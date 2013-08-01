@@ -1,0 +1,824 @@
+<?xml version="1.0" encoding="ascii"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>TestON.bin.cli</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css" />
+  <script type="text/javascript" src="epydoc.js"></script>
+</head>
+
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="TestON-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+      <th class="navbar" width="100%"></th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">
+      <span class="breadcrumbs">
+        <a href="TestON-module.html">Package&nbsp;TestON</a> ::
+        <a href="TestON.bin-module.html">Package&nbsp;bin</a> ::
+        Module&nbsp;cli
+      </span>
+    </td>
+    <td>
+      <table cellpadding="0" cellspacing="0">
+        <!-- hide/show private -->
+        <tr><td align="right"><span class="options">[<a href="javascript:void(0);" class="privatelink"
+    onclick="toggle_private();">hide&nbsp;private</a>]</span></td></tr>
+        <tr><td align="right"><span class="options"
+            >[<a href="frames.html" target="_top">frames</a
+            >]&nbsp;|&nbsp;<a href="TestON.bin.cli-pysrc.html"
+            target="_top">no&nbsp;frames</a>]</span></td></tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<h1 class="epydoc">Source Code for <a href="TestON.bin.cli-module.html">Module TestON.bin.cli</a></h1>
+<pre class="py-src">
+<a name="L1"></a><tt class="py-lineno">  1</tt>  <tt class="py-line"><tt class="py-comment">#!/usr/bin/env python</tt> </tt>
+<a name="L2"></a><tt class="py-lineno">  2</tt>  <tt class="py-line"><tt class="py-docstring">'''</tt> </tt>
+<a name="L3"></a><tt class="py-lineno">  3</tt>  <tt class="py-line"><tt class="py-docstring">Created on 20-Dec-2012</tt> </tt>
+<a name="L4"></a><tt class="py-lineno">  4</tt>  <tt class="py-line"><tt class="py-docstring">    </tt> </tt>
+<a name="L5"></a><tt class="py-lineno">  5</tt>  <tt class="py-line"><tt class="py-docstring">@author: Anil Kumar (anilkumar.s@paxterrasolutions.com)</tt> </tt>
+<a name="L6"></a><tt class="py-lineno">  6</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L7"></a><tt class="py-lineno">  7</tt>  <tt class="py-line"><tt class="py-docstring">cli will provide the CLI shell for teston framework.</tt> </tt>
+<a name="L8"></a><tt class="py-lineno">  8</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L9"></a><tt class="py-lineno">  9</tt>  <tt class="py-line"><tt class="py-docstring">'''</tt> </tt>
+<a name="L10"></a><tt class="py-lineno"> 10</tt>  <tt class="py-line"> </tt>
+<a name="L11"></a><tt class="py-lineno"> 11</tt>  <tt class="py-line"> </tt>
+<a name="L12"></a><tt class="py-lineno"> 12</tt>  <tt class="py-line"><tt class="py-string">"""</tt> </tt>
+<a name="L13"></a><tt class="py-lineno"> 13</tt>  <tt class="py-line"><tt class="py-string">A simple command-line interface for TestON.</tt> </tt>
+<a name="L14"></a><tt class="py-lineno"> 14</tt>  <tt class="py-line"><tt class="py-string"></tt> </tt>
+<a name="L15"></a><tt class="py-lineno"> 15</tt>  <tt class="py-line"><tt class="py-string">The TestON CLI provides a simple console which</tt> </tt>
+<a name="L16"></a><tt class="py-lineno"> 16</tt>  <tt class="py-line"><tt class="py-string">makes it easy to launch the test. For example, the command run will execute the test.</tt> </tt>
+<a name="L17"></a><tt class="py-lineno"> 17</tt>  <tt class="py-line"><tt class="py-string"></tt> </tt>
+<a name="L18"></a><tt class="py-lineno"> 18</tt>  <tt class="py-line"><tt class="py-string">teston&gt; run test DpctlTest</tt> </tt>
+<a name="L19"></a><tt class="py-lineno"> 19</tt>  <tt class="py-line"><tt class="py-string">Several useful commands are provided.</tt> </tt>
+<a name="L20"></a><tt class="py-lineno"> 20</tt>  <tt class="py-line"><tt class="py-string">"""</tt> </tt>
+<a name="L21"></a><tt class="py-lineno"> 21</tt>  <tt class="py-line"> </tt>
+<a name="L22"></a><tt class="py-lineno"> 22</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt class="py-name">subprocess</tt> <tt class="py-keyword">import</tt> <tt class="py-name">call</tt> </tt>
+<a name="L23"></a><tt class="py-lineno"> 23</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt class="py-name">cmd</tt> <tt class="py-keyword">import</tt> <tt class="py-name">Cmd</tt> </tt>
+<a name="L24"></a><tt class="py-lineno"> 24</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt class="py-name">os</tt> <tt class="py-keyword">import</tt> <tt id="link-0" class="py-name" targets="Method TestON.bin.cli.CLI.isatty()=TestON.bin.cli.CLI-class.html#isatty"><a title="TestON.bin.cli.CLI.isatty" class="py-name" href="#" onclick="return doclink('link-0', 'isatty', 'link-0');">isatty</a></tt> </tt>
+<a name="L25"></a><tt class="py-lineno"> 25</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt class="py-name">sys</tt> </tt>
+<a name="L26"></a><tt class="py-lineno"> 26</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt class="py-name">re</tt> </tt>
+<a name="L27"></a><tt class="py-lineno"> 27</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt class="py-name">os</tt> </tt>
+<a name="L28"></a><tt class="py-lineno"> 28</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt class="py-name">time</tt> </tt>
+<a name="L29"></a><tt class="py-lineno"> 29</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt class="py-name">threading</tt> </tt>
+<a name="L30"></a><tt class="py-lineno"> 30</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt class="py-name">__builtin__</tt> </tt>
+<a name="L31"></a><tt class="py-lineno"> 31</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt class="py-name">pprint</tt> </tt>
+<a name="L32"></a><tt class="py-lineno"> 32</tt>  <tt class="py-line"><tt id="link-1" class="py-name" targets="Variable TestON.bin.cli.dump=TestON.bin.cli-module.html#dump,Function TestON.core.ast.dump()=TestON.core.ast-module.html#dump,Method TestON.drivers.common.cli.emulator.mininetclidriver.MininetCliDriver.dump()=TestON.drivers.common.cli.emulator.mininetclidriver.MininetCliDriver-class.html#dump"><a title="TestON.bin.cli.dump
+TestON.core.ast.dump
+TestON.drivers.common.cli.emulator.mininetclidriver.MininetCliDriver.dump" class="py-name" href="#" onclick="return doclink('link-1', 'dump', 'link-1');">dump</a></tt> <tt class="py-op">=</tt> <tt class="py-name">pprint</tt><tt class="py-op">.</tt><tt class="py-name">PrettyPrinter</tt><tt class="py-op">(</tt><tt class="py-name">indent</tt><tt class="py-op">=</tt><tt class="py-number">4</tt><tt class="py-op">)</tt> </tt>
+<a name="L33"></a><tt class="py-lineno"> 33</tt>  <tt class="py-line"><tt class="py-name">__builtin__</tt><tt class="py-op">.</tt><tt class="py-name">testthread</tt> <tt class="py-op">=</tt> <tt class="py-name">False</tt> </tt>
+<a name="L34"></a><tt class="py-lineno"> 34</tt>  <tt class="py-line"><tt id="link-2" class="py-name" targets="Variable TestON.bin.cli.introduction=TestON.bin.cli-module.html#introduction"><a title="TestON.bin.cli.introduction" class="py-name" href="#" onclick="return doclink('link-2', 'introduction', 'link-2');">introduction</a></tt> <tt class="py-op">=</tt> <tt class="py-string">"TestON is the testing framework \nDeveloped by Paxterra Solutions (www.paxterrasolutions.com)"</tt> </tt>
+<a name="L35"></a><tt class="py-lineno"> 35</tt>  <tt class="py-line"> </tt>
+<a name="L36"></a><tt class="py-lineno"> 36</tt>  <tt class="py-line"><tt id="link-3" class="py-name" targets="Variable TestON.bin.cli.path=TestON.bin.cli-module.html#path,Variable TestON.core.teston.path=TestON.core.teston-module.html#path"><a title="TestON.bin.cli.path
+TestON.core.teston.path" class="py-name" href="#" onclick="return doclink('link-3', 'path', 'link-3');">path</a></tt> <tt class="py-op">=</tt> <tt class="py-name">re</tt><tt class="py-op">.</tt><tt class="py-name">sub</tt><tt class="py-op">(</tt><tt class="py-string">"teston$"</tt><tt class="py-op">,</tt> <tt class="py-string">""</tt><tt class="py-op">,</tt> <tt class="py-name">os</tt><tt class="py-op">.</tt><tt class="py-name">getcwd</tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L37"></a><tt class="py-lineno"> 37</tt>  <tt class="py-line"><tt class="py-name">sys</tt><tt class="py-op">.</tt><tt id="link-4" class="py-name"><a title="TestON.bin.cli.path
+TestON.core.teston.path" class="py-name" href="#" onclick="return doclink('link-4', 'path', 'link-3');">path</a></tt><tt class="py-op">.</tt><tt class="py-name">append</tt><tt class="py-op">(</tt><tt id="link-5" class="py-name"><a title="TestON.bin.cli.path
+TestON.core.teston.path" class="py-name" href="#" onclick="return doclink('link-5', 'path', 'link-3');">path</a></tt><tt class="py-op">+</tt><tt class="py-string">"/Core"</tt><tt class="py-op">)</tt> </tt>
+<a name="L38"></a><tt class="py-lineno"> 38</tt>  <tt class="py-line"><tt class="py-name">sys</tt><tt class="py-op">.</tt><tt id="link-6" class="py-name"><a title="TestON.bin.cli.path
+TestON.core.teston.path" class="py-name" href="#" onclick="return doclink('link-6', 'path', 'link-3');">path</a></tt><tt class="py-op">.</tt><tt class="py-name">append</tt><tt class="py-op">(</tt><tt class="py-string">"../"</tt><tt class="py-op">)</tt> </tt>
+<a name="L39"></a><tt class="py-lineno"> 39</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt id="link-7" class="py-name" targets="Package TestON.core=TestON.core-module.html"><a title="TestON.core" class="py-name" href="#" onclick="return doclink('link-7', 'core', 'link-7');">core</a></tt><tt class="py-op">.</tt><tt id="link-8" class="py-name" targets="Module TestON.core.teston=TestON.core.teston-module.html"><a title="TestON.core.teston" class="py-name" href="#" onclick="return doclink('link-8', 'teston', 'link-8');">teston</a></tt> <tt class="py-keyword">import</tt> <tt class="py-op">*</tt>  </tt>
+<a name="L40"></a><tt class="py-lineno"> 40</tt>  <tt class="py-line"> </tt>
+<a name="CLI"></a><div id="CLI-def"><a name="L41"></a><tt class="py-lineno"> 41</tt> <a class="py-toggle" href="#" id="CLI-toggle" onclick="return toggle('CLI');">-</a><tt class="py-line"><tt class="py-keyword">class</tt> <a class="py-def-name" href="TestON.bin.cli.CLI-class.html">CLI</a><tt class="py-op">(</tt> <tt class="py-base-class">threading</tt><tt class="py-op">.</tt><tt class="py-base-class">Thread</tt><tt class="py-op">,</tt><tt class="py-base-class">Cmd</tt><tt class="py-op">,</tt><tt class="py-base-class">object</tt> <tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="CLI-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="CLI-expanded"><a name="L42"></a><tt class="py-lineno"> 42</tt>  <tt class="py-line">    <tt class="py-docstring">"command-line interface to execute the test."</tt> </tt>
+<a name="L43"></a><tt class="py-lineno"> 43</tt>  <tt class="py-line"> </tt>
+<a name="L44"></a><tt class="py-lineno"> 44</tt>  <tt class="py-line">    <tt id="link-9" class="py-name" targets="Variable TestON.bin.cli.CLI.prompt=TestON.bin.cli.CLI-class.html#prompt"><a title="TestON.bin.cli.CLI.prompt" class="py-name" href="#" onclick="return doclink('link-9', 'prompt', 'link-9');">prompt</a></tt> <tt class="py-op">=</tt> <tt class="py-string">'teston&gt; '</tt> </tt>
+<a name="L45"></a><tt class="py-lineno"> 45</tt>  <tt class="py-line"> </tt>
+<a name="CLI.__init__"></a><div id="CLI.__init__-def"><a name="L46"></a><tt class="py-lineno"> 46</tt> <a class="py-toggle" href="#" id="CLI.__init__-toggle" onclick="return toggle('CLI.__init__');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="TestON.bin.cli.CLI-class.html#__init__">__init__</a><tt class="py-op">(</tt> <tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">teston</tt><tt class="py-op">,</tt> <tt class="py-param">stdin</tt><tt class="py-op">=</tt><tt class="py-name">sys</tt><tt class="py-op">.</tt><tt class="py-name">stdin</tt> <tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="CLI.__init__-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="CLI.__init__-expanded"><a name="L47"></a><tt class="py-lineno"> 47</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-10" class="py-name"><a title="TestON.core.teston" class="py-name" href="#" onclick="return doclink('link-10', 'teston', 'link-8');">teston</a></tt> <tt class="py-op">=</tt> <tt id="link-11" class="py-name"><a title="TestON.core.teston" class="py-name" href="#" onclick="return doclink('link-11', 'teston', 'link-8');">teston</a></tt> </tt>
+<a name="L48"></a><tt class="py-lineno"> 48</tt>  <tt class="py-line">         </tt>
+<a name="L49"></a><tt class="py-lineno"> 49</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">_mainevent</tt> <tt class="py-op">=</tt> <tt class="py-name">threading</tt><tt class="py-op">.</tt><tt class="py-name">Event</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L50"></a><tt class="py-lineno"> 50</tt>  <tt class="py-line">        <tt class="py-name">threading</tt><tt class="py-op">.</tt><tt class="py-name">Thread</tt><tt class="py-op">.</tt><tt id="link-12" class="py-name" targets="Method TestON.bin.cli.CLI.__init__()=TestON.bin.cli.CLI-class.html#__init__,Method TestON.bin.cli.TestThread.__init__()=TestON.bin.cli.TestThread-class.html#__init__,Method TestON.bin.generatedriver.GenerateDriver.__init__()=TestON.bin.generatedriver.GenerateDriver-class.html#__init__,Method TestON.bin.updatedriver.UpdateDriver.__init__()=TestON.bin.updatedriver.UpdateDriver-class.html#__init__,Method TestON.bin.vyatta.Vyatta.__init__()=TestON.bin.vyatta.Vyatta-class.html#__init__,Method TestON.core.iniparser.iniparser.__init__()=TestON.core.iniparser.iniparser-class.html#__init__,Method TestON.core.openspeak.OpenSpeak.__init__()=TestON.core.openspeak.OpenSpeak-class.html#__init__,Method TestON.core.teston.TestON.__init__()=TestON.core.teston.TestON-class.html#__init__,Method TestON.core.testparser.TestParser.__init__()=TestON.core.testparser.TestParser-class.html#__init__,Method TestON.core.xmlparser.xmlparser.__init__()=TestON.core.xmlparser.xmlparser-class.html#__init__,Method TestON.drivers.common.api.controllerdriver.Controller.__init__()=TestON.drivers.common.api.controllerdriver.Controller-class.html#__init__,Method TestON.drivers.common.api.fvtapidriver.FvtApiDriver.__init__()=TestON.drivers.common.api.fvtapidriver.FvtApiDriver-class.html#__init__,Method TestON.drivers.common.cli.emulator.mininetclidriver.MininetCliDriver.__init__()=TestON.drivers.common.cli.emulator.mininetclidriver.MininetCliDriver-class.html#__init__,Method TestON.drivers.common.cli.emulator.poxclidriver.PoxCliDriver.__init__()=TestON.drivers.common.cli.emulator.poxclidriver.PoxCliDriver-class.html#__init__,Method TestON.drivers.common.cli.emulatordriver.Emulator.__init__()=TestON.drivers.common.cli.emulatordriver.Emulator-class.html#__init__,Method TestON.drivers.common.cli.remotesys.hpswitchdriver.HPSwitchDriver.__init__()=TestON.drivers.common.cli.remotesys.hpswitchdriver.HPSwitchDriver-class.html#__init__,Method TestON.drivers.common.cli.remotesysdriver.RemoteSysDriver.__init__()=TestON.drivers.common.cli.remotesysdriver.RemoteSysDriver-class.html#__init__,Method TestON.drivers.common.cli.tool.dpctlclidriver.DpctlCliDriver.__init__()=TestON.drivers.common.cli.tool.dpctlclidriver.DpctlCliDriver-class.html#__init__,Method TestON.drivers.common.cli.toolsdriver.Tools.__init__()=TestON.drivers.common.cli.toolsdriver.Tools-class.html#__init__,Method TestON.drivers.common.clidriver.CLI.__init__()=TestON.drivers.common.clidriver.CLI-class.html#__init__,Method TestON.drivers.common.webdriver.WebDriver.__init__()=TestON.drivers.common.webdriver.WebDriver-class.html#__init__,Method TestON.drivers.component.Component.__init__()=TestON.drivers.component.Component-class.html#__init__,Method TestON.examples.Assert.Assert.Assert.__init__()=TestON.examples.Assert.Assert.Assert-class.html#__init__,Method TestON.examples.CaseParams.CaseParams.CaseParams.__init__()=TestON.examples.CaseParams.CaseParams.CaseParams-class.html#__init__,Method TestON.examples.ExperimentTest.ExperimentTest.ExperimentTest.__init__()=TestON.examples.ExperimentTest.ExperimentTest.ExperimentTest-class.html#__init__,Method TestON.examples.StepParams.StepParams.StepParams.__init__()=TestON.examples.StepParams.StepParams.StepParams-class.html#__init__,Method TestON.examples.Topology.Topology.Topology.__init__()=TestON.examples.Topology.Topology.Topology-class.html#__init__,Method TestON.tests.DpctlTest.DpctlTest.DpctlTest.__init__()=TestON.tests.DpctlTest.DpctlTest.DpctlTest-class.html#__init__,Method TestON.tests.FvtTest.FvtTest.FvtTest.__init__()=TestON.tests.FvtTest.FvtTest.FvtTest-class.html#__init__,Method TestON.tests.HPSwitchTest.HPSwitchTest.HPSwitchTest.__init__()=TestON.tests.HPSwitchTest.HPSwitchTest.HPSwitchTest-class.html#__init__,Method TestON.tests.MininetTest.MininetTest.MininetTest.__init__()=TestON.tests.MininetTest.MininetTest.MininetTest-class.html#__init__,Method TestON.tests.PoxTest.PoxTest.PoxTest.__init__()=TestON.tests.PoxTest.PoxTest.PoxTest-class.html#__init__,Method TestON.tests.TicketBooking.TicketBooking.TicketBooking.__init__()=TestON.tests.TicketBooking.TicketBooking.TicketBooking-class.html#__init__,Method TestON.tests.VyattaTest.VyattaTest.VyattaTest.__init__()=TestON.tests.VyattaTest.VyattaTest.VyattaTest-class.html#__init__"><a title="TestON.bin.cli.CLI.__init__
+TestON.bin.cli.TestThread.__init__
+TestON.bin.generatedriver.GenerateDriver.__init__
+TestON.bin.updatedriver.UpdateDriver.__init__
+TestON.bin.vyatta.Vyatta.__init__
+TestON.core.iniparser.iniparser.__init__
+TestON.core.openspeak.OpenSpeak.__init__
+TestON.core.teston.TestON.__init__
+TestON.core.testparser.TestParser.__init__
+TestON.core.xmlparser.xmlparser.__init__
+TestON.drivers.common.api.controllerdriver.Controller.__init__
+TestON.drivers.common.api.fvtapidriver.FvtApiDriver.__init__
+TestON.drivers.common.cli.emulator.mininetclidriver.MininetCliDriver.__init__
+TestON.drivers.common.cli.emulator.poxclidriver.PoxCliDriver.__init__
+TestON.drivers.common.cli.emulatordriver.Emulator.__init__
+TestON.drivers.common.cli.remotesys.hpswitchdriver.HPSwitchDriver.__init__
+TestON.drivers.common.cli.remotesysdriver.RemoteSysDriver.__init__
+TestON.drivers.common.cli.tool.dpctlclidriver.DpctlCliDriver.__init__
+TestON.drivers.common.cli.toolsdriver.Tools.__init__
+TestON.drivers.common.clidriver.CLI.__init__
+TestON.drivers.common.webdriver.WebDriver.__init__
+TestON.drivers.component.Component.__init__
+TestON.examples.Assert.Assert.Assert.__init__
+TestON.examples.CaseParams.CaseParams.CaseParams.__init__
+TestON.examples.ExperimentTest.ExperimentTest.ExperimentTest.__init__
+TestON.examples.StepParams.StepParams.StepParams.__init__
+TestON.examples.Topology.Topology.Topology.__init__
+TestON.tests.DpctlTest.DpctlTest.DpctlTest.__init__
+TestON.tests.FvtTest.FvtTest.FvtTest.__init__
+TestON.tests.HPSwitchTest.HPSwitchTest.HPSwitchTest.__init__
+TestON.tests.MininetTest.MininetTest.MininetTest.__init__
+TestON.tests.PoxTest.PoxTest.PoxTest.__init__
+TestON.tests.TicketBooking.TicketBooking.TicketBooking.__init__
+TestON.tests.VyattaTest.VyattaTest.VyattaTest.__init__" class="py-name" href="#" onclick="return doclink('link-12', '__init__', 'link-12');">__init__</a></tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">)</tt> </tt>
+<a name="L51"></a><tt class="py-lineno"> 51</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">main_stop</tt> <tt class="py-op">=</tt> <tt class="py-name">False</tt> </tt>
+<a name="L52"></a><tt class="py-lineno"> 52</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">locals</tt> <tt class="py-op">=</tt> <tt class="py-op">{</tt> <tt class="py-string">'test'</tt><tt class="py-op">:</tt> <tt id="link-13" class="py-name"><a title="TestON.core.teston" class="py-name" href="#" onclick="return doclink('link-13', 'teston', 'link-8');">teston</a></tt> <tt class="py-op">}</tt> </tt>
+<a name="L53"></a><tt class="py-lineno"> 53</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">stdin</tt> <tt class="py-op">=</tt> <tt class="py-name">stdin</tt> </tt>
+<a name="L54"></a><tt class="py-lineno"> 54</tt>  <tt class="py-line">        <tt class="py-name">Cmd</tt><tt class="py-op">.</tt><tt id="link-14" class="py-name"><a title="TestON.bin.cli.CLI.__init__
+TestON.bin.cli.TestThread.__init__
+TestON.bin.generatedriver.GenerateDriver.__init__
+TestON.bin.updatedriver.UpdateDriver.__init__
+TestON.bin.vyatta.Vyatta.__init__
+TestON.core.iniparser.iniparser.__init__
+TestON.core.openspeak.OpenSpeak.__init__
+TestON.core.teston.TestON.__init__
+TestON.core.testparser.TestParser.__init__
+TestON.core.xmlparser.xmlparser.__init__
+TestON.drivers.common.api.controllerdriver.Controller.__init__
+TestON.drivers.common.api.fvtapidriver.FvtApiDriver.__init__
+TestON.drivers.common.cli.emulator.mininetclidriver.MininetCliDriver.__init__
+TestON.drivers.common.cli.emulator.poxclidriver.PoxCliDriver.__init__
+TestON.drivers.common.cli.emulatordriver.Emulator.__init__
+TestON.drivers.common.cli.remotesys.hpswitchdriver.HPSwitchDriver.__init__
+TestON.drivers.common.cli.remotesysdriver.RemoteSysDriver.__init__
+TestON.drivers.common.cli.tool.dpctlclidriver.DpctlCliDriver.__init__
+TestON.drivers.common.cli.toolsdriver.Tools.__init__
+TestON.drivers.common.clidriver.CLI.__init__
+TestON.drivers.common.webdriver.WebDriver.__init__
+TestON.drivers.component.Component.__init__
+TestON.examples.Assert.Assert.Assert.__init__
+TestON.examples.CaseParams.CaseParams.CaseParams.__init__
+TestON.examples.ExperimentTest.ExperimentTest.ExperimentTest.__init__
+TestON.examples.StepParams.StepParams.StepParams.__init__
+TestON.examples.Topology.Topology.Topology.__init__
+TestON.tests.DpctlTest.DpctlTest.DpctlTest.__init__
+TestON.tests.FvtTest.FvtTest.FvtTest.__init__
+TestON.tests.HPSwitchTest.HPSwitchTest.HPSwitchTest.__init__
+TestON.tests.MininetTest.MininetTest.MininetTest.__init__
+TestON.tests.PoxTest.PoxTest.PoxTest.__init__
+TestON.tests.TicketBooking.TicketBooking.TicketBooking.__init__
+TestON.tests.VyattaTest.VyattaTest.VyattaTest.__init__" class="py-name" href="#" onclick="return doclink('link-14', '__init__', 'link-12');">__init__</a></tt><tt class="py-op">(</tt> <tt class="py-name">self</tt> <tt class="py-op">)</tt> </tt>
+<a name="L55"></a><tt class="py-lineno"> 55</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-15" class="py-name" targets="Method TestON.bin.cli.TestThread.pause()=TestON.bin.cli.TestThread-class.html#pause,Method TestON.core.teston.TestON.pause()=TestON.core.teston.TestON-class.html#pause"><a title="TestON.bin.cli.TestThread.pause
+TestON.core.teston.TestON.pause" class="py-name" href="#" onclick="return doclink('link-15', 'pause', 'link-15');">pause</a></tt> <tt class="py-op">=</tt> <tt class="py-name">False</tt> </tt>
+<a name="L56"></a><tt class="py-lineno"> 56</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-16" class="py-name" targets="Method TestON.bin.cli.TestThread.stop()=TestON.bin.cli.TestThread-class.html#stop"><a title="TestON.bin.cli.TestThread.stop" class="py-name" href="#" onclick="return doclink('link-16', 'stop', 'link-16');">stop</a></tt> <tt class="py-op">=</tt> <tt class="py-name">False</tt> </tt>
+<a name="L57"></a><tt class="py-lineno"> 57</tt>  <tt class="py-line">        <tt class="py-name">__builtin__</tt><tt class="py-op">.</tt><tt id="link-17" class="py-name" targets="Module TestON.bin.cli=TestON.bin.cli-module.html,Package TestON.drivers.common.cli=TestON.drivers.common.cli-module.html"><a title="TestON.bin.cli
+TestON.drivers.common.cli" class="py-name" href="#" onclick="return doclink('link-17', 'cli', 'link-17');">cli</a></tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt> </tt>
+</div><a name="L58"></a><tt class="py-lineno"> 58</tt>  <tt class="py-line"> </tt>
+<a name="CLI.emptyline"></a><div id="CLI.emptyline-def"><a name="L59"></a><tt class="py-lineno"> 59</tt> <a class="py-toggle" href="#" id="CLI.emptyline-toggle" onclick="return toggle('CLI.emptyline');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="TestON.bin.cli.CLI-class.html#emptyline">emptyline</a><tt class="py-op">(</tt> <tt class="py-param">self</tt> <tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="CLI.emptyline-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="CLI.emptyline-expanded"><a name="L60"></a><tt class="py-lineno"> 60</tt>  <tt class="py-line">        <tt class="py-docstring">"Don't repeat last command when you hit return."</tt> </tt>
+<a name="L61"></a><tt class="py-lineno"> 61</tt>  <tt class="py-line">        <tt class="py-keyword">pass</tt> </tt>
+</div><a name="L62"></a><tt class="py-lineno"> 62</tt>  <tt class="py-line"> </tt>
+<a name="L63"></a><tt class="py-lineno"> 63</tt>  <tt class="py-line">    <tt id="link-18" class="py-name" targets="Variable TestON.bin.cli.CLI.helpStr=TestON.bin.cli.CLI-class.html#helpStr"><a title="TestON.bin.cli.CLI.helpStr" class="py-name" href="#" onclick="return doclink('link-18', 'helpStr', 'link-18');">helpStr</a></tt> <tt class="py-op">=</tt> <tt class="py-op">(</tt> </tt>
+<a name="L64"></a><tt class="py-lineno"> 64</tt>  <tt class="py-line">              <tt class="py-string">" teston help"</tt> </tt>
+<a name="L65"></a><tt class="py-lineno"> 65</tt>  <tt class="py-line">    <tt class="py-op">)</tt> </tt>
+<a name="L66"></a><tt class="py-lineno"> 66</tt>  <tt class="py-line"> </tt>
+<a name="CLI.do_help"></a><div id="CLI.do_help-def"><a name="L67"></a><tt class="py-lineno"> 67</tt> <a class="py-toggle" href="#" id="CLI.do_help-toggle" onclick="return toggle('CLI.do_help');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="TestON.bin.cli.CLI-class.html#do_help">do_help</a><tt class="py-op">(</tt> <tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">line</tt> <tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="CLI.do_help-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="CLI.do_help-expanded"><a name="L68"></a><tt class="py-lineno"> 68</tt>  <tt class="py-line">        <tt class="py-docstring">"Describe available CLI commands."</tt> </tt>
+<a name="L69"></a><tt class="py-lineno"> 69</tt>  <tt class="py-line">        <tt class="py-name">Cmd</tt><tt class="py-op">.</tt><tt id="link-19" class="py-name" targets="Method TestON.bin.cli.CLI.do_help()=TestON.bin.cli.CLI-class.html#do_help"><a title="TestON.bin.cli.CLI.do_help" class="py-name" href="#" onclick="return doclink('link-19', 'do_help', 'link-19');">do_help</a></tt><tt class="py-op">(</tt> <tt class="py-name">self</tt><tt class="py-op">,</tt> <tt class="py-name">line</tt> <tt class="py-op">)</tt> </tt>
+<a name="L70"></a><tt class="py-lineno"> 70</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-name">line</tt> <tt class="py-keyword">is</tt> <tt class="py-string">''</tt><tt class="py-op">:</tt> </tt>
+<a name="L71"></a><tt class="py-lineno"> 71</tt>  <tt class="py-line">            <tt id="link-20" class="py-name" targets="Function TestON.bin.cli.output()=TestON.bin.cli-module.html#output"><a title="TestON.bin.cli.output" class="py-name" href="#" onclick="return doclink('link-20', 'output', 'link-20');">output</a></tt><tt class="py-op">(</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-21" class="py-name"><a title="TestON.bin.cli.CLI.helpStr" class="py-name" href="#" onclick="return doclink('link-21', 'helpStr', 'link-18');">helpStr</a></tt> <tt class="py-op">)</tt> </tt>
+</div><a name="CLI.do_run"></a><div id="CLI.do_run-def"><a name="L72"></a><tt class="py-lineno"> 72</tt> <a class="py-toggle" href="#" id="CLI.do_run-toggle" onclick="return toggle('CLI.do_run');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="TestON.bin.cli.CLI-class.html#do_run">do_run</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt><tt class="py-param">args</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="CLI.do_run-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="CLI.do_run-expanded"><a name="L73"></a><tt class="py-lineno"> 73</tt>  <tt class="py-line">        <tt class="py-docstring">'''</tt> </tt>
+<a name="L74"></a><tt class="py-lineno"> 74</tt>  <tt class="py-line"><tt class="py-docstring">        run command will execute the test with following optional command line arguments</tt> </tt>
+<a name="L75"></a><tt class="py-lineno"> 75</tt>  <tt class="py-line"><tt class="py-docstring">        logdir &lt;directory to store logs in&gt;</tt> </tt>
+<a name="L76"></a><tt class="py-lineno"> 76</tt>  <tt class="py-line"><tt class="py-docstring">        testcases &lt;list of testcases separated by comma or range of testcases separated by hypen&gt;</tt> </tt>
+<a name="L77"></a><tt class="py-lineno"> 77</tt>  <tt class="py-line"><tt class="py-docstring">        mail &lt;mail-id or list of mail-ids seperated by comma&gt;</tt> </tt>
+<a name="L78"></a><tt class="py-lineno"> 78</tt>  <tt class="py-line"><tt class="py-docstring">        example 1, to execute the examples specified in the ~/examples diretory.</tt> </tt>
+<a name="L79"></a><tt class="py-lineno"> 79</tt>  <tt class="py-line"><tt class="py-docstring">        '''</tt> </tt>
+<a name="L80"></a><tt class="py-lineno"> 80</tt>  <tt class="py-line">        <tt class="py-name">args</tt> <tt class="py-op">=</tt> <tt class="py-name">args</tt><tt class="py-op">.</tt><tt class="py-name">split</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L81"></a><tt class="py-lineno"> 81</tt>  <tt class="py-line">        <tt class="py-name">options</tt> <tt class="py-op">=</tt> <tt class="py-op">{</tt><tt class="py-op">}</tt> </tt>
+<a name="L82"></a><tt class="py-lineno"> 82</tt>  <tt class="py-line">        <tt class="py-name">options</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-22" class="py-name" targets="Method TestON.bin.cli.CLI.parseArgs()=TestON.bin.cli.CLI-class.html#parseArgs"><a title="TestON.bin.cli.CLI.parseArgs" class="py-name" href="#" onclick="return doclink('link-22', 'parseArgs', 'link-22');">parseArgs</a></tt><tt class="py-op">(</tt><tt class="py-name">args</tt><tt class="py-op">,</tt><tt class="py-name">options</tt><tt class="py-op">)</tt> </tt>
+<a name="L83"></a><tt class="py-lineno"> 83</tt>  <tt class="py-line">        <tt class="py-name">options</tt> <tt class="py-op">=</tt> <tt id="link-23" class="py-name" targets="Function TestON.bin.cli.dictToObj()=TestON.bin.cli-module.html#dictToObj"><a title="TestON.bin.cli.dictToObj" class="py-name" href="#" onclick="return doclink('link-23', 'dictToObj', 'link-23');">dictToObj</a></tt><tt class="py-op">(</tt><tt class="py-name">options</tt><tt class="py-op">)</tt> </tt>
+<a name="L84"></a><tt class="py-lineno"> 84</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-keyword">not</tt> <tt class="py-name">testthread</tt><tt class="py-op">:</tt> </tt>
+<a name="L85"></a><tt class="py-lineno"> 85</tt>  <tt class="py-line">            <tt class="py-name">test</tt> <tt class="py-op">=</tt> <tt id="link-24" class="py-name" targets="Class TestON.bin.cli.TestThread=TestON.bin.cli.TestThread-class.html"><a title="TestON.bin.cli.TestThread" class="py-name" href="#" onclick="return doclink('link-24', 'TestThread', 'link-24');">TestThread</a></tt><tt class="py-op">(</tt><tt class="py-name">options</tt><tt class="py-op">)</tt> </tt>
+<a name="L86"></a><tt class="py-lineno"> 86</tt>  <tt class="py-line">            <tt class="py-name">test</tt><tt class="py-op">.</tt><tt class="py-name">start</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L87"></a><tt class="py-lineno"> 87</tt>  <tt class="py-line">        <tt class="py-keyword">else</tt> <tt class="py-op">:</tt> </tt>
+<a name="L88"></a><tt class="py-lineno"> 88</tt>  <tt class="py-line">            <tt class="py-keyword">print</tt> <tt class="py-name">main</tt><tt class="py-op">.</tt><tt class="py-name">TEST</tt><tt class="py-op">+</tt> <tt class="py-string">" test execution paused, please resume that before executing to another test"</tt> </tt>
+</div><a name="L89"></a><tt class="py-lineno"> 89</tt>  <tt class="py-line">                     </tt>
+<a name="CLI.do_resume"></a><div id="CLI.do_resume-def"><a name="L90"></a><tt class="py-lineno"> 90</tt> <a class="py-toggle" href="#" id="CLI.do_resume-toggle" onclick="return toggle('CLI.do_resume');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="TestON.bin.cli.CLI-class.html#do_resume">do_resume</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">line</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="CLI.do_resume-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="CLI.do_resume-expanded"><a name="L91"></a><tt class="py-lineno"> 91</tt>  <tt class="py-line">        <tt class="py-docstring">'''</tt> </tt>
+<a name="L92"></a><tt class="py-lineno"> 92</tt>  <tt class="py-line"><tt class="py-docstring">        resume command will continue the execution of paused test.</tt> </tt>
+<a name="L93"></a><tt class="py-lineno"> 93</tt>  <tt class="py-line"><tt class="py-docstring">        teston&gt;resume</tt> </tt>
+<a name="L94"></a><tt class="py-lineno"> 94</tt>  <tt class="py-line"><tt class="py-docstring">        [2013-01-07 23:03:44.640723] [PoxTest] [STEP]  1.1: Checking the host reachability using pingHost</tt> </tt>
+<a name="L95"></a><tt class="py-lineno"> 95</tt>  <tt class="py-line"><tt class="py-docstring">        2013-01-07 23:03:44,858 - PoxTest - INFO - Expected Prompt Found</tt> </tt>
+<a name="L96"></a><tt class="py-lineno"> 96</tt>  <tt class="py-line"><tt class="py-docstring">        ....</tt> </tt>
+<a name="L97"></a><tt class="py-lineno"> 97</tt>  <tt class="py-line"><tt class="py-docstring">        '''</tt> </tt>
+<a name="L98"></a><tt class="py-lineno"> 98</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-name">testthread</tt><tt class="py-op">:</tt> </tt>
+<a name="L99"></a><tt class="py-lineno"> 99</tt>  <tt class="py-line">            <tt class="py-name">testthread</tt><tt class="py-op">.</tt><tt id="link-25" class="py-name" targets="Method TestON.bin.cli.TestThread.play()=TestON.bin.cli.TestThread-class.html#play"><a title="TestON.bin.cli.TestThread.play" class="py-name" href="#" onclick="return doclink('link-25', 'play', 'link-25');">play</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L100"></a><tt class="py-lineno">100</tt>  <tt class="py-line">        <tt class="py-keyword">else</tt> <tt class="py-op">:</tt> </tt>
+<a name="L101"></a><tt class="py-lineno">101</tt>  <tt class="py-line">            <tt class="py-keyword">print</tt> <tt class="py-string">"There is no test to resume"</tt> </tt>
+</div><a name="L102"></a><tt class="py-lineno">102</tt>  <tt class="py-line">     </tt>
+<a name="CLI.do_nextstep"></a><div id="CLI.do_nextstep-def"><a name="L103"></a><tt class="py-lineno">103</tt> <a class="py-toggle" href="#" id="CLI.do_nextstep-toggle" onclick="return toggle('CLI.do_nextstep');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="TestON.bin.cli.CLI-class.html#do_nextstep">do_nextstep</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt><tt class="py-param">line</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="CLI.do_nextstep-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="CLI.do_nextstep-expanded"><a name="L104"></a><tt class="py-lineno">104</tt>  <tt class="py-line">        <tt class="py-docstring">'''</tt> </tt>
+<a name="L105"></a><tt class="py-lineno">105</tt>  <tt class="py-line"><tt class="py-docstring">        nextstep will execute the next-step of the paused test and </tt> </tt>
+<a name="L106"></a><tt class="py-lineno">106</tt>  <tt class="py-line"><tt class="py-docstring">        it will pause the test after finishing of step.</tt> </tt>
+<a name="L107"></a><tt class="py-lineno">107</tt>  <tt class="py-line"><tt class="py-docstring">        </tt> </tt>
+<a name="L108"></a><tt class="py-lineno">108</tt>  <tt class="py-line"><tt class="py-docstring">        teston&gt; nextstep</tt> </tt>
+<a name="L109"></a><tt class="py-lineno">109</tt>  <tt class="py-line"><tt class="py-docstring">        Will pause the test's execution, after completion of this step.....</tt> </tt>
+<a name="L110"></a><tt class="py-lineno">110</tt>  <tt class="py-line"><tt class="py-docstring">        </tt> </tt>
+<a name="L111"></a><tt class="py-lineno">111</tt>  <tt class="py-line"><tt class="py-docstring">        teston&gt; [2013-01-07 21:24:26.286601] [PoxTest] [STEP]  1.8: Checking the host reachability using pingHost</tt> </tt>
+<a name="L112"></a><tt class="py-lineno">112</tt>  <tt class="py-line"><tt class="py-docstring">        2013-01-07 21:24:26,455 - PoxTest - INFO - Expected Prompt Found</tt> </tt>
+<a name="L113"></a><tt class="py-lineno">113</tt>  <tt class="py-line"><tt class="py-docstring">        .....</tt> </tt>
+<a name="L114"></a><tt class="py-lineno">114</tt>  <tt class="py-line"><tt class="py-docstring">        teston&gt;</tt> </tt>
+<a name="L115"></a><tt class="py-lineno">115</tt>  <tt class="py-line"><tt class="py-docstring">        </tt> </tt>
+<a name="L116"></a><tt class="py-lineno">116</tt>  <tt class="py-line"><tt class="py-docstring">        '''</tt> </tt>
+<a name="L117"></a><tt class="py-lineno">117</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-name">testthread</tt><tt class="py-op">:</tt> </tt>
+<a name="L118"></a><tt class="py-lineno">118</tt>  <tt class="py-line">            <tt class="py-name">main</tt><tt class="py-op">.</tt><tt id="link-26" class="py-name" targets="Method TestON.drivers.component.Component.log()=TestON.drivers.component.Component-class.html#log"><a title="TestON.drivers.component.Component.log" class="py-name" href="#" onclick="return doclink('link-26', 'log', 'link-26');">log</a></tt><tt class="py-op">.</tt><tt class="py-name">info</tt><tt class="py-op">(</tt><tt class="py-string">"Executing the nextstep, Will pause test execution, after completion of the step"</tt><tt class="py-op">)</tt> </tt>
+<a name="L119"></a><tt class="py-lineno">119</tt>  <tt class="py-line">            <tt class="py-name">testthread</tt><tt class="py-op">.</tt><tt id="link-27" class="py-name"><a title="TestON.bin.cli.TestThread.play" class="py-name" href="#" onclick="return doclink('link-27', 'play', 'link-25');">play</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L120"></a><tt class="py-lineno">120</tt>  <tt class="py-line">            <tt class="py-name">time</tt><tt class="py-op">.</tt><tt class="py-name">sleep</tt><tt class="py-op">(</tt><tt class="py-number">.1</tt><tt class="py-op">)</tt> </tt>
+<a name="L121"></a><tt class="py-lineno">121</tt>  <tt class="py-line">            <tt class="py-name">testthread</tt><tt class="py-op">.</tt><tt id="link-28" class="py-name"><a title="TestON.bin.cli.TestThread.pause
+TestON.core.teston.TestON.pause" class="py-name" href="#" onclick="return doclink('link-28', 'pause', 'link-15');">pause</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L122"></a><tt class="py-lineno">122</tt>  <tt class="py-line">        <tt class="py-keyword">else</tt><tt class="py-op">:</tt> </tt>
+<a name="L123"></a><tt class="py-lineno">123</tt>  <tt class="py-line">            <tt class="py-keyword">print</tt> <tt class="py-string">"There is no paused test "</tt> </tt>
+</div><a name="L124"></a><tt class="py-lineno">124</tt>  <tt class="py-line">         </tt>
+<a name="CLI.do_dumpvar"></a><div id="CLI.do_dumpvar-def"><a name="L125"></a><tt class="py-lineno">125</tt> <a class="py-toggle" href="#" id="CLI.do_dumpvar-toggle" onclick="return toggle('CLI.do_dumpvar');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="TestON.bin.cli.CLI-class.html#do_dumpvar">do_dumpvar</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt><tt class="py-param">line</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="CLI.do_dumpvar-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="CLI.do_dumpvar-expanded"><a name="L126"></a><tt class="py-lineno">126</tt>  <tt class="py-line">        <tt class="py-docstring">'''</tt> </tt>
+<a name="L127"></a><tt class="py-lineno">127</tt>  <tt class="py-line"><tt class="py-docstring">        dumpvar will print all the test data in raw format.</tt> </tt>
+<a name="L128"></a><tt class="py-lineno">128</tt>  <tt class="py-line"><tt class="py-docstring">        usgae : </tt> </tt>
+<a name="L129"></a><tt class="py-lineno">129</tt>  <tt class="py-line"><tt class="py-docstring">        teston&gt;dumpvar main</tt> </tt>
+<a name="L130"></a><tt class="py-lineno">130</tt>  <tt class="py-line"><tt class="py-docstring">        Here 'main' will be the test object.</tt> </tt>
+<a name="L131"></a><tt class="py-lineno">131</tt>  <tt class="py-line"><tt class="py-docstring">        </tt> </tt>
+<a name="L132"></a><tt class="py-lineno">132</tt>  <tt class="py-line"><tt class="py-docstring">        teston&gt;dumpvar params </tt> </tt>
+<a name="L133"></a><tt class="py-lineno">133</tt>  <tt class="py-line"><tt class="py-docstring">        here 'params' will be the parameters specified in the params file.</tt> </tt>
+<a name="L134"></a><tt class="py-lineno">134</tt>  <tt class="py-line"><tt class="py-docstring">        </tt> </tt>
+<a name="L135"></a><tt class="py-lineno">135</tt>  <tt class="py-line"><tt class="py-docstring">        teston&gt;dumpvar topology</tt> </tt>
+<a name="L136"></a><tt class="py-lineno">136</tt>  <tt class="py-line"><tt class="py-docstring">        here 'topology' will be topology specification of the test specified in topo file.</tt> </tt>
+<a name="L137"></a><tt class="py-lineno">137</tt>  <tt class="py-line"><tt class="py-docstring">        '''</tt> </tt>
+<a name="L138"></a><tt class="py-lineno">138</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-name">testthread</tt><tt class="py-op">:</tt> </tt>
+<a name="L139"></a><tt class="py-lineno">139</tt>  <tt class="py-line">            <tt class="py-keyword">if</tt> <tt class="py-name">line</tt> <tt class="py-op">==</tt> <tt class="py-string">"main"</tt><tt class="py-op">:</tt> </tt>
+<a name="L140"></a><tt class="py-lineno">140</tt>  <tt class="py-line">                <tt id="link-29" class="py-name"><a title="TestON.bin.cli.dump
+TestON.core.ast.dump
+TestON.drivers.common.cli.emulator.mininetclidriver.MininetCliDriver.dump" class="py-name" href="#" onclick="return doclink('link-29', 'dump', 'link-1');">dump</a></tt><tt class="py-op">.</tt><tt class="py-name">pprint</tt><tt class="py-op">(</tt><tt class="py-name">vars</tt><tt class="py-op">(</tt><tt class="py-name">main</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L141"></a><tt class="py-lineno">141</tt>  <tt class="py-line">            <tt class="py-keyword">else</tt> <tt class="py-op">:</tt> </tt>
+<a name="L142"></a><tt class="py-lineno">142</tt>  <tt class="py-line">                <tt class="py-keyword">try</tt> <tt class="py-op">:</tt> </tt>
+<a name="L143"></a><tt class="py-lineno">143</tt>  <tt class="py-line">                    <tt id="link-30" class="py-name"><a title="TestON.bin.cli.dump
+TestON.core.ast.dump
+TestON.drivers.common.cli.emulator.mininetclidriver.MininetCliDriver.dump" class="py-name" href="#" onclick="return doclink('link-30', 'dump', 'link-1');">dump</a></tt><tt class="py-op">.</tt><tt class="py-name">pprint</tt><tt class="py-op">(</tt><tt class="py-name">vars</tt><tt class="py-op">(</tt><tt class="py-name">main</tt><tt class="py-op">)</tt><tt class="py-op">[</tt><tt class="py-name">line</tt><tt class="py-op">]</tt><tt class="py-op">)</tt> </tt>
+<a name="L144"></a><tt class="py-lineno">144</tt>  <tt class="py-line">                <tt class="py-keyword">except</tt> <tt class="py-name">KeyError</tt><tt class="py-op">,</tt><tt class="py-name">e</tt><tt class="py-op">:</tt> </tt>
+<a name="L145"></a><tt class="py-lineno">145</tt>  <tt class="py-line">                    <tt class="py-keyword">print</tt> <tt class="py-name">e</tt> </tt>
+<a name="L146"></a><tt class="py-lineno">146</tt>  <tt class="py-line">        <tt class="py-keyword">else</tt> <tt class="py-op">:</tt> </tt>
+<a name="L147"></a><tt class="py-lineno">147</tt>  <tt class="py-line">            <tt class="py-keyword">print</tt> <tt class="py-string">"There is no paused test "</tt> </tt>
+</div><a name="L148"></a><tt class="py-lineno">148</tt>  <tt class="py-line">             </tt>
+<a name="CLI.do_currentcase"></a><div id="CLI.do_currentcase-def"><a name="L149"></a><tt class="py-lineno">149</tt> <a class="py-toggle" href="#" id="CLI.do_currentcase-toggle" onclick="return toggle('CLI.do_currentcase');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="TestON.bin.cli.CLI-class.html#do_currentcase">do_currentcase</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt><tt class="py-param">line</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="CLI.do_currentcase-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="CLI.do_currentcase-expanded"><a name="L150"></a><tt class="py-lineno">150</tt>  <tt class="py-line">        <tt class="py-docstring">'''</tt> </tt>
+<a name="L151"></a><tt class="py-lineno">151</tt>  <tt class="py-line"><tt class="py-docstring">        currentcase will return the current case in the test execution.</tt> </tt>
+<a name="L152"></a><tt class="py-lineno">152</tt>  <tt class="py-line"><tt class="py-docstring">        </tt> </tt>
+<a name="L153"></a><tt class="py-lineno">153</tt>  <tt class="py-line"><tt class="py-docstring">        teston&gt;currentcase</tt> </tt>
+<a name="L154"></a><tt class="py-lineno">154</tt>  <tt class="py-line"><tt class="py-docstring">        Currently executing test case is: 2</tt> </tt>
+<a name="L155"></a><tt class="py-lineno">155</tt>  <tt class="py-line"><tt class="py-docstring">         </tt> </tt>
+<a name="L156"></a><tt class="py-lineno">156</tt>  <tt class="py-line"><tt class="py-docstring">        '''</tt> </tt>
+<a name="L157"></a><tt class="py-lineno">157</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-name">testthread</tt><tt class="py-op">:</tt> </tt>
+<a name="L158"></a><tt class="py-lineno">158</tt>  <tt class="py-line">            <tt class="py-keyword">print</tt> <tt class="py-string">"Currently executing test case is: "</tt><tt class="py-op">+</tt><tt class="py-name">str</tt><tt class="py-op">(</tt><tt class="py-name">main</tt><tt class="py-op">.</tt><tt class="py-name">CurrentTestCaseNumber</tt><tt class="py-op">)</tt> </tt>
+<a name="L159"></a><tt class="py-lineno">159</tt>  <tt class="py-line">        <tt class="py-keyword">else</tt> <tt class="py-op">:</tt> </tt>
+<a name="L160"></a><tt class="py-lineno">160</tt>  <tt class="py-line">            <tt class="py-keyword">print</tt> <tt class="py-string">"There is no paused test "</tt> </tt>
+</div><a name="L161"></a><tt class="py-lineno">161</tt>  <tt class="py-line">             </tt>
+<a name="L162"></a><tt class="py-lineno">162</tt>  <tt class="py-line">             </tt>
+<a name="CLI.do_currentstep"></a><div id="CLI.do_currentstep-def"><a name="L163"></a><tt class="py-lineno">163</tt> <a class="py-toggle" href="#" id="CLI.do_currentstep-toggle" onclick="return toggle('CLI.do_currentstep');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="TestON.bin.cli.CLI-class.html#do_currentstep">do_currentstep</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt><tt class="py-param">line</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="CLI.do_currentstep-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="CLI.do_currentstep-expanded"><a name="L164"></a><tt class="py-lineno">164</tt>  <tt class="py-line">        <tt class="py-docstring">'''</tt> </tt>
+<a name="L165"></a><tt class="py-lineno">165</tt>  <tt class="py-line"><tt class="py-docstring">        currentstep will return the current step in the test execution.</tt> </tt>
+<a name="L166"></a><tt class="py-lineno">166</tt>  <tt class="py-line"><tt class="py-docstring">         </tt> </tt>
+<a name="L167"></a><tt class="py-lineno">167</tt>  <tt class="py-line"><tt class="py-docstring">        teston&gt;currentstep</tt> </tt>
+<a name="L168"></a><tt class="py-lineno">168</tt>  <tt class="py-line"><tt class="py-docstring">        Currently executing test step is: 2.3</tt> </tt>
+<a name="L169"></a><tt class="py-lineno">169</tt>  <tt class="py-line"><tt class="py-docstring">        '''</tt> </tt>
+<a name="L170"></a><tt class="py-lineno">170</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-name">testthread</tt><tt class="py-op">:</tt> </tt>
+<a name="L171"></a><tt class="py-lineno">171</tt>  <tt class="py-line">            <tt class="py-keyword">print</tt> <tt class="py-string">"Currently executing test step is: "</tt><tt class="py-op">+</tt><tt class="py-name">str</tt><tt class="py-op">(</tt><tt class="py-name">main</tt><tt class="py-op">.</tt><tt class="py-name">CurrentTestCaseNumber</tt><tt class="py-op">)</tt><tt class="py-op">+</tt><tt class="py-string">'.'</tt><tt class="py-op">+</tt><tt class="py-name">str</tt><tt class="py-op">(</tt><tt class="py-name">main</tt><tt class="py-op">.</tt><tt class="py-name">stepCount</tt><tt class="py-op">)</tt> </tt>
+<a name="L172"></a><tt class="py-lineno">172</tt>  <tt class="py-line">        <tt class="py-keyword">else</tt> <tt class="py-op">:</tt> </tt>
+<a name="L173"></a><tt class="py-lineno">173</tt>  <tt class="py-line">            <tt class="py-keyword">print</tt> <tt class="py-string">"There is no paused test "</tt> </tt>
+</div><a name="L174"></a><tt class="py-lineno">174</tt>  <tt class="py-line">     </tt>
+<a name="L175"></a><tt class="py-lineno">175</tt>  <tt class="py-line">     </tt>
+<a name="CLI.do_stop"></a><div id="CLI.do_stop-def"><a name="L176"></a><tt class="py-lineno">176</tt> <a class="py-toggle" href="#" id="CLI.do_stop-toggle" onclick="return toggle('CLI.do_stop');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="TestON.bin.cli.CLI-class.html#do_stop">do_stop</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt><tt class="py-param">line</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="CLI.do_stop-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="CLI.do_stop-expanded"><a name="L177"></a><tt class="py-lineno">177</tt>  <tt class="py-line">        <tt class="py-docstring">'''</tt> </tt>
+<a name="L178"></a><tt class="py-lineno">178</tt>  <tt class="py-line"><tt class="py-docstring">        Will stop the paused test, if any !</tt> </tt>
+<a name="L179"></a><tt class="py-lineno">179</tt>  <tt class="py-line"><tt class="py-docstring">        '''</tt> </tt>
+<a name="L180"></a><tt class="py-lineno">180</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-name">testthread</tt><tt class="py-op">:</tt> </tt>
+<a name="L181"></a><tt class="py-lineno">181</tt>  <tt class="py-line">            <tt class="py-name">testthread</tt><tt class="py-op">.</tt><tt id="link-31" class="py-name"><a title="TestON.bin.cli.TestThread.stop" class="py-name" href="#" onclick="return doclink('link-31', 'stop', 'link-16');">stop</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L182"></a><tt class="py-lineno">182</tt>  <tt class="py-line">             </tt>
+<a name="L183"></a><tt class="py-lineno">183</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-string">'exited by user command'</tt> </tt>
+</div><a name="L184"></a><tt class="py-lineno">184</tt>  <tt class="py-line">         </tt>
+<a name="CLI.do_gettest"></a><div id="CLI.do_gettest-def"><a name="L185"></a><tt class="py-lineno">185</tt> <a class="py-toggle" href="#" id="CLI.do_gettest-toggle" onclick="return toggle('CLI.do_gettest');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="TestON.bin.cli.CLI-class.html#do_gettest">do_gettest</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt><tt class="py-param">line</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="CLI.do_gettest-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="CLI.do_gettest-expanded"><a name="L186"></a><tt class="py-lineno">186</tt>  <tt class="py-line">        <tt class="py-docstring">'''</tt> </tt>
+<a name="L187"></a><tt class="py-lineno">187</tt>  <tt class="py-line"><tt class="py-docstring">        gettest will return the test name which is under execution or recently executed.</tt> </tt>
+<a name="L188"></a><tt class="py-lineno">188</tt>  <tt class="py-line"><tt class="py-docstring">        </tt> </tt>
+<a name="L189"></a><tt class="py-lineno">189</tt>  <tt class="py-line"><tt class="py-docstring">        Test under execution:</tt> </tt>
+<a name="L190"></a><tt class="py-lineno">190</tt>  <tt class="py-line"><tt class="py-docstring">        teston&gt;gettest </tt> </tt>
+<a name="L191"></a><tt class="py-lineno">191</tt>  <tt class="py-line"><tt class="py-docstring">        Currently executing Test is: PoxTest</tt> </tt>
+<a name="L192"></a><tt class="py-lineno">192</tt>  <tt class="py-line"><tt class="py-docstring">        </tt> </tt>
+<a name="L193"></a><tt class="py-lineno">193</tt>  <tt class="py-line"><tt class="py-docstring">        Test recently executed:</tt> </tt>
+<a name="L194"></a><tt class="py-lineno">194</tt>  <tt class="py-line"><tt class="py-docstring">        Recently executed test is: MininetTest</tt> </tt>
+<a name="L195"></a><tt class="py-lineno">195</tt>  <tt class="py-line"><tt class="py-docstring">        '''</tt> </tt>
+<a name="L196"></a><tt class="py-lineno">196</tt>  <tt class="py-line">        <tt class="py-keyword">try</tt> <tt class="py-op">:</tt> </tt>
+<a name="L197"></a><tt class="py-lineno">197</tt>  <tt class="py-line">            <tt class="py-keyword">if</tt> <tt class="py-name">testthread</tt> <tt class="py-op">:</tt> </tt>
+<a name="L198"></a><tt class="py-lineno">198</tt>  <tt class="py-line">                <tt class="py-keyword">print</tt> <tt class="py-string">"Currently executing Test is: "</tt><tt class="py-op">+</tt><tt class="py-name">main</tt><tt class="py-op">.</tt><tt class="py-name">TEST</tt> </tt>
+<a name="L199"></a><tt class="py-lineno">199</tt>  <tt class="py-line">            <tt class="py-keyword">else</tt> <tt class="py-op">:</tt> </tt>
+<a name="L200"></a><tt class="py-lineno">200</tt>  <tt class="py-line">                <tt class="py-keyword">print</tt> <tt class="py-string">"Recently executed test is: "</tt><tt class="py-op">+</tt><tt class="py-name">main</tt><tt class="py-op">.</tt><tt class="py-name">TEST</tt> </tt>
+<a name="L201"></a><tt class="py-lineno">201</tt>  <tt class="py-line">             </tt>
+<a name="L202"></a><tt class="py-lineno">202</tt>  <tt class="py-line">        <tt class="py-keyword">except</tt> <tt class="py-name">NameError</tt><tt class="py-op">:</tt> </tt>
+<a name="L203"></a><tt class="py-lineno">203</tt>  <tt class="py-line">            <tt class="py-keyword">print</tt> <tt class="py-string">"There is no previously executed Test"</tt> </tt>
+</div><a name="L204"></a><tt class="py-lineno">204</tt>  <tt class="py-line">             </tt>
+<a name="CLI.do_showlog"></a><div id="CLI.do_showlog-def"><a name="L205"></a><tt class="py-lineno">205</tt> <a class="py-toggle" href="#" id="CLI.do_showlog-toggle" onclick="return toggle('CLI.do_showlog');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="TestON.bin.cli.CLI-class.html#do_showlog">do_showlog</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt><tt class="py-param">line</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="CLI.do_showlog-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="CLI.do_showlog-expanded"><a name="L206"></a><tt class="py-lineno">206</tt>  <tt class="py-line">        <tt class="py-docstring">'''</tt> </tt>
+<a name="L207"></a><tt class="py-lineno">207</tt>  <tt class="py-line"><tt class="py-docstring">        showlog will show the test's Log</tt> </tt>
+<a name="L208"></a><tt class="py-lineno">208</tt>  <tt class="py-line"><tt class="py-docstring">        teston&gt;showlog</tt> </tt>
+<a name="L209"></a><tt class="py-lineno">209</tt>  <tt class="py-line"><tt class="py-docstring">        Last executed test's log is : //home/openflow/TestON/logs/PoxTest_07_Jan_2013_21_42_11/PoxTest_07_Jan_2013_21_42_11.log</tt> </tt>
+<a name="L210"></a><tt class="py-lineno">210</tt>  <tt class="py-line"><tt class="py-docstring">        .....</tt> </tt>
+<a name="L211"></a><tt class="py-lineno">211</tt>  <tt class="py-line"><tt class="py-docstring">        teston&gt;showlog</tt> </tt>
+<a name="L212"></a><tt class="py-lineno">212</tt>  <tt class="py-line"><tt class="py-docstring">        Currently executing Test's log is: /home/openflow/TestON/logs/PoxTest_07_Jan_2013_21_46_58/PoxTest_07_Jan_2013_21_46_58.log</tt> </tt>
+<a name="L213"></a><tt class="py-lineno">213</tt>  <tt class="py-line"><tt class="py-docstring">        .....</tt> </tt>
+<a name="L214"></a><tt class="py-lineno">214</tt>  <tt class="py-line"><tt class="py-docstring">        '''</tt> </tt>
+<a name="L215"></a><tt class="py-lineno">215</tt>  <tt class="py-line">        <tt class="py-keyword">try</tt> <tt class="py-op">:</tt> </tt>
+<a name="L216"></a><tt class="py-lineno">216</tt>  <tt class="py-line">            <tt class="py-keyword">if</tt> <tt class="py-name">testthread</tt> <tt class="py-op">:</tt> </tt>
+<a name="L217"></a><tt class="py-lineno">217</tt>  <tt class="py-line">                <tt class="py-keyword">print</tt> <tt class="py-string">"Currently executing Test's log is: "</tt><tt class="py-op">+</tt><tt class="py-name">main</tt><tt class="py-op">.</tt><tt class="py-name">LogFileName</tt> </tt>
+<a name="L218"></a><tt class="py-lineno">218</tt>  <tt class="py-line">                 </tt>
+<a name="L219"></a><tt class="py-lineno">219</tt>  <tt class="py-line">            <tt class="py-keyword">else</tt> <tt class="py-op">:</tt> </tt>
+<a name="L220"></a><tt class="py-lineno">220</tt>  <tt class="py-line">                <tt class="py-keyword">print</tt> <tt class="py-string">"Last executed test's log is : "</tt><tt class="py-op">+</tt><tt class="py-name">main</tt><tt class="py-op">.</tt><tt class="py-name">LogFileName</tt> </tt>
+<a name="L221"></a><tt class="py-lineno">221</tt>  <tt class="py-line">             </tt>
+<a name="L222"></a><tt class="py-lineno">222</tt>  <tt class="py-line">            <tt class="py-name">logFile</tt> <tt class="py-op">=</tt> <tt class="py-name">main</tt><tt class="py-op">.</tt><tt class="py-name">LogFileName</tt> </tt>
+<a name="L223"></a><tt class="py-lineno">223</tt>  <tt class="py-line">            <tt class="py-name">logFileHandler</tt> <tt class="py-op">=</tt> <tt class="py-name">open</tt><tt class="py-op">(</tt><tt class="py-name">logFile</tt><tt class="py-op">,</tt> <tt class="py-string">'r'</tt><tt class="py-op">)</tt> </tt>
+<a name="L224"></a><tt class="py-lineno">224</tt>  <tt class="py-line">            <tt class="py-keyword">for</tt> <tt class="py-name">msg</tt> <tt class="py-keyword">in</tt> <tt class="py-name">logFileHandler</tt><tt class="py-op">.</tt><tt class="py-name">readlines</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> <tt class="py-op">:</tt> </tt>
+<a name="L225"></a><tt class="py-lineno">225</tt>  <tt class="py-line">                <tt class="py-keyword">print</tt> <tt class="py-name">msg</tt><tt class="py-op">,</tt> </tt>
+<a name="L226"></a><tt class="py-lineno">226</tt>  <tt class="py-line">                 </tt>
+<a name="L227"></a><tt class="py-lineno">227</tt>  <tt class="py-line">            <tt class="py-name">logFileHandler</tt><tt class="py-op">.</tt><tt class="py-name">close</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L228"></a><tt class="py-lineno">228</tt>  <tt class="py-line">             </tt>
+<a name="L229"></a><tt class="py-lineno">229</tt>  <tt class="py-line">        <tt class="py-keyword">except</tt> <tt class="py-name">NameError</tt><tt class="py-op">:</tt> </tt>
+<a name="L230"></a><tt class="py-lineno">230</tt>  <tt class="py-line">            <tt class="py-keyword">print</tt> <tt class="py-string">"There is no previously executed Test"</tt> </tt>
+</div><a name="L231"></a><tt class="py-lineno">231</tt>  <tt class="py-line">             </tt>
+<a name="L232"></a><tt class="py-lineno">232</tt>  <tt class="py-line">     </tt>
+<a name="L233"></a><tt class="py-lineno">233</tt>  <tt class="py-line">             </tt>
+<a name="CLI.parseArgs"></a><div id="CLI.parseArgs-def"><a name="L234"></a><tt class="py-lineno">234</tt> <a class="py-toggle" href="#" id="CLI.parseArgs-toggle" onclick="return toggle('CLI.parseArgs');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="TestON.bin.cli.CLI-class.html#parseArgs">parseArgs</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt><tt class="py-param">args</tt><tt class="py-op">,</tt><tt class="py-param">options</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="CLI.parseArgs-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="CLI.parseArgs-expanded"><a name="L235"></a><tt class="py-lineno">235</tt>  <tt class="py-line">        <tt class="py-docstring">'''</tt> </tt>
+<a name="L236"></a><tt class="py-lineno">236</tt>  <tt class="py-line"><tt class="py-docstring">        This will parse the command line arguments.</tt> </tt>
+<a name="L237"></a><tt class="py-lineno">237</tt>  <tt class="py-line"><tt class="py-docstring">        '''</tt> </tt>
+<a name="L238"></a><tt class="py-lineno">238</tt>  <tt class="py-line">        <tt class="py-name">options</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-32" class="py-name" targets="Method TestON.bin.cli.CLI.initOptions()=TestON.bin.cli.CLI-class.html#initOptions"><a title="TestON.bin.cli.CLI.initOptions" class="py-name" href="#" onclick="return doclink('link-32', 'initOptions', 'link-32');">initOptions</a></tt><tt class="py-op">(</tt><tt class="py-name">options</tt><tt class="py-op">)</tt> </tt>
+<a name="L239"></a><tt class="py-lineno">239</tt>  <tt class="py-line">        <tt class="py-keyword">try</tt> <tt class="py-op">:</tt> </tt>
+<a name="L240"></a><tt class="py-lineno">240</tt>  <tt class="py-line">            <tt class="py-keyword">for</tt> <tt class="py-name">index</tt><tt class="py-op">,</tt> <tt class="py-name">option</tt> <tt class="py-keyword">in</tt> <tt class="py-name">enumerate</tt><tt class="py-op">(</tt><tt class="py-name">args</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L241"></a><tt class="py-lineno">241</tt>  <tt class="py-line">                <tt class="py-keyword">if</tt> <tt class="py-name">index</tt> <tt class="py-op">&gt;</tt> <tt class="py-number">0</tt> <tt class="py-op">:</tt> </tt>
+<a name="L242"></a><tt class="py-lineno">242</tt>  <tt class="py-line">                    <tt class="py-keyword">if</tt> <tt class="py-name">re</tt><tt class="py-op">.</tt><tt class="py-name">match</tt><tt class="py-op">(</tt><tt class="py-string">"logdir|mail|example|testdir|testcases"</tt><tt class="py-op">,</tt> <tt class="py-name">option</tt><tt class="py-op">,</tt> <tt class="py-name">flags</tt> <tt class="py-op">=</tt> <tt class="py-number">0</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L243"></a><tt class="py-lineno">243</tt>  <tt class="py-line">                        <tt class="py-name">index</tt> <tt class="py-op">=</tt> <tt class="py-name">index</tt><tt class="py-op">+</tt><tt class="py-number">1</tt> </tt>
+<a name="L244"></a><tt class="py-lineno">244</tt>  <tt class="py-line">                        <tt class="py-name">options</tt><tt class="py-op">[</tt><tt class="py-name">option</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-name">args</tt><tt class="py-op">[</tt><tt class="py-name">index</tt><tt class="py-op">]</tt> </tt>
+<a name="L245"></a><tt class="py-lineno">245</tt>  <tt class="py-line">                        <tt class="py-name">options</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-33" class="py-name" targets="Method TestON.bin.cli.CLI.testcasesInRange()=TestON.bin.cli.CLI-class.html#testcasesInRange"><a title="TestON.bin.cli.CLI.testcasesInRange" class="py-name" href="#" onclick="return doclink('link-33', 'testcasesInRange', 'link-33');">testcasesInRange</a></tt><tt class="py-op">(</tt><tt class="py-name">index</tt><tt class="py-op">,</tt><tt class="py-name">option</tt><tt class="py-op">,</tt><tt class="py-name">args</tt><tt class="py-op">,</tt><tt class="py-name">options</tt><tt class="py-op">)</tt> </tt>
+<a name="L246"></a><tt class="py-lineno">246</tt>  <tt class="py-line">                <tt class="py-keyword">else</tt> <tt class="py-op">:</tt> </tt>
+<a name="L247"></a><tt class="py-lineno">247</tt>  <tt class="py-line">                    <tt class="py-name">options</tt><tt class="py-op">[</tt><tt class="py-string">'testname'</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-name">option</tt> </tt>
+<a name="L248"></a><tt class="py-lineno">248</tt>  <tt class="py-line">        <tt class="py-keyword">except</tt> <tt class="py-name">IndexError</tt><tt class="py-op">,</tt><tt class="py-name">e</tt><tt class="py-op">:</tt> </tt>
+<a name="L249"></a><tt class="py-lineno">249</tt>  <tt class="py-line">            <tt class="py-keyword">print</tt> <tt class="py-name">e</tt> </tt>
+<a name="L250"></a><tt class="py-lineno">250</tt>  <tt class="py-line">             </tt>
+<a name="L251"></a><tt class="py-lineno">251</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">options</tt> </tt>
+</div><a name="L252"></a><tt class="py-lineno">252</tt>  <tt class="py-line">     </tt>
+<a name="CLI.initOptions"></a><div id="CLI.initOptions-def"><a name="L253"></a><tt class="py-lineno">253</tt> <a class="py-toggle" href="#" id="CLI.initOptions-toggle" onclick="return toggle('CLI.initOptions');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="TestON.bin.cli.CLI-class.html#initOptions">initOptions</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt><tt class="py-param">options</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="CLI.initOptions-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="CLI.initOptions-expanded"><a name="L254"></a><tt class="py-lineno">254</tt>  <tt class="py-line">        <tt class="py-docstring">'''</tt> </tt>
+<a name="L255"></a><tt class="py-lineno">255</tt>  <tt class="py-line"><tt class="py-docstring">        This will initialize the commandline options.</tt> </tt>
+<a name="L256"></a><tt class="py-lineno">256</tt>  <tt class="py-line"><tt class="py-docstring">        '''</tt> </tt>
+<a name="L257"></a><tt class="py-lineno">257</tt>  <tt class="py-line">        <tt class="py-name">options</tt><tt class="py-op">[</tt><tt class="py-string">'logdir'</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-name">None</tt> </tt>
+<a name="L258"></a><tt class="py-lineno">258</tt>  <tt class="py-line">        <tt class="py-name">options</tt><tt class="py-op">[</tt><tt class="py-string">'mail'</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-name">None</tt> </tt>
+<a name="L259"></a><tt class="py-lineno">259</tt>  <tt class="py-line">        <tt class="py-name">options</tt><tt class="py-op">[</tt><tt class="py-string">'example'</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-name">None</tt> </tt>
+<a name="L260"></a><tt class="py-lineno">260</tt>  <tt class="py-line">        <tt class="py-name">options</tt><tt class="py-op">[</tt><tt class="py-string">'testdir'</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-name">None</tt> </tt>
+<a name="L261"></a><tt class="py-lineno">261</tt>  <tt class="py-line">        <tt class="py-name">options</tt><tt class="py-op">[</tt><tt class="py-string">'testcases'</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-name">None</tt> </tt>
+<a name="L262"></a><tt class="py-lineno">262</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">options</tt>    </tt>
+</div><a name="L263"></a><tt class="py-lineno">263</tt>  <tt class="py-line">     </tt>
+<a name="CLI.testcasesInRange"></a><div id="CLI.testcasesInRange-def"><a name="L264"></a><tt class="py-lineno">264</tt> <a class="py-toggle" href="#" id="CLI.testcasesInRange-toggle" onclick="return toggle('CLI.testcasesInRange');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="TestON.bin.cli.CLI-class.html#testcasesInRange">testcasesInRange</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt><tt class="py-param">index</tt><tt class="py-op">,</tt><tt class="py-param">option</tt><tt class="py-op">,</tt><tt class="py-param">args</tt><tt class="py-op">,</tt><tt class="py-param">options</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="CLI.testcasesInRange-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="CLI.testcasesInRange-expanded"><a name="L265"></a><tt class="py-lineno">265</tt>  <tt class="py-line">        <tt class="py-docstring">'''</tt> </tt>
+<a name="L266"></a><tt class="py-lineno">266</tt>  <tt class="py-line"><tt class="py-docstring">        This method will handle testcases list,specified in range [1-10].</tt> </tt>
+<a name="L267"></a><tt class="py-lineno">267</tt>  <tt class="py-line"><tt class="py-docstring">        '''</tt> </tt>
+<a name="L268"></a><tt class="py-lineno">268</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-name">re</tt><tt class="py-op">.</tt><tt class="py-name">match</tt><tt class="py-op">(</tt><tt class="py-string">"testcases"</tt><tt class="py-op">,</tt><tt class="py-name">option</tt><tt class="py-op">,</tt><tt class="py-number">1</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L269"></a><tt class="py-lineno">269</tt>  <tt class="py-line">            <tt class="py-name">testcases</tt> <tt class="py-op">=</tt> <tt class="py-op">[</tt><tt class="py-op">]</tt> </tt>
+<a name="L270"></a><tt class="py-lineno">270</tt>  <tt class="py-line">            <tt class="py-name">args</tt><tt class="py-op">[</tt><tt class="py-name">index</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-name">re</tt><tt class="py-op">.</tt><tt class="py-name">sub</tt><tt class="py-op">(</tt><tt class="py-string">"\[|\]"</tt><tt class="py-op">,</tt><tt class="py-string">""</tt><tt class="py-op">,</tt><tt class="py-name">args</tt><tt class="py-op">[</tt><tt class="py-name">index</tt><tt class="py-op">]</tt><tt class="py-op">,</tt><tt class="py-number">0</tt><tt class="py-op">)</tt> </tt>
+<a name="L271"></a><tt class="py-lineno">271</tt>  <tt class="py-line">            <tt class="py-name">m</tt> <tt class="py-op">=</tt> <tt class="py-name">re</tt><tt class="py-op">.</tt><tt class="py-name">match</tt><tt class="py-op">(</tt><tt class="py-string">"(\d+)\-(\d+)"</tt><tt class="py-op">,</tt><tt class="py-name">args</tt><tt class="py-op">[</tt><tt class="py-name">index</tt><tt class="py-op">]</tt><tt class="py-op">,</tt><tt class="py-name">flags</tt><tt class="py-op">=</tt><tt class="py-number">0</tt><tt class="py-op">)</tt> </tt>
+<a name="L272"></a><tt class="py-lineno">272</tt>  <tt class="py-line">            <tt class="py-keyword">if</tt> <tt class="py-name">m</tt><tt class="py-op">:</tt> </tt>
+<a name="L273"></a><tt class="py-lineno">273</tt>  <tt class="py-line">                <tt class="py-name">start_case</tt> <tt class="py-op">=</tt> <tt class="py-name">eval</tt><tt class="py-op">(</tt><tt class="py-name">m</tt><tt class="py-op">.</tt><tt class="py-name">group</tt><tt class="py-op">(</tt><tt class="py-number">1</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L274"></a><tt class="py-lineno">274</tt>  <tt class="py-line">                <tt class="py-name">end_case</tt> <tt class="py-op">=</tt> <tt class="py-name">eval</tt><tt class="py-op">(</tt><tt class="py-name">m</tt><tt class="py-op">.</tt><tt class="py-name">group</tt><tt class="py-op">(</tt><tt class="py-number">2</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L275"></a><tt class="py-lineno">275</tt>  <tt class="py-line">                <tt class="py-keyword">if</tt> <tt class="py-op">(</tt><tt class="py-name">start_case</tt> <tt class="py-op">&lt;=</tt> <tt class="py-name">end_case</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L276"></a><tt class="py-lineno">276</tt>  <tt class="py-line">                    <tt class="py-name">i</tt> <tt class="py-op">=</tt> <tt class="py-name">start_case</tt> </tt>
+<a name="L277"></a><tt class="py-lineno">277</tt>  <tt class="py-line">                    <tt class="py-keyword">while</tt> <tt class="py-name">i</tt> <tt class="py-op">&lt;=</tt> <tt class="py-name">end_case</tt><tt class="py-op">:</tt> </tt>
+<a name="L278"></a><tt class="py-lineno">278</tt>  <tt class="py-line">                        <tt class="py-name">testcases</tt><tt class="py-op">.</tt><tt class="py-name">append</tt><tt class="py-op">(</tt><tt class="py-name">i</tt><tt class="py-op">)</tt> </tt>
+<a name="L279"></a><tt class="py-lineno">279</tt>  <tt class="py-line">                        <tt class="py-name">i</tt><tt class="py-op">=</tt> <tt class="py-name">i</tt><tt class="py-op">+</tt><tt class="py-number">1</tt>          </tt>
+<a name="L280"></a><tt class="py-lineno">280</tt>  <tt class="py-line">                <tt class="py-keyword">else</tt> <tt class="py-op">:</tt> </tt>
+<a name="L281"></a><tt class="py-lineno">281</tt>  <tt class="py-line">                    <tt class="py-keyword">print</tt> <tt class="py-string">"Please specify testcases properly like 1-5"</tt> </tt>
+<a name="L282"></a><tt class="py-lineno">282</tt>  <tt class="py-line">            <tt class="py-keyword">else</tt> <tt class="py-op">:</tt> </tt>
+<a name="L283"></a><tt class="py-lineno">283</tt>  <tt class="py-line">                <tt class="py-name">options</tt><tt class="py-op">[</tt><tt class="py-name">option</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-name">args</tt><tt class="py-op">[</tt><tt class="py-name">index</tt><tt class="py-op">]</tt> </tt>
+<a name="L284"></a><tt class="py-lineno">284</tt>  <tt class="py-line">                <tt class="py-keyword">return</tt> <tt class="py-name">options</tt> </tt>
+<a name="L285"></a><tt class="py-lineno">285</tt>  <tt class="py-line">            <tt class="py-name">options</tt><tt class="py-op">[</tt><tt class="py-name">option</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-name">str</tt><tt class="py-op">(</tt><tt class="py-name">testcases</tt><tt class="py-op">)</tt> </tt>
+<a name="L286"></a><tt class="py-lineno">286</tt>  <tt class="py-line">             </tt>
+<a name="L287"></a><tt class="py-lineno">287</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">options</tt> </tt>
+</div><a name="L288"></a><tt class="py-lineno">288</tt>  <tt class="py-line">     </tt>
+<a name="CLI.cmdloop"></a><div id="CLI.cmdloop-def"><a name="L289"></a><tt class="py-lineno">289</tt> <a class="py-toggle" href="#" id="CLI.cmdloop-toggle" onclick="return toggle('CLI.cmdloop');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="TestON.bin.cli.CLI-class.html#cmdloop">cmdloop</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">intro</tt><tt class="py-op">=</tt><tt id="link-34" class="py-name"><a title="TestON.bin.cli.introduction" class="py-name" href="#" onclick="return doclink('link-34', 'introduction', 'link-2');">introduction</a></tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="CLI.cmdloop-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="CLI.cmdloop-expanded"><a name="L290"></a><tt class="py-lineno">290</tt>  <tt class="py-line">        <tt class="py-keyword">print</tt> <tt id="link-35" class="py-name"><a title="TestON.bin.cli.introduction" class="py-name" href="#" onclick="return doclink('link-35', 'introduction', 'link-2');">introduction</a></tt> </tt>
+<a name="L291"></a><tt class="py-lineno">291</tt>  <tt class="py-line">        <tt class="py-keyword">while</tt> <tt class="py-name">True</tt><tt class="py-op">:</tt> </tt>
+<a name="L292"></a><tt class="py-lineno">292</tt>  <tt class="py-line">            <tt class="py-keyword">try</tt><tt class="py-op">:</tt> </tt>
+<a name="L293"></a><tt class="py-lineno">293</tt>  <tt class="py-line">                <tt class="py-name">super</tt><tt class="py-op">(</tt><tt id="link-36" class="py-name" targets="Class TestON.bin.cli.CLI=TestON.bin.cli.CLI-class.html,Class TestON.drivers.common.clidriver.CLI=TestON.drivers.common.clidriver.CLI-class.html"><a title="TestON.bin.cli.CLI
+TestON.drivers.common.clidriver.CLI" class="py-name" href="#" onclick="return doclink('link-36', 'CLI', 'link-36');">CLI</a></tt><tt class="py-op">,</tt> <tt class="py-name">self</tt><tt class="py-op">)</tt><tt class="py-op">.</tt><tt id="link-37" class="py-name" targets="Method TestON.bin.cli.CLI.cmdloop()=TestON.bin.cli.CLI-class.html#cmdloop"><a title="TestON.bin.cli.CLI.cmdloop" class="py-name" href="#" onclick="return doclink('link-37', 'cmdloop', 'link-37');">cmdloop</a></tt><tt class="py-op">(</tt><tt class="py-name">intro</tt><tt class="py-op">=</tt><tt class="py-string">""</tt><tt class="py-op">)</tt> </tt>
+<a name="L294"></a><tt class="py-lineno">294</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">postloop</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L295"></a><tt class="py-lineno">295</tt>  <tt class="py-line">            <tt class="py-keyword">except</tt> <tt class="py-name">KeyboardInterrupt</tt><tt class="py-op">:</tt> </tt>
+<a name="L296"></a><tt class="py-lineno">296</tt>  <tt class="py-line">                <tt class="py-name">testthread</tt><tt class="py-op">.</tt><tt id="link-38" class="py-name"><a title="TestON.bin.cli.TestThread.pause
+TestON.core.teston.TestON.pause" class="py-name" href="#" onclick="return doclink('link-38', 'pause', 'link-15');">pause</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L297"></a><tt class="py-lineno">297</tt>  <tt class="py-line"> </tt>
+<a name="CLI.do_echo"></a><div id="CLI.do_echo-def"><a name="L298"></a><tt class="py-lineno">298</tt> <a class="py-toggle" href="#" id="CLI.do_echo-toggle" onclick="return toggle('CLI.do_echo');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="TestON.bin.cli.CLI-class.html#do_echo">do_echo</a><tt class="py-op">(</tt> <tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">line</tt> <tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="CLI.do_echo-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="CLI.do_echo-expanded"><a name="L299"></a><tt class="py-lineno">299</tt>  <tt class="py-line">        <tt class="py-docstring">'''</tt> </tt>
+<a name="L300"></a><tt class="py-lineno">300</tt>  <tt class="py-line"><tt class="py-docstring">        Echoing of given input.</tt> </tt>
+<a name="L301"></a><tt class="py-lineno">301</tt>  <tt class="py-line"><tt class="py-docstring">        '''</tt> </tt>
+<a name="L302"></a><tt class="py-lineno">302</tt>  <tt class="py-line">        <tt id="link-39" class="py-name"><a title="TestON.bin.cli.output" class="py-name" href="#" onclick="return doclink('link-39', 'output', 'link-20');">output</a></tt><tt class="py-op">(</tt><tt class="py-name">line</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L303"></a><tt class="py-lineno">303</tt>  <tt class="py-line"> </tt>
+<a name="CLI.do_sh"></a><div id="CLI.do_sh-def"><a name="L304"></a><tt class="py-lineno">304</tt> <a class="py-toggle" href="#" id="CLI.do_sh-toggle" onclick="return toggle('CLI.do_sh');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="TestON.bin.cli.CLI-class.html#do_sh">do_sh</a><tt class="py-op">(</tt> <tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">line</tt> <tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="CLI.do_sh-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="CLI.do_sh-expanded"><a name="L305"></a><tt class="py-lineno">305</tt>  <tt class="py-line">        <tt class="py-docstring">'''</tt> </tt>
+<a name="L306"></a><tt class="py-lineno">306</tt>  <tt class="py-line"><tt class="py-docstring">        Run an external shell command</tt> </tt>
+<a name="L307"></a><tt class="py-lineno">307</tt>  <tt class="py-line"><tt class="py-docstring">        sh pwd</tt> </tt>
+<a name="L308"></a><tt class="py-lineno">308</tt>  <tt class="py-line"><tt class="py-docstring">        sh ifconfig etc.</tt> </tt>
+<a name="L309"></a><tt class="py-lineno">309</tt>  <tt class="py-line"><tt class="py-docstring">        '''</tt> </tt>
+<a name="L310"></a><tt class="py-lineno">310</tt>  <tt class="py-line">        <tt class="py-name">call</tt><tt class="py-op">(</tt> <tt class="py-name">line</tt><tt class="py-op">,</tt> <tt class="py-name">shell</tt><tt class="py-op">=</tt><tt class="py-name">True</tt> <tt class="py-op">)</tt> </tt>
+</div><a name="L311"></a><tt class="py-lineno">311</tt>  <tt class="py-line"> </tt>
+<a name="L312"></a><tt class="py-lineno">312</tt>  <tt class="py-line"> </tt>
+<a name="CLI.do_py"></a><div id="CLI.do_py-def"><a name="L313"></a><tt class="py-lineno">313</tt> <a class="py-toggle" href="#" id="CLI.do_py-toggle" onclick="return toggle('CLI.do_py');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="TestON.bin.cli.CLI-class.html#do_py">do_py</a><tt class="py-op">(</tt> <tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">line</tt> <tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="CLI.do_py-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="CLI.do_py-expanded"><a name="L314"></a><tt class="py-lineno">314</tt>  <tt class="py-line">        <tt class="py-docstring">'''</tt> </tt>
+<a name="L315"></a><tt class="py-lineno">315</tt>  <tt class="py-line"><tt class="py-docstring">        Evaluate a Python expression.</tt> </tt>
+<a name="L316"></a><tt class="py-lineno">316</tt>  <tt class="py-line"><tt class="py-docstring">        </tt> </tt>
+<a name="L317"></a><tt class="py-lineno">317</tt>  <tt class="py-line"><tt class="py-docstring">        py main.log.info("Sample Log Information")</tt> </tt>
+<a name="L318"></a><tt class="py-lineno">318</tt>  <tt class="py-line"><tt class="py-docstring">        2013-01-07 12:07:26,804 - PoxTest - INFO - Sample Log Information</tt> </tt>
+<a name="L319"></a><tt class="py-lineno">319</tt>  <tt class="py-line"><tt class="py-docstring">        </tt> </tt>
+<a name="L320"></a><tt class="py-lineno">320</tt>  <tt class="py-line"><tt class="py-docstring">        '''</tt> </tt>
+<a name="L321"></a><tt class="py-lineno">321</tt>  <tt class="py-line">        <tt class="py-keyword">try</tt><tt class="py-op">:</tt> </tt>
+<a name="L322"></a><tt class="py-lineno">322</tt>  <tt class="py-line">            <tt class="py-keyword">exec</tt><tt class="py-op">(</tt> <tt class="py-name">line</tt> <tt class="py-op">)</tt> </tt>
+<a name="L323"></a><tt class="py-lineno">323</tt>  <tt class="py-line">        <tt class="py-keyword">except</tt> <tt class="py-name">Exception</tt><tt class="py-op">,</tt> <tt class="py-name">e</tt><tt class="py-op">:</tt> </tt>
+<a name="L324"></a><tt class="py-lineno">324</tt>  <tt class="py-line">            <tt id="link-40" class="py-name"><a title="TestON.bin.cli.output" class="py-name" href="#" onclick="return doclink('link-40', 'output', 'link-20');">output</a></tt><tt class="py-op">(</tt> <tt class="py-name">str</tt><tt class="py-op">(</tt> <tt class="py-name">e</tt> <tt class="py-op">)</tt> <tt class="py-op">+</tt> <tt class="py-string">'\n'</tt> <tt class="py-op">)</tt> </tt>
+</div><a name="L325"></a><tt class="py-lineno">325</tt>  <tt class="py-line">             </tt>
+<a name="CLI.do_interpret"></a><div id="CLI.do_interpret-def"><a name="L326"></a><tt class="py-lineno">326</tt> <a class="py-toggle" href="#" id="CLI.do_interpret-toggle" onclick="return toggle('CLI.do_interpret');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="TestON.bin.cli.CLI-class.html#do_interpret">do_interpret</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt><tt class="py-param">line</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="CLI.do_interpret-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="CLI.do_interpret-expanded"><a name="L327"></a><tt class="py-lineno">327</tt>  <tt class="py-line">        <tt class="py-docstring">'''</tt> </tt>
+<a name="L328"></a><tt class="py-lineno">328</tt>  <tt class="py-line"><tt class="py-docstring">        interpret will translate the single line openspeak statement to equivalent python script.</tt> </tt>
+<a name="L329"></a><tt class="py-lineno">329</tt>  <tt class="py-line"><tt class="py-docstring">        </tt> </tt>
+<a name="L330"></a><tt class="py-lineno">330</tt>  <tt class="py-line"><tt class="py-docstring">        teston&gt; interpret ASSERT result EQUALS main.TRUE ONPASS "Ping executed successfully" ONFAIL "Ping failed"</tt> </tt>
+<a name="L331"></a><tt class="py-lineno">331</tt>  <tt class="py-line"><tt class="py-docstring">        utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Ping executed successfully",onfail="Ping failed")</tt> </tt>
+<a name="L332"></a><tt class="py-lineno">332</tt>  <tt class="py-line"><tt class="py-docstring"> </tt> </tt>
+<a name="L333"></a><tt class="py-lineno">333</tt>  <tt class="py-line"><tt class="py-docstring">        '''</tt> </tt>
+<a name="L334"></a><tt class="py-lineno">334</tt>  <tt class="py-line">        <tt class="py-keyword">from</tt> <tt id="link-41" class="py-name"><a title="TestON.core" class="py-name" href="#" onclick="return doclink('link-41', 'core', 'link-7');">core</a></tt> <tt class="py-keyword">import</tt> <tt id="link-42" class="py-name" targets="Module TestON.core.openspeak=TestON.core.openspeak-module.html"><a title="TestON.core.openspeak" class="py-name" href="#" onclick="return doclink('link-42', 'openspeak', 'link-42');">openspeak</a></tt> </tt>
+<a name="L335"></a><tt class="py-lineno">335</tt>  <tt class="py-line">        <tt class="py-name">ospk</tt> <tt class="py-op">=</tt> <tt id="link-43" class="py-name"><a title="TestON.core.openspeak" class="py-name" href="#" onclick="return doclink('link-43', 'openspeak', 'link-42');">openspeak</a></tt><tt class="py-op">.</tt><tt id="link-44" class="py-name" targets="Class TestON.core.openspeak.OpenSpeak=TestON.core.openspeak.OpenSpeak-class.html"><a title="TestON.core.openspeak.OpenSpeak" class="py-name" href="#" onclick="return doclink('link-44', 'OpenSpeak', 'link-44');">OpenSpeak</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L336"></a><tt class="py-lineno">336</tt>  <tt class="py-line">        <tt class="py-keyword">try</tt> <tt class="py-op">:</tt> </tt>
+<a name="L337"></a><tt class="py-lineno">337</tt>  <tt class="py-line">            <tt class="py-name">translated_code</tt> <tt class="py-op">=</tt> <tt class="py-name">ospk</tt><tt class="py-op">.</tt><tt id="link-45" class="py-name" targets="Method TestON.core.openspeak.OpenSpeak.interpret()=TestON.core.openspeak.OpenSpeak-class.html#interpret"><a title="TestON.core.openspeak.OpenSpeak.interpret" class="py-name" href="#" onclick="return doclink('link-45', 'interpret', 'link-45');">interpret</a></tt><tt class="py-op">(</tt><tt class="py-name">text</tt><tt class="py-op">=</tt><tt class="py-name">line</tt><tt class="py-op">)</tt> </tt>
+<a name="L338"></a><tt class="py-lineno">338</tt>  <tt class="py-line">            <tt class="py-keyword">print</tt> <tt class="py-name">translated_code</tt> </tt>
+<a name="L339"></a><tt class="py-lineno">339</tt>  <tt class="py-line">        <tt class="py-keyword">except</tt> <tt class="py-name">AttributeError</tt><tt class="py-op">,</tt> <tt class="py-name">e</tt><tt class="py-op">:</tt> </tt>
+<a name="L340"></a><tt class="py-lineno">340</tt>  <tt class="py-line">            <tt class="py-keyword">print</tt> <tt class="py-string">'Dynamic params are not allowed in single statement translations'</tt> </tt>
+</div><a name="L341"></a><tt class="py-lineno">341</tt>  <tt class="py-line">         </tt>
+<a name="CLI.do_do"></a><div id="CLI.do_do-def"><a name="L342"></a><tt class="py-lineno">342</tt> <a class="py-toggle" href="#" id="CLI.do_do-toggle" onclick="return toggle('CLI.do_do');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="TestON.bin.cli.CLI-class.html#do_do">do_do</a> <tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt><tt class="py-param">line</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="CLI.do_do-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="CLI.do_do-expanded"><a name="L343"></a><tt class="py-lineno">343</tt>  <tt class="py-line">        <tt class="py-docstring">'''</tt> </tt>
+<a name="L344"></a><tt class="py-lineno">344</tt>  <tt class="py-line"><tt class="py-docstring">        Do will translate and execute the openspeak statement for the paused test.</tt> </tt>
+<a name="L345"></a><tt class="py-lineno">345</tt>  <tt class="py-line"><tt class="py-docstring">        do &lt;OpenSpeak statement&gt;</tt> </tt>
+<a name="L346"></a><tt class="py-lineno">346</tt>  <tt class="py-line"><tt class="py-docstring">        '''</tt> </tt>
+<a name="L347"></a><tt class="py-lineno">347</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-name">testthread</tt><tt class="py-op">:</tt> </tt>
+<a name="L348"></a><tt class="py-lineno">348</tt>  <tt class="py-line">            <tt class="py-keyword">from</tt> <tt id="link-46" class="py-name"><a title="TestON.core" class="py-name" href="#" onclick="return doclink('link-46', 'core', 'link-7');">core</a></tt> <tt class="py-keyword">import</tt> <tt id="link-47" class="py-name"><a title="TestON.core.openspeak" class="py-name" href="#" onclick="return doclink('link-47', 'openspeak', 'link-42');">openspeak</a></tt> </tt>
+<a name="L349"></a><tt class="py-lineno">349</tt>  <tt class="py-line">            <tt class="py-name">ospk</tt> <tt class="py-op">=</tt> <tt id="link-48" class="py-name"><a title="TestON.core.openspeak" class="py-name" href="#" onclick="return doclink('link-48', 'openspeak', 'link-42');">openspeak</a></tt><tt class="py-op">.</tt><tt id="link-49" class="py-name"><a title="TestON.core.openspeak.OpenSpeak" class="py-name" href="#" onclick="return doclink('link-49', 'OpenSpeak', 'link-44');">OpenSpeak</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L350"></a><tt class="py-lineno">350</tt>  <tt class="py-line">            <tt class="py-keyword">try</tt> <tt class="py-op">:</tt> </tt>
+<a name="L351"></a><tt class="py-lineno">351</tt>  <tt class="py-line">                <tt class="py-name">translated_code</tt> <tt class="py-op">=</tt> <tt class="py-name">ospk</tt><tt class="py-op">.</tt><tt id="link-50" class="py-name"><a title="TestON.core.openspeak.OpenSpeak.interpret" class="py-name" href="#" onclick="return doclink('link-50', 'interpret', 'link-45');">interpret</a></tt><tt class="py-op">(</tt><tt class="py-name">text</tt><tt class="py-op">=</tt><tt class="py-name">line</tt><tt class="py-op">)</tt> </tt>
+<a name="L352"></a><tt class="py-lineno">352</tt>  <tt class="py-line">                <tt class="py-name">eval</tt><tt class="py-op">(</tt><tt class="py-name">translated_code</tt><tt class="py-op">)</tt> </tt>
+<a name="L353"></a><tt class="py-lineno">353</tt>  <tt class="py-line">            <tt class="py-keyword">except</tt> <tt class="py-op">(</tt><tt class="py-name">AttributeError</tt><tt class="py-op">,</tt><tt class="py-name">SyntaxError</tt><tt class="py-op">)</tt><tt class="py-op">,</tt> <tt class="py-name">e</tt><tt class="py-op">:</tt> </tt>
+<a name="L354"></a><tt class="py-lineno">354</tt>  <tt class="py-line">                <tt class="py-keyword">print</tt> <tt class="py-string">'Dynamic params are not allowed in single statement translations'</tt> </tt>
+<a name="L355"></a><tt class="py-lineno">355</tt>  <tt class="py-line">        <tt class="py-keyword">else</tt> <tt class="py-op">:</tt> </tt>
+<a name="L356"></a><tt class="py-lineno">356</tt>  <tt class="py-line">            <tt class="py-keyword">print</tt> <tt class="py-string">"Do will translate and execute the openspeak statement for the paused test.\nPlease use interpret to translate the OpenSpeak statement."</tt> </tt>
+</div><a name="L357"></a><tt class="py-lineno">357</tt>  <tt class="py-line">             </tt>
+<a name="CLI.do_compile"></a><div id="CLI.do_compile-def"><a name="L358"></a><tt class="py-lineno">358</tt> <a class="py-toggle" href="#" id="CLI.do_compile-toggle" onclick="return toggle('CLI.do_compile');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="TestON.bin.cli.CLI-class.html#do_compile">do_compile</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt><tt class="py-param">line</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="CLI.do_compile-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="CLI.do_compile-expanded"><a name="L359"></a><tt class="py-lineno">359</tt>  <tt class="py-line">        <tt class="py-docstring">'''</tt> </tt>
+<a name="L360"></a><tt class="py-lineno">360</tt>  <tt class="py-line"><tt class="py-docstring">        compile will translate the openspeak (.ospk) file into TestON test script (python).</tt> </tt>
+<a name="L361"></a><tt class="py-lineno">361</tt>  <tt class="py-line"><tt class="py-docstring">        It will receive the openspeak file path as input and will generate </tt> </tt>
+<a name="L362"></a><tt class="py-lineno">362</tt>  <tt class="py-line"><tt class="py-docstring">        equivalent test-script file in the same directory. </tt> </tt>
+<a name="L363"></a><tt class="py-lineno">363</tt>  <tt class="py-line"><tt class="py-docstring">        </tt> </tt>
+<a name="L364"></a><tt class="py-lineno">364</tt>  <tt class="py-line"><tt class="py-docstring">        usage:</tt> </tt>
+<a name="L365"></a><tt class="py-lineno">365</tt>  <tt class="py-line"><tt class="py-docstring">        -----</tt> </tt>
+<a name="L366"></a><tt class="py-lineno">366</tt>  <tt class="py-line"><tt class="py-docstring">        teston&gt;compile /home/openflow/TestON/PoxTest.ospk</tt> </tt>
+<a name="L367"></a><tt class="py-lineno">367</tt>  <tt class="py-line"><tt class="py-docstring">        </tt> </tt>
+<a name="L368"></a><tt class="py-lineno">368</tt>  <tt class="py-line"><tt class="py-docstring">        Auto-generated test-script file is /home/openflow/TestON/PoxTest.py</tt> </tt>
+<a name="L369"></a><tt class="py-lineno">369</tt>  <tt class="py-line"><tt class="py-docstring">        '''</tt> </tt>
+<a name="L370"></a><tt class="py-lineno">370</tt>  <tt class="py-line">        <tt class="py-keyword">from</tt> <tt id="link-51" class="py-name"><a title="TestON.core" class="py-name" href="#" onclick="return doclink('link-51', 'core', 'link-7');">core</a></tt> <tt class="py-keyword">import</tt> <tt id="link-52" class="py-name"><a title="TestON.core.openspeak" class="py-name" href="#" onclick="return doclink('link-52', 'openspeak', 'link-42');">openspeak</a></tt> </tt>
+<a name="L371"></a><tt class="py-lineno">371</tt>  <tt class="py-line">        <tt id="link-53" class="py-name"><a title="TestON.core.openspeak" class="py-name" href="#" onclick="return doclink('link-53', 'openspeak', 'link-42');">openspeak</a></tt> <tt class="py-op">=</tt> <tt id="link-54" class="py-name"><a title="TestON.core.openspeak" class="py-name" href="#" onclick="return doclink('link-54', 'openspeak', 'link-42');">openspeak</a></tt><tt class="py-op">.</tt><tt id="link-55" class="py-name"><a title="TestON.core.openspeak.OpenSpeak" class="py-name" href="#" onclick="return doclink('link-55', 'OpenSpeak', 'link-44');">OpenSpeak</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt>       </tt>
+<a name="L372"></a><tt class="py-lineno">372</tt>  <tt class="py-line">        <tt class="py-name">openspeakfile</tt> <tt class="py-op">=</tt> <tt class="py-name">line</tt> </tt>
+<a name="L373"></a><tt class="py-lineno">373</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-name">os</tt><tt class="py-op">.</tt><tt id="link-56" class="py-name"><a title="TestON.bin.cli.path
+TestON.core.teston.path" class="py-name" href="#" onclick="return doclink('link-56', 'path', 'link-3');">path</a></tt><tt class="py-op">.</tt><tt class="py-name">exists</tt><tt class="py-op">(</tt><tt class="py-name">openspeakfile</tt><tt class="py-op">)</tt> <tt class="py-op">:</tt> </tt>
+<a name="L374"></a><tt class="py-lineno">374</tt>  <tt class="py-line">            <tt id="link-57" class="py-name"><a title="TestON.core.openspeak" class="py-name" href="#" onclick="return doclink('link-57', 'openspeak', 'link-42');">openspeak</a></tt><tt class="py-op">.</tt><tt id="link-58" class="py-name" targets="Method TestON.core.openspeak.OpenSpeak.compiler()=TestON.core.openspeak.OpenSpeak-class.html#compiler"><a title="TestON.core.openspeak.OpenSpeak.compiler" class="py-name" href="#" onclick="return doclink('link-58', 'compiler', 'link-58');">compiler</a></tt><tt class="py-op">(</tt><tt class="py-name">openspeakfile</tt><tt class="py-op">=</tt><tt class="py-name">openspeakfile</tt><tt class="py-op">,</tt><tt class="py-name">writetofile</tt><tt class="py-op">=</tt><tt class="py-number">1</tt><tt class="py-op">)</tt> </tt>
+<a name="L375"></a><tt class="py-lineno">375</tt>  <tt class="py-line">            <tt class="py-keyword">print</tt> <tt class="py-string">"Auto-generated test-script file is "</tt><tt class="py-op">+</tt> <tt class="py-name">re</tt><tt class="py-op">.</tt><tt class="py-name">sub</tt><tt class="py-op">(</tt><tt class="py-string">"ospk"</tt><tt class="py-op">,</tt><tt class="py-string">"py"</tt><tt class="py-op">,</tt><tt class="py-name">openspeakfile</tt><tt class="py-op">,</tt><tt class="py-number">0</tt><tt class="py-op">)</tt> </tt>
+<a name="L376"></a><tt class="py-lineno">376</tt>  <tt class="py-line">        <tt class="py-keyword">else</tt><tt class="py-op">:</tt> </tt>
+<a name="L377"></a><tt class="py-lineno">377</tt>  <tt class="py-line">            <tt class="py-keyword">print</tt> <tt class="py-string">'There is no such file : '</tt><tt class="py-op">+</tt><tt class="py-name">line</tt> </tt>
+</div><a name="L378"></a><tt class="py-lineno">378</tt>  <tt class="py-line"> </tt>
+<a name="CLI.do_exit"></a><div id="CLI.do_exit-def"><a name="L379"></a><tt class="py-lineno">379</tt> <a class="py-toggle" href="#" id="CLI.do_exit-toggle" onclick="return toggle('CLI.do_exit');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="TestON.bin.cli.CLI-class.html#do_exit">do_exit</a><tt class="py-op">(</tt> <tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">_line</tt> <tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="CLI.do_exit-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="CLI.do_exit-expanded"><a name="L380"></a><tt class="py-lineno">380</tt>  <tt class="py-line">        <tt class="py-docstring">"Exit"</tt> </tt>
+<a name="L381"></a><tt class="py-lineno">381</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-name">testthread</tt><tt class="py-op">:</tt> </tt>
+<a name="L382"></a><tt class="py-lineno">382</tt>  <tt class="py-line">            <tt class="py-name">testthread</tt><tt class="py-op">.</tt><tt id="link-59" class="py-name"><a title="TestON.bin.cli.TestThread.stop" class="py-name" href="#" onclick="return doclink('link-59', 'stop', 'link-16');">stop</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L383"></a><tt class="py-lineno">383</tt>  <tt class="py-line">             </tt>
+<a name="L384"></a><tt class="py-lineno">384</tt>  <tt class="py-line">        <tt class="py-name">sys</tt><tt class="py-op">.</tt><tt id="link-60" class="py-name" targets="Method TestON.core.teston.TestON.exit()=TestON.core.teston.TestON-class.html#exit"><a title="TestON.core.teston.TestON.exit" class="py-name" href="#" onclick="return doclink('link-60', 'exit', 'link-60');">exit</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L385"></a><tt class="py-lineno">385</tt>  <tt class="py-line"> </tt>
+<a name="L386"></a><tt class="py-lineno">386</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-string">'exited by user command'</tt> </tt>
+</div><a name="L387"></a><tt class="py-lineno">387</tt>  <tt class="py-line"> </tt>
+<a name="CLI.do_quit"></a><div id="CLI.do_quit-def"><a name="L388"></a><tt class="py-lineno">388</tt> <a class="py-toggle" href="#" id="CLI.do_quit-toggle" onclick="return toggle('CLI.do_quit');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="TestON.bin.cli.CLI-class.html#do_quit">do_quit</a><tt class="py-op">(</tt> <tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">line</tt> <tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="CLI.do_quit-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="CLI.do_quit-expanded"><a name="L389"></a><tt class="py-lineno">389</tt>  <tt class="py-line">        <tt class="py-docstring">"Exit"</tt> </tt>
+<a name="L390"></a><tt class="py-lineno">390</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-61" class="py-name" targets="Method TestON.bin.cli.CLI.do_exit()=TestON.bin.cli.CLI-class.html#do_exit"><a title="TestON.bin.cli.CLI.do_exit" class="py-name" href="#" onclick="return doclink('link-61', 'do_exit', 'link-61');">do_exit</a></tt><tt class="py-op">(</tt> <tt class="py-name">line</tt> <tt class="py-op">)</tt> </tt>
+</div><a name="L391"></a><tt class="py-lineno">391</tt>  <tt class="py-line"> </tt>
+<a name="CLI.do_EOF"></a><div id="CLI.do_EOF-def"><a name="L392"></a><tt class="py-lineno">392</tt> <a class="py-toggle" href="#" id="CLI.do_EOF-toggle" onclick="return toggle('CLI.do_EOF');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="TestON.bin.cli.CLI-class.html#do_EOF">do_EOF</a><tt class="py-op">(</tt> <tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">line</tt> <tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="CLI.do_EOF-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="CLI.do_EOF-expanded"><a name="L393"></a><tt class="py-lineno">393</tt>  <tt class="py-line">        <tt class="py-docstring">"Exit"</tt> </tt>
+<a name="L394"></a><tt class="py-lineno">394</tt>  <tt class="py-line">        <tt id="link-62" class="py-name"><a title="TestON.bin.cli.output" class="py-name" href="#" onclick="return doclink('link-62', 'output', 'link-20');">output</a></tt><tt class="py-op">(</tt> <tt class="py-string">'\n'</tt> <tt class="py-op">)</tt> </tt>
+<a name="L395"></a><tt class="py-lineno">395</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-63" class="py-name"><a title="TestON.bin.cli.CLI.do_exit" class="py-name" href="#" onclick="return doclink('link-63', 'do_exit', 'link-61');">do_exit</a></tt><tt class="py-op">(</tt> <tt class="py-name">line</tt> <tt class="py-op">)</tt> </tt>
+</div><a name="L396"></a><tt class="py-lineno">396</tt>  <tt class="py-line"> </tt>
+<a name="CLI.isatty"></a><div id="CLI.isatty-def"><a name="L397"></a><tt class="py-lineno">397</tt> <a class="py-toggle" href="#" id="CLI.isatty-toggle" onclick="return toggle('CLI.isatty');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="TestON.bin.cli.CLI-class.html#isatty">isatty</a><tt class="py-op">(</tt> <tt class="py-param">self</tt> <tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="CLI.isatty-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="CLI.isatty-expanded"><a name="L398"></a><tt class="py-lineno">398</tt>  <tt class="py-line">        <tt class="py-docstring">"Is our standard input a tty?"</tt> </tt>
+<a name="L399"></a><tt class="py-lineno">399</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt id="link-64" class="py-name"><a title="TestON.bin.cli.CLI.isatty" class="py-name" href="#" onclick="return doclink('link-64', 'isatty', 'link-0');">isatty</a></tt><tt class="py-op">(</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">stdin</tt><tt class="py-op">.</tt><tt class="py-name">fileno</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> <tt class="py-op">)</tt> </tt>
+</div><a name="L400"></a><tt class="py-lineno">400</tt>  <tt class="py-line"> </tt>
+<a name="CLI.do_source"></a><div id="CLI.do_source-def"><a name="L401"></a><tt class="py-lineno">401</tt> <a class="py-toggle" href="#" id="CLI.do_source-toggle" onclick="return toggle('CLI.do_source');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="TestON.bin.cli.CLI-class.html#do_source">do_source</a><tt class="py-op">(</tt> <tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">line</tt> <tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="CLI.do_source-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="CLI.do_source-expanded"><a name="L402"></a><tt class="py-lineno">402</tt>  <tt class="py-line">        <tt class="py-docstring">'''</tt> </tt>
+<a name="L403"></a><tt class="py-lineno">403</tt>  <tt class="py-line"><tt class="py-docstring">        Read shell commands from an input file and execute them sequentially.</tt> </tt>
+<a name="L404"></a><tt class="py-lineno">404</tt>  <tt class="py-line"><tt class="py-docstring">        cmdsource.txt :</tt> </tt>
+<a name="L405"></a><tt class="py-lineno">405</tt>  <tt class="py-line"><tt class="py-docstring">        </tt> </tt>
+<a name="L406"></a><tt class="py-lineno">406</tt>  <tt class="py-line"><tt class="py-docstring">        "pwd</tt> </tt>
+<a name="L407"></a><tt class="py-lineno">407</tt>  <tt class="py-line"><tt class="py-docstring">         ls "</tt> </tt>
+<a name="L408"></a><tt class="py-lineno">408</tt>  <tt class="py-line"><tt class="py-docstring">         </tt> </tt>
+<a name="L409"></a><tt class="py-lineno">409</tt>  <tt class="py-line"><tt class="py-docstring">        teston&gt;source /home/openflow/cmdsource.txt</tt> </tt>
+<a name="L410"></a><tt class="py-lineno">410</tt>  <tt class="py-line"><tt class="py-docstring">        /home/openflow/TestON/bin/</tt> </tt>
+<a name="L411"></a><tt class="py-lineno">411</tt>  <tt class="py-line"><tt class="py-docstring">        cli.py  __init__.py</tt> </tt>
+<a name="L412"></a><tt class="py-lineno">412</tt>  <tt class="py-line"><tt class="py-docstring">        </tt> </tt>
+<a name="L413"></a><tt class="py-lineno">413</tt>  <tt class="py-line"><tt class="py-docstring">        '''</tt> </tt>
+<a name="L414"></a><tt class="py-lineno">414</tt>  <tt class="py-line">         </tt>
+<a name="L415"></a><tt class="py-lineno">415</tt>  <tt class="py-line">        <tt class="py-name">args</tt> <tt class="py-op">=</tt> <tt class="py-name">line</tt><tt class="py-op">.</tt><tt class="py-name">split</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L416"></a><tt class="py-lineno">416</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-name">len</tt><tt class="py-op">(</tt><tt class="py-name">args</tt><tt class="py-op">)</tt> <tt class="py-op">!=</tt> <tt class="py-number">1</tt><tt class="py-op">:</tt> </tt>
+<a name="L417"></a><tt class="py-lineno">417</tt>  <tt class="py-line">            <tt id="link-65" class="py-name" targets="Function TestON.bin.cli.error()=TestON.bin.cli-module.html#error"><a title="TestON.bin.cli.error" class="py-name" href="#" onclick="return doclink('link-65', 'error', 'link-65');">error</a></tt><tt class="py-op">(</tt> <tt class="py-string">'usage: source &lt;file&gt;\n'</tt> <tt class="py-op">)</tt> </tt>
+<a name="L418"></a><tt class="py-lineno">418</tt>  <tt class="py-line">            <tt class="py-keyword">return</tt> </tt>
+<a name="L419"></a><tt class="py-lineno">419</tt>  <tt class="py-line">        <tt class="py-keyword">try</tt><tt class="py-op">:</tt> </tt>
+<a name="L420"></a><tt class="py-lineno">420</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">inputFile</tt> <tt class="py-op">=</tt> <tt class="py-name">open</tt><tt class="py-op">(</tt> <tt class="py-name">args</tt><tt class="py-op">[</tt> <tt class="py-number">0</tt> <tt class="py-op">]</tt> <tt class="py-op">)</tt> </tt>
+<a name="L421"></a><tt class="py-lineno">421</tt>  <tt class="py-line">            <tt class="py-keyword">while</tt> <tt class="py-name">True</tt><tt class="py-op">:</tt> </tt>
+<a name="L422"></a><tt class="py-lineno">422</tt>  <tt class="py-line">                <tt class="py-name">line</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">inputFile</tt><tt class="py-op">.</tt><tt class="py-name">readline</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L423"></a><tt class="py-lineno">423</tt>  <tt class="py-line">                <tt class="py-keyword">if</tt> <tt class="py-name">len</tt><tt class="py-op">(</tt> <tt class="py-name">line</tt> <tt class="py-op">)</tt> <tt class="py-op">&gt;</tt> <tt class="py-number">0</tt><tt class="py-op">:</tt> </tt>
+<a name="L424"></a><tt class="py-lineno">424</tt>  <tt class="py-line">                    <tt class="py-name">call</tt><tt class="py-op">(</tt> <tt class="py-name">line</tt><tt class="py-op">,</tt> <tt class="py-name">shell</tt><tt class="py-op">=</tt><tt class="py-name">True</tt> <tt class="py-op">)</tt> </tt>
+<a name="L425"></a><tt class="py-lineno">425</tt>  <tt class="py-line">                <tt class="py-keyword">else</tt><tt class="py-op">:</tt> </tt>
+<a name="L426"></a><tt class="py-lineno">426</tt>  <tt class="py-line">                    <tt class="py-keyword">break</tt> </tt>
+<a name="L427"></a><tt class="py-lineno">427</tt>  <tt class="py-line">        <tt class="py-keyword">except</tt> <tt class="py-name">IOError</tt><tt class="py-op">:</tt> </tt>
+<a name="L428"></a><tt class="py-lineno">428</tt>  <tt class="py-line">            <tt id="link-66" class="py-name"><a title="TestON.bin.cli.error" class="py-name" href="#" onclick="return doclink('link-66', 'error', 'link-65');">error</a></tt><tt class="py-op">(</tt> <tt class="py-string">'error reading file %s\n'</tt> <tt class="py-op">%</tt> <tt class="py-name">args</tt><tt class="py-op">[</tt> <tt class="py-number">0</tt> <tt class="py-op">]</tt> <tt class="py-op">)</tt> </tt>
+</div><a name="L429"></a><tt class="py-lineno">429</tt>  <tt class="py-line">     </tt>
+<a name="CLI.do_updatedriver"></a><div id="CLI.do_updatedriver-def"><a name="L430"></a><tt class="py-lineno">430</tt> <a class="py-toggle" href="#" id="CLI.do_updatedriver-toggle" onclick="return toggle('CLI.do_updatedriver');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="TestON.bin.cli.CLI-class.html#do_updatedriver">do_updatedriver</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt><tt class="py-param">line</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="CLI.do_updatedriver-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="CLI.do_updatedriver-expanded"><a name="L431"></a><tt class="py-lineno">431</tt>  <tt class="py-line">        <tt class="py-docstring">'''</tt> </tt>
+<a name="L432"></a><tt class="py-lineno">432</tt>  <tt class="py-line"><tt class="py-docstring">         updatedriver will update the given driver name which exists into mentioned config file.</tt> </tt>
+<a name="L433"></a><tt class="py-lineno">433</tt>  <tt class="py-line"><tt class="py-docstring">         It will receive two optional arguments :</tt> </tt>
+<a name="L434"></a><tt class="py-lineno">434</tt>  <tt class="py-line"><tt class="py-docstring">         </tt> </tt>
+<a name="L435"></a><tt class="py-lineno">435</tt>  <tt class="py-line"><tt class="py-docstring">         1. Config File Path </tt> </tt>
+<a name="L436"></a><tt class="py-lineno">436</tt>  <tt class="py-line"><tt class="py-docstring">         2. Drivers List to be updated.</tt> </tt>
+<a name="L437"></a><tt class="py-lineno">437</tt>  <tt class="py-line"><tt class="py-docstring">        </tt> </tt>
+<a name="L438"></a><tt class="py-lineno">438</tt>  <tt class="py-line"><tt class="py-docstring">         Default : config file = "~/TestON/config/updatedriver" ,</tt> </tt>
+<a name="L439"></a><tt class="py-lineno">439</tt>  <tt class="py-line"><tt class="py-docstring">                   Driver List = all drivers specified in config file .</tt> </tt>
+<a name="L440"></a><tt class="py-lineno">440</tt>  <tt class="py-line"><tt class="py-docstring">        '''</tt> </tt>
+<a name="L441"></a><tt class="py-lineno">441</tt>  <tt class="py-line">        <tt class="py-name">args</tt> <tt class="py-op">=</tt> <tt class="py-name">line</tt><tt class="py-op">.</tt><tt class="py-name">split</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L442"></a><tt class="py-lineno">442</tt>  <tt class="py-line">        <tt id="link-67" class="py-name" targets="Method TestON.drivers.component.Component.config()=TestON.drivers.component.Component-class.html#config"><a title="TestON.drivers.component.Component.config" class="py-name" href="#" onclick="return doclink('link-67', 'config', 'link-67');">config</a></tt> <tt class="py-op">=</tt> <tt class="py-string">''</tt> </tt>
+<a name="L443"></a><tt class="py-lineno">443</tt>  <tt class="py-line">        <tt id="link-68" class="py-name" targets="Package TestON.drivers=TestON.drivers-module.html"><a title="TestON.drivers" class="py-name" href="#" onclick="return doclink('link-68', 'drivers', 'link-68');">drivers</a></tt> <tt class="py-op">=</tt> <tt class="py-string">''</tt> </tt>
+<a name="L444"></a><tt class="py-lineno">444</tt>  <tt class="py-line">        <tt class="py-keyword">try</tt> <tt class="py-op">:</tt> </tt>
+<a name="L445"></a><tt class="py-lineno">445</tt>  <tt class="py-line">            <tt class="py-keyword">for</tt> <tt class="py-name">index</tt><tt class="py-op">,</tt> <tt class="py-name">option</tt> <tt class="py-keyword">in</tt> <tt class="py-name">enumerate</tt><tt class="py-op">(</tt><tt class="py-name">args</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L446"></a><tt class="py-lineno">446</tt>  <tt class="py-line">                <tt class="py-keyword">if</tt> <tt class="py-name">option</tt> <tt class="py-op">==</tt> <tt class="py-string">'config'</tt><tt class="py-op">:</tt> </tt>
+<a name="L447"></a><tt class="py-lineno">447</tt>  <tt class="py-line">                    <tt class="py-name">index</tt> <tt class="py-op">=</tt> <tt class="py-name">index</tt> <tt class="py-op">+</tt> <tt class="py-number">1</tt> </tt>
+<a name="L448"></a><tt class="py-lineno">448</tt>  <tt class="py-line">                    <tt id="link-69" class="py-name"><a title="TestON.drivers.component.Component.config" class="py-name" href="#" onclick="return doclink('link-69', 'config', 'link-67');">config</a></tt> <tt class="py-op">=</tt> <tt class="py-name">args</tt><tt class="py-op">[</tt><tt class="py-name">index</tt><tt class="py-op">]</tt> </tt>
+<a name="L449"></a><tt class="py-lineno">449</tt>  <tt class="py-line">                <tt class="py-keyword">elif</tt> <tt class="py-name">option</tt> <tt class="py-op">==</tt> <tt class="py-string">'drivers'</tt> <tt class="py-op">:</tt> </tt>
+<a name="L450"></a><tt class="py-lineno">450</tt>  <tt class="py-line">                    <tt class="py-name">index</tt> <tt class="py-op">=</tt> <tt class="py-name">index</tt> <tt class="py-op">+</tt> <tt class="py-number">1</tt>  </tt>
+<a name="L451"></a><tt class="py-lineno">451</tt>  <tt class="py-line">                    <tt id="link-70" class="py-name"><a title="TestON.drivers" class="py-name" href="#" onclick="return doclink('link-70', 'drivers', 'link-68');">drivers</a></tt> <tt class="py-op">=</tt> <tt class="py-name">args</tt><tt class="py-op">[</tt><tt class="py-name">index</tt><tt class="py-op">]</tt> </tt>
+<a name="L452"></a><tt class="py-lineno">452</tt>  <tt class="py-line">        <tt class="py-keyword">except</tt> <tt class="py-name">IndexError</tt><tt class="py-op">:</tt> </tt>
+<a name="L453"></a><tt class="py-lineno">453</tt>  <tt class="py-line">            <tt class="py-keyword">pass</tt>         </tt>
+<a name="L454"></a><tt class="py-lineno">454</tt>  <tt class="py-line">        <tt class="py-keyword">import</tt> <tt id="link-71" class="py-name" targets="Module TestON.bin.updatedriver=TestON.bin.updatedriver-module.html"><a title="TestON.bin.updatedriver" class="py-name" href="#" onclick="return doclink('link-71', 'updatedriver', 'link-71');">updatedriver</a></tt> </tt>
+<a name="L455"></a><tt class="py-lineno">455</tt>  <tt class="py-line">        <tt class="py-name">converter</tt> <tt class="py-op">=</tt> <tt id="link-72" class="py-name"><a title="TestON.bin.updatedriver" class="py-name" href="#" onclick="return doclink('link-72', 'updatedriver', 'link-71');">updatedriver</a></tt><tt class="py-op">.</tt><tt id="link-73" class="py-name" targets="Class TestON.bin.updatedriver.UpdateDriver=TestON.bin.updatedriver.UpdateDriver-class.html"><a title="TestON.bin.updatedriver.UpdateDriver" class="py-name" href="#" onclick="return doclink('link-73', 'UpdateDriver', 'link-73');">UpdateDriver</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L456"></a><tt class="py-lineno">456</tt>  <tt class="py-line">         </tt>
+<a name="L457"></a><tt class="py-lineno">457</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt id="link-74" class="py-name"><a title="TestON.drivers.component.Component.config" class="py-name" href="#" onclick="return doclink('link-74', 'config', 'link-67');">config</a></tt> <tt class="py-op">==</tt> <tt class="py-string">''</tt><tt class="py-op">:</tt> </tt>
+<a name="L458"></a><tt class="py-lineno">458</tt>  <tt class="py-line">            <tt id="link-75" class="py-name"><a title="TestON.bin.cli.path
+TestON.core.teston.path" class="py-name" href="#" onclick="return doclink('link-75', 'path', 'link-3');">path</a></tt> <tt class="py-op">=</tt> <tt class="py-name">re</tt><tt class="py-op">.</tt><tt class="py-name">sub</tt><tt class="py-op">(</tt><tt class="py-string">"(bin)$"</tt><tt class="py-op">,</tt> <tt class="py-string">""</tt><tt class="py-op">,</tt> <tt class="py-name">os</tt><tt class="py-op">.</tt><tt class="py-name">getcwd</tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L459"></a><tt class="py-lineno">459</tt>  <tt class="py-line">            <tt id="link-76" class="py-name"><a title="TestON.drivers.component.Component.config" class="py-name" href="#" onclick="return doclink('link-76', 'config', 'link-67');">config</a></tt> <tt class="py-op">=</tt> <tt id="link-77" class="py-name"><a title="TestON.bin.cli.path
+TestON.core.teston.path" class="py-name" href="#" onclick="return doclink('link-77', 'path', 'link-3');">path</a></tt> <tt class="py-op">+</tt> <tt class="py-string">"/config/updatedriver.cfg"</tt> </tt>
+<a name="L460"></a><tt class="py-lineno">460</tt>  <tt class="py-line">            <tt class="py-name">configDict</tt> <tt class="py-op">=</tt> <tt class="py-name">converter</tt><tt class="py-op">.</tt><tt id="link-78" class="py-name" targets="Method TestON.bin.updatedriver.UpdateDriver.configparser()=TestON.bin.updatedriver.UpdateDriver-class.html#configparser,Method TestON.core.teston.TestON.configparser()=TestON.core.teston.TestON-class.html#configparser"><a title="TestON.bin.updatedriver.UpdateDriver.configparser
+TestON.core.teston.TestON.configparser" class="py-name" href="#" onclick="return doclink('link-78', 'configparser', 'link-78');">configparser</a></tt><tt class="py-op">(</tt><tt id="link-79" class="py-name"><a title="TestON.drivers.component.Component.config" class="py-name" href="#" onclick="return doclink('link-79', 'config', 'link-67');">config</a></tt><tt class="py-op">)</tt> </tt>
+<a name="L461"></a><tt class="py-lineno">461</tt>  <tt class="py-line">             </tt>
+<a name="L462"></a><tt class="py-lineno">462</tt>  <tt class="py-line">        <tt class="py-keyword">else</tt> <tt class="py-op">:</tt> </tt>
+<a name="L463"></a><tt class="py-lineno">463</tt>  <tt class="py-line">            <tt class="py-name">converter</tt><tt class="py-op">.</tt><tt id="link-80" class="py-name"><a title="TestON.bin.updatedriver.UpdateDriver.configparser
+TestON.core.teston.TestON.configparser" class="py-name" href="#" onclick="return doclink('link-80', 'configparser', 'link-78');">configparser</a></tt><tt class="py-op">(</tt><tt id="link-81" class="py-name"><a title="TestON.drivers.component.Component.config" class="py-name" href="#" onclick="return doclink('link-81', 'config', 'link-67');">config</a></tt><tt class="py-op">)</tt> </tt>
+<a name="L464"></a><tt class="py-lineno">464</tt>  <tt class="py-line">            <tt class="py-name">configDict</tt> <tt class="py-op">=</tt> <tt class="py-name">converter</tt><tt class="py-op">.</tt><tt id="link-82" class="py-name"><a title="TestON.bin.updatedriver.UpdateDriver.configparser
+TestON.core.teston.TestON.configparser" class="py-name" href="#" onclick="return doclink('link-82', 'configparser', 'link-78');">configparser</a></tt><tt class="py-op">(</tt><tt id="link-83" class="py-name"><a title="TestON.drivers.component.Component.config" class="py-name" href="#" onclick="return doclink('link-83', 'config', 'link-67');">config</a></tt><tt class="py-op">)</tt> </tt>
+<a name="L465"></a><tt class="py-lineno">465</tt>  <tt class="py-line">            </tt>
+<a name="L466"></a><tt class="py-lineno">466</tt>  <tt class="py-line">             </tt>
+<a name="L467"></a><tt class="py-lineno">467</tt>  <tt class="py-line">        <tt class="py-name">converter</tt><tt class="py-op">.</tt><tt id="link-84" class="py-name" targets="Method TestON.bin.updatedriver.UpdateDriver.writeDriver()=TestON.bin.updatedriver.UpdateDriver-class.html#writeDriver"><a title="TestON.bin.updatedriver.UpdateDriver.writeDriver" class="py-name" href="#" onclick="return doclink('link-84', 'writeDriver', 'link-84');">writeDriver</a></tt><tt class="py-op">(</tt><tt id="link-85" class="py-name"><a title="TestON.drivers" class="py-name" href="#" onclick="return doclink('link-85', 'drivers', 'link-68');">drivers</a></tt><tt class="py-op">)</tt> </tt>
+</div><a name="L468"></a><tt class="py-lineno">468</tt>  <tt class="py-line">                       </tt>
+<a name="L469"></a><tt class="py-lineno">469</tt>  <tt class="py-line">        </tt>
+<a name="L470"></a><tt class="py-lineno">470</tt>  <tt class="py-line">                      </tt>
+<a name="L471"></a><tt class="py-lineno">471</tt>  <tt class="py-line">         </tt>
+<a name="CLI.do_time"></a><div id="CLI.do_time-def"><a name="L472"></a><tt class="py-lineno">472</tt> <a class="py-toggle" href="#" id="CLI.do_time-toggle" onclick="return toggle('CLI.do_time');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="TestON.bin.cli.CLI-class.html#do_time">do_time</a><tt class="py-op">(</tt> <tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">line</tt> <tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="CLI.do_time-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="CLI.do_time-expanded"><a name="L473"></a><tt class="py-lineno">473</tt>  <tt class="py-line">        <tt class="py-docstring">"Measure time taken for any command in TestON."</tt> </tt>
+<a name="L474"></a><tt class="py-lineno">474</tt>  <tt class="py-line">        <tt class="py-name">start</tt> <tt class="py-op">=</tt> <tt class="py-name">time</tt><tt class="py-op">.</tt><tt class="py-name">time</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L475"></a><tt class="py-lineno">475</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">onecmd</tt><tt class="py-op">(</tt><tt class="py-name">line</tt><tt class="py-op">)</tt> </tt>
+<a name="L476"></a><tt class="py-lineno">476</tt>  <tt class="py-line">        <tt class="py-name">elapsed</tt> <tt class="py-op">=</tt> <tt class="py-name">time</tt><tt class="py-op">.</tt><tt class="py-name">time</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> <tt class="py-op">-</tt> <tt class="py-name">start</tt> </tt>
+<a name="L477"></a><tt class="py-lineno">477</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">stdout</tt><tt class="py-op">.</tt><tt class="py-name">write</tt><tt class="py-op">(</tt><tt class="py-string">"*** Elapsed time: %0.6f secs\n"</tt> <tt class="py-op">%</tt> <tt class="py-name">elapsed</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L478"></a><tt class="py-lineno">478</tt>  <tt class="py-line"> </tt>
+<a name="CLI.default"></a><div id="CLI.default-def"><a name="L479"></a><tt class="py-lineno">479</tt> <a class="py-toggle" href="#" id="CLI.default-toggle" onclick="return toggle('CLI.default');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="TestON.bin.cli.CLI-class.html#default">default</a><tt class="py-op">(</tt> <tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">line</tt> <tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="CLI.default-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="CLI.default-expanded"><a name="L480"></a><tt class="py-lineno">480</tt>  <tt class="py-line">        <tt class="py-docstring">"""Called on an input line when the command prefix is not recognized."""</tt> </tt>
+<a name="L481"></a><tt class="py-lineno">481</tt>  <tt class="py-line">        <tt class="py-name">first</tt><tt class="py-op">,</tt> <tt class="py-name">args</tt><tt class="py-op">,</tt> <tt class="py-name">line</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">parseline</tt><tt class="py-op">(</tt> <tt class="py-name">line</tt> <tt class="py-op">)</tt> </tt>
+<a name="L482"></a><tt class="py-lineno">482</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-keyword">not</tt> <tt class="py-name">args</tt><tt class="py-op">:</tt> </tt>
+<a name="L483"></a><tt class="py-lineno">483</tt>  <tt class="py-line">            <tt class="py-keyword">return</tt> </tt>
+<a name="L484"></a><tt class="py-lineno">484</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-name">args</tt> <tt class="py-keyword">and</tt> <tt class="py-name">len</tt><tt class="py-op">(</tt><tt class="py-name">args</tt><tt class="py-op">)</tt> <tt class="py-op">&gt;</tt> <tt class="py-number">0</tt> <tt class="py-keyword">and</tt> <tt class="py-name">args</tt><tt class="py-op">[</tt> <tt class="py-op">-</tt><tt class="py-number">1</tt> <tt class="py-op">]</tt> <tt class="py-op">==</tt> <tt class="py-string">'\n'</tt><tt class="py-op">:</tt> </tt>
+<a name="L485"></a><tt class="py-lineno">485</tt>  <tt class="py-line">            <tt class="py-name">args</tt> <tt class="py-op">=</tt> <tt class="py-name">args</tt><tt class="py-op">[</tt> <tt class="py-op">:</tt><tt class="py-op">-</tt><tt class="py-number">1</tt> <tt class="py-op">]</tt> </tt>
+<a name="L486"></a><tt class="py-lineno">486</tt>  <tt class="py-line">        <tt class="py-name">rest</tt> <tt class="py-op">=</tt> <tt class="py-name">args</tt><tt class="py-op">.</tt><tt class="py-name">split</tt><tt class="py-op">(</tt> <tt class="py-string">' '</tt> <tt class="py-op">)</tt> </tt>
+<a name="L487"></a><tt class="py-lineno">487</tt>  <tt class="py-line"> </tt>
+<a name="L488"></a><tt class="py-lineno">488</tt>  <tt class="py-line">        <tt id="link-86" class="py-name"><a title="TestON.bin.cli.error" class="py-name" href="#" onclick="return doclink('link-86', 'error', 'link-65');">error</a></tt><tt class="py-op">(</tt> <tt class="py-string">'*** Unknown command: %s\n'</tt> <tt class="py-op">%</tt> <tt class="py-name">first</tt> <tt class="py-op">)</tt> </tt>
+</div></div><a name="L489"></a><tt class="py-lineno">489</tt>  <tt class="py-line"> </tt>
+<a name="L490"></a><tt class="py-lineno">490</tt>  <tt class="py-line"> </tt>
+<a name="L491"></a><tt class="py-lineno">491</tt>  <tt class="py-line"> </tt>
+<a name="TestThread"></a><div id="TestThread-def"><a name="L492"></a><tt class="py-lineno">492</tt> <a class="py-toggle" href="#" id="TestThread-toggle" onclick="return toggle('TestThread');">-</a><tt class="py-line"><tt class="py-keyword">class</tt> <a class="py-def-name" href="TestON.bin.cli.TestThread-class.html">TestThread</a><tt class="py-op">(</tt><tt class="py-base-class">threading</tt><tt class="py-op">.</tt><tt class="py-base-class">Thread</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="TestThread-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="TestThread-expanded"><a name="L493"></a><tt class="py-lineno">493</tt>  <tt class="py-line">    <tt class="py-docstring">'''</tt> </tt>
+<a name="L494"></a><tt class="py-lineno">494</tt>  <tt class="py-line"><tt class="py-docstring">    TestThread class will handle the test execution and will communicate with the thread in the do_run.</tt> </tt>
+<a name="L495"></a><tt class="py-lineno">495</tt>  <tt class="py-line"><tt class="py-docstring">    '''</tt> </tt>
+<a name="TestThread.__init__"></a><div id="TestThread.__init__-def"><a name="L496"></a><tt class="py-lineno">496</tt> <a class="py-toggle" href="#" id="TestThread.__init__-toggle" onclick="return toggle('TestThread.__init__');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="TestON.bin.cli.TestThread-class.html#__init__">__init__</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt><tt class="py-param">options</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="TestThread.__init__-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="TestThread.__init__-expanded"><a name="L497"></a><tt class="py-lineno">497</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">_stopevent</tt> <tt class="py-op">=</tt> <tt class="py-name">threading</tt><tt class="py-op">.</tt><tt class="py-name">Event</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L498"></a><tt class="py-lineno">498</tt>  <tt class="py-line">        <tt class="py-name">threading</tt><tt class="py-op">.</tt><tt class="py-name">Thread</tt><tt class="py-op">.</tt><tt id="link-87" class="py-name"><a title="TestON.bin.cli.CLI.__init__
+TestON.bin.cli.TestThread.__init__
+TestON.bin.generatedriver.GenerateDriver.__init__
+TestON.bin.updatedriver.UpdateDriver.__init__
+TestON.bin.vyatta.Vyatta.__init__
+TestON.core.iniparser.iniparser.__init__
+TestON.core.openspeak.OpenSpeak.__init__
+TestON.core.teston.TestON.__init__
+TestON.core.testparser.TestParser.__init__
+TestON.core.xmlparser.xmlparser.__init__
+TestON.drivers.common.api.controllerdriver.Controller.__init__
+TestON.drivers.common.api.fvtapidriver.FvtApiDriver.__init__
+TestON.drivers.common.cli.emulator.mininetclidriver.MininetCliDriver.__init__
+TestON.drivers.common.cli.emulator.poxclidriver.PoxCliDriver.__init__
+TestON.drivers.common.cli.emulatordriver.Emulator.__init__
+TestON.drivers.common.cli.remotesys.hpswitchdriver.HPSwitchDriver.__init__
+TestON.drivers.common.cli.remotesysdriver.RemoteSysDriver.__init__
+TestON.drivers.common.cli.tool.dpctlclidriver.DpctlCliDriver.__init__
+TestON.drivers.common.cli.toolsdriver.Tools.__init__
+TestON.drivers.common.clidriver.CLI.__init__
+TestON.drivers.common.webdriver.WebDriver.__init__
+TestON.drivers.component.Component.__init__
+TestON.examples.Assert.Assert.Assert.__init__
+TestON.examples.CaseParams.CaseParams.CaseParams.__init__
+TestON.examples.ExperimentTest.ExperimentTest.ExperimentTest.__init__
+TestON.examples.StepParams.StepParams.StepParams.__init__
+TestON.examples.Topology.Topology.Topology.__init__
+TestON.tests.DpctlTest.DpctlTest.DpctlTest.__init__
+TestON.tests.FvtTest.FvtTest.FvtTest.__init__
+TestON.tests.HPSwitchTest.HPSwitchTest.HPSwitchTest.__init__
+TestON.tests.MininetTest.MininetTest.MininetTest.__init__
+TestON.tests.PoxTest.PoxTest.PoxTest.__init__
+TestON.tests.TicketBooking.TicketBooking.TicketBooking.__init__
+TestON.tests.VyattaTest.VyattaTest.VyattaTest.__init__" class="py-name" href="#" onclick="return doclink('link-87', '__init__', 'link-12');">__init__</a></tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">)</tt> </tt>
+<a name="L499"></a><tt class="py-lineno">499</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">is_stop</tt> <tt class="py-op">=</tt> <tt class="py-name">False</tt> </tt>
+<a name="L500"></a><tt class="py-lineno">500</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">options</tt> <tt class="py-op">=</tt> <tt class="py-name">options</tt> </tt>
+<a name="L501"></a><tt class="py-lineno">501</tt>  <tt class="py-line">        <tt class="py-name">__builtin__</tt><tt class="py-op">.</tt><tt class="py-name">testthread</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt> </tt>
+</div><a name="L502"></a><tt class="py-lineno">502</tt>  <tt class="py-line"> </tt>
+<a name="TestThread.run"></a><div id="TestThread.run-def"><a name="L503"></a><tt class="py-lineno">503</tt> <a class="py-toggle" href="#" id="TestThread.run-toggle" onclick="return toggle('TestThread.run');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="TestON.bin.cli.TestThread-class.html#run">run</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="TestThread.run-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="TestThread.run-expanded"><a name="L504"></a><tt class="py-lineno">504</tt>  <tt class="py-line">        <tt class="py-docstring">'''</tt> </tt>
+<a name="L505"></a><tt class="py-lineno">505</tt>  <tt class="py-line"><tt class="py-docstring">        Will execute the test.</tt> </tt>
+<a name="L506"></a><tt class="py-lineno">506</tt>  <tt class="py-line"><tt class="py-docstring">        '''</tt> </tt>
+<a name="L507"></a><tt class="py-lineno">507</tt>  <tt class="py-line">        <tt class="py-keyword">while</tt> <tt class="py-keyword">not</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">is_stop</tt> <tt class="py-op">:</tt> </tt>
+<a name="L508"></a><tt class="py-lineno">508</tt>  <tt class="py-line">            <tt class="py-keyword">if</tt> <tt class="py-keyword">not</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">_stopevent</tt><tt class="py-op">.</tt><tt class="py-name">isSet</tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L509"></a><tt class="py-lineno">509</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">test_on</tt> <tt class="py-op">=</tt> <tt id="link-88" class="py-name" targets="Package TestON=TestON-module.html,Class TestON.core.teston.TestON=TestON.core.teston.TestON-class.html"><a title="TestON
+TestON.core.teston.TestON" class="py-name" href="#" onclick="return doclink('link-88', 'TestON', 'link-88');">TestON</a></tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">options</tt><tt class="py-op">)</tt> </tt>
+<a name="L510"></a><tt class="py-lineno">510</tt>  <tt class="py-line">                <tt class="py-keyword">try</tt> <tt class="py-op">:</tt> </tt>
+<a name="L511"></a><tt class="py-lineno">511</tt>  <tt class="py-line">                    <tt class="py-keyword">if</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">test_on</tt><tt class="py-op">.</tt><tt class="py-name">init_result</tt><tt class="py-op">:</tt> </tt>
+<a name="L512"></a><tt class="py-lineno">512</tt>  <tt class="py-line">                        <tt class="py-name">result</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">test_on</tt><tt class="py-op">.</tt><tt id="link-89" class="py-name" targets="Method TestON.bin.cli.TestThread.run()=TestON.bin.cli.TestThread-class.html#run,Method TestON.core.teston.TestON.run()=TestON.core.teston.TestON-class.html#run"><a title="TestON.bin.cli.TestThread.run
+TestON.core.teston.TestON.run" class="py-name" href="#" onclick="return doclink('link-89', 'run', 'link-89');">run</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L513"></a><tt class="py-lineno">513</tt>  <tt class="py-line">                        <tt class="py-keyword">if</tt> <tt class="py-keyword">not</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">is_stop</tt> <tt class="py-op">:</tt> </tt>
+<a name="L514"></a><tt class="py-lineno">514</tt>  <tt class="py-line">                            <tt class="py-name">result</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">test_on</tt><tt class="py-op">.</tt><tt id="link-90" class="py-name" targets="Method TestON.core.teston.TestON.cleanup()=TestON.core.teston.TestON-class.html#cleanup,Method TestON.drivers.component.Component.cleanup()=TestON.drivers.component.Component-class.html#cleanup"><a title="TestON.core.teston.TestON.cleanup
+TestON.drivers.component.Component.cleanup" class="py-name" href="#" onclick="return doclink('link-90', 'cleanup', 'link-90');">cleanup</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L515"></a><tt class="py-lineno">515</tt>  <tt class="py-line">                        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">is_stop</tt> <tt class="py-op">=</tt> <tt class="py-name">True</tt> </tt>
+<a name="L516"></a><tt class="py-lineno">516</tt>  <tt class="py-line">                <tt class="py-keyword">except</tt><tt class="py-op">(</tt><tt class="py-name">KeyboardInterrupt</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L517"></a><tt class="py-lineno">517</tt>  <tt class="py-line">                    <tt class="py-keyword">print</tt> <tt class="py-string">"Recevied Interrupt,cleaning-up the logs and drivers before exiting"</tt> </tt>
+<a name="L518"></a><tt class="py-lineno">518</tt>  <tt class="py-line">                    <tt class="py-name">result</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">test_on</tt><tt class="py-op">.</tt><tt id="link-91" class="py-name"><a title="TestON.core.teston.TestON.cleanup
+TestON.drivers.component.Component.cleanup" class="py-name" href="#" onclick="return doclink('link-91', 'cleanup', 'link-90');">cleanup</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L519"></a><tt class="py-lineno">519</tt>  <tt class="py-line">                    <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">is_stop</tt> <tt class="py-op">=</tt> <tt class="py-name">True</tt> </tt>
+<a name="L520"></a><tt class="py-lineno">520</tt>  <tt class="py-line"> </tt>
+<a name="L521"></a><tt class="py-lineno">521</tt>  <tt class="py-line">        <tt class="py-name">__builtin__</tt><tt class="py-op">.</tt><tt class="py-name">testthread</tt> <tt class="py-op">=</tt> <tt class="py-name">False</tt>        </tt>
+</div><a name="L522"></a><tt class="py-lineno">522</tt>  <tt class="py-line"> </tt>
+<a name="TestThread.pause"></a><div id="TestThread.pause-def"><a name="L523"></a><tt class="py-lineno">523</tt> <a class="py-toggle" href="#" id="TestThread.pause-toggle" onclick="return toggle('TestThread.pause');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="TestON.bin.cli.TestThread-class.html#pause">pause</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="TestThread.pause-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="TestThread.pause-expanded"><a name="L524"></a><tt class="py-lineno">524</tt>  <tt class="py-line">        <tt class="py-docstring">'''</tt> </tt>
+<a name="L525"></a><tt class="py-lineno">525</tt>  <tt class="py-line"><tt class="py-docstring">        Will pause the test.</tt> </tt>
+<a name="L526"></a><tt class="py-lineno">526</tt>  <tt class="py-line"><tt class="py-docstring">        '''</tt> </tt>
+<a name="L527"></a><tt class="py-lineno">527</tt>  <tt class="py-line">        <tt class="py-keyword">print</tt> <tt class="py-string">"Will pause the test's execution, after completion of this step.....\n\n\n\n"</tt> </tt>
+<a name="L528"></a><tt class="py-lineno">528</tt>  <tt class="py-line">        <tt id="link-92" class="py-name"><a title="TestON.bin.cli
+TestON.drivers.common.cli" class="py-name" href="#" onclick="return doclink('link-92', 'cli', 'link-17');">cli</a></tt><tt class="py-op">.</tt><tt id="link-93" class="py-name"><a title="TestON.bin.cli.TestThread.pause
+TestON.core.teston.TestON.pause" class="py-name" href="#" onclick="return doclink('link-93', 'pause', 'link-15');">pause</a></tt> <tt class="py-op">=</tt> <tt class="py-name">True</tt> </tt>
+<a name="L529"></a><tt class="py-lineno">529</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">_stopevent</tt><tt class="py-op">.</tt><tt class="py-name">set</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L530"></a><tt class="py-lineno">530</tt>  <tt class="py-line"> </tt>
+<a name="TestThread.play"></a><div id="TestThread.play-def"><a name="L531"></a><tt class="py-lineno">531</tt> <a class="py-toggle" href="#" id="TestThread.play-toggle" onclick="return toggle('TestThread.play');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="TestON.bin.cli.TestThread-class.html#play">play</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="TestThread.play-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="TestThread.play-expanded"><a name="L532"></a><tt class="py-lineno">532</tt>  <tt class="py-line">        <tt class="py-docstring">'''</tt> </tt>
+<a name="L533"></a><tt class="py-lineno">533</tt>  <tt class="py-line"><tt class="py-docstring">        Will resume the paused test.</tt> </tt>
+<a name="L534"></a><tt class="py-lineno">534</tt>  <tt class="py-line"><tt class="py-docstring">        '''</tt> </tt>
+<a name="L535"></a><tt class="py-lineno">535</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">_stopevent</tt><tt class="py-op">.</tt><tt class="py-name">clear</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L536"></a><tt class="py-lineno">536</tt>  <tt class="py-line">        <tt id="link-94" class="py-name"><a title="TestON.bin.cli
+TestON.drivers.common.cli" class="py-name" href="#" onclick="return doclink('link-94', 'cli', 'link-17');">cli</a></tt><tt class="py-op">.</tt><tt id="link-95" class="py-name"><a title="TestON.bin.cli.TestThread.pause
+TestON.core.teston.TestON.pause" class="py-name" href="#" onclick="return doclink('link-95', 'pause', 'link-15');">pause</a></tt> <tt class="py-op">=</tt> <tt class="py-name">False</tt> </tt>
+</div><a name="L537"></a><tt class="py-lineno">537</tt>  <tt class="py-line">         </tt>
+<a name="TestThread.stop"></a><div id="TestThread.stop-def"><a name="L538"></a><tt class="py-lineno">538</tt> <a class="py-toggle" href="#" id="TestThread.stop-toggle" onclick="return toggle('TestThread.stop');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="TestON.bin.cli.TestThread-class.html#stop">stop</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="TestThread.stop-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="TestThread.stop-expanded"><a name="L539"></a><tt class="py-lineno">539</tt>  <tt class="py-line">        <tt class="py-docstring">'''</tt> </tt>
+<a name="L540"></a><tt class="py-lineno">540</tt>  <tt class="py-line"><tt class="py-docstring">        Will stop the test execution.</tt> </tt>
+<a name="L541"></a><tt class="py-lineno">541</tt>  <tt class="py-line"><tt class="py-docstring">        '''</tt> </tt>
+<a name="L542"></a><tt class="py-lineno">542</tt>  <tt class="py-line">         </tt>
+<a name="L543"></a><tt class="py-lineno">543</tt>  <tt class="py-line">        <tt class="py-keyword">print</tt> <tt class="py-string">"Stopping the test"</tt> </tt>
+<a name="L544"></a><tt class="py-lineno">544</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">is_stop</tt> <tt class="py-op">=</tt> <tt class="py-name">True</tt> </tt>
+<a name="L545"></a><tt class="py-lineno">545</tt>  <tt class="py-line">        <tt id="link-96" class="py-name"><a title="TestON.bin.cli
+TestON.drivers.common.cli" class="py-name" href="#" onclick="return doclink('link-96', 'cli', 'link-17');">cli</a></tt><tt class="py-op">.</tt><tt id="link-97" class="py-name"><a title="TestON.bin.cli.TestThread.stop" class="py-name" href="#" onclick="return doclink('link-97', 'stop', 'link-16');">stop</a></tt> <tt class="py-op">=</tt> <tt class="py-name">True</tt> </tt>
+<a name="L546"></a><tt class="py-lineno">546</tt>  <tt class="py-line">        <tt class="py-name">__builtin__</tt><tt class="py-op">.</tt><tt class="py-name">testthread</tt> <tt class="py-op">=</tt> <tt class="py-name">False</tt> </tt>
+</div></div><a name="L547"></a><tt class="py-lineno">547</tt>  <tt class="py-line">         </tt>
+<a name="output"></a><div id="output-def"><a name="L548"></a><tt class="py-lineno">548</tt> <a class="py-toggle" href="#" id="output-toggle" onclick="return toggle('output');">-</a><tt class="py-line"><tt class="py-keyword">def</tt> <a class="py-def-name" href="TestON.bin.cli-module.html#output">output</a><tt class="py-op">(</tt><tt class="py-param">msg</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="output-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="output-expanded"><a name="L549"></a><tt class="py-lineno">549</tt>  <tt class="py-line">    <tt class="py-docstring">'''</tt> </tt>
+<a name="L550"></a><tt class="py-lineno">550</tt>  <tt class="py-line"><tt class="py-docstring">    Simply, print the message in console</tt> </tt>
+<a name="L551"></a><tt class="py-lineno">551</tt>  <tt class="py-line"><tt class="py-docstring">    '''</tt> </tt>
+<a name="L552"></a><tt class="py-lineno">552</tt>  <tt class="py-line">    <tt class="py-keyword">print</tt> <tt class="py-name">msg</tt> </tt>
+</div><a name="L553"></a><tt class="py-lineno">553</tt>  <tt class="py-line"> </tt>
+<a name="error"></a><div id="error-def"><a name="L554"></a><tt class="py-lineno">554</tt> <a class="py-toggle" href="#" id="error-toggle" onclick="return toggle('error');">-</a><tt class="py-line"><tt class="py-keyword">def</tt> <a class="py-def-name" href="TestON.bin.cli-module.html#error">error</a><tt class="py-op">(</tt><tt class="py-param">msg</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="error-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="error-expanded"><a name="L555"></a><tt class="py-lineno">555</tt>  <tt class="py-line">    <tt class="py-docstring">'''</tt> </tt>
+<a name="L556"></a><tt class="py-lineno">556</tt>  <tt class="py-line"><tt class="py-docstring">    print the error message.</tt> </tt>
+<a name="L557"></a><tt class="py-lineno">557</tt>  <tt class="py-line"><tt class="py-docstring">    '''</tt> </tt>
+<a name="L558"></a><tt class="py-lineno">558</tt>  <tt class="py-line">    <tt class="py-keyword">print</tt> <tt class="py-name">msg</tt> </tt>
+</div><a name="L559"></a><tt class="py-lineno">559</tt>  <tt class="py-line"> </tt>
+<a name="dictToObj"></a><div id="dictToObj-def"><a name="L560"></a><tt class="py-lineno">560</tt> <a class="py-toggle" href="#" id="dictToObj-toggle" onclick="return toggle('dictToObj');">-</a><tt class="py-line"><tt class="py-keyword">def</tt> <a class="py-def-name" href="TestON.bin.cli-module.html#dictToObj">dictToObj</a><tt class="py-op">(</tt><tt class="py-param">dictionary</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="dictToObj-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="dictToObj-expanded"><a name="L561"></a><tt class="py-lineno">561</tt>  <tt class="py-line">    <tt class="py-docstring">'''</tt> </tt>
+<a name="L562"></a><tt class="py-lineno">562</tt>  <tt class="py-line"><tt class="py-docstring">    This will facilitates the converting of the dictionary to the object.</tt> </tt>
+<a name="L563"></a><tt class="py-lineno">563</tt>  <tt class="py-line"><tt class="py-docstring">    This method will help to send options as object format to the test.</tt> </tt>
+<a name="L564"></a><tt class="py-lineno">564</tt>  <tt class="py-line"><tt class="py-docstring">    '''</tt> </tt>
+<a name="L565"></a><tt class="py-lineno">565</tt>  <tt class="py-line">    <tt class="py-keyword">if</tt> <tt class="py-name">isinstance</tt><tt class="py-op">(</tt><tt class="py-name">dictionary</tt><tt class="py-op">,</tt> <tt class="py-name">list</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L566"></a><tt class="py-lineno">566</tt>  <tt class="py-line">        <tt class="py-name">dictionary</tt> <tt class="py-op">=</tt> <tt class="py-op">[</tt><tt id="link-98" class="py-name"><a title="TestON.bin.cli.dictToObj" class="py-name" href="#" onclick="return doclink('link-98', 'dictToObj', 'link-23');">dictToObj</a></tt><tt class="py-op">(</tt><tt class="py-name">x</tt><tt class="py-op">)</tt> <tt class="py-keyword">for</tt> <tt class="py-name">x</tt> <tt class="py-keyword">in</tt> <tt class="py-name">dictionary</tt><tt class="py-op">]</tt> </tt>
+<a name="L567"></a><tt class="py-lineno">567</tt>  <tt class="py-line">    <tt class="py-keyword">if</tt> <tt class="py-keyword">not</tt> <tt class="py-name">isinstance</tt><tt class="py-op">(</tt><tt class="py-name">dictionary</tt><tt class="py-op">,</tt> <tt class="py-name">dict</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L568"></a><tt class="py-lineno">568</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">dictionary</tt> </tt>
+<a name="L569"></a><tt class="py-lineno">569</tt>  <tt class="py-line">    <tt class="py-keyword">class</tt> <tt class="py-def-name">Convert</tt><tt class="py-op">(</tt><tt class="py-base-class">object</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L570"></a><tt class="py-lineno">570</tt>  <tt class="py-line">        <tt class="py-keyword">pass</tt> </tt>
+</div><a name="L571"></a><tt class="py-lineno">571</tt>  <tt class="py-line">    <tt class="py-name">obj</tt> <tt class="py-op">=</tt> <tt class="py-name">Convert</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L572"></a><tt class="py-lineno">572</tt>  <tt class="py-line">    <tt class="py-keyword">for</tt> <tt class="py-name">k</tt> <tt class="py-keyword">in</tt> <tt class="py-name">dictionary</tt><tt class="py-op">:</tt> </tt>
+<a name="L573"></a><tt class="py-lineno">573</tt>  <tt class="py-line">        <tt class="py-name">obj</tt><tt class="py-op">.</tt><tt class="py-name">__dict__</tt><tt class="py-op">[</tt><tt class="py-name">k</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt id="link-99" class="py-name"><a title="TestON.bin.cli.dictToObj" class="py-name" href="#" onclick="return doclink('link-99', 'dictToObj', 'link-23');">dictToObj</a></tt><tt class="py-op">(</tt><tt class="py-name">dictionary</tt><tt class="py-op">[</tt><tt class="py-name">k</tt><tt class="py-op">]</tt><tt class="py-op">)</tt> </tt>
+<a name="L574"></a><tt class="py-lineno">574</tt>  <tt class="py-line">    <tt class="py-keyword">return</tt> <tt class="py-name">obj</tt> </tt>
+</div><a name="L575"></a><tt class="py-lineno">575</tt>  <tt class="py-line"> </tt>
+<a name="L576"></a><tt class="py-lineno">576</tt>  <tt class="py-line"> </tt>
+<a name="L577"></a><tt class="py-lineno">577</tt>  <tt class="py-line"><tt class="py-keyword">if</tt> <tt class="py-name">__name__</tt> <tt class="py-op">==</tt> <tt class="py-string">'__main__'</tt><tt class="py-op">:</tt> </tt>
+<a name="L578"></a><tt class="py-lineno">578</tt>  <tt class="py-line">    <tt class="py-keyword">if</tt> <tt class="py-name">len</tt><tt class="py-op">(</tt><tt class="py-name">sys</tt><tt class="py-op">.</tt><tt class="py-name">argv</tt><tt class="py-op">)</tt> <tt class="py-op">&gt;</tt> <tt class="py-number">1</tt><tt class="py-op">:</tt> </tt>
+<a name="L579"></a><tt class="py-lineno">579</tt>  <tt class="py-line">        <tt id="link-100" class="py-name"><a title="TestON.bin.cli.CLI
+TestON.drivers.common.clidriver.CLI" class="py-name" href="#" onclick="return doclink('link-100', 'CLI', 'link-36');">CLI</a></tt><tt class="py-op">(</tt><tt class="py-string">"test"</tt><tt class="py-op">)</tt><tt class="py-op">.</tt><tt class="py-name">onecmd</tt><tt class="py-op">(</tt><tt class="py-string">' '</tt><tt class="py-op">.</tt><tt class="py-name">join</tt><tt class="py-op">(</tt><tt class="py-name">sys</tt><tt class="py-op">.</tt><tt class="py-name">argv</tt><tt class="py-op">[</tt><tt class="py-number">1</tt><tt class="py-op">:</tt><tt class="py-op">]</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L580"></a><tt class="py-lineno">580</tt>  <tt class="py-line">    <tt class="py-keyword">else</tt><tt class="py-op">:</tt> </tt>
+<a name="L581"></a><tt class="py-lineno">581</tt>  <tt class="py-line">        <tt id="link-101" class="py-name"><a title="TestON.bin.cli.CLI
+TestON.drivers.common.clidriver.CLI" class="py-name" href="#" onclick="return doclink('link-101', 'CLI', 'link-36');">CLI</a></tt><tt class="py-op">(</tt><tt class="py-string">"test"</tt><tt class="py-op">)</tt><tt class="py-op">.</tt><tt id="link-102" class="py-name"><a title="TestON.bin.cli.CLI.cmdloop" class="py-name" href="#" onclick="return doclink('link-102', 'cmdloop', 'link-37');">cmdloop</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L582"></a><tt class="py-lineno">582</tt>  <tt class="py-line"> </tt><script type="text/javascript">
+<!--
+expandto(location.href);
+// -->
+</script>
+</pre>
+<br />
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="TestON-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+      <th class="navbar" width="100%"></th>
+  </tr>
+</table>
+<table border="0" cellpadding="0" cellspacing="0" width="100%%">
+  <tr>
+    <td align="left" class="footer">
+    Generated by Epydoc 3.0.1 on Mon Mar 11 12:56:27 2013
+    </td>
+    <td align="right" class="footer">
+      <a target="mainFrame" href="http://epydoc.sourceforge.net"
+        >http://epydoc.sourceforge.net</a>
+    </td>
+  </tr>
+</table>
+
+<script type="text/javascript">
+  <!--
+  // Private objects are initially displayed (because if
+  // javascript is turned off then we want them to be
+  // visible); but by default, we want to hide them.  So hide
+  // them unless we have a cookie that says to show them.
+  checkCookie();
+  // -->
+</script>
+</body>
+</html>

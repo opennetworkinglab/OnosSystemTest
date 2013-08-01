@@ -1,0 +1,30 @@
+<TOPOLOGY>    
+
+    <COMPONENT>
+        <Mininet1>
+            <host> 192.168.56.101 </host>
+            <user> openflow </user>
+            <password> openflow </password>
+            <type> MininetCliDriver </type>
+            <COMPONENTS>
+                # Specify the Option for mininet
+                <topo> single </topo>
+                <topocount> 3 </topocount>
+                <switch> ovsk </switch>
+                <controller> remote </controller>
+            </COMPONENTS>
+        </Mininet1>
+        <DPCTL1>
+            <host> 192.168.56.101 </host>
+            <user> openflow </user>
+            <password> openflow </password>
+            <test_target> 1</test_target>
+            <type> DpctlCliDriver </type>
+            <src> h2 </src>
+            <target> h3 </target>
+            <controller> c1 </controller>
+            <COMPONENTS>
+            </COMPONENTS>
+        </DPCTL1>
+    </COMPONENT>
+</TOPOLOGY>

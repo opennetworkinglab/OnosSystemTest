@@ -1,0 +1,7 @@
+[PARAMS]
+    'testcases' = '1'
+    'mail' = 'paxweb@paxterrasolutions.com'
+    #'log_dir' = '/home/user/Desktop/openflow_logs/'
+    [[CASE1]]
+        'destination' = 'h2'
+        

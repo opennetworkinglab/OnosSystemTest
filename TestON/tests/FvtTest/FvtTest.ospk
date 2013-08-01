@@ -1,0 +1,20 @@
+CASE 1
+
+    NAME "Checking FVT"
+    STEP "Checking the FVT"
+    STORE ON FVT DO simplePacket USING "SRC_MAC_FOR_CTL0_0" IN pkt
+    in_port = 3
+    STORE ON FVT DO genPacketIn USING in_port AS in_port, pkt AS pkt IN msg
+    snd_list = ["switch", 0, msg]
+    exp_list = [["controller", 0, msg]]
+    STORE ON FVT DO ofmsgSndCmp USING snd_list , exp_list , xid_ignore AS True, hdr_only AS True IN res
+    ASSERT res EQUALS True ONPASS "Received expected message" ONFAIL "Received unexpected message"
+
+    COMMENT "Packet_in for controller1"
+    STORE ON FVT DO simplePacket USING "SRC_MAC_FOR_CTL1_0" IN pkt
+    in_port = 3
+    STORE ON FVT DO genPacketIn USING in_port AS in_port, pkt AS pkt IN msg
+    snd_list = ["switch", 0, msg]
+    exp_list = [["controller", 1, msg]]
+    STORE ON FVT DO ofmsgSndCmp USING snd_list , exp_list , xid_ignore AS True IN res
+    ASSERT res EQUALS True ONPASS "Received expected message" ONFAIL "Received unexpected message"

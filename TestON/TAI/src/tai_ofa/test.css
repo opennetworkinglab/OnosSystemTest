@@ -1,0 +1,19 @@
+.default-color0.chart-pie { -fx-pie-color: blue;  }
+.default-color1.chart-pie { -fx-pie-color: yellow;  }
+.default-color2.chart-pie { -fx-pie-color: pink; }
+.default-color3.chart-pie { -fx-pie-color: blue; }
+.default-color4.chart-pie { -fx-pie-color: green; }
+.default-color5.chart-pie { -fx-pie-color: red; }
+.chart-pie-label-line {
+    -fx-stroke: #8b4513;
+    -fx-fill: #8b4513;
+}
+ 
+.chart-pie-label {
+    -fx-fill: #8b4513;
+    -fx-font-size: 1em;
+} 
+.chart-legend {
+   -fx-background-color:  sienna;
+   -fx-stroke: #daa520;
+}

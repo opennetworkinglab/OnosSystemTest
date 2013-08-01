@@ -1,0 +1,15 @@
+CASE 1
+
+     NAME "Using CASE level parameters to specify the host as h2"
+     STEP "Host IP Checking using checkIP"
+     ON Mininet1 DO checkIP USING CASE['destination'] AND STORE LAST_RESULT IN result
+     STEP "Verifying the result"
+     ASSERT result EQUALS main.TRUE ONPASS "Host h2 IP address configured" ONFAIL "Host h2 IP address didn't configured"
+
+CASE 2
+
+     NAME "Using CASE level parameters to specify the host as h3"
+     STEP "Host IP Checking using checkIP"
+     ON Mininet1 DO checkIP USING CASE['destination'] AND STORE LAST_RESULT IN result
+     STEP "Verifying the result"
+     ASSERT result EQUALS main.TRUE ONPASS "Host h2 IP address configured" ONFAIL "Host h2 IP address didn't configured"

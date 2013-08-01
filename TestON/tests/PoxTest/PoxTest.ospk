@@ -1,0 +1,7 @@
+CASE 1
+    NAME "Checking the control flow of POX"
+    STEP "Checking the host reachability using pingHost"
+    ON Mininet1 DO pingHost USING src AS CASE["src"], target AS CASE["target"], controller AS CASE["controller"] AND STORE LAST_RESULT IN result
+    ASSERT result EQUALS main.TRUE ONPASS "Ping executed successfully" ONFAIL "Ping failed"
+
+

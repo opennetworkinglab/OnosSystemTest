@@ -1,0 +1,43 @@
+CASE 1
+    NAME "Verifying SSH protocol based slicing" 
+    
+    STEP "Deleting the flowspace by using 'removeFlowSpace'"
+    STORE ON FlowVisor DO removeFlowSpace USING "all" IN removeflowspace_result
+    ASSERT removeflowspace_result EQUALS main.TRUE ONPASS "Removed FlowSpace Successfully" ONFAIL "Failed to remove FlowSpace" 
+    
+    STEP "Showing the connected devices by USING 'listDevices'"
+    STORE ON FlowVisor DO listDevices IN listdevices_result
+    ASSERT listdevices_result EQUALS main.TRUE ONPASS "Listed devices Successfully" ONFAIL "Failed to list the devices" 
+    
+    STEP "Adding FlowSpace"
+    STORE ON FlowVisor DO addFlowSpace USING "any 100 dl_type=0x806,dl_src=9e:f5:8b:78:c3:93,nw_dst=10.128.4.6 Slice:SSH=4" IN addflowspace_result_1
+    ASSERT addflowspace_result_1 EQUALS main.TRUE ONPASS "Added FlowSpace Successfully" ONFAIL "Failed to add FlowSpace" 
+    
+    STORE ON FlowVisor DO addFlowSpace USING "any 100 dl_type=0x806,dl_src=d2:df:f1:53:d4:49,nw_dst=10.128.4.5 Slice:SSH=4" IN addflowspace_result_2
+    ASSERT addflowspace_result_2 EQUALS main.TRUE ONPASS "Added FlowSpace Successfully" ONFAIL "Failed to add FlowSpace" 
+    
+    STORE ON FlowVisor DO addFlowSpace USING "any 100 dl_type=0x800,nw_proto=6,nw_src=10.128.4.6,tp_dst=22 Slice:SSH=4" IN addflowspace_result_3
+    ASSERT addflowspace_result_3 EQUALS main.TRUE ONPASS "Added FlowSpace Successfully" ONFAIL "Failed to add FlowSpace" 
+    
+    STORE ON FlowVisor DO addFlowSpace USING "any 100 dl_type=0x800,nw_proto=6,nw_src=10.128.4.5,tp_dst=22 Slice:SSH=4" IN addflowspace_result_4
+    ASSERT addflowspace_result_4 EQUALS main.TRUE ONPASS "Added FlowSpace Successfully" ONFAIL "Failed to add FlowSpace" 
+    
+    STORE ON FlowVisor DO addFlowSpace USING "any 100 dl_type=0x800,nw_proto=6,nw_src=10.128.4.6,tp_src=22 Slice:SSH=4" IN addflowspace_result_5
+    ASSERT addflowspace_result_5 EQUALS main.TRUE ONPASS "Added FlowSpace Successfully" ONFAIL "Failed to add FlowSpace" 
+    
+    STORE ON FlowVisor DO addFlowSpace USING "any 100 dl_type=0x800,nw_proto=6,nw_src=10.128.4.5,tp_src=22 Slice:SSH=4" IN addflowspace_result_6
+    ASSERT addflowspace_result_6 EQUALS main.TRUE ONPASS "Added FlowSpace Successfully" ONFAIL "Failed to add FlowSpace" 
+        
+    STEP "Showing the flowSpace USING 'listFlowSpace'"
+    STORE ON FlowVisor DO listFlowSpace IN listflowspace_result
+    ASSERT listflowspace_result EQUALS main.TRUE ONPASS "FlowSpace Listed successfully" ONFAIL "Failed to listthe FlowSpace"
+     
+    STEP "Verifying the Slice, by checking SSH is happening to the destination or not"
+    STORE ON Pax_DPVM1 DO SSH USING user_name AS CASE['destination_username'],ip_address AS CASE['destination_host'], pwd AS CASE['destination_password'], port AS CASE['destination_port'], options AS TOPO['Pax_DPVM1']['COMPONENTS'] IN ssh_result
+    ASSERT ssh_result EQUALS main.TRUE ONPASS "Remote host connected throgh SSH " ONFAIL "Failed to connect remote host throgh SSH" 
+    
+    STEP " Showcasing the Parsing the response in required format"
+    STORE "<ipaddress>10.128.4.2</ipaddress><username>paxterra</username><password>paxterra</password><port>22</port><location>Bangalore</location>" IN myOutput 
+    PARSE myOutput AS table INTO myVar
+    INFO <myVar>
+    

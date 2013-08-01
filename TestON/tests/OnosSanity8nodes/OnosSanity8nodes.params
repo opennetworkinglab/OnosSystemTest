@@ -1,0 +1,35 @@
+<PARAMS>
+    <testcases>1,2,3,4,5,6,7</testcases>
+    <FLOWDEF>~/flowdef_files/Center_Triangle/flowdef_20.txt</FLOWDEF>
+    <CASE1>       
+        <destination>h6</destination>
+    </CASE1>       
+    <PING>
+        <source1>h6</source1>
+        <target1>h31</target1>
+        <source2>h8</source2>
+        <target2>h33</target2>
+    </PING>
+    <LINK>
+        <begin>s1</begin>
+        <end>s2</end>
+    </LINK>
+    <CTRL>
+        <ip1>10.128.4.11</ip1>
+        <port1>6633</port1>
+        <ip2>10.128.4.12</ip2>
+        <port2>6633</port2>
+        <ip3>10.128.4.13</ip3>
+        <port3>6633</port3>
+        <ip4>10.128.4.14</ip4>
+        <port4>6633</port4>
+        <ip5>10.128.4.15</ip5>
+        <port5>6633</port5>
+        <ip6>10.128.4.16</ip6>
+        <port6>6633</port6>
+        <ip7>10.128.4.17</ip7>
+        <port7>6633</port7>
+        <ip8>10.128.4.18</ip8>
+        <port8>6633</port8>
+    </CTRL>
+</PARAMS>      

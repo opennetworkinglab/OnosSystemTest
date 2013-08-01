@@ -1,0 +1,10 @@
+<PARAMS>
+    <testcases> 1,2 </testcases>
+    <mail> paxweb@paxterrasolutions.com </mail>
+    <CASE1>
+        <destination> h2 </destination>
+    </CASE1>    
+    <CASE2>
+        <destination> h3 </destination>
+    </CASE2>
+</PARAMS>

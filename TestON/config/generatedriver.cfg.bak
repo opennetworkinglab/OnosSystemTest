@@ -1,0 +1,12 @@
+<device>
+    <Pronto> 
+        <user_name> root </user_name>
+        <ip_address>10.128.0.61</ip_address>
+        <password> OpenFlow </password>
+        <help_keyword>\t</help_keyword>
+        <interrupt_key> C </interrupt_key>
+        <command_search_regex> "" </command_search_regex>
+        <command> 'cli' </command>
+        <end_pattern> Enter </end_pattern>
+    </Pronto>
+</device>

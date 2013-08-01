@@ -1,0 +1,13 @@
+<TOPOLOGY>
+
+    <COMPONENT>
+        <FVT>
+            <host>192.168.56.101</host>
+            <user> openflow</user>
+            <password> openflow</password>
+            <type>FvtApiDriver</type>
+            <COMPONENTS>
+            </COMPONENTS>   
+        </FVT>        
+    </COMPONENT>
+</TOPOLOGY>

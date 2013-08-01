@@ -1,0 +1,14 @@
+<TOPOLOGY>
+
+    <COMPONENT>
+        <HPSwitch>
+            <host>24.6.49.222</host>
+            <user> Paxterra </user>
+            <port> 6500 </port>
+            <password>0nLab_gu3st</password>
+            <type>RemoteSysDriver</type>
+            <COMPONENTS>
+            </COMPONENTS>   
+        </HPSwitch>        
+    </COMPONENT>
+</TOPOLOGY>

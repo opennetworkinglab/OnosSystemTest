@@ -1,0 +1,12 @@
+This example shows the usage of the STEP level parameters, in params file the
+[[CASE1]]
+[[[STEP1]]]
+    'host'  = 'h2'
+
+We can get this CASE level parameter like :
+main.params['CASE1']['STEP1']['host']
+
+
+cd ~/bin/
+./launcher --example StepParams 
+   will execute this example.

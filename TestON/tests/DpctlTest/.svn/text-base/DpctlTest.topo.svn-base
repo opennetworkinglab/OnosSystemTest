@@ -1,0 +1,24 @@
+[TOPOLOGY]    
+
+    [[COMPONENT]]
+        [[["Mininet1"]]]
+            'host' = '192.168.56.101'
+            'user' = 'openflow'
+            'password' = 'openflow'
+            'type' = "Mininet"
+            [[[["COMPONENTS"]]]]
+                # Specify the Option for mininet
+                'topo' = 'single'
+                'topocount' = '3'
+                'switch' = 'ovsk'
+                'controller' = 'remote'
+        [[["DPCTL1"]]]
+            'host' = '192.168.56.101'
+            'user' = 'openflow'
+            'password' = 'openflow'
+            'test_target' = '1'
+            'type' = 'DPCTL'
+            'src' = 'h2'
+            'target' = 'h3'
+            'controller' = 'c1'
+            [[[["COMPONENTS"]]]]

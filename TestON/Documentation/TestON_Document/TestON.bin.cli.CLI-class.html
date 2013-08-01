@@ -1,0 +1,1292 @@
+<?xml version="1.0" encoding="ascii"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>TestON.bin.cli.CLI</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css" />
+  <script type="text/javascript" src="epydoc.js"></script>
+</head>
+
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="TestON-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+      <th class="navbar" width="100%"></th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">
+      <span class="breadcrumbs">
+        <a href="TestON-module.html">Package&nbsp;TestON</a> ::
+        <a href="TestON.bin-module.html">Package&nbsp;bin</a> ::
+        <a href="TestON.bin.cli-module.html">Module&nbsp;cli</a> ::
+        Class&nbsp;CLI
+      </span>
+    </td>
+    <td>
+      <table cellpadding="0" cellspacing="0">
+        <!-- hide/show private -->
+        <tr><td align="right"><span class="options">[<a href="javascript:void(0);" class="privatelink"
+    onclick="toggle_private();">hide&nbsp;private</a>]</span></td></tr>
+        <tr><td align="right"><span class="options"
+            >[<a href="frames.html" target="_top">frames</a
+            >]&nbsp;|&nbsp;<a href="TestON.bin.cli.CLI-class.html"
+            target="_top">no&nbsp;frames</a>]</span></td></tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<!-- ==================== CLASS DESCRIPTION ==================== -->
+<h1 class="epydoc">Class CLI</h1><p class="nomargin-top"><span class="codelink"><a href="TestON.bin.cli-pysrc.html#CLI">source&nbsp;code</a></span></p>
+<pre class="base-tree">
+        object --+        
+                 |        
+threading._Verbose --+    
+                     |    
+      threading.Thread --+
+                         |
+               cmd.Cmd --+
+                         |
+                object --+
+                         |
+                        <strong class="uidshort">CLI</strong>
+</pre>
+
+<hr />
+<p>command-line interface to execute the test.</p>
+
+<!-- ==================== INSTANCE METHODS ==================== -->
+<a name="section-InstanceMethods"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Instance Methods</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-InstanceMethods"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="TestON.bin.cli.CLI-class.html#__init__" class="summary-sig-name">__init__</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">teston</span>,
+        <span class="summary-sig-arg">stdin</span>=<span class="summary-sig-default">sys.stdin</span>)</span><br />
+      Instantiate a line-oriented interpreter framework.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.bin.cli-pysrc.html#CLI.__init__">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="TestON.bin.cli.CLI-class.html#emptyline" class="summary-sig-name">emptyline</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Don't repeat last command when you hit return.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.bin.cli-pysrc.html#CLI.emptyline">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="TestON.bin.cli.CLI-class.html#do_help" class="summary-sig-name">do_help</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">line</span>)</span><br />
+      Describe available CLI commands.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.bin.cli-pysrc.html#CLI.do_help">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="do_run"></a><span class="summary-sig-name">do_run</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">args</span>)</span><br />
+      run command will execute the test with following optional command 
+      line arguments logdir &lt;directory to store logs in&gt; testcases 
+      &lt;list of testcases separated by comma or range of testcases 
+      separated by hypen&gt; mail &lt;mail-id or list of mail-ids seperated
+      by comma&gt; example 1, to execute the examples specified in the 
+      ~/examples diretory.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.bin.cli-pysrc.html#CLI.do_run">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="TestON.bin.cli.CLI-class.html#do_resume" class="summary-sig-name">do_resume</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">line</span>)</span><br />
+      resume command will continue the execution of paused test.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.bin.cli-pysrc.html#CLI.do_resume">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="TestON.bin.cli.CLI-class.html#do_nextstep" class="summary-sig-name">do_nextstep</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">line</span>)</span><br />
+      nextstep will execute the next-step of the paused test and it will 
+      pause the test after finishing of step.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.bin.cli-pysrc.html#CLI.do_nextstep">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="TestON.bin.cli.CLI-class.html#do_dumpvar" class="summary-sig-name">do_dumpvar</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">line</span>)</span><br />
+      dumpvar will print all the test data in raw format.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.bin.cli-pysrc.html#CLI.do_dumpvar">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="TestON.bin.cli.CLI-class.html#do_currentcase" class="summary-sig-name">do_currentcase</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">line</span>)</span><br />
+      currentcase will return the current case in the test execution.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.bin.cli-pysrc.html#CLI.do_currentcase">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="TestON.bin.cli.CLI-class.html#do_currentstep" class="summary-sig-name">do_currentstep</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">line</span>)</span><br />
+      currentstep will return the current step in the test execution.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.bin.cli-pysrc.html#CLI.do_currentstep">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="do_stop"></a><span class="summary-sig-name">do_stop</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">line</span>)</span><br />
+      Will stop the paused test, if any !</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.bin.cli-pysrc.html#CLI.do_stop">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="TestON.bin.cli.CLI-class.html#do_gettest" class="summary-sig-name">do_gettest</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">line</span>)</span><br />
+      gettest will return the test name which is under execution or 
+      recently executed.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.bin.cli-pysrc.html#CLI.do_gettest">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="TestON.bin.cli.CLI-class.html#do_showlog" class="summary-sig-name">do_showlog</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">line</span>)</span><br />
+      showlog will show the test's Log teston&gt;showlog Last executed 
+      test's log is : 
+      //home/openflow/TestON/logs/PoxTest_07_Jan_2013_21_42_11/PoxTest_07_Jan_2013_21_42_11.log
+      .....</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.bin.cli-pysrc.html#CLI.do_showlog">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="parseArgs"></a><span class="summary-sig-name">parseArgs</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">args</span>,
+        <span class="summary-sig-arg">options</span>)</span><br />
+      This will parse the command line arguments.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.bin.cli-pysrc.html#CLI.parseArgs">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="initOptions"></a><span class="summary-sig-name">initOptions</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">options</span>)</span><br />
+      This will initialize the commandline options.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.bin.cli-pysrc.html#CLI.initOptions">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="testcasesInRange"></a><span class="summary-sig-name">testcasesInRange</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">index</span>,
+        <span class="summary-sig-arg">option</span>,
+        <span class="summary-sig-arg">args</span>,
+        <span class="summary-sig-arg">options</span>)</span><br />
+      This method will handle testcases list,specified in range [1-10].</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.bin.cli-pysrc.html#CLI.testcasesInRange">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="TestON.bin.cli.CLI-class.html#cmdloop" class="summary-sig-name">cmdloop</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">intro</span>=<span class="summary-sig-default">introduction</span>)</span><br />
+      Repeatedly issue a prompt, accept input, parse an initial prefix off 
+      the received input, and dispatch to action methods, passing them the 
+      remainder of the line as argument.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.bin.cli-pysrc.html#CLI.cmdloop">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="do_echo"></a><span class="summary-sig-name">do_echo</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">line</span>)</span><br />
+      Echoing of given input.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.bin.cli-pysrc.html#CLI.do_echo">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="do_sh"></a><span class="summary-sig-name">do_sh</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">line</span>)</span><br />
+      Run an external shell command sh pwd sh ifconfig etc.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.bin.cli-pysrc.html#CLI.do_sh">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="TestON.bin.cli.CLI-class.html#do_py" class="summary-sig-name">do_py</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">line</span>)</span><br />
+      Evaluate a Python expression.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.bin.cli-pysrc.html#CLI.do_py">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="TestON.bin.cli.CLI-class.html#do_interpret" class="summary-sig-name">do_interpret</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">line</span>)</span><br />
+      interpret will translate the single line openspeak statement to 
+      equivalent python script.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.bin.cli-pysrc.html#CLI.do_interpret">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="TestON.bin.cli.CLI-class.html#do_do" class="summary-sig-name">do_do</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">line</span>)</span><br />
+      Do will translate and execute the openspeak statement for the paused 
+      test.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.bin.cli-pysrc.html#CLI.do_do">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="TestON.bin.cli.CLI-class.html#do_compile" class="summary-sig-name">do_compile</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">line</span>)</span><br />
+      compile will translate the openspeak (.ospk) file into TestON test 
+      script (python).</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.bin.cli-pysrc.html#CLI.do_compile">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="do_exit"></a><span class="summary-sig-name">do_exit</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">_line</span>)</span><br />
+      Exit</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.bin.cli-pysrc.html#CLI.do_exit">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="do_quit"></a><span class="summary-sig-name">do_quit</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">line</span>)</span><br />
+      Exit</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.bin.cli-pysrc.html#CLI.do_quit">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="do_EOF"></a><span class="summary-sig-name">do_EOF</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">line</span>)</span><br />
+      Exit</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.bin.cli-pysrc.html#CLI.do_EOF">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="isatty"></a><span class="summary-sig-name">isatty</span>(<span class="summary-sig-arg">self</span>)</span><br />
+      Is our standard input a tty?</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.bin.cli-pysrc.html#CLI.isatty">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="TestON.bin.cli.CLI-class.html#do_source" class="summary-sig-name">do_source</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">line</span>)</span><br />
+      Read shell commands from an input file and execute them sequentially.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.bin.cli-pysrc.html#CLI.do_source">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="TestON.bin.cli.CLI-class.html#do_updatedriver" class="summary-sig-name">do_updatedriver</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">line</span>)</span><br />
+      updatedriver will update the given driver name which exists into mentioned config file.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.bin.cli-pysrc.html#CLI.do_updatedriver">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="do_time"></a><span class="summary-sig-name">do_time</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">line</span>)</span><br />
+      Measure time taken for any command in TestON.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.bin.cli-pysrc.html#CLI.do_time">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="TestON.bin.cli.CLI-class.html#default" class="summary-sig-name">default</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">line</span>)</span><br />
+      Called on an input line when the command prefix is not recognized.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.bin.cli-pysrc.html#CLI.default">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" class="summary">
+    <p class="indent-wrapped-lines"><b>Inherited from <code>threading.Thread</code></b>:
+      <code>__repr__</code>,
+      <code>daemon</code>,
+      <code>getName</code>,
+      <code>ident</code>,
+      <code>isAlive</code>,
+      <code>isDaemon</code>,
+      <code>is_alive</code>,
+      <code>join</code>,
+      <code>name</code>,
+      <code>run</code>,
+      <code>setDaemon</code>,
+      <code>setName</code>,
+      <code>start</code>
+      </p>
+    <div class="private">    <p class="indent-wrapped-lines"><b>Inherited from <code>threading.Thread</code></b> (private):
+      <code>_set_daemon</code>,
+      <code>_set_ident</code>
+      </p></div>
+    <div class="private">    <p class="indent-wrapped-lines"><b>Inherited from <code>threading._Verbose</code></b> (private):
+      <code>_note</code>
+      </p></div>
+    <p class="indent-wrapped-lines"><b>Inherited from <code>cmd.Cmd</code></b>:
+      <code>columnize</code>,
+      <code>complete</code>,
+      <code>complete_help</code>,
+      <code>completedefault</code>,
+      <code>completenames</code>,
+      <code>get_names</code>,
+      <code>onecmd</code>,
+      <code>parseline</code>,
+      <code>postcmd</code>,
+      <code>postloop</code>,
+      <code>precmd</code>,
+      <code>preloop</code>,
+      <code>print_topics</code>
+      </p>
+    <p class="indent-wrapped-lines"><b>Inherited from <code>object</code></b>:
+      <code>__delattr__</code>,
+      <code>__format__</code>,
+      <code>__getattribute__</code>,
+      <code>__hash__</code>,
+      <code>__new__</code>,
+      <code>__reduce__</code>,
+      <code>__reduce_ex__</code>,
+      <code>__setattr__</code>,
+      <code>__sizeof__</code>,
+      <code>__str__</code>,
+      <code>__subclasshook__</code>
+      </p>
+    </td>
+  </tr>
+</table>
+<!-- ==================== CLASS VARIABLES ==================== -->
+<a name="section-ClassVariables"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Class Variables</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-ClassVariables"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="prompt"></a><span class="summary-name">prompt</span> = <code title="'teston&gt; '">'teston&gt; '</code>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="helpStr"></a><span class="summary-name">helpStr</span> = <code title="&quot; teston help&quot;">&quot; teston help&quot;</code>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" class="summary">
+    <p class="indent-wrapped-lines"><b>Inherited from <code>cmd.Cmd</code></b>:
+      <code>doc_header</code>,
+      <code>doc_leader</code>,
+      <code>identchars</code>,
+      <code>intro</code>,
+      <code>lastcmd</code>,
+      <code>misc_header</code>,
+      <code>nohelp</code>,
+      <code>ruler</code>,
+      <code>undoc_header</code>,
+      <code>use_rawinput</code>
+      </p>
+    </td>
+  </tr>
+</table>
+<!-- ==================== PROPERTIES ==================== -->
+<a name="section-Properties"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Properties</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-Properties"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+  <tr>
+    <td colspan="2" class="summary">
+    <p class="indent-wrapped-lines"><b>Inherited from <code>object</code></b>:
+      <code>__class__</code>
+      </p>
+    </td>
+  </tr>
+</table>
+<!-- ==================== METHOD DETAILS ==================== -->
+<a name="section-MethodDetails"></a>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Method Details</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-MethodDetails"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+</table>
+<a name="__init__"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">__init__</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">teston</span>,
+        <span class="sig-arg">stdin</span>=<span class="sig-default">sys.stdin</span>)</span>
+    <br /><em class="fname">(Constructor)</em>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="TestON.bin.cli-pysrc.html#CLI.__init__">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Instantiate a line-oriented interpreter framework.</p>
+  <p>The optional argument 'completekey' is the readline name of a 
+  completion key; it defaults to the Tab key. If completekey is not None 
+  and the readline module is available, command completion is done 
+  automatically. The optional arguments stdin and stdout specify alternate 
+  input and output file objects; if not specified, sys.stdin and sys.stdout
+  are used.</p>
+  <dl class="fields">
+    <dt>Overrides:
+        object.__init__
+        <dd><em class="note">(inherited documentation)</em></dd>
+    </dt>
+  </dl>
+</td></tr></table>
+</div>
+<a name="emptyline"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">emptyline</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="TestON.bin.cli-pysrc.html#CLI.emptyline">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Don't repeat last command when you hit return.</p>
+  <dl class="fields">
+    <dt>Overrides:
+        cmd.Cmd.emptyline
+    </dt>
+  </dl>
+</td></tr></table>
+</div>
+<a name="do_help"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">do_help</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">line</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="TestON.bin.cli-pysrc.html#CLI.do_help">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Describe available CLI commands.</p>
+  <dl class="fields">
+    <dt>Overrides:
+        cmd.Cmd.do_help
+    </dt>
+  </dl>
+</td></tr></table>
+</div>
+<a name="do_resume"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">do_resume</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">line</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="TestON.bin.cli-pysrc.html#CLI.do_resume">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>resume command will continue the execution of paused test. 
+  teston&gt;resume [2013-01-07 23:03:44.640723] [PoxTest] [STEP]  1.1: 
+  Checking the host reachability using pingHost 2013-01-07 23:03:44,858 - 
+  PoxTest - INFO - Expected Prompt Found ....</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="do_nextstep"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">do_nextstep</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">line</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="TestON.bin.cli-pysrc.html#CLI.do_nextstep">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>nextstep will execute the next-step of the paused test and it will 
+  pause the test after finishing of step.</p>
+  <p>teston&gt; nextstep Will pause the test's execution, after completion 
+  of this step.....</p>
+  <p>teston&gt; [2013-01-07 21:24:26.286601] [PoxTest] [STEP]  1.8: 
+  Checking the host reachability using pingHost 2013-01-07 21:24:26,455 - 
+  PoxTest - INFO - Expected Prompt Found ..... teston&gt;</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="do_dumpvar"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">do_dumpvar</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">line</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="TestON.bin.cli-pysrc.html#CLI.do_dumpvar">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>dumpvar will print all the test data in raw format. usgae : 
+  teston&gt;dumpvar main Here 'main' will be the test object.</p>
+  <p>teston&gt;dumpvar params here 'params' will be the parameters 
+  specified in the params file.</p>
+  <p>teston&gt;dumpvar topology here 'topology' will be topology 
+  specification of the test specified in topo file.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="do_currentcase"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">do_currentcase</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">line</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="TestON.bin.cli-pysrc.html#CLI.do_currentcase">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>currentcase will return the current case in the test execution.</p>
+  <p>teston&gt;currentcase Currently executing test case is: 2</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="do_currentstep"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">do_currentstep</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">line</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="TestON.bin.cli-pysrc.html#CLI.do_currentstep">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>currentstep will return the current step in the test execution.</p>
+  <p>teston&gt;currentstep Currently executing test step is: 2.3</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="do_gettest"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">do_gettest</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">line</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="TestON.bin.cli-pysrc.html#CLI.do_gettest">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>gettest will return the test name which is under execution or recently
+  executed.</p>
+  <p>Test under execution: teston&gt;gettest Currently executing Test is: 
+  PoxTest</p>
+  <p>Test recently executed: Recently executed test is: MininetTest</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="do_showlog"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">do_showlog</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">line</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="TestON.bin.cli-pysrc.html#CLI.do_showlog">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>showlog will show the test's Log teston&gt;showlog Last executed 
+  test's log is : 
+  //home/openflow/TestON/logs/PoxTest_07_Jan_2013_21_42_11/PoxTest_07_Jan_2013_21_42_11.log
+  ..... teston&gt;showlog Currently executing Test's log is: 
+  /home/openflow/TestON/logs/PoxTest_07_Jan_2013_21_46_58/PoxTest_07_Jan_2013_21_46_58.log
+  .....</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="cmdloop"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">cmdloop</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">intro</span>=<span class="sig-default">introduction</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="TestON.bin.cli-pysrc.html#CLI.cmdloop">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Repeatedly issue a prompt, accept input, parse an initial prefix off 
+  the received input, and dispatch to action methods, passing them the 
+  remainder of the line as argument.</p>
+  <dl class="fields">
+    <dt>Overrides:
+        cmd.Cmd.cmdloop
+        <dd><em class="note">(inherited documentation)</em></dd>
+    </dt>
+  </dl>
+</td></tr></table>
+</div>
+<a name="do_py"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">do_py</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">line</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="TestON.bin.cli-pysrc.html#CLI.do_py">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Evaluate a Python expression.</p>
+  <p>py main.log.info(&quot;Sample Log Information&quot;) 2013-01-07 
+  12:07:26,804 - PoxTest - INFO - Sample Log Information</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="do_interpret"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">do_interpret</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">line</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="TestON.bin.cli-pysrc.html#CLI.do_interpret">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>interpret will translate the single line openspeak statement to 
+  equivalent python script.</p>
+  <p>teston&gt; interpret ASSERT result EQUALS main.TRUE ONPASS &quot;Ping 
+  executed successfully&quot; ONFAIL &quot;Ping failed&quot; 
+  utilities.assert_equals(expect=main.TRUE,actual=result,onpass=&quot;Ping 
+  executed successfully&quot;,onfail=&quot;Ping failed&quot;)</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="do_do"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">do_do</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">line</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="TestON.bin.cli-pysrc.html#CLI.do_do">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Do will translate and execute the openspeak statement for the paused 
+  test. do &lt;OpenSpeak statement&gt;</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="do_compile"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">do_compile</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">line</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="TestON.bin.cli-pysrc.html#CLI.do_compile">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>compile will translate the openspeak (.ospk) file into TestON test 
+  script (python). It will receive the openspeak file path as input and 
+  will generate equivalent test-script file in the same directory.</p>
+  <p>usage: ----- teston&gt;compile /home/openflow/TestON/PoxTest.ospk</p>
+  <p>Auto-generated test-script file is 
+  /home/openflow/TestON/PoxTest.py</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="do_source"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">do_source</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">line</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="TestON.bin.cli-pysrc.html#CLI.do_source">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <pre class="literalblock">
+
+Read shell commands from an input file and execute them sequentially.
+cmdsource.txt :
+
+&quot;pwd
+ ls &quot;
+ 
+teston&gt;source /home/openflow/cmdsource.txt
+/home/openflow/TestON/bin/
+cli.py  __init__.py
+
+</pre>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="do_updatedriver"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">do_updatedriver</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">line</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="TestON.bin.cli-pysrc.html#CLI.do_updatedriver">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <pre class="literalblock">
+
+updatedriver will update the given driver name which exists into mentioned config file.
+It will receive two optional arguments :
+
+1. Config File Path 
+2. Drivers List to be updated.
+
+Default : config file = &quot;~/TestON/config/updatedriver&quot; ,
+          Driver List = all drivers specified in config file .
+
+</pre>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="default"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">default</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">line</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="TestON.bin.cli-pysrc.html#CLI.default">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Called on an input line when the command prefix is not recognized.</p>
+  <dl class="fields">
+    <dt>Overrides:
+        cmd.Cmd.default
+    </dt>
+  </dl>
+</td></tr></table>
+</div>
+<br />
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="TestON-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+      <th class="navbar" width="100%"></th>
+  </tr>
+</table>
+<table border="0" cellpadding="0" cellspacing="0" width="100%%">
+  <tr>
+    <td align="left" class="footer">
+    Generated by Epydoc 3.0.1 on Mon Mar 11 12:56:26 2013
+    </td>
+    <td align="right" class="footer">
+      <a target="mainFrame" href="http://epydoc.sourceforge.net"
+        >http://epydoc.sourceforge.net</a>
+    </td>
+  </tr>
+</table>
+
+<script type="text/javascript">
+  <!--
+  // Private objects are initially displayed (because if
+  // javascript is turned off then we want them to be
+  // visible); but by default, we want to hide them.  So hide
+  // them unless we have a cookie that says to show them.
+  checkCookie();
+  // -->
+</script>
+</body>
+</html>

@@ -1,0 +1,18 @@
+<PARAMS>
+    <testcases> [1]</testcases>
+    <mail> anil4haart@gmail.com,paxweb@paxterrasolutions.com</mail>
+    <CASE1>
+    
+        <dl_type> 0x800 </dl_type> 
+        <nw_proto> 6 </nw_proto>
+        <nw_src> 10.0.0.2 </nw_src>
+        <tp_dst> 22 </tp_dst>
+        <slice> SSH </slice> 
+        <permissions> 4 </permissions>
+        
+        <destination_host> 10.128.4.6 </destination_host>
+        <destination_username> paxterra </destination_username>
+        <destination_password> 0nLab_gu3st </destination_password>
+        <destination_port> 22 </destination_port>
+    </CASE1>
+</PARAMS>

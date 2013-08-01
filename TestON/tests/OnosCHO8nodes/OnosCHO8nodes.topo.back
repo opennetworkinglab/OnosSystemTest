@@ -1,0 +1,42 @@
+<TOPOLOGY>
+
+    <COMPONENT>
+        <Zookeeper1>
+            <host>10.128.4.26</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>ZookeeperCliDriver</type>
+            <COMPONENTS>
+             </COMPONENTS>   
+        </Zookeeper1>     
+        <Cassandra1>
+            <host>10.128.4.26</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>CassandraCliDriver</type>
+            <COMPONENTS>
+             </COMPONENTS>   
+        </Cassandra1>   
+        <ONOS1>
+            <host>10.128.4.26</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>OnosCliDriver</type>
+            <COMPONENTS>
+            
+             </COMPONENTS>   
+        </ONOS1> 
+        
+        
+         <ONOSRESTAPI1>
+            <host>10.128.4.26</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>OnosRestApiDriver</type>
+            <COMPONENTS>
+            <topology_url>http://10.128.4.26:9000/topology</topology_url>
+             </COMPONENTS>   
+        </ONOSRESTAPI1> 
+        
+    </COMPONENT>
+</TOPOLOGY>

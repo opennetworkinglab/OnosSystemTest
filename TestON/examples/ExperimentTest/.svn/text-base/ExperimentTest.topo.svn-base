@@ -1,0 +1,23 @@
+[TOPOLOGY]    
+
+    [[COMPONENT]]
+        [[["Mininet1"]]]
+            'host' = '192.168.56.101'
+            'user' = 'openflow'
+            'password' = 'openflow'
+            'type' = "Mininet"
+            [[[["COMPONENTS"]]]]
+                # Specify the Option for mininet
+                'topo' = 'single'
+                'topocount' = '3'
+                'switch' = 'ovsk'
+                'controller' = 'remote'
+        [[["POX2"]]]
+            'host' = '192.168.56.101'
+            'user' = 'openflow'
+            'password' = 'openflow'
+            'type' = 'POX'
+            'no-cli' = '1' #or '0' if want to run in cli mode
+            [[[["COMPONENTS"]]]]
+                'pox_lib_location' = "/home/openflow/pox/"
+                [[[[["samples.of_tutorial"]]]]]

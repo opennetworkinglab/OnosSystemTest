@@ -1,0 +1,270 @@
+operator@10.128.0.11's password: operator
+
+show ?
+
+Copyright (c) 2011 NEC Corporation. All rights reserved.
+
+!NEC-PF5240> ?
+  access-filter       Display the statistics information of access-filter
+  accounting          Display the accounting information
+  acknowledgments     Display acknowledgments
+  auto-config         Display the information of auto-config
+  axrp                Display the Ring Protocol information
+  cfm                 Display the CFM information
+  channel-group       Display the information on a Link Aggregation Protocol
+  clock               Display clock of the system
+  config-lock-status  Display lock status of configurations
+  cpu                 Target is cpu utilization information
+  dhcp                Display the information of DHCP
+  dot1x               Display the status of 802.1X
+  dumpfile            Display the information of dumpfile
+  efmoam              Display the IEEE802.3ah/OAM information
+  environment         Display the information of system environment
+  file                Show contents of file
+  flash               Display the information of flash memory
+  gsrp                Display the GSRP information
+  history             Display the list of commands that was entered
+  igmp-snooping       Display the igmp-snooping information
+  interfaces          Display the information of interfaces
+  ip                  Display the information of IP routing program
+  ip-dual             Display the information of IP and IPv6 routing program
+byte 1378  ipv6                Display the information of IPv6 routing program
+byte 1448  ipv6-dhcp           Display the information of IPv6 DHCP program
+byte 1515  license             Display licenses
+byte 1554  lldp                Display the LLDP information
+byte 1605  logging             Display the log information of router
+byte 1665  loop-detection      Display the information on an L2 Loop Detection
+byte 1735  mac-address-table   Display the mac-address-table information
+byte 1799  mc                  Display the information of MC
+byte 1851  memory              Display the status of memory
+byte 1902  mld-snooping        Display the mld-snooping information
+byte 1961  netconf             Display the information of netconf
+byte 2018  netstat             Display the status of network
+byte 2070  ntp                 Display the information of NTP
+byte 2123  oadp                Display the OADP information
+byte 2174  openflow            Display the OpenFlow information
+byte 2229  port                Display the information list of ports
+byte 2289  power               Display the information of power consumption
+byte 2356  processes           Display the status of process
+byte 2408  qos                 Display the statistics information of QoS
+byte 2472  qos-flow            Display the statistics information of qos-flow
+byte 2541  sessions            Display the login user name
+byte 2591  sflow               Display the information of sFlow
+byte 2646  spanning-tree       Display the information on a spanning tree protocol
+byte 2720  ssh                 Display the information of SSH Server
+byte 2780  system              Display the information of a system
+byte 2838  tcpdump             Dump traffic to/from this system
+byte 2893  tech-support        Display the general information about the switch
+byte 2964  track               Display the information of track
+byte 3019  version             Display the version of a system
+byte 3073  vlan                Display the VLAN information
+byte 3124  vrrpstatus          Display the status of VRRP
+byte 3173  whoami              Display the real user name
+byte 3222show 
+     ^
+% Incomplete command at '^' marker
+!NEC-PF5240> show   access-filter   ?
+
+?
+  <nif no.>/<port no.>  Specify NIF number and Port number
+  interface             Target is interface
+  <cr>
+Date 2013/06/27 18:11:19 UTC
+No configuration.
+!NEC-PF5240> show   accounting   ?
+
+?
+  <cr>
+Connection failed to accounting program.
+!NEC-PF5240> show   acknowledgments   ?
+
+?
+  <cr>
+[OpenFlow]
+/* Copyright (c) 2008 The Board of Trustees of The Leland Stanford
+ * Junior University
+ *
+ * We are making the OpenFlow specification and associated documentation
+ * (Software) available for public use and benefit with the expectation
+ * that others will use, modify and enhance the Software and contribute
+ * those enhancements back to the community. However, since we would
+ * like to make the Software available for broadest use, with as few
+ * restrictions as possible permission is hereby granted, free of
+ * charge, to any person obtaining a copy of this Software to deal in
+ * the Software under the copyrights without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+byte 1237 * NONINFRINGEMENT.  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
+byte 1309 * BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+byte 1379 * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+byte 1448 * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+byte 1516 * SOFTWARE.
+byte 1529 *
+byte 1532 * The name and trademarks of copyright holder(s) may NOT be used in
+byte 1601 * advertising or publicity pertaining to the Software or any
+byte 1663 * derivatives without specific, written prior permission.
+byte 1722 */
+byte 1726
+byte 1727[CPU2 uboot]
+byte 1740This product includes software to be licensed under the GNU General 
+byte 1809Public License Version 2(GPLv2).
+byte 1842For details about GPL, see http://www.gnu.org/licenses/licenses.html
+byte 1911
+byte 1912#
+byte 1914show   acknowledgments     interface   ?
+byte 1914byte 1914byte 1914byte 1914...skipping...
+[OpenFlow]
+/* Copyright (c) 2008 The Board of Trustees of The Leland Stanford
+ * Junior University
+ *
+ * We are making the OpenFlow specification and associated documentation
+ * (Software) available for public use and benefit with the expectation
+ * that others will use, modify and enhance the Software and contribute
+ * those enhancements back to the community. However, since we would
+ * like to make the Software available for broadest use, with as few
+ * restrictions as possible permission is hereby granted, free of
+ * charge, to any person obtaining a copy of this Software to deal in
+ * the Software under the copyrights without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+byte 1237 * NONINFRINGEMENT.  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
+ * BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+ * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ * The name and trademarks of copyright holder(s) may NOT be used in
+ * advertising or publicity pertaining to the Software or any
+ * derivatives without specific, written prior permission.
+ */
+
+[CPU2 uboot]
+This product includes software to be licensed under the GNU General 
+Public License Version 2(GPLv2).
+For details about GPL, see http://www.gnu.org/licenses/licenses.html
+
+#
+# (C) Copyright 2000-2004
+# Wolfgang Denk, DENX Software Engineering, wd@denx.de.
+#
+# See file CREDITS for list of people who contributed to this
+# project.
+#
+byte 2073# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of
+# the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston,
+# MA 02111-1307 USA
+#
+
+#
+# (C) Copyright 2000
+# Wolfgang Denk, DENX Software Engineering, wd@denx.de.
+#
+# See file CREDITS for list of people who contributed to this
+# project.
+#
+byte 2932# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of
+# the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston,
+# MA 02111-1307 USA
+#
+
+#
+# (C) Copyright 2003
+# Wolfgang Denk, DENX Software Engineering, wd@denx.de.
+#
+# See file CREDITS for list of people who contributed to this
+# project.
+#
+byte 3791byte 3791byte 3791...skipping...
+#
+# This program is free software; you can redistribute it andshow   auto-config   ?
+show   axrp   ?
+show   cfm   ?
+show   channel-group   ?
+show   clock   ?
+show   config-lock-status   ?
+show   cpu   ?
+show   dhcp   ?
+show   dot1x   ?
+show   dumpfile   ?
+show   efmoam   ?
+show   environment   ?
+show   file   ?
+show   flash   ?
+show   gsrp   ?
+show   history   ?
+show   igmp-snooping   ?
+show   interfaces   ?
+show   ip   ?
+show   ip-dual   ?
+show   ipv6-dhcp   ?
+show   license   ?
+show   lldp   ?
+show   logging   ?
+show   loop-detection   ?
+show   mac-address-table   ?
+show   mc   ?
+show   memory   ?
+show   mld-snooping   ?
+show   netconf   ?
+show   netstat   ?
+show   ntp   ?
+show   oadp   ?
+show   openflow   ?
+show   port   ?
+show   power   ?
+show   processes   ?
+show   qos   ?
+show   qos-flow   ?
+show   sessions   ?
+show   sflow   ?
+show   spanning-tree   ?
+show   ssh   ?
+show   system   ?
+show   tcpdump   ?
+show   tech-support   ?
+show   track   ?
+show   version   ?
+show   vlan   ?
+show   vrrpstatus   ?
+show   whoami   ?
+

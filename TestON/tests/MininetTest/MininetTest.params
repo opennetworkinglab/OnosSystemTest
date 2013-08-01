@@ -1,0 +1,23 @@
+<PARAMS>
+    <testcases>[1,2]</testcases>
+    <mail>anilkumar.s@paxterrasolutions.com,raghavkashyap@paxterrasolutions.com</mail>
+    <CASE1> 
+        <destination> h2</destination>
+        <STEP1>
+            <host> h2 </host>
+        </STEP1>
+    </CASE1>
+    <SET1>
+        <begin>
+            <one>s1</one>
+            <two>s1</two>
+            <three>s3</three> 
+        </begin>
+        <end>
+            <one>s2</one>
+            <two>s3</two>
+            <three>s4</three> 
+        </end>
+    </SET1>
+        
+</PARAMS>      

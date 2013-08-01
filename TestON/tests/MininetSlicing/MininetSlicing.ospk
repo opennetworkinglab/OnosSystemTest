@@ -1,0 +1,64 @@
+CASE 1
+    NAME "Verifying 'SSH protocol' based slicing" 
+    
+    STEP "Deleting flowspace using 'removeFlowSpace'"
+    STORE ON FlowVisor1 DO removeFlowSpace USING "all" IN removeflowspace_result
+    ASSERT removeflowspace_result EQUALS main.TRUE ONPASS "Removed FlowSpace Successfully" ONFAIL "Failed to remove FlowSpace" 
+    
+    STEP "Showing connected devices using 'listDevices'"
+    STORE ON FlowVisor1 DO listDevices IN listdevices_result
+    ASSERT listdevices_result EQUALS main.TRUE ONPASS "Listed devices Successfully" ONFAIL "Failed to list the devices"
+
+    STEP "Verifying hosts reachability through ICMP traffic"
+    STORE ON Mininet1 DO pingHost USING src AS 'h1',target AS 'h4' IN ping_result
+    ASSERT ping_result EQUALS main.TRUE ONPASS "NO PACKET LOSS, HOST IS REACHABLE" ONFAIL "PACKET LOST, HOST IS NOT REACHABLE"  
+    
+    STEP "Showing the flowSpace USING 'listFlowSpace'"
+    STORE ON FlowVisor1 DO listFlowSpace IN listflowspace_result
+    STORE ON Mininet1 DO pingHost USING src AS 'h1',target AS 'h4' IN ping_result
+    ASSERT main.TRUE EQUALS main.TRUE ONPASS "Listed FlowSpace" ONFAIL "Failed to list the FlowSpace"
+   
+    STEP "Adding FlowSpace to create the slice of the Network"
+    INFO " Geeting the IP-Addresses of Hosts"
+    STORE ON Mininet1 DO getIPAddress USING 'h1' IN h1_ipaddress
+    STORE ON Mininet1 DO getIPAddress USING 'h4' IN h4_ipaddress 
+    
+    INFO " Geeting the MAC-Addresses of Hosts"  
+    STORE ON Mininet1 DO getMacAddress USING 'h1' IN h1_macaddress
+    STORE ON Mininet1 DO getMacAddress USING 'h4' IN h4_macaddress
+    
+    STORE ON FlowVisor1 DO addFlowSpace USING dl_src AS h1_macaddress,nw_dst AS h4_ipaddress IN addflowspace_result_1
+    ASSERT addflowspace_result_1 EQUALS main.TRUE ONPASS "Added FlowSpace Successfully" ONFAIL "Failed to add FlowSpace" 
+    
+    STORE ON FlowVisor1 DO addFlowSpace USING dl_src AS h4_macaddress,nw_dst AS h1_ipaddress IN addflowspace_result_2 
+    ASSERT addflowspace_result_2 EQUALS main.TRUE ONPASS "Added FlowSpace Successfully" ONFAIL "Failed to add FlowSpace" 
+    
+    STORE ON FlowVisor1 DO addFlowSpace USING nw_src AS h1_ipaddress IN addflowspace_result_3
+    STORE ON FlowVisor1 DO addFlowSpace USING nw_src AS h4_ipaddress IN addflowspace_result_3
+    
+    STORE ON FlowVisor1 DO addFlowSpace USING nw_src AS h1_ipaddress, tp_dst AS '22' IN addflowspace_result_3
+    ASSERT addflowspace_result_3 EQUALS main.TRUE ONPASS "Added FlowSpace Successfully" ONFAIL "Failed to add FlowSpace"
+    
+    STORE ON FlowVisor1 DO addFlowSpace USING nw_src AS h4_ipaddress,tp_dst AS '22' IN addflowspace_result_4
+    ASSERT addflowspace_result_4 EQUALS main.TRUE ONPASS "Added FlowSpace Successfully" ONFAIL "Failed to add FlowSpace" 
+    
+    STORE ON FlowVisor1 DO addFlowSpace USING nw_src AS h1_ipaddress,tp_src AS '22' IN addflowspace_result_5
+    ASSERT addflowspace_result_5 EQUALS main.TRUE ONPASS "Added FlowSpace Successfully" ONFAIL "Failed to add FlowSpace" 
+    
+    STORE ON FlowVisor1 DO addFlowSpace USING nw_src AS h4_ipaddress,tp_src AS '22' IN addflowspace_result_6
+    ASSERT addflowspace_result_6 EQUALS main.TRUE ONPASS "Added FlowSpace Successfully" ONFAIL "Failed to add FlowSpace"
+      
+    INFO "Showing the flowSpace USING 'listFlowSpace'"
+    STORE ON FlowVisor1 DO listFlowSpace IN listflowspace_result    
+
+    STEP "Verifying hosts reachability through ICMP traffic and Connectivity through SSH service"
+    STORE ON Mininet1 DO pingHost USING src AS 'h1',target AS 'h4' IN ping_result
+    ASSERT ping_result EQUALS main.TRUE ONPASS "NO PACKET LOSS, HOST IS REACHABLE" ONFAIL "PACKET LOST, HOST IS NOT REACHABLE"  
+
+    STORE ON Mininet1 DO verifySSH USING user_name AS CASE['destination_username'],ip_address AS CASE['destination_host'], pwd AS CASE['destination_password'], port AS CASE['destination_port'] IN ssh_result
+    ASSERT ssh_result EQUALS main.TRUE ONPASS "Failed to connect remote host throgh SSH" ONFAIL "Remote host connected throgh SSH "  
+     
+
+
+
+

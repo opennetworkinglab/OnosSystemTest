@@ -1,0 +1,259 @@
+<TOPOLOGY>
+
+    <COMPONENT>
+        <Zookeeper1>
+            <host>10.128.4.11</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>ZookeeperCliDriver</type>
+            <connect_order>1</connect_order>
+            <COMPONENTS>
+             </COMPONENTS>
+        </Zookeeper1>
+
+        <Zookeeper2>
+            <host>10.128.4.12</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>ZookeeperCliDriver</type>
+            <connect_order>2</connect_order>
+            <COMPONENTS>
+             </COMPONENTS>
+        </Zookeeper2>
+
+        <Zookeeper3>
+            <host>10.128.4.13</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>ZookeeperCliDriver</type>
+            <connect_order>3</connect_order>
+            <COMPONENTS>
+             </COMPONENTS>
+        </Zookeeper3>
+       
+        <Zookeeper4>
+            <host>10.128.4.14</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>ZookeeperCliDriver</type>
+            <connect_order>4</connect_order>
+            <COMPONENTS>
+             </COMPONENTS>
+        </Zookeeper4>
+
+        <Zookeeper5>
+            <host>10.128.4.15</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>ZookeeperCliDriver</type>
+            <connect_order>5</connect_order>
+            <COMPONENTS>
+             </COMPONENTS>
+        </Zookeeper5>
+
+        <Zookeeper6>
+            <host>10.128.4.16</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>ZookeeperCliDriver</type>
+            <connect_order>6</connect_order>
+            <COMPONENTS>
+             </COMPONENTS>
+        </Zookeeper6>
+
+        <Zookeeper7>
+            <host>10.128.4.17</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>ZookeeperCliDriver</type>
+            <connect_order>7</connect_order>
+            <COMPONENTS>
+             </COMPONENTS>
+        </Zookeeper7>
+
+        <Zookeeper8>
+            <host>10.128.4.18</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>ZookeeperCliDriver</type>
+            <connect_order>8</connect_order>
+            <COMPONENTS>
+             </COMPONENTS>
+        </Zookeeper8>
+
+        <Cassandra1>
+            <host>10.128.4.11</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>CassandraCliDriver</type>
+            <connect_order>9</connect_order>
+            <COMPONENTS>
+             </COMPONENTS>
+        </Cassandra1>
+
+        <Cassandra2>
+            <host>10.128.4.12</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>CassandraCliDriver</type>
+            <connect_order>10</connect_order>
+            <COMPONENTS>
+             </COMPONENTS>
+        </Cassandra2>
+       
+        <Cassandra3>
+            <host>10.128.4.13</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>CassandraCliDriver</type>
+            <connect_order>11</connect_order>
+            <COMPONENTS>
+             </COMPONENTS>
+        </Cassandra3>
+       
+        <Cassandra4>
+            <host>10.128.4.14</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>CassandraCliDriver</type>
+            <connect_order>12</connect_order>
+            <COMPONENTS>
+             </COMPONENTS>
+        </Cassandra4>
+
+        <Cassandra5>
+            <host>10.128.4.15</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>CassandraCliDriver</type>
+            <connect_order>13</connect_order>
+            <COMPONENTS>
+             </COMPONENTS>
+        </Cassandra5>
+
+        <Cassandra6>
+            <host>10.128.4.16</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>CassandraCliDriver</type>
+            <connect_order>14</connect_order>
+            <COMPONENTS>
+             </COMPONENTS>
+        </Cassandra6>
+
+        <Cassandra7>
+            <host>10.128.4.17</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>CassandraCliDriver</type>
+            <connect_order>15</connect_order>
+            <COMPONENTS>
+             </COMPONENTS>
+        </Cassandra7>
+
+        <Cassandra8>
+            <host>10.128.4.18</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>CassandraCliDriver</type>
+            <connect_order>16</connect_order>
+            <COMPONENTS>
+             </COMPONENTS>
+        </Cassandra8>
+
+        <ONOS1>
+            <host>10.128.4.11</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>OnosCliDriver</type>
+            <connect_order>17</connect_order>
+            <COMPONENTS>
+             </COMPONENTS>
+        </ONOS1>
+
+        <ONOS2>
+            <host>10.128.4.12</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>OnosCliDriver</type>
+            <connect_order>18</connect_order>
+            <COMPONENTS>
+             </COMPONENTS>
+        </ONOS2>
+
+        <ONOS3>
+            <host>10.128.4.13</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>OnosCliDriver</type>
+            <connect_order>19</connect_order>
+            <COMPONENTS>
+             </COMPONENTS>
+        </ONOS3>
+       
+        <ONOS4>
+            <host>10.128.4.14</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>OnosCliDriver</type>
+            <connect_order>20</connect_order>
+            <COMPONENTS>
+             </COMPONENTS>
+        </ONOS4>
+
+        <ONOS5>
+            <host>10.128.4.15</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>OnosCliDriver</type>
+            <connect_order>21</connect_order>
+            <COMPONENTS>
+             </COMPONENTS>
+        </ONOS5>
+
+        <ONOS6>
+            <host>10.128.4.16</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>OnosCliDriver</type>
+            <connect_order>22</connect_order>
+            <COMPONENTS>
+             </COMPONENTS>
+        </ONOS6>
+
+        <ONOS7>
+            <host>10.128.4.17</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>OnosCliDriver</type>
+            <connect_order>23</connect_order>
+            <COMPONENTS>
+             </COMPONENTS>
+        </ONOS7>
+
+        <ONOS8>
+            <host>10.128.4.18</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>OnosCliDriver</type>
+            <connect_order>24</connect_order>
+            <COMPONENTS>
+             </COMPONENTS>
+        </ONOS8>
+
+        <Mininet1>
+            <host>10.128.6.2</host>
+            <user>miniuser</user>
+            <password>onos_test</password>
+            <type>MininetCliDriver</type>
+            <connect_order>25</connect_order>
+            <COMPONENTS>
+                # Specify the Option for mininet
+                <arg1> --custom ~/mininet/custom/topo-2sw-2host.py </arg1>
+                <arg2> --topo mytopo</arg2>
+                <controller> remote </controller>
+             </COMPONENTS>
+        </Mininet1>
+
+    </COMPONENT>
+</TOPOLOGY>

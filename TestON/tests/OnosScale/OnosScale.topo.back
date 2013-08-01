@@ -1,0 +1,52 @@
+<TOPOLOGY>
+    <COMPONENT>
+
+        <ONOS1>
+            <host>10.128.4.26</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>OnosCliDriver</type>
+            <connect_order>3</connect_order>
+            <COMPONENTS>
+
+             </COMPONENTS>
+        </ONOS1>
+
+        <!--
+        <Zookeeper1>
+            <host>10.128.4.26</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>ZookeeperCliDriver</type>
+            <connect_order>1</connect_order>
+            <COMPONENTS>
+             </COMPONENTS>
+        </Zookeeper1>
+
+        <Cassandra1>
+            <host>10.128.4.26</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>CassandraCliDriver</type>
+            <connect_order>2</connect_order>
+            <COMPONENTS>
+             </COMPONENTS>
+        </Cassandra1>
+
+        <Mininet1>
+            <host>10.128.4.26</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>MininetCliDriver</type>
+            <connect_order>4</connect_order>
+            <COMPONENTS>
+                # Specify the Option for mininet
+                <arg1> --custom ~/mininet/custom/topo-2sw-2host.py </arg1>
+                <arg2> --topo mytopo</arg2>
+                <controller> remote </controller>
+             </COMPONENTS>
+        </Mininet1>
+        -->
+
+    </COMPONENT>
+</TOPOLOGY>

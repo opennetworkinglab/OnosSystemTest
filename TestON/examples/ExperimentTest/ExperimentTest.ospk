@@ -1,0 +1,24 @@
+CASE 1
+
+    EXPERIMENTAL MODE ON
+    NAME "Testing the configuration of the host"
+    STEP "Host IP Checking using checkIP"
+    STORE ON Mininet1 DO checkIP USING CASE['destination'] IN result
+    STEP "Verifying the result"
+    ASSERT result EQUALS main.TRUE ONPASS "Host h2 IP address configured" ONFAIL "Host h2 IP address didn't configured"
+    STEP "Calling Non Existing API for Experimental Mode"
+    STORE ON POX2 DO verify_flow USING returns AS main.TRUE IN testReturn
+    ASSERT testRetun EQUALS main.TRUE ONPASS "Experimental Mode Passed" ONFAIL "Experimental Mode failed"
+
+CASE 2
+
+    EXPERIMENTAL MODE ON
+    NAME "Testing Reachabilty of all the hosts"
+    STEP "Checking Hosts reachability by using pingall"
+    STORE ON Mininet1 DO pingall IN result
+    STEP "Verifying the result"
+    ASSERT result EQUALS main.TRUE ONPASS "Host h2 IP address configured" ONFAIL "Host h2 IP address didn't configured"
+    STEP "Calling Non Existing API for Experimental Mode"
+    STORE ON Mininet1 DO verify_flow USING returns AS main.TRUE IN testReturn
+    ASSERT testRetun EQUALS main.TRUE ONPASS "Experimental Mode Passed" ONFAIL "Experimental Mode failed"
+                                                      

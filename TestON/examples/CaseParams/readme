@@ -1,0 +1,11 @@
+This example shows the usage of the CASE level parameters, in params file the
+[[CASE]]
+    'destination'  = 'h2'
+
+We can get this CASE level parameter like :
+main.params['CASE1']['destination']
+
+
+cd ~/bin/
+./launcher --example CaseParams 
+   will execute this example.

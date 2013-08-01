@@ -1,0 +1,14 @@
+<TOPOLOGY>
+
+    <COMPONENT>
+        <Vyatta>
+            <host>192.168.56.81</host>
+            <user> vyatta </user>
+            
+            <password>vyatta</password>
+            <type>RemoteSysDriver</type>
+            <COMPONENTS>
+            </COMPONENTS>   
+        </Vyatta>        
+    </COMPONENT>
+</TOPOLOGY>

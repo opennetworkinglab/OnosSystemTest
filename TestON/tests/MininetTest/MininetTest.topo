@@ -1,0 +1,17 @@
+<TOPOLOGY>
+
+    <COMPONENT>
+        <Mininet1>
+            <host>10.128.7.7</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>MininetCliDriver</type>
+            <COMPONENTS>
+                # Specify the Option for mininet
+                <arg1> </arg1>
+                <arg2> </arg2>
+                <controller> none  </controller>
+             </COMPONENTS>
+        </Mininet1>
+   </COMPONENT>
+</TOPOLOGY>

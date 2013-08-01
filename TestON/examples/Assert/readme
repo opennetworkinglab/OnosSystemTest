@@ -1,0 +1,35 @@
+This example shows the usage of the assert
+assert_equal :
+-------------
+utilities.assert_equals(expect=1,actual=1,
+      onpass="Expected result equal to Actual",
+      onfail="Expected result not equal to Actual") 
+
+assert_matches:
+--------------
+expect = "Res(.*)"
+actual = "Result : Test Passed"
+utilities.assert_equals(expect=expect,actual=actual,
+          onpass="Expected result matches with Actual",
+          onfail="Expected result didn't matched with Actual")
+
+assert_greater:
+--------------
+expect = 10
+        actual = 5
+        utilities.assert_greater(expect=expect,actual=actual,
+              onpass=str(expect)+" greater than the "+str(actual),
+              onfail=str(expect)+" is not greater than "+str(actual))
+
+assert_lesser:
+-------------
+expect = 5
+        actual = 10
+        utilities.assert_lesser(expect=expect,actual=actual,
+                 onpass=str(expect)+" is lesser than the "+str(actual),
+                 onfail=str(expect)+" is not lesser than the "+str(actual))
+                 
+
+cd ~/bin/
+./launcher --example Assert 
+   will execute this example.

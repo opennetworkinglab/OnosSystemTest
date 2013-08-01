@@ -1,0 +1,42 @@
+<PARAMS>
+    <testcases> [1,2] </testcases>
+    <mail> paxweb@paxterrasolutions.com </mail>
+    <CASE1>
+        <tcpip> 127.0.0.1</tcpip>
+        <tcpport> 6634 </tcpport>
+        <destination> h2 </destination>
+        <STEP1>
+            <tcpip> 127.0.0.1 </tcpip>
+            <tcpport> 6634 </tcpport>
+            <inport> 1 </inport>
+            <timeout> 360 </timeout>
+            <action> output:2 </action>
+        </STEP1>
+        <STEP2>
+            <tcpip> 127.0.0.1 </tcpip>
+            <tcpport> 6634 </tcpport>
+            <inport> 2 </inport>
+            <timeout> 360 </timeout>
+            <action> output:3 </action>
+        </STEP2>     
+    </CASE1>
+    <CASE2>
+        <tcpip> 127.0.0.1</tcpip>
+        <tcpport> 6634 </tcpport>
+        <destination> h2 </destination>
+        <STEP1>
+            <tcpip> 127.0.0.1 </tcpip>
+            <tcpport> 6634 </tcpport>
+            <inport> 1 </inport>
+            <timeout> 360 </timeout>
+            <action> output:2 </action>
+        </STEP1>
+        <STEP2>
+            <tcpip> 127.0.0.1 </tcpip>
+            <tcpport> 6634 </tcpport>
+            <inport> 2 </inport>
+            <timeout> 360 </timeout>
+            <action> output:3 </action>
+        </STEP2>     
+    </CASE2>
+</PARAMS>        

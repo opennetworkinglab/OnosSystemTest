@@ -1,0 +1,61 @@
+!NEC-PF5240> configure
+configure: not found
+!NEC-PF5240> show ?
+  access-filter       Display the statistics information of access-filter
+  accounting          Display the accounting information
+  acknowledgments     Display acknowledgments
+  auto-config         Display the information of auto-config
+  axrp                Display the Ring Protocol information
+  cfm                 Display the CFM information
+  channel-group       Display the information on a Link Aggregation Protocol
+  clock               Display clock of the system
+  config-lock-status  Display lock status of configurations
+  cpu                 Target is cpu utilization information
+  dhcp                Display the information of DHCP
+  dot1x               Display the status of 802.1X
+  dumpfile            Display the information of dumpfile
+  efmoam              Display the IEEE802.3ah/OAM information
+  environment         Display the information of system environment
+  file                Show contents of file
+  flash               Display the information of flash memory
+  gsrp                Display the GSRP information
+  history             Display the list of commands that was entered
+  igmp-snooping       Display the igmp-snooping information
+  interfaces          Display the information of interfaces
+  ip                  Display the information of IP routing program
+  ip-dual             Display the information of IP and IPv6 routing program
+  ipv6-dhcp           Display the information of IPv6 DHCP program
+  license             Display licenses
+  lldp                Display the LLDP information
+  logging             Display the log information of router
+  loop-detection      Display the information on an L2 Loop Detection
+  mac-address-table   Display the mac-address-table information
+  mc                  Display the information of MC
+  memory              Display the status of memory
+  mld-snooping        Display the mld-snooping information
+  netconf             Display the information of netconf
+  netstat             Display the status of network
+  ntp                 Display the information of NTP
+  oadp                Display the OADP information
+  openflow            Display the OpenFlow information
+  port                Display the information list of ports
+  power               Display the information of power consumption
+  processes           Display the status of process
+  qos                 Display the statistics information of QoS
+  qos-flow            Display the statistics information of qos-flow
+  sessions            Display the login user name
+  sflow               Display the information of sFlow
+  spanning-tree       Display the information on a spanning tree protocol
+  ssh                 Display the information of SSH Server
+  system              Display the information of a system
+  tcpdump             Dump traffic to/from this system
+  tech-support        Display the general information about the switch
+  track               Display the information of track
+  version             Display the version of a system
+  vlan                Display the VLAN information
+  vrrpstatus          Display the status of VRRP
+  whoami              Display the real user name
+!NEC-PF5240> show 
+show 
+     ^
+

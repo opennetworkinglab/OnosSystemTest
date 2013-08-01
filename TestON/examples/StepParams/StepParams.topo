@@ -1,0 +1,29 @@
+<TOPOLOGY>
+
+    <COMPONENT>
+        <Mininet1>
+            <host>192.168.56.101</host>
+            <user> openflow</user>
+            <password> openflow</password>
+            <type> MininetCliDriver </type>
+            <COMPONENTS>
+                # Specify the Option for mininet
+                <topo> single</topo>
+                <topocount>3</topocount>
+                <switch> ovsk </switch>
+                <controller> remote </controller>
+             </COMPONENTS>   
+        </Mininet1>        
+        <POX2>
+            <host> 192.168.56.101 </host>
+            <user>  openflow </user>
+            <password> openflow </password>
+            <type> PoxCliDriver </type>
+            <test_target> 1 </test_target>
+            <COMPONENTS>
+                <pox_lib_location> /home/openflow/pox/  </pox_lib_location>
+                <samples.of_tutorial></samples.of_tutorial>
+            </COMPONENTS>
+        </POX2>
+    </COMPONENT>
+</TOPOLOGY>

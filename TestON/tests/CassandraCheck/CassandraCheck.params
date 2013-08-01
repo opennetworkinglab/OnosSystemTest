@@ -1,0 +1,9 @@
+<PARAMS>
+    <testcases>3</testcases>
+    <Iterations>2</Iterations>
+    <WaitTime>20</WaitTime>
+    <TargetTime>20</TargetTime>
+    <RestIP>10.128.4.11</RestIP>
+    <NR_Switches>405</NR_Switches>
+    <NR_Links>802</NR_Links>
+</PARAMS>      

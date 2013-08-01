@@ -1,0 +1,11 @@
+<config>
+
+    <parser> /home/paxterra/Documents/AptanaWorkspace/OpenFlowAutomation/core/xmlparser.py </parser>
+    <parser_class>xmlparser</parser_class>
+    <mail_to></mail_to>
+
+    <logger_class>/home/openflow/OpenFlowAutomation/core/logger</logger_class>
+
+</config>
+
+

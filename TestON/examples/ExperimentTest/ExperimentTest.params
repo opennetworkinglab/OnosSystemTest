@@ -1,0 +1,11 @@
+<PARAMS>
+    <testcases> 1,2 </testcases>
+    <mail> anilkumar.s@paxterrasolutions.com,paxweb@paxterrasolutions.com </mail>
+    #'log_dir' = '/home/user/Desktop/openflow_logs/'
+    <CASE1>
+        <destination> h2 </destination>
+        <STEP1>
+            <host> h2 </host>
+         </STEP1>
+    </CASE1> 
+</PARAMS>

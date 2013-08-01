@@ -1,0 +1,23 @@
+CASE 1
+    NAME "Testing the ONOS sanity"
+    STEP "Testing the ONOS sanity"
+
+    STORE ON Zookeeper1 DO status IN Zookeeper1_status
+    INFO <Zookeeper1_status>
+    
+    STORE ON Cassandra1 DO status IN Cassandra1_status
+    INFO <Cassandra1_status>
+    
+    STORE ON ONOS1 DO status IN ONOS1_status
+    INFO <ONOS1_status>
+    
+    STORE ON ONOS1 DO rest_status IN ONOS1_rest_status
+    INFO <ONOS1_rest_status>
+    
+    STORE ON ONOSRESTAPI1 DO execute IN Response
+    INFO <Response>
+    
+    ON ONOS1 DO stop
+    ON ONOS1 DO rest_stop
+    ON Cassandra1 DO stop
+    ON Zookeeper1 DO stop

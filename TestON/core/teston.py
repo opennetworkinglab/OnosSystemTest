@@ -278,7 +278,7 @@ class TestON:
         #self.reportFile.close()
         
 
-        utilities.send_mail()
+        #utilities.send_mail()
         try :
             for component in self.componentDictionary.keys():
                 tempObject  = vars(self)[component]    
@@ -288,7 +288,7 @@ class TestON:
             #tempObject.execute(cmd="exit",prompt="(.*)",timeout=120) 
 
         except(Exception):
-            #print " There is an error with closing hanldes"
+            print " There is an error with closing hanldes"
             result = self.FALSE
         # Closing all the driver's session files
         for driver in self.componentDictionary.keys():

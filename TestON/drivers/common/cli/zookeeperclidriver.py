@@ -37,7 +37,7 @@ from drivers.common.clidriver import CLI
 
 class ZookeeperCliDriver(CLI):
     '''
-        ZookeeperCliDriver is the basic driver which will handle the Zookeeper's functions
+    ZookeeperCliDriver is the basic driver which will handle the Zookeeper's functions
     '''
     def __init__(self):
         super(CLI, self).__init__()
@@ -64,7 +64,9 @@ class ZookeeperCliDriver(CLI):
    
  
     def start(self):
-        ''' This Function will start the Zookeeper'''
+        '''
+        This Function will start the Zookeeper
+        '''
         main.log.info( "Starting Zookeeper" )
         self.handle.sendline("")
         self.handle.expect("\$")
@@ -82,7 +84,9 @@ class ZookeeperCliDriver(CLI):
             return main.FALSE
         
     def status(self):
-        '''This Function will return the Status of the Zookeeper '''
+        '''
+        This Function will return the Status of the Zookeeper 
+        '''
         time.sleep(5)
         self.execute(cmd="\r",prompt="\$",timeout=10)
         response = self.execute(cmd="~/zookeeper-3.4.5/bin/zkServer.sh status ",prompt="JMX",timeout=10)
@@ -91,7 +95,9 @@ class ZookeeperCliDriver(CLI):
         return response
         
     def stop(self):
-        '''This Function will stop the Zookeeper if it is Running''' 
+        '''
+        This Function will stop the Zookeeper if it is Running
+        ''' 
         self.execute(cmd="\r",prompt="\$",timeout=10)
         time.sleep(5)
         response = self.execute(cmd="~/zookeeper-3.4.5/bin/zkServer.sh stop ",prompt="STOPPED",timeout=10)
@@ -104,7 +110,9 @@ class ZookeeperCliDriver(CLI):
             return main.FALSE
             
     def disconnect(self):
-        
+        ''' 
+        Called at the end of the test to disconnect the ZK handle 
+        ''' 
         response = ''
         if self.handle:
             self.handle.sendline("exit")
@@ -115,6 +123,9 @@ class ZookeeperCliDriver(CLI):
         return response 
 
     def isup(self):
+        '''
+        Calls the zookeeper status and returns TRUE if it has an assigned Mode to it. 
+        '''
         self.execute(cmd="\n",prompt="\$",timeout=10)
         response = self.execute(cmd="~/zookeeper-3.4.5/bin/zkServer.sh status ",prompt="Mode",timeout=10)
         pattern = '(.*)Mode(.*)'

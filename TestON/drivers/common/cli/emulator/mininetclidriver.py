@@ -124,6 +124,27 @@ class MininetCliDriver(Emulator):
         else :
             main.log.error("Connection failed to the host") 
             return main.FALSE
+
+    def fpingHost(self,**pingParams):
+        ''' 
+        Uses the fping package for faster pinging...
+        *requires fping to be installed on machine running mininet 
+        ''' 
+        args = utilities.parse_args(["SRC","TARGET"],**pingParams)
+        command = args["SRC"] + " fping -i 100 -t 10 -C 1 -q "+args["TARGET"]
+        self.handle.sendline(command) 
+        self.handle.expect(args["TARGET"]) 
+        self.handle.expect("mininet")
+        response = self.handle.before 
+        if re.search(":\s-" ,response):
+            main.log.info("Ping fail") 
+            return main.FALSE
+        elif re.search(":\s\d\.\d\d", response):
+            main.log.info("Ping good!")
+            return main.TRUE
+        main.log.info("Install fping on mininet machine... ") 
+        main.log.info("\n---\n"+response)
+        return main.FALSE
         
     def pingHost(self,**pingParams):
         
@@ -254,6 +275,32 @@ class MininetCliDriver(Emulator):
         response = self.execute(cmd=command,prompt="mininet>",timeout=10)
         return main.TRUE
         
+
+    def yank(self, **yangargs):
+	'''
+	yank out a mininet switch interfacet to host
+	'''
+	main.log.info('Yang out the switch interface attached to a host')
+	args = utilities.parse_args(["SW","INTF"])
+	sw = args["SW"] if args["SW"] !=None else ""
+	intf = args["INTF"] if args["INTF"] != None else ""
+	command = "py "+ str(sw) + '.detach("' + str(intf) + '")'
+	response = self.execute(cmd=command,prompt="mininet>",timeout=10)
+	return main.TRUE
+
+    def plug(self, **plugargs):
+        '''
+        plug the yanked mininet switch interface to a switch
+        '''
+        main.log.info('Plug the switch interface attached to a switch')
+        args = utilities.parse_args(["SW","INTF"])
+        sw = args["SW"] if args["SW"] !=None else ""
+        intf = args["INTF"] if args["INTF"] != None else ""
+        command = "py "+ str(sw) + '.attach("' + str(intf) + '")'
+        response = self.execute(cmd=command,prompt="mininet>",timeout=10)
+        return main.TRUE
+
+
 
     def dpctl(self,**dpctlargs):
         '''

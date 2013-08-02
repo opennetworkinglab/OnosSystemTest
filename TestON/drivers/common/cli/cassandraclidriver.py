@@ -37,7 +37,7 @@ from drivers.common.clidriver import CLI
 
 class CassandraCliDriver(CLI):
     '''
-        CassandraCliDriver is the basic driver which will handle the Cassandra's functions
+    CassandraCliDriver is the basic driver which will handle the Cassandra's functions
     '''
     def __init__(self):
         super(CLI, self).__init__()
@@ -64,7 +64,9 @@ class CassandraCliDriver(CLI):
    
  
     def start(self):
-        ''' This Function will start the Cassandra'''
+        '''
+        This Function will start the Cassandra
+        '''
         main.log.info( "Starting Cassandra" )
         self.handle.sendline("")
         self.handle.expect("\$")
@@ -81,7 +83,9 @@ class CassandraCliDriver(CLI):
             return main.FALSE
         
     def status(self):
-        '''This Function will return the Status of the Cassandra '''
+        '''
+        This Function will return the Status of the Cassandra
+        '''
         time.sleep(5)
         self.execute(cmd="\r",prompt="\$",timeout=10)
         response = self.execute(cmd="~/ONOS/start-cassandra.sh status ",prompt="\d+\sinstance\sof\scassandra\srunning(.*)",timeout=10)
@@ -98,7 +102,9 @@ class CassandraCliDriver(CLI):
             return main.TRUE
             
     def stop(self):
-        '''This Function will stop the Cassandra if it is Running''' 
+        '''
+        This Function will stop the Cassandra if it is Running
+        ''' 
         self.execute(cmd="\r",prompt="\$",timeout=10)
         time.sleep(5)
         response = self.execute(cmd="~/ONOS/start-cassandra.sh stop ",prompt="Killed\sexisting\sprosess(.*)",timeout=10)
@@ -111,7 +117,9 @@ class CassandraCliDriver(CLI):
             return main.FALSE
             
     def disconnect(self):
-        
+        ''' 
+        Called at the end of the test to disconnect the ssh handle. 
+        ''' 
         response = ''
         if self.handle:
             self.handle.sendline("exit")
@@ -122,6 +130,11 @@ class CassandraCliDriver(CLI):
         return response 
 
     def isup(self):
+        '''
+        A more complete status check of cassandra.
+        Tries 5 times to call start-cassandra.sh status
+        returns TRUE if it sees four occurances of both Up, and Normal 
+        '''
         tries = 5
         main.log.info("trying %i times" % tries )
         for i in range(tries):

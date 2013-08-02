@@ -62,14 +62,16 @@ class OnosCliDriver(CLI):
         self.handle.sendline("cd ~/ONOS")
         self.handle.expect("ONOS\$")
         self.handle.sendline("./start-onos.sh start")
+        self.handle.expect("onos.sh start")
         i=self.handle.expect(["Starting\sONOS\scontroller","Cassandra\sis\snot\srunning"])
         if i==0:
-            if self.handle.expect("ONOS\$", 60):
+            try: 
+                self.handle.expect("ONOS\$", timeout=60)
                 main.log.info("ONOS Started ") 
-                return main.TRUE
-            else:  
+            except:  
                 main.log.info("ONOS NOT Started, stuck while waiting for it to start ") 
                 return main.FALSE
+            return main.TRUE
         elif i==1:
             main.log.error("ONOS didn't start because cassandra wasn't running.") 
             return main.FALSE
@@ -192,8 +194,9 @@ class OnosCliDriver(CLI):
         self.handle.expect("ONOS\$")
         self.handle.sendline("./start-onos.sh stop")
         self.handle.expect("stop", 2)
+        result = self.handle.before 
         self.handle.expect("ONOS\$", 60)
-        if re.search("Killed",response):
+        if re.search("Killed", result):
             main.log.info("ONOS Killed Successfully")
             return main.TRUE
         else :
@@ -215,18 +218,17 @@ class OnosCliDriver(CLI):
         
     def disconnect(self):
         '''
-        Called when Test is complete to dissconnect the ONOS handle.  
+        Called when Test is complete to disconnect the ONOS handle.  
         '''
-        if self.handle:
+        response = ''
+        try:
             self.handle.sendline("exit")
-            self.handle.expect("closed") 
-            if self.handle.isalive():   
-                response = main.TRUE
-        else :
+            self.handle.expect("closed")
+        except: 
             main.log.error("Connection failed to the host")
             response = main.FALSE
-        return response 
-
+        return response
+ 
     def get_version(self):
         ''' 
         Writes the COMMIT number to the report to be parsed by Jenkins data collecter.  

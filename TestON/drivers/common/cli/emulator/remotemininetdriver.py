@@ -37,7 +37,9 @@ from time import time
 
 class RemoteMininetDriver(Emulator):
     '''
-        MininetCliDriver is the basic driver which will handle the Mininet functions
+    RemoteMininetCliDriver is the basic driver which will handle the Mininet functions
+    The main different between this and the MininetCliDriver is that this one does not build the mininet. 
+    It assumes that there is already a mininet running on the target. 
     '''
     def __init__(self):
         super(Emulator, self).__init__()
@@ -66,6 +68,9 @@ class RemoteMininetDriver(Emulator):
             return main.FALSE
   
     def pingLong(self,**pingParams):
+        '''
+        Starts a continuous ping on the mininet host outputing to a file in the /tmp dir. 
+        '''
         args = utilities.parse_args(["SRC","TARGET"],**pingParams)
         command = "mininet/util/m " + args["SRC"] + " ping "+args ["TARGET"]+" -i .1 -D -W 1 > /tmp/ping." + args["SRC"] + " &"
         main.log.info( command ) 
@@ -73,15 +78,9 @@ class RemoteMininetDriver(Emulator):
         return main.TRUE
 
     def pingstatus(self,**pingParams):
-        #self.handle.sendline("pgrep ping")
-        #self.handle.expect("pgrep")
-        #self.handle.expect("\$")
-        #result = self.handle.before + self.handle.after
-        #if re.search('\d\d+', result ):
-        #    return main.TRUE
-        #else: 
-        #    return main.FALSE
-         
+        '''
+        Tails the respective ping output file and check that there is a moving "64 bytes"
+        '''
         args = utilities.parse_args(["SRC"],**pingParams)
         self.handle.sendline("tail /tmp/ping." + args["SRC"])
         self.handle.expect("tail")
@@ -98,20 +97,17 @@ class RemoteMininetDriver(Emulator):
             return main.FALSE
          
     def pingKill(self):
+        '''
+        Kills all continuous ping processes.
+        Then copies all the ping files to the TestStation.
+        '''
+        import time
         command = "sudo pkill ping" 
         main.log.info( command ) 
         self.execute(cmd=command,prompt="(.*)",timeout=10)
-        #command = "sudo pgrep ping" 
-        #result1 = self.execute(cmd="\r",prompt="\$",timout=10)
-        #result = self.execute(cmd=command,prompt=self.user_name,timout=10)
-        #if utilities.assert_matches(expect='[^\s]+',actual=result,onpass="match",onfail="no match"):
-        #    main.log.info( "pings running as process"  )
-        #    main.log.info( result )
-        #    return main.FALSE
         main.log.info( "Removing old ping data" )
         command = "rm /tmp/ping.*"
         os.popen(command) 
-        import time
         time.sleep(2)      
         main.log.info( "Transferring ping files to TestStation" )
         command = "scp /tmp/ping.* admin@10.128.7.7:/tmp/" 
@@ -119,7 +115,9 @@ class RemoteMininetDriver(Emulator):
         return main.TRUE
         
     def pingHost(self,**pingParams):
-        
+        ''' 
+        Pings between two hosts on remote mininet  
+        ''' 
         args = utilities.parse_args(["SRC","TARGET"],**pingParams)
         command = "mininet/util/m " + args["SRC"] + " ping "+args ["TARGET"]+" -c 4 -W 1 -i .2"
         main.log.info ( command ) 
@@ -136,7 +134,7 @@ class RemoteMininetDriver(Emulator):
     
     def checknum(self,num):
         '''
-            Verifies the correct number of switches are running 
+        Verifies the correct number of switches are running 
         '''
         if self.handle :
             self.handle.sendline("")
@@ -161,12 +159,21 @@ class RemoteMininetDriver(Emulator):
             main.log.error("Connection failed to the host") 
 
     def ctrl_none(self):
+        '''
+        Sets all the switches to no controllers. 
+        '''
         self.execute(cmd="~/ONOS/scripts/test-ctrl-none.sh", prompt="\$",timeout=10)
 
     def ctrl_one(self, ip):
+        '''
+        Sets all the switches to point to the supplied IP
+        '''
         self.execute(cmd="~/ONOS/scripts/test-ctrl-one.sh "+ip, prompt="\$",timeout=10)
  
     def ctrl_local(self):
+        '''
+        Sets all the switches to point to the Controller on the same machine that they are running on. 
+        '''
         self.execute(cmd="~/ONOS/scripts/test-ctrl-local.sh ", prompt="\$",timeout=10)
 
  #   def verifySSH(self,**connectargs):
@@ -293,7 +300,9 @@ class RemoteMininetDriver(Emulator):
  #       return version    
 
     def disconnect(self):
-        
+        '''    
+        Called at the end of the test to disconnect the handle.    
+        '''    
         response = ''
         #print "Disconnecting Mininet"
         if self.handle:

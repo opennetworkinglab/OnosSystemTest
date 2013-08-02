@@ -133,7 +133,7 @@ class TimsDeathTest:
         t1 = time.time()
         main.ONOS1.add_flow(main.params['FLOWDEF'])
         main.log.info("Checking...")
-        for i in range(15):
+        for i in range(8):
             result = main.ONOS1.check_flow()
             if result == main.TRUE:
                 t2 = time.time()
@@ -157,22 +157,22 @@ class TimsDeathTest:
         main.step("Testing ping")
         success = 0
         main.log.info("starting loops") 
-        result = main.Mininet1.pingHost(src="h9",target="h33")
+        result = main.Mininet1.fpingHost(src="h9",target="h33")
         for j in range(23) :
-            result = result & main.Mininet1.pingHost(src="h"+str((10+j)),target="h"+str((34+j)))
+            result = result & main.Mininet1.fpingHost(src="h"+str((10+j)),target="h"+str((34+j)))
             main.log.info("result updated") 
             if result == main.TRUE:
                 success = success + 1
         for j in range(24) :
-            result = result & main.Mininet1.pingHost(src="h"+str((33+j)),target="h"+str((57+j)))
+            result = result & main.Mininet1.fpingHost(src="h"+str((33+j)),target="h"+str((57+j)))
             if result == main.TRUE:
                 success = success + 1
         for j in range(24) :
-            result = result & main.Mininet1.pingHost(src="h"+str((57+j)),target="h"+str((81+j)))
+            result = result & main.Mininet1.fpingHost(src="h"+str((57+j)),target="h"+str((81+j)))
             if result == main.TRUE:
                 success = success + 1
         for j in range(24) :
-            result = result & main.Mininet1.pingHost(src="h"+str((81+j)),target="h"+str((9+j)))
+            result = result & main.Mininet1.fpingHost(src="h"+str((81+j)),target="h"+str((9+j)))
             if result == main.TRUE:
                 success = success + 1
         main.log.info("%d/98 Pings Good" % success) 
@@ -187,19 +187,19 @@ class TimsDeathTest:
         result = main.TRUE
         success = 0
         for j in range(24) :
-            result = result & main.Mininet1.pingHost(src="h%d"%(9+j),target="h%d"%(33+j))
+            result = result & main.Mininet1.fpingHost(src="h%d"%(9+j),target="h%d"%(33+j))
             if result == main.TRUE:
                 success = success + 1
         for j in range(24) :
-            result = result & main.Mininet1.pingHost(src="h%d"%(33+j),target="h%d"%(57+j))
+            result = result & main.Mininet1.fpingHost(src="h%d"%(33+j),target="h%d"%(57+j))
             if result == main.TRUE:
                 success = success + 1
         for j in range(24) :
-            result = result & main.Mininet1.pingHost(src="h%d"%(57+j),target="h%d"%(81+j))
+            result = result & main.Mininet1.fpingHost(src="h%d"%(57+j),target="h%d"%(81+j))
             if result == main.TRUE:
                 success = success + 1
         for j in range(24) :
-            result = result & main.Mininet1.pingHost(src="h%d"%(81+j),target="h%d"%(9+j))
+            result = result & main.Mininet1.fpingHost(src="h%d"%(81+j),target="h%d"%(9+j))
             if result == main.TRUE:
                 success = success + 1
         main.log.info("%d/98 Pings Good" % success)
@@ -214,19 +214,19 @@ class TimsDeathTest:
         result = main.TRUE
         success = 0
         for j in range(24) :
-            result = result & main.Mininet1.pingHost(src="h%d"%(9+j),target="h%d"%(33+j))
+            result = result & main.Mininet1.fpingHost(src="h%d"%(9+j),target="h%d"%(33+j))
             if result == main.TRUE:
                 success = success + 1
         for j in range(24) :
-            result = result & main.Mininet1.pingHost(src="h%d"%(33+j),target="h%d"%(57+j))
+            result = result & main.Mininet1.fpingHost(src="h%d"%(33+j),target="h%d"%(57+j))
             if result == main.TRUE:
                 success = success + 1
         for j in range(24) :
-            result = result & main.Mininet1.pingHost(src="h%d"%(57+j),target="h%d"%(81+j))
+            result = result & main.Mininet1.fpingHost(src="h%d"%(57+j),target="h%d"%(81+j))
             if result == main.TRUE:
                 success = success + 1
         for j in range(24) :
-            result = result & main.Mininet1.pingHost(src="h%d"%(81+j),target="h%d"%(9+j))
+            result = result & main.Mininet1.fpingHost(src="h%d"%(81+j),target="h%d"%(9+j))
             if result == main.TRUE:
                 success = success + 1
         main.log.info("%d/98 Pings Good" % success)
@@ -247,19 +247,19 @@ class TimsDeathTest:
         result = main.TRUE
         success = 0 
         for j in range(24) :
-            result = result & main.Mininet1.pingHost(src="h%d"%(9+j),target="h%d"%(33+j))
+            result = result & main.Mininet1.fpingHost(src="h%d"%(9+j),target="h%d"%(33+j))
             if result == main.TRUE:
                 success = success + 1
         for j in range(24) :
-            result = result & main.Mininet1.pingHost(src="h%d"%(33+j),target="h%d"%(57+j))
+            result = result & main.Mininet1.fpingHost(src="h%d"%(33+j),target="h%d"%(57+j))
             if result == main.TRUE:
                 success = success + 1
         for j in range(24) :
-            result = result & main.Mininet1.pingHost(src="h%d"%(57+j),target="h%d"%(81+j))
+            result = result & main.Mininet1.fpingHost(src="h%d"%(57+j),target="h%d"%(81+j))
             if result == main.TRUE:
                 success = success + 1
         for j in range(24) :
-            result = result & main.Mininet1.pingHost(src="h%d"%(81+j),target="h%d"%(9+j))
+            result = result & main.Mininet1.fpingHost(src="h%d"%(81+j),target="h%d"%(9+j))
             if result == main.TRUE:
                 success = success + 1
         main.log.info("%d/98 Pings Good" % success) 
@@ -343,19 +343,19 @@ class TimsDeathTest:
         result = main.TRUE
         success = 0
         for j in range(24) :
-            result = result & main.Mininet1.pingHost(src="h%d"%(9+j),target="h%d"%(33+j))
+            result = result & main.Mininet1.fpingHost(src="h%d"%(9+j),target="h%d"%(33+j))
             if result == main.TRUE:
                 success = success + 1
         for j in range(24) :
-            result = result & main.Mininet1.pingHost(src="h%d"%(33+j),target="h%d"%(57+j))
+            result = result & main.Mininet1.fpingHost(src="h%d"%(33+j),target="h%d"%(57+j))
             if result == main.TRUE:
                 success = success + 1
         for j in range(24) :
-            result = result & main.Mininet1.pingHost(src="h%d"%(57+j),target="h%d"%(81+j))
+            result = result & main.Mininet1.fpingHost(src="h%d"%(57+j),target="h%d"%(81+j))
             if result == main.TRUE:
                 success = success + 1
         for j in range(24) :
-            result = result & main.Mininet1.pingHost(src="h%d"%(81+j),target="h%d"%(9+j))
+            result = result & main.Mininet1.fpingHost(src="h%d"%(81+j),target="h%d"%(9+j))
             if result == main.TRUE:
                 success = success + 1
         main.log.info("%d/98 Pings Good" % success)
@@ -371,19 +371,19 @@ class TimsDeathTest:
         result = main.TRUE
         success = 0
         for j in range(24) :
-            result = result & main.Mininet1.pingHost(src="h%d"%(9+j),target="h%d"%(33+j))
+            result = result & main.Mininet1.fpingHost(src="h%d"%(9+j),target="h%d"%(33+j))
             if result == main.TRUE:
                 success = success + 1
         for j in range(24) :
-            result = result & main.Mininet1.pingHost(src="h%d"%(33+j),target="h%d"%(57+j))
+            result = result & main.Mininet1.fpingHost(src="h%d"%(33+j),target="h%d"%(57+j))
             if result == main.TRUE:
                 success = success + 1
         for j in range(24) :
-            result = result & main.Mininet1.pingHost(src="h%d"%(57+j),target="h%d"%(81+j))
+            result = result & main.Mininet1.fpingHost(src="h%d"%(57+j),target="h%d"%(81+j))
             if result == main.TRUE:
                 success = success + 1
         for j in range(24) :
-            result = result & main.Mininet1.pingHost(src="h%d"%(81+j),target="h%d"%(9+j))
+            result = result & main.Mininet1.fpingHost(src="h%d"%(81+j),target="h%d"%(9+j))
             if result == main.TRUE:
                 success = success + 1
         main.log.info("%d/98 Pings Good" % success)
@@ -399,19 +399,19 @@ class TimsDeathTest:
         result = main.TRUE
         success = 0
         for j in range(24) :
-            result = result & main.Mininet1.pingHost(src="h%d"%(9+j),target="h%d"%(33+j))
+            result = result & main.Mininet1.fpingHost(src="h%d"%(9+j),target="h%d"%(33+j))
             if result == main.TRUE:
                 success = success + 1
         for j in range(24) :
-            result = result & main.Mininet1.pingHost(src="h%d"%(33+j),target="h%d"%(57+j))
+            result = result & main.Mininet1.fpingHost(src="h%d"%(33+j),target="h%d"%(57+j))
             if result == main.TRUE:
                 success = success + 1
         for j in range(24) :
-            result = result & main.Mininet1.pingHost(src="h%d"%(57+j),target="h%d"%(81+j))
+            result = result & main.Mininet1.fpingHost(src="h%d"%(57+j),target="h%d"%(81+j))
             if result == main.TRUE:
                 success = success + 1
         for j in range(24) :
-            result = result & main.Mininet1.pingHost(src="h%d"%(81+j),target="h%d"%(9+j))
+            result = result & main.Mininet1.fpingHost(src="h%d"%(81+j),target="h%d"%(9+j))
             if result == main.TRUE:
                 success = success + 1
         main.log.info("%d/98 Pings Good" % success)

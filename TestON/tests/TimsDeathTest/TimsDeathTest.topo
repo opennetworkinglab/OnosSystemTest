@@ -70,7 +70,7 @@
         </Cassandra4>
 
         <Mininet1>
-            <host>10.128.100.4</host>
+            <host>10.128.100.11</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>MininetCliDriver</type>

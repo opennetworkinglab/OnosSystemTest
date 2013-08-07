@@ -39,6 +39,10 @@ Configuration
 
     Change the file paths to the appropriate paths
 
+2. The .topo file for each test
+ 
+    Must change the IPs/login/etc to point to the nodes you want to run on
+
 Running TestON
 ------------
 
@@ -62,15 +66,15 @@ Each test has its own folder with the following files:
 
 1. .ospk file
 
-    - This is written in Openspeak, an word based languaged developed by Paxterra.
+    - This is written in Openspeak, an word based language developed by Paxterra.
 
-    - It defines the cases that the test runs as the sequence of events in general 
+    - It defines the cases and sequence of events for the test 
 
 2. .py file
  
     - This file serves the same exact function as the openspeak file. 
 
-    - It will only be run when the test is called if there is NO .ospk file, so if you like python, delete or rename the .ospk file 
+    - It will only be used if there is NO .ospk file, so if you like python, delete or rename the .ospk file 
  
 3. .topo file  
 
@@ -84,5 +88,10 @@ Each test has its own folder with the following files:
 
     - NOTE: The variable `testcases` which defines which testcases run when the test is ran. 
 
-TODO: 
+Troubleshooting
 -----------------------------------------------
+Here are a few things to check if it doesn't work
+
+1. Double check the topo file for that specific test the nodes must be able to run that specific component ( Mininet IP -> machine with mn installed)
+
+2. Enable passwordless logins between your nodes and the TestON node.  

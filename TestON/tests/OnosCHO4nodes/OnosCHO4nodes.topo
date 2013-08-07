@@ -4,7 +4,7 @@
         <Zookeeper1>
             <host>10.128.100.3</host>
             <user>admin</user>
-            <password>onos_test</password>
+            <password></password>
             <type>ZookeeperCliDriver</type>
             <connect_order>1</connect_order>
             <COMPONENTS>
@@ -14,7 +14,7 @@
         <Zookeeper2>
             <host>10.128.100.4</host>
             <user>admin</user>
-            <password>onos_test</password>
+            <password></password>
             <type>ZookeeperCliDriver</type>
             <connect_order>2</connect_order>
             <COMPONENTS>
@@ -24,7 +24,7 @@
         <Zookeeper3>
             <host>10.128.100.5</host>
             <user>admin</user>
-            <password>onos_test</password>
+            <password></password>
             <type>ZookeeperCliDriver</type>
             <connect_order>3</connect_order>
             <COMPONENTS>
@@ -34,7 +34,7 @@
         <Zookeeper4>
             <host>10.128.100.6</host>
             <user>admin</user>
-            <password>onos_test</password>
+            <password></password>
             <type>ZookeeperCliDriver</type>
             <connect_order>4</connect_order>
             <COMPONENTS>
@@ -44,7 +44,7 @@
         <Cassandra1>
             <host>10.128.100.3</host>
             <user>admin</user>
-            <password>onos_test</password>
+            <password></password>
             <type>CassandraCliDriver</type>
             <connect_order>5</connect_order>
             <COMPONENTS>
@@ -54,7 +54,7 @@
         <Cassandra2>
             <host>10.128.100.4</host>
             <user>admin</user>
-            <password>onos_test</password>
+            <password></password>
             <type>CassandraCliDriver</type>
             <connect_order>6</connect_order>
             <COMPONENTS>
@@ -64,7 +64,7 @@
         <Cassandra3>
             <host>10.128.100.5</host>
             <user>admin</user>
-            <password>onos_test</password>
+            <password></password>
             <type>CassandraCliDriver</type>
             <connect_order>7</connect_order>
             <COMPONENTS>
@@ -74,7 +74,7 @@
         <Cassandra4>
             <host>10.128.100.6</host>
             <user>admin</user>
-            <password>onos_test</password>
+            <password></password>
             <type>CassandraCliDriver</type>
             <connect_order>8</connect_order>
             <COMPONENTS>
@@ -84,7 +84,7 @@
         <ONOS1>
             <host>10.128.100.3</host>
             <user>admin</user>
-            <password>onos_test</password>
+            <password></password>
             <type>OnosCliDriver</type>
             <connect_order>9</connect_order>
             <COMPONENTS>
@@ -94,7 +94,7 @@
         <ONOS2>
             <host>10.128.100.4</host>
             <user>admin</user>
-            <password>onos_test</password>
+            <password></password>
             <type>OnosCliDriver</type>
             <connect_order>10</connect_order>
             <COMPONENTS>
@@ -104,7 +104,7 @@
         <ONOS3>
             <host>10.128.100.5</host>
             <user>admin</user>
-            <password>onos_test</password>
+            <password></password>
             <type>OnosCliDriver</type>
             <connect_order>11</connect_order>
             <COMPONENTS>
@@ -114,7 +114,7 @@
         <ONOS4>
             <host>10.128.100.6</host>
             <user>admin</user>
-            <password>onos_test</password>
+            <password></password>
             <type>OnosCliDriver</type>
             <connect_order>12</connect_order>
             <COMPONENTS>
@@ -124,7 +124,7 @@
         <Mininet1>
             <host>10.128.100.3</host>
             <user>admin</user>
-            <password>onos_test</password>
+            <password></password>
             <type>MininetCliDriver</type>
             <connect_order>13</connect_order>
             <COMPONENTS>

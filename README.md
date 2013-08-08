@@ -13,7 +13,7 @@ Setup
 1. Make a symbolic link for TestON on the HOMEDIR 
    Execute the following from the home directory  
 
-    $ ln -s ONLab/TestON TestON
+    $ ln -s ONLabTest/TestON TestON
 
 2. Make sure python path is correct 
 
@@ -31,6 +31,12 @@ Dependencies
 3. ONOS
 
 4. Mininet
+
+5. Install python packages configObj and pexpect. they can be installed as :
+
+     $ sudo pip install configObj
+
+     $ sudo easy_install pexpect 
 
 Configuration
 ------------

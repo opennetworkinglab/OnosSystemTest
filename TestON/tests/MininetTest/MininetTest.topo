@@ -66,9 +66,15 @@
             <connect_order>9</connect_order>
         </ONOS4>
         <Mininet1>
+<<<<<<< HEAD
             <host>10.128.100.11</host>
             <user>admin</user>
             <password>onos_test</password>
+=======
+            <host>10.128.100.15</host>
+            <user>user_one</user>
+            <password></password>
+>>>>>>> 229277f2a177afe10c76af83686b38645fe2abe3
             <type>MininetCliDriver</type>
             <COMPONENTS>
                 # Specify the Option for mininet

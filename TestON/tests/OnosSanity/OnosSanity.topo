@@ -4,7 +4,7 @@
         <Zookeeper1>
             <host>10.128.4.26</host>
             <user>admin</user>
-            <password>onos_test</password>
+            <password></password>
             <type>ZookeeperCliDriver</type>
             <connect_order>1</connect_order>
             <COMPONENTS>
@@ -14,7 +14,7 @@
         <Cassandra1>
             <host>10.128.4.26</host>
             <user>admin</user>
-            <password>onos_test</password>
+            <password></password>
             <type>CassandraCliDriver</type>
             <connect_order>2</connect_order>
             <COMPONENTS>
@@ -24,7 +24,7 @@
         <ONOS1>
             <host>10.128.4.26</host>
             <user>admin</user>
-            <password>onos_test</password>
+            <password></password>
             <type>OnosCliDriver</type>
             <connect_order>3</connect_order>
             <COMPONENTS>
@@ -35,7 +35,7 @@
         <Mininet1>
             <host>10.128.4.26</host>
             <user>admin</user>
-            <password>onos_test</password>
+            <password></password>
             <type>MininetCliDriver</type>
             <connect_order>4</connect_order>
             <COMPONENTS>

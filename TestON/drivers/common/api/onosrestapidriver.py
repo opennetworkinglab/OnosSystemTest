@@ -29,6 +29,7 @@ import signal
 import re
 import sys
 import time 
+import json
 
 sys.path.append("../")
 from drivers.common.apidriver import API
@@ -92,6 +93,26 @@ class OnosRestApiDriver(API):
         '''
         return response  
     
-    
-   
-    
+    def find_host(self,RestIP,RestPort,RestAPI,hostMAC):
+	retcode = 0
+	url ="http://%s:%s%s" %(RestIP,RestPort,RestAPI)
+		
+	try:
+	    command = "curl -s %s" % (url)
+	    result = os.popen(command).read()
+	    parsedResult = json.loads(result)
+            print parsedResult
+	except:
+	    print "REST IF %s has issue" % command
+	    parsedResult = ""  
+	if type(parsedResult) == 'dict' and parsedResult.has_key('code'):
+	    print "REST %s returned code %s" % (command, parsedResult['code'])
+	    parsedResult = ""
+
+    	if parsedResult == "":
+	    return (retcode, "Rest API has an error")	
+	else:
+	    found = [item for item in parsedResult if item['mac'] == [str(hostMAC)]]
+            retcode = 1
+	    return (retcode, found)
+

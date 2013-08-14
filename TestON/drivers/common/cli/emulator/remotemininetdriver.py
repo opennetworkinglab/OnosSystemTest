@@ -72,7 +72,9 @@ class RemoteMininetDriver(Emulator):
         Starts a continuous ping on the mininet host outputing to a file in the /tmp dir. 
         '''
         args = utilities.parse_args(["SRC","TARGET"],**pingParams)
-        command = "mininet/util/m " + args["SRC"] + " ping "+args ["TARGET"]+" -i .1 -D -W 1 > /tmp/ping." + args["SRC"] + " &"
+        precmd = "rm /tmp/ping." + args["SRC"]
+        self.execute(cmd=precmd,prompt="(.*)",timeout=10)
+        command = "mininet/util/m " + args["SRC"] + " ping "+args ["TARGET"]+" -i 1 -W 1 > /tmp/ping." + args["SRC"] + " &"
         main.log.info( command ) 
         self.execute(cmd=command,prompt="(.*)",timeout=10)
         return main.TRUE

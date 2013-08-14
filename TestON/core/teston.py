@@ -25,6 +25,7 @@ teston is the main module.
 '''
 
 import sys
+import pprint
 import getpass
 import os
 import re
@@ -67,7 +68,7 @@ class TestON:
         '''
         # Initialization of the variables.
         __builtin__.main = self
-        
+        pprint.pprint(sys.path)  
         __builtin__.path = path
         __builtin__.utilities = Utilities()
         self.TRUE = 1
@@ -607,6 +608,7 @@ def verifyTestScript(options):
         main.exit()
               
     try :
+        print main.classPath
         testModule = __import__(main.classPath, globals(), locals(), [main.TEST], -1)
     except(ImportError):
         print "There is no test like "+main.TEST

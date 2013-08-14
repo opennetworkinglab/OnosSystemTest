@@ -67,28 +67,28 @@
         </ONOS4>
 
         <Mininet1>
-            <host>10.128.100.4</host>
+            <host>10.128.100.11</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>MininetCliDriver</type>
             <connect_order>10</connect_order>
             <COMPONENTS>
                 # Specify the Option for mininet
-                <arg1> --custom ~/mininet/custom/topo-2sw-2host.py </arg1>
+                <arg1> --custom ~/mininet/custom/topo-onos4node.py </arg1>
                 <arg2> --topo mytopo</arg2>
-                <controller> remote </controller>
+                <controller> remote,ip=10.128.100.1,port=6633 </controller>
              </COMPONENTS>
         </Mininet1>
 
         <Mininet4>
-            <host>10.128.100.4</host>
+            <host>10.128.100.11</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>RemoteMininetDriver</type>
             <connect_order>11</connect_order>
         </Mininet4>
         <Mininet8>
-            <host>10.128.100.4</host>
+            <host>10.128.100.11</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>RemoteMininetDriver</type>

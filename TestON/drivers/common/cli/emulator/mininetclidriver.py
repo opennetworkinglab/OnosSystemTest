@@ -131,7 +131,7 @@ class MininetCliDriver(Emulator):
         *requires fping to be installed on machine running mininet 
         ''' 
         args = utilities.parse_args(["SRC","TARGET"],**pingParams)
-        command = args["SRC"] + " fping -i 100 -t 10 -C 1 -q "+args["TARGET"]
+        command = args["SRC"] + " fping -i 100 -t 20 -C 1 -q "+args["TARGET"]
         self.handle.sendline(command) 
         self.handle.expect(args["TARGET"]) 
         self.handle.expect("mininet")
@@ -139,7 +139,7 @@ class MininetCliDriver(Emulator):
         if re.search(":\s-" ,response):
             main.log.info("Ping fail") 
             return main.FALSE
-        elif re.search(":\s\d\.\d\d", response):
+        elif re.search(":\s\d{1,2}\.\d\d", response):
             main.log.info("Ping good!")
             return main.TRUE
         main.log.info("Install fping on mininet machine... ") 
@@ -150,7 +150,7 @@ class MininetCliDriver(Emulator):
         
         args = utilities.parse_args(["SRC","TARGET"],**pingParams)
         #command = args["SRC"] + " ping -" + args["CONTROLLER"] + " " +args ["TARGET"]
-        command = args["SRC"] + " ping "+args ["TARGET"]+" -c 2 -i .2"
+        command = args["SRC"] + " ping "+args ["TARGET"]+" -c 1 -i .2"
         response = self.execute(cmd=command,prompt="mininet",timeout=10 )
         if utilities.assert_matches(expect=',\s0\%\spacket\sloss',actual=response,onpass="No Packet loss",onfail="Host is not reachable"):
             main.log.info("NO PACKET LOSS, HOST IS REACHABLE")
@@ -276,12 +276,12 @@ class MininetCliDriver(Emulator):
         return main.TRUE
         
 
-    def yank(self, **yangargs):
+    def yank(self,**yankargs):
 	'''
-	yank out a mininet switch interfacet to host
+	yank a mininet switch interface to a host
 	'''
-	main.log.info('Yang out the switch interface attached to a host')
-	args = utilities.parse_args(["SW","INTF"])
+	main.log.info('Yank the switch interface attached to a host')
+	args = utilities.parse_args(["SW","INTF"],**yankargs)
 	sw = args["SW"] if args["SW"] !=None else ""
 	intf = args["INTF"] if args["INTF"] != None else ""
 	command = "py "+ str(sw) + '.detach("' + str(intf) + '")'
@@ -293,7 +293,7 @@ class MininetCliDriver(Emulator):
         plug the yanked mininet switch interface to a switch
         '''
         main.log.info('Plug the switch interface attached to a switch')
-        args = utilities.parse_args(["SW","INTF"])
+        args = utilities.parse_args(["SW","INTF"],**plugargs)
         sw = args["SW"] if args["SW"] !=None else ""
         intf = args["INTF"] if args["INTF"] != None else ""
         command = "py "+ str(sw) + '.attach("' + str(intf) + '")'
@@ -349,6 +349,8 @@ class MininetCliDriver(Emulator):
         port6 = args["PORT6"] if args["PORT6"] != None else ""
         port7 = args["PORT7"] if args["PORT7"] != None else ""
         port8 = args["PORT8"] if args["PORT8"] != None else ""
+        ptcpA = int(args["PORT1"])+int(sw) if args["PORT1"] != None else ""
+        ptcpB = "ptcp:"+str(ptcpA) if ip1 != "" else ""
         tcp1 = "tcp:"+str(ip1)+":"+str(port1) if ip1 != "" else ""
         tcp2 = "tcp:"+str(ip2)+":"+str(port2) if ip2 != "" else ""
         tcp3 = "tcp:"+str(ip3)+":"+str(port3) if ip3 != "" else ""
@@ -361,7 +363,7 @@ class MininetCliDriver(Emulator):
        # master2 = tcp2+" role master " if args["MASTER"] == 2 else ""
        # master3 = tcp3+" role master " if args["MASTER"] == 3 else ""
        # master4 = tcp4+" role master " if args["MASTER"] == 4 else ""
-        command = "sh ovs-vsctl set-controller "+str(sw)+" "+tcp1+" "+tcp2+" "+tcp3+" "+tcp4+" "+tcp5+" "+tcp6+" "+tcp7+" "+tcp8
+        command = "sh ovs-vsctl set-controller s"+str(sw)+" "+ptcpB+" "+tcp1+" "+tcp2+" "+tcp3+" "+tcp4+" "+tcp5+" "+tcp6+" "+tcp7+" "+tcp8
         self.execute(cmd=command,prompt="mininet>",timeout=5)
 
     def disconnect(self):

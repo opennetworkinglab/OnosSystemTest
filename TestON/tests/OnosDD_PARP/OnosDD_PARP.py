@@ -1,5 +1,5 @@
 
-class OnosSanity4nodes :
+class OnosDD_PARP :
 
     def __init__(self) :
         self.default = ''
@@ -60,27 +60,27 @@ class OnosSanity4nodes :
         for i in range(25): 
             if i < 3:
                 j=i+1
-                main.Mininet1.assign_sw_controller(sw="s"+str(j),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'])
+                main.Mininet1.assign_sw_controller(sw=str(j),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'])
                 time.sleep(1)
-                main.Mininet1.assign_sw_controller(sw="s"+str(j),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'])
+                main.Mininet1.assign_sw_controller(sw=str(j),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'])
                 time.sleep(1)
             elif i >= 3 and i < 5:
                 j=i+1
-                main.Mininet1.assign_sw_controller(sw="s"+str(j),ip1=main.params['CTRL']['ip2'],port1=main.params['CTRL']['port2'])
+                main.Mininet1.assign_sw_controller(sw=str(j),ip1=main.params['CTRL']['ip2'],port1=main.params['CTRL']['port2'])
                 time.sleep(1)
-                main.Mininet1.assign_sw_controller(sw="s"+str(j),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'])
+                main.Mininet1.assign_sw_controller(sw=str(j),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'])
                 time.sleep(1)
             elif i >= 5 and i < 15:
                 j=i+1
-                main.Mininet1.assign_sw_controller(sw="s"+str(j),ip1=main.params['CTRL']['ip3'],port1=main.params['CTRL']['port3'])
+                main.Mininet1.assign_sw_controller(sw=str(j),ip1=main.params['CTRL']['ip3'],port1=main.params['CTRL']['port3'])
                 time.sleep(1)
-                main.Mininet1.assign_sw_controller(sw="s"+str(j),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'])
+                main.Mininet1.assign_sw_controller(sw=str(j),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'])
                 time.sleep(1)
             else:
                 j=i+16
-                main.Mininet1.assign_sw_controller(sw="s"+str(j),ip1=main.params['CTRL']['ip4'],port1=main.params['CTRL']['port4'])
+                main.Mininet1.assign_sw_controller(sw=str(j),ip1=main.params['CTRL']['ip4'],port1=main.params['CTRL']['port4'])
                 time.sleep(1)
-                main.Mininet1.assign_sw_controller(sw="s"+str(j),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'])
+                main.Mininet1.assign_sw_controller(sw=str(j),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'])
                 time.sleep(1)
         main.Mininet1.get_sw_controller("s1")       
  
@@ -135,11 +135,11 @@ class OnosSanity4nodes :
         for i in range(25):
             if i < 15:
                 j=i+1
-                main.Mininet1.assign_sw_controller(sw="s"+str(j),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'])  #Assigning a single controller removes all other controllers
+                main.Mininet1.assign_sw_controller(sw=str(j),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'])  #Assigning a single controller removes all other controllers
                 time.sleep(1)
             else:
                 j=i+16
-                main.Mininet1.assign_sw_controller(sw="s"+str(j),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'])
+                main.Mininet1.assign_sw_controller(sw=str(j),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'])
                 time.sleep(1)
         strtTime = time.time()
         count = 1
@@ -175,11 +175,11 @@ class OnosSanity4nodes :
         for i in range(25):
             if i < 15:
                 j=i+1
-                main.Mininet1.assign_sw_controller(sw="s"+str(j),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'])
+                main.Mininet1.assign_sw_controller(sw=str(j),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'])
                 time.sleep(1)
             else:
                 j=i+16
-                main.Mininet1.assign_sw_controller(sw="s"+str(j),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'])
+                main.Mininet1.assign_sw_controller(sw=str(j),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'])
                 time.sleep(1)
         strtTime = time.time()
         count = 1
@@ -275,4 +275,104 @@ class OnosSanity4nodes :
         else:
             main.log.report("\tPING TESTS FAILED")
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="NO PACKET LOSS, HOST IS REACHABLE",onfail="PACKET LOST, HOST IS NOT REACHABLE")
+
+
+
+# **********************************************************************************************************************************************************************************************
+# Test Device Discovery function by yanking s6:s6-eth0 interface and re-plug it into a switch
+
+    def CASE21(self,main) :
+        import json
+        from drivers.common.api.onosrestapidriver import *
+        main.log.report("Test device discovery function, by attach/detach/move host h1 from s1->s6->s1.")
+        main.log.report("Check initially hostMAC exist on the mininet...")
+        host = main.params['YANK']['hostname']
+        mac = main.params['YANK']['hostmac']
+        RestIP1 = main.params['RESTCALL']['restIP1']
+        RestIP2 = main.params['RESTCALL']['restIP2']
+        RestPort = main.params['RESTCALL']['restPort']
+        url = main.params['RESTCALL']['restURL']
+        #print "host=" + host + ";  RestIP=" + RestIP1 + ";  RestPort=" + str(RestPort)
+        
+        main.log.info("\n\t\t\t\t ping issue one ping from" + str(host) + "to generate arp to switch. Ping result is not important" )
+        ping = main.Mininet1.pingHost(src = str(host),target = "10.0.0.254")
+        restcall = OnosRestApiDriver()
+        Reststatus, Hoststatus = restcall.find_host(RestIP1,RestPort,url,mac)
+        try:
+            attachedSW = Hoststatus[0]['attachmentPoint'][0]['switchDPID']
+        except IndexError:
+            Reststatus = 0
+        if Reststatus == 1:
+            main.log.report("\tFound host " + host + " attached to switchDPID = " + attachedSW)
+            result = main.TRUE
+        else:
+            main.log.report("\t Host " + host + " with MAC:" + str(mac) + " does not exist. FAILED")
+            result = main.FALSE
+
+        ##### Step to yank out "s1-eth1" from s1, which is on autoONOS1 #####
+
+        main.log.report("Yank out s1-eth1")
+        main.case("Yankout s6-eth1 (link to h1) from s1")
+        result = main.Mininet1.yank(SW=main.params['YANK']['sw1'],INTF=main.params['YANK']['intf'])
+        time.sleep(3)
+        utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Yank command suceeded",onfail="Yank command failed...")
+        ping = main.Mininet1.pingHost(src = str(host),target = "10.0.0.254")
+        Reststatus, Hoststatus = restcall.find_host(RestIP1,RestPort,url,mac)
+        try:
+            attachedSW = Hoststatus[0]['attachmentPoint'][0]['switchDPID']
+        except IndexError:
+            Reststatus = 0
+        if Reststatus == 0:
+            main.log.report("Attemp to yank out s1-eth1 from s1 sucessfully")
+            result = main.TRUE
+        else:
+            main.log.report("Attemp to yank out s1-eht1 from s1 failed.")
+            result = main.FALSE
+        
+        ##### Step to plug "s1-eth1" to s6, which is on autoONOS3  ######
+        main.log.report("Plug s1-eth1 into s6")
+        main.case("Plug s1-eth1 to s6")
+        result = main.Mininet1.plug(SW=main.params['PLUG']['sw6'],INTF=main.params['PLUG']['intf'])
+        time.sleep(3)
+        utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Plug command suceeded",onfail="Plug command failed...")
+        ping = main.Mininet1.pingHost(src = str(host),target = "10.0.0.254")
+        Reststatus, Hoststatus = restcall.find_host(RestIP2,RestPort,url,mac)
+        try:
+            attachedSW = Hoststatus[0]['attachmentPoint'][0]['switchDPID']
+        except IndexError:
+            Reststatus = 0
+        if Reststatus == 0:
+            main.log.report("Attemp to plug s1-eth1 to s6 FAILED")
+            result = main.FALSE
+        elif attachedSW == "00:00:00:00:00:00:00:06":
+            main.log.report("Attemp to plug s1-eht1 to s6 succeded.")
+            result = main.TRUE
+        else:
+            main.log.report( "FAILED to attach s1-eth1 to s6 correctly!")
+            result = main.FALSE
+
+	###### Step to put interface "s1-eth1" back to s1"#####
+        main.log.report("Move s1-eth1 back on to s1")
+        main.case("Move s1-eth1 back to s1")
+        result = main.Mininet1.yank(SW=main.params['YANK']['sw6'],INTF=main.params['YANK']['intf'])
+        time.sleep(3)
+        retult = main.Mininet1.plug(SW=main.params['PLUG']['sw1'],INTF=main.params['PLUG']['intf'])
+        utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Yank/Plug command suceeded",onfail="Yank/Plug command failed...")
+        ping = main.Mininet1.pingHost(src = str(host),target = "10.0.0.254")
+        Reststatus, Hoststatus = restcall.find_host(RestIP1,RestPort,url,mac)
+        try:
+            attachedSW = Hoststatus[0]['attachmentPoint'][0]['switchDPID']
+        except IndexError:
+            Reststatus = 0
+        if Reststatus == 0:
+            main.log.report("Attemp to plug s1-eth1 back to s1 FAILED")
+            result = main.FALSE
+        elif attachedSW == "00:00:00:00:00:00:00:01":
+            main.log.report("Attemp to plug s1-eht1 back to s1 succeded.")
+            result = main.TRUE
+        else:
+            main.log.report( "FAIL to attach s1-eth1 to s1 correctly!")
+            result = main.FALSE
+
+        utilities.assert_equals(expect=main.TRUE,actual=result,onpass="DEVICE DISCOVERY TEST PASSED PLUG/UNPLUG/MOVE TEST",onfail="DIVICE DISCOVERY TEST FAILED")
 

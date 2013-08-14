@@ -70,7 +70,7 @@
         </Cassandra4>
 
         <Mininet1>
-            <host>10.128.100.4</host>
+            <host>10.128.100.11</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>MininetCliDriver</type>
@@ -79,7 +79,7 @@
                 # Specify the Option for mininet
                 <arg1> </arg1>
                 <arg2> --topo linear,100 </arg2>
-                <controller> remote </controller>
+                <controller> remote,ip=10.128.100.1,port=6633 </controller>
              </COMPONENTS>
         </Mininet1>
 

@@ -1,5 +1,5 @@
 <PARAMS>
-    <testcases>1,2,3,4,5,6,7</testcases>
+    <testcases>1,2,21,3</testcases>
     <FLOWDEF>~/flowdef_files/Center_Triangle/flowdef_20.txt</FLOWDEF>
     <CASE1>       
         <destination>h6</destination>
@@ -14,6 +14,18 @@
         <begin>s1</begin>
         <end>s2</end>
     </LINK>
+    <YANK>
+        <hostname>h1</hostname>
+        <hostmac>00:00:00:00:00:01</hostmac>
+	<sw1>s1</sw1>
+        <sw6>s6</sw6>
+        <intf>s1-eth1</intf>
+    </YANK>
+    <PLUG>
+        <intf>s1-eth1</intf>
+	<sw6>s6</sw6>
+	<sw1>s1</sw1>
+    </PLUG>
     <CTRL>
         <ip1>10.128.100.1</ip1>
         <port1>6633</port1>
@@ -24,4 +36,10 @@
         <ip4>10.128.100.6</ip4>
         <port4>6633</port4>
     </CTRL>
+    <RESTCALL>
+	<restIP1>10.128.100.1</restIP1>
+	<restIP2>10.128.100.5</restIP2>
+	<restPort>8080</restPort>
+	<restURL>/wm/device/</restURL>
+    </RESTCALL>
 </PARAMS>      

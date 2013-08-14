@@ -59,14 +59,12 @@ class OnosCliDriver(CLI):
         '''
         self.handle.sendline("")
         self.handle.expect("\$")
-        self.handle.sendline("cd ~/ONOS")
-        self.handle.expect("ONOS\$")
-        self.handle.sendline("./start-onos.sh start")
+        self.handle.sendline("~/ONOS/start-onos.sh start")
         self.handle.expect("onos.sh start")
         i=self.handle.expect(["Starting\sONOS\scontroller","Cassandra\sis\snot\srunning"])
         if i==0:
             try: 
-                self.handle.expect("ONOS\$", timeout=60)
+                self.handle.expect("\$", timeout=60)
                 main.log.info("ONOS Started ") 
             except:  
                 main.log.info("ONOS NOT Started, stuck while waiting for it to start ") 
@@ -111,8 +109,7 @@ class OnosCliDriver(CLI):
         '''
         Starts the rest server on ONOS.
         '''
-        self.execute(cmd="cd ONOS",prompt="ONOS\$",timeout=10)
-        response = self.execute(cmd="start-rest.sh start",prompt="\$",timeout=10)
+        response = self.execute(cmd="~/ONOS/start-rest.sh start",prompt="\$",timeout=10)
         if re.search("admin",response):
             main.log.info("Rest Server Started Successfully")
             time.sleep(5)
@@ -190,12 +187,10 @@ class OnosCliDriver(CLI):
         '''
         self.handle.sendline("")
         self.handle.expect("\$")
-        self.handle.sendline("cd ~/ONOS")
-        self.handle.expect("ONOS\$")
-        self.handle.sendline("./start-onos.sh stop")
+        self.handle.sendline("~/ONOS/start-onos.sh stop")
         self.handle.expect("stop", 2)
         result = self.handle.before 
-        self.handle.expect("ONOS\$", 60)
+        self.handle.expect("\$", 60)
         if re.search("Killed", result):
             main.log.info("ONOS Killed Successfully")
             return main.TRUE
@@ -507,7 +502,7 @@ class OnosCliDriver(CLI):
         '''
         Used by CassndraCheck.py to scan ONOS logs for Exceptions
         '''
-        self.handle.sendline(r"dsh 'grep Exception ~/ONOS/onos-logs/onos.*.log'")
+        self.handle.sendline("dsh 'grep Exception ~/ONOS/onos-logs/onos.*.log'")
         self.handle.expect("\$ dsh") 
         self.handle.expect("\$")
         output = self.handle.before
@@ -527,7 +522,8 @@ class OnosCliDriver(CLI):
         self.handle.sendline("cd ~/ONOS") 
         self.handle.expect("ONOS\$")
         self.handle.sendline("git pull")
-        
+       
+        uptodate = 0 
         i=self.handle.expect(['fatal','Username\sfor\s(.*):\s','Unpacking\sobjects',pexpect.TIMEOUT,'Already up-to-date','Aborting'],timeout=180)
         if i==0:
             main.log.error("Git pull had some issue...") 
@@ -553,12 +549,13 @@ class OnosCliDriver(CLI):
             main.log.error("TIMEOUT")
             return main.FALSE
         elif i==4:
-            main.log.info("Already up to date") 
+            main.log.info("Already up to date")
+            uptodate = 1 
         elif i==5:
             main.log.info("Aborting... Are there conflicting git files?")
             return main.FALSE
         
-        
+        '''        
         main.log.info("./setup-local-maven.sh")
         self.handle.sendline("./setup-local-maven.sh")
         self.handle.expect("local-maven.sh")
@@ -575,36 +572,37 @@ class OnosCliDriver(CLI):
             elif i == 3:
                 main.log.error("TIMEOUT!")
                 return main.FALSE
- 
-        main.log.info("mvn clean") 
-        self.handle.sendline("mvn clean")
-        while 1: 
-            i=self.handle.expect(['BUILD\sFAILURE','BUILD\sSUCCESS','ONOS\$',pexpect.TIMEOUT],timeout=30)
-            if i == 0:
-                main.log.error("Build failure!")
-                return main.FALSE
-            elif i == 1:
-                main.log.info("Build success!")
-            elif i == 2:
-                main.log.info("Build complete") 
-                break;
-            elif i == 3:
-                main.log.error("TIMEOUT!")
-                return main.FALSE
+        '''      
+        if uptodate == 0:
+            main.log.info("mvn clean") 
+            self.handle.sendline("mvn clean")
+            while 1: 
+                i=self.handle.expect(['BUILD\sFAILURE','BUILD\sSUCCESS','ONOS\$',pexpect.TIMEOUT],timeout=30)
+                if i == 0:
+                    main.log.error("Build failure!")
+                    return main.FALSE
+                elif i == 1:
+                    main.log.info("Build success!")
+                elif i == 2:
+                    main.log.info("Build complete") 
+                    break;
+                elif i == 3:
+                    main.log.error("TIMEOUT!")
+                    return main.FALSE
         
-        main.log.info("mvn compile") 
-        self.handle.sendline("mvn compile")
-        while 1: 
-            i=self.handle.expect(['BUILD\sFAILURE','BUILD\sSUCCESS','ONOS\$',pexpect.TIMEOUT],timeout=30)
-            if i == 0:
-                main.log.error("Build failure!")
-                return main.FALSE
-            elif i == 1:
-                main.log.info("Build success!")
-            elif i == 2:
-                main.log.info("Build complete") 
-                break;
-            elif i == 3:
-                main.log.error("TIMEOUT!")
-                return main.FALSE
+            main.log.info("mvn compile") 
+            self.handle.sendline("mvn compile")
+            while 1: 
+                i=self.handle.expect(['BUILD\sFAILURE','BUILD\sSUCCESS','ONOS\$',pexpect.TIMEOUT],timeout=30)
+                if i == 0:
+                    main.log.error("Build failure!")
+                    return main.FALSE
+                elif i == 1:
+                    main.log.info("Build success!")
+                elif i == 2:
+                    main.log.info("Build complete") 
+                    break;
+                elif i == 3:
+                    main.log.error("TIMEOUT!")
+                    return main.FALSE
         

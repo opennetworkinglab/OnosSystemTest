@@ -76,7 +76,17 @@ class OnosCliDriver(CLI):
         
         main.log.error("ONOS expect script missed something... ") 
         return main.FALSE
-    
+ 
+    def start_embedded(self):
+        self.handle.sendline("")
+        self.handle.expect("\$")
+        self.handle.sendline("~/ONOS/start-onos-embedded.sh start")
+        try:
+            self.handle.expect("start...")
+            main.log.info("Embedded ONOS started")
+        except:
+            main.log.info("Embedded ONOS failed to start")
+
     def link_down(self, **linkParams):
         '''
         Specifically used for the ONOS demo on the HW.

@@ -14,6 +14,11 @@ class OnosSanity4nodes :
         main.ONOS2.git_pull()
         main.ONOS3.git_pull()
         main.ONOS4.git_pull()
+        main.Cassandra1.start()
+        main.Cassandra2.start()
+        main.Cassandra3.start()
+        main.Cassandra4.start()
+        time.sleep(20)
         main.ONOS1.drop_keyspace()
         main.ONOS1.start()
         time.sleep(10)
@@ -113,7 +118,7 @@ class OnosSanity4nodes :
         main.case("Checking flows")
         tmp = main.FALSE
         count = 1
-        main.log.info("Wait for flows to settle, then check")
+        main.log.info("Wait for flows to be pushed to the switches, then check")
         while tmp == main.FALSE:
             main.step("Waiting")
             time.sleep(10)
@@ -178,7 +183,8 @@ class OnosSanity4nodes :
             else:
                 j=i+16
                 main.Mininet1.assign_sw_controller(sw=str(j),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'])
-       
+      
+        strtTime = time.time() 
         result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
         for i in range(2):
             if result == main.FALSE:
@@ -187,7 +193,6 @@ class OnosSanity4nodes :
             else:
                 break
 
-        strtTime = time.time()
         count = 1
         i = 6
         while i < 16 :
@@ -225,7 +230,8 @@ class OnosSanity4nodes :
             else:
                 j=i+16
                 main.Mininet1.assign_sw_controller(sw=str(j),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'])
-       
+      
+        strtTime = time.time() 
         result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
         for i in range(2):
             if result == main.FALSE:
@@ -234,7 +240,6 @@ class OnosSanity4nodes :
             else:
                 break
 
-        strtTime = time.time()
         count = 1
         i = 6
         while i < 16 :
@@ -263,13 +268,13 @@ class OnosSanity4nodes :
 #Brings a link that all flows pass through in the mininet down, then runs a ping test to view reroute time
 
     def CASE6(self,main) :
-        main.log.report("Bring Link between s1 and s2 down, wait 15 seconds, then ping until all hosts are reachable or fail after 6 attempts")
+        main.log.report("Bring Link between s1 and s2 down, then ping until all hosts are reachable or fail after 10 attempts")
         import time
         main.case("Bringing Link down... ")
         result = main.Mininet1.link(END1=main.params['LINK']['begin'],END2=main.params['LINK']['end'],OPTION="down")
-        time.sleep(15)
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Link DOWN!",onfail="Link not brought down...")
-        
+       
+        strtTime = time.time() 
         result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],str(int(main.params['NR_Links'])-2))
         for i in range(2):
             if result == main.FALSE:
@@ -278,18 +283,17 @@ class OnosSanity4nodes :
             else:
                 break
 
-        strtTime = time.time()
         count = 1
         i = 6
         while i < 16 :
             main.log.info("\n\t\t\t\th"+str(i)+" IS PINGING h"+str(i+25) )
             ping = main.Mininet1.pingHost(src="h"+str(i),target="h"+str(i+25))
-            if ping == main.FALSE and count < 6:
+            if ping == main.FALSE and count < 10:
                 count = count + 1
                 main.log.info("Ping failed, making attempt number "+str(count)+" in 5 seconds")
                 i = 6
                 time.sleep(5)
-            elif ping == main.FALSE and count ==6:
+            elif ping == main.FALSE and count == 10:
                 main.log.error("Ping test failed")
                 i = 17
                 result = main.FALSE
@@ -307,13 +311,13 @@ class OnosSanity4nodes :
 #Brings the link that Case 6 took down  back up, then runs a ping test to view reroute time
 
     def CASE7(self,main) :
-        main.log.report("Bring Link between s1 and s2 up, wait 15 seconds, then ping until all hosts are reachable or fail after 6 attempts")
+        main.log.report("Bring Link between s1 and s2 up, then ping until all hosts are reachable or fail after 10 attempts")
         import time
         main.case("Bringing Link up... ")
         result = main.Mininet1.link(END1=main.params['LINK']['begin'],END2=main.params['LINK']['end'],OPTION="up")
-        time.sleep(15)
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Link UP!",onfail="Link not brought up...")
-       
+      
+        strtTime = time.time() 
         result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
         for i in range(2):
             if result == main.FALSE:
@@ -328,12 +332,12 @@ class OnosSanity4nodes :
         while i < 16 :
             main.log.info("\n\t\t\t\th"+str(i)+" IS PINGING h"+str(i+25) )
             ping = main.Mininet1.pingHost(src="h"+str(i),target="h"+str(i+25))
-            if ping == main.FALSE and count < 6:
+            if ping == main.FALSE and count < 10:
                 count = count + 1
                 main.log.info("Ping failed, making attempt number "+str(count)+" in 5 seconds")
                 i = 6
                 time.sleep(5)
-            elif ping == main.FALSE and count ==6:
+            elif ping == main.FALSE and count ==10:
                 main.log.error("Ping test failed")
                 i = 17
                 result = main.FALSE

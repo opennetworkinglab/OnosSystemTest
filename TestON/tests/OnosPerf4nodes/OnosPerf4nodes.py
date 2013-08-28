@@ -14,10 +14,10 @@ class OnosPerf4nodes:
         import time
         main.log.report("Checking if the startup was clean") 
         main.case("Checking if the startup was clean...")
-        #main.ONOS1.stop()
-        #main.ONOS2.stop()
-        #main.ONOS3.stop()
-        #main.ONOS4.stop()
+        main.ONOS1.stop()
+        main.ONOS2.stop()
+        main.ONOS3.stop()
+        main.ONOS4.stop()
         main.step("Testing startup Zookeeper")
         main.ONOS1.get_version()
         data =  main.Zookeeper1.isup()
@@ -246,7 +246,7 @@ class OnosPerf4nodes:
         '''
         import os
         import time
-        main.log.report("Process ping data")
+        main.log.report("Process ping data (Fail is time is >20 seconds)")
         main.case("Processing Ping data") 
         time.sleep(3) 
         #result=os.popen("/home/admin/tools/shell.sh " + main.params['Iterations']).read()
@@ -275,7 +275,7 @@ class OnosPerf4nodes:
         main.log.report("Start continuous pings, then toggle multiple links in center triangle")
         import time
         import os
-
+        time.sleep(20)
         main.case("Starting long ping... ")
         main.Mininet4.pingLong(src=main.params['PING']['source1'],target=main.params['PING']['target1'])
         main.Mininet4.pingLong(src=main.params['PING']['source2'],target=main.params['PING']['target2'])
@@ -319,43 +319,20 @@ class OnosPerf4nodes:
         main.case("Killing remote ping processes ")
         result =  result & main.Mininet4.pingKill()
         utilities.assert_equals(expect=main.TRUE,actual=result)
-
-    def CASE9(self,main) :
-        '''
-        Processes all of the ping data and outputs raw data and an overall average
-        '''
-        import os
-        import time
-        main.log.report("Process ping data")
-        main.case("Processing Ping data")
-        time.sleep(3)
-        #result=os.popen("/home/admin/tools/shell.sh " + main.params['Iterations']).read()
-        result=os.popen("/home/admin/get_reroute_times.py").read()
-        average=result.split(":")[1]
-        main.log.info( "Reroute times are... " )
-        main.log.report( result )
-        try:
-            if float(average) < float(main.params['TargetTime']) :
-                test=main.TRUE
-            else:
-                test=main.FALSE
-        except ValueError:
-            main.log.error("Data is corrupted")
-            test=main.FALSE
-        utilities.assert_equals(expect=main.TRUE,actual=test,onpass="Average is less then the target time!",onfail="Average is worse then target time... ")
-
-    def CASE10(self,main) :
-        '''
-        Starts continuous pings on the Mininet nodes
-        '''
         main.log.info("Make sure all links in triangle are up")
         main.Mininet1.link(END1="s1",END2="s2",OPTION="up")
         main.Mininet1.link(END1="s1",END2="s3",OPTION="up")
         main.Mininet1.link(END1="s2",END2="s3",OPTION="up")
+
+    def CASE9(self,main) :
+        '''
+        Starts continuous pings on the Mininet nodes
+        '''
         main.log.report("Start continuous pings, then toggle one link in center triangle and start/stop 1 ONOS node")
         import time
         import os
 
+        time.sleep(20)
         main.case("Starting long ping... ")
         main.Mininet4.pingLong(src=main.params['PING']['source1'],target=main.params['PING']['target1'])
         main.Mininet4.pingLong(src=main.params['PING']['source2'],target=main.params['PING']['target2'])
@@ -416,26 +393,3 @@ class OnosPerf4nodes:
         result =  result & main.Mininet4.pingKill()
         utilities.assert_equals(expect=main.TRUE,actual=result)
 
-    def CASE11(self,main) :
-        '''
-        Processes all of the ping data and outputs raw data and an overall average
-        '''
-        import os
-        import time
-        main.log.report("Process ping data")
-        main.case("Processing Ping data")
-        time.sleep(3)
-        #result=os.popen("/home/admin/tools/shell.sh " + main.params['Iterations']).read()
-        result=os.popen("/home/admin/get_reroute_times.py").read()
-        average=result.split(":")[1]
-        main.log.info( "Reroute times are... " )
-        main.log.report( result )
-        try:
-            if float(average) < float(main.params['TargetTime']) :
-                test=main.TRUE
-            else:
-                test=main.FALSE
-        except ValueError:
-            main.log.error("Data is corrupted")
-            test=main.FALSE
-        utilities.assert_equals(expect=main.TRUE,actual=test,onpass="Average is less then the target time!",onfail="Average is worse then target time... ")

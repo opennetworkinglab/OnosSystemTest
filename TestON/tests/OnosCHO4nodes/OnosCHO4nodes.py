@@ -9,29 +9,11 @@ class OnosCHO4nodes :
 #Tests the startup of Zookeeper1, Cassandra1, and ONOS1 to be certain that all started up successfully
     def CASE1(self,main) :  #Check to be sure ZK, Cass, and ONOS are up, then get ONOS version
         import time
-        main.log.report("Pulling latest code from github to all nodes")
+        main.log.report("Setting up fresh database")
         main.ONOS1.stop()
         main.ONOS2.stop()
         main.ONOS3.stop()
         main.ONOS4.stop()
-        main.ONOS1.drop_keyspace()
-        main.ONOS1.start()
-        time.sleep(10)
-        main.ONOS2.start()
-        main.ONOS3.start()
-        main.ONOS4.start()
-        main.ONOS1.start_rest()
-        time.sleep(5)
-        test= main.ONOS1.rest_status()
-        if test == main.FALSE:
-            main.ONOS1.start_rest()
-        main.ONOS1.get_version()
-        main.log.report("Startup check Zookeeper1, Cassandra1, and ONOS1 connections")
-        main.case("Checking if the startup was clean...")
-        main.step("Testing startup Zookeeper")   
-        data =  main.Zookeeper1.isup()
-        utilities.assert_equals(expect=main.TRUE,actual=data,onpass="Zookeeper is up!",onfail="Zookeeper is down...")
-        main.step("Testing startup Cassandra")   
         data =  main.Cassandra1.isup()
         if data == main.FALSE:
             main.Cassandra1.stop()
@@ -40,21 +22,46 @@ class OnosCHO4nodes :
             main.Cassandra4.stop()
 
             time.sleep(5)
- 
+
             main.Cassandra1.start()
             main.Cassandra2.start()
             main.Cassandra3.start()
             main.Cassandra4.start()
         utilities.assert_equals(expect=main.TRUE,actual=data,onpass="Cassandra is up!",onfail="Cassandra is down...")
+        main.ONOS1.drop_keyspace()
+        main.ONOS1.start()
+        main.ONOS2.start()
+        main.ONOS3.start()
+        main.ONOS4.start()
+        '''
+        For embedded ONOS
+        main.Cassandra1.stop()
+        main.Cassandra1.stop()
+        main.Cassandra1.stop()
+        main.Cassandra1.stop()
+        main.log.report("Starting embedded ONOS")
+        main.ONOS1.start_embedded()
+        time.sleep(30)
+        main.ONOS2.start_embedded()
+        main.ONOS3.start_embedded()
+        main.ONOS4.start_embedded()
+        '''
+        main.ONOS1.start_rest()
+        time.sleep(30)
+        test= main.ONOS1.rest_status()
+        if test == main.FALSE:
+            main.ONOS1.start_rest()
+        main.ONOS1.get_version()
+        main.log.report("Startup check Zookeeper1, Cassandra1, and ONOS1 connections")
+        main.case("Checking if the startup was clean...")
+        main.step("Testing startup Zookeeper")
+        main.step("Testing startup Cassandra")
+        data =  main.Cassandra1.isup()
+        utilities.assert_equals(expect=main.TRUE,actual=data,onpass="Cassandra is up!",onfail="Cassandra is down...")
+        data =  main.Zookeeper1.isup()
+        utilities.assert_equals(expect=main.TRUE,actual=data,onpass="Zookeeper is up!",onfail="Zookeeper is down...")
         main.step("Testing startup ONOS")   
         data = main.ONOS1.isup()
-        if data == main.FALSE: 
-            main.log.report("Something is funny... restarting ONOS")
-            main.ONOS1.stop()
-            time.sleep(3)
-            main.ONOS1.start()
-            time.sleep(5) 
-            data = main.ONOS1.isup()
         utilities.assert_equals(expect=main.TRUE,actual=data,onpass="ONOS is up and running!",onfail="ONOS didn't start...")
            
 #**********************************************************************************************************************************************************************************************
@@ -113,7 +120,7 @@ class OnosCHO4nodes :
         main.case("Checking flows")
         tmp = main.FALSE
         count = 1
-        main.log.info("Wait for flows to settle, then check")
+        main.log.info("Wait for flows to be pushed to the switches, then check")
         while tmp == main.FALSE:
             main.step("Waiting")
             time.sleep(10)
@@ -130,7 +137,7 @@ class OnosCHO4nodes :
                 break
         endTime = time.time()
         if result1 == main.TRUE:
-            main.log.report("\n\t\t\t\tTime to add flows: "+str(round(endTime-strtTime,2))+" seconds")
+            main.log.report("\n\t\t\t\tTime to add flows: "+str(round(endTime-strtTime,2)))
         else:
             main.log.report("\tFlows failed check")
         
@@ -154,7 +161,7 @@ class OnosCHO4nodes :
                 result2 = main.TRUE
         endTime = time.time()
         if result2 == main.TRUE:
-            main.log.report("\tTime to complete ping test: "+str(round(endTime-strtTime,2))+" seconds")
+            main.log.report("\tTime to complete ping test: "+str(round(endTime-strtTime,2)))
         else:
             main.log.report("\tPING TEST FAIL")
 
@@ -169,17 +176,43 @@ class OnosCHO4nodes :
 #If the ping test fails 6 times, then the test case will return false
 
     def CASE4(self,main) :
-        main.log.report("Remove ONOS 2,3,4 then ping until all hosts are reachable or fail after 6 attempts")
+        main.log.report("Remove all but one ONOS node then ping until all hosts are reachable or fail after 6 attempts")
         import time
+        import random
+
+        random.seed(None)
+
+        rand = random.randrange(4)
+
+        if rand == 0:
+            main.log.info("Controller 1 will be the lone coontroller")
+            ip = main.params['CTRL']['ip1']
+            port = main.params['CTRL']['port1']
+        elif rand == 1:
+            main.log.info("Controller 2 will be the lone controller")
+            ip = main.params['CTRL']['ip2']
+            port = main.params['CTRL']['port2']
+        elif rand == 2:
+            main.log.info("Controller 3 will be the lone controller")
+            ip = main.params['CTRL']['ip3']
+            port = main.params['CTRL']['port3']
+        elif rand == 3:
+            main.log.info("Controller 4 will be the lone controller")
+            ip = main.params['CTRL']['ip4']
+            port = main.params['CTRL']['port4']
+
         for i in range(25):
             if i < 15:
                 j=i+1
-                main.Mininet1.assign_sw_controller(sw=str(j),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'])  #Assigning a single controller removes all other controllers
+                main.Mininet1.assign_sw_controller(sw=str(j),ip1=ip,port1=port)  #Assigning a single controller removes all other controllers
             else:
                 j=i+16
-                main.Mininet1.assign_sw_controller(sw=str(j),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'])
+                main.Mininet1.assign_sw_controller(sw=str(j),ip1=ip,port1=port)
        
         result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
+ 
+        strtTime = time.time()
+
         for i in range(2):
             if result == main.FALSE:
                 time.sleep(5)
@@ -187,7 +220,6 @@ class OnosCHO4nodes :
             else:
                 break
 
-        strtTime = time.time()
         count = 1
         i = 6
         while i < 16 :
@@ -207,7 +239,7 @@ class OnosCHO4nodes :
                 result = main.TRUE
         endTime = time.time() 
         if result == main.TRUE:
-            main.log.report("\tTime to complete ping test: "+str(round(endTime-strtTime,2))+" seconds")
+            main.log.report("\tTime to complete ping test: "+str(round(endTime-strtTime,2)))
         else:
             main.log.report("\tPING TEST FAIL")
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="NO PACKET LOSS, HOST IS REACHABLE",onfail="PACKET LOST, HOST IS NOT REACHABLE")
@@ -227,6 +259,9 @@ class OnosCHO4nodes :
                 main.Mininet1.assign_sw_controller(sw=str(j),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'])
        
         result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
+       
+        strtTime = time.time()
+
         for i in range(2):
             if result == main.FALSE:
                 time.sleep(5)
@@ -234,7 +269,6 @@ class OnosCHO4nodes :
             else:
                 break
 
-        strtTime = time.time()
         count = 1
         i = 6
         while i < 16 :
@@ -254,7 +288,7 @@ class OnosCHO4nodes :
                 result = main.TRUE
         endTime = time.time()
         if result == main.TRUE:
-            main.log.report("\tTime to complete ping test: "+str(round(endTime-strtTime,2))+" seconds")
+            main.log.report("\tTime to complete ping test: "+str(round(endTime-strtTime,2)))
         else:
             main.log.report("\tPING TEST FAILED")
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="NO PACKET LOSS, HOST IS REACHABLE",onfail="PACKET LOST, HOST IS NOT REACHABLE")
@@ -263,13 +297,15 @@ class OnosCHO4nodes :
 #Brings a link that all flows pass through in the mininet down, then runs a ping test to view reroute time
 
     def CASE6(self,main) :
-        main.log.report("Bring Link between s1 and s2 down, wait 15 seconds, then ping until all hosts are reachable or fail after 6 attempts")
+        main.log.report("Bring Link between s1 and s2 down, then ping until all hosts are reachable or fail after 10 attempts")
         import time
         main.case("Bringing Link down... ")
         result = main.Mininet1.link(END1=main.params['LINK']['begin'],END2=main.params['LINK']['end'],OPTION="down")
         time.sleep(15)
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Link DOWN!",onfail="Link not brought down...")
-        
+       
+        strtTime = time.time()
+ 
         result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],str(int(main.params['NR_Links'])-2))
         for i in range(2):
             if result == main.FALSE:
@@ -278,18 +314,17 @@ class OnosCHO4nodes :
             else:
                 break
 
-        strtTime = time.time()
         count = 1
         i = 6
         while i < 16 :
             main.log.info("\n\t\t\t\th"+str(i)+" IS PINGING h"+str(i+25) )
             ping = main.Mininet1.pingHost(src="h"+str(i),target="h"+str(i+25))
-            if ping == main.FALSE and count < 6:
+            if ping == main.FALSE and count < 10:
                 count = count + 1
                 main.log.info("Ping failed, making attempt number "+str(count)+" in 5 seconds")
                 i = 6
                 time.sleep(5)
-            elif ping == main.FALSE and count ==6:
+            elif ping == main.FALSE and count == 10:
                 main.log.error("Ping test failed")
                 i = 17
                 result = main.FALSE
@@ -298,7 +333,7 @@ class OnosCHO4nodes :
                 result = main.TRUE
         endTime = time.time()
         if result == main.TRUE:
-            main.log.report("\tTime to complete ping test: "+str(round(endTime-strtTime,2))+" seconds")
+            main.log.report("\tTime to complete ping test: "+str(round(endTime-strtTime,2)))
         else:
             main.log.report("\tPING TEST FAILED")
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="NO PACKET LOSS, HOST IS REACHABLE",onfail="PACKET LOST, HOST IS NOT REACHABLE")
@@ -307,13 +342,15 @@ class OnosCHO4nodes :
 #Brings the link that Case 6 took down  back up, then runs a ping test to view reroute time
 
     def CASE7(self,main) :
-        main.log.report("Bring Link between s1 and s2 up, wait 15 seconds, then ping until all hosts are reachable or fail after 6 attempts")
+        main.log.report("Bring Link between s1 and s2 up, then ping until all hosts are reachable or fail after 10 attempts")
         import time
         main.case("Bringing Link up... ")
         result = main.Mininet1.link(END1=main.params['LINK']['begin'],END2=main.params['LINK']['end'],OPTION="up")
         time.sleep(15)
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Link UP!",onfail="Link not brought up...")
        
+        strtTime = time.time()
+
         result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
         for i in range(2):
             if result == main.FALSE:
@@ -328,12 +365,12 @@ class OnosCHO4nodes :
         while i < 16 :
             main.log.info("\n\t\t\t\th"+str(i)+" IS PINGING h"+str(i+25) )
             ping = main.Mininet1.pingHost(src="h"+str(i),target="h"+str(i+25))
-            if ping == main.FALSE and count < 6:
+            if ping == main.FALSE and count < 10:
                 count = count + 1
                 main.log.info("Ping failed, making attempt number "+str(count)+" in 5 seconds")
                 i = 6
                 time.sleep(5)
-            elif ping == main.FALSE and count ==6:
+            elif ping == main.FALSE and count == 10:
                 main.log.error("Ping test failed")
                 i = 17
                 result = main.FALSE
@@ -342,7 +379,7 @@ class OnosCHO4nodes :
                 result = main.TRUE
         endTime = time.time()
         if result == main.TRUE:
-            main.log.report("\tTime to complete ping test: "+str(round(endTime-strtTime,2))+" seconds")
+            main.log.report("\tTime to complete ping test: "+str(round(endTime-strtTime,2)))
         else:
             main.log.report("\tPING TESTS FAILED")
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="NO PACKET LOSS, HOST IS REACHABLE",onfail="PACKET LOST, HOST IS NOT REACHABLE")

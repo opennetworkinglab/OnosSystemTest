@@ -1,5 +1,5 @@
 
-class OnosSanity4nodes :
+class testDD :
 
     def __init__(self) :
         self.default = ''
@@ -100,13 +100,6 @@ class OnosSanity4nodes :
                 time.sleep(1)
                 main.Mininet1.assign_sw_controller(sw=str(j),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'])
         main.Mininet1.get_sw_controller("s1")       
-
-        for i in range(9):
-            if result == main.FALSE:
-                time.sleep(3)
-                result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
-            else:
-                break 
  
 # **********************************************************************************************************************************************************************************************
 #Add Flows
@@ -116,15 +109,6 @@ class OnosSanity4nodes :
     def CASE3(self,main) :    #Delete any remnant flows, then add flows, and time how long it takes flow tables to update
         main.log.report("Delete any flows from previous tests, then add flows from FLOWDEF file, then wait for switch flow tables to update")
         import time
-
-        result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
-        for i in range(9):
-            if result == main.FALSE:
-                time.sleep(3)
-                result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
-            else:
-                break
-
         main.case("Taking care of these flows!") 
         main.step("Cleaning out any leftover flows...")
         main.ONOS1.delete_flow("all")
@@ -137,7 +121,7 @@ class OnosSanity4nodes :
         main.log.info("Wait for flows to be pushed to the switches, then check")
         while tmp == main.FALSE:
             main.step("Waiting")
-            time.sleep(5)
+            time.sleep(10)
             main.step("Checking")
             tmp = main.ONOS1.check_flow()
             if tmp == main.FALSE and count < 6:
@@ -155,6 +139,7 @@ class OnosSanity4nodes :
         else:
             main.log.report("\tFlows failed check")
         
+        strtTime = time.time()
         count = 1
         i = 6
         while i < 16 :
@@ -172,13 +157,15 @@ class OnosSanity4nodes :
             elif ping == main.TRUE:
                 i = i + 1
                 result2 = main.TRUE
+        endTime = time.time()
         if result2 == main.TRUE:
-            main.log.info("Flows successfully added")
+            main.log.report("\tTime to complete ping test: "+str(round(endTime-strtTime,2))+" seconds")
         else:
             main.log.report("\tPING TEST FAIL")
 
+        result3 = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
         main.step("Verifying the result")
-        utilities.assert_equals(expect=main.TRUE,actual=result1 and result2,onpass="Flow check PASS",onfail="Flow check FAIL")
+        utilities.assert_equals(expect=main.TRUE,actual=result1 and result2 and result3,onpass="Flow check PASS",onfail="Flow check FAIL")
 
 #**********************************************************************************************************************************************************************************************
 #This test case removes Controllers 2,3, and 4 then performs a ping test.
@@ -199,9 +186,9 @@ class OnosSanity4nodes :
       
         strtTime = time.time() 
         result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
-        for i in range(9):
+        for i in range(2):
             if result == main.FALSE:
-                time.sleep(3)
+                time.sleep(5)
                 result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
             else:
                 break
@@ -246,9 +233,9 @@ class OnosSanity4nodes :
       
         strtTime = time.time() 
         result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
-        for i in range(9):
+        for i in range(2):
             if result == main.FALSE:
-                time.sleep(3)
+                time.sleep(5)
                 result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
             else:
                 break
@@ -289,9 +276,9 @@ class OnosSanity4nodes :
        
         strtTime = time.time() 
         result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],str(int(main.params['NR_Links'])-2))
-        for i in range(9):
+        for i in range(2):
             if result == main.FALSE:
-                time.sleep(3)
+                time.sleep(5)
                 result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],str(int(main.params['NR_Links'])-2))
             else:
                 break
@@ -332,9 +319,9 @@ class OnosSanity4nodes :
       
         strtTime = time.time() 
         result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
-        for i in range(9):
+        for i in range(2):
             if result == main.FALSE:
-                time.sleep(3)
+                time.sleep(5)
                 result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
             else:
                 break
@@ -394,10 +381,10 @@ class OnosSanity4nodes :
         if Reststatus == 1:
             main.log.report("\tFound host " + host + " attached to switchDPID = " + attachedSW)
             if ip_found != None:
-                main.log.report("\t IP discovered is ip_found ( " + ip_found + " ).")
+                main.log.report("/t IP discovered is ip_found ( " + ip_found + " ).")
                 result = main.TRUE
             else:
-                main.log.report("\t Found host attached to switch, but no IP address discovered.")
+                main.log.report("/t Found host attached to switch, but no IP address discovered.")
                 result = main.FALSE
         else:
             main.log.report("\t Host " + host + " with MAC:" + str(mac) + " does not exist. FAILED")
@@ -442,10 +429,10 @@ class OnosSanity4nodes :
         elif attachedSW == "00:00:00:00:00:00:00:06":
             main.log.report("Attempt to plug s1-eht1 to s6 succeded.")
             if ip_found != None:
-                main.log.report("\t IP discovered is ip_found ( " + ip_found + " ).")
+                main.log.report("/t IP discovered is ip_found ( " + ip_found + " ).")
                 result = main.TRUE
             else:
-                main.log.report("\t Found host attached to switch, but no IP address discovered.")
+                main.log.report("/t Found host attached to switch, but no IP address discovered.")
                 result = main.FALSE
         else:
             main.log.report( "FAILED to attach s1-eth1 to s6 correctly!")
@@ -471,17 +458,15 @@ class OnosSanity4nodes :
         elif attachedSW == "00:00:00:00:00:00:00:01":
             main.log.report("Attempt to plug s1-eht1 back to s1 succeded.")
             if ip_found != None:
-                main.log.report("\t IP discovered is ip_found ( " + ip_found + " ).")
+                main.log.report("/t IP discovered is ip_found ( " + ip_found + " ).")
                 result = main.TRUE
             else:
-                main.log.report("\t Found host attached to switch, but no IP address discovered.")
+                main.log.report("/t Found host attached to switch, but no IP address discovered.")
                 result = main.FALSE
         else:
             main.log.report( "FAIL to attach s1-eth1 to s1 correctly!")
             result = main.FALSE
 
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="DEVICE DISCOVERY TEST PASSED PLUG/UNPLUG/MOVE TEST",onfail="DEVICE DISCOVERY TEST FAILED")
-
-
 
 

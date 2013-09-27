@@ -615,4 +615,13 @@ class OnosCliDriver(CLI):
                 elif i == 3:
                     main.log.error("TIMEOUT!")
                     return main.FALSE
-        
+
+    def tcpdump(self):
+        self.handle.sendline("")
+        self.handle.expect("\$")
+        self.handle.sendline("sudo tcpdump -n -i eth0 -s0 -w onos-logs/tcpdump &")
+  
+    def kill_tcpdump(self):
+        self.handle.sendline("")
+        self.handle.expect("\$")
+        self.handle.sendline("sudo kill -9 `ps -ef | grep \"tcpdump -n\" | grep -v grep | awk '{print $2}'`")

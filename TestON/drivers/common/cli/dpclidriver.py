@@ -30,7 +30,15 @@ class DPCliDriver(CLI):
             main.log.info("NO HANDLE")
             return main.FALSE
 
-    def create_interfaces(self, net, number, start, destlogin, dest):
+    def create_interfaces(self, net, number, start):
+        '''
+        Creates a number,specified by 'number,' of subinterfaces on eth0. Ip addresses start at 'net'.'start'.1.1 with a 24 bit netmask. Addresses increment sequentially in the third quad,
+        therefore all interfaces are in different subnets on the same machine. When the third quad reaches 255, it is reset to 1 and the second quad is incremented.
+        Every single ip address is placed in a file in /tmp titled 'ip_table{net}.txt'
+        The file is used by 'pingall_interfaces()' as a fping argument
+        This method returns true if all interfaces are created without a hitch, and false if a single interface has issues
+        '''
+
         self.handle.sendline("")
         self.handle.expect("\$")
 
@@ -54,7 +62,7 @@ class DPCliDriver(CLI):
 
             i = self.handle.expect(["\$","password",pexpect.TIMEOUT,pexpect.EOF], timeout = 120)
                 if i == 0:
-                    self.handle.sendline("echo "+str(ip)+"\n >> /tmp/local_ip.txt")
+                    self.handle.sendline("echo "+str(ip)+" >> /tmp/local_ip.txt")
                     self.handle.expect("\$")
                 elif i == 1:
                     main.log.info("Sending sudo password")
@@ -63,44 +71,34 @@ class DPCliDriver(CLI):
                 else:
                     main.log.error("INTERFACES NOT CREATED")
                     return main.FALSE
-        self.handle.sendline("scp /tmp/local_ip.txt "+str(destlogin)+"@"+str(destip)+":/tmp/ip_table"+str(net)+".txt")
-        try:
+
+
+    def pingall_interfaces(self, netsrc, netstrt, netdst, destlogin, destip):
+        '''
+        Copies the /tmp/ip_table{net}.txt file from the machine you wish to ping, then runs fping with a source address of {netsrc}.{netstrt}.1.1 on the copied file.
+        Check every single response for reachable or unreachable. If all are reachable, function returns true. If a SINGLE host is unreachable, then the function stops and returns false
+        If fping is not installed, this function will install fping then run the same command
+        '''
+
+        self.handle.sendline("")
+        self.handle.expect("\$")
+      
+        self.handle.sendline("scp "+str(destlogin)+"@"+str(destip)+":/tmp/local_ip.txt /tmp/ip_table"+str(net)+".txt")
+        i = self.handle.expect(["100%","password",pexpect.TIMEOUT], timeout = 30)
+        if i == 0:
+            main.log.info("Copied ping file successfully")
+        elif i == 1:
+            self.handle.sendline(self.pwd)
             self.handle.expect("100%")
-            return main.TRUE
-        except:
-            self.log.warn("FAILURE SENDING IP TABLE TO DESTINATION MACHINE")
-            return main.FALSE
-
-    '''
-    def remove_interfaces(self, number, start):
-        self.handle.sendline("")
-        self.handle.expect("\$")
-
-        main.log.info("Deleting interfaces")
-        while number != 0:
-            number = number - 1
-            intf = intf + 1
-            self.handle.sendline("sudo ifconfig eth0:"+str(intf)+" down")
-
-        i = self.handle.expect(["\$","password",pexpect.TIMEOUT,pexpect.EOF], timeout = 120)
-            if i == 0:
-                 main.log.info("Interfaces deleted")
-                 return main.TRUE
-            elif i == 1:
-                main.log.info("Sending sudo password")
-                self.handle.sendline(self.pwd)
-                self.handle.expect("DONE")
-                main.log.info("Interfaces deleted")
-                return main.TRUE
-            else:
-                main.log.error("INTERFACES NOT DELETED")
-                return main.FALSE
-    '''
-
-    def pingall_interfaces(self, netsrc, netstrt, netdst):
-        self.handle.sendline("")
-        self.handle.expect("\$")
+            main.log.info("Copied ping file successfully")
+        elif i == 2:
+            main.log.error("COULD NOT COPY PING FILE FROM "+str(destip))
+            result = main.FALSE
+            return result
        
+        self.handle.sendline("")
+        self.handle.expect("\$")
+
         main.log.info("Pinging interfaces on the "+str(netdst)+" network from "+str(netsrc)+"."+str(netstrt)+".1.1") 
         self.handle.sendline("sudo fping -S "+str(netsrc)+"."+str(netstrt)+".1.1 -f /tmp/ip_table"+str(netdst)+".txt")
         while 1:
@@ -127,10 +125,10 @@ class DPCliDriver(CLI):
                 if i == 0:
                     self.handle.sendline(self.pwd)
                     self.handle.expect("\$", timeout = 30)
-                    main.log.info("fping installed")
+                    main.log.info("fping installed, now pinging interfaces")
                     self.handle.sendline("sudo fping -S "+str(netsrc)+"."+str(netstrt)+".1.1 -f /tmp/ip_table"+str(netdst)+".txt")
                 elif i == 1:
-                    main.log.info("fping installed")
+                    main.log.info("fping installed, now pinging interfaces")
                     self.handle.sendline("sudo fping -S "+str(netsrc)+"."+str(netstrt)+".1.1 -f /tmp/ip_table"+str(netdst)+".txt")
                 elif i == 2:
                     main.log.error("Could not install fping")

@@ -1,5 +1,5 @@
 
-class OnosPerf4nodes:
+class OnosPerfTest:
 
     def __init__(self) :
         self.default = ''
@@ -12,66 +12,46 @@ class OnosPerf4nodes:
         The test will only pass if ONOS is running properly, and has a full view of all topology elements.
         '''
         import time
+        main.log.report("Checking if the startup was clean") 
+        main.case("Checking if the startup was clean...")
         main.ONOS1.stop()
         main.ONOS2.stop()
         main.ONOS3.stop()
         main.ONOS4.stop()
+        main.step("Testing startup Zookeeper")
+        main.ONOS1.get_version()
+        data =  main.Zookeeper1.isup()
+        utilities.assert_equals(expect=main.TRUE,actual=data,onpass="Zookeeper is up!",onfail="Zookeeper is down...")
+        main.step("Testing startup Cassandra")
         main.Cassandra1.start()
         main.Cassandra2.start()
         main.Cassandra3.start()
         main.Cassandra4.start()
-        time.sleep(20)
+        data =  main.Cassandra1.isup()
+        utilities.assert_equals(expect=main.TRUE,actual=data,onpass="Cassandra is up!",onfail="Cassandra is down...")
         main.ONOS1.drop_keyspace()
+        time.sleep(5) 
         main.ONOS1.start()
-        time.sleep(10)
+        time.sleep(5)
         main.ONOS2.start()
         main.ONOS3.start()
         main.ONOS4.start()
-        main.ONOS1.start_rest()
-        time.sleep(5)
-        test= main.ONOS1.rest_status()
-        if test == main.FALSE:
-            main.ONOS1.start_rest()
-        main.ONOS1.get_version()
-        main.log.report("Startup check Zookeeper1, Cassandra1, and ONOS1 connections")
-        main.case("Checking if the startup was clean...")
-        main.step("Testing startup Zookeeper")
-        data =  main.Zookeeper1.isup()
-        utilities.assert_equals(expect=main.TRUE,actual=data,onpass="Zookeeper is up!",onfail="Zookeeper is down...")
-        main.step("Testing startup Cassandra")
-        data =  main.Cassandra1.isup()
-        if data == main.FALSE:
-            main.Cassandra1.stop()
-            main.Cassandra2.stop()
-            main.Cassandra3.stop()
-            main.Cassandra4.stop()
-
-            time.sleep(5)
-
-            main.Cassandra1.start()
-            main.Cassandra2.start()
-            main.Cassandra3.start()
-            main.Cassandra4.start()
-        utilities.assert_equals(expect=main.TRUE,actual=data,onpass="Cassandra is up!",onfail="Cassandra is down...")
         main.step("Testing startup ONOS")
         data = main.ONOS1.isup()
-        data = data and main.ONOS2.isup()
-        data = data and main.ONOS3.isup()
-        data = data and main.ONOS4.isup()
         if data == main.FALSE:
-            main.log.report("Something is funny... restarting ONOS")
+            main.log.info("Something is funny... restarting ONOS")
             main.ONOS1.stop()
-            main.ONOS2.stop()
-            main.ONOS3.stop()
-            main.ONOS4.stop()
-            time.sleep(5)
+            time.sleep(3)
             main.ONOS1.start()
-            time.sleep(10)
-            main.ONOS2.start()
-            main.ONOS3.start()
-            main.ONOS4.start()
+            time.sleep(5)
             data = main.ONOS1.isup()
-        utilities.assert_equals(expect=main.TRUE,actual=data,onpass="ONOS is up and running!",onfail="ONOS didn't start...")
+        data = data & main.ONOS2.isup()
+        data = data & main.ONOS3.isup()
+        data = data & main.ONOS4.isup()
+        main.ONOS1.start_rest()
+        #topoview = main.ONOS1.check_status(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
+
+        utilities.assert_equals(expect=main.TRUE,actual=data,onpass="ONOS is up and running ",onfail="ONOS didn't start ...")
 
     def CASE2(self,main) :
         '''
@@ -115,7 +95,6 @@ class OnosPerf4nodes:
                 time.sleep(1)
                 main.Mininet1.assign_sw_controller(sw=str(j),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'])
         main.Mininet1.get_sw_controller("s1")
-        time.sleep(5)        
 
     def CASE3(self,main) :
         '''
@@ -125,7 +104,7 @@ class OnosPerf4nodes:
         main.log.report("checking if ONOS sees the right topo...") 
         main.case("TOPO check")
         main.step("calling rest calls") 
-        for i in range(4):
+        for i in range(9):
             result = main.ONOS1.check_status(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
             time.sleep(5)
             if result == 1:
@@ -135,7 +114,7 @@ class OnosPerf4nodes:
             main.ONOS2.start()
             main.ONOS3.start()
             main.ONOS4.start()
-            for i in range(4):
+            for i in range(9):
                 result = main.ONOS1.check_status(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
                 time.sleep(5)
                 if result == 1:
@@ -194,14 +173,6 @@ class OnosPerf4nodes:
 
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="flows are good",onfail="FLOWS not correct") 
 
-        main.log.report("checking if ONOS sees the right topo...")
-        main.case("TOPO check")
-        main.step("calling rest calls")
-        for i in range(3):
-            result = main.ONOS1.check_status(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
-            time.sleep(5)
-            if result == 1:
-                break
 
     def CASE5(self,main) :
         '''
@@ -217,9 +188,10 @@ class OnosPerf4nodes:
         '''
         Starts continuous pings on the Mininet nodes
         '''
-        main.log.report("Starting continuous ping, then toggle a single link in the center triangle")
+        main.log.report("Start continuous pings, then toggle links in center triangle")
         import time
         import os
+
         main.case("Starting long ping... ") 
         main.Mininet4.pingLong(src=main.params['PING']['source1'],target=main.params['PING']['target1'])
         main.Mininet4.pingLong(src=main.params['PING']['source2'],target=main.params['PING']['target2'])
@@ -231,7 +203,7 @@ class OnosPerf4nodes:
         main.Mininet4.pingLong(src=main.params['PING']['source8'],target=main.params['PING']['target8'])
         main.Mininet4.pingLong(src=main.params['PING']['source9'],target=main.params['PING']['target9'])
         main.Mininet4.pingLong(src=main.params['PING']['source10'],target=main.params['PING']['target10'])
-        main.step("Check that the pings are going") 
+        main.step("Check that the pings are going")
         result = main.Mininet4.pingstatus(src=main.params['PING']['source1'])
         result = result & main.Mininet4.pingstatus(src=main.params['PING']['source2'])
         result = result & main.Mininet4.pingstatus(src=main.params['PING']['source3'])
@@ -242,16 +214,22 @@ class OnosPerf4nodes:
         result = result & main.Mininet4.pingstatus(src=main.params['PING']['source8'])
         result = result & main.Mininet4.pingstatus(src=main.params['PING']['source9'])
         result = result & main.Mininet4.pingstatus(src=main.params['PING']['source10'])
-        main.step( "Link down number of iterations: " +  main.params['Iterations'] )
-        for i in range(int(main.params['Iterations'])):
-            main.log.info("Bringing Link down... ") 
+        main.step( "Making topo change while flows are rerouting")
+            
+        for i in range(int(main.params['Iterations'])): 
+            main.log.info("s1-s2 link down")
             main.Mininet1.link(END1="s1",END2="s2",OPTION="down")
-            main.log.info( "Waiting " + main.params['WaitTime'] + " seconds.... " )
-            time.sleep( int(main.params['WaitTime']) )
-            main.log.info("Bringing Link up... ")
+
+            time.sleep(3)
+
+            main.log.info("s1-s2 link up | s1-s3 link down | s2-s3 link down")
             main.Mininet1.link(END1="s1",END2="s2",OPTION="up")
+            main.Mininet1.link(END1="s1",END2="s3",OPTION="down")
+            main.Mininet1.link(END1="s2",END2="s3",OPTION="down")
+
             main.log.info( "Waiting " + main.params['WaitTime'] + " seconds.... " )
             time.sleep( int(main.params['WaitTime']) )
+
         main.case("Killing remote ping processes ") 
         result =  result & main.Mininet4.pingKill() 
         utilities.assert_equals(expect=main.TRUE,actual=result) 
@@ -263,25 +241,21 @@ class OnosPerf4nodes:
         '''
         import os
         import time
-        main.log.report("Process ping data (Fail is time is >20 seconds)")
+        main.log.report("Process ping data")
         main.case("Processing Ping data") 
         time.sleep(3) 
         #result=os.popen("/home/admin/tools/shell.sh " + main.params['Iterations']).read()
+        result=os.popen("/home/admin/get_reroute_times.py").read() 
+        average=result.split(":")[1] 
+        main.log.info( "Reroute times are... " ) 
+        main.log.report( result ) 
         try:
-            result=os.popen("/home/admin/get_reroute_times.py").read() 
-            average=result.split(":")[1] 
-            main.log.info( "Reroute times are... " ) 
-            main.log.report( result + " seconds" ) 
-            try:
-                if float(average) < float(main.params['TargetTime']) :
-                    test=main.TRUE
-                else:
-                    test=main.FALSE
-            except ValueError: 
-                main.log.error("Data is corrupted")
+            if float(average) < float(main.params['TargetTime']) :
+                test=main.TRUE
+            else:
                 test=main.FALSE
-        except:
-            main.log.report("No data")
+        except ValueError: 
+            main.log.error("Data is corrupted")
             test=main.FALSE
         utilities.assert_equals(expect=main.TRUE,actual=test,onpass="Average is less then the target time!",onfail="Average is worse then target time... ")
 
@@ -289,10 +263,10 @@ class OnosPerf4nodes:
         '''
         Starts continuous pings on the Mininet nodes
         '''
-        main.log.report("Start continuous pings, then toggle multiple links in center triangle")
+        main.log.report("Start continuous pings, then toggle links in center triangle")
         import time
         import os
-        time.sleep(20)
+
         main.case("Starting long ping... ")
         main.Mininet4.pingLong(src=main.params['PING']['source1'],target=main.params['PING']['target1'])
         main.Mininet4.pingLong(src=main.params['PING']['source2'],target=main.params['PING']['target2'])
@@ -316,92 +290,18 @@ class OnosPerf4nodes:
         result = result & main.Mininet4.pingstatus(src=main.params['PING']['source9'])
         result = result & main.Mininet4.pingstatus(src=main.params['PING']['source10'])
         main.step( "Making topo change while flows are rerouting")
-        main.step( "Link down number of iterations: " +  main.params['Iterations'] )
-        for i in range(int(main.params['Iterations'])):
-            main.log.info("s1-s2 link down")
-            main.Mininet1.link(END1="s1",END2="s2",OPTION="down")
-            main.Mininet1.link(END1="s1",END2="s3",OPTION="up")
-            main.Mininet1.link(END1="s2",END2="s3",OPTION="up")
 
-            time.sleep(5)
-
-            main.log.info("s1-s2 link up | s1-s3 link down | s2-s3 link down")
-            main.Mininet1.link(END1="s1",END2="s2",OPTION="up")
-            main.Mininet1.link(END1="s1",END2="s3",OPTION="down")
-            main.Mininet1.link(END1="s2",END2="s3",OPTION="down")
-
-            main.log.info( "Waiting " + main.params['WaitTime'] + " seconds.... " )
-            time.sleep( int(main.params['WaitTime']) )
-
-        main.case("Killing remote ping processes ")
-        result =  result & main.Mininet4.pingKill()
-        utilities.assert_equals(expect=main.TRUE,actual=result)
-        main.log.info("Make sure all links in triangle are up")
-        main.Mininet1.link(END1="s1",END2="s2",OPTION="up")
-        main.Mininet1.link(END1="s1",END2="s3",OPTION="up")
-        main.Mininet1.link(END1="s2",END2="s3",OPTION="up")
-
-    def CASE9(self,main) :
-        '''
-        Starts continuous pings on the Mininet nodes
-        '''
-        main.log.report("Start continuous pings, then toggle one link in center triangle and start/stop 1 ONOS node")
-        import time
-        import os
-
-        time.sleep(20)
-        main.case("Starting long ping... ")
-        main.Mininet4.pingLong(src=main.params['PING']['source1'],target=main.params['PING']['target1'])
-        main.Mininet4.pingLong(src=main.params['PING']['source2'],target=main.params['PING']['target2'])
-        main.Mininet4.pingLong(src=main.params['PING']['source3'],target=main.params['PING']['target3'])
-        main.Mininet4.pingLong(src=main.params['PING']['source4'],target=main.params['PING']['target4'])
-        main.Mininet4.pingLong(src=main.params['PING']['source5'],target=main.params['PING']['target5'])
-        main.Mininet4.pingLong(src=main.params['PING']['source6'],target=main.params['PING']['target6'])
-        main.Mininet4.pingLong(src=main.params['PING']['source7'],target=main.params['PING']['target7'])
-        main.Mininet4.pingLong(src=main.params['PING']['source8'],target=main.params['PING']['target8'])
-        main.Mininet4.pingLong(src=main.params['PING']['source9'],target=main.params['PING']['target9'])
-        main.Mininet4.pingLong(src=main.params['PING']['source10'],target=main.params['PING']['target10'])
-        main.step("Check that the pings are going")
-        result = main.Mininet4.pingstatus(src=main.params['PING']['source1'])
-        result = result & main.Mininet4.pingstatus(src=main.params['PING']['source2'])
-        result = result & main.Mininet4.pingstatus(src=main.params['PING']['source3'])
-        result = result & main.Mininet4.pingstatus(src=main.params['PING']['source4'])
-        result = result & main.Mininet4.pingstatus(src=main.params['PING']['source5'])
-        result = result & main.Mininet4.pingstatus(src=main.params['PING']['source6'])
-        result = result & main.Mininet4.pingstatus(src=main.params['PING']['source7'])
-        result = result & main.Mininet4.pingstatus(src=main.params['PING']['source8'])
-        result = result & main.Mininet4.pingstatus(src=main.params['PING']['source9'])
-        result = result & main.Mininet4.pingstatus(src=main.params['PING']['source10'])
-        main.step( "Making topo change while flows are rerouting")
-        main.step( "Link down number of iterations: " +  main.params['Iterations'] )
         for i in range(int(main.params['Iterations'])):
             main.log.info("s1-s2 link down | Onos 1 down")
             main.Mininet1.link(END1="s1",END2="s2",OPTION="down")
-            if i % 4 == 0:
-                main.ONOS1.stop()
-            elif i % 4 == 1:
-                main.ONOS2.stop()
-            elif i % 4 == 2:
-                main.ONOS3.stop()
-            else:
-                main.ONOS4.stop()
+            main.ONOS1.stop() 
 
-            time.sleep(5)
+            time.sleep(3)
 
             main.log.info("s1-s2 link up | Onos 1 back up")
             main.Mininet1.link(END1="s1",END2="s2",OPTION="up")
-            if i % 4 == 0:
-                main.ONOS1.start()
-                main.ONOS1.isup()
-            elif i % 4 == 1:
-                main.ONOS2.start()
-                main.ONOS2.isup()
-            elif i % 4 == 2:
-                main.ONOS3.start()
-                main.ONOS3.isup()
-            else:
-                main.ONOS4.start()
-                main.ONOS4.isup()
+            main.ONOS1.start()
+            main.ONOS1.isup()
 
             main.log.info( "Waiting " + main.params['WaitTime'] + " seconds.... " )
             time.sleep( int(main.params['WaitTime']) )
@@ -409,4 +309,29 @@ class OnosPerf4nodes:
         main.case("Killing remote ping processes ")
         result =  result & main.Mininet4.pingKill()
         utilities.assert_equals(expect=main.TRUE,actual=result)
+
+
+    def CASE9(self,main) :
+        '''
+        Processes all of the ping data and outputs raw data and an overall average
+        '''
+        import os
+        import time
+        main.log.report("Process ping data")
+        main.case("Processing Ping data")
+        time.sleep(3)
+        #result=os.popen("/home/admin/tools/shell.sh " + main.params['Iterations']).read()
+        result=os.popen("/home/admin/get_reroute_times.py").read()
+        average=result.split(":")[1]
+        main.log.info( "Reroute times are... " )
+        main.log.report( result )
+        try:
+            if float(average) < float(main.params['TargetTime']) :
+                test=main.TRUE
+            else:
+                test=main.FALSE
+        except ValueError:
+            main.log.error("Data is corrupted")
+            test=main.FALSE
+        utilities.assert_equals(expect=main.TRUE,actual=test,onpass="Average is less then the target time!",onfail="Average is worse then target time... ")
 

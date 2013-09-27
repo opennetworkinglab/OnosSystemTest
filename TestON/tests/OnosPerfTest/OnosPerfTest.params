@@ -1,7 +1,7 @@
 <PARAMS>
-    <testcases>1,2,3,4,5,6,7,4,8,7,4,9,7</testcases>
+    <testcases>1,2,3,4,5,6,7,8,9</testcases>
     <Iterations>3</Iterations>
-    <WaitTime>60</WaitTime>
+    <WaitTime>120</WaitTime>
     <RestIP>10.128.100.4</RestIP>
     <MN_size>57</MN_size>
     <TargetTime>20</TargetTime>

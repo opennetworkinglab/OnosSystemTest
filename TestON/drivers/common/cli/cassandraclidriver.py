@@ -55,7 +55,7 @@ class CassandraCliDriver(CLI):
         
         self.ssh_handle = self.handle
         if self.handle :
-            self.start()
+            #self.start()
             return main.TRUE
         else :
             main.log.error("Connection failed to the host "+self.user_name+"@"+self.ip_address) 

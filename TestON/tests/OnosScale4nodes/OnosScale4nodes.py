@@ -12,10 +12,30 @@ class OnosScale4nodes:
         The test will only pass if ONOS is running properly, and has a full view of all topology elements.
         '''
         import time
-        main.log.report("Checking is startup was clean")
+        main.ONOS1.stop()
+        main.ONOS2.stop()
+        main.ONOS3.stop()
+        main.ONOS4.stop()
+        main.Cassandra1.start()
+        main.Cassandra2.start()
+        main.Cassandra3.start()
+        main.Cassandra4.start()
+        time.sleep(20)
+        main.ONOS1.drop_keyspace()
+        main.ONOS1.start()
+        time.sleep(10)
+        main.ONOS2.start()
+        main.ONOS3.start()
+        main.ONOS4.start()
+        main.ONOS1.start_rest()
+        time.sleep(5)
+        test= main.ONOS1.rest_status()
+        if test == main.FALSE:
+            main.ONOS1.start_rest()
+        main.ONOS1.get_version()
+        main.log.report("Startup check Zookeeper1, Cassandra1, and ONOS1 connections")
         main.case("Checking if the startup was clean...")
         main.step("Testing startup Zookeeper")
-        main.ONOS1.get_version()
         data =  main.Zookeeper1.isup()
         utilities.assert_equals(expect=main.TRUE,actual=data,onpass="Zookeeper is up!",onfail="Zookeeper is down...")
         main.step("Testing startup Cassandra")
@@ -27,38 +47,31 @@ class OnosScale4nodes:
             main.Cassandra4.stop()
 
             time.sleep(5)
- 
+
             main.Cassandra1.start()
             main.Cassandra2.start()
             main.Cassandra3.start()
             main.Cassandra4.start()
         utilities.assert_equals(expect=main.TRUE,actual=data,onpass="Cassandra is up!",onfail="Cassandra is down...")
         main.step("Testing startup ONOS")
-        main.ONOS1.start()
-        main.ONOS2.start()
-        main.ONOS2.start_rest()
-        time.sleep(5)
-        test= main.ONOS2.rest_status()
-        if test == main.FALSE:
-            main.ONOS2.start_rest()
-        main.ONOS3.start()
-        main.ONOS4.start()
         data = main.ONOS1.isup()
+        data = data and main.ONOS2.isup()
+        data = data and main.ONOS3.isup()
+        data = data and main.ONOS4.isup()
         if data == main.FALSE:
-            main.log.info("Something is funny... restarting ONOS")
+            main.log.report("Something is funny... restarting ONOS")
             main.ONOS1.stop()
-            time.sleep(3)
-            main.ONOS1.start()
+            main.ONOS2.stop()
+            main.ONOS3.stop()
+            main.ONOS4.stop()
             time.sleep(5)
+            main.ONOS1.start()
+            time.sleep(10)
+            main.ONOS2.start()
+            main.ONOS3.start()
+            main.ONOS4.start()
             data = main.ONOS1.isup()
-        #topoview = main.ONOS1.check_status(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
-        topoview = main.TRUE
-        if topoview == main.TRUE & data == main.TRUE :
-            data = main.TRUE
-        else:
-            data = main.FALSE
-
-        utilities.assert_equals(expect=main.TRUE,actual=data,onpass="ONOS is up and running and has full view of topology",onfail="ONOS didn't start or has fragmented view of topology...")
+        utilities.assert_equals(expect=main.TRUE,actual=data,onpass="ONOS is up and running!",onfail="ONOS didn't start...")
 
     def CASE2(self,main) :
         '''

@@ -12,14 +12,30 @@ class OnosPerf4nodes:
         The test will only pass if ONOS is running properly, and has a full view of all topology elements.
         '''
         import time
-        main.log.report("Checking if the startup was clean") 
-        main.case("Checking if the startup was clean...")
         main.ONOS1.stop()
         main.ONOS2.stop()
         main.ONOS3.stop()
         main.ONOS4.stop()
-        main.step("Testing startup Zookeeper")
+        main.Cassandra1.start()
+        main.Cassandra2.start()
+        main.Cassandra3.start()
+        main.Cassandra4.start()
+        time.sleep(20)
+        main.ONOS1.drop_keyspace()
+        main.ONOS1.start()
+        time.sleep(10)
+        main.ONOS2.start()
+        main.ONOS3.start()
+        main.ONOS4.start()
+        main.ONOS1.start_rest()
+        time.sleep(5)
+        test= main.ONOS1.rest_status()
+        if test == main.FALSE:
+            main.ONOS1.start_rest()
         main.ONOS1.get_version()
+        main.log.report("Startup check Zookeeper1, Cassandra1, and ONOS1 connections")
+        main.case("Checking if the startup was clean...")
+        main.step("Testing startup Zookeeper")
         data =  main.Zookeeper1.isup()
         utilities.assert_equals(expect=main.TRUE,actual=data,onpass="Zookeeper is up!",onfail="Zookeeper is down...")
         main.step("Testing startup Cassandra")
@@ -37,33 +53,25 @@ class OnosPerf4nodes:
             main.Cassandra3.start()
             main.Cassandra4.start()
         utilities.assert_equals(expect=main.TRUE,actual=data,onpass="Cassandra is up!",onfail="Cassandra is down...")
-        main.ONOS1.drop_keyspace()
-        time.sleep(5) 
-        main.ONOS1.start()
-        time.sleep(5)
-        main.ONOS2.start()
-        main.ONOS3.start()
-        main.ONOS4.start()
         main.step("Testing startup ONOS")
         data = main.ONOS1.isup()
+        data = data and main.ONOS2.isup()
+        data = data and main.ONOS3.isup()
+        data = data and main.ONOS4.isup()
         if data == main.FALSE:
-            main.log.info("Something is funny... restarting ONOS")
+            main.log.report("Something is funny... restarting ONOS")
             main.ONOS1.stop()
-            time.sleep(3)
-            main.ONOS1.start()
+            main.ONOS2.stop()
+            main.ONOS3.stop()
+            main.ONOS4.stop()
             time.sleep(5)
+            main.ONOS1.start()
+            time.sleep(10)
+            main.ONOS2.start()
+            main.ONOS3.start()
+            main.ONOS4.start()
             data = main.ONOS1.isup()
-        data = data & main.ONOS2.isup()
-        data = data & main.ONOS3.isup()
-        data = data & main.ONOS4.isup()
-        main.ONOS1.start_rest()
-        time.sleep(5)
-        test= main.ONOS1.rest_status()
-        if test == main.FALSE:
-            main.ONOS1.start_rest()
-        #topoview = main.ONOS1.check_status(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
-
-        utilities.assert_equals(expect=main.TRUE,actual=data,onpass="ONOS is up and running ",onfail="ONOS didn't start ...")
+        utilities.assert_equals(expect=main.TRUE,actual=data,onpass="ONOS is up and running!",onfail="ONOS didn't start...")
 
     def CASE2(self,main) :
         '''
@@ -107,6 +115,7 @@ class OnosPerf4nodes:
                 time.sleep(1)
                 main.Mininet1.assign_sw_controller(sw=str(j),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'])
         main.Mininet1.get_sw_controller("s1")
+        time.sleep(5)        
 
     def CASE3(self,main) :
         '''
@@ -116,7 +125,7 @@ class OnosPerf4nodes:
         main.log.report("checking if ONOS sees the right topo...") 
         main.case("TOPO check")
         main.step("calling rest calls") 
-        for i in range(9):
+        for i in range(4):
             result = main.ONOS1.check_status(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
             time.sleep(5)
             if result == 1:
@@ -126,7 +135,7 @@ class OnosPerf4nodes:
             main.ONOS2.start()
             main.ONOS3.start()
             main.ONOS4.start()
-            for i in range(9):
+            for i in range(4):
                 result = main.ONOS1.check_status(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
                 time.sleep(5)
                 if result == 1:
@@ -185,6 +194,14 @@ class OnosPerf4nodes:
 
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="flows are good",onfail="FLOWS not correct") 
 
+        main.log.report("checking if ONOS sees the right topo...")
+        main.case("TOPO check")
+        main.step("calling rest calls")
+        for i in range(3):
+            result = main.ONOS1.check_status(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
+            time.sleep(5)
+            if result == 1:
+                break
 
     def CASE5(self,main) :
         '''

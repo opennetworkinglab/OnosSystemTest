@@ -68,10 +68,17 @@ class OnosCHO4nodes :
             main.ONOS3.start()
             main.ONOS4.start()
             data = main.ONOS1.isup()
+<<<<<<< HEAD
         #main.ONOS1.tcpdump()
         #main.ONOS2.tcpdump()
         #main.ONOS3.tcpdump()
         #main.ONOS4.tcpdump()
+=======
+        main.ONOS1.tcpdump()
+        main.ONOS2.tcpdump()
+        main.ONOS3.tcpdump()
+        main.ONOS4.tcpdump()
+>>>>>>> f580d10d359eabad08530e06fb8339390b47fba0
         utilities.assert_equals(expect=main.TRUE,actual=data,onpass="ONOS is up and running!",onfail="ONOS didn't start...")
            
 #**********************************************************************************************************************************************************************************************
@@ -199,6 +206,7 @@ class OnosCHO4nodes :
 #If the ping test fails 6 times, then the test case will return false
 
     def CASE4(self,main) :
+<<<<<<< HEAD
         main.log.report("Remove all but one ONOS then ping until all hosts are reachable or fail after 6 attempts")
         import time
         import random
@@ -220,13 +228,21 @@ class OnosCHO4nodes :
             port = main.params['CTRL']['port4']
 
         main.log.report("ONOS"+str(num)+" will be the sole controller")
+=======
+        main.log.report("Remove ONOS 2,3,4 then ping until all hosts are reachable or fail after 6 attempts")
+        import time
+>>>>>>> f580d10d359eabad08530e06fb8339390b47fba0
         for i in range(25):
             if i < 15:
                 j=i+1
-                main.Mininet1.assign_sw_controller(sw=str(j),ip1=ip,port1=port)  #Assigning a single controller removes all other controllers
+                main.Mininet1.assign_sw_controller(sw=str(j),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'])  #Assigning a single controller removes all other controllers
             else:
                 j=i+16
+<<<<<<< HEAD
                 main.Mininet1.assign_sw_controller(sw=str(j),ip1=ip,port1=port)
+=======
+                main.Mininet1.assign_sw_controller(sw=str(j),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'])
+>>>>>>> f580d10d359eabad08530e06fb8339390b47fba0
       
         strtTime = time.time() 
         result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])

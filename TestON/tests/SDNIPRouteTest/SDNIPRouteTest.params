@@ -1,0 +1,21 @@
+<PARAMS>
+   <testcases>1</testcases>
+   <numRoutes>600</numRoutes>
+   <Q1>
+      <net>172</net>
+      <routeRate>20</routeRate>
+      <startNet>1</startNet>
+   </Q1>
+   <Q2>
+      <net>173</net>
+      <routeRate>20</routeRate>
+      <startNet>1</startNet>
+   </Q2>
+   <DP1>
+      <pingIntf>eth0:1</pingIntf>
+   </DP1>
+   <DP2>
+      <pingIntf>eth0:1</pingIntf>
+   </DP2>
+</PARAMS>   
+

@@ -1,0 +1,353 @@
+
+                                +----------------+
+------------------------------ { Script And Files }  ------------------------------
+                                +----------------+
+
+	Script Log File : /home/admin/ONLabTest/TestON/logs/OnosPerf4nodes_20_Nov_2013_00_44_22/OnosPerf4nodes_20_Nov_2013_00_44_22.log
+	Report Log File : /home/admin/ONLabTest/TestON/logs/OnosPerf4nodes_20_Nov_2013_00_44_22/OnosPerf4nodes_20_Nov_2013_00_44_22.rpt
+	ONOS4 Session Log : /home/admin/ONLabTest/TestON/logs/OnosPerf4nodes_20_Nov_2013_00_44_22/ONOS4.session
+	ONOS2 Session Log : /home/admin/ONLabTest/TestON/logs/OnosPerf4nodes_20_Nov_2013_00_44_22/ONOS2.session
+	ONOS3 Session Log : /home/admin/ONLabTest/TestON/logs/OnosPerf4nodes_20_Nov_2013_00_44_22/ONOS3.session
+	ONOS1 Session Log : /home/admin/ONLabTest/TestON/logs/OnosPerf4nodes_20_Nov_2013_00_44_22/ONOS1.session
+	Cassandra1 Session Log : /home/admin/ONLabTest/TestON/logs/OnosPerf4nodes_20_Nov_2013_00_44_22/Cassandra1.session
+	Cassandra2 Session Log : /home/admin/ONLabTest/TestON/logs/OnosPerf4nodes_20_Nov_2013_00_44_22/Cassandra2.session
+	Cassandra3 Session Log : /home/admin/ONLabTest/TestON/logs/OnosPerf4nodes_20_Nov_2013_00_44_22/Cassandra3.session
+	Cassandra4 Session Log : /home/admin/ONLabTest/TestON/logs/OnosPerf4nodes_20_Nov_2013_00_44_22/Cassandra4.session
+	Zookeeper1 Session Log : /home/admin/ONLabTest/TestON/logs/OnosPerf4nodes_20_Nov_2013_00_44_22/Zookeeper1.session
+	Mininet1 Session Log : /home/admin/ONLabTest/TestON/logs/OnosPerf4nodes_20_Nov_2013_00_44_22/Mininet1.session
+	Mininet4 Session Log : /home/admin/ONLabTest/TestON/logs/OnosPerf4nodes_20_Nov_2013_00_44_22/Mininet4.session
+	Test Script :/home/admin/ONLabTest/TestON/Tests/OnosPerf4nodes.py
+	Test Params : /home/admin/ONLabTest/TestON/Tests/OnosPerf4nodes.params
+	Topology : /home/admin/ONLabTest/TestON/Tests/OnosPerf4nodes.tpl
+                              +------------------+
+---------------------------  { Script Exec Params }  ---------------------------
+                              +------------------+
+
+	
+	'CTRL': 
+	'ip2': '10.128.100.4'
+	 'ip3': '10.128.100.5'
+	 'ip1': '10.128.100.1'
+	 'ip4': '10.128.100.6'
+	 'port4': '6633'
+	 'port2': '6633'
+	 'port3': '6633'
+	 'port1': '6633'
+	
+	 'MN_size': '57'
+	 'FLOWDEF': '~/flowdef_files/Center_Triangle/flowdef_20.txt'
+	 'NR_Switches': '25'
+	 'WaitTime': '60'
+	 'TargetTime': '30'
+	 'PING': 
+	'source2': 'h7'
+	 'source9': 'h14'
+	 'source10': 'h15'
+	 'source4': 'h9'
+	 'source5': 'h10'
+	 'target3': '10.0.0.18'
+	 'target10': '10.0.0.25'
+	 'source3': 'h8'
+	 'source1': 'h6'
+	 'source6': 'h11'
+	 'source7': 'h12'
+	 'target8': '10.0.0.23'
+	 'target9': '10.0.0.24'
+	 'target6': '10.0.0.21'
+	 'target7': '10.0.0.22'
+	 'target4': '10.0.0.19'
+	 'target5': '10.0.0.20'
+	 'target2': '10.0.0.17'
+	 'source8': 'h13'
+	 'target1': '10.0.0.16'
+	
+	 'NR_Links': '50'
+	 'testcases': '1
+	2
+	3
+	4
+	5
+	6
+	7
+	4
+	8
+	7
+	4
+	9
+	7'
+	 'RestIP': '10.128.100.4'
+	 'Iterations': '3'
+	
+
+                               +---------------+
+----------------------------- { Components Used }  -----------------------------
+                               +---------------+
+	ONOS4
+	ONOS2
+	ONOS3
+	ONOS1
+	Cassandra1
+	Cassandra2
+	Cassandra3
+	Cassandra4
+	Zookeeper1
+	Mininet1
+	Mininet4
+
+
+                              +--------+
+---------------------------- { Topology }  ----------------------------
+                              +--------+
+
+	
+	'ONOS4': 
+	'connect_order': '9'
+	 'password': None
+	 'type': 'OnosCliDriver'
+	 'host': '10.128.100.6'
+	 'user': 'admin'
+	
+	 'ONOS2': 
+	'connect_order': '7'
+	 'password': None
+	 'type': 'OnosCliDriver'
+	 'host': '10.128.100.4'
+	 'user': 'admin'
+	
+	 'ONOS3': 
+	'connect_order': '8'
+	 'password': None
+	 'type': 'OnosCliDriver'
+	 'host': '10.128.100.5'
+	 'user': 'admin'
+	
+	 'ONOS1': 
+	'connect_order': '6'
+	 'password': None
+	 'type': 'OnosCliDriver'
+	 'host': '10.128.100.1'
+	 'user': 'admin'
+	
+	 'Cassandra1': 
+	'connect_order': '2'
+	 'password': None
+	 'type': 'CassandraCliDriver'
+	 'host': '10.128.100.1'
+	 'user': 'admin'
+	
+	 'Cassandra2': 
+	'connect_order': '3'
+	 'password': None
+	 'type': 'CassandraCliDriver'
+	 'host': '10.128.100.4'
+	 'user': 'admin'
+	
+	 'Cassandra3': 
+	'connect_order': '4'
+	 'password': None
+	 'type': 'CassandraCliDriver'
+	 'host': '10.128.100.5'
+	 'user': 'admin'
+	
+	 'Cassandra4': 
+	'connect_order': '5'
+	 'password': None
+	 'type': 'CassandraCliDriver'
+	 'host': '10.128.100.6'
+	 'user': 'admin'
+	
+	 'Zookeeper1': 
+	'connect_order': '1'
+	 'password': None
+	 'type': 'ZookeeperCliDriver'
+	 'host': '10.128.100.1'
+	 'user': 'admin'
+	
+	 'Mininet1': 
+	'connect_order': '10'
+	 'host': '10.128.100.11'
+	 'user': 'admin'
+	 'COMPONENTS': 
+	'arg1': '--custom ~/mininet/custom/topo-onos4node.py'
+	 'arg2': '--topo mytopo --arp'
+	 'controller': 'remote'
+	
+	 'password': None
+	 'type': 'MininetCliDriver'
+	
+	 'Mininet4': 
+	'connect_order': '11'
+	 'password': None
+	 'type': 'RemoteMininetDriver'
+	 'host': '10.128.100.11'
+	 'user': 'admin'
+	
+	
+------------------------------------------------------------
+
+******************************
+ CASE INIT 
+******************************
+
+******************************
+ Result summary for Testcase1
+******************************
+
+[REPORT] [20 Nov 2013 00:46:42] COMMIT: 
+7462869ddf8f66ae52eb815cd06e11ee0bbf45c4
+admin@autoONOS1:~$
+[REPORT] [20 Nov 2013 00:46:42] Startup check Zookeeper1, Cassandra1, and ONOS1 connections
+*****************************
+ Result: Pass 
+*****************************
+
+******************************
+ Result summary for Testcase2
+******************************
+
+[REPORT] [20 Nov 2013 00:46:58] Check if MN switches exist
+*****************************
+ Result: Pass 
+*****************************
+
+******************************
+ Result summary for Testcase3
+******************************
+
+[REPORT] [20 Nov 2013 00:47:37] checking if ONOS sees the right topo...
+*****************************
+ Result: Pass 
+*****************************
+
+******************************
+ Result summary for Testcase4
+******************************
+
+[REPORT] [20 Nov 2013 00:48:03] Deleting and adding flows
+[REPORT] [20 Nov 2013 00:48:44] checking if ONOS sees the right topo...
+*****************************
+ Result: Pass 
+*****************************
+
+******************************
+ Result summary for Testcase5
+******************************
+
+[REPORT] [20 Nov 2013 00:48:51] Testing a single ping
+*****************************
+ Result: Pass 
+*****************************
+
+******************************
+ Result summary for Testcase6
+******************************
+
+[REPORT] [20 Nov 2013 00:48:52] Starting continuous ping, then toggle a single link in the center triangle
+*****************************
+ Result: Pass 
+*****************************
+
+******************************
+ Result summary for Testcase7
+******************************
+
+[REPORT] [20 Nov 2013 00:55:01] Process ping data (Fail is time is >20 seconds)
+[REPORT] [20 Nov 2013 00:55:04] Flow 1  
+  16
+Flow 2  
+Flow 3  
+  18
+Flow 4  
+Flow 5  
+  17
+Flow 6  
+Flow 7  
+Flow 8  
+Flow 9  
+Flow 10  
+Average: 17
+ seconds
+*****************************
+ Result: Pass 
+*****************************
+
+******************************
+ Result summary for Testcase4
+******************************
+
+[REPORT] [20 Nov 2013 00:55:04] Deleting and adding flows
+[REPORT] [20 Nov 2013 00:55:36] checking if ONOS sees the right topo...
+*****************************
+ Result: Pass 
+*****************************
+
+******************************
+ Result summary for Testcase8
+******************************
+
+[REPORT] [20 Nov 2013 00:55:44] Start continuous pings, then toggle multiple links in center triangle
+*****************************
+ Result: Pass 
+*****************************
+
+******************************
+ Result summary for Testcase7
+******************************
+
+[REPORT] [20 Nov 2013 01:02:28] Process ping data (Fail is time is >20 seconds)
+[REPORT] [20 Nov 2013 01:02:32] No data
+[REPORT] [20 Nov 2013 01:02:32] Average is worse then target time... 
+*****************************
+ Result: Failed 
+*****************************
+
+******************************
+ Result summary for Testcase4
+******************************
+
+[REPORT] [20 Nov 2013 01:02:32] Deleting and adding flows
+[REPORT] [20 Nov 2013 01:04:41] Host is not reachable
+[REPORT] [20 Nov 2013 01:04:51] Host is not reachable
+[REPORT] [20 Nov 2013 01:05:02] Host is not reachable
+[REPORT] [20 Nov 2013 01:05:02] FLOWS not correct
+[REPORT] [20 Nov 2013 01:05:02] checking if ONOS sees the right topo...
+*****************************
+ Result: Failed 
+*****************************
+
+******************************
+ Result summary for Testcase9
+******************************
+
+[REPORT] [20 Nov 2013 01:05:09] Start continuous pings, then toggle one link in center triangle and start/stop 1 ONOS node
+*****************************
+ Result: Failed 
+*****************************
+
+******************************
+ Result summary for Testcase7
+******************************
+
+[REPORT] [20 Nov 2013 01:09:35] Process ping data (Fail is time is >20 seconds)
+[REPORT] [20 Nov 2013 01:09:38] No data
+[REPORT] [20 Nov 2013 01:09:38] Average is worse then target time... 
+*****************************
+ Result: Failed 
+*****************************
+
+
+*************************************
+	Test Execution Summary
+
+************************************* 
+
+ Test Start           : 20 Nov 2013 00:44:22
+ Test End             : 20 Nov 2013 01:09:38
+ Execution Time       : 0:25:15.820610
+ Total tests planned  : 9
+ Total tests RUN      : 13
+ Total Pass           : 9
+ Total Fail           : 4
+ Total No Result      : 0
+ Success Percentage   : 69%
+ Execution Result     : 144%

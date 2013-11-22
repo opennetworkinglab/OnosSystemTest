@@ -1,0 +1,449 @@
+2013-11-21 11:56:01,634  Cassandra1: INFO    : 
+                                +----------------+
+------------------------------ { Script And Files }  ------------------------------
+                                +----------------+
+
+	Script Log File : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_21_Nov_2013_11_55_50/OnosSanity4nodes_21_Nov_2013_11_55_50.log
+	Report Log File : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_21_Nov_2013_11_55_50/OnosSanity4nodes_21_Nov_2013_11_55_50.rpt
+	ONOS4 Session Log : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_21_Nov_2013_11_55_50/ONOS4.session
+	ONOS2 Session Log : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_21_Nov_2013_11_55_50/ONOS2.session
+	ONOS3 Session Log : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_21_Nov_2013_11_55_50/ONOS3.session
+	ONOS1 Session Log : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_21_Nov_2013_11_55_50/ONOS1.session
+	Zookeeper4 Session Log : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_21_Nov_2013_11_55_50/Zookeeper4.session
+	Cassandra1 Session Log : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_21_Nov_2013_11_55_50/Cassandra1.session
+	Cassandra2 Session Log : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_21_Nov_2013_11_55_50/Cassandra2.session
+	Cassandra3 Session Log : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_21_Nov_2013_11_55_50/Cassandra3.session
+	Cassandra4 Session Log : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_21_Nov_2013_11_55_50/Cassandra4.session
+	Zookeeper1 Session Log : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_21_Nov_2013_11_55_50/Zookeeper1.session
+	Zookeeper2 Session Log : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_21_Nov_2013_11_55_50/Zookeeper2.session
+	Zookeeper3 Session Log : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_21_Nov_2013_11_55_50/Zookeeper3.session
+	Mininet1 Session Log : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_21_Nov_2013_11_55_50/Mininet1.session
+	Test Script :/home/admin/ONLabTest/TestON/Tests/OnosSanity4nodes.py
+	Test Params : /home/admin/ONLabTest/TestON/Tests/OnosSanity4nodes.params
+	Topology : /home/admin/ONLabTest/TestON/Tests/OnosSanity4nodes.tpl
+                              +------------------+
+---------------------------  { Script Exec Params }  ---------------------------
+                              +------------------+
+
+	
+	'CTRL': 
+	'ip2': '10.128.100.4'
+	 'ip3': '10.128.100.5'
+	 'ip1': '10.128.100.1'
+	 'ip4': '10.128.100.6'
+	 'port4': '6633'
+	 'port2': '6633'
+	 'port3': '6633'
+	 'port1': '6633'
+	
+	 'NR_Links': '50'
+	 'LINK': 
+	'begin': 's1'
+	 'end': 's2'
+	
+	 'RESTCALL': 
+	'restIP1': '10.128.100.1'
+	 'restIP2': '10.128.100.5'
+	 'restPort': '8080'
+	 'restURL': '/wm/device/'
+	
+	 'CASE1': 
+	'destination': 'h6'
+	
+	 'PLUG': 
+	'sw1': 's1'
+	 'intf': 's1-eth1'
+	 'sw6': 's6'
+	
+	 'PING': 
+	'source2': 'h8'
+	 'source1': 'h6'
+	 'target2': 'h33'
+	 'target1': 'h31'
+	
+	 'FLOWDEF': '~/flowdef_files/Center_Triangle/flowdef_20.txt'
+	 'testcases': '1
+	2
+	21
+	3
+	4
+	5
+	6
+	7'
+	 'RestIP': '10.128.100.1'
+	 'NR_Switches': '25'
+	 'YANK': 
+	'hostmac': '00:00:00:00:00:01'
+	 'sw1': 's1'
+	 'hostname': 'h1'
+	 'intf': 's1-eth1'
+	 'sw6': 's6'
+	
+	
+
+                               +---------------+
+----------------------------- { Components Used }  -----------------------------
+                               +---------------+
+	ONOS4
+	ONOS2
+	ONOS3
+	ONOS1
+	Zookeeper4
+	Cassandra1
+	Cassandra2
+	Cassandra3
+	Cassandra4
+	Zookeeper1
+	Zookeeper2
+	Zookeeper3
+	Mininet1
+
+
+                              +--------+
+---------------------------- { Topology }  ----------------------------
+                              +--------+
+
+	
+	'ONOS4': 
+	'connect_order': '12'
+	 'host': '10.128.100.6'
+	 'user': 'admin'
+	 'COMPONENTS': ''
+	 'password': None
+	 'type': 'OnosCliDriver'
+	
+	 'ONOS2': 
+	'connect_order': '10'
+	 'host': '10.128.100.4'
+	 'user': 'admin'
+	 'COMPONENTS': ''
+	 'password': None
+	 'type': 'OnosCliDriver'
+	
+	 'ONOS3': 
+	'connect_order': '11'
+	 'host': '10.128.100.5'
+	 'user': 'admin'
+	 'COMPONENTS': ''
+	 'password': None
+	 'type': 'OnosCliDriver'
+	
+	 'ONOS1': 
+	'connect_order': '9'
+	 'host': '10.128.100.1'
+	 'user': 'admin'
+	 'COMPONENTS': ''
+	 'password': None
+	 'type': 'OnosCliDriver'
+	
+	 'Zookeeper4': 
+	'connect_order': '4'
+	 'host': '10.128.100.6'
+	 'user': 'admin'
+	 'COMPONENTS': ''
+	 'password': None
+	 'type': 'ZookeeperCliDriver'
+	
+	 'Cassandra1': 
+	'connect_order': '5'
+	 'host': '10.128.100.1'
+	 'user': 'admin'
+	 'COMPONENTS': ''
+	 'password': None
+	 'type': 'CassandraCliDriver'
+	
+	 'Cassandra2': 
+	'connect_order': '6'
+	 'host': '10.128.100.4'
+	 'user': 'admin'
+	 'COMPONENTS': ''
+	 'password': None
+	 'type': 'CassandraCliDriver'
+	
+	 'Cassandra3': 
+	'connect_order': '7'
+	 'host': '10.128.100.5'
+	 'user': 'admin'
+	 'COMPONENTS': ''
+	 'password': None
+	 'type': 'CassandraCliDriver'
+	
+	 'Cassandra4': 
+	'connect_order': '8'
+	 'host': '10.128.100.6'
+	 'user': 'admin'
+	 'COMPONENTS': ''
+	 'password': None
+	 'type': 'CassandraCliDriver'
+	
+	 'Zookeeper1': 
+	'connect_order': '1'
+	 'host': '10.128.100.1'
+	 'user': 'admin'
+	 'COMPONENTS': ''
+	 'password': None
+	 'type': 'ZookeeperCliDriver'
+	
+	 'Zookeeper2': 
+	'connect_order': '2'
+	 'host': '10.128.100.4'
+	 'user': 'admin'
+	 'COMPONENTS': ''
+	 'password': None
+	 'type': 'ZookeeperCliDriver'
+	
+	 'Zookeeper3': 
+	'connect_order': '3'
+	 'host': '10.128.100.5'
+	 'user': 'admin'
+	 'COMPONENTS': ''
+	 'password': None
+	 'type': 'ZookeeperCliDriver'
+	
+	 'Mininet1': 
+	'connect_order': '13'
+	 'host': '10.128.100.11'
+	 'user': 'admin'
+	 'COMPONENTS': 
+	'arg1': '--custom ~/mininet/custom/topo-onos4node.py'
+	 'arg2': '--topo mytopo --arp'
+	 'controller': 'remote'
+	
+	 'password': None
+	 'type': 'MininetCliDriver'
+	
+	
+------------------------------------------------------------
+
+                                                                               teston> 
+
+
+2013-11-21 11:56:27,500  Cassandra1: INFO    : 
+****************************************
+Start of Test Case1 : 
+
+Welcome to Ubuntu 12.04.2 LTS (GNU/Linux 3.2.0-44-virtual x86_64)
+
+ * Documentation:  https://help.ubuntu.com/
+
+  System information as of Thu Nov 21 11:56:02 PST 2013
+
+
+Last login: Thu Nov 21 11:55:51 2013 from 10.128.7.7
+
+
+admin@autoONOS1:~$ 
+admin@autoONOS1:~$ 
+admin@autoONOS1:~$ ~/ONOS/start-cassandra.sh start
+
+admin@autoONOS1:~$ ~/ONOS/start-cassandra.sh start
+Killed existing prosess (pid: 4865)
+rotate log: 
+Starting cassandra
+admin@autoONOS1:~$ 2013-11-21 12:02:18,923  Cassandra1: INFO    :  Checking if the startup was clean...
+****************************************
+
+2013-11-21 12:02:18,927  Cassandra1: INFO    : 
+---------------------------------------------
+Start of Step INIT : Initializing the test case :Checking if the startup was clean...
+---------------------------------------------
+
+2013-11-21 12:02:18,931  Cassandra1: INFO    : 
+---------------------------------------------
+Start of Step 1.1: Testing startup Zookeeper
+---------------------------------------------
+
+2013-11-21 12:02:19,722  Cassandra1: INFO    : 
+---------------------------------------------
+End of Step  1.1: Testing startup Zookeeper
+---------------------------------------------
+
+---------------------------------------------
+Start of Step 1.2: Testing startup Cassandra
+---------------------------------------------
+
+
+
+admin@autoONOS1:~$ 
+admin@autoONOS1:~$ 
+~/ONOS/start-cassandra.sh status
+
+admin@autoONOS1:~$ ~/ONOS/start-cassandra.sh status
+1 instance of cassandra running
+
+Datacenter: datacenter1
+==========
+Replicas: 1
+
+Address       Rack        Status State   Load            Owns                Token                                       
+                                                                             127605887595351923798765477786913079296     
+10.128.100.5  rack1       Up     Normal  53.42 KB        25.00%              85070591730234615865843651857942052864      
+10.128.100.1  rack1       Up     Normal  61.5 KB         25.00%              0                                           
+10.128.100.4  rack1       Up     Normal  80.21 KB        25.00%              42535295865117307932921825928971026432      
+10.128.100.6  rack1       Up     Normal  76.72 KB        25.00%              127605887595351923798765477786913079296     
+
+admin@autoONOS1:~$ 2013-11-21 12:02:21,271  Cassandra1: INFO    : 
+---------------------------------------------
+End of Step  1.2: Testing startup Cassandra
+---------------------------------------------
+
+---------------------------------------------
+Start of Step 1.3: Testing startup ONOS
+---------------------------------------------
+
+2013-11-21 12:02:46,206  Cassandra1: INFO    : 
+****************************************
+Start of Test Case2 : 
+2013-11-21 12:02:46,211  Cassandra1: INFO    :  Checking if one MN host exists
+****************************************
+
+2013-11-21 12:02:46,215  Cassandra1: INFO    : 
+---------------------------------------------
+Start of Step INIT : Initializing the test case :Checking if one MN host exists
+---------------------------------------------
+
+2013-11-21 12:02:46,218  Cassandra1: INFO    : 
+---------------------------------------------
+Start of Step 2.1: Host IP Checking using checkIP
+---------------------------------------------
+
+2013-11-21 12:02:46,354  Cassandra1: INFO    : 
+---------------------------------------------
+End of Step  2.1: Host IP Checking using checkIP
+---------------------------------------------
+
+---------------------------------------------
+Start of Step 2.2: Verifying the result
+---------------------------------------------
+
+2013-11-21 12:02:46,364  Cassandra1: INFO    : 
+---------------------------------------------
+End of Step  2.2: Verifying the result
+---------------------------------------------
+
+---------------------------------------------
+Start of Step 2.3: assigning ONOS controllers to switches
+---------------------------------------------
+
+2013-11-21 12:03:19,659  Cassandra1: INFO    : 
+****************************************
+Start of Test Case21 : 
+2013-11-21 12:03:23,022  Cassandra1: INFO    :  Yankout s6-eth1 (link to h1) from s1
+****************************************
+
+2013-11-21 12:03:29,524  Cassandra1: INFO    :  Plug s1-eth1 to s6
+****************************************
+
+2013-11-21 12:03:36,156  Cassandra1: INFO    :  Move s1-eth1 back to s1
+****************************************
+
+2013-11-21 12:03:42,863  Cassandra1: INFO    : 
+****************************************
+Start of Test Case3 : 
+2013-11-21 12:04:14,440  Cassandra1: INFO    :  Taking care of these flows!
+****************************************
+
+2013-11-21 12:04:14,444  Cassandra1: INFO    : 
+---------------------------------------------
+Start of Step INIT : Initializing the test case :Taking care of these flows!
+---------------------------------------------
+
+2013-11-21 12:04:14,451  Cassandra1: INFO    : 
+---------------------------------------------
+Start of Step 3.1: Cleaning out any leftover flows...
+---------------------------------------------
+
+2013-11-21 12:04:24,752  Cassandra1: INFO    :  Checking flows
+****************************************
+
+2013-11-21 12:04:24,755  Cassandra1: INFO    : 
+---------------------------------------------
+Start of Step 3.1: Waiting
+---------------------------------------------
+
+2013-11-21 12:04:29,764  Cassandra1: INFO    : 
+---------------------------------------------
+Start of Step 3.1: Checking
+---------------------------------------------
+
+2013-11-21 12:04:31,331  Cassandra1: INFO    : 
+---------------------------------------------
+Start of Step 3.1: Waiting
+---------------------------------------------
+
+2013-11-21 12:04:36,340  Cassandra1: INFO    : 
+---------------------------------------------
+Start of Step 3.1: Checking
+---------------------------------------------
+
+2013-11-21 12:04:37,946  Cassandra1: INFO    : 
+---------------------------------------------
+Start of Step 3.1: Waiting
+---------------------------------------------
+
+2013-11-21 12:04:42,955  Cassandra1: INFO    : 
+---------------------------------------------
+Start of Step 3.1: Checking
+---------------------------------------------
+
+2013-11-21 12:04:44,550  Cassandra1: INFO    : 
+---------------------------------------------
+Start of Step 3.1: Waiting
+---------------------------------------------
+
+2013-11-21 12:04:49,559  Cassandra1: INFO    : 
+---------------------------------------------
+Start of Step 3.1: Checking
+---------------------------------------------
+
+2013-11-21 12:04:51,153  Cassandra1: INFO    : 
+---------------------------------------------
+Start of Step 3.1: Waiting
+---------------------------------------------
+
+2013-11-21 12:04:56,157  Cassandra1: INFO    : 
+---------------------------------------------
+Start of Step 3.1: Checking
+---------------------------------------------
+
+2013-11-21 12:04:57,789  Cassandra1: INFO    : 
+---------------------------------------------
+Start of Step 3.1: Waiting
+---------------------------------------------
+
+2013-11-21 12:05:02,798  Cassandra1: INFO    : 
+---------------------------------------------
+Start of Step 3.1: Checking
+---------------------------------------------
+
+2013-11-21 12:05:34,748  Cassandra1: INFO    : 
+---------------------------------------------
+End of Step  3.1: Checking
+---------------------------------------------
+
+---------------------------------------------
+Start of Step 3.2: Verifying the result
+---------------------------------------------
+
+2013-11-21 12:05:34,754  Cassandra1: INFO    : 
+****************************************
+Start of Test Case4 : 
+2013-11-21 12:07:15,045  Cassandra1: INFO    : 
+****************************************
+Start of Test Case5 : 
+2013-11-21 12:08:46,894  Cassandra1: INFO    : 
+****************************************
+Start of Test Case6 : 
+2013-11-21 12:08:46,902  Cassandra1: INFO    :  Bringing Link down... 
+****************************************
+
+2013-11-21 12:10:59,961  Cassandra1: INFO    : 
+****************************************
+Start of Test Case7 : 
+2013-11-21 12:10:59,968  Cassandra1: INFO    :  Bringing Link up... 
+****************************************
+
+exit
+exit
+logout
+Connection to 10.128.100.1 closed.

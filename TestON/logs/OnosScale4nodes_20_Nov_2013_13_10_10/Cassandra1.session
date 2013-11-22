@@ -1,0 +1,281 @@
+2013-11-20 13:10:13,307  Cassandra1: INFO    : 
+                                +----------------+
+------------------------------ { Script And Files }  ------------------------------
+                                +----------------+
+
+	Script Log File : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_20_Nov_2013_13_10_10/OnosScale4nodes_20_Nov_2013_13_10_10.log
+	Report Log File : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_20_Nov_2013_13_10_10/OnosScale4nodes_20_Nov_2013_13_10_10.rpt
+	ONOS4 Session Log : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_20_Nov_2013_13_10_10/ONOS4.session
+	Cassandra3 Session Log : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_20_Nov_2013_13_10_10/Cassandra3.session
+	ONOS2 Session Log : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_20_Nov_2013_13_10_10/ONOS2.session
+	ONOS3 Session Log : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_20_Nov_2013_13_10_10/ONOS3.session
+	ONOS1 Session Log : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_20_Nov_2013_13_10_10/ONOS1.session
+	Cassandra1 Session Log : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_20_Nov_2013_13_10_10/Cassandra1.session
+	Cassandra2 Session Log : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_20_Nov_2013_13_10_10/Cassandra2.session
+	Mininet1 Session Log : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_20_Nov_2013_13_10_10/Mininet1.session
+	Cassandra4 Session Log : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_20_Nov_2013_13_10_10/Cassandra4.session
+	Zookeeper1 Session Log : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_20_Nov_2013_13_10_10/Zookeeper1.session
+	Test Script :/home/admin/ONLabTest/TestON/Tests/OnosScale4nodes.py
+	Test Params : /home/admin/ONLabTest/TestON/Tests/OnosScale4nodes.params
+	Topology : /home/admin/ONLabTest/TestON/Tests/OnosScale4nodes.tpl
+                              +------------------+
+---------------------------  { Script Exec Params }  ---------------------------
+                              +------------------+
+
+	
+	'TargetTime': '50'
+	 'testcases': '1
+	2
+	3
+	4'
+	 'WaitTime': '50'
+	 'NR_Links': '198'
+	 'RestIP': '10.128.100.4'
+	 'NR_Switches': '100'
+	 'Iterations': '2'
+	
+
+                               +---------------+
+----------------------------- { Components Used }  -----------------------------
+                               +---------------+
+	ONOS4
+	Cassandra3
+	ONOS2
+	ONOS3
+	ONOS1
+	Cassandra1
+	Cassandra2
+	Mininet1
+	Cassandra4
+	Zookeeper1
+
+
+                              +--------+
+---------------------------- { Topology }  ----------------------------
+                              +--------+
+
+	
+	'ONOS4': 
+	'connect_order': '10'
+	 'password': None
+	 'type': 'OnosCliDriver'
+	 'host': '10.128.100.6'
+	 'user': 'admin'
+	
+	 'Cassandra3': 
+	'connect_order': '5'
+	 'password': None
+	 'type': 'CassandraCliDriver'
+	 'host': '10.128.100.5'
+	 'user': 'admin'
+	
+	 'ONOS2': 
+	'connect_order': '8'
+	 'password': None
+	 'type': 'OnosCliDriver'
+	 'host': '10.128.100.4'
+	 'user': 'admin'
+	
+	 'ONOS3': 
+	'connect_order': '9'
+	 'password': None
+	 'type': 'OnosCliDriver'
+	 'host': '10.128.100.5'
+	 'user': 'admin'
+	
+	 'ONOS1': 
+	'connect_order': '7'
+	 'password': None
+	 'type': 'OnosCliDriver'
+	 'host': '10.128.100.1'
+	 'user': 'admin'
+	
+	 'Cassandra1': 
+	'connect_order': '3'
+	 'password': None
+	 'type': 'CassandraCliDriver'
+	 'host': '10.128.100.1'
+	 'user': 'admin'
+	
+	 'Cassandra2': 
+	'connect_order': '4'
+	 'password': None
+	 'type': 'CassandraCliDriver'
+	 'host': '10.128.100.4'
+	 'user': 'admin'
+	
+	 'Mininet1': 
+	'connect_order': '25'
+	 'host': '10.128.100.11'
+	 'user': 'admin'
+	 'COMPONENTS': 
+	'arg1': ''
+	 'arg2': '--topo linear
+	100 --arp'
+	 'controller': 'remote
+	ip=10.128.100.1
+	port=6633'
+	
+	 'password': None
+	 'type': 'MininetCliDriver'
+	
+	 'Cassandra4': 
+	'connect_order': '6'
+	 'password': None
+	 'type': 'CassandraCliDriver'
+	 'host': '10.128.100.6'
+	 'user': 'admin'
+	
+	 'Zookeeper1': 
+	'connect_order': '2'
+	 'host': '10.128.100.1'
+	 'user': 'admin'
+	 'COMPONENTS': ''
+	 'password': None
+	 'type': 'ZookeeperCliDriver'
+	
+	
+------------------------------------------------------------
+
+                                                                               teston> 
+
+
+2013-11-20 13:13:02,225  Cassandra1: INFO    : 
+****************************************
+Start of Test Case1 : 
+
+Welcome to Ubuntu 12.04.2 LTS (GNU/Linux 3.2.0-44-virtual x86_64)
+
+ * Documentation:  https://help.ubuntu.com/
+
+  System information as of Wed Nov 20 13:10:13 PST 2013
+
+  System load:  0.3                Processes:           99
+  Usage of /:   23.3% of 19.67GB   Users logged in:     1
+  Memory usage: 62%                IP address for eth0: 10.128.100.1
+  Swap usage:   0%
+
+  Graph this data and manage this system at https://landscape.canonical.com/
+
+  Get cloud support with Ubuntu Advantage Cloud Guest:
+    http://www.ubuntu.com/business/services/cloud
+
+  Use Juju to deploy your cloud instances and workloads:
+    https://juju.ubuntu.com/#cloud-precise
+
+134 packages can be updated.
+69 updates are security updates.
+
+Last login: Wed Nov 20 13:10:11 2013 from 10.128.7.7
+
+
+admin@autoONOS1:~$ 
+admin@autoONOS1:~$ 
+admin@autoONOS1:~$ ~/ONOS/start-cassandra.sh start
+
+admin@autoONOS1:~$ ~/ONOS/start-cassandra.sh start
+Killed existing prosess (pid: 17436)
+rotate log: 
+Starting cassandra
+admin@autoONOS1:~$ 2013-11-20 13:14:54,992  Cassandra1: INFO    :  Checking if the startup was clean...
+****************************************
+
+2013-11-20 13:14:54,994  Cassandra1: INFO    : 
+---------------------------------------------
+Start of Step INIT : Initializing the test case :Checking if the startup was clean...
+---------------------------------------------
+
+2013-11-20 13:14:54,997  Cassandra1: INFO    : 
+---------------------------------------------
+Start of Step 1.1: Testing startup Zookeeper
+---------------------------------------------
+
+2013-11-20 13:14:56,176  Cassandra1: INFO    : 
+---------------------------------------------
+End of Step  1.1: Testing startup Zookeeper
+---------------------------------------------
+
+---------------------------------------------
+Start of Step 1.2: Testing startup Cassandra
+---------------------------------------------
+
+
+
+admin@autoONOS1:~$ 
+admin@autoONOS1:~$ 
+~/ONOS/start-cassandra.sh status
+
+admin@autoONOS1:~$ ~/ONOS/start-cassandra.sh status
+1 instance of cassandra running
+Note: Ownership information does not include topology; for complete information, specify a keyspace
+
+Datacenter: datacenter1
+==========
+Address       Rack        Status State   Load            Owns                Token                                       
+                                                                             127605887595351923798765477786913079296     
+10.128.100.1  rack1       Up     Normal  226.05 KB       25.00%              0                                           
+10.128.100.4  rack1       Up     Normal  211.2 KB        25.00%              42535295865117307932921825928971026432      
+10.128.100.5  rack1       Up     Normal  242.69 KB       25.00%              85070591730234615865843651857942052864      
+10.128.100.6  rack1       Up     Normal  246.6 KB        25.00%              127605887595351923798765477786913079296     
+
+admin@autoONOS1:~$ 2013-11-20 13:14:57,914  Cassandra1: INFO    : 
+---------------------------------------------
+End of Step  1.2: Testing startup Cassandra
+---------------------------------------------
+
+---------------------------------------------
+Start of Step 1.3: Testing startup ONOS
+---------------------------------------------
+
+2013-11-20 13:15:11,307  Cassandra1: INFO    : 
+****************************************
+Start of Test Case2 : 
+2013-11-20 13:15:11,310  Cassandra1: INFO    :  Timing Onos Convergence for switch -> a single ONOS node in the cluster
+****************************************
+
+2013-11-20 13:15:11,312  Cassandra1: INFO    : 
+---------------------------------------------
+Start of Step INIT : Initializing the test case :Timing Onos Convergence for switch -> a single ONOS node in the cluster
+---------------------------------------------
+
+2013-11-20 13:15:11,316  Cassandra1: INFO    : 
+---------------------------------------------
+Start of Step 2.1: Bringing ONOS down...
+---------------------------------------------
+
+2013-11-20 13:17:09,157  Cassandra1: INFO    : 
+****************************************
+Start of Test Case3 : 
+2013-11-20 13:17:09,163  Cassandra1: INFO    :  Timing Onos Convergence for switch -> all ONOS nodes in cluster
+****************************************
+
+2013-11-20 13:17:09,166  Cassandra1: INFO    : 
+---------------------------------------------
+Start of Step INIT : Initializing the test case :Timing Onos Convergence for switch -> all ONOS nodes in cluster
+---------------------------------------------
+
+2013-11-20 13:17:09,172  Cassandra1: INFO    : 
+---------------------------------------------
+Start of Step 3.1: Bringing ONOS down...
+---------------------------------------------
+
+2013-11-20 13:19:15,542  Cassandra1: INFO    : 
+****************************************
+Start of Test Case4 : 
+2013-11-20 13:19:15,546  Cassandra1: INFO    :  Timing Onos Convergence for even single controller distribution
+****************************************
+
+2013-11-20 13:19:15,548  Cassandra1: INFO    : 
+---------------------------------------------
+Start of Step INIT : Initializing the test case :Timing Onos Convergence for even single controller distribution
+---------------------------------------------
+
+2013-11-20 13:19:15,553  Cassandra1: INFO    : 
+---------------------------------------------
+Start of Step 4.1: Bringing ONOS down...
+---------------------------------------------
+
+exit
+exit
+logout
+Connection to 10.128.100.1 closed.

@@ -1,0 +1,513 @@
+2013-11-21 15:39:32,231  ONOS1     : INFO    : 
+                                +----------------+
+------------------------------ { Script And Files }  ------------------------------
+                                +----------------+
+
+	Script Log File : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_21_Nov_2013_15_39_28/OnosScale4nodes_21_Nov_2013_15_39_28.log
+	Report Log File : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_21_Nov_2013_15_39_28/OnosScale4nodes_21_Nov_2013_15_39_28.rpt
+	ONOS4 Session Log : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_21_Nov_2013_15_39_28/ONOS4.session
+	Cassandra3 Session Log : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_21_Nov_2013_15_39_28/Cassandra3.session
+	ONOS2 Session Log : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_21_Nov_2013_15_39_28/ONOS2.session
+	ONOS3 Session Log : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_21_Nov_2013_15_39_28/ONOS3.session
+	ONOS1 Session Log : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_21_Nov_2013_15_39_28/ONOS1.session
+	Cassandra1 Session Log : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_21_Nov_2013_15_39_28/Cassandra1.session
+	Cassandra2 Session Log : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_21_Nov_2013_15_39_28/Cassandra2.session
+	Mininet1 Session Log : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_21_Nov_2013_15_39_28/Mininet1.session
+	Cassandra4 Session Log : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_21_Nov_2013_15_39_28/Cassandra4.session
+	Zookeeper1 Session Log : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_21_Nov_2013_15_39_28/Zookeeper1.session
+	Test Script :/home/admin/ONLabTest/TestON/Tests/OnosScale4nodes.py
+	Test Params : /home/admin/ONLabTest/TestON/Tests/OnosScale4nodes.params
+	Topology : /home/admin/ONLabTest/TestON/Tests/OnosScale4nodes.tpl
+                              +------------------+
+---------------------------  { Script Exec Params }  ---------------------------
+                              +------------------+
+
+	
+	'TargetTime': '50'
+	 'testcases': '1
+	2
+	3
+	4'
+	 'WaitTime': '50'
+	 'NR_Links': '198'
+	 'RestIP': '10.128.100.4'
+	 'NR_Switches': '100'
+	 'Iterations': '2'
+	
+
+                               +---------------+
+----------------------------- { Components Used }  -----------------------------
+                               +---------------+
+	ONOS4
+	Cassandra3
+	ONOS2
+	ONOS3
+	ONOS1
+	Cassandra1
+	Cassandra2
+	Mininet1
+	Cassandra4
+	Zookeeper1
+
+
+                              +--------+
+---------------------------- { Topology }  ----------------------------
+                              +--------+
+
+	
+	'ONOS4': 
+	'connect_order': '10'
+	 'password': None
+	 'type': 'OnosCliDriver'
+	 'host': '10.128.100.6'
+	 'user': 'admin'
+	
+	 'Cassandra3': 
+	'connect_order': '5'
+	 'password': None
+	 'type': 'CassandraCliDriver'
+	 'host': '10.128.100.5'
+	 'user': 'admin'
+	
+	 'ONOS2': 
+	'connect_order': '8'
+	 'password': None
+	 'type': 'OnosCliDriver'
+	 'host': '10.128.100.4'
+	 'user': 'admin'
+	
+	 'ONOS3': 
+	'connect_order': '9'
+	 'password': None
+	 'type': 'OnosCliDriver'
+	 'host': '10.128.100.5'
+	 'user': 'admin'
+	
+	 'ONOS1': 
+	'connect_order': '7'
+	 'password': None
+	 'type': 'OnosCliDriver'
+	 'host': '10.128.100.1'
+	 'user': 'admin'
+	
+	 'Cassandra1': 
+	'connect_order': '3'
+	 'password': None
+	 'type': 'CassandraCliDriver'
+	 'host': '10.128.100.1'
+	 'user': 'admin'
+	
+	 'Cassandra2': 
+	'connect_order': '4'
+	 'password': None
+	 'type': 'CassandraCliDriver'
+	 'host': '10.128.100.4'
+	 'user': 'admin'
+	
+	 'Mininet1': 
+	'connect_order': '25'
+	 'host': '10.128.100.11'
+	 'user': 'admin'
+	 'COMPONENTS': 
+	'arg1': ''
+	 'arg2': '--topo linear
+	100 --arp'
+	 'controller': 'remote
+	ip=10.128.100.1
+	port=6633'
+	
+	 'password': None
+	 'type': 'MininetCliDriver'
+	
+	 'Cassandra4': 
+	'connect_order': '6'
+	 'password': None
+	 'type': 'CassandraCliDriver'
+	 'host': '10.128.100.6'
+	 'user': 'admin'
+	
+	 'Zookeeper1': 
+	'connect_order': '2'
+	 'host': '10.128.100.1'
+	 'user': 'admin'
+	 'COMPONENTS': ''
+	 'password': None
+	 'type': 'ZookeeperCliDriver'
+	
+	
+------------------------------------------------------------
+
+[Kteston> 
+
+
+2013-11-21 15:42:19,941  ONOS1     : INFO    : 
+****************************************
+Start of Test Case1 : 
+
+Welcome to Ubuntu 12.04.2 LTS (GNU/Linux 3.2.0-44-virtual x86_64)
+
+ * Documentation:  https://help.ubuntu.com/
+
+  System information as of Thu Nov 21 15:39:32 PST 2013
+
+  System load:  0.17               Processes:           106
+  Usage of /:   23.2% of 19.67GB   Users logged in:     1
+  Memory usage: 67%                IP address for eth0: 10.128.100.1
+  Swap usage:   0%
+
+  Graph this data and manage this system at https://landscape.canonical.com/
+
+  Get cloud support with Ubuntu Advantage Cloud Guest:
+    http://www.ubuntu.com/business/services/cloud
+
+  Use Juju to deploy your cloud instances and workloads:
+    https://juju.ubuntu.com/#cloud-precise
+
+134 packages can be updated.
+69 updates are security updates.
+
+Last login: Thu Nov 21 15:39:32 2013 from 10.128.7.7
+
+
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ 
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ 
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ ~/ONOS/start-onos.sh stop
+
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ ~/ONOS/start-onos.sh stop
+Killed existing process (pid: 13245)
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ ~/ONOS/scripts/test-drop-keyspace.sh
+~/ONOS/scripts/test-drop-keyspace.sh
+spawn ~/apache-cassandra-1.2.4/bin/cassandra-cli
+
+
+Connected to: "Onos Sanity 4 nodes" on 127.0.0.1/9160
+Welcome to Cassandra CLI version 1.2.4
+
+Type 'help;' or '?' for help.
+Type 'quit;' or 'exit;' to quit.
+
+[default@unknown] drop keyspace onos;
+c0de5dd0-49ab-339c-a8a6-03ef58a86d46
+[default@unknown] ]0;admin@autoONOS1: ~admin@autoONOS1:~$ 
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ 
+
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ ~/ONOS/start-onos.sh start
+~/ONOS/start-onos.sh start
+rotate log: ./onos-logs/onos.autoONOS1.log
+rotate log: ./onos-logs/onos.autoONOS1.pcap
+Starting ONOS controller ...
+
+/home/admin/ONOS
+/home/admin/ONOS
+mvn -o exec:exec -Dexec.executable="java" -Dexec.args=" -javaagent:/home/admin/ONOS/lib/jacocoagent.jar=dumponexit=true,output=file,destfile=./onos-logs/jacoco.exec -server -d64 -Xmx1g -Xms1g -Xmn800m -XX:+UseConcMarkSweepGC -XX:+UseAdaptiveSizePolicy -XX:+AggressiveOpts -XX:+UseFastAccessorMethods -XX:MaxInlineSize=8192 -XX:FreqInlineSize=8192 -XX:CompileThreshold=1500 -XX:PreBlockSpin=8 -XX:OnError=crash-logger -XX:CompileThreshold=1500 -XX:PreBlockSpin=8 		-XX:+UseThreadPriorities 		-XX:ThreadPriorityPolicy=42 		-XX:+UseCompressedOops 		-Dcom.sun.management.jmxremote.port=7189 		-Dcom.sun.management.jmxremote.ssl=false 		-Dcom.sun.management.jmxremote.authenticate=false -Dhazelcast.logging.type=slf4j -Dlogback.configurationFile=./logback.autoONOS1.xml -cp %classpath net.onrc.onos.ofcontroller.core.Main -cf ./conf/onos.properties"
+Waiting for ONOS to start...
+.....
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ ~/ONOS/start-rest.sh start
+~/ONOS/start-rest.sh start
+killing: /usr/bin/python /home/admin/ONOS/web/topology_rest.py
+killing: python /home/admin/ONOS/web/topology_rest.py
+killing: 
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ ~/ONOS/start-rest.sh status 
+~/ONOS/start-rest.sh status 
+rest server is running
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ 
+cat /home/admin/ONOS/.git/ORIG_HEAD
+
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ 
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ cat /home/admin/ONOS/.git/ORIG_HEAD
+67174b8f2ccab135db02699ccdfc59e082b65490
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ 2013-11-21 15:44:13,132  ONOS1     : INFO    :  Checking if the startup was clean...
+****************************************
+
+2013-11-21 15:44:13,135  ONOS1     : INFO    : 
+---------------------------------------------
+Start of Step INIT : Initializing the test case :Checking if the startup was clean...
+---------------------------------------------
+
+2013-11-21 15:44:13,138  ONOS1     : INFO    : 
+---------------------------------------------
+Start of Step 1.1: Testing startup Zookeeper
+---------------------------------------------
+
+2013-11-21 15:44:14,101  ONOS1     : INFO    : 
+---------------------------------------------
+End of Step  1.1: Testing startup Zookeeper
+---------------------------------------------
+
+---------------------------------------------
+Start of Step 1.2: Testing startup Cassandra
+---------------------------------------------
+
+2013-11-21 15:44:16,124  ONOS1     : INFO    : 
+---------------------------------------------
+End of Step  1.2: Testing startup Cassandra
+---------------------------------------------
+
+---------------------------------------------
+Start of Step 1.3: Testing startup ONOS
+---------------------------------------------
+
+
+
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ ~/ONOS/start-onos.sh status 
+
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ ~/ONOS/start-onos.sh status 
+1 instance of onos running
+
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ 
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ tail ~/ONOS/onos-logs/onos.*.log
+
+
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ tail ~/ONOS/onos-logs/onos.*.log
+2013-11-21 15:44:17,076 INFO [main] n.o.o.o.c.i.SwitchStorageImpl [SwitchStorageImpl.java:491] SwitchStorage:setPortStateImpl port:00:00:00:00:00:00:00:641 state:0 desc:s100-eth1 done
+2013-11-21 15:44:17,078 INFO [main] n.o.o.o.c.i.SwitchStorageImpl [SwitchStorageImpl.java:461] SwitchStorage:addPort dpid:00:00:00:00:00:00:00:64 port:1 done
+2013-11-21 15:44:17,101 DEBUG [main] c.t.t.g.d.StandardTitanGraph [StandardTitanGraph.java:688] Saving transaction. Added 28, removed 0
+2013-11-21 15:44:17,111 DEBUG [hz._hzInstance_1_dev.cached.thread-3] c.h.c.ClusterService [Slf4jFactory.java:81] [10.128.100.1]:5701 [dev] Handling join from Address[10.128.100.6]:5701, inProgress: false, timeToStart: 3991
+2013-11-21 15:44:17,138 DEBUG [Thread-6] n.o.o.o.f.FlowEventHandler [FlowEventHandler.java:395] Topology Event: ENTRY_ADD Switch=64
+2013-11-21 15:44:17,143 DEBUG [Thread-6] n.o.o.o.f.FlowEventHandler [FlowEventHandler.java:395] Topology Event: ENTRY_ADD Port=64/-2
+2013-11-21 15:44:17,148 DEBUG [Thread-6] n.o.o.o.f.FlowEventHandler [FlowEventHandler.java:395] Topology Event: ENTRY_ADD Port=64/1
+2013-11-21 15:44:17,151 DEBUG [Thread-6] n.o.o.o.f.FlowEventHandler [FlowEventHandler.java:395] Topology Event: ENTRY_ADD Port=64/2
+2013-11-21 15:44:17,250 DEBUG [main] n.f.s.StaticFlowEntryPusher [StaticFlowEntryPusher.java:325] addedSwitch OFSwitchImpl [/10.128.100.11:40688 DPID[00:00:00:00:00:00:00:64]]; processing its static entries
+2013-11-21 15:44:17,252 INFO [main] n.o.o.o.c.i.SwitchStorageImpl [SwitchStorageImpl.java:137] SwitchStorage:addSwitch(): dpid 00:00:00:00:00:00:00:25 
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ tail ~/ONOS/onos-logs/onos.*.log
+2013-11-21 15:46:21,402  ONOS1     : INFO    : 
+****************************************
+Start of Test Case2 : 
+2013-11-21 15:46:21,405  ONOS1     : INFO    :  Timing Onos Convergence for switch -> a single ONOS node in the cluster
+****************************************
+
+2013-11-21 15:46:21,408  ONOS1     : INFO    : 
+---------------------------------------------
+Start of Step INIT : Initializing the test case :Timing Onos Convergence for switch -> a single ONOS node in the cluster
+---------------------------------------------
+
+2013-11-21 15:46:21,412  ONOS1     : INFO    : 
+---------------------------------------------
+Start of Step 2.1: Bringing ONOS down...
+---------------------------------------------
+
+
+
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ 
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ tail ~/ONOS/onos-logs/onos.*.log
+2013-11-21 15:44:45,627 DEBUG [main] n.o.o.o.f.NetworkGraphPublisher [NetworkGraphPublisher.java:198] LinkDiscoveryUpdate(): Updating link Link [src=00:00:00:00:00:00:00:59 outPort=2, dst=00:00:00:00:00:00:00:58, inPort=3]
+2013-11-21 15:44:45,627 DEBUG [main] n.o.o.o.f.NetworkGraphPublisher [NetworkGraphPublisher.java:198] LinkDiscoveryUpdate(): Updating link Link [src=00:00:00:00:00:00:00:3e outPort=2, dst=00:00:00:00:00:00:00:3d, inPort=3]
+2013-11-21 15:44:45,627 DEBUG [main] n.o.o.o.f.NetworkGraphPublisher [NetworkGraphPublisher.java:198] LinkDiscoveryUpdate(): Updating link Link [src=00:00:00:00:00:00:00:1a outPort=3, dst=00:00:00:00:00:00:00:1b, inPort=2]
+2013-11-21 15:44:45,628 DEBUG [main] n.o.o.o.f.NetworkGraphPublisher [NetworkGraphPublisher.java:198] LinkDiscoveryUpdate(): Updating link Link [src=00:00:00:00:00:00:00:62 outPort=2, dst=00:00:00:00:00:00:00:61, inPort=3]
+2013-11-21 15:44:45,628 DEBUG [main] n.o.o.o.f.NetworkGraphPublisher [NetworkGraphPublisher.java:198] LinkDiscoveryUpdate(): Updating link Link [src=00:00:00:00:00:00:00:1d outPort=3, dst=00:00:00:00:00:00:00:1e, inPort=2]
+2013-11-21 15:44:45,628 DEBUG [main] n.o.o.o.f.NetworkGraphPublisher [NetworkGraphPublisher.java:198] LinkDiscoveryUpdate(): Updating link Link [src=00:00:00:00:00:00:00:4e outPort=3, dst=00:00:00:00:00:00:00:4f, inPort=2]
+2013-11-21 15:44:45,628 DEBUG [main] n.o.o.o.f.NetworkGraphPublisher [NetworkGraphPublisher.java:198] LinkDiscoveryUpdate(): Updating link Link [src=00:00:00:00:00:00:00:16 outPort=3, dst=00:00:00:00:00:00:00:17, inPort=2]
+2013-11-21 15:44:45,628 DEBUG [main] n.o.o.o.f.NetworkGraphPublisher [NetworkGraphPublisher.java:198] LinkDiscoveryUpdate(): Updating link Link [src=00:00:00:00:00:00:00:2e outPort=2, dst=00:00:00:00:00:00:00:2d, inPort=3]
+2013-11-21 15:44:45,628 DEBUG [main] n.o.o.o.f.NetworkGraphPublisher [NetworkGraphPublisher.java:198] LinkDiscoveryUpdate(): Updating link Link [src=00:00:00:00:00:00:00:11 outPort=2, dst=00:00:00:00:00:00:00:10, inPort=3]
+2013-11-21 15:44:45,628 DEBUG [main] n.o.o.o.f.NetworkGraphPublisher [NetworkGraphPublisher.java:198] LinkDiscoveryUpdate(): Updating link Link [src=00:00:00:00:00:00:00:44 outPort=2, dst=00:00:00:00:00:00:00:43, inPort=3]
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ ~/ONOS/start-onos.sh stop
+
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ ~/ONOS/start-onos.sh stop
+Killed existing process (pid: 15123)
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ ~/ONOS/scripts/test-drop-keyspace.sh
+~/ONOS/scripts/test-drop-keyspace.sh
+
+spawn ~/apache-cassandra-1.2.4/bin/cassandra-cli
+
+Connected to: "Onos Sanity 4 nodes" on 127.0.0.1/9160
+Welcome to Cassandra CLI version 1.2.4
+
+Type 'help;' or '?' for help.
+Type 'quit;' or 'exit;' to quit.
+
+[default@unknown] drop keyspace onos;
+c0de5dd0-49ab-339c-a8a6-03ef58a86d46
+[default@unknown] ]0;admin@autoONOS1: ~admin@autoONOS1:~$ 
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ 
+
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ ~/ONOS/start-onos.sh start
+~/ONOS/start-onos.sh start
+rotate log: ./onos-logs/onos.autoONOS1.log
+rotate log: ./onos-logs/onos.autoONOS1.pcap
+Starting ONOS controller ...
+
+/home/admin/ONOS
+/home/admin/ONOS
+mvn -o exec:exec -Dexec.executable="java" -Dexec.args=" -javaagent:/home/admin/ONOS/lib/jacocoagent.jar=dumponexit=true,output=file,destfile=./onos-logs/jacoco.exec -server -d64 -Xmx1g -Xms1g -Xmn800m -XX:+UseConcMarkSweepGC -XX:+UseAdaptiveSizePolicy -XX:+AggressiveOpts -XX:+UseFastAccessorMethods -XX:MaxInlineSize=8192 -XX:FreqInlineSize=8192 -XX:CompileThreshold=1500 -XX:PreBlockSpin=8 -XX:OnError=crash-logger -XX:CompileThreshold=1500 -XX:PreBlockSpin=8 		-XX:+UseThreadPriorities 		-XX:ThreadPriorityPolicy=42 		-XX:+UseCompressedOops 		-Dcom.sun.management.jmxremote.port=7189 		-Dcom.sun.management.jmxremote.ssl=false 		-Dcom.sun.management.jmxremote.authenticate=false -Dhazelcast.logging.type=slf4j -Dlogback.configurationFile=./logback.autoONOS1.xml -cp %classpath net.onrc.onos.ofcontroller.core.Main -cf ./conf/onos.properties"
+Waiting for ONOS to start...
+.....
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ 
+
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ 
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ ~/ONOS/start-onos.sh status 
+~/ONOS/start-onos.sh status 
+1 instance of onos running
+
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ 
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ tail ~/ONOS/onos-logs/onos.*.log
+
+
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ tail ~/ONOS/onos-logs/onos.*.log
+2013-11-21 15:47:32,164 DEBUG [hz._hzInstance_1_dev.migration] c.h.p.PartitionService [Slf4jFactory.java:81] [10.128.100.1]:5701 [dev] Started Migration : MigrationInfo{ partitionId=91, source=Address[10.128.100.1]:5701, destination=Address[10.128.100.4]:5701, master=Address[10.128.100.1]:5701, valid=true, processing=false}
+2013-11-21 15:47:32,168 DEBUG [hz._hzInstance_1_dev.operation.thread-2] c.h.p.ReplicaSyncResponse [Slf4jFactory.java:81] [10.128.100.1]:5701 [dev] Applying replica sync for partition: 90, replica: 1
+2013-11-21 15:47:32,192 DEBUG [hz._hzInstance_1_dev.migration] c.h.p.PartitionService [Slf4jFactory.java:81] [10.128.100.1]:5701 [dev] Finished Migration: MigrationInfo{ partitionId=91, source=Address[10.128.100.1]:5701, destination=Address[10.128.100.4]:5701, master=Address[10.128.100.1]:5701, valid=true, processing=false}
+2013-11-21 15:47:32,194 DEBUG [hz._hzInstance_1_dev.migration] c.h.p.PartitionService [Slf4jFactory.java:81] [10.128.100.1]:5701 [dev] Sending sync replica request to -> Address[10.128.100.4]:5701; for partition: 91, replica: 1
+2013-11-21 15:47:32,197 DEBUG [hz._hzInstance_1_dev.migration] c.h.p.PartitionService [Slf4jFactory.java:81] [10.128.100.1]:5701 [dev] Started Migration : MigrationInfo{ partitionId=92, source=Address[10.128.100.1]:5701, destination=Address[10.128.100.4]:5701, master=Address[10.128.100.1]:5701, valid=true, processing=false}
+2013-11-21 15:47:32,201 DEBUG [hz._hzInstance_1_dev.operation.thread-3] c.h.p.ReplicaSyncResponse [Slf4jFactory.java:81] [10.128.100.1]:5701 [dev] Applying replica sync for partition: 91, replica: 1
+2013-11-21 15:47:32,240 DEBUG [hz._hzInstance_1_dev.migration] c.h.p.PartitionService [Slf4jFactory.java:81] [10.128.100.1]:5701 [dev] Finished Migration: MigrationInfo{ partitionId=92, source=Address[10.128.100.1]:5701, destination=Address[10.128.100.4]:5701, master=Address[10.128.100.1]:5701, valid=true, processing=false}
+2013-11-21 15:47:32,241 DEBUG [hz._hzInstance_1_dev.migration] c.h.p.PartitionService [Slf4jFactory.java:81] [10.128.100.1]:5701 [dev] Sending sync replica request to -> Address[10.128.100.4]:5701; for partition: 92, replica: 1
+2013-11-21 15:47:32,242 DEBUG [hz._hzInstance_1_dev.migration] c.h.p.PartitionService [Slf4jFactory.java:81] [10.128.100.1]:5701 [dev] Started Migration : MigrationInfo{ partitionId=93, source=Address[10.128.100.1]:5701, destination=Address[10.128.100.4]:5701, master=Address[10.128.100.1]:5701, valid=true, processing=false}
+2013-11-21 15:47:32,260 DEBUG [hz._hzInstance_1_dev.operation.thread-4] c.h.p.ReplicaSyncResponse [Slf4jFactory.java:81] [10.128.100.1]:5701 [dev] Applying replica sync for partition: 92, replica: 1
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ tail ~/ONOS/onos-logs/onos.*.log
+2013-11-21 15:50:37,738  ONOS1     : INFO    : 
+****************************************
+Start of Test Case3 : 
+2013-11-21 15:50:37,740  ONOS1     : INFO    :  Timing Onos Convergence for switch -> all ONOS nodes in cluster
+****************************************
+
+2013-11-21 15:50:37,742  ONOS1     : INFO    : 
+---------------------------------------------
+Start of Step INIT : Initializing the test case :Timing Onos Convergence for switch -> all ONOS nodes in cluster
+---------------------------------------------
+
+2013-11-21 15:50:37,743  ONOS1     : INFO    : 
+---------------------------------------------
+Start of Step 3.1: Bringing ONOS down...
+---------------------------------------------
+
+
+
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ 
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ tail ~/ONOS/onos-logs/onos.*.log
+2013-11-21 15:47:55,917 DEBUG [hz._hzInstance_1_dev.operation.thread-5] c.h.p.ReplicaSyncResponse [Slf4jFactory.java:81] [10.128.100.1]:5701 [dev] Applying replica sync for partition: 189, replica: 3
+2013-11-21 15:47:55,948 DEBUG [hz._hzInstance_1_dev.migration] c.h.p.PartitionService [Slf4jFactory.java:81] [10.128.100.1]:5701 [dev] Finished Migration: MigrationInfo{ partitionId=190, source=Address[10.128.100.1]:5701, destination=Address[10.128.100.6]:5701, master=Address[10.128.100.1]:5701, valid=true, processing=false}
+2013-11-21 15:47:55,949 DEBUG [hz._hzInstance_1_dev.migration] c.h.p.PartitionService [Slf4jFactory.java:81] [10.128.100.1]:5701 [dev] Sending sync replica request to -> Address[10.128.100.6]:5701; for partition: 190, replica: 3
+2013-11-21 15:47:55,954 DEBUG [hz._hzInstance_1_dev.migration] c.h.p.PartitionService [Slf4jFactory.java:81] [10.128.100.1]:5701 [dev] Started Migration : MigrationInfo{ partitionId=191, source=Address[10.128.100.1]:5701, destination=Address[10.128.100.6]:5701, master=Address[10.128.100.1]:5701, valid=true, processing=false}
+2013-11-21 15:47:55,961 DEBUG [hz._hzInstance_1_dev.operation.thread-6] c.h.p.ReplicaSyncResponse [Slf4jFactory.java:81] [10.128.100.1]:5701 [dev] Applying replica sync for partition: 190, replica: 3
+2013-11-21 15:47:55,997 DEBUG [hz._hzInstance_1_dev.migration] c.h.p.PartitionService [Slf4jFactory.java:81] [10.128.100.1]:5701 [dev] Finished Migration: MigrationInfo{ partitionId=191, source=Address[10.128.100.1]:5701, destination=Address[10.128.100.6]:5701, master=Address[10.128.100.1]:5701, valid=true, processing=false}
+2013-11-21 15:47:55,999 DEBUG [hz._hzInstance_1_dev.migration] c.h.p.PartitionService [Slf4jFactory.java:81] [10.128.100.1]:5701 [dev] Sending sync replica request to -> Address[10.128.100.6]:5701; for partition: 191, replica: 3
+2013-11-21 15:47:56,013 DEBUG [hz._hzInstance_1_dev.operation.thread-7] c.h.p.ReplicaSyncResponse [Slf4jFactory.java:81] [10.128.100.1]:5701 [dev] Applying replica sync for partition: 191, replica: 3
+2013-11-21 15:47:57,004 INFO [hz._hzInstance_1_dev.migration] c.h.p.PartitionService [Slf4jFactory.java:83] [10.128.100.1]:5701 [dev] All migration tasks has been completed, queues are empty.
+2013-11-21 15:47:57,029 DEBUG [pool-3-thread-2] n.o.o.o.l.i.LinkDiscoveryManager [LinkDiscoveryManager.java:372] Sending LLDP out on all ports.
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ ~/ONOS/start-onos.sh stop
+
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ ~/ONOS/start-onos.sh stop
+Killed existing process (pid: 15870)
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ 
+
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ ~/ONOS/start-onos.sh start
+~/ONOS/start-onos.sh start
+rotate log: ./onos-logs/onos.autoONOS1.log
+rotate log: ./onos-logs/onos.autoONOS1.pcap
+Starting ONOS controller ...
+
+/home/admin/ONOS
+/home/admin/ONOS
+mvn -o exec:exec -Dexec.executable="java" -Dexec.args=" -javaagent:/home/admin/ONOS/lib/jacocoagent.jar=dumponexit=true,output=file,destfile=./onos-logs/jacoco.exec -server -d64 -Xmx1g -Xms1g -Xmn800m -XX:+UseConcMarkSweepGC -XX:+UseAdaptiveSizePolicy -XX:+AggressiveOpts -XX:+UseFastAccessorMethods -XX:MaxInlineSize=8192 -XX:FreqInlineSize=8192 -XX:CompileThreshold=1500 -XX:PreBlockSpin=8 -XX:OnError=crash-logger -XX:CompileThreshold=1500 -XX:PreBlockSpin=8 		-XX:+UseThreadPriorities 		-XX:ThreadPriorityPolicy=42 		-XX:+UseCompressedOops 		-Dcom.sun.management.jmxremote.port=7189 		-Dcom.sun.management.jmxremote.ssl=false 		-Dcom.sun.management.jmxremote.authenticate=false -Dhazelcast.logging.type=slf4j -Dlogback.configurationFile=./logback.autoONOS1.xml -cp %classpath net.onrc.onos.ofcontroller.core.Main -cf ./conf/onos.properties"
+Waiting for ONOS to start...
+.....
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ 
+
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ 
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ ~/ONOS/start-onos.sh status 
+~/ONOS/start-onos.sh status 
+1 instance of onos running
+
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ 
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ tail ~/ONOS/onos-logs/onos.*.log
+
+
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ tail ~/ONOS/onos-logs/onos.*.log
+2013-11-21 15:51:46,249 DEBUG [hz._hzInstance_1_dev.migration] c.h.p.PartitionService [Slf4jFactory.java:81] [10.128.100.1]:5701 [dev] Started Migration : MigrationInfo{ partitionId=141, source=Address[10.128.100.1]:5701, destination=Address[10.128.100.4]:5701, master=Address[10.128.100.1]:5701, valid=true, processing=false}
+2013-11-21 15:51:46,262 DEBUG [hz._hzInstance_1_dev.operation.thread-4] c.h.p.ReplicaSyncResponse [Slf4jFactory.java:81] [10.128.100.1]:5701 [dev] Applying replica sync for partition: 140, replica: 1
+2013-11-21 15:51:46,264 DEBUG [hz._hzInstance_1_dev.migration] c.h.p.PartitionService [Slf4jFactory.java:81] [10.128.100.1]:5701 [dev] Finished Migration: MigrationInfo{ partitionId=141, source=Address[10.128.100.1]:5701, destination=Address[10.128.100.4]:5701, master=Address[10.128.100.1]:5701, valid=true, processing=false}
+2013-11-21 15:51:46,266 DEBUG [hz._hzInstance_1_dev.migration] c.h.p.PartitionService [Slf4jFactory.java:81] [10.128.100.1]:5701 [dev] Sending sync replica request to -> Address[10.128.100.4]:5701; for partition: 141, replica: 1
+2013-11-21 15:51:46,270 DEBUG [hz._hzInstance_1_dev.migration] c.h.p.PartitionService [Slf4jFactory.java:81] [10.128.100.1]:5701 [dev] Started Migration : MigrationInfo{ partitionId=143, source=Address[10.128.100.1]:5701, destination=Address[10.128.100.4]:5701, master=Address[10.128.100.1]:5701, valid=true, processing=false}
+2013-11-21 15:51:46,279 DEBUG [hz._hzInstance_1_dev.operation.thread-5] c.h.p.ReplicaSyncResponse [Slf4jFactory.java:81] [10.128.100.1]:5701 [dev] Applying replica sync for partition: 141, replica: 1
+2013-11-21 15:51:46,289 DEBUG [hz._hzInstance_1_dev.migration] c.h.p.PartitionService [Slf4jFactory.java:81] [10.128.100.1]:5701 [dev] Finished Migration: MigrationInfo{ partitionId=143, source=Address[10.128.100.1]:5701, destination=Address[10.128.100.4]:5701, master=Address[10.128.100.1]:5701, valid=true, processing=false}
+2013-11-21 15:51:46,292 DEBUG [hz._hzInstance_1_dev.migration] c.h.p.PartitionService [Slf4jFactory.java:81] [10.128.100.1]:5701 [dev] Sending sync replica request to -> Address[10.128.100.4]:5701; for partition: 143, replica: 1
+2013-11-21 15:51:46,307 DEBUG [hz._hzInstance_1_dev.operation.thread-7] c.h.p.ReplicaSyncResponse [Slf4jFactory.java:81] [10.128.100.1]:5701 [dev] Applying replica sync for partition: 143, replica: 1
+2013-11-21 15:51:47,297 INFO [hz._hzInstance_1_dev.migration] c.h.p.PartitionService [Slf4jFactory.java:83] [10.128.100.1]:5701 [dev] All migration tasks has been completed, queues are empty.
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ tail ~/ONOS/onos-logs/onos.*.log
+2013-11-21 15:54:44,624  ONOS1     : INFO    : 
+****************************************
+Start of Test Case4 : 
+2013-11-21 15:54:44,626  ONOS1     : INFO    :  Timing Onos Convergence for even single controller distribution
+****************************************
+
+2013-11-21 15:54:44,627  ONOS1     : INFO    : 
+---------------------------------------------
+Start of Step INIT : Initializing the test case :Timing Onos Convergence for even single controller distribution
+---------------------------------------------
+
+2013-11-21 15:54:44,629  ONOS1     : INFO    : 
+---------------------------------------------
+Start of Step 4.1: Bringing ONOS down...
+---------------------------------------------
+
+
+
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ 
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ tail ~/ONOS/onos-logs/onos.*.log
+2013-11-21 15:52:23,203 INFO [pool-3-thread-14] n.o.o.r.c.ZookeeperRegistry [ZookeeperRegistry.java:167] Requesting control for 00:00:00:00:00:00:00:1c
+2013-11-21 15:52:23,222 DEBUG [pool-3-thread-14] n.o.o.o.f.NetworkGraphPublisher [NetworkGraphPublisher.java:162] request Control to set inactive sw 00:00:00:00:00:00:00:4d
+2013-11-21 15:52:23,224 INFO [pool-3-thread-14] n.o.o.r.c.ZookeeperRegistry [ZookeeperRegistry.java:167] Requesting control for 00:00:00:00:00:00:00:4d
+2013-11-21 15:52:23,241 DEBUG [pool-14-thread-1] c.t.t.g.d.StandardTitanGraph [StandardTitanGraph.java:688] Saving transaction. Added 5, removed 5
+2013-11-21 15:52:23,244 DEBUG [pool-3-thread-14] n.o.o.o.f.NetworkGraphPublisher [NetworkGraphPublisher.java:162] request Control to set inactive sw 00:00:00:00:00:00:00:63
+2013-11-21 15:52:23,244 INFO [pool-3-thread-14] n.o.o.r.c.ZookeeperRegistry [ZookeeperRegistry.java:167] Requesting control for 00:00:00:00:00:00:00:63
+2013-11-21 15:52:23,255 DEBUG [pool-3-thread-14] n.o.o.o.f.NetworkGraphPublisher [NetworkGraphPublisher.java:162] request Control to set inactive sw 00:00:00:00:00:00:00:13
+2013-11-21 15:52:23,255 INFO [pool-3-thread-14] n.o.o.r.c.ZookeeperRegistry [ZookeeperRegistry.java:167] Requesting control for 00:00:00:00:00:00:00:13
+2013-11-21 15:52:23,267 DEBUG [pool-3-thread-14] n.o.o.o.f.NetworkGraphPublisher [NetworkGraphPublisher.java:162] request Control to set inactive sw 00:00:00:00:00:00:00:2b
+2013-11-21 15:52:23,268 INFO [pool-3-thread-14] n.o.o.r.c.ZookeeperRegistry [ZookeeperRegistry.java:167] Requesting control for 00:00:00:00:00:00:00:2b
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ ~/ONOS/start-onos.sh stop
+
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ ~/ONOS/start-onos.sh stop
+Killed existing process (pid: 16421)
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ 
+
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ ~/ONOS/start-onos.sh start
+~/ONOS/start-onos.sh start
+rotate log: ./onos-logs/onos.autoONOS1.log
+rotate log: ./onos-logs/onos.autoONOS1.pcap
+Starting ONOS controller ...
+
+/home/admin/ONOS
+/home/admin/ONOS
+mvn -o exec:exec -Dexec.executable="java" -Dexec.args=" -javaagent:/home/admin/ONOS/lib/jacocoagent.jar=dumponexit=true,output=file,destfile=./onos-logs/jacoco.exec -server -d64 -Xmx1g -Xms1g -Xmn800m -XX:+UseConcMarkSweepGC -XX:+UseAdaptiveSizePolicy -XX:+AggressiveOpts -XX:+UseFastAccessorMethods -XX:MaxInlineSize=8192 -XX:FreqInlineSize=8192 -XX:CompileThreshold=1500 -XX:PreBlockSpin=8 -XX:OnError=crash-logger -XX:CompileThreshold=1500 -XX:PreBlockSpin=8 		-XX:+UseThreadPriorities 		-XX:ThreadPriorityPolicy=42 		-XX:+UseCompressedOops 		-Dcom.sun.management.jmxremote.port=7189 		-Dcom.sun.management.jmxremote.ssl=false 		-Dcom.sun.management.jmxremote.authenticate=false -Dhazelcast.logging.type=slf4j -Dlogback.configurationFile=./logback.autoONOS1.xml -cp %classpath net.onrc.onos.ofcontroller.core.Main -cf ./conf/onos.properties"
+Waiting for ONOS to start...
+.....
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ 
+
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ 
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ ~/ONOS/start-onos.sh status 
+~/ONOS/start-onos.sh status 
+1 instance of onos running
+
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ 
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ tail ~/ONOS/onos-logs/onos.*.log
+
+
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ tail ~/ONOS/onos-logs/onos.*.log
+2013-11-21 15:55:55,274 DEBUG [hz._hzInstance_1_dev.migration] c.h.p.PartitionService [Slf4jFactory.java:81] [10.128.100.1]:5701 [dev] Started Migration : MigrationInfo{ partitionId=141, source=Address[10.128.100.1]:5701, destination=Address[10.128.100.4]:5701, master=Address[10.128.100.1]:5701, valid=true, processing=false}
+2013-11-21 15:55:55,289 DEBUG [hz._hzInstance_1_dev.operation.thread-4] c.h.p.ReplicaSyncResponse [Slf4jFactory.java:81] [10.128.100.1]:5701 [dev] Applying replica sync for partition: 140, replica: 1
+2013-11-21 15:55:55,291 DEBUG [hz._hzInstance_1_dev.migration] c.h.p.PartitionService [Slf4jFactory.java:81] [10.128.100.1]:5701 [dev] Finished Migration: MigrationInfo{ partitionId=141, source=Address[10.128.100.1]:5701, destination=Address[10.128.100.4]:5701, master=Address[10.128.100.1]:5701, valid=true, processing=false}
+2013-11-21 15:55:55,291 DEBUG [hz._hzInstance_1_dev.migration] c.h.p.PartitionService [Slf4jFactory.java:81] [10.128.100.1]:5701 [dev] Sending sync replica request to -> Address[10.128.100.4]:5701; for partition: 141, replica: 1
+2013-11-21 15:55:55,293 DEBUG [hz._hzInstance_1_dev.migration] c.h.p.PartitionService [Slf4jFactory.java:81] [10.128.100.1]:5701 [dev] Started Migration : MigrationInfo{ partitionId=143, source=Address[10.128.100.1]:5701, destination=Address[10.128.100.4]:5701, master=Address[10.128.100.1]:5701, valid=true, processing=false}
+2013-11-21 15:55:55,309 DEBUG [hz._hzInstance_1_dev.migration] c.h.p.PartitionService [Slf4jFactory.java:81] [10.128.100.1]:5701 [dev] Finished Migration: MigrationInfo{ partitionId=143, source=Address[10.128.100.1]:5701, destination=Address[10.128.100.4]:5701, master=Address[10.128.100.1]:5701, valid=true, processing=false}
+2013-11-21 15:55:55,310 DEBUG [hz._hzInstance_1_dev.migration] c.h.p.PartitionService [Slf4jFactory.java:81] [10.128.100.1]:5701 [dev] Sending sync replica request to -> Address[10.128.100.4]:5701; for partition: 143, replica: 1
+2013-11-21 15:55:55,309 DEBUG [hz._hzInstance_1_dev.operation.thread-5] c.h.p.ReplicaSyncResponse [Slf4jFactory.java:81] [10.128.100.1]:5701 [dev] Applying replica sync for partition: 141, replica: 1
+2013-11-21 15:55:55,319 DEBUG [hz._hzInstance_1_dev.operation.thread-7] c.h.p.ReplicaSyncResponse [Slf4jFactory.java:81] [10.128.100.1]:5701 [dev] Applying replica sync for partition: 143, replica: 1
+2013-11-21 15:55:56,312 INFO [hz._hzInstance_1_dev.migration] c.h.p.PartitionService [Slf4jFactory.java:83] [10.128.100.1]:5701 [dev] All migration tasks has been completed, queues are empty.
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ tail ~/ONOS/onos-logs/onos.*.log
+exit
+
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ 
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ tail ~/ONOS/onos-logs/onos.*.log
+2013-11-21 15:56:30,733 DEBUG [pool-3-thread-15] n.o.o.o.f.NetworkGraphPublisher [NetworkGraphPublisher.java:162] request Control to set inactive sw 00:00:00:00:00:00:00:3f
+2013-11-21 15:56:30,734 INFO [pool-3-thread-15] n.o.o.r.c.ZookeeperRegistry [ZookeeperRegistry.java:167] Requesting control for 00:00:00:00:00:00:00:3f
+2013-11-21 15:56:30,752 DEBUG [pool-3-thread-15] n.o.o.o.f.NetworkGraphPublisher [NetworkGraphPublisher.java:162] request Control to set inactive sw 00:00:00:00:00:00:00:11
+2013-11-21 15:56:30,754 INFO [pool-3-thread-15] n.o.o.r.c.ZookeeperRegistry [ZookeeperRegistry.java:167] Requesting control for 00:00:00:00:00:00:00:11
+2013-11-21 15:56:30,772 DEBUG [pool-3-thread-15] n.o.o.o.f.NetworkGraphPublisher [NetworkGraphPublisher.java:162] request Control to set inactive sw 00:00:00:00:00:00:00:1e
+2013-11-21 15:56:30,774 INFO [pool-3-thread-15] n.o.o.r.c.ZookeeperRegistry [ZookeeperRegistry.java:167] Requesting control for 00:00:00:00:00:00:00:1e
+2013-11-21 15:56:30,792 DEBUG [pool-3-thread-15] n.o.o.o.f.NetworkGraphPublisher [NetworkGraphPublisher.java:162] request Control to set inactive sw 00:00:00:00:00:00:00:4f
+2013-11-21 15:56:30,793 INFO [pool-3-thread-15] n.o.o.r.c.ZookeeperRegistry [ZookeeperRegistry.java:167] Requesting control for 00:00:00:00:00:00:00:4f
+2013-11-21 15:56:30,808 DEBUG [pool-3-thread-15] n.o.o.o.f.NetworkGraphPublisher [NetworkGraphPublisher.java:162] request Control to set inactive sw 00:00:00:00:00:00:00:52
+2013-11-21 15:56:30,810 INFO [pool-3-thread-15] n.o.o.r.c.ZookeeperRegistry [ZookeeperRegistry.java:167] Requesting control for 00:00:00:00:00:00:00:52
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ exit
+logout
+Connection to 10.128.100.1 closed.

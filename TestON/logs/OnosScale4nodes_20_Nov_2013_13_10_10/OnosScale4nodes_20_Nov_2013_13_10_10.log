@@ -1,0 +1,751 @@
+
+                                +----------------+
+------------------------------ { Script And Files }  ------------------------------
+                                +----------------+
+
+	Script Log File : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_20_Nov_2013_13_10_10/OnosScale4nodes_20_Nov_2013_13_10_10.log
+	Report Log File : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_20_Nov_2013_13_10_10/OnosScale4nodes_20_Nov_2013_13_10_10.rpt
+	ONOS4 Session Log : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_20_Nov_2013_13_10_10/ONOS4.session
+	Cassandra3 Session Log : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_20_Nov_2013_13_10_10/Cassandra3.session
+	ONOS2 Session Log : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_20_Nov_2013_13_10_10/ONOS2.session
+	ONOS3 Session Log : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_20_Nov_2013_13_10_10/ONOS3.session
+	ONOS1 Session Log : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_20_Nov_2013_13_10_10/ONOS1.session
+	Cassandra1 Session Log : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_20_Nov_2013_13_10_10/Cassandra1.session
+	Cassandra2 Session Log : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_20_Nov_2013_13_10_10/Cassandra2.session
+	Mininet1 Session Log : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_20_Nov_2013_13_10_10/Mininet1.session
+	Cassandra4 Session Log : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_20_Nov_2013_13_10_10/Cassandra4.session
+	Zookeeper1 Session Log : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_20_Nov_2013_13_10_10/Zookeeper1.session
+	Test Script :/home/admin/ONLabTest/TestON/Tests/OnosScale4nodes.py
+	Test Params : /home/admin/ONLabTest/TestON/Tests/OnosScale4nodes.params
+	Topology : /home/admin/ONLabTest/TestON/Tests/OnosScale4nodes.tpl
+                              +------------------+
+---------------------------  { Script Exec Params }  ---------------------------
+                              +------------------+
+
+	
+	'TargetTime': '50'
+	 'testcases': '1
+	2
+	3
+	4'
+	 'WaitTime': '50'
+	 'NR_Links': '198'
+	 'RestIP': '10.128.100.4'
+	 'NR_Switches': '100'
+	 'Iterations': '2'
+	
+
+                               +---------------+
+----------------------------- { Components Used }  -----------------------------
+                               +---------------+
+	ONOS4
+	Cassandra3
+	ONOS2
+	ONOS3
+	ONOS1
+	Cassandra1
+	Cassandra2
+	Mininet1
+	Cassandra4
+	Zookeeper1
+
+
+                              +--------+
+---------------------------- { Topology }  ----------------------------
+                              +--------+
+
+	
+	'ONOS4': 
+	'connect_order': '10'
+	 'password': None
+	 'type': 'OnosCliDriver'
+	 'host': '10.128.100.6'
+	 'user': 'admin'
+	
+	 'Cassandra3': 
+	'connect_order': '5'
+	 'password': None
+	 'type': 'CassandraCliDriver'
+	 'host': '10.128.100.5'
+	 'user': 'admin'
+	
+	 'ONOS2': 
+	'connect_order': '8'
+	 'password': None
+	 'type': 'OnosCliDriver'
+	 'host': '10.128.100.4'
+	 'user': 'admin'
+	
+	 'ONOS3': 
+	'connect_order': '9'
+	 'password': None
+	 'type': 'OnosCliDriver'
+	 'host': '10.128.100.5'
+	 'user': 'admin'
+	
+	 'ONOS1': 
+	'connect_order': '7'
+	 'password': None
+	 'type': 'OnosCliDriver'
+	 'host': '10.128.100.1'
+	 'user': 'admin'
+	
+	 'Cassandra1': 
+	'connect_order': '3'
+	 'password': None
+	 'type': 'CassandraCliDriver'
+	 'host': '10.128.100.1'
+	 'user': 'admin'
+	
+	 'Cassandra2': 
+	'connect_order': '4'
+	 'password': None
+	 'type': 'CassandraCliDriver'
+	 'host': '10.128.100.4'
+	 'user': 'admin'
+	
+	 'Mininet1': 
+	'connect_order': '25'
+	 'host': '10.128.100.11'
+	 'user': 'admin'
+	 'COMPONENTS': 
+	'arg1': ''
+	 'arg2': '--topo linear
+	100 --arp'
+	 'controller': 'remote
+	ip=10.128.100.1
+	port=6633'
+	
+	 'password': None
+	 'type': 'MininetCliDriver'
+	
+	 'Cassandra4': 
+	'connect_order': '6'
+	 'password': None
+	 'type': 'CassandraCliDriver'
+	 'host': '10.128.100.6'
+	 'user': 'admin'
+	
+	 'Zookeeper1': 
+	'connect_order': '2'
+	 'host': '10.128.100.1'
+	 'user': 'admin'
+	 'COMPONENTS': ''
+	 'password': None
+	 'type': 'ZookeeperCliDriver'
+	
+	
+------------------------------------------------------------
+
+
+******************************
+ CASE INIT 
+******************************
+
+2013-11-20 13:10:10,511 - OnosScale4nodes - INFO - Creating component Handle: Zookeeper1
+2013-11-20 13:10:10,554 - OnosScale4nodes - INFO - Password not required logged in
+2013-11-20 13:10:10,657 - OnosScale4nodes - INFO - Starting Zookeeper
+2013-11-20 13:10:13,270 - OnosScale4nodes - WARNING - zookeeper ... already running
+2013-11-20 13:10:13,270 - OnosScale4nodes - INFO - Creating component Handle: Cassandra1
+2013-11-20 13:10:13,328 - OnosScale4nodes - INFO - Password not required logged in
+2013-11-20 13:10:13,433 - OnosScale4nodes - INFO - Creating component Handle: Cassandra2
+2013-11-20 13:10:13,481 - OnosScale4nodes - INFO - Password not required logged in
+2013-11-20 13:10:13,584 - OnosScale4nodes - INFO - Creating component Handle: Cassandra3
+2013-11-20 13:10:13,633 - OnosScale4nodes - INFO - Password not required logged in
+2013-11-20 13:10:13,737 - OnosScale4nodes - INFO - Creating component Handle: Cassandra4
+2013-11-20 13:10:13,796 - OnosScale4nodes - INFO - Password not required logged in
+2013-11-20 13:10:13,899 - OnosScale4nodes - INFO - Creating component Handle: ONOS1
+2013-11-20 13:10:13,969 - OnosScale4nodes - INFO - Password not required logged in
+2013-11-20 13:10:14,073 - OnosScale4nodes - INFO - Creating component Handle: ONOS2
+2013-11-20 13:10:14,124 - OnosScale4nodes - INFO - Password not required logged in
+2013-11-20 13:10:14,227 - OnosScale4nodes - INFO - Creating component Handle: ONOS3
+2013-11-20 13:10:14,279 - OnosScale4nodes - INFO - Password not required logged in
+2013-11-20 13:10:14,382 - OnosScale4nodes - INFO - Creating component Handle: ONOS4
+2013-11-20 13:10:14,433 - OnosScale4nodes - INFO - Password not required logged in
+2013-11-20 13:10:14,537 - OnosScale4nodes - INFO - Creating component Handle: Mininet1
+2013-11-20 13:10:14,595 - OnosScale4nodes - INFO - Password not required logged in
+2013-11-20 13:10:14,699 - OnosScale4nodes - INFO - Clearing any residual state or processes
+2013-11-20 13:10:17,909 - OnosScale4nodes - INFO - Clean
+2013-11-20 13:10:17,910 - OnosScale4nodes - INFO - building fresh mininet
+2013-11-20 13:10:18,158 - OnosScale4nodes - INFO -  Creating network
+2013-11-20 13:10:18,159 - OnosScale4nodes - INFO -  Adding controller
+2013-11-20 13:10:18,336 - OnosScale4nodes - INFO -  Adding hosts:
+2013-11-20 13:10:19,489 - OnosScale4nodes - INFO -  Adding switches:
+2013-11-20 13:10:23,635 - OnosScale4nodes - INFO -  Adding links:
+2013-11-20 13:10:55,419 - OnosScale4nodes - INFO -  Configuring hosts
+2013-11-20 13:11:59,798 - OnosScale4nodes - INFO -  Starting controller
+2013-11-20 13:11:59,799 - OnosScale4nodes - INFO -  Starting 100 switches
+2013-11-20 13:13:02,187 - OnosScale4nodes - INFO -  Starting CLI:
+2013-11-20 13:13:02,208 - OnosScale4nodes - INFO - mininet built
+
+
+******************************
+ Result summary for Testcase1
+******************************
+
+2013-11-20 13:13:03,386 - OnosScale4nodes - WARNING - ONOS wasn't running
+2013-11-20 13:13:04,214 - OnosScale4nodes - WARNING - ONOS wasn't running
+2013-11-20 13:13:05,042 - OnosScale4nodes - WARNING - ONOS wasn't running
+2013-11-20 13:13:06,112 - OnosScale4nodes - WARNING - ONOS wasn't running
+2013-11-20 13:13:06,113 - OnosScale4nodes - INFO - Starting Cassandra
+2013-11-20 13:13:12,399 - OnosScale4nodes - INFO - Cassandra Started 
+2013-11-20 13:13:12,399 - OnosScale4nodes - INFO - Starting Cassandra
+2013-11-20 13:13:18,255 - OnosScale4nodes - INFO - Cassandra Started 
+2013-11-20 13:13:18,256 - OnosScale4nodes - INFO - Starting Cassandra
+2013-11-20 13:13:23,914 - OnosScale4nodes - INFO - Cassandra Started 
+2013-11-20 13:13:23,919 - OnosScale4nodes - INFO - Starting Cassandra
+2013-11-20 13:13:29,502 - OnosScale4nodes - INFO - Cassandra Started 
+2013-11-20 13:13:49,819 - OnosScale4nodes - INFO - Keyspace dropped
+2013-11-20 13:13:59,650 - OnosScale4nodes - INFO - ONOS Started 
+2013-11-20 13:14:20,179 - OnosScale4nodes - INFO - ONOS Started 
+2013-11-20 13:14:30,971 - OnosScale4nodes - INFO - ONOS Started 
+2013-11-20 13:14:42,110 - OnosScale4nodes - INFO - ONOS Started 
+2013-11-20 13:14:44,541 - OnosScale4nodes - INFO - Executed :~/ONOS/start-rest.sh start 		 Expected Prompt '\$' Found
+2013-11-20 13:14:44,543 - OnosScale4nodes - INFO - Rest Server Started Successfully
+2013-11-20 13:14:54,768 - OnosScale4nodes - INFO - Executed :~/ONOS/start-rest.sh status  		 Expected Prompt 'running' Found
+2013-11-20 13:14:54,769 - OnosScale4nodes - INFO - Rest Server is running
+2013-11-20 13:14:54,871 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+
+[2013-11-20 13:14:54.991246] [OnosScale4nodes] [CASE]  Checking if the startup was clean...
+
+[2013-11-20 13:14:54.993590] [OnosScale4nodes] [STEP]  INIT : Initializing the test case :Checking if the startup was clean...
+
+[2013-11-20 13:14:54.996314] [OnosScale4nodes] [STEP]  1.1: Testing startup Zookeeper
+2013-11-20 13:14:55,203 - OnosScale4nodes - INFO - Executed :
+ 		 Expected Prompt '\$' Found
+2013-11-20 13:14:56,169 - OnosScale4nodes - INFO - Executed :~/zookeeper-3.4.5/bin/zkServer.sh status  		 Expected Prompt 'Mode' Found
+2013-11-20 13:14:56,173 - OnosScale4nodes - INFO - Verifying the Expected is equal to the actual or not using assert_equal
+2013-11-20 13:14:56,174 - OnosScale4nodes - INFO - Zookeeper is up!
+2013-11-20 13:14:56,174 - OnosScale4nodes - INFO - Assertion Passed
+
+[2013-11-20 13:14:56.175469] [OnosScale4nodes] [STEP]  1.2: Testing startup Cassandra
+2013-11-20 13:14:56,177 - OnosScale4nodes - INFO - trying 5 times
+2013-11-20 13:14:56,395 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 13:14:57,910 - OnosScale4nodes - INFO - Verifying the Expected is equal to the actual or not using assert_equal
+2013-11-20 13:14:57,910 - OnosScale4nodes - INFO - Cassandra is up!
+2013-11-20 13:14:57,911 - OnosScale4nodes - INFO - Assertion Passed
+
+[2013-11-20 13:14:57.912552] [OnosScale4nodes] [STEP]  1.3: Testing startup ONOS
+2013-11-20 13:14:58,016 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 13:14:58,832 - OnosScale4nodes - INFO - Executed :~/ONOS/start-onos.sh status  		 Expected Prompt 'running' Found
+2013-11-20 13:14:58,934 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 13:14:59,036 - OnosScale4nodes - INFO - Executed :tail ~/ONOS/onos-logs/onos.*.log 		 Expected Prompt '\$' Found
+2013-11-20 13:15:01,140 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 13:15:01,243 - OnosScale4nodes - INFO - Executed :tail ~/ONOS/onos-logs/onos.*.log 		 Expected Prompt '\$' Found
+2013-11-20 13:15:01,245 - OnosScale4nodes - INFO - ONOS process is running...
+2013-11-20 13:15:01,246 - OnosScale4nodes - INFO - Assertion Passed
+2013-11-20 13:15:01,265 - OnosScale4nodes - INFO - Onos log is moving! It's looking good!
+2013-11-20 13:15:01,456 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 13:15:02,189 - OnosScale4nodes - INFO - Executed :~/ONOS/start-onos.sh status  		 Expected Prompt 'running' Found
+2013-11-20 13:15:02,292 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 13:15:02,394 - OnosScale4nodes - INFO - Executed :tail ~/ONOS/onos-logs/onos.*.log 		 Expected Prompt '\$' Found
+2013-11-20 13:15:04,499 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 13:15:04,602 - OnosScale4nodes - INFO - Executed :tail ~/ONOS/onos-logs/onos.*.log 		 Expected Prompt '\$' Found
+2013-11-20 13:15:04,603 - OnosScale4nodes - INFO - ONOS process is running...
+2013-11-20 13:15:04,603 - OnosScale4nodes - INFO - Assertion Passed
+2013-11-20 13:15:04,611 - OnosScale4nodes - INFO - Onos log is moving! It's looking good!
+2013-11-20 13:15:04,812 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 13:15:05,571 - OnosScale4nodes - INFO - Executed :~/ONOS/start-onos.sh status  		 Expected Prompt 'running' Found
+2013-11-20 13:15:05,673 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 13:15:05,775 - OnosScale4nodes - INFO - Executed :tail ~/ONOS/onos-logs/onos.*.log 		 Expected Prompt '\$' Found
+2013-11-20 13:15:07,880 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 13:15:07,982 - OnosScale4nodes - INFO - Executed :tail ~/ONOS/onos-logs/onos.*.log 		 Expected Prompt '\$' Found
+2013-11-20 13:15:07,983 - OnosScale4nodes - INFO - ONOS process is running...
+2013-11-20 13:15:07,983 - OnosScale4nodes - INFO - Assertion Passed
+2013-11-20 13:15:07,991 - OnosScale4nodes - INFO - Onos log is moving! It's looking good!
+2013-11-20 13:15:08,200 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 13:15:08,881 - OnosScale4nodes - INFO - Executed :~/ONOS/start-onos.sh status  		 Expected Prompt 'running' Found
+2013-11-20 13:15:08,984 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 13:15:09,086 - OnosScale4nodes - INFO - Executed :tail ~/ONOS/onos-logs/onos.*.log 		 Expected Prompt '\$' Found
+2013-11-20 13:15:11,191 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 13:15:11,293 - OnosScale4nodes - INFO - Executed :tail ~/ONOS/onos-logs/onos.*.log 		 Expected Prompt '\$' Found
+2013-11-20 13:15:11,294 - OnosScale4nodes - INFO - ONOS process is running...
+2013-11-20 13:15:11,294 - OnosScale4nodes - INFO - Assertion Passed
+2013-11-20 13:15:11,302 - OnosScale4nodes - INFO - Onos log is moving! It's looking good!
+2013-11-20 13:15:11,303 - OnosScale4nodes - INFO - Verifying the Expected is equal to the actual or not using assert_equal
+2013-11-20 13:15:11,303 - OnosScale4nodes - INFO - ONOS is up and running!
+2013-11-20 13:15:11,304 - OnosScale4nodes - INFO - Assertion Passed
+
+
+*****************************
+ Result: Pass 
+*****************************
+
+
+
+******************************
+ Result summary for Testcase2
+******************************
+
+
+[2013-11-20 13:15:11.309037] [OnosScale4nodes] [CASE]  Timing Onos Convergence for switch -> a single ONOS node in the cluster
+
+[2013-11-20 13:15:11.311427] [OnosScale4nodes] [STEP]  INIT : Initializing the test case :Timing Onos Convergence for switch -> a single ONOS node in the cluster
+
+[2013-11-20 13:15:11.315687] [OnosScale4nodes] [STEP]  2.1: Bringing ONOS down...
+2013-11-20 13:15:11,317 - OnosScale4nodes - INFO - all switch no controllers
+2013-11-20 13:15:24,677 - OnosScale4nodes - INFO - bringing ONOS down
+2013-11-20 13:15:25,660 - OnosScale4nodes - WARNING - ONOS wasn't running
+2013-11-20 13:15:26,435 - OnosScale4nodes - WARNING - ONOS wasn't running
+2013-11-20 13:15:27,297 - OnosScale4nodes - WARNING - ONOS wasn't running
+2013-11-20 13:15:28,074 - OnosScale4nodes - WARNING - ONOS wasn't running
+2013-11-20 13:15:28,074 - OnosScale4nodes - INFO - Dropping keyspace...
+2013-11-20 13:15:28,280 - OnosScale4nodes - INFO - Keyspace dropped
+2013-11-20 13:15:33,286 - OnosScale4nodes - INFO - Bringing ONOS up
+2013-11-20 13:15:42,642 - OnosScale4nodes - INFO - ONOS Started 
+2013-11-20 13:15:57,834 - OnosScale4nodes - INFO - ONOS Started 
+2013-11-20 13:16:09,002 - OnosScale4nodes - INFO - ONOS Started 
+2013-11-20 13:16:19,505 - OnosScale4nodes - INFO - ONOS Started 
+2013-11-20 13:16:19,693 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 13:16:20,557 - OnosScale4nodes - INFO - Executed :~/ONOS/start-onos.sh status  		 Expected Prompt 'running' Found
+2013-11-20 13:16:20,659 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 13:16:20,761 - OnosScale4nodes - INFO - Executed :tail ~/ONOS/onos-logs/onos.*.log 		 Expected Prompt '\$' Found
+2013-11-20 13:16:22,868 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 13:16:22,971 - OnosScale4nodes - INFO - Executed :tail ~/ONOS/onos-logs/onos.*.log 		 Expected Prompt '\$' Found
+2013-11-20 13:16:22,972 - OnosScale4nodes - INFO - ONOS process is running...
+2013-11-20 13:16:22,972 - OnosScale4nodes - INFO - Assertion Passed
+2013-11-20 13:16:22,986 - OnosScale4nodes - INFO - Onos log is moving! It's looking good!
+2013-11-20 13:16:23,163 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 13:16:23,859 - OnosScale4nodes - INFO - Executed :~/ONOS/start-onos.sh status  		 Expected Prompt 'running' Found
+2013-11-20 13:16:23,961 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 13:16:24,063 - OnosScale4nodes - INFO - Executed :tail ~/ONOS/onos-logs/onos.*.log 		 Expected Prompt '\$' Found
+2013-11-20 13:16:26,168 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 13:16:26,270 - OnosScale4nodes - INFO - Executed :tail ~/ONOS/onos-logs/onos.*.log 		 Expected Prompt '\$' Found
+2013-11-20 13:16:26,272 - OnosScale4nodes - INFO - ONOS process is running...
+2013-11-20 13:16:26,272 - OnosScale4nodes - INFO - Assertion Passed
+2013-11-20 13:16:26,279 - OnosScale4nodes - INFO - Onos log is moving! It's looking good!
+2013-11-20 13:16:26,929 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 13:16:27,597 - OnosScale4nodes - INFO - Executed :~/ONOS/start-onos.sh status  		 Expected Prompt 'running' Found
+2013-11-20 13:16:27,700 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 13:16:27,802 - OnosScale4nodes - INFO - Executed :tail ~/ONOS/onos-logs/onos.*.log 		 Expected Prompt '\$' Found
+2013-11-20 13:16:29,905 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 13:16:30,007 - OnosScale4nodes - INFO - Executed :tail ~/ONOS/onos-logs/onos.*.log 		 Expected Prompt '\$' Found
+2013-11-20 13:16:30,008 - OnosScale4nodes - INFO - ONOS process is running...
+2013-11-20 13:16:30,009 - OnosScale4nodes - INFO - Assertion Passed
+2013-11-20 13:16:30,016 - OnosScale4nodes - INFO - Onos log is moving! It's looking good!
+2013-11-20 13:16:30,284 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 13:16:31,124 - OnosScale4nodes - INFO - Executed :~/ONOS/start-onos.sh status  		 Expected Prompt 'running' Found
+2013-11-20 13:16:31,226 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 13:16:31,329 - OnosScale4nodes - INFO - Executed :tail ~/ONOS/onos-logs/onos.*.log 		 Expected Prompt '\$' Found
+2013-11-20 13:16:33,433 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 13:16:33,536 - OnosScale4nodes - INFO - Executed :tail ~/ONOS/onos-logs/onos.*.log 		 Expected Prompt '\$' Found
+2013-11-20 13:16:33,537 - OnosScale4nodes - INFO - ONOS process is running...
+2013-11-20 13:16:33,537 - OnosScale4nodes - INFO - Assertion Passed
+2013-11-20 13:16:33,545 - OnosScale4nodes - INFO - Onos log is moving! It's looking good!
+2013-11-20 13:16:33,546 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 13:16:34,012 - OnosScale4nodes - INFO - 
+-----
+Rest API has an issueRest API has an issue-----
+
+2013-11-20 13:16:34,015 - OnosScale4nodes - INFO - Pointing the Switches at ONE controller... then BEGIN time
+2013-11-20 13:16:46,671 - OnosScale4nodes - INFO - Executed :sh ~/ONOS/scripts/test-ctrl-local.sh  		 Expected Prompt 'mininet' Found
+2013-11-20 13:16:46,672 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 13:16:47,039 - OnosScale4nodes - INFO - 
+-----
+Rest API has an issueRest API has an issue-----
+
+2013-11-20 13:16:48,042 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 13:16:48,473 - OnosScale4nodes - INFO - 
+-----
+Rest API has an issueRest API has an issue-----
+
+2013-11-20 13:16:49,477 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 13:16:49,842 - OnosScale4nodes - INFO - 
+-----
+Rest API has an issueRest API has an issue-----
+
+2013-11-20 13:16:50,846 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 13:16:51,273 - OnosScale4nodes - INFO - 
+-----
+Rest API has an issueRest API has an issue-----
+
+2013-11-20 13:16:52,277 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 13:16:52,746 - OnosScale4nodes - INFO - 
+-----
+Rest API has an issueRest API has an issue-----
+
+2013-11-20 13:16:53,750 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 13:16:54,207 - OnosScale4nodes - INFO - 
+-----
+Rest API has an issueRest API has an issue-----
+
+2013-11-20 13:16:55,210 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 13:16:55,572 - OnosScale4nodes - INFO - 
+-----
+Rest API has an issueRest API has an issue-----
+
+2013-11-20 13:16:56,576 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 13:16:57,024 - OnosScale4nodes - INFO - 
+-----
+Rest API has an issueRest API has an issue-----
+
+2013-11-20 13:16:58,027 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 13:16:58,470 - OnosScale4nodes - INFO - 
+-----
+Rest API has an issueRest API has an issue-----
+
+2013-11-20 13:16:59,474 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 13:16:59,935 - OnosScale4nodes - INFO - 
+-----
+Rest API has an issueRest API has an issue-----
+
+2013-11-20 13:17:00,940 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 13:17:01,495 - OnosScale4nodes - INFO - 
+-----
+Rest API has an issueRest API has an issue-----
+
+2013-11-20 13:17:02,498 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 13:17:02,861 - OnosScale4nodes - INFO - 
+-----
+Rest API has an issueRest API has an issue-----
+
+2013-11-20 13:17:03,864 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 13:17:04,239 - OnosScale4nodes - INFO - 
+-----
+Rest API has an issueRest API has an issue-----
+
+2013-11-20 13:17:05,242 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 13:17:06,266 - OnosScale4nodes - INFO - 
+-----
+Rest API has an issueRest API has an issue-----
+
+2013-11-20 13:17:07,269 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 13:17:07,642 - OnosScale4nodes - INFO - 
+-----
+Rest API has an issueRest API has an issue-----
+
+2013-11-20 13:17:08,646 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 13:17:09,152 - OnosScale4nodes - INFO - Verifying the Expected is equal to the actual or not using assert_equal
+2013-11-20 13:17:09,154 - OnosScale4nodes - WARNING - Assertion Failed
+
+
+*****************************
+ Result: Failed 
+*****************************
+
+
+
+******************************
+ Result summary for Testcase3
+******************************
+
+
+[2013-11-20 13:17:09.161576] [OnosScale4nodes] [CASE]  Timing Onos Convergence for switch -> all ONOS nodes in cluster
+
+[2013-11-20 13:17:09.164778] [OnosScale4nodes] [STEP]  INIT : Initializing the test case :Timing Onos Convergence for switch -> all ONOS nodes in cluster
+
+[2013-11-20 13:17:09.170180] [OnosScale4nodes] [STEP]  3.1: Bringing ONOS down...
+2013-11-20 13:17:09,173 - OnosScale4nodes - INFO - all switch no controllers
+2013-11-20 13:17:22,373 - OnosScale4nodes - INFO - bringing ONOS down
+2013-11-20 13:17:23,616 - OnosScale4nodes - WARNING - ONOS wasn't running
+2013-11-20 13:17:24,419 - OnosScale4nodes - WARNING - ONOS wasn't running
+2013-11-20 13:17:25,192 - OnosScale4nodes - WARNING - ONOS wasn't running
+2013-11-20 13:17:25,938 - OnosScale4nodes - WARNING - ONOS wasn't running
+2013-11-20 13:17:30,944 - OnosScale4nodes - INFO - Bringing ONOS up
+2013-11-20 13:17:40,559 - OnosScale4nodes - INFO - ONOS Started 
+2013-11-20 13:17:55,862 - OnosScale4nodes - INFO - ONOS Started 
+2013-11-20 13:17:58,214 - OnosScale4nodes - INFO - Executed :~/ONOS/start-rest.sh start 		 Expected Prompt '\$' Found
+2013-11-20 13:17:58,215 - OnosScale4nodes - INFO - Rest Server Started Successfully
+2013-11-20 13:18:13,719 - OnosScale4nodes - INFO - ONOS Started 
+2013-11-20 13:18:24,480 - OnosScale4nodes - INFO - ONOS Started 
+2013-11-20 13:18:24,725 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 13:18:25,430 - OnosScale4nodes - INFO - Executed :~/ONOS/start-onos.sh status  		 Expected Prompt 'running' Found
+2013-11-20 13:18:25,532 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 13:18:25,634 - OnosScale4nodes - INFO - Executed :tail ~/ONOS/onos-logs/onos.*.log 		 Expected Prompt '\$' Found
+2013-11-20 13:18:27,738 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 13:18:27,840 - OnosScale4nodes - INFO - Executed :tail ~/ONOS/onos-logs/onos.*.log 		 Expected Prompt '\$' Found
+2013-11-20 13:18:27,841 - OnosScale4nodes - INFO - ONOS process is running...
+2013-11-20 13:18:27,842 - OnosScale4nodes - INFO - Assertion Passed
+2013-11-20 13:18:27,855 - OnosScale4nodes - INFO - Onos log is moving! It's looking good!
+2013-11-20 13:18:28,088 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 13:18:28,727 - OnosScale4nodes - INFO - Executed :~/ONOS/start-onos.sh status  		 Expected Prompt 'running' Found
+2013-11-20 13:18:28,829 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 13:18:28,931 - OnosScale4nodes - INFO - Executed :tail ~/ONOS/onos-logs/onos.*.log 		 Expected Prompt '\$' Found
+2013-11-20 13:18:31,035 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 13:18:31,137 - OnosScale4nodes - INFO - Executed :tail ~/ONOS/onos-logs/onos.*.log 		 Expected Prompt '\$' Found
+2013-11-20 13:18:31,138 - OnosScale4nodes - INFO - ONOS process is running...
+2013-11-20 13:18:31,139 - OnosScale4nodes - INFO - Assertion Passed
+2013-11-20 13:18:31,146 - OnosScale4nodes - INFO - Onos log is moving! It's looking good!
+2013-11-20 13:18:31,391 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 13:18:32,058 - OnosScale4nodes - INFO - Executed :~/ONOS/start-onos.sh status  		 Expected Prompt 'running' Found
+2013-11-20 13:18:32,160 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 13:18:32,262 - OnosScale4nodes - INFO - Executed :tail ~/ONOS/onos-logs/onos.*.log 		 Expected Prompt '\$' Found
+2013-11-20 13:18:34,366 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 13:18:34,468 - OnosScale4nodes - INFO - Executed :tail ~/ONOS/onos-logs/onos.*.log 		 Expected Prompt '\$' Found
+2013-11-20 13:18:34,469 - OnosScale4nodes - INFO - ONOS process is running...
+2013-11-20 13:18:34,469 - OnosScale4nodes - INFO - Assertion Passed
+2013-11-20 13:18:34,477 - OnosScale4nodes - INFO - Onos log is moving! It's looking good!
+2013-11-20 13:18:34,891 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 13:18:35,682 - OnosScale4nodes - INFO - Executed :~/ONOS/start-onos.sh status  		 Expected Prompt 'running' Found
+2013-11-20 13:18:35,784 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 13:18:35,886 - OnosScale4nodes - INFO - Executed :tail ~/ONOS/onos-logs/onos.*.log 		 Expected Prompt '\$' Found
+2013-11-20 13:18:37,991 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 13:18:38,093 - OnosScale4nodes - INFO - Executed :tail ~/ONOS/onos-logs/onos.*.log 		 Expected Prompt '\$' Found
+2013-11-20 13:18:38,094 - OnosScale4nodes - INFO - ONOS process is running...
+2013-11-20 13:18:38,094 - OnosScale4nodes - INFO - Assertion Passed
+2013-11-20 13:18:38,102 - OnosScale4nodes - INFO - Onos log is moving! It's looking good!
+2013-11-20 13:18:38,102 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 13:18:38,551 - OnosScale4nodes - INFO - 
+-----
+Rest API has an issueRest API has an issue-----
+
+2013-11-20 13:18:38,554 - OnosScale4nodes - INFO - Pointing the Switches at ALL controllers... then BEGIN time
+2013-11-20 13:18:52,507 - OnosScale4nodes - INFO - Executed :sh ~/ONOS/scripts/test-ctrl-add-ext.sh 		 Expected Prompt 'mininet' Found
+2013-11-20 13:18:52,509 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 13:18:52,960 - OnosScale4nodes - INFO - 
+-----
+Rest API has an issueRest API has an issue-----
+
+2013-11-20 13:18:53,963 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 13:18:54,514 - OnosScale4nodes - INFO - 
+-----
+Rest API has an issueRest API has an issue-----
+
+2013-11-20 13:18:55,517 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 13:18:55,954 - OnosScale4nodes - INFO - 
+-----
+Rest API has an issueRest API has an issue-----
+
+2013-11-20 13:18:56,957 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 13:18:57,635 - OnosScale4nodes - INFO - 
+-----
+Rest API has an issueRest API has an issue-----
+
+2013-11-20 13:18:58,639 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 13:18:59,078 - OnosScale4nodes - INFO - 
+-----
+Rest API has an issueRest API has an issue-----
+
+2013-11-20 13:19:00,082 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 13:19:00,639 - OnosScale4nodes - INFO - 
+-----
+Rest API has an issueRest API has an issue-----
+
+2013-11-20 13:19:01,642 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 13:19:02,106 - OnosScale4nodes - INFO - 
+-----
+Rest API has an issueRest API has an issue-----
+
+2013-11-20 13:19:03,109 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 13:19:03,570 - OnosScale4nodes - INFO - 
+-----
+Rest API has an issueRest API has an issue-----
+
+2013-11-20 13:19:04,574 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 13:19:05,127 - OnosScale4nodes - INFO - 
+-----
+Rest API has an issueRest API has an issue-----
+
+2013-11-20 13:19:06,132 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 13:19:06,483 - OnosScale4nodes - INFO - 
+-----
+Rest API has an issueRest API has an issue-----
+
+2013-11-20 13:19:07,487 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 13:19:07,952 - OnosScale4nodes - INFO - 
+-----
+Rest API has an issueRest API has an issue-----
+
+2013-11-20 13:19:08,956 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 13:19:09,402 - OnosScale4nodes - INFO - 
+-----
+Rest API has an issueRest API has an issue-----
+
+2013-11-20 13:19:10,406 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 13:19:10,819 - OnosScale4nodes - INFO - 
+-----
+Rest API has an issueRest API has an issue-----
+
+2013-11-20 13:19:11,822 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 13:19:12,169 - OnosScale4nodes - INFO - 
+-----
+Rest API has an issueRest API has an issue-----
+
+2013-11-20 13:19:13,173 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 13:19:14,149 - OnosScale4nodes - INFO - 
+-----
+Rest API has an issueRest API has an issue-----
+
+2013-11-20 13:19:15,152 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 13:19:15,536 - OnosScale4nodes - INFO - Verifying the Expected is equal to the actual or not using assert_equal
+2013-11-20 13:19:15,538 - OnosScale4nodes - WARNING - Assertion Failed
+
+
+*****************************
+ Result: Failed 
+*****************************
+
+
+
+******************************
+ Result summary for Testcase4
+******************************
+
+
+[2013-11-20 13:19:15.544703] [OnosScale4nodes] [CASE]  Timing Onos Convergence for even single controller distribution
+
+[2013-11-20 13:19:15.547169] [OnosScale4nodes] [STEP]  INIT : Initializing the test case :Timing Onos Convergence for even single controller distribution
+
+[2013-11-20 13:19:15.551776] [OnosScale4nodes] [STEP]  4.1: Bringing ONOS down...
+2013-11-20 13:19:15,554 - OnosScale4nodes - INFO - all switch no controllers
+2013-11-20 13:19:29,350 - OnosScale4nodes - INFO - bringing ONOS down
+2013-11-20 13:19:30,513 - OnosScale4nodes - WARNING - ONOS wasn't running
+2013-11-20 13:19:31,468 - OnosScale4nodes - WARNING - ONOS wasn't running
+2013-11-20 13:19:32,236 - OnosScale4nodes - WARNING - ONOS wasn't running
+2013-11-20 13:19:32,971 - OnosScale4nodes - WARNING - ONOS wasn't running
+2013-11-20 13:19:37,977 - OnosScale4nodes - INFO - Bringing ONOS up
+2013-11-20 13:19:47,841 - OnosScale4nodes - INFO - ONOS Started 
+2013-11-20 13:20:02,892 - OnosScale4nodes - INFO - ONOS Started 
+2013-11-20 13:20:05,173 - OnosScale4nodes - INFO - Executed :~/ONOS/start-rest.sh start 		 Expected Prompt '\$' Found
+2013-11-20 13:20:05,174 - OnosScale4nodes - INFO - Rest Server Started Successfully
+2013-11-20 13:20:20,742 - OnosScale4nodes - INFO - ONOS Started 
+2013-11-20 13:20:30,761 - OnosScale4nodes - INFO - ONOS Started 
+2013-11-20 13:20:30,929 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 13:20:31,693 - OnosScale4nodes - INFO - Executed :~/ONOS/start-onos.sh status  		 Expected Prompt 'running' Found
+2013-11-20 13:20:31,795 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 13:20:31,897 - OnosScale4nodes - INFO - Executed :tail ~/ONOS/onos-logs/onos.*.log 		 Expected Prompt '\$' Found
+2013-11-20 13:20:34,000 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 13:20:34,102 - OnosScale4nodes - INFO - Executed :tail ~/ONOS/onos-logs/onos.*.log 		 Expected Prompt '\$' Found
+2013-11-20 13:20:34,103 - OnosScale4nodes - INFO - ONOS process is running...
+2013-11-20 13:20:34,103 - OnosScale4nodes - INFO - Assertion Passed
+2013-11-20 13:20:34,116 - OnosScale4nodes - INFO - Onos log is moving! It's looking good!
+2013-11-20 13:20:34,355 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 13:20:35,069 - OnosScale4nodes - INFO - Executed :~/ONOS/start-onos.sh status  		 Expected Prompt 'running' Found
+2013-11-20 13:20:35,171 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 13:20:35,272 - OnosScale4nodes - INFO - Executed :tail ~/ONOS/onos-logs/onos.*.log 		 Expected Prompt '\$' Found
+2013-11-20 13:20:37,377 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 13:20:37,479 - OnosScale4nodes - INFO - Executed :tail ~/ONOS/onos-logs/onos.*.log 		 Expected Prompt '\$' Found
+2013-11-20 13:20:37,480 - OnosScale4nodes - INFO - ONOS process is running...
+2013-11-20 13:20:37,480 - OnosScale4nodes - INFO - Assertion Passed
+2013-11-20 13:20:37,489 - OnosScale4nodes - INFO - Onos log is moving! It's looking good!
+2013-11-20 13:20:37,696 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 13:20:38,369 - OnosScale4nodes - INFO - Executed :~/ONOS/start-onos.sh status  		 Expected Prompt 'running' Found
+2013-11-20 13:20:38,471 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 13:20:38,572 - OnosScale4nodes - INFO - Executed :tail ~/ONOS/onos-logs/onos.*.log 		 Expected Prompt '\$' Found
+2013-11-20 13:20:40,677 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 13:20:40,778 - OnosScale4nodes - INFO - Executed :tail ~/ONOS/onos-logs/onos.*.log 		 Expected Prompt '\$' Found
+2013-11-20 13:20:40,779 - OnosScale4nodes - INFO - ONOS process is running...
+2013-11-20 13:20:40,780 - OnosScale4nodes - INFO - Assertion Passed
+2013-11-20 13:20:40,787 - OnosScale4nodes - INFO - Onos log is moving! It's looking good!
+2013-11-20 13:20:40,975 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 13:20:41,706 - OnosScale4nodes - INFO - Executed :~/ONOS/start-onos.sh status  		 Expected Prompt 'running' Found
+2013-11-20 13:20:41,808 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 13:20:41,910 - OnosScale4nodes - INFO - Executed :tail ~/ONOS/onos-logs/onos.*.log 		 Expected Prompt '\$' Found
+2013-11-20 13:20:44,015 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 13:20:44,116 - OnosScale4nodes - INFO - Executed :tail ~/ONOS/onos-logs/onos.*.log 		 Expected Prompt '\$' Found
+2013-11-20 13:20:44,117 - OnosScale4nodes - INFO - ONOS process is running...
+2013-11-20 13:20:44,118 - OnosScale4nodes - INFO - Assertion Passed
+2013-11-20 13:20:44,125 - OnosScale4nodes - INFO - Onos log is moving! It's looking good!
+2013-11-20 13:20:44,126 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 13:20:44,535 - OnosScale4nodes - INFO - 
+-----
+Rest API has an issueRest API has an issue-----
+
+2013-11-20 13:20:44,537 - OnosScale4nodes - INFO - Pointing the Switches to alternating controllers... then BEGIN time
+2013-11-20 13:20:57,856 - OnosScale4nodes - INFO - Executed :sh ~/ONOS/scripts/ctrl-divide.sh  		 Expected Prompt 'mininet' Found
+2013-11-20 13:20:57,857 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 13:20:58,217 - OnosScale4nodes - INFO - 
+-----
+Rest API has an issueRest API has an issue-----
+
+2013-11-20 13:20:59,220 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 13:21:00,132 - OnosScale4nodes - INFO - 
+-----
+Rest API has an issueRest API has an issue-----
+
+2013-11-20 13:21:01,136 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 13:21:01,532 - OnosScale4nodes - INFO - 
+-----
+Rest API has an issueRest API has an issue-----
+
+2013-11-20 13:21:02,536 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 13:21:03,055 - OnosScale4nodes - INFO - 
+-----
+Rest API has an issueRest API has an issue-----
+
+2013-11-20 13:21:04,059 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 13:21:04,511 - OnosScale4nodes - INFO - 
+-----
+Rest API has an issueRest API has an issue-----
+
+2013-11-20 13:21:05,515 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 13:21:05,903 - OnosScale4nodes - INFO - 
+-----
+Rest API has an issueRest API has an issue-----
+
+2013-11-20 13:21:06,906 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 13:21:07,344 - OnosScale4nodes - INFO - 
+-----
+Rest API has an issueRest API has an issue-----
+
+2013-11-20 13:21:08,348 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 13:21:08,715 - OnosScale4nodes - INFO - 
+-----
+Rest API has an issueRest API has an issue-----
+
+2013-11-20 13:21:09,719 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 13:21:10,182 - OnosScale4nodes - INFO - 
+-----
+Rest API has an issueRest API has an issue-----
+
+2013-11-20 13:21:11,187 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 13:21:11,618 - OnosScale4nodes - INFO - 
+-----
+Rest API has an issueRest API has an issue-----
+
+2013-11-20 13:21:12,622 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 13:21:13,098 - OnosScale4nodes - INFO - 
+-----
+Rest API has an issueRest API has an issue-----
+
+2013-11-20 13:21:14,101 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 13:21:14,513 - OnosScale4nodes - INFO - 
+-----
+Rest API has an issueRest API has an issue-----
+
+2013-11-20 13:21:15,517 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 13:21:15,947 - OnosScale4nodes - INFO - 
+-----
+Rest API has an issueRest API has an issue-----
+
+2013-11-20 13:21:16,951 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 13:21:17,348 - OnosScale4nodes - INFO - 
+-----
+Rest API has an issueRest API has an issue-----
+
+2013-11-20 13:21:18,351 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 13:21:18,707 - OnosScale4nodes - INFO - 
+-----
+Rest API has an issueRest API has an issue-----
+
+2013-11-20 13:21:19,710 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 13:21:20,950 - OnosScale4nodes - WARNING - ONOS wasn't running
+2013-11-20 13:21:20,953 - OnosScale4nodes - INFO - Verifying the Expected is equal to the actual or not using assert_equal
+2013-11-20 13:21:20,954 - OnosScale4nodes - WARNING - Assertion Failed
+
+
+*****************************
+ Result: Failed 
+*****************************
+
+
+
+
+*************************************
+	Test Execution Summary
+
+************************************* 
+
+ Test Start           : 20 Nov 2013 13:10:10
+ Test End             : 20 Nov 2013 13:21:20
+ Execution Time       : 0:11:10.452572
+ Total tests planned  : 4
+ Total tests RUN      : 4
+ Total Pass           : 1
+ Total Fail           : 3
+ Total No Result      : 0
+ Success Percentage   : 25%
+ Execution Result     : 100%
+2013-11-20 13:21:22,722 - OnosScale4nodes - INFO - Disconnecting mininet...
+2013-11-20 13:21:22,825 - OnosScale4nodes - INFO - Executed :exit 		 Expected Prompt '(.*)' Found
+2013-11-20 13:21:22,928 - OnosScale4nodes - INFO - Executed :exit 		 Expected Prompt '(.*)' Found

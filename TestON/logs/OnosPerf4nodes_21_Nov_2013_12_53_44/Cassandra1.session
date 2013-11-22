@@ -1,0 +1,529 @@
+2013-11-21 12:53:47,015  Cassandra1: INFO    : 
+                                +----------------+
+------------------------------ { Script And Files }  ------------------------------
+                                +----------------+
+
+	Script Log File : /home/admin/ONLabTest/TestON/logs/OnosPerf4nodes_21_Nov_2013_12_53_44/OnosPerf4nodes_21_Nov_2013_12_53_44.log
+	Report Log File : /home/admin/ONLabTest/TestON/logs/OnosPerf4nodes_21_Nov_2013_12_53_44/OnosPerf4nodes_21_Nov_2013_12_53_44.rpt
+	ONOS4 Session Log : /home/admin/ONLabTest/TestON/logs/OnosPerf4nodes_21_Nov_2013_12_53_44/ONOS4.session
+	ONOS2 Session Log : /home/admin/ONLabTest/TestON/logs/OnosPerf4nodes_21_Nov_2013_12_53_44/ONOS2.session
+	ONOS3 Session Log : /home/admin/ONLabTest/TestON/logs/OnosPerf4nodes_21_Nov_2013_12_53_44/ONOS3.session
+	ONOS1 Session Log : /home/admin/ONLabTest/TestON/logs/OnosPerf4nodes_21_Nov_2013_12_53_44/ONOS1.session
+	Cassandra1 Session Log : /home/admin/ONLabTest/TestON/logs/OnosPerf4nodes_21_Nov_2013_12_53_44/Cassandra1.session
+	Cassandra2 Session Log : /home/admin/ONLabTest/TestON/logs/OnosPerf4nodes_21_Nov_2013_12_53_44/Cassandra2.session
+	Cassandra3 Session Log : /home/admin/ONLabTest/TestON/logs/OnosPerf4nodes_21_Nov_2013_12_53_44/Cassandra3.session
+	Cassandra4 Session Log : /home/admin/ONLabTest/TestON/logs/OnosPerf4nodes_21_Nov_2013_12_53_44/Cassandra4.session
+	Zookeeper1 Session Log : /home/admin/ONLabTest/TestON/logs/OnosPerf4nodes_21_Nov_2013_12_53_44/Zookeeper1.session
+	Mininet1 Session Log : /home/admin/ONLabTest/TestON/logs/OnosPerf4nodes_21_Nov_2013_12_53_44/Mininet1.session
+	Mininet4 Session Log : /home/admin/ONLabTest/TestON/logs/OnosPerf4nodes_21_Nov_2013_12_53_44/Mininet4.session
+	Test Script :/home/admin/ONLabTest/TestON/Tests/OnosPerf4nodes.py
+	Test Params : /home/admin/ONLabTest/TestON/Tests/OnosPerf4nodes.params
+	Topology : /home/admin/ONLabTest/TestON/Tests/OnosPerf4nodes.tpl
+                              +------------------+
+---------------------------  { Script Exec Params }  ---------------------------
+                              +------------------+
+
+	
+	'CTRL': 
+	'ip2': '10.128.100.4'
+	 'ip3': '10.128.100.5'
+	 'ip1': '10.128.100.1'
+	 'ip4': '10.128.100.6'
+	 'port4': '6633'
+	 'port2': '6633'
+	 'port3': '6633'
+	 'port1': '6633'
+	
+	 'MN_size': '57'
+	 'FLOWDEF': '~/flowdef_files/Center_Triangle/flowdef_20.txt'
+	 'NR_Switches': '25'
+	 'WaitTime': '60'
+	 'TargetTime': '30'
+	 'PING': 
+	'source2': 'h7'
+	 'source9': 'h14'
+	 'source10': 'h15'
+	 'source4': 'h9'
+	 'source5': 'h10'
+	 'target3': '10.0.0.18'
+	 'target10': '10.0.0.25'
+	 'source3': 'h8'
+	 'source1': 'h6'
+	 'source6': 'h11'
+	 'source7': 'h12'
+	 'target8': '10.0.0.23'
+	 'target9': '10.0.0.24'
+	 'target6': '10.0.0.21'
+	 'target7': '10.0.0.22'
+	 'target4': '10.0.0.19'
+	 'target5': '10.0.0.20'
+	 'target2': '10.0.0.17'
+	 'source8': 'h13'
+	 'target1': '10.0.0.16'
+	
+	 'NR_Links': '50'
+	 'testcases': '1
+	2
+	3
+	4
+	5
+	6
+	7
+	4
+	8
+	7
+	4
+	9
+	7'
+	 'RestIP': '10.128.100.4'
+	 'Iterations': '3'
+	
+
+                               +---------------+
+----------------------------- { Components Used }  -----------------------------
+                               +---------------+
+	ONOS4
+	ONOS2
+	ONOS3
+	ONOS1
+	Cassandra1
+	Cassandra2
+	Cassandra3
+	Cassandra4
+	Zookeeper1
+	Mininet1
+	Mininet4
+
+
+                              +--------+
+---------------------------- { Topology }  ----------------------------
+                              +--------+
+
+	
+	'ONOS4': 
+	'connect_order': '9'
+	 'password': None
+	 'type': 'OnosCliDriver'
+	 'host': '10.128.100.6'
+	 'user': 'admin'
+	
+	 'ONOS2': 
+	'connect_order': '7'
+	 'password': None
+	 'type': 'OnosCliDriver'
+	 'host': '10.128.100.4'
+	 'user': 'admin'
+	
+	 'ONOS3': 
+	'connect_order': '8'
+	 'password': None
+	 'type': 'OnosCliDriver'
+	 'host': '10.128.100.5'
+	 'user': 'admin'
+	
+	 'ONOS1': 
+	'connect_order': '6'
+	 'password': None
+	 'type': 'OnosCliDriver'
+	 'host': '10.128.100.1'
+	 'user': 'admin'
+	
+	 'Cassandra1': 
+	'connect_order': '2'
+	 'password': None
+	 'type': 'CassandraCliDriver'
+	 'host': '10.128.100.1'
+	 'user': 'admin'
+	
+	 'Cassandra2': 
+	'connect_order': '3'
+	 'password': None
+	 'type': 'CassandraCliDriver'
+	 'host': '10.128.100.4'
+	 'user': 'admin'
+	
+	 'Cassandra3': 
+	'connect_order': '4'
+	 'password': None
+	 'type': 'CassandraCliDriver'
+	 'host': '10.128.100.5'
+	 'user': 'admin'
+	
+	 'Cassandra4': 
+	'connect_order': '5'
+	 'password': None
+	 'type': 'CassandraCliDriver'
+	 'host': '10.128.100.6'
+	 'user': 'admin'
+	
+	 'Zookeeper1': 
+	'connect_order': '1'
+	 'password': None
+	 'type': 'ZookeeperCliDriver'
+	 'host': '10.128.100.1'
+	 'user': 'admin'
+	
+	 'Mininet1': 
+	'connect_order': '10'
+	 'host': '10.128.100.11'
+	 'user': 'admin'
+	 'COMPONENTS': 
+	'arg1': '--custom ~/mininet/custom/topo-onos4node.py'
+	 'arg2': '--topo mytopo --arp'
+	 'controller': 'remote'
+	
+	 'password': None
+	 'type': 'MininetCliDriver'
+	
+	 'Mininet4': 
+	'connect_order': '11'
+	 'password': None
+	 'type': 'RemoteMininetDriver'
+	 'host': '10.128.100.11'
+	 'user': 'admin'
+	
+	
+------------------------------------------------------------
+
+                                                                               teston> 
+
+
+2013-11-21 12:54:10,444  Cassandra1: INFO    : 
+****************************************
+Start of Test Case1 : 
+
+Welcome to Ubuntu 12.04.2 LTS (GNU/Linux 3.2.0-44-virtual x86_64)
+
+ * Documentation:  https://help.ubuntu.com/
+
+  System information as of Thu Nov 21 12:53:47 PST 2013
+
+  System load:  1.48               Processes:           105
+  Usage of /:   23.2% of 19.67GB   Users logged in:     1
+  Memory usage: 67%                IP address for eth0: 10.128.100.1
+  Swap usage:   0%
+
+  Graph this data and manage this system at https://landscape.canonical.com/
+
+  Get cloud support with Ubuntu Advantage Cloud Guest:
+    http://www.ubuntu.com/business/services/cloud
+
+  Use Juju to deploy your cloud instances and workloads:
+    https://juju.ubuntu.com/#cloud-precise
+
+134 packages can be updated.
+69 updates are security updates.
+
+Last login: Thu Nov 21 12:53:45 2013 from 10.128.7.7
+
+
+admin@autoONOS1:~$ 
+admin@autoONOS1:~$ 
+admin@autoONOS1:~$ ~/ONOS/start-cassandra.sh start
+
+admin@autoONOS1:~$ ~/ONOS/start-cassandra.sh start
+Killed existing prosess (pid: 22125)
+rotate log: 
+Starting cassandra
+admin@autoONOS1:~$ 2013-11-21 12:56:02,178  Cassandra1: INFO    :  Checking if the startup was clean...
+****************************************
+
+2013-11-21 12:56:02,180  Cassandra1: INFO    : 
+---------------------------------------------
+Start of Step INIT : Initializing the test case :Checking if the startup was clean...
+---------------------------------------------
+
+2013-11-21 12:56:02,183  Cassandra1: INFO    : 
+---------------------------------------------
+Start of Step 1.1: Testing startup Zookeeper
+---------------------------------------------
+
+2013-11-21 12:56:03,105  Cassandra1: INFO    : 
+---------------------------------------------
+End of Step  1.1: Testing startup Zookeeper
+---------------------------------------------
+
+---------------------------------------------
+Start of Step 1.2: Testing startup Cassandra
+---------------------------------------------
+
+
+
+admin@autoONOS1:~$ 
+admin@autoONOS1:~$ 
+~/ONOS/start-cassandra.sh status
+
+admin@autoONOS1:~$ ~/ONOS/start-cassandra.sh status
+1 instance of cassandra running
+Note: Ownership information does not include topology; for complete information, specify a keyspace
+
+Datacenter: datacenter1
+==========
+Address       Rack        Status State   Load            Owns                Token                                       
+                                                                             127605887595351923798765477786913079296     
+10.128.100.1  rack1       Up     Normal  77.12 KB        25.00%              0                                           
+10.128.100.4  rack1       Up     Normal  64.63 KB        25.00%              42535295865117307932921825928971026432      
+10.128.100.5  rack1       Up     Normal  73.57 KB        25.00%              85070591730234615865843651857942052864      
+10.128.100.6  rack1       Up     Normal  66.78 KB        25.00%              127605887595351923798765477786913079296     
+
+admin@autoONOS1:~$ 2013-11-21 12:56:04,886  Cassandra1: INFO    : 
+---------------------------------------------
+End of Step  1.2: Testing startup Cassandra
+---------------------------------------------
+
+---------------------------------------------
+Start of Step 1.3: Testing startup ONOS
+---------------------------------------------
+
+2013-11-21 12:58:09,901  Cassandra1: INFO    : 
+****************************************
+Start of Test Case2 : 
+2013-11-21 12:58:09,904  Cassandra1: INFO    : 
+---------------------------------------------
+Start of Step INIT : Initializing the test case :Checking if the startup was clean...
+---------------------------------------------
+
+2013-11-21 12:58:09,907  Cassandra1: INFO    : 
+---------------------------------------------
+Start of Step 2.1: Checking if MN switches exist
+---------------------------------------------
+
+2013-11-21 12:58:09,915  Cassandra1: INFO    : 
+---------------------------------------------
+End of Step  2.1: Checking if MN switches exist
+---------------------------------------------
+
+---------------------------------------------
+Start of Step 2.2: assigning ONOS controllers to switches
+---------------------------------------------
+
+2013-11-21 12:58:47,963  Cassandra1: INFO    : 
+****************************************
+Start of Test Case3 : 
+2013-11-21 12:58:47,967  Cassandra1: INFO    :  TOPO check
+****************************************
+
+2013-11-21 12:58:47,969  Cassandra1: INFO    : 
+---------------------------------------------
+Start of Step INIT : Initializing the test case :TOPO check
+---------------------------------------------
+
+2013-11-21 12:58:47,973  Cassandra1: INFO    : 
+---------------------------------------------
+Start of Step 3.1: calling rest calls
+---------------------------------------------
+
+2013-11-21 12:58:59,528  Cassandra1: INFO    : 
+****************************************
+Start of Test Case4 : 
+2013-11-21 12:58:59,533  Cassandra1: INFO    :  Taking care of these flows!
+****************************************
+
+2013-11-21 12:58:59,535  Cassandra1: INFO    : 
+---------------------------------------------
+Start of Step INIT : Initializing the test case :Taking care of these flows!
+---------------------------------------------
+
+2013-11-21 12:58:59,540  Cassandra1: INFO    : 
+---------------------------------------------
+Start of Step 4.1: Cleaning out any leftover flows...
+---------------------------------------------
+
+2013-11-21 12:59:23,785  Cassandra1: INFO    :  TOPO check
+****************************************
+
+2013-11-21 12:59:23,788  Cassandra1: INFO    : 
+---------------------------------------------
+End of Step  4.1: Cleaning out any leftover flows...
+---------------------------------------------
+
+---------------------------------------------
+Start of Step 4.2: calling rest calls
+---------------------------------------------
+
+2013-11-21 12:59:33,463  Cassandra1: INFO    : 
+****************************************
+Start of Test Case5 : 
+2013-11-21 12:59:33,468  Cassandra1: INFO    :  Testing ping...
+****************************************
+
+2013-11-21 12:59:34,240  Cassandra1: INFO    : 
+****************************************
+Start of Test Case6 : 
+2013-11-21 12:59:34,245  Cassandra1: INFO    :  Starting long ping... 
+****************************************
+
+2013-11-21 12:59:36,291  Cassandra1: INFO    : 
+---------------------------------------------
+Start of Step INIT : Initializing the test case :Starting long ping... 
+---------------------------------------------
+
+2013-11-21 12:59:36,295  Cassandra1: INFO    : 
+---------------------------------------------
+Start of Step 6.1: Check that the pings are going
+---------------------------------------------
+
+2013-11-21 12:59:37,411  Cassandra1: INFO    : 
+---------------------------------------------
+End of Step  6.1: Check that the pings are going
+---------------------------------------------
+
+---------------------------------------------
+Start of Step 6.2: Link down number of iterations: 3
+---------------------------------------------
+
+2013-11-21 13:05:38,383  Cassandra1: INFO    :  Killing remote ping processes 
+****************************************
+
+2013-11-21 13:05:42,647  Cassandra1: INFO    : 
+****************************************
+Start of Test Case7 : 
+2013-11-21 13:05:42,649  Cassandra1: INFO    :  Processing Ping data
+****************************************
+
+2013-11-21 13:05:45,792  Cassandra1: INFO    : 
+****************************************
+Start of Test Case4 : 
+2013-11-21 13:05:45,797  Cassandra1: INFO    :  Taking care of these flows!
+****************************************
+
+2013-11-21 13:05:45,800  Cassandra1: INFO    : 
+---------------------------------------------
+Start of Step INIT : Initializing the test case :Taking care of these flows!
+---------------------------------------------
+
+2013-11-21 13:05:45,805  Cassandra1: INFO    : 
+---------------------------------------------
+Start of Step 4.1: Cleaning out any leftover flows...
+---------------------------------------------
+
+2013-11-21 13:06:07,418  Cassandra1: INFO    :  TOPO check
+****************************************
+
+2013-11-21 13:06:07,421  Cassandra1: INFO    : 
+---------------------------------------------
+End of Step  4.1: Cleaning out any leftover flows...
+---------------------------------------------
+
+---------------------------------------------
+Start of Step 4.2: calling rest calls
+---------------------------------------------
+
+2013-11-21 13:06:16,476  Cassandra1: INFO    : 
+****************************************
+Start of Test Case8 : 
+2013-11-21 13:06:36,483  Cassandra1: INFO    :  Starting long ping... 
+****************************************
+
+2013-11-21 13:06:38,534  Cassandra1: INFO    : 
+---------------------------------------------
+Start of Step INIT : Initializing the test case :Starting long ping... 
+---------------------------------------------
+
+2013-11-21 13:06:38,538  Cassandra1: INFO    : 
+---------------------------------------------
+Start of Step 8.1: Check that the pings are going
+---------------------------------------------
+
+2013-11-21 13:06:39,657  Cassandra1: INFO    : 
+---------------------------------------------
+End of Step  8.1: Check that the pings are going
+---------------------------------------------
+
+---------------------------------------------
+Start of Step 8.2: Making topo change while flows are rerouting
+---------------------------------------------
+
+2013-11-21 13:06:39,661  Cassandra1: INFO    : 
+---------------------------------------------
+End of Step  8.2: Making topo change while flows are rerouting
+---------------------------------------------
+
+---------------------------------------------
+Start of Step 8.3: Link down number of iterations: 3
+---------------------------------------------
+
+2013-11-21 13:12:56,980  Cassandra1: INFO    :  Killing remote ping processes 
+****************************************
+
+2013-11-21 13:13:01,366  Cassandra1: INFO    : 
+****************************************
+Start of Test Case7 : 
+2013-11-21 13:13:01,372  Cassandra1: INFO    :  Processing Ping data
+****************************************
+
+2013-11-21 13:13:04,526  Cassandra1: INFO    : 
+****************************************
+Start of Test Case4 : 
+2013-11-21 13:13:04,534  Cassandra1: INFO    :  Taking care of these flows!
+****************************************
+
+2013-11-21 13:13:04,538  Cassandra1: INFO    : 
+---------------------------------------------
+Start of Step INIT : Initializing the test case :Taking care of these flows!
+---------------------------------------------
+
+2013-11-21 13:13:04,544  Cassandra1: INFO    : 
+---------------------------------------------
+Start of Step 4.1: Cleaning out any leftover flows...
+---------------------------------------------
+
+2013-11-21 13:13:24,313  Cassandra1: INFO    :  TOPO check
+****************************************
+
+2013-11-21 13:13:24,317  Cassandra1: INFO    : 
+---------------------------------------------
+End of Step  4.1: Cleaning out any leftover flows...
+---------------------------------------------
+
+---------------------------------------------
+Start of Step 4.2: calling rest calls
+---------------------------------------------
+
+2013-11-21 13:13:33,074  Cassandra1: INFO    : 
+****************************************
+Start of Test Case9 : 
+2013-11-21 13:13:53,082  Cassandra1: INFO    :  Starting long ping... 
+****************************************
+
+2013-11-21 13:13:55,134  Cassandra1: INFO    : 
+---------------------------------------------
+Start of Step INIT : Initializing the test case :Starting long ping... 
+---------------------------------------------
+
+2013-11-21 13:13:55,137  Cassandra1: INFO    : 
+---------------------------------------------
+Start of Step 9.1: Check that the pings are going
+---------------------------------------------
+
+2013-11-21 13:13:56,256  Cassandra1: INFO    : 
+---------------------------------------------
+End of Step  9.1: Check that the pings are going
+---------------------------------------------
+
+---------------------------------------------
+Start of Step 9.2: Making topo change while flows are rerouting
+---------------------------------------------
+
+2013-11-21 13:13:56,260  Cassandra1: INFO    : 
+---------------------------------------------
+End of Step  9.2: Making topo change while flows are rerouting
+---------------------------------------------
+
+---------------------------------------------
+Start of Step 9.3: Link down number of iterations: 3
+---------------------------------------------
+
+2013-11-21 13:19:19,392  Cassandra1: INFO    :  Killing remote ping processes 
+****************************************
+
+2013-11-21 13:19:23,337  Cassandra1: INFO    : 
+****************************************
+Start of Test Case7 : 
+2013-11-21 13:19:23,343  Cassandra1: INFO    :  Processing Ping data
+****************************************
+
+exit
+exit
+logout
+Connection to 10.128.100.1 closed.

@@ -1,0 +1,527 @@
+2013-11-22 00:33:51,561  ONOS3     : INFO    : 
+                                +----------------+
+------------------------------ { Script And Files }  ------------------------------
+                                +----------------+
+
+	Script Log File : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_22_Nov_2013_00_33_38/OnosSanity4nodes_22_Nov_2013_00_33_38.log
+	Report Log File : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_22_Nov_2013_00_33_38/OnosSanity4nodes_22_Nov_2013_00_33_38.rpt
+	ONOS4 Session Log : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_22_Nov_2013_00_33_38/ONOS4.session
+	ONOS2 Session Log : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_22_Nov_2013_00_33_38/ONOS2.session
+	ONOS3 Session Log : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_22_Nov_2013_00_33_38/ONOS3.session
+	ONOS1 Session Log : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_22_Nov_2013_00_33_38/ONOS1.session
+	Zookeeper4 Session Log : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_22_Nov_2013_00_33_38/Zookeeper4.session
+	Cassandra1 Session Log : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_22_Nov_2013_00_33_38/Cassandra1.session
+	Cassandra2 Session Log : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_22_Nov_2013_00_33_38/Cassandra2.session
+	Cassandra3 Session Log : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_22_Nov_2013_00_33_38/Cassandra3.session
+	Cassandra4 Session Log : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_22_Nov_2013_00_33_38/Cassandra4.session
+	Zookeeper1 Session Log : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_22_Nov_2013_00_33_38/Zookeeper1.session
+	Zookeeper2 Session Log : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_22_Nov_2013_00_33_38/Zookeeper2.session
+	Zookeeper3 Session Log : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_22_Nov_2013_00_33_38/Zookeeper3.session
+	Mininet1 Session Log : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_22_Nov_2013_00_33_38/Mininet1.session
+	Test Script :/home/admin/ONLabTest/TestON/Tests/OnosSanity4nodes.py
+	Test Params : /home/admin/ONLabTest/TestON/Tests/OnosSanity4nodes.params
+	Topology : /home/admin/ONLabTest/TestON/Tests/OnosSanity4nodes.tpl
+                              +------------------+
+---------------------------  { Script Exec Params }  ---------------------------
+                              +------------------+
+
+	
+	'CTRL': 
+	'ip2': '10.128.100.4'
+	 'ip3': '10.128.100.5'
+	 'ip1': '10.128.100.1'
+	 'ip4': '10.128.100.6'
+	 'port4': '6633'
+	 'port2': '6633'
+	 'port3': '6633'
+	 'port1': '6633'
+	
+	 'NR_Links': '50'
+	 'LINK': 
+	'begin': 's1'
+	 'end': 's2'
+	
+	 'RESTCALL': 
+	'restIP1': '10.128.100.1'
+	 'restIP2': '10.128.100.5'
+	 'restPort': '8080'
+	 'restURL': '/wm/device/'
+	
+	 'CASE1': 
+	'destination': 'h6'
+	
+	 'PLUG': 
+	'sw1': 's1'
+	 'intf': 's1-eth1'
+	 'sw6': 's6'
+	
+	 'PING': 
+	'source2': 'h8'
+	 'source1': 'h6'
+	 'target2': 'h33'
+	 'target1': 'h31'
+	
+	 'FLOWDEF': '~/flowdef_files/Center_Triangle/flowdef_20.txt'
+	 'testcases': '1
+	2
+	21
+	3
+	4
+	5
+	6
+	7'
+	 'RestIP': '10.128.100.1'
+	 'NR_Switches': '25'
+	 'YANK': 
+	'hostmac': '00:00:00:00:00:01'
+	 'sw1': 's1'
+	 'hostname': 'h1'
+	 'intf': 's1-eth1'
+	 'sw6': 's6'
+	
+	
+
+                               +---------------+
+----------------------------- { Components Used }  -----------------------------
+                               +---------------+
+	ONOS4
+	ONOS2
+	ONOS3
+	ONOS1
+	Zookeeper4
+	Cassandra1
+	Cassandra2
+	Cassandra3
+	Cassandra4
+	Zookeeper1
+	Zookeeper2
+	Zookeeper3
+	Mininet1
+
+
+                              +--------+
+---------------------------- { Topology }  ----------------------------
+                              +--------+
+
+	
+	'ONOS4': 
+	'connect_order': '12'
+	 'host': '10.128.100.6'
+	 'user': 'admin'
+	 'COMPONENTS': ''
+	 'password': None
+	 'type': 'OnosCliDriver'
+	
+	 'ONOS2': 
+	'connect_order': '10'
+	 'host': '10.128.100.4'
+	 'user': 'admin'
+	 'COMPONENTS': ''
+	 'password': None
+	 'type': 'OnosCliDriver'
+	
+	 'ONOS3': 
+	'connect_order': '11'
+	 'host': '10.128.100.5'
+	 'user': 'admin'
+	 'COMPONENTS': ''
+	 'password': None
+	 'type': 'OnosCliDriver'
+	
+	 'ONOS1': 
+	'connect_order': '9'
+	 'host': '10.128.100.1'
+	 'user': 'admin'
+	 'COMPONENTS': ''
+	 'password': None
+	 'type': 'OnosCliDriver'
+	
+	 'Zookeeper4': 
+	'connect_order': '4'
+	 'host': '10.128.100.6'
+	 'user': 'admin'
+	 'COMPONENTS': ''
+	 'password': None
+	 'type': 'ZookeeperCliDriver'
+	
+	 'Cassandra1': 
+	'connect_order': '5'
+	 'host': '10.128.100.1'
+	 'user': 'admin'
+	 'COMPONENTS': ''
+	 'password': None
+	 'type': 'CassandraCliDriver'
+	
+	 'Cassandra2': 
+	'connect_order': '6'
+	 'host': '10.128.100.4'
+	 'user': 'admin'
+	 'COMPONENTS': ''
+	 'password': None
+	 'type': 'CassandraCliDriver'
+	
+	 'Cassandra3': 
+	'connect_order': '7'
+	 'host': '10.128.100.5'
+	 'user': 'admin'
+	 'COMPONENTS': ''
+	 'password': None
+	 'type': 'CassandraCliDriver'
+	
+	 'Cassandra4': 
+	'connect_order': '8'
+	 'host': '10.128.100.6'
+	 'user': 'admin'
+	 'COMPONENTS': ''
+	 'password': None
+	 'type': 'CassandraCliDriver'
+	
+	 'Zookeeper1': 
+	'connect_order': '1'
+	 'host': '10.128.100.1'
+	 'user': 'admin'
+	 'COMPONENTS': ''
+	 'password': None
+	 'type': 'ZookeeperCliDriver'
+	
+	 'Zookeeper2': 
+	'connect_order': '2'
+	 'host': '10.128.100.4'
+	 'user': 'admin'
+	 'COMPONENTS': ''
+	 'password': None
+	 'type': 'ZookeeperCliDriver'
+	
+	 'Zookeeper3': 
+	'connect_order': '3'
+	 'host': '10.128.100.5'
+	 'user': 'admin'
+	 'COMPONENTS': ''
+	 'password': None
+	 'type': 'ZookeeperCliDriver'
+	
+	 'Mininet1': 
+	'connect_order': '13'
+	 'host': '10.128.100.11'
+	 'user': 'admin'
+	 'COMPONENTS': 
+	'arg1': '--custom ~/mininet/custom/topo-onos4node.py'
+	 'arg2': '--topo mytopo --arp'
+	 'controller': 'remote'
+	
+	 'password': None
+	 'type': 'MininetCliDriver'
+	
+	
+------------------------------------------------------------
+
+                                                                               teston> 
+
+
+2013-11-22 00:34:17,039  ONOS3     : INFO    : 
+****************************************
+Start of Test Case1 : 
+
+
+
+Welcome to Ubuntu 12.04.2 LTS (GNU/Linux 3.2.0-44-virtual x86_64)
+
+ * Documentation:  https://help.ubuntu.com/
+
+  System information as of Fri Nov 22 00:33:52 PST 2013
+
+  System load:  0.24               Processes:           95
+  Usage of /:   24.2% of 19.67GB   Users logged in:     1
+  Memory usage: 24%                IP address for eth0: 10.128.100.5
+  Swap usage:   0%
+
+  Graph this data and manage this system at https://landscape.canonical.com/
+
+  Get cloud support with Ubuntu Advantage Cloud Guest:
+    http://www.ubuntu.com/business/services/cloud
+
+  Use Juju to deploy your cloud instances and workloads:
+    https://juju.ubuntu.com/#cloud-precise
+
+129 packages can be updated.
+65 updates are security updates.
+
+Last login: Fri Nov 22 00:33:52 2013 from 10.128.7.7
+admin@autoONOS3:~$ 
+admin@autoONOS3:~$ 
+admin@autoONOS3:~$ ~/ONOS/start-onos.sh stop
+
+admin@autoONOS3:~$ ~/ONOS/start-onos.sh stop
+admin@autoONOS3:~$ cd ~/ONOS
+cd ~/ONOS
+admin@autoONOS3:~/ONOS$ git pull
+git pull
+remote: Counting objects: 90, done.        
+remote: Compressing objects:   2% (1/43)           remote: Compressing objects:   4% (2/43)           remote: Compressing objects:   6% (3/43)           remote: Compressing objects:   9% (4/43)           remote: Compressing objects:  11% (5/43)           remote: Compressing objects:  13% (6/43)           remote: Compressing objects:  16% (7/43)           remote: Compressing objects:  18% (8/43)           remote: Compressing objects:  20% (9/43)           remote: Compressing objects:  23% (10/43)           remote: Compressing objects:  25% (11/43)           remote: Compressing objects:  27% (12/43)           remote: Compressing objects:  30% (13/43)           remote: Compressing objects:  32% (14/43)           remote: Compressing objects:  34% (15/43)           remote: Compressing objects:  37% (16/43)           remote: Compressing objects:  39% (17/43)           remote: Compressing objects:  41% (18/43)           remote: Compressing objects:  44% (19/43)           remote: Compressing objects:  46% (20/43)           remote: Compressing objects:  48% (21/43)           remote: Compressing objects:  51% (22/43)           remote: Compressing objects:  53% (23/43)           remote: Compressing objects:  55% (24/43)           remote: Compressing objects:  58% (25/43)           remote: Compressing objects:  60% (26/43)           remote: Compressing objects:  62% (27/43)           remote: Compressing objects:  65% (28/43)           remote: Compressing objects:  67% (29/43)           remote: Compressing objects:  69% (30/43)           remote: Compressing objects:  72% (31/43)           remote: Compressing objects:  74% (32/43)           remote: Compressing objects:  76% (33/43)           remote: Compressing objects:  79% (34/43)           remote: Compressing objects:  81% (35/43)           remote: Compressing objects:  83% (36/43)           remote: Compressing objects:  86% (37/43)           remote: Compressing objects:  88% (38/43)           remote: Compressing objects:  90% (39/43)           remote: Compressing objects:  93% (40/43)           remote: Compressing objects:  95% (41/43)           remote: Compressing objects:  97% (42/43)           remote: Compressing objects: 100% (43/43)           remote: Compressing objects: 100% (43/43), done.        
+remote: Total 57 (delta 23), reused 43 (delta 9)        
+Unpacking objects:   1% (1/57)   Unpacking objects:   3% (2/57)   Unpacking objects:   5% (3/57)   Unpacking objects:   7% (4/57)   Unpacking objects:   8% (5/57)   Unpacking objects:  10% (6/57)   Unpacking objects:  12% (7/57)   Unpacking objects:  14% (8/57)   Unpacking objects:  15% (9/57)   Unpacking objects:  17% (10/57)   Unpacking objects:  19% (11/57)   Unpacking objects:  21% (12/57)   Unpacking objects:  22% (13/57)   Unpacking objects:  24% (14/57)   Unpacking objects:  26% (15/57)   Unpacking objects:  28% (16/57)   Unpacking objects:  29% (17/57)   Unpacking objects:  31% (18/57)   Unpacking objects:  33% (19/57)   Unpacking objects:  35% (20/57)   Unpacking objects:  36% (21/57)   Unpacking objects:  38% (22/57)   Unpacking objects:  40% (23/57)   Unpacking objects:  42% (24/57)   Unpacking objects:  43% (25/57)   Unpacking objects:  45% (26/57)   Unpacking objects:  47% (27/57)   Unpacking objects:  49% (28/57)   Unpacking objects:  50% (29/57)   Unpacking objects:  52% (30/57)   Unpacking objects:  54% (31/57)   Unpacking objects:  56% (32/57)   Unpacking objects:  57% (33/57)   Unpacking objects:  59% (34/57)   Unpacking objects:  61% (35/57)   Unpacking objects:  63% (36/57)   Unpacking objects:  64% (37/57)   Unpacking objects:  66% (38/57)   Unpacking objects:  68% (39/57)   Unpacking objects:  70% (40/57)   Unpacking objects:  71% (41/57)   Unpacking objects:  73% (42/57)   Unpacking objects:  75% (43/57)   Unpacking objects:  77% (44/57)   Unpacking objects:  78% (45/57)   Unpacking objects:  80% (46/57)   Unpacking objects:  82% (47/57)   Unpacking objects:  84% (48/57)   Unpacking objects:  85% (49/57)   Unpacking objects:  87% (50/57)   Unpacking objects:  89% (51/57)   Unpacking objects:  91% (52/57)   Unpacking objects:  92% (53/57)   Unpacking objects:  94% (54/57)   Unpacking objects:  96% (55/57)   Unpacking objects:  98% (56/57)   Unpacking objects: 100% (57/57)   Unpacking objects: 100% (57/57), done.
+From github.com:OPENNETWORKINGLAB/ONOS
+   67174b8..a7a1625  master     -> origin/master
+Updating 67174b8..a7a1625
+Fast-forward
+ .../onos/ofcontroller/flowmanager/FlowManager.java |   83 +++++++-
+ .../flowprogrammer/FlowProgrammer.java             |   10 +-
+ .../ofcontroller/flowprogrammer/FlowPusher.java    |  224 +++++++++++++++-----
+ .../flowprogrammer/FlowSynchronizer.java           |   38 +---
+ .../flowprogrammer/IFlowPusherService.java         |   52 ++++-
+ .../flowprogrammer/OFBarrierReplyFuture.java       |   49 +++++
+ 6 files changed, 351 insertions(+), 105 deletions(-)
+ create mode 100644 src/main/java/net/onrc/onos/ofcontroller/flowprogrammer/OFBarrierReplyFuture.java
+admin@autoONOS3:~/ONOS$ mvn clean
+mvn clean
+[INFO] Scanning for projects...
+[INFO]                                                                         
+[INFO] ------------------------------------------------------------------------
+[INFO] Building ONOS 0.1.0
+[INFO] ------------------------------------------------------------------------
+[INFO] 
+[INFO] --- maven-clean-plugin:2.3:clean (default-clean) @ onos ---
+[INFO] Deleting file set: /home/admin/ONOS/target (included: [**], excluded: [])
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time: 1.715s
+[INFO] Finished at: Fri Nov 22 00:35:23 PST 2013
+[INFO] Final Memory: 5M/105M
+[INFO] ------------------------------------------------------------------------
+admin@autoONOS3:~/ONOS$ mvn compile
+mvn compile
+[INFO] Scanning for projects...
+[INFO]                                                                         
+[INFO] ------------------------------------------------------------------------
+[INFO] Building ONOS 0.1.0
+[INFO] ------------------------------------------------------------------------
+Downloading: file:///home/admin/ONOS/repo/com/netflix/curator/curator-framework/1.3.5-SNAPSHOT/maven-metadata.xml
+Downloading: http://maven.restlet.org/com/netflix/curator/curator-framework/1.3.5-SNAPSHOT/maven-metadata.xml
+Downloading: http://repo1.maven.org/maven2/com/netflix/curator/curator-framework/1.3.5-SNAPSHOT/maven-metadata.xml
+Downloading: http://repo1.maven.org/maven2/com/netflix/curator/curator-client/1.3.5-SNAPSHOT/maven-metadata.xml
+Downloading: http://maven.restlet.org/com/netflix/curator/curator-client/1.3.5-SNAPSHOT/maven-metadata.xml
+Downloading: file:///home/admin/ONOS/repo/com/netflix/curator/curator-client/1.3.5-SNAPSHOT/maven-metadata.xml
+Downloading: http://repo1.maven.org/maven2/com/netflix/curator/curator-recipes/1.3.5-SNAPSHOT/maven-metadata.xml
+Downloading: http://maven.restlet.org/com/netflix/curator/curator-recipes/1.3.5-SNAPSHOT/maven-metadata.xml
+Downloading: file:///home/admin/ONOS/repo/com/netflix/curator/curator-recipes/1.3.5-SNAPSHOT/maven-metadata.xml
+Downloading: file:///home/admin/ONOS/repo/com/netflix/curator/curator-x-discovery/1.3.5-SNAPSHOT/maven-metadata.xml
+Downloading: http://repo1.maven.org/maven2/com/netflix/curator/curator-x-discovery/1.3.5-SNAPSHOT/maven-metadata.xml
+Downloading: http://maven.restlet.org/com/netflix/curator/curator-x-discovery/1.3.5-SNAPSHOT/maven-metadata.xml
+[INFO] 
+[INFO] --- jacoco-maven-plugin:0.6.3.201306030806:prepare-agent (jacoco-initialize) @ onos ---
+[INFO] argLine set to -javaagent:/home/admin/.m2/repository/org/jacoco/org.jacoco.agent/0.6.3.201306030806/org.jacoco.agent-0.6.3.201306030806-runtime.jar=destfile=/home/admin/ONOS/target/jacoco.exec
+[INFO] 
+[INFO] --- maven-resources-plugin:2.3:resources (default-resources) @ onos ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Copying 52 resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:2.3.2:compile (default-compile) @ onos ---
+[INFO] Compiling 467 source files to /home/admin/ONOS/target/classes
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time: 17.002s
+[INFO] Finished at: Fri Nov 22 00:35:44 PST 2013
+[INFO] Final Memory: 26M/348M
+[INFO] ------------------------------------------------------------------------
+admin@autoONOS3:~/ONOS$ 
+
+admin@autoONOS3:~/ONOS$ ~/ONOS/start-onos.sh start
+~/ONOS/start-onos.sh start
+rotate log: ./onos-logs/onos.autoONOS3.log
+rotate log: ./onos-logs/onos.autoONOS3.pcap
+Starting ONOS controller ...
+
+/home/admin/ONOS
+/home/admin/ONOS
+mvn -o exec:exec -Dexec.executable="java" -Dexec.args=" -javaagent:/home/admin/ONOS/lib/jacocoagent.jar=dumponexit=true,output=file,destfile=./onos-logs/jacoco.exec -server -d64 -Xmx1g -Xms1g -Xmn800m -XX:+UseConcMarkSweepGC -XX:+UseAdaptiveSizePolicy -XX:+AggressiveOpts -XX:+UseFastAccessorMethods -XX:MaxInlineSize=8192 -XX:FreqInlineSize=8192 -XX:CompileThreshold=1500 -XX:PreBlockSpin=8 -XX:OnError=crash-logger -XX:CompileThreshold=1500 -XX:PreBlockSpin=8 		-XX:+UseThreadPriorities 		-XX:ThreadPriorityPolicy=42 		-XX:+UseCompressedOops 		-Dcom.sun.management.jmxremote.port=7189 		-Dcom.sun.management.jmxremote.ssl=false 		-Dcom.sun.management.jmxremote.authenticate=false -Dhazelcast.logging.type=slf4j -Dlogback.configurationFile=./logback.autoONOS3.xml -cp %classpath net.onrc.onos.ofcontroller.core.Main -cf ./conf/onos.properties"
+Waiting for ONOS to start...
+.....
+admin@autoONOS3:~/ONOS$ 2013-11-22 00:38:03,656  ONOS3     : INFO    :  Checking if the startup was clean...
+****************************************
+
+2013-11-22 00:38:03,659  ONOS3     : INFO    : 
+---------------------------------------------
+Start of Step INIT : Initializing the test case :Checking if the startup was clean...
+---------------------------------------------
+
+2013-11-22 00:38:03,664  ONOS3     : INFO    : 
+---------------------------------------------
+Start of Step 1.1: Testing startup Zookeeper
+---------------------------------------------
+
+2013-11-22 00:38:04,508  ONOS3     : INFO    : 
+---------------------------------------------
+End of Step  1.1: Testing startup Zookeeper
+---------------------------------------------
+
+---------------------------------------------
+Start of Step 1.2: Testing startup Cassandra
+---------------------------------------------
+
+2013-11-22 00:38:06,243  ONOS3     : INFO    : 
+---------------------------------------------
+End of Step  1.2: Testing startup Cassandra
+---------------------------------------------
+
+---------------------------------------------
+Start of Step 1.3: Testing startup ONOS
+---------------------------------------------
+
+2013-11-22 00:38:37,466  ONOS3     : INFO    : 
+****************************************
+Start of Test Case2 : 
+2013-11-22 00:38:37,468  ONOS3     : INFO    :  Checking if one MN host exists
+****************************************
+
+2013-11-22 00:38:37,469  ONOS3     : INFO    : 
+---------------------------------------------
+Start of Step INIT : Initializing the test case :Checking if one MN host exists
+---------------------------------------------
+
+2013-11-22 00:38:37,475  ONOS3     : INFO    : 
+---------------------------------------------
+Start of Step 2.1: Host IP Checking using checkIP
+---------------------------------------------
+
+2013-11-22 00:38:37,609  ONOS3     : INFO    : 
+---------------------------------------------
+End of Step  2.1: Host IP Checking using checkIP
+---------------------------------------------
+
+---------------------------------------------
+Start of Step 2.2: Verifying the result
+---------------------------------------------
+
+2013-11-22 00:38:37,620  ONOS3     : INFO    : 
+---------------------------------------------
+End of Step  2.2: Verifying the result
+---------------------------------------------
+
+---------------------------------------------
+Start of Step 2.3: assigning ONOS controllers to switches
+---------------------------------------------
+
+2013-11-22 00:39:10,954  ONOS3     : INFO    : 
+****************************************
+Start of Test Case21 : 
+2013-11-22 00:39:14,976  ONOS3     : INFO    :  Yankout s6-eth1 (link to h1) from s1
+****************************************
+
+2013-11-22 00:39:21,582  ONOS3     : INFO    :  Plug s1-eth1 to s6
+****************************************
+
+2013-11-22 00:39:28,522  ONOS3     : INFO    :  Move s1-eth1 back to s1
+****************************************
+
+2013-11-22 00:39:35,303  ONOS3     : INFO    : 
+****************************************
+Start of Test Case3 : 
+2013-11-22 00:40:49,096  ONOS3     : INFO    :  Taking care of these flows!
+****************************************
+
+2013-11-22 00:40:49,100  ONOS3     : INFO    : 
+---------------------------------------------
+Start of Step INIT : Initializing the test case :Taking care of these flows!
+---------------------------------------------
+
+2013-11-22 00:40:49,105  ONOS3     : INFO    : 
+---------------------------------------------
+Start of Step 3.1: Cleaning out any leftover flows...
+---------------------------------------------
+
+2013-11-22 00:41:02,365  ONOS3     : INFO    :  Checking flows
+****************************************
+
+2013-11-22 00:41:02,368  ONOS3     : INFO    : 
+---------------------------------------------
+Start of Step 3.1: Waiting
+---------------------------------------------
+
+2013-11-22 00:41:07,383  ONOS3     : INFO    : 
+---------------------------------------------
+Start of Step 3.1: Checking
+---------------------------------------------
+
+2013-11-22 00:41:15,707  ONOS3     : INFO    : 
+---------------------------------------------
+Start of Step 3.1: Waiting
+---------------------------------------------
+
+2013-11-22 00:41:20,714  ONOS3     : INFO    : 
+---------------------------------------------
+Start of Step 3.1: Checking
+---------------------------------------------
+
+2013-11-22 00:41:29,506  ONOS3     : INFO    : 
+---------------------------------------------
+Start of Step 3.1: Waiting
+---------------------------------------------
+
+2013-11-22 00:41:34,521  ONOS3     : INFO    : 
+---------------------------------------------
+Start of Step 3.1: Checking
+---------------------------------------------
+
+2013-11-22 00:41:42,271  ONOS3     : INFO    : 
+---------------------------------------------
+Start of Step 3.1: Waiting
+---------------------------------------------
+
+2013-11-22 00:41:47,289  ONOS3     : INFO    : 
+---------------------------------------------
+Start of Step 3.1: Checking
+---------------------------------------------
+
+2013-11-22 00:41:54,642  ONOS3     : INFO    : 
+---------------------------------------------
+Start of Step 3.1: Waiting
+---------------------------------------------
+
+2013-11-22 00:41:59,656  ONOS3     : INFO    : 
+---------------------------------------------
+Start of Step 3.1: Checking
+---------------------------------------------
+
+2013-11-22 00:42:07,407  ONOS3     : INFO    : 
+---------------------------------------------
+Start of Step 3.1: Waiting
+---------------------------------------------
+
+2013-11-22 00:42:12,422  ONOS3     : INFO    : 
+---------------------------------------------
+Start of Step 3.1: Checking
+---------------------------------------------
+
+2013-11-22 00:42:49,390  ONOS3     : INFO    : 
+---------------------------------------------
+End of Step  3.1: Checking
+---------------------------------------------
+
+---------------------------------------------
+Start of Step 3.2: Verifying the result
+---------------------------------------------
+
+2013-11-22 00:42:49,396  ONOS3     : INFO    : 
+****************************************
+Start of Test Case4 : 
+2013-11-22 00:43:13,026  ONOS3     : INFO    : 
+****************************************
+Start of Test Case5 : 
+2013-11-22 00:43:22,098  ONOS3     : INFO    : 
+****************************************
+Start of Test Case6 : 
+2013-11-22 00:43:22,107  ONOS3     : INFO    :  Bringing Link down... 
+****************************************
+
+2013-11-22 00:43:26,479  ONOS3     : INFO    : 
+****************************************
+Start of Test Case7 : 
+2013-11-22 00:43:26,486  ONOS3     : INFO    :  Bringing Link up... 
+****************************************
+
+exit
+exit
+logout
+Connection to 10.128.100.5 closed.

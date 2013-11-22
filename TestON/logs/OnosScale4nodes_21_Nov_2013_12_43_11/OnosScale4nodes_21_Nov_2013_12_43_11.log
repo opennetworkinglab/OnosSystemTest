@@ -1,0 +1,179 @@
+
+                                +----------------+
+------------------------------ { Script And Files }  ------------------------------
+                                +----------------+
+
+	Script Log File : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_21_Nov_2013_12_43_11/OnosScale4nodes_21_Nov_2013_12_43_11.log
+	Report Log File : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_21_Nov_2013_12_43_11/OnosScale4nodes_21_Nov_2013_12_43_11.rpt
+	ONOS4 Session Log : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_21_Nov_2013_12_43_11/ONOS4.session
+	Cassandra3 Session Log : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_21_Nov_2013_12_43_11/Cassandra3.session
+	ONOS2 Session Log : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_21_Nov_2013_12_43_11/ONOS2.session
+	ONOS3 Session Log : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_21_Nov_2013_12_43_11/ONOS3.session
+	ONOS1 Session Log : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_21_Nov_2013_12_43_11/ONOS1.session
+	Cassandra1 Session Log : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_21_Nov_2013_12_43_11/Cassandra1.session
+	Cassandra2 Session Log : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_21_Nov_2013_12_43_11/Cassandra2.session
+	Mininet1 Session Log : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_21_Nov_2013_12_43_11/Mininet1.session
+	Cassandra4 Session Log : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_21_Nov_2013_12_43_11/Cassandra4.session
+	Zookeeper1 Session Log : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_21_Nov_2013_12_43_11/Zookeeper1.session
+	Test Script :/home/admin/ONLabTest/TestON/Tests/OnosScale4nodes.py
+	Test Params : /home/admin/ONLabTest/TestON/Tests/OnosScale4nodes.params
+	Topology : /home/admin/ONLabTest/TestON/Tests/OnosScale4nodes.tpl
+                              +------------------+
+---------------------------  { Script Exec Params }  ---------------------------
+                              +------------------+
+
+	
+	'TargetTime': '50'
+	 'testcases': '1
+	2
+	3
+	4'
+	 'WaitTime': '50'
+	 'NR_Links': '198'
+	 'RestIP': '10.128.100.4'
+	 'NR_Switches': '100'
+	 'Iterations': '2'
+	
+
+                               +---------------+
+----------------------------- { Components Used }  -----------------------------
+                               +---------------+
+	ONOS4
+	Cassandra3
+	ONOS2
+	ONOS3
+	ONOS1
+	Cassandra1
+	Cassandra2
+	Mininet1
+	Cassandra4
+	Zookeeper1
+
+
+                              +--------+
+---------------------------- { Topology }  ----------------------------
+                              +--------+
+
+	
+	'ONOS4': 
+	'connect_order': '10'
+	 'password': None
+	 'type': 'OnosCliDriver'
+	 'host': '10.128.100.6'
+	 'user': 'admin'
+	
+	 'Cassandra3': 
+	'connect_order': '5'
+	 'password': None
+	 'type': 'CassandraCliDriver'
+	 'host': '10.128.100.5'
+	 'user': 'admin'
+	
+	 'ONOS2': 
+	'connect_order': '8'
+	 'password': None
+	 'type': 'OnosCliDriver'
+	 'host': '10.128.100.4'
+	 'user': 'admin'
+	
+	 'ONOS3': 
+	'connect_order': '9'
+	 'password': None
+	 'type': 'OnosCliDriver'
+	 'host': '10.128.100.5'
+	 'user': 'admin'
+	
+	 'ONOS1': 
+	'connect_order': '7'
+	 'password': None
+	 'type': 'OnosCliDriver'
+	 'host': '10.128.100.1'
+	 'user': 'admin'
+	
+	 'Cassandra1': 
+	'connect_order': '3'
+	 'password': None
+	 'type': 'CassandraCliDriver'
+	 'host': '10.128.100.1'
+	 'user': 'admin'
+	
+	 'Cassandra2': 
+	'connect_order': '4'
+	 'password': None
+	 'type': 'CassandraCliDriver'
+	 'host': '10.128.100.4'
+	 'user': 'admin'
+	
+	 'Mininet1': 
+	'connect_order': '25'
+	 'host': '10.128.100.11'
+	 'user': 'admin'
+	 'COMPONENTS': 
+	'arg1': ''
+	 'arg2': '--topo linear
+	100 --arp'
+	 'controller': 'remote
+	ip=10.128.100.1
+	port=6633'
+	
+	 'password': None
+	 'type': 'MininetCliDriver'
+	
+	 'Cassandra4': 
+	'connect_order': '6'
+	 'password': None
+	 'type': 'CassandraCliDriver'
+	 'host': '10.128.100.6'
+	 'user': 'admin'
+	
+	 'Zookeeper1': 
+	'connect_order': '2'
+	 'host': '10.128.100.1'
+	 'user': 'admin'
+	 'COMPONENTS': ''
+	 'password': None
+	 'type': 'ZookeeperCliDriver'
+	
+	
+------------------------------------------------------------
+
+
+******************************
+ CASE INIT 
+******************************
+
+2013-11-21 12:43:11,389 - OnosScale4nodes - INFO - Creating component Handle: Zookeeper1
+2013-11-21 12:43:11,446 - OnosScale4nodes - INFO - Password not required logged in
+2013-11-21 12:43:11,549 - OnosScale4nodes - INFO - Starting Zookeeper
+2013-11-21 12:43:13,968 - OnosScale4nodes - WARNING - zookeeper ... already running
+2013-11-21 12:43:13,969 - OnosScale4nodes - INFO - Creating component Handle: Cassandra1
+2013-11-21 12:43:14,028 - OnosScale4nodes - INFO - Password not required logged in
+2013-11-21 12:43:14,132 - OnosScale4nodes - INFO - Creating component Handle: Cassandra2
+2013-11-21 12:43:14,186 - OnosScale4nodes - INFO - Password not required logged in
+2013-11-21 12:43:14,289 - OnosScale4nodes - INFO - Creating component Handle: Cassandra3
+2013-11-21 12:43:14,351 - OnosScale4nodes - INFO - Password not required logged in
+2013-11-21 12:43:14,454 - OnosScale4nodes - INFO - Creating component Handle: Cassandra4
+2013-11-21 12:43:14,513 - OnosScale4nodes - INFO - Password not required logged in
+2013-11-21 12:43:14,616 - OnosScale4nodes - INFO - Creating component Handle: ONOS1
+2013-11-21 12:43:14,697 - OnosScale4nodes - INFO - Password not required logged in
+2013-11-21 12:43:14,801 - OnosScale4nodes - INFO - Creating component Handle: ONOS2
+2013-11-21 12:43:14,853 - OnosScale4nodes - INFO - Password not required logged in
+2013-11-21 12:43:14,957 - OnosScale4nodes - INFO - Creating component Handle: ONOS3
+2013-11-21 12:43:14,999 - OnosScale4nodes - INFO - Password not required logged in
+2013-11-21 12:43:15,102 - OnosScale4nodes - INFO - Creating component Handle: ONOS4
+2013-11-21 12:43:15,159 - OnosScale4nodes - INFO - Password not required logged in
+2013-11-21 12:43:15,262 - OnosScale4nodes - INFO - Creating component Handle: Mininet1
+2013-11-21 12:43:15,322 - OnosScale4nodes - INFO - Password not required logged in
+2013-11-21 12:43:15,425 - OnosScale4nodes - INFO - Clearing any residual state or processes
+2013-11-21 12:43:18,586 - OnosScale4nodes - INFO - Clean
+2013-11-21 12:43:18,587 - OnosScale4nodes - INFO - building fresh mininet
+2013-11-21 12:43:18,828 - OnosScale4nodes - INFO -  Creating network
+2013-11-21 12:43:18,829 - OnosScale4nodes - INFO -  Adding controller
+2013-11-21 12:43:19,237 - OnosScale4nodes - INFO -  Adding hosts:
+2013-11-21 12:43:20,426 - OnosScale4nodes - INFO -  Adding switches:
+2013-11-21 12:43:24,379 - OnosScale4nodes - INFO -  Adding links:
+2013-11-21 12:43:54,432 - OnosScale4nodes - INFO -  Configuring hosts
+2013-11-21 12:44:57,943 - OnosScale4nodes - INFO -  Starting controller
+2013-11-21 12:44:57,944 - OnosScale4nodes - INFO -  Starting 100 switches
+2013-11-21 12:46:43,290 - OnosScale4nodes - ERROR - Connection timeout
+2013-11-21 12:46:43,290 - OnosScale4nodes - ERROR - Exiting form the test execution because the connecting to the Mininet1 component failed.

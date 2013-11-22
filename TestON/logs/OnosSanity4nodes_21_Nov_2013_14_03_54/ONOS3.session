@@ -1,0 +1,304 @@
+2013-11-21 14:04:07,433  ONOS3     : INFO    : 
+                                +----------------+
+------------------------------ { Script And Files }  ------------------------------
+                                +----------------+
+
+	Script Log File : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_21_Nov_2013_14_03_54/OnosSanity4nodes_21_Nov_2013_14_03_54.log
+	Report Log File : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_21_Nov_2013_14_03_54/OnosSanity4nodes_21_Nov_2013_14_03_54.rpt
+	ONOS4 Session Log : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_21_Nov_2013_14_03_54/ONOS4.session
+	ONOS2 Session Log : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_21_Nov_2013_14_03_54/ONOS2.session
+	ONOS3 Session Log : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_21_Nov_2013_14_03_54/ONOS3.session
+	ONOS1 Session Log : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_21_Nov_2013_14_03_54/ONOS1.session
+	Zookeeper4 Session Log : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_21_Nov_2013_14_03_54/Zookeeper4.session
+	Cassandra1 Session Log : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_21_Nov_2013_14_03_54/Cassandra1.session
+	Cassandra2 Session Log : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_21_Nov_2013_14_03_54/Cassandra2.session
+	Cassandra3 Session Log : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_21_Nov_2013_14_03_54/Cassandra3.session
+	Cassandra4 Session Log : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_21_Nov_2013_14_03_54/Cassandra4.session
+	Zookeeper1 Session Log : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_21_Nov_2013_14_03_54/Zookeeper1.session
+	Zookeeper2 Session Log : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_21_Nov_2013_14_03_54/Zookeeper2.session
+	Zookeeper3 Session Log : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_21_Nov_2013_14_03_54/Zookeeper3.session
+	Mininet1 Session Log : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_21_Nov_2013_14_03_54/Mininet1.session
+	Test Script :/home/admin/ONLabTest/TestON/Tests/OnosSanity4nodes.py
+	Test Params : /home/admin/ONLabTest/TestON/Tests/OnosSanity4nodes.params
+	Topology : /home/admin/ONLabTest/TestON/Tests/OnosSanity4nodes.tpl
+                              +------------------+
+---------------------------  { Script Exec Params }  ---------------------------
+                              +------------------+
+
+	
+	'CTRL': 
+	'ip2': '10.128.100.4'
+	 'ip3': '10.128.100.5'
+	 'ip1': '10.128.100.1'
+	 'ip4': '10.128.100.6'
+	 'port4': '6633'
+	 'port2': '6633'
+	 'port3': '6633'
+	 'port1': '6633'
+	
+	 'NR_Links': '50'
+	 'LINK': 
+	'begin': 's1'
+	 'end': 's2'
+	
+	 'RESTCALL': 
+	'restIP1': '10.128.100.1'
+	 'restIP2': '10.128.100.5'
+	 'restPort': '8080'
+	 'restURL': '/wm/device/'
+	
+	 'CASE1': 
+	'destination': 'h6'
+	
+	 'PLUG': 
+	'sw1': 's1'
+	 'intf': 's1-eth1'
+	 'sw6': 's6'
+	
+	 'PING': 
+	'source2': 'h8'
+	 'source1': 'h6'
+	 'target2': 'h33'
+	 'target1': 'h31'
+	
+	 'FLOWDEF': '~/flowdef_files/Center_Triangle/flowdef_20.txt'
+	 'testcases': '1
+	2
+	21
+	3
+	4
+	5
+	6
+	7'
+	 'RestIP': '10.128.100.1'
+	 'NR_Switches': '25'
+	 'YANK': 
+	'hostmac': '00:00:00:00:00:01'
+	 'sw1': 's1'
+	 'hostname': 'h1'
+	 'intf': 's1-eth1'
+	 'sw6': 's6'
+	
+	
+
+                               +---------------+
+----------------------------- { Components Used }  -----------------------------
+                               +---------------+
+	ONOS4
+	ONOS2
+	ONOS3
+	ONOS1
+	Zookeeper4
+	Cassandra1
+	Cassandra2
+	Cassandra3
+	Cassandra4
+	Zookeeper1
+	Zookeeper2
+	Zookeeper3
+	Mininet1
+
+
+                              +--------+
+---------------------------- { Topology }  ----------------------------
+                              +--------+
+
+	
+	'ONOS4': 
+	'connect_order': '12'
+	 'host': '10.128.100.6'
+	 'user': 'admin'
+	 'COMPONENTS': ''
+	 'password': None
+	 'type': 'OnosCliDriver'
+	
+	 'ONOS2': 
+	'connect_order': '10'
+	 'host': '10.128.100.4'
+	 'user': 'admin'
+	 'COMPONENTS': ''
+	 'password': None
+	 'type': 'OnosCliDriver'
+	
+	 'ONOS3': 
+	'connect_order': '11'
+	 'host': '10.128.100.5'
+	 'user': 'admin'
+	 'COMPONENTS': ''
+	 'password': None
+	 'type': 'OnosCliDriver'
+	
+	 'ONOS1': 
+	'connect_order': '9'
+	 'host': '10.128.100.1'
+	 'user': 'admin'
+	 'COMPONENTS': ''
+	 'password': None
+	 'type': 'OnosCliDriver'
+	
+	 'Zookeeper4': 
+	'connect_order': '4'
+	 'host': '10.128.100.6'
+	 'user': 'admin'
+	 'COMPONENTS': ''
+	 'password': None
+	 'type': 'ZookeeperCliDriver'
+	
+	 'Cassandra1': 
+	'connect_order': '5'
+	 'host': '10.128.100.1'
+	 'user': 'admin'
+	 'COMPONENTS': ''
+	 'password': None
+	 'type': 'CassandraCliDriver'
+	
+	 'Cassandra2': 
+	'connect_order': '6'
+	 'host': '10.128.100.4'
+	 'user': 'admin'
+	 'COMPONENTS': ''
+	 'password': None
+	 'type': 'CassandraCliDriver'
+	
+	 'Cassandra3': 
+	'connect_order': '7'
+	 'host': '10.128.100.5'
+	 'user': 'admin'
+	 'COMPONENTS': ''
+	 'password': None
+	 'type': 'CassandraCliDriver'
+	
+	 'Cassandra4': 
+	'connect_order': '8'
+	 'host': '10.128.100.6'
+	 'user': 'admin'
+	 'COMPONENTS': ''
+	 'password': None
+	 'type': 'CassandraCliDriver'
+	
+	 'Zookeeper1': 
+	'connect_order': '1'
+	 'host': '10.128.100.1'
+	 'user': 'admin'
+	 'COMPONENTS': ''
+	 'password': None
+	 'type': 'ZookeeperCliDriver'
+	
+	 'Zookeeper2': 
+	'connect_order': '2'
+	 'host': '10.128.100.4'
+	 'user': 'admin'
+	 'COMPONENTS': ''
+	 'password': None
+	 'type': 'ZookeeperCliDriver'
+	
+	 'Zookeeper3': 
+	'connect_order': '3'
+	 'host': '10.128.100.5'
+	 'user': 'admin'
+	 'COMPONENTS': ''
+	 'password': None
+	 'type': 'ZookeeperCliDriver'
+	
+	 'Mininet1': 
+	'connect_order': '13'
+	 'host': '10.128.100.11'
+	 'user': 'admin'
+	 'COMPONENTS': 
+	'arg1': '--custom ~/mininet/custom/topo-onos4node.py'
+	 'arg2': '--topo mytopo --arp'
+	 'controller': 'remote'
+	
+	 'password': None
+	 'type': 'MininetCliDriver'
+	
+	
+------------------------------------------------------------
+
+[Kteston> 
+
+
+2013-11-21 14:04:30,495  ONOS3     : INFO    : 
+****************************************
+Start of Test Case1 : 
+
+Welcome to Ubuntu 12.04.2 LTS (GNU/Linux 3.2.0-44-virtual x86_64)
+
+ * Documentation:  https://help.ubuntu.com/
+
+  System information as of Thu Nov 21 14:04:08 PST 2013
+
+  System load:  0.09               Processes:           100
+  Usage of /:   24.2% of 19.67GB   Users logged in:     1
+  Memory usage: 57%                IP address for eth0: 10.128.100.5
+  Swap usage:   0%
+
+  Graph this data and manage this system at https://landscape.canonical.com/
+
+  Get cloud support with Ubuntu Advantage Cloud Guest:
+    http://www.ubuntu.com/business/services/cloud
+
+  Use Juju to deploy your cloud instances and workloads:
+    https://juju.ubuntu.com/#cloud-precise
+
+129 packages can be updated.
+65 updates are security updates.
+
+Last login: Thu Nov 21 14:04:08 2013 from 10.128.7.7
+
+
+]0;admin@autoONOS3: ~admin@autoONOS3:~$ 
+]0;admin@autoONOS3: ~admin@autoONOS3:~$ 
+]0;admin@autoONOS3: ~admin@autoONOS3:~$ ~/ONOS/start-onos.sh stop
+
+]0;admin@autoONOS3: ~admin@autoONOS3:~$ ~/ONOS/start-onos.sh stop
+Killed existing process (pid: 1548)
+]0;admin@autoONOS3: ~admin@autoONOS3:~$ cd ~/ONOS
+cd ~/ONOS
+]0;admin@autoONOS3: ~/ONOSadmin@autoONOS3:~/ONOS$ git pull
+git pull
+Already up-to-date.
+
+]0;admin@autoONOS3: ~/ONOSadmin@autoONOS3:~/ONOS$ ~/ONOS/start-onos.sh start
+
+]0;admin@autoONOS3: ~/ONOSadmin@autoONOS3:~/ONOS$ ~/ONOS/start-onos.sh start
+rotate log: ./onos-logs/onos.autoONOS3.log
+rotate log: ./onos-logs/onos.autoONOS3.pcap
+Starting ONOS controller ...
+
+/home/admin/ONOS
+/home/admin/ONOS
+mvn -o exec:exec -Dexec.executable="java" -Dexec.args=" -javaagent:/home/admin/ONOS/lib/jacocoagent.jar=dumponexit=true,output=file,destfile=./onos-logs/jacoco.exec -server -d64 -Xmx1g -Xms1g -Xmn800m -XX:+UseConcMarkSweepGC -XX:+UseAdaptiveSizePolicy -XX:+AggressiveOpts -XX:+UseFastAccessorMethods -XX:MaxInlineSize=8192 -XX:FreqInlineSize=8192 -XX:CompileThreshold=1500 -XX:PreBlockSpin=8 -XX:OnError=crash-logger -XX:CompileThreshold=1500 -XX:PreBlockSpin=8 		-XX:+UseThreadPriorities 		-XX:ThreadPriorityPolicy=42 		-XX:+UseCompressedOops 		-Dcom.sun.management.jmxremote.port=7189 		-Dcom.sun.management.jmxremote.ssl=false 		-Dcom.sun.management.jmxremote.authenticate=false -Dhazelcast.logging.type=slf4j -Dlogback.configurationFile=./logback.autoONOS3.xml -cp %classpath net.onrc.onos.ofcontroller.core.Main -cf ./conf/onos.properties"
+Waiting for ONOS to start...
+......
+]0;admin@autoONOS3: ~/ONOSadmin@autoONOS3:~/ONOS$ 2013-11-21 14:06:34,075  ONOS3     : INFO    :  Checking if the startup was clean...
+****************************************
+
+2013-11-21 14:06:34,078  ONOS3     : INFO    : 
+---------------------------------------------
+Start of Step INIT : Initializing the test case :Checking if the startup was clean...
+---------------------------------------------
+
+2013-11-21 14:06:34,082  ONOS3     : INFO    : 
+---------------------------------------------
+Start of Step 1.1: Testing startup Zookeeper
+---------------------------------------------
+
+2013-11-21 14:06:34,849  ONOS3     : INFO    : 
+---------------------------------------------
+End of Step  1.1: Testing startup Zookeeper
+---------------------------------------------
+
+---------------------------------------------
+Start of Step 1.2: Testing startup Cassandra
+---------------------------------------------
+
+2013-11-21 14:06:36,568  ONOS3     : INFO    : 
+---------------------------------------------
+End of Step  1.2: Testing startup Cassandra
+---------------------------------------------
+
+---------------------------------------------
+Start of Step 1.3: Testing startup ONOS
+---------------------------------------------
+

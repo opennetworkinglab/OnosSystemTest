@@ -1,0 +1,925 @@
+
+                                +----------------+
+------------------------------ { Script And Files }  ------------------------------
+                                +----------------+
+
+	Script Log File : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_20_Nov_2013_01_10_31/OnosScale4nodes_20_Nov_2013_01_10_31.log
+	Report Log File : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_20_Nov_2013_01_10_31/OnosScale4nodes_20_Nov_2013_01_10_31.rpt
+	ONOS4 Session Log : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_20_Nov_2013_01_10_31/ONOS4.session
+	Cassandra3 Session Log : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_20_Nov_2013_01_10_31/Cassandra3.session
+	ONOS2 Session Log : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_20_Nov_2013_01_10_31/ONOS2.session
+	ONOS3 Session Log : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_20_Nov_2013_01_10_31/ONOS3.session
+	ONOS1 Session Log : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_20_Nov_2013_01_10_31/ONOS1.session
+	Cassandra1 Session Log : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_20_Nov_2013_01_10_31/Cassandra1.session
+	Cassandra2 Session Log : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_20_Nov_2013_01_10_31/Cassandra2.session
+	Mininet1 Session Log : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_20_Nov_2013_01_10_31/Mininet1.session
+	Cassandra4 Session Log : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_20_Nov_2013_01_10_31/Cassandra4.session
+	Zookeeper1 Session Log : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_20_Nov_2013_01_10_31/Zookeeper1.session
+	Test Script :/home/admin/ONLabTest/TestON/Tests/OnosScale4nodes.py
+	Test Params : /home/admin/ONLabTest/TestON/Tests/OnosScale4nodes.params
+	Topology : /home/admin/ONLabTest/TestON/Tests/OnosScale4nodes.tpl
+                              +------------------+
+---------------------------  { Script Exec Params }  ---------------------------
+                              +------------------+
+
+	
+	'TargetTime': '50'
+	 'testcases': '1
+	2
+	3
+	4'
+	 'WaitTime': '50'
+	 'NR_Links': '198'
+	 'RestIP': '10.128.100.4'
+	 'NR_Switches': '100'
+	 'Iterations': '2'
+	
+
+                               +---------------+
+----------------------------- { Components Used }  -----------------------------
+                               +---------------+
+	ONOS4
+	Cassandra3
+	ONOS2
+	ONOS3
+	ONOS1
+	Cassandra1
+	Cassandra2
+	Mininet1
+	Cassandra4
+	Zookeeper1
+
+
+                              +--------+
+---------------------------- { Topology }  ----------------------------
+                              +--------+
+
+	
+	'ONOS4': 
+	'connect_order': '10'
+	 'password': None
+	 'type': 'OnosCliDriver'
+	 'host': '10.128.100.6'
+	 'user': 'admin'
+	
+	 'Cassandra3': 
+	'connect_order': '5'
+	 'password': None
+	 'type': 'CassandraCliDriver'
+	 'host': '10.128.100.5'
+	 'user': 'admin'
+	
+	 'ONOS2': 
+	'connect_order': '8'
+	 'password': None
+	 'type': 'OnosCliDriver'
+	 'host': '10.128.100.4'
+	 'user': 'admin'
+	
+	 'ONOS3': 
+	'connect_order': '9'
+	 'password': None
+	 'type': 'OnosCliDriver'
+	 'host': '10.128.100.5'
+	 'user': 'admin'
+	
+	 'ONOS1': 
+	'connect_order': '7'
+	 'password': None
+	 'type': 'OnosCliDriver'
+	 'host': '10.128.100.1'
+	 'user': 'admin'
+	
+	 'Cassandra1': 
+	'connect_order': '3'
+	 'password': None
+	 'type': 'CassandraCliDriver'
+	 'host': '10.128.100.1'
+	 'user': 'admin'
+	
+	 'Cassandra2': 
+	'connect_order': '4'
+	 'password': None
+	 'type': 'CassandraCliDriver'
+	 'host': '10.128.100.4'
+	 'user': 'admin'
+	
+	 'Mininet1': 
+	'connect_order': '25'
+	 'host': '10.128.100.11'
+	 'user': 'admin'
+	 'COMPONENTS': 
+	'arg1': ''
+	 'arg2': '--topo linear
+	100 --arp'
+	 'controller': 'remote
+	ip=10.128.100.1
+	port=6633'
+	
+	 'password': None
+	 'type': 'MininetCliDriver'
+	
+	 'Cassandra4': 
+	'connect_order': '6'
+	 'password': None
+	 'type': 'CassandraCliDriver'
+	 'host': '10.128.100.6'
+	 'user': 'admin'
+	
+	 'Zookeeper1': 
+	'connect_order': '2'
+	 'host': '10.128.100.1'
+	 'user': 'admin'
+	 'COMPONENTS': ''
+	 'password': None
+	 'type': 'ZookeeperCliDriver'
+	
+	
+------------------------------------------------------------
+
+
+******************************
+ CASE INIT 
+******************************
+
+2013-11-20 01:10:31,316 - OnosScale4nodes - INFO - Creating component Handle: Zookeeper1
+2013-11-20 01:10:31,374 - OnosScale4nodes - INFO - Password not required logged in
+2013-11-20 01:10:31,476 - OnosScale4nodes - INFO - Starting Zookeeper
+2013-11-20 01:10:34,235 - OnosScale4nodes - WARNING - zookeeper ... already running
+2013-11-20 01:10:34,236 - OnosScale4nodes - INFO - Creating component Handle: Cassandra1
+2013-11-20 01:10:34,295 - OnosScale4nodes - INFO - Password not required logged in
+2013-11-20 01:10:34,400 - OnosScale4nodes - INFO - Creating component Handle: Cassandra2
+2013-11-20 01:10:34,460 - OnosScale4nodes - INFO - Password not required logged in
+2013-11-20 01:10:34,565 - OnosScale4nodes - INFO - Creating component Handle: Cassandra3
+2013-11-20 01:10:34,621 - OnosScale4nodes - INFO - Password not required logged in
+2013-11-20 01:10:34,723 - OnosScale4nodes - INFO - Creating component Handle: Cassandra4
+2013-11-20 01:10:34,780 - OnosScale4nodes - INFO - Password not required logged in
+2013-11-20 01:10:34,882 - OnosScale4nodes - INFO - Creating component Handle: ONOS1
+2013-11-20 01:10:34,955 - OnosScale4nodes - INFO - Password not required logged in
+2013-11-20 01:10:35,058 - OnosScale4nodes - INFO - Creating component Handle: ONOS2
+2013-11-20 01:10:35,112 - OnosScale4nodes - INFO - Password not required logged in
+2013-11-20 01:10:35,217 - OnosScale4nodes - INFO - Creating component Handle: ONOS3
+2013-11-20 01:10:35,278 - OnosScale4nodes - INFO - Password not required logged in
+2013-11-20 01:10:35,381 - OnosScale4nodes - INFO - Creating component Handle: ONOS4
+2013-11-20 01:10:35,438 - OnosScale4nodes - INFO - Password not required logged in
+2013-11-20 01:10:35,541 - OnosScale4nodes - INFO - Creating component Handle: Mininet1
+2013-11-20 01:10:35,604 - OnosScale4nodes - INFO - Password not required logged in
+2013-11-20 01:10:35,706 - OnosScale4nodes - INFO - Clearing any residual state or processes
+2013-11-20 01:10:38,706 - OnosScale4nodes - INFO - Clean
+2013-11-20 01:10:38,707 - OnosScale4nodes - INFO - building fresh mininet
+2013-11-20 01:10:38,946 - OnosScale4nodes - INFO -  Creating network
+2013-11-20 01:10:38,947 - OnosScale4nodes - INFO -  Adding controller
+2013-11-20 01:10:39,180 - OnosScale4nodes - INFO -  Adding hosts:
+2013-11-20 01:10:40,249 - OnosScale4nodes - INFO -  Adding switches:
+2013-11-20 01:10:44,325 - OnosScale4nodes - INFO -  Adding links:
+2013-11-20 01:11:15,267 - OnosScale4nodes - INFO -  Configuring hosts
+2013-11-20 01:12:18,966 - OnosScale4nodes - INFO -  Starting controller
+2013-11-20 01:12:18,967 - OnosScale4nodes - INFO -  Starting 100 switches
+2013-11-20 01:13:20,000 - OnosScale4nodes - INFO -  Starting CLI:
+2013-11-20 01:13:20,013 - OnosScale4nodes - INFO - mininet built
+
+
+******************************
+ Result summary for Testcase1
+******************************
+
+2013-11-20 01:13:20,875 - OnosScale4nodes - WARNING - ONOS wasn't running
+2013-11-20 01:13:21,683 - OnosScale4nodes - WARNING - ONOS wasn't running
+2013-11-20 01:13:22,501 - OnosScale4nodes - WARNING - ONOS wasn't running
+2013-11-20 01:13:23,352 - OnosScale4nodes - WARNING - ONOS wasn't running
+2013-11-20 01:13:23,352 - OnosScale4nodes - INFO - Starting Cassandra
+2013-11-20 01:13:29,440 - OnosScale4nodes - INFO - Cassandra Started 
+2013-11-20 01:13:29,440 - OnosScale4nodes - INFO - Starting Cassandra
+2013-11-20 01:13:35,165 - OnosScale4nodes - INFO - Cassandra Started 
+2013-11-20 01:13:35,166 - OnosScale4nodes - INFO - Starting Cassandra
+2013-11-20 01:13:40,929 - OnosScale4nodes - INFO - Cassandra Started 
+2013-11-20 01:13:40,930 - OnosScale4nodes - INFO - Starting Cassandra
+2013-11-20 01:13:46,502 - OnosScale4nodes - INFO - Cassandra Started 
+2013-11-20 01:14:08,864 - OnosScale4nodes - INFO - Keyspace dropped
+2013-11-20 01:14:18,191 - OnosScale4nodes - INFO - ONOS Started 
+2013-11-20 01:14:38,279 - OnosScale4nodes - INFO - ONOS Started 
+2013-11-20 01:14:49,049 - OnosScale4nodes - INFO - ONOS Started 
+2013-11-20 01:15:00,050 - OnosScale4nodes - INFO - ONOS Started 
+2013-11-20 01:15:02,490 - OnosScale4nodes - INFO - Executed :~/ONOS/start-rest.sh start 		 Expected Prompt '\$' Found
+2013-11-20 01:15:02,492 - OnosScale4nodes - INFO - Rest Server Started Successfully
+2013-11-20 01:15:12,696 - OnosScale4nodes - INFO - Executed :~/ONOS/start-rest.sh status  		 Expected Prompt 'running' Found
+2013-11-20 01:15:12,697 - OnosScale4nodes - INFO - Rest Server is running
+2013-11-20 01:15:12,799 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+
+[2013-11-20 01:15:12.925420] [OnosScale4nodes] [CASE]  Checking if the startup was clean...
+
+[2013-11-20 01:15:12.927835] [OnosScale4nodes] [STEP]  INIT : Initializing the test case :Checking if the startup was clean...
+
+[2013-11-20 01:15:12.930543] [OnosScale4nodes] [STEP]  1.1: Testing startup Zookeeper
+2013-11-20 01:15:13,084 - OnosScale4nodes - INFO - Executed :
+ 		 Expected Prompt '\$' Found
+2013-11-20 01:15:13,731 - OnosScale4nodes - INFO - Executed :~/zookeeper-3.4.5/bin/zkServer.sh status  		 Expected Prompt 'Mode' Found
+2013-11-20 01:15:13,735 - OnosScale4nodes - INFO - Verifying the Expected is equal to the actual or not using assert_equal
+2013-11-20 01:15:13,736 - OnosScale4nodes - INFO - Zookeeper is up!
+2013-11-20 01:15:13,736 - OnosScale4nodes - INFO - Assertion Passed
+
+[2013-11-20 01:15:13.737690] [OnosScale4nodes] [STEP]  1.2: Testing startup Cassandra
+2013-11-20 01:15:13,740 - OnosScale4nodes - INFO - trying 5 times
+2013-11-20 01:15:13,944 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 01:15:15,742 - OnosScale4nodes - INFO - Verifying the Expected is equal to the actual or not using assert_equal
+2013-11-20 01:15:15,743 - OnosScale4nodes - INFO - Cassandra is up!
+2013-11-20 01:15:15,743 - OnosScale4nodes - INFO - Assertion Passed
+
+[2013-11-20 01:15:15.744822] [OnosScale4nodes] [STEP]  1.3: Testing startup ONOS
+2013-11-20 01:15:15,849 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 01:15:16,627 - OnosScale4nodes - INFO - Executed :~/ONOS/start-onos.sh status  		 Expected Prompt 'running' Found
+2013-11-20 01:15:16,729 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 01:15:16,831 - OnosScale4nodes - INFO - Executed :tail ~/ONOS/onos-logs/onos.*.log 		 Expected Prompt '\$' Found
+2013-11-20 01:15:18,936 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 01:15:19,039 - OnosScale4nodes - INFO - Executed :tail ~/ONOS/onos-logs/onos.*.log 		 Expected Prompt '\$' Found
+2013-11-20 01:15:19,041 - OnosScale4nodes - INFO - ONOS process is running...
+2013-11-20 01:15:19,041 - OnosScale4nodes - INFO - Assertion Passed
+2013-11-20 01:15:19,052 - OnosScale4nodes - INFO - Onos log is moving! It's looking good!
+2013-11-20 01:15:19,207 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 01:15:19,946 - OnosScale4nodes - INFO - Executed :~/ONOS/start-onos.sh status  		 Expected Prompt 'running' Found
+2013-11-20 01:15:20,048 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 01:15:20,150 - OnosScale4nodes - INFO - Executed :tail ~/ONOS/onos-logs/onos.*.log 		 Expected Prompt '\$' Found
+2013-11-20 01:15:22,255 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 01:15:22,357 - OnosScale4nodes - INFO - Executed :tail ~/ONOS/onos-logs/onos.*.log 		 Expected Prompt '\$' Found
+2013-11-20 01:15:22,359 - OnosScale4nodes - INFO - ONOS process is running...
+2013-11-20 01:15:22,359 - OnosScale4nodes - INFO - Assertion Passed
+2013-11-20 01:15:22,366 - OnosScale4nodes - INFO - Onos log is moving! It's looking good!
+2013-11-20 01:15:22,537 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 01:15:23,324 - OnosScale4nodes - INFO - Executed :~/ONOS/start-onos.sh status  		 Expected Prompt 'running' Found
+2013-11-20 01:15:23,426 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 01:15:23,528 - OnosScale4nodes - INFO - Executed :tail ~/ONOS/onos-logs/onos.*.log 		 Expected Prompt '\$' Found
+2013-11-20 01:15:25,633 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 01:15:25,735 - OnosScale4nodes - INFO - Executed :tail ~/ONOS/onos-logs/onos.*.log 		 Expected Prompt '\$' Found
+2013-11-20 01:15:25,737 - OnosScale4nodes - INFO - ONOS process is running...
+2013-11-20 01:15:25,737 - OnosScale4nodes - INFO - Assertion Passed
+2013-11-20 01:15:25,755 - OnosScale4nodes - INFO - Onos log is moving! It's looking good!
+2013-11-20 01:15:25,978 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 01:15:26,698 - OnosScale4nodes - INFO - Executed :~/ONOS/start-onos.sh status  		 Expected Prompt 'running' Found
+2013-11-20 01:15:26,800 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 01:15:26,902 - OnosScale4nodes - INFO - Executed :tail ~/ONOS/onos-logs/onos.*.log 		 Expected Prompt '\$' Found
+2013-11-20 01:15:29,012 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 01:15:29,115 - OnosScale4nodes - INFO - Executed :tail ~/ONOS/onos-logs/onos.*.log 		 Expected Prompt '\$' Found
+2013-11-20 01:15:29,116 - OnosScale4nodes - INFO - ONOS process is running...
+2013-11-20 01:15:29,117 - OnosScale4nodes - INFO - Assertion Passed
+2013-11-20 01:15:29,131 - OnosScale4nodes - INFO - Onos log is moving! It's looking good!
+2013-11-20 01:15:29,132 - OnosScale4nodes - INFO - Verifying the Expected is equal to the actual or not using assert_equal
+2013-11-20 01:15:29,132 - OnosScale4nodes - INFO - ONOS is up and running!
+2013-11-20 01:15:29,132 - OnosScale4nodes - INFO - Assertion Passed
+
+
+*****************************
+ Result: Pass 
+*****************************
+
+
+
+******************************
+ Result summary for Testcase2
+******************************
+
+
+[2013-11-20 01:15:29.137569] [OnosScale4nodes] [CASE]  Timing Onos Convergence for switch -> a single ONOS node in the cluster
+
+[2013-11-20 01:15:29.138730] [OnosScale4nodes] [STEP]  INIT : Initializing the test case :Timing Onos Convergence for switch -> a single ONOS node in the cluster
+
+[2013-11-20 01:15:29.140482] [OnosScale4nodes] [STEP]  2.1: Bringing ONOS down...
+2013-11-20 01:15:29,141 - OnosScale4nodes - INFO - all switch no controllers
+2013-11-20 01:15:42,033 - OnosScale4nodes - INFO - bringing ONOS down
+2013-11-20 01:15:43,195 - OnosScale4nodes - WARNING - ONOS wasn't running
+2013-11-20 01:15:44,054 - OnosScale4nodes - WARNING - ONOS wasn't running
+2013-11-20 01:15:44,825 - OnosScale4nodes - WARNING - ONOS wasn't running
+2013-11-20 01:15:45,590 - OnosScale4nodes - WARNING - ONOS wasn't running
+2013-11-20 01:15:45,590 - OnosScale4nodes - INFO - Dropping keyspace...
+2013-11-20 01:15:47,699 - OnosScale4nodes - INFO - Keyspace dropped
+2013-11-20 01:15:52,701 - OnosScale4nodes - INFO - Bringing ONOS up
+2013-11-20 01:16:02,454 - OnosScale4nodes - INFO - ONOS Started 
+2013-11-20 01:16:17,874 - OnosScale4nodes - INFO - ONOS Started 
+2013-11-20 01:16:28,342 - OnosScale4nodes - INFO - ONOS Started 
+2013-11-20 01:16:39,127 - OnosScale4nodes - INFO - ONOS Started 
+2013-11-20 01:16:39,285 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 01:16:40,057 - OnosScale4nodes - INFO - Executed :~/ONOS/start-onos.sh status  		 Expected Prompt 'running' Found
+2013-11-20 01:16:40,158 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 01:16:40,261 - OnosScale4nodes - INFO - Executed :tail ~/ONOS/onos-logs/onos.*.log 		 Expected Prompt '\$' Found
+2013-11-20 01:16:42,365 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 01:16:42,468 - OnosScale4nodes - INFO - Executed :tail ~/ONOS/onos-logs/onos.*.log 		 Expected Prompt '\$' Found
+2013-11-20 01:16:42,469 - OnosScale4nodes - INFO - ONOS process is running...
+2013-11-20 01:16:42,470 - OnosScale4nodes - INFO - Assertion Passed
+2013-11-20 01:16:42,491 - OnosScale4nodes - INFO - Onos log is moving! It's looking good!
+2013-11-20 01:16:42,694 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 01:16:43,485 - OnosScale4nodes - INFO - Executed :~/ONOS/start-onos.sh status  		 Expected Prompt 'running' Found
+2013-11-20 01:16:43,588 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 01:16:43,690 - OnosScale4nodes - INFO - Executed :tail ~/ONOS/onos-logs/onos.*.log 		 Expected Prompt '\$' Found
+2013-11-20 01:16:45,795 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 01:16:45,898 - OnosScale4nodes - INFO - Executed :tail ~/ONOS/onos-logs/onos.*.log 		 Expected Prompt '\$' Found
+2013-11-20 01:16:45,899 - OnosScale4nodes - INFO - ONOS process is running...
+2013-11-20 01:16:45,899 - OnosScale4nodes - INFO - Assertion Passed
+2013-11-20 01:16:45,920 - OnosScale4nodes - INFO - Onos log is moving! It's looking good!
+2013-11-20 01:16:46,091 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 01:16:46,891 - OnosScale4nodes - INFO - Executed :~/ONOS/start-onos.sh status  		 Expected Prompt 'running' Found
+2013-11-20 01:16:46,993 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 01:16:47,096 - OnosScale4nodes - INFO - Executed :tail ~/ONOS/onos-logs/onos.*.log 		 Expected Prompt '\$' Found
+2013-11-20 01:16:49,200 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 01:16:49,303 - OnosScale4nodes - INFO - Executed :tail ~/ONOS/onos-logs/onos.*.log 		 Expected Prompt '\$' Found
+2013-11-20 01:16:49,304 - OnosScale4nodes - INFO - ONOS process is running...
+2013-11-20 01:16:49,305 - OnosScale4nodes - INFO - Assertion Passed
+2013-11-20 01:16:49,318 - OnosScale4nodes - INFO - Onos log is moving! It's looking good!
+2013-11-20 01:16:49,498 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 01:16:50,367 - OnosScale4nodes - INFO - Executed :~/ONOS/start-onos.sh status  		 Expected Prompt 'running' Found
+2013-11-20 01:16:50,469 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 01:16:50,571 - OnosScale4nodes - INFO - Executed :tail ~/ONOS/onos-logs/onos.*.log 		 Expected Prompt '\$' Found
+2013-11-20 01:16:52,675 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 01:16:52,777 - OnosScale4nodes - INFO - Executed :tail ~/ONOS/onos-logs/onos.*.log 		 Expected Prompt '\$' Found
+2013-11-20 01:16:52,778 - OnosScale4nodes - INFO - ONOS process is running...
+2013-11-20 01:16:52,779 - OnosScale4nodes - INFO - Assertion Passed
+2013-11-20 01:16:52,787 - OnosScale4nodes - INFO - Onos log is moving! It's looking good!
+2013-11-20 01:16:52,788 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 01:16:55,885 - OnosScale4nodes - INFO - 
+-----
+switch: network 1 : 0 switches 0 active
+switch fail: network 1 should have 100 switches but has 0
+switch fail: network 1 should have 100 active switches but has 0
+link: total 0 links (correct : 198)
+link fail
+-----
+
+2013-11-20 01:16:55,888 - OnosScale4nodes - INFO - Pointing the Switches at ONE controller... then BEGIN time
+2013-11-20 01:17:08,354 - OnosScale4nodes - INFO - Executed :sh ~/ONOS/scripts/test-ctrl-local.sh  		 Expected Prompt 'mininet' Found
+2013-11-20 01:17:08,356 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 01:17:09,442 - OnosScale4nodes - INFO - 
+-----
+switch: network 1 : 1 switches 1 active
+switch fail: network 1 should have 100 switches but has 1
+switch fail: network 1 should have 100 active switches but has 1
+link: total 0 links (correct : 198)
+link fail
+-----
+
+2013-11-20 01:17:10,446 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 01:17:11,845 - OnosScale4nodes - INFO - 
+-----
+switch: network 1 : 2 switches 2 active
+switch fail: network 1 should have 100 switches but has 2
+switch fail: network 1 should have 100 active switches but has 2
+link: total 0 links (correct : 198)
+link fail
+-----
+
+2013-11-20 01:17:12,850 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 01:17:13,994 - OnosScale4nodes - INFO - 
+-----
+switch: network 1 : 3 switches 3 active
+switch fail: network 1 should have 100 switches but has 3
+switch fail: network 1 should have 100 active switches but has 3
+link: total 0 links (correct : 198)
+link fail
+-----
+
+2013-11-20 01:17:14,998 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 01:17:16,763 - OnosScale4nodes - INFO - 
+-----
+switch: network 1 : 4 switches 4 active
+switch fail: network 1 should have 100 switches but has 4
+switch fail: network 1 should have 100 active switches but has 4
+link: total 0 links (correct : 198)
+link fail
+-----
+
+2013-11-20 01:17:17,767 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 01:17:19,076 - OnosScale4nodes - INFO - 
+-----
+switch: network 1 : 5 switches 5 active
+switch fail: network 1 should have 100 switches but has 5
+switch fail: network 1 should have 100 active switches but has 5
+link: total 0 links (correct : 198)
+link fail
+-----
+
+2013-11-20 01:17:20,080 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 01:17:21,464 - OnosScale4nodes - INFO - 
+-----
+switch: network 1 : 6 switches 6 active
+switch fail: network 1 should have 100 switches but has 6
+switch fail: network 1 should have 100 active switches but has 6
+link: total 0 links (correct : 198)
+link fail
+-----
+
+2013-11-20 01:17:22,469 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 01:17:23,953 - OnosScale4nodes - INFO - 
+-----
+switch: network 1 : 7 switches 7 active
+switch fail: network 1 should have 100 switches but has 7
+switch fail: network 1 should have 100 active switches but has 7
+link: total 0 links (correct : 198)
+link fail
+-----
+
+2013-11-20 01:17:24,957 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 01:17:26,649 - OnosScale4nodes - INFO - 
+-----
+switch: network 1 : 8 switches 8 active
+switch fail: network 1 should have 100 switches but has 8
+switch fail: network 1 should have 100 active switches but has 8
+link: total 0 links (correct : 198)
+link fail
+-----
+
+2013-11-20 01:17:27,653 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 01:17:29,306 - OnosScale4nodes - INFO - 
+-----
+switch: network 1 : 9 switches 9 active
+switch fail: network 1 should have 100 switches but has 9
+switch fail: network 1 should have 100 active switches but has 9
+link: total 0 links (correct : 198)
+link fail
+-----
+
+2013-11-20 01:17:30,310 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 01:17:32,092 - OnosScale4nodes - INFO - 
+-----
+switch: network 1 : 10 switches 10 active
+switch fail: network 1 should have 100 switches but has 10
+switch fail: network 1 should have 100 active switches but has 10
+link: total 0 links (correct : 198)
+link fail
+-----
+
+2013-11-20 01:17:33,096 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 01:17:34,946 - OnosScale4nodes - INFO - 
+-----
+switch: network 1 : 12 switches 12 active
+switch fail: network 1 should have 100 switches but has 12
+switch fail: network 1 should have 100 active switches but has 12
+link: total 0 links (correct : 198)
+link fail
+-----
+
+2013-11-20 01:17:35,950 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 01:17:37,919 - OnosScale4nodes - INFO - 
+-----
+switch: network 1 : 13 switches 13 active
+switch fail: network 1 should have 100 switches but has 13
+switch fail: network 1 should have 100 active switches but has 13
+link: total 0 links (correct : 198)
+link fail
+-----
+
+2013-11-20 01:17:38,926 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 01:17:41,035 - OnosScale4nodes - INFO - 
+-----
+switch: network 1 : 14 switches 14 active
+switch fail: network 1 should have 100 switches but has 14
+switch fail: network 1 should have 100 active switches but has 14
+link: total 0 links (correct : 198)
+link fail
+-----
+
+2013-11-20 01:17:42,039 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 01:17:44,456 - OnosScale4nodes - INFO - 
+-----
+switch: network 1 : 15 switches 15 active
+switch fail: network 1 should have 100 switches but has 15
+switch fail: network 1 should have 100 active switches but has 15
+link: total 0 links (correct : 198)
+link fail
+-----
+
+2013-11-20 01:17:45,460 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 01:17:47,778 - OnosScale4nodes - INFO - 
+-----
+switch: network 1 : 17 switches 17 active
+switch fail: network 1 should have 100 switches but has 17
+switch fail: network 1 should have 100 active switches but has 17
+link: total 0 links (correct : 198)
+link fail
+-----
+
+2013-11-20 01:17:48,783 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 01:17:51,409 - OnosScale4nodes - INFO - Verifying the Expected is equal to the actual or not using assert_equal
+2013-11-20 01:17:51,411 - OnosScale4nodes - WARNING - Assertion Failed
+
+
+*****************************
+ Result: Failed 
+*****************************
+
+
+
+******************************
+ Result summary for Testcase3
+******************************
+
+
+[2013-11-20 01:17:51.417953] [OnosScale4nodes] [CASE]  Timing Onos Convergence for switch -> all ONOS nodes in cluster
+
+[2013-11-20 01:17:51.419057] [OnosScale4nodes] [STEP]  INIT : Initializing the test case :Timing Onos Convergence for switch -> all ONOS nodes in cluster
+
+[2013-11-20 01:17:51.421001] [OnosScale4nodes] [STEP]  3.1: Bringing ONOS down...
+2013-11-20 01:17:51,421 - OnosScale4nodes - INFO - all switch no controllers
+2013-11-20 01:18:04,176 - OnosScale4nodes - INFO - bringing ONOS down
+2013-11-20 01:18:05,015 - OnosScale4nodes - WARNING - ONOS wasn't running
+2013-11-20 01:18:05,791 - OnosScale4nodes - WARNING - ONOS wasn't running
+2013-11-20 01:18:06,722 - OnosScale4nodes - WARNING - ONOS wasn't running
+2013-11-20 01:18:07,507 - OnosScale4nodes - WARNING - ONOS wasn't running
+2013-11-20 01:18:12,512 - OnosScale4nodes - INFO - Bringing ONOS up
+2013-11-20 01:18:22,218 - OnosScale4nodes - INFO - ONOS Started 
+2013-11-20 01:18:37,562 - OnosScale4nodes - INFO - ONOS Started 
+2013-11-20 01:18:39,843 - OnosScale4nodes - INFO - Executed :~/ONOS/start-rest.sh start 		 Expected Prompt '\$' Found
+2013-11-20 01:18:39,844 - OnosScale4nodes - INFO - Rest Server Started Successfully
+2013-11-20 01:18:54,903 - OnosScale4nodes - INFO - ONOS Started 
+2013-11-20 01:19:05,506 - OnosScale4nodes - INFO - ONOS Started 
+2013-11-20 01:19:05,738 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 01:19:06,465 - OnosScale4nodes - INFO - Executed :~/ONOS/start-onos.sh status  		 Expected Prompt 'running' Found
+2013-11-20 01:19:06,567 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 01:19:06,669 - OnosScale4nodes - INFO - Executed :tail ~/ONOS/onos-logs/onos.*.log 		 Expected Prompt '\$' Found
+2013-11-20 01:19:08,774 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 01:19:08,875 - OnosScale4nodes - INFO - Executed :tail ~/ONOS/onos-logs/onos.*.log 		 Expected Prompt '\$' Found
+2013-11-20 01:19:08,877 - OnosScale4nodes - INFO - ONOS process is running...
+2013-11-20 01:19:08,877 - OnosScale4nodes - INFO - Assertion Passed
+2013-11-20 01:19:08,899 - OnosScale4nodes - INFO - Onos log is moving! It's looking good!
+2013-11-20 01:19:09,103 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 01:19:09,816 - OnosScale4nodes - INFO - Executed :~/ONOS/start-onos.sh status  		 Expected Prompt 'running' Found
+2013-11-20 01:19:09,918 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 01:19:10,020 - OnosScale4nodes - INFO - Executed :tail ~/ONOS/onos-logs/onos.*.log 		 Expected Prompt '\$' Found
+2013-11-20 01:19:12,124 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 01:19:12,226 - OnosScale4nodes - INFO - Executed :tail ~/ONOS/onos-logs/onos.*.log 		 Expected Prompt '\$' Found
+2013-11-20 01:19:12,227 - OnosScale4nodes - INFO - ONOS process is running...
+2013-11-20 01:19:12,228 - OnosScale4nodes - INFO - Assertion Passed
+2013-11-20 01:19:12,247 - OnosScale4nodes - INFO - Onos log is moving! It's looking good!
+2013-11-20 01:19:12,725 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 01:19:13,402 - OnosScale4nodes - INFO - Executed :~/ONOS/start-onos.sh status  		 Expected Prompt 'running' Found
+2013-11-20 01:19:13,504 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 01:19:13,605 - OnosScale4nodes - INFO - Executed :tail ~/ONOS/onos-logs/onos.*.log 		 Expected Prompt '\$' Found
+2013-11-20 01:19:15,710 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 01:19:15,811 - OnosScale4nodes - INFO - Executed :tail ~/ONOS/onos-logs/onos.*.log 		 Expected Prompt '\$' Found
+2013-11-20 01:19:15,812 - OnosScale4nodes - INFO - ONOS process is running...
+2013-11-20 01:19:15,813 - OnosScale4nodes - INFO - Assertion Passed
+2013-11-20 01:19:15,826 - OnosScale4nodes - INFO - Onos log is moving! It's looking good!
+2013-11-20 01:19:16,012 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 01:19:16,812 - OnosScale4nodes - INFO - Executed :~/ONOS/start-onos.sh status  		 Expected Prompt 'running' Found
+2013-11-20 01:19:16,914 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 01:19:17,016 - OnosScale4nodes - INFO - Executed :tail ~/ONOS/onos-logs/onos.*.log 		 Expected Prompt '\$' Found
+2013-11-20 01:19:19,120 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 01:19:19,222 - OnosScale4nodes - INFO - Executed :tail ~/ONOS/onos-logs/onos.*.log 		 Expected Prompt '\$' Found
+2013-11-20 01:19:19,223 - OnosScale4nodes - INFO - ONOS process is running...
+2013-11-20 01:19:19,223 - OnosScale4nodes - INFO - Assertion Passed
+2013-11-20 01:19:19,232 - OnosScale4nodes - INFO - Onos log is moving! It's looking good!
+2013-11-20 01:19:19,233 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 01:19:25,216 - OnosScale4nodes - INFO - 
+-----
+switch: network 1 : 24 switches 9 active
+switch fail: network 1 should have 100 switches but has 24
+switch fail: network 1 should have 100 active switches but has 9
+link: total 11 links (correct : 198)
+link fail
+-----
+
+2013-11-20 01:19:25,220 - OnosScale4nodes - INFO - Pointing the Switches at ALL controllers... then BEGIN time
+2013-11-20 01:19:38,795 - OnosScale4nodes - INFO - Executed :sh ~/ONOS/scripts/test-ctrl-add-ext.sh 		 Expected Prompt 'mininet' Found
+2013-11-20 01:19:38,797 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 01:19:44,248 - OnosScale4nodes - INFO - 
+-----
+switch: network 1 : 26 switches 13 active
+switch fail: network 1 should have 100 switches but has 26
+switch fail: network 1 should have 100 active switches but has 13
+link: total 16 links (correct : 198)
+link fail
+-----
+
+2013-11-20 01:19:45,252 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 01:19:50,448 - OnosScale4nodes - INFO - 
+-----
+switch: network 1 : 27 switches 16 active
+switch fail: network 1 should have 100 switches but has 27
+switch fail: network 1 should have 100 active switches but has 16
+link: total 18 links (correct : 198)
+link fail
+-----
+
+2013-11-20 01:19:51,452 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 01:19:58,071 - OnosScale4nodes - INFO - 
+-----
+switch: network 1 : 31 switches 22 active
+switch fail: network 1 should have 100 switches but has 31
+switch fail: network 1 should have 100 active switches but has 22
+link: total 21 links (correct : 198)
+link fail
+-----
+
+2013-11-20 01:19:59,075 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 01:20:05,899 - OnosScale4nodes - INFO - 
+-----
+switch: network 1 : 35 switches 28 active
+switch fail: network 1 should have 100 switches but has 35
+switch fail: network 1 should have 100 active switches but has 28
+link: total 22 links (correct : 198)
+link fail
+-----
+
+2013-11-20 01:20:06,902 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 01:20:13,366 - OnosScale4nodes - INFO - 
+-----
+switch: network 1 : 39 switches 35 active
+switch fail: network 1 should have 100 switches but has 39
+switch fail: network 1 should have 100 active switches but has 35
+link: total 31 links (correct : 198)
+link fail
+-----
+
+2013-11-20 01:20:14,370 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 01:20:19,596 - OnosScale4nodes - INFO - 
+-----
+switch: network 1 : 46 switches 42 active
+switch fail: network 1 should have 100 switches but has 46
+switch fail: network 1 should have 100 active switches but has 42
+link: total 31 links (correct : 198)
+link fail
+-----
+
+2013-11-20 01:20:20,601 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 01:20:24,897 - OnosScale4nodes - INFO - 
+-----
+switch: network 1 : 54 switches 50 active
+switch fail: network 1 should have 100 switches but has 54
+switch fail: network 1 should have 100 active switches but has 50
+link: total 31 links (correct : 198)
+link fail
+-----
+
+2013-11-20 01:20:25,905 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 01:20:30,218 - OnosScale4nodes - INFO - 
+-----
+switch: network 1 : 63 switches 61 active
+switch fail: network 1 should have 100 switches but has 63
+switch fail: network 1 should have 100 active switches but has 61
+link: total 37 links (correct : 198)
+link fail
+-----
+
+2013-11-20 01:20:31,222 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 01:20:36,031 - OnosScale4nodes - INFO - 
+-----
+switch: network 1 : 70 switches 68 active
+switch fail: network 1 should have 100 switches but has 70
+switch fail: network 1 should have 100 active switches but has 68
+link: total 54 links (correct : 198)
+link fail
+-----
+
+2013-11-20 01:20:37,034 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 01:20:42,977 - OnosScale4nodes - INFO - 
+-----
+switch: network 1 : 78 switches 78 active
+switch fail: network 1 should have 100 switches but has 78
+switch fail: network 1 should have 100 active switches but has 78
+link: total 72 links (correct : 198)
+link fail
+-----
+
+2013-11-20 01:20:43,981 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 01:20:49,899 - OnosScale4nodes - INFO - 
+-----
+switch: network 1 : 88 switches 88 active
+switch fail: network 1 should have 100 switches but has 88
+switch fail: network 1 should have 100 active switches but has 88
+link: total 104 links (correct : 198)
+link fail
+-----
+
+2013-11-20 01:20:50,903 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 01:20:56,974 - OnosScale4nodes - INFO - 
+-----
+switch: network 1 : 94 switches 94 active
+switch fail: network 1 should have 100 switches but has 94
+switch fail: network 1 should have 100 active switches but has 94
+link: total 125 links (correct : 198)
+link fail
+-----
+
+2013-11-20 01:20:57,978 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 01:21:04,283 - OnosScale4nodes - INFO - 
+-----
+switch: network 1 : 98 switches 98 active
+switch fail: network 1 should have 100 switches but has 98
+switch fail: network 1 should have 100 active switches but has 98
+link: total 168 links (correct : 198)
+link fail
+-----
+
+2013-11-20 01:21:05,287 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 01:21:11,998 - OnosScale4nodes - INFO - 
+-----
+switch: network 1 : 100 switches 100 active
+link: total 174 links (correct : 198)
+link fail
+-----
+
+2013-11-20 01:21:13,003 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 01:21:20,218 - OnosScale4nodes - INFO - 
+-----
+switch: network 1 : 100 switches 100 active
+link: total 174 links (correct : 198)
+link fail
+-----
+
+2013-11-20 01:21:21,222 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 01:21:27,745 - OnosScale4nodes - INFO - Verifying the Expected is equal to the actual or not using assert_equal
+2013-11-20 01:21:27,746 - OnosScale4nodes - WARNING - Assertion Failed
+
+
+*****************************
+ Result: Failed 
+*****************************
+
+
+
+******************************
+ Result summary for Testcase4
+******************************
+
+
+[2013-11-20 01:21:27.753018] [OnosScale4nodes] [CASE]  Timing Onos Convergence for even single controller distribution
+
+[2013-11-20 01:21:27.755543] [OnosScale4nodes] [STEP]  INIT : Initializing the test case :Timing Onos Convergence for even single controller distribution
+
+[2013-11-20 01:21:27.759823] [OnosScale4nodes] [STEP]  4.1: Bringing ONOS down...
+2013-11-20 01:21:27,762 - OnosScale4nodes - INFO - all switch no controllers
+2013-11-20 01:21:41,034 - OnosScale4nodes - INFO - bringing ONOS down
+2013-11-20 01:21:41,840 - OnosScale4nodes - WARNING - ONOS wasn't running
+2013-11-20 01:21:42,655 - OnosScale4nodes - WARNING - ONOS wasn't running
+2013-11-20 01:21:43,543 - OnosScale4nodes - WARNING - ONOS wasn't running
+2013-11-20 01:21:44,327 - OnosScale4nodes - WARNING - ONOS wasn't running
+2013-11-20 01:21:49,333 - OnosScale4nodes - INFO - Bringing ONOS up
+2013-11-20 01:21:59,125 - OnosScale4nodes - INFO - ONOS Started 
+2013-11-20 01:22:14,568 - OnosScale4nodes - INFO - ONOS Started 
+2013-11-20 01:22:16,872 - OnosScale4nodes - INFO - Executed :~/ONOS/start-rest.sh start 		 Expected Prompt '\$' Found
+2013-11-20 01:22:16,876 - OnosScale4nodes - INFO - Rest Server Started Successfully
+2013-11-20 01:22:32,088 - OnosScale4nodes - INFO - ONOS Started 
+2013-11-20 01:22:43,042 - OnosScale4nodes - INFO - ONOS Started 
+2013-11-20 01:22:43,254 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 01:22:43,918 - OnosScale4nodes - INFO - Executed :~/ONOS/start-onos.sh status  		 Expected Prompt 'running' Found
+2013-11-20 01:22:44,020 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 01:22:44,122 - OnosScale4nodes - INFO - Executed :tail ~/ONOS/onos-logs/onos.*.log 		 Expected Prompt '\$' Found
+2013-11-20 01:22:46,226 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 01:22:46,328 - OnosScale4nodes - INFO - Executed :tail ~/ONOS/onos-logs/onos.*.log 		 Expected Prompt '\$' Found
+2013-11-20 01:22:46,329 - OnosScale4nodes - INFO - ONOS process is running...
+2013-11-20 01:22:46,330 - OnosScale4nodes - INFO - Assertion Passed
+2013-11-20 01:22:46,352 - OnosScale4nodes - INFO - Onos log is moving! It's looking good!
+2013-11-20 01:22:46,600 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 01:22:47,295 - OnosScale4nodes - INFO - Executed :~/ONOS/start-onos.sh status  		 Expected Prompt 'running' Found
+2013-11-20 01:22:47,397 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 01:22:47,499 - OnosScale4nodes - INFO - Executed :tail ~/ONOS/onos-logs/onos.*.log 		 Expected Prompt '\$' Found
+2013-11-20 01:22:49,603 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 01:22:49,705 - OnosScale4nodes - INFO - Executed :tail ~/ONOS/onos-logs/onos.*.log 		 Expected Prompt '\$' Found
+2013-11-20 01:22:49,706 - OnosScale4nodes - INFO - ONOS process is running...
+2013-11-20 01:22:49,707 - OnosScale4nodes - INFO - Assertion Passed
+2013-11-20 01:22:49,727 - OnosScale4nodes - INFO - Onos log is moving! It's looking good!
+2013-11-20 01:22:49,840 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 01:22:50,785 - OnosScale4nodes - INFO - Executed :~/ONOS/start-onos.sh status  		 Expected Prompt 'running' Found
+2013-11-20 01:22:50,887 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 01:22:50,988 - OnosScale4nodes - INFO - Executed :tail ~/ONOS/onos-logs/onos.*.log 		 Expected Prompt '\$' Found
+2013-11-20 01:22:53,093 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 01:22:53,195 - OnosScale4nodes - INFO - Executed :tail ~/ONOS/onos-logs/onos.*.log 		 Expected Prompt '\$' Found
+2013-11-20 01:22:53,196 - OnosScale4nodes - INFO - ONOS process is running...
+2013-11-20 01:22:53,196 - OnosScale4nodes - INFO - Assertion Passed
+2013-11-20 01:22:53,216 - OnosScale4nodes - INFO - Onos log is moving! It's looking good!
+2013-11-20 01:22:53,429 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 01:22:54,208 - OnosScale4nodes - INFO - Executed :~/ONOS/start-onos.sh status  		 Expected Prompt 'running' Found
+2013-11-20 01:22:54,310 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 01:22:54,412 - OnosScale4nodes - INFO - Executed :tail ~/ONOS/onos-logs/onos.*.log 		 Expected Prompt '\$' Found
+2013-11-20 01:22:56,516 - OnosScale4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 01:22:56,618 - OnosScale4nodes - INFO - Executed :tail ~/ONOS/onos-logs/onos.*.log 		 Expected Prompt '\$' Found
+2013-11-20 01:22:56,619 - OnosScale4nodes - INFO - ONOS process is running...
+2013-11-20 01:22:56,619 - OnosScale4nodes - INFO - Assertion Passed
+2013-11-20 01:22:56,630 - OnosScale4nodes - INFO - Onos log is moving! It's looking good!
+2013-11-20 01:22:56,630 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 01:23:06,945 - OnosScale4nodes - INFO - 
+-----
+switch: network 1 : 100 switches 46 active
+switch fail: network 1 should have 100 active switches but has 46
+link: total 0 links (correct : 198)
+link fail
+-----
+
+2013-11-20 01:23:06,948 - OnosScale4nodes - INFO - Pointing the Switches to alternating controllers... then BEGIN time
+2013-11-20 01:23:19,800 - OnosScale4nodes - INFO - Executed :sh ~/ONOS/scripts/ctrl-divide.sh  		 Expected Prompt 'mininet' Found
+2013-11-20 01:23:19,802 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 01:23:28,510 - OnosScale4nodes - INFO - 
+-----
+switch: network 1 : 100 switches 27 active
+switch fail: network 1 should have 100 active switches but has 27
+link: total 0 links (correct : 198)
+link fail
+-----
+
+2013-11-20 01:23:29,514 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 01:23:36,293 - OnosScale4nodes - INFO - 
+-----
+switch: network 1 : 100 switches 21 active
+switch fail: network 1 should have 100 active switches but has 21
+link: total 0 links (correct : 198)
+link fail
+-----
+
+2013-11-20 01:23:37,298 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 01:23:44,692 - OnosScale4nodes - INFO - 
+-----
+switch: network 1 : 100 switches 31 active
+switch fail: network 1 should have 100 active switches but has 31
+link: total 0 links (correct : 198)
+link fail
+-----
+
+2013-11-20 01:23:45,697 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 01:23:53,224 - OnosScale4nodes - INFO - 
+-----
+switch: network 1 : 100 switches 44 active
+switch fail: network 1 should have 100 active switches but has 44
+link: total 32 links (correct : 198)
+link fail
+-----
+
+2013-11-20 01:23:54,228 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 01:23:59,895 - OnosScale4nodes - INFO - 
+-----
+switch: network 1 : 100 switches 53 active
+switch fail: network 1 should have 100 active switches but has 53
+link: total 58 links (correct : 198)
+link fail
+-----
+
+2013-11-20 01:24:00,900 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 01:24:06,455 - OnosScale4nodes - INFO - 
+-----
+switch: network 1 : 100 switches 65 active
+switch fail: network 1 should have 100 active switches but has 65
+link: total 66 links (correct : 198)
+link fail
+-----
+
+2013-11-20 01:24:07,460 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 01:24:12,992 - OnosScale4nodes - INFO - 
+-----
+switch: network 1 : 100 switches 77 active
+switch fail: network 1 should have 100 active switches but has 77
+link: total 90 links (correct : 198)
+link fail
+-----
+
+2013-11-20 01:24:13,995 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 01:24:19,634 - OnosScale4nodes - INFO - 
+-----
+switch: network 1 : 100 switches 90 active
+switch fail: network 1 should have 100 active switches but has 90
+link: total 90 links (correct : 198)
+link fail
+-----
+
+2013-11-20 01:24:20,639 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 01:24:26,789 - OnosScale4nodes - INFO - 
+-----
+switch: network 1 : 100 switches 99 active
+switch fail: network 1 should have 100 active switches but has 99
+link: total 195 links (correct : 198)
+link fail
+-----
+
+2013-11-20 01:24:27,794 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 01:24:34,120 - OnosScale4nodes - INFO - 
+-----
+switch: network 1 : 100 switches 100 active
+link: total 198 links (correct : 198)
+-----
+
+2013-11-20 01:24:34,123 - OnosScale4nodes - INFO - Making some rest calls...
+2013-11-20 01:24:40,428 - OnosScale4nodes - INFO - Time is greater then supplied target time
+2013-11-20 01:24:41,317 - OnosScale4nodes - WARNING - ONOS wasn't running
+2013-11-20 01:24:41,319 - OnosScale4nodes - INFO - Verifying the Expected is equal to the actual or not using assert_equal
+2013-11-20 01:24:41,321 - OnosScale4nodes - WARNING - Assertion Failed
+
+
+*****************************
+ Result: Failed 
+*****************************
+
+
+
+
+*************************************
+	Test Execution Summary
+
+************************************* 
+
+ Test Start           : 20 Nov 2013 01:10:31
+ Test End             : 20 Nov 2013 01:24:41
+ Execution Time       : 0:14:10.014683
+ Total tests planned  : 4
+ Total tests RUN      : 4
+ Total Pass           : 1
+ Total Fail           : 3
+ Total No Result      : 0
+ Success Percentage   : 25%
+ Execution Result     : 100%
+2013-11-20 01:24:42,602 - OnosScale4nodes - INFO - Disconnecting mininet...
+2013-11-20 01:24:42,705 - OnosScale4nodes - INFO - Executed :exit 		 Expected Prompt '(.*)' Found
+2013-11-20 01:24:42,808 - OnosScale4nodes - INFO - Executed :exit 		 Expected Prompt '(.*)' Found

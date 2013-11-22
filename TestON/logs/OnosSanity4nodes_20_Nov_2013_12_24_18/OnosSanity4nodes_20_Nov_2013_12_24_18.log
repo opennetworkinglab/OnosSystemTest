@@ -1,0 +1,1035 @@
+
+                                +----------------+
+------------------------------ { Script And Files }  ------------------------------
+                                +----------------+
+
+	Script Log File : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_20_Nov_2013_12_24_18/OnosSanity4nodes_20_Nov_2013_12_24_18.log
+	Report Log File : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_20_Nov_2013_12_24_18/OnosSanity4nodes_20_Nov_2013_12_24_18.rpt
+	ONOS4 Session Log : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_20_Nov_2013_12_24_18/ONOS4.session
+	ONOS2 Session Log : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_20_Nov_2013_12_24_18/ONOS2.session
+	ONOS3 Session Log : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_20_Nov_2013_12_24_18/ONOS3.session
+	ONOS1 Session Log : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_20_Nov_2013_12_24_18/ONOS1.session
+	Zookeeper4 Session Log : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_20_Nov_2013_12_24_18/Zookeeper4.session
+	Cassandra1 Session Log : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_20_Nov_2013_12_24_18/Cassandra1.session
+	Cassandra2 Session Log : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_20_Nov_2013_12_24_18/Cassandra2.session
+	Cassandra3 Session Log : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_20_Nov_2013_12_24_18/Cassandra3.session
+	Cassandra4 Session Log : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_20_Nov_2013_12_24_18/Cassandra4.session
+	Zookeeper1 Session Log : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_20_Nov_2013_12_24_18/Zookeeper1.session
+	Zookeeper2 Session Log : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_20_Nov_2013_12_24_18/Zookeeper2.session
+	Zookeeper3 Session Log : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_20_Nov_2013_12_24_18/Zookeeper3.session
+	Mininet1 Session Log : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_20_Nov_2013_12_24_18/Mininet1.session
+	Test Script :/home/admin/ONLabTest/TestON/Tests/OnosSanity4nodes.py
+	Test Params : /home/admin/ONLabTest/TestON/Tests/OnosSanity4nodes.params
+	Topology : /home/admin/ONLabTest/TestON/Tests/OnosSanity4nodes.tpl
+                              +------------------+
+---------------------------  { Script Exec Params }  ---------------------------
+                              +------------------+
+
+	
+	'CTRL': 
+	'ip2': '10.128.100.4'
+	 'ip3': '10.128.100.5'
+	 'ip1': '10.128.100.1'
+	 'ip4': '10.128.100.6'
+	 'port4': '6633'
+	 'port2': '6633'
+	 'port3': '6633'
+	 'port1': '6633'
+	
+	 'NR_Links': '50'
+	 'LINK': 
+	'begin': 's1'
+	 'end': 's2'
+	
+	 'RESTCALL': 
+	'restIP1': '10.128.100.1'
+	 'restIP2': '10.128.100.5'
+	 'restPort': '8080'
+	 'restURL': '/wm/device/'
+	
+	 'CASE1': 
+	'destination': 'h6'
+	
+	 'PLUG': 
+	'sw1': 's1'
+	 'intf': 's1-eth1'
+	 'sw6': 's6'
+	
+	 'PING': 
+	'source2': 'h8'
+	 'source1': 'h6'
+	 'target2': 'h33'
+	 'target1': 'h31'
+	
+	 'FLOWDEF': '~/flowdef_files/Center_Triangle/flowdef_20.txt'
+	 'testcases': '1
+	2
+	21
+	3
+	4
+	5
+	6
+	7'
+	 'RestIP': '10.128.100.1'
+	 'NR_Switches': '25'
+	 'YANK': 
+	'hostmac': '00:00:00:00:00:01'
+	 'sw1': 's1'
+	 'hostname': 'h1'
+	 'intf': 's1-eth1'
+	 'sw6': 's6'
+	
+	
+
+                               +---------------+
+----------------------------- { Components Used }  -----------------------------
+                               +---------------+
+	ONOS4
+	ONOS2
+	ONOS3
+	ONOS1
+	Zookeeper4
+	Cassandra1
+	Cassandra2
+	Cassandra3
+	Cassandra4
+	Zookeeper1
+	Zookeeper2
+	Zookeeper3
+	Mininet1
+
+
+                              +--------+
+---------------------------- { Topology }  ----------------------------
+                              +--------+
+
+	
+	'ONOS4': 
+	'connect_order': '12'
+	 'host': '10.128.100.6'
+	 'user': 'admin'
+	 'COMPONENTS': ''
+	 'password': None
+	 'type': 'OnosCliDriver'
+	
+	 'ONOS2': 
+	'connect_order': '10'
+	 'host': '10.128.100.4'
+	 'user': 'admin'
+	 'COMPONENTS': ''
+	 'password': None
+	 'type': 'OnosCliDriver'
+	
+	 'ONOS3': 
+	'connect_order': '11'
+	 'host': '10.128.100.5'
+	 'user': 'admin'
+	 'COMPONENTS': ''
+	 'password': None
+	 'type': 'OnosCliDriver'
+	
+	 'ONOS1': 
+	'connect_order': '9'
+	 'host': '10.128.100.1'
+	 'user': 'admin'
+	 'COMPONENTS': ''
+	 'password': None
+	 'type': 'OnosCliDriver'
+	
+	 'Zookeeper4': 
+	'connect_order': '4'
+	 'host': '10.128.100.6'
+	 'user': 'admin'
+	 'COMPONENTS': ''
+	 'password': None
+	 'type': 'ZookeeperCliDriver'
+	
+	 'Cassandra1': 
+	'connect_order': '5'
+	 'host': '10.128.100.1'
+	 'user': 'admin'
+	 'COMPONENTS': ''
+	 'password': None
+	 'type': 'CassandraCliDriver'
+	
+	 'Cassandra2': 
+	'connect_order': '6'
+	 'host': '10.128.100.4'
+	 'user': 'admin'
+	 'COMPONENTS': ''
+	 'password': None
+	 'type': 'CassandraCliDriver'
+	
+	 'Cassandra3': 
+	'connect_order': '7'
+	 'host': '10.128.100.5'
+	 'user': 'admin'
+	 'COMPONENTS': ''
+	 'password': None
+	 'type': 'CassandraCliDriver'
+	
+	 'Cassandra4': 
+	'connect_order': '8'
+	 'host': '10.128.100.6'
+	 'user': 'admin'
+	 'COMPONENTS': ''
+	 'password': None
+	 'type': 'CassandraCliDriver'
+	
+	 'Zookeeper1': 
+	'connect_order': '1'
+	 'host': '10.128.100.1'
+	 'user': 'admin'
+	 'COMPONENTS': ''
+	 'password': None
+	 'type': 'ZookeeperCliDriver'
+	
+	 'Zookeeper2': 
+	'connect_order': '2'
+	 'host': '10.128.100.4'
+	 'user': 'admin'
+	 'COMPONENTS': ''
+	 'password': None
+	 'type': 'ZookeeperCliDriver'
+	
+	 'Zookeeper3': 
+	'connect_order': '3'
+	 'host': '10.128.100.5'
+	 'user': 'admin'
+	 'COMPONENTS': ''
+	 'password': None
+	 'type': 'ZookeeperCliDriver'
+	
+	 'Mininet1': 
+	'connect_order': '13'
+	 'host': '10.128.100.11'
+	 'user': 'admin'
+	 'COMPONENTS': 
+	'arg1': '--custom ~/mininet/custom/topo-onos4node.py'
+	 'arg2': '--topo mytopo --arp'
+	 'controller': 'remote'
+	
+	 'password': None
+	 'type': 'MininetCliDriver'
+	
+	
+------------------------------------------------------------
+
+
+******************************
+ CASE INIT 
+******************************
+
+2013-11-20 12:24:18,154 - OnosSanity4nodes - INFO - Creating component Handle: Zookeeper1
+2013-11-20 12:24:18,211 - OnosSanity4nodes - INFO - Password not required logged in
+2013-11-20 12:24:18,321 - OnosSanity4nodes - INFO - Starting Zookeeper
+2013-11-20 12:24:20,822 - OnosSanity4nodes - WARNING - zookeeper ... already running
+2013-11-20 12:24:20,823 - OnosSanity4nodes - INFO - Creating component Handle: Zookeeper2
+2013-11-20 12:24:20,878 - OnosSanity4nodes - INFO - Password not required logged in
+2013-11-20 12:24:20,982 - OnosSanity4nodes - INFO - Starting Zookeeper
+2013-11-20 12:24:24,648 - OnosSanity4nodes - WARNING - zookeeper ... already running
+2013-11-20 12:24:24,649 - OnosSanity4nodes - INFO - Creating component Handle: Zookeeper3
+2013-11-20 12:24:24,704 - OnosSanity4nodes - INFO - Password not required logged in
+2013-11-20 12:24:24,806 - OnosSanity4nodes - INFO - Starting Zookeeper
+2013-11-20 12:24:27,885 - OnosSanity4nodes - WARNING - zookeeper ... already running
+2013-11-20 12:24:27,886 - OnosSanity4nodes - INFO - Creating component Handle: Zookeeper4
+2013-11-20 12:24:27,942 - OnosSanity4nodes - INFO - Password not required logged in
+2013-11-20 12:24:28,044 - OnosSanity4nodes - INFO - Starting Zookeeper
+2013-11-20 12:24:30,689 - OnosSanity4nodes - WARNING - zookeeper ... already running
+2013-11-20 12:24:30,689 - OnosSanity4nodes - INFO - Creating component Handle: Cassandra1
+2013-11-20 12:24:30,747 - OnosSanity4nodes - INFO - Password not required logged in
+2013-11-20 12:24:30,851 - OnosSanity4nodes - INFO - Creating component Handle: Cassandra2
+2013-11-20 12:24:30,896 - OnosSanity4nodes - INFO - Password not required logged in
+2013-11-20 12:24:30,999 - OnosSanity4nodes - INFO - Creating component Handle: Cassandra3
+2013-11-20 12:24:31,055 - OnosSanity4nodes - INFO - Password not required logged in
+2013-11-20 12:24:31,158 - OnosSanity4nodes - INFO - Creating component Handle: Cassandra4
+2013-11-20 12:24:31,220 - OnosSanity4nodes - INFO - Password not required logged in
+2013-11-20 12:24:31,324 - OnosSanity4nodes - INFO - Creating component Handle: ONOS1
+2013-11-20 12:24:31,391 - OnosSanity4nodes - INFO - Password not required logged in
+2013-11-20 12:24:31,494 - OnosSanity4nodes - INFO - Creating component Handle: ONOS2
+2013-11-20 12:24:31,555 - OnosSanity4nodes - INFO - Password not required logged in
+2013-11-20 12:24:31,658 - OnosSanity4nodes - INFO - Creating component Handle: ONOS3
+2013-11-20 12:24:31,716 - OnosSanity4nodes - INFO - Password not required logged in
+2013-11-20 12:24:31,819 - OnosSanity4nodes - INFO - Creating component Handle: ONOS4
+2013-11-20 12:24:31,874 - OnosSanity4nodes - INFO - Password not required logged in
+2013-11-20 12:24:31,978 - OnosSanity4nodes - INFO - Creating component Handle: Mininet1
+2013-11-20 12:24:32,027 - OnosSanity4nodes - INFO - Password not required logged in
+2013-11-20 12:24:32,130 - OnosSanity4nodes - INFO - Clearing any residual state or processes
+2013-11-20 12:24:35,201 - OnosSanity4nodes - INFO - Clean
+2013-11-20 12:24:35,202 - OnosSanity4nodes - INFO - building fresh mininet
+2013-11-20 12:24:35,433 - OnosSanity4nodes - INFO -  Creating network
+2013-11-20 12:24:35,434 - OnosSanity4nodes - INFO -  Adding controller
+2013-11-20 12:24:35,490 - OnosSanity4nodes - INFO -  Adding hosts:
+2013-11-20 12:24:35,746 - OnosSanity4nodes - INFO -  Adding switches:
+2013-11-20 12:24:36,769 - OnosSanity4nodes - INFO -  Adding links:
+2013-11-20 12:24:42,714 - OnosSanity4nodes - INFO -  Configuring hosts
+2013-11-20 12:24:47,572 - OnosSanity4nodes - INFO -  Starting controller
+2013-11-20 12:24:47,573 - OnosSanity4nodes - INFO -  Starting 25 switches
+2013-11-20 12:24:54,707 - OnosSanity4nodes - INFO -  Starting CLI:
+2013-11-20 12:24:54,714 - OnosSanity4nodes - INFO - mininet built
+
+
+******************************
+ Result summary for Testcase1
+******************************
+
+2013-11-20 12:24:54,737 - OnosSanity4nodes - INFO - Stopping onos
+2013-11-20 12:24:55,850 - OnosSanity4nodes - WARNING - ONOS wasn't running
+2013-11-20 12:24:58,258 - OnosSanity4nodes - INFO - Already up to date
+2013-11-20 12:24:58,259 - OnosSanity4nodes - INFO - Stopping onos
+2013-11-20 12:24:59,002 - OnosSanity4nodes - WARNING - ONOS wasn't running
+2013-11-20 12:25:01,298 - OnosSanity4nodes - INFO - Already up to date
+2013-11-20 12:25:01,299 - OnosSanity4nodes - INFO - Stopping onos
+2013-11-20 12:25:02,062 - OnosSanity4nodes - WARNING - ONOS wasn't running
+2013-11-20 12:25:04,301 - OnosSanity4nodes - INFO - Already up to date
+2013-11-20 12:25:04,301 - OnosSanity4nodes - INFO - Stopping onos
+2013-11-20 12:25:05,037 - OnosSanity4nodes - WARNING - ONOS wasn't running
+2013-11-20 12:25:07,890 - OnosSanity4nodes - INFO - Already up to date
+2013-11-20 12:25:07,891 - OnosSanity4nodes - INFO - Starting Cassandra
+2013-11-20 12:25:13,539 - OnosSanity4nodes - INFO - Cassandra Started 
+2013-11-20 12:25:13,540 - OnosSanity4nodes - INFO - Starting Cassandra
+2013-11-20 12:25:19,169 - OnosSanity4nodes - INFO - Cassandra Started 
+2013-11-20 12:25:19,169 - OnosSanity4nodes - INFO - Starting Cassandra
+2013-11-20 12:25:24,755 - OnosSanity4nodes - INFO - Cassandra Started 
+2013-11-20 12:25:24,756 - OnosSanity4nodes - INFO - Starting Cassandra
+2013-11-20 12:25:30,381 - OnosSanity4nodes - INFO - Cassandra Started 
+2013-11-20 12:25:51,075 - OnosSanity4nodes - INFO - Keyspace dropped
+2013-11-20 12:26:01,046 - OnosSanity4nodes - INFO - ONOS Started 
+2013-11-20 12:26:22,219 - OnosSanity4nodes - INFO - ONOS Started 
+2013-11-20 12:26:32,900 - OnosSanity4nodes - INFO - ONOS Started 
+2013-11-20 12:26:43,564 - OnosSanity4nodes - INFO - ONOS Started 
+2013-11-20 12:26:45,980 - OnosSanity4nodes - INFO - Executed :~/ONOS/start-rest.sh start 		 Expected Prompt '\$' Found
+2013-11-20 12:26:45,982 - OnosSanity4nodes - INFO - Rest Server Started Successfully
+
+[2013-11-20 12:26:56.213963] [OnosSanity4nodes] [CASE]  Checking if the startup was clean...
+
+[2013-11-20 12:26:56.216994] [OnosSanity4nodes] [STEP]  INIT : Initializing the test case :Checking if the startup was clean...
+
+[2013-11-20 12:26:56.220331] [OnosSanity4nodes] [STEP]  1.1: Testing startup Zookeeper
+2013-11-20 12:26:56,394 - OnosSanity4nodes - INFO - Executed :
+ 		 Expected Prompt '\$' Found
+2013-11-20 12:26:57,252 - OnosSanity4nodes - INFO - Executed :~/zookeeper-3.4.5/bin/zkServer.sh status  		 Expected Prompt 'Mode' Found
+2013-11-20 12:26:57,257 - OnosSanity4nodes - INFO - Verifying the Expected is equal to the actual or not using assert_equal
+2013-11-20 12:26:57,257 - OnosSanity4nodes - INFO - Zookeeper is up!
+2013-11-20 12:26:57,258 - OnosSanity4nodes - INFO - Assertion Passed
+
+[2013-11-20 12:26:57.259160] [OnosSanity4nodes] [STEP]  1.2: Testing startup Cassandra
+2013-11-20 12:26:57,262 - OnosSanity4nodes - INFO - trying 5 times
+2013-11-20 12:26:57,414 - OnosSanity4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 12:26:59,104 - OnosSanity4nodes - INFO - Verifying the Expected is equal to the actual or not using assert_equal
+2013-11-20 12:26:59,105 - OnosSanity4nodes - INFO - Cassandra is up!
+2013-11-20 12:26:59,106 - OnosSanity4nodes - INFO - Assertion Passed
+
+[2013-11-20 12:26:59.108052] [OnosSanity4nodes] [STEP]  1.3: Testing startup ONOS
+2013-11-20 12:26:59,213 - OnosSanity4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 12:26:59,886 - OnosSanity4nodes - INFO - Executed :~/ONOS/start-onos.sh status  		 Expected Prompt 'running' Found
+2013-11-20 12:26:59,989 - OnosSanity4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 12:27:00,092 - OnosSanity4nodes - INFO - Executed :tail ~/ONOS/onos-logs/onos.*.log 		 Expected Prompt '\$' Found
+2013-11-20 12:27:02,195 - OnosSanity4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-20 12:27:02,298 - OnosSanity4nodes - INFO - Executed :tail ~/ONOS/onos-logs/onos.*.log 		 Expected Prompt '\$' Found
+2013-11-20 12:27:02,300 - OnosSanity4nodes - INFO - ONOS process is running...
+2013-11-20 12:27:02,301 - OnosSanity4nodes - INFO - Assertion Passed
+2013-11-20 12:27:02,315 - OnosSanity4nodes - INFO - Onos log is moving! It's looking good!
+2013-11-20 12:27:02,316 - OnosSanity4nodes - INFO - Verifying the Expected is equal to the actual or not using assert_equal
+2013-11-20 12:27:02,316 - OnosSanity4nodes - INFO - ONOS is up and running!
+2013-11-20 12:27:02,316 - OnosSanity4nodes - INFO - Assertion Passed
+
+
+*****************************
+ Result: Pass 
+*****************************
+
+
+
+******************************
+ Result summary for Testcase2
+******************************
+
+
+[2013-11-20 12:27:02.319989] [OnosSanity4nodes] [CASE]  Checking if one MN host exists
+
+[2013-11-20 12:27:02.321509] [OnosSanity4nodes] [STEP]  INIT : Initializing the test case :Checking if one MN host exists
+
+[2013-11-20 12:27:02.323103] [OnosSanity4nodes] [STEP]  2.1: Host IP Checking using checkIP
+2013-11-20 12:27:02,445 - OnosSanity4nodes - INFO - Executed :h6 ifconfig 		 Expected Prompt 'mininet>' Found
+2013-11-20 12:27:02,454 - OnosSanity4nodes - INFO - Host Ip configured properly
+2013-11-20 12:27:02,455 - OnosSanity4nodes - INFO - Assertion Passed
+
+[2013-11-20 12:27:02.456884] [OnosSanity4nodes] [STEP]  2.2: Verifying the result
+2013-11-20 12:27:02,460 - OnosSanity4nodes - INFO - Verifying the Expected is equal to the actual or not using assert_equal
+2013-11-20 12:27:02,461 - OnosSanity4nodes - INFO - Host IP address configured
+2013-11-20 12:27:02,462 - OnosSanity4nodes - INFO - Assertion Passed
+
+[2013-11-20 12:27:02.467288] [OnosSanity4nodes] [STEP]  2.3: assigning ONOS controllers to switches
+2013-11-20 12:27:02,613 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s1 ptcp:6634 tcp:10.128.100.1:6633        		 Expected Prompt 'mininet>' Found
+2013-11-20 12:27:03,775 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s1 ptcp:6634 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633     		 Expected Prompt 'mininet>' Found
+2013-11-20 12:27:03,934 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s2 ptcp:6635 tcp:10.128.100.1:6633        		 Expected Prompt 'mininet>' Found
+2013-11-20 12:27:05,101 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s2 ptcp:6635 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633     		 Expected Prompt 'mininet>' Found
+2013-11-20 12:27:05,259 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s3 ptcp:6636 tcp:10.128.100.1:6633        		 Expected Prompt 'mininet>' Found
+2013-11-20 12:27:06,419 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s3 ptcp:6636 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633     		 Expected Prompt 'mininet>' Found
+2013-11-20 12:27:06,584 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s4 ptcp:6637 tcp:10.128.100.4:6633        		 Expected Prompt 'mininet>' Found
+2013-11-20 12:27:07,754 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s4 ptcp:6637 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633     		 Expected Prompt 'mininet>' Found
+2013-11-20 12:27:07,909 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s5 ptcp:6638 tcp:10.128.100.4:6633        		 Expected Prompt 'mininet>' Found
+2013-11-20 12:27:09,087 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s5 ptcp:6638 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633     		 Expected Prompt 'mininet>' Found
+2013-11-20 12:27:09,245 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s6 ptcp:6639 tcp:10.128.100.5:6633        		 Expected Prompt 'mininet>' Found
+2013-11-20 12:27:10,404 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s6 ptcp:6639 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633     		 Expected Prompt 'mininet>' Found
+2013-11-20 12:27:10,561 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s7 ptcp:6640 tcp:10.128.100.5:6633        		 Expected Prompt 'mininet>' Found
+2013-11-20 12:27:11,716 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s7 ptcp:6640 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633     		 Expected Prompt 'mininet>' Found
+2013-11-20 12:27:11,888 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s8 ptcp:6641 tcp:10.128.100.5:6633        		 Expected Prompt 'mininet>' Found
+2013-11-20 12:27:13,054 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s8 ptcp:6641 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633     		 Expected Prompt 'mininet>' Found
+2013-11-20 12:27:13,218 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s9 ptcp:6642 tcp:10.128.100.5:6633        		 Expected Prompt 'mininet>' Found
+2013-11-20 12:27:14,381 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s9 ptcp:6642 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633     		 Expected Prompt 'mininet>' Found
+2013-11-20 12:27:14,545 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s10 ptcp:6643 tcp:10.128.100.5:6633        		 Expected Prompt 'mininet>' Found
+2013-11-20 12:27:15,705 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s10 ptcp:6643 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633     		 Expected Prompt 'mininet>' Found
+2013-11-20 12:27:15,875 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s11 ptcp:6644 tcp:10.128.100.5:6633        		 Expected Prompt 'mininet>' Found
+2013-11-20 12:27:17,034 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s11 ptcp:6644 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633     		 Expected Prompt 'mininet>' Found
+2013-11-20 12:27:17,195 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s12 ptcp:6645 tcp:10.128.100.5:6633        		 Expected Prompt 'mininet>' Found
+2013-11-20 12:27:18,358 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s12 ptcp:6645 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633     		 Expected Prompt 'mininet>' Found
+2013-11-20 12:27:18,514 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s13 ptcp:6646 tcp:10.128.100.5:6633        		 Expected Prompt 'mininet>' Found
+2013-11-20 12:27:19,671 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s13 ptcp:6646 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633     		 Expected Prompt 'mininet>' Found
+2013-11-20 12:27:19,836 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s14 ptcp:6647 tcp:10.128.100.5:6633        		 Expected Prompt 'mininet>' Found
+2013-11-20 12:27:21,000 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s14 ptcp:6647 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633     		 Expected Prompt 'mininet>' Found
+2013-11-20 12:27:21,162 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s15 ptcp:6648 tcp:10.128.100.5:6633        		 Expected Prompt 'mininet>' Found
+2013-11-20 12:27:22,324 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s15 ptcp:6648 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633     		 Expected Prompt 'mininet>' Found
+2013-11-20 12:27:22,473 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s31 ptcp:6664 tcp:10.128.100.6:6633        		 Expected Prompt 'mininet>' Found
+2013-11-20 12:27:23,635 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s31 ptcp:6664 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633     		 Expected Prompt 'mininet>' Found
+2013-11-20 12:27:23,777 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s32 ptcp:6665 tcp:10.128.100.6:6633        		 Expected Prompt 'mininet>' Found
+2013-11-20 12:27:24,944 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s32 ptcp:6665 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633     		 Expected Prompt 'mininet>' Found
+2013-11-20 12:27:25,103 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s33 ptcp:6666 tcp:10.128.100.6:6633        		 Expected Prompt 'mininet>' Found
+2013-11-20 12:27:26,265 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s33 ptcp:6666 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633     		 Expected Prompt 'mininet>' Found
+2013-11-20 12:27:26,426 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s34 ptcp:6667 tcp:10.128.100.6:6633        		 Expected Prompt 'mininet>' Found
+2013-11-20 12:27:27,575 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s34 ptcp:6667 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633     		 Expected Prompt 'mininet>' Found
+2013-11-20 12:27:27,730 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s35 ptcp:6668 tcp:10.128.100.6:6633        		 Expected Prompt 'mininet>' Found
+2013-11-20 12:27:28,897 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s35 ptcp:6668 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633     		 Expected Prompt 'mininet>' Found
+2013-11-20 12:27:29,060 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s36 ptcp:6669 tcp:10.128.100.6:6633        		 Expected Prompt 'mininet>' Found
+2013-11-20 12:27:30,230 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s36 ptcp:6669 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633     		 Expected Prompt 'mininet>' Found
+2013-11-20 12:27:30,395 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s37 ptcp:6670 tcp:10.128.100.6:6633        		 Expected Prompt 'mininet>' Found
+2013-11-20 12:27:31,561 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s37 ptcp:6670 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633     		 Expected Prompt 'mininet>' Found
+2013-11-20 12:27:31,726 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s38 ptcp:6671 tcp:10.128.100.6:6633        		 Expected Prompt 'mininet>' Found
+2013-11-20 12:27:32,900 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s38 ptcp:6671 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633     		 Expected Prompt 'mininet>' Found
+2013-11-20 12:27:33,063 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s39 ptcp:6672 tcp:10.128.100.6:6633        		 Expected Prompt 'mininet>' Found
+2013-11-20 12:27:34,234 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s39 ptcp:6672 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633     		 Expected Prompt 'mininet>' Found
+2013-11-20 12:27:34,384 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s40 ptcp:6673 tcp:10.128.100.6:6633        		 Expected Prompt 'mininet>' Found
+2013-11-20 12:27:35,535 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s40 ptcp:6673 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633     		 Expected Prompt 'mininet>' Found
+2013-11-20 12:27:35,677 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl get-controller s1 		 Expected Prompt 'mininet>' Found
+2013-11-20 12:27:35,677 - OnosSanity4nodes - INFO -  sh ovs-vsctl get-controller s1
+ptcp:6634
+tcp:10.128.100.1:6633
+tcp:10.128.100.4:6633
+tcp:10.128.100.5:6633
+tcp:10.128.100.6:6633
+mininet>
+
+
+*****************************
+ Result: Pass 
+*****************************
+
+
+
+******************************
+ Result summary for Testcase21
+******************************
+
+2013-11-20 12:27:35,692 - OnosSanity4nodes - INFO - 
+				 ping issue one ping fromh1to generate arp to switch. Ping result is not important
+2013-11-20 12:27:38,806 - OnosSanity4nodes - INFO - Executed :h1 ping 10.0.0.254 -c 1 -i .2 		 Expected Prompt 'mininet' Found
+2013-11-20 12:27:38,808 - OnosSanity4nodes - ERROR - Assertion Failed
+2013-11-20 12:27:38,809 - OnosSanity4nodes - ERROR - Host is not reachable
+2013-11-20 12:27:38,812 - OnosSanity4nodes - WARNING - Assertion Failed
+2013-11-20 12:27:38,813 - OnosSanity4nodes - ERROR - PACKET LOST, HOST IS NOT REACHABLE
+
+[2013-11-20 12:27:39.641896] [OnosSanity4nodes] [CASE]  Yankout s6-eth1 (link to h1) from s1
+2013-11-20 12:27:39,647 - OnosSanity4nodes - INFO - Yank the switch interface attached to a host
+2013-11-20 12:27:39,872 - OnosSanity4nodes - INFO - Executed :py s1.detach("s1-eth1") 		 Expected Prompt 'mininet>' Found
+2013-11-20 12:27:42,877 - OnosSanity4nodes - INFO - Verifying the Expected is equal to the actual or not using assert_equal
+2013-11-20 12:27:42,878 - OnosSanity4nodes - INFO - Yank command suceeded
+2013-11-20 12:27:42,880 - OnosSanity4nodes - INFO - Assertion Passed
+2013-11-20 12:27:45,990 - OnosSanity4nodes - INFO - Executed :h1 ping 10.0.0.254 -c 1 -i .2 		 Expected Prompt 'mininet' Found
+2013-11-20 12:27:45,992 - OnosSanity4nodes - ERROR - Assertion Failed
+2013-11-20 12:27:45,993 - OnosSanity4nodes - ERROR - Host is not reachable
+2013-11-20 12:27:45,995 - OnosSanity4nodes - WARNING - Assertion Failed
+2013-11-20 12:27:45,996 - OnosSanity4nodes - ERROR - PACKET LOST, HOST IS NOT REACHABLE
+
+[2013-11-20 12:27:46.189765] [OnosSanity4nodes] [CASE]  Plug s1-eth1 to s6
+2013-11-20 12:27:46,194 - OnosSanity4nodes - INFO - Plug the switch interface attached to a switch
+2013-11-20 12:27:46,369 - OnosSanity4nodes - INFO - Executed :py s6.attach("s1-eth1") 		 Expected Prompt 'mininet>' Found
+2013-11-20 12:27:49,374 - OnosSanity4nodes - INFO - Verifying the Expected is equal to the actual or not using assert_equal
+2013-11-20 12:27:49,375 - OnosSanity4nodes - INFO - Plug command suceeded
+2013-11-20 12:27:49,375 - OnosSanity4nodes - INFO - Assertion Passed
+2013-11-20 12:27:52,486 - OnosSanity4nodes - INFO - Executed :h1 ping 10.0.0.254 -c 1 -i .2 		 Expected Prompt 'mininet' Found
+2013-11-20 12:27:52,487 - OnosSanity4nodes - ERROR - Assertion Failed
+2013-11-20 12:27:52,488 - OnosSanity4nodes - ERROR - Host is not reachable
+2013-11-20 12:27:52,489 - OnosSanity4nodes - WARNING - Assertion Failed
+2013-11-20 12:27:52,489 - OnosSanity4nodes - ERROR - PACKET LOST, HOST IS NOT REACHABLE
+
+[2013-11-20 12:27:52.975743] [OnosSanity4nodes] [CASE]  Move s1-eth1 back to s1
+2013-11-20 12:27:52,980 - OnosSanity4nodes - INFO - Yank the switch interface attached to a host
+2013-11-20 12:27:53,206 - OnosSanity4nodes - INFO - Executed :py s6.detach("s1-eth1") 		 Expected Prompt 'mininet>' Found
+2013-11-20 12:27:56,211 - OnosSanity4nodes - INFO - Plug the switch interface attached to a switch
+2013-11-20 12:27:56,381 - OnosSanity4nodes - INFO - Executed :py s1.attach("s1-eth1") 		 Expected Prompt 'mininet>' Found
+2013-11-20 12:27:56,383 - OnosSanity4nodes - INFO - Verifying the Expected is equal to the actual or not using assert_equal
+2013-11-20 12:27:56,383 - OnosSanity4nodes - INFO - Yank/Plug command suceeded
+2013-11-20 12:27:56,384 - OnosSanity4nodes - INFO - Assertion Passed
+2013-11-20 12:27:59,494 - OnosSanity4nodes - INFO - Executed :h1 ping 10.0.0.254 -c 1 -i .2 		 Expected Prompt 'mininet' Found
+2013-11-20 12:27:59,495 - OnosSanity4nodes - ERROR - Assertion Failed
+2013-11-20 12:27:59,496 - OnosSanity4nodes - ERROR - Host is not reachable
+2013-11-20 12:27:59,497 - OnosSanity4nodes - WARNING - Assertion Failed
+2013-11-20 12:27:59,497 - OnosSanity4nodes - ERROR - PACKET LOST, HOST IS NOT REACHABLE
+2013-11-20 12:27:59,793 - OnosSanity4nodes - INFO - Verifying the Expected is equal to the actual or not using assert_equal
+2013-11-20 12:27:59,795 - OnosSanity4nodes - INFO - DEVICE DISCOVERY TEST PASSED PLUG/UNPLUG/MOVE TEST
+2013-11-20 12:27:59,796 - OnosSanity4nodes - INFO - Assertion Passed
+
+
+*****************************
+ Result: Pass 
+*****************************
+
+
+
+******************************
+ Result summary for Testcase3
+******************************
+
+2013-11-20 12:27:59,807 - OnosSanity4nodes - INFO - Making some rest calls...
+2013-11-20 12:28:04,977 - OnosSanity4nodes - INFO - Making some rest calls...
+2013-11-20 12:28:09,877 - OnosSanity4nodes - INFO - Making some rest calls...
+2013-11-20 12:28:14,592 - OnosSanity4nodes - INFO - Making some rest calls...
+2013-11-20 12:28:19,847 - OnosSanity4nodes - INFO - Making some rest calls...
+2013-11-20 12:28:25,043 - OnosSanity4nodes - INFO - Making some rest calls...
+2013-11-20 12:28:29,649 - OnosSanity4nodes - INFO - Making some rest calls...
+2013-11-20 12:28:34,445 - OnosSanity4nodes - INFO - Making some rest calls...
+2013-11-20 12:28:38,993 - OnosSanity4nodes - INFO - Making some rest calls...
+2013-11-20 12:28:43,539 - OnosSanity4nodes - INFO - Making some rest calls...
+
+[2013-11-20 12:28:45.005064] [OnosSanity4nodes] [CASE]  Taking care of these flows!
+
+[2013-11-20 12:28:45.010909] [OnosSanity4nodes] [STEP]  INIT : Initializing the test case :Taking care of these flows!
+
+[2013-11-20 12:28:45.017778] [OnosSanity4nodes] [STEP]  3.1: Cleaning out any leftover flows...
+2013-11-20 12:28:45,021 - OnosSanity4nodes - INFO - Deleting ALL flows...
+2013-11-20 12:28:46,129 - OnosSanity4nodes - INFO - Flows deleted
+2013-11-20 12:28:51,135 - OnosSanity4nodes - INFO - Adding Flows...
+2013-11-20 12:28:56,421 - OnosSanity4nodes - INFO - Flows added
+
+[2013-11-20 12:28:56.423883] [OnosSanity4nodes] [CASE]  Checking flows
+2013-11-20 12:28:56,427 - OnosSanity4nodes - INFO - Wait for flows to be pushed to the switches, then check
+
+[2013-11-20 12:28:56.428540] [OnosSanity4nodes] [STEP]  3.1: Waiting
+
+[2013-11-20 12:29:01.438057] [OnosSanity4nodes] [STEP]  3.1: Checking
+2013-11-20 12:29:03,169 - OnosSanity4nodes - INFO - There don't seem to be any flows here...
+
+[2013-11-20 12:29:03.172447] [OnosSanity4nodes] [STEP]  3.1: Waiting
+
+[2013-11-20 12:29:08.181822] [OnosSanity4nodes] [STEP]  3.1: Checking
+2013-11-20 12:29:09,824 - OnosSanity4nodes - INFO - There don't seem to be any flows here...
+
+[2013-11-20 12:29:09.827400] [OnosSanity4nodes] [STEP]  3.1: Waiting
+
+[2013-11-20 12:29:14.836590] [OnosSanity4nodes] [STEP]  3.1: Checking
+2013-11-20 12:29:16,516 - OnosSanity4nodes - INFO - There don't seem to be any flows here...
+
+[2013-11-20 12:29:16.519052] [OnosSanity4nodes] [STEP]  3.1: Waiting
+
+[2013-11-20 12:29:21.528160] [OnosSanity4nodes] [STEP]  3.1: Checking
+2013-11-20 12:29:23,117 - OnosSanity4nodes - INFO - There don't seem to be any flows here...
+
+[2013-11-20 12:29:23.119868] [OnosSanity4nodes] [STEP]  3.1: Waiting
+
+[2013-11-20 12:29:28.129155] [OnosSanity4nodes] [STEP]  3.1: Checking
+2013-11-20 12:29:29,708 - OnosSanity4nodes - INFO - There don't seem to be any flows here...
+
+[2013-11-20 12:29:29.711484] [OnosSanity4nodes] [STEP]  3.1: Waiting
+
+[2013-11-20 12:29:34.720841] [OnosSanity4nodes] [STEP]  3.1: Checking
+2013-11-20 12:29:36,314 - OnosSanity4nodes - INFO - There don't seem to be any flows here...
+2013-11-20 12:29:36,317 - OnosSanity4nodes - INFO - 
+				h6 IS PINGING h31
+2013-11-20 12:29:46,431 - OnosSanity4nodes - ERROR - Expected Prompt not found , Time Out!!
+2013-11-20 12:29:46,432 - OnosSanity4nodes - ERROR - mininet
+2013-11-20 12:29:46,434 - OnosSanity4nodes - ERROR - Assertion Failed
+2013-11-20 12:29:46,435 - OnosSanity4nodes - ERROR - Host is not reachable
+2013-11-20 12:29:46,438 - OnosSanity4nodes - WARNING - Assertion Failed
+2013-11-20 12:29:46,439 - OnosSanity4nodes - ERROR - PACKET LOST, HOST IS NOT REACHABLE
+2013-11-20 12:29:46,440 - OnosSanity4nodes - INFO - Ping failed, making attempt number 2 in 10 seconds
+2013-11-20 12:29:56,452 - OnosSanity4nodes - INFO - 
+				h6 IS PINGING h31
+2013-11-20 12:29:56,554 - OnosSanity4nodes - INFO - Executed :h6 ping h31 -c 1 -i .2 		 Expected Prompt 'mininet' Found
+2013-11-20 12:29:56,555 - OnosSanity4nodes - ERROR - Assertion Failed
+2013-11-20 12:29:56,556 - OnosSanity4nodes - ERROR - Host is not reachable
+2013-11-20 12:29:56,556 - OnosSanity4nodes - WARNING - Assertion Failed
+2013-11-20 12:29:56,557 - OnosSanity4nodes - ERROR - PACKET LOST, HOST IS NOT REACHABLE
+2013-11-20 12:29:56,557 - OnosSanity4nodes - INFO - Ping failed, making attempt number 3 in 10 seconds
+2013-11-20 12:30:06,568 - OnosSanity4nodes - INFO - 
+				h6 IS PINGING h31
+2013-11-20 12:30:06,670 - OnosSanity4nodes - INFO - Executed :h6 ping h31 -c 1 -i .2 		 Expected Prompt 'mininet' Found
+2013-11-20 12:30:06,671 - OnosSanity4nodes - ERROR - Assertion Failed
+2013-11-20 12:30:06,671 - OnosSanity4nodes - ERROR - Host is not reachable
+2013-11-20 12:30:06,672 - OnosSanity4nodes - WARNING - Assertion Failed
+2013-11-20 12:30:06,672 - OnosSanity4nodes - ERROR - PACKET LOST, HOST IS NOT REACHABLE
+2013-11-20 12:30:06,673 - OnosSanity4nodes - ERROR - Ping test failed
+
+[2013-11-20 12:30:06.674469] [OnosSanity4nodes] [STEP]  3.2: Verifying the result
+2013-11-20 12:30:06,677 - OnosSanity4nodes - INFO - Verifying the Expected is equal to the actual or not using assert_equal
+2013-11-20 12:30:06,678 - OnosSanity4nodes - ERROR - Flow check FAIL
+2013-11-20 12:30:06,679 - OnosSanity4nodes - WARNING - Assertion Failed
+
+
+*****************************
+ Result: Failed 
+*****************************
+
+
+
+******************************
+ Result summary for Testcase4
+******************************
+
+2013-11-20 12:30:11,793 - OnosSanity4nodes - ERROR - Expected Prompt not found , Time Out!!
+2013-11-20 12:30:11,805 - OnosSanity4nodes - ERROR - mininet>
+2013-11-20 12:30:16,689 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s2 ptcp:6635 tcp:10.128.100.1:6633        		 Expected Prompt 'mininet>' Found
+2013-11-20 12:30:16,946 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s3 ptcp:6636 tcp:10.128.100.1:6633        		 Expected Prompt 'mininet>' Found
+2013-11-20 12:30:17,103 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s4 ptcp:6637 tcp:10.128.100.1:6633        		 Expected Prompt 'mininet>' Found
+2013-11-20 12:30:17,265 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s5 ptcp:6638 tcp:10.128.100.1:6633        		 Expected Prompt 'mininet>' Found
+2013-11-20 12:30:17,420 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s6 ptcp:6639 tcp:10.128.100.1:6633        		 Expected Prompt 'mininet>' Found
+2013-11-20 12:30:17,583 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s7 ptcp:6640 tcp:10.128.100.1:6633        		 Expected Prompt 'mininet>' Found
+2013-11-20 12:30:17,743 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s8 ptcp:6641 tcp:10.128.100.1:6633        		 Expected Prompt 'mininet>' Found
+2013-11-20 12:30:17,901 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s9 ptcp:6642 tcp:10.128.100.1:6633        		 Expected Prompt 'mininet>' Found
+2013-11-20 12:30:18,059 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s10 ptcp:6643 tcp:10.128.100.1:6633        		 Expected Prompt 'mininet>' Found
+2013-11-20 12:30:18,226 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s11 ptcp:6644 tcp:10.128.100.1:6633        		 Expected Prompt 'mininet>' Found
+2013-11-20 12:30:18,392 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s12 ptcp:6645 tcp:10.128.100.1:6633        		 Expected Prompt 'mininet>' Found
+2013-11-20 12:30:18,561 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s13 ptcp:6646 tcp:10.128.100.1:6633        		 Expected Prompt 'mininet>' Found
+2013-11-20 12:30:18,731 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s14 ptcp:6647 tcp:10.128.100.1:6633        		 Expected Prompt 'mininet>' Found
+2013-11-20 12:30:18,904 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s15 ptcp:6648 tcp:10.128.100.1:6633        		 Expected Prompt 'mininet>' Found
+2013-11-20 12:30:19,070 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s31 ptcp:6664 tcp:10.128.100.1:6633        		 Expected Prompt 'mininet>' Found
+2013-11-20 12:30:19,236 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s32 ptcp:6665 tcp:10.128.100.1:6633        		 Expected Prompt 'mininet>' Found
+2013-11-20 12:30:19,395 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s33 ptcp:6666 tcp:10.128.100.1:6633        		 Expected Prompt 'mininet>' Found
+2013-11-20 12:30:19,554 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s34 ptcp:6667 tcp:10.128.100.1:6633        		 Expected Prompt 'mininet>' Found
+2013-11-20 12:30:19,712 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s35 ptcp:6668 tcp:10.128.100.1:6633        		 Expected Prompt 'mininet>' Found
+2013-11-20 12:30:19,875 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s36 ptcp:6669 tcp:10.128.100.1:6633        		 Expected Prompt 'mininet>' Found
+2013-11-20 12:30:20,027 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s37 ptcp:6670 tcp:10.128.100.1:6633        		 Expected Prompt 'mininet>' Found
+2013-11-20 12:30:20,191 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s38 ptcp:6671 tcp:10.128.100.1:6633        		 Expected Prompt 'mininet>' Found
+2013-11-20 12:30:20,360 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s39 ptcp:6672 tcp:10.128.100.1:6633        		 Expected Prompt 'mininet>' Found
+2013-11-20 12:30:20,522 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s40 ptcp:6673 tcp:10.128.100.1:6633        		 Expected Prompt 'mininet>' Found
+2013-11-20 12:30:20,523 - OnosSanity4nodes - INFO - Making some rest calls...
+2013-11-20 12:30:24,954 - OnosSanity4nodes - INFO - Making some rest calls...
+2013-11-20 12:30:29,350 - OnosSanity4nodes - INFO - Making some rest calls...
+2013-11-20 12:30:33,687 - OnosSanity4nodes - INFO - Making some rest calls...
+2013-11-20 12:30:38,460 - OnosSanity4nodes - INFO - Making some rest calls...
+2013-11-20 12:30:42,645 - OnosSanity4nodes - INFO - Making some rest calls...
+2013-11-20 12:30:47,077 - OnosSanity4nodes - INFO - Making some rest calls...
+2013-11-20 12:30:51,517 - OnosSanity4nodes - INFO - Making some rest calls...
+2013-11-20 12:30:55,857 - OnosSanity4nodes - INFO - Making some rest calls...
+2013-11-20 12:31:00,743 - OnosSanity4nodes - INFO - Making some rest calls...
+2013-11-20 12:31:02,032 - OnosSanity4nodes - INFO - 
+				h6 IS PINGING h31
+2013-11-20 12:31:12,146 - OnosSanity4nodes - ERROR - Expected Prompt not found , Time Out!!
+2013-11-20 12:31:12,147 - OnosSanity4nodes - ERROR - mininet
+2013-11-20 12:31:12,148 - OnosSanity4nodes - ERROR - Assertion Failed
+2013-11-20 12:31:12,148 - OnosSanity4nodes - ERROR - Host is not reachable
+2013-11-20 12:31:12,149 - OnosSanity4nodes - WARNING - Assertion Failed
+2013-11-20 12:31:12,150 - OnosSanity4nodes - ERROR - PACKET LOST, HOST IS NOT REACHABLE
+2013-11-20 12:31:12,150 - OnosSanity4nodes - INFO - Ping failed, making attempt number 2 in 5 seconds
+2013-11-20 12:31:17,156 - OnosSanity4nodes - INFO - 
+				h6 IS PINGING h31
+2013-11-20 12:31:17,258 - OnosSanity4nodes - INFO - Executed :h6 ping h31 -c 1 -i .2 		 Expected Prompt 'mininet' Found
+2013-11-20 12:31:17,260 - OnosSanity4nodes - ERROR - Assertion Failed
+2013-11-20 12:31:17,260 - OnosSanity4nodes - ERROR - Host is not reachable
+2013-11-20 12:31:17,261 - OnosSanity4nodes - WARNING - Assertion Failed
+2013-11-20 12:31:17,261 - OnosSanity4nodes - ERROR - PACKET LOST, HOST IS NOT REACHABLE
+2013-11-20 12:31:17,262 - OnosSanity4nodes - INFO - Ping failed, making attempt number 3 in 5 seconds
+2013-11-20 12:31:22,268 - OnosSanity4nodes - INFO - 
+				h6 IS PINGING h31
+2013-11-20 12:31:27,281 - OnosSanity4nodes - INFO - Executed :h6 ping h31 -c 1 -i .2 		 Expected Prompt 'mininet' Found
+2013-11-20 12:31:27,282 - OnosSanity4nodes - ERROR - Assertion Failed
+2013-11-20 12:31:27,283 - OnosSanity4nodes - ERROR - Host is not reachable
+2013-11-20 12:31:27,283 - OnosSanity4nodes - WARNING - Assertion Failed
+2013-11-20 12:31:27,284 - OnosSanity4nodes - ERROR - PACKET LOST, HOST IS NOT REACHABLE
+2013-11-20 12:31:27,284 - OnosSanity4nodes - INFO - Ping failed, making attempt number 4 in 5 seconds
+2013-11-20 12:31:32,289 - OnosSanity4nodes - INFO - 
+				h6 IS PINGING h31
+2013-11-20 12:31:42,402 - OnosSanity4nodes - ERROR - Expected Prompt not found , Time Out!!
+2013-11-20 12:31:42,402 - OnosSanity4nodes - ERROR - mininet
+2013-11-20 12:31:42,403 - OnosSanity4nodes - ERROR - Assertion Failed
+2013-11-20 12:31:42,404 - OnosSanity4nodes - ERROR - Host is not reachable
+2013-11-20 12:31:42,404 - OnosSanity4nodes - WARNING - Assertion Failed
+2013-11-20 12:31:42,405 - OnosSanity4nodes - ERROR - PACKET LOST, HOST IS NOT REACHABLE
+2013-11-20 12:31:42,405 - OnosSanity4nodes - INFO - Ping failed, making attempt number 5 in 5 seconds
+2013-11-20 12:31:47,411 - OnosSanity4nodes - INFO - 
+				h6 IS PINGING h31
+2013-11-20 12:31:47,514 - OnosSanity4nodes - INFO - Executed :h6 ping h31 -c 1 -i .2 		 Expected Prompt 'mininet' Found
+2013-11-20 12:31:47,515 - OnosSanity4nodes - ERROR - Assertion Failed
+2013-11-20 12:31:47,515 - OnosSanity4nodes - ERROR - Host is not reachable
+2013-11-20 12:31:47,516 - OnosSanity4nodes - WARNING - Assertion Failed
+2013-11-20 12:31:47,517 - OnosSanity4nodes - ERROR - PACKET LOST, HOST IS NOT REACHABLE
+2013-11-20 12:31:47,517 - OnosSanity4nodes - INFO - Ping failed, making attempt number 6 in 5 seconds
+2013-11-20 12:31:52,522 - OnosSanity4nodes - INFO - 
+				h6 IS PINGING h31
+2013-11-20 12:31:57,535 - OnosSanity4nodes - INFO - Executed :h6 ping h31 -c 1 -i .2 		 Expected Prompt 'mininet' Found
+2013-11-20 12:31:57,536 - OnosSanity4nodes - ERROR - Assertion Failed
+2013-11-20 12:31:57,537 - OnosSanity4nodes - ERROR - Host is not reachable
+2013-11-20 12:31:57,538 - OnosSanity4nodes - WARNING - Assertion Failed
+2013-11-20 12:31:57,538 - OnosSanity4nodes - ERROR - PACKET LOST, HOST IS NOT REACHABLE
+2013-11-20 12:31:57,539 - OnosSanity4nodes - ERROR - Ping test failed
+2013-11-20 12:31:57,540 - OnosSanity4nodes - INFO - Verifying the Expected is equal to the actual or not using assert_equal
+2013-11-20 12:31:57,540 - OnosSanity4nodes - ERROR - PACKET LOST, HOST IS NOT REACHABLE
+2013-11-20 12:31:57,541 - OnosSanity4nodes - WARNING - Assertion Failed
+
+
+*****************************
+ Result: Failed 
+*****************************
+
+
+
+******************************
+ Result summary for Testcase5
+******************************
+
+2013-11-20 12:31:57,719 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s1 ptcp:6634 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633     		 Expected Prompt 'mininet>' Found
+2013-11-20 12:31:57,882 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s2 ptcp:6635 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633     		 Expected Prompt 'mininet>' Found
+2013-11-20 12:31:58,043 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s3 ptcp:6636 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633     		 Expected Prompt 'mininet>' Found
+2013-11-20 12:31:58,200 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s4 ptcp:6637 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633     		 Expected Prompt 'mininet>' Found
+2013-11-20 12:31:58,363 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s5 ptcp:6638 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633     		 Expected Prompt 'mininet>' Found
+2013-11-20 12:31:58,520 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s6 ptcp:6639 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633     		 Expected Prompt 'mininet>' Found
+2013-11-20 12:31:58,682 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s7 ptcp:6640 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633     		 Expected Prompt 'mininet>' Found
+2013-11-20 12:31:58,833 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s8 ptcp:6641 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633     		 Expected Prompt 'mininet>' Found
+2013-11-20 12:31:59,002 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s9 ptcp:6642 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633     		 Expected Prompt 'mininet>' Found
+2013-11-20 12:31:59,160 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s10 ptcp:6643 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633     		 Expected Prompt 'mininet>' Found
+2013-11-20 12:31:59,326 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s11 ptcp:6644 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633     		 Expected Prompt 'mininet>' Found
+2013-11-20 12:31:59,491 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s12 ptcp:6645 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633     		 Expected Prompt 'mininet>' Found
+2013-11-20 12:31:59,651 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s13 ptcp:6646 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633     		 Expected Prompt 'mininet>' Found
+2013-11-20 12:31:59,810 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s14 ptcp:6647 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633     		 Expected Prompt 'mininet>' Found
+2013-11-20 12:31:59,977 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s15 ptcp:6648 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633     		 Expected Prompt 'mininet>' Found
+2013-11-20 12:32:00,140 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s31 ptcp:6664 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633     		 Expected Prompt 'mininet>' Found
+2013-11-20 12:32:00,301 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s32 ptcp:6665 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633     		 Expected Prompt 'mininet>' Found
+2013-11-20 12:32:00,475 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s33 ptcp:6666 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633     		 Expected Prompt 'mininet>' Found
+2013-11-20 12:32:00,644 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s34 ptcp:6667 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633     		 Expected Prompt 'mininet>' Found
+2013-11-20 12:32:00,813 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s35 ptcp:6668 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633     		 Expected Prompt 'mininet>' Found
+2013-11-20 12:32:00,988 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s36 ptcp:6669 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633     		 Expected Prompt 'mininet>' Found
+2013-11-20 12:32:01,143 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s37 ptcp:6670 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633     		 Expected Prompt 'mininet>' Found
+2013-11-20 12:32:01,309 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s38 ptcp:6671 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633     		 Expected Prompt 'mininet>' Found
+2013-11-20 12:32:01,466 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s39 ptcp:6672 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633     		 Expected Prompt 'mininet>' Found
+2013-11-20 12:32:01,632 - OnosSanity4nodes - INFO - Executed :sh ovs-vsctl set-controller s40 ptcp:6673 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633     		 Expected Prompt 'mininet>' Found
+2013-11-20 12:32:01,633 - OnosSanity4nodes - INFO - Making some rest calls...
+2013-11-20 12:32:05,844 - OnosSanity4nodes - INFO - Making some rest calls...
+2013-11-20 12:32:10,120 - OnosSanity4nodes - INFO - Making some rest calls...
+2013-11-20 12:32:14,494 - OnosSanity4nodes - INFO - Making some rest calls...
+2013-11-20 12:32:19,049 - OnosSanity4nodes - INFO - Making some rest calls...
+2013-11-20 12:32:23,370 - OnosSanity4nodes - INFO - Making some rest calls...
+2013-11-20 12:32:27,580 - OnosSanity4nodes - INFO - Making some rest calls...
+2013-11-20 12:32:31,790 - OnosSanity4nodes - INFO - Making some rest calls...
+2013-11-20 12:32:36,034 - OnosSanity4nodes - INFO - Making some rest calls...
+2013-11-20 12:32:40,838 - OnosSanity4nodes - INFO - Making some rest calls...
+2013-11-20 12:32:42,228 - OnosSanity4nodes - INFO - 
+				h6 IS PINGING h31
+2013-11-20 12:32:52,342 - OnosSanity4nodes - ERROR - Expected Prompt not found , Time Out!!
+2013-11-20 12:32:52,342 - OnosSanity4nodes - ERROR - mininet
+2013-11-20 12:32:52,344 - OnosSanity4nodes - ERROR - Assertion Failed
+2013-11-20 12:32:52,344 - OnosSanity4nodes - ERROR - Host is not reachable
+2013-11-20 12:32:52,345 - OnosSanity4nodes - WARNING - Assertion Failed
+2013-11-20 12:32:52,345 - OnosSanity4nodes - ERROR - PACKET LOST, HOST IS NOT REACHABLE
+2013-11-20 12:32:52,346 - OnosSanity4nodes - INFO - Ping failed, making attempt number 2 in 5 seconds
+2013-11-20 12:32:57,351 - OnosSanity4nodes - INFO - 
+				h6 IS PINGING h31
+2013-11-20 12:32:57,454 - OnosSanity4nodes - INFO - Executed :h6 ping h31 -c 1 -i .2 		 Expected Prompt 'mininet' Found
+2013-11-20 12:32:57,455 - OnosSanity4nodes - ERROR - Assertion Failed
+2013-11-20 12:32:57,456 - OnosSanity4nodes - ERROR - Host is not reachable
+2013-11-20 12:32:57,457 - OnosSanity4nodes - WARNING - Assertion Failed
+2013-11-20 12:32:57,457 - OnosSanity4nodes - ERROR - PACKET LOST, HOST IS NOT REACHABLE
+2013-11-20 12:32:57,457 - OnosSanity4nodes - INFO - Ping failed, making attempt number 3 in 5 seconds
+2013-11-20 12:33:02,463 - OnosSanity4nodes - INFO - 
+				h6 IS PINGING h31
+2013-11-20 12:33:07,476 - OnosSanity4nodes - INFO - Executed :h6 ping h31 -c 1 -i .2 		 Expected Prompt 'mininet' Found
+2013-11-20 12:33:07,478 - OnosSanity4nodes - ERROR - Assertion Failed
+2013-11-20 12:33:07,478 - OnosSanity4nodes - ERROR - Host is not reachable
+2013-11-20 12:33:07,479 - OnosSanity4nodes - WARNING - Assertion Failed
+2013-11-20 12:33:07,479 - OnosSanity4nodes - ERROR - PACKET LOST, HOST IS NOT REACHABLE
+2013-11-20 12:33:07,480 - OnosSanity4nodes - INFO - Ping failed, making attempt number 4 in 5 seconds
+2013-11-20 12:33:12,485 - OnosSanity4nodes - INFO - 
+				h6 IS PINGING h31
+2013-11-20 12:33:22,598 - OnosSanity4nodes - ERROR - Expected Prompt not found , Time Out!!
+2013-11-20 12:33:22,599 - OnosSanity4nodes - ERROR - mininet
+2013-11-20 12:33:22,599 - OnosSanity4nodes - ERROR - Assertion Failed
+2013-11-20 12:33:22,600 - OnosSanity4nodes - ERROR - Host is not reachable
+2013-11-20 12:33:22,601 - OnosSanity4nodes - WARNING - Assertion Failed
+2013-11-20 12:33:22,601 - OnosSanity4nodes - ERROR - PACKET LOST, HOST IS NOT REACHABLE
+2013-11-20 12:33:22,601 - OnosSanity4nodes - INFO - Ping failed, making attempt number 5 in 5 seconds
+2013-11-20 12:33:27,607 - OnosSanity4nodes - INFO - 
+				h6 IS PINGING h31
+2013-11-20 12:33:27,710 - OnosSanity4nodes - INFO - Executed :h6 ping h31 -c 1 -i .2 		 Expected Prompt 'mininet' Found
+2013-11-20 12:33:27,711 - OnosSanity4nodes - ERROR - Assertion Failed
+2013-11-20 12:33:27,711 - OnosSanity4nodes - ERROR - Host is not reachable
+2013-11-20 12:33:27,712 - OnosSanity4nodes - WARNING - Assertion Failed
+2013-11-20 12:33:27,712 - OnosSanity4nodes - ERROR - PACKET LOST, HOST IS NOT REACHABLE
+2013-11-20 12:33:27,713 - OnosSanity4nodes - INFO - Ping failed, making attempt number 6 in 5 seconds
+2013-11-20 12:33:32,718 - OnosSanity4nodes - INFO - 
+				h6 IS PINGING h31
+2013-11-20 12:33:37,732 - OnosSanity4nodes - INFO - Executed :h6 ping h31 -c 1 -i .2 		 Expected Prompt 'mininet' Found
+2013-11-20 12:33:37,756 - OnosSanity4nodes - ERROR - Assertion Failed
+2013-11-20 12:33:37,756 - OnosSanity4nodes - ERROR - Host is not reachable
+2013-11-20 12:33:37,757 - OnosSanity4nodes - WARNING - Assertion Failed
+2013-11-20 12:33:37,758 - OnosSanity4nodes - ERROR - PACKET LOST, HOST IS NOT REACHABLE
+2013-11-20 12:33:37,758 - OnosSanity4nodes - ERROR - Ping test failed
+2013-11-20 12:33:37,759 - OnosSanity4nodes - INFO - Verifying the Expected is equal to the actual or not using assert_equal
+2013-11-20 12:33:37,759 - OnosSanity4nodes - ERROR - PACKET LOST, HOST IS NOT REACHABLE
+2013-11-20 12:33:37,760 - OnosSanity4nodes - WARNING - Assertion Failed
+
+
+*****************************
+ Result: Failed 
+*****************************
+
+
+
+******************************
+ Result summary for Testcase6
+******************************
+
+
+[2013-11-20 12:33:37.770355] [OnosSanity4nodes] [CASE]  Bringing Link down... 
+2013-11-20 12:33:37,773 - OnosSanity4nodes - INFO - Bring link(s) between two nodes up or down
+2013-11-20 12:33:37,902 - OnosSanity4nodes - INFO - Executed :link s1 s2 down 		 Expected Prompt 'mininet>' Found
+2013-11-20 12:33:37,903 - OnosSanity4nodes - INFO - Verifying the Expected is equal to the actual or not using assert_equal
+2013-11-20 12:33:37,903 - OnosSanity4nodes - INFO - Link DOWN!
+2013-11-20 12:33:37,904 - OnosSanity4nodes - INFO - Assertion Passed
+2013-11-20 12:33:37,904 - OnosSanity4nodes - INFO - Making some rest calls...
+2013-11-20 12:33:42,733 - OnosSanity4nodes - INFO - Making some rest calls...
+2013-11-20 12:33:47,087 - OnosSanity4nodes - INFO - Making some rest calls...
+2013-11-20 12:33:51,441 - OnosSanity4nodes - INFO - Making some rest calls...
+2013-11-20 12:33:55,793 - OnosSanity4nodes - INFO - Making some rest calls...
+2013-11-20 12:34:00,086 - OnosSanity4nodes - INFO - Making some rest calls...
+2013-11-20 12:34:04,964 - OnosSanity4nodes - INFO - Making some rest calls...
+2013-11-20 12:34:09,171 - OnosSanity4nodes - INFO - Making some rest calls...
+2013-11-20 12:34:13,542 - OnosSanity4nodes - INFO - Making some rest calls...
+2013-11-20 12:34:18,070 - OnosSanity4nodes - INFO - Making some rest calls...
+2013-11-20 12:34:19,439 - OnosSanity4nodes - INFO - 
+				h6 IS PINGING h31
+2013-11-20 12:34:29,553 - OnosSanity4nodes - ERROR - Expected Prompt not found , Time Out!!
+2013-11-20 12:34:29,554 - OnosSanity4nodes - ERROR - mininet
+2013-11-20 12:34:29,555 - OnosSanity4nodes - ERROR - Assertion Failed
+2013-11-20 12:34:29,555 - OnosSanity4nodes - ERROR - Host is not reachable
+2013-11-20 12:34:29,556 - OnosSanity4nodes - WARNING - Assertion Failed
+2013-11-20 12:34:29,556 - OnosSanity4nodes - ERROR - PACKET LOST, HOST IS NOT REACHABLE
+2013-11-20 12:34:29,557 - OnosSanity4nodes - INFO - Ping failed, making attempt number 2 in 5 seconds
+2013-11-20 12:34:34,558 - OnosSanity4nodes - INFO - 
+				h6 IS PINGING h31
+2013-11-20 12:34:34,660 - OnosSanity4nodes - INFO - Executed :h6 ping h31 -c 1 -i .2 		 Expected Prompt 'mininet' Found
+2013-11-20 12:34:34,661 - OnosSanity4nodes - ERROR - Assertion Failed
+2013-11-20 12:34:34,661 - OnosSanity4nodes - ERROR - Host is not reachable
+2013-11-20 12:34:34,662 - OnosSanity4nodes - WARNING - Assertion Failed
+2013-11-20 12:34:34,663 - OnosSanity4nodes - ERROR - PACKET LOST, HOST IS NOT REACHABLE
+2013-11-20 12:34:34,663 - OnosSanity4nodes - INFO - Ping failed, making attempt number 3 in 5 seconds
+2013-11-20 12:34:39,668 - OnosSanity4nodes - INFO - 
+				h6 IS PINGING h31
+2013-11-20 12:34:44,767 - OnosSanity4nodes - INFO - Executed :h6 ping h31 -c 1 -i .2 		 Expected Prompt 'mininet' Found
+2013-11-20 12:34:44,768 - OnosSanity4nodes - ERROR - Assertion Failed
+2013-11-20 12:34:44,769 - OnosSanity4nodes - ERROR - Host is not reachable
+2013-11-20 12:34:44,770 - OnosSanity4nodes - WARNING - Assertion Failed
+2013-11-20 12:34:44,770 - OnosSanity4nodes - ERROR - PACKET LOST, HOST IS NOT REACHABLE
+2013-11-20 12:34:44,771 - OnosSanity4nodes - INFO - Ping failed, making attempt number 4 in 5 seconds
+2013-11-20 12:34:49,776 - OnosSanity4nodes - INFO - 
+				h6 IS PINGING h31
+2013-11-20 12:34:59,911 - OnosSanity4nodes - ERROR - Expected Prompt not found , Time Out!!
+2013-11-20 12:34:59,912 - OnosSanity4nodes - ERROR - mininet
+2013-11-20 12:34:59,912 - OnosSanity4nodes - ERROR - Assertion Failed
+2013-11-20 12:34:59,913 - OnosSanity4nodes - ERROR - Host is not reachable
+2013-11-20 12:34:59,914 - OnosSanity4nodes - WARNING - Assertion Failed
+2013-11-20 12:34:59,914 - OnosSanity4nodes - ERROR - PACKET LOST, HOST IS NOT REACHABLE
+2013-11-20 12:34:59,915 - OnosSanity4nodes - INFO - Ping failed, making attempt number 5 in 5 seconds
+2013-11-20 12:35:04,920 - OnosSanity4nodes - INFO - 
+				h6 IS PINGING h31
+2013-11-20 12:35:05,026 - OnosSanity4nodes - INFO - Executed :h6 ping h31 -c 1 -i .2 		 Expected Prompt 'mininet' Found
+2013-11-20 12:35:05,029 - OnosSanity4nodes - ERROR - Assertion Failed
+2013-11-20 12:35:05,030 - OnosSanity4nodes - ERROR - Host is not reachable
+2013-11-20 12:35:05,033 - OnosSanity4nodes - WARNING - Assertion Failed
+2013-11-20 12:35:05,035 - OnosSanity4nodes - ERROR - PACKET LOST, HOST IS NOT REACHABLE
+2013-11-20 12:35:05,036 - OnosSanity4nodes - INFO - Ping failed, making attempt number 6 in 5 seconds
+2013-11-20 12:35:10,043 - OnosSanity4nodes - INFO - 
+				h6 IS PINGING h31
+2013-11-20 12:35:15,048 - OnosSanity4nodes - INFO - Executed :h6 ping h31 -c 1 -i .2 		 Expected Prompt 'mininet' Found
+2013-11-20 12:35:15,048 - OnosSanity4nodes - ERROR - Assertion Failed
+2013-11-20 12:35:15,048 - OnosSanity4nodes - ERROR - Host is not reachable
+2013-11-20 12:35:15,049 - OnosSanity4nodes - WARNING - Assertion Failed
+2013-11-20 12:35:15,049 - OnosSanity4nodes - ERROR - PACKET LOST, HOST IS NOT REACHABLE
+2013-11-20 12:35:15,049 - OnosSanity4nodes - INFO - Ping failed, making attempt number 7 in 5 seconds
+2013-11-20 12:35:20,055 - OnosSanity4nodes - INFO - 
+				h6 IS PINGING h31
+2013-11-20 12:35:30,172 - OnosSanity4nodes - ERROR - Expected Prompt not found , Time Out!!
+2013-11-20 12:35:30,172 - OnosSanity4nodes - ERROR - mininet
+2013-11-20 12:35:30,173 - OnosSanity4nodes - ERROR - Assertion Failed
+2013-11-20 12:35:30,173 - OnosSanity4nodes - ERROR - Host is not reachable
+2013-11-20 12:35:30,174 - OnosSanity4nodes - WARNING - Assertion Failed
+2013-11-20 12:35:30,174 - OnosSanity4nodes - ERROR - PACKET LOST, HOST IS NOT REACHABLE
+2013-11-20 12:35:30,175 - OnosSanity4nodes - INFO - Ping failed, making attempt number 8 in 5 seconds
+2013-11-20 12:35:35,180 - OnosSanity4nodes - INFO - 
+				h6 IS PINGING h31
+2013-11-20 12:35:35,282 - OnosSanity4nodes - INFO - Executed :h6 ping h31 -c 1 -i .2 		 Expected Prompt 'mininet' Found
+2013-11-20 12:35:35,283 - OnosSanity4nodes - ERROR - Assertion Failed
+2013-11-20 12:35:35,284 - OnosSanity4nodes - ERROR - Host is not reachable
+2013-11-20 12:35:35,285 - OnosSanity4nodes - WARNING - Assertion Failed
+2013-11-20 12:35:35,286 - OnosSanity4nodes - ERROR - PACKET LOST, HOST IS NOT REACHABLE
+2013-11-20 12:35:35,288 - OnosSanity4nodes - INFO - Ping failed, making attempt number 9 in 5 seconds
+2013-11-20 12:35:40,294 - OnosSanity4nodes - INFO - 
+				h6 IS PINGING h31
+2013-11-20 12:35:45,307 - OnosSanity4nodes - INFO - Executed :h6 ping h31 -c 1 -i .2 		 Expected Prompt 'mininet' Found
+2013-11-20 12:35:45,309 - OnosSanity4nodes - ERROR - Assertion Failed
+2013-11-20 12:35:45,310 - OnosSanity4nodes - ERROR - Host is not reachable
+2013-11-20 12:35:45,314 - OnosSanity4nodes - WARNING - Assertion Failed
+2013-11-20 12:35:45,315 - OnosSanity4nodes - ERROR - PACKET LOST, HOST IS NOT REACHABLE
+2013-11-20 12:35:45,316 - OnosSanity4nodes - INFO - Ping failed, making attempt number 10 in 5 seconds
+2013-11-20 12:35:50,323 - OnosSanity4nodes - INFO - 
+				h6 IS PINGING h31
+2013-11-20 12:36:00,439 - OnosSanity4nodes - ERROR - Expected Prompt not found , Time Out!!
+2013-11-20 12:36:00,441 - OnosSanity4nodes - ERROR - mininet
+2013-11-20 12:36:00,443 - OnosSanity4nodes - ERROR - Assertion Failed
+2013-11-20 12:36:00,444 - OnosSanity4nodes - ERROR - Host is not reachable
+2013-11-20 12:36:00,447 - OnosSanity4nodes - WARNING - Assertion Failed
+2013-11-20 12:36:00,449 - OnosSanity4nodes - ERROR - PACKET LOST, HOST IS NOT REACHABLE
+2013-11-20 12:36:00,450 - OnosSanity4nodes - ERROR - Ping test failed
+2013-11-20 12:36:00,452 - OnosSanity4nodes - INFO - Verifying the Expected is equal to the actual or not using assert_equal
+2013-11-20 12:36:00,453 - OnosSanity4nodes - ERROR - PACKET LOST, HOST IS NOT REACHABLE
+2013-11-20 12:36:00,455 - OnosSanity4nodes - WARNING - Assertion Failed
+
+
+*****************************
+ Result: Failed 
+*****************************
+
+
+
+******************************
+ Result summary for Testcase7
+******************************
+
+
+[2013-11-20 12:36:00.464696] [OnosSanity4nodes] [CASE]  Bringing Link up... 
+2013-11-20 12:36:00,467 - OnosSanity4nodes - INFO - Bring link(s) between two nodes up or down
+2013-11-20 12:36:00,569 - OnosSanity4nodes - INFO - Executed :link s1 s2 up 		 Expected Prompt 'mininet>' Found
+2013-11-20 12:36:00,570 - OnosSanity4nodes - INFO - Verifying the Expected is equal to the actual or not using assert_equal
+2013-11-20 12:36:00,571 - OnosSanity4nodes - INFO - Link UP!
+2013-11-20 12:36:00,571 - OnosSanity4nodes - INFO - Assertion Passed
+2013-11-20 12:36:00,571 - OnosSanity4nodes - INFO - Making some rest calls...
+2013-11-20 12:36:05,056 - OnosSanity4nodes - INFO - Making some rest calls...
+2013-11-20 12:36:09,325 - OnosSanity4nodes - INFO - Making some rest calls...
+2013-11-20 12:36:13,635 - OnosSanity4nodes - INFO - Making some rest calls...
+2013-11-20 12:36:18,400 - OnosSanity4nodes - INFO - Making some rest calls...
+2013-11-20 12:36:22,761 - OnosSanity4nodes - INFO - Making some rest calls...
+2013-11-20 12:36:26,941 - OnosSanity4nodes - INFO - Making some rest calls...
+2013-11-20 12:36:31,273 - OnosSanity4nodes - INFO - Making some rest calls...
+2013-11-20 12:36:35,572 - OnosSanity4nodes - INFO - Making some rest calls...
+2013-11-20 12:36:39,792 - OnosSanity4nodes - INFO - Making some rest calls...
+2013-11-20 12:36:41,176 - OnosSanity4nodes - INFO - 
+				h6 IS PINGING h31
+2013-11-20 12:36:41,280 - OnosSanity4nodes - INFO - Executed :h6 ping h31 -c 1 -i .2 		 Expected Prompt 'mininet' Found
+2013-11-20 12:36:41,282 - OnosSanity4nodes - ERROR - Assertion Failed
+2013-11-20 12:36:41,282 - OnosSanity4nodes - ERROR - Host is not reachable
+2013-11-20 12:36:41,283 - OnosSanity4nodes - WARNING - Assertion Failed
+2013-11-20 12:36:41,284 - OnosSanity4nodes - ERROR - PACKET LOST, HOST IS NOT REACHABLE
+2013-11-20 12:36:41,284 - OnosSanity4nodes - INFO - Ping failed, making attempt number 2 in 5 seconds
+2013-11-20 12:36:46,290 - OnosSanity4nodes - INFO - 
+				h6 IS PINGING h31
+2013-11-20 12:36:51,303 - OnosSanity4nodes - INFO - Executed :h6 ping h31 -c 1 -i .2 		 Expected Prompt 'mininet' Found
+2013-11-20 12:36:51,305 - OnosSanity4nodes - ERROR - Assertion Failed
+2013-11-20 12:36:51,306 - OnosSanity4nodes - ERROR - Host is not reachable
+2013-11-20 12:36:51,310 - OnosSanity4nodes - WARNING - Assertion Failed
+2013-11-20 12:36:51,311 - OnosSanity4nodes - ERROR - PACKET LOST, HOST IS NOT REACHABLE
+2013-11-20 12:36:51,312 - OnosSanity4nodes - INFO - Ping failed, making attempt number 3 in 5 seconds
+2013-11-20 12:36:56,318 - OnosSanity4nodes - INFO - 
+				h6 IS PINGING h31
+2013-11-20 12:37:06,431 - OnosSanity4nodes - ERROR - Expected Prompt not found , Time Out!!
+2013-11-20 12:37:06,431 - OnosSanity4nodes - ERROR - mininet
+2013-11-20 12:37:06,432 - OnosSanity4nodes - ERROR - Assertion Failed
+2013-11-20 12:37:06,432 - OnosSanity4nodes - ERROR - Host is not reachable
+2013-11-20 12:37:06,433 - OnosSanity4nodes - WARNING - Assertion Failed
+2013-11-20 12:37:06,434 - OnosSanity4nodes - ERROR - PACKET LOST, HOST IS NOT REACHABLE
+2013-11-20 12:37:06,434 - OnosSanity4nodes - INFO - Ping failed, making attempt number 4 in 5 seconds
+2013-11-20 12:37:11,439 - OnosSanity4nodes - INFO - 
+				h6 IS PINGING h31
+2013-11-20 12:37:11,546 - OnosSanity4nodes - INFO - Executed :h6 ping h31 -c 1 -i .2 		 Expected Prompt 'mininet' Found
+2013-11-20 12:37:11,548 - OnosSanity4nodes - ERROR - Assertion Failed
+2013-11-20 12:37:11,550 - OnosSanity4nodes - ERROR - Host is not reachable
+2013-11-20 12:37:11,553 - OnosSanity4nodes - WARNING - Assertion Failed
+2013-11-20 12:37:11,554 - OnosSanity4nodes - ERROR - PACKET LOST, HOST IS NOT REACHABLE
+2013-11-20 12:37:11,555 - OnosSanity4nodes - INFO - Ping failed, making attempt number 5 in 5 seconds
+2013-11-20 12:37:16,561 - OnosSanity4nodes - INFO - 
+				h6 IS PINGING h31
+2013-11-20 12:37:21,598 - OnosSanity4nodes - INFO - Executed :h6 ping h31 -c 1 -i .2 		 Expected Prompt 'mininet' Found
+2013-11-20 12:37:21,599 - OnosSanity4nodes - ERROR - Assertion Failed
+2013-11-20 12:37:21,600 - OnosSanity4nodes - ERROR - Host is not reachable
+2013-11-20 12:37:21,601 - OnosSanity4nodes - WARNING - Assertion Failed
+2013-11-20 12:37:21,602 - OnosSanity4nodes - ERROR - PACKET LOST, HOST IS NOT REACHABLE
+2013-11-20 12:37:21,603 - OnosSanity4nodes - INFO - Ping failed, making attempt number 6 in 5 seconds
+2013-11-20 12:37:26,609 - OnosSanity4nodes - INFO - 
+				h6 IS PINGING h31
+2013-11-20 12:37:36,722 - OnosSanity4nodes - ERROR - Expected Prompt not found , Time Out!!
+2013-11-20 12:37:36,723 - OnosSanity4nodes - ERROR - mininet
+2013-11-20 12:37:36,724 - OnosSanity4nodes - ERROR - Assertion Failed
+2013-11-20 12:37:36,724 - OnosSanity4nodes - ERROR - Host is not reachable
+2013-11-20 12:37:36,726 - OnosSanity4nodes - WARNING - Assertion Failed
+2013-11-20 12:37:36,727 - OnosSanity4nodes - ERROR - PACKET LOST, HOST IS NOT REACHABLE
+2013-11-20 12:37:36,727 - OnosSanity4nodes - INFO - Ping failed, making attempt number 7 in 5 seconds
+2013-11-20 12:37:41,733 - OnosSanity4nodes - INFO - 
+				h6 IS PINGING h31
+2013-11-20 12:37:41,836 - OnosSanity4nodes - INFO - Executed :h6 ping h31 -c 1 -i .2 		 Expected Prompt 'mininet' Found
+2013-11-20 12:37:41,838 - OnosSanity4nodes - ERROR - Assertion Failed
+2013-11-20 12:37:41,838 - OnosSanity4nodes - ERROR - Host is not reachable
+2013-11-20 12:37:41,840 - OnosSanity4nodes - WARNING - Assertion Failed
+2013-11-20 12:37:41,840 - OnosSanity4nodes - ERROR - PACKET LOST, HOST IS NOT REACHABLE
+2013-11-20 12:37:41,841 - OnosSanity4nodes - INFO - Ping failed, making attempt number 8 in 5 seconds
+2013-11-20 12:37:46,847 - OnosSanity4nodes - INFO - 
+				h6 IS PINGING h31
+2013-11-20 12:37:51,855 - OnosSanity4nodes - INFO - Executed :h6 ping h31 -c 1 -i .2 		 Expected Prompt 'mininet' Found
+2013-11-20 12:37:51,858 - OnosSanity4nodes - ERROR - Assertion Failed
+2013-11-20 12:37:51,859 - OnosSanity4nodes - ERROR - Host is not reachable
+2013-11-20 12:37:51,860 - OnosSanity4nodes - WARNING - Assertion Failed
+2013-11-20 12:37:51,861 - OnosSanity4nodes - ERROR - PACKET LOST, HOST IS NOT REACHABLE
+2013-11-20 12:37:51,862 - OnosSanity4nodes - INFO - Ping failed, making attempt number 9 in 5 seconds
+2013-11-20 12:37:56,868 - OnosSanity4nodes - INFO - 
+				h6 IS PINGING h31
+2013-11-20 12:38:06,981 - OnosSanity4nodes - ERROR - Expected Prompt not found , Time Out!!
+2013-11-20 12:38:06,983 - OnosSanity4nodes - ERROR - mininet
+2013-11-20 12:38:06,985 - OnosSanity4nodes - ERROR - Assertion Failed
+2013-11-20 12:38:06,987 - OnosSanity4nodes - ERROR - Host is not reachable
+2013-11-20 12:38:06,990 - OnosSanity4nodes - WARNING - Assertion Failed
+2013-11-20 12:38:06,991 - OnosSanity4nodes - ERROR - PACKET LOST, HOST IS NOT REACHABLE
+2013-11-20 12:38:06,993 - OnosSanity4nodes - INFO - Ping failed, making attempt number 10 in 5 seconds
+2013-11-20 12:38:12,000 - OnosSanity4nodes - INFO - 
+				h6 IS PINGING h31
+2013-11-20 12:38:12,109 - OnosSanity4nodes - INFO - Executed :h6 ping h31 -c 1 -i .2 		 Expected Prompt 'mininet' Found
+2013-11-20 12:38:12,111 - OnosSanity4nodes - ERROR - Assertion Failed
+2013-11-20 12:38:12,113 - OnosSanity4nodes - ERROR - Host is not reachable
+2013-11-20 12:38:12,116 - OnosSanity4nodes - WARNING - Assertion Failed
+2013-11-20 12:38:12,118 - OnosSanity4nodes - ERROR - PACKET LOST, HOST IS NOT REACHABLE
+2013-11-20 12:38:12,120 - OnosSanity4nodes - ERROR - Ping test failed
+2013-11-20 12:38:12,122 - OnosSanity4nodes - INFO - Verifying the Expected is equal to the actual or not using assert_equal
+2013-11-20 12:38:12,124 - OnosSanity4nodes - ERROR - PACKET LOST, HOST IS NOT REACHABLE
+2013-11-20 12:38:12,126 - OnosSanity4nodes - WARNING - Assertion Failed
+
+
+*****************************
+ Result: Failed 
+*****************************
+
+
+
+
+*************************************
+	Test Execution Summary
+
+************************************* 
+
+ Test Start           : 20 Nov 2013 12:24:18
+ Test End             : 20 Nov 2013 12:38:12
+ Execution Time       : 0:13:53.981922
+ Total tests planned  : 8
+ Total tests RUN      : 8
+ Total Pass           : 3
+ Total Fail           : 5
+ Total No Result      : 0
+ Success Percentage   : 37%
+ Execution Result     : 100%
+2013-11-20 12:38:14,527 - OnosSanity4nodes - INFO - Disconnecting mininet...
+2013-11-20 12:38:14,630 - OnosSanity4nodes - INFO - Executed :exit 		 Expected Prompt '(.*)' Found
+2013-11-20 12:38:14,733 - OnosSanity4nodes - INFO - Executed :exit 		 Expected Prompt '(.*)' Found

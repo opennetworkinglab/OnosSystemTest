@@ -1,0 +1,1227 @@
+
+                                +----------------+
+------------------------------ { Script And Files }  ------------------------------
+                                +----------------+
+
+	Script Log File : /home/admin/ONLabTest/TestON/logs/OnosPerf4nodes_21_Nov_2013_12_13_56/OnosPerf4nodes_21_Nov_2013_12_13_56.log
+	Report Log File : /home/admin/ONLabTest/TestON/logs/OnosPerf4nodes_21_Nov_2013_12_13_56/OnosPerf4nodes_21_Nov_2013_12_13_56.rpt
+	ONOS4 Session Log : /home/admin/ONLabTest/TestON/logs/OnosPerf4nodes_21_Nov_2013_12_13_56/ONOS4.session
+	ONOS2 Session Log : /home/admin/ONLabTest/TestON/logs/OnosPerf4nodes_21_Nov_2013_12_13_56/ONOS2.session
+	ONOS3 Session Log : /home/admin/ONLabTest/TestON/logs/OnosPerf4nodes_21_Nov_2013_12_13_56/ONOS3.session
+	ONOS1 Session Log : /home/admin/ONLabTest/TestON/logs/OnosPerf4nodes_21_Nov_2013_12_13_56/ONOS1.session
+	Cassandra1 Session Log : /home/admin/ONLabTest/TestON/logs/OnosPerf4nodes_21_Nov_2013_12_13_56/Cassandra1.session
+	Cassandra2 Session Log : /home/admin/ONLabTest/TestON/logs/OnosPerf4nodes_21_Nov_2013_12_13_56/Cassandra2.session
+	Cassandra3 Session Log : /home/admin/ONLabTest/TestON/logs/OnosPerf4nodes_21_Nov_2013_12_13_56/Cassandra3.session
+	Cassandra4 Session Log : /home/admin/ONLabTest/TestON/logs/OnosPerf4nodes_21_Nov_2013_12_13_56/Cassandra4.session
+	Zookeeper1 Session Log : /home/admin/ONLabTest/TestON/logs/OnosPerf4nodes_21_Nov_2013_12_13_56/Zookeeper1.session
+	Mininet1 Session Log : /home/admin/ONLabTest/TestON/logs/OnosPerf4nodes_21_Nov_2013_12_13_56/Mininet1.session
+	Mininet4 Session Log : /home/admin/ONLabTest/TestON/logs/OnosPerf4nodes_21_Nov_2013_12_13_56/Mininet4.session
+	Test Script :/home/admin/ONLabTest/TestON/Tests/OnosPerf4nodes.py
+	Test Params : /home/admin/ONLabTest/TestON/Tests/OnosPerf4nodes.params
+	Topology : /home/admin/ONLabTest/TestON/Tests/OnosPerf4nodes.tpl
+                              +------------------+
+---------------------------  { Script Exec Params }  ---------------------------
+                              +------------------+
+
+	
+	'CTRL': 
+	'ip2': '10.128.100.4'
+	 'ip3': '10.128.100.5'
+	 'ip1': '10.128.100.1'
+	 'ip4': '10.128.100.6'
+	 'port4': '6633'
+	 'port2': '6633'
+	 'port3': '6633'
+	 'port1': '6633'
+	
+	 'MN_size': '57'
+	 'FLOWDEF': '~/flowdef_files/Center_Triangle/flowdef_20.txt'
+	 'NR_Switches': '25'
+	 'WaitTime': '60'
+	 'TargetTime': '30'
+	 'PING': 
+	'source2': 'h7'
+	 'source9': 'h14'
+	 'source10': 'h15'
+	 'source4': 'h9'
+	 'source5': 'h10'
+	 'target3': '10.0.0.18'
+	 'target10': '10.0.0.25'
+	 'source3': 'h8'
+	 'source1': 'h6'
+	 'source6': 'h11'
+	 'source7': 'h12'
+	 'target8': '10.0.0.23'
+	 'target9': '10.0.0.24'
+	 'target6': '10.0.0.21'
+	 'target7': '10.0.0.22'
+	 'target4': '10.0.0.19'
+	 'target5': '10.0.0.20'
+	 'target2': '10.0.0.17'
+	 'source8': 'h13'
+	 'target1': '10.0.0.16'
+	
+	 'NR_Links': '50'
+	 'testcases': '1
+	2
+	3
+	4
+	5
+	6
+	7
+	4
+	8
+	7
+	4
+	9
+	7'
+	 'RestIP': '10.128.100.4'
+	 'Iterations': '3'
+	
+
+                               +---------------+
+----------------------------- { Components Used }  -----------------------------
+                               +---------------+
+	ONOS4
+	ONOS2
+	ONOS3
+	ONOS1
+	Cassandra1
+	Cassandra2
+	Cassandra3
+	Cassandra4
+	Zookeeper1
+	Mininet1
+	Mininet4
+
+
+                              +--------+
+---------------------------- { Topology }  ----------------------------
+                              +--------+
+
+	
+	'ONOS4': 
+	'connect_order': '9'
+	 'password': None
+	 'type': 'OnosCliDriver'
+	 'host': '10.128.100.6'
+	 'user': 'admin'
+	
+	 'ONOS2': 
+	'connect_order': '7'
+	 'password': None
+	 'type': 'OnosCliDriver'
+	 'host': '10.128.100.4'
+	 'user': 'admin'
+	
+	 'ONOS3': 
+	'connect_order': '8'
+	 'password': None
+	 'type': 'OnosCliDriver'
+	 'host': '10.128.100.5'
+	 'user': 'admin'
+	
+	 'ONOS1': 
+	'connect_order': '6'
+	 'password': None
+	 'type': 'OnosCliDriver'
+	 'host': '10.128.100.1'
+	 'user': 'admin'
+	
+	 'Cassandra1': 
+	'connect_order': '2'
+	 'password': None
+	 'type': 'CassandraCliDriver'
+	 'host': '10.128.100.1'
+	 'user': 'admin'
+	
+	 'Cassandra2': 
+	'connect_order': '3'
+	 'password': None
+	 'type': 'CassandraCliDriver'
+	 'host': '10.128.100.4'
+	 'user': 'admin'
+	
+	 'Cassandra3': 
+	'connect_order': '4'
+	 'password': None
+	 'type': 'CassandraCliDriver'
+	 'host': '10.128.100.5'
+	 'user': 'admin'
+	
+	 'Cassandra4': 
+	'connect_order': '5'
+	 'password': None
+	 'type': 'CassandraCliDriver'
+	 'host': '10.128.100.6'
+	 'user': 'admin'
+	
+	 'Zookeeper1': 
+	'connect_order': '1'
+	 'password': None
+	 'type': 'ZookeeperCliDriver'
+	 'host': '10.128.100.1'
+	 'user': 'admin'
+	
+	 'Mininet1': 
+	'connect_order': '10'
+	 'host': '10.128.100.11'
+	 'user': 'admin'
+	 'COMPONENTS': 
+	'arg1': '--custom ~/mininet/custom/topo-onos4node.py'
+	 'arg2': '--topo mytopo --arp'
+	 'controller': 'remote'
+	
+	 'password': None
+	 'type': 'MininetCliDriver'
+	
+	 'Mininet4': 
+	'connect_order': '11'
+	 'password': None
+	 'type': 'RemoteMininetDriver'
+	 'host': '10.128.100.11'
+	 'user': 'admin'
+	
+	
+------------------------------------------------------------
+
+
+******************************
+ CASE INIT 
+******************************
+
+2013-11-21 12:13:56,090 - OnosPerf4nodes - INFO - Creating component Handle: Zookeeper1
+2013-11-21 12:13:56,138 - OnosPerf4nodes - INFO - Password not required logged in
+2013-11-21 12:13:56,241 - OnosPerf4nodes - INFO - Starting Zookeeper
+2013-11-21 12:13:58,696 - OnosPerf4nodes - WARNING - zookeeper ... already running
+2013-11-21 12:13:58,697 - OnosPerf4nodes - INFO - Creating component Handle: Cassandra1
+2013-11-21 12:13:58,757 - OnosPerf4nodes - INFO - Password not required logged in
+2013-11-21 12:13:58,860 - OnosPerf4nodes - INFO - Creating component Handle: Cassandra2
+2013-11-21 12:13:58,915 - OnosPerf4nodes - INFO - Password not required logged in
+2013-11-21 12:13:59,018 - OnosPerf4nodes - INFO - Creating component Handle: Cassandra3
+2013-11-21 12:13:59,076 - OnosPerf4nodes - INFO - Password not required logged in
+2013-11-21 12:13:59,178 - OnosPerf4nodes - INFO - Creating component Handle: Cassandra4
+2013-11-21 12:13:59,230 - OnosPerf4nodes - INFO - Password not required logged in
+2013-11-21 12:13:59,334 - OnosPerf4nodes - INFO - Creating component Handle: ONOS1
+2013-11-21 12:13:59,395 - OnosPerf4nodes - INFO - Password not required logged in
+2013-11-21 12:13:59,498 - OnosPerf4nodes - INFO - Creating component Handle: ONOS2
+2013-11-21 12:13:59,549 - OnosPerf4nodes - INFO - Password not required logged in
+2013-11-21 12:13:59,654 - OnosPerf4nodes - INFO - Creating component Handle: ONOS3
+2013-11-21 12:13:59,709 - OnosPerf4nodes - INFO - Password not required logged in
+2013-11-21 12:13:59,813 - OnosPerf4nodes - INFO - Creating component Handle: ONOS4
+2013-11-21 12:13:59,863 - OnosPerf4nodes - INFO - Password not required logged in
+2013-11-21 12:13:59,967 - OnosPerf4nodes - INFO - Creating component Handle: Mininet1
+2013-11-21 12:14:00,033 - OnosPerf4nodes - INFO - Password not required logged in
+2013-11-21 12:14:00,136 - OnosPerf4nodes - INFO - Clearing any residual state or processes
+2013-11-21 12:14:09,482 - OnosPerf4nodes - INFO - Clean
+2013-11-21 12:14:09,483 - OnosPerf4nodes - INFO - building fresh mininet
+2013-11-21 12:14:09,724 - OnosPerf4nodes - INFO -  Creating network
+2013-11-21 12:14:09,725 - OnosPerf4nodes - INFO -  Adding controller
+2013-11-21 12:14:09,788 - OnosPerf4nodes - INFO -  Adding hosts:
+2013-11-21 12:14:10,053 - OnosPerf4nodes - INFO -  Adding switches:
+2013-11-21 12:14:11,066 - OnosPerf4nodes - INFO -  Adding links:
+2013-11-21 12:14:16,686 - OnosPerf4nodes - INFO -  Configuring hosts
+2013-11-21 12:14:21,344 - OnosPerf4nodes - INFO -  Starting controller
+2013-11-21 12:14:21,346 - OnosPerf4nodes - INFO -  Starting 25 switches
+2013-11-21 12:14:28,242 - OnosPerf4nodes - INFO -  Starting CLI:
+2013-11-21 12:14:28,254 - OnosPerf4nodes - INFO - mininet built
+2013-11-21 12:14:28,255 - OnosPerf4nodes - INFO - Creating component Handle: Mininet4
+2013-11-21 12:14:28,316 - OnosPerf4nodes - INFO - Password not required logged in
+
+
+******************************
+ Result summary for Testcase1
+******************************
+
+2013-11-21 12:14:29,234 - OnosPerf4nodes - WARNING - ONOS wasn't running
+2013-11-21 12:14:29,963 - OnosPerf4nodes - WARNING - ONOS wasn't running
+2013-11-21 12:14:30,780 - OnosPerf4nodes - WARNING - ONOS wasn't running
+2013-11-21 12:14:31,874 - OnosPerf4nodes - WARNING - ONOS wasn't running
+2013-11-21 12:14:31,875 - OnosPerf4nodes - INFO - Starting Cassandra
+2013-11-21 12:14:37,471 - OnosPerf4nodes - INFO - Cassandra Started 
+2013-11-21 12:14:37,471 - OnosPerf4nodes - INFO - Starting Cassandra
+2013-11-21 12:14:43,093 - OnosPerf4nodes - INFO - Cassandra Started 
+2013-11-21 12:14:43,094 - OnosPerf4nodes - INFO - Starting Cassandra
+2013-11-21 12:14:48,726 - OnosPerf4nodes - INFO - Cassandra Started 
+2013-11-21 12:14:48,727 - OnosPerf4nodes - INFO - Starting Cassandra
+2013-11-21 12:14:54,345 - OnosPerf4nodes - INFO - Cassandra Started 
+2013-11-21 12:15:16,224 - OnosPerf4nodes - INFO - Keyspace dropped
+2013-11-21 12:15:25,992 - OnosPerf4nodes - INFO - ONOS Started 
+2013-11-21 12:15:45,736 - OnosPerf4nodes - INFO - ONOS Started 
+2013-11-21 12:15:55,776 - OnosPerf4nodes - INFO - ONOS Started 
+2013-11-21 12:16:05,671 - OnosPerf4nodes - INFO - ONOS Started 
+2013-11-21 12:16:08,169 - OnosPerf4nodes - INFO - Executed :~/ONOS/start-rest.sh start 		 Expected Prompt '\$' Found
+2013-11-21 12:16:08,171 - OnosPerf4nodes - INFO - Rest Server Started Successfully
+2013-11-21 12:16:18,419 - OnosPerf4nodes - INFO - Executed :~/ONOS/start-rest.sh status  		 Expected Prompt 'running' Found
+2013-11-21 12:16:18,420 - OnosPerf4nodes - INFO - Rest Server is running
+2013-11-21 12:16:18,523 - OnosPerf4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+
+[2013-11-21 12:16:18.637434] [OnosPerf4nodes] [CASE]  Checking if the startup was clean...
+
+[2013-11-21 12:16:18.640067] [OnosPerf4nodes] [STEP]  INIT : Initializing the test case :Checking if the startup was clean...
+
+[2013-11-21 12:16:18.642942] [OnosPerf4nodes] [STEP]  1.1: Testing startup Zookeeper
+2013-11-21 12:16:18,886 - OnosPerf4nodes - INFO - Executed :
+ 		 Expected Prompt '\$' Found
+2013-11-21 12:16:19,497 - OnosPerf4nodes - INFO - Executed :~/zookeeper-3.4.5/bin/zkServer.sh status  		 Expected Prompt 'Mode' Found
+2013-11-21 12:16:19,501 - OnosPerf4nodes - INFO - Verifying the Expected is equal to the actual or not using assert_equal
+2013-11-21 12:16:19,502 - OnosPerf4nodes - INFO - Zookeeper is up!
+2013-11-21 12:16:19,502 - OnosPerf4nodes - INFO - Assertion Passed
+
+[2013-11-21 12:16:19.503597] [OnosPerf4nodes] [STEP]  1.2: Testing startup Cassandra
+2013-11-21 12:16:19,506 - OnosPerf4nodes - INFO - trying 5 times
+2013-11-21 12:16:19,747 - OnosPerf4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-21 12:16:21,194 - OnosPerf4nodes - INFO - Verifying the Expected is equal to the actual or not using assert_equal
+2013-11-21 12:16:21,195 - OnosPerf4nodes - INFO - Cassandra is up!
+2013-11-21 12:16:21,195 - OnosPerf4nodes - INFO - Assertion Passed
+
+[2013-11-21 12:16:21.197126] [OnosPerf4nodes] [STEP]  1.3: Testing startup ONOS
+2013-11-21 12:16:21,301 - OnosPerf4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-21 12:16:21,896 - OnosPerf4nodes - INFO - Executed :~/ONOS/start-onos.sh status  		 Expected Prompt 'running' Found
+2013-11-21 12:16:21,998 - OnosPerf4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-21 12:16:22,100 - OnosPerf4nodes - INFO - Executed :tail ~/ONOS/onos-logs/onos.*.log 		 Expected Prompt '\$' Found
+2013-11-21 12:16:24,204 - OnosPerf4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-21 12:16:24,306 - OnosPerf4nodes - INFO - Executed :tail ~/ONOS/onos-logs/onos.*.log 		 Expected Prompt '\$' Found
+2013-11-21 12:16:24,308 - OnosPerf4nodes - ERROR - Assertion Failed
+2013-11-21 12:16:24,309 - OnosPerf4nodes - ERROR - ONOS process not running...
+2013-11-21 12:16:24,310 - OnosPerf4nodes - WARNING - Assertion Failed
+2013-11-21 12:16:25,038 - OnosPerf4nodes - WARNING - ONOS wasn't running
+2013-11-21 12:16:25,922 - OnosPerf4nodes - WARNING - ONOS wasn't running
+2013-11-21 12:16:26,818 - OnosPerf4nodes - WARNING - ONOS wasn't running
+2013-11-21 12:16:27,697 - OnosPerf4nodes - WARNING - ONOS wasn't running
+2013-11-21 12:16:42,578 - OnosPerf4nodes - INFO - ONOS Started 
+2013-11-21 12:17:02,441 - OnosPerf4nodes - INFO - ONOS Started 
+2013-11-21 12:17:12,616 - OnosPerf4nodes - INFO - ONOS Started 
+2013-11-21 12:17:22,087 - OnosPerf4nodes - INFO - ONOS Started 
+2013-11-21 12:17:22,327 - OnosPerf4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-21 12:17:22,936 - OnosPerf4nodes - INFO - Executed :~/ONOS/start-onos.sh status  		 Expected Prompt 'running' Found
+2013-11-21 12:17:23,038 - OnosPerf4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-21 12:17:23,140 - OnosPerf4nodes - INFO - Executed :tail ~/ONOS/onos-logs/onos.*.log 		 Expected Prompt '\$' Found
+2013-11-21 12:17:25,244 - OnosPerf4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-21 12:17:25,346 - OnosPerf4nodes - INFO - Executed :tail ~/ONOS/onos-logs/onos.*.log 		 Expected Prompt '\$' Found
+2013-11-21 12:17:25,348 - OnosPerf4nodes - ERROR - Assertion Failed
+2013-11-21 12:17:25,348 - OnosPerf4nodes - ERROR - ONOS process not running...
+2013-11-21 12:17:25,349 - OnosPerf4nodes - WARNING - Assertion Failed
+2013-11-21 12:17:25,350 - OnosPerf4nodes - INFO - Verifying the Expected is equal to the actual or not using assert_equal
+2013-11-21 12:17:25,350 - OnosPerf4nodes - ERROR - ONOS didn't start...
+2013-11-21 12:17:25,351 - OnosPerf4nodes - WARNING - Assertion Failed
+
+
+*****************************
+ Result: Failed 
+*****************************
+
+
+
+******************************
+ Result summary for Testcase2
+******************************
+
+
+[2013-11-21 12:17:25.355429] [OnosPerf4nodes] [STEP]  INIT : Initializing the test case :Checking if the startup was clean...
+
+[2013-11-21 12:17:25.358211] [OnosPerf4nodes] [STEP]  2.1: Checking if MN switches exist
+
+[2013-11-21 12:17:25.364875] [OnosPerf4nodes] [STEP]  2.2: assigning ONOS controllers to switches
+2013-11-21 12:17:25,524 - OnosPerf4nodes - INFO - Executed :sh ovs-vsctl set-controller s1 ptcp:6634 tcp:10.128.100.1:6633        		 Expected Prompt 'mininet>' Found
+2013-11-21 12:17:26,691 - OnosPerf4nodes - INFO - Executed :sh ovs-vsctl set-controller s1 ptcp:6634 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633     		 Expected Prompt 'mininet>' Found
+2013-11-21 12:17:26,855 - OnosPerf4nodes - INFO - Executed :sh ovs-vsctl set-controller s2 ptcp:6635 tcp:10.128.100.1:6633        		 Expected Prompt 'mininet>' Found
+2013-11-21 12:17:28,013 - OnosPerf4nodes - INFO - Executed :sh ovs-vsctl set-controller s2 ptcp:6635 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633     		 Expected Prompt 'mininet>' Found
+2013-11-21 12:17:28,175 - OnosPerf4nodes - INFO - Executed :sh ovs-vsctl set-controller s3 ptcp:6636 tcp:10.128.100.1:6633        		 Expected Prompt 'mininet>' Found
+2013-11-21 12:17:29,339 - OnosPerf4nodes - INFO - Executed :sh ovs-vsctl set-controller s3 ptcp:6636 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633     		 Expected Prompt 'mininet>' Found
+2013-11-21 12:17:29,502 - OnosPerf4nodes - INFO - Executed :sh ovs-vsctl set-controller s4 ptcp:6637 tcp:10.128.100.4:6633        		 Expected Prompt 'mininet>' Found
+2013-11-21 12:17:30,660 - OnosPerf4nodes - INFO - Executed :sh ovs-vsctl set-controller s4 ptcp:6637 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633     		 Expected Prompt 'mininet>' Found
+2013-11-21 12:17:30,807 - OnosPerf4nodes - INFO - Executed :sh ovs-vsctl set-controller s5 ptcp:6638 tcp:10.128.100.4:6633        		 Expected Prompt 'mininet>' Found
+2013-11-21 12:17:31,965 - OnosPerf4nodes - INFO - Executed :sh ovs-vsctl set-controller s5 ptcp:6638 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633     		 Expected Prompt 'mininet>' Found
+2013-11-21 12:17:32,128 - OnosPerf4nodes - INFO - Executed :sh ovs-vsctl set-controller s6 ptcp:6639 tcp:10.128.100.5:6633        		 Expected Prompt 'mininet>' Found
+2013-11-21 12:17:33,292 - OnosPerf4nodes - INFO - Executed :sh ovs-vsctl set-controller s6 ptcp:6639 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633     		 Expected Prompt 'mininet>' Found
+2013-11-21 12:17:33,453 - OnosPerf4nodes - INFO - Executed :sh ovs-vsctl set-controller s7 ptcp:6640 tcp:10.128.100.5:6633        		 Expected Prompt 'mininet>' Found
+2013-11-21 12:17:34,605 - OnosPerf4nodes - INFO - Executed :sh ovs-vsctl set-controller s7 ptcp:6640 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633     		 Expected Prompt 'mininet>' Found
+2013-11-21 12:17:34,762 - OnosPerf4nodes - INFO - Executed :sh ovs-vsctl set-controller s8 ptcp:6641 tcp:10.128.100.5:6633        		 Expected Prompt 'mininet>' Found
+2013-11-21 12:17:35,915 - OnosPerf4nodes - INFO - Executed :sh ovs-vsctl set-controller s8 ptcp:6641 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633     		 Expected Prompt 'mininet>' Found
+2013-11-21 12:17:36,068 - OnosPerf4nodes - INFO - Executed :sh ovs-vsctl set-controller s9 ptcp:6642 tcp:10.128.100.5:6633        		 Expected Prompt 'mininet>' Found
+2013-11-21 12:17:37,221 - OnosPerf4nodes - INFO - Executed :sh ovs-vsctl set-controller s9 ptcp:6642 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633     		 Expected Prompt 'mininet>' Found
+2013-11-21 12:17:37,384 - OnosPerf4nodes - INFO - Executed :sh ovs-vsctl set-controller s10 ptcp:6643 tcp:10.128.100.5:6633        		 Expected Prompt 'mininet>' Found
+2013-11-21 12:17:38,553 - OnosPerf4nodes - INFO - Executed :sh ovs-vsctl set-controller s10 ptcp:6643 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633     		 Expected Prompt 'mininet>' Found
+2013-11-21 12:17:38,718 - OnosPerf4nodes - INFO - Executed :sh ovs-vsctl set-controller s11 ptcp:6644 tcp:10.128.100.5:6633        		 Expected Prompt 'mininet>' Found
+2013-11-21 12:17:39,879 - OnosPerf4nodes - INFO - Executed :sh ovs-vsctl set-controller s11 ptcp:6644 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633     		 Expected Prompt 'mininet>' Found
+2013-11-21 12:17:40,044 - OnosPerf4nodes - INFO - Executed :sh ovs-vsctl set-controller s12 ptcp:6645 tcp:10.128.100.5:6633        		 Expected Prompt 'mininet>' Found
+2013-11-21 12:17:41,203 - OnosPerf4nodes - INFO - Executed :sh ovs-vsctl set-controller s12 ptcp:6645 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633     		 Expected Prompt 'mininet>' Found
+2013-11-21 12:17:41,366 - OnosPerf4nodes - INFO - Executed :sh ovs-vsctl set-controller s13 ptcp:6646 tcp:10.128.100.5:6633        		 Expected Prompt 'mininet>' Found
+2013-11-21 12:17:42,541 - OnosPerf4nodes - INFO - Executed :sh ovs-vsctl set-controller s13 ptcp:6646 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633     		 Expected Prompt 'mininet>' Found
+2013-11-21 12:17:42,713 - OnosPerf4nodes - INFO - Executed :sh ovs-vsctl set-controller s14 ptcp:6647 tcp:10.128.100.5:6633        		 Expected Prompt 'mininet>' Found
+2013-11-21 12:17:43,884 - OnosPerf4nodes - INFO - Executed :sh ovs-vsctl set-controller s14 ptcp:6647 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633     		 Expected Prompt 'mininet>' Found
+2013-11-21 12:17:44,032 - OnosPerf4nodes - INFO - Executed :sh ovs-vsctl set-controller s15 ptcp:6648 tcp:10.128.100.5:6633        		 Expected Prompt 'mininet>' Found
+2013-11-21 12:17:45,182 - OnosPerf4nodes - INFO - Executed :sh ovs-vsctl set-controller s15 ptcp:6648 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633     		 Expected Prompt 'mininet>' Found
+2013-11-21 12:17:45,348 - OnosPerf4nodes - INFO - Executed :sh ovs-vsctl set-controller s31 ptcp:6664 tcp:10.128.100.6:6633        		 Expected Prompt 'mininet>' Found
+2013-11-21 12:17:46,512 - OnosPerf4nodes - INFO - Executed :sh ovs-vsctl set-controller s31 ptcp:6664 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633     		 Expected Prompt 'mininet>' Found
+2013-11-21 12:17:46,658 - OnosPerf4nodes - INFO - Executed :sh ovs-vsctl set-controller s32 ptcp:6665 tcp:10.128.100.6:6633        		 Expected Prompt 'mininet>' Found
+2013-11-21 12:17:47,810 - OnosPerf4nodes - INFO - Executed :sh ovs-vsctl set-controller s32 ptcp:6665 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633     		 Expected Prompt 'mininet>' Found
+2013-11-21 12:17:47,976 - OnosPerf4nodes - INFO - Executed :sh ovs-vsctl set-controller s33 ptcp:6666 tcp:10.128.100.6:6633        		 Expected Prompt 'mininet>' Found
+2013-11-21 12:17:49,147 - OnosPerf4nodes - INFO - Executed :sh ovs-vsctl set-controller s33 ptcp:6666 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633     		 Expected Prompt 'mininet>' Found
+2013-11-21 12:17:49,308 - OnosPerf4nodes - INFO - Executed :sh ovs-vsctl set-controller s34 ptcp:6667 tcp:10.128.100.6:6633        		 Expected Prompt 'mininet>' Found
+2013-11-21 12:17:50,465 - OnosPerf4nodes - INFO - Executed :sh ovs-vsctl set-controller s34 ptcp:6667 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633     		 Expected Prompt 'mininet>' Found
+2013-11-21 12:17:50,629 - OnosPerf4nodes - INFO - Executed :sh ovs-vsctl set-controller s35 ptcp:6668 tcp:10.128.100.6:6633        		 Expected Prompt 'mininet>' Found
+2013-11-21 12:17:51,790 - OnosPerf4nodes - INFO - Executed :sh ovs-vsctl set-controller s35 ptcp:6668 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633     		 Expected Prompt 'mininet>' Found
+2013-11-21 12:17:51,942 - OnosPerf4nodes - INFO - Executed :sh ovs-vsctl set-controller s36 ptcp:6669 tcp:10.128.100.6:6633        		 Expected Prompt 'mininet>' Found
+2013-11-21 12:17:53,106 - OnosPerf4nodes - INFO - Executed :sh ovs-vsctl set-controller s36 ptcp:6669 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633     		 Expected Prompt 'mininet>' Found
+2013-11-21 12:17:53,262 - OnosPerf4nodes - INFO - Executed :sh ovs-vsctl set-controller s37 ptcp:6670 tcp:10.128.100.6:6633        		 Expected Prompt 'mininet>' Found
+2013-11-21 12:17:54,424 - OnosPerf4nodes - INFO - Executed :sh ovs-vsctl set-controller s37 ptcp:6670 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633     		 Expected Prompt 'mininet>' Found
+2013-11-21 12:17:54,590 - OnosPerf4nodes - INFO - Executed :sh ovs-vsctl set-controller s38 ptcp:6671 tcp:10.128.100.6:6633        		 Expected Prompt 'mininet>' Found
+2013-11-21 12:17:55,760 - OnosPerf4nodes - INFO - Executed :sh ovs-vsctl set-controller s38 ptcp:6671 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633     		 Expected Prompt 'mininet>' Found
+2013-11-21 12:17:55,923 - OnosPerf4nodes - INFO - Executed :sh ovs-vsctl set-controller s39 ptcp:6672 tcp:10.128.100.6:6633        		 Expected Prompt 'mininet>' Found
+2013-11-21 12:17:57,076 - OnosPerf4nodes - INFO - Executed :sh ovs-vsctl set-controller s39 ptcp:6672 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633     		 Expected Prompt 'mininet>' Found
+2013-11-21 12:17:57,234 - OnosPerf4nodes - INFO - Executed :sh ovs-vsctl set-controller s40 ptcp:6673 tcp:10.128.100.6:6633        		 Expected Prompt 'mininet>' Found
+2013-11-21 12:17:58,393 - OnosPerf4nodes - INFO - Executed :sh ovs-vsctl set-controller s40 ptcp:6673 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633     		 Expected Prompt 'mininet>' Found
+2013-11-21 12:17:58,530 - OnosPerf4nodes - INFO - Executed :sh ovs-vsctl get-controller s1 		 Expected Prompt 'mininet>' Found
+2013-11-21 12:17:58,531 - OnosPerf4nodes - INFO -  sh ovs-vsctl get-controller s1
+ptcp:6634
+tcp:10.128.100.1:6633
+tcp:10.128.100.4:6633
+tcp:10.128.100.5:6633
+tcp:10.128.100.6:6633
+mininet>
+
+
+*****************************
+ Result: Failed 
+*****************************
+
+
+
+******************************
+ Result summary for Testcase3
+******************************
+
+
+[2013-11-21 12:18:03.541241] [OnosPerf4nodes] [CASE]  TOPO check
+
+[2013-11-21 12:18:03.543717] [OnosPerf4nodes] [STEP]  INIT : Initializing the test case :TOPO check
+
+[2013-11-21 12:18:03.547510] [OnosPerf4nodes] [STEP]  3.1: calling rest calls
+2013-11-21 12:18:03,550 - OnosPerf4nodes - INFO - Making some rest calls...
+2013-11-21 12:18:03,958 - OnosPerf4nodes - INFO - 
+-----
+Rest API has an issueRest API has an issue-----
+
+2013-11-21 12:18:08,966 - OnosPerf4nodes - INFO - Making some rest calls...
+2013-11-21 12:18:09,385 - OnosPerf4nodes - INFO - 
+-----
+Rest API has an issueRest API has an issue-----
+
+2013-11-21 12:18:14,393 - OnosPerf4nodes - INFO - Making some rest calls...
+2013-11-21 12:18:14,713 - OnosPerf4nodes - INFO - 
+-----
+Rest API has an issueRest API has an issue-----
+
+2013-11-21 12:18:19,720 - OnosPerf4nodes - INFO - Making some rest calls...
+2013-11-21 12:18:20,133 - OnosPerf4nodes - INFO - 
+-----
+Rest API has an issueRest API has an issue-----
+
+2013-11-21 12:18:34,950 - OnosPerf4nodes - INFO - ONOS Started 
+2013-11-21 12:18:45,214 - OnosPerf4nodes - INFO - ONOS Started 
+2013-11-21 12:18:55,073 - OnosPerf4nodes - INFO - ONOS Started 
+2013-11-21 12:19:04,738 - OnosPerf4nodes - INFO - ONOS Started 
+2013-11-21 12:19:49,771 - OnosPerf4nodes - INFO - Making some rest calls...
+2013-11-21 12:19:50,122 - OnosPerf4nodes - INFO - 
+-----
+Rest API has an issueRest API has an issue-----
+
+2013-11-21 12:19:55,130 - OnosPerf4nodes - INFO - Making some rest calls...
+2013-11-21 12:19:55,563 - OnosPerf4nodes - INFO - 
+-----
+Rest API has an issueRest API has an issue-----
+
+2013-11-21 12:20:00,571 - OnosPerf4nodes - INFO - Making some rest calls...
+2013-11-21 12:20:00,934 - OnosPerf4nodes - INFO - 
+-----
+Rest API has an issueRest API has an issue-----
+
+2013-11-21 12:20:05,941 - OnosPerf4nodes - INFO - Making some rest calls...
+2013-11-21 12:20:06,357 - OnosPerf4nodes - INFO - 
+-----
+Rest API has an issueRest API has an issue-----
+
+2013-11-21 12:20:11,366 - OnosPerf4nodes - INFO - Verifying the Expected is equal to the actual or not using assert_equal
+2013-11-21 12:20:11,372 - OnosPerf4nodes - WARNING - Assertion Failed
+
+
+*****************************
+ Result: Failed 
+*****************************
+
+
+
+******************************
+ Result summary for Testcase4
+******************************
+
+
+[2013-11-21 12:20:11.379461] [OnosPerf4nodes] [CASE]  Taking care of these flows!
+
+[2013-11-21 12:20:11.382103] [OnosPerf4nodes] [STEP]  INIT : Initializing the test case :Taking care of these flows!
+
+[2013-11-21 12:20:11.387308] [OnosPerf4nodes] [STEP]  4.1: Cleaning out any leftover flows...
+2013-11-21 12:20:11,390 - OnosPerf4nodes - INFO - deleting...
+2013-11-21 12:20:11,390 - OnosPerf4nodes - INFO - Deleting ALL flows...
+2013-11-21 12:20:12,371 - OnosPerf4nodes - INFO - Flows deleted
+2013-11-21 12:20:12,372 - OnosPerf4nodes - INFO - adding...
+2013-11-21 12:20:12,372 - OnosPerf4nodes - INFO - Adding Flows...
+2013-11-21 12:20:16,262 - OnosPerf4nodes - INFO - Flows added
+2013-11-21 12:20:16,263 - OnosPerf4nodes - INFO - Checking...
+2013-11-21 12:20:17,896 - OnosPerf4nodes - INFO - There don't seem to be any flows here...
+2013-11-21 12:20:22,902 - OnosPerf4nodes - INFO - Checking Flows again...
+2013-11-21 12:20:24,476 - OnosPerf4nodes - INFO - There don't seem to be any flows here...
+2013-11-21 12:20:29,481 - OnosPerf4nodes - INFO - Checking Flows again...
+2013-11-21 12:20:31,085 - OnosPerf4nodes - INFO - There don't seem to be any flows here...
+2013-11-21 12:20:36,091 - OnosPerf4nodes - INFO - Checking Flows again...
+2013-11-21 12:20:37,657 - OnosPerf4nodes - INFO - There don't seem to be any flows here...
+2013-11-21 12:20:42,663 - OnosPerf4nodes - INFO - Checking Flows again...
+2013-11-21 12:20:44,257 - OnosPerf4nodes - INFO - There don't seem to be any flows here...
+2013-11-21 12:20:49,263 - OnosPerf4nodes - INFO - Checking Flows again...
+2013-11-21 12:20:50,816 - OnosPerf4nodes - INFO - There don't seem to be any flows here...
+2013-11-21 12:20:55,822 - OnosPerf4nodes - INFO - Checking Flows again...
+2013-11-21 12:20:57,371 - OnosPerf4nodes - INFO - There don't seem to be any flows here...
+2013-11-21 12:21:02,377 - OnosPerf4nodes - INFO - Checking Flows again...
+2013-11-21 12:21:03,962 - OnosPerf4nodes - INFO - There don't seem to be any flows here...
+2013-11-21 12:21:08,968 - OnosPerf4nodes - INFO - Checking Flows again...
+2013-11-21 12:21:10,542 - OnosPerf4nodes - INFO - There don't seem to be any flows here...
+2013-11-21 12:21:15,547 - OnosPerf4nodes - INFO - Checking Flows again...
+2013-11-21 12:21:17,102 - OnosPerf4nodes - INFO - There don't seem to be any flows here...
+2013-11-21 12:21:22,107 - OnosPerf4nodes - INFO - Checking Flows again...
+2013-11-21 12:21:23,649 - OnosPerf4nodes - INFO - There don't seem to be any flows here...
+2013-11-21 12:21:28,654 - OnosPerf4nodes - INFO - Checking Flows again...
+2013-11-21 12:21:30,206 - OnosPerf4nodes - INFO - There don't seem to be any flows here...
+2013-11-21 12:21:35,212 - OnosPerf4nodes - INFO - Checking Flows again...
+2013-11-21 12:21:36,797 - OnosPerf4nodes - INFO - There don't seem to be any flows here...
+2013-11-21 12:21:41,802 - OnosPerf4nodes - INFO - Checking Flows again...
+2013-11-21 12:21:43,491 - OnosPerf4nodes - INFO - There don't seem to be any flows here...
+2013-11-21 12:21:48,497 - OnosPerf4nodes - INFO - Checking Flows again...
+2013-11-21 12:21:50,045 - OnosPerf4nodes - INFO - There don't seem to be any flows here...
+2013-11-21 12:21:55,051 - OnosPerf4nodes - INFO - Checking Flows again...
+2013-11-21 12:21:55,052 - OnosPerf4nodes - INFO - 
+				h6 IS PINGING h31
+2013-11-21 12:22:05,155 - OnosPerf4nodes - ERROR - Expected Prompt not found , Time Out!!
+2013-11-21 12:22:05,156 - OnosPerf4nodes - ERROR - mininet
+2013-11-21 12:22:05,157 - OnosPerf4nodes - ERROR - Assertion Failed
+2013-11-21 12:22:05,157 - OnosPerf4nodes - ERROR - Host is not reachable
+2013-11-21 12:22:05,158 - OnosPerf4nodes - WARNING - Assertion Failed
+2013-11-21 12:22:05,158 - OnosPerf4nodes - ERROR - PACKET LOST, HOST IS NOT REACHABLE
+2013-11-21 12:22:05,159 - OnosPerf4nodes - INFO - Ping failed, making attempt number 2 in 10 seconds
+2013-11-21 12:22:15,169 - OnosPerf4nodes - INFO - 
+				h6 IS PINGING h31
+2013-11-21 12:22:15,272 - OnosPerf4nodes - INFO - Executed :h6 ping h31 -c 1 -i .2 		 Expected Prompt 'mininet' Found
+2013-11-21 12:22:15,273 - OnosPerf4nodes - ERROR - Assertion Failed
+2013-11-21 12:22:15,273 - OnosPerf4nodes - ERROR - Host is not reachable
+2013-11-21 12:22:15,274 - OnosPerf4nodes - WARNING - Assertion Failed
+2013-11-21 12:22:15,274 - OnosPerf4nodes - ERROR - PACKET LOST, HOST IS NOT REACHABLE
+2013-11-21 12:22:15,275 - OnosPerf4nodes - INFO - Ping failed, making attempt number 3 in 10 seconds
+2013-11-21 12:22:25,285 - OnosPerf4nodes - INFO - 
+				h6 IS PINGING h31
+2013-11-21 12:22:25,388 - OnosPerf4nodes - INFO - Executed :h6 ping h31 -c 1 -i .2 		 Expected Prompt 'mininet' Found
+2013-11-21 12:22:25,389 - OnosPerf4nodes - ERROR - Assertion Failed
+2013-11-21 12:22:25,389 - OnosPerf4nodes - ERROR - Host is not reachable
+2013-11-21 12:22:25,390 - OnosPerf4nodes - WARNING - Assertion Failed
+2013-11-21 12:22:25,390 - OnosPerf4nodes - ERROR - PACKET LOST, HOST IS NOT REACHABLE
+2013-11-21 12:22:25,390 - OnosPerf4nodes - ERROR - Ping test failed
+2013-11-21 12:22:25,391 - OnosPerf4nodes - INFO - 	PING TEST FAIL
+2013-11-21 12:22:25,391 - OnosPerf4nodes - INFO - Verifying the Expected is equal to the actual or not using assert_equal
+2013-11-21 12:22:25,391 - OnosPerf4nodes - ERROR - FLOWS not correct
+2013-11-21 12:22:25,392 - OnosPerf4nodes - WARNING - Assertion Failed
+
+[2013-11-21 12:22:25.393313] [OnosPerf4nodes] [CASE]  TOPO check
+
+[2013-11-21 12:22:25.396390] [OnosPerf4nodes] [STEP]  4.2: calling rest calls
+2013-11-21 12:22:25,399 - OnosPerf4nodes - INFO - Making some rest calls...
+2013-11-21 12:22:25,826 - OnosPerf4nodes - INFO - 
+-----
+Rest API has an issueRest API has an issue-----
+
+2013-11-21 12:22:30,833 - OnosPerf4nodes - INFO - Making some rest calls...
+2013-11-21 12:22:31,188 - OnosPerf4nodes - INFO - 
+-----
+Rest API has an issueRest API has an issue-----
+
+2013-11-21 12:22:36,195 - OnosPerf4nodes - INFO - Making some rest calls...
+2013-11-21 12:22:36,561 - OnosPerf4nodes - INFO - 
+-----
+Rest API has an issueRest API has an issue-----
+
+
+
+*****************************
+ Result: Failed 
+*****************************
+
+
+
+******************************
+ Result summary for Testcase5
+******************************
+
+
+[2013-11-21 12:22:41.579900] [OnosPerf4nodes] [CASE]  Testing ping...
+2013-11-21 12:22:41,582 - OnosPerf4nodes - INFO - mininet/util/m h6 ping 10.0.0.16 -c 4 -W 1 -i .2
+2013-11-21 12:22:51,692 - OnosPerf4nodes - ERROR - Expected Prompt not found , Time Out!!
+2013-11-21 12:22:51,693 - OnosPerf4nodes - ERROR - rtt
+2013-11-21 12:22:51,694 - OnosPerf4nodes - ERROR - Assertion Failed
+2013-11-21 12:22:51,694 - OnosPerf4nodes - ERROR - Host is not reachable
+2013-11-21 12:22:51,695 - OnosPerf4nodes - WARNING - Assertion Failed
+2013-11-21 12:22:51,695 - OnosPerf4nodes - ERROR - PACKET LOST, HOST IS NOT REACHABLE
+2013-11-21 12:22:51,696 - OnosPerf4nodes - INFO - Verifying the Expected is equal to the actual or not using assert_equal
+2013-11-21 12:22:51,696 - OnosPerf4nodes - ERROR - PACKET LOST, HOST IS NOT REACHABLE
+2013-11-21 12:22:51,697 - OnosPerf4nodes - WARNING - Assertion Failed
+
+
+*****************************
+ Result: Failed 
+*****************************
+
+
+
+******************************
+ Result summary for Testcase6
+******************************
+
+
+[2013-11-21 12:22:51.704166] [OnosPerf4nodes] [CASE]  Starting long ping... 
+2013-11-21 12:22:51,808 - OnosPerf4nodes - INFO - Executed :rm /tmp/ping.h6 		 Expected Prompt '(.*)' Found
+2013-11-21 12:22:51,810 - OnosPerf4nodes - INFO - mininet/util/m h6 ping 10.0.0.16 -i 1 -W 1 > /tmp/ping.h6 &
+2013-11-21 12:22:51,912 - OnosPerf4nodes - INFO - Executed :mininet/util/m h6 ping 10.0.0.16 -i 1 -W 1 > /tmp/ping.h6 & 		 Expected Prompt '(.*)' Found
+2013-11-21 12:22:52,015 - OnosPerf4nodes - INFO - Executed :rm /tmp/ping.h7 		 Expected Prompt '(.*)' Found
+2013-11-21 12:22:52,015 - OnosPerf4nodes - INFO - mininet/util/m h7 ping 10.0.0.17 -i 1 -W 1 > /tmp/ping.h7 &
+2013-11-21 12:22:52,117 - OnosPerf4nodes - INFO - Executed :mininet/util/m h7 ping 10.0.0.17 -i 1 -W 1 > /tmp/ping.h7 & 		 Expected Prompt '(.*)' Found
+2013-11-21 12:22:52,220 - OnosPerf4nodes - INFO - Executed :rm /tmp/ping.h8 		 Expected Prompt '(.*)' Found
+2013-11-21 12:22:52,221 - OnosPerf4nodes - INFO - mininet/util/m h8 ping 10.0.0.18 -i 1 -W 1 > /tmp/ping.h8 &
+2013-11-21 12:22:52,323 - OnosPerf4nodes - INFO - Executed :mininet/util/m h8 ping 10.0.0.18 -i 1 -W 1 > /tmp/ping.h8 & 		 Expected Prompt '(.*)' Found
+2013-11-21 12:22:52,426 - OnosPerf4nodes - INFO - Executed :rm /tmp/ping.h9 		 Expected Prompt '(.*)' Found
+2013-11-21 12:22:52,426 - OnosPerf4nodes - INFO - mininet/util/m h9 ping 10.0.0.19 -i 1 -W 1 > /tmp/ping.h9 &
+2013-11-21 12:22:52,528 - OnosPerf4nodes - INFO - Executed :mininet/util/m h9 ping 10.0.0.19 -i 1 -W 1 > /tmp/ping.h9 & 		 Expected Prompt '(.*)' Found
+2013-11-21 12:22:52,630 - OnosPerf4nodes - INFO - Executed :rm /tmp/ping.h10 		 Expected Prompt '(.*)' Found
+2013-11-21 12:22:52,630 - OnosPerf4nodes - INFO - mininet/util/m h10 ping 10.0.0.20 -i 1 -W 1 > /tmp/ping.h10 &
+2013-11-21 12:22:52,732 - OnosPerf4nodes - INFO - Executed :mininet/util/m h10 ping 10.0.0.20 -i 1 -W 1 > /tmp/ping.h10 & 		 Expected Prompt '(.*)' Found
+2013-11-21 12:22:52,834 - OnosPerf4nodes - INFO - Executed :rm /tmp/ping.h11 		 Expected Prompt '(.*)' Found
+2013-11-21 12:22:52,834 - OnosPerf4nodes - INFO - mininet/util/m h11 ping 10.0.0.21 -i 1 -W 1 > /tmp/ping.h11 &
+2013-11-21 12:22:52,936 - OnosPerf4nodes - INFO - Executed :mininet/util/m h11 ping 10.0.0.21 -i 1 -W 1 > /tmp/ping.h11 & 		 Expected Prompt '(.*)' Found
+2013-11-21 12:22:53,038 - OnosPerf4nodes - INFO - Executed :rm /tmp/ping.h12 		 Expected Prompt '(.*)' Found
+2013-11-21 12:22:53,038 - OnosPerf4nodes - INFO - mininet/util/m h12 ping 10.0.0.22 -i 1 -W 1 > /tmp/ping.h12 &
+2013-11-21 12:22:53,140 - OnosPerf4nodes - INFO - Executed :mininet/util/m h12 ping 10.0.0.22 -i 1 -W 1 > /tmp/ping.h12 & 		 Expected Prompt '(.*)' Found
+2013-11-21 12:22:53,242 - OnosPerf4nodes - INFO - Executed :rm /tmp/ping.h13 		 Expected Prompt '(.*)' Found
+2013-11-21 12:22:53,243 - OnosPerf4nodes - INFO - mininet/util/m h13 ping 10.0.0.23 -i 1 -W 1 > /tmp/ping.h13 &
+2013-11-21 12:22:53,344 - OnosPerf4nodes - INFO - Executed :mininet/util/m h13 ping 10.0.0.23 -i 1 -W 1 > /tmp/ping.h13 & 		 Expected Prompt '(.*)' Found
+2013-11-21 12:22:53,447 - OnosPerf4nodes - INFO - Executed :rm /tmp/ping.h14 		 Expected Prompt '(.*)' Found
+2013-11-21 12:22:53,447 - OnosPerf4nodes - INFO - mininet/util/m h14 ping 10.0.0.24 -i 1 -W 1 > /tmp/ping.h14 &
+2013-11-21 12:22:53,549 - OnosPerf4nodes - INFO - Executed :mininet/util/m h14 ping 10.0.0.24 -i 1 -W 1 > /tmp/ping.h14 & 		 Expected Prompt '(.*)' Found
+2013-11-21 12:22:53,651 - OnosPerf4nodes - INFO - Executed :rm /tmp/ping.h15 		 Expected Prompt '(.*)' Found
+2013-11-21 12:22:53,652 - OnosPerf4nodes - INFO - mininet/util/m h15 ping 10.0.0.25 -i 1 -W 1 > /tmp/ping.h15 &
+2013-11-21 12:22:53,754 - OnosPerf4nodes - INFO - Executed :mininet/util/m h15 ping 10.0.0.25 -i 1 -W 1 > /tmp/ping.h15 & 		 Expected Prompt '(.*)' Found
+
+[2013-11-21 12:22:53.754873] [OnosPerf4nodes] [STEP]  INIT : Initializing the test case :Starting long ping... 
+
+[2013-11-21 12:22:53.758710] [OnosPerf4nodes] [STEP]  6.1: Check that the pings are going
+2013-11-21 12:22:53,871 - OnosPerf4nodes - INFO - No, or faulty ping data...
+2013-11-21 12:22:53,982 - OnosPerf4nodes - INFO - No, or faulty ping data...
+2013-11-21 12:22:54,093 - OnosPerf4nodes - INFO - No, or faulty ping data...
+2013-11-21 12:22:54,212 - OnosPerf4nodes - INFO - No, or faulty ping data...
+2013-11-21 12:22:54,323 - OnosPerf4nodes - INFO - No, or faulty ping data...
+2013-11-21 12:22:54,434 - OnosPerf4nodes - INFO - No, or faulty ping data...
+2013-11-21 12:22:54,547 - OnosPerf4nodes - INFO - No, or faulty ping data...
+2013-11-21 12:22:54,657 - OnosPerf4nodes - INFO - No, or faulty ping data...
+2013-11-21 12:22:54,767 - OnosPerf4nodes - INFO - No, or faulty ping data...
+2013-11-21 12:22:54,878 - OnosPerf4nodes - INFO - No, or faulty ping data...
+
+[2013-11-21 12:22:54.880062] [OnosPerf4nodes] [STEP]  6.2: Link down number of iterations: 3
+2013-11-21 12:22:54,882 - OnosPerf4nodes - INFO - Bringing Link down... 
+2013-11-21 12:22:54,883 - OnosPerf4nodes - INFO - Bring link(s) between two nodes up or down
+2013-11-21 12:22:54,985 - OnosPerf4nodes - INFO - Executed :link s1 s2 down 		 Expected Prompt 'mininet>' Found
+2013-11-21 12:22:54,986 - OnosPerf4nodes - INFO - Waiting 60 seconds.... 
+2013-11-21 12:23:55,046 - OnosPerf4nodes - INFO - Bringing Link up... 
+2013-11-21 12:23:55,047 - OnosPerf4nodes - INFO - Bring link(s) between two nodes up or down
+2013-11-21 12:23:55,149 - OnosPerf4nodes - INFO - Executed :link s1 s2 up 		 Expected Prompt 'mininet>' Found
+2013-11-21 12:23:55,149 - OnosPerf4nodes - INFO - Waiting 60 seconds.... 
+2013-11-21 12:24:55,183 - OnosPerf4nodes - INFO - Bringing Link down... 
+2013-11-21 12:24:55,183 - OnosPerf4nodes - INFO - Bring link(s) between two nodes up or down
+2013-11-21 12:24:55,285 - OnosPerf4nodes - INFO - Executed :link s1 s2 down 		 Expected Prompt 'mininet>' Found
+2013-11-21 12:24:55,286 - OnosPerf4nodes - INFO - Waiting 60 seconds.... 
+2013-11-21 12:25:55,346 - OnosPerf4nodes - INFO - Bringing Link up... 
+2013-11-21 12:25:55,347 - OnosPerf4nodes - INFO - Bring link(s) between two nodes up or down
+2013-11-21 12:25:55,449 - OnosPerf4nodes - INFO - Executed :link s1 s2 up 		 Expected Prompt 'mininet>' Found
+2013-11-21 12:25:55,449 - OnosPerf4nodes - INFO - Waiting 60 seconds.... 
+2013-11-21 12:26:55,510 - OnosPerf4nodes - INFO - Bringing Link down... 
+2013-11-21 12:26:55,510 - OnosPerf4nodes - INFO - Bring link(s) between two nodes up or down
+2013-11-21 12:26:55,612 - OnosPerf4nodes - INFO - Executed :link s1 s2 down 		 Expected Prompt 'mininet>' Found
+2013-11-21 12:26:55,613 - OnosPerf4nodes - INFO - Waiting 60 seconds.... 
+2013-11-21 12:27:55,657 - OnosPerf4nodes - INFO - Bringing Link up... 
+2013-11-21 12:27:55,657 - OnosPerf4nodes - INFO - Bring link(s) between two nodes up or down
+2013-11-21 12:27:55,759 - OnosPerf4nodes - INFO - Executed :link s1 s2 up 		 Expected Prompt 'mininet>' Found
+2013-11-21 12:27:55,760 - OnosPerf4nodes - INFO - Waiting 60 seconds.... 
+
+[2013-11-21 12:28:55.820990] [OnosPerf4nodes] [CASE]  Killing remote ping processes 
+2013-11-21 12:28:55,823 - OnosPerf4nodes - INFO - sudo pkill ping
+2013-11-21 12:28:55,925 - OnosPerf4nodes - INFO - Executed :sudo pkill ping 		 Expected Prompt '(.*)' Found
+2013-11-21 12:28:55,925 - OnosPerf4nodes - INFO - Removing old ping data
+2013-11-21 12:28:57,960 - OnosPerf4nodes - INFO - Transferring ping files to TestStation
+2013-11-21 12:28:59,912 - OnosPerf4nodes - INFO - Executed :scp /tmp/ping.* admin@10.128.7.7:/tmp/ 		 Expected Prompt '100%' Found
+2013-11-21 12:28:59,914 - OnosPerf4nodes - INFO - Verifying the Expected is equal to the actual or not using assert_equal
+2013-11-21 12:28:59,915 - OnosPerf4nodes - WARNING - Assertion Failed
+
+
+*****************************
+ Result: Failed 
+*****************************
+
+
+
+******************************
+ Result summary for Testcase7
+******************************
+
+
+[2013-11-21 12:28:59.923298] [OnosPerf4nodes] [CASE]  Processing Ping data
+2013-11-21 12:29:03,179 - OnosPerf4nodes - INFO - Verifying the Expected is equal to the actual or not using assert_equal
+2013-11-21 12:29:03,180 - OnosPerf4nodes - ERROR - Average is worse then target time... 
+2013-11-21 12:29:03,181 - OnosPerf4nodes - WARNING - Assertion Failed
+
+
+*****************************
+ Result: Failed 
+*****************************
+
+
+
+******************************
+ Result summary for Testcase4
+******************************
+
+
+[2013-11-21 12:29:03.188753] [OnosPerf4nodes] [CASE]  Taking care of these flows!
+
+[2013-11-21 12:29:03.191412] [OnosPerf4nodes] [STEP]  INIT : Initializing the test case :Taking care of these flows!
+
+[2013-11-21 12:29:03.196573] [OnosPerf4nodes] [STEP]  4.1: Cleaning out any leftover flows...
+2013-11-21 12:29:03,199 - OnosPerf4nodes - INFO - deleting...
+2013-11-21 12:29:03,199 - OnosPerf4nodes - INFO - Deleting ALL flows...
+2013-11-21 12:29:04,593 - OnosPerf4nodes - INFO - Flows deleted
+2013-11-21 12:29:04,594 - OnosPerf4nodes - INFO - adding...
+2013-11-21 12:29:04,594 - OnosPerf4nodes - INFO - Adding Flows...
+2013-11-21 12:29:12,264 - OnosPerf4nodes - INFO - Flows added
+2013-11-21 12:29:12,265 - OnosPerf4nodes - INFO - Checking...
+2013-11-21 12:29:20,392 - OnosPerf4nodes - INFO - FlowPath without FlowEntry
+2013-11-21 12:29:25,398 - OnosPerf4nodes - INFO - Checking Flows again...
+2013-11-21 12:29:36,255 - OnosPerf4nodes - INFO - All flows pass
+2013-11-21 12:29:36,255 - OnosPerf4nodes - INFO - Number of FlowPaths: 20
+2013-11-21 12:29:36,256 - OnosPerf4nodes - INFO - Adding flows took 31.662 s
+2013-11-21 12:29:36,256 - OnosPerf4nodes - INFO - 
+				h6 IS PINGING h31
+2013-11-21 12:29:36,359 - OnosPerf4nodes - INFO - Executed :h6 ping h31 -c 1 -i .2 		 Expected Prompt 'mininet' Found
+2013-11-21 12:29:36,360 - OnosPerf4nodes - ERROR - Assertion Failed
+2013-11-21 12:29:36,360 - OnosPerf4nodes - ERROR - Host is not reachable
+2013-11-21 12:29:36,361 - OnosPerf4nodes - WARNING - Assertion Failed
+2013-11-21 12:29:36,361 - OnosPerf4nodes - ERROR - PACKET LOST, HOST IS NOT REACHABLE
+2013-11-21 12:29:36,362 - OnosPerf4nodes - INFO - Ping failed, making attempt number 2 in 10 seconds
+2013-11-21 12:29:46,371 - OnosPerf4nodes - INFO - 
+				h6 IS PINGING h31
+2013-11-21 12:29:46,474 - OnosPerf4nodes - INFO - Executed :h6 ping h31 -c 1 -i .2 		 Expected Prompt 'mininet' Found
+2013-11-21 12:29:46,475 - OnosPerf4nodes - INFO - No Packet loss
+2013-11-21 12:29:46,475 - OnosPerf4nodes - INFO - Assertion Passed
+2013-11-21 12:29:46,476 - OnosPerf4nodes - INFO - NO PACKET LOSS, HOST IS REACHABLE
+2013-11-21 12:29:46,476 - OnosPerf4nodes - INFO - 
+				h7 IS PINGING h32
+2013-11-21 12:29:46,578 - OnosPerf4nodes - INFO - Executed :h7 ping h32 -c 1 -i .2 		 Expected Prompt 'mininet' Found
+2013-11-21 12:29:46,579 - OnosPerf4nodes - INFO - No Packet loss
+2013-11-21 12:29:46,579 - OnosPerf4nodes - INFO - Assertion Passed
+2013-11-21 12:29:46,580 - OnosPerf4nodes - INFO - NO PACKET LOSS, HOST IS REACHABLE
+2013-11-21 12:29:46,580 - OnosPerf4nodes - INFO - 
+				h8 IS PINGING h33
+2013-11-21 12:29:46,682 - OnosPerf4nodes - INFO - Executed :h8 ping h33 -c 1 -i .2 		 Expected Prompt 'mininet' Found
+2013-11-21 12:29:46,683 - OnosPerf4nodes - INFO - No Packet loss
+2013-11-21 12:29:46,683 - OnosPerf4nodes - INFO - Assertion Passed
+2013-11-21 12:29:46,684 - OnosPerf4nodes - INFO - NO PACKET LOSS, HOST IS REACHABLE
+2013-11-21 12:29:46,684 - OnosPerf4nodes - INFO - 
+				h9 IS PINGING h34
+2013-11-21 12:29:46,786 - OnosPerf4nodes - INFO - Executed :h9 ping h34 -c 1 -i .2 		 Expected Prompt 'mininet' Found
+2013-11-21 12:29:46,787 - OnosPerf4nodes - INFO - No Packet loss
+2013-11-21 12:29:46,787 - OnosPerf4nodes - INFO - Assertion Passed
+2013-11-21 12:29:46,788 - OnosPerf4nodes - INFO - NO PACKET LOSS, HOST IS REACHABLE
+2013-11-21 12:29:46,788 - OnosPerf4nodes - INFO - 
+				h10 IS PINGING h35
+2013-11-21 12:29:46,890 - OnosPerf4nodes - INFO - Executed :h10 ping h35 -c 1 -i .2 		 Expected Prompt 'mininet' Found
+2013-11-21 12:29:46,891 - OnosPerf4nodes - INFO - No Packet loss
+2013-11-21 12:29:46,891 - OnosPerf4nodes - INFO - Assertion Passed
+2013-11-21 12:29:46,891 - OnosPerf4nodes - INFO - NO PACKET LOSS, HOST IS REACHABLE
+2013-11-21 12:29:46,892 - OnosPerf4nodes - INFO - 
+				h11 IS PINGING h36
+2013-11-21 12:29:46,994 - OnosPerf4nodes - INFO - Executed :h11 ping h36 -c 1 -i .2 		 Expected Prompt 'mininet' Found
+2013-11-21 12:29:46,995 - OnosPerf4nodes - INFO - No Packet loss
+2013-11-21 12:29:46,995 - OnosPerf4nodes - INFO - Assertion Passed
+2013-11-21 12:29:46,995 - OnosPerf4nodes - INFO - NO PACKET LOSS, HOST IS REACHABLE
+2013-11-21 12:29:46,996 - OnosPerf4nodes - INFO - 
+				h12 IS PINGING h37
+2013-11-21 12:29:47,098 - OnosPerf4nodes - INFO - Executed :h12 ping h37 -c 1 -i .2 		 Expected Prompt 'mininet' Found
+2013-11-21 12:29:47,099 - OnosPerf4nodes - INFO - No Packet loss
+2013-11-21 12:29:47,099 - OnosPerf4nodes - INFO - Assertion Passed
+2013-11-21 12:29:47,099 - OnosPerf4nodes - INFO - NO PACKET LOSS, HOST IS REACHABLE
+2013-11-21 12:29:47,100 - OnosPerf4nodes - INFO - 
+				h13 IS PINGING h38
+2013-11-21 12:29:47,202 - OnosPerf4nodes - INFO - Executed :h13 ping h38 -c 1 -i .2 		 Expected Prompt 'mininet' Found
+2013-11-21 12:29:47,203 - OnosPerf4nodes - INFO - No Packet loss
+2013-11-21 12:29:47,203 - OnosPerf4nodes - INFO - Assertion Passed
+2013-11-21 12:29:47,203 - OnosPerf4nodes - INFO - NO PACKET LOSS, HOST IS REACHABLE
+2013-11-21 12:29:47,204 - OnosPerf4nodes - INFO - 
+				h14 IS PINGING h39
+2013-11-21 12:29:47,306 - OnosPerf4nodes - INFO - Executed :h14 ping h39 -c 1 -i .2 		 Expected Prompt 'mininet' Found
+2013-11-21 12:29:47,307 - OnosPerf4nodes - INFO - No Packet loss
+2013-11-21 12:29:47,307 - OnosPerf4nodes - INFO - Assertion Passed
+2013-11-21 12:29:47,307 - OnosPerf4nodes - INFO - NO PACKET LOSS, HOST IS REACHABLE
+2013-11-21 12:29:47,308 - OnosPerf4nodes - INFO - 
+				h15 IS PINGING h40
+2013-11-21 12:29:47,410 - OnosPerf4nodes - INFO - Executed :h15 ping h40 -c 1 -i .2 		 Expected Prompt 'mininet' Found
+2013-11-21 12:29:47,411 - OnosPerf4nodes - INFO - No Packet loss
+2013-11-21 12:29:47,411 - OnosPerf4nodes - INFO - Assertion Passed
+2013-11-21 12:29:47,411 - OnosPerf4nodes - INFO - NO PACKET LOSS, HOST IS REACHABLE
+2013-11-21 12:29:47,412 - OnosPerf4nodes - INFO - 	Time to complete ping test: 11.16 seconds
+2013-11-21 12:29:47,412 - OnosPerf4nodes - INFO - Verifying the Expected is equal to the actual or not using assert_equal
+2013-11-21 12:29:47,413 - OnosPerf4nodes - INFO - flows are good
+2013-11-21 12:29:47,413 - OnosPerf4nodes - INFO - Assertion Passed
+
+[2013-11-21 12:29:47.414507] [OnosPerf4nodes] [CASE]  TOPO check
+
+[2013-11-21 12:29:47.418198] [OnosPerf4nodes] [STEP]  4.2: calling rest calls
+2013-11-21 12:29:47,420 - OnosPerf4nodes - INFO - Making some rest calls...
+2013-11-21 12:29:47,839 - OnosPerf4nodes - INFO - 
+-----
+Rest API has an issueRest API has an issue-----
+
+2013-11-21 12:29:52,846 - OnosPerf4nodes - INFO - Making some rest calls...
+2013-11-21 12:29:53,270 - OnosPerf4nodes - INFO - 
+-----
+Rest API has an issueRest API has an issue-----
+
+2013-11-21 12:29:58,278 - OnosPerf4nodes - INFO - Making some rest calls...
+2013-11-21 12:29:58,706 - OnosPerf4nodes - INFO - 
+-----
+Rest API has an issueRest API has an issue-----
+
+
+
+*****************************
+ Result: Pass 
+*****************************
+
+
+
+******************************
+ Result summary for Testcase8
+******************************
+
+
+[2013-11-21 12:30:23.733918] [OnosPerf4nodes] [CASE]  Starting long ping... 
+2013-11-21 12:30:23,839 - OnosPerf4nodes - INFO - Executed :rm /tmp/ping.h6 		 Expected Prompt '(.*)' Found
+2013-11-21 12:30:23,839 - OnosPerf4nodes - INFO - mininet/util/m h6 ping 10.0.0.16 -i 1 -W 1 > /tmp/ping.h6 &
+2013-11-21 12:30:23,942 - OnosPerf4nodes - INFO - Executed :mininet/util/m h6 ping 10.0.0.16 -i 1 -W 1 > /tmp/ping.h6 & 		 Expected Prompt '(.*)' Found
+2013-11-21 12:30:24,044 - OnosPerf4nodes - INFO - Executed :rm /tmp/ping.h7 		 Expected Prompt '(.*)' Found
+2013-11-21 12:30:24,045 - OnosPerf4nodes - INFO - mininet/util/m h7 ping 10.0.0.17 -i 1 -W 1 > /tmp/ping.h7 &
+2013-11-21 12:30:24,147 - OnosPerf4nodes - INFO - Executed :mininet/util/m h7 ping 10.0.0.17 -i 1 -W 1 > /tmp/ping.h7 & 		 Expected Prompt '(.*)' Found
+2013-11-21 12:30:24,249 - OnosPerf4nodes - INFO - Executed :rm /tmp/ping.h8 		 Expected Prompt '(.*)' Found
+2013-11-21 12:30:24,249 - OnosPerf4nodes - INFO - mininet/util/m h8 ping 10.0.0.18 -i 1 -W 1 > /tmp/ping.h8 &
+2013-11-21 12:30:24,351 - OnosPerf4nodes - INFO - Executed :mininet/util/m h8 ping 10.0.0.18 -i 1 -W 1 > /tmp/ping.h8 & 		 Expected Prompt '(.*)' Found
+2013-11-21 12:30:24,453 - OnosPerf4nodes - INFO - Executed :rm /tmp/ping.h9 		 Expected Prompt '(.*)' Found
+2013-11-21 12:30:24,453 - OnosPerf4nodes - INFO - mininet/util/m h9 ping 10.0.0.19 -i 1 -W 1 > /tmp/ping.h9 &
+2013-11-21 12:30:24,555 - OnosPerf4nodes - INFO - Executed :mininet/util/m h9 ping 10.0.0.19 -i 1 -W 1 > /tmp/ping.h9 & 		 Expected Prompt '(.*)' Found
+2013-11-21 12:30:24,657 - OnosPerf4nodes - INFO - Executed :rm /tmp/ping.h10 		 Expected Prompt '(.*)' Found
+2013-11-21 12:30:24,658 - OnosPerf4nodes - INFO - mininet/util/m h10 ping 10.0.0.20 -i 1 -W 1 > /tmp/ping.h10 &
+2013-11-21 12:30:24,759 - OnosPerf4nodes - INFO - Executed :mininet/util/m h10 ping 10.0.0.20 -i 1 -W 1 > /tmp/ping.h10 & 		 Expected Prompt '(.*)' Found
+2013-11-21 12:30:24,862 - OnosPerf4nodes - INFO - Executed :rm /tmp/ping.h11 		 Expected Prompt '(.*)' Found
+2013-11-21 12:30:24,862 - OnosPerf4nodes - INFO - mininet/util/m h11 ping 10.0.0.21 -i 1 -W 1 > /tmp/ping.h11 &
+2013-11-21 12:30:24,964 - OnosPerf4nodes - INFO - Executed :mininet/util/m h11 ping 10.0.0.21 -i 1 -W 1 > /tmp/ping.h11 & 		 Expected Prompt '(.*)' Found
+2013-11-21 12:30:25,066 - OnosPerf4nodes - INFO - Executed :rm /tmp/ping.h12 		 Expected Prompt '(.*)' Found
+2013-11-21 12:30:25,066 - OnosPerf4nodes - INFO - mininet/util/m h12 ping 10.0.0.22 -i 1 -W 1 > /tmp/ping.h12 &
+2013-11-21 12:30:25,168 - OnosPerf4nodes - INFO - Executed :mininet/util/m h12 ping 10.0.0.22 -i 1 -W 1 > /tmp/ping.h12 & 		 Expected Prompt '(.*)' Found
+2013-11-21 12:30:25,270 - OnosPerf4nodes - INFO - Executed :rm /tmp/ping.h13 		 Expected Prompt '(.*)' Found
+2013-11-21 12:30:25,271 - OnosPerf4nodes - INFO - mininet/util/m h13 ping 10.0.0.23 -i 1 -W 1 > /tmp/ping.h13 &
+2013-11-21 12:30:25,372 - OnosPerf4nodes - INFO - Executed :mininet/util/m h13 ping 10.0.0.23 -i 1 -W 1 > /tmp/ping.h13 & 		 Expected Prompt '(.*)' Found
+2013-11-21 12:30:25,474 - OnosPerf4nodes - INFO - Executed :rm /tmp/ping.h14 		 Expected Prompt '(.*)' Found
+2013-11-21 12:30:25,475 - OnosPerf4nodes - INFO - mininet/util/m h14 ping 10.0.0.24 -i 1 -W 1 > /tmp/ping.h14 &
+2013-11-21 12:30:25,577 - OnosPerf4nodes - INFO - Executed :mininet/util/m h14 ping 10.0.0.24 -i 1 -W 1 > /tmp/ping.h14 & 		 Expected Prompt '(.*)' Found
+2013-11-21 12:30:25,678 - OnosPerf4nodes - INFO - Executed :rm /tmp/ping.h15 		 Expected Prompt '(.*)' Found
+2013-11-21 12:30:25,679 - OnosPerf4nodes - INFO - mininet/util/m h15 ping 10.0.0.25 -i 1 -W 1 > /tmp/ping.h15 &
+2013-11-21 12:30:25,780 - OnosPerf4nodes - INFO - Executed :mininet/util/m h15 ping 10.0.0.25 -i 1 -W 1 > /tmp/ping.h15 & 		 Expected Prompt '(.*)' Found
+
+[2013-11-21 12:30:25.781588] [OnosPerf4nodes] [STEP]  INIT : Initializing the test case :Starting long ping... 
+
+[2013-11-21 12:30:25.785564] [OnosPerf4nodes] [STEP]  8.1: Check that the pings are going
+2013-11-21 12:30:25,905 - OnosPerf4nodes - INFO - Pings look good
+2013-11-21 12:30:26,016 - OnosPerf4nodes - INFO - No, or faulty ping data...
+2013-11-21 12:30:26,127 - OnosPerf4nodes - INFO - No, or faulty ping data...
+2013-11-21 12:30:26,239 - OnosPerf4nodes - INFO - No, or faulty ping data...
+2013-11-21 12:30:26,350 - OnosPerf4nodes - INFO - No, or faulty ping data...
+2013-11-21 12:30:26,462 - OnosPerf4nodes - INFO - No, or faulty ping data...
+2013-11-21 12:30:26,574 - OnosPerf4nodes - INFO - No, or faulty ping data...
+2013-11-21 12:30:26,685 - OnosPerf4nodes - INFO - No, or faulty ping data...
+2013-11-21 12:30:26,796 - OnosPerf4nodes - INFO - No, or faulty ping data...
+2013-11-21 12:30:26,908 - OnosPerf4nodes - INFO - No, or faulty ping data...
+
+[2013-11-21 12:30:26.910550] [OnosPerf4nodes] [STEP]  8.2: Making topo change while flows are rerouting
+
+[2013-11-21 12:30:26.915808] [OnosPerf4nodes] [STEP]  8.3: Link down number of iterations: 3
+2013-11-21 12:30:26,919 - OnosPerf4nodes - INFO - s1-s2 link down
+2013-11-21 12:30:26,920 - OnosPerf4nodes - INFO - Bring link(s) between two nodes up or down
+2013-11-21 12:30:27,024 - OnosPerf4nodes - INFO - Executed :link s1 s2 down 		 Expected Prompt 'mininet>' Found
+2013-11-21 12:30:27,025 - OnosPerf4nodes - INFO - Bring link(s) between two nodes up or down
+2013-11-21 12:30:27,129 - OnosPerf4nodes - INFO - Executed :link s1 s3 up 		 Expected Prompt 'mininet>' Found
+2013-11-21 12:30:27,130 - OnosPerf4nodes - INFO - Bring link(s) between two nodes up or down
+2013-11-21 12:30:27,233 - OnosPerf4nodes - INFO - Executed :link s2 s3 up 		 Expected Prompt 'mininet>' Found
+2013-11-21 12:30:32,238 - OnosPerf4nodes - INFO - s1-s2 link up | s1-s3 link down | s2-s3 link down
+2013-11-21 12:30:32,240 - OnosPerf4nodes - INFO - Bring link(s) between two nodes up or down
+2013-11-21 12:30:32,344 - OnosPerf4nodes - INFO - Executed :link s1 s2 up 		 Expected Prompt 'mininet>' Found
+2013-11-21 12:30:32,345 - OnosPerf4nodes - INFO - Bring link(s) between two nodes up or down
+2013-11-21 12:30:32,449 - OnosPerf4nodes - INFO - Executed :link s1 s3 down 		 Expected Prompt 'mininet>' Found
+2013-11-21 12:30:32,451 - OnosPerf4nodes - INFO - Bring link(s) between two nodes up or down
+2013-11-21 12:30:32,554 - OnosPerf4nodes - INFO - Executed :link s2 s3 down 		 Expected Prompt 'mininet>' Found
+2013-11-21 12:30:32,555 - OnosPerf4nodes - INFO - Waiting 60 seconds.... 
+2013-11-21 12:32:32,593 - OnosPerf4nodes - INFO - s1-s2 link down
+2013-11-21 12:32:32,594 - OnosPerf4nodes - INFO - Bring link(s) between two nodes up or down
+2013-11-21 12:32:32,696 - OnosPerf4nodes - INFO - Executed :link s1 s2 down 		 Expected Prompt 'mininet>' Found
+2013-11-21 12:32:32,696 - OnosPerf4nodes - INFO - Bring link(s) between two nodes up or down
+2013-11-21 12:32:32,798 - OnosPerf4nodes - INFO - Executed :link s1 s3 up 		 Expected Prompt 'mininet>' Found
+2013-11-21 12:32:32,800 - OnosPerf4nodes - INFO - Bring link(s) between two nodes up or down
+2013-11-21 12:32:32,904 - OnosPerf4nodes - INFO - Executed :link s2 s3 up 		 Expected Prompt 'mininet>' Found
+2013-11-21 12:32:37,911 - OnosPerf4nodes - INFO - s1-s2 link up | s1-s3 link down | s2-s3 link down
+2013-11-21 12:32:37,927 - OnosPerf4nodes - INFO - Bring link(s) between two nodes up or down
+2013-11-21 12:32:38,030 - OnosPerf4nodes - INFO - Executed :link s1 s2 up 		 Expected Prompt 'mininet>' Found
+2013-11-21 12:32:38,032 - OnosPerf4nodes - INFO - Bring link(s) between two nodes up or down
+2013-11-21 12:32:38,135 - OnosPerf4nodes - INFO - Executed :link s1 s3 down 		 Expected Prompt 'mininet>' Found
+2013-11-21 12:32:38,137 - OnosPerf4nodes - INFO - Bring link(s) between two nodes up or down
+2013-11-21 12:32:38,240 - OnosPerf4nodes - INFO - Executed :link s2 s3 down 		 Expected Prompt 'mininet>' Found
+2013-11-21 12:32:38,242 - OnosPerf4nodes - INFO - Waiting 60 seconds.... 
+2013-11-21 12:34:38,271 - OnosPerf4nodes - INFO - s1-s2 link down
+2013-11-21 12:34:38,272 - OnosPerf4nodes - INFO - Bring link(s) between two nodes up or down
+2013-11-21 12:34:38,374 - OnosPerf4nodes - INFO - Executed :link s1 s2 down 		 Expected Prompt 'mininet>' Found
+2013-11-21 12:34:38,374 - OnosPerf4nodes - INFO - Bring link(s) between two nodes up or down
+2013-11-21 12:34:38,476 - OnosPerf4nodes - INFO - Executed :link s1 s3 up 		 Expected Prompt 'mininet>' Found
+2013-11-21 12:34:38,477 - OnosPerf4nodes - INFO - Bring link(s) between two nodes up or down
+2013-11-21 12:34:38,579 - OnosPerf4nodes - INFO - Executed :link s2 s3 up 		 Expected Prompt 'mininet>' Found
+2013-11-21 12:34:43,586 - OnosPerf4nodes - INFO - s1-s2 link up | s1-s3 link down | s2-s3 link down
+2013-11-21 12:34:43,602 - OnosPerf4nodes - INFO - Bring link(s) between two nodes up or down
+2013-11-21 12:34:43,706 - OnosPerf4nodes - INFO - Executed :link s1 s2 up 		 Expected Prompt 'mininet>' Found
+2013-11-21 12:34:43,708 - OnosPerf4nodes - INFO - Bring link(s) between two nodes up or down
+2013-11-21 12:34:43,811 - OnosPerf4nodes - INFO - Executed :link s1 s3 down 		 Expected Prompt 'mininet>' Found
+2013-11-21 12:34:43,812 - OnosPerf4nodes - INFO - Bring link(s) between two nodes up or down
+2013-11-21 12:34:43,915 - OnosPerf4nodes - INFO - Executed :link s2 s3 down 		 Expected Prompt 'mininet>' Found
+2013-11-21 12:34:43,917 - OnosPerf4nodes - INFO - Waiting 60 seconds.... 
+
+[2013-11-21 12:36:43.949248] [OnosPerf4nodes] [CASE]  Killing remote ping processes 
+2013-11-21 12:36:43,952 - OnosPerf4nodes - INFO - sudo pkill ping
+2013-11-21 12:36:44,054 - OnosPerf4nodes - INFO - Executed :sudo pkill ping 		 Expected Prompt '(.*)' Found
+2013-11-21 12:36:44,056 - OnosPerf4nodes - INFO - Removing old ping data
+2013-11-21 12:36:46,091 - OnosPerf4nodes - INFO - Transferring ping files to TestStation
+2013-11-21 12:36:48,078 - OnosPerf4nodes - INFO - Executed :scp /tmp/ping.* admin@10.128.7.7:/tmp/ 		 Expected Prompt '100%' Found
+2013-11-21 12:36:48,080 - OnosPerf4nodes - INFO - Verifying the Expected is equal to the actual or not using assert_equal
+2013-11-21 12:36:48,081 - OnosPerf4nodes - WARNING - Assertion Failed
+2013-11-21 12:36:48,081 - OnosPerf4nodes - INFO - Make sure all links in triangle are up
+2013-11-21 12:36:48,082 - OnosPerf4nodes - INFO - Bring link(s) between two nodes up or down
+2013-11-21 12:36:48,184 - OnosPerf4nodes - INFO - Executed :link s1 s2 up 		 Expected Prompt 'mininet>' Found
+2013-11-21 12:36:48,184 - OnosPerf4nodes - INFO - Bring link(s) between two nodes up or down
+2013-11-21 12:36:48,286 - OnosPerf4nodes - INFO - Executed :link s1 s3 up 		 Expected Prompt 'mininet>' Found
+2013-11-21 12:36:48,287 - OnosPerf4nodes - INFO - Bring link(s) between two nodes up or down
+2013-11-21 12:36:48,389 - OnosPerf4nodes - INFO - Executed :link s2 s3 up 		 Expected Prompt 'mininet>' Found
+
+
+*****************************
+ Result: Failed 
+*****************************
+
+
+
+******************************
+ Result summary for Testcase7
+******************************
+
+
+[2013-11-21 12:36:48.403360] [OnosPerf4nodes] [CASE]  Processing Ping data
+2013-11-21 12:36:51,604 - OnosPerf4nodes - INFO - Verifying the Expected is equal to the actual or not using assert_equal
+2013-11-21 12:36:51,607 - OnosPerf4nodes - ERROR - Average is worse then target time... 
+2013-11-21 12:36:51,610 - OnosPerf4nodes - WARNING - Assertion Failed
+
+
+*****************************
+ Result: Failed 
+*****************************
+
+
+
+******************************
+ Result summary for Testcase4
+******************************
+
+
+[2013-11-21 12:36:51.622275] [OnosPerf4nodes] [CASE]  Taking care of these flows!
+
+[2013-11-21 12:36:51.625983] [OnosPerf4nodes] [STEP]  INIT : Initializing the test case :Taking care of these flows!
+
+[2013-11-21 12:36:51.632981] [OnosPerf4nodes] [STEP]  4.1: Cleaning out any leftover flows...
+2013-11-21 12:36:51,636 - OnosPerf4nodes - INFO - deleting...
+2013-11-21 12:36:51,638 - OnosPerf4nodes - INFO - Deleting ALL flows...
+2013-11-21 12:36:56,533 - OnosPerf4nodes - INFO - Flows deleted
+2013-11-21 12:36:56,534 - OnosPerf4nodes - INFO - adding...
+2013-11-21 12:36:56,536 - OnosPerf4nodes - INFO - Adding Flows...
+2013-11-21 12:37:01,860 - OnosPerf4nodes - INFO - Flows added
+2013-11-21 12:37:01,861 - OnosPerf4nodes - INFO - Checking...
+2013-11-21 12:37:07,386 - OnosPerf4nodes - INFO - FlowPath without FlowEntry
+2013-11-21 12:37:12,394 - OnosPerf4nodes - INFO - Checking Flows again...
+2013-11-21 12:37:19,879 - OnosPerf4nodes - INFO - All flows pass
+2013-11-21 12:37:19,880 - OnosPerf4nodes - INFO - Number of FlowPaths: 20
+2013-11-21 12:37:19,882 - OnosPerf4nodes - INFO - Adding flows took 23.346 s
+2013-11-21 12:37:19,883 - OnosPerf4nodes - INFO - 
+				h6 IS PINGING h31
+2013-11-21 12:37:19,987 - OnosPerf4nodes - INFO - Executed :h6 ping h31 -c 1 -i .2 		 Expected Prompt 'mininet' Found
+2013-11-21 12:37:19,990 - OnosPerf4nodes - ERROR - Assertion Failed
+2013-11-21 12:37:19,991 - OnosPerf4nodes - ERROR - Host is not reachable
+2013-11-21 12:37:19,994 - OnosPerf4nodes - WARNING - Assertion Failed
+2013-11-21 12:37:19,995 - OnosPerf4nodes - ERROR - PACKET LOST, HOST IS NOT REACHABLE
+2013-11-21 12:37:19,996 - OnosPerf4nodes - INFO - Ping failed, making attempt number 2 in 10 seconds
+2013-11-21 12:37:30,008 - OnosPerf4nodes - INFO - 
+				h6 IS PINGING h31
+2013-11-21 12:37:30,110 - OnosPerf4nodes - INFO - Executed :h6 ping h31 -c 1 -i .2 		 Expected Prompt 'mininet' Found
+2013-11-21 12:37:30,111 - OnosPerf4nodes - INFO - No Packet loss
+2013-11-21 12:37:30,111 - OnosPerf4nodes - INFO - Assertion Passed
+2013-11-21 12:37:30,112 - OnosPerf4nodes - INFO - NO PACKET LOSS, HOST IS REACHABLE
+2013-11-21 12:37:30,112 - OnosPerf4nodes - INFO - 
+				h7 IS PINGING h32
+2013-11-21 12:37:30,214 - OnosPerf4nodes - INFO - Executed :h7 ping h32 -c 1 -i .2 		 Expected Prompt 'mininet' Found
+2013-11-21 12:37:30,216 - OnosPerf4nodes - INFO - No Packet loss
+2013-11-21 12:37:30,218 - OnosPerf4nodes - INFO - Assertion Passed
+2013-11-21 12:37:30,219 - OnosPerf4nodes - INFO - NO PACKET LOSS, HOST IS REACHABLE
+2013-11-21 12:37:30,220 - OnosPerf4nodes - INFO - 
+				h8 IS PINGING h33
+2013-11-21 12:37:30,324 - OnosPerf4nodes - INFO - Executed :h8 ping h33 -c 1 -i .2 		 Expected Prompt 'mininet' Found
+2013-11-21 12:37:30,326 - OnosPerf4nodes - INFO - No Packet loss
+2013-11-21 12:37:30,327 - OnosPerf4nodes - INFO - Assertion Passed
+2013-11-21 12:37:30,328 - OnosPerf4nodes - INFO - NO PACKET LOSS, HOST IS REACHABLE
+2013-11-21 12:37:30,330 - OnosPerf4nodes - INFO - 
+				h9 IS PINGING h34
+2013-11-21 12:37:30,433 - OnosPerf4nodes - INFO - Executed :h9 ping h34 -c 1 -i .2 		 Expected Prompt 'mininet' Found
+2013-11-21 12:37:30,434 - OnosPerf4nodes - INFO - No Packet loss
+2013-11-21 12:37:30,436 - OnosPerf4nodes - INFO - Assertion Passed
+2013-11-21 12:37:30,437 - OnosPerf4nodes - INFO - NO PACKET LOSS, HOST IS REACHABLE
+2013-11-21 12:37:30,437 - OnosPerf4nodes - INFO - 
+				h10 IS PINGING h35
+2013-11-21 12:37:30,540 - OnosPerf4nodes - INFO - Executed :h10 ping h35 -c 1 -i .2 		 Expected Prompt 'mininet' Found
+2013-11-21 12:37:30,542 - OnosPerf4nodes - INFO - No Packet loss
+2013-11-21 12:37:30,543 - OnosPerf4nodes - INFO - Assertion Passed
+2013-11-21 12:37:30,545 - OnosPerf4nodes - INFO - NO PACKET LOSS, HOST IS REACHABLE
+2013-11-21 12:37:30,546 - OnosPerf4nodes - INFO - 
+				h11 IS PINGING h36
+2013-11-21 12:37:30,649 - OnosPerf4nodes - INFO - Executed :h11 ping h36 -c 1 -i .2 		 Expected Prompt 'mininet' Found
+2013-11-21 12:37:30,650 - OnosPerf4nodes - INFO - No Packet loss
+2013-11-21 12:37:30,652 - OnosPerf4nodes - INFO - Assertion Passed
+2013-11-21 12:37:30,653 - OnosPerf4nodes - INFO - NO PACKET LOSS, HOST IS REACHABLE
+2013-11-21 12:37:30,653 - OnosPerf4nodes - INFO - 
+				h12 IS PINGING h37
+2013-11-21 12:37:30,756 - OnosPerf4nodes - INFO - Executed :h12 ping h37 -c 1 -i .2 		 Expected Prompt 'mininet' Found
+2013-11-21 12:37:30,758 - OnosPerf4nodes - INFO - No Packet loss
+2013-11-21 12:37:30,759 - OnosPerf4nodes - INFO - Assertion Passed
+2013-11-21 12:37:30,761 - OnosPerf4nodes - INFO - NO PACKET LOSS, HOST IS REACHABLE
+2013-11-21 12:37:30,762 - OnosPerf4nodes - INFO - 
+				h13 IS PINGING h38
+2013-11-21 12:37:30,866 - OnosPerf4nodes - INFO - Executed :h13 ping h38 -c 1 -i .2 		 Expected Prompt 'mininet' Found
+2013-11-21 12:37:30,868 - OnosPerf4nodes - INFO - No Packet loss
+2013-11-21 12:37:30,869 - OnosPerf4nodes - INFO - Assertion Passed
+2013-11-21 12:37:30,870 - OnosPerf4nodes - INFO - NO PACKET LOSS, HOST IS REACHABLE
+2013-11-21 12:37:30,871 - OnosPerf4nodes - INFO - 
+				h14 IS PINGING h39
+2013-11-21 12:37:30,974 - OnosPerf4nodes - INFO - Executed :h14 ping h39 -c 1 -i .2 		 Expected Prompt 'mininet' Found
+2013-11-21 12:37:30,976 - OnosPerf4nodes - INFO - No Packet loss
+2013-11-21 12:37:30,977 - OnosPerf4nodes - INFO - Assertion Passed
+2013-11-21 12:37:30,978 - OnosPerf4nodes - INFO - NO PACKET LOSS, HOST IS REACHABLE
+2013-11-21 12:37:30,979 - OnosPerf4nodes - INFO - 
+				h15 IS PINGING h40
+2013-11-21 12:37:31,082 - OnosPerf4nodes - INFO - Executed :h15 ping h40 -c 1 -i .2 		 Expected Prompt 'mininet' Found
+2013-11-21 12:37:31,084 - OnosPerf4nodes - INFO - No Packet loss
+2013-11-21 12:37:31,085 - OnosPerf4nodes - INFO - Assertion Passed
+2013-11-21 12:37:31,086 - OnosPerf4nodes - INFO - NO PACKET LOSS, HOST IS REACHABLE
+2013-11-21 12:37:31,087 - OnosPerf4nodes - INFO - 	Time to complete ping test: 11.2 seconds
+2013-11-21 12:37:31,088 - OnosPerf4nodes - INFO - Verifying the Expected is equal to the actual or not using assert_equal
+2013-11-21 12:37:31,089 - OnosPerf4nodes - INFO - flows are good
+2013-11-21 12:37:31,090 - OnosPerf4nodes - INFO - Assertion Passed
+
+[2013-11-21 12:37:31.092090] [OnosPerf4nodes] [CASE]  TOPO check
+
+[2013-11-21 12:37:31.096484] [OnosPerf4nodes] [STEP]  4.2: calling rest calls
+2013-11-21 12:37:31,099 - OnosPerf4nodes - INFO - Making some rest calls...
+2013-11-21 12:37:36,436 - OnosPerf4nodes - INFO - 
+-----
+switch: network 1 : 25 switches 25 active
+link: total 50 links (correct : 50)
+-----
+
+
+
+*****************************
+ Result: Pass 
+*****************************
+
+
+
+******************************
+ Result summary for Testcase9
+******************************
+
+
+[2013-11-21 12:38:01.474104] [OnosPerf4nodes] [CASE]  Starting long ping... 
+2013-11-21 12:38:01,580 - OnosPerf4nodes - INFO - Executed :rm /tmp/ping.h6 		 Expected Prompt '(.*)' Found
+2013-11-21 12:38:01,582 - OnosPerf4nodes - INFO - mininet/util/m h6 ping 10.0.0.16 -i 1 -W 1 > /tmp/ping.h6 &
+2013-11-21 12:38:01,685 - OnosPerf4nodes - INFO - Executed :mininet/util/m h6 ping 10.0.0.16 -i 1 -W 1 > /tmp/ping.h6 & 		 Expected Prompt '(.*)' Found
+2013-11-21 12:38:01,790 - OnosPerf4nodes - INFO - Executed :rm /tmp/ping.h7 		 Expected Prompt '(.*)' Found
+2013-11-21 12:38:01,791 - OnosPerf4nodes - INFO - mininet/util/m h7 ping 10.0.0.17 -i 1 -W 1 > /tmp/ping.h7 &
+2013-11-21 12:38:01,895 - OnosPerf4nodes - INFO - Executed :mininet/util/m h7 ping 10.0.0.17 -i 1 -W 1 > /tmp/ping.h7 & 		 Expected Prompt '(.*)' Found
+2013-11-21 12:38:02,000 - OnosPerf4nodes - INFO - Executed :rm /tmp/ping.h8 		 Expected Prompt '(.*)' Found
+2013-11-21 12:38:02,001 - OnosPerf4nodes - INFO - mininet/util/m h8 ping 10.0.0.18 -i 1 -W 1 > /tmp/ping.h8 &
+2013-11-21 12:38:02,104 - OnosPerf4nodes - INFO - Executed :mininet/util/m h8 ping 10.0.0.18 -i 1 -W 1 > /tmp/ping.h8 & 		 Expected Prompt '(.*)' Found
+2013-11-21 12:38:02,207 - OnosPerf4nodes - INFO - Executed :rm /tmp/ping.h9 		 Expected Prompt '(.*)' Found
+2013-11-21 12:38:02,209 - OnosPerf4nodes - INFO - mininet/util/m h9 ping 10.0.0.19 -i 1 -W 1 > /tmp/ping.h9 &
+2013-11-21 12:38:02,312 - OnosPerf4nodes - INFO - Executed :mininet/util/m h9 ping 10.0.0.19 -i 1 -W 1 > /tmp/ping.h9 & 		 Expected Prompt '(.*)' Found
+2013-11-21 12:38:02,414 - OnosPerf4nodes - INFO - Executed :rm /tmp/ping.h10 		 Expected Prompt '(.*)' Found
+2013-11-21 12:38:02,414 - OnosPerf4nodes - INFO - mininet/util/m h10 ping 10.0.0.20 -i 1 -W 1 > /tmp/ping.h10 &
+2013-11-21 12:38:02,516 - OnosPerf4nodes - INFO - Executed :mininet/util/m h10 ping 10.0.0.20 -i 1 -W 1 > /tmp/ping.h10 & 		 Expected Prompt '(.*)' Found
+2013-11-21 12:38:02,618 - OnosPerf4nodes - INFO - Executed :rm /tmp/ping.h11 		 Expected Prompt '(.*)' Found
+2013-11-21 12:38:02,619 - OnosPerf4nodes - INFO - mininet/util/m h11 ping 10.0.0.21 -i 1 -W 1 > /tmp/ping.h11 &
+2013-11-21 12:38:02,720 - OnosPerf4nodes - INFO - Executed :mininet/util/m h11 ping 10.0.0.21 -i 1 -W 1 > /tmp/ping.h11 & 		 Expected Prompt '(.*)' Found
+2013-11-21 12:38:02,822 - OnosPerf4nodes - INFO - Executed :rm /tmp/ping.h12 		 Expected Prompt '(.*)' Found
+2013-11-21 12:38:02,822 - OnosPerf4nodes - INFO - mininet/util/m h12 ping 10.0.0.22 -i 1 -W 1 > /tmp/ping.h12 &
+2013-11-21 12:38:02,924 - OnosPerf4nodes - INFO - Executed :mininet/util/m h12 ping 10.0.0.22 -i 1 -W 1 > /tmp/ping.h12 & 		 Expected Prompt '(.*)' Found
+2013-11-21 12:38:03,026 - OnosPerf4nodes - INFO - Executed :rm /tmp/ping.h13 		 Expected Prompt '(.*)' Found
+2013-11-21 12:38:03,026 - OnosPerf4nodes - INFO - mininet/util/m h13 ping 10.0.0.23 -i 1 -W 1 > /tmp/ping.h13 &
+2013-11-21 12:38:03,128 - OnosPerf4nodes - INFO - Executed :mininet/util/m h13 ping 10.0.0.23 -i 1 -W 1 > /tmp/ping.h13 & 		 Expected Prompt '(.*)' Found
+2013-11-21 12:38:03,230 - OnosPerf4nodes - INFO - Executed :rm /tmp/ping.h14 		 Expected Prompt '(.*)' Found
+2013-11-21 12:38:03,230 - OnosPerf4nodes - INFO - mininet/util/m h14 ping 10.0.0.24 -i 1 -W 1 > /tmp/ping.h14 &
+2013-11-21 12:38:03,332 - OnosPerf4nodes - INFO - Executed :mininet/util/m h14 ping 10.0.0.24 -i 1 -W 1 > /tmp/ping.h14 & 		 Expected Prompt '(.*)' Found
+2013-11-21 12:38:03,434 - OnosPerf4nodes - INFO - Executed :rm /tmp/ping.h15 		 Expected Prompt '(.*)' Found
+2013-11-21 12:38:03,435 - OnosPerf4nodes - INFO - mininet/util/m h15 ping 10.0.0.25 -i 1 -W 1 > /tmp/ping.h15 &
+2013-11-21 12:38:03,537 - OnosPerf4nodes - INFO - Executed :mininet/util/m h15 ping 10.0.0.25 -i 1 -W 1 > /tmp/ping.h15 & 		 Expected Prompt '(.*)' Found
+
+[2013-11-21 12:38:03.537684] [OnosPerf4nodes] [STEP]  INIT : Initializing the test case :Starting long ping... 
+
+[2013-11-21 12:38:03.541904] [OnosPerf4nodes] [STEP]  9.1: Check that the pings are going
+2013-11-21 12:38:03,655 - OnosPerf4nodes - INFO - Pings look good
+2013-11-21 12:38:03,767 - OnosPerf4nodes - INFO - No, or faulty ping data...
+2013-11-21 12:38:03,879 - OnosPerf4nodes - INFO - No, or faulty ping data...
+2013-11-21 12:38:03,990 - OnosPerf4nodes - INFO - No, or faulty ping data...
+2013-11-21 12:38:04,102 - OnosPerf4nodes - INFO - No, or faulty ping data...
+2013-11-21 12:38:04,213 - OnosPerf4nodes - INFO - No, or faulty ping data...
+2013-11-21 12:38:04,323 - OnosPerf4nodes - INFO - No, or faulty ping data...
+2013-11-21 12:38:04,434 - OnosPerf4nodes - INFO - No, or faulty ping data...
+2013-11-21 12:38:04,545 - OnosPerf4nodes - INFO - No, or faulty ping data...
+2013-11-21 12:38:04,656 - OnosPerf4nodes - INFO - No, or faulty ping data...
+
+[2013-11-21 12:38:04.657454] [OnosPerf4nodes] [STEP]  9.2: Making topo change while flows are rerouting
+
+[2013-11-21 12:38:04.661662] [OnosPerf4nodes] [STEP]  9.3: Link down number of iterations: 3
+2013-11-21 12:38:04,664 - OnosPerf4nodes - INFO - s1-s2 link down | Onos 1 down
+2013-11-21 12:38:04,664 - OnosPerf4nodes - INFO - Bring link(s) between two nodes up or down
+2013-11-21 12:38:04,767 - OnosPerf4nodes - INFO - Executed :link s1 s2 down 		 Expected Prompt 'mininet>' Found
+2013-11-21 12:38:06,707 - OnosPerf4nodes - WARNING - ONOS wasn't running
+2013-11-21 12:38:11,713 - OnosPerf4nodes - INFO - s1-s2 link up | Onos 1 back up
+2013-11-21 12:38:11,717 - OnosPerf4nodes - INFO - Bring link(s) between two nodes up or down
+2013-11-21 12:38:11,819 - OnosPerf4nodes - INFO - Executed :link s1 s2 up 		 Expected Prompt 'mininet>' Found
+2013-11-21 12:38:23,711 - OnosPerf4nodes - INFO - ONOS Started 
+2013-11-21 12:38:23,813 - OnosPerf4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-21 12:38:24,927 - OnosPerf4nodes - INFO - Executed :~/ONOS/start-onos.sh status  		 Expected Prompt 'running' Found
+2013-11-21 12:38:25,029 - OnosPerf4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-21 12:38:25,131 - OnosPerf4nodes - INFO - Executed :tail ~/ONOS/onos-logs/onos.*.log 		 Expected Prompt '\$' Found
+2013-11-21 12:38:27,236 - OnosPerf4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-21 12:38:27,338 - OnosPerf4nodes - INFO - Executed :tail ~/ONOS/onos-logs/onos.*.log 		 Expected Prompt '\$' Found
+2013-11-21 12:38:27,340 - OnosPerf4nodes - INFO - ONOS process is running...
+2013-11-21 12:38:27,340 - OnosPerf4nodes - INFO - Assertion Passed
+2013-11-21 12:38:27,354 - OnosPerf4nodes - INFO - Onos log is moving! It's looking good!
+2013-11-21 12:38:27,355 - OnosPerf4nodes - INFO - Waiting 60 seconds.... 
+2013-11-21 12:39:27,416 - OnosPerf4nodes - INFO - s1-s2 link down | Onos 1 down
+2013-11-21 12:39:27,416 - OnosPerf4nodes - INFO - Bring link(s) between two nodes up or down
+2013-11-21 12:39:27,518 - OnosPerf4nodes - INFO - Executed :link s1 s2 down 		 Expected Prompt 'mininet>' Found
+2013-11-21 12:39:28,475 - OnosPerf4nodes - WARNING - ONOS wasn't running
+2013-11-21 12:39:33,481 - OnosPerf4nodes - INFO - s1-s2 link up | Onos 1 back up
+2013-11-21 12:39:33,481 - OnosPerf4nodes - INFO - Bring link(s) between two nodes up or down
+2013-11-21 12:39:33,583 - OnosPerf4nodes - INFO - Executed :link s1 s2 up 		 Expected Prompt 'mininet>' Found
+2013-11-21 12:39:43,892 - OnosPerf4nodes - INFO - ONOS Started 
+2013-11-21 12:39:43,995 - OnosPerf4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-21 12:39:44,725 - OnosPerf4nodes - INFO - Executed :~/ONOS/start-onos.sh status  		 Expected Prompt 'running' Found
+2013-11-21 12:39:44,827 - OnosPerf4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-21 12:39:44,930 - OnosPerf4nodes - INFO - Executed :tail ~/ONOS/onos-logs/onos.*.log 		 Expected Prompt '\$' Found
+2013-11-21 12:39:47,034 - OnosPerf4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-21 12:39:47,137 - OnosPerf4nodes - INFO - Executed :tail ~/ONOS/onos-logs/onos.*.log 		 Expected Prompt '\$' Found
+2013-11-21 12:39:47,139 - OnosPerf4nodes - INFO - ONOS process is running...
+2013-11-21 12:39:47,139 - OnosPerf4nodes - INFO - Assertion Passed
+2013-11-21 12:39:47,140 - OnosPerf4nodes - INFO - Onos log is moving! It's looking good!
+2013-11-21 12:39:47,140 - OnosPerf4nodes - INFO - Waiting 60 seconds.... 
+2013-11-21 12:40:47,148 - OnosPerf4nodes - INFO - s1-s2 link down | Onos 1 down
+2013-11-21 12:40:47,149 - OnosPerf4nodes - INFO - Bring link(s) between two nodes up or down
+2013-11-21 12:40:47,251 - OnosPerf4nodes - INFO - Executed :link s1 s2 down 		 Expected Prompt 'mininet>' Found
+2013-11-21 12:40:48,311 - OnosPerf4nodes - WARNING - ONOS wasn't running
+2013-11-21 12:40:53,317 - OnosPerf4nodes - INFO - s1-s2 link up | Onos 1 back up
+2013-11-21 12:40:53,318 - OnosPerf4nodes - INFO - Bring link(s) between two nodes up or down
+2013-11-21 12:40:53,420 - OnosPerf4nodes - INFO - Executed :link s1 s2 up 		 Expected Prompt 'mininet>' Found
+2013-11-21 12:41:07,237 - OnosPerf4nodes - INFO - ONOS Started 
+2013-11-21 12:41:07,339 - OnosPerf4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-21 12:41:08,088 - OnosPerf4nodes - INFO - Executed :~/ONOS/start-onos.sh status  		 Expected Prompt 'running' Found
+2013-11-21 12:41:08,190 - OnosPerf4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-21 12:41:08,293 - OnosPerf4nodes - INFO - Executed :tail ~/ONOS/onos-logs/onos.*.log 		 Expected Prompt '\$' Found
+2013-11-21 12:41:10,397 - OnosPerf4nodes - INFO - Executed : 		 Expected Prompt '\$' Found
+2013-11-21 12:41:10,500 - OnosPerf4nodes - INFO - Executed :tail ~/ONOS/onos-logs/onos.*.log 		 Expected Prompt '\$' Found
+2013-11-21 12:41:10,501 - OnosPerf4nodes - INFO - ONOS process is running...
+2013-11-21 12:41:10,502 - OnosPerf4nodes - INFO - Assertion Passed
+2013-11-21 12:41:10,517 - OnosPerf4nodes - INFO - Onos log is moving! It's looking good!
+2013-11-21 12:41:10,518 - OnosPerf4nodes - INFO - Waiting 60 seconds.... 
+
+[2013-11-21 12:42:10.525002] [OnosPerf4nodes] [CASE]  Killing remote ping processes 
+2013-11-21 12:42:10,527 - OnosPerf4nodes - INFO - sudo pkill ping
+2013-11-21 12:42:10,629 - OnosPerf4nodes - INFO - Executed :sudo pkill ping 		 Expected Prompt '(.*)' Found
+2013-11-21 12:42:10,630 - OnosPerf4nodes - INFO - Removing old ping data
+2013-11-21 12:42:12,664 - OnosPerf4nodes - INFO - Transferring ping files to TestStation
+2013-11-21 12:42:14,555 - OnosPerf4nodes - INFO - Executed :scp /tmp/ping.* admin@10.128.7.7:/tmp/ 		 Expected Prompt '100%' Found
+2013-11-21 12:42:14,556 - OnosPerf4nodes - INFO - Verifying the Expected is equal to the actual or not using assert_equal
+2013-11-21 12:42:14,557 - OnosPerf4nodes - WARNING - Assertion Failed
+
+
+*****************************
+ Result: Failed 
+*****************************
+
+
+
+******************************
+ Result summary for Testcase7
+******************************
+
+
+[2013-11-21 12:42:14.566863] [OnosPerf4nodes] [CASE]  Processing Ping data
+2013-11-21 12:42:17,771 - OnosPerf4nodes - INFO - Verifying the Expected is equal to the actual or not using assert_equal
+2013-11-21 12:42:17,772 - OnosPerf4nodes - ERROR - Average is worse then target time... 
+2013-11-21 12:42:17,773 - OnosPerf4nodes - WARNING - Assertion Failed
+
+
+*****************************
+ Result: Failed 
+*****************************
+
+
+
+
+*************************************
+	Test Execution Summary
+
+************************************* 
+
+ Test Start           : 21 Nov 2013 12:13:56
+ Test End             : 21 Nov 2013 12:42:17
+ Execution Time       : 0:28:21.691540
+ Total tests planned  : 9
+ Total tests RUN      : 13
+ Total Pass           : 2
+ Total Fail           : 11
+ Total No Result      : 0
+ Success Percentage   : 15%
+ Execution Result     : 144%
+2013-11-21 12:42:19,613 - OnosPerf4nodes - INFO - Disconnecting mininet...
+2013-11-21 12:42:19,715 - OnosPerf4nodes - INFO - Executed :exit 		 Expected Prompt '(.*)' Found
+2013-11-21 12:42:19,817 - OnosPerf4nodes - INFO - Executed :exit 		 Expected Prompt '(.*)' Found

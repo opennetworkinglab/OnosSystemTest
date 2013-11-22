@@ -1,0 +1,1870 @@
+2013-11-21 14:44:35,740  ONOS1     : INFO    : 
+                                +----------------+
+------------------------------ { Script And Files }  ------------------------------
+                                +----------------+
+
+	Script Log File : /home/admin/ONLabTest/TestON/logs/OnosPerf4nodes_21_Nov_2013_14_44_32/OnosPerf4nodes_21_Nov_2013_14_44_32.log
+	Report Log File : /home/admin/ONLabTest/TestON/logs/OnosPerf4nodes_21_Nov_2013_14_44_32/OnosPerf4nodes_21_Nov_2013_14_44_32.rpt
+	ONOS4 Session Log : /home/admin/ONLabTest/TestON/logs/OnosPerf4nodes_21_Nov_2013_14_44_32/ONOS4.session
+	ONOS2 Session Log : /home/admin/ONLabTest/TestON/logs/OnosPerf4nodes_21_Nov_2013_14_44_32/ONOS2.session
+	ONOS3 Session Log : /home/admin/ONLabTest/TestON/logs/OnosPerf4nodes_21_Nov_2013_14_44_32/ONOS3.session
+	ONOS1 Session Log : /home/admin/ONLabTest/TestON/logs/OnosPerf4nodes_21_Nov_2013_14_44_32/ONOS1.session
+	Cassandra1 Session Log : /home/admin/ONLabTest/TestON/logs/OnosPerf4nodes_21_Nov_2013_14_44_32/Cassandra1.session
+	Cassandra2 Session Log : /home/admin/ONLabTest/TestON/logs/OnosPerf4nodes_21_Nov_2013_14_44_32/Cassandra2.session
+	Cassandra3 Session Log : /home/admin/ONLabTest/TestON/logs/OnosPerf4nodes_21_Nov_2013_14_44_32/Cassandra3.session
+	Cassandra4 Session Log : /home/admin/ONLabTest/TestON/logs/OnosPerf4nodes_21_Nov_2013_14_44_32/Cassandra4.session
+	Zookeeper1 Session Log : /home/admin/ONLabTest/TestON/logs/OnosPerf4nodes_21_Nov_2013_14_44_32/Zookeeper1.session
+	Mininet1 Session Log : /home/admin/ONLabTest/TestON/logs/OnosPerf4nodes_21_Nov_2013_14_44_32/Mininet1.session
+	Mininet4 Session Log : /home/admin/ONLabTest/TestON/logs/OnosPerf4nodes_21_Nov_2013_14_44_32/Mininet4.session
+	Test Script :/home/admin/ONLabTest/TestON/Tests/OnosPerf4nodes.py
+	Test Params : /home/admin/ONLabTest/TestON/Tests/OnosPerf4nodes.params
+	Topology : /home/admin/ONLabTest/TestON/Tests/OnosPerf4nodes.tpl
+                              +------------------+
+---------------------------  { Script Exec Params }  ---------------------------
+                              +------------------+
+
+	
+	'CTRL': 
+	'ip2': '10.128.100.4'
+	 'ip3': '10.128.100.5'
+	 'ip1': '10.128.100.1'
+	 'ip4': '10.128.100.6'
+	 'port4': '6633'
+	 'port2': '6633'
+	 'port3': '6633'
+	 'port1': '6633'
+	
+	 'MN_size': '57'
+	 'FLOWDEF': '~/flowdef_files/Center_Triangle/flowdef_20.txt'
+	 'NR_Switches': '25'
+	 'WaitTime': '60'
+	 'TargetTime': '30'
+	 'PING': 
+	'source2': 'h7'
+	 'source9': 'h14'
+	 'source10': 'h15'
+	 'source4': 'h9'
+	 'source5': 'h10'
+	 'target3': '10.0.0.18'
+	 'target10': '10.0.0.25'
+	 'source3': 'h8'
+	 'source1': 'h6'
+	 'source6': 'h11'
+	 'source7': 'h12'
+	 'target8': '10.0.0.23'
+	 'target9': '10.0.0.24'
+	 'target6': '10.0.0.21'
+	 'target7': '10.0.0.22'
+	 'target4': '10.0.0.19'
+	 'target5': '10.0.0.20'
+	 'target2': '10.0.0.17'
+	 'source8': 'h13'
+	 'target1': '10.0.0.16'
+	
+	 'NR_Links': '50'
+	 'testcases': '1
+	2
+	3
+	4
+	5
+	6
+	7
+	4
+	8
+	7
+	4
+	9
+	7'
+	 'RestIP': '10.128.100.4'
+	 'Iterations': '3'
+	
+
+                               +---------------+
+----------------------------- { Components Used }  -----------------------------
+                               +---------------+
+	ONOS4
+	ONOS2
+	ONOS3
+	ONOS1
+	Cassandra1
+	Cassandra2
+	Cassandra3
+	Cassandra4
+	Zookeeper1
+	Mininet1
+	Mininet4
+
+
+                              +--------+
+---------------------------- { Topology }  ----------------------------
+                              +--------+
+
+	
+	'ONOS4': 
+	'connect_order': '9'
+	 'password': None
+	 'type': 'OnosCliDriver'
+	 'host': '10.128.100.6'
+	 'user': 'admin'
+	
+	 'ONOS2': 
+	'connect_order': '7'
+	 'password': None
+	 'type': 'OnosCliDriver'
+	 'host': '10.128.100.4'
+	 'user': 'admin'
+	
+	 'ONOS3': 
+	'connect_order': '8'
+	 'password': None
+	 'type': 'OnosCliDriver'
+	 'host': '10.128.100.5'
+	 'user': 'admin'
+	
+	 'ONOS1': 
+	'connect_order': '6'
+	 'password': None
+	 'type': 'OnosCliDriver'
+	 'host': '10.128.100.1'
+	 'user': 'admin'
+	
+	 'Cassandra1': 
+	'connect_order': '2'
+	 'password': None
+	 'type': 'CassandraCliDriver'
+	 'host': '10.128.100.1'
+	 'user': 'admin'
+	
+	 'Cassandra2': 
+	'connect_order': '3'
+	 'password': None
+	 'type': 'CassandraCliDriver'
+	 'host': '10.128.100.4'
+	 'user': 'admin'
+	
+	 'Cassandra3': 
+	'connect_order': '4'
+	 'password': None
+	 'type': 'CassandraCliDriver'
+	 'host': '10.128.100.5'
+	 'user': 'admin'
+	
+	 'Cassandra4': 
+	'connect_order': '5'
+	 'password': None
+	 'type': 'CassandraCliDriver'
+	 'host': '10.128.100.6'
+	 'user': 'admin'
+	
+	 'Zookeeper1': 
+	'connect_order': '1'
+	 'password': None
+	 'type': 'ZookeeperCliDriver'
+	 'host': '10.128.100.1'
+	 'user': 'admin'
+	
+	 'Mininet1': 
+	'connect_order': '10'
+	 'host': '10.128.100.11'
+	 'user': 'admin'
+	 'COMPONENTS': 
+	'arg1': '--custom ~/mininet/custom/topo-onos4node.py'
+	 'arg2': '--topo mytopo --arp'
+	 'controller': 'remote'
+	
+	 'password': None
+	 'type': 'MininetCliDriver'
+	
+	 'Mininet4': 
+	'connect_order': '11'
+	 'password': None
+	 'type': 'RemoteMininetDriver'
+	 'host': '10.128.100.11'
+	 'user': 'admin'
+	
+	
+------------------------------------------------------------
+
+[Kteston> 
+
+
+2013-11-21 14:44:58,767  ONOS1     : INFO    : 
+****************************************
+Start of Test Case1 : 
+
+Welcome to Ubuntu 12.04.2 LTS (GNU/Linux 3.2.0-44-virtual x86_64)
+
+ * Documentation:  https://help.ubuntu.com/
+
+  System information as of Thu Nov 21 14:44:36 PST 2013
+
+  System load:  0.16               Processes:           105
+  Usage of /:   23.2% of 19.67GB   Users logged in:     1
+  Memory usage: 67%                IP address for eth0: 10.128.100.1
+  Swap usage:   0%
+
+  Graph this data and manage this system at https://landscape.canonical.com/
+
+  Get cloud support with Ubuntu Advantage Cloud Guest:
+    http://www.ubuntu.com/business/services/cloud
+
+  Use Juju to deploy your cloud instances and workloads:
+    https://juju.ubuntu.com/#cloud-precise
+
+134 packages can be updated.
+69 updates are security updates.
+
+Last login: Thu Nov 21 14:44:36 2013 from 10.128.7.7
+
+
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ 
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ 
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ ~/ONOS/start-onos.sh stop
+
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ ~/ONOS/start-onos.sh stop
+Killed existing process (pid: 6188)
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ ~/ONOS/scripts/test-drop-keyspace.sh
+~/ONOS/scripts/test-drop-keyspace.sh
+spawn ~/apache-cassandra-1.2.4/bin/cassandra-cli
+
+
+Connected to: "Onos Sanity 4 nodes" on 127.0.0.1/9160
+Welcome to Cassandra CLI version 1.2.4
+
+Type 'help;' or '?' for help.
+Type 'quit;' or 'exit;' to quit.
+
+[default@unknown] drop keyspace onos;
+c0de5dd0-49ab-339c-a8a6-03ef58a86d46
+[default@unknown] ]0;admin@autoONOS1: ~admin@autoONOS1:~$ 
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ 
+
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ ~/ONOS/start-onos.sh start
+~/ONOS/start-onos.sh start
+rotate log: ./onos-logs/onos.autoONOS1.log
+rotate log: ./onos-logs/onos.autoONOS1.pcap
+Starting ONOS controller ...
+
+/home/admin/ONOS
+/home/admin/ONOS
+mvn -o exec:exec -Dexec.executable="java" -Dexec.args=" -javaagent:/home/admin/ONOS/lib/jacocoagent.jar=dumponexit=true,output=file,destfile=./onos-logs/jacoco.exec -server -d64 -Xmx1g -Xms1g -Xmn800m -XX:+UseConcMarkSweepGC -XX:+UseAdaptiveSizePolicy -XX:+AggressiveOpts -XX:+UseFastAccessorMethods -XX:MaxInlineSize=8192 -XX:FreqInlineSize=8192 -XX:CompileThreshold=1500 -XX:PreBlockSpin=8 -XX:OnError=crash-logger -XX:CompileThreshold=1500 -XX:PreBlockSpin=8 		-XX:+UseThreadPriorities 		-XX:ThreadPriorityPolicy=42 		-XX:+UseCompressedOops 		-Dcom.sun.management.jmxremote.port=7189 		-Dcom.sun.management.jmxremote.ssl=false 		-Dcom.sun.management.jmxremote.authenticate=false -Dhazelcast.logging.type=slf4j -Dlogback.configurationFile=./logback.autoONOS1.xml -cp %classpath net.onrc.onos.ofcontroller.core.Main -cf ./conf/onos.properties"
+Waiting for ONOS to start...
+.....
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ ~/ONOS/start-rest.sh start
+~/ONOS/start-rest.sh start
+killing: /usr/bin/python /home/admin/ONOS/web/topology_rest.py
+killing: python /home/admin/ONOS/web/topology_rest.py
+killing: 
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ ~/ONOS/start-rest.sh status 
+~/ONOS/start-rest.sh status 
+rest server is running
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ 
+cat /home/admin/ONOS/.git/ORIG_HEAD
+
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ 
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ cat /home/admin/ONOS/.git/ORIG_HEAD
+67174b8f2ccab135db02699ccdfc59e082b65490
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ 2013-11-21 14:46:50,805  ONOS1     : INFO    :  Checking if the startup was clean...
+****************************************
+
+2013-11-21 14:46:50,808  ONOS1     : INFO    : 
+---------------------------------------------
+Start of Step INIT : Initializing the test case :Checking if the startup was clean...
+---------------------------------------------
+
+2013-11-21 14:46:50,812  ONOS1     : INFO    : 
+---------------------------------------------
+Start of Step 1.1: Testing startup Zookeeper
+---------------------------------------------
+
+2013-11-21 14:46:51,654  ONOS1     : INFO    : 
+---------------------------------------------
+End of Step  1.1: Testing startup Zookeeper
+---------------------------------------------
+
+---------------------------------------------
+Start of Step 1.2: Testing startup Cassandra
+---------------------------------------------
+
+2013-11-21 14:46:53,429  ONOS1     : INFO    : 
+---------------------------------------------
+End of Step  1.2: Testing startup Cassandra
+---------------------------------------------
+
+---------------------------------------------
+Start of Step 1.3: Testing startup ONOS
+---------------------------------------------
+
+
+
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ ~/ONOS/start-onos.sh status 
+
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ ~/ONOS/start-onos.sh status 
+1 instance of onos running
+
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ 
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ tail ~/ONOS/onos-logs/onos.*.log
+
+
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ tail ~/ONOS/onos-logs/onos.*.log
+2013-11-21 14:46:51,280 DEBUG [hz._hzInstance_1_dev.migration] c.h.p.PartitionService [Slf4jFactory.java:81] [10.128.100.1]:5701 [dev] Sending sync replica request to -> Address[10.128.100.5]:5701; for partition: 270, replica: 2
+2013-11-21 14:46:51,288 DEBUG [hz._hzInstance_1_dev.operation.thread-6] c.h.p.ReplicaSyncResponse [Slf4jFactory.java:81] [10.128.100.1]:5701 [dev] Applying replica sync for partition: 270, replica: 2
+2013-11-21 14:46:52,282 INFO [hz._hzInstance_1_dev.migration] c.h.p.PartitionService [Slf4jFactory.java:83] [10.128.100.1]:5701 [dev] All migration tasks has been completed, queues are empty.
+2013-11-21 14:46:53,117 INFO [hz._hzInstance_1_dev.IO.thread-Acceptor] c.h.n.SocketAcceptor [Slf4jFactory.java:83] [10.128.100.1]:5701 [dev] Accepting socket connection from /10.128.100.6:33481
+2013-11-21 14:46:53,130 INFO [hz._hzInstance_1_dev.IO.thread-Acceptor] c.h.n.TcpIpConnectionManager [Slf4jFactory.java:83] [10.128.100.1]:5701 [dev] 5701 accepted socket connection from /10.128.100.6:33481
+2013-11-21 14:46:53,237 DEBUG [hz._hzInstance_1_dev.cached.thread-4] c.h.n.TcpIpConnectionManager [Slf4jFactory.java:81] [10.128.100.1]:5701 [dev] Binding Connection [/10.128.100.6:33481 -> null] live=true, client=false, type=MEMBER to Address[10.128.100.6]:5701, replyBack is true
+2013-11-21 14:46:53,238 DEBUG [hz._hzInstance_1_dev.cached.thread-4] c.h.n.ConnectionMonitor [Slf4jFactory.java:81] [10.128.100.1]:5701 [dev] Resetting connection monitor for endpoint Address[10.128.100.6]:5701
+2013-11-21 14:46:53,456 DEBUG [hz._hzInstance_1_dev.cached.thread-4] c.h.c.ClusterService [Slf4jFactory.java:81] [10.128.100.1]:5701 [dev] Handling join from Address[10.128.100.6]:5701, inProgress: false, timeToStart: -2368
+2013-11-21 14:46:53,475 DEBUG [hz._hzInstance_1_dev.cached.thread-4] c.h.c.ClusterService [Slf4jFactory.java:81] [10.128.100.1]:5701 [dev] Handling join from Address[10.128.100.6]:5701, inProgress: false, timeToStart: 4981
+2013-11-21 14:46:53,959 DEBUG [hz._hzInstance_1_dev.cached.thread-4] c.h.c.ClusterService [Slf4jFactory.java:81] [10.128.100.1]:5701 [dev] Handling join from Address[10.128.100.6]:5701, inProgress: false, timeToStart: 4497
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ tail ~/ONOS/onos-logs/onos.*.log
+2013-11-21 14:48:59,096  ONOS1     : INFO    : 
+****************************************
+Start of Test Case2 : 
+2013-11-21 14:48:59,099  ONOS1     : INFO    : 
+---------------------------------------------
+Start of Step INIT : Initializing the test case :Checking if the startup was clean...
+---------------------------------------------
+
+2013-11-21 14:48:59,102  ONOS1     : INFO    : 
+---------------------------------------------
+Start of Step 2.1: Checking if MN switches exist
+---------------------------------------------
+
+2013-11-21 14:48:59,109  ONOS1     : INFO    : 
+---------------------------------------------
+End of Step  2.1: Checking if MN switches exist
+---------------------------------------------
+
+---------------------------------------------
+Start of Step 2.2: assigning ONOS controllers to switches
+---------------------------------------------
+
+2013-11-21 14:49:37,433  ONOS1     : INFO    : 
+****************************************
+Start of Test Case3 : 
+2013-11-21 14:49:37,436  ONOS1     : INFO    :  TOPO check
+****************************************
+
+2013-11-21 14:49:37,439  ONOS1     : INFO    : 
+---------------------------------------------
+Start of Step INIT : Initializing the test case :TOPO check
+---------------------------------------------
+
+2013-11-21 14:49:37,442  ONOS1     : INFO    : 
+---------------------------------------------
+Start of Step 3.1: calling rest calls
+---------------------------------------------
+
+2013-11-21 14:49:48,423  ONOS1     : INFO    : 
+****************************************
+Start of Test Case4 : 
+2013-11-21 14:49:48,428  ONOS1     : INFO    :  Taking care of these flows!
+****************************************
+
+2013-11-21 14:49:48,431  ONOS1     : INFO    : 
+---------------------------------------------
+Start of Step INIT : Initializing the test case :Taking care of these flows!
+---------------------------------------------
+
+2013-11-21 14:49:48,436  ONOS1     : INFO    : 
+---------------------------------------------
+Start of Step 4.1: Cleaning out any leftover flows...
+---------------------------------------------
+
+~/ONOS/web/delete_flow.py all
+
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ 
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ tail ~/ONOS/onos-logs/onos.*.log
+2013-11-21 14:47:02,635 DEBUG [hz._hzInstance_1_dev.operation.thread-6] c.h.p.ReplicaSyncResponse [Slf4jFactory.java:81] [10.128.100.1]:5701 [dev] Applying replica sync for partition: 190, replica: 3
+2013-11-21 14:47:02,663 DEBUG [hz._hzInstance_1_dev.migration] c.h.p.PartitionService [Slf4jFactory.java:81] [10.128.100.1]:5701 [dev] Finished Migration: MigrationInfo{ partitionId=191, source=Address[10.128.100.1]:5701, destination=Address[10.128.100.6]:5701, master=Address[10.128.100.1]:5701, valid=true, processing=false}
+2013-11-21 14:47:02,665 DEBUG [hz._hzInstance_1_dev.migration] c.h.p.PartitionService [Slf4jFactory.java:81] [10.128.100.1]:5701 [dev] Sending sync replica request to -> Address[10.128.100.6]:5701; for partition: 191, replica: 3
+2013-11-21 14:47:02,672 DEBUG [hz._hzInstance_1_dev.operation.thread-7] c.h.p.ReplicaSyncResponse [Slf4jFactory.java:81] [10.128.100.1]:5701 [dev] Applying replica sync for partition: 191, replica: 3
+2013-11-21 14:47:03,668 INFO [hz._hzInstance_1_dev.migration] c.h.p.PartitionService [Slf4jFactory.java:83] [10.128.100.1]:5701 [dev] All migration tasks has been completed, queues are empty.
+2013-11-21 14:47:09,351 DEBUG [pool-3-thread-1] n.o.o.o.f.NetworkGraphPublisher [NetworkGraphPublisher.java:88] Running cleanup thread
+2013-11-21 14:47:10,200 DEBUG [hz._hzInstance_1_dev.cached.thread-2] c.h.c.ClusterService [Slf4jFactory.java:81] [10.128.100.1]:5701 [dev] MasterConfirmation has been received from Member [10.128.100.5]:5701
+2013-11-21 14:47:11,247 DEBUG [pool-3-thread-1] n.o.o.o.f.NetworkGraphPublisher [NetworkGraphPublisher.java:154] Checking for inactive switches
+2013-11-21 14:47:13,056 DEBUG [pool-3-thread-4] n.o.o.o.l.i.LinkDiscoveryManager [LinkDiscoveryManager.java:372] Sending LLDP out on all ports.
+2013-11-21 14:47:22,742 DEBUG [hz._hzInstance_1_dev.cached.thread-6] c.h.c.ClusterService [Slf4jFactory.java:81] [10.128.100.1]:5701 [dev] MasterConfirmation has been received from Member [10.128.100.6]:5701
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ ~/ONOS/web/delete_flow.py all
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ ~/ONOS/web/clear_flow.py all
+~/ONOS/web/clear_flow.py all
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ scp admin@10.128.7.7:~/flowdef_files/Center_Triangle/flowdef_20.txt /tmp/flowtmp
+scp admin@10.128.7.7:~/flowdef_files/Center_Triangle/flowdef_ 20.txt /tmp/flowtmp
+flowdef_20.txt                                  0%    0     0.0KB/s   --:-- ETAflowdef_20.txt                                100% 2433     2.4KB/s   00:00    
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ ~/ONOS/web/add_flow.py -m onos -f /tmp/flowtmp
+~/ONOS/web/add_flow.py -m onos -f /tmp/flowtmp
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ clear
+~/ONOS/web/get_flow.py all
+clear
+[H[2J]0;admin@autoONOS1: ~admin@autoONOS1:~$ ~/ONOS/web/get_flow.py all
+FlowPath: (flowId = 0xa installerId = ps_5_2 flowPathType = FP_TYPE_SHORTEST_PATH flowPathUserState = FP_USER_ADD flowPathFlags = 0x0() src = 00:00:00:00:00:00:00:23/1 dst = 00:00:00:00:00:00:00:0a/1)
+    srcMac: 00:00:00:00:00:14
+    dstMac: 00:00:00:00:00:0A
+  FlowEntry: (0x4489d19f0000000a, 00:00:00:00:00:00:00:23, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 1
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+FlowPath: (flowId = 0x2 installerId = ps_1_2 flowPathType = FP_TYPE_SHORTEST_PATH flowPathUserState = FP_USER_ADD flowPathFlags = 0x0() src = 00:00:00:00:00:00:00:1f/1 dst = 00:00:00:00:00:00:00:06/1)
+    srcMac: 00:00:00:00:00:10
+    dstMac: 00:00:00:00:00:06
+  FlowEntry: (0x4489d19f00000002, 00:00:00:00:00:00:00:1f, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 1
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0xfe3c7b7500000003, 00:00:00:00:00:00:00:05, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 3
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0xfe3c7b7500000004, 00:00:00:00:00:00:00:04, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 3 maxLen: 0
+  FlowEntry: (0x8075807a00000003, 00:00:00:00:00:00:00:01, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 4
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x8075807a00000004, 00:00:00:00:00:00:00:02, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 4 maxLen: 0
+  FlowEntry: (0x30a84f6300000002, 00:00:00:00:00:00:00:06, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 1 maxLen: 0
+FlowPath: (flowId = 0x9 installerId = ps_5_1 flowPathType = FP_TYPE_SHORTEST_PATH flowPathUserState = FP_USER_ADD flowPathFlags = 0x0() src = 00:00:00:00:00:00:00:0a/1 dst = 00:00:00:00:00:00:00:23/1)
+    srcMac: 00:00:00:00:00:0A
+    dstMac: 00:00:00:00:00:14
+  FlowEntry: (0x30a84f6300000009, 00:00:00:00:00:00:00:0a, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 1
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x8075807a00000011, 00:00:00:00:00:00:00:02, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 4
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0xfe3c7b7500000012, 00:00:00:00:00:00:00:05, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 7 maxLen: 0
+  FlowEntry: (0x8075807a00000012, 00:00:00:00:00:00:00:01, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 4 maxLen: 0
+  FlowEntry: (0xfe3c7b7500000011, 00:00:00:00:00:00:00:04, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 7
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+FlowPath: (flowId = 0x1 installerId = ps_1_1 flowPathType = FP_TYPE_SHORTEST_PATH flowPathUserState = FP_USER_ADD flowPathFlags = 0x0() src = 00:00:00:00:00:00:00:06/1 dst = 00:00:00:00:00:00:00:1f/1)
+    srcMac: 00:00:00:00:00:06
+    dstMac: 00:00:00:00:00:10
+  FlowEntry: (0x30a84f6300000001, 00:00:00:00:00:00:00:06, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 1
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0xfe3c7b7500000001, 00:00:00:00:00:00:00:04, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 3
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0xfe3c7b7500000002, 00:00:00:00:00:00:00:05, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 3 maxLen: 0
+  FlowEntry: (0x4489d19f00000001, 00:00:00:00:00:00:00:1f, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 1 maxLen: 0
+  FlowEntry: (0x8075807a00000001, 00:00:00:00:00:00:00:02, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 4
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x8075807a00000002, 00:00:00:00:00:00:00:01, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 4 maxLen: 0
+FlowPath: (flowId = 0xc installerId = ps_6_2 flowPathType = FP_TYPE_SHORTEST_PATH flowPathUserState = FP_USER_ADD flowPathFlags = 0x0() src = 00:00:00:00:00:00:00:24/1 dst = 00:00:00:00:00:00:00:0b/1)
+    srcMac: 00:00:00:00:00:15
+    dstMac: 00:00:00:00:00:0B
+  FlowEntry: (0x4489d19f0000000c, 00:00:00:00:00:00:00:24, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 1
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x8075807a00000018, 00:00:00:00:00:00:00:02, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 4 maxLen: 0
+  FlowEntry: (0xfe3c7b7500000018, 00:00:00:00:00:00:00:04, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 8 maxLen: 0
+  FlowEntry: (0xfe3c7b7500000017, 00:00:00:00:00:00:00:05, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 8
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x8075807a00000017, 00:00:00:00:00:00:00:01, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 4
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x30a84f630000000c, 00:00:00:00:00:00:00:0b, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 1 maxLen: 0
+FlowPath: (flowId = 0x4 installerId = ps_2_2 flowPathType = FP_TYPE_SHORTEST_PATH flowPathUserState = FP_USER_ADD flowPathFlags = 0x0() src = 00:00:00:00:00:00:00:20/1 dst = 00:00:00:00:00:00:00:07/1)
+    srcMac: 00:00:00:00:00:11
+    dstMac: 00:00:00:00:00:07
+  FlowEntry: (0x4489d19f00000004, 00:00:00:00:00:00:00:20, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 1
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x8075807a00000008, 00:00:00:00:00:00:00:02, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 4 maxLen: 0
+  FlowEntry: (0xfe3c7b7500000008, 00:00:00:00:00:00:00:04, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 4 maxLen: 0
+  FlowEntry: (0x30a84f6300000004, 00:00:00:00:00:00:00:07, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 1 maxLen: 0
+  FlowEntry: (0xfe3c7b7500000007, 00:00:00:00:00:00:00:05, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 4
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x8075807a00000007, 00:00:00:00:00:00:00:01, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 4
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+FlowPath: (flowId = 0xb installerId = ps_6_1 flowPathType = FP_TYPE_SHORTEST_PATH flowPathUserState = FP_USER_ADD flowPathFlags = 0x0() src = 00:00:00:00:00:00:00:0b/1 dst = 00:00:00:00:00:00:00:24/1)
+    srcMac: 00:00:00:00:00:0B
+    dstMac: 00:00:00:00:00:15
+  FlowEntry: (0x30a84f630000000b, 00:00:00:00:00:00:00:0b, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 1
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0xfe3c7b7500000016, 00:00:00:00:00:00:00:05, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 8 maxLen: 0
+  FlowEntry: (0x8075807a00000015, 00:00:00:00:00:00:00:02, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 4
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0xfe3c7b7500000015, 00:00:00:00:00:00:00:04, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 8
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x8075807a00000016, 00:00:00:00:00:00:00:01, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 4 maxLen: 0
+  FlowEntry: (0x4489d19f0000000b, 00:00:00:00:00:00:00:24, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 1 maxLen: 0
+FlowPath: (flowId = 0x3 installerId = ps_2_1 flowPathType = FP_TYPE_SHORTEST_PATH flowPathUserState = FP_USER_ADD flowPathFlags = 0x0() src = 00:00:00:00:00:00:00:07/1 dst = 00:00:00:00:00:00:00:20/1)
+    srcMac: 00:00:00:00:00:07
+    dstMac: 00:00:00:00:00:11
+  FlowEntry: (0x30a84f6300000003, 00:00:00:00:00:00:00:07, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 1
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x8075807a00000005, 00:00:00:00:00:00:00:02, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 4
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0xfe3c7b7500000006, 00:00:00:00:00:00:00:05, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 4 maxLen: 0
+  FlowEntry: (0x8075807a00000006, 00:00:00:00:00:00:00:01, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 4 maxLen: 0
+  FlowEntry: (0xfe3c7b7500000005, 00:00:00:00:00:00:00:04, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 4
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x4489d19f00000003, 00:00:00:00:00:00:00:20, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 1 maxLen: 0
+FlowPath: (flowId = 0x13 installerId = ps_10_1 flowPathType = FP_TYPE_SHORTEST_PATH flowPathUserState = FP_USER_ADD flowPathFlags = 0x0() src = 00:00:00:00:00:00:00:0f/1 dst = 00:00:00:00:00:00:00:28/1)
+    srcMac: 00:00:00:00:00:0F
+    dstMac: 00:00:00:00:00:19
+  FlowEntry: (0x30a84f6300000013, 00:00:00:00:00:00:00:0f, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 1
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x8075807a00000026, 00:00:00:00:00:00:00:01, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 4 maxLen: 0
+  FlowEntry: (0xfe3c7b7500000025, 00:00:00:00:00:00:00:04, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 12
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x8075807a00000025, 00:00:00:00:00:00:00:02, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 4
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0xfe3c7b7500000026, 00:00:00:00:00:00:00:05, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 12 maxLen: 0
+  FlowEntry: (0x4489d19f00000013, 00:00:00:00:00:00:00:28, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 1 maxLen: 0
+FlowPath: (flowId = 0xe installerId = ps_7_2 flowPathType = FP_TYPE_SHORTEST_PATH flowPathUserState = FP_USER_ADD flowPathFlags = 0x0() src = 00:00:00:00:00:00:00:25/1 dst = 00:00:00:00:00:00:00:0c/1)
+    srcMac: 00:00:00:00:00:16
+    dstMac: 00:00:00:00:00:0C
+  FlowEntry: (0x4489d19f0000000e, 00:00:00:00:00:00:00:25, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 1
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0xfe3c7b750000001b, 00:00:00:00:00:00:00:05, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 9
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x8075807a0000001b, 00:00:00:00:00:00:00:01, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 4
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x8075807a0000001c, 00:00:00:00:00:00:00:02, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 4 maxLen: 0
+  FlowEntry: (0xfe3c7b750000001c, 00:00:00:00:00:00:00:04, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 9 maxLen: 0
+  FlowEntry: (0x30a84f630000000e, 00:00:00:00:00:00:00:0c, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 1 maxLen: 0
+FlowPath: (flowId = 0x6 installerId = ps_3_2 flowPathType = FP_TYPE_SHORTEST_PATH flowPathUserState = FP_USER_ADD flowPathFlags = 0x0() src = 00:00:00:00:00:00:00:21/1 dst = 00:00:00:00:00:00:00:08/1)
+    srcMac: 00:00:00:00:00:12
+    dstMac: 00:00:00:00:00:08
+  FlowEntry: (0x4489d19f00000006, 00:00:00:00:00:00:00:21, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 1
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0xfe3c7b750000000b, 00:00:00:00:00:00:00:05, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 5
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x8075807a0000000b, 00:00:00:00:00:00:00:01, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 4
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x8075807a0000000c, 00:00:00:00:00:00:00:02, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 4 maxLen: 0
+  FlowEntry: (0xfe3c7b750000000c, 00:00:00:00:00:00:00:04, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 5 maxLen: 0
+  FlowEntry: (0x30a84f6300000006, 00:00:00:00:00:00:00:08, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 1 maxLen: 0
+FlowPath: (flowId = 0x14 installerId = ps_10_2 flowPathType = FP_TYPE_SHORTEST_PATH flowPathUserState = FP_USER_ADD flowPathFlags = 0x0() src = 00:00:00:00:00:00:00:28/1 dst = 00:00:00:00:00:00:00:0f/1)
+    srcMac: 00:00:00:00:00:19
+    dstMac: 00:00:00:00:00:0F
+  FlowEntry: (0x4489d19f00000014, 00:00:00:00:00:00:00:28, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 1
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0xfe3c7b7500000028, 00:00:00:00:00:00:00:04, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 12 maxLen: 0
+  FlowEntry: (0x8075807a00000028, 00:00:00:00:00:00:00:02, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 4 maxLen: 0
+  FlowEntry: (0x8075807a00000027, 00:00:00:00:00:00:00:01, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 4
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0xfe3c7b7500000027, 00:00:00:00:00:00:00:05, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 12
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x30a84f6300000014, 00:00:00:00:00:00:00:0f, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 1 maxLen: 0
+FlowPath: (flowId = 0xd installerId = ps_7_1 flowPathType = FP_TYPE_SHORTEST_PATH flowPathUserState = FP_USER_ADD flowPathFlags = 0x0() src = 00:00:00:00:00:00:00:0c/1 dst = 00:00:00:00:00:00:00:25/1)
+    srcMac: 00:00:00:00:00:0C
+    dstMac: 00:00:00:00:00:16
+  FlowEntry: (0x30a84f630000000d, 00:00:00:00:00:00:00:0c, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 1
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x8075807a00000019, 00:00:00:00:00:00:00:02, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 4
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0xfe3c7b750000001a, 00:00:00:00:00:00:00:05, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 9 maxLen: 0
+  FlowEntry: (0x8075807a0000001a, 00:00:00:00:00:00:00:01, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 4 maxLen: 0
+  FlowEntry: (0xfe3c7b7500000019, 00:00:00:00:00:00:00:04, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 9
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x4489d19f0000000d, 00:00:00:00:00:00:00:25, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 1 maxLen: 0
+FlowPath: (flowId = 0x5 installerId = ps_3_1 flowPathType = FP_TYPE_SHORTEST_PATH flowPathUserState = FP_USER_ADD flowPathFlags = 0x0() src = 00:00:00:00:00:00:00:08/1 dst = 00:00:00:00:00:00:00:21/1)
+    srcMac: 00:00:00:00:00:08
+    dstMac: 00:00:00:00:00:12
+  FlowEntry: (0x30a84f6300000005, 00:00:00:00:00:00:00:08, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 1
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0xfe3c7b750000000a, 00:00:00:00:00:00:00:05, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 5 maxLen: 0
+  FlowEntry: (0x8075807a00000009, 00:00:00:00:00:00:00:02, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 4
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0xfe3c7b7500000009, 00:00:00:00:00:00:00:04, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 5
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x8075807a0000000a, 00:00:00:00:00:00:00:01, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 4 maxLen: 0
+  FlowEntry: (0x4489d19f00000005, 00:00:00:00:00:00:00:21, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 1 maxLen: 0
+FlowPath: (flowId = 0x11 installerId = ps_9_1 flowPathType = FP_TYPE_SHORTEST_PATH flowPathUserState = FP_USER_ADD flowPathFlags = 0x0() src = 00:00:00:00:00:00:00:0e/1 dst = 00:00:00:00:00:00:00:27/1)
+    srcMac: 00:00:00:00:00:0E
+    dstMac: 00:00:00:00:00:18
+  FlowEntry: (0x30a84f6300000011, 00:00:00:00:00:00:00:0e, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 1
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0xfe3c7b7500000021, 00:00:00:00:00:00:00:04, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 11
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x8075807a00000022, 00:00:00:00:00:00:00:01, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 4 maxLen: 0
+  FlowEntry: (0x8075807a00000021, 00:00:00:00:00:00:00:02, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 4
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0xfe3c7b7500000022, 00:00:00:00:00:00:00:05, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 11 maxLen: 0
+  FlowEntry: (0x4489d19f00000011, 00:00:00:00:00:00:00:27, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 1 maxLen: 0
+FlowPath: (flowId = 0x10 installerId = ps_8_2 flowPathType = FP_TYPE_SHORTEST_PATH flowPathUserState = FP_USER_ADD flowPathFlags = 0x0() src = 00:00:00:00:00:00:00:26/1 dst = 00:00:00:00:00:00:00:0d/1)
+    srcMac: 00:00:00:00:00:17
+    dstMac: 00:00:00:00:00:0D
+  FlowEntry: (0x4489d19f00000010, 00:00:00:00:00:00:00:26, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 1
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0xfe3c7b7500000020, 00:00:00:00:00:00:00:04, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 10 maxLen: 0
+  FlowEntry: (0x8075807a00000020, 00:00:00:00:00:00:00:02, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 4 maxLen: 0
+  FlowEntry: (0xfe3c7b750000001f, 00:00:00:00:00:00:00:05, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 10
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x8075807a0000001f, 00:00:00:00:00:00:00:01, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 4
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x30a84f6300000010, 00:00:00:00:00:00:00:0d, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 1 maxLen: 0
+FlowPath: (flowId = 0x8 installerId = ps_4_2 flowPathType = FP_TYPE_SHORTEST_PATH flowPathUserState = FP_USER_ADD flowPathFlags = 0x0() src = 00:00:00:00:00:00:00:22/1 dst = 00:00:00:00:00:00:00:09/1)
+    srcMac: 00:00:00:00:00:13
+    dstMac: 00:00:00:00:00:09
+  FlowEntry: (0x4489d19f00000008, 00:00:00:00:00:00:00:22, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 1
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0xfe3c7b750000000f, 00:00:00:00:00:00:00:05, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 6
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x8075807a0000000f, 00:00:00:00:00:00:00:01, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 4
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x8075807a00000010, 00:00:00:00:00:00:00:02, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 4 maxLen: 0
+  FlowEntry: (0xfe3c7b7500000010, 00:00:00:00:00:00:00:04, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 6 maxLen: 0
+  FlowEntry: (0x30a84f6300000008, 00:00:00:00:00:00:00:09, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 1 maxLen: 0
+FlowPath: (flowId = 0x12 installerId = ps_9_2 flowPathType = FP_TYPE_SHORTEST_PATH flowPathUserState = FP_USER_ADD flowPathFlags = 0x0() src = 00:00:00:00:00:00:00:27/1 dst = 00:00:00:00:00:00:00:0e/1)
+    srcMac: 00:00:00:00:00:18
+    dstMac: 00:00:00:00:00:0E
+  FlowEntry: (0x4489d19f00000012, 00:00:00:00:00:00:00:27, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 1
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x8075807a00000023, 00:00:00:00:00:00:00:01, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 4
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0xfe3c7b7500000023, 00:00:00:00:00:00:00:05, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 11
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0xfe3c7b7500000024, 00:00:00:00:00:00:00:04, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 11 maxLen: 0
+  FlowEntry: (0x8075807a00000024, 00:00:00:00:00:00:00:02, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 4 maxLen: 0
+  FlowEntry: (0x30a84f6300000012, 00:00:00:00:00:00:00:0e, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 1 maxLen: 0
+FlowPath: (flowId = 0xf installerId = ps_8_1 flowPathType = FP_TYPE_SHORTEST_PATH flowPathUserState = FP_USER_ADD flowPathFlags = 0x0() src = 00:00:00:00:00:00:00:0d/1 dst = 00:00:00:00:00:00:00:26/1)
+    srcMac: 00:00:00:00:00:0D
+    dstMac: 00:00:00:00:00:17
+  FlowEntry: (0x30a84f630000000f, 00:00:00:00:00:00:00:0d, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 1
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x8075807a0000001d, 00:00:00:00:00:00:00:02, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 4
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0xfe3c7b750000001e, 00:00:00:00:00:00:00:05, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 10 maxLen: 0
+  FlowEntry: (0xfe3c7b750000001d, 00:00:00:00:00:00:00:04, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 10
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x8075807a0000001e, 00:00:00:00:00:00:00:01, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 4 maxLen: 0
+  FlowEntry: (0x4489d19f0000000f, 00:00:00:00:00:00:00:26, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 1 maxLen: 0
+FlowPath: (flowId = 0x7 installerId = ps_4_1 flowPathType = FP_TYPE_SHORTEST_PATH flowPathUserState = FP_USER_ADD flowPathFlags = 0x0() src = 00:00:00:00:00:00:00:09/1 dst = 00:00:00:00:00:00:00:22/1)
+    srcMac: 00:00:00:00:00:09
+    dstMac: 00:00:00:00:00:13
+  FlowEntry: (0x30a84f6300000007, 00:00:00:00:00:00:00:09, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 1
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0xfe3c7b750000000e, 00:00:00:00:00:00:00:05, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 6 maxLen: 0
+  FlowEntry: (0x8075807a0000000d, 00:00:00:00:00:00:00:02, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 4
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x8075807a0000000e, 00:00:00:00:00:00:00:01, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 4 maxLen: 0
+  FlowEntry: (0xfe3c7b750000000d, 00:00:00:00:00:00:00:04, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 6
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x4489d19f00000007, 00:00:00:00:00:00:00:22, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 1 maxLen: 0
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ 2013-11-21 14:50:13,907  ONOS1     : INFO    :  TOPO check
+****************************************
+
+2013-11-21 14:50:13,910  ONOS1     : INFO    : 
+---------------------------------------------
+End of Step  4.1: Cleaning out any leftover flows...
+---------------------------------------------
+
+---------------------------------------------
+Start of Step 4.2: calling rest calls
+---------------------------------------------
+
+2013-11-21 14:50:23,643  ONOS1     : INFO    : 
+****************************************
+Start of Test Case5 : 
+2013-11-21 14:50:23,649  ONOS1     : INFO    :  Testing ping...
+****************************************
+
+2013-11-21 14:50:24,431  ONOS1     : INFO    : 
+****************************************
+Start of Test Case6 : 
+2013-11-21 14:50:24,436  ONOS1     : INFO    :  Starting long ping... 
+****************************************
+
+2013-11-21 14:50:26,497  ONOS1     : INFO    : 
+---------------------------------------------
+Start of Step INIT : Initializing the test case :Starting long ping... 
+---------------------------------------------
+
+2013-11-21 14:50:26,501  ONOS1     : INFO    : 
+---------------------------------------------
+Start of Step 6.1: Check that the pings are going
+---------------------------------------------
+
+2013-11-21 14:50:27,629  ONOS1     : INFO    : 
+---------------------------------------------
+End of Step  6.1: Check that the pings are going
+---------------------------------------------
+
+---------------------------------------------
+Start of Step 6.2: Link down number of iterations: 3
+---------------------------------------------
+
+2013-11-21 14:56:28,692  ONOS1     : INFO    :  Killing remote ping processes 
+****************************************
+
+2013-11-21 14:56:32,854  ONOS1     : INFO    : 
+****************************************
+Start of Test Case7 : 
+2013-11-21 14:56:32,863  ONOS1     : INFO    :  Processing Ping data
+****************************************
+
+2013-11-21 14:56:36,042  ONOS1     : INFO    : 
+****************************************
+Start of Test Case4 : 
+2013-11-21 14:56:36,046  ONOS1     : INFO    :  Taking care of these flows!
+****************************************
+
+2013-11-21 14:56:36,048  ONOS1     : INFO    : 
+---------------------------------------------
+Start of Step INIT : Initializing the test case :Taking care of these flows!
+---------------------------------------------
+
+2013-11-21 14:56:36,050  ONOS1     : INFO    : 
+---------------------------------------------
+Start of Step 4.1: Cleaning out any leftover flows...
+---------------------------------------------
+
+~/ONOS/web/delete_flow.py all
+~/ONOS/web/delete_flow.py all
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ ~/ONOS/web/clear_flow.py all
+~/ONOS/web/clear_flow.py all
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ scp admin@10.128.7.7:~/flowdef_files/Center_Triangle/flowdef_20.txt /tmp/flowtmp
+scp admin@10.128.7.7:~/flowdef_files/Center_Triangle/flowdef_ 20.txt /tmp/flowtmp
+flowdef_20.txt                                  0%    0     0.0KB/s   --:-- ETAflowdef_20.txt                                100% 2433     2.4KB/s   00:00    
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ ~/ONOS/web/add_flow.py -m onos -f /tmp/flowtmp
+~/ONOS/web/add_flow.py -m onos -f /tmp/flowtmp
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ clear
+~/ONOS/web/get_flow.py all
+clear
+[H[2J]0;admin@autoONOS1: ~admin@autoONOS1:~$ ~/ONOS/web/get_flow.py all
+FlowPath: (flowId = 0x11 installerId = ps_9_1 flowPathType = FP_TYPE_SHORTEST_PATH flowPathUserState = FP_USER_ADD flowPathFlags = 0x0() src = 00:00:00:00:00:00:00:0e/1 dst = 00:00:00:00:00:00:00:27/1)
+    srcMac: 00:00:00:00:00:0E
+    dstMac: 00:00:00:00:00:18
+  FlowEntry: (0x30a84f6300000025, 00:00:00:00:00:00:00:0e, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 1
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0xfe3c7b750000004a, 00:00:00:00:00:00:00:05, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 11 maxLen: 0
+  FlowEntry: (0xfe3c7b7500000049, 00:00:00:00:00:00:00:04, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 11
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x8075807a00000175, 00:00:00:00:00:00:00:02, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 4
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x8075807a00000176, 00:00:00:00:00:00:00:01, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 4 maxLen: 0
+FlowPath: (flowId = 0x8 installerId = ps_4_2 flowPathType = FP_TYPE_SHORTEST_PATH flowPathUserState = FP_USER_ADD flowPathFlags = 0x0() src = 00:00:00:00:00:00:00:22/1 dst = 00:00:00:00:00:00:00:09/1)
+    srcMac: 00:00:00:00:00:13
+    dstMac: 00:00:00:00:00:09
+  FlowEntry: (0x4489d19f0000001c, 00:00:00:00:00:00:00:22, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 1
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0xfe3c7b7500000038, 00:00:00:00:00:00:00:04, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 6 maxLen: 0
+  FlowEntry: (0x30a84f630000001c, 00:00:00:00:00:00:00:09, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 1 maxLen: 0
+  FlowEntry: (0x8075807a00000164, 00:00:00:00:00:00:00:02, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 4 maxLen: 0
+  FlowEntry: (0xfe3c7b7500000037, 00:00:00:00:00:00:00:05, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 6
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x8075807a00000163, 00:00:00:00:00:00:00:01, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 4
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+FlowPath: (flowId = 0x10 installerId = ps_8_2 flowPathType = FP_TYPE_SHORTEST_PATH flowPathUserState = FP_USER_ADD flowPathFlags = 0x0() src = 00:00:00:00:00:00:00:26/1 dst = 00:00:00:00:00:00:00:0d/1)
+    srcMac: 00:00:00:00:00:17
+    dstMac: 00:00:00:00:00:0D
+  FlowEntry: (0x4489d19f00000024, 00:00:00:00:00:00:00:26, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 1
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0xfe3c7b7500000048, 00:00:00:00:00:00:00:04, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 10 maxLen: 0
+  FlowEntry: (0xfe3c7b7500000047, 00:00:00:00:00:00:00:05, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 10
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x8075807a00000174, 00:00:00:00:00:00:00:02, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 4 maxLen: 0
+  FlowEntry: (0x8075807a00000173, 00:00:00:00:00:00:00:01, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 4
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x30a84f6300000024, 00:00:00:00:00:00:00:0d, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 1 maxLen: 0
+FlowPath: (flowId = 0x1 installerId = ps_1_1 flowPathType = FP_TYPE_SHORTEST_PATH flowPathUserState = FP_USER_ADD flowPathFlags = 0x0() src = 00:00:00:00:00:00:00:06/1 dst = 00:00:00:00:00:00:00:1f/1)
+    srcMac: 00:00:00:00:00:06
+    dstMac: 00:00:00:00:00:10
+  FlowEntry: (0x30a84f6300000015, 00:00:00:00:00:00:00:06, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 1
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x4489d19f00000015, 00:00:00:00:00:00:00:1f, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 1 maxLen: 0
+  FlowEntry: (0x8075807a00000155, 00:00:00:00:00:00:00:02, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 4
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x8075807a00000156, 00:00:00:00:00:00:00:01, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 4 maxLen: 0
+  FlowEntry: (0xfe3c7b7500000029, 00:00:00:00:00:00:00:04, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 3
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0xfe3c7b750000002a, 00:00:00:00:00:00:00:05, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 3 maxLen: 0
+FlowPath: (flowId = 0x9 installerId = ps_5_1 flowPathType = FP_TYPE_SHORTEST_PATH flowPathUserState = FP_USER_ADD flowPathFlags = 0x0() src = 00:00:00:00:00:00:00:0a/1 dst = 00:00:00:00:00:00:00:23/1)
+    srcMac: 00:00:00:00:00:0A
+    dstMac: 00:00:00:00:00:14
+  FlowEntry: (0x30a84f630000001d, 00:00:00:00:00:00:00:0a, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 1
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0xfe3c7b7500000039, 00:00:00:00:00:00:00:04, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 7
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0xfe3c7b750000003a, 00:00:00:00:00:00:00:05, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 7 maxLen: 0
+  FlowEntry: (0x4489d19f0000001d, 00:00:00:00:00:00:00:23, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 1 maxLen: 0
+  FlowEntry: (0x8075807a00000165, 00:00:00:00:00:00:00:02, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 4
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x8075807a00000166, 00:00:00:00:00:00:00:01, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 4 maxLen: 0
+FlowPath: (flowId = 0xf installerId = ps_8_1 flowPathType = FP_TYPE_SHORTEST_PATH flowPathUserState = FP_USER_ADD flowPathFlags = 0x0() src = 00:00:00:00:00:00:00:0d/1 dst = 00:00:00:00:00:00:00:26/1)
+    srcMac: 00:00:00:00:00:0D
+    dstMac: 00:00:00:00:00:17
+  FlowEntry: (0x30a84f6300000023, 00:00:00:00:00:00:00:0d, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 1
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0xfe3c7b7500000046, 00:00:00:00:00:00:00:05, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 10 maxLen: 0
+  FlowEntry: (0xfe3c7b7500000045, 00:00:00:00:00:00:00:04, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 10
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x8075807a00000171, 00:00:00:00:00:00:00:02, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 4
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x8075807a00000172, 00:00:00:00:00:00:00:01, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 4 maxLen: 0
+  FlowEntry: (0x4489d19f00000023, 00:00:00:00:00:00:00:26, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 1 maxLen: 0
+FlowPath: (flowId = 0x6 installerId = ps_3_2 flowPathType = FP_TYPE_SHORTEST_PATH flowPathUserState = FP_USER_ADD flowPathFlags = 0x0() src = 00:00:00:00:00:00:00:21/1 dst = 00:00:00:00:00:00:00:08/1)
+    srcMac: 00:00:00:00:00:12
+    dstMac: 00:00:00:00:00:08
+  FlowEntry: (0x4489d19f0000001a, 00:00:00:00:00:00:00:21, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 1
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x8075807a0000015f, 00:00:00:00:00:00:00:01, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 4
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0xfe3c7b7500000033, 00:00:00:00:00:00:00:05, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 5
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0xfe3c7b7500000034, 00:00:00:00:00:00:00:04, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 5 maxLen: 0
+  FlowEntry: (0x8075807a00000160, 00:00:00:00:00:00:00:02, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 4 maxLen: 0
+  FlowEntry: (0x30a84f630000001a, 00:00:00:00:00:00:00:08, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 1 maxLen: 0
+FlowPath: (flowId = 0xe installerId = ps_7_2 flowPathType = FP_TYPE_SHORTEST_PATH flowPathUserState = FP_USER_ADD flowPathFlags = 0x0() src = 00:00:00:00:00:00:00:25/1 dst = 00:00:00:00:00:00:00:0c/1)
+    srcMac: 00:00:00:00:00:16
+    dstMac: 00:00:00:00:00:0C
+  FlowEntry: (0x4489d19f00000022, 00:00:00:00:00:00:00:25, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 1
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0xfe3c7b7500000044, 00:00:00:00:00:00:00:04, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 9 maxLen: 0
+  FlowEntry: (0xfe3c7b7500000043, 00:00:00:00:00:00:00:05, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 9
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x8075807a00000170, 00:00:00:00:00:00:00:02, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 4 maxLen: 0
+  FlowEntry: (0x8075807a0000016f, 00:00:00:00:00:00:00:01, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 4
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x30a84f6300000022, 00:00:00:00:00:00:00:0c, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 1 maxLen: 0
+FlowPath: (flowId = 0x7 installerId = ps_4_1 flowPathType = FP_TYPE_SHORTEST_PATH flowPathUserState = FP_USER_ADD flowPathFlags = 0x0() src = 00:00:00:00:00:00:00:09/1 dst = 00:00:00:00:00:00:00:22/1)
+    srcMac: 00:00:00:00:00:09
+    dstMac: 00:00:00:00:00:13
+  FlowEntry: (0x30a84f630000001b, 00:00:00:00:00:00:00:09, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 1
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x8075807a00000161, 00:00:00:00:00:00:00:02, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 4
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0xfe3c7b7500000035, 00:00:00:00:00:00:00:04, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 6
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x8075807a00000162, 00:00:00:00:00:00:00:01, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 4 maxLen: 0
+  FlowEntry: (0xfe3c7b7500000036, 00:00:00:00:00:00:00:05, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 6 maxLen: 0
+  FlowEntry: (0x4489d19f0000001b, 00:00:00:00:00:00:00:22, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 1 maxLen: 0
+FlowPath: (flowId = 0xd installerId = ps_7_1 flowPathType = FP_TYPE_SHORTEST_PATH flowPathUserState = FP_USER_ADD flowPathFlags = 0x0() src = 00:00:00:00:00:00:00:0c/1 dst = 00:00:00:00:00:00:00:25/1)
+    srcMac: 00:00:00:00:00:0C
+    dstMac: 00:00:00:00:00:16
+  FlowEntry: (0x30a84f6300000021, 00:00:00:00:00:00:00:0c, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 1
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0xfe3c7b7500000042, 00:00:00:00:00:00:00:05, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 9 maxLen: 0
+  FlowEntry: (0xfe3c7b7500000041, 00:00:00:00:00:00:00:04, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 9
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x8075807a0000016d, 00:00:00:00:00:00:00:02, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 4
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x8075807a0000016e, 00:00:00:00:00:00:00:01, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 4 maxLen: 0
+  FlowEntry: (0x4489d19f00000021, 00:00:00:00:00:00:00:25, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 1 maxLen: 0
+FlowPath: (flowId = 0x4 installerId = ps_2_2 flowPathType = FP_TYPE_SHORTEST_PATH flowPathUserState = FP_USER_ADD flowPathFlags = 0x0() src = 00:00:00:00:00:00:00:20/1 dst = 00:00:00:00:00:00:00:07/1)
+    srcMac: 00:00:00:00:00:11
+    dstMac: 00:00:00:00:00:07
+  FlowEntry: (0x4489d19f00000018, 00:00:00:00:00:00:00:20, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 1
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x8075807a0000015c, 00:00:00:00:00:00:00:02, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 4 maxLen: 0
+  FlowEntry: (0x8075807a0000015b, 00:00:00:00:00:00:00:01, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 4
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0xfe3c7b750000002f, 00:00:00:00:00:00:00:05, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 4
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0xfe3c7b7500000030, 00:00:00:00:00:00:00:04, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 4 maxLen: 0
+  FlowEntry: (0x30a84f6300000018, 00:00:00:00:00:00:00:07, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 1 maxLen: 0
+FlowPath: (flowId = 0xc installerId = ps_6_2 flowPathType = FP_TYPE_SHORTEST_PATH flowPathUserState = FP_USER_ADD flowPathFlags = 0x0() src = 00:00:00:00:00:00:00:24/1 dst = 00:00:00:00:00:00:00:0b/1)
+    srcMac: 00:00:00:00:00:15
+    dstMac: 00:00:00:00:00:0B
+  FlowEntry: (0x4489d19f00000020, 00:00:00:00:00:00:00:24, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 1
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0xfe3c7b7500000040, 00:00:00:00:00:00:00:04, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 8 maxLen: 0
+  FlowEntry: (0x8075807a0000016c, 00:00:00:00:00:00:00:02, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 4 maxLen: 0
+  FlowEntry: (0xfe3c7b750000003f, 00:00:00:00:00:00:00:05, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 8
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x8075807a0000016b, 00:00:00:00:00:00:00:01, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 4
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x30a84f6300000020, 00:00:00:00:00:00:00:0b, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 1 maxLen: 0
+FlowPath: (flowId = 0x14 installerId = ps_10_2 flowPathType = FP_TYPE_SHORTEST_PATH flowPathUserState = FP_USER_ADD flowPathFlags = 0x0() src = 00:00:00:00:00:00:00:28/1 dst = 00:00:00:00:00:00:00:0f/1)
+    srcMac: 00:00:00:00:00:19
+    dstMac: 00:00:00:00:00:0F
+  FlowEntry: (0x4489d19f00000028, 00:00:00:00:00:00:00:28, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 1
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+FlowPath: (flowId = 0x5 installerId = ps_3_1 flowPathType = FP_TYPE_SHORTEST_PATH flowPathUserState = FP_USER_ADD flowPathFlags = 0x0() src = 00:00:00:00:00:00:00:08/1 dst = 00:00:00:00:00:00:00:21/1)
+    srcMac: 00:00:00:00:00:08
+    dstMac: 00:00:00:00:00:12
+  FlowEntry: (0x30a84f6300000019, 00:00:00:00:00:00:00:08, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 1
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x8075807a0000015e, 00:00:00:00:00:00:00:01, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 4 maxLen: 0
+  FlowEntry: (0x8075807a0000015d, 00:00:00:00:00:00:00:02, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 4
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0xfe3c7b7500000031, 00:00:00:00:00:00:00:04, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 5
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0xfe3c7b7500000032, 00:00:00:00:00:00:00:05, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 5 maxLen: 0
+  FlowEntry: (0x4489d19f00000019, 00:00:00:00:00:00:00:21, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 1 maxLen: 0
+FlowPath: (flowId = 0xb installerId = ps_6_1 flowPathType = FP_TYPE_SHORTEST_PATH flowPathUserState = FP_USER_ADD flowPathFlags = 0x0() src = 00:00:00:00:00:00:00:0b/1 dst = 00:00:00:00:00:00:00:24/1)
+    srcMac: 00:00:00:00:00:0B
+    dstMac: 00:00:00:00:00:15
+  FlowEntry: (0x30a84f630000001f, 00:00:00:00:00:00:00:0b, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 1
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x8075807a00000169, 00:00:00:00:00:00:00:02, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 4
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0xfe3c7b750000003d, 00:00:00:00:00:00:00:04, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 8
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0xfe3c7b750000003e, 00:00:00:00:00:00:00:05, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 8 maxLen: 0
+  FlowEntry: (0x8075807a0000016a, 00:00:00:00:00:00:00:01, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 4 maxLen: 0
+  FlowEntry: (0x4489d19f0000001f, 00:00:00:00:00:00:00:24, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 1 maxLen: 0
+FlowPath: (flowId = 0x13 installerId = ps_10_1 flowPathType = FP_TYPE_SHORTEST_PATH flowPathUserState = FP_USER_ADD flowPathFlags = 0x0() src = 00:00:00:00:00:00:00:0f/1 dst = 00:00:00:00:00:00:00:28/1)
+    srcMac: 00:00:00:00:00:0F
+    dstMac: 00:00:00:00:00:19
+  FlowEntry: (0x30a84f6300000027, 00:00:00:00:00:00:00:0f, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 1
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0xfe3c7b750000004e, 00:00:00:00:00:00:00:05, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 12 maxLen: 0
+  FlowEntry: (0xfe3c7b750000004d, 00:00:00:00:00:00:00:04, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 12
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x8075807a00000179, 00:00:00:00:00:00:00:02, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 4
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x8075807a0000017a, 00:00:00:00:00:00:00:01, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 4 maxLen: 0
+  FlowEntry: (0x4489d19f00000027, 00:00:00:00:00:00:00:28, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 1 maxLen: 0
+FlowPath: (flowId = 0x2 installerId = ps_1_2 flowPathType = FP_TYPE_SHORTEST_PATH flowPathUserState = FP_USER_ADD flowPathFlags = 0x0() src = 00:00:00:00:00:00:00:1f/1 dst = 00:00:00:00:00:00:00:06/1)
+    srcMac: 00:00:00:00:00:10
+    dstMac: 00:00:00:00:00:06
+  FlowEntry: (0x4489d19f00000016, 00:00:00:00:00:00:00:1f, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 1
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x8075807a00000158, 00:00:00:00:00:00:00:02, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 4 maxLen: 0
+  FlowEntry: (0xfe3c7b750000002b, 00:00:00:00:00:00:00:05, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 3
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0xfe3c7b750000002c, 00:00:00:00:00:00:00:04, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 3 maxLen: 0
+  FlowEntry: (0x8075807a00000157, 00:00:00:00:00:00:00:01, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 4
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x30a84f6300000016, 00:00:00:00:00:00:00:06, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 1 maxLen: 0
+FlowPath: (flowId = 0xa installerId = ps_5_2 flowPathType = FP_TYPE_SHORTEST_PATH flowPathUserState = FP_USER_ADD flowPathFlags = 0x0() src = 00:00:00:00:00:00:00:23/1 dst = 00:00:00:00:00:00:00:0a/1)
+    srcMac: 00:00:00:00:00:14
+    dstMac: 00:00:00:00:00:0A
+  FlowEntry: (0x4489d19f0000001e, 00:00:00:00:00:00:00:23, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 1
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x8075807a00000168, 00:00:00:00:00:00:00:02, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 4 maxLen: 0
+  FlowEntry: (0x8075807a00000167, 00:00:00:00:00:00:00:01, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 4
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0xfe3c7b750000003c, 00:00:00:00:00:00:00:04, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 7 maxLen: 0
+  FlowEntry: (0xfe3c7b750000003b, 00:00:00:00:00:00:00:05, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 7
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x30a84f630000001e, 00:00:00:00:00:00:00:0a, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 1 maxLen: 0
+FlowPath: (flowId = 0x12 installerId = ps_9_2 flowPathType = FP_TYPE_SHORTEST_PATH flowPathUserState = FP_USER_ADD flowPathFlags = 0x0() src = 00:00:00:00:00:00:00:27/1 dst = 00:00:00:00:00:00:00:0e/1)
+    srcMac: 00:00:00:00:00:18
+    dstMac: 00:00:00:00:00:0E
+  FlowEntry: (0x4489d19f00000026, 00:00:00:00:00:00:00:27, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 1
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0xfe3c7b750000004c, 00:00:00:00:00:00:00:04, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 11 maxLen: 0
+  FlowEntry: (0xfe3c7b750000004b, 00:00:00:00:00:00:00:05, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 11
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x8075807a00000178, 00:00:00:00:00:00:00:02, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 4 maxLen: 0
+  FlowEntry: (0x8075807a00000177, 00:00:00:00:00:00:00:01, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 4
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x30a84f6300000026, 00:00:00:00:00:00:00:0e, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 1 maxLen: 0
+FlowPath: (flowId = 0x3 installerId = ps_2_1 flowPathType = FP_TYPE_SHORTEST_PATH flowPathUserState = FP_USER_ADD flowPathFlags = 0x0() src = 00:00:00:00:00:00:00:07/1 dst = 00:00:00:00:00:00:00:20/1)
+    srcMac: 00:00:00:00:00:07
+    dstMac: 00:00:00:00:00:11
+  FlowEntry: (0x30a84f6300000017, 00:00:00:00:00:00:00:07, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 1
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x8075807a0000015a, 00:00:00:00:00:00:00:01, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 4 maxLen: 0
+  FlowEntry: (0xfe3c7b750000002d, 00:00:00:00:00:00:00:04, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 4
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0xfe3c7b750000002e, 00:00:00:00:00:00:00:05, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 4 maxLen: 0
+  FlowEntry: (0x8075807a00000159, 00:00:00:00:00:00:00:02, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 4
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x4489d19f00000017, 00:00:00:00:00:00:00:20, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 1 maxLen: 0
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ 2013-11-21 14:56:59,661  ONOS1     : INFO    :  TOPO check
+****************************************
+
+2013-11-21 14:56:59,664  ONOS1     : INFO    : 
+---------------------------------------------
+End of Step  4.1: Cleaning out any leftover flows...
+---------------------------------------------
+
+---------------------------------------------
+Start of Step 4.2: calling rest calls
+---------------------------------------------
+
+2013-11-21 14:57:08,723  ONOS1     : INFO    : 
+****************************************
+Start of Test Case8 : 
+2013-11-21 14:57:28,751  ONOS1     : INFO    :  Starting long ping... 
+****************************************
+
+2013-11-21 14:57:30,802  ONOS1     : INFO    : 
+---------------------------------------------
+Start of Step INIT : Initializing the test case :Starting long ping... 
+---------------------------------------------
+
+2013-11-21 14:57:30,806  ONOS1     : INFO    : 
+---------------------------------------------
+Start of Step 8.1: Check that the pings are going
+---------------------------------------------
+
+2013-11-21 14:57:31,924  ONOS1     : INFO    : 
+---------------------------------------------
+End of Step  8.1: Check that the pings are going
+---------------------------------------------
+
+---------------------------------------------
+Start of Step 8.2: Making topo change while flows are rerouting
+---------------------------------------------
+
+2013-11-21 14:57:31,928  ONOS1     : INFO    : 
+---------------------------------------------
+End of Step  8.2: Making topo change while flows are rerouting
+---------------------------------------------
+
+---------------------------------------------
+Start of Step 8.3: Link down number of iterations: 3
+---------------------------------------------
+
+2013-11-21 15:03:49,383  ONOS1     : INFO    :  Killing remote ping processes 
+****************************************
+
+2013-11-21 15:03:53,804  ONOS1     : INFO    : 
+****************************************
+Start of Test Case7 : 
+2013-11-21 15:03:53,810  ONOS1     : INFO    :  Processing Ping data
+****************************************
+
+2013-11-21 15:03:56,989  ONOS1     : INFO    : 
+****************************************
+Start of Test Case4 : 
+2013-11-21 15:03:56,991  ONOS1     : INFO    :  Taking care of these flows!
+****************************************
+
+2013-11-21 15:03:56,992  ONOS1     : INFO    : 
+---------------------------------------------
+Start of Step INIT : Initializing the test case :Taking care of these flows!
+---------------------------------------------
+
+2013-11-21 15:03:56,995  ONOS1     : INFO    : 
+---------------------------------------------
+Start of Step 4.1: Cleaning out any leftover flows...
+---------------------------------------------
+
+~/ONOS/web/delete_flow.py all
+~/ONOS/web/delete_flow.py all
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ ~/ONOS/web/clear_flow.py all
+~/ONOS/web/clear_flow.py all
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ scp admin@10.128.7.7:~/flowdef_files/Center_Triangle/flowdef_20.txt /tmp/flowtmp
+scp admin@10.128.7.7:~/flowdef_files/Center_Triangle/flowdef_ 20.txt /tmp/flowtmp
+flowdef_20.txt                                  0%    0     0.0KB/s   --:-- ETAflowdef_20.txt                                100% 2433     2.4KB/s   00:00    
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ ~/ONOS/web/add_flow.py -m onos -f /tmp/flowtmp
+~/ONOS/web/add_flow.py -m onos -f /tmp/flowtmp
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ clear
+~/ONOS/web/get_flow.py all
+clear
+[H[2J]0;admin@autoONOS1: ~admin@autoONOS1:~$ ~/ONOS/web/get_flow.py all
+FlowPath: (flowId = 0xf installerId = ps_8_1 flowPathType = FP_TYPE_SHORTEST_PATH flowPathUserState = FP_USER_ADD flowPathFlags = 0x0() src = 00:00:00:00:00:00:00:0d/1 dst = 00:00:00:00:00:00:00:26/1)
+    srcMac: 00:00:00:00:00:0D
+    dstMac: 00:00:00:00:00:17
+  FlowEntry: (0x30a84f6300000069, 00:00:00:00:00:00:00:0d, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 1
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x8075807a000002c5, 00:00:00:00:00:00:00:02, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 4
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x8075807a000002c6, 00:00:00:00:00:00:00:01, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 4 maxLen: 0
+  FlowEntry: (0x4489d19f00000055, 00:00:00:00:00:00:00:26, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 1 maxLen: 0
+  FlowEntry: (0xfe3c7b75000000d2, 00:00:00:00:00:00:00:05, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 10 maxLen: 0
+  FlowEntry: (0xfe3c7b75000000d1, 00:00:00:00:00:00:00:04, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 10
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+FlowPath: (flowId = 0x6 installerId = ps_3_2 flowPathType = FP_TYPE_SHORTEST_PATH flowPathUserState = FP_USER_ADD flowPathFlags = 0x0() src = 00:00:00:00:00:00:00:21/1 dst = 00:00:00:00:00:00:00:08/1)
+    srcMac: 00:00:00:00:00:12
+    dstMac: 00:00:00:00:00:08
+  FlowEntry: (0x4489d19f0000004c, 00:00:00:00:00:00:00:21, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 1
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x8075807a000002b4, 00:00:00:00:00:00:00:02, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 4 maxLen: 0
+  FlowEntry: (0x8075807a000002b3, 00:00:00:00:00:00:00:01, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 4
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0xfe3c7b75000000c0, 00:00:00:00:00:00:00:04, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 5 maxLen: 0
+  FlowEntry: (0x30a84f6300000060, 00:00:00:00:00:00:00:08, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 1 maxLen: 0
+  FlowEntry: (0xfe3c7b75000000bf, 00:00:00:00:00:00:00:05, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 5
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+FlowPath: (flowId = 0xe installerId = ps_7_2 flowPathType = FP_TYPE_SHORTEST_PATH flowPathUserState = FP_USER_ADD flowPathFlags = 0x0() src = 00:00:00:00:00:00:00:25/1 dst = 00:00:00:00:00:00:00:0c/1)
+    srcMac: 00:00:00:00:00:16
+    dstMac: 00:00:00:00:00:0C
+  FlowEntry: (0x4489d19f00000054, 00:00:00:00:00:00:00:25, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 1
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0xfe3c7b75000000cf, 00:00:00:00:00:00:00:05, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 9
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0xfe3c7b75000000d0, 00:00:00:00:00:00:00:04, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 9 maxLen: 0
+  FlowEntry: (0x8075807a000002c3, 00:00:00:00:00:00:00:01, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 4
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x8075807a000002c4, 00:00:00:00:00:00:00:02, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 4 maxLen: 0
+  FlowEntry: (0x30a84f6300000068, 00:00:00:00:00:00:00:0c, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 1 maxLen: 0
+FlowPath: (flowId = 0x7 installerId = ps_4_1 flowPathType = FP_TYPE_SHORTEST_PATH flowPathUserState = FP_USER_ADD flowPathFlags = 0x0() src = 00:00:00:00:00:00:00:09/1 dst = 00:00:00:00:00:00:00:22/1)
+    srcMac: 00:00:00:00:00:09
+    dstMac: 00:00:00:00:00:13
+  FlowEntry: (0x30a84f6300000061, 00:00:00:00:00:00:00:09, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 1
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0xfe3c7b75000000c2, 00:00:00:00:00:00:00:05, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 6 maxLen: 0
+  FlowEntry: (0xfe3c7b75000000c1, 00:00:00:00:00:00:00:04, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 6
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x8075807a000002b6, 00:00:00:00:00:00:00:01, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 4 maxLen: 0
+  FlowEntry: (0x8075807a000002b5, 00:00:00:00:00:00:00:02, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 4
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x4489d19f0000004d, 00:00:00:00:00:00:00:22, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 1 maxLen: 0
+FlowPath: (flowId = 0x11 installerId = ps_9_1 flowPathType = FP_TYPE_SHORTEST_PATH flowPathUserState = FP_USER_ADD flowPathFlags = 0x0() src = 00:00:00:00:00:00:00:0e/1 dst = 00:00:00:00:00:00:00:27/1)
+    srcMac: 00:00:00:00:00:0E
+    dstMac: 00:00:00:00:00:18
+  FlowEntry: (0x30a84f630000006b, 00:00:00:00:00:00:00:0e, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 1
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+FlowPath: (flowId = 0x8 installerId = ps_4_2 flowPathType = FP_TYPE_SHORTEST_PATH flowPathUserState = FP_USER_ADD flowPathFlags = 0x0() src = 00:00:00:00:00:00:00:22/1 dst = 00:00:00:00:00:00:00:09/1)
+    srcMac: 00:00:00:00:00:13
+    dstMac: 00:00:00:00:00:09
+  FlowEntry: (0x4489d19f0000004e, 00:00:00:00:00:00:00:22, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 1
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x8075807a000002b7, 00:00:00:00:00:00:00:01, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 4
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0xfe3c7b75000000c4, 00:00:00:00:00:00:00:04, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 6 maxLen: 0
+  FlowEntry: (0xfe3c7b75000000c3, 00:00:00:00:00:00:00:05, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 6
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x8075807a000002b8, 00:00:00:00:00:00:00:02, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 4 maxLen: 0
+  FlowEntry: (0x30a84f6300000062, 00:00:00:00:00:00:00:09, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 1 maxLen: 0
+FlowPath: (flowId = 0x10 installerId = ps_8_2 flowPathType = FP_TYPE_SHORTEST_PATH flowPathUserState = FP_USER_ADD flowPathFlags = 0x0() src = 00:00:00:00:00:00:00:26/1 dst = 00:00:00:00:00:00:00:0d/1)
+    srcMac: 00:00:00:00:00:17
+    dstMac: 00:00:00:00:00:0D
+  FlowEntry: (0x4489d19f00000056, 00:00:00:00:00:00:00:26, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 1
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x8075807a000002c7, 00:00:00:00:00:00:00:01, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 4
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x8075807a000002c8, 00:00:00:00:00:00:00:02, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 4 maxLen: 0
+  FlowEntry: (0xfe3c7b75000000d3, 00:00:00:00:00:00:00:05, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 10
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0xfe3c7b75000000d4, 00:00:00:00:00:00:00:04, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 10 maxLen: 0
+  FlowEntry: (0x30a84f630000006a, 00:00:00:00:00:00:00:0d, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 1 maxLen: 0
+FlowPath: (flowId = 0x1 installerId = ps_1_1 flowPathType = FP_TYPE_SHORTEST_PATH flowPathUserState = FP_USER_ADD flowPathFlags = 0x0() src = 00:00:00:00:00:00:00:06/1 dst = 00:00:00:00:00:00:00:1f/1)
+    srcMac: 00:00:00:00:00:06
+    dstMac: 00:00:00:00:00:10
+  FlowEntry: (0x30a84f630000005b, 00:00:00:00:00:00:00:06, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 1
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x8075807a000002a9, 00:00:00:00:00:00:00:02, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 4
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0xfe3c7b75000000b5, 00:00:00:00:00:00:00:04, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 3
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0xfe3c7b75000000b6, 00:00:00:00:00:00:00:05, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 3 maxLen: 0
+  FlowEntry: (0x8075807a000002aa, 00:00:00:00:00:00:00:01, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 4 maxLen: 0
+  FlowEntry: (0x4489d19f00000047, 00:00:00:00:00:00:00:1f, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 1 maxLen: 0
+FlowPath: (flowId = 0x9 installerId = ps_5_1 flowPathType = FP_TYPE_SHORTEST_PATH flowPathUserState = FP_USER_ADD flowPathFlags = 0x0() src = 00:00:00:00:00:00:00:0a/1 dst = 00:00:00:00:00:00:00:23/1)
+    srcMac: 00:00:00:00:00:0A
+    dstMac: 00:00:00:00:00:14
+  FlowEntry: (0x30a84f6300000063, 00:00:00:00:00:00:00:0a, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 1
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0xfe3c7b75000000c6, 00:00:00:00:00:00:00:05, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 7 maxLen: 0
+  FlowEntry: (0xfe3c7b75000000c5, 00:00:00:00:00:00:00:04, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 7
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x8075807a000002ba, 00:00:00:00:00:00:00:01, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 4 maxLen: 0
+  FlowEntry: (0x8075807a000002b9, 00:00:00:00:00:00:00:02, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 4
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x4489d19f0000004f, 00:00:00:00:00:00:00:23, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 1 maxLen: 0
+FlowPath: (flowId = 0xb installerId = ps_6_1 flowPathType = FP_TYPE_SHORTEST_PATH flowPathUserState = FP_USER_ADD flowPathFlags = 0x0() src = 00:00:00:00:00:00:00:0b/1 dst = 00:00:00:00:00:00:00:24/1)
+    srcMac: 00:00:00:00:00:0B
+    dstMac: 00:00:00:00:00:15
+  FlowEntry: (0x30a84f6300000065, 00:00:00:00:00:00:00:0b, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 1
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0xfe3c7b75000000ca, 00:00:00:00:00:00:00:05, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 8 maxLen: 0
+  FlowEntry: (0xfe3c7b75000000c9, 00:00:00:00:00:00:00:04, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 8
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x8075807a000002be, 00:00:00:00:00:00:00:01, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 4 maxLen: 0
+  FlowEntry: (0x8075807a000002bd, 00:00:00:00:00:00:00:02, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 4
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x4489d19f00000051, 00:00:00:00:00:00:00:24, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 1 maxLen: 0
+FlowPath: (flowId = 0x13 installerId = ps_10_1 flowPathType = FP_TYPE_SHORTEST_PATH flowPathUserState = FP_USER_ADD flowPathFlags = 0x0() src = 00:00:00:00:00:00:00:0f/1 dst = 00:00:00:00:00:00:00:28/1)
+    srcMac: 00:00:00:00:00:0F
+    dstMac: 00:00:00:00:00:19
+  FlowEntry: (0x30a84f630000006d, 00:00:00:00:00:00:00:0f, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 1
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+FlowPath: (flowId = 0x2 installerId = ps_1_2 flowPathType = FP_TYPE_SHORTEST_PATH flowPathUserState = FP_USER_ADD flowPathFlags = 0x0() src = 00:00:00:00:00:00:00:1f/1 dst = 00:00:00:00:00:00:00:06/1)
+    srcMac: 00:00:00:00:00:10
+    dstMac: 00:00:00:00:00:06
+  FlowEntry: (0x4489d19f00000048, 00:00:00:00:00:00:00:1f, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 1
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0xfe3c7b75000000b8, 00:00:00:00:00:00:00:04, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 3 maxLen: 0
+  FlowEntry: (0x8075807a000002ac, 00:00:00:00:00:00:00:02, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 4 maxLen: 0
+  FlowEntry: (0xfe3c7b75000000b7, 00:00:00:00:00:00:00:05, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 3
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x8075807a000002ab, 00:00:00:00:00:00:00:01, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 4
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x30a84f630000005c, 00:00:00:00:00:00:00:06, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 1 maxLen: 0
+FlowPath: (flowId = 0xa installerId = ps_5_2 flowPathType = FP_TYPE_SHORTEST_PATH flowPathUserState = FP_USER_ADD flowPathFlags = 0x0() src = 00:00:00:00:00:00:00:23/1 dst = 00:00:00:00:00:00:00:0a/1)
+    srcMac: 00:00:00:00:00:14
+    dstMac: 00:00:00:00:00:0A
+  FlowEntry: (0x4489d19f00000050, 00:00:00:00:00:00:00:23, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 1
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0xfe3c7b75000000c7, 00:00:00:00:00:00:00:05, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 7
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x8075807a000002bc, 00:00:00:00:00:00:00:02, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 4 maxLen: 0
+  FlowEntry: (0x8075807a000002bb, 00:00:00:00:00:00:00:01, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 4
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0xfe3c7b75000000c8, 00:00:00:00:00:00:00:04, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 7 maxLen: 0
+  FlowEntry: (0x30a84f6300000064, 00:00:00:00:00:00:00:0a, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 1 maxLen: 0
+FlowPath: (flowId = 0x12 installerId = ps_9_2 flowPathType = FP_TYPE_SHORTEST_PATH flowPathUserState = FP_USER_ADD flowPathFlags = 0x0() src = 00:00:00:00:00:00:00:27/1 dst = 00:00:00:00:00:00:00:0e/1)
+    srcMac: 00:00:00:00:00:18
+    dstMac: 00:00:00:00:00:0E
+  FlowEntry: (0x4489d19f00000058, 00:00:00:00:00:00:00:27, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 1
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x8075807a000002cb, 00:00:00:00:00:00:00:01, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 4
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x8075807a000002cc, 00:00:00:00:00:00:00:02, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 4 maxLen: 0
+  FlowEntry: (0xfe3c7b75000000d7, 00:00:00:00:00:00:00:05, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 11
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0xfe3c7b75000000d8, 00:00:00:00:00:00:00:04, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 11 maxLen: 0
+  FlowEntry: (0x30a84f630000006c, 00:00:00:00:00:00:00:0e, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 1 maxLen: 0
+FlowPath: (flowId = 0x3 installerId = ps_2_1 flowPathType = FP_TYPE_SHORTEST_PATH flowPathUserState = FP_USER_ADD flowPathFlags = 0x0() src = 00:00:00:00:00:00:00:07/1 dst = 00:00:00:00:00:00:00:20/1)
+    srcMac: 00:00:00:00:00:07
+    dstMac: 00:00:00:00:00:11
+  FlowEntry: (0x30a84f630000005d, 00:00:00:00:00:00:00:07, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 1
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x8075807a000002ae, 00:00:00:00:00:00:00:01, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 4 maxLen: 0
+  FlowEntry: (0x8075807a000002ad, 00:00:00:00:00:00:00:02, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 4
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0xfe3c7b75000000b9, 00:00:00:00:00:00:00:04, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 4
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0xfe3c7b75000000ba, 00:00:00:00:00:00:00:05, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 4 maxLen: 0
+  FlowEntry: (0x4489d19f00000049, 00:00:00:00:00:00:00:20, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 1 maxLen: 0
+FlowPath: (flowId = 0xd installerId = ps_7_1 flowPathType = FP_TYPE_SHORTEST_PATH flowPathUserState = FP_USER_ADD flowPathFlags = 0x0() src = 00:00:00:00:00:00:00:0c/1 dst = 00:00:00:00:00:00:00:25/1)
+    srcMac: 00:00:00:00:00:0C
+    dstMac: 00:00:00:00:00:16
+  FlowEntry: (0x30a84f6300000067, 00:00:00:00:00:00:00:0c, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 1
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0xfe3c7b75000000ce, 00:00:00:00:00:00:00:05, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 9 maxLen: 0
+  FlowEntry: (0xfe3c7b75000000cd, 00:00:00:00:00:00:00:04, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 9
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x8075807a000002c1, 00:00:00:00:00:00:00:02, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 4
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x8075807a000002c2, 00:00:00:00:00:00:00:01, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 4 maxLen: 0
+  FlowEntry: (0x4489d19f00000053, 00:00:00:00:00:00:00:25, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 1 maxLen: 0
+FlowPath: (flowId = 0x4 installerId = ps_2_2 flowPathType = FP_TYPE_SHORTEST_PATH flowPathUserState = FP_USER_ADD flowPathFlags = 0x0() src = 00:00:00:00:00:00:00:20/1 dst = 00:00:00:00:00:00:00:07/1)
+    srcMac: 00:00:00:00:00:11
+    dstMac: 00:00:00:00:00:07
+  FlowEntry: (0x4489d19f0000004a, 00:00:00:00:00:00:00:20, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 1
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x8075807a000002af, 00:00:00:00:00:00:00:01, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 4
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x30a84f630000005e, 00:00:00:00:00:00:00:07, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 1 maxLen: 0
+  FlowEntry: (0x8075807a000002b0, 00:00:00:00:00:00:00:02, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 4 maxLen: 0
+  FlowEntry: (0xfe3c7b75000000bb, 00:00:00:00:00:00:00:05, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 4
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0xfe3c7b75000000bc, 00:00:00:00:00:00:00:04, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 4 maxLen: 0
+FlowPath: (flowId = 0xc installerId = ps_6_2 flowPathType = FP_TYPE_SHORTEST_PATH flowPathUserState = FP_USER_ADD flowPathFlags = 0x0() src = 00:00:00:00:00:00:00:24/1 dst = 00:00:00:00:00:00:00:0b/1)
+    srcMac: 00:00:00:00:00:15
+    dstMac: 00:00:00:00:00:0B
+  FlowEntry: (0x4489d19f00000052, 00:00:00:00:00:00:00:24, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 1
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0xfe3c7b75000000cc, 00:00:00:00:00:00:00:04, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 8 maxLen: 0
+  FlowEntry: (0xfe3c7b75000000cb, 00:00:00:00:00:00:00:05, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 8
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x8075807a000002bf, 00:00:00:00:00:00:00:01, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 4
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x8075807a000002c0, 00:00:00:00:00:00:00:02, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 4 maxLen: 0
+  FlowEntry: (0x30a84f6300000066, 00:00:00:00:00:00:00:0b, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 1 maxLen: 0
+FlowPath: (flowId = 0x14 installerId = ps_10_2 flowPathType = FP_TYPE_SHORTEST_PATH flowPathUserState = FP_USER_ADD flowPathFlags = 0x0() src = 00:00:00:00:00:00:00:28/1 dst = 00:00:00:00:00:00:00:0f/1)
+    srcMac: 00:00:00:00:00:19
+    dstMac: 00:00:00:00:00:0F
+  FlowEntry: (0x4489d19f0000005a, 00:00:00:00:00:00:00:28, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 1
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x8075807a000002cf, 00:00:00:00:00:00:00:01, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 4
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x8075807a000002d0, 00:00:00:00:00:00:00:02, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 4 maxLen: 0
+  FlowEntry: (0xfe3c7b75000000dc, 00:00:00:00:00:00:00:04, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 12 maxLen: 0
+  FlowEntry: (0xfe3c7b75000000db, 00:00:00:00:00:00:00:05, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 12
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x30a84f630000006e, 00:00:00:00:00:00:00:0f, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 1 maxLen: 0
+FlowPath: (flowId = 0x5 installerId = ps_3_1 flowPathType = FP_TYPE_SHORTEST_PATH flowPathUserState = FP_USER_ADD flowPathFlags = 0x0() src = 00:00:00:00:00:00:00:08/1 dst = 00:00:00:00:00:00:00:21/1)
+    srcMac: 00:00:00:00:00:08
+    dstMac: 00:00:00:00:00:12
+  FlowEntry: (0x30a84f630000005f, 00:00:00:00:00:00:00:08, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 1
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0x8075807a000002b2, 00:00:00:00:00:00:00:01, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 4 maxLen: 0
+  FlowEntry: (0x8075807a000002b1, 00:00:00:00:00:00:00:02, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 4
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0xfe3c7b75000000bd, 00:00:00:00:00:00:00:04, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 5
+    actionType: ACTION_OUTPUT port: 2 maxLen: 0
+  FlowEntry: (0xfe3c7b75000000be, 00:00:00:00:00:00:00:05, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 5 maxLen: 0
+  FlowEntry: (0x4489d19f0000004b, 00:00:00:00:00:00:00:21, FE_USER_ADD, FE_SWITCH_UPDATED)
+    inPort: 2
+    actionType: ACTION_OUTPUT port: 1 maxLen: 0
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ 2013-11-21 15:04:17,197  ONOS1     : INFO    :  TOPO check
+****************************************
+
+2013-11-21 15:04:17,201  ONOS1     : INFO    : 
+---------------------------------------------
+End of Step  4.1: Cleaning out any leftover flows...
+---------------------------------------------
+
+---------------------------------------------
+Start of Step 4.2: calling rest calls
+---------------------------------------------
+
+2013-11-21 15:04:25,726  ONOS1     : INFO    : 
+****************************************
+Start of Test Case9 : 
+2013-11-21 15:04:45,749  ONOS1     : INFO    :  Starting long ping... 
+****************************************
+
+2013-11-21 15:04:47,809  ONOS1     : INFO    : 
+---------------------------------------------
+Start of Step INIT : Initializing the test case :Starting long ping... 
+---------------------------------------------
+
+2013-11-21 15:04:47,813  ONOS1     : INFO    : 
+---------------------------------------------
+Start of Step 9.1: Check that the pings are going
+---------------------------------------------
+
+2013-11-21 15:04:48,931  ONOS1     : INFO    : 
+---------------------------------------------
+End of Step  9.1: Check that the pings are going
+---------------------------------------------
+
+---------------------------------------------
+Start of Step 9.2: Making topo change while flows are rerouting
+---------------------------------------------
+
+2013-11-21 15:04:48,935  ONOS1     : INFO    : 
+---------------------------------------------
+End of Step  9.2: Making topo change while flows are rerouting
+---------------------------------------------
+
+---------------------------------------------
+Start of Step 9.3: Link down number of iterations: 3
+---------------------------------------------
+
+
+
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ ~/ONOS/start-onos.sh stop
+~/ONOS/start-onos.sh stop
+Killed existing process (pid: 8568)
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ 
+
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ ~/ONOS/start-onos.sh start
+~/ONOS/start-onos.sh start
+rotate log: ./onos-logs/onos.autoONOS1.log
+rotate log: ./onos-logs/onos.autoONOS1.pcap
+Starting ONOS controller ...
+
+/home/admin/ONOS
+/home/admin/ONOS
+mvn -o exec:exec -Dexec.executable="java" -Dexec.args=" -javaagent:/home/admin/ONOS/lib/jacocoagent.jar=dumponexit=true,output=file,destfile=./onos-logs/jacoco.exec -server -d64 -Xmx1g -Xms1g -Xmn800m -XX:+UseConcMarkSweepGC -XX:+UseAdaptiveSizePolicy -XX:+AggressiveOpts -XX:+UseFastAccessorMethods -XX:MaxInlineSize=8192 -XX:FreqInlineSize=8192 -XX:CompileThreshold=1500 -XX:PreBlockSpin=8 -XX:OnError=crash-logger -XX:CompileThreshold=1500 -XX:PreBlockSpin=8 		-XX:+UseThreadPriorities 		-XX:ThreadPriorityPolicy=42 		-XX:+UseCompressedOops 		-Dcom.sun.management.jmxremote.port=7189 		-Dcom.sun.management.jmxremote.ssl=false 		-Dcom.sun.management.jmxremote.authenticate=false -Dhazelcast.logging.type=slf4j -Dlogback.configurationFile=./logback.autoONOS1.xml -cp %classpath net.onrc.onos.ofcontroller.core.Main -cf ./conf/onos.properties"
+Waiting for ONOS to start...
+.....
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ 
+
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ ~/ONOS/start-onos.sh status 
+
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ ~/ONOS/start-onos.sh status 
+1 instance of onos running
+
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ 
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ tail ~/ONOS/onos-logs/onos.*.log
+
+
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ tail ~/ONOS/onos-logs/onos.*.log
+2013-11-21 15:04:50,531 DEBUG [hz._hzInstance_1_dev.IO.thread-out-1] c.h.n.OutSelectorImpl [Slf4jFactory.java:81] [10.128.100.1]:5701 [dev] hz._hzInstance_1_dev.IO.thread-out-1 is interrupted!
+2013-11-21 15:04:50,531 DEBUG [hz._hzInstance_1_dev.IO.thread-out-1] c.h.n.OutSelectorImpl [Slf4jFactory.java:81] [10.128.100.1]:5701 [dev] Closing selector hz._hzInstance_1_dev.IO.thread-out-1
+2013-11-21 15:04:50,531 DEBUG [hz._hzInstance_1_dev.IO.thread-in-0] c.h.n.InSelectorImpl [Slf4jFactory.java:81] [10.128.100.1]:5701 [dev] hz._hzInstance_1_dev.IO.thread-in-0 is interrupted!
+2013-11-21 15:04:50,532 DEBUG [hz._hzInstance_1_dev.IO.thread-in-0] c.h.n.InSelectorImpl [Slf4jFactory.java:81] [10.128.100.1]:5701 [dev] Closing selector hz._hzInstance_1_dev.IO.thread-in-0
+2013-11-21 15:04:50,531 INFO [hz.ShutdownThread] c.h.initializer [Slf4jFactory.java:83] [10.128.100.1]:5701 [dev] Destroying node initializer.
+2013-11-21 15:04:50,531 DEBUG [hz._hzInstance_1_dev.IO.thread-in-1] c.h.n.InSelectorImpl [Slf4jFactory.java:81] [10.128.100.1]:5701 [dev] hz._hzInstance_1_dev.IO.thread-in-1 is interrupted!
+2013-11-21 15:04:50,540 DEBUG [hz.ShutdownThread] c.h.i.Node [Slf4jFactory.java:81] [10.128.100.1]:5701 [dev] Shutting down thread hz._hzInstance_1_dev.IO.thread-in-1
+2013-11-21 15:04:50,541 DEBUG [hz.ShutdownThread] c.h.i.Node [Slf4jFactory.java:81] [10.128.100.1]:5701 [dev] Shutting down thread hz._hzInstance_1_dev.HealthMonitor
+2013-11-21 15:04:50,541 DEBUG [hz._hzInstance_1_dev.IO.thread-in-1] c.h.n.InSelectorImpl [Slf4jFactory.java:81] [10.128.100.1]:5701 [dev] Closing selector hz._hzInstance_1_dev.IO.thread-in-1
+2013-11-21 15:04:50,542 INFO [hz.ShutdownThread] c.h.i.Node [Slf4jFactory.java:83] [10.128.100.1]:5701 [dev] Hazelcast Shutdown is completed in 288 ms.
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ tail ~/ONOS/onos-logs/onos.*.log
+2013-11-21 15:10:11,714  ONOS1     : INFO    :  Killing remote ping processes 
+****************************************
+
+2013-11-21 15:10:15,770  ONOS1     : INFO    : 
+****************************************
+Start of Test Case7 : 
+2013-11-21 15:10:15,777  ONOS1     : INFO    :  Processing Ping data
+****************************************
+
+exit
+
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ 
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ tail ~/ONOS/onos-logs/onos.*.log
+2013-11-21 15:05:29,910 DEBUG [hz._hzInstance_1_dev.operation.thread-5] c.h.p.CheckReplicaVersion [Slf4jFactory.java:81] [10.128.100.1]:5701 [dev] com.hazelcast.spi.exception.CallerNotMemberException: Not Member! caller:Address[10.128.100.4]:5701, partitionId: 109, operation: com.hazelcast.partition.CheckReplicaVersion, service: hz:core:partitionService
+2013-11-21 15:05:29,921 DEBUG [hz._hzInstance_1_dev.operation.thread-5] c.h.p.CheckReplicaVersion [Slf4jFactory.java:81] [10.128.100.1]:5701 [dev] com.hazelcast.spi.exception.CallerNotMemberException: Not Member! caller:Address[10.128.100.4]:5701, partitionId: 117, operation: com.hazelcast.partition.CheckReplicaVersion, service: hz:core:partitionService
+2013-11-21 15:05:29,922 DEBUG [hz._hzInstance_1_dev.operation.thread-5] c.h.p.CheckReplicaVersion [Slf4jFactory.java:81] [10.128.100.1]:5701 [dev] com.hazelcast.spi.exception.CallerNotMemberException: Not Member! caller:Address[10.128.100.4]:5701, partitionId: 125, operation: com.hazelcast.partition.CheckReplicaVersion, service: hz:core:partitionService
+2013-11-21 15:05:30,129 WARN [hz._hzInstance_1_dev.cached.thread-2] c.h.c.MasterConfirmationOperation [Slf4jFactory.java:85] [10.128.100.1]:5701 [dev] MasterConfirmation has been received from Address[10.128.100.4]:5701, but it is not a member of this cluster!
+2013-11-21 15:05:30,153 INFO [hz._hzInstance_1_dev.IO.thread-in-1] c.h.n.TcpIpConnection [Slf4jFactory.java:83] [10.128.100.1]:5701 [dev] Connection [Address[10.128.100.4]:5701] lost. Reason: java.io.EOFException[Remote socket closed!]
+2013-11-21 15:05:30,154 DEBUG [hz._hzInstance_1_dev.IO.thread-in-1] c.h.n.TcpIpConnectionManager [Slf4jFactory.java:81] [10.128.100.1]:5701 [dev] Destroying Connection [/10.128.100.4:35722 -> Address[10.128.100.4]:5701] live=false, client=false, type=MEMBER
+2013-11-21 15:05:30,155 DEBUG [hz._hzInstance_1_dev.IO.thread-in-1] c.h.c.ClusterService [Slf4jFactory.java:81] [10.128.100.1]:5701 [dev] Connection is removed Address[10.128.100.4]:5701
+2013-11-21 15:05:30,158 DEBUG [hz._hzInstance_1_dev.IO.thread-in-1] c.h.n.ConnectionMonitor [Slf4jFactory.java:81] [10.128.100.1]:5701 [dev] An error occurred on connection to Address[10.128.100.4]:5701 Cause => java.io.EOFException {Remote socket closed!}, Error-Count: 1
+2013-11-21 15:05:30,159 WARN [hz._hzInstance_1_dev.IO.thread-in-1] c.h.n.ReadHandler [Slf4jFactory.java:85] [10.128.100.1]:5701 [dev] hz._hzInstance_1_dev.IO.thread-in-1 Closing socket to endpoint Address[10.128.100.4]:5701, Cause:java.io.EOFException: Remote socket closed!
+2013-11-21 15:05:35,411 DEBUG [pool-3-thread-12] n.o.o.o.l.i.LinkDiscoveryManager [LinkDiscoveryManager.java:372] Sending LLDP out on all ports.
+]0;admin@autoONOS1: ~admin@autoONOS1:~$ 

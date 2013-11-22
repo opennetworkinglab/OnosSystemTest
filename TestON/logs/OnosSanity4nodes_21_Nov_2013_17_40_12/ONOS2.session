@@ -1,0 +1,410 @@
+2013-11-21 17:40:26,579  ONOS2     : INFO    : 
+                                +----------------+
+------------------------------ { Script And Files }  ------------------------------
+                                +----------------+
+
+	Script Log File : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_21_Nov_2013_17_40_12/OnosSanity4nodes_21_Nov_2013_17_40_12.log
+	Report Log File : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_21_Nov_2013_17_40_12/OnosSanity4nodes_21_Nov_2013_17_40_12.rpt
+	ONOS4 Session Log : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_21_Nov_2013_17_40_12/ONOS4.session
+	ONOS2 Session Log : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_21_Nov_2013_17_40_12/ONOS2.session
+	ONOS3 Session Log : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_21_Nov_2013_17_40_12/ONOS3.session
+	ONOS1 Session Log : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_21_Nov_2013_17_40_12/ONOS1.session
+	Zookeeper4 Session Log : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_21_Nov_2013_17_40_12/Zookeeper4.session
+	Cassandra1 Session Log : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_21_Nov_2013_17_40_12/Cassandra1.session
+	Cassandra2 Session Log : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_21_Nov_2013_17_40_12/Cassandra2.session
+	Cassandra3 Session Log : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_21_Nov_2013_17_40_12/Cassandra3.session
+	Cassandra4 Session Log : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_21_Nov_2013_17_40_12/Cassandra4.session
+	Zookeeper1 Session Log : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_21_Nov_2013_17_40_12/Zookeeper1.session
+	Zookeeper2 Session Log : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_21_Nov_2013_17_40_12/Zookeeper2.session
+	Zookeeper3 Session Log : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_21_Nov_2013_17_40_12/Zookeeper3.session
+	Mininet1 Session Log : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_21_Nov_2013_17_40_12/Mininet1.session
+	Test Script :/home/admin/ONLabTest/TestON/Tests/OnosSanity4nodes.py
+	Test Params : /home/admin/ONLabTest/TestON/Tests/OnosSanity4nodes.params
+	Topology : /home/admin/ONLabTest/TestON/Tests/OnosSanity4nodes.tpl
+                              +------------------+
+---------------------------  { Script Exec Params }  ---------------------------
+                              +------------------+
+
+	
+	'CTRL': 
+	'ip2': '10.128.100.4'
+	 'ip3': '10.128.100.5'
+	 'ip1': '10.128.100.1'
+	 'ip4': '10.128.100.6'
+	 'port4': '6633'
+	 'port2': '6633'
+	 'port3': '6633'
+	 'port1': '6633'
+	
+	 'NR_Links': '50'
+	 'LINK': 
+	'begin': 's1'
+	 'end': 's2'
+	
+	 'RESTCALL': 
+	'restIP1': '10.128.100.1'
+	 'restIP2': '10.128.100.5'
+	 'restPort': '8080'
+	 'restURL': '/wm/device/'
+	
+	 'CASE1': 
+	'destination': 'h6'
+	
+	 'PLUG': 
+	'sw1': 's1'
+	 'intf': 's1-eth1'
+	 'sw6': 's6'
+	
+	 'PING': 
+	'source2': 'h8'
+	 'source1': 'h6'
+	 'target2': 'h33'
+	 'target1': 'h31'
+	
+	 'FLOWDEF': '~/flowdef_files/Center_Triangle/flowdef_20.txt'
+	 'testcases': '1
+	2
+	21
+	3
+	4
+	5
+	6
+	7'
+	 'RestIP': '10.128.100.1'
+	 'NR_Switches': '25'
+	 'YANK': 
+	'hostmac': '00:00:00:00:00:01'
+	 'sw1': 's1'
+	 'hostname': 'h1'
+	 'intf': 's1-eth1'
+	 'sw6': 's6'
+	
+	
+
+                               +---------------+
+----------------------------- { Components Used }  -----------------------------
+                               +---------------+
+	ONOS4
+	ONOS2
+	ONOS3
+	ONOS1
+	Zookeeper4
+	Cassandra1
+	Cassandra2
+	Cassandra3
+	Cassandra4
+	Zookeeper1
+	Zookeeper2
+	Zookeeper3
+	Mininet1
+
+
+                              +--------+
+---------------------------- { Topology }  ----------------------------
+                              +--------+
+
+	
+	'ONOS4': 
+	'connect_order': '12'
+	 'host': '10.128.100.6'
+	 'user': 'admin'
+	 'COMPONENTS': ''
+	 'password': None
+	 'type': 'OnosCliDriver'
+	
+	 'ONOS2': 
+	'connect_order': '10'
+	 'host': '10.128.100.4'
+	 'user': 'admin'
+	 'COMPONENTS': ''
+	 'password': None
+	 'type': 'OnosCliDriver'
+	
+	 'ONOS3': 
+	'connect_order': '11'
+	 'host': '10.128.100.5'
+	 'user': 'admin'
+	 'COMPONENTS': ''
+	 'password': None
+	 'type': 'OnosCliDriver'
+	
+	 'ONOS1': 
+	'connect_order': '9'
+	 'host': '10.128.100.1'
+	 'user': 'admin'
+	 'COMPONENTS': ''
+	 'password': None
+	 'type': 'OnosCliDriver'
+	
+	 'Zookeeper4': 
+	'connect_order': '4'
+	 'host': '10.128.100.6'
+	 'user': 'admin'
+	 'COMPONENTS': ''
+	 'password': None
+	 'type': 'ZookeeperCliDriver'
+	
+	 'Cassandra1': 
+	'connect_order': '5'
+	 'host': '10.128.100.1'
+	 'user': 'admin'
+	 'COMPONENTS': ''
+	 'password': None
+	 'type': 'CassandraCliDriver'
+	
+	 'Cassandra2': 
+	'connect_order': '6'
+	 'host': '10.128.100.4'
+	 'user': 'admin'
+	 'COMPONENTS': ''
+	 'password': None
+	 'type': 'CassandraCliDriver'
+	
+	 'Cassandra3': 
+	'connect_order': '7'
+	 'host': '10.128.100.5'
+	 'user': 'admin'
+	 'COMPONENTS': ''
+	 'password': None
+	 'type': 'CassandraCliDriver'
+	
+	 'Cassandra4': 
+	'connect_order': '8'
+	 'host': '10.128.100.6'
+	 'user': 'admin'
+	 'COMPONENTS': ''
+	 'password': None
+	 'type': 'CassandraCliDriver'
+	
+	 'Zookeeper1': 
+	'connect_order': '1'
+	 'host': '10.128.100.1'
+	 'user': 'admin'
+	 'COMPONENTS': ''
+	 'password': None
+	 'type': 'ZookeeperCliDriver'
+	
+	 'Zookeeper2': 
+	'connect_order': '2'
+	 'host': '10.128.100.4'
+	 'user': 'admin'
+	 'COMPONENTS': ''
+	 'password': None
+	 'type': 'ZookeeperCliDriver'
+	
+	 'Zookeeper3': 
+	'connect_order': '3'
+	 'host': '10.128.100.5'
+	 'user': 'admin'
+	 'COMPONENTS': ''
+	 'password': None
+	 'type': 'ZookeeperCliDriver'
+	
+	 'Mininet1': 
+	'connect_order': '13'
+	 'host': '10.128.100.11'
+	 'user': 'admin'
+	 'COMPONENTS': 
+	'arg1': '--custom ~/mininet/custom/topo-onos4node.py'
+	 'arg2': '--topo mytopo --arp'
+	 'controller': 'remote'
+	
+	 'password': None
+	 'type': 'MininetCliDriver'
+	
+	
+------------------------------------------------------------
+
+[Kteston> 
+
+
+2013-11-21 17:40:49,047  ONOS2     : INFO    : 
+****************************************
+Start of Test Case1 : 
+
+Welcome to Ubuntu 12.04.2 LTS (GNU/Linux 3.2.0-44-virtual x86_64)
+
+ * Documentation:  https://help.ubuntu.com/
+
+
+
+  System information as of Thu Nov 21 17:40:27 PST 2013
+
+  System load:  0.55               Processes:           97
+  Usage of /:   24.2% of 19.67GB   Users logged in:     1
+  Memory usage: 59%                IP address for eth0: 10.128.100.4
+  Swap usage:   0%
+
+  Graph this data and manage this system at https://landscape.canonical.com/
+
+  Get cloud support with Ubuntu Advantage Cloud Guest:
+    http://www.ubuntu.com/business/services/cloud
+
+  Use Juju to deploy your cloud instances and workloads:
+    https://juju.ubuntu.com/#cloud-precise
+
+129 packages can be updated.
+65 updates are security updates.
+
+Last login: Thu Nov 21 17:40:27 2013 from 10.128.7.7
+]0;admin@autoONOS2: ~admin@autoONOS2:~$ 
+]0;admin@autoONOS2: ~admin@autoONOS2:~$ 
+]0;admin@autoONOS2: ~admin@autoONOS2:~$ ~/ONOS/start-onos.sh stop
+
+]0;admin@autoONOS2: ~admin@autoONOS2:~$ ~/ONOS/start-onos.sh stop
+Killed existing process (pid: 13591)
+]0;admin@autoONOS2: ~admin@autoONOS2:~$ cd ~/ONOS
+cd ~/ONOS
+]0;admin@autoONOS2: ~/ONOSadmin@autoONOS2:~/ONOS$ git pull
+git pull
+Already up-to-date.
+
+]0;admin@autoONOS2: ~/ONOSadmin@autoONOS2:~/ONOS$ ~/ONOS/start-onos.sh start
+
+]0;admin@autoONOS2: ~/ONOSadmin@autoONOS2:~/ONOS$ ~/ONOS/start-onos.sh start
+rotate log: ./onos-logs/onos.autoONOS2.log
+rotate log: ./onos-logs/onos.autoONOS2.pcap
+Starting ONOS controller ...
+
+/home/admin/ONOS
+/home/admin/ONOS
+mvn -o exec:exec -Dexec.executable="java" -Dexec.args=" -javaagent:/home/admin/ONOS/lib/jacocoagent.jar=dumponexit=true,output=file,destfile=./onos-logs/jacoco.exec -server -d64 -Xmx1g -Xms1g -Xmn800m -XX:+UseConcMarkSweepGC -XX:+UseAdaptiveSizePolicy -XX:+AggressiveOpts -XX:+UseFastAccessorMethods -XX:MaxInlineSize=8192 -XX:FreqInlineSize=8192 -XX:CompileThreshold=1500 -XX:PreBlockSpin=8 -XX:OnError=crash-logger -XX:CompileThreshold=1500 -XX:PreBlockSpin=8 		-XX:+UseThreadPriorities 		-XX:ThreadPriorityPolicy=42 		-XX:+UseCompressedOops 		-Dcom.sun.management.jmxremote.port=7189 		-Dcom.sun.management.jmxremote.ssl=false 		-Dcom.sun.management.jmxremote.authenticate=false -Dhazelcast.logging.type=slf4j -Dlogback.configurationFile=./logback.autoONOS2.xml -cp %classpath net.onrc.onos.ofcontroller.core.Main -cf ./conf/onos.properties"
+Waiting for ONOS to start...
+.....
+]0;admin@autoONOS2: ~/ONOSadmin@autoONOS2:~/ONOS$ 2013-11-21 17:42:51,138  ONOS2     : INFO    :  Checking if the startup was clean...
+****************************************
+
+2013-11-21 17:42:51,141  ONOS2     : INFO    : 
+---------------------------------------------
+Start of Step INIT : Initializing the test case :Checking if the startup was clean...
+---------------------------------------------
+
+2013-11-21 17:42:51,145  ONOS2     : INFO    : 
+---------------------------------------------
+Start of Step 1.1: Testing startup Zookeeper
+---------------------------------------------
+
+2013-11-21 17:42:52,026  ONOS2     : INFO    : 
+---------------------------------------------
+End of Step  1.1: Testing startup Zookeeper
+---------------------------------------------
+
+---------------------------------------------
+Start of Step 1.2: Testing startup Cassandra
+---------------------------------------------
+
+2013-11-21 17:42:53,780  ONOS2     : INFO    : 
+---------------------------------------------
+End of Step  1.2: Testing startup Cassandra
+---------------------------------------------
+
+---------------------------------------------
+Start of Step 1.3: Testing startup ONOS
+---------------------------------------------
+
+2013-11-21 17:43:25,100  ONOS2     : INFO    : 
+****************************************
+Start of Test Case2 : 
+2013-11-21 17:43:25,103  ONOS2     : INFO    :  Checking if one MN host exists
+****************************************
+
+2013-11-21 17:43:25,105  ONOS2     : INFO    : 
+---------------------------------------------
+Start of Step INIT : Initializing the test case :Checking if one MN host exists
+---------------------------------------------
+
+2013-11-21 17:43:25,106  ONOS2     : INFO    : 
+---------------------------------------------
+Start of Step 2.1: Host IP Checking using checkIP
+---------------------------------------------
+
+2013-11-21 17:43:25,237  ONOS2     : INFO    : 
+---------------------------------------------
+End of Step  2.1: Host IP Checking using checkIP
+---------------------------------------------
+
+---------------------------------------------
+Start of Step 2.2: Verifying the result
+---------------------------------------------
+
+2013-11-21 17:43:25,244  ONOS2     : INFO    : 
+---------------------------------------------
+End of Step  2.2: Verifying the result
+---------------------------------------------
+
+---------------------------------------------
+Start of Step 2.3: assigning ONOS controllers to switches
+---------------------------------------------
+
+2013-11-21 17:43:58,425  ONOS2     : INFO    : 
+****************************************
+Start of Test Case21 : 
+2013-11-21 17:44:02,095  ONOS2     : INFO    :  Yankout s6-eth1 (link to h1) from s1
+****************************************
+
+2013-11-21 17:44:08,653  ONOS2     : INFO    :  Plug s1-eth1 to s6
+****************************************
+
+2013-11-21 17:44:15,494  ONOS2     : INFO    :  Move s1-eth1 back to s1
+****************************************
+
+2013-11-21 17:44:22,740  ONOS2     : INFO    : 
+****************************************
+Start of Test Case3 : 
+2013-11-21 17:44:28,640  ONOS2     : INFO    :  Taking care of these flows!
+****************************************
+
+2013-11-21 17:44:28,645  ONOS2     : INFO    : 
+---------------------------------------------
+Start of Step INIT : Initializing the test case :Taking care of these flows!
+---------------------------------------------
+
+2013-11-21 17:44:28,652  ONOS2     : INFO    : 
+---------------------------------------------
+Start of Step 3.1: Cleaning out any leftover flows...
+---------------------------------------------
+
+2013-11-21 17:44:42,659  ONOS2     : INFO    :  Checking flows
+****************************************
+
+2013-11-21 17:44:42,664  ONOS2     : INFO    : 
+---------------------------------------------
+Start of Step 3.1: Waiting
+---------------------------------------------
+
+2013-11-21 17:44:47,678  ONOS2     : INFO    : 
+---------------------------------------------
+Start of Step 3.1: Checking
+---------------------------------------------
+
+2013-11-21 17:45:00,863  ONOS2     : INFO    : 
+---------------------------------------------
+End of Step  3.1: Checking
+---------------------------------------------
+
+---------------------------------------------
+Start of Step 3.2: Verifying the result
+---------------------------------------------
+
+2013-11-21 17:45:00,872  ONOS2     : INFO    : 
+****************************************
+Start of Test Case4 : 
+2013-11-21 17:45:36,587  ONOS2     : INFO    : 
+****************************************
+Start of Test Case5 : 
+2013-11-21 17:45:49,168  ONOS2     : INFO    : 
+****************************************
+Start of Test Case6 : 
+2013-11-21 17:45:49,175  ONOS2     : INFO    :  Bringing Link down... 
+****************************************
+
+2013-11-21 17:46:09,656  ONOS2     : INFO    : 
+****************************************
+Start of Test Case7 : 
+2013-11-21 17:46:09,663  ONOS2     : INFO    :  Bringing Link up... 
+****************************************
+
+exit
+exit
+logout
+Connection to 10.128.100.4 closed.

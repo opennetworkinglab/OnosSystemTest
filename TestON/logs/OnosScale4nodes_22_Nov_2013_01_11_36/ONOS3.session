@@ -1,0 +1,471 @@
+2013-11-22 01:11:40,531  ONOS3     : INFO    : 
+                                +----------------+
+------------------------------ { Script And Files }  ------------------------------
+                                +----------------+
+
+	Script Log File : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_22_Nov_2013_01_11_36/OnosScale4nodes_22_Nov_2013_01_11_36.log
+	Report Log File : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_22_Nov_2013_01_11_36/OnosScale4nodes_22_Nov_2013_01_11_36.rpt
+	ONOS4 Session Log : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_22_Nov_2013_01_11_36/ONOS4.session
+	Cassandra3 Session Log : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_22_Nov_2013_01_11_36/Cassandra3.session
+	ONOS2 Session Log : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_22_Nov_2013_01_11_36/ONOS2.session
+	ONOS3 Session Log : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_22_Nov_2013_01_11_36/ONOS3.session
+	ONOS1 Session Log : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_22_Nov_2013_01_11_36/ONOS1.session
+	Cassandra1 Session Log : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_22_Nov_2013_01_11_36/Cassandra1.session
+	Cassandra2 Session Log : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_22_Nov_2013_01_11_36/Cassandra2.session
+	Mininet1 Session Log : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_22_Nov_2013_01_11_36/Mininet1.session
+	Cassandra4 Session Log : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_22_Nov_2013_01_11_36/Cassandra4.session
+	Zookeeper1 Session Log : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_22_Nov_2013_01_11_36/Zookeeper1.session
+	Test Script :/home/admin/ONLabTest/TestON/Tests/OnosScale4nodes.py
+	Test Params : /home/admin/ONLabTest/TestON/Tests/OnosScale4nodes.params
+	Topology : /home/admin/ONLabTest/TestON/Tests/OnosScale4nodes.tpl
+                              +------------------+
+---------------------------  { Script Exec Params }  ---------------------------
+                              +------------------+
+
+	
+	'TargetTime': '50'
+	 'testcases': '1
+	2
+	3
+	4'
+	 'WaitTime': '50'
+	 'NR_Links': '198'
+	 'RestIP': '10.128.100.4'
+	 'NR_Switches': '100'
+	 'Iterations': '2'
+	
+
+                               +---------------+
+----------------------------- { Components Used }  -----------------------------
+                               +---------------+
+	ONOS4
+	Cassandra3
+	ONOS2
+	ONOS3
+	ONOS1
+	Cassandra1
+	Cassandra2
+	Mininet1
+	Cassandra4
+	Zookeeper1
+
+
+                              +--------+
+---------------------------- { Topology }  ----------------------------
+                              +--------+
+
+	
+	'ONOS4': 
+	'connect_order': '10'
+	 'password': None
+	 'type': 'OnosCliDriver'
+	 'host': '10.128.100.6'
+	 'user': 'admin'
+	
+	 'Cassandra3': 
+	'connect_order': '5'
+	 'password': None
+	 'type': 'CassandraCliDriver'
+	 'host': '10.128.100.5'
+	 'user': 'admin'
+	
+	 'ONOS2': 
+	'connect_order': '8'
+	 'password': None
+	 'type': 'OnosCliDriver'
+	 'host': '10.128.100.4'
+	 'user': 'admin'
+	
+	 'ONOS3': 
+	'connect_order': '9'
+	 'password': None
+	 'type': 'OnosCliDriver'
+	 'host': '10.128.100.5'
+	 'user': 'admin'
+	
+	 'ONOS1': 
+	'connect_order': '7'
+	 'password': None
+	 'type': 'OnosCliDriver'
+	 'host': '10.128.100.1'
+	 'user': 'admin'
+	
+	 'Cassandra1': 
+	'connect_order': '3'
+	 'password': None
+	 'type': 'CassandraCliDriver'
+	 'host': '10.128.100.1'
+	 'user': 'admin'
+	
+	 'Cassandra2': 
+	'connect_order': '4'
+	 'password': None
+	 'type': 'CassandraCliDriver'
+	 'host': '10.128.100.4'
+	 'user': 'admin'
+	
+	 'Mininet1': 
+	'connect_order': '25'
+	 'host': '10.128.100.11'
+	 'user': 'admin'
+	 'COMPONENTS': 
+	'arg1': ''
+	 'arg2': '--topo linear
+	100 --arp'
+	 'controller': 'remote
+	ip=10.128.100.1
+	port=6633'
+	
+	 'password': None
+	 'type': 'MininetCliDriver'
+	
+	 'Cassandra4': 
+	'connect_order': '6'
+	 'password': None
+	 'type': 'CassandraCliDriver'
+	 'host': '10.128.100.6'
+	 'user': 'admin'
+	
+	 'Zookeeper1': 
+	'connect_order': '2'
+	 'host': '10.128.100.1'
+	 'user': 'admin'
+	 'COMPONENTS': ''
+	 'password': None
+	 'type': 'ZookeeperCliDriver'
+	
+	
+------------------------------------------------------------
+
+                                                                               teston> 
+
+
+2013-11-22 01:14:26,177  ONOS3     : INFO    : 
+****************************************
+Start of Test Case1 : 
+
+
+
+Welcome to Ubuntu 12.04.2 LTS (GNU/Linux 3.2.0-44-virtual x86_64)
+
+ * Documentation:  https://help.ubuntu.com/
+
+  System information as of Fri Nov 22 01:11:41 PST 2013
+
+  System load:  0.92               Processes:           94
+  Usage of /:   24.2% of 19.67GB   Users logged in:     1
+  Memory usage: 54%                IP address for eth0: 10.128.100.5
+  Swap usage:   0%
+
+  Graph this data and manage this system at https://landscape.canonical.com/
+
+  Get cloud support with Ubuntu Advantage Cloud Guest:
+    http://www.ubuntu.com/business/services/cloud
+
+  Use Juju to deploy your cloud instances and workloads:
+    https://juju.ubuntu.com/#cloud-precise
+
+129 packages can be updated.
+65 updates are security updates.
+
+Last login: Fri Nov 22 01:11:41 2013 from 10.128.7.7
+admin@autoONOS3:~$ 
+admin@autoONOS3:~$ 
+admin@autoONOS3:~$ ~/ONOS/start-onos.sh stop
+
+admin@autoONOS3:~$ ~/ONOS/start-onos.sh stop
+Killed existing process (pid: 25594)
+admin@autoONOS3:~$ 
+
+admin@autoONOS3:~$ ~/ONOS/start-onos.sh start
+~/ONOS/start-onos.sh start
+rotate log: ./onos-logs/onos.autoONOS3.log
+rotate log: ./onos-logs/onos.autoONOS3.pcap
+Starting ONOS controller ...
+
+/home/admin/ONOS
+/home/admin/ONOS
+mvn -o exec:exec -Dexec.executable="java" -Dexec.args=" -javaagent:/home/admin/ONOS/lib/jacocoagent.jar=dumponexit=true,output=file,destfile=./onos-logs/jacoco.exec -server -d64 -Xmx1g -Xms1g -Xmn800m -XX:+UseConcMarkSweepGC -XX:+UseAdaptiveSizePolicy -XX:+AggressiveOpts -XX:+UseFastAccessorMethods -XX:MaxInlineSize=8192 -XX:FreqInlineSize=8192 -XX:CompileThreshold=1500 -XX:PreBlockSpin=8 -XX:OnError=crash-logger -XX:CompileThreshold=1500 -XX:PreBlockSpin=8 		-XX:+UseThreadPriorities 		-XX:ThreadPriorityPolicy=42 		-XX:+UseCompressedOops 		-Dcom.sun.management.jmxremote.port=7189 		-Dcom.sun.management.jmxremote.ssl=false 		-Dcom.sun.management.jmxremote.authenticate=false -Dhazelcast.logging.type=slf4j -Dlogback.configurationFile=./logback.autoONOS3.xml -cp %classpath net.onrc.onos.ofcontroller.core.Main -cf ./conf/onos.properties"
+Waiting for ONOS to start...
+......
+admin@autoONOS3:~$ 2013-11-22 01:16:18,300  ONOS3     : INFO    :  Checking if the startup was clean...
+****************************************
+
+2013-11-22 01:16:18,303  ONOS3     : INFO    : 
+---------------------------------------------
+Start of Step INIT : Initializing the test case :Checking if the startup was clean...
+---------------------------------------------
+
+2013-11-22 01:16:18,305  ONOS3     : INFO    : 
+---------------------------------------------
+Start of Step 1.1: Testing startup Zookeeper
+---------------------------------------------
+
+2013-11-22 01:16:19,279  ONOS3     : INFO    : 
+---------------------------------------------
+End of Step  1.1: Testing startup Zookeeper
+---------------------------------------------
+
+---------------------------------------------
+Start of Step 1.2: Testing startup Cassandra
+---------------------------------------------
+
+2013-11-22 01:16:21,112  ONOS3     : INFO    : 
+---------------------------------------------
+End of Step  1.2: Testing startup Cassandra
+---------------------------------------------
+
+---------------------------------------------
+Start of Step 1.3: Testing startup ONOS
+---------------------------------------------
+
+
+
+admin@autoONOS3:~$ 
+admin@autoONOS3:~$ ~/ONOS/start-onos.sh status 
+~/ONOS/start-onos.sh status 
+1 instance of onos running
+
+admin@autoONOS3:~$ 
+admin@autoONOS3:~$ tail ~/ONOS/onos-logs/onos.*.log
+
+
+admin@autoONOS3:~$ tail ~/ONOS/onos-logs/onos.*.log
+2013-11-22 01:16:35,782 DEBUG [Thread-6] n.o.o.o.f.FlowEventHandler [FlowEventHandler.java:395] Topology Event: ENTRY_ADD Link=3/3/4/2
+2013-11-22 01:16:39,882 DEBUG [hz._hzInstance_1_dev.cached.thread-8] c.h.c.ClusterService [Slf4jFactory.java:81] [10.128.100.5]:5701 [dev] Sending MasterConfirmation to Member [10.128.100.1]:5701
+2013-11-22 01:16:42,943 DEBUG [hz._hzInstance_1_dev.scheduled] c.h.s.OperationService [Slf4jFactory.java:81] [10.128.100.5]:5701 [dev] Re-scheduling[5] -> ScheduledBackup{backup=Backup{backupOp=PutBackupOperation{mapTopology}, originalCaller=Address[10.128.100.1]:5701, version=[3, 3, 3, 0, 0, 0], sync=false}, partitionId=10, replicaIndex=3}
+2013-11-22 01:16:47,565 DEBUG [pool-3-thread-5] n.o.o.o.l.i.LinkDiscoveryManager [LinkDiscoveryManager.java:372] Sending LLDP out on all ports.
+2013-11-22 01:17:02,574 DEBUG [pool-3-thread-2] n.o.o.o.l.i.LinkDiscoveryManager [LinkDiscoveryManager.java:372] Sending LLDP out on all ports.
+2013-11-22 01:17:08,210 DEBUG [pool-3-thread-2] n.o.o.o.f.NetworkGraphPublisher [NetworkGraphPublisher.java:88] Running cleanup thread
+2013-11-22 01:17:09,882 DEBUG [hz._hzInstance_1_dev.cached.thread-8] c.h.c.ClusterService [Slf4jFactory.java:81] [10.128.100.5]:5701 [dev] Sending MasterConfirmation to Member [10.128.100.1]:5701
+2013-11-22 01:17:10,598 DEBUG [pool-3-thread-2] n.o.o.o.f.NetworkGraphPublisher [NetworkGraphPublisher.java:154] Checking for inactive switches
+2013-11-22 01:17:17,582 DEBUG [pool-3-thread-11] n.o.o.o.l.i.LinkDiscoveryManager [LinkDiscoveryManager.java:372] Sending LLDP out on all ports.
+2013-11-22 01:17:21,578 DEBUG [hz._hzInstance_1_dev.operation.thread-0] c.h.p.ReplicaSyncRequest [Slf4jFactory.java:81] [10.128.100.5]:5701 [dev] Sending sync response to -> Address[10.128.100.6]:5701; for partition: 16, replica: 1
+admin@autoONOS3:~$ tail ~/ONOS/onos-logs/onos.*.log
+2013-11-22 01:18:26,516  ONOS3     : INFO    : 
+****************************************
+Start of Test Case2 : 
+2013-11-22 01:18:26,519  ONOS3     : INFO    :  Timing Onos Convergence for switch -> a single ONOS node in the cluster
+****************************************
+
+2013-11-22 01:18:26,521  ONOS3     : INFO    : 
+---------------------------------------------
+Start of Step INIT : Initializing the test case :Timing Onos Convergence for switch -> a single ONOS node in the cluster
+---------------------------------------------
+
+2013-11-22 01:18:26,526  ONOS3     : INFO    : 
+---------------------------------------------
+Start of Step 2.1: Bringing ONOS down...
+---------------------------------------------
+
+
+
+admin@autoONOS3:~$ 
+admin@autoONOS3:~$ tail ~/ONOS/onos-logs/onos.*.log
+2013-11-22 01:17:02,574 DEBUG [pool-3-thread-2] n.o.o.o.l.i.LinkDiscoveryManager [LinkDiscoveryManager.java:372] Sending LLDP out on all ports.
+2013-11-22 01:17:08,210 DEBUG [pool-3-thread-2] n.o.o.o.f.NetworkGraphPublisher [NetworkGraphPublisher.java:88] Running cleanup thread
+2013-11-22 01:17:09,882 DEBUG [hz._hzInstance_1_dev.cached.thread-8] c.h.c.ClusterService [Slf4jFactory.java:81] [10.128.100.5]:5701 [dev] Sending MasterConfirmation to Member [10.128.100.1]:5701
+2013-11-22 01:17:10,598 DEBUG [pool-3-thread-2] n.o.o.o.f.NetworkGraphPublisher [NetworkGraphPublisher.java:154] Checking for inactive switches
+2013-11-22 01:17:17,582 DEBUG [pool-3-thread-11] n.o.o.o.l.i.LinkDiscoveryManager [LinkDiscoveryManager.java:372] Sending LLDP out on all ports.
+2013-11-22 01:17:21,578 DEBUG [hz._hzInstance_1_dev.operation.thread-0] c.h.p.ReplicaSyncRequest [Slf4jFactory.java:81] [10.128.100.5]:5701 [dev] Sending sync response to -> Address[10.128.100.6]:5701; for partition: 16, replica: 1
+2013-11-22 01:17:32,593 DEBUG [pool-3-thread-7] n.o.o.o.l.i.LinkDiscoveryManager [LinkDiscoveryManager.java:372] Sending LLDP out on all ports.
+2013-11-22 01:17:39,882 DEBUG [hz._hzInstance_1_dev.cached.thread-7] c.h.c.ClusterService [Slf4jFactory.java:81] [10.128.100.5]:5701 [dev] Sending MasterConfirmation to Member [10.128.100.1]:5701
+2013-11-22 01:17:42,944 DEBUG [hz._hzInstance_1_dev.scheduled] c.h.s.OperationService [Slf4jFactory.java:81] [10.128.100.5]:5701 [dev] Re-scheduling[6] -> ScheduledBackup{backup=Backup{backupOp=PutBackupOperation{mapTopology}, originalCaller=Address[10.128.100.1]:5701, version=[3, 3, 3, 0, 0, 0], sync=false}, partitionId=10, replicaIndex=3}
+2013-11-22 01:17:47,603 DEBUG [pool-3-thread-4] n.o.o.o.l.i.LinkDiscoveryManager [LinkDiscoveryManager.java:372] Sending LLDP out on all ports.
+admin@autoONOS3:~$ ~/ONOS/start-onos.sh stop
+
+admin@autoONOS3:~$ ~/ONOS/start-onos.sh stop
+Killed existing process (pid: 27319)
+admin@autoONOS3:~$ 
+
+admin@autoONOS3:~$ ~/ONOS/start-onos.sh start
+~/ONOS/start-onos.sh start
+rotate log: ./onos-logs/onos.autoONOS3.log
+rotate log: ./onos-logs/onos.autoONOS3.pcap
+Starting ONOS controller ...
+
+/home/admin/ONOS
+/home/admin/ONOS
+mvn -o exec:exec -Dexec.executable="java" -Dexec.args=" -javaagent:/home/admin/ONOS/lib/jacocoagent.jar=dumponexit=true,output=file,destfile=./onos-logs/jacoco.exec -server -d64 -Xmx1g -Xms1g -Xmn800m -XX:+UseConcMarkSweepGC -XX:+UseAdaptiveSizePolicy -XX:+AggressiveOpts -XX:+UseFastAccessorMethods -XX:MaxInlineSize=8192 -XX:FreqInlineSize=8192 -XX:CompileThreshold=1500 -XX:PreBlockSpin=8 -XX:OnError=crash-logger -XX:CompileThreshold=1500 -XX:PreBlockSpin=8 		-XX:+UseThreadPriorities 		-XX:ThreadPriorityPolicy=42 		-XX:+UseCompressedOops 		-Dcom.sun.management.jmxremote.port=7189 		-Dcom.sun.management.jmxremote.ssl=false 		-Dcom.sun.management.jmxremote.authenticate=false -Dhazelcast.logging.type=slf4j -Dlogback.configurationFile=./logback.autoONOS3.xml -cp %classpath net.onrc.onos.ofcontroller.core.Main -cf ./conf/onos.properties"
+Waiting for ONOS to start...
+......
+admin@autoONOS3:~$ 
+
+admin@autoONOS3:~$ 
+admin@autoONOS3:~$ ~/ONOS/start-onos.sh status 
+~/ONOS/start-onos.sh status 
+1 instance of onos running
+admin@autoONOS3:~$ 
+tail ~/ONOS/onos-logs/onos.*.log
+
+admin@autoONOS3:~$ 
+admin@autoONOS3:~$ tail ~/ONOS/onos-logs/onos.*.log
+tail ~/ONOS/onos-logs/onos.*.log
+
+2013-11-22 01:19:56,802 DEBUG [hz._hzInstance_1_dev.operation.thread-7] c.h.m.o.MapValuesOperation [Slf4jFactory.java:81] [10.128.100.5]:5701 [dev] class com.hazelcast.spi.exception.WrongTargetException: WrongTarget! this:Address[10.128.100.5]:5701, target:Address[10.128.100.6]:5701, partitionId: 135, replicaIndex: 0, operation: com.hazelcast.map.operation.MapValuesOperation, service: hz:impl:mapService
+2013-11-22 01:19:57,139 DEBUG [hz._hzInstance_1_dev.cached.thread-3] c.h.p.PartitionService [Slf4jFactory.java:81] [10.128.100.5]:5701 [dev] Sending sync replica request to -> Address[10.128.100.6]:5701; for partition: 142, replica: 3
+2013-11-22 01:19:57,152 DEBUG [hz._hzInstance_1_dev.operation.thread-6] c.h.p.ReplicaSyncResponse [Slf4jFactory.java:81] [10.128.100.5]:5701 [dev] Applying replica sync for partition: 142, replica: 3
+2013-11-22 01:20:00,620 DEBUG [pool-3-thread-5] n.o.o.o.l.i.LinkDiscoveryManager [LinkDiscoveryManager.java:372] Sending LLDP out on all ports.
+2013-11-22 01:20:07,942 DEBUG [hz._hzInstance_1_dev.cached.thread-3] c.h.c.ClusterService [Slf4jFactory.java:81] [10.128.100.5]:5701 [dev] Sending MasterConfirmation to Member [10.128.100.1]:5701
+2013-11-22 01:20:15,632 DEBUG [pool-3-thread-9] n.o.o.o.l.i.LinkDiscoveryManager [LinkDiscoveryManager.java:372] Sending LLDP out on all ports.
+2013-11-22 01:20:30,644 DEBUG [pool-3-thread-15] n.o.o.o.l.i.LinkDiscoveryManager [LinkDiscoveryManager.java:372] Sending LLDP out on all ports.
+2013-11-22 01:20:36,710 DEBUG [pool-3-thread-6] n.o.o.o.f.NetworkGraphPublisher [NetworkGraphPublisher.java:88] Running cleanup thread
+2013-11-22 01:20:37,942 DEBUG [hz._hzInstance_1_dev.cached.thread-3] c.h.c.ClusterService [Slf4jFactory.java:81] [10.128.100.5]:5701 [dev] Sending MasterConfirmation to Member [10.128.100.1]:5701
+2013-11-22 01:20:38,486 DEBUG [pool-3-thread-6] n.o.o.o.f.NetworkGraphPublisher [NetworkGraphPublisher.java:154] Checking for inactive switches
+admin@autoONOS3:~$ 2013-11-22 01:22:40,340  ONOS3     : INFO    : 
+****************************************
+Start of Test Case3 : 
+2013-11-22 01:22:40,342  ONOS3     : INFO    :  Timing Onos Convergence for switch -> all ONOS nodes in cluster
+****************************************
+
+2013-11-22 01:22:40,343  ONOS3     : INFO    : 
+---------------------------------------------
+Start of Step INIT : Initializing the test case :Timing Onos Convergence for switch -> all ONOS nodes in cluster
+---------------------------------------------
+
+2013-11-22 01:22:40,345  ONOS3     : INFO    : 
+---------------------------------------------
+Start of Step 3.1: Bringing ONOS down...
+---------------------------------------------
+
+
+
+admin@autoONOS3:~$ 
+admin@autoONOS3:~$ tail ~/ONOS/onos-logs/onos.*.log
+2013-11-22 01:20:00,620 DEBUG [pool-3-thread-5] n.o.o.o.l.i.LinkDiscoveryManager [LinkDiscoveryManager.java:372] Sending LLDP out on all ports.
+2013-11-22 01:20:07,942 DEBUG [hz._hzInstance_1_dev.cached.thread-3] c.h.c.ClusterService [Slf4jFactory.java:81] [10.128.100.5]:5701 [dev] Sending MasterConfirmation to Member [10.128.100.1]:5701
+2013-11-22 01:20:15,632 DEBUG [pool-3-thread-9] n.o.o.o.l.i.LinkDiscoveryManager [LinkDiscoveryManager.java:372] Sending LLDP out on all ports.
+2013-11-22 01:20:30,644 DEBUG [pool-3-thread-15] n.o.o.o.l.i.LinkDiscoveryManager [LinkDiscoveryManager.java:372] Sending LLDP out on all ports.
+2013-11-22 01:20:36,710 DEBUG [pool-3-thread-6] n.o.o.o.f.NetworkGraphPublisher [NetworkGraphPublisher.java:88] Running cleanup thread
+2013-11-22 01:20:37,942 DEBUG [hz._hzInstance_1_dev.cached.thread-3] c.h.c.ClusterService [Slf4jFactory.java:81] [10.128.100.5]:5701 [dev] Sending MasterConfirmation to Member [10.128.100.1]:5701
+2013-11-22 01:20:38,486 DEBUG [pool-3-thread-6] n.o.o.o.f.NetworkGraphPublisher [NetworkGraphPublisher.java:154] Checking for inactive switches
+2013-11-22 01:20:45,653 DEBUG [pool-3-thread-2] n.o.o.o.l.i.LinkDiscoveryManager [LinkDiscoveryManager.java:372] Sending LLDP out on all ports.
+2013-11-22 01:21:00,663 DEBUG [pool-3-thread-8] n.o.o.o.l.i.LinkDiscoveryManager [LinkDiscoveryManager.java:372] Sending LLDP out on all ports.
+2013-11-22 01:21:07,942 DEBUG [hz._hzInstance_1_dev.cached.thread-7] c.h.c.ClusterService [Slf4jFactory.java:81] [10.128.100.5]:5701 [dev] Sending MasterConfirmation to Member [10.128.100.1]:5701
+admin@autoONOS3:~$ ~/ONOS/start-onos.sh stop
+
+admin@autoONOS3:~$ ~/ONOS/start-onos.sh stop
+Killed existing process (pid: 27908)
+admin@autoONOS3:~$ 
+
+admin@autoONOS3:~$ ~/ONOS/start-onos.sh start
+~/ONOS/start-onos.sh start
+rotate log: ./onos-logs/onos.autoONOS3.log
+rotate log: ./onos-logs/onos.autoONOS3.pcap
+Starting ONOS controller ...
+
+/home/admin/ONOS
+/home/admin/ONOS
+mvn -o exec:exec -Dexec.executable="java" -Dexec.args=" -javaagent:/home/admin/ONOS/lib/jacocoagent.jar=dumponexit=true,output=file,destfile=./onos-logs/jacoco.exec -server -d64 -Xmx1g -Xms1g -Xmn800m -XX:+UseConcMarkSweepGC -XX:+UseAdaptiveSizePolicy -XX:+AggressiveOpts -XX:+UseFastAccessorMethods -XX:MaxInlineSize=8192 -XX:FreqInlineSize=8192 -XX:CompileThreshold=1500 -XX:PreBlockSpin=8 -XX:OnError=crash-logger -XX:CompileThreshold=1500 -XX:PreBlockSpin=8 		-XX:+UseThreadPriorities 		-XX:ThreadPriorityPolicy=42 		-XX:+UseCompressedOops 		-Dcom.sun.management.jmxremote.port=7189 		-Dcom.sun.management.jmxremote.ssl=false 		-Dcom.sun.management.jmxremote.authenticate=false -Dhazelcast.logging.type=slf4j -Dlogback.configurationFile=./logback.autoONOS3.xml -cp %classpath net.onrc.onos.ofcontroller.core.Main -cf ./conf/onos.properties"
+Waiting for ONOS to start...
+.....
+admin@autoONOS3:~$ 
+
+admin@autoONOS3:~$ 
+admin@autoONOS3:~$ ~/ONOS/start-onos.sh status 
+~/ONOS/start-onos.sh status 
+1 instance of onos running
+admin@autoONOS3:~$ 
+tail ~/ONOS/onos-logs/onos.*.log
+
+admin@autoONOS3:~$ 
+admin@autoONOS3:~$ tail ~/ONOS/onos-logs/onos.*.log
+tail ~/ONOS/onos-logs/onos.*.log
+
+2013-11-22 01:24:28,106 DEBUG [hz._hzInstance_1_dev.operation.thread-2] c.h.p.ReplicaSyncRequest [Slf4jFactory.java:81] [10.128.100.5]:5701 [dev] Sending sync response to -> Address[10.128.100.6]:5701; for partition: 170, replica: 2
+2013-11-22 01:24:28,110 DEBUG [hz._hzInstance_1_dev.operation.thread-3] c.h.p.ReplicaSyncRequest [Slf4jFactory.java:81] [10.128.100.5]:5701 [dev] Sending sync response to -> Address[10.128.100.6]:5701; for partition: 35, replica: 1
+2013-11-22 01:24:28,114 DEBUG [hz._hzInstance_1_dev.operation.thread-3] c.h.p.ReplicaSyncRequest [Slf4jFactory.java:81] [10.128.100.5]:5701 [dev] Sending sync response to -> Address[10.128.100.6]:5701; for partition: 27, replica: 1
+2013-11-22 01:24:28,117 DEBUG [hz._hzInstance_1_dev.operation.thread-7] c.h.p.ReplicaSyncRequest [Slf4jFactory.java:81] [10.128.100.5]:5701 [dev] Sending sync response to -> Address[10.128.100.6]:5701; for partition: 39, replica: 2
+2013-11-22 01:24:28,120 DEBUG [hz._hzInstance_1_dev.operation.thread-7] c.h.p.ReplicaSyncRequest [Slf4jFactory.java:81] [10.128.100.5]:5701 [dev] Sending sync response to -> Address[10.128.100.6]:5701; for partition: 31, replica: 1
+2013-11-22 01:24:28,464 DEBUG [hz._hzInstance_1_dev.cached.thread-6] c.h.c.ClusterService [Slf4jFactory.java:81] [10.128.100.5]:5701 [dev] Sending MasterConfirmation to Member [10.128.100.1]:5701
+2013-11-22 01:24:36,204 DEBUG [pool-3-thread-11] n.o.o.o.l.i.LinkDiscoveryManager [LinkDiscoveryManager.java:372] Sending LLDP out on all ports.
+2013-11-22 01:24:51,214 DEBUG [pool-3-thread-11] n.o.o.o.l.i.LinkDiscoveryManager [LinkDiscoveryManager.java:372] Sending LLDP out on all ports.
+2013-11-22 01:24:57,303 DEBUG [pool-3-thread-5] n.o.o.o.f.NetworkGraphPublisher [NetworkGraphPublisher.java:88] Running cleanup thread
+2013-11-22 01:24:58,463 DEBUG [hz._hzInstance_1_dev.cached.thread-2] c.h.c.ClusterService [Slf4jFactory.java:81] [10.128.100.5]:5701 [dev] Sending MasterConfirmation to Member [10.128.100.1]:5701
+admin@autoONOS3:~$ 2013-11-22 01:26:47,504  ONOS3     : INFO    : 
+****************************************
+Start of Test Case4 : 
+2013-11-22 01:26:47,505  ONOS3     : INFO    :  Timing Onos Convergence for even single controller distribution
+****************************************
+
+2013-11-22 01:26:47,506  ONOS3     : INFO    : 
+---------------------------------------------
+Start of Step INIT : Initializing the test case :Timing Onos Convergence for even single controller distribution
+---------------------------------------------
+
+2013-11-22 01:26:47,508  ONOS3     : INFO    : 
+---------------------------------------------
+Start of Step 4.1: Bringing ONOS down...
+---------------------------------------------
+
+
+
+admin@autoONOS3:~$ 
+admin@autoONOS3:~$ tail ~/ONOS/onos-logs/onos.*.log
+2013-11-22 01:24:28,120 DEBUG [hz._hzInstance_1_dev.operation.thread-7] c.h.p.ReplicaSyncRequest [Slf4jFactory.java:81] [10.128.100.5]:5701 [dev] Sending sync response to -> Address[10.128.100.6]:5701; for partition: 31, replica: 1
+2013-11-22 01:24:28,464 DEBUG [hz._hzInstance_1_dev.cached.thread-6] c.h.c.ClusterService [Slf4jFactory.java:81] [10.128.100.5]:5701 [dev] Sending MasterConfirmation to Member [10.128.100.1]:5701
+2013-11-22 01:24:36,204 DEBUG [pool-3-thread-11] n.o.o.o.l.i.LinkDiscoveryManager [LinkDiscoveryManager.java:372] Sending LLDP out on all ports.
+2013-11-22 01:24:51,214 DEBUG [pool-3-thread-11] n.o.o.o.l.i.LinkDiscoveryManager [LinkDiscoveryManager.java:372] Sending LLDP out on all ports.
+2013-11-22 01:24:57,303 DEBUG [pool-3-thread-5] n.o.o.o.f.NetworkGraphPublisher [NetworkGraphPublisher.java:88] Running cleanup thread
+2013-11-22 01:24:58,463 DEBUG [hz._hzInstance_1_dev.cached.thread-2] c.h.c.ClusterService [Slf4jFactory.java:81] [10.128.100.5]:5701 [dev] Sending MasterConfirmation to Member [10.128.100.1]:5701
+2013-11-22 01:25:00,252 DEBUG [pool-3-thread-5] n.o.o.o.f.NetworkGraphPublisher [NetworkGraphPublisher.java:154] Checking for inactive switches
+2013-11-22 01:25:06,222 DEBUG [pool-3-thread-14] n.o.o.o.l.i.LinkDiscoveryManager [LinkDiscoveryManager.java:372] Sending LLDP out on all ports.
+2013-11-22 01:25:21,232 DEBUG [pool-3-thread-5] n.o.o.o.l.i.LinkDiscoveryManager [LinkDiscoveryManager.java:372] Sending LLDP out on all ports.
+2013-11-22 01:25:28,464 DEBUG [hz._hzInstance_1_dev.cached.thread-1] c.h.c.ClusterService [Slf4jFactory.java:81] [10.128.100.5]:5701 [dev] Sending MasterConfirmation to Member [10.128.100.1]:5701
+admin@autoONOS3:~$ ~/ONOS/start-onos.sh stop
+
+admin@autoONOS3:~$ ~/ONOS/start-onos.sh stop
+Killed existing process (pid: 28432)
+admin@autoONOS3:~$ 
+
+admin@autoONOS3:~$ ~/ONOS/start-onos.sh start
+~/ONOS/start-onos.sh start
+rotate log: ./onos-logs/onos.autoONOS3.log
+rotate log: ./onos-logs/onos.autoONOS3.pcap
+Starting ONOS controller ...
+
+/home/admin/ONOS
+/home/admin/ONOS
+mvn -o exec:exec -Dexec.executable="java" -Dexec.args=" -javaagent:/home/admin/ONOS/lib/jacocoagent.jar=dumponexit=true,output=file,destfile=./onos-logs/jacoco.exec -server -d64 -Xmx1g -Xms1g -Xmn800m -XX:+UseConcMarkSweepGC -XX:+UseAdaptiveSizePolicy -XX:+AggressiveOpts -XX:+UseFastAccessorMethods -XX:MaxInlineSize=8192 -XX:FreqInlineSize=8192 -XX:CompileThreshold=1500 -XX:PreBlockSpin=8 -XX:OnError=crash-logger -XX:CompileThreshold=1500 -XX:PreBlockSpin=8 		-XX:+UseThreadPriorities 		-XX:ThreadPriorityPolicy=42 		-XX:+UseCompressedOops 		-Dcom.sun.management.jmxremote.port=7189 		-Dcom.sun.management.jmxremote.ssl=false 		-Dcom.sun.management.jmxremote.authenticate=false -Dhazelcast.logging.type=slf4j -Dlogback.configurationFile=./logback.autoONOS3.xml -cp %classpath net.onrc.onos.ofcontroller.core.Main -cf ./conf/onos.properties"
+Waiting for ONOS to start...
+.....
+admin@autoONOS3:~$ 
+
+admin@autoONOS3:~$ 
+admin@autoONOS3:~$ ~/ONOS/start-onos.sh status 
+~/ONOS/start-onos.sh status 
+1 instance of onos running
+admin@autoONOS3:~$ 
+tail ~/ONOS/onos-logs/onos.*.log
+
+admin@autoONOS3:~$ 
+admin@autoONOS3:~$ tail ~/ONOS/onos-logs/onos.*.log
+tail ~/ONOS/onos-logs/onos.*.log
+
+2013-11-22 01:28:23,442 DEBUG [hz._hzInstance_1_dev.cached.thread-2] c.h.p.PartitionService [Slf4jFactory.java:81] [10.128.100.5]:5701 [dev] Sending sync replica request to -> Address[10.128.100.6]:5701; for partition: 135, replica: 3
+2013-11-22 01:28:23,450 DEBUG [hz._hzInstance_1_dev.operation.thread-7] c.h.p.ReplicaSyncResponse [Slf4jFactory.java:81] [10.128.100.5]:5701 [dev] Applying replica sync for partition: 135, replica: 3
+2013-11-22 01:28:23,739 DEBUG [hz._hzInstance_1_dev.cached.thread-2] c.h.p.PartitionService [Slf4jFactory.java:81] [10.128.100.5]:5701 [dev] Sending sync replica request to -> Address[10.128.100.6]:5701; for partition: 142, replica: 3
+2013-11-22 01:28:23,752 DEBUG [hz._hzInstance_1_dev.operation.thread-6] c.h.p.ReplicaSyncResponse [Slf4jFactory.java:81] [10.128.100.5]:5701 [dev] Applying replica sync for partition: 142, replica: 3
+2013-11-22 01:28:27,998 DEBUG [pool-3-thread-3] n.o.o.o.l.i.LinkDiscoveryManager [LinkDiscoveryManager.java:372] Sending LLDP out on all ports.
+2013-11-22 01:28:35,436 DEBUG [hz._hzInstance_1_dev.cached.thread-2] c.h.c.ClusterService [Slf4jFactory.java:81] [10.128.100.5]:5701 [dev] Sending MasterConfirmation to Member [10.128.100.1]:5701
+2013-11-22 01:28:43,009 DEBUG [pool-3-thread-6] n.o.o.o.l.i.LinkDiscoveryManager [LinkDiscoveryManager.java:372] Sending LLDP out on all ports.
+2013-11-22 01:28:58,019 DEBUG [pool-3-thread-11] n.o.o.o.l.i.LinkDiscoveryManager [LinkDiscoveryManager.java:372] Sending LLDP out on all ports.
+2013-11-22 01:29:04,222 DEBUG [pool-3-thread-6] n.o.o.o.f.NetworkGraphPublisher [NetworkGraphPublisher.java:88] Running cleanup thread
+2013-11-22 01:29:05,436 DEBUG [hz._hzInstance_1_dev.cached.thread-2] c.h.c.ClusterService [Slf4jFactory.java:81] [10.128.100.5]:5701 [dev] Sending MasterConfirmation to Member [10.128.100.1]:5701
+admin@autoONOS3:~$ 
+admin@autoONOS3:~$ 
+admin@autoONOS3:~$ tail ~/ONOS/onos-logs/onos.*.logexit
+
+2013-11-22 01:28:27,998 DEBUG [pool-3-thread-3] n.o.o.o.l.i.LinkDiscoveryManager [LinkDiscoveryManager.java:372] Sending LLDP out on all ports.
+2013-11-22 01:28:35,436 DEBUG [hz._hzInstance_1_dev.cached.thread-2] c.h.c.ClusterService [Slf4jFactory.java:81] [10.128.100.5]:5701 [dev] Sending MasterConfirmation to Member [10.128.100.1]:5701
+2013-11-22 01:28:43,009 DEBUG [pool-3-thread-6] n.o.o.o.l.i.LinkDiscoveryManager [LinkDiscoveryManager.java:372] Sending LLDP out on all ports.
+2013-11-22 01:28:58,019 DEBUG [pool-3-thread-11] n.o.o.o.l.i.LinkDiscoveryManager [LinkDiscoveryManager.java:372] Sending LLDP out on all ports.
+2013-11-22 01:29:04,222 DEBUG [pool-3-thread-6] n.o.o.o.f.NetworkGraphPublisher [NetworkGraphPublisher.java:88] Running cleanup thread
+2013-11-22 01:29:05,436 DEBUG [hz._hzInstance_1_dev.cached.thread-2] c.h.c.ClusterService [Slf4jFactory.java:81] [10.128.100.5]:5701 [dev] Sending MasterConfirmation to Member [10.128.100.1]:5701
+2013-11-22 01:29:06,907 DEBUG [pool-3-thread-6] n.o.o.o.f.NetworkGraphPublisher [NetworkGraphPublisher.java:154] Checking for inactive switches
+2013-11-22 01:29:13,028 DEBUG [pool-3-thread-8] n.o.o.o.l.i.LinkDiscoveryManager [LinkDiscoveryManager.java:372] Sending LLDP out on all ports.
+2013-11-22 01:29:28,039 DEBUG [pool-3-thread-14] n.o.o.o.l.i.LinkDiscoveryManager [LinkDiscoveryManager.java:372] Sending LLDP out on all ports.
+2013-11-22 01:29:35,436 DEBUG [hz._hzInstance_1_dev.cached.thread-4] c.h.c.ClusterService [Slf4jFactory.java:81] [10.128.100.5]:5701 [dev] Sending MasterConfirmation to Member [10.128.100.1]:5701
+admin@autoONOS3:~$ exit
+logout
+Connection to 10.128.100.5 closed.

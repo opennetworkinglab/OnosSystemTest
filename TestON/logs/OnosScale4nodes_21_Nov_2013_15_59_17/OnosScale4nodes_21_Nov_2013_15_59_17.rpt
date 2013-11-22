@@ -1,0 +1,219 @@
+
+                                +----------------+
+------------------------------ { Script And Files }  ------------------------------
+                                +----------------+
+
+	Script Log File : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_21_Nov_2013_15_59_17/OnosScale4nodes_21_Nov_2013_15_59_17.log
+	Report Log File : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_21_Nov_2013_15_59_17/OnosScale4nodes_21_Nov_2013_15_59_17.rpt
+	ONOS4 Session Log : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_21_Nov_2013_15_59_17/ONOS4.session
+	Cassandra3 Session Log : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_21_Nov_2013_15_59_17/Cassandra3.session
+	ONOS2 Session Log : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_21_Nov_2013_15_59_17/ONOS2.session
+	ONOS3 Session Log : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_21_Nov_2013_15_59_17/ONOS3.session
+	ONOS1 Session Log : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_21_Nov_2013_15_59_17/ONOS1.session
+	Cassandra1 Session Log : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_21_Nov_2013_15_59_17/Cassandra1.session
+	Cassandra2 Session Log : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_21_Nov_2013_15_59_17/Cassandra2.session
+	Mininet1 Session Log : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_21_Nov_2013_15_59_17/Mininet1.session
+	Cassandra4 Session Log : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_21_Nov_2013_15_59_17/Cassandra4.session
+	Zookeeper1 Session Log : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_21_Nov_2013_15_59_17/Zookeeper1.session
+	Test Script :/home/admin/ONLabTest/TestON/Tests/OnosScale4nodes.py
+	Test Params : /home/admin/ONLabTest/TestON/Tests/OnosScale4nodes.params
+	Topology : /home/admin/ONLabTest/TestON/Tests/OnosScale4nodes.tpl
+                              +------------------+
+---------------------------  { Script Exec Params }  ---------------------------
+                              +------------------+
+
+	
+	'TargetTime': '50'
+	 'testcases': '1
+	2
+	3
+	4'
+	 'WaitTime': '50'
+	 'NR_Links': '198'
+	 'RestIP': '10.128.100.4'
+	 'NR_Switches': '100'
+	 'Iterations': '2'
+	
+
+                               +---------------+
+----------------------------- { Components Used }  -----------------------------
+                               +---------------+
+	ONOS4
+	Cassandra3
+	ONOS2
+	ONOS3
+	ONOS1
+	Cassandra1
+	Cassandra2
+	Mininet1
+	Cassandra4
+	Zookeeper1
+
+
+                              +--------+
+---------------------------- { Topology }  ----------------------------
+                              +--------+
+
+	
+	'ONOS4': 
+	'connect_order': '10'
+	 'password': None
+	 'type': 'OnosCliDriver'
+	 'host': '10.128.100.6'
+	 'user': 'admin'
+	
+	 'Cassandra3': 
+	'connect_order': '5'
+	 'password': None
+	 'type': 'CassandraCliDriver'
+	 'host': '10.128.100.5'
+	 'user': 'admin'
+	
+	 'ONOS2': 
+	'connect_order': '8'
+	 'password': None
+	 'type': 'OnosCliDriver'
+	 'host': '10.128.100.4'
+	 'user': 'admin'
+	
+	 'ONOS3': 
+	'connect_order': '9'
+	 'password': None
+	 'type': 'OnosCliDriver'
+	 'host': '10.128.100.5'
+	 'user': 'admin'
+	
+	 'ONOS1': 
+	'connect_order': '7'
+	 'password': None
+	 'type': 'OnosCliDriver'
+	 'host': '10.128.100.1'
+	 'user': 'admin'
+	
+	 'Cassandra1': 
+	'connect_order': '3'
+	 'password': None
+	 'type': 'CassandraCliDriver'
+	 'host': '10.128.100.1'
+	 'user': 'admin'
+	
+	 'Cassandra2': 
+	'connect_order': '4'
+	 'password': None
+	 'type': 'CassandraCliDriver'
+	 'host': '10.128.100.4'
+	 'user': 'admin'
+	
+	 'Mininet1': 
+	'connect_order': '25'
+	 'host': '10.128.100.11'
+	 'user': 'admin'
+	 'COMPONENTS': 
+	'arg1': ''
+	 'arg2': '--topo linear
+	100 --arp'
+	 'controller': 'remote
+	ip=10.128.100.1
+	port=6633'
+	
+	 'password': None
+	 'type': 'MininetCliDriver'
+	
+	 'Cassandra4': 
+	'connect_order': '6'
+	 'password': None
+	 'type': 'CassandraCliDriver'
+	 'host': '10.128.100.6'
+	 'user': 'admin'
+	
+	 'Zookeeper1': 
+	'connect_order': '2'
+	 'host': '10.128.100.1'
+	 'user': 'admin'
+	 'COMPONENTS': ''
+	 'password': None
+	 'type': 'ZookeeperCliDriver'
+	
+	
+------------------------------------------------------------
+
+******************************
+ CASE INIT 
+******************************
+
+******************************
+ Result summary for Testcase1
+******************************
+
+[REPORT] [21 Nov 2013 16:04:01] COMMIT: 
+67174b8f2ccab135db02699ccdfc59e082b65490
+]0;admin@autoONOS1: ~admin@autoONOS1:~$
+[REPORT] [21 Nov 2013 16:04:01] Startup check Zookeeper1, Cassandra1, and ONOS1 connections
+*****************************
+ Result: Pass 
+*****************************
+
+******************************
+ Result summary for Testcase2
+******************************
+
+[REPORT] [21 Nov 2013 16:06:09] Time convergence for switches -> single ONOS node in cluster
+[REPORT] [21 Nov 2013 16:10:18] 
+-----
+switch: network 1 : 100 switches 100 active
+link: total 198 links (correct : 198)
+-----
+
+[REPORT] [21 Nov 2013 16:10:18] Convergence time of : 28.389544 seconds
+*****************************
+ Result: Pass 
+*****************************
+
+******************************
+ Result summary for Testcase3
+******************************
+
+[REPORT] [21 Nov 2013 16:10:18] Time convergence for switches -> all ONOS nodes in cluster
+[REPORT] [21 Nov 2013 16:14:26] 
+-----
+switch: network 1 : 100 switches 100 active
+link: total 198 links (correct : 198)
+-----
+
+[REPORT] [21 Nov 2013 16:14:26] Convergence time of : 18.609244 seconds
+*****************************
+ Result: Pass 
+*****************************
+
+******************************
+ Result summary for Testcase4
+******************************
+
+[REPORT] [21 Nov 2013 16:14:26] Time convergence for switches -> Divide switches equall among all  nodes in cluster
+[REPORT] [21 Nov 2013 16:18:31] 
+-----
+switch: network 1 : 100 switches 100 active
+link: total 198 links (correct : 198)
+-----
+
+[REPORT] [21 Nov 2013 16:18:31] Convergence time of : 16.875325 seconds
+*****************************
+ Result: Pass 
+*****************************
+
+
+*************************************
+	Test Execution Summary
+
+************************************* 
+
+ Test Start           : 21 Nov 2013 15:59:17
+ Test End             : 21 Nov 2013 16:18:31
+ Execution Time       : 0:19:13.919748
+ Total tests planned  : 4
+ Total tests RUN      : 4
+ Total Pass           : 4
+ Total Fail           : 0
+ Total No Result      : 0
+ Success Percentage   : 100%
+ Execution Result     : 100%

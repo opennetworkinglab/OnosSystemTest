@@ -1,0 +1,273 @@
+2013-11-20 01:10:31,359  Zookeeper1: INFO    : 
+                                +----------------+
+------------------------------ { Script And Files }  ------------------------------
+                                +----------------+
+
+	Script Log File : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_20_Nov_2013_01_10_31/OnosScale4nodes_20_Nov_2013_01_10_31.log
+	Report Log File : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_20_Nov_2013_01_10_31/OnosScale4nodes_20_Nov_2013_01_10_31.rpt
+	ONOS4 Session Log : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_20_Nov_2013_01_10_31/ONOS4.session
+	Cassandra3 Session Log : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_20_Nov_2013_01_10_31/Cassandra3.session
+	ONOS2 Session Log : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_20_Nov_2013_01_10_31/ONOS2.session
+	ONOS3 Session Log : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_20_Nov_2013_01_10_31/ONOS3.session
+	ONOS1 Session Log : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_20_Nov_2013_01_10_31/ONOS1.session
+	Cassandra1 Session Log : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_20_Nov_2013_01_10_31/Cassandra1.session
+	Cassandra2 Session Log : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_20_Nov_2013_01_10_31/Cassandra2.session
+	Mininet1 Session Log : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_20_Nov_2013_01_10_31/Mininet1.session
+	Cassandra4 Session Log : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_20_Nov_2013_01_10_31/Cassandra4.session
+	Zookeeper1 Session Log : /home/admin/ONLabTest/TestON/logs/OnosScale4nodes_20_Nov_2013_01_10_31/Zookeeper1.session
+	Test Script :/home/admin/ONLabTest/TestON/Tests/OnosScale4nodes.py
+	Test Params : /home/admin/ONLabTest/TestON/Tests/OnosScale4nodes.params
+	Topology : /home/admin/ONLabTest/TestON/Tests/OnosScale4nodes.tpl
+                              +------------------+
+---------------------------  { Script Exec Params }  ---------------------------
+                              +------------------+
+
+	
+	'TargetTime': '50'
+	 'testcases': '1
+	2
+	3
+	4'
+	 'WaitTime': '50'
+	 'NR_Links': '198'
+	 'RestIP': '10.128.100.4'
+	 'NR_Switches': '100'
+	 'Iterations': '2'
+	
+
+                               +---------------+
+----------------------------- { Components Used }  -----------------------------
+                               +---------------+
+	ONOS4
+	Cassandra3
+	ONOS2
+	ONOS3
+	ONOS1
+	Cassandra1
+	Cassandra2
+	Mininet1
+	Cassandra4
+	Zookeeper1
+
+
+                              +--------+
+---------------------------- { Topology }  ----------------------------
+                              +--------+
+
+	
+	'ONOS4': 
+	'connect_order': '10'
+	 'password': None
+	 'type': 'OnosCliDriver'
+	 'host': '10.128.100.6'
+	 'user': 'admin'
+	
+	 'Cassandra3': 
+	'connect_order': '5'
+	 'password': None
+	 'type': 'CassandraCliDriver'
+	 'host': '10.128.100.5'
+	 'user': 'admin'
+	
+	 'ONOS2': 
+	'connect_order': '8'
+	 'password': None
+	 'type': 'OnosCliDriver'
+	 'host': '10.128.100.4'
+	 'user': 'admin'
+	
+	 'ONOS3': 
+	'connect_order': '9'
+	 'password': None
+	 'type': 'OnosCliDriver'
+	 'host': '10.128.100.5'
+	 'user': 'admin'
+	
+	 'ONOS1': 
+	'connect_order': '7'
+	 'password': None
+	 'type': 'OnosCliDriver'
+	 'host': '10.128.100.1'
+	 'user': 'admin'
+	
+	 'Cassandra1': 
+	'connect_order': '3'
+	 'password': None
+	 'type': 'CassandraCliDriver'
+	 'host': '10.128.100.1'
+	 'user': 'admin'
+	
+	 'Cassandra2': 
+	'connect_order': '4'
+	 'password': None
+	 'type': 'CassandraCliDriver'
+	 'host': '10.128.100.4'
+	 'user': 'admin'
+	
+	 'Mininet1': 
+	'connect_order': '25'
+	 'host': '10.128.100.11'
+	 'user': 'admin'
+	 'COMPONENTS': 
+	'arg1': ''
+	 'arg2': '--topo linear
+	100 --arp'
+	 'controller': 'remote
+	ip=10.128.100.1
+	port=6633'
+	
+	 'password': None
+	 'type': 'MininetCliDriver'
+	
+	 'Cassandra4': 
+	'connect_order': '6'
+	 'password': None
+	 'type': 'CassandraCliDriver'
+	 'host': '10.128.100.6'
+	 'user': 'admin'
+	
+	 'Zookeeper1': 
+	'connect_order': '2'
+	 'host': '10.128.100.1'
+	 'user': 'admin'
+	 'COMPONENTS': ''
+	 'password': None
+	 'type': 'ZookeeperCliDriver'
+	
+	
+------------------------------------------------------------
+
+                                                                               teston> 
+
+
+
+
+Welcome to Ubuntu 12.04.2 LTS (GNU/Linux 3.2.0-44-virtual x86_64)
+
+ * Documentation:  https://help.ubuntu.com/
+
+  System information as of Wed Nov 20 01:10:32 PST 2013
+
+  System load:  0.49               Processes:           96
+  Usage of /:   23.2% of 19.67GB   Users logged in:     0
+  Memory usage: 64%                IP address for eth0: 10.128.100.1
+  Swap usage:   0%
+
+  Graph this data and manage this system at https://landscape.canonical.com/
+
+  Get cloud support with Ubuntu Advantage Cloud Guest:
+    http://www.ubuntu.com/business/services/cloud
+
+  Use Juju to deploy your cloud instances and workloads:
+    https://juju.ubuntu.com/#cloud-precise
+
+134 packages can be updated.
+69 updates are security updates.
+
+Last login: Wed Nov 20 00:44:27 2013 from 10.128.7.7
+
+
+
+admin@autoONOS1:~$ 
+admin@autoONOS1:~$ 
+admin@autoONOS1:~$ 
+admin@autoONOS1:~$ ~/zookeeper-3.4.5/bin/zkServer.sh start
+~/zookeeper-3.4.5/bin/zkServer.sh start
+JMX enabled by default
+Using config: /home/admin/zookeeper-3.4.5/bin/../conf/zoo.cfg
+Starting zookeeper ... already running as process 1659.
+admin@autoONOS1:~$ 2013-11-20 01:13:20,032  Zookeeper1: INFO    : 
+****************************************
+Start of Test Case1 : 
+2013-11-20 01:15:12,927  Zookeeper1: INFO    :  Checking if the startup was clean...
+****************************************
+
+2013-11-20 01:15:12,929  Zookeeper1: INFO    : 
+---------------------------------------------
+Start of Step INIT : Initializing the test case :Checking if the startup was clean...
+---------------------------------------------
+
+2013-11-20 01:15:12,932  Zookeeper1: INFO    : 
+---------------------------------------------
+Start of Step 1.1: Testing startup Zookeeper
+---------------------------------------------
+
+
+
+
+admin@autoONOS1:~$ 
+admin@autoONOS1:~$ ~/zookeeper-3.4.5/bin/zkServer.sh status 
+~/zookeeper-3.4.5/bin/zkServer.sh status 
+JMX enabled by default
+Using config: /home/admin/zookeeper-3.4.5/bin/../conf/zoo.cfg
+Mode: follower
+admin@autoONOS1:~$ 2013-11-20 01:15:13,740  Zookeeper1: INFO    : 
+---------------------------------------------
+End of Step  1.1: Testing startup Zookeeper
+---------------------------------------------
+
+---------------------------------------------
+Start of Step 1.2: Testing startup Cassandra
+---------------------------------------------
+
+2013-11-20 01:15:15,747  Zookeeper1: INFO    : 
+---------------------------------------------
+End of Step  1.2: Testing startup Cassandra
+---------------------------------------------
+
+---------------------------------------------
+Start of Step 1.3: Testing startup ONOS
+---------------------------------------------
+
+2013-11-20 01:15:29,136  Zookeeper1: INFO    : 
+****************************************
+Start of Test Case2 : 
+2013-11-20 01:15:29,138  Zookeeper1: INFO    :  Timing Onos Convergence for switch -> a single ONOS node in the cluster
+****************************************
+
+2013-11-20 01:15:29,139  Zookeeper1: INFO    : 
+---------------------------------------------
+Start of Step INIT : Initializing the test case :Timing Onos Convergence for switch -> a single ONOS node in the cluster
+---------------------------------------------
+
+2013-11-20 01:15:29,141  Zookeeper1: INFO    : 
+---------------------------------------------
+Start of Step 2.1: Bringing ONOS down...
+---------------------------------------------
+
+2013-11-20 01:17:51,416  Zookeeper1: INFO    : 
+****************************************
+Start of Test Case3 : 
+2013-11-20 01:17:51,418  Zookeeper1: INFO    :  Timing Onos Convergence for switch -> all ONOS nodes in cluster
+****************************************
+
+2013-11-20 01:17:51,419  Zookeeper1: INFO    : 
+---------------------------------------------
+Start of Step INIT : Initializing the test case :Timing Onos Convergence for switch -> all ONOS nodes in cluster
+---------------------------------------------
+
+2013-11-20 01:17:51,421  Zookeeper1: INFO    : 
+---------------------------------------------
+Start of Step 3.1: Bringing ONOS down...
+---------------------------------------------
+
+2013-11-20 01:21:27,751  Zookeeper1: INFO    : 
+****************************************
+Start of Test Case4 : 
+2013-11-20 01:21:27,755  Zookeeper1: INFO    :  Timing Onos Convergence for even single controller distribution
+****************************************
+
+2013-11-20 01:21:27,757  Zookeeper1: INFO    : 
+---------------------------------------------
+Start of Step INIT : Initializing the test case :Timing Onos Convergence for even single controller distribution
+---------------------------------------------
+
+2013-11-20 01:21:27,762  Zookeeper1: INFO    : 
+---------------------------------------------
+Start of Step 4.1: Bringing ONOS down...
+---------------------------------------------
+
+exit
+exit
+logout
+Connection to 10.128.100.1 closed.

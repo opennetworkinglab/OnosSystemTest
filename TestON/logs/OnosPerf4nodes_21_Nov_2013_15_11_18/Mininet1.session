@@ -1,0 +1,951 @@
+2013-11-21 15:11:23,108  Mininet1  : INFO    : 
+                                +----------------+
+------------------------------ { Script And Files }  ------------------------------
+                                +----------------+
+
+	Script Log File : /home/admin/ONLabTest/TestON/logs/OnosPerf4nodes_21_Nov_2013_15_11_18/OnosPerf4nodes_21_Nov_2013_15_11_18.log
+	Report Log File : /home/admin/ONLabTest/TestON/logs/OnosPerf4nodes_21_Nov_2013_15_11_18/OnosPerf4nodes_21_Nov_2013_15_11_18.rpt
+	ONOS4 Session Log : /home/admin/ONLabTest/TestON/logs/OnosPerf4nodes_21_Nov_2013_15_11_18/ONOS4.session
+	ONOS2 Session Log : /home/admin/ONLabTest/TestON/logs/OnosPerf4nodes_21_Nov_2013_15_11_18/ONOS2.session
+	ONOS3 Session Log : /home/admin/ONLabTest/TestON/logs/OnosPerf4nodes_21_Nov_2013_15_11_18/ONOS3.session
+	ONOS1 Session Log : /home/admin/ONLabTest/TestON/logs/OnosPerf4nodes_21_Nov_2013_15_11_18/ONOS1.session
+	Cassandra1 Session Log : /home/admin/ONLabTest/TestON/logs/OnosPerf4nodes_21_Nov_2013_15_11_18/Cassandra1.session
+	Cassandra2 Session Log : /home/admin/ONLabTest/TestON/logs/OnosPerf4nodes_21_Nov_2013_15_11_18/Cassandra2.session
+	Cassandra3 Session Log : /home/admin/ONLabTest/TestON/logs/OnosPerf4nodes_21_Nov_2013_15_11_18/Cassandra3.session
+	Cassandra4 Session Log : /home/admin/ONLabTest/TestON/logs/OnosPerf4nodes_21_Nov_2013_15_11_18/Cassandra4.session
+	Zookeeper1 Session Log : /home/admin/ONLabTest/TestON/logs/OnosPerf4nodes_21_Nov_2013_15_11_18/Zookeeper1.session
+	Mininet1 Session Log : /home/admin/ONLabTest/TestON/logs/OnosPerf4nodes_21_Nov_2013_15_11_18/Mininet1.session
+	Mininet4 Session Log : /home/admin/ONLabTest/TestON/logs/OnosPerf4nodes_21_Nov_2013_15_11_18/Mininet4.session
+	Test Script :/home/admin/ONLabTest/TestON/Tests/OnosPerf4nodes.py
+	Test Params : /home/admin/ONLabTest/TestON/Tests/OnosPerf4nodes.params
+	Topology : /home/admin/ONLabTest/TestON/Tests/OnosPerf4nodes.tpl
+                              +------------------+
+---------------------------  { Script Exec Params }  ---------------------------
+                              +------------------+
+
+	
+	'CTRL': 
+	'ip2': '10.128.100.4'
+	 'ip3': '10.128.100.5'
+	 'ip1': '10.128.100.1'
+	 'ip4': '10.128.100.6'
+	 'port4': '6633'
+	 'port2': '6633'
+	 'port3': '6633'
+	 'port1': '6633'
+	
+	 'MN_size': '57'
+	 'FLOWDEF': '~/flowdef_files/Center_Triangle/flowdef_20.txt'
+	 'NR_Switches': '25'
+	 'WaitTime': '60'
+	 'TargetTime': '30'
+	 'PING': 
+	'source2': 'h7'
+	 'source9': 'h14'
+	 'source10': 'h15'
+	 'source4': 'h9'
+	 'source5': 'h10'
+	 'target3': '10.0.0.18'
+	 'target10': '10.0.0.25'
+	 'source3': 'h8'
+	 'source1': 'h6'
+	 'source6': 'h11'
+	 'source7': 'h12'
+	 'target8': '10.0.0.23'
+	 'target9': '10.0.0.24'
+	 'target6': '10.0.0.21'
+	 'target7': '10.0.0.22'
+	 'target4': '10.0.0.19'
+	 'target5': '10.0.0.20'
+	 'target2': '10.0.0.17'
+	 'source8': 'h13'
+	 'target1': '10.0.0.16'
+	
+	 'NR_Links': '50'
+	 'testcases': '1
+	2
+	3
+	4
+	5
+	6
+	7
+	4
+	8
+	7
+	4
+	9
+	7'
+	 'RestIP': '10.128.100.4'
+	 'Iterations': '3'
+	
+
+                               +---------------+
+----------------------------- { Components Used }  -----------------------------
+                               +---------------+
+	ONOS4
+	ONOS2
+	ONOS3
+	ONOS1
+	Cassandra1
+	Cassandra2
+	Cassandra3
+	Cassandra4
+	Zookeeper1
+	Mininet1
+	Mininet4
+
+
+                              +--------+
+---------------------------- { Topology }  ----------------------------
+                              +--------+
+
+	
+	'ONOS4': 
+	'connect_order': '9'
+	 'password': None
+	 'type': 'OnosCliDriver'
+	 'host': '10.128.100.6'
+	 'user': 'admin'
+	
+	 'ONOS2': 
+	'connect_order': '7'
+	 'password': None
+	 'type': 'OnosCliDriver'
+	 'host': '10.128.100.4'
+	 'user': 'admin'
+	
+	 'ONOS3': 
+	'connect_order': '8'
+	 'password': None
+	 'type': 'OnosCliDriver'
+	 'host': '10.128.100.5'
+	 'user': 'admin'
+	
+	 'ONOS1': 
+	'connect_order': '6'
+	 'password': None
+	 'type': 'OnosCliDriver'
+	 'host': '10.128.100.1'
+	 'user': 'admin'
+	
+	 'Cassandra1': 
+	'connect_order': '2'
+	 'password': None
+	 'type': 'CassandraCliDriver'
+	 'host': '10.128.100.1'
+	 'user': 'admin'
+	
+	 'Cassandra2': 
+	'connect_order': '3'
+	 'password': None
+	 'type': 'CassandraCliDriver'
+	 'host': '10.128.100.4'
+	 'user': 'admin'
+	
+	 'Cassandra3': 
+	'connect_order': '4'
+	 'password': None
+	 'type': 'CassandraCliDriver'
+	 'host': '10.128.100.5'
+	 'user': 'admin'
+	
+	 'Cassandra4': 
+	'connect_order': '5'
+	 'password': None
+	 'type': 'CassandraCliDriver'
+	 'host': '10.128.100.6'
+	 'user': 'admin'
+	
+	 'Zookeeper1': 
+	'connect_order': '1'
+	 'password': None
+	 'type': 'ZookeeperCliDriver'
+	 'host': '10.128.100.1'
+	 'user': 'admin'
+	
+	 'Mininet1': 
+	'connect_order': '10'
+	 'host': '10.128.100.11'
+	 'user': 'admin'
+	 'COMPONENTS': 
+	'arg1': '--custom ~/mininet/custom/topo-onos4node.py'
+	 'arg2': '--topo mytopo --arp'
+	 'controller': 'remote'
+	
+	 'password': None
+	 'type': 'MininetCliDriver'
+	
+	 'Mininet4': 
+	'connect_order': '11'
+	 'password': None
+	 'type': 'RemoteMininetDriver'
+	 'host': '10.128.100.11'
+	 'user': 'admin'
+	
+	
+------------------------------------------------------------
+
+[Kteston> 
+
+sudo mn -c
+
+sudo mn -c
+Welcome to Ubuntu 12.04.2 LTS (GNU/Linux 3.2.0-44-virtual x86_64)
+
+ * Documentation:  https://help.ubuntu.com/
+
+  System information as of Thu Nov 21 23:11:23 UTC 2013
+
+  System load:  0.05               Processes:           86
+  Usage of /:   11.9% of 19.67GB   Users logged in:     1
+  Memory usage: 8%                 IP address for eth0: 10.128.100.11
+  Swap usage:   0%
+
+  Graph this data and manage this system at https://landscape.canonical.com/
+
+  Get cloud support with Ubuntu Advantage Cloud Guest:
+    http://www.ubuntu.com/business/services/cloud
+
+  Use Juju to deploy your cloud instances and workloads:
+    https://juju.ubuntu.com/#cloud-precise
+
+97 packages can be updated.
+33 updates are security updates.
+
+Last login: Thu Nov 21 22:44:59 2013 from 10.128.7.7
+
+
+sudo mn -c
+]0;admin@autoONOS-MN: ~admin@autoONOS-MN:~$ 
+]0;admin@autoONOS-MN: ~admin@autoONOS-MN:~$ 
+]0;admin@autoONOS-MN: ~admin@autoONOS-MN:~$ sudo mn -c
+*** Removing excess controllers/ofprotocols/ofdatapaths/pings/noxes
+killall controller ofprotocol ofdatapath ping nox_core lt-nox_core ovs-openflowd ovs-controller udpbwtest mnexec ivs 2> /dev/null
+killall -9 controller ofprotocol ofdatapath ping nox_core lt-nox_core ovs-openflowd ovs-controller udpbwtest mnexec ivs 2> /dev/null
+pkill -9 -f "sudo mnexec"
+*** Removing junk from /tmp
+rm -f /tmp/vconn* /tmp/vlogs* /tmp/*.out /tmp/*.log
+*** Removing old X11 tunnels
+*** Removing excess kernel datapaths
+ps ax | egrep -o 'dp[0-9]+' | sed 's/dp/nl:/'
+***  Removing OVS datapathsovs-vsctl --timeout=1 list-br
+*** Removing all links of the pattern foo-ethX
+ip link show | egrep -o '(\w+-eth\w+)'
+*** Cleanup complete.
+sudo mn --custom ~/mininet/custom/topo-onos4node.py --topo mytopo --arp --mac --controller remote
+]0;admin@autoONOS-MN: ~admin@autoONOS-MN:~$ sudo mn --custom ~/mininet/custom/topo-onos4node.py --topo  mytopo --arp --mac --controller remote
+*** Creating network
+*** Adding controller
+Unable to contact the remote controller at 127.0.0.1:6633
+*** Adding hosts:
+h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11 h12 h13 h14 h15 h31 h32 h33 h34 h35 h36 h37 h38 h39 h40 
+*** Adding switches:
+s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11 s12 s13 s14 s15 s31 s32 s33 s34 s35 s36 s37 s38 s39 s40 
+*** Adding links:
+(h1, s1) (h2, s2) (h3, s3) (h4, s4) (h5, s5) (h6, s6) (h7, s7) (h8, s8) (h9, s9) (h10, s10) (h11, s11) (h12, s12) (h13, s13) (h14, s14) (h15, s15) (h31, s31) (h32, s32) (h33, s33) (h34, s34) (h35, s35) (h36, s36) (h37, s37) (h38, s38) (h39, s39) (h40, s40) (s1, s2) (s1, s3) (s1, s5) (s2, s3) (s2, s4) (s4, s6) (s4, s7) (s4, s8) (s4, s9) (s4, s10) (s4, s11) (s4, s12) (s4, s13) (s4, s14) (s4, s15) (s5, s31) (s5, s32) (s5, s33) (s5, s34) (s5, s35) (s5, s36) (s5, s37) (s5, s38) (s5, s39) (s5, s40) 
+*** Configuring hosts
+h1 h2 h3 h4 h5 h6 h7 h8 h9 h10 h11 h12 h13 h14 h15 h31 h32 h33 h34 h35 h36 h37 h38 h39 h40 
+*** Starting controller
+*** Starting 25 switches
+s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11 s12 s13 s14 s15 s31 s32 s33 s34 s35 s36 s37 s38 s39 s40 
+*** Starting CLI:
+mininet> 2013-11-21 15:11:45,406  Mininet1  : INFO    : 
+****************************************
+Start of Test Case1 : 
+2013-11-21 15:13:38,445  Mininet1  : INFO    :  Checking if the startup was clean...
+****************************************
+
+2013-11-21 15:13:38,447  Mininet1  : INFO    : 
+---------------------------------------------
+Start of Step INIT : Initializing the test case :Checking if the startup was clean...
+---------------------------------------------
+
+2013-11-21 15:13:38,450  Mininet1  : INFO    : 
+---------------------------------------------
+Start of Step 1.1: Testing startup Zookeeper
+---------------------------------------------
+
+2013-11-21 15:13:39,224  Mininet1  : INFO    : 
+---------------------------------------------
+End of Step  1.1: Testing startup Zookeeper
+---------------------------------------------
+
+---------------------------------------------
+Start of Step 1.2: Testing startup Cassandra
+---------------------------------------------
+
+2013-11-21 15:13:40,846  Mininet1  : INFO    : 
+---------------------------------------------
+End of Step  1.2: Testing startup Cassandra
+---------------------------------------------
+
+---------------------------------------------
+Start of Step 1.3: Testing startup ONOS
+---------------------------------------------
+
+2013-11-21 15:15:46,039  Mininet1  : INFO    : 
+****************************************
+Start of Test Case2 : 
+2013-11-21 15:15:46,043  Mininet1  : INFO    : 
+---------------------------------------------
+Start of Step INIT : Initializing the test case :Checking if the startup was clean...
+---------------------------------------------
+
+2013-11-21 15:15:46,046  Mininet1  : INFO    : 
+---------------------------------------------
+Start of Step 2.1: Checking if MN switches exist
+---------------------------------------------
+
+2013-11-21 15:15:46,051  Mininet1  : INFO    : 
+---------------------------------------------
+End of Step  2.1: Checking if MN switches exist
+---------------------------------------------
+
+---------------------------------------------
+Start of Step 2.2: assigning ONOS controllers to switches
+---------------------------------------------
+
+sh ovs-vsctl set-controller s1 ptcp:6634 tcp:10.128.100.1:6633       
+sh ovs-vsctl set-controller s1 ptcp:6634 tcp:10.128.100.1:6633       
+mininet> sh ovs-vsctl set-controller s1 ptcp:6634 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633    
+sh ovs-vsctl set-controller s1 ptcp:6634 tcp:10.128.100.1:6633 tcp:10.1 28.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633    
+mininet> sh ovs-vsctl set-controller s2 ptcp:6635 tcp:10.128.100.1:6633       
+sh ovs-vsctl set-controller s2 ptcp:6635 tcp:10.128.100.1:6633       
+mininet> sh ovs-vsctl set-controller s2 ptcp:6635 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633    
+sh ovs-vsctl set-controller s2 ptcp:6635 tcp:10.128.100.1:6633 tcp:10.1 28.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633    
+mininet> sh ovs-vsctl set-controller s3 ptcp:6636 tcp:10.128.100.1:6633       
+sh ovs-vsctl set-controller s3 ptcp:6636 tcp:10.128.100.1:6633       
+mininet> sh ovs-vsctl set-controller s3 ptcp:6636 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633    
+sh ovs-vsctl set-controller s3 ptcp:6636 tcp:10.128.100.1:6633 tcp:10.1 28.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633    
+mininet> sh ovs-vsctl set-controller s4 ptcp:6637 tcp:10.128.100.4:6633       
+sh ovs-vsctl set-controller s4 ptcp:6637 tcp:10.128.100.4:6633       
+mininet> sh ovs-vsctl set-controller s4 ptcp:6637 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633    
+sh ovs-vsctl set-controller s4 ptcp:6637 tcp:10.128.100.1:6633 tcp:10.1 28.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633    
+mininet> sh ovs-vsctl set-controller s5 ptcp:6638 tcp:10.128.100.4:6633       
+sh ovs-vsctl set-controller s5 ptcp:6638 tcp:10.128.100.4:6633       
+mininet> sh ovs-vsctl set-controller s5 ptcp:6638 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633    
+sh ovs-vsctl set-controller s5 ptcp:6638 tcp:10.128.100.1:6633 tcp:10.1 28.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633    
+mininet> sh ovs-vsctl set-controller s6 ptcp:6639 tcp:10.128.100.5:6633       
+sh ovs-vsctl set-controller s6 ptcp:6639 tcp:10.128.100.5:6633       
+mininet> sh ovs-vsctl set-controller s6 ptcp:6639 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633    
+sh ovs-vsctl set-controller s6 ptcp:6639 tcp:10.128.100.1:6633 tcp:10.1 28.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633    
+mininet> sh ovs-vsctl set-controller s7 ptcp:6640 tcp:10.128.100.5:6633       
+sh ovs-vsctl set-controller s7 ptcp:6640 tcp:10.128.100.5:6633       
+mininet> sh ovs-vsctl set-controller s7 ptcp:6640 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633    
+sh ovs-vsctl set-controller s7 ptcp:6640 tcp:10.128.100.1:6633 tcp:10.1 28.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633    
+mininet> sh ovs-vsctl set-controller s8 ptcp:6641 tcp:10.128.100.5:6633       
+sh ovs-vsctl set-controller s8 ptcp:6641 tcp:10.128.100.5:6633       
+mininet> sh ovs-vsctl set-controller s8 ptcp:6641 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633    
+sh ovs-vsctl set-controller s8 ptcp:6641 tcp:10.128.100.1:6633 tcp:10.1 28.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633    
+mininet> sh ovs-vsctl set-controller s9 ptcp:6642 tcp:10.128.100.5:6633       
+sh ovs-vsctl set-controller s9 ptcp:6642 tcp:10.128.100.5:6633       
+mininet> sh ovs-vsctl set-controller s9 ptcp:6642 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633    
+sh ovs-vsctl set-controller s9 ptcp:6642 tcp:10.128.100.1:6633 tcp:10.1 28.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633    
+mininet> sh ovs-vsctl set-controller s10 ptcp:6643 tcp:10.128.100.5:6633       
+sh ovs-vsctl set-controller s10 ptcp:6643 tcp:10.128.100.5:6633       
+mininet> sh ovs-vsctl set-controller s10 ptcp:6643 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633    
+sh ovs-vsctl set-controller s10 ptcp:6643 tcp:10.128.100.1:6633 tcp:10. 128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633    
+mininet> sh ovs-vsctl set-controller s11 ptcp:6644 tcp:10.128.100.5:6633       
+sh ovs-vsctl set-controller s11 ptcp:6644 tcp:10.128.100.5:6633       
+mininet> sh ovs-vsctl set-controller s11 ptcp:6644 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633    
+sh ovs-vsctl set-controller s11 ptcp:6644 tcp:10.128.100.1:6633 tcp:10. 128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633    
+mininet> sh ovs-vsctl set-controller s12 ptcp:6645 tcp:10.128.100.5:6633       
+sh ovs-vsctl set-controller s12 ptcp:6645 tcp:10.128.100.5:6633       
+mininet> sh ovs-vsctl set-controller s12 ptcp:6645 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633    
+sh ovs-vsctl set-controller s12 ptcp:6645 tcp:10.128.100.1:6633 tcp:10. 128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633    
+mininet> sh ovs-vsctl set-controller s13 ptcp:6646 tcp:10.128.100.5:6633       
+sh ovs-vsctl set-controller s13 ptcp:6646 tcp:10.128.100.5:6633       
+mininet> sh ovs-vsctl set-controller s13 ptcp:6646 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633    
+sh ovs-vsctl set-controller s13 ptcp:6646 tcp:10.128.100.1:6633 tcp:10. 128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633    
+mininet> sh ovs-vsctl set-controller s14 ptcp:6647 tcp:10.128.100.5:6633       
+sh ovs-vsctl set-controller s14 ptcp:6647 tcp:10.128.100.5:6633       
+mininet> sh ovs-vsctl set-controller s14 ptcp:6647 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633    
+sh ovs-vsctl set-controller s14 ptcp:6647 tcp:10.128.100.1:6633 tcp:10. 128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633    
+mininet> sh ovs-vsctl set-controller s15 ptcp:6648 tcp:10.128.100.5:6633       
+sh ovs-vsctl set-controller s15 ptcp:6648 tcp:10.128.100.5:6633       
+mininet> sh ovs-vsctl set-controller s15 ptcp:6648 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633    
+sh ovs-vsctl set-controller s15 ptcp:6648 tcp:10.128.100.1:6633 tcp:10. 128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633    
+mininet> sh ovs-vsctl set-controller s31 ptcp:6664 tcp:10.128.100.6:6633       
+sh ovs-vsctl set-controller s31 ptcp:6664 tcp:10.128.100.6:6633       
+mininet> sh ovs-vsctl set-controller s31 ptcp:6664 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633    
+sh ovs-vsctl set-controller s31 ptcp:6664 tcp:10.128.100.1:6633 tcp:10. 128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633    
+mininet> sh ovs-vsctl set-controller s32 ptcp:6665 tcp:10.128.100.6:6633       
+sh ovs-vsctl set-controller s32 ptcp:6665 tcp:10.128.100.6:6633       
+mininet> sh ovs-vsctl set-controller s32 ptcp:6665 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633    
+sh ovs-vsctl set-controller s32 ptcp:6665 tcp:10.128.100.1:6633 tcp:10. 128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633    
+mininet> sh ovs-vsctl set-controller s33 ptcp:6666 tcp:10.128.100.6:6633       
+sh ovs-vsctl set-controller s33 ptcp:6666 tcp:10.128.100.6:6633       
+mininet> sh ovs-vsctl set-controller s33 ptcp:6666 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633    
+sh ovs-vsctl set-controller s33 ptcp:6666 tcp:10.128.100.1:6633 tcp:10. 128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633    
+mininet> sh ovs-vsctl set-controller s34 ptcp:6667 tcp:10.128.100.6:6633       
+sh ovs-vsctl set-controller s34 ptcp:6667 tcp:10.128.100.6:6633       
+mininet> sh ovs-vsctl set-controller s34 ptcp:6667 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633    
+sh ovs-vsctl set-controller s34 ptcp:6667 tcp:10.128.100.1:6633 tcp:10. 128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633    
+mininet> sh ovs-vsctl set-controller s35 ptcp:6668 tcp:10.128.100.6:6633       
+sh ovs-vsctl set-controller s35 ptcp:6668 tcp:10.128.100.6:6633       
+mininet> sh ovs-vsctl set-controller s35 ptcp:6668 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633    
+sh ovs-vsctl set-controller s35 ptcp:6668 tcp:10.128.100.1:6633 tcp:10. 128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633    
+mininet> sh ovs-vsctl set-controller s36 ptcp:6669 tcp:10.128.100.6:6633       
+sh ovs-vsctl set-controller s36 ptcp:6669 tcp:10.128.100.6:6633       
+mininet> sh ovs-vsctl set-controller s36 ptcp:6669 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633    
+sh ovs-vsctl set-controller s36 ptcp:6669 tcp:10.128.100.1:6633 tcp:10. 128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633    
+mininet> sh ovs-vsctl set-controller s37 ptcp:6670 tcp:10.128.100.6:6633       
+sh ovs-vsctl set-controller s37 ptcp:6670 tcp:10.128.100.6:6633       
+mininet> sh ovs-vsctl set-controller s37 ptcp:6670 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633    
+sh ovs-vsctl set-controller s37 ptcp:6670 tcp:10.128.100.1:6633 tcp:10. 128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633    
+mininet> sh ovs-vsctl set-controller s38 ptcp:6671 tcp:10.128.100.6:6633       
+sh ovs-vsctl set-controller s38 ptcp:6671 tcp:10.128.100.6:6633       
+mininet> sh ovs-vsctl set-controller s38 ptcp:6671 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633    
+sh ovs-vsctl set-controller s38 ptcp:6671 tcp:10.128.100.1:6633 tcp:10. 128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633    
+mininet> sh ovs-vsctl set-controller s39 ptcp:6672 tcp:10.128.100.6:6633       
+sh ovs-vsctl set-controller s39 ptcp:6672 tcp:10.128.100.6:6633       
+mininet> sh ovs-vsctl set-controller s39 ptcp:6672 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633    
+sh ovs-vsctl set-controller s39 ptcp:6672 tcp:10.128.100.1:6633 tcp:10. 128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633    
+mininet> sh ovs-vsctl set-controller s40 ptcp:6673 tcp:10.128.100.6:6633       
+sh ovs-vsctl set-controller s40 ptcp:6673 tcp:10.128.100.6:6633       
+mininet> sh ovs-vsctl set-controller s40 ptcp:6673 tcp:10.128.100.1:6633 tcp:10.128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633    
+sh ovs-vsctl set-controller s40 ptcp:6673 tcp:10.128.100.1:6633 tcp:10. 128.100.4:6633 tcp:10.128.100.5:6633 tcp:10.128.100.6:6633    
+mininet> sh ovs-vsctl get-controller s1
+sh ovs-vsctl get-controller s1
+ptcp:6634
+tcp:10.128.100.1:6633
+tcp:10.128.100.4:6633
+tcp:10.128.100.5:6633
+tcp:10.128.100.6:6633
+mininet> 2013-11-21 15:16:24,384  Mininet1  : INFO    : 
+****************************************
+Start of Test Case3 : 
+2013-11-21 15:16:24,388  Mininet1  : INFO    :  TOPO check
+****************************************
+
+2013-11-21 15:16:24,390  Mininet1  : INFO    : 
+---------------------------------------------
+Start of Step INIT : Initializing the test case :TOPO check
+---------------------------------------------
+
+2013-11-21 15:16:24,394  Mininet1  : INFO    : 
+---------------------------------------------
+Start of Step 3.1: calling rest calls
+---------------------------------------------
+
+2013-11-21 15:16:35,221  Mininet1  : INFO    : 
+****************************************
+Start of Test Case4 : 
+2013-11-21 15:16:35,226  Mininet1  : INFO    :  Taking care of these flows!
+****************************************
+
+2013-11-21 15:16:35,230  Mininet1  : INFO    : 
+---------------------------------------------
+Start of Step INIT : Initializing the test case :Taking care of these flows!
+---------------------------------------------
+
+2013-11-21 15:16:35,235  Mininet1  : INFO    : 
+---------------------------------------------
+Start of Step 4.1: Cleaning out any leftover flows...
+---------------------------------------------
+
+h6 ping h31 -c 1 -i .2
+h6 ping h31 -c 1 -i .2
+PING 10.0.0.16 (10.0.0.16) 56(84) bytes of data.
+64 bytes from 10.0.0.16: icmp_req=1 ttl=64 time=10.1 ms
+
+--- 10.0.0.16 ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 10.169/10.169/10.169/0.000 ms
+mininet> h7 ping h32 -c 1 -i .2
+h7 ping h32 -c 1 -i .2
+PING 10.0.0.17 (10.0.0.17) 56(84) bytes of data.
+64 bytes from 10.0.0.17: icmp_req=1 ttl=64 time=7.54 ms
+
+--- 10.0.0.17 ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 7.545/7.545/7.545/0.000 ms
+mininet> h8 ping h33 -c 1 -i .2
+h8 ping h33 -c 1 -i .2
+PING 10.0.0.18 (10.0.0.18) 56(84) bytes of data.
+64 bytes from 10.0.0.18: icmp_req=1 ttl=64 time=7.57 ms
+
+--- 10.0.0.18 ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 7.577/7.577/7.577/0.000 ms
+mininet> h9 ping h34 -c 1 -i .2
+h9 ping h34 -c 1 -i .2
+PING 10.0.0.19 (10.0.0.19) 56(84) bytes of data.
+64 bytes from 10.0.0.19: icmp_req=1 ttl=64 time=10.9 ms
+
+--- 10.0.0.19 ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 10.929/10.929/10.929/0.000 ms
+mininet> h10 ping h35 -c 1 -i .2
+h10 ping h35 -c 1 -i .2
+PING 10.0.0.20 (10.0.0.20) 56(84) bytes of data.
+64 bytes from 10.0.0.20: icmp_req=1 ttl=64 time=9.71 ms
+
+--- 10.0.0.20 ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 9.712/9.712/9.712/0.000 ms
+mininet> h11 ping h36 -c 1 -i .2
+h11 ping h36 -c 1 -i .2
+PING 10.0.0.21 (10.0.0.21) 56(84) bytes of data.
+64 bytes from 10.0.0.21: icmp_req=1 ttl=64 time=11.3 ms
+
+--- 10.0.0.21 ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 11.302/11.302/11.302/0.000 ms
+mininet> h12 ping h37 -c 1 -i .2
+h12 ping h37 -c 1 -i .2
+PING 10.0.0.22 (10.0.0.22) 56(84) bytes of data.
+64 bytes from 10.0.0.22: icmp_req=1 ttl=64 time=8.88 ms
+
+--- 10.0.0.22 ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 8.886/8.886/8.886/0.000 ms
+mininet> h13 ping h38 -c 1 -i .2
+h13 ping h38 -c 1 -i .2
+PING 10.0.0.23 (10.0.0.23) 56(84) bytes of data.
+64 bytes from 10.0.0.23: icmp_req=1 ttl=64 time=10.4 ms
+
+--- 10.0.0.23 ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 10.408/10.408/10.408/0.000 ms
+mininet> h14 ping h39 -c 1 -i .2
+h14 ping h39 -c 1 -i .2
+PING 10.0.0.24 (10.0.0.24) 56(84) bytes of data.
+64 bytes from 10.0.0.24: icmp_req=1 ttl=64 time=10.4 ms
+
+--- 10.0.0.24 ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 10.478/10.478/10.478/0.000 ms
+mininet> h15 ping h40 -c 1 -i .2
+h15 ping h40 -c 1 -i .2
+PING 10.0.0.25 (10.0.0.25) 56(84) bytes of data.
+64 bytes from 10.0.0.25: icmp_req=1 ttl=64 time=12.2 ms
+
+--- 10.0.0.25 ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 12.205/12.205/12.205/0.000 ms
+mininet> 2013-11-21 15:16:59,148  Mininet1  : INFO    :  TOPO check
+****************************************
+
+2013-11-21 15:16:59,151  Mininet1  : INFO    : 
+---------------------------------------------
+End of Step  4.1: Cleaning out any leftover flows...
+---------------------------------------------
+
+---------------------------------------------
+Start of Step 4.2: calling rest calls
+---------------------------------------------
+
+2013-11-21 15:17:09,308  Mininet1  : INFO    : 
+****************************************
+Start of Test Case5 : 
+2013-11-21 15:17:09,313  Mininet1  : INFO    :  Testing ping...
+****************************************
+
+2013-11-21 15:17:10,097  Mininet1  : INFO    : 
+****************************************
+Start of Test Case6 : 
+2013-11-21 15:17:10,103  Mininet1  : INFO    :  Starting long ping... 
+****************************************
+
+2013-11-21 15:17:12,183  Mininet1  : INFO    : 
+---------------------------------------------
+Start of Step INIT : Initializing the test case :Starting long ping... 
+---------------------------------------------
+
+2013-11-21 15:17:12,187  Mininet1  : INFO    : 
+---------------------------------------------
+Start of Step 6.1: Check that the pings are going
+---------------------------------------------
+
+2013-11-21 15:17:13,314  Mininet1  : INFO    : 
+---------------------------------------------
+End of Step  6.1: Check that the pings are going
+---------------------------------------------
+
+---------------------------------------------
+Start of Step 6.2: Link down number of iterations: 3
+---------------------------------------------
+
+link s1 s2 down
+link s1 s2 down
+mininet> link s1 s2 up
+link s1 s2 up
+mininet> link s1 s2 down
+link s1 s2 down
+mininet> link s1 s2 up
+link s1 s2 up
+mininet> link s1 s2 down
+link s1 s2 down
+mininet> link s1 s2 up
+link s1 s2 up
+mininet> 2013-11-21 15:23:14,274  Mininet1  : INFO    :  Killing remote ping processes 
+****************************************
+
+2013-11-21 15:23:18,280  Mininet1  : INFO    : 
+****************************************
+Start of Test Case7 : 
+2013-11-21 15:23:18,285  Mininet1  : INFO    :  Processing Ping data
+****************************************
+
+2013-11-21 15:23:21,423  Mininet1  : INFO    : 
+****************************************
+Start of Test Case4 : 
+2013-11-21 15:23:21,424  Mininet1  : INFO    :  Taking care of these flows!
+****************************************
+
+2013-11-21 15:23:21,426  Mininet1  : INFO    : 
+---------------------------------------------
+Start of Step INIT : Initializing the test case :Taking care of these flows!
+---------------------------------------------
+
+2013-11-21 15:23:21,428  Mininet1  : INFO    : 
+---------------------------------------------
+Start of Step 4.1: Cleaning out any leftover flows...
+---------------------------------------------
+
+h6 ping h31 -c 1 -i .2
+h6 ping h31 -c 1 -i .2
+PING 10.0.0.16 (10.0.0.16) 56(84) bytes of data.
+64 bytes from 10.0.0.16: icmp_req=1 ttl=64 time=11.4 ms
+
+--- 10.0.0.16 ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 11.485/11.485/11.485/0.000 ms
+mininet> h7 ping h32 -c 1 -i .2
+h7 ping h32 -c 1 -i .2
+PING 10.0.0.17 (10.0.0.17) 56(84) bytes of data.
+64 bytes from 10.0.0.17: icmp_req=1 ttl=64 time=8.23 ms
+
+--- 10.0.0.17 ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 8.237/8.237/8.237/0.000 ms
+mininet> h8 ping h33 -c 1 -i .2
+h8 ping h33 -c 1 -i .2
+PING 10.0.0.18 (10.0.0.18) 56(84) bytes of data.
+64 bytes from 10.0.0.18: icmp_req=1 ttl=64 time=13.9 ms
+
+--- 10.0.0.18 ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 13.963/13.963/13.963/0.000 ms
+mininet> h9 ping h34 -c 1 -i .2
+h9 ping h34 -c 1 -i .2
+PING 10.0.0.19 (10.0.0.19) 56(84) bytes of data.
+64 bytes from 10.0.0.19: icmp_req=1 ttl=64 time=6.92 ms
+
+--- 10.0.0.19 ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 6.928/6.928/6.928/0.000 ms
+mininet> h10 ping h35 -c 1 -i .2
+h10 ping h35 -c 1 -i .2
+PING 10.0.0.20 (10.0.0.20) 56(84) bytes of data.
+64 bytes from 10.0.0.20: icmp_req=1 ttl=64 time=11.8 ms
+
+--- 10.0.0.20 ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 11.858/11.858/11.858/0.000 ms
+mininet> h11 ping h36 -c 1 -i .2
+h11 ping h36 -c 1 -i .2
+PING 10.0.0.21 (10.0.0.21) 56(84) bytes of data.
+64 bytes from 10.0.0.21: icmp_req=1 ttl=64 time=7.10 ms
+
+--- 10.0.0.21 ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 7.103/7.103/7.103/0.000 ms
+mininet> h12 ping h37 -c 1 -i .2
+h12 ping h37 -c 1 -i .2
+PING 10.0.0.22 (10.0.0.22) 56(84) bytes of data.
+64 bytes from 10.0.0.22: icmp_req=1 ttl=64 time=10.8 ms
+
+--- 10.0.0.22 ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 10.821/10.821/10.821/0.000 ms
+mininet> h13 ping h38 -c 1 -i .2
+h13 ping h38 -c 1 -i .2
+PING 10.0.0.23 (10.0.0.23) 56(84) bytes of data.
+64 bytes from 10.0.0.23: icmp_req=1 ttl=64 time=9.60 ms
+
+--- 10.0.0.23 ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 9.601/9.601/9.601/0.000 ms
+mininet> h14 ping h39 -c 1 -i .2
+h14 ping h39 -c 1 -i .2
+PING 10.0.0.24 (10.0.0.24) 56(84) bytes of data.
+64 bytes from 10.0.0.24: icmp_req=1 ttl=64 time=10.9 ms
+
+--- 10.0.0.24 ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 10.982/10.982/10.982/0.000 ms
+mininet> h15 ping h40 -c 1 -i .2
+h15 ping h40 -c 1 -i .2
+PING 10.0.0.25 (10.0.0.25) 56(84) bytes of data.
+64 bytes from 10.0.0.25: icmp_req=1 ttl=64 time=7.93 ms
+
+--- 10.0.0.25 ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 7.935/7.935/7.935/0.000 ms
+mininet> 2013-11-21 15:23:44,723  Mininet1  : INFO    :  TOPO check
+****************************************
+
+2013-11-21 15:23:44,726  Mininet1  : INFO    : 
+---------------------------------------------
+End of Step  4.1: Cleaning out any leftover flows...
+---------------------------------------------
+
+---------------------------------------------
+Start of Step 4.2: calling rest calls
+---------------------------------------------
+
+2013-11-21 15:23:53,615  Mininet1  : INFO    : 
+****************************************
+Start of Test Case8 : 
+2013-11-21 15:24:13,624  Mininet1  : INFO    :  Starting long ping... 
+****************************************
+
+2013-11-21 15:24:15,674  Mininet1  : INFO    : 
+---------------------------------------------
+Start of Step INIT : Initializing the test case :Starting long ping... 
+---------------------------------------------
+
+2013-11-21 15:24:15,678  Mininet1  : INFO    : 
+---------------------------------------------
+Start of Step 8.1: Check that the pings are going
+---------------------------------------------
+
+2013-11-21 15:24:16,792  Mininet1  : INFO    : 
+---------------------------------------------
+End of Step  8.1: Check that the pings are going
+---------------------------------------------
+
+---------------------------------------------
+Start of Step 8.2: Making topo change while flows are rerouting
+---------------------------------------------
+
+2013-11-21 15:24:16,796  Mininet1  : INFO    : 
+---------------------------------------------
+End of Step  8.2: Making topo change while flows are rerouting
+---------------------------------------------
+
+---------------------------------------------
+Start of Step 8.3: Link down number of iterations: 3
+---------------------------------------------
+
+link s1 s2 down
+link s1 s2 down
+mininet> link s1 s3 up
+link s1 s3 up
+mininet> link s2 s3 up
+link s2 s3 up
+mininet> link s1 s2 up
+link s1 s2 up
+mininet> link s1 s3 down
+link s1 s3 down
+mininet> link s2 s3 down
+link s2 s3 down
+mininet> link s1 s2 down
+link s1 s2 down
+mininet> link s1 s3 up
+link s1 s3 up
+mininet> link s2 s3 up
+link s2 s3 up
+mininet> link s1 s2 up
+link s1 s2 up
+mininet> link s1 s3 down
+link s1 s3 down
+mininet> link s2 s3 down
+link s2 s3 down
+mininet> link s1 s2 down
+link s1 s2 down
+mininet> link s1 s3 up
+link s1 s3 up
+mininet> link s2 s3 up
+link s2 s3 up
+mininet> link s1 s2 up
+link s1 s2 up
+mininet> link s1 s3 down
+link s1 s3 down
+mininet> link s2 s3 down
+link s2 s3 down
+mininet> 2013-11-21 15:30:34,120  Mininet1  : INFO    :  Killing remote ping processes 
+****************************************
+
+link s1 s2 up
+link s1 s2 up
+mininet> link s1 s3 up
+link s1 s3 up
+mininet> link s2 s3 up
+link s2 s3 up
+mininet> 2013-11-21 15:30:38,538  Mininet1  : INFO    : 
+****************************************
+Start of Test Case7 : 
+2013-11-21 15:30:38,543  Mininet1  : INFO    :  Processing Ping data
+****************************************
+
+2013-11-21 15:30:41,692  Mininet1  : INFO    : 
+****************************************
+Start of Test Case4 : 
+2013-11-21 15:30:41,696  Mininet1  : INFO    :  Taking care of these flows!
+****************************************
+
+2013-11-21 15:30:41,698  Mininet1  : INFO    : 
+---------------------------------------------
+Start of Step INIT : Initializing the test case :Taking care of these flows!
+---------------------------------------------
+
+2013-11-21 15:30:41,703  Mininet1  : INFO    : 
+---------------------------------------------
+Start of Step 4.1: Cleaning out any leftover flows...
+---------------------------------------------
+
+h6 ping h31 -c 1 -i .2
+h6 ping h31 -c 1 -i .2
+PING 10.0.0.16 (10.0.0.16) 56(84) bytes of data.
+64 bytes from 10.0.0.16: icmp_req=1 ttl=64 time=9.67 ms
+
+--- 10.0.0.16 ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 9.678/9.678/9.678/0.000 ms
+mininet> h7 ping h32 -c 1 -i .2
+h7 ping h32 -c 1 -i .2
+PING 10.0.0.17 (10.0.0.17) 56(84) bytes of data.
+64 bytes from 10.0.0.17: icmp_req=1 ttl=64 time=10.8 ms
+
+--- 10.0.0.17 ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 10.873/10.873/10.873/0.000 ms
+mininet> h8 ping h33 -c 1 -i .2
+h8 ping h33 -c 1 -i .2
+PING 10.0.0.18 (10.0.0.18) 56(84) bytes of data.
+64 bytes from 10.0.0.18: icmp_req=1 ttl=64 time=11.1 ms
+
+--- 10.0.0.18 ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 11.123/11.123/11.123/0.000 ms
+mininet> h9 ping h34 -c 1 -i .2
+h9 ping h34 -c 1 -i .2
+PING 10.0.0.19 (10.0.0.19) 56(84) bytes of data.
+64 bytes from 10.0.0.19: icmp_req=1 ttl=64 time=10.5 ms
+
+--- 10.0.0.19 ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 10.519/10.519/10.519/0.000 ms
+mininet> h10 ping h35 -c 1 -i .2
+h10 ping h35 -c 1 -i .2
+PING 10.0.0.20 (10.0.0.20) 56(84) bytes of data.
+64 bytes from 10.0.0.20: icmp_req=1 ttl=64 time=4.20 ms
+
+--- 10.0.0.20 ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 4.204/4.204/4.204/0.000 ms
+mininet> h11 ping h36 -c 1 -i .2
+h11 ping h36 -c 1 -i .2
+PING 10.0.0.21 (10.0.0.21) 56(84) bytes of data.
+64 bytes from 10.0.0.21: icmp_req=1 ttl=64 time=7.65 ms
+
+--- 10.0.0.21 ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 7.659/7.659/7.659/0.000 ms
+mininet> h12 ping h37 -c 1 -i .2
+h12 ping h37 -c 1 -i .2
+PING 10.0.0.22 (10.0.0.22) 56(84) bytes of data.
+64 bytes from 10.0.0.22: icmp_req=1 ttl=64 time=10.7 ms
+
+--- 10.0.0.22 ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 10.774/10.774/10.774/0.000 ms
+mininet> h13 ping h38 -c 1 -i .2
+h13 ping h38 -c 1 -i .2
+PING 10.0.0.23 (10.0.0.23) 56(84) bytes of data.
+64 bytes from 10.0.0.23: icmp_req=1 ttl=64 time=11.8 ms
+
+--- 10.0.0.23 ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 11.883/11.883/11.883/0.000 ms
+mininet> h14 ping h39 -c 1 -i .2
+h14 ping h39 -c 1 -i .2
+PING 10.0.0.24 (10.0.0.24) 56(84) bytes of data.
+64 bytes from 10.0.0.24: icmp_req=1 ttl=64 time=10.5 ms
+
+--- 10.0.0.24 ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 10.543/10.543/10.543/0.000 ms
+mininet> h15 ping h40 -c 1 -i .2
+h15 ping h40 -c 1 -i .2
+PING 10.0.0.25 (10.0.0.25) 56(84) bytes of data.
+64 bytes from 10.0.0.25: icmp_req=1 ttl=64 time=10.7 ms
+
+--- 10.0.0.25 ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 10.759/10.759/10.759/0.000 ms
+mininet> 2013-11-21 15:31:01,781  Mininet1  : INFO    :  TOPO check
+****************************************
+
+2013-11-21 15:31:01,784  Mininet1  : INFO    : 
+---------------------------------------------
+End of Step  4.1: Cleaning out any leftover flows...
+---------------------------------------------
+
+---------------------------------------------
+Start of Step 4.2: calling rest calls
+---------------------------------------------
+
+2013-11-21 15:31:10,374  Mininet1  : INFO    : 
+****************************************
+Start of Test Case9 : 
+2013-11-21 15:31:30,400  Mininet1  : INFO    :  Starting long ping... 
+****************************************
+
+2013-11-21 15:31:32,472  Mininet1  : INFO    : 
+---------------------------------------------
+Start of Step INIT : Initializing the test case :Starting long ping... 
+---------------------------------------------
+
+2013-11-21 15:31:32,477  Mininet1  : INFO    : 
+---------------------------------------------
+Start of Step 9.1: Check that the pings are going
+---------------------------------------------
+
+2013-11-21 15:31:33,601  Mininet1  : INFO    : 
+---------------------------------------------
+End of Step  9.1: Check that the pings are going
+---------------------------------------------
+
+---------------------------------------------
+Start of Step 9.2: Making topo change while flows are rerouting
+---------------------------------------------
+
+2013-11-21 15:31:33,606  Mininet1  : INFO    : 
+---------------------------------------------
+End of Step  9.2: Making topo change while flows are rerouting
+---------------------------------------------
+
+---------------------------------------------
+Start of Step 9.3: Link down number of iterations: 3
+---------------------------------------------
+
+link s1 s2 down
+link s1 s2 down
+mininet> link s1 s2 up
+link s1 s2 up
+mininet> link s1 s2 down
+link s1 s2 down
+mininet> link s1 s2 up
+link s1 s2 up
+mininet> link s1 s2 down
+link s1 s2 down
+mininet> link s1 s2 up
+link s1 s2 up
+mininet> 2013-11-21 15:36:55,883  Mininet1  : INFO    :  Killing remote ping processes 
+****************************************
+
+2013-11-21 15:36:59,976  Mininet1  : INFO    : 
+****************************************
+Start of Test Case7 : 
+2013-11-21 15:36:59,982  Mininet1  : INFO    :  Processing Ping data
+****************************************
+
+exit
+exit
+exit
+*** Stopping 25 switches
+s1 exit

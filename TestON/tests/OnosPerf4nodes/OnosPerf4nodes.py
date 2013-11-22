@@ -135,6 +135,7 @@ class OnosPerf4nodes:
             main.ONOS2.start()
             main.ONOS3.start()
             main.ONOS4.start()
+            time.sleep(45)
             for i in range(4):
                 result = main.ONOS1.check_status(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
                 time.sleep(5)
@@ -331,7 +332,7 @@ class OnosPerf4nodes:
             main.Mininet1.link(END1="s2",END2="s3",OPTION="down")
 
             main.log.info( "Waiting " + main.params['WaitTime'] + " seconds.... " )
-            time.sleep( int(main.params['WaitTime']) )
+            time.sleep( int(main.params['WaitTime']) + 60 )
 
         main.case("Killing remote ping processes ")
         result =  result & main.Mininet4.pingKill()

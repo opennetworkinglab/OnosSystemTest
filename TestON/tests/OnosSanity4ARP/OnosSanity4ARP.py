@@ -1,5 +1,5 @@
 
-class OnosSanity4nodes :
+class OnosSanity4ARP :
 
     def __init__(self) :
         self.default = ''
@@ -479,6 +479,16 @@ class OnosSanity4nodes :
 
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="DEVICE DISCOVERY TEST PASSED PLUG/UNPLUG/MOVE TEST",onfail="DEVICE DISCOVERY TEST FAILED")
 
+    def CASE31(self):
+        final = main.TRUE
+        for i in range(6,16):
+            mac = main.Mininet1.decToHex(i+25)
+            mac = "00:00:00:00:00:"+str(mac)
+            result = main.Mininet1.arping("h"+str(i),"h"+str(i+25),mac)
+            final = final and result            
 
+        utilities.assert_equals(expect=main.TRUE,actual=final,onpass="ARP successful",onfail="ARP not working properly")
 
-
+    def CASE32(self):
+        main.step("Cleaning out any leftover flows...")
+        main.ONOS1.delete_flow("all") 

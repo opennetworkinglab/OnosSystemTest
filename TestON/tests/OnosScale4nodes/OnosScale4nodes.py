@@ -244,6 +244,5 @@ class OnosScale4nodes:
             main.log.report( "ONOS did NOT converge over : %f seconds" % conv_time ) 
             test=main.FALSE
  
-        main.ONOS1.stop()
         utilities.assert_equals(expect=main.TRUE,actual=test)
 

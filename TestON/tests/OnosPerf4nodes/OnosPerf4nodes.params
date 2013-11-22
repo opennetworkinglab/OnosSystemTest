@@ -4,7 +4,7 @@
     <WaitTime>60</WaitTime>
     <RestIP>10.128.100.4</RestIP>
     <MN_size>57</MN_size>
-    <TargetTime>20</TargetTime>
+    <TargetTime>30</TargetTime>
     <NR_Switches>25</NR_Switches>
     <NR_Links>50</NR_Links>
     <FLOWDEF>~/flowdef_files/Center_Triangle/flowdef_20.txt</FLOWDEF>

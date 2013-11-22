@@ -154,7 +154,7 @@ class OnosCliDriver(CLI):
         response = self.execute(cmd="~/ONOS/start-onos.sh status ",prompt="running",timeout=10)
         self.execute(cmd="\r",prompt="\$",timeout=10)
         tail1 = self.execute(cmd="tail ~/ONOS/onos-logs/onos.*.log",prompt="\$",timeout=10)
-        time.sleep(2)
+        time.sleep(30)
         self.execute(cmd="\r",prompt="\$",timeout=10)
         tail2 = self.execute(cmd="tail ~/ONOS/onos-logs/onos.*.log",prompt="\$",timeout=10)
         pattern = '(.*)1 instance(.*)'
@@ -268,9 +268,6 @@ class OnosCliDriver(CLI):
                   self.handle.sendline("~/ONOS/web/delete_flow.py all")
                   self.handle.expect("delete_flow")
                   self.handle.expect("\$",1000)
-                  self.handle.sendline("~/ONOS/web/clear_flow.py all")
-                  self.handle.expect("clear_flow")
-                  self.handle.expect("\$",1000)
                   main.log.info("Flows deleted")
              else:
                   main.log.info("Deleting flow "+str(delParams[0])+"...")
@@ -279,9 +276,6 @@ class OnosCliDriver(CLI):
                   self.handle.sendline("~/ONOS/web/delete_flow.py %d" % int(delParams[0]))
                   self.handle.expect("delete_flow")
                   self.handle.expect("\$",60)
-                  self.handle.sendline("~/ONOS/web/clear_flow.py %d" % int(delParams[0]))
-                  self.handle.expect("clear_flow")
-                  self.handle.expect("\$",60)
                   main.log.info("Flow deleted")
         elif len(delParams)==2:
              main.log.info("Deleting flows "+str(delParams[0])+" through "+str(delParams[1])+"...")
@@ -289,9 +283,6 @@ class OnosCliDriver(CLI):
              #self.execute(cmd="\n",prompt="\$",timeout=60)
              self.handle.sendline("~/ONOS/web/delete_flow.py %d %d" % (int(delParams[0]), int(delParams[1])))
              self.handle.expect("delete_flow")
-             self.handle.expect("\$",600)
-             self.handle.sendline("~/ONOS/web/clear_flow.py %d %d" % (int(delParams[0]), int(delParams[1])))
-             self.handle.expect("clear_flow")
              self.handle.expect("\$",600)
              main.log.info("Flows deleted")
 
@@ -493,6 +484,7 @@ class OnosCliDriver(CLI):
         self.handle.sendline("")
         self.handle.expect("\$")
         self.handle.expect("\$")
+        main.log.info("Keyspace dropped")
 
     def ctrl_none(self):
         '''
@@ -534,7 +526,7 @@ class OnosCliDriver(CLI):
         self.handle.sendline("git pull")
        
         uptodate = 0 
-        i=self.handle.expect(['fatal','Username\sfor\s(.*):\s','Unpacking\sobjects',pexpect.TIMEOUT,'Already up-to-date','Aborting'],timeout=180)
+        i=self.handle.expect(['fatal','Username\sfor\s(.*):\s','Unpacking\sobjects',pexpect.TIMEOUT,'Already up-to-date','Aborting'],timeout=60)
         if i==0:
             main.log.error("Git pull had some issue...") 
             return main.FALSE

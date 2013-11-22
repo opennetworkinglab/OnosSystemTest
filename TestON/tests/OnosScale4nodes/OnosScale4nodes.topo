@@ -78,7 +78,7 @@
             <COMPONENTS>
                 # Specify the Option for mininet
                 <arg1> </arg1>
-                <arg2> --topo linear,100 </arg2>
+                <arg2> --topo linear,100 --arp</arg2>
                 <controller> remote,ip=10.128.100.1,port=6633 </controller>
              </COMPONENTS>
         </Mininet1>

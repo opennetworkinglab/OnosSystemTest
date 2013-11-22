@@ -77,7 +77,7 @@ class MininetCliDriver(Emulator):
             #cmdString = "sudo mn --topo "+self.options['topo']+","+self.options['topocount']+" --mac --switch "+self.options['switch']+" --controller "+self.options['controller']
             #cmdString = "sudo mn --custom ~/mininet/custom/topo-2sw-2host.py --controller remote --ip 192.168.56.102 --port 6633 --topo mytopo"
             main.log.info("building fresh mininet") 
-            cmdString = "sudo mn " + self.options['arg1'] + " " + self.options['arg2'] +  " --arp --mac --controller " + self.options['controller']
+            cmdString = "sudo mn " + self.options['arg1'] + " " + self.options['arg2'] +  " --mac --controller " + self.options['controller']
             #resultCommand = self.execute(cmd=cmdString,prompt='mininet>',timeout=120)
             self.handle.sendline(cmdString)
             self.handle.expect("sudo mn")
@@ -397,6 +397,24 @@ class MininetCliDriver(Emulator):
 
     def ctrl_one(self, ip):
         self.execute(cmd="sh ~/ONOS/scripts/ctrl-one.sh "+ip, prompt="mininet",timeout=20)
+  
+    def arping(self, src, dest, destmac):
+        self.handle.sendline('')
+        self.handle.expect("mininet")
+
+        self.handle.sendline(src + ' arping ' + dest)
+        try:
+            self.handle.expect(destmac)
+            main.log.info("ARP successful")
+            self.handle.expect("mininet")
+            return main.TRUE
+        except:
+            main.log.warn("ARP FAILURE")
+            self.handle.expect("mininet")
+            return main.FALSE
+
+    def decToHex(num):
+        return hex(num).split('x')[1]
 
 if __name__ != "__main__":
     import sys

@@ -16,6 +16,7 @@
     </LINK>
     <YANK>
         <hostname>h1</hostname>
+        <hostip>10.0.0.1</hostip>
         <hostmac>00:00:00:00:00:01</hostmac>
 	<sw1>s1</sw1>
         <sw6>s6</sw6>
@@ -43,6 +44,6 @@
 	<restIP1>10.128.100.1</restIP1>
 	<restIP2>10.128.100.5</restIP2>
 	<restPort>8080</restPort>
-	<restURL>/wm/device/</restURL>
+	<restURL>/wm/onos/topology/switches/all/json</restURL>
     </RESTCALL>
 </PARAMS>      

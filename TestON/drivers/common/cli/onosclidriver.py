@@ -237,11 +237,14 @@ class OnosCliDriver(CLI):
     def get_version(self):
         ''' 
         Writes the COMMIT number to the report to be parsed by Jenkins data collecter.  
-        ''' 
-        self.handle.sendline("cat /home/admin/ONOS/.git/ORIG_HEAD")
-        self.handle.expect("ORIG_HEAD")
+        '''
+        self.handle.sendline("export TERM=xterm-256color")
+        self.handle.expect("xterm-256color")
+        self.handle.expect("\$") 
+        self.handle.sendline("cd ONOS; git log -1; cd \.\.")
+        self.handle.expect("cd ..")
         self.handle.expect("\$")
-        main.log.report( "COMMIT: " + str(self.handle.before + self.handle.after))
+        main.log.report( str(self.handle.before + self.handle.after))
 
     def add_flow(self, path):
         ''' 
@@ -382,12 +385,12 @@ class OnosCliDriver(CLI):
         buf = ""
         retcode = 0
         RestPort="8080"
-        url="http://%s:%s/wm/core/topology/switches/all/json" % (RestIP, RestPort)
+        url="http://%s:%s/wm/onos/topology/switches/all/json" % (RestIP, RestPort)
         parsedResult = self.get_json(url)
         if parsedResult == "":
             retcode = 1
             return (retcode, "Rest API has an issue")
-        url = "http://%s:%s/wm/registry/switches/json" % (RestIP, RestPort)
+        url = "http://%s:%s/wm/onos/registry/switches/json" % (RestIP, RestPort)
         registry = self.get_json(url)
     
         if registry == "":
@@ -421,7 +424,7 @@ class OnosCliDriver(CLI):
         buf = ""
         retcode = 0
     
-        url = "http://%s:%s/wm/core/topology/links/json" % (RestIP, RestPort)
+        url = "http://%s:%s/wm/onos/topology/links/json" % (RestIP, RestPort)
         parsedResult = self.get_json(url)
     
         if parsedResult == "":
@@ -526,7 +529,7 @@ class OnosCliDriver(CLI):
         self.handle.sendline("git pull")
        
         uptodate = 0 
-        i=self.handle.expect(['fatal','Username\sfor\s(.*):\s','Unpacking\sobjects',pexpect.TIMEOUT,'Already up-to-date','Aborting'],timeout=60)
+        i=self.handle.expect(['fatal','Username\sfor\s(.*):\s','Unpacking\sobjects',pexpect.TIMEOUT,'Already up-to-date','Aborting'],timeout=180)
         if i==0:
             main.log.error("Git pull had some issue...") 
             return main.FALSE
@@ -543,10 +546,10 @@ class OnosCliDriver(CLI):
             else:
                 main.log.error("something went wrong")
                 return main.FALSE
-            self.handle.expect("ONOS\$", 30)
+            self.handle.expect("ONOS\$", 120)
         elif i==2:
             main.log.info("pulling repository now")
-            self.handle.expect("ONOS\$", 30)
+            self.handle.expect("ONOS\$", 120)
         elif i==3:
             main.log.error("TIMEOUT")
             return main.FALSE

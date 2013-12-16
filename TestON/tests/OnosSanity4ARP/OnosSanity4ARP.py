@@ -27,6 +27,9 @@ class OnosSanity4ARP :
         main.ONOS4.start()
         main.ONOS1.start_rest()
         time.sleep(5)
+        test= main.ONOS1.rest_status()
+        if test == main.FALSE:
+            main.ONOS1.start_rest()
         main.ONOS1.get_version()
         main.log.report("Startup check Zookeeper1, Cassandra1, and ONOS1 connections")
         main.case("Checking if the startup was clean...")
@@ -97,13 +100,6 @@ class OnosSanity4ARP :
                 time.sleep(1)
                 main.Mininet1.assign_sw_controller(sw=str(j),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'])
         main.Mininet1.get_sw_controller("s1")       
-
-        for i in range(9):
-            if result == main.FALSE:
-                time.sleep(3)
-                result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
-            else:
-                break 
  
 # **********************************************************************************************************************************************************************************************
 #Add Flows
@@ -113,69 +109,39 @@ class OnosSanity4ARP :
     def CASE3(self,main) :    #Delete any remnant flows, then add flows, and time how long it takes flow tables to update
         main.log.report("Delete any flows from previous tests, then add flows from FLOWDEF file, then wait for switch flow tables to update")
         import time
-
-        result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
-        for i in range(9):
-            if result == main.FALSE:
-                time.sleep(3)
-                result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
-            else:
-                break
-
         main.case("Taking care of these flows!") 
         main.step("Cleaning out any leftover flows...")
         main.ONOS1.delete_flow("all")
-        time.sleep(5)
         strtTime = time.time()
         main.ONOS1.add_flow(main.params['FLOWDEF'])
         main.case("Checking flows")
-        tmp = main.FALSE
-        count = 1
-        main.log.info("Wait for flows to be pushed to the switches, then check")
-        while tmp == main.FALSE:
-            main.step("Waiting")
-            time.sleep(5)
-            main.step("Checking")
-            tmp = main.ONOS1.check_flow()
-            if tmp == main.FALSE and count < 6:
-                count = count + 1
-                main.log.report("Flow failed, waiting 10 seconds then making attempt number "+str(count))
-            elif tmp == main.FALSE and count == 6:
-                result1 = main.FALSE
-                break
-            else:
-                result1 = main.TRUE
-                break
-        endTime = time.time()
-        if result1 == main.TRUE:
-            main.log.report("\n\t\t\t\tTime to add flows: "+str(round(endTime-strtTime,2))+" seconds")
-        else:
-            main.log.report("\tFlows failed check")
         
         count = 1
         i = 6
         while i < 16 :
             main.log.info("\n\t\t\t\th"+str(i)+" IS PINGING h"+str(i+25) )
             ping = main.Mininet1.pingHost(src="h"+str(i),target="h"+str(i+25))
-            if ping == main.FALSE and count < 3:
+            if ping == main.FALSE and count < 9:
                 count = count + 1
                 i = 6
-                main.log.info("Ping failed, making attempt number "+str(count)+" in 10 seconds")
-                time.sleep(10)
-            elif ping == main.FALSE and count ==3:
+                main.log.info("Ping failed, making attempt number "+str(count)+" in 2 seconds")
+                time.sleep(2)
+            elif ping == main.FALSE and count ==9:
                 main.log.error("Ping test failed")
                 i = 17
-                result2 = main.FALSE
+                result = main.FALSE
             elif ping == main.TRUE:
                 i = i + 1
                 result2 = main.TRUE
-        if result2 == main.TRUE:
-            main.log.info("Flows successfully added")
+        endTime = time.time()
+        if result == main.TRUE:
+            main.log.report("\tTime to complete add flows: "+str(round(endTime-strtTime,2))+" seconds")
         else:
             main.log.report("\tPING TEST FAIL")
 
+        result2 = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
         main.step("Verifying the result")
-        utilities.assert_equals(expect=main.TRUE,actual=result1 and result2,onpass="Flow check PASS",onfail="Flow check FAIL")
+        utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Flow check PASS",onfail="Flow check FAIL")
 
 #**********************************************************************************************************************************************************************************************
 #This test case removes Controllers 2,3, and 4 then performs a ping test.
@@ -196,9 +162,9 @@ class OnosSanity4ARP :
       
         strtTime = time.time() 
         result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
-        for i in range(9):
+        for i in range(2):
             if result == main.FALSE:
-                time.sleep(3)
+                time.sleep(5)
                 result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
             else:
                 break
@@ -212,7 +178,7 @@ class OnosSanity4ARP :
                 count = count + 1
                 i = 6
                 main.log.info("Ping failed, making attempt number "+str(count)+" in 5 seconds")
-                time.sleep(5)
+                time.sleep(2)
             elif ping == main.FALSE and count ==6:
                 main.log.error("Ping test failed")
                 i = 17
@@ -243,7 +209,7 @@ class OnosSanity4ARP :
       
         strtTime = time.time() 
         result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
-        for i in range(9):
+        for i in range(2):
             if result == main.FALSE:
                 time.sleep(3)
                 result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
@@ -259,7 +225,7 @@ class OnosSanity4ARP :
                 count = count + 1
                 i = 6
                 main.log.info("Ping failed, making attempt number "+str(count)+" in 5 seconds")
-                time.sleep(5)
+                time.sleep(2)
             elif ping == main.FALSE and count ==6:
                 main.log.error("Ping test failed")
                 i = 17
@@ -286,9 +252,9 @@ class OnosSanity4ARP :
        
         strtTime = time.time() 
         result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],str(int(main.params['NR_Links'])-2))
-        for i in range(9):
+        for i in range(2):
             if result == main.FALSE:
-                time.sleep(3)
+                time.sleep(5)
                 result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],str(int(main.params['NR_Links'])-2))
             else:
                 break
@@ -302,7 +268,7 @@ class OnosSanity4ARP :
                 count = count + 1
                 main.log.info("Ping failed, making attempt number "+str(count)+" in 5 seconds")
                 i = 6
-                time.sleep(5)
+                time.sleep(2)
             elif ping == main.FALSE and count == 10:
                 main.log.error("Ping test failed")
                 i = 17
@@ -329,9 +295,9 @@ class OnosSanity4ARP :
       
         strtTime = time.time() 
         result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
-        for i in range(9):
+        for i in range(2):
             if result == main.FALSE:
-                time.sleep(3)
+                time.sleep(5)
                 result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
             else:
                 break
@@ -346,7 +312,7 @@ class OnosSanity4ARP :
                 count = count + 1
                 main.log.info("Ping failed, making attempt number "+str(count)+" in 5 seconds")
                 i = 6
-                time.sleep(5)
+                time.sleep(2)
             elif ping == main.FALSE and count ==10:
                 main.log.error("Ping test failed")
                 i = 17
@@ -369,36 +335,33 @@ class OnosSanity4ARP :
         import json
         from drivers.common.api.onosrestapidriver import *
         main.log.report("Test device discovery function, by attach/detach/move host h1 from s1->s6->s1.")
-        main.log.report("Check initially hostMAC exist on the mininet...")
+        main.log.report("Check initially hostMAC/IP exist on the mininet...")
         host = main.params['YANK']['hostname']
         mac = main.params['YANK']['hostmac']
+        hostip = main.params['YANK']['hostip']
         RestIP1 = main.params['RESTCALL']['restIP1']
-        RestIP2 = main.params['RESTCALL']['restIP2']
         RestPort = main.params['RESTCALL']['restPort']
         url = main.params['RESTCALL']['restURL']
         #print "host=" + host + ";  RestIP=" + RestIP1 + ";  RestPort=" + str(RestPort)
-        
-        main.log.info("\n\t\t\t\t ping issue one ping from" + str(host) + "to generate arp to switch. Ping result is not important" )
+       
         ping = main.Mininet1.pingHost(src = str(host),target = "10.0.0.254")
         restcall = OnosRestApiDriver()
-        Reststatus, Hoststatus = restcall.find_host(RestIP1,RestPort,url,mac)
+        Reststatus, RestSwitch, RestPort = restcall.find_host(RestIP1,RestPort,url, hostip)
         try:
-            attachedSW = Hoststatus[0]['attachmentPoint'][0]['switchDPID']
-            ip_found = Hoststatus[0]['ipv4'][0]
+            attachedSW = RestSwitch[0]['dpid']
+            host_ip = RestSwitch[0]['devices'][0]['ipv4addresses']
         except:
             Reststatus = 0
-
-        if Reststatus == 1:
+        if Reststatus == 1 and host_ip == '10.0.0.1':
             main.log.report("\tFound host " + host + " attached to switchDPID = " + attachedSW)
-            if ip_found != None:
-                main.log.report("\t IP discovered is ip_found ( " + ip_found + " ).")
-                result = main.TRUE
-            else:
-                main.log.report("\t Found host attached to switch, but no IP address discovered.")
-                result = main.FALSE
+            result = main.TRUE
+        elif Reststatus > 1:
+            main.log.report("\t Host " + host + " with MAC:" + str(mac) + " has " + Reststatus + " duplicated IP addresses. FAILED")
         else:
             main.log.report("\t Host " + host + " with MAC:" + str(mac) + " does not exist. FAILED")
             result = main.FALSE
+
+        main.log.info("\n\t\t\t\t ping issue one ping from" + str(host) + "to generate arp to switch. Ping result is not important" )
 
         ##### Step to yank out "s1-eth1" from s1, which is on autoONOS1 #####
 
@@ -407,46 +370,51 @@ class OnosSanity4ARP :
         result = main.Mininet1.yank(SW=main.params['YANK']['sw1'],INTF=main.params['YANK']['intf'])
         time.sleep(3)
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Yank command suceeded",onfail="Yank command failed...")
+
+        main.log.info("\n\t\t\t\t ping issue one ping from" + str(host) + "to generate arp to switch. Ping result is not important" )
         ping = main.Mininet1.pingHost(src = str(host),target = "10.0.0.254")
-        Reststatus, Hoststatus = restcall.find_host(RestIP1,RestPort,url,mac)
+        restcall = OnosRestApiDriver()
+        Reststatus, RestSwitch, RestPort = restcall.find_host(RestIP1,RestPort,url, hostip)
         try:
-            attachedSW = Hoststatus[0]['attachmentPoint'][0]['switchDPID']
+            attachedSW = RestSwitch[0]['dpid']
+            host_ip = RestSwitch[0]['devices'][0]['ipv4addresses']
         except:
             Reststatus = 0
-        if Reststatus == 0:
-            main.log.report("Attempt to yank out s1-eth1 from s1 sucessfully")
+        if Reststatus == 1 and host_ip == '10.0.0.1':
+            main.log.report("\tFound host " + host + " attached to switchDPID = " + attachedSW)
             result = main.TRUE
+        elif Reststatus > 1:
+            main.log.report("\t Host " + host + " with MAC:" + str(mac) + " has " + Reststatus + " duplicated IP addresses. FAILED")
         else:
-            main.log.report("Attempt to yank out s1-eht1 from s1 failed.")
+            main.log.report("\t Host " + host + " with MAC:" + str(mac) + " does not exist. FAILED")
             result = main.FALSE
-        
+
+         
         ##### Step to plug "s1-eth1" to s6, which is on autoONOS3  ######
         main.log.report("Plug s1-eth1 into s6")
         main.case("Plug s1-eth1 to s6")
         result = main.Mininet1.plug(SW=main.params['PLUG']['sw6'],INTF=main.params['PLUG']['intf'])
         time.sleep(3)
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Plug command suceeded",onfail="Plug command failed...")
+        main.log.info("\n\t\t\t\t ping issue one ping from" + str(host) + "to generate arp to switch. Ping result is not important" )
+
         ping = main.Mininet1.pingHost(src = str(host),target = "10.0.0.254")
-        Reststatus, Hoststatus = restcall.find_host(RestIP2,RestPort,url,mac)
+        restcall = OnosRestApiDriver()
+        Reststatus, RestSwitch, RestPort = restcall.find_host(RestIP1,RestPort,url, hostip)
         try:
-            attachedSW = Hoststatus[0]['attachmentPoint'][0]['switchDPID']
-            ip_found = Hoststatus[0]['ipv4'][0]
+            attachedSW = RestSwitch[0]['dpid']
+            host_ip = RestSwitch[0]['devices'][0]['ipv4addresses']
         except:
             Reststatus = 0
-        if Reststatus == 0:
-            main.log.report("Attempt to plug s1-eth1 to s6 FAILED")
-            result = main.FALSE
-        elif attachedSW == "00:00:00:00:00:00:00:06":
-            main.log.report("Attempt to plug s1-eht1 to s6 succeded.")
-            if ip_found != None:
-                main.log.report("\t IP discovered is ip_found ( " + ip_found + " ).")
-                result = main.TRUE
-            else:
-                main.log.report("\t Found host attached to switch, but no IP address discovered.")
-                result = main.FALSE
+        if Reststatus == 1 and host_ip == '10.0.0.1':
+            main.log.report("\tFound host " + host + " attached to switchDPID = " + attachedSW)
+            result = main.TRUE
+        elif Reststatus > 1:
+            main.log.report("\t Host " + host + " with MAC:" + str(mac) + " has " + Reststatus + " duplicated IP addresses. FAILED")
         else:
-            main.log.report( "FAILED to attach s1-eth1 to s6 correctly!")
+            main.log.report("\t Host " + host + " with MAC:" + str(mac) + " does not exist. FAILED")
             result = main.FALSE
+
 
         ###### Step to put interface "s1-eth1" back to s1"#####
         main.log.report("Move s1-eth1 back on to s1")
@@ -455,40 +423,26 @@ class OnosSanity4ARP :
         time.sleep(3)
         retult = main.Mininet1.plug(SW=main.params['PLUG']['sw1'],INTF=main.params['PLUG']['intf'])
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Yank/Plug command suceeded",onfail="Yank/Plug command failed...")
+        main.log.info("\n\t\t\t\t ping issue one ping from" + str(host) + "to generate arp to switch. Ping result is not important" )
+
         ping = main.Mininet1.pingHost(src = str(host),target = "10.0.0.254")
-        Reststatus, Hoststatus = restcall.find_host(RestIP1,RestPort,url,mac)
+        restcall = OnosRestApiDriver()
+        Reststatus, RestSwitch, RestPort = restcall.find_host(RestIP1,RestPort,url, hostip)
         try:
-            attachedSW = Hoststatus[0]['attachmentPoint'][0]['switchDPID']
-            ip_found = Hoststatus[0]['ipv4'][0]
+            attachedSW = RestSwitch[0]['dpid']
+            host_ip = RestSwitch[0]['devices'][0]['ipv4addresses']
         except:
             Reststatus = 0
-        if Reststatus == 0:
-            main.log.report("Attempt to plug s1-eth1 back to s1 FAILED")
-            result = main.FALSE
-        elif attachedSW == "00:00:00:00:00:00:00:01":
-            main.log.report("Attempt to plug s1-eht1 back to s1 succeded.")
-            if ip_found != None:
-                main.log.report("\t IP discovered is ip_found ( " + ip_found + " ).")
-                result = main.TRUE
-            else:
-                main.log.report("\t Found host attached to switch, but no IP address discovered.")
-                result = main.FALSE
+        if Reststatus == 1 and host_ip == '10.0.0.1':
+            main.log.report("\tFound host " + host + " attached to switchDPID = " + attachedSW)
+            result = main.TRUE
+        elif Reststatus > 1:
+            main.log.report("\t Host " + host + " with MAC:" + str(mac) + " has " + Reststatus + " duplicated IP addresses. FAILED")
         else:
-            main.log.report( "FAIL to attach s1-eth1 to s1 correctly!")
+            main.log.report("\t Host " + host + " with MAC:" + str(mac) + " does not exist. FAILED")
             result = main.FALSE
+
 
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="DEVICE DISCOVERY TEST PASSED PLUG/UNPLUG/MOVE TEST",onfail="DEVICE DISCOVERY TEST FAILED")
 
-    def CASE31(self):
-        final = main.TRUE
-        for i in range(6,16):
-            mac = main.Mininet1.decToHex(i+25)
-            mac = "00:00:00:00:00:"+str(mac)
-            result = main.Mininet1.arping("h"+str(i),"h"+str(i+25),mac)
-            final = final and result            
 
-        utilities.assert_equals(expect=main.TRUE,actual=final,onpass="ARP successful",onfail="ARP not working properly")
-
-    def CASE32(self):
-        main.step("Cleaning out any leftover flows...")
-        main.ONOS1.delete_flow("all") 

@@ -135,10 +135,7 @@ class OnosPerf4nodes:
             main.ONOS2.start()
             main.ONOS3.start()
             main.ONOS4.start()
-<<<<<<< HEAD
             time.sleep(45)
-=======
->>>>>>> f580d10d359eabad08530e06fb8339390b47fba0
             for i in range(4):
                 result = main.ONOS1.check_status(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
                 time.sleep(5)

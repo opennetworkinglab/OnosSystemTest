@@ -13,6 +13,10 @@ class OnosCHO4nodes :
         main.ONOS2.stop()
         main.ONOS3.stop()
         main.ONOS4.stop()
+        main.ONOS1.git_pull()
+        main.ONOS2.git_pull()
+        main.ONOS3.git_pull()
+        main.ONOS4.git_pull()
         main.Cassandra1.start()
         main.Cassandra2.start()
         main.Cassandra3.start()
@@ -20,15 +24,11 @@ class OnosCHO4nodes :
         time.sleep(20)
         main.ONOS1.drop_keyspace()
         main.ONOS1.start()
-        time.sleep(10)
+        time.sleep(30)
         main.ONOS2.start()
         main.ONOS3.start()
         main.ONOS4.start()
-        main.ONOS1.start_rest()
-        time.sleep(5)
-        test= main.ONOS1.rest_status()
-        if test == main.FALSE:
-            main.ONOS1.start_rest()
+        time.sleep(20)
         main.ONOS1.get_version()
         main.log.report("Startup check Zookeeper1, Cassandra1, and ONOS1 connections")
         main.case("Checking if the startup was clean...")
@@ -63,22 +63,15 @@ class OnosCHO4nodes :
             main.ONOS4.stop()
             time.sleep(5)
             main.ONOS1.start()
-            time.sleep(10)
+            time.sleep(30)
             main.ONOS2.start()
             main.ONOS3.start()
             main.ONOS4.start()
             data = main.ONOS1.isup()
-<<<<<<< HEAD
         #main.ONOS1.tcpdump()
         #main.ONOS2.tcpdump()
         #main.ONOS3.tcpdump()
         #main.ONOS4.tcpdump()
-=======
-        main.ONOS1.tcpdump()
-        main.ONOS2.tcpdump()
-        main.ONOS3.tcpdump()
-        main.ONOS4.tcpdump()
->>>>>>> f580d10d359eabad08530e06fb8339390b47fba0
         utilities.assert_equals(expect=main.TRUE,actual=data,onpass="ONOS is up and running!",onfail="ONOS didn't start...")
            
 #**********************************************************************************************************************************************************************************************
@@ -137,7 +130,7 @@ class OnosCHO4nodes :
         import time
 
         result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
-        for i in range(9):
+        for counter in range(9):
             if result == main.FALSE:
                 time.sleep(3)
                 result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
@@ -151,53 +144,35 @@ class OnosCHO4nodes :
         strtTime = time.time()
         main.ONOS1.add_flow(main.params['FLOWDEF'])
         main.case("Checking flows")
-        tmp = main.FALSE
-        count = 1
-        main.log.info("Wait for flows to be pushed to the switches, then check")
-        while tmp == main.FALSE:
-            main.step("Waiting")
-            time.sleep(10)
-            main.step("Checking")
-            tmp = main.ONOS1.check_flow()
-            if tmp == main.FALSE and count < 6:
-                count = count + 1
-                main.log.report("Flow failed, waiting 10 seconds then making attempt number "+str(count))
-            elif tmp == main.FALSE and count == 6:
-                result1 = main.FALSE
-                break
-            else:
-                result1 = main.TRUE
-                break
-        endTime = time.time()
-        if result1 == main.TRUE:
-            main.log.report("\n\t\t\t\tTime to add flows: "+str(round(endTime-strtTime,2))+" seconds")
-        else:
-            main.log.report("\tFlows failed check")
         
+        pingAttempts = main.params['pingAttempts']
+        pingSleep = main.params['pingSleep']
+
         count = 1
         i = 6
         while i < 16 :
             main.log.info("\n\t\t\t\th"+str(i)+" IS PINGING h"+str(i+25) )
             ping = main.Mininet1.pingHost(src="h"+str(i),target="h"+str(i+25))
-            if ping == main.FALSE and count < 3:
+            if ping == main.FALSE and count < int(pingAttempts):
                 count = count + 1
                 i = 6
-                main.log.report("Ping failed, making attempt number "+str(count)+" in 10 seconds")
-                time.sleep(10)
-            elif ping == main.FALSE and count ==3:
+                main.log.report("Ping failed, making attempt number "+str(count)+" in "+str(pingSleep)+"  seconds")
+                time.sleep(int(pingSleep))
+            elif ping == main.FALSE and count == int(pingAttempts):
                 main.log.error("Ping test failed")
                 i = 17
-                result2 = main.FALSE
+                result = main.FALSE
             elif ping == main.TRUE:
                 i = i + 1
-                result2 = main.TRUE
-        if result2 == main.TRUE:
-            main.log.info("Flows successfully added")
+                result = main.TRUE
+        endTime = time.time()
+        if result == main.TRUE:
+             main.log.report("\n\t\t\t\tTime to add flows: "+str(round(endTime-strtTime,2))+" seconds")
         else:
-            main.log.report("\tPING TEST FAIL")
+            main.log.report("\tFlows failed check")
 
         main.step("Verifying the result")
-        utilities.assert_equals(expect=main.TRUE,actual=result1 and result2,onpass="Flow check PASS",onfail="Flow check FAIL")
+        utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Flow check PASS",onfail="Flow check FAIL")
 
 #**********************************************************************************************************************************************************************************************
 #This test case removes Controllers 2,3, and 4 then performs a ping test.
@@ -206,7 +181,6 @@ class OnosCHO4nodes :
 #If the ping test fails 6 times, then the test case will return false
 
     def CASE4(self,main) :
-<<<<<<< HEAD
         main.log.report("Remove all but one ONOS then ping until all hosts are reachable or fail after 6 attempts")
         import time
         import random
@@ -228,42 +202,37 @@ class OnosCHO4nodes :
             port = main.params['CTRL']['port4']
 
         main.log.report("ONOS"+str(num)+" will be the sole controller")
-=======
-        main.log.report("Remove ONOS 2,3,4 then ping until all hosts are reachable or fail after 6 attempts")
-        import time
->>>>>>> f580d10d359eabad08530e06fb8339390b47fba0
         for i in range(25):
             if i < 15:
                 j=i+1
-                main.Mininet1.assign_sw_controller(sw=str(j),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'])  #Assigning a single controller removes all other controllers
+                main.Mininet1.assign_sw_controller(sw=str(j),ip1=ip,port1=port)  #Assigning a single controller removes all other controllers
             else:
                 j=i+16
-<<<<<<< HEAD
                 main.Mininet1.assign_sw_controller(sw=str(j),ip1=ip,port1=port)
-=======
-                main.Mininet1.assign_sw_controller(sw=str(j),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'])
->>>>>>> f580d10d359eabad08530e06fb8339390b47fba0
       
         strtTime = time.time() 
         result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
-        for i in range(9):
+        for counter in range(9):
             if result == main.FALSE:
                 time.sleep(3)
                 result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
             else:
                 break
 
+        pingAttempts = main.params['pingAttempts']
+        pingSleep = main.params['pingSleep']
+
         count = 1
         i = 6
         while i < 16 :
             main.log.info("\n\t\t\t\th"+str(i)+" IS PINGING h"+str(i+25) )
             ping = main.Mininet1.pingHost(src="h"+str(i),target="h"+str(i+25))
-            if ping == main.FALSE and count < 6:
+            if ping == main.FALSE and count < int(pingAttempts):
                 count = count + 1
                 i = 6
-                main.log.report("Ping failed, making attempt number "+str(count)+" in 5 seconds")
-                time.sleep(5)
-            elif ping == main.FALSE and count ==6:
+                main.log.report("Ping failed, making attempt number "+str(count)+" in "+str(pingSleep)+" seconds")
+                time.sleep(int(pingSleep))
+            elif ping == main.FALSE and count == int(pingAttempts):
                 main.log.error("Ping test failed")
                 i = 17
                 result = main.FALSE
@@ -293,24 +262,27 @@ class OnosCHO4nodes :
       
         strtTime = time.time() 
         result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
-        for i in range(9):
+        for counter in range(9):
             if result == main.FALSE:
                 time.sleep(3)
                 result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
             else:
                 break
 
+        pingAttempts = main.params['pingAttempts']
+        pingSleep = main.params['pingSleep']
+
         count = 1
         i = 6
         while i < 16 :
             main.log.info("\n\t\t\t\th"+str(i)+" IS PINGING h"+str(i+25) )
             ping = main.Mininet1.pingHost(src="h"+str(i),target="h"+str(i+25))
-            if ping == main.FALSE and count < 6:
+            if ping == main.FALSE and count < int(pingAttempts):
                 count = count + 1
                 i = 6
-                main.log.report("Ping failed, making attempt number "+str(count)+" in 5 seconds")
-                time.sleep(5)
-            elif ping == main.FALSE and count ==6:
+                main.log.report("Ping failed, making attempt number "+str(count)+" in "+str(pingSleep)+" seconds")
+                time.sleep(int(pingSleep))
+            elif ping == main.FALSE and count == int(pingAttempts):
                 main.log.error("Ping test failed")
                 i = 17
                 result = main.FALSE
@@ -336,24 +308,27 @@ class OnosCHO4nodes :
        
         strtTime = time.time() 
         result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],str(int(main.params['NR_Links'])-2))
-        for i in range(9):
+        for counter in range(9):
             if result == main.FALSE:
                 time.sleep(3)
                 result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],str(int(main.params['NR_Links'])-2))
             else:
                 break
 
+        pingAttempts = main.params['pingAttempts']
+        pingSleep = main.params['pingSleep']
+
         count = 1
         i = 6
         while i < 16 :
             main.log.info("\n\t\t\t\th"+str(i)+" IS PINGING h"+str(i+25) )
             ping = main.Mininet1.pingHost(src="h"+str(i),target="h"+str(i+25))
-            if ping == main.FALSE and count < 10:
+            if ping == main.FALSE and count < int(pingAttempts):
                 count = count + 1
-                main.log.report("Ping failed, making attempt number "+str(count)+" in 5 seconds")
+                main.log.report("Ping failed, making attempt number "+str(count)+" in "+str(pingSleep)+" seconds")
                 i = 6
-                time.sleep(5)
-            elif ping == main.FALSE and count == 10:
+                time.sleep(int(pingSleep))
+            elif ping == main.FALSE and count == int(pingAttempts):
                 main.log.error("Ping test failed")
                 i = 17
                 result = main.FALSE
@@ -379,12 +354,15 @@ class OnosCHO4nodes :
       
         strtTime = time.time() 
         result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
-        for i in range(9):
+        for counter in range(9):
             if result == main.FALSE:
                 time.sleep(3)
                 result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
             else:
                 break
+
+        pingAttempts = main.params['pingAttempts']
+        pingSleep = main.params['pingSleep']
 
         strtTime = time.time()
         count = 1
@@ -392,12 +370,12 @@ class OnosCHO4nodes :
         while i < 16 :
             main.log.info("\n\t\t\t\th"+str(i)+" IS PINGING h"+str(i+25) )
             ping = main.Mininet1.pingHost(src="h"+str(i),target="h"+str(i+25))
-            if ping == main.FALSE and count < 10:
+            if ping == main.FALSE and count < int(pingAttempts):
                 count = count + 1
-                main.log.report("Ping failed, making attempt number "+str(count)+" in 5 seconds")
+                main.log.report("Ping failed, making attempt number "+str(count)+" in " +str(pingSleep)+" seconds")
                 i = 6
-                time.sleep(5)
-            elif ping == main.FALSE and count ==10:
+                time.sleep(int(pingSleep))
+            elif ping == main.FALSE and count == int(pingAttempts):
                 main.log.error("Ping test failed")
                 i = 17
                 result = main.FALSE

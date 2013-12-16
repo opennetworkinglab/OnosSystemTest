@@ -1,5 +1,5 @@
 <PARAMS>
-    <testcases>1,2,21,32,31,4,5,6,7,3,4,5,6,7</testcases>
+    <testcases>1,2,4,5,6,7,3,4,5,6,7</testcases>
     <FLOWDEF>~/flowdef_files/Center_Triangle/flowdef_20.txt</FLOWDEF>
     <CASE1>       
         <destination>h6</destination>

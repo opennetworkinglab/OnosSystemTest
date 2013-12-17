@@ -269,7 +269,7 @@ class OnosPerf4nodes:
         time.sleep(3) 
         #result=os.popen("/home/admin/tools/shell.sh " + main.params['Iterations']).read()
         try:
-            result=os.popen("/home/admin/get_reroute_times.py").read() 
+            result=os.popen("/home/admin/ONLabTest/TestON/scripts/get_reroute_times.py").read() 
             average=result.split(":")[1] 
             main.log.info( "Reroute times are... " ) 
             main.log.report( result + " seconds" ) 

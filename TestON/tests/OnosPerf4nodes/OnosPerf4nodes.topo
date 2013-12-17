@@ -75,7 +75,7 @@
             <COMPONENTS>
                 # Specify the Option for mininet
                 <arg1> --custom ~/mininet/custom/topo-onos4node.py </arg1>
-                <arg2> --topo mytopo --arp</arg2>
+                <arg2> --topo mytopo </arg2>
                 <controller> remote </controller>
              </COMPONENTS>
         </Mininet1>

@@ -1,1 +1,3 @@
 *.swp
+TestON/logs/*
+*.pyc

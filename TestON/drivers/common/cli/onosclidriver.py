@@ -242,7 +242,7 @@ class OnosCliDriver(CLI):
         self.handle.expect("xterm-256color")
         self.handle.expect("\$") 
         self.handle.sendline("cd ONOS; git log -1 | grep -A 3 \"commit\"; cd \.\.")
-        self.handle.expect("cd \.\.")
+        self.handle.expect("cd ..")
         self.handle.expect("\$")
         main.log.report( str(self.handle.before + self.handle.after))
 

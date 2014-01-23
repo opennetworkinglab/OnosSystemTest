@@ -77,7 +77,11 @@ class MininetCliDriver(Emulator):
             #cmdString = "sudo mn --topo "+self.options['topo']+","+self.options['topocount']+" --mac --switch "+self.options['switch']+" --controller "+self.options['controller']
             #cmdString = "sudo mn --custom ~/mininet/custom/topo-2sw-2host.py --controller remote --ip 192.168.56.102 --port 6633 --topo mytopo"
             main.log.info("building fresh mininet") 
+
+            #### for reactive/PARP enabled tests
             cmdString = "sudo mn " + self.options['arg1'] + " " + self.options['arg2'] +  " --mac --controller " + self.options['controller']
+            #### for proactive flow with static ARP entries
+            #cmdString = "sudo mn " + self.options['arg1'] + " " + self.options['arg2'] +  " --mac --arp --controller " + self.options['controller']
             #resultCommand = self.execute(cmd=cmdString,prompt='mininet>',timeout=120)
             self.handle.sendline(cmdString)
             self.handle.expect("sudo mn")

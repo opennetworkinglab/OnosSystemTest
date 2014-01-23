@@ -93,8 +93,12 @@ class OnosRestApiDriver(API):
         '''
         return response  
     
-    def find_host(self,RestIP,RestPort,RestAPI,hostMAC):
+    def find_host(self,RestIP,RestPort,RestAPI,hostIP):
 	retcode = 0
+        retswitch = ''
+        retport = ''
+        retmac = ''
+        foundIP = ''
 	##### device rest API is: 'host:8080/wm/core/topology/switches/all/json' ###
 	url ="http://%s:%s%s" %(RestIP,RestPort,RestAPI)
 		
@@ -102,18 +106,26 @@ class OnosRestApiDriver(API):
 	    command = "curl -s %s" % (url)
 	    result = os.popen(command).read()
 	    parsedResult = json.loads(result)
-            print parsedResult
+            # print parsedResult
 	except:
 	    print "REST IF %s has issue" % command
 	    parsedResult = ""  
-	if type(parsedResult) == 'dict' and parsedResult.has_key('code'):
-	    print "REST %s returned code %s" % (command, parsedResult['code'])
-	    parsedResult = ""
 
     	if parsedResult == "":
 	    return (retcode, "Rest API has an error")	
 	else:
-	    found = [item for item in parsedResult if item['mac'] == [str(hostMAC)]]
-            retcode = 1
-	    return (retcode, found)
+            for switch in enumerate(parsedResult):
+                for port in enumerate(switch[1]['ports']):
+                    if ( port[1]['devices'] != [] ):
+                        try:
+                            foundIP =  port[1]['devices'][0]['ipv4addresses'][0]['ipv4']
+                        except:
+                            print "Error in detecting IP address."
+                        if foundIP == hostIP:
+                            retcode = retcode +1
+	                    retswitch = switch[1]['dpid']
+                            retport = port[1]['desc']
+                            retmac = port[1]['devices'][0]['mac']
+                            foundIP =''
+        return(retcode, retswitch, retport, retmac)
 

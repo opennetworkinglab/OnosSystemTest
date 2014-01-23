@@ -95,10 +95,10 @@ class OnosRestApiDriver(API):
     
     def find_host(self,RestIP,RestPort,RestAPI,hostIP):
 	retcode = 0
-        retswitch = ''
-        retport = ''
-        retmac = ''
-        foundIP = ''
+        retswitch = []
+        retport = []
+        retmac = []
+        foundIP = []
 	##### device rest API is: 'host:8080/wm/core/topology/switches/all/json' ###
 	url ="http://%s:%s%s" %(RestIP,RestPort,RestAPI)
 		
@@ -122,10 +122,10 @@ class OnosRestApiDriver(API):
                         except:
                             print "Error in detecting IP address."
                         if foundIP == hostIP:
+	                    retswitch.append(switch[1]['dpid'])
+                            retport.append(port[1]['desc'])
+                            retmac.append(port[1]['devices'][0]['mac'])
                             retcode = retcode +1
-	                    retswitch = switch[1]['dpid']
-                            retport = port[1]['desc']
-                            retmac = port[1]['devices'][0]['mac']
                             foundIP =''
         return(retcode, retswitch, retport, retmac)
 

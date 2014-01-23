@@ -4,7 +4,7 @@ class OnosSanity4nodes :
     def __init__(self) :
         self.default = ''
 
-#**********************************************************************************************************************************************************************************************
+#*****************************************************************************************************************************************************************************************
 #Test startup
 #Tests the startup of Zookeeper1, Cassandra1, and ONOS1 to be certain that all started up successfully
     def CASE1(self,main) :  #Check to be sure ZK, Cass, and ONOS are up, then get ONOS version
@@ -334,7 +334,7 @@ class OnosSanity4nodes :
     def CASE21(self,main) :
         import json
         from drivers.common.api.onosrestapidriver import *
-        main.log.report("Test device discovery function, by attach, detach, move host h1 from s1->s6->s1. Per mininet naming, switch port the host attaches will remain as 's1-eth1' throughout the test. Wait time from topo change to ping is 5 seconds; wait time from ping to restcall is sleepT=20sec.")
+        main.log.report("Test device discovery function, by attach, detach, move host h1 from s1->s6->s1. Per mininet naming, switch port the host attaches will remain as 's1-eth1' throughout the test.")
         main.log.report("Check initially hostMAC/IP exist on the mininet...")
         host = main.params['YANK']['hostname']
         mac = main.params['YANK']['hostmac']
@@ -342,20 +342,27 @@ class OnosSanity4nodes :
         RestIP1 = main.params['RESTCALL']['restIP1']
         RestPort = main.params['RESTCALL']['restPort']
         url = main.params['RESTCALL']['restURL']
-        sleepT = 20
-        #print "host=" + host + ";  RestIP=" + RestIP1 + ";  RestPort=" + str(RestPort)
        
+        t_topowait = 0
+        t_restwait = 10
+        main.log.report( "Wait time from topo change to ping set to " + str(t_topowait))
+        main.log.report( "Wait time from ping to rest call set to " + str(t_restwait))
+        #print "host=" + host + ";  RestIP=" + RestIP1 + ";  RestPort=" + str(RestPort)
+        time.sleep(t_topowait) 
         main.log.info("\n\t\t\t\t ping issue one ping from" + str(host) + "to generate arp to switch. Ping result is not important" )
         ping = main.Mininet1.pingHost(src = str(host),target = "10.0.0.254")
-        time.sleep(sleepT)
+        time.sleep(t_restwait)
         restcall = OnosRestApiDriver()
         Reststatus, Switch, Port, MAC = restcall.find_host(RestIP1,RestPort,url, hostip)
         main.log.report("Number of host with IP=10.0.0.1 found by ONOS is: " + str(Reststatus))
         if Reststatus == 1:
-            main.log.report("\t PASSED - Found host IP = " + hostip + "; MAC = " + MAC + "; attached to switchDPID = " + Switch + "; at port = " + Port)
+            main.log.report("\t PASSED - Found host IP = " + hostip + "; MAC = " + "".join(MAC) + "; attached to switchDPID = " + "".join(Switch) + "; at port = " + "".join(Port))
             result1 = main.TRUE
         elif Reststatus > 1:
             main.log.report("\t FAILED - Host " + host + " with MAC:" + mac + " has " + str(Reststatus) + " duplicated IP addresses. FAILED")
+            main.log.report("switches are: " + "; ".join(Switch))
+            main.log.report("Ports are: " + "; ".join(Port))
+            main.log.report("MACs are: " + "; ".join(MAC))
             result1 = main.FALSE
         else:
             main.log.report("\t FAILED - Host " + host + " with MAC:" + mac + " does not exist. FAILED")
@@ -367,21 +374,24 @@ class OnosSanity4nodes :
         main.log.report("Yank out s1-eth1")
         main.case("Yankout s6-eth1 (link to h1) from s1")
         result = main.Mininet1.yank(SW=main.params['YANK']['sw1'],INTF=main.params['YANK']['intf'])
-        time.sleep(5)
+        time.sleep(t_topowait)
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Yank command suceeded",onfail="Yank command failed...")
 
         main.log.info("\n\t\t\t\t ping issue one ping from" + str(host) + "to generate arp to switch. Ping result is not important" )
         ping = main.Mininet1.pingHost(src = str(host),target = "10.0.0.254")
-        time.sleep(sleepT)
+        time.sleep(t_restwait)
         restcall = OnosRestApiDriver()
         Reststatus, Switch, Port, MAC = restcall.find_host(RestIP1,RestPort,url, hostip)
 
         main.log.report("Number of host with IP=10.0.0.1 found by ONOS is: " + str(Reststatus))
         if Reststatus == 1:
-            main.log.report("\tFAILED - Found host IP = " + hostip + "; MAC = " + MAC + "; attached to switchDPID = " + Switch + "; at port = " + Port)
+            main.log.report("\tFAILED - Found host IP = " + hostip + "; MAC = " + "".join(MAC) + "; attached to switchDPID = " + "".join(Switch) + "; at port = " + "".join(Port))
             result2 = main.FALSE
         elif Reststatus > 1:
             main.log.report("\t FAILED - Host " + host + " with MAC:" + str(mac) + " has " + str(Reststatus) + " duplicated IP addresses. FAILED")
+            main.log.report("switches are: " + "; ".join(Switch))
+            main.log.report("Ports are: " + "; ".join(Port))
+            main.log.report("MACs are: " + "; ".join(MAC))
             result2 = main.FALSE
         else:
             main.log.report("\t PASSED - Host " + host + " with MAC:" + str(mac) + " does not exist. PASSED - host is not supposed to be attached to the switch.")
@@ -391,21 +401,24 @@ class OnosSanity4nodes :
         main.log.report("Plug s1-eth1 into s6")
         main.case("Plug s1-eth1 to s6")
         result = main.Mininet1.plug(SW=main.params['PLUG']['sw6'],INTF=main.params['PLUG']['intf'])
-        time.sleep(5)
+        time.sleep(t_topowait)
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Plug command suceeded",onfail="Plug command failed...")
         main.log.info("\n\t\t\t\t ping issue one ping from" + str(host) + "to generate arp to switch. Ping result is not important" )
 
         ping = main.Mininet1.pingHost(src = str(host),target = "10.0.0.254")
-        time.sleep(sleepT)
+        time.sleep(t_restwait)
         restcall = OnosRestApiDriver()
         Reststatus, Switch, Port, MAC = restcall.find_host(RestIP1,RestPort,url, hostip)
 
         main.log.report("Number of host with IP=10.0.0.1 found by ONOS is: " + str(Reststatus))
         if Reststatus == 1:
-            main.log.report("\tPASSED - Found host IP = " + hostip + "; MAC = " + MAC + "; attached to switchDPID = " + Switch + "; at port = " + Port)
+            main.log.report("\tPASSED - Found host IP = " + hostip + "; MAC = " + "".join(MAC) + "; attached to switchDPID = " + "".join(Switch) + "; at port = " + "".join(Port))
             result3 = main.TRUE
         elif Reststatus > 1:
             main.log.report("\t FAILED - Host " + host + " with MAC:" + str(mac) + " has " + str(Reststatus) + " duplicated IP addresses. FAILED")
+            main.log.report("switches are: " + "; ".join(Switch))
+            main.log.report("Ports are: " + "; ".join(Port))
+            main.log.report("MACs are: " + "; ".join(MAC))            
             result3 = main.FALSE
         else:
             main.log.report("\t FAILED - Host " + host + " with MAC:" + str(mac) + " does not exist. FAILED")
@@ -415,22 +428,25 @@ class OnosSanity4nodes :
         main.log.report("Move s1-eth1 back on to s1")
         main.case("Move s1-eth1 back to s1")
         result = main.Mininet1.yank(SW=main.params['YANK']['sw6'],INTF=main.params['YANK']['intf'])
-        time.sleep(5)
+        time.sleep(t_topowait)
         retult = main.Mininet1.plug(SW=main.params['PLUG']['sw1'],INTF=main.params['PLUG']['intf'])
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Yank/Plug command suceeded",onfail="Yank/Plug command failed...")
         main.log.info("\n\t\t\t\t ping issue one ping from" + str(host) + "to generate arp to switch. Ping result is not important" )
 
         ping = main.Mininet1.pingHost(src = str(host),target = "10.0.0.254")
-        time.sleep(sleepT)
+        time.sleep(t_restwait)
         restcall = OnosRestApiDriver()
         Reststatus, Switch, Port, MAC = restcall.find_host(RestIP1,RestPort,url, hostip)
 
         main.log.report("Number of host with IP=10.0.0.1 found by ONOS is: " + str(Reststatus))
         if Reststatus == 1:
-            main.log.report("\tPASSED - Found host IP = " + hostip + "; MAC = " + MAC + "; attached to switchDPID = " + Switch + "; at port = " + Port)
+            main.log.report("\tPASSED - Found host IP = " + hostip + "; MAC = " + "".join(MAC) + "; attached to switchDPID = " + "".join(Switch) + "; at port = " + "".join(Port))
             result4 = main.TRUE
         elif Reststatus > 1:
             main.log.report("\t FAILED - Host " + host + " with MAC:" + str(mac) + " has " + str(Reststatuas) + " duplicated IP addresses. FAILED")
+            main.log.report("switches are: " + "; ".join(Switch))
+            main.log.report("Ports are: " + "; ".join(Port))
+            main.log.report("MACs are: " + "; ".join(MAC))            
             result4 = main.FALSE
         else:
             main.log.report("\t FAILED -Host " + host + " with MAC:" + str(mac) + " does not exist. FAILED")
@@ -439,4 +455,31 @@ class OnosSanity4nodes :
         result = result1 and result2 and result3 and result4
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="DEVICE DISCOVERY TEST PASSED PLUG/UNPLUG/MOVE TEST",onfail="DEVICE DISCOVERY TEST FAILED")
 
+# Run a pure ping test. 
+
+    def CASE31(self, main):
+        main.log.report("Performing Ping Test")        
+        count = 1
+        i = 6
+        while i < 16 :
+            main.log.info("\n\t\t\t\th"+str(i)+" IS PINGING h"+str(i+25) )
+            ping = main.Mininet1.pingHost(src="h"+str(i),target="h"+str(i+25))
+            if ping == main.FALSE and count < 6:
+                count = count + 1
+                i = 6
+                main.log.info("Ping failed, making attempt number "+str(count)+" in 2 seconds")
+                time.sleep(2)
+            elif ping == main.FALSE and count ==6:
+                main.log.error("Ping test failed")
+                i = 17
+                result = main.FALSE
+            elif ping == main.TRUE:
+                i = i + 1
+                result = main.TRUE
+        endTime = time.time()
+        if result == main.TRUE:
+            main.log.report("\tTime to complete ping test: "+str(round(endTime-strtTime,2))+" seconds")
+        else:
+            main.log.report("\tPING TEST FAIL")
+        utilities.assert_equals(expect=main.TRUE,actual=result,onpass="NO PACKET LOSS, HOST IS REACHABLE",onfail="PACKET LOST, HOST IS NOT REACHABLE")
 

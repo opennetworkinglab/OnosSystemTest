@@ -45,12 +45,12 @@ class RemoteTestBedDriver(CLI):
                                                               port = remote_port, pwd = remote_pwd)
         
         if self.handle:
-            self.execute(cmd= "\r",prompt= "\$|>|#",timeout= 10)
+            self.execute(cmd= "\n",prompt= "\$|>|#",timeout= 10)
             self.execute(cmd= "SET CYGWIN=notty",prompt= "\$|>|#",timeout= 10)
-            self.execute(cmd= "\r",prompt= "\$|>|#",timeout= 10)
+            self.execute(cmd= "\n",prompt= "\$|>|#",timeout= 10)
             main.log.info("ssh "+self.vm_user_name+'@'+self.vm_ip_address)
             self.execute(cmd= "ssh "+self.vm_user_name+'@'+self.vm_ip_address,prompt= "(.*)",timeout= 10)
-            self.execute(cmd= "\r",prompt= "assword:",timeout= 10)
+            self.execute(cmd= "\n",prompt= "assword:",timeout= 10)
             self.execute(cmd = self.vm_pwd,prompt = "\$",timeout = 10)
             
             return self.handle

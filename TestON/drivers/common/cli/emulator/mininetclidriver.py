@@ -61,11 +61,11 @@ class MininetCliDriver(Emulator):
             main.log.info("Clearing any residual state or processes")
             self.handle.sendline("sudo mn -c")
 
-            i=self.handle.expect(['password\sfor\sadmin','Cleanup\scomplete',pexpect.EOF,pexpect.TIMEOUT],60)
+            i=self.handle.expect(['password\sfor\sadmin','Cleanup\scomplete',pexpect.EOF,pexpect.TIMEOUT],120)
             if i==0:
                 main.log.info("sending sudo password")
-                self.handle.sendline('onos_test')
-                i=self.handle.expect(['admin:','\$',pexpect.EOF,pexpect.TIMEOUT],60)
+                self.handle.sendline(pwd)
+                i=self.handle.expect(['admin:','\$',pexpect.EOF,pexpect.TIMEOUT],120)
             if i==1:
                 main.log.info("Clean")
 
@@ -77,7 +77,6 @@ class MininetCliDriver(Emulator):
             #cmdString = "sudo mn --topo "+self.options['topo']+","+self.options['topocount']+" --mac --switch "+self.options['switch']+" --controller "+self.options['controller']
             #cmdString = "sudo mn --custom ~/mininet/custom/topo-2sw-2host.py --controller remote --ip 192.168.56.102 --port 6633 --topo mytopo"
             main.log.info("building fresh mininet") 
-
             #### for reactive/PARP enabled tests
             cmdString = "sudo mn " + self.options['arg1'] + " " + self.options['arg2'] +  " --mac --controller " + self.options['controller']
             #### for proactive flow with static ARP entries
@@ -154,8 +153,9 @@ class MininetCliDriver(Emulator):
         
         args = utilities.parse_args(["SRC","TARGET"],**pingParams)
         #command = args["SRC"] + " ping -" + args["CONTROLLER"] + " " +args ["TARGET"]
-        command = args["SRC"] + " ping "+args ["TARGET"]+" -c 1 -i .2"
+        command = args["SRC"] + " ping "+args ["TARGET"]+" -c 1 -i 1"
         response = self.execute(cmd=command,prompt="mininet",timeout=10 )
+        main.log.info("Ping Response: "+ response )
         if utilities.assert_matches(expect=',\s0\%\spacket\sloss',actual=response,onpass="No Packet loss",onfail="Host is not reachable"):
             main.log.info("NO PACKET LOSS, HOST IS REACHABLE")
             main.last_result = main.TRUE 
@@ -164,7 +164,6 @@ class MininetCliDriver(Emulator):
             main.log.error("PACKET LOST, HOST IS NOT REACHABLE")
             main.last_result = main.FALSE
             return main.FALSE
-        
     
     def checkIP(self,host):
         '''
@@ -334,40 +333,29 @@ class MininetCliDriver(Emulator):
         main.log.info(self.execute(cmd=command,prompt="mininet>",timeout=10))
 
     def assign_sw_controller(self,**kwargs):
-        args = utilities.parse_args(["SW","IP1","PORT1","IP2","PORT2","IP3","PORT3","IP4","PORT4","IP5","PORT5","IP6","PORT6","IP7","PORT7","IP8","PORT8"],**kwargs)
+        '''
+        count is only needed if there is more than 1 controller
+        '''
+        args = utilities.parse_args(["COUNT"],**kwargs)
+        count = args["COUNT"] if args!={} else 1
+
+        argstring = "SW"
+        for j in range(count):
+            argstring = argstring + ",IP" + str(j+1) + ",PORT" + str(j+1)
+        args = utilities.parse_args(argstring.split(","),**kwargs)
+
         sw = args["SW"] if args["SW"] != None else ""
-        ip1 = args["IP1"] if args["IP1"] != None else ""
-        ip2 = args["IP2"] if args["IP2"] != None else ""
-        ip3 = args["IP3"] if args["IP3"] != None else ""
-        ip4 = args["IP4"] if args["IP4"] != None else ""
-        ip5 = args["IP5"] if args["IP5"] != None else ""
-        ip6 = args["IP6"] if args["IP6"] != None else ""
-        ip7 = args["IP7"] if args["IP7"] != None else ""
-        ip8 = args["IP8"] if args["IP8"] != None else ""
-       # master = args["MASTER"] if args["MASTER"] != None else ""
-        port1 = args["PORT1"] if args["PORT1"] != None else ""
-        port2 = args["PORT2"] if args["PORT2"] != None else ""
-        port3 = args["PORT3"] if args["PORT3"] != None else ""
-        port4 = args["PORT4"] if args["PORT4"] != None else ""
-        port5 = args["PORT5"] if args["PORT5"] != None else ""
-        port6 = args["PORT6"] if args["PORT6"] != None else ""
-        port7 = args["PORT7"] if args["PORT7"] != None else ""
-        port8 = args["PORT8"] if args["PORT8"] != None else ""
         ptcpA = int(args["PORT1"])+int(sw) if args["PORT1"] != None else ""
-        ptcpB = "ptcp:"+str(ptcpA) if ip1 != "" else ""
-        tcp1 = "tcp:"+str(ip1)+":"+str(port1) if ip1 != "" else ""
-        tcp2 = "tcp:"+str(ip2)+":"+str(port2) if ip2 != "" else ""
-        tcp3 = "tcp:"+str(ip3)+":"+str(port3) if ip3 != "" else ""
-        tcp4 = "tcp:"+str(ip4)+":"+str(port4) if ip4 != "" else ""
-        tcp5 = "tcp:"+str(ip5)+":"+str(port5) if ip5 != "" else ""
-        tcp6 = "tcp:"+str(ip6)+":"+str(port6) if ip6 != "" else ""
-        tcp7 = "tcp:"+str(ip7)+":"+str(port7) if ip7 != "" else ""
-        tcp8 = "tcp:"+str(ip8)+":"+str(port8) if ip8 != "" else ""
-       # master1 = tcp1+" role master " if args["MASTER"] == 1 else ""
-       # master2 = tcp2+" role master " if args["MASTER"] == 2 else ""
-       # master3 = tcp3+" role master " if args["MASTER"] == 3 else ""
-       # master4 = tcp4+" role master " if args["MASTER"] == 4 else ""
-        command = "sh ovs-vsctl set-controller s"+str(sw)+" "+ptcpB+" "+tcp1+" "+tcp2+" "+tcp3+" "+tcp4+" "+tcp5+" "+tcp6+" "+tcp7+" "+tcp8
+        ptcpB = "ptcp:"+str(ptcpA) if ptcpA != "" else ""
+        
+        command = "sh ovs-vsctl set-controller s" + str(sw) + " " + ptcpB + " "
+        for j in range(count):
+            i=j+1
+            args = utilities.parse_args(["IP"+str(i),"PORT"+str(i)],**kwargs)
+            ip = args["IP"+str(i)] if args["IP"+str(i)] != None else ""
+            port = args["PORT" + str(i)] if args["PORT" + str(i)] != None else ""
+            tcp = "tcp:" + str(ip) + ":" + str(port) + " " if ip != "" else ""
+            command = command + tcp
         self.execute(cmd=command,prompt="mininet>",timeout=5)
 
     def disconnect(self):

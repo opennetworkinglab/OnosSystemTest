@@ -10,6 +10,14 @@ class OnosSanity8nodes :
     def CASE1(self,main) :  #Check to be sure ZK, Cass, and ONOS are up, then get ONOS version
         main.log.report("Startup check Zookeeper1, Cassandra1, and ONOS1 connections")
         import time
+        main.Zookeeper1.start()
+        main.Zookeeper2.start()
+        main.Zookeeper3.start()
+        main.Zookeeper4.start()
+        main.Zookeeper5.start()
+        main.Zookeeper6.start()
+        main.Zookeeper7.start()
+        main.Zookeeper8.start()
         main.case("Checking if the startup was clean...") 
         main.step("Testing startup Zookeeper")   
         data =  main.Zookeeper1.isup()
@@ -52,25 +60,25 @@ class OnosSanity8nodes :
                 j=i+1
                 main.Mininet1.assign_sw_controller(sw="s"+str(j),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'])
                 time.sleep(1)
-                main.Mininet1.assign_sw_controller(sw="s"+str(j),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'],ip5=main.params['CTRL']['ip5'],port5=main.params['CTRL']['port5'],ip6=main.params['CTRL']['ip6'],port6=main.params['CTRL']['port6'],ip7=main.params['CTRL']['ip7'],port7=main.params['CTRL']['port7'],ip8=main.params['CTRL']['ip8'],port8=main.params['CTRL']['port8'])
+                main.Mininet1.assign_sw_controller(sw="s"+str(j),count=8,ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'],ip5=main.params['CTRL']['ip5'],port5=main.params['CTRL']['port5'],ip6=main.params['CTRL']['ip6'],port6=main.params['CTRL']['port6'],ip7=main.params['CTRL']['ip7'],port7=main.params['CTRL']['port7'],ip8=main.params['CTRL']['ip8'],port8=main.params['CTRL']['port8'])
                 time.sleep(1)
             elif i >= 3 and i < 5:
                 j=i+1
                 main.Mininet1.assign_sw_controller(sw="s"+str(j),ip1=main.params['CTRL']['ip2'],port1=main.params['CTRL']['port2'])
                 time.sleep(1)
-                main.Mininet1.assign_sw_controller(sw="s"+str(j),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'],ip5=main.params['CTRL']['ip5'],port5=main.params['CTRL']['port5'],ip6=main.params['CTRL']['ip6'],port6=main.params['CTRL']['port6'],ip7=main.params['CTRL']['ip7'],port7=main.params['CTRL']['port7'],ip8=main.params['CTRL']['ip8'],port8=main.params['CTRL']['port8'])
+                main.Mininet1.assign_sw_controller(sw="s"+str(j),count=8,ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'],ip5=main.params['CTRL']['ip5'],port5=main.params['CTRL']['port5'],ip6=main.params['CTRL']['ip6'],port6=main.params['CTRL']['port6'],ip7=main.params['CTRL']['ip7'],port7=main.params['CTRL']['port7'],ip8=main.params['CTRL']['ip8'],port8=main.params['CTRL']['port8'])
                 time.sleep(1)
             elif i >= 5 and i < 15:
                 j=i+1
                 main.Mininet1.assign_sw_controller(sw="s"+str(j),ip1=main.params['CTRL']['ip3'],port1=main.params['CTRL']['port3'])
                 time.sleep(1)
-                main.Mininet1.assign_sw_controller(sw="s"+str(j),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'],ip5=main.params['CTRL']['ip5'],port5=main.params['CTRL']['port5'],ip6=main.params['CTRL']['ip6'],port6=main.params['CTRL']['port6'],ip7=main.params['CTRL']['ip7'],port7=main.params['CTRL']['port7'],ip8=main.params['CTRL']['ip8'],port8=main.params['CTRL']['port8'])
+                main.Mininet1.assign_sw_controller(sw="s"+str(j),count=8,ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'],ip5=main.params['CTRL']['ip5'],port5=main.params['CTRL']['port5'],ip6=main.params['CTRL']['ip6'],port6=main.params['CTRL']['port6'],ip7=main.params['CTRL']['ip7'],port7=main.params['CTRL']['port7'],ip8=main.params['CTRL']['ip8'],port8=main.params['CTRL']['port8'])
                 time.sleep(1)
             else:
                 j=i+16
                 main.Mininet1.assign_sw_controller(sw="s"+str(j),ip1=main.params['CTRL']['ip4'],port1=main.params['CTRL']['port4'])
                 time.sleep(1)
-                main.Mininet1.assign_sw_controller(sw="s"+str(j),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'],ip5=main.params['CTRL']['ip5'],port5=main.params['CTRL']['port5'],ip6=main.params['CTRL']['ip6'],port6=main.params['CTRL']['port6'],ip7=main.params['CTRL']['ip7'],port7=main.params['CTRL']['port7'],ip8=main.params['CTRL']['ip8'],port8=main.params['CTRL']['port8'])
+                main.Mininet1.assign_sw_controller(sw="s"+str(j),count=8,ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'],ip5=main.params['CTRL']['ip5'],port5=main.params['CTRL']['port5'],ip6=main.params['CTRL']['ip6'],port6=main.params['CTRL']['port6'],ip7=main.params['CTRL']['ip7'],port7=main.params['CTRL']['port7'],ip8=main.params['CTRL']['ip8'],port8=main.params['CTRL']['port8'])
                 time.sleep(1)
         main.Mininet1.get_sw_controller("s1")       
  
@@ -165,11 +173,11 @@ class OnosSanity8nodes :
         for i in range(25):
             if i < 15:
                 j=i+1
-                main.Mininet1.assign_sw_controller(sw="s"+str(j),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'],ip5=main.params['CTRL']['ip5'],port5=main.params['CTRL']['port5'],ip6=main.params['CTRL']['ip6'],port6=main.params['CTRL']['port6'],ip7=main.params['CTRL']['ip7'],port7=main.params['CTRL']['port7'],ip8=main.params['CTRL']['ip8'],port8=main.params['CTRL']['port8'])
+                main.Mininet1.assign_sw_controller(sw="s"+str(j),count=8,ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'],ip5=main.params['CTRL']['ip5'],port5=main.params['CTRL']['port5'],ip6=main.params['CTRL']['ip6'],port6=main.params['CTRL']['port6'],ip7=main.params['CTRL']['ip7'],port7=main.params['CTRL']['port7'],ip8=main.params['CTRL']['ip8'],port8=main.params['CTRL']['port8'])
                 time.sleep(1)
             else:
                 j=i+16
-                main.Mininet1.assign_sw_controller(sw="s"+str(j),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'],ip5=main.params['CTRL']['ip5'],port5=main.params['CTRL']['port5'],ip6=main.params['CTRL']['ip6'],port6=main.params['CTRL']['port6'],ip7=main.params['CTRL']['ip7'],port7=main.params['CTRL']['port7'],ip8=main.params['CTRL']['ip8'],port8=main.params['CTRL']['port8'])
+                main.Mininet1.assign_sw_controller(sw="s"+str(j),count=8,ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'],ip5=main.params['CTRL']['ip5'],port5=main.params['CTRL']['port5'],ip6=main.params['CTRL']['ip6'],port6=main.params['CTRL']['port6'],ip7=main.params['CTRL']['ip7'],port7=main.params['CTRL']['port7'],ip8=main.params['CTRL']['ip8'],port8=main.params['CTRL']['port8'])
                 time.sleep(1)
         strtTime = time.time()
         count = 1

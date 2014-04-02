@@ -9,6 +9,10 @@ class OnosSanity4nodes :
 #Tests the startup of Zookeeper1, Cassandra1, and ONOS1 to be certain that all started up successfully
     def CASE1(self,main) :  #Check to be sure ZK, Cass, and ONOS are up, then get ONOS version
         import time
+        main.Zookeeper1.start()
+        main.Zookeeper2.start()
+        main.Zookeeper3.start()
+        main.Zookeeper4.start()
         main.log.report("Pulling latest code from github to all nodes")
         main.ONOS1.git_pull()
         main.ONOS2.git_pull()
@@ -87,22 +91,22 @@ class OnosSanity4nodes :
                 j=i+1
                 main.Mininet1.assign_sw_controller(sw=str(j),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'])
                 time.sleep(1)
-                main.Mininet1.assign_sw_controller(sw=str(j),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'])
+                main.Mininet1.assign_sw_controller(sw=str(j),count=4,ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'])
             elif i >= 3 and i < 5:
                 j=i+1
                 main.Mininet1.assign_sw_controller(sw=str(j),ip1=main.params['CTRL']['ip2'],port1=main.params['CTRL']['port2'])
                 time.sleep(1)
-                main.Mininet1.assign_sw_controller(sw=str(j),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'])
+                main.Mininet1.assign_sw_controller(sw=str(j),count=4,ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'])
             elif i >= 5 and i < 15:
                 j=i+1
                 main.Mininet1.assign_sw_controller(sw=str(j),ip1=main.params['CTRL']['ip3'],port1=main.params['CTRL']['port3'])
                 time.sleep(1)
-                main.Mininet1.assign_sw_controller(sw=str(j),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'])
+                main.Mininet1.assign_sw_controller(sw=str(j),count=4,ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'])
             else:
                 j=i+16
                 main.Mininet1.assign_sw_controller(sw=str(j),ip1=main.params['CTRL']['ip4'],port1=main.params['CTRL']['port4'])
                 time.sleep(1)
-                main.Mininet1.assign_sw_controller(sw=str(j),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'])
+                main.Mininet1.assign_sw_controller(sw=str(j),count=4,ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'])
         main.Mininet1.get_sw_controller("s1")       
  
 # **********************************************************************************************************************************************************************************************
@@ -206,10 +210,10 @@ class OnosSanity4nodes :
         for i in range(25):
             if i < 15:
                 j=i+1
-                main.Mininet1.assign_sw_controller(sw=str(j),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'])
+                main.Mininet1.assign_sw_controller(sw=str(j),count=4,ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'])
             else:
                 j=i+16
-                main.Mininet1.assign_sw_controller(sw=str(j),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'])
+                main.Mininet1.assign_sw_controller(sw=str(j),count=4,ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'])
       
         strtTime = time.time() 
         result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
@@ -337,7 +341,6 @@ class OnosSanity4nodes :
 
     def CASE21(self,main) :
         import json
-        from drivers.common.api.onosrestapidriver import *
         main.log.report("Test device discovery function, by attach, detach, move host h1 from s1->s6->s1. Per mininet naming, switch port the host attaches will remain as 's1-eth1' throughout the test.")
         main.log.report("Check initially hostMAC/IP exist on the mininet...")
         host = main.params['YANK']['hostname']
@@ -356,8 +359,7 @@ class OnosSanity4nodes :
         main.log.info("\n\t\t\t\t ping issue one ping from" + str(host) + "to generate arp to switch. Ping result is not important" )
         ping = main.Mininet1.pingHost(src = str(host),target = "10.0.0.254")
         time.sleep(t_restwait)
-        restcall = OnosRestApiDriver()
-        Reststatus, Switch, Port, MAC = restcall.find_host(RestIP1,RestPort,url, hostip)
+        Reststatus, Switch, Port, MAC = main.ONOS1.find_host(RestIP1,RestPort,url, hostip)
         main.log.report("Number of host with IP=10.0.0.1 found by ONOS is: " + str(Reststatus))
         if Reststatus == 1:
             main.log.report("\t PASSED - Found host IP = " + hostip + "; MAC = " + "".join(MAC) + "; attached to switchDPID = " + "".join(Switch) + "; at port = " + "".join(Port))
@@ -376,7 +378,7 @@ class OnosSanity4nodes :
         ##### Step to yank out "s1-eth1" from s1, which is on autoONOS1 #####
 
         main.log.report("Yank out s1-eth1")
-        main.case("Yankout s6-eth1 (link to h1) from s1")
+        main.step("Yankout s6-eth1 (link to h1) from s1")
         result = main.Mininet1.yank(SW=main.params['YANK']['sw1'],INTF=main.params['YANK']['intf'])
         time.sleep(t_topowait)
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Yank command suceeded",onfail="Yank command failed...")
@@ -384,8 +386,7 @@ class OnosSanity4nodes :
         main.log.info("\n\t\t\t\t ping issue one ping from" + str(host) + "to generate arp to switch. Ping result is not important" )
         ping = main.Mininet1.pingHost(src = str(host),target = "10.0.0.254")
         time.sleep(t_restwait)
-        restcall = OnosRestApiDriver()
-        Reststatus, Switch, Port, MAC = restcall.find_host(RestIP1,RestPort,url, hostip)
+        Reststatus, Switch, Port, MAC = main.ONOS1.find_host(RestIP1,RestPort,url, hostip)
 
         main.log.report("Number of host with IP=10.0.0.1 found by ONOS is: " + str(Reststatus))
         if Reststatus == 1:
@@ -403,7 +404,7 @@ class OnosSanity4nodes :
          
         ##### Step to plug "s1-eth1" to s6, which is on autoONOS3  ######
         main.log.report("Plug s1-eth1 into s6")
-        main.case("Plug s1-eth1 to s6")
+        main.step("Plug s1-eth1 to s6")
         result = main.Mininet1.plug(SW=main.params['PLUG']['sw6'],INTF=main.params['PLUG']['intf'])
         time.sleep(t_topowait)
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Plug command suceeded",onfail="Plug command failed...")
@@ -411,8 +412,7 @@ class OnosSanity4nodes :
 
         ping = main.Mininet1.pingHost(src = str(host),target = "10.0.0.254")
         time.sleep(t_restwait)
-        restcall = OnosRestApiDriver()
-        Reststatus, Switch, Port, MAC = restcall.find_host(RestIP1,RestPort,url, hostip)
+        Reststatus, Switch, Port, MAC = main.ONOS1.find_host(RestIP1,RestPort,url, hostip)
 
         main.log.report("Number of host with IP=10.0.0.1 found by ONOS is: " + str(Reststatus))
         if Reststatus == 1:
@@ -430,17 +430,16 @@ class OnosSanity4nodes :
 
         ###### Step to put interface "s1-eth1" back to s1"#####
         main.log.report("Move s1-eth1 back on to s1")
-        main.case("Move s1-eth1 back to s1")
+        main.step("Move s1-eth1 back to s1")
         result = main.Mininet1.yank(SW=main.params['YANK']['sw6'],INTF=main.params['YANK']['intf'])
         time.sleep(t_topowait)
-        retult = main.Mininet1.plug(SW=main.params['PLUG']['sw1'],INTF=main.params['PLUG']['intf'])
+        result = main.Mininet1.plug(SW=main.params['PLUG']['sw1'],INTF=main.params['PLUG']['intf'])
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Yank/Plug command suceeded",onfail="Yank/Plug command failed...")
         main.log.info("\n\t\t\t\t ping issue one ping from" + str(host) + "to generate arp to switch. Ping result is not important" )
 
         ping = main.Mininet1.pingHost(src = str(host),target = "10.0.0.254")
         time.sleep(t_restwait)
-        restcall = OnosRestApiDriver()
-        Reststatus, Switch, Port, MAC = restcall.find_host(RestIP1,RestPort,url, hostip)
+        Reststatus, Switch, Port, MAC = main.ONOS1.find_host(RestIP1,RestPort,url, hostip)
 
         main.log.report("Number of host with IP=10.0.0.1 found by ONOS is: " + str(Reststatus))
         if Reststatus == 1:

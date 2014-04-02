@@ -58,8 +58,8 @@ class CassandraCliDriver(CLI):
             #self.start()
             return main.TRUE
         else :
-            main.log.error("Connection failed to the host "+self.user_name+"@"+self.ip_address) 
-            main.log.error("Failed to connect to the Onos system")
+            main.log.error(self.name + ": Connection failed to the host "+self.user_name+"@"+self.ip_address) 
+            main.log.error(self.name + ": Failed to connect to the Onos system")
             return main.FALSE
    
  
@@ -67,7 +67,7 @@ class CassandraCliDriver(CLI):
         '''
         This Function will start the Cassandra
         '''
-        main.log.info( "Starting Cassandra" )
+        main.log.info(self.name + ": Starting Cassandra" )
         self.handle.sendline("")
         self.handle.expect("\$")
         self.handle.sendline("~/ONOS/start-cassandra.sh start")
@@ -76,10 +76,10 @@ class CassandraCliDriver(CLI):
         response = self.handle.before + self.handle.after
         time.sleep(5)
         if re.search("Starting\scassandra(.*)", response):
-            main.log.info("Cassandra Started ")
+            main.log.info(self.name + ": Cassandra Started ")
             return main.TRUE
         else:
-            main.log.error("Failed to start Cassandra"+ response)
+            main.log.error(self.name + ": Failed to start Cassandra"+ response)
             return main.FALSE
         
     def status(self):
@@ -87,33 +87,40 @@ class CassandraCliDriver(CLI):
         This Function will return the Status of the Cassandra
         '''
         time.sleep(5)
-        self.execute(cmd="\r",prompt="\$",timeout=10)
+        self.execute(cmd="\n",prompt="\$",timeout=10)
         response = self.execute(cmd="~/ONOS/start-cassandra.sh status ",prompt="\d+\sinstance\sof\scassandra\srunning(.*)",timeout=10)
         
 
-        self.execute(cmd="\r",prompt="\$",timeout=10)
-        return response
+        #self.execute(cmd="\n",prompt="\$",timeout=10)
+        #return response
         
-        if re.search("0\sinstance\sof\scassandra\srunning(.*)") :
-            main.log.info("Cassandra not running")
+        if re.search("0\sinstance\sof\scassandra\srunning(.*)",response) :
+            main.log.info(self.name + ": Cassandra not running")
+            return main.FALSE
+        elif re.search("1\sinstance\sof\scassandra\srunning(.*)",response):
+            main.log.warn(self.name + ": Cassandra Running")
             return main.TRUE
-        elif re.search("1\sinstance\sof\scassandra\srunning(.*)"):
-            main.log.warn("Cassandra Running")
+        elif re.search("\sinstance\sof\scassandra\srunning(.*)",response):
+            main.log.warn(self.name + ": Multiple instances of Cassandra Running on the same machine!")
+            #Known bug: Once ONOS starts the script shows 2 instances
             return main.TRUE
+	else: 
+	    main.log.warn(self.name + ": Cannot determine cassandra status")
+	    return main.False
             
     def stop(self):
         '''
         This Function will stop the Cassandra if it is Running
         ''' 
-        self.execute(cmd="\r",prompt="\$",timeout=10)
+        self.execute(cmd="\n",prompt="\$",timeout=10)
         time.sleep(5)
         response = self.execute(cmd="~/ONOS/start-cassandra.sh stop ",prompt="Killed\sexisting\sprosess(.*)",timeout=10)
-        self.execute(cmd="\r",prompt="\$",timeout=10)
+        self.execute(cmd="\n",prompt="\$",timeout=10)
         if re.search("Killed\sexisting\sprosess(.*)",response):
-            main.log.info("Cassandra Stopped")
+            main.log.info(self.name + ": Cassandra Stopped")
             return main.TRUE
         else:
-            main.log.warn("Cassndra is not Running")
+            main.log.warn(self.name + ": Cassndra is not Running")
             return main.FALSE
             
     def disconnect(self):
@@ -125,7 +132,7 @@ class CassandraCliDriver(CLI):
             self.handle.sendline("exit")
             self.handle.expect("closed")
         else :
-            main.log.error("Connection failed to the host")
+            main.log.error(self.name + ": Connection failed to the host")
             response = main.FALSE
         return response 
 
@@ -136,16 +143,17 @@ class CassandraCliDriver(CLI):
         returns TRUE if it sees four occurances of both Up, and Normal 
         '''
         tries = 5
-        main.log.info("trying %i times" % tries )
+        main.log.info(self.name + ": trying %i times" % tries )
         for i in range(tries):
-            self.execute(cmd="\r",prompt="\$",timeout=10)
+            self.execute(cmd="\n",prompt="\$",timeout=10)
             self.handle.sendline("")
             self.handle.expect("\$") 
             self.handle.sendline("~/ONOS/start-cassandra.sh status")
             self.handle.expect("sh status") 
             self.handle.expect("\$") 
             result = self.handle.before + self.handle.after 
-            pattern = '(.*)Up(.*)Normal(.*)\n(.*)Up(.*)Normal(.*)\n(.*)Up(.*)Normal(.*)\n(.*)Up(.*)Normal(.*)'
+            #pattern = '(.*)Up(.*)Normal(.*)\n(.*)Up(.*)Normal(.*)\n(.*)Up(.*)Normal(.*)\n(.*)Up(.*)Normal(.*)'
+	    pattern = '(' + self.ip_address.replace('.', '\\.') + '.*)Up(.*)Normal(.*)'
             if re.search(pattern, result): 
                 return main.TRUE
         return main.FALSE

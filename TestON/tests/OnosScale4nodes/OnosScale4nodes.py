@@ -12,6 +12,10 @@ class OnosScale4nodes:
         The test will only pass if ONOS is running properly, and has a full view of all topology elements.
         '''
         import time
+        main.Zookeeper1.start()
+        main.Zookeeper2.start()
+        main.Zookeeper3.start()
+        main.Zookeeper4.start()
         main.ONOS1.stop()
         main.ONOS2.stop()
         main.ONOS3.stop()

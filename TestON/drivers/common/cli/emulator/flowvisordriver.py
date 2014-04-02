@@ -91,7 +91,7 @@ class FlowVisorDriver(Emulator):
         else :
             self.execute(cmd="clear",prompt="\$",timeout=10)
             self.execute(cmd="./fvctl.sh removeFlowSpace "+id,prompt="passwd:",timeout=10)
-            self.execute(cmd="\r",prompt="\$",timeout=10)
+            self.execute(cmd="\n",prompt="\$",timeout=10)
             main.log.info("Removed flowSpace which is having id :"+id)
             
         return main.TRUE
@@ -129,7 +129,7 @@ class FlowVisorDriver(Emulator):
 
         #self.execute(cmd="clear",prompt="\$",timeout=10)
         self.execute(cmd="./fvctl.sh addFlowSpace "+flowspace,prompt="passwd:",timeout=10)
-        self.execute(cmd="\r",prompt="\$",timeout=10)
+        self.execute(cmd="\n",prompt="\$",timeout=10)
         sucess_match = re.search("success\:\s+(\d+)", main.last_response)
         if sucess_match :
             main.log.info("Added flow Space and id is "+sucess_match.group(1))
@@ -142,7 +142,7 @@ class FlowVisorDriver(Emulator):
     def listFlowSpace(self):
         self.execute(cmd="clear",prompt="\$",timeout=10)
         self.execute(cmd="./fvctl.sh listFlowSpace ",prompt="passwd:",timeout=10)
-        self.execute(cmd="\r",prompt="\$",timeout=10)
+        self.execute(cmd="\n",prompt="\$",timeout=10)
         flow_space = main.last_response
         flow_space = self.remove_contol_chars( flow_space)
         flow_space = re.sub("rule\s(\d+)\:", "\nrule "+r'\1'+":",flow_space)
@@ -153,7 +153,7 @@ class FlowVisorDriver(Emulator):
     def listDevices(self):
         #self.execute(cmd="clear",prompt="\$",timeout=10)
         #self.execute(cmd="./fvctl.sh listDevices ",prompt="passwd:",timeout=10)
-        #self.execute(cmd="\r",prompt="\$",timeout=10)
+        #self.execute(cmd="\n",prompt="\$",timeout=10)
         devices_list = ''
         last_response = re.findall("(Device\s\d+\:\s((\d|[a-z])(\d|[a-z])\:)+(\d|[a-z])(\d|[a-z]))", main.last_response)
         

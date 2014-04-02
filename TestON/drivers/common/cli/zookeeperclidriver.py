@@ -49,17 +49,21 @@ class ZookeeperCliDriver(CLI):
         self.port = None
         for key in connectargs:
             vars(self)[key] = connectargs[key]       
+        self.home = "~/zookeeper-3.4.5"
+        for key in self.options:
+            if key == "home":
+                self.home = self.options['home']
+                break
         
         self.name = self.options['name']
-        self.handle = super(ZookeeperCliDriver, self).connect(user_name = self.user_name, ip_address = self.ip_address,port = self.port, pwd = self.pwd)
+        self.handle = super(ZookeeperCliDriver, self).connect(user_name = self.user_name, ip_address = self.ip_address,port = self.port, pwd = self.pwd, home = self.home)
         
         self.ssh_handle = self.handle
         if self.handle :
-            self.start()
             return main.TRUE
         else :
             main.log.error("Connection failed to the host "+self.user_name+"@"+self.ip_address) 
-            main.log.error("Failed to connect to the Onos system")
+            main.log.error(self.name + ": Failed to connect to Zookeeper")
             return main.FALSE
    
  
@@ -67,20 +71,21 @@ class ZookeeperCliDriver(CLI):
         '''
         This Function will start the Zookeeper
         '''
-        main.log.info( "Starting Zookeeper" )
+        main.log.info(self.name + ": Starting Zookeeper" )
         self.handle.sendline("")
         self.handle.expect("\$")
-        self.handle.sendline("~/zookeeper-3.4.5/bin/zkServer.sh start")
+        self.handle.sendline(self.home + "/bin/zkServer.sh start")
         self.handle.expect("zkServer.sh start") 
         self.handle.expect("\$")
         response = self.handle.before + self.handle.after 
         if re.search("STARTED", response):
-            main.log.info("Zookeeper Started ")
+            main.log.info(self.name + ": Zookeeper Started ")
             return main.TRUE
         elif re.search("running", response):
-            main.log.warn("zookeeper ... already running")
+            main.log.warn(self.name +": zookeeper ... already running")
+            return main.TRUE
         else:
-            main.log.error("Failed to start Zookeeper"+ response)
+            main.log.error(self.name + ": Failed to start Zookeeper"+ response)
             return main.FALSE
         
     def status(self):
@@ -88,25 +93,25 @@ class ZookeeperCliDriver(CLI):
         This Function will return the Status of the Zookeeper 
         '''
         time.sleep(5)
-        self.execute(cmd="\r",prompt="\$",timeout=10)
-        response = self.execute(cmd="~/zookeeper-3.4.5/bin/zkServer.sh status ",prompt="JMX",timeout=10)
-        
-        self.execute(cmd="\r",prompt="\$",timeout=10)
+        self.execute(cmd="\n",prompt="\$",timeout=10)
+        response = self.execute(cmd=self.home + "/bin/zkServer.sh status ",prompt="JMX",timeout=10)
+       
+        self.execute(cmd="\n",prompt="\$",timeout=10)
         return response
         
     def stop(self):
         '''
         This Function will stop the Zookeeper if it is Running
         ''' 
-        self.execute(cmd="\r",prompt="\$",timeout=10)
+        self.execute(cmd="\n",prompt="\$",timeout=10)
         time.sleep(5)
-        response = self.execute(cmd="~/zookeeper-3.4.5/bin/zkServer.sh stop ",prompt="STOPPED",timeout=10)
-        self.execute(cmd="\r",prompt="\$",timeout=10)
+        response = self.execute(cmd=self.home + "/bin/zkServer.sh stop ",prompt="STOPPED",timeout=10)
+        self.execute(cmd="\n",prompt="\$",timeout=10)
         if re.search("STOPPED",response):
-            main.log.info("Zookeeper Stopped")
+            main.log.info(self.name + ": Zookeeper Stopped")
             return main.TRUE
         else:
-            main.log.warn("No zookeeper to stop")
+            main.log.warn(self.name + ": No zookeeper to stop")
             return main.FALSE
             
     def disconnect(self):
@@ -118,7 +123,7 @@ class ZookeeperCliDriver(CLI):
             self.handle.sendline("exit")
             self.handle.expect("closed")
         else :
-            main.log.error("Connection failed to the host")
+            main.log.error(self.name + ": Connection failed to the host")
             response = main.FALSE
         return response 
 
@@ -127,11 +132,13 @@ class ZookeeperCliDriver(CLI):
         Calls the zookeeper status and returns TRUE if it has an assigned Mode to it. 
         '''
         self.execute(cmd="\n",prompt="\$",timeout=10)
-        response = self.execute(cmd="~/zookeeper-3.4.5/bin/zkServer.sh status ",prompt="Mode",timeout=10)
+        response = self.execute(cmd=self.home + "/bin/zkServer.sh status ",prompt="Mode",timeout=10)
         pattern = '(.*)Mode(.*)'
-        if re.search(pattern, response):  
+        if re.search(pattern, response): 
+	    main.log.info(self.name + ": Zookeeper is up.") 
             return main.TRUE
         else:
+	    main.log.info(self.name + ": Zookeeper is down.") 
             return main.FALSE
 
 

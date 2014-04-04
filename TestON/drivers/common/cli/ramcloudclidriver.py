@@ -49,9 +49,15 @@ RamCloudCliDriver is the basic driver which will handle the RamCloud server func
         self.port = None
         for key in connectargs:
             vars(self)[key] = connectargs[key]       
+        self.home = "~/ONOS"
+        for key in self.options:
+           if key == "ONOShome":
+               self.home = self.options['ONOShome']
+               break
+
         
         self.name = self.options['name']
-        self.handle = super(RamCloudCliDriver, self).connect(user_name = self.user_name, ip_address = self.ip_address,port = self.port, pwd = self.pwd)
+        self.handle = super(RamCloudCliDriver, self).connect(user_name = self.user_name, ip_address = self.ip_address,port = self.port, pwd = self.pwd, home = self.home)
         
         self.ssh_handle = self.handle
         if self.handle :
@@ -90,7 +96,7 @@ RamCloudCliDriver is the basic driver which will handle the RamCloud server func
         main.log.info( "Starting RAMCloud Coordinator" )
         self.handle.sendline("")
         self.handle.expect("\$")
-        self.handle.sendline("~/ONOS/onos.sh rc-coord start")
+        self.handle.sendline(self.home + "/onos.sh rc-coord start")
         self.handle.expect("onos.sh rc-coord start")
         self.handle.expect("\$")
         response = self.handle.before + self.handle.after
@@ -108,7 +114,7 @@ RamCloudCliDriver is the basic driver which will handle the RamCloud server func
         '''
         time.sleep(5)
         self.execute(cmd="\n",prompt="\$",timeout=10)
-        response = self.execute(cmd="~/ONOS/onos.sh rc-server status ",prompt="\d+\sramcloud\sserver\srunning(.*)",timeout=10)
+        response = self.execute(cmd=self.home + "/onos.sh rc-server status ",prompt="\d+\sramcloud\sserver\srunning(.*)",timeout=10)
         
 
         self.execute(cmd="\n",prompt="\$",timeout=10)
@@ -127,7 +133,7 @@ RamCloudCliDriver is the basic driver which will handle the RamCloud server func
         '''
         time.sleep(5)
         self.execute(cmd="\n",prompt="\$",timeout=10)
-        response = self.execute(cmd="~/ONOS/onos.sh rc-coord status ",prompt="\d+\sramcloud\scoordinator\sis\srunning(.*)",timeout=10)
+        response = self.execute(cmd=self.home + "/onos.sh rc-coord status ",prompt="\d+\sramcloud\scoordinator\sis\srunning(.*)",timeout=10)
         
 
         self.execute(cmd="\n",prompt="\$",timeout=10)
@@ -146,7 +152,7 @@ RamCloudCliDriver is the basic driver which will handle the RamCloud server func
         ''' 
         self.execute(cmd="\n",prompt="\$",timeout=10)
         time.sleep(5)
-        response = self.execute(cmd="~/ONOS/onos.sh rc-server stop ",prompt="Killed\sexisting\sprosess(.*)",timeout=10)
+        response = self.execute(cmd=slef.home + "/onos.sh rc-server stop ",prompt="Killed\sexisting\sprosess(.*)",timeout=10)
         self.execute(cmd="\n",prompt="\$",timeout=10)
         if re.search("Killed\sexisting\sprosess(.*)",response):
             main.log.info("RAMCloud Server Stopped")
@@ -162,7 +168,7 @@ RamCloudCliDriver is the basic driver which will handle the RamCloud server func
         ''' 
         self.execute(cmd="\n",prompt="\$",timeout=10)
         time.sleep(5)
-        response = self.execute(cmd="~/ONOS/onos.sh rc-coord stop ",prompt="Killed\sexisting\sprosess(.*)",timeout=10)
+        response = self.execute(cmd=self.home + "/onos.sh rc-coord stop ",prompt="Killed\sexisting\sprosess(.*)",timeout=10)
         self.execute(cmd="\n",prompt="\$",timeout=10)
         if re.search("Killed\sexisting\sprosess(.*)",response):
             main.log.info("RAMCloud Coordinator Stopped")
@@ -195,7 +201,7 @@ RamCloudCliDriver is the basic driver which will handle the RamCloud server func
             self.execute(cmd="\n",prompt="\$",timeout=10)
             self.handle.sendline("")
             self.handle.expect("\$") 
-            self.handle.sendline("~/ONOS/onos.sh rc-server status")
+            self.handle.sendline(self.home + "/onos.sh rc-server status")
             data = self.handle.expect(['1 RAMCloud server running','0 RAMCloud server running',pexpect.TIMEOUT],timeout=30)
             if data==0:
                 main.log.report("RAMCloud Up and Running!")

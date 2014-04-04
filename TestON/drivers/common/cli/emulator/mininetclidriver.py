@@ -225,8 +225,8 @@ class MininetCliDriver(Emulator):
         
     def dump(self):
         main.log.info("Dump node info")
-        self.execute(cmd = 'dump',prompt = 'mininet>',timeout = 10)
-        return main.TRUE
+        response = self.execute(cmd = 'dump',prompt = 'mininet>',timeout = 10)
+        return response
             
     def intfs(self):
         main.log.info("List interfaces")

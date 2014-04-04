@@ -61,11 +61,11 @@ class MininetCliDriver(Emulator):
             main.log.info("Clearing any residual state or processes")
             self.handle.sendline("sudo mn -c")
 
-            i=self.handle.expect(['password\sfor\sadmin','Cleanup\scomplete',pexpect.EOF,pexpect.TIMEOUT],120)
+            i=self.handle.expect(['password\sfor\s','Cleanup\scomplete',pexpect.EOF,pexpect.TIMEOUT],120)
             if i==0:
                 main.log.info("sending sudo password")
-                self.handle.sendline(pwd)
-                i=self.handle.expect(['admin:','\$',pexpect.EOF,pexpect.TIMEOUT],120)
+                self.handle.sendline(self.pwd)
+                i=self.handle.expect(['%s:'%(self.user),'\$',pexpect.EOF,pexpect.TIMEOUT],120) 
             if i==1:
                 main.log.info("Clean")
 

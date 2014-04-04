@@ -72,9 +72,9 @@ class OnosCliDriver(CLI):
         try: 
             self.handle.sendline("")
             self.handle.expect("\$")
-            self.handle.sendline(self.home + "/start-onos.sh start")
-            self.handle.expect("onos.sh start")
-            i=self.handle.expect(["Starting\sONOS\scontroller","Cassandra\sis\snot\srunning"])
+            self.handle.sendline(self.home + "/onos.sh core start")
+            self.handle.expect("onos.sh core start")
+            i=self.handle.expect(["STARTED","FAILED"]) 
             if i==0:
                 try:
                     self.handle.expect("\$", timeout=60)
@@ -84,7 +84,7 @@ class OnosCliDriver(CLI):
                     return main.FALSE
                 return main.TRUE
             elif i==1:
-                main.log.error(self.name + ": ONOS didn't start because cassandra wasn't running.")
+                main.log.error(self.name + ": ONOS Failed ")
                 return main.FALSE
                 raise
             main.log.error(self.name + ": ONOS expect script missed something... ") 
@@ -96,28 +96,6 @@ class OnosCliDriver(CLI):
             main.cleanup()
             main.exit()
  
-    def start_embedded(self):
-        '''
-        Starts ONOS on remote machine with cassandra embedded.
-        Returns false if any errors were encountered.
-        '''
-        try:
-            self.handle.sendline("")
-            self.handle.expect("\$")
-            self.handle.sendline("~/ONOS/start-onos-embedded.sh start")
-            try:
-                self.handle.expect("start...")
-                main.log.info(self.name + ": Embedded ONOS started")
-            except:
-                main.log.info(self.name + ": Embedded ONOS failed to start")
-                return main.FALSE
-        except:
-            main.log.info(self.name + ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
-            main.log.error( traceback.print_exc() )
-            main.log.info(":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
-            main.cleanup()
-            main.exit()
-
     def start_rest(self):
         '''
         Starts the rest server on ONOS.
@@ -140,11 +118,11 @@ class OnosCliDriver(CLI):
     
     def status(self):
         '''
-        Called start-onos.sh status and returns TRUE/FALSE accordingly 
+        Called onos.sh core status and returns TRUE/FALSE accordingly 
         '''
         try:
             self.execute(cmd="\n",prompt="\$",timeout=10)
-            response = self.execute(cmd= self.home + "/start-onos.sh status ",prompt="\d+\sinstance\sof\sonos\srunning",timeout=10)
+            response = self.execute(cmd= self.home + "/onos.sh core status ",prompt="\d+\sinstance\sof\sonos\srunning",timeout=10)
             self.execute(cmd="\n",prompt="\$",timeout=10)
             if re.search("1\sinstance\sof\sonos\srunning",response):
                 return main.TRUE
@@ -171,7 +149,7 @@ class OnosCliDriver(CLI):
         '''
         try:
             self.execute(cmd="\n",prompt="\$",timeout=10)
-            response = self.execute(cmd= self.home + "/start-onos.sh status ",prompt="running",timeout=10)
+            response = self.execute(cmd= self.home + "/onos.sh core status ",prompt="running",timeout=10)
             self.execute(cmd="\n",prompt="\$",timeout=10)
             tail1 = self.execute(cmd="tail " + self.home + "/onos-logs/onos.*.log",prompt="\$",timeout=10)
             time.sleep(30)
@@ -232,12 +210,12 @@ class OnosCliDriver(CLI):
 
     def stop(self):
         '''
-        Runs ./start-onos.sh stop to stop ONOS
+        Runs ./onos.sh core stop to stop ONOS
         '''
         try:
             self.handle.sendline("")
             self.handle.expect("\$")
-            self.handle.sendline(self.home + "/start-onos.sh stop")
+            self.handle.sendline(self.home + "/onos.sh core stop")
             self.handle.expect("stop", 2)
             result = self.handle.before 
             self.handle.expect("\$", 60)
@@ -297,7 +275,7 @@ class OnosCliDriver(CLI):
             self.handle.sendline("export TERM=xterm-256color")
             self.handle.expect("xterm-256color")
             self.handle.expect("\$") 
-            self.handle.sendline("cd " + self.home + "; git log -1 --pretty=fuller; cd \.\.")
+            self.handle.sendline("cd " + self.home + "; git log -1 --pretty=fuller | grep -A 5 \"commit\"; cd \.\.")
             self.handle.expect("cd ..")
             self.handle.expect("\$")
             main.log.report(self.name +": \n"+ str(self.handle.before + self.handle.after))
@@ -504,7 +482,7 @@ class OnosCliDriver(CLI):
             buf = ""
             retcode = 0
             #RestPort="8080"
-            url="http://%s:%s/wm/onos/topology/switches/all/json" % (RestIP, RestPort)
+            url="http://%s:%s/wm/onos/topology/switches/json" % (RestIP, RestPort)
             parsedResult = self.get_json(url)
             if parsedResult == "":
                 retcode = 1

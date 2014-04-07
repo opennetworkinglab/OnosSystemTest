@@ -90,9 +90,9 @@ RamCloudCliDriver is the basic driver which will handle the RamCloud server func
                 main.log.info(self.name + ": Failed to start RAMCloud Server"+response)
                 return main.FALSE
         if re.search("Starting\sRAMCloud\sserver",response):
-             main.log.info(self.name + ": RAMCloud Server Started")
-             return main.TRUE
-         else:
+            main.log.info(self.name + ": RAMCloud Server Started")
+            return main.TRUE
+        else:
             main.log.info(self.name + ": Failed to start RAMCloud Server"+response)
             return main.FALSE
 
@@ -164,7 +164,7 @@ RamCloudCliDriver is the basic driver which will handle the RamCloud server func
         ''' 
         self.execute(cmd="\n",prompt="\$",timeout=10)
         time.sleep(5)
-        response = self.execute(cmd=slef.home + "/onos.sh rc-server stop ",prompt="Killed\sexisting\sprocess(.*)",timeout=10)
+        response = self.execute(cmd=self.home + "/onos.sh rc-server stop ",prompt="Killed\sexisting\sprocess(.*)",timeout=10)
         self.execute(cmd="\n",prompt="\$",timeout=10)
         if re.search("Killed\sexisting\sprocess(.*)",response):
             main.log.info("RAMCloud Server Stopped")

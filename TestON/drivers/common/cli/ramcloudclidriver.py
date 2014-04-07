@@ -63,8 +63,8 @@ RamCloudCliDriver is the basic driver which will handle the RamCloud server func
         if self.handle :
             return main.TRUE
         else :
-            main.log.error("Connection failed to the host "+self.user_name+"@"+self.ip_address) 
-            main.log.error("Failed to connect to the Onos system")
+            main.log.error(self.name+": Connection failed to the host "+self.user_name+"@"+self.ip_address) 
+            main.log.error(self.name+": Failed to connect to the Onos system")
             return main.FALSE
    
  
@@ -72,7 +72,7 @@ RamCloudCliDriver is the basic driver which will handle the RamCloud server func
         '''
         This Function will start RamCloud Servers
         '''
-        main.log.info( "Starting RAMCloud Server" )
+        main.log.info(self.name+": Starting RAMCloud Server" )
         self.handle.sendline("")
         self.handle.expect("\$")
         self.handle.sendline(self.home + "/onos.sh rc-server start")
@@ -101,19 +101,20 @@ RamCloudCliDriver is the basic driver which will handle the RamCloud server func
         '''
         This Function will start RamCloud
         '''
-        main.log.info( "Starting RAMCloud Coordinator" )
+        main.log.info(self.name+": Starting RAMCloud Coordinator" )
         self.handle.sendline("")
         self.handle.expect("\$")
         self.handle.sendline(self.home + "/onos.sh rc-coord start")
         self.handle.expect("onos.sh rc-coord start")
         self.handle.expect("\$")
         response = self.handle.before + self.handle.after
-        time.sleep(5)
-        if re.search("Starting\sRAMCloud\scoordinator\s(.*)", response):
-            main.log.info("RAMCloud Coordinator Started ")
+        if re.search("Starting\sRAMCloud\scoordinator\s", response):
+            if re.search("Killed\sexisting\sprocess", response):
+                main.log.warn(self.name+": Process was already running, killing existing process")
+            main.log.info(self.name+": RAMCloud Coordinator Started ")
             return main.TRUE
         else:
-            main.log.error("Failed to start RAMCloud Coordinator"+ response)
+            main.log.error(self.name+": Failed to start RAMCloud Coordinator"+ response)
             return main.FALSE
 
     def status_serv(self):
@@ -129,30 +130,33 @@ RamCloudCliDriver is the basic driver which will handle the RamCloud server func
         return response
         
         if re.search("0\sRAMCloud\sserver\srunning(.*)") :
-            main.log.info("RAMCloud not running")
+            main.log.info(self.name+": RAMCloud not running")
             return main.TRUE
         elif re.search("1\sRAMCloud\sserver\srunning(.*)"):
-            main.log.warn("RAMCloud Running")
+            main.log.warn(self.name+": RAMCloud Running")
             return main.TRUE
+        else:
+            main.log.info( self.name+":  WARNING: status recieved unknown response")
+            return main.FALSE
             
     def status_coor(self):
         '''
         This Function will return the Status of the RAMCloud
         '''
-        time.sleep(5)
         self.execute(cmd="\n",prompt="\$",timeout=10)
-        response = self.execute(cmd=self.home + "/onos.sh rc-coord status ",prompt="\d+\sramcloud\scoordinator\sis\srunning(.*)",timeout=10)
-        
-
+        response = self.execute(cmd=self.home + "/onos.sh rc-coord status ",prompt="\d+\sRAMCloud\scoordinator\srunning",timeout=10)
         self.execute(cmd="\n",prompt="\$",timeout=10)
-        return response
+        #return response
         
-        if re.search("0\sRAMCloud\scoordinator\sis\srunning(.*)") :
-            main.log.info("RAMCloud Coordinator not running")
+        if re.search("0\sRAMCloud\scoordinator\srunning", response) :
+            main.log.warn(self.name+": RAMCloud Coordinator not running")
             return main.TRUE
-        elif re.search("1\sRAMCloud\scoordinator\sis\srunning(.*)"):
-            main.log.warn("RAMCloud Coordinator Running")
+        elif re.search("1\sRAMCloud\scoordinator\srunning", response):
+            main.log.info(self.name+": RAMCloud Coordinator Running")
             return main.TRUE
+        else:
+            main.log.warn( self.name+": coordinator status recieved unknown response")
+            return main.FALSE
 
     def stop_serv(self):
         '''
@@ -166,7 +170,7 @@ RamCloudCliDriver is the basic driver which will handle the RamCloud server func
             main.log.info("RAMCloud Server Stopped")
             return main.TRUE
         else:
-            main.log.warn("RAMCloud is not Running")
+            main.log.warn(self.name+": RAMCloud is not Running")
             return main.FALSE
            
 
@@ -176,13 +180,13 @@ RamCloudCliDriver is the basic driver which will handle the RamCloud server func
         ''' 
         self.execute(cmd="\n",prompt="\$",timeout=10)
         time.sleep(5)
-        response = self.execute(cmd=self.home + "/onos.sh rc-coord stop ",prompt="Killed\sexisting\sprocess(.*)",timeout=10)
+        response = self.execute(cmd=self.home + "/onos.sh rc-coord stop ",prompt="Killed\sexisting\sprocess",timeout=10)
         self.execute(cmd="\n",prompt="\$",timeout=10)
-        if re.search("Killed\sexisting\sprocess(.*)",response):
-            main.log.info("RAMCloud Coordinator Stopped")
+        if re.search("Killed\sexisting\sprocess",response):
+            main.log.info(self.name+": RAMCloud Coordinator Stopped")
             return main.TRUE
         else:
-            main.log.warn("RAMCloud is not Running")
+            main.log.warn(self.name+": RAMCloud was not Running")
  
     def disconnect(self):
         ''' 
@@ -193,7 +197,6 @@ RamCloudCliDriver is the basic driver which will handle the RamCloud server func
             self.handle.sendline("exit")
             self.handle.expect("closed")
         else :
-            main.log.error("Connection failed to the host")
+            main.log.error("Connection failed to the host when trying to disconnect from RAMCloud component")
             response = main.FALSE
         return response 
-

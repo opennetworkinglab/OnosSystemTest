@@ -79,13 +79,21 @@ RamCloudCliDriver is the basic driver which will handle the RamCloud server func
         self.handle.expect("onos.sh rc-server start")
         self.handle.expect("\$")
         response = self.handle.before + self.handle.after
-        print response
+        print ("RESPONSE IS: "+response)
         time.sleep(5)
-        if re.search("Starting\sRAMCloud\sserver\s(.*)", response):
-            main.log.info(self.name + ": RAMCloud Server Started ")
-            return main.TRUE
-        else:
-            main.log.error(self.name + ": Failed to start RAMCloud Server"+ response)
+        if re.search("Killed\sexisting\process", response):
+            main.log.info(self.name + ": Previous RAMCloud killed. ")
+            if re.search("Starting\sRAMCloud\sserver",response):
+                main.log.info(self.name + ": RAMCloud Server Started")
+                return main.TRUE
+            else:
+                main.log.info(self.name + ": Failed to start RAMCloud Server"+response)
+                return main.FALSE
+        if re.search("Starting\sRAMCloud\sserver",response):
+             main.log.info(self.name + ": RAMCloud Server Started")
+             return main.TRUE
+         else:
+            main.log.info(self.name + ": Failed to start RAMCloud Server"+response)
             return main.FALSE
 
  
@@ -152,9 +160,9 @@ RamCloudCliDriver is the basic driver which will handle the RamCloud server func
         ''' 
         self.execute(cmd="\n",prompt="\$",timeout=10)
         time.sleep(5)
-        response = self.execute(cmd=slef.home + "/onos.sh rc-server stop ",prompt="Killed\sexisting\sprosess(.*)",timeout=10)
+        response = self.execute(cmd=slef.home + "/onos.sh rc-server stop ",prompt="Killed\sexisting\sprocess(.*)",timeout=10)
         self.execute(cmd="\n",prompt="\$",timeout=10)
-        if re.search("Killed\sexisting\sprosess(.*)",response):
+        if re.search("Killed\sexisting\sprocess(.*)",response):
             main.log.info("RAMCloud Server Stopped")
             return main.TRUE
         else:
@@ -168,9 +176,9 @@ RamCloudCliDriver is the basic driver which will handle the RamCloud server func
         ''' 
         self.execute(cmd="\n",prompt="\$",timeout=10)
         time.sleep(5)
-        response = self.execute(cmd=self.home + "/onos.sh rc-coord stop ",prompt="Killed\sexisting\sprosess(.*)",timeout=10)
+        response = self.execute(cmd=self.home + "/onos.sh rc-coord stop ",prompt="Killed\sexisting\sprocess(.*)",timeout=10)
         self.execute(cmd="\n",prompt="\$",timeout=10)
-        if re.search("Killed\sexisting\sprosess(.*)",response):
+        if re.search("Killed\sexisting\sprocess(.*)",response):
             main.log.info("RAMCloud Coordinator Stopped")
             return main.TRUE
         else:
@@ -189,25 +197,3 @@ RamCloudCliDriver is the basic driver which will handle the RamCloud server func
             response = main.FALSE
         return response 
 
-    def isup(self):
-        '''
-        A more complete status check of ramcloud.
-        Tries 5 times to call start-ramcloud-server.sh status
-        returns TRUE if it sees four occurances of both Up, and Normal 
-        '''
-        tries = 5
-        main.log.info("trying %i times" % tries )
-        for i in range(tries):
-            self.execute(cmd="\n",prompt="\$",timeout=10)
-            self.handle.sendline("")
-            self.handle.expect("\$") 
-            self.handle.sendline(self.home + "/onos.sh rc-server status")
-            data = self.handle.expect(['1 RAMCloud server running','0 RAMCloud server running',pexpect.TIMEOUT],timeout=30)
-            if data==0:
-                main.log.report("RAMCloud Up and Running!")
-                return main.TRUE
-            elif data==1:
-                main.log.report("RAMCloud is down!")
-      
-  
-        return main.FALSE

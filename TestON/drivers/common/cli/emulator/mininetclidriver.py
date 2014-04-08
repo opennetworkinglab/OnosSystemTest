@@ -36,7 +36,7 @@ from drivers.common.clidriver import CLI
 
 class MininetCliDriver(Emulator):
     '''
-        MininetCliDriver is the basic driver which will handle the Mininet functions
+    MininetCliDriver is the basic driver which will handle the Mininet functions
     '''
     def __init__(self):
         super(Emulator, self).__init__()
@@ -45,8 +45,9 @@ class MininetCliDriver(Emulator):
         self.flag = 0
 
     def connect(self, **connectargs):
-        #,user_name, ip_address, pwd,options):
-        # Here the main is the TestON instance after creating all the log handles.
+        '''
+        Here the main is the TestON instance after creating all the log handles.
+        '''
         for key in connectargs:
             vars(self)[key] = connectargs[key]       
         
@@ -55,9 +56,7 @@ class MininetCliDriver(Emulator):
         
         self.ssh_handle = self.handle
         
-        # Copying the readme file to process the 
         if self.handle :
-            #self.handle.logfile = sys.stdout
             main.log.info("Clearing any residual state or processes")
             self.handle.sendline("sudo mn -c")
 
@@ -114,7 +113,7 @@ class MininetCliDriver(Emulator):
                        
     def pingall(self):
         '''
-           Verifies the reachability of the hosts using pingall command.
+        Verifies the reachability of the hosts using pingall command.
         '''
         if self.handle :
             main.log.info("Checking reachabilty to the hosts using pingall")
@@ -167,7 +166,7 @@ class MininetCliDriver(Emulator):
     
     def checkIP(self,host):
         '''
-            Verifies the host's ip configured or not.
+        Verifies the host's ip configured or not.
         '''
         if self.handle :
             response = self.execute(cmd=host+" ifconfig",prompt="mininet>",timeout=10)
@@ -197,7 +196,7 @@ class MininetCliDriver(Emulator):
     
     def getMacAddress(self,host):
         '''
-            Verifies the host's ip configured or not.
+        Verifies the host's ip configured or not.
         '''
         if self.handle :
             response = self.execute(cmd=host+" ifconfig",prompt="mininet>",timeout=10)
@@ -211,7 +210,7 @@ class MininetCliDriver(Emulator):
             main.log.error("Connection failed to the host") 
     def getIPAddress(self,host):
         '''
-            Verifies the host's ip configured or not.
+        Verifies the host's ip configured or not.
         '''
         if self.handle :
             response = self.execute(cmd=host+" ifconfig",prompt="mininet>",timeout=10)
@@ -308,7 +307,7 @@ class MininetCliDriver(Emulator):
 
     def dpctl(self,**dpctlargs):
         '''
-         Run dpctl command on all switches.
+        Run dpctl command on all switches.
         '''
         main.log.info('Run dpctl command on all switches')
         args = utilities.parse_args(["CMD","ARGS"],**dpctlargs)

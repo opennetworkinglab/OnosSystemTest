@@ -337,7 +337,6 @@ class OnosSanity4ARP :
 
     def CASE21(self,main) :
         import json
-        from drivers.common.api.onosrestapidriver import *
         main.log.report("Test device discovery function, by attach/detach/move host h1 from s1->s6->s1.")
         main.log.report("Check initially hostMAC/IP exist on the mininet...")
         host = main.params['YANK']['hostname']
@@ -349,8 +348,7 @@ class OnosSanity4ARP :
         #print "host=" + host + ";  RestIP=" + RestIP1 + ";  RestPort=" + str(RestPort)
        
         ping = main.Mininet1.pingHost(src = str(host),target = "10.0.0.254")
-        restcall = OnosRestApiDriver()
-        Reststatus, RestSwitch, RestPort = restcall.find_host(RestIP1,RestPort,url, hostip)
+        Reststatus, RestSwitch, RestPort = main.ONOS1.find_host(RestIP1,RestPort,url, hostip)
         try:
             attachedSW = RestSwitch[0]['dpid']
             host_ip = RestSwitch[0]['devices'][0]['ipv4addresses']
@@ -377,8 +375,7 @@ class OnosSanity4ARP :
 
         main.log.info("\n\t\t\t\t ping issue one ping from" + str(host) + "to generate arp to switch. Ping result is not important" )
         ping = main.Mininet1.pingHost(src = str(host),target = "10.0.0.254")
-        restcall = OnosRestApiDriver()
-        Reststatus, RestSwitch, RestPort = restcall.find_host(RestIP1,RestPort,url, hostip)
+        Reststatus, RestSwitch, RestPort = main.ONOS1.find_host(RestIP1,RestPort,url, hostip)
         try:
             attachedSW = RestSwitch[0]['dpid']
             host_ip = RestSwitch[0]['devices'][0]['ipv4addresses']
@@ -403,8 +400,7 @@ class OnosSanity4ARP :
         main.log.info("\n\t\t\t\t ping issue one ping from" + str(host) + "to generate arp to switch. Ping result is not important" )
 
         ping = main.Mininet1.pingHost(src = str(host),target = "10.0.0.254")
-        restcall = OnosRestApiDriver()
-        Reststatus, RestSwitch, RestPort = restcall.find_host(RestIP1,RestPort,url, hostip)
+        Reststatus, RestSwitch, RestPort = main.ONOS1.find_host(RestIP1,RestPort,url, hostip)
         try:
             attachedSW = RestSwitch[0]['dpid']
             host_ip = RestSwitch[0]['devices'][0]['ipv4addresses']
@@ -430,8 +426,7 @@ class OnosSanity4ARP :
         main.log.info("\n\t\t\t\t ping issue one ping from" + str(host) + "to generate arp to switch. Ping result is not important" )
 
         ping = main.Mininet1.pingHost(src = str(host),target = "10.0.0.254")
-        restcall = OnosRestApiDriver()
-        Reststatus, RestSwitch, RestPort = restcall.find_host(RestIP1,RestPort,url, hostip)
+        Reststatus, RestSwitch, RestPort = main.ONOS1.find_host(RestIP1,RestPort,url, hostip)
         try:
             attachedSW = RestSwitch[0]['dpid']
             host_ip = RestSwitch[0]['devices'][0]['ipv4addresses']

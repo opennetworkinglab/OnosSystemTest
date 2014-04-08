@@ -1,24 +1,24 @@
 #!/usr/bin/env python
 '''
-Created on 31-May-2013 
+Created on 31-May-2013
 
-@author: Anil Kumar (anilkumar.s@paxterrasolutions.com)      
+@author: Anil Kumar (anilkumar.s@paxterrasolutions.com)
 
-    TestON is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+TestON is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 2 of the License, or
+(at your option) any later version.
 
-    TestON is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+TestON is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with TestON.  If not, see <http://www.gnu.org/licenses/>.        
+You should have received a copy of the GNU General Public License
+along with TestON. If not, see <http://www.gnu.org/licenses/>.
 
 
-''' 
+'''
 import time
 import pexpect
 import struct, fcntl, os, sys, signal
@@ -34,9 +34,9 @@ class OnosCliDriver(CLI):
         super(CLI, self).__init__()
         
     def connect(self,**connectargs):
-	'''
-        Creates ssh handle for ONOS. 
-        '''
+'''
+Creates ssh handle for ONOS.
+'''
         try:
             for key in connectargs:
                vars(self)[key] = connectargs[key]
@@ -66,15 +66,15 @@ class OnosCliDriver(CLI):
         
     def start(self):
         '''
-        Starts ONOS on remote machine.
-        Returns false if any errors were encountered. 
-        '''
-        try: 
+Starts ONOS on remote machine.
+Returns false if any errors were encountered.
+'''
+        try:
             self.handle.sendline("")
             self.handle.expect("\$")
             self.handle.sendline(self.home + "/onos.sh core start")
             self.handle.expect("onos.sh core start")
-            i=self.handle.expect(["STARTED","FAILED"]) 
+            i=self.handle.expect(["STARTED","FAILED"])
             if i==0:
                 try:
                     self.handle.expect("\$", timeout=60)
@@ -87,7 +87,7 @@ class OnosCliDriver(CLI):
                 main.log.error(self.name + ": ONOS Failed ")
                 return main.FALSE
                 raise
-            main.log.error(self.name + ": ONOS expect script missed something... ") 
+            main.log.error(self.name + ": ONOS expect script missed something... ")
             return main.FALSE
         except:
             main.log.info(self.name + ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
@@ -98,8 +98,8 @@ class OnosCliDriver(CLI):
  
     def start_rest(self):
         '''
-        Starts the rest server on ONOS.
-        ''' 
+Starts the rest server on ONOS.
+'''
         try:
             response = self.execute(cmd= self.home + "/start-rest.sh start",prompt="\$",timeout=10)
             if re.search("admin",response):
@@ -107,8 +107,8 @@ class OnosCliDriver(CLI):
                 time.sleep(5)
                 return main.TRUE
             else :
-                main.log.warn(self.name + ": Failed to start Rest Server")   
-                return main.FALSE     
+                main.log.warn(self.name + ": Failed to start Rest Server")
+                return main.FALSE
         except:
             main.log.info(self.name + ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
             main.log.error( traceback.print_exc() )
@@ -118,8 +118,8 @@ class OnosCliDriver(CLI):
     
     def status(self):
         '''
-        Called onos.sh core status and returns TRUE/FALSE accordingly 
-        '''
+Called onos.sh core status and returns TRUE/FALSE accordingly
+'''
         try:
             self.execute(cmd="\n",prompt="\$",timeout=10)
             response = self.execute(cmd= self.home + "/onos.sh core status ",prompt="\d+\sinstance\sof\sonos\srunning",timeout=10)
@@ -141,12 +141,12 @@ class OnosCliDriver(CLI):
 
     def isup(self):
         '''
-        A more complete check to see if ONOS is up and running properly. 
-        First, it checks if the process is up. 
-        Second, it reads the logs for "Exception: Connection refused" 
-        Third, it makes sure the logs are actually moving. 
-        returns TRUE/FALSE accordingly.
-        '''
+A more complete check to see if ONOS is up and running properly.
+First, it checks if the process is up.
+Second, it reads the logs for "Exception: Connection refused"
+Third, it makes sure the logs are actually moving.
+returns TRUE/FALSE accordingly.
+'''
         try:
             self.execute(cmd="\n",prompt="\$",timeout=10)
             response = self.execute(cmd= self.home + "/onos.sh core status ",prompt="running",timeout=10)
@@ -165,10 +165,10 @@ class OnosCliDriver(CLI):
                     main.log.error(self.name + ": ONOS is frozen...")#logs aren't moving
                     return main.FALSE
                 elif re.search( pattern2,tail1 ):
-                    main.log.info(self.name + ": Connection Refused found in onos log") 
+                    main.log.info(self.name + ": Connection Refused found in onos log")
                     return main.FALSE
                 elif re.search( pattern2,tail2 ):
-                    main.log.info(self.name + ": Connection Refused found in onos log") 
+                    main.log.info(self.name + ": Connection Refused found in onos log")
                     return main.FALSE
                 else:
                     main.log.info(self.name + ": Onos log is moving! It's looking good!")
@@ -185,10 +185,10 @@ class OnosCliDriver(CLI):
 
 
         
-    def rest_status(self): 
+    def rest_status(self):
         '''
-        Checks if the rest server is running. 
-        '''
+Checks if the rest server is running.
+'''
         try:
             response = self.execute(cmd= self.home + "/start-rest.sh status ",prompt="running",timeout=10)
             if re.search("rest\sserver\sis\srunning",response):
@@ -210,14 +210,14 @@ class OnosCliDriver(CLI):
 
     def stop(self):
         '''
-        Runs ./onos.sh core stop to stop ONOS
-        '''
+Runs ./onos.sh core stop to stop ONOS
+'''
         try:
             self.handle.sendline("")
             self.handle.expect("\$")
             self.handle.sendline(self.home + "/onos.sh core stop")
             self.handle.expect("stop", 2)
-            result = self.handle.before 
+            result = self.handle.before
             self.handle.expect("\$", 60)
             if re.search("Killed", result):
                 main.log.info(self.name + ": ONOS Killed Successfully")
@@ -235,8 +235,8 @@ class OnosCliDriver(CLI):
     
     def rest_stop(self):
         '''
-        Runs ./start-rest.sh stop to stop ONOS rest server
-        '''
+Runs ./start-rest.sh stop to stop ONOS rest server
+'''
         try:
             response = self.execute(cmd= self.home + "/start-rest.sh stop ",prompt="killing",timeout=10)
             self.execute(cmd="\n",prompt="\$",timeout=10)
@@ -256,25 +256,25 @@ class OnosCliDriver(CLI):
 
     def disconnect(self):
         '''
-        Called when Test is complete to disconnect the ONOS handle.  
-        '''
+Called when Test is complete to disconnect the ONOS handle.
+'''
         response = ''
         try:
             self.handle.sendline("exit")
             self.handle.expect("closed")
-        except: 
+        except:
             main.log.error(self.name + ": Connection failed to the host")
             response = main.FALSE
         return response
  
     def get_version(self):
-        ''' 
-        Writes the COMMIT number to the report to be parsed by Jenkins data collecter.  
         '''
+Writes the COMMIT number to the report to be parsed by Jenkins data collecter.
+'''
         try:
             self.handle.sendline("export TERM=xterm-256color")
             self.handle.expect("xterm-256color")
-            self.handle.expect("\$") 
+            self.handle.expect("\$")
             self.handle.sendline("cd " + self.home + "; git log -1 --pretty=fuller | grep -A 5 \"commit\"; cd \.\.")
             self.handle.expect("cd ..")
             self.handle.expect("\$")
@@ -287,10 +287,10 @@ class OnosCliDriver(CLI):
             main.exit()
 
     def add_flow(self, testONip, user, password, flowDef):
-        ''' 
-        Copies the flowdef file from TestStation -> ONOS machine
-        Then runs ./add_flow.py to add the flows to ONOS
-        ''' 
+        '''
+Copies the flowdef file from TestStation -> ONOS machine
+Then runs ./add_flow.py to add the flows to ONOS
+'''
         try:
             main.log.info("Adding Flows...")
             self.handle.sendline("scp %s@%s:%s /tmp/flowtmp" %(user,testONip,flowDef))
@@ -319,7 +319,7 @@ class OnosCliDriver(CLI):
 
             else:
                     main.log.error("Failed to add flows...")
-                    return main.FALSE            
+                    return main.FALSE
         except:
             main.log.info(self.name + ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
             main.log.error( traceback.print_exc() )
@@ -330,8 +330,8 @@ class OnosCliDriver(CLI):
 
     def delete_flow(self, *delParams):
         '''
-        Deletes a specific flow, a range of flows, or all flows.
-        '''
+Deletes a specific flow, a range of flows, or all flows.
+'''
         try:
             if len(delParams)==1:
                 if str(delParams[0])=="all":
@@ -366,11 +366,11 @@ class OnosCliDriver(CLI):
 
     def check_flow(self):
         '''
-        Calls the ./get_flow.py all and checks:
-          - If each FlowPath has at least one FlowEntry  
-          - That there are no "NOT"s found
-        returns TRUE/FALSE 
-        '''
+Calls the ./get_flow.py all and checks:
+- If each FlowPath has at least one FlowEntry
+- That there are no "NOT"s found
+returns TRUE/FALSE
+'''
         try:
             flowEntryDetect = 1
             count = 0
@@ -401,7 +401,7 @@ class OnosCliDriver(CLI):
                         main.log.info(self.name + ": Number of FlowPaths: "+str(count))
                         return main.TRUE
                 elif i==4:
-                    main.log.error(self.name + ":Check_flow() -  Command Timeout!")
+                    main.log.error(self.name + ":Check_flow() - Command Timeout!")
             return main.FALSE
         except:
             main.log.info(self.name + ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
@@ -412,8 +412,8 @@ class OnosCliDriver(CLI):
 
     def get_flow(self, *flowParams):
          '''
-         Returns verbose output of ./get_flow.py
-         '''
+Returns verbose output of ./get_flow.py
+'''
          try:
              if len(flowParams)==1:
                   if str(flowParams[0])=="all":
@@ -452,8 +452,8 @@ class OnosCliDriver(CLI):
 
     def get_json(self, url):
         '''
-        Helper functions used to parse the json output of a rest call 
-        '''
+Helper functions used to parse the json output of a rest call
+'''
         try:
             try:
                 command = "curl -s %s" % (url)
@@ -466,7 +466,7 @@ class OnosCliDriver(CLI):
             if type(parsedResult) == 'dict' and parsedResult.has_key('code'):
                 print "REST %s returned code %s" % (command, parsedResult['code'])
                 parsedResult = ""
-            return parsedResult 
+            return parsedResult
         except:
             main.log.info(self.name + ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
             main.log.error( traceback.print_exc() )
@@ -475,9 +475,9 @@ class OnosCliDriver(CLI):
             main.exit()
 
     def check_switch(self,RestIP,correct_nr_switch, RestPort ="8080" ):
-        ''' 
-        Used by check_status 
-        ''' 
+        '''
+Used by check_status
+'''
         try:
             buf = ""
             retcode = 0
@@ -499,7 +499,7 @@ class OnosCliDriver(CLI):
 
             for s in parsedResult:
                 cnt += 1
-                if s['state']  == "ACTIVE":
+                if s['state'] == "ACTIVE":
                    active += 1
 
             buf += "switch: network %d : %d switches %d active\n" % (0+1, cnt, active)
@@ -520,9 +520,9 @@ class OnosCliDriver(CLI):
             main.exit()
 
     def check_link(self,RestIP, nr_links, RestPort = "8080"):
-        ''' 
-        Used by check_status 
-        ''' 
+        '''
+Used by check_status
+'''
         try:
             buf = ""
             retcode = 0
@@ -539,7 +539,7 @@ class OnosCliDriver(CLI):
             interlink=0
         
             for s in parsedResult:
-                intra = intra + 1 
+                intra = intra + 1
         
             if intra != nr_links:
                 buf += "link fail\n"
@@ -554,12 +554,12 @@ class OnosCliDriver(CLI):
             main.exit()
 
     def check_status_report(self, ip, numoswitch, numolink, port="8080"):
-        ''' 
-        Checks the number of swithes & links that ONOS sees against the supplied values.
-        Writes to the report log.  
         '''
+Checks the number of swithes & links that ONOS sees against the supplied values.
+Writes to the report log.
+'''
         try:
-            main.log.info(self.name + ": Making some rest calls...") 
+            main.log.info(self.name + ": Making some rest calls...")
             switch = self.check_switch(ip, int(numoswitch), port)
             link = self.check_link(ip, int(numolink), port)
             value = switch[0]
@@ -567,7 +567,7 @@ class OnosCliDriver(CLI):
             main.log.report( self.name + ": \n-----\n%s%s-----\n" % ( switch[1], link[1]) )
             if value != 0:
                 return main.FALSE
-            else: 
+            else:
                 # "PASS"
                 return main.TRUE
         except:
@@ -578,12 +578,12 @@ class OnosCliDriver(CLI):
             main.exit()
 
     def check_status(self, ip, numoswitch, numolink, port = "8080"):
-        ''' 
-        Checks the number of swithes & links that ONOS sees against the supplied values.
-        Writes to the main log.  
-        ''' 
+        '''
+Checks the number of swithes & links that ONOS sees against the supplied values.
+Writes to the main log.
+'''
         try:
-            main.log.info(self.name + ": Making some rest calls...") 
+            main.log.info(self.name + ": Making some rest calls...")
             switch = self.check_switch(ip, int(numoswitch), port)
             link = self.check_link(ip, int(numolink), port)
             value = switch[0]
@@ -591,7 +591,7 @@ class OnosCliDriver(CLI):
             main.log.info(self.name + ": \n-----\n%s%s-----\n" % ( switch[1], link[1]) )
             if value != 0:
                 return main.FALSE
-            else: 
+            else:
                 # "PASS"
                 return main.TRUE
         except:
@@ -603,8 +603,8 @@ class OnosCliDriver(CLI):
  
     def drop_keyspace(self):
         '''
-        Drops the ONOS keyspace
-        '''
+Drops the ONOS keyspace
+'''
         try:
             self.handle.sendline(self.home + "/scripts/drop-keyspace.sh")
             self.handle.expect("keyspace")
@@ -622,15 +622,15 @@ class OnosCliDriver(CLI):
     
     def check_for_no_exceptions(self):
         '''
-        TODO: Rewrite
-        Used by CassndraCheck.py to scan ONOS logs for Exceptions
-        '''
+TODO: Rewrite
+Used by CassndraCheck.py to scan ONOS logs for Exceptions
+'''
         try:
             self.handle.sendline("dsh 'grep Exception ~/ONOS/onos-logs/onos.*.log'")
-            self.handle.expect("\$ dsh") 
+            self.handle.expect("\$ dsh")
             self.handle.expect("\$")
             output = self.handle.before
-            main.log.info(self.name + ": " + output ) 
+            main.log.info(self.name + ": " + output )
             if re.search("Exception",output):
                 return main.FALSE
             else :
@@ -645,26 +645,26 @@ class OnosCliDriver(CLI):
 
     def git_pull(self):
         '''
-        Stops the ONOS, pulls the latest code, and builds with mvn. 
-        Assumes that "git pull" works without login 
-        '''
+Stops the ONOS, pulls the latest code, and builds with mvn.
+Assumes that "git pull" works without login
+'''
         try:
-            main.log.info(self.name + ": Stopping ONOS") 
+            main.log.info(self.name + ": Stopping ONOS")
             self.stop()
             self.handle.sendline("cd " + self.home)
             self.handle.expect("ONOS\$")
             self.handle.sendline("git pull")
            
-            uptodate = 0 
+            uptodate = 0
             i=self.handle.expect(['fatal','Username\sfor\s(.*):\s','Unpacking\sobjects',pexpect.TIMEOUT,'Already up-to-date','Aborting'],timeout=180)
             #debug
-           #main.log.report(self.name +": \n"+"git pull response: " +  str(self.handle.before) + str(self.handle.after))
+           #main.log.report(self.name +": \n"+"git pull response: " + str(self.handle.before) + str(self.handle.after))
             if i==0:
-                main.log.error(self.name + ": Git pull had some issue...") 
+                main.log.error(self.name + ": Git pull had some issue...")
                 return main.FALSE
             elif i==1:
-                main.log.error(self.name + ": Git Pull Asking for username!!! BADD!") 
-                return main.FALSE 
+                main.log.error(self.name + ": Git Pull Asking for username!!! BADD!")
+                return main.FALSE
             elif i==2:
                 main.log.info(self.name + ": Git Pull - pulling repository now")
                 self.handle.expect("ONOS\$", 120)
@@ -673,7 +673,7 @@ class OnosCliDriver(CLI):
                 return main.FALSE
             elif i==4:
                 main.log.info(self.name + ": Git Pull - Already up to date")
-                uptodate = 1 
+                uptodate = 1
             elif i==5:
                 main.log.info(self.name + ": Git Pull - Aborting... Are there conflicting git files?")
                 return main.FALSE
@@ -682,9 +682,9 @@ class OnosCliDriver(CLI):
                 return main.FALSE
             
             if uptodate == 0:
-                main.log.info(self.name + ": mvn clean") 
+                main.log.info(self.name + ": mvn clean")
                 self.handle.sendline("mvn clean")
-                while 1: 
+                while 1:
                     i=self.handle.expect(['BUILD\sFAILURE','BUILD\sSUCCESS','ONOS\$',pexpect.TIMEOUT],timeout=30)
                     if i == 0:
                         main.log.error(self.name + ": Build failure!")
@@ -692,15 +692,15 @@ class OnosCliDriver(CLI):
                     elif i == 1:
                         main.log.info(self.name + ": Build success!")
                     elif i == 2:
-                        main.log.info(self.name + ": Build complete") 
+                        main.log.info(self.name + ": Build complete")
                         break;
                     elif i == 3:
                         main.log.error(self.name + ": mvn clean TIMEOUT!")
                         return main.FALSE
             
-                main.log.info(self.name + ": mvn compile") 
+                main.log.info(self.name + ": mvn compile")
                 self.handle.sendline("mvn compile")
-                while 1: 
+                while 1:
                     i=self.handle.expect(['BUILD\sFAILURE','BUILD\sSUCCESS','ONOS\$',pexpect.TIMEOUT],timeout=60)
                     if i == 0:
                         main.log.error(self.name + ": Build failure!")
@@ -709,7 +709,7 @@ class OnosCliDriver(CLI):
                         main.log.info(self.name + ": Build success!")
                         return main.TRUE
                     elif i == 2:
-                        main.log.info(self.name + ": Build complete") 
+                        main.log.info(self.name + ": Build complete")
                         return main.TRUE
                     elif i == 3:
                         main.log.error(self.name + ": mvn compile TIMEOUT!")
@@ -733,10 +733,10 @@ class OnosCliDriver(CLI):
             if i == 0:
                 main.log.error(self.name + ": tcpdump - No such device exists. tcpdump attempted on: " + intf)
                 return main.FALSE
-            elif i == 1: 
+            elif i == 1:
                 main.log.info(self.name + ": tcpdump started on " + intf)
                 return main.TRUE
-            elif i == 2: 
+            elif i == 2:
                 main.log.error(self.name + ": tcpdump command timed out! Check interface name, given interface was: " + intf)
                 return main.FALSE
             else:
@@ -787,7 +787,7 @@ class OnosCliDriver(CLI):
                     for port in enumerate(switch[1]['ports']):
                         if ( port[1]['devices'] != [] ):
                             try:
-                                foundIP =  port[1]['devices'][0]['ipv4addresses'][0]['ipv4']
+                                foundIP = port[1]['devices'][0]['ipv4addresses'][0]['ipv4']
                             except:
                                 print "Error in detecting IP address."
                             if foundIP == hostIP:

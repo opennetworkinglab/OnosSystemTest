@@ -79,9 +79,9 @@ RamCloudCliDriver is the basic driver which will handle the RamCloud server func
         self.handle.expect("onos.sh rc-server start")
         self.handle.expect("\$")
         response = self.handle.before + self.handle.after
-        print ("RESPONSE IS: "+response)
+        #print ("RESPONSE IS: "+response)
         time.sleep(5)
-        if re.search("Killed\sexisting\process", response):
+        if re.search("Killed\sexisting\sprocess", response):
             main.log.info(self.name + ": Previous RAMCloud killed. ")
             if re.search("Starting\sRAMCloud\sserver",response):
                 main.log.info(self.name + ": RAMCloud Server Started")
@@ -89,7 +89,7 @@ RamCloudCliDriver is the basic driver which will handle the RamCloud server func
             else:
                 main.log.info(self.name + ": Failed to start RAMCloud Server"+response)
                 return main.FALSE
-        if re.search("Starting\sRAMCloud\sserver",response):
+        elif re.search("Starting\sRAMCloud\sserver",response):
             main.log.info(self.name + ": RAMCloud Server Started")
             return main.TRUE
         else:
@@ -121,18 +121,18 @@ RamCloudCliDriver is the basic driver which will handle the RamCloud server func
         '''
         This Function will return the Status of the RAMCloud
         '''
-        time.sleep(5)
-        self.execute(cmd="\n",prompt="\$",timeout=10)
-        response = self.execute(cmd=self.home + "/onos.sh rc-server status ",prompt="\d+\sramcloud\sserver\srunning(.*)",timeout=10)
-        
+        main.log.info(self.name + ": Getting RC-Server Status")
+        self.handle.sendline("")
+        self.handle.expect("\$")
+        self.handle.sendline(self.home + "/onos.sh rc-server status")
+        self.handle.expect("onos.sh rc-server status")
+        self.handle.expect("\$")
+        response = self.handle.before + self.handle.after
 
-        self.execute(cmd="\n",prompt="\$",timeout=10)
-        return response
-        
-        if re.search("0\sRAMCloud\sserver\srunning(.*)") :
+        if re.search("0\sRAMCloud\sserver\srunning", response) :
             main.log.info(self.name+": RAMCloud not running")
             return main.TRUE
-        elif re.search("1\sRAMCloud\sserver\srunning(.*)"):
+        elif re.search("1\sRAMCloud\sserver\srunning",response):
             main.log.warn(self.name+": RAMCloud Running")
             return main.TRUE
         else:
@@ -161,12 +161,15 @@ RamCloudCliDriver is the basic driver which will handle the RamCloud server func
     def stop_serv(self):
         '''
         This Function will stop the RAMCloud if it is Running
-        ''' 
-        self.execute(cmd="\n",prompt="\$",timeout=10)
-        time.sleep(5)
-        response = self.execute(cmd=self.home + "/onos.sh rc-server stop ",prompt="Killed\sexisting\sprocess(.*)",timeout=10)
-        self.execute(cmd="\n",prompt="\$",timeout=10)
-        if re.search("Killed\sexisting\sprocess(.*)",response):
+        '''
+        main.log.info(self.name + ": Stopping RC-Server")
+        self.handle.sendline("")
+        self.handle.expect("\$")
+        self.handle.sendline(self.home + "/onos.sh rc-server stop")
+        self.handle.expect("onos.sh rc-server stop")
+        self.handle.expect("\$")
+        response = self.handle.before + self.handle.after
+        if re.search("Killed\sexisting\sprocess",response):
             main.log.info("RAMCloud Server Stopped")
             return main.TRUE
         else:

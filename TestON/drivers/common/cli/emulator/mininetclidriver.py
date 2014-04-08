@@ -202,10 +202,11 @@ class MininetCliDriver(Emulator):
         if self.handle :
             response = self.execute(cmd=host+" ifconfig",prompt="mininet>",timeout=10)
 
-            pattern = "HWaddr\s(((\d|\w)+:)+(\d|\w))"
-            mac_address_search = re.search(pattern, response)
-            main.log.info("Mac-Address of Host "+host +" is "+mac_address_search.group(1))
-            return mac_address_search.group(1)
+            pattern = r'HWaddr\s([0-9A-F]{2}[:-]){5}([0-9A-F]{2})'
+            mac_address_search = re.search(pattern, response, re.I)
+            mac_address = mac_address_search.group().split(" ")[1]
+            main.log.info("Mac-Address of Host "+ host + " is " + mac_address)
+            return mac_address
         else :
             main.log.error("Connection failed to the host") 
     def getIPAddress(self,host):
@@ -224,8 +225,8 @@ class MininetCliDriver(Emulator):
         
     def dump(self):
         main.log.info("Dump node info")
-        self.execute(cmd = 'dump',prompt = 'mininet>',timeout = 10)
-        return main.TRUE
+        response = self.execute(cmd = 'dump',prompt = 'mininet>',timeout = 10)
+        return response
             
     def intfs(self):
         main.log.info("List interfaces")

@@ -229,28 +229,28 @@ class MininetCliDriver(Emulator):
             
     def intfs(self):
         main.log.info("List interfaces")
-        self.execute(cmd = 'intfs',prompt = 'mininet>',timeout = 10)
-        return main.TRUE
+        response = self.execute(cmd = 'intfs',prompt = 'mininet>',timeout = 10)
+        return response
     
     def net(self):
         main.log.info("List network connections")
-        self.execute(cmd = 'net',prompt = 'mininet>',timeout = 10)
-        return main.TRUE
+        response = self.execute(cmd = 'net',prompt = 'mininet>',timeout = 10)
+        return response
     
     def iperf(self):
         main.log.info("Simple iperf TCP test between two (optionally specified) hosts")
-        self.execute(cmd = 'iperf',prompt = 'mininet>',timeout = 10)
-        return main.TRUE
+        response = self.execute(cmd = 'iperf',prompt = 'mininet>',timeout = 10)
+        return response
     
     def iperfudp(self):
         main.log.info("Simple iperf TCP test between two (optionally specified) hosts")
-        self.execute(cmd = 'iperfudp',prompt = 'mininet>',timeout = 10)
-        return main.TRUE
+        response = self.execute(cmd = 'iperfudp',prompt = 'mininet>',timeout = 10)
+        return response
     
     def nodes(self):
         main.log.info("List all nodes.")
-        self.execute(cmd = 'nodes',prompt = 'mininet>',timeout = 10)    
-        return main.TRUE
+        response = self.execute(cmd = 'nodes',prompt = 'mininet>',timeout = 10)    
+        return response
     
     def pingpair(self):
         main.log.infoe("Ping between first two hosts")

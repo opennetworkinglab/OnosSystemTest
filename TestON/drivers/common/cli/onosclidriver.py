@@ -34,9 +34,9 @@ class OnosCliDriver(CLI):
         super(CLI, self).__init__()
         
     def connect(self,**connectargs):
-'''
-Creates ssh handle for ONOS.
-'''
+        '''
+        Creates ssh handle for ONOS.
+        '''
         try:
             for key in connectargs:
                vars(self)[key] = connectargs[key]
@@ -66,9 +66,9 @@ Creates ssh handle for ONOS.
         
     def start(self):
         '''
-Starts ONOS on remote machine.
-Returns false if any errors were encountered.
-'''
+        Starts ONOS on remote machine.
+        Returns false if any errors were encountered.
+        '''
         try:
             self.handle.sendline("")
             self.handle.expect("\$")
@@ -98,8 +98,8 @@ Returns false if any errors were encountered.
  
     def start_rest(self):
         '''
-Starts the rest server on ONOS.
-'''
+        Starts the rest server on ONOS.
+        '''
         try:
             response = self.execute(cmd= self.home + "/start-rest.sh start",prompt="\$",timeout=10)
             if re.search("admin",response):
@@ -118,8 +118,8 @@ Starts the rest server on ONOS.
     
     def status(self):
         '''
-Called onos.sh core status and returns TRUE/FALSE accordingly
-'''
+        Called onos.sh core status and returns TRUE/FALSE accordingly
+        '''
         try:
             self.execute(cmd="\n",prompt="\$",timeout=10)
             response = self.execute(cmd= self.home + "/onos.sh core status ",prompt="\d+\sinstance\sof\sonos\srunning",timeout=10)
@@ -141,12 +141,12 @@ Called onos.sh core status and returns TRUE/FALSE accordingly
 
     def isup(self):
         '''
-A more complete check to see if ONOS is up and running properly.
-First, it checks if the process is up.
-Second, it reads the logs for "Exception: Connection refused"
-Third, it makes sure the logs are actually moving.
-returns TRUE/FALSE accordingly.
-'''
+        A more complete check to see if ONOS is up and running properly.
+        First, it checks if the process is up.
+        Second, it reads the logs for "Exception: Connection refused"
+        Third, it makes sure the logs are actually moving.
+        returns TRUE/FALSE accordingly.
+        '''
         try:
             self.execute(cmd="\n",prompt="\$",timeout=10)
             response = self.execute(cmd= self.home + "/onos.sh core status ",prompt="running",timeout=10)
@@ -187,8 +187,8 @@ returns TRUE/FALSE accordingly.
         
     def rest_status(self):
         '''
-Checks if the rest server is running.
-'''
+        Checks if the rest server is running.
+        '''
         try:
             response = self.execute(cmd= self.home + "/start-rest.sh status ",prompt="running",timeout=10)
             if re.search("rest\sserver\sis\srunning",response):
@@ -210,8 +210,8 @@ Checks if the rest server is running.
 
     def stop(self):
         '''
-Runs ./onos.sh core stop to stop ONOS
-'''
+        Runs ./onos.sh core stop to stop ONOS
+        '''
         try:
             self.handle.sendline("")
             self.handle.expect("\$")
@@ -235,8 +235,8 @@ Runs ./onos.sh core stop to stop ONOS
     
     def rest_stop(self):
         '''
-Runs ./start-rest.sh stop to stop ONOS rest server
-'''
+        Runs ./start-rest.sh stop to stop ONOS rest server
+        '''
         try:
             response = self.execute(cmd= self.home + "/start-rest.sh stop ",prompt="killing",timeout=10)
             self.execute(cmd="\n",prompt="\$",timeout=10)
@@ -256,8 +256,8 @@ Runs ./start-rest.sh stop to stop ONOS rest server
 
     def disconnect(self):
         '''
-Called when Test is complete to disconnect the ONOS handle.
-'''
+        Called when Test is complete to disconnect the ONOS handle.
+        '''
         response = ''
         try:
             self.handle.sendline("exit")
@@ -269,8 +269,8 @@ Called when Test is complete to disconnect the ONOS handle.
  
     def get_version(self):
         '''
-Writes the COMMIT number to the report to be parsed by Jenkins data collecter.
-'''
+        Writes the COMMIT number to the report to be parsed by Jenkins data collecter.
+        '''
         try:
             self.handle.sendline("export TERM=xterm-256color")
             self.handle.expect("xterm-256color")
@@ -288,9 +288,9 @@ Writes the COMMIT number to the report to be parsed by Jenkins data collecter.
 
     def add_flow(self, testONip, user, password, flowDef):
         '''
-Copies the flowdef file from TestStation -> ONOS machine
-Then runs ./add_flow.py to add the flows to ONOS
-'''
+        Copies the flowdef file from TestStation -> ONOS machine
+        Then runs ./add_flow.py to add the flows to ONOS
+        '''
         try:
             main.log.info("Adding Flows...")
             self.handle.sendline("scp %s@%s:%s /tmp/flowtmp" %(user,testONip,flowDef))
@@ -330,8 +330,8 @@ Then runs ./add_flow.py to add the flows to ONOS
 
     def delete_flow(self, *delParams):
         '''
-Deletes a specific flow, a range of flows, or all flows.
-'''
+        Deletes a specific flow, a range of flows, or all flows.
+        '''
         try:
             if len(delParams)==1:
                 if str(delParams[0])=="all":
@@ -366,11 +366,11 @@ Deletes a specific flow, a range of flows, or all flows.
 
     def check_flow(self):
         '''
-Calls the ./get_flow.py all and checks:
-- If each FlowPath has at least one FlowEntry
-- That there are no "NOT"s found
-returns TRUE/FALSE
-'''
+        Calls the ./get_flow.py all and checks:
+        - If each FlowPath has at least one FlowEntry
+        - That there are no "NOT"s found
+        returns TRUE/FALSE
+        '''
         try:
             flowEntryDetect = 1
             count = 0
@@ -411,33 +411,33 @@ returns TRUE/FALSE
             main.exit()
 
     def get_flow(self, *flowParams):
-         '''
-Returns verbose output of ./get_flow.py
-'''
-         try:
-             if len(flowParams)==1:
-                  if str(flowParams[0])=="all":
-                       self.execute(cmd="\n",prompt="\$",timeout=60)
-                       main.log.info(self.name + ": Getting all flow data...")
-                       data = self.execute(cmd=self.home + "/scripts/TestON_get_flow.sh all",prompt="done",timeout=150)
-                       self.execute(cmd="\n",prompt="\$",timeout=60)
-                       return data
-                  else:
-                       main.log.info(self.name + ": Retrieving flow "+str(flowParams[0])+" data...")
-                       data = self.execute(cmd=self.home +"/scripts/TestON_get_flow.sh "+str(flowParams[0]),prompt="done",timeout=150)
-                       self.execute(cmd="\n",prompt="\$",timeout=60)
-                       return data
-             elif len(flowParams)==5:
-                  main.log.info(self.name + ": Retrieving flow installer data...")
-                  data = self.execute(cmd=self.home + "/scripts/TestON_get_flow.sh "+str(flowParams[0])+" "+str(flowParams[1])+" "+str(flowParams[2])+" "+str(flowParams[3])+" "+str(flowParams[4]),prompt="done",timeout=150)
-                  self.execute(cmd="\n",prompt="\$",timeout=60)
-                  return data
-             elif len(flowParams)==4:
-                  main.log.info(self.name + ": Retrieving flow endpoints...")
-                  data = self.execute(cmd=self.home + "/scripts/TestON_get_flow.sh "+str(flowParams[0])+" "+str(flowParams[1])+" "+str(flowParams[2])+" "+str(flowParams[3]),prompt="done",timeout=150)
-                  self.execute(cmd="\n",prompt="\$",timeout=60)
-                  return data
-         except:
+        '''
+        Returns verbose output of ./get_flow.py
+        '''
+        try:
+            if len(flowParams)==1:
+                if str(flowParams[0])=="all":
+                    self.execute(cmd="\n",prompt="\$",timeout=60)
+                    main.log.info(self.name + ": Getting all flow data...")
+                    data = self.execute(cmd=self.home + "/scripts/TestON_get_flow.sh all",prompt="done",timeout=150)
+                    self.execute(cmd="\n",prompt="\$",timeout=60)
+                    return data
+                else:
+                    main.log.info(self.name + ": Retrieving flow "+str(flowParams[0])+" data...")
+                    data = self.execute(cmd=self.home +"/scripts/TestON_get_flow.sh "+str(flowParams[0]),prompt="done",timeout=150)
+                    self.execute(cmd="\n",prompt="\$",timeout=60)
+                    return data
+            elif len(flowParams)==5:
+                main.log.info(self.name + ": Retrieving flow installer data...")
+                data = self.execute(cmd=self.home + "/scripts/TestON_get_flow.sh "+str(flowParams[0])+" "+str(flowParams[1])+" "+str(flowParams[2])+" "+str(flowParams[3])+" "+str(flowParams[4]),prompt="done",timeout=150)
+                self.execute(cmd="\n",prompt="\$",timeout=60)
+                return data
+            elif len(flowParams)==4:
+                main.log.info(self.name + ": Retrieving flow endpoints...")
+                data = self.execute(cmd=self.home + "/scripts/TestON_get_flow.sh "+str(flowParams[0])+" "+str(flowParams[1])+" "+str(flowParams[2])+" "+str(flowParams[3]),prompt="done",timeout=150)
+                self.execute(cmd="\n",prompt="\$",timeout=60)
+                return data
+        except:
             main.log.info(self.name + ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
             main.log.error( traceback.print_exc() )
             main.log.info(":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
@@ -452,8 +452,8 @@ Returns verbose output of ./get_flow.py
 
     def get_json(self, url):
         '''
-Helper functions used to parse the json output of a rest call
-'''
+        Helper functions used to parse the json output of a rest call
+        '''
         try:
             try:
                 command = "curl -s %s" % (url)
@@ -476,8 +476,8 @@ Helper functions used to parse the json output of a rest call
 
     def check_switch(self,RestIP,correct_nr_switch, RestPort ="8080" ):
         '''
-Used by check_status
-'''
+        Used by check_status
+        '''
         try:
             buf = ""
             retcode = 0
@@ -521,8 +521,8 @@ Used by check_status
 
     def check_link(self,RestIP, nr_links, RestPort = "8080"):
         '''
-Used by check_status
-'''
+        Used by check_status
+        '''
         try:
             buf = ""
             retcode = 0
@@ -555,9 +555,9 @@ Used by check_status
 
     def check_status_report(self, ip, numoswitch, numolink, port="8080"):
         '''
-Checks the number of swithes & links that ONOS sees against the supplied values.
-Writes to the report log.
-'''
+        Checks the number of swithes & links that ONOS sees against the supplied values.
+        Writes to the report log.
+        '''
         try:
             main.log.info(self.name + ": Making some rest calls...")
             switch = self.check_switch(ip, int(numoswitch), port)
@@ -579,9 +579,9 @@ Writes to the report log.
 
     def check_status(self, ip, numoswitch, numolink, port = "8080"):
         '''
-Checks the number of swithes & links that ONOS sees against the supplied values.
-Writes to the main log.
-'''
+        Checks the number of swithes & links that ONOS sees against the supplied values.
+        Writes to the main log.
+        '''
         try:
             main.log.info(self.name + ": Making some rest calls...")
             switch = self.check_switch(ip, int(numoswitch), port)
@@ -603,8 +603,8 @@ Writes to the main log.
  
     def drop_keyspace(self):
         '''
-Drops the ONOS keyspace
-'''
+        Drops the ONOS keyspace
+        '''
         try:
             self.handle.sendline(self.home + "/scripts/drop-keyspace.sh")
             self.handle.expect("keyspace")
@@ -622,9 +622,9 @@ Drops the ONOS keyspace
     
     def check_for_no_exceptions(self):
         '''
-TODO: Rewrite
-Used by CassndraCheck.py to scan ONOS logs for Exceptions
-'''
+        TODO: Rewrite
+        Used by CassndraCheck.py to scan ONOS logs for Exceptions
+        '''
         try:
             self.handle.sendline("dsh 'grep Exception ~/ONOS/onos-logs/onos.*.log'")
             self.handle.expect("\$ dsh")
@@ -645,9 +645,9 @@ Used by CassndraCheck.py to scan ONOS logs for Exceptions
 
     def git_pull(self):
         '''
-Stops the ONOS, pulls the latest code, and builds with mvn.
-Assumes that "git pull" works without login
-'''
+        Stops the ONOS, pulls the latest code, and builds with mvn.
+        Assumes that "git pull" works without login
+        '''
         try:
             main.log.info(self.name + ": Stopping ONOS")
             self.stop()

@@ -190,6 +190,7 @@ RamCloudCliDriver is the basic driver which will handle the RamCloud server func
             return main.TRUE
         else:
             main.log.warn(self.name+": RAMCloud was not Running")
+            return main.FALSE
  
     def disconnect(self):
         ''' 

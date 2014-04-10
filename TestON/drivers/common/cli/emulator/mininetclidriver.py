@@ -57,25 +57,23 @@ class MininetCliDriver(Emulator):
         self.ssh_handle = self.handle
         
         if self.handle :
-            main.log.info("Clearing any residual state or processes")
+            main.log.info(self.name+": Clearing any residual state or processes")
             self.handle.sendline("sudo mn -c")
-
             i=self.handle.expect(['password\sfor\s','Cleanup\scomplete',pexpect.EOF,pexpect.TIMEOUT],120)
             if i==0:
-                main.log.info("sending sudo password")
+                main.log.info(self.name+": Sending sudo password")
                 self.handle.sendline(self.pwd)
                 i=self.handle.expect(['%s:'%(self.user),'\$',pexpect.EOF,pexpect.TIMEOUT],120) 
             if i==1:
-                main.log.info("Clean")
-
+                main.log.info(self.name+": Clean")
             elif i==2:
-                main.log.error("Connection timeout")
+                main.log.error(self.name+": Connection terminated")
             elif i==3: #timeout
-                main.log.error("Something while cleaning MN took too long... " )
+                main.log.error(self.name+": Something while cleaning MN took too long... " )
  
             #cmdString = "sudo mn --topo "+self.options['topo']+","+self.options['topocount']+" --mac --switch "+self.options['switch']+" --controller "+self.options['controller']
             #cmdString = "sudo mn --custom ~/mininet/custom/topo-2sw-2host.py --controller remote --ip 192.168.56.102 --port 6633 --topo mytopo"
-            main.log.info("building fresh mininet") 
+            main.log.info(self.name+": building fresh mininet") 
             #### for reactive/PARP enabled tests
             cmdString = "sudo mn " + self.options['arg1'] + " " + self.options['arg2'] +  " --mac --controller " + self.options['controller']
             #### for proactive flow with static ARP entries
@@ -86,29 +84,25 @@ class MininetCliDriver(Emulator):
             while 1: 
                 i=self.handle.expect(['mininet>','\*\*\*','Exception',pexpect.EOF,pexpect.TIMEOUT],300)
                 if i==0:
-                    main.log.info("mininet built") 
+                    main.log.info(self.name+": mininet built") 
                     return main.TRUE
                 if i==1:
                     self.handle.expect("\n")
                     main.log.info(self.handle.before)
                 elif i==2:
-                    main.log.error("Launching mininet failed...")
+                    main.log.error(self.name+": Launching mininet failed...")
                     return main.FALSE
                 elif i==3:
-                    main.log.error("Connection timeout")
+                    main.log.error(self.name+": Connection timeout")
                     return main.FALSE
                 elif i==4: #timeout
-                    main.log.error("Something took too long... " )
+                    main.log.error(self.name+": Something took too long... " )
                     return main.FALSE
-
             #if utilities.assert_matches(expect=patterns,actual=resultCommand,onpass="Network is being launched",onfail="Network launching is being failed "):
             return main.TRUE
-            #else:
-            #    return main.FALSE
-
-        else :
-            main.log.error("Connection failed to the host "+self.user_name+"@"+self.ip_address) 
-            main.log.error("Failed to connect to the Mininet")
+        else:#if no handle
+            main.log.error(self.name+": Connection failed to the host "+self.user_name+"@"+self.ip_address) 
+            main.log.error(self.name+": Failed to connect to the Mininet")
             return main.FALSE
                        
     def pingall(self):
@@ -116,15 +110,18 @@ class MininetCliDriver(Emulator):
         Verifies the reachability of the hosts using pingall command.
         '''
         if self.handle :
-            main.log.info("Checking reachabilty to the hosts using pingall")
+            main.log.info(self.name+": Checking reachabilty to the hosts using pingall")
             response = self.execute(cmd="pingall",prompt="mininet>",timeout=10)
             pattern = 'Results\:\s0\%\sdropped\s\(0\/\d+\slost\)\s*$'
-            if utilities.assert_matches(expect=pattern,actual=response,onpass="All hosts are reaching",onfail="Unable to reach all the hosts"):
+            #if utilities.assert_matches(expect=pattern,actual=response,onpass="All hosts are reaching",onfail="Unable to reach all the hosts"):
+            if re.search(pattern,response):
+                main.log.info(self.name+": All hosts are reachable")
                 return main.TRUE
             else:
+                main.log.error(self.name+": Unable to reach all the hosts")
                 return main.FALSE
         else :
-            main.log.error("Connection failed to the host") 
+            main.log.error(self.name+": Connection failed to the host") 
             return main.FALSE
 
     def fpingHost(self,**pingParams):
@@ -139,28 +136,32 @@ class MininetCliDriver(Emulator):
         self.handle.expect("mininet")
         response = self.handle.before 
         if re.search(":\s-" ,response):
-            main.log.info("Ping fail") 
+            main.log.info(self.name+": Ping fail") 
             return main.FALSE
         elif re.search(":\s\d{1,2}\.\d\d", response):
-            main.log.info("Ping good!")
+            main.log.info(self.name+": Ping good!")
             return main.TRUE
-        main.log.info("Install fping on mininet machine... ") 
-        main.log.info("\n---\n"+response)
+        main.log.info(self.name+": Install fping on mininet machine... ") 
+        main.log.info(self.name+": \n---\n"+response)
         return main.FALSE
         
     def pingHost(self,**pingParams):
-        
+        '''
+        Ping from one mininet host to another
+        Currently the only supported Params: SRC and TARGET
+        '''
         args = utilities.parse_args(["SRC","TARGET"],**pingParams)
         #command = args["SRC"] + " ping -" + args["CONTROLLER"] + " " +args ["TARGET"]
         command = args["SRC"] + " ping "+args ["TARGET"]+" -c 1 -i 1"
         response = self.execute(cmd=command,prompt="mininet",timeout=10 )
-        main.log.info("Ping Response: "+ response )
-        if utilities.assert_matches(expect=',\s0\%\spacket\sloss',actual=response,onpass="No Packet loss",onfail="Host is not reachable"):
-            main.log.info("NO PACKET LOSS, HOST IS REACHABLE")
+        main.log.info(self.name+": Ping Response: "+ response )
+        #if utilities.assert_matches(expect=',\s0\%\spacket\sloss',actual=response,onpass="No Packet loss",onfail="Host is not reachable"):
+        if re.search(',\s0\%\spacket\sloss',response):
+            main.log.info(self.name+": NO PACKET LOSS, HOST IS REACHABLE")
             main.last_result = main.TRUE 
             return main.TRUE
         else :
-            main.log.error("PACKET LOST, HOST IS NOT REACHABLE")
+            main.log.error(self.name+": PACKET LOST, HOST IS NOT REACHABLE")
             main.last_result = main.FALSE
             return main.FALSE
     
@@ -173,12 +174,15 @@ class MininetCliDriver(Emulator):
 
             pattern = "inet\s(addr|Mask):([0-1]{1}[0-9]{1,2}|2[0-4][0-9]|25[0-5]|[0-9]{1,2}).([0-1]{1}[0-9]{1,2}|2[0-4][0-9]|25[0-5]|[0-9]{1,2}).([0-1]{1}[0-9]{1,2}|2[0-4][0-9]|25[0-5]|[0-9]{1,2}).([0-1]{1}[0-9]{1,2}|2[0-4][0-9]|25[0-5]|[0-9]{1,2})"
             #pattern = "inet\saddr:10.0.0.6"  
-            if utilities.assert_matches(expect=pattern,actual=response,onpass="Host Ip configured properly",onfail="Host IP not found") :
+            #if utilities.assert_matches(expect=pattern,actual=response,onpass="Host Ip configured properly",onfail="Host IP not found") :
+            if re.search(pattern,response):
+                main.log.info(self.name+": Host Ip configured properly")
                 return main.TRUE
             else:
+                main.log.error(self.name+": Host IP not found")
                 return main.FALSE
         else :
-            main.log.error("Connection failed to the host") 
+            main.log.error(self.name+": Connection failed to the host") 
             
     def verifySSH(self,**connectargs):
         response = self.execute(cmd="h1 /usr/sbin/sshd -D&",prompt="mininet>",timeout=10)
@@ -204,10 +208,10 @@ class MininetCliDriver(Emulator):
             pattern = r'HWaddr\s([0-9A-F]{2}[:-]){5}([0-9A-F]{2})'
             mac_address_search = re.search(pattern, response, re.I)
             mac_address = mac_address_search.group().split(" ")[1]
-            main.log.info("Mac-Address of Host "+ host + " is " + mac_address)
+            main.log.info(self.name+": Mac-Address of Host "+ host + " is " + mac_address)
             return mac_address
         else :
-            main.log.error("Connection failed to the host") 
+            main.log.error(self.name+": Connection failed to the host") 
     def getIPAddress(self,host):
         '''
         Verifies the host's ip configured or not.
@@ -217,51 +221,52 @@ class MininetCliDriver(Emulator):
 
             pattern = "inet\saddr:(\d+\.\d+\.\d+\.\d+)"
             ip_address_search = re.search(pattern, response)
-            main.log.info("IP-Address of Host "+host +" is "+ip_address_search.group(1))
+            main.log.info(self.name+": IP-Address of Host "+host +" is "+ip_address_search.group(1))
             return ip_address_search.group(1)
         else :
-            main.log.error("Connection failed to the host") 
+            main.log.error(self.name+": Connection failed to the host") 
         
     def dump(self):
-        main.log.info("Dump node info")
+        main.log.info(self.name+": Dump node info")
         response = self.execute(cmd = 'dump',prompt = 'mininet>',timeout = 10)
         return response
             
     def intfs(self):
-        main.log.info("List interfaces")
+        main.log.info(self.name+": List interfaces")
         response = self.execute(cmd = 'intfs',prompt = 'mininet>',timeout = 10)
         return response
     
     def net(self):
-        main.log.info("List network connections")
+        main.log.info(self.name+": List network connections")
         response = self.execute(cmd = 'net',prompt = 'mininet>',timeout = 10)
         return response
     
     def iperf(self):
-        main.log.info("Simple iperf TCP test between two (optionally specified) hosts")
+        main.log.info(self.name+": Simple iperf TCP test between two (optionally specified) hosts")
         response = self.execute(cmd = 'iperf',prompt = 'mininet>',timeout = 10)
         return response
     
     def iperfudp(self):
-        main.log.info("Simple iperf TCP test between two (optionally specified) hosts")
+        main.log.info(self.name+": Simple iperf TCP test between two (optionally specified) hosts")
         response = self.execute(cmd = 'iperfudp',prompt = 'mininet>',timeout = 10)
         return response
     
     def nodes(self):
-        main.log.info("List all nodes.")
+        main.log.info(self.name+": List all nodes.")
         response = self.execute(cmd = 'nodes',prompt = 'mininet>',timeout = 10)    
         return response
     
     def pingpair(self):
-        main.log.infoe("Ping between first two hosts")
-        self.execute(cmd = 'pingpair',prompt = 'mininet>',timeout = 20)
+        main.log.info(self.name+": Ping between first two hosts")
+        response = self.execute(cmd = 'pingpair',prompt = 'mininet>',timeout = 20)
         
-        if utilities.assert_matches(expect='0% packet loss',actual=response,onpass="No Packet loss",onfail="Hosts not reachable"):
-            main.log.info("Ping between two hosts SUCCESS")
+        #if utilities.assert_matches(expect='0% packet loss',actual=response,onpass="No Packet loss",onfail="Hosts not reachable"):
+        if re.search(',\s0\%\spacket\sloss',response):
+            main.log.info(self.name+": Ping between two hosts SUCCESSFUL")
             main.last_result = main.TRUE 
             return main.TRUE
         else :
-            main.log.error("PACKET LOST, HOSTS NOT REACHABLE")
+            main.log.error(self.name+": PACKET LOST, HOSTS NOT REACHABLE")
             main.last_result = main.FALSE
             return main.FALSE
     
@@ -359,14 +364,14 @@ class MininetCliDriver(Emulator):
         self.execute(cmd=command,prompt="mininet>",timeout=5)
 
     def disconnect(self):
-        main.log.info("Disconnecting mininet...")
+        main.log.info(self.name+": Disconnecting mininet...")
         response = ''
         if self.handle:
             response = self.execute(cmd="exit",prompt="(.*)",timeout=120)
             response = self.execute(cmd="exit",prompt="(.*)",timeout=120)
 
         else :
-            main.log.error("Connection failed to the host")
+            main.log.error(self.name+": Connection failed to the host")
             response = main.FALSE
         return response  
 
@@ -397,11 +402,11 @@ class MininetCliDriver(Emulator):
         self.handle.sendline(src + ' arping ' + dest)
         try:
             self.handle.expect(destmac)
-            main.log.info("ARP successful")
+            main.log.info(self.name+": ARP successful")
             self.handle.expect("mininet")
             return main.TRUE
         except:
-            main.log.warn("ARP FAILURE")
+            main.log.warn(self.name+": ARP FAILURE")
             self.handle.expect("mininet")
             return main.FALSE
 

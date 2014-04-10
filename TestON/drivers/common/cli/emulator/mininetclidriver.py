@@ -207,7 +207,27 @@ class MininetCliDriver(Emulator):
             main.log.info("Mac-Address of Host "+ host + " is " + mac_address)
             return mac_address
         else :
-            main.log.error("Connection failed to the host") 
+            main.log.error("Connection failed to the host")
+
+    def getInterfaceMACAddress(self,host, interface):
+        '''
+            Return the IP address of the interface on the given host
+        '''
+        if self.handle :
+            response = self.execute(cmd=host+" ifconfig " + interface,
+                                    prompt="mininet>",timeout=10)
+
+            pattern = r'HWaddr\s([0-9A-F]{2}[:-]){5}([0-9A-F]{2})'
+            mac_address_search = re.search(pattern, response, re.I)
+            if mac_address_search is None:
+                main.log.info("No mac address found in %s" % response)
+                return main.FALSE
+            mac_address = mac_address_search.group().split(" ")[1]
+            main.log.info("Mac-Address of "+ host + ":"+ interface + " is " + mac_address)
+            return mac_address
+        else:
+            main.log.error("Connection failed to the host")
+
     def getIPAddress(self,host):
         '''
         Verifies the host's ip configured or not.
@@ -221,7 +241,35 @@ class MininetCliDriver(Emulator):
             return ip_address_search.group(1)
         else :
             main.log.error("Connection failed to the host") 
-        
+
+    def getSwitchDPID(self,switch):
+        '''
+            return the datapath ID of the switch
+        '''
+        if self.handle :
+            cmd = "py %s.dpid" % switch
+            response = self.execute(cmd=cmd,prompt="mininet>",timeout=10)
+            pattern = r'^(?P<dpid>\d)+'
+            result = re.search(pattern, response, re.MULTILINE)
+            if result is None:
+                main.log.info("Couldn't find DPID for switch '', found: %s" % (switch, response))
+                return main.FALSE
+            return int(result.group('dpid'))
+        else:
+            main.log.error("Connection failed to the host")
+
+    def getInterfaces(self, node):
+        '''
+            return information dict about interfaces connected to the node
+        '''
+        if self.handle :
+            cmd = 'py "\\n".join(["name=%s,mac=%s,ip=%s,isUp=%s" % (i.name, i.MAC(), i.IP(), i.isUp())'
+            cmd += ' for i in %s.intfs.values()])' % node
+            response = self.execute(cmd=cmd,prompt="mininet>",timeout=10)
+            return response
+        else:
+            main.log.error("Connection failed to the node")
+
     def dump(self):
         main.log.info("Dump node info")
         response = self.execute(cmd = 'dump',prompt = 'mininet>',timeout = 10)

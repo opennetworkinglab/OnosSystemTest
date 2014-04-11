@@ -728,7 +728,7 @@ class OnosCliDriver(CLI):
         try:
             self.handle.sendline("")
             self.handle.expect("\$")
-            self.handle.sendline("sudo tcpdump -n -i "+ intf + " -s0 -w onos-logs/tcpdump &")
+            self.handle.sendline("sudo tcpdump -n -i "+ intf + " -s0 -w " + self.home +"/onos-logs/tcpdump &")
             i=self.handle.expect(['No\ssuch\device','listening\son',pexpect.TIMEOUT],timeout=10)
             if i == 0:
                 main.log.error(self.name + ": tcpdump - No such device exists. tcpdump attempted on: " + intf)

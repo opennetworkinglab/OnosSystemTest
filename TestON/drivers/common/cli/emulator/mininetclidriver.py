@@ -564,50 +564,6 @@ class MininetCliDriver(Emulator):
             main.log.error(self.name+": Connection failed to the host")
             response = main.FALSE
         return response  
-
-    def ctrl_none(self):
-        #self.execute(cmd="sh ~/ONOS/scripts/test-ctrl-none.sh", prompt="mininet",timeout=20)
-        self.handle.sendline()
-        self.handle.expect(["mininet>",pexpect.EOF,pexpect.TIMEOUT])
-        self.handle.sendline("sh ~/ONOS/scripts/test-ctrl-none.sh")
-        self.handle.expect(["test-ctrl-none",pexpect.EOF,pexpect.TIMEOUT])
-        self.handle.expect(["mininet>",pexpect.EOF,pexpect.TIMEOUT], 20)
-
-    def ctrl_all(self):
-        try:
-            self.execute(cmd="sh ~/ONOS/scripts/test-ctrl-add-ext.sh", prompt="mininet",timeout=20)
-        except pexpect.EOF:  
-            main.log.error(self.name + ": EOF exception found")
-            main.log.error(self.name + ":     " + self.handle.before)
-            main.cleanup()
-            main.exit()
-
-    def ctrl_divide(self):
-        try:
-            self.execute(cmd="sh ~/ONOS/scripts/ctrl-divide.sh ", prompt="mininet",timeout=20)
-        except pexpect.EOF:  
-            main.log.error(self.name + ": EOF exception found")
-            main.log.error(self.name + ":     " + self.handle.before)
-            main.cleanup()
-            main.exit()
-
-    def ctrl_local(self):
-        try:
-            self.execute(cmd="sh ~/ONOS/scripts/test-ctrl-local.sh ", prompt="mininet",timeout=20)
-        except pexpect.EOF:  
-            main.log.error(self.name + ": EOF exception found")
-            main.log.error(self.name + ":     " + self.handle.before)
-            main.cleanup()
-            main.exit()
-
-    def ctrl_one(self, ip):
-        try:
-            self.execute(cmd="sh ~/ONOS/scripts/ctrl-one.sh "+ip, prompt="mininet",timeout=20)
-        except pexpect.EOF:  
-            main.log.error(self.name + ": EOF exception found")
-            main.log.error(self.name + ":     " + self.handle.before)
-            main.cleanup()
-            main.exit()
   
     def arping(self, src, dest, destmac):
         self.handle.sendline('')

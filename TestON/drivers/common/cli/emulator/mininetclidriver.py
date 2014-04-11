@@ -80,14 +80,14 @@ class MininetCliDriver(Emulator):
             #cmdString = "sudo mn " + self.options['arg1'] + " " + self.options['arg2'] +  " --mac --arp --controller " + self.options['controller']
             #resultCommand = self.execute(cmd=cmdString,prompt='mininet>',timeout=120)
             self.handle.sendline(cmdString)
-            self.handle.expect("sudo mn")
+            self.handle.expect(["sudo mn",pexpect.EOF,pexpect.TIMEOUT])
             while 1: 
                 i=self.handle.expect(['mininet>','\*\*\*','Exception',pexpect.EOF,pexpect.TIMEOUT],300)
                 if i==0:
                     main.log.info(self.name+": mininet built") 
                     return main.TRUE
                 if i==1:
-                    self.handle.expect("\n")
+                    self.handle.expect(["\n",pexpect.EOF,pexpect.TIMEOUT])
                     main.log.info(self.handle.before)
                 elif i==2:
                     main.log.error(self.name+": Launching mininet failed...")
@@ -132,8 +132,8 @@ class MininetCliDriver(Emulator):
         args = utilities.parse_args(["SRC","TARGET"],**pingParams)
         command = args["SRC"] + " fping -i 100 -t 20 -C 1 -q "+args["TARGET"]
         self.handle.sendline(command) 
-        self.handle.expect(args["TARGET"]) 
-        self.handle.expect("mininet")
+        self.handle.expect([args["TARGET"],pexpect.EOF,pexpect.TIMEOUT]) 
+        self.handle.expect(["mininet",pexpect.EOF,pexpect.TIMEOUT])
         response = self.handle.before 
         if re.search(":\s-" ,response):
             main.log.info(self.name+": Ping fail") 
@@ -378,10 +378,10 @@ class MininetCliDriver(Emulator):
     def ctrl_none(self):
         #self.execute(cmd="sh ~/ONOS/scripts/test-ctrl-none.sh", prompt="mininet",timeout=20)
         self.handle.sendline()
-        self.handle.expect("mininet>")
+        self.handle.expect(["mininet>",pexpect.EOF,pexpect.TIMEOUT])
         self.handle.sendline("sh ~/ONOS/scripts/test-ctrl-none.sh")
-        self.handle.expect("test-ctrl-none")
-        self.handle.expect("mininet>", 20)
+        self.handle.expect(["test-ctrl-none",pexpect.EOF,pexpect.TIMEOUT])
+        self.handle.expect(["mininet>",pexpect.EOF,pexpect.TIMEOUT], 20)
 
     def ctrl_all(self):
         self.execute(cmd="sh ~/ONOS/scripts/test-ctrl-add-ext.sh", prompt="mininet",timeout=20)
@@ -397,17 +397,17 @@ class MininetCliDriver(Emulator):
   
     def arping(self, src, dest, destmac):
         self.handle.sendline('')
-        self.handle.expect("mininet")
+        self.handle.expect(["mininet",pexpect.EOF,pexpect.TIMEOUT])
 
         self.handle.sendline(src + ' arping ' + dest)
         try:
-            self.handle.expect(destmac)
+            self.handle.expect([destmac,pexpect.EOF,pexpect.TIMEOUT])
             main.log.info(self.name+": ARP successful")
-            self.handle.expect("mininet")
+            self.handle.expect(["mininet",pexpect.EOF,pexpect.TIMEOUT])
             return main.TRUE
         except:
             main.log.warn(self.name+": ARP FAILURE")
-            self.handle.expect("mininet")
+            self.handle.expect(["mininet",pexpect.EOF,pexpect.TIMEOUT])
             return main.FALSE
 
     def decToHex(num):

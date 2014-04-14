@@ -44,6 +44,6 @@
 	<restIP1>10.128.100.1</restIP1>
 	<restIP2>10.128.100.5</restIP2>
 	<restPort>8080</restPort>
-	<restURL>/wm/onos/topology/switches/all/json</restURL>
+	<restURL>/wm/onos/ng/switches/json</restURL>
     </RESTCALL>
 </PARAMS>      

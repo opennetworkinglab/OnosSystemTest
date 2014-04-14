@@ -450,10 +450,10 @@ class OnosCliDriver(CLI):
             main.exit()
 
 
-# http://localhost:8080/wm/core/topology/switches/all/json
-# http://localhost:8080/wm/core/topology/links/json
-# http://localhost:8080/wm/registry/controllers/json
-# http://localhost:8080/wm/registry/switches/json"
+# http://localhost:8080/wm/onos/ng/switches/json
+# http://localhost:8080/wm/onos/ng/links/json
+# http://localhost:8080/wm/onos/registry/controllers/json
+# http://localhost:8080/wm/onos/registry/switches/json"
 
     def get_json(self, url):
         '''
@@ -781,7 +781,7 @@ class OnosCliDriver(CLI):
         retmac = []
         foundIP = []
         try:
-            ##### device rest API is: 'host:8080/wm/core/topology/switches/all/json' ###
+            ##### device rest API is: 'host:8080/wm/onos/ng/switches/json' ###
             url ="http://%s:%s%s" %(RestIP,RestPort,RestAPI)
 
             try:

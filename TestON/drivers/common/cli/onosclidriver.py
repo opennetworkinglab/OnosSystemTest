@@ -700,7 +700,7 @@ class OnosCliDriver(CLI):
 #********************************************************           
 
 
-    def compile(self)
+    def compile(self):
         main.log.info(self.name + ": mvn clean")
         self.handle.sendline("mvn clean")
         while 1:

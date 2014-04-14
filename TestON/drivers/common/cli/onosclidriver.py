@@ -39,12 +39,12 @@ class OnosCliDriver(CLI):
         '''
         try:
             for key in connectargs:
-               vars(self)[key] = connectargs[key]
+                vars(self)[key] = connectargs[key]
             self.home = "~/ONOS"
             for key in self.options:
-               if key == "home":
-                   self.home = self.options['home']
-                   break
+                if key == "home":
+                    self.home = self.options['home']
+                    break
 
             
             self.name = self.options['name']
@@ -278,7 +278,12 @@ class OnosCliDriver(CLI):
             self.handle.sendline("cd " + self.home + "; git log -1 --pretty=fuller | grep -A 5 \"commit\"; cd \.\.")
             self.handle.expect("cd ..")
             self.handle.expect("\$")
-            main.log.report(self.name +": \n"+ str(self.handle.before + self.handle.after))
+            response=(self.name +": \n"+ str(self.handle.before + self.handle.after))
+            main.log.report(response)
+            lines=response.splitlines()
+            for line in lines:
+                print line
+            return lines[2]
         except:
             main.log.info(self.name + ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
             main.log.error( traceback.print_exc() )
@@ -482,7 +487,7 @@ class OnosCliDriver(CLI):
             buf = ""
             retcode = 0
             #RestPort="8080"
-            url="http://%s:%s/wm/onos/topology/switches/json" % (RestIP, RestPort)
+            url="http://%s:%s/wm/onos/ng/switches/json" % (RestIP, RestPort)
             parsedResult = self.get_json(url)
             if parsedResult == "":
                 retcode = 1
@@ -527,7 +532,7 @@ class OnosCliDriver(CLI):
             buf = ""
             retcode = 0
         
-            url = "http://%s:%s/wm/onos/topology/links/json" % (RestIP, RestPort)
+            url = "http://%s:%s/wm/onos/ng/links/json" % (RestIP, RestPort)
             parsedResult = self.get_json(url)
         
             if parsedResult == "":
@@ -643,85 +648,93 @@ class OnosCliDriver(CLI):
             main.exit()
 
 
-    def git_pull(self):
+    def git_pull(self, comp1=""):
         '''
-        Stops the ONOS, pulls the latest code, and builds with mvn.
         Assumes that "git pull" works without login
+        
+        This function will perform a git pull on the ONOS instance.
+        If used as git_pull("NODE") it will do git pull + NODE. This is
+        for the purpose of pulling from other nodes if necessary.
+
+        Otherwise, this function will perform a git pull in the 
+        ONOS repository. If it has any problems, it will return main.ERROR
+        If it successfully does a git_pull, it will return a 1.
+        If it has no updates, it will return a 0.
+
         '''
-        try:
-            main.log.info(self.name + ": Stopping ONOS")
-            self.stop()
-            self.handle.sendline("cd " + self.home)
-            self.handle.expect("ONOS\$")
+        main.log.info(self.name + ": Stopping ONOS")
+        self.stop()
+        self.handle.sendline("cd " + self.home)
+        self.handle.expect("ONOS\$")
+        if comp1=="":
             self.handle.sendline("git pull")
-           
-            uptodate = 0
-            i=self.handle.expect(['fatal','Username\sfor\s(.*):\s','Unpacking\sobjects',pexpect.TIMEOUT,'Already up-to-date','Aborting'],timeout=180)
-            #debug
-           #main.log.report(self.name +": \n"+"git pull response: " + str(self.handle.before) + str(self.handle.after))
-            if i==0:
-                main.log.error(self.name + ": Git pull had some issue...")
+        else:
+            self.handle.sendline("git pull " + comp1)
+       
+        uptodate = 0
+        i=self.handle.expect(['fatal','Username\sfor\s(.*):\s','Unpacking\sobjects',pexpect.TIMEOUT,'Already up-to-date','Aborting'],timeout=180)
+        #debug
+       #main.log.report(self.name +": \n"+"git pull response: " + str(self.handle.before) + str(self.handle.after))
+        if i==0:
+            main.log.error(self.name + ": Git pull had some issue...")
+            return main.ERROR
+        elif i==1:
+            main.log.error(self.name + ": Git Pull Asking for username!!! BADD!")
+            return main.ERROR
+        elif i==2:
+            main.log.info(self.name + ": Git Pull - pulling repository now")
+            self.handle.expect("ONOS\$", 120)
+            return 0
+        elif i==3:
+            main.log.error(self.name + ": Git Pull - TIMEOUT")
+            return main.ERROR
+        elif i==4:
+            main.log.info(self.name + ": Git Pull - Already up to date")
+            return 1
+        elif i==5:
+            main.log.info(self.name + ": Git Pull - Aborting... Are there conflicting git files?")
+            return main.ERROR
+        else:
+            main.log.error(self.name + ": Git Pull - Unexpected response, check for pull errors")
+            return main.ERROR
+#********************************************************           
+
+
+    def compile(self)
+        main.log.info(self.name + ": mvn clean")
+        self.handle.sendline("mvn clean")
+        while 1:
+            i=self.handle.expect(['BUILD\sFAILURE','BUILD\sSUCCESS','ONOS\$',pexpect.TIMEOUT],timeout=30)
+            if i == 0:
+                main.log.error(self.name + ": Build failure!")
                 return main.FALSE
-            elif i==1:
-                main.log.error(self.name + ": Git Pull Asking for username!!! BADD!")
+            elif i == 1:
+                main.log.info(self.name + ": Build success!")
+            elif i == 2:
+                main.log.info(self.name + ": Build complete")
+                break;
+            elif i == 3:
+                main.log.error(self.name + ": mvn clean TIMEOUT!")
                 return main.FALSE
-            elif i==2:
-                main.log.info(self.name + ": Git Pull - pulling repository now")
-                self.handle.expect("ONOS\$", 120)
-            elif i==3:
-                main.log.error(self.name + ": Git Pull - TIMEOUT")
+    
+        main.log.info(self.name + ": mvn compile")
+        self.handle.sendline("mvn compile")
+        while 1:
+            i=self.handle.expect(['BUILD\sFAILURE','BUILD\sSUCCESS','ONOS\$',pexpect.TIMEOUT],timeout=60)
+            if i == 0:
+                main.log.error(self.name + ": Build failure!")
                 return main.FALSE
-            elif i==4:
-                main.log.info(self.name + ": Git Pull - Already up to date")
-                uptodate = 1
-            elif i==5:
-                main.log.info(self.name + ": Git Pull - Aborting... Are there conflicting git files?")
+            elif i == 1:
+                main.log.info(self.name + ": Build success!")
+                return main.TRUE
+            elif i == 2:
+                main.log.info(self.name + ": Build complete")
+                return main.TRUE
+            elif i == 3:
+                main.log.error(self.name + ": mvn compile TIMEOUT!")
                 return main.FALSE
             else:
-                main.log.error(self.name + ": Git Pull - Unexpected response, check for pull errors")
-                return main.FALSE
-            
-            if uptodate == 0:
-                main.log.info(self.name + ": mvn clean")
-                self.handle.sendline("mvn clean")
-                while 1:
-                    i=self.handle.expect(['BUILD\sFAILURE','BUILD\sSUCCESS','ONOS\$',pexpect.TIMEOUT],timeout=30)
-                    if i == 0:
-                        main.log.error(self.name + ": Build failure!")
-                        return main.FALSE
-                    elif i == 1:
-                        main.log.info(self.name + ": Build success!")
-                    elif i == 2:
-                        main.log.info(self.name + ": Build complete")
-                        break;
-                    elif i == 3:
-                        main.log.error(self.name + ": mvn clean TIMEOUT!")
-                        return main.FALSE
-            
-                main.log.info(self.name + ": mvn compile")
-                self.handle.sendline("mvn compile")
-                while 1:
-                    i=self.handle.expect(['BUILD\sFAILURE','BUILD\sSUCCESS','ONOS\$',pexpect.TIMEOUT],timeout=60)
-                    if i == 0:
-                        main.log.error(self.name + ": Build failure!")
-                        return main.FALSE
-                    elif i == 1:
-                        main.log.info(self.name + ": Build success!")
-                        return main.TRUE
-                    elif i == 2:
-                        main.log.info(self.name + ": Build complete")
-                        return main.TRUE
-                    elif i == 3:
-                        main.log.error(self.name + ": mvn compile TIMEOUT!")
-                        return main.FALSE
-                    else:
-                        pass
-        except:
-            main.log.info(self.name + ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
-            main.log.error( traceback.print_exc() )
-            main.log.info(":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
-            main.cleanup()
-            main.exit()
+                pass
 
 
     def tcpdump(self, intf = "eth0"):

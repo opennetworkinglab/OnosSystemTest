@@ -10,10 +10,24 @@ class RCOnosSanity4nodesJ :
     def CASE1(self,main) :  #Check to be sure ZK, Cass, and ONOS are up, then get ONOS version
         import time
         main.log.report("Pulling latest code from github to all nodes")
-        main.ONOS1.git_pull()
-        main.ONOS2.git_pull()
-        main.ONOS3.git_pull()
-        main.ONOS4.git_pull()
+        for i in range(2):
+            uptodate = main.ONOS1.git_pull()
+            main.ONOS2.git_pull()
+            main.ONOS3.git_pull()
+            main.ONOS4.git_pull()
+            ver1 = main.ONOS1.get_version()
+            ver2 = main.ONOS4.get_version()
+            if ver1==ver2:
+                break
+            elif i==1:
+                main.ONOS2.git_pull("ONOS1 master")
+                main.ONOS3.git_pull("ONOS1 master")
+                main.ONOS4.git_pull("ONOS1 master")
+        if uptodate==0:
+            main.ONOS1.git_compile()
+            main.ONOS2.git_compile()
+            main.ONOS3.git_compile()
+            main.ONOS4.git_compile()
        # main.RamCloud1.git_pull()
        # main.RamCloud2.git_pull()
        # main.RamCloud3.git_pull()

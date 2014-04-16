@@ -808,7 +808,7 @@ class OnosCliDriver(CLI):
 #********************************************************           
 
 
-    def compile(self):
+    def git_compile(self):
         '''
         Compiles ONOS
         First runs mvn clean then mvn compile
@@ -859,7 +859,6 @@ class OnosCliDriver(CLI):
             main.log.info(":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
             main.cleanup()
             main.exit()
-
 
     def tcpdump(self, intf = "eth0"):
         '''

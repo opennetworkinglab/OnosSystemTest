@@ -51,12 +51,15 @@ class OnosCliDriver(CLI):
             self.handle = super(OnosCliDriver,self).connect(user_name = self.user_name, ip_address = self.ip_address,port = self.port, pwd = self.pwd, home = self.home)
 
             if self.handle:
-                #self.start()
-                #self.start_rest()
                 return self.handle
             else :
                 main.log.info("NO ONOS HANDLE")
                 return main.FALSE
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":     " + self.handle.before)
+            main.cleanup()
+            main.exit()
         except:
             main.log.info(self.name + ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
             main.log.error( traceback.print_exc() )
@@ -71,24 +74,47 @@ class OnosCliDriver(CLI):
         '''
         try:
             self.handle.sendline("")
-            self.handle.expect("\$")
+            self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT])
             self.handle.sendline(self.home + "/onos.sh core start")
-            self.handle.expect("onos.sh core start")
-            i=self.handle.expect(["STARTED","FAILED"])
+            i=self.handle.expect(["STARTED","FAILED",pexpect.EOF,pexpect.TIMEOUT])
+            response = self.handle.before + str(self.handle.after)
             if i==0:
-                try:
-                    self.handle.expect("\$", timeout=60)
+                j = self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT], timeout=60)
+                if re.search("Killed",response):
+                    main.log.warn(self.name + ": Killed existing process")
+                if j==0:
                     main.log.info(self.name + ": ONOS Started ")
-                except:
+                    return main.TRUE
+                elif j==1:
+                    main.log.error(self.name + ": EOF exception found")
+                    main.log.error(self.name + ":     " + self.handle.before)
+                    main.cleanup()
+                    main.exit()
+                elif j==2:
                     main.log.info(self.name + ": ONOS NOT Started, stuck while waiting for it to start ")
                     return main.FALSE
-                return main.TRUE
+                else:
+                    main.log.warn(self.name +": Unexpected response in start")
+                    return main.TRUE
             elif i==1:
-                main.log.error(self.name + ": ONOS Failed ")
+                main.log.error(self.name + ": ONOS Failed to start")
                 return main.FALSE
-                raise
-            main.log.error(self.name + ": ONOS expect script missed something... ")
+            elif i==2:
+                main.log.error(self.name + ": EOF exception found")
+                main.log.error(self.name + ":     " + self.handle.before)
+                main.cleanup()
+                main.exit()
+            elif i==3:
+                main.log.error(self.name + ": ONOS timedout while starting")
+                return main.FALSE
+            else:
+                main.log.error(self.name + ": ONOS start  expect script missed something... ")
             return main.FALSE
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":     " + self.handle.before)
+            main.cleanup()
+            main.exit()
         except:
             main.log.info(self.name + ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
             main.log.error( traceback.print_exc() )
@@ -109,6 +135,11 @@ class OnosCliDriver(CLI):
             else :
                 main.log.warn(self.name + ": Failed to start Rest Server")
                 return main.FALSE
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":     " + self.handle.before)
+            main.cleanup()
+            main.exit()
         except:
             main.log.info(self.name + ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
             main.log.error( traceback.print_exc() )
@@ -131,6 +162,11 @@ class OnosCliDriver(CLI):
             else :
                 main.log.info( self.name + " WARNING: status recieved unknown response")
                 return main.FALSE
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":     " + self.handle.before)
+            main.cleanup()
+            main.exit()
         except:
             main.log.info(self.name + ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
             main.log.error( traceback.print_exc() )
@@ -176,6 +212,11 @@ class OnosCliDriver(CLI):
             else:
                 main.log.error(self.name + ": ONOS process not running...")
                 return main.FALSE
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":     " + self.handle.before)
+            main.cleanup()
+            main.exit()
         except:
             main.log.info(self.name + ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
             main.log.error( traceback.print_exc() )
@@ -193,13 +234,18 @@ class OnosCliDriver(CLI):
             response = self.execute(cmd= self.home + "/start-rest.sh status ",prompt="running",timeout=10)
             if re.search("rest\sserver\sis\srunning",response):
                 main.log.info(self.name + ": Rest Server is running")
+                return main.TRUE
             elif re.search("rest\sserver\sis\snot\srunning",response):
                 main.log.warn(self.name + ": Rest Server is not Running")
+                return main.FALSE
             else :
                 main.log.error(self.name + ": No response" +response)
-            self.execute(cmd="\n",prompt="\$",timeout=10)
-            
-            return response
+                return main.FALSE
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":     " + self.handle.before)
+            main.cleanup()
+            main.exit()
         except:
             main.log.info(self.name + ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
             main.log.error( traceback.print_exc() )
@@ -214,17 +260,22 @@ class OnosCliDriver(CLI):
         '''
         try:
             self.handle.sendline("")
-            self.handle.expect("\$")
+            self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT])
             self.handle.sendline(self.home + "/onos.sh core stop")
-            self.handle.expect("stop", 2)
+            i=self.handle.expect(["Stop",pexpect.EOF,pexpect.TIMEOUT])
+            self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT], 60)
             result = self.handle.before
-            self.handle.expect("\$", 60)
             if re.search("Killed", result):
                 main.log.info(self.name + ": ONOS Killed Successfully")
                 return main.TRUE
             else :
                 main.log.warn(self.name + ": ONOS wasn't running")
                 return main.FALSE
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":     " + self.handle.before)
+            main.cleanup()
+            main.exit()
         except:
             main.log.info(self.name + ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
             main.log.error( traceback.print_exc() )
@@ -246,6 +297,11 @@ class OnosCliDriver(CLI):
             else :
                 main.log.error(self.name + ": Failed to Stop, Rest Server is not Running")
                 return main.FALSE
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":     " + self.handle.before)
+            main.cleanup()
+            main.exit()
         except:
             main.log.info(self.name + ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
             main.log.error( traceback.print_exc() )
@@ -262,6 +318,11 @@ class OnosCliDriver(CLI):
         try:
             self.handle.sendline("exit")
             self.handle.expect("closed")
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":     " + self.handle.before)
+            main.cleanup()
+            main.exit()
         except:
             main.log.error(self.name + ": Connection failed to the host")
             response = main.FALSE
@@ -284,6 +345,11 @@ class OnosCliDriver(CLI):
             for line in lines:
                 print line
             return lines[2]
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":     " + self.handle.before)
+            main.cleanup()
+            main.exit()
         except:
             main.log.info(self.name + ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
             main.log.error( traceback.print_exc() )
@@ -325,6 +391,11 @@ class OnosCliDriver(CLI):
             else:
                     main.log.error("Failed to add flows...")
                     return main.FALSE
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":     " + self.handle.before)
+            main.cleanup()
+            main.exit()
         except:
             main.log.info(self.name + ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
             main.log.error( traceback.print_exc() )
@@ -362,6 +433,11 @@ class OnosCliDriver(CLI):
                  self.handle.expect("delete_flow")
                  self.handle.expect("\$",600)
                  main.log.info(self.name + ": Flows deleted")
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":     " + self.handle.before)
+            main.cleanup()
+            main.exit()
         except:
             main.log.info(self.name + ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
             main.log.error( traceback.print_exc() )
@@ -408,6 +484,11 @@ class OnosCliDriver(CLI):
                 elif i==4:
                     main.log.error(self.name + ":Check_flow() - Command Timeout!")
             return main.FALSE
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":     " + self.handle.before)
+            main.cleanup()
+            main.exit()
         except:
             main.log.info(self.name + ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
             main.log.error( traceback.print_exc() )
@@ -442,6 +523,11 @@ class OnosCliDriver(CLI):
                 data = self.execute(cmd=self.home + "/scripts/TestON_get_flow.sh "+str(flowParams[0])+" "+str(flowParams[1])+" "+str(flowParams[2])+" "+str(flowParams[3]),prompt="done",timeout=150)
                 self.execute(cmd="\n",prompt="\$",timeout=60)
                 return data
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":     " + self.handle.before)
+            main.cleanup()
+            main.exit()
         except:
             main.log.info(self.name + ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
             main.log.error( traceback.print_exc() )
@@ -472,6 +558,11 @@ class OnosCliDriver(CLI):
                 print "REST %s returned code %s" % (command, parsedResult['code'])
                 parsedResult = ""
             return parsedResult
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":     " + self.handle.before)
+            main.cleanup()
+            main.exit()
         except:
             main.log.info(self.name + ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
             main.log.error( traceback.print_exc() )
@@ -486,7 +577,6 @@ class OnosCliDriver(CLI):
         try:
             buf = ""
             retcode = 0
-            #RestPort="8080"
             url="http://%s:%s/wm/onos/ng/switches/json" % (RestIP, RestPort)
             parsedResult = self.get_json(url)
             if parsedResult == "":
@@ -517,6 +607,11 @@ class OnosCliDriver(CLI):
                 retcode = 1
         
             return (retcode, buf)
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":     " + self.handle.before)
+            main.cleanup()
+            main.exit()
         except:
             main.log.info(self.name + ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
             main.log.error( traceback.print_exc() )
@@ -551,6 +646,11 @@ class OnosCliDriver(CLI):
                 retcode = 1
         
             return (retcode, buf)
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":     " + self.handle.before)
+            main.cleanup()
+            main.exit()
         except:
             main.log.info(self.name + ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
             main.log.error( traceback.print_exc() )
@@ -575,6 +675,11 @@ class OnosCliDriver(CLI):
             else:
                 # "PASS"
                 return main.TRUE
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":     " + self.handle.before)
+            main.cleanup()
+            main.exit()
         except:
             main.log.info(self.name + ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
             main.log.error( traceback.print_exc() )
@@ -599,6 +704,11 @@ class OnosCliDriver(CLI):
             else:
                 # "PASS"
                 return main.TRUE
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":     " + self.handle.before)
+            main.cleanup()
+            main.exit()
         except:
             main.log.info(self.name + ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
             main.log.error( traceback.print_exc() )
@@ -606,25 +716,6 @@ class OnosCliDriver(CLI):
             main.cleanup()
             main.exit()
  
-    def drop_keyspace(self):
-        '''
-        Drops the ONOS keyspace
-        '''
-        try:
-            self.handle.sendline(self.home + "/scripts/drop-keyspace.sh")
-            self.handle.expect("keyspace")
-            self.handle.sendline("")
-            self.handle.expect("\$")
-            self.handle.expect("\$")
-            main.log.info(self.name + ": Keyspace dropped")
-        except:
-            main.log.info(self.name + ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
-            main.log.error( traceback.print_exc() )
-            main.log.info(":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
-            main.cleanup()
-            main.exit()
-
-    
     def check_for_no_exceptions(self):
         '''
         TODO: Rewrite
@@ -640,6 +731,11 @@ class OnosCliDriver(CLI):
                 return main.FALSE
             else :
                 return main.TRUE
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":     " + self.handle.before)
+            main.cleanup()
+            main.exit()
         except:
             main.log.info(self.name + ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
             main.log.error( traceback.print_exc() )
@@ -662,82 +758,114 @@ class OnosCliDriver(CLI):
         If it has no updates, it will return a 0.
 
         '''
-        main.log.info(self.name + ": Stopping ONOS")
-        self.stop()
-        self.handle.sendline("cd " + self.home)
-        self.handle.expect("ONOS\$")
-        if comp1=="":
-            self.handle.sendline("git pull")
-        else:
-            self.handle.sendline("git pull " + comp1)
-       
-        uptodate = 0
-        i=self.handle.expect(['fatal','Username\sfor\s(.*):\s','Unpacking\sobjects',pexpect.TIMEOUT,'Already up-to-date','Aborting'],timeout=180)
-        #debug
-       #main.log.report(self.name +": \n"+"git pull response: " + str(self.handle.before) + str(self.handle.after))
-        if i==0:
-            main.log.error(self.name + ": Git pull had some issue...")
-            return main.ERROR
-        elif i==1:
-            main.log.error(self.name + ": Git Pull Asking for username!!! BADD!")
-            return main.ERROR
-        elif i==2:
-            main.log.info(self.name + ": Git Pull - pulling repository now")
-            self.handle.expect("ONOS\$", 120)
-            return 0
-        elif i==3:
-            main.log.error(self.name + ": Git Pull - TIMEOUT")
-            return main.ERROR
-        elif i==4:
-            main.log.info(self.name + ": Git Pull - Already up to date")
-            return 1
-        elif i==5:
-            main.log.info(self.name + ": Git Pull - Aborting... Are there conflicting git files?")
-            return main.ERROR
-        else:
-            main.log.error(self.name + ": Git Pull - Unexpected response, check for pull errors")
-            return main.ERROR
+        try:
+            main.log.info(self.name + ": Stopping ONOS")
+            self.stop()
+            self.handle.sendline("cd " + self.home)
+            self.handle.expect("ONOS\$")
+            if comp1=="":
+                self.handle.sendline("git pull")
+            else:
+                self.handle.sendline("git pull " + comp1)
+           
+            uptodate = 0
+            i=self.handle.expect(['fatal','Username\sfor\s(.*):\s','Unpacking\sobjects',pexpect.TIMEOUT,'Already up-to-date','Aborting'],timeout=180)
+            #debug
+           #main.log.report(self.name +": \n"+"git pull response: " + str(self.handle.before) + str(self.handle.after))
+            if i==0:
+                main.log.error(self.name + ": Git pull had some issue...")
+                return main.ERROR
+            elif i==1:
+                main.log.error(self.name + ": Git Pull Asking for username!!! BADD!")
+                return main.ERROR
+            elif i==2:
+                main.log.info(self.name + ": Git Pull - pulling repository now")
+                self.handle.expect("ONOS\$", 120)
+                return 0
+            elif i==3:
+                main.log.error(self.name + ": Git Pull - TIMEOUT")
+                return main.ERROR
+            elif i==4:
+                main.log.info(self.name + ": Git Pull - Already up to date")
+                return 1
+            elif i==5:
+                main.log.info(self.name + ": Git Pull - Aborting... Are there conflicting git files?")
+                return main.ERROR
+            else:
+                main.log.error(self.name + ": Git Pull - Unexpected response, check for pull errors")
+                return main.ERROR
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":     " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name + ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
+            main.log.error( traceback.print_exc() )
+            main.log.info(":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
+            main.cleanup()
+            main.exit()
 #********************************************************           
 
 
     def compile(self):
-        main.log.info(self.name + ": mvn clean")
-        self.handle.sendline("mvn clean")
-        while 1:
-            i=self.handle.expect(['BUILD\sFAILURE','BUILD\sSUCCESS','ONOS\$',pexpect.TIMEOUT],timeout=30)
-            if i == 0:
-                main.log.error(self.name + ": Build failure!")
-                return main.FALSE
-            elif i == 1:
-                main.log.info(self.name + ": Build success!")
-            elif i == 2:
-                main.log.info(self.name + ": Build complete")
-                break;
-            elif i == 3:
-                main.log.error(self.name + ": mvn clean TIMEOUT!")
-                return main.FALSE
-    
-        main.log.info(self.name + ": mvn compile")
-        self.handle.sendline("mvn compile")
-        while 1:
-            i=self.handle.expect(['BUILD\sFAILURE','BUILD\sSUCCESS','ONOS\$',pexpect.TIMEOUT],timeout=60)
-            if i == 0:
-                main.log.error(self.name + ": Build failure!")
-                return main.FALSE
-            elif i == 1:
-                main.log.info(self.name + ": Build success!")
-                return main.TRUE
-            elif i == 2:
-                main.log.info(self.name + ": Build complete")
-                return main.TRUE
-            elif i == 3:
-                main.log.error(self.name + ": mvn compile TIMEOUT!")
-                return main.FALSE
-            else:
-                pass
+        '''
+        Compiles ONOS
+        First runs mvn clean then mvn compile
+        '''
+        try:
+            main.log.info(self.name + ": mvn clean")
+            self.handle.sendline("mvn clean")
+            while 1:
+                i=self.handle.expect(['BUILD\sFAILURE','BUILD\sSUCCESS','ONOS\$',pexpect.TIMEOUT],timeout=30)
+                if i == 0:
+                    main.log.error(self.name + ": Build failure!")
+                    return main.FALSE
+                elif i == 1:
+                    main.log.info(self.name + ": Build success!")
+                elif i == 2:
+                    main.log.info(self.name + ": Build complete")
+                    break;
+                elif i == 3:
+                    main.log.error(self.name + ": mvn clean TIMEOUT!")
+                    return main.FALSE
+        
+            main.log.info(self.name + ": mvn compile")
+            self.handle.sendline("mvn compile")
+            while 1:
+                i=self.handle.expect(['BUILD\sFAILURE','BUILD\sSUCCESS','ONOS\$',pexpect.TIMEOUT],timeout=60)
+                if i == 0:
+                    main.log.error(self.name + ": Build failure!")
+                    return main.FALSE
+                elif i == 1:
+                    main.log.info(self.name + ": Build success!")
+                    return main.TRUE
+                elif i == 2:
+                    main.log.info(self.name + ": Build complete")
+                    return main.TRUE
+                elif i == 3:
+                    main.log.error(self.name + ": mvn compile TIMEOUT!")
+                    return main.FALSE
+                else:
+                    pass
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":     " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name + ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
+            main.log.error( traceback.print_exc() )
+            main.log.info(":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
+            main.cleanup()
+            main.exit()
 
 
     def tcpdump(self, intf = "eth0"):
+        '''
+        Runs tpdump on an intferface and saves in onos-logs under the ONOS home directory
+        intf can be specified, or the default eth0 is used
+        '''
         try:
             self.handle.sendline("")
             self.handle.expect("\$")
@@ -755,6 +883,11 @@ class OnosCliDriver(CLI):
             else:
                 main.log.error(self.name + ": tcpdump - unexpected response")
             return main.FALSE
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":     " + self.handle.before)
+            main.cleanup()
+            main.exit()
         except:
             main.log.info(self.name + ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
             main.log.error( traceback.print_exc() )
@@ -763,10 +896,18 @@ class OnosCliDriver(CLI):
             main.exit()
 
     def kill_tcpdump(self):
+        '''
+        Kills any tcpdump processes running
+        '''
         try:
             self.handle.sendline("")
             self.handle.expect("\$")
             self.handle.sendline("sudo kill -9 `ps -ef | grep \"tcpdump -n\" | grep -v grep | awk '{print $2}'`")
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":     " + self.handle.before)
+            main.cleanup()
+            main.exit()
         except:
             main.log.info(self.name + ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
             main.log.error( traceback.print_exc() )
@@ -794,7 +935,7 @@ class OnosCliDriver(CLI):
                 parsedResult = ""
 
             if parsedResult == "":
-                return (retcode, "Rest API has an error")
+                return (retcode, "Rest API has an error", retport, retmac)
             else:
                 for switch in enumerate(parsedResult):
                     for port in enumerate(switch[1]['ports']):
@@ -810,6 +951,11 @@ class OnosCliDriver(CLI):
                                 retcode = retcode +1
                                 foundIP =''
             return(retcode, retswitch, retport, retmac)
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":     " + self.handle.before)
+            main.cleanup()
+            main.exit()
         except:
             main.log.info(self.name + ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
             main.log.error( traceback.print_exc() )

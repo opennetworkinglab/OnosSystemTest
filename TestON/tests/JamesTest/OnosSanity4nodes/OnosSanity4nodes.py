@@ -1,47 +1,25 @@
 
-class RCOnosSanity4nodesJ :
+class OnosSanity4nodes :
 
     def __init__(self) :
         self.default = ''
 
-#*****************************************************************************************************************************************************************************************
+#**********************************************************************************************************************************************************************************************
 #Test startup
-#Tests the startup of Zookeeper1, RamCloud1, and ONOS1 to be certain that all started up successfully
+#Tests the startup of Zookeeper1, Cassandra1, and ONOS1 to be certain that all started up successfully
     def CASE1(self,main) :  #Check to be sure ZK, Cass, and ONOS are up, then get ONOS version
         import time
         main.log.report("Pulling latest code from github to all nodes")
-        for i in range(2):
-            uptodate = main.ONOS1.git_pull()
-            main.ONOS2.git_pull()
-            main.ONOS3.git_pull()
-            main.ONOS4.git_pull()
-            ver1 = main.ONOS1.get_version()
-            ver2 = main.ONOS4.get_version()
-            if ver1==ver2:
-                break
-            elif i==1:
-                main.ONOS2.git_pull("ONOS1 master")
-                main.ONOS3.git_pull("ONOS1 master")
-                main.ONOS4.git_pull("ONOS1 master")
-        if uptodate==0:
-            main.ONOS1.git_compile()
-            main.ONOS2.git_compile()
-            main.ONOS3.git_compile()
-            main.ONOS4.git_compile()
-       # main.RamCloud1.git_pull()
-       # main.RamCloud2.git_pull()
-       # main.RamCloud3.git_pull()
-       # main.RamCloud4.git_pull()
-       # main.ONOS1.get_version()
-       # main.ONOS2.get_version()
-       # main.ONOS3.get_version()
-       # main.ONOS4.get_version()
-        main.RamCloud1.start_coor()
-        main.RamCloud1.start_serv()
-        main.RamCloud2.start_serv()
-        main.RamCloud3.start_serv()
-        main.RamCloud4.start_serv()
+        main.ONOS1.git_pull()
+        main.ONOS2.git_pull()
+        main.ONOS3.git_pull()
+        main.ONOS4.git_pull()
+        main.Cassandra1.start()
+        main.Cassandra2.start()
+        main.Cassandra3.start()
+        main.Cassandra4.start()
         time.sleep(20)
+        main.ONOS1.drop_keyspace()
         main.ONOS1.start()
         time.sleep(10)
         main.ONOS2.start()
@@ -53,27 +31,26 @@ class RCOnosSanity4nodesJ :
         if test == main.FALSE:
             main.ONOS1.start_rest()
         main.ONOS1.get_version()
-        main.log.report("Startup check Zookeeper1, RamCloud1, and ONOS1 connections")
+        main.log.report("Startup check Zookeeper1, Cassandra1, and ONOS1 connections")
         main.case("Checking if the startup was clean...")
         main.step("Testing startup Zookeeper")   
         data =  main.Zookeeper1.isup()
         utilities.assert_equals(expect=main.TRUE,actual=data,onpass="Zookeeper is up!",onfail="Zookeeper is down...")
-        main.step("Testing startup RamCloud")   
-        data =  main.RamCloud1.isup() 
+        main.step("Testing startup Cassandra")   
+        data =  main.Cassandra1.isup() 
         if data == main.FALSE:
-            main.RamCloud1.stop_coor()
-            main.RamCloud1.stop_serv()
-            main.RamCloud2.stop_serv()
-            main.RamCloud3.stop_serv()
-            main.RamCloud4.stop_serv()
+            main.Cassandra1.stop()
+            main.Cassandra2.stop()
+            main.Cassandra3.stop()
+            main.Cassandra4.stop()
 
             time.sleep(5)
-            main.RamCloud1.start_coor()
-            main.RamCloud1.start_serv()
-            main.RamCloud2.start_serv()
-            main.RamCloud3.start_serv()
-            main.RamCloud4.start_serv()
-        utilities.assert_equals(expect=main.TRUE,actual=data,onpass="RamCloud is up!",onfail="RamCloud is down...")
+ 
+            main.Cassandra1.start()
+            main.Cassandra2.start()
+            main.Cassandra3.start()
+            main.Cassandra4.start()
+        utilities.assert_equals(expect=main.TRUE,actual=data,onpass="Cassandra is up!",onfail="Cassandra is down...")
         main.step("Testing startup ONOS")   
         data = main.ONOS1.isup()
         if data == main.FALSE: 
@@ -106,22 +83,22 @@ class RCOnosSanity4nodesJ :
                 j=i+1
                 main.Mininet1.assign_sw_controller(sw=str(j),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'])
                 time.sleep(1)
-                main.Mininet1.assign_sw_controller(sw=str(j),count=4,ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'])
+                main.Mininet1.assign_sw_controller(sw=str(j),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'])
             elif i >= 3 and i < 5:
                 j=i+1
                 main.Mininet1.assign_sw_controller(sw=str(j),ip1=main.params['CTRL']['ip2'],port1=main.params['CTRL']['port2'])
                 time.sleep(1)
-                main.Mininet1.assign_sw_controller(sw=str(j),count=4,ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'])
+                main.Mininet1.assign_sw_controller(sw=str(j),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'])
             elif i >= 5 and i < 15:
                 j=i+1
                 main.Mininet1.assign_sw_controller(sw=str(j),ip1=main.params['CTRL']['ip3'],port1=main.params['CTRL']['port3'])
                 time.sleep(1)
-                main.Mininet1.assign_sw_controller(sw=str(j),count=4,ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'])
+                main.Mininet1.assign_sw_controller(sw=str(j),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'])
             else:
                 j=i+16
                 main.Mininet1.assign_sw_controller(sw=str(j),ip1=main.params['CTRL']['ip4'],port1=main.params['CTRL']['port4'])
                 time.sleep(1)
-                main.Mininet1.assign_sw_controller(sw=str(j),count=4,ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'])
+                main.Mininet1.assign_sw_controller(sw=str(j),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'])
         main.Mininet1.get_sw_controller("s1")       
  
 # **********************************************************************************************************************************************************************************************
@@ -171,49 +148,6 @@ class RCOnosSanity4nodesJ :
 #The assign controller is used because the ovs-vsctl module deletes all current controllers when a new controller is assigned.
 #The ping test performs single pings on hosts from opposite sides of the topology. If one ping fails, the test waits 5 seconds before trying again.
 #If the ping test fails 6 times, then the test case will return false
-    def CASE41(self,main) :
-        main.log.report("Testing Removal")
-        main.ONOS2.stop()
-        main.ONOS3.stop()
-        main.ONOS4.stop()
-        strtTime = time.time() 
-        result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
-        for i in range(10):
-            if result == main.FALSE:
-                time.sleep(5)
-                result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
-            else:
-                break
-
-        count = 1
-        i = 6
-        while i < 16 :
-            main.log.info("\n\t\t\t\th"+str(i)+" IS PINGING h"+str(i+25) )
-            ping = main.Mininet1.pingHost(src="h"+str(i),target="h"+str(i+25))
-            if ping == main.FALSE and count < 6:
-                count = count + 1
-                i = 6
-                main.log.info("Ping failed, making attempt number "+str(count)+" in 2 seconds")
-                time.sleep(2)
-            elif ping == main.FALSE and count ==6:
-                main.log.error("Ping test failed")
-                i = 17
-                result = main.FALSE
-            elif ping == main.TRUE:
-                i = i + 1
-                result = main.TRUE
-        endTime = time.time() 
-        if result == main.TRUE:
-            main.log.report("\tTime to complete ping test: "+str(round(endTime-strtTime,2))+" seconds")
-        else:
-            main.log.report("\tPING TEST FAIL")
-        utilities.assert_equals(expect=main.TRUE,actual=result,onpass="NO PACKET LOSS, HOST IS REACHABLE",onfail="PACKET LOST, HOST IS NOT REACHABLE")
-        time.sleep(10)
-        main.ONOS2.start() 
-        main.ONOS3.start()
-        main.ONOS4.start() 
-        time.sleep(10)
-
 
     def CASE4(self,main) :
         main.log.report("Remove ONOS 2,3,4 then ping until all hosts are reachable or fail after 6 attempts")
@@ -228,7 +162,7 @@ class RCOnosSanity4nodesJ :
       
         strtTime = time.time() 
         result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
-        for i in range(10):
+        for i in range(2):
             if result == main.FALSE:
                 time.sleep(5)
                 result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
@@ -258,7 +192,6 @@ class RCOnosSanity4nodesJ :
         else:
             main.log.report("\tPING TEST FAIL")
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="NO PACKET LOSS, HOST IS REACHABLE",onfail="PACKET LOST, HOST IS NOT REACHABLE")
-        time.sleep(10)
 
 # **********************************************************************************************************************************************************************************************
 #This test case restores the controllers removed by Case 4 then performs a ping test.
@@ -269,10 +202,10 @@ class RCOnosSanity4nodesJ :
         for i in range(25):
             if i < 15:
                 j=i+1
-                main.Mininet1.assign_sw_controller(sw=str(j),count=4,ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'])
+                main.Mininet1.assign_sw_controller(sw=str(j),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'])
             else:
                 j=i+16
-                main.Mininet1.assign_sw_controller(sw=str(j),count=4,ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'])
+                main.Mininet1.assign_sw_controller(sw=str(j),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'])
       
         strtTime = time.time() 
         result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
@@ -400,6 +333,7 @@ class RCOnosSanity4nodesJ :
 
     def CASE21(self,main) :
         import json
+        from drivers.common.api.onosrestapidriver import *
         main.log.report("Test device discovery function, by attach, detach, move host h1 from s1->s6->s1. Per mininet naming, switch port the host attaches will remain as 's1-eth1' throughout the test.")
         main.log.report("Check initially hostMAC/IP exist on the mininet...")
         host = main.params['YANK']['hostname']
@@ -418,7 +352,8 @@ class RCOnosSanity4nodesJ :
         main.log.info("\n\t\t\t\t ping issue one ping from" + str(host) + "to generate arp to switch. Ping result is not important" )
         ping = main.Mininet1.pingHost(src = str(host),target = "10.0.0.254")
         time.sleep(t_restwait)
-        Reststatus, Switch, Port, MAC = main.ONOS1.find_host(RestIP1,RestPort,url, hostip)
+        restcall = OnosRestApiDriver()
+        Reststatus, Switch, Port, MAC = restcall.find_host(RestIP1,RestPort,url, hostip)
         main.log.report("Number of host with IP=10.0.0.1 found by ONOS is: " + str(Reststatus))
         if Reststatus == 1:
             main.log.report("\t PASSED - Found host IP = " + hostip + "; MAC = " + "".join(MAC) + "; attached to switchDPID = " + "".join(Switch) + "; at port = " + "".join(Port))
@@ -445,7 +380,8 @@ class RCOnosSanity4nodesJ :
         main.log.info("\n\t\t\t\t ping issue one ping from" + str(host) + "to generate arp to switch. Ping result is not important" )
         ping = main.Mininet1.pingHost(src = str(host),target = "10.0.0.254")
         time.sleep(t_restwait)
-        Reststatus, Switch, Port, MAC = main.ONOS1.find_host(RestIP1,RestPort,url, hostip)
+        restcall = OnosRestApiDriver()
+        Reststatus, Switch, Port, MAC = restcall.find_host(RestIP1,RestPort,url, hostip)
 
         main.log.report("Number of host with IP=10.0.0.1 found by ONOS is: " + str(Reststatus))
         if Reststatus == 1:
@@ -471,7 +407,8 @@ class RCOnosSanity4nodesJ :
 
         ping = main.Mininet1.pingHost(src = str(host),target = "10.0.0.254")
         time.sleep(t_restwait)
-        Reststatus, Switch, Port, MAC = main.ONOS1.find_host(RestIP1,RestPort,url, hostip)
+        restcall = OnosRestApiDriver()
+        Reststatus, Switch, Port, MAC = restcall.find_host(RestIP1,RestPort,url, hostip)
 
         main.log.report("Number of host with IP=10.0.0.1 found by ONOS is: " + str(Reststatus))
         if Reststatus == 1:
@@ -492,13 +429,14 @@ class RCOnosSanity4nodesJ :
         main.case("Move s1-eth1 back to s1")
         result = main.Mininet1.yank(SW=main.params['YANK']['sw6'],INTF=main.params['YANK']['intf'])
         time.sleep(t_topowait)
-        result = main.Mininet1.plug(SW=main.params['PLUG']['sw1'],INTF=main.params['PLUG']['intf'])
+        retult = main.Mininet1.plug(SW=main.params['PLUG']['sw1'],INTF=main.params['PLUG']['intf'])
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Yank/Plug command suceeded",onfail="Yank/Plug command failed...")
         main.log.info("\n\t\t\t\t ping issue one ping from" + str(host) + "to generate arp to switch. Ping result is not important" )
 
         ping = main.Mininet1.pingHost(src = str(host),target = "10.0.0.254")
         time.sleep(t_restwait)
-        Reststatus, Switch, Port, MAC = main.ONOS1.find_host(RestIP1,RestPort,url, hostip)
+        restcall = OnosRestApiDriver()
+        Reststatus, Switch, Port, MAC = restcall.find_host(RestIP1,RestPort,url, hostip)
 
         main.log.report("Number of host with IP=10.0.0.1 found by ONOS is: " + str(Reststatus))
         if Reststatus == 1:
@@ -517,32 +455,4 @@ class RCOnosSanity4nodesJ :
         result = result1 and result2 and result3 and result4
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="DEVICE DISCOVERY TEST PASSED PLUG/UNPLUG/MOVE TEST",onfail="DEVICE DISCOVERY TEST FAILED")
 
-# Run a pure ping test. 
-
-    def CASE31(self, main):
-        main.log.report("Performing Ping Test")        
-        count = 1
-        i = 6
-        while i < 16 :
-            main.log.info("\n\t\t\t\th"+str(i)+" IS PINGING h"+str(i+25) )
-            strtTime = time.time()
-            ping = main.Mininet1.pingHost(src="h"+str(i),target="h"+str(i+25))
-            if ping == main.FALSE and count < 6:
-                count = count + 1
-                i = 6
-                main.log.info("Ping failed, making attempt number "+str(count)+" in 2 seconds")
-                time.sleep(2)
-            elif ping == main.FALSE and count ==6:
-                main.log.error("Ping test failed")
-                i = 17
-                result = main.FALSE
-            elif ping == main.TRUE:
-                i = i + 1
-                result = main.TRUE
-        endTime = time.time()
-        if result == main.TRUE:
-            main.log.report("\tTime to complete ping test: "+str(round(endTime-strtTime,2))+" seconds")
-        else:
-            main.log.report("\tPING TEST FAIL")
-        utilities.assert_equals(expect=main.TRUE,actual=result,onpass="NO PACKET LOSS, HOST IS REACHABLE",onfail="PACKET LOST, HOST IS NOT REACHABLE")
 

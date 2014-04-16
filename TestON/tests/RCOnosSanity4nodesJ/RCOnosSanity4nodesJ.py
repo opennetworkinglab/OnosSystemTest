@@ -415,7 +415,7 @@ class RCOnosSanity4nodesJ :
         main.log.report( "Wait time from ping to rest call set to " + str(t_restwait))
         #print "host=" + host + ";  RestIP=" + RestIP1 + ";  RestPort=" + str(RestPort)
         time.sleep(t_topowait) 
-        main.log.info("\n\t\t\t\t ping issue one ping from" + str(host) + "to generate arp to switch. Ping result is not important" )
+        main.log.info("\n\t\t\t\t ping issue one ping from " + str(host) + " to generate arp to switch. Ping result is not important" )
         ping = main.Mininet1.pingHost(src = str(host),target = "10.0.0.254")
         time.sleep(t_restwait)
         Reststatus, Switch, Port, MAC = main.ONOS1.find_host(RestIP1,RestPort,url, hostip)
@@ -429,8 +429,11 @@ class RCOnosSanity4nodesJ :
             main.log.report("Ports are: " + "; ".join(Port))
             main.log.report("MACs are: " + "; ".join(MAC))
             result1 = main.FALSE
-        else:
+        elif Reststatus == 0 and Switch == []:
             main.log.report("\t FAILED - Host " + host + " with MAC:" + mac + " does not exist. FAILED")
+            result1 = main.FALSE
+        else:# check if rest server is working
+            main.log.error("Issue with find host")
             result1 = main.FALSE
 
 
@@ -442,7 +445,7 @@ class RCOnosSanity4nodesJ :
         time.sleep(t_topowait)
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Yank command suceeded",onfail="Yank command failed...")
 
-        main.log.info("\n\t\t\t\t ping issue one ping from" + str(host) + "to generate arp to switch. Ping result is not important" )
+        main.log.info("\n\t\t\t\t ping issue one ping from " + str(host) + " to generate arp to switch. Ping result is not important" )
         ping = main.Mininet1.pingHost(src = str(host),target = "10.0.0.254")
         time.sleep(t_restwait)
         Reststatus, Switch, Port, MAC = main.ONOS1.find_host(RestIP1,RestPort,url, hostip)
@@ -457,9 +460,12 @@ class RCOnosSanity4nodesJ :
             main.log.report("Ports are: " + "; ".join(Port))
             main.log.report("MACs are: " + "; ".join(MAC))
             result2 = main.FALSE
-        else:
+        elif Reststatus == 0 and Switch == []:
             main.log.report("\t PASSED - Host " + host + " with MAC:" + str(mac) + " does not exist. PASSED - host is not supposed to be attached to the switch.")
             result2 = main.TRUE
+        else:# check if rest server is working
+            main.log.error("Issue with find host")
+            result2 = main.FALSE
          
         ##### Step to plug "s1-eth1" to s6, which is on autoONOS3  ######
         main.log.report("Plug s1-eth1 into s6")
@@ -467,7 +473,7 @@ class RCOnosSanity4nodesJ :
         result = main.Mininet1.plug(SW=main.params['PLUG']['sw6'],INTF=main.params['PLUG']['intf'])
         time.sleep(t_topowait)
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Plug command suceeded",onfail="Plug command failed...")
-        main.log.info("\n\t\t\t\t ping issue one ping from" + str(host) + "to generate arp to switch. Ping result is not important" )
+        main.log.info("\n\t\t\t\t ping issue one ping from " + str(host) + " to generate arp to switch. Ping result is not important" )
 
         ping = main.Mininet1.pingHost(src = str(host),target = "10.0.0.254")
         time.sleep(t_restwait)
@@ -483,8 +489,11 @@ class RCOnosSanity4nodesJ :
             main.log.report("Ports are: " + "; ".join(Port))
             main.log.report("MACs are: " + "; ".join(MAC))            
             result3 = main.FALSE
-        else:
+        elif Reststatus == 0 and Switch == []:
             main.log.report("\t FAILED - Host " + host + " with MAC:" + str(mac) + " does not exist. FAILED")
+            result3 = main.FALSE
+        else:# check if rest server is working
+            main.log.error("Issue with find host")
             result3 = main.FALSE
 
         ###### Step to put interface "s1-eth1" back to s1"#####
@@ -494,7 +503,7 @@ class RCOnosSanity4nodesJ :
         time.sleep(t_topowait)
         result = main.Mininet1.plug(SW=main.params['PLUG']['sw1'],INTF=main.params['PLUG']['intf'])
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Yank/Plug command suceeded",onfail="Yank/Plug command failed...")
-        main.log.info("\n\t\t\t\t ping issue one ping from" + str(host) + "to generate arp to switch. Ping result is not important" )
+        main.log.info("\n\t\t\t\t ping issue one ping from " + str(host) + " to generate arp to switch. Ping result is not important" )
 
         ping = main.Mininet1.pingHost(src = str(host),target = "10.0.0.254")
         time.sleep(t_restwait)
@@ -510,8 +519,11 @@ class RCOnosSanity4nodesJ :
             main.log.report("Ports are: " + "; ".join(Port))
             main.log.report("MACs are: " + "; ".join(MAC))            
             result4 = main.FALSE
-        else:
+        elif Reststatus == 0 and Switch == []:
             main.log.report("\t FAILED -Host " + host + " with MAC:" + str(mac) + " does not exist. FAILED")
+            result4 = main.FALSE
+        else:# check if rest server is working
+            main.log.error("Issue with find host")
             result4 = main.FALSE
 
         result = result1 and result2 and result3 and result4

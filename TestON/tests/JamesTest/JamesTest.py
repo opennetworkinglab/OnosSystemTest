@@ -34,14 +34,38 @@ class JamesTest :
                 main.ONOS3.git_pull("ONOS1 master")
                 main.ONOS4.git_pull("ONOS1 master")
         if uptodate==0:
-            main.log.report("Building ONOS1")
-            main.ONOS1.git_compile()
-            main.log.report("Building ONOS2")
-            main.ONOS2.git_compile()
-            main.log.report("Building ONOS3")
-            main.ONOS3.git_compile()
-            main.log.report("Building ONOS4")
-            main.ONOS4.git_compile()
+            for i in range(2):
+                main.log.report("Building ONOS1")
+                build1 = main.ONOS1.git_compile()
+                if build1:
+                    break
+                elif i==1:
+                    main.cleanup()
+                    main.exit()
+            for i in range(2):
+                main.log.report("Building ONOS2")
+                build2 = main.ONOS2.git_compile()
+                if build2:
+                    break
+                elif i==1:
+                    main.cleanup()
+                    main.exit()
+            for i in range(2):
+                main.log.report("Building ONOS3")
+                build3 = main.ONOS3.git_compile()
+                if build3:
+                    break
+                elif i==1:
+                    main.cleanup()
+                    main.exit()
+            for i in range(2):
+                main.log.report("Building ONOS4")
+                build4 = main.ONOS4.git_compile()
+                if build4:
+                    break
+                elif i==1:
+                    main.cleanup()
+                    main.exit()
         
 
         main.step("\n********************Testing Zookeeper Startup**************")

@@ -815,16 +815,18 @@ class OnosCliDriver(CLI):
         '''
         try:
             main.log.info(self.name + ": mvn clean")
+            self.handle.sendline("cd " + self.home)
             self.handle.sendline("mvn clean")
             while 1:
                 i=self.handle.expect(['BUILD\sFAILURE','BUILD\sSUCCESS','ONOS\$',pexpect.TIMEOUT],timeout=30)
+                print(str(self.before))
                 if i == 0:
-                    main.log.error(self.name + ": Build failure!")
+                    main.log.error(self.name + ": Clean failure!")
                     return main.FALSE
                 elif i == 1:
-                    main.log.info(self.name + ": Build success!")
+                    main.log.info(self.name + ": Clean success!")
                 elif i == 2:
-                    main.log.info(self.name + ": Build complete")
+                    main.log.info(self.name + ": Clean complete")
                     break;
                 elif i == 3:
                     main.log.error(self.name + ": mvn clean TIMEOUT!")

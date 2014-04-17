@@ -33,6 +33,7 @@ class RCOnosSanity4nodesJ :
             main.ONOS2.git_compile()
             main.ONOS3.git_compile()
             main.ONOS4.git_compile()
+        main.ONOS1.print_version()    
        # main.RamCloud1.git_pull()
        # main.RamCloud2.git_pull()
        # main.RamCloud3.git_pull()

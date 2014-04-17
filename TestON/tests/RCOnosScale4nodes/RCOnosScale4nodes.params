@@ -3,7 +3,7 @@
     <Iterations>2</Iterations>
     <WaitTime>50</WaitTime>
     <TargetTime>50</TargetTime>
-    <RestIP>10.128.4.151</RestIP>
+    <RestIP>10.128.100.1</RestIP>
     <NR_Switches>100</NR_Switches>
     <NR_Links>198</NR_Links>
 </PARAMS>      

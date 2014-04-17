@@ -10,6 +10,7 @@ class RCOnosSanity4nodesJ :
     def CASE1(self,main) :  #Check to be sure ZK, Cass, and ONOS are up, then get ONOS version
         import time
         main.Zookeeper1.start()
+        time.sleep(20)
         main.Zookeeper2.start()
         main.Zookeeper3.start()
         main.Zookeeper4.start()
@@ -41,13 +42,14 @@ class RCOnosSanity4nodesJ :
        # main.ONOS3.get_version()
        # main.ONOS4.get_version()
         main.RamCloud1.start_coor()
+        time.sleep(20)
         main.RamCloud1.start_serv()
         main.RamCloud2.start_serv()
         main.RamCloud3.start_serv()
         main.RamCloud4.start_serv()
         time.sleep(20)
         main.ONOS1.start()
-        time.sleep(10)
+        time.sleep(20)
         main.ONOS2.start()
         main.ONOS3.start()
         main.ONOS4.start()
@@ -63,7 +65,7 @@ class RCOnosSanity4nodesJ :
         data =  main.Zookeeper1.isup()
         utilities.assert_equals(expect=main.TRUE,actual=data,onpass="Zookeeper is up!",onfail="Zookeeper is down...")
         main.step("Testing startup RamCloud")   
-        data =  main.RamCloud1.isup() 
+        data =  main.RamCloud1.status() 
         if data == main.FALSE:
             main.RamCloud1.stop_coor()
             main.RamCloud1.stop_serv()

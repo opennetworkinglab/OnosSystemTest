@@ -2,7 +2,7 @@
 
     <COMPONENT>
         <Zookeeper1>
-            <host>10.128.4.151</host>
+            <host>10.128.100.1</host>
             <user>admin</user>
             <password></password>
             <type>ZookeeperCliDriver</type>
@@ -12,7 +12,7 @@
         </Zookeeper1>
 
         <Zookeeper2>
-            <host>10.128.4.152</host>
+            <host>10.128.100.4</host>
             <user>admin</user>
             <password></password>
             <type>ZookeeperCliDriver</type>
@@ -22,7 +22,7 @@
         </Zookeeper2>
 
         <Zookeeper3>
-            <host>10.128.4.153</host>
+            <host>10.128.100.5</host>
             <user>admin</user>
             <password></password>
             <type>ZookeeperCliDriver</type>
@@ -32,7 +32,7 @@
         </Zookeeper3>
        
         <Zookeeper4>
-            <host>10.128.4.154</host>
+            <host>10.128.100.6</host>
             <user>admin</user>
             <password></password>
             <type>ZookeeperCliDriver</type>
@@ -42,7 +42,7 @@
         </Zookeeper4>
 
         <RamCloud1>
-            <host>10.128.4.151</host>
+            <host>10.128.100.1</host>
             <user>admin</user>
             <password></password>
             <type>RamCloudCliDriver</type>
@@ -52,7 +52,7 @@
         </RamCloud1>
 
         <RamCloud2>
-            <host>10.128.4.152</host>
+            <host>10.128.100.4</host>
             <user>admin</user>
             <password></password>
             <type>RamCloudCliDriver</type>
@@ -62,7 +62,7 @@
         </RamCloud2>
        
         <RamCloud3>
-            <host>10.128.4.153</host>
+            <host>10.128.100.5</host>
             <user>admin</user>
             <password></password>
             <type>RamCloudCliDriver</type>
@@ -72,7 +72,7 @@
         </RamCloud3>
        
         <RamCloud4>
-            <host>10.128.4.154</host>
+            <host>10.128.100.6</host>
             <user>admin</user>
             <password></password>
             <type>RamCloudCliDriver</type>
@@ -82,7 +82,7 @@
         </RamCloud4>
 
         <ONOS1>
-            <host>10.128.4.151</host>
+            <host>10.128.100.1</host>
             <user>admin</user>
             <password></password>
             <type>OnosCliDriver</type>
@@ -92,7 +92,7 @@
         </ONOS1>
 
         <ONOS2>
-            <host>10.128.4.152</host>
+            <host>10.128.100.4</host>
             <user>admin</user>
             <password></password>
             <type>OnosCliDriver</type>
@@ -102,7 +102,7 @@
         </ONOS2>
 
         <ONOS3>
-            <host>10.128.4.153</host>
+            <host>10.128.100.5</host>
             <user>admin</user>
             <password></password>
             <type>OnosCliDriver</type>
@@ -112,7 +112,7 @@
         </ONOS3>
        
         <ONOS4>
-            <host>10.128.4.154</host>
+            <host>10.128.100.6</host>
             <user>admin</user>
             <password></password>
             <type>OnosCliDriver</type>
@@ -122,7 +122,7 @@
         </ONOS4>
 
         <Mininet1>
-            <host>10.128.4.159</host>
+            <host>10.128.100.11</host>
             <user>admin</user>
             <password></password>
             <type>MininetCliDriver</type>

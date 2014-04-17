@@ -326,7 +326,7 @@ class OnosCliDriver(CLI):
             response = main.FALSE
         return response
  
-    def get_version(self):
+    def print_version(self):
         '''
         Writes the COMMIT number to the report to be parsed by Jenkins data collecter.
         '''
@@ -339,6 +339,28 @@ class OnosCliDriver(CLI):
             self.handle.expect("\$")
             response=(self.name +": \n"+ str(self.handle.before + self.handle.after))
             main.log.report(response)
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":     " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name + ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
+            main.log.error( traceback.print_exc() )
+            main.log.info(":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
+            main.cleanup()
+    def get_version(self):
+        '''
+        Writes the COMMIT number to the report to be parsed by Jenkins data collecter.
+        '''
+        try:
+            self.handle.sendline("export TERM=xterm-256color")
+            self.handle.expect("xterm-256color")
+            self.handle.expect("\$")
+            self.handle.sendline("cd " + self.home + "; git log -1 --pretty=fuller | grep -A 5 \"commit\"; cd \.\.")
+            self.handle.expect("cd ..")
+            self.handle.expect("\$")
+            response=(self.name +": \n"+ str(self.handle.before + self.handle.after))
             lines=response.splitlines()
             for line in lines:
                 print line

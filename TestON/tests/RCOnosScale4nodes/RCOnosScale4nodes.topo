@@ -2,28 +2,28 @@
     <COMPONENT>
 
         <ONOS1>
-            <host>10.128.4.151</host>
+            <host>10.128.100.1</host>
             <user>admin</user>
             <password></password>
             <type>OnosCliDriver</type>
             <connect_order>7</connect_order>
         </ONOS1>
         <ONOS2>
-            <host>10.128.4.152</host>
+            <host>10.128.100.4</host>
             <user>admin</user>
             <password></password>
             <type>OnosCliDriver</type>
             <connect_order>8</connect_order>
         </ONOS2>
         <ONOS3>
-            <host>10.128.4.153</host>
+            <host>10.128.100.5</host>
             <user>admin</user>
             <password></password>
             <type>OnosCliDriver</type>
             <connect_order>9</connect_order>
         </ONOS3>
         <ONOS4>
-            <host>10.128.4.154</host>
+            <host>10.128.100.6</host>
             <user>admin</user>
             <password></password>
             <type>OnosCliDriver</type>
@@ -31,7 +31,7 @@
         </ONOS4>
 
         <Zookeeper1>
-            <host>10.128.4.151</host>
+            <host>10.128.100.1</host>
             <user>admin</user>
             <password></password>
             <type>ZookeeperCliDriver</type>
@@ -41,28 +41,28 @@
         </Zookeeper1>
 
         <RamCloud1>
-            <host>10.128.4.151</host>
+            <host>10.128.100.1</host>
             <user>admin</user>
             <password></password>
             <type>RamCloudCliDriver</type>
             <connect_order>3</connect_order>
         </RamCloud1>
         <RamCloud2>
-            <host>10.128.4.152</host>
+            <host>10.128.100.4</host>
             <user>admin</user>
             <password></password>
             <type>RamCloudCliDriver</type>
             <connect_order>4</connect_order>
         </RamCloud2>
         <RamCloud3>
-            <host>10.128.4.153</host>
+            <host>10.128.100.5</host>
             <user>admin</user>
             <password></password>
             <type>RamCloudCliDriver</type>
             <connect_order>5</connect_order>
         </RamCloud3>
         <RamCloud4>
-            <host>10.128.4.154</host>
+            <host>10.128.100.6</host>
             <user>admin</user>
             <password></password>
             <type>RamCloudCliDriver</type>
@@ -70,7 +70,7 @@
         </RamCloud4>
 
         <Mininet1>
-            <host>10.128.4.159</host>
+            <host>10.128.100.11</host>
             <user>admin</user>
             <password></password>
             <type>MininetCliDriver</type>
@@ -79,7 +79,7 @@
                 # Specify the Option for mininet
                 <arg1> </arg1>
                 <arg2> --topo linear,100 --arp</arg2>
-                <controller> remote,ip=10.128.4.151,port=6633 </controller>
+                <controller> remote,ip=10.128.100.1,port=6633 </controller>
              </COMPONENTS>
         </Mininet1>
 

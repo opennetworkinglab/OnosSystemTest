@@ -9,6 +9,11 @@ class RCOnosCHO4nodes :
 #Tests the startup of Zookeeper1, RamCloud1, and ONOS1 to be certain that all started up successfully
     def CASE1(self,main) :  #Check to be sure ZK, Cass, and ONOS are up, then get ONOS version
         import time
+        main.Zookeeper1.start()
+        time.sleep(5)
+        main.Zookeeper2.start()
+        main.Zookeeper3.start()
+        main.Zookeeper4.start()
         main.ONOS1.stop()
         main.ONOS2.stop()
         main.ONOS3.stop()
@@ -17,7 +22,12 @@ class RCOnosCHO4nodes :
         main.ONOS2.git_pull()
         main.ONOS3.git_pull()
         main.ONOS4.git_pull()
+        main.ONOS1.git_compile()
+        main.ONOS2.git_compile()
+        main.ONOS3.git_compile()
+        main.ONOS4.git_compile()
         main.RamCloud1.start_coor()
+        time.sleep(10)
         main.RamCloud1.start_serv()
         main.RamCloud2.start_serv()
         main.RamCloud3.start_serv()
@@ -36,7 +46,7 @@ class RCOnosCHO4nodes :
         data =  main.Zookeeper1.isup()
         utilities.assert_equals(expect=main.TRUE,actual=data,onpass="Zookeeper is up!",onfail="Zookeeper is down...")
         main.step("Testing startup RamCloud")   
-        data =  main.RamCloud1.isup() 
+        data =  main.RamCloud1.status() 
         if data == main.FALSE:
             main.RamCloud1.stop_coor()
             main.RamCloud1.stop_serv()
@@ -70,10 +80,7 @@ class RCOnosCHO4nodes :
             main.ONOS3.start()
             main.ONOS4.start()
             data = main.ONOS1.isup()
-        #main.ONOS1.tcpdump()
-        #main.ONOS2.tcpdump()
-        #main.ONOS3.tcpdump()
-        #main.ONOS4.tcpdump()
+            main.ONOS1.start_rest()
         utilities.assert_equals(expect=main.TRUE,actual=data,onpass="ONOS is up and running!",onfail="ONOS didn't start...")
            
 #**********************************************************************************************************************************************************************************************

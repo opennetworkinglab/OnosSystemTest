@@ -321,8 +321,6 @@ class OnosCliDriver(CLI):
         except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
             main.log.error(self.name + ":     " + self.handle.before)
-            main.cleanup()
-            main.exit()
         except:
             main.log.error(self.name + ": Connection failed to the host")
             response = main.FALSE
@@ -818,38 +816,47 @@ class OnosCliDriver(CLI):
             self.handle.sendline("cd " + self.home)
             self.handle.sendline("mvn clean")
             while 1:
-                i=self.handle.expect(['BUILD\sFAILURE','BUILD\sSUCCESS','ONOS\$',pexpect.TIMEOUT],timeout=30)
-                print(str(self.before))
+                i=self.handle.expect(['There\sis\sinsufficient\smemory\sfor\sthe\sJava\sRuntime\sEnvironment\sto\scontinue','BUILD\sFAILURE','BUILD\sSUCCESS','ONOS\$',pexpect.TIMEOUT],timeout=30)
                 if i == 0:
-                    main.log.error(self.name + ": Clean failure!")
+                    main.log.error(self.name + ":There is insufficient memory for the Java Runtime Environment to continue.")
                     return main.FALSE
                 elif i == 1:
-                    main.log.info(self.name + ": Clean success!")
+                    main.log.error(self.name + ": Clean failure!")
+                    return main.FALSE
                 elif i == 2:
+                    main.log.info(self.name + ": Clean success!")
+                elif i == 3:
                     main.log.info(self.name + ": Clean complete")
                     break;
-                elif i == 3:
+                elif i == 4:
                     main.log.error(self.name + ": mvn clean TIMEOUT!")
+                    return main.FALSE
+                else:
+                    main.log.error(self.name + ": unexpected response from mvn clean")
                     return main.FALSE
         
             main.log.info(self.name + ": mvn compile")
             self.handle.sendline("mvn compile")
             while 1:
-                i=self.handle.expect(['BUILD\sFAILURE','BUILD\sSUCCESS','ONOS\$',pexpect.TIMEOUT],timeout=60)
+                i=self.handle.expect(['There\sis\sinsufficient\smemory\sfor\sthe\sJava\sRuntime\sEnvironment\sto\scontinue','BUILD\sFAILURE','BUILD\sSUCCESS','ONOS\$',pexpect.TIMEOUT],timeout=60)
                 if i == 0:
+                    main.log.error(self.name + ":There is insufficient memory for the Java Runtime Environment to continue.")
+                    return main.FALSE
+                if i == 1:
                     main.log.error(self.name + ": Build failure!")
                     return main.FALSE
-                elif i == 1:
+                elif i == 2:
                     main.log.info(self.name + ": Build success!")
                     return main.TRUE
-                elif i == 2:
+                elif i == 3:
                     main.log.info(self.name + ": Build complete")
                     return main.TRUE
-                elif i == 3:
+                elif i == 4:
                     main.log.error(self.name + ": mvn compile TIMEOUT!")
                     return main.FALSE
                 else:
-                    pass
+                    main.log.error(self.name + ": unexpected response from mvn compile")
+                    return main.FALSE
         except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
             main.log.error(self.name + ":     " + self.handle.before)

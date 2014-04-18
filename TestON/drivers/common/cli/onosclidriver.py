@@ -75,7 +75,8 @@ class OnosCliDriver(CLI):
         try:
             self.handle.sendline("")
             self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT])
-            self.handle.sendline(self.home + "/onos.sh core start")
+            self.handle.sendline("cd "+self.home)
+            self.handle.sendline("./onos.sh core start")
             i=self.handle.expect(["STARTED","FAILED",pexpect.EOF,pexpect.TIMEOUT])
             response = self.handle.before + str(self.handle.after)
             if i==0:
@@ -127,7 +128,8 @@ class OnosCliDriver(CLI):
         Starts the rest server on ONOS.
         '''
         try:
-            response = self.execute(cmd= self.home + "/start-rest.sh start",prompt="\$",timeout=10)
+            self.handle.sendline("cd "+self.home)
+            response = self.execute(cmd= "./start-rest.sh start",prompt="\$",timeout=10)
             if re.search("admin",response):
                 main.log.info(self.name + ": Rest Server Started Successfully")
                 time.sleep(5)
@@ -153,7 +155,8 @@ class OnosCliDriver(CLI):
         '''
         try:
             self.execute(cmd="\n",prompt="\$",timeout=10)
-            response = self.execute(cmd= self.home + "/onos.sh core status ",prompt="\d+\sinstance\sof\sonos\srunning",timeout=10)
+            self.handle.sendline("cd "+self.home)
+            response = self.execute(cmd="./onos.sh core status ",prompt="\d+\sinstance\sof\sonos\srunning",timeout=10)
             self.execute(cmd="\n",prompt="\$",timeout=10)
             if re.search("1\sinstance\sof\sonos\srunning",response):
                 return main.TRUE
@@ -185,7 +188,8 @@ class OnosCliDriver(CLI):
         '''
         try:
             self.execute(cmd="\n",prompt="\$",timeout=10)
-            response = self.execute(cmd= self.home + "/onos.sh core status ",prompt="running",timeout=10)
+            self.handle.sendline("cd "+self.home)
+            response = self.execute(cmd= "./onos.sh core status ",prompt="running",timeout=10)
             self.execute(cmd="\n",prompt="\$",timeout=10)
             tail1 = self.execute(cmd="tail " + self.home + "/onos-logs/onos.*.log",prompt="\$",timeout=10)
             time.sleep(30)
@@ -261,7 +265,8 @@ class OnosCliDriver(CLI):
         try:
             self.handle.sendline("")
             self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT])
-            self.handle.sendline(self.home + "/onos.sh core stop")
+            self.handle.sendline("cd "+self.home)
+            self.handle.sendline("./onos.sh core stop")
             i=self.handle.expect(["Stop",pexpect.EOF,pexpect.TIMEOUT])
             self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT], 60)
             result = self.handle.before
@@ -377,7 +382,7 @@ class OnosCliDriver(CLI):
             main.cleanup()
             main.exit()
 
-    def add_flow(self, testONip, user, password, flowDef):
+    def add_flow(self, testONip, user = "admin", password = "", flowDef = "/flowdef.txt"):
         '''
         Copies the flowdef file from TestStation -> ONOS machine
         Then runs ./add_flow.py to add the flows to ONOS

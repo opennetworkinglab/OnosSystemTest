@@ -49,7 +49,8 @@ class ZookeeperCliDriver(CLI):
         self.port = None
         for key in connectargs:
             vars(self)[key] = connectargs[key]       
-        self.home = "~/zookeeper-3.4.5"
+        self.home = "~/ONOS"
+        #self.home = "~/zookeeper-3.4.5"
         for key in self.options:
             if key == "home":
                 self.home = self.options['home']
@@ -74,8 +75,9 @@ class ZookeeperCliDriver(CLI):
         main.log.info(self.name + ": Starting Zookeeper" )
         self.handle.sendline("")
         self.handle.expect("\$")
-        self.handle.sendline(self.home + "/bin/zkServer.sh start")
-        self.handle.expect("zkServer.sh start") 
+        self.handle.sendline("cd "+self.home)
+        self.handle.sendline("./onos.sh zk start")
+        self.handle.expect("zk start") 
         self.handle.expect("\$")
         response = self.handle.before + self.handle.after 
         if re.search("STARTED", response):
@@ -94,7 +96,8 @@ class ZookeeperCliDriver(CLI):
         '''
         time.sleep(5)
         self.execute(cmd="\n",prompt="\$",timeout=10)
-        response = self.execute(cmd=self.home + "/bin/zkServer.sh status ",prompt="JMX",timeout=10)
+        self.handle.sendline("cd "+self.home)
+        response = self.execute(cmd="./onos.sh zk status ",prompt="JMX",timeout=10)
        
         self.execute(cmd="\n",prompt="\$",timeout=10)
         return response
@@ -105,9 +108,9 @@ class ZookeeperCliDriver(CLI):
         ''' 
         self.execute(cmd="\n",prompt="\$",timeout=10)
         time.sleep(5)
-        response = self.execute(cmd=self.home + "/bin/zkServer.sh stop ",prompt="STOPPED",timeout=10)
-        self.execute(cmd="\n",prompt="\$",timeout=10)
-        if re.search("STOPPED",response):
+        self.handle.sendline("cd "+self.home)
+        response = self.execute(cmd="./onos.sh zk stop ",prompt="$",timeout=10)
+        if re.search("stopping",response):
             main.log.info(self.name + ": Zookeeper Stopped")
             return main.TRUE
         else:

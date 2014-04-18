@@ -75,7 +75,8 @@ RamCloudCliDriver is the basic driver which will handle the RamCloud server func
         main.log.info(self.name+": Starting RAMCloud Server" )
         self.handle.sendline("")
         self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT])
-        self.handle.sendline(self.home + "/onos.sh rc-server start")
+        self.handle.sendline("cd "+self.home)
+        self.handle.sendline("./onos.sh rc-server start")
         self.handle.expect(["onos.sh rc-server start",pexpect.EOF,pexpect.TIMEOUT])
         self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT])
         response = self.handle.before + self.handle.after
@@ -104,7 +105,8 @@ RamCloudCliDriver is the basic driver which will handle the RamCloud server func
         main.log.info(self.name+": Starting RAMCloud Coordinator" )
         self.handle.sendline("")
         self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT])
-        self.handle.sendline(self.home + "/onos.sh rc-coord start")
+        self.handle.sendline("cd "+self.home)
+        self.handle.sendline("./onos.sh rc-coord start")
         self.handle.expect(["onos.sh rc-coord start",pexpect.EOF,pexpect.TIMEOUT])
         self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT])
         response = self.handle.before + self.handle.after
@@ -124,7 +126,8 @@ RamCloudCliDriver is the basic driver which will handle the RamCloud server func
         main.log.info(self.name + ": Getting RC-Server Status")
         self.handle.sendline("")
         self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT])
-        self.handle.sendline(self.home + "/onos.sh rc-server status")
+        self.handle.sendline("cd "+self.home)
+        self.handle.sendline("./onos.sh rc-server status")
         self.handle.expect(["onos.sh rc-server status",pexpect.EOF,pexpect.TIMEOUT])
         self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT])
         response = self.handle.before + self.handle.after
@@ -146,7 +149,8 @@ RamCloudCliDriver is the basic driver which will handle the RamCloud server func
         main.log.info(self.name + ": Getting RC-Coord Status")
         self.handle.sendline("")
         self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT])
-        self.handle.sendline(self.home + "/onos.sh rc-coord status")
+        self.handle.sendline("cd "+self.home)
+        self.handle.sendline("./onos.sh rc-coord status")
         i=self.handle.expect(["onos.sh rc-coord status",pexpect.EOF,pexpect.TIMEOUT])
         self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT])
         response = self.handle.before + self.handle.after
@@ -169,7 +173,8 @@ RamCloudCliDriver is the basic driver which will handle the RamCloud server func
         main.log.info(self.name + ": Stopping RC-Server")
         self.handle.sendline("")
         self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT])
-        self.handle.sendline(self.home + "/onos.sh rc-server stop")
+        self.handle.sendline("cd "+self.home)
+        self.handle.sendline("./onos.sh rc-server stop")
         self.handle.expect(["onos.sh rc-server stop",pexpect.EOF,pexpect.TIMEOUT])
         self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT])
         response = self.handle.before + self.handle.after
@@ -188,7 +193,8 @@ RamCloudCliDriver is the basic driver which will handle the RamCloud server func
         main.log.info(self.name + ": Stopping RC-Coord")
         self.handle.sendline("")
         self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT])
-        self.handle.sendline(self.home + "/onos.sh rc-coord stop")
+        self.handle.sendline("cd "+self.home)
+        self.handle.sendline( "./onos.sh rc-coord stop")
         self.handle.expect(["onos.sh rc-coord stop",pexpect.EOF,pexpect.TIMEOUT])
         self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT])
         response = self.handle.before + self.handle.after

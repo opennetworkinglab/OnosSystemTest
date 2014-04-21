@@ -382,6 +382,27 @@ class OnosCliDriver(CLI):
             main.cleanup()
             main.exit()
 
+    def ad_flow(self):
+        main.log.info("AD_FLOW RUNNING!!!!")
+        self.handle.sendline("cd "+self.home+ "/scripts")
+        self.handle.expect("scripts")
+        print("Adding flows")
+        self.handle.sendline("./pyintents.py")
+        self.handle.sendline("cd "+self.home)
+        return main.TRUE
+
+    def rm_flow(self):
+        main.log.info("RM_FLOW RUNNING!!!")
+        self.handle.sendline("cd "+self.home+ "/scripts")
+        self.handle.expect("scripts")
+        print("Removing flows")
+        self.handle.sendline("./rmpyintents.py")
+        self.handle.sendline("cd "+self.home)
+        return main.TRUE
+        
+
+
+
     def add_flow(self, testONip, user = "admin", password = "", flowDef = "/flowdef.txt"):
         '''
         Copies the flowdef file from TestStation -> ONOS machine

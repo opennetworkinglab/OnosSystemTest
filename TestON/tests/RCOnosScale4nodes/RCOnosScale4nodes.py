@@ -40,7 +40,7 @@ class RCOnosScale4nodes:
         data =  main.Zookeeper1.isup()
         utilities.assert_equals(expect=main.TRUE,actual=data,onpass="Zookeeper is up!",onfail="Zookeeper is down...")
         main.step("Testing startup RamCloud")
-        data =  main.RamCloud1.isup()
+        data =  main.RamCloud1.status_serv()
         if data == main.FALSE:
             main.RamCloud1.stop_coor()
             main.RamCloud1.stop_serv()

@@ -141,11 +141,15 @@ class RCOnosSanity4nodesJ :
         import time
         main.case("Taking care of these flows!") 
         main.step("Cleaning out any leftover flows...")
-        main.ONOS1.delete_flow("all")
+        #main.ONOS1.delete_flow("all")
         strtTime = time.time()
-        main.ONOS1.add_flow(main.params['FLOWDEF'])
+        print("hello")
+        main.ONOS1.rm_flow()
+        print("world")
+        main.ONOS1.ad_flow()
+       # main.ONOS1.add_flow(main.params['FLOWDEF']['testONip'],main.params['FLOWDEF']['user'],main.params['FLOWDEF']['password'],main.params['FLOWDEF']['flowDef'])
         main.case("Checking flows")
-        
+       
         count = 1
         i = 6
         while i < 16 :

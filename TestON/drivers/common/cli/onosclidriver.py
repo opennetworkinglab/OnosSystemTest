@@ -582,8 +582,8 @@ class OnosCliDriver(CLI):
             main.exit()
 
 
-# http://localhost:8080/wm/onos/ng/switches/json
-# http://localhost:8080/wm/onos/ng/links/json
+# http://localhost:8080/wm/onos/topology/switches/json
+# http://localhost:8080/wm/onos/topology/links/json
 # http://localhost:8080/wm/onos/registry/controllers/json
 # http://localhost:8080/wm/onos/registry/switches/json"
 
@@ -623,7 +623,7 @@ class OnosCliDriver(CLI):
         try:
             buf = ""
             retcode = 0
-            url="http://%s:%s/wm/onos/ng/switches/json" % (RestIP, RestPort)
+            url="http://%s:%s/wm/onos/topology/switches/json" % (RestIP, RestPort)
             parsedResult = self.get_json(url)
             if parsedResult == "":
                 retcode = 1
@@ -673,7 +673,7 @@ class OnosCliDriver(CLI):
             buf = ""
             retcode = 0
         
-            url = "http://%s:%s/wm/onos/ng/links/json" % (RestIP, RestPort)
+            url = "http://%s:%s/wm/onos/topology/links/json" % (RestIP, RestPort)
             parsedResult = self.get_json(url)
         
             if parsedResult == "":
@@ -978,7 +978,7 @@ class OnosCliDriver(CLI):
         retmac = []
         foundIP = []
         try:
-            ##### device rest API is: 'host:8080/wm/onos/ng/switches/json' ###
+            ##### device rest API is: 'host:8080/wm/onos/topology/switches/json' ###
             url ="http://%s:%s%s" %(RestIP,RestPort,RestAPI)
 
             try:

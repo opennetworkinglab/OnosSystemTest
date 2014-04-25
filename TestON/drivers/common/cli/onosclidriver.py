@@ -400,6 +400,14 @@ class OnosCliDriver(CLI):
         self.handle.sendline("cd "+self.home)
         return main.TRUE
         
+    def purge(self):
+        main.log.info("Purging dead intents")
+        self.handle.sendline("cd "+self.home+ "/scripts")
+        self.handle.expect("scripts")
+        print("Purging Intents")
+        self.handle.sendline("./purgeintents.py")
+        self.handle.sendline("cd "+self.home)
+        return main.TRUE
 
 
 

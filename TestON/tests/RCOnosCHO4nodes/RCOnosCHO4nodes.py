@@ -14,18 +14,26 @@ class RCOnosCHO4nodes :
         main.Zookeeper2.start()
         main.Zookeeper3.start()
         main.Zookeeper4.start()
-        main.ONOS1.stop()
-        main.ONOS2.stop()
-        main.ONOS3.stop()
-        main.ONOS4.stop()
-        main.ONOS1.git_pull()
-        main.ONOS2.git_pull()
-        main.ONOS3.git_pull()
-        main.ONOS4.git_pull()
-        main.ONOS1.git_compile()
-        main.ONOS2.git_compile()
-        main.ONOS3.git_compile()
-        main.ONOS4.git_compile()
+        main.log.report("Pulling latest code from github to all nodes")
+        for i in range(2):
+            uptodate = main.ONOS1.git_pull()
+            main.ONOS2.git_pull()
+            main.ONOS3.git_pull()
+            main.ONOS4.git_pull()
+            ver1 = main.ONOS1.get_version()
+            ver2 = main.ONOS4.get_version()
+            if ver1==ver2:
+                break
+            elif i==1:
+                main.ONOS2.git_pull("ONOS1 master")
+                main.ONOS3.git_pull("ONOS1 master")
+                main.ONOS4.git_pull("ONOS1 master")
+        if uptodate==0:
+            main.ONOS1.git_compile()
+            main.ONOS2.git_compile()
+            main.ONOS3.git_compile()
+            main.ONOS4.git_compile()
+        main.ONOS1.print_version()
         main.RamCloud1.start_coor()
         time.sleep(10)
         main.RamCloud1.start_serv()
@@ -38,8 +46,6 @@ class RCOnosCHO4nodes :
         main.ONOS2.start()
         main.ONOS3.start()
         main.ONOS4.start()
-        time.sleep(20)
-        main.ONOS1.get_version()
         main.log.report("Startup check Zookeeper1, RamCloud1, and ONOS1 connections")
         main.case("Checking if the startup was clean...")
         main.step("Testing startup Zookeeper")   
@@ -104,22 +110,22 @@ class RCOnosCHO4nodes :
                 j=i+1
                 main.Mininet1.assign_sw_controller(sw=str(j),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'])
                 time.sleep(1)
-                main.Mininet1.assign_sw_controller(sw=str(j),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'])
+                main.Mininet1.assign_sw_controller(sw=str(j),count=4,ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'])
             elif i >= 3 and i < 5:
                 j=i+1
                 main.Mininet1.assign_sw_controller(sw=str(j),ip1=main.params['CTRL']['ip2'],port1=main.params['CTRL']['port2'])
                 time.sleep(1)
-                main.Mininet1.assign_sw_controller(sw=str(j),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'])
+                main.Mininet1.assign_sw_controller(sw=str(j),count=4,ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'])
             elif i >= 5 and i < 15:
                 j=i+1
                 main.Mininet1.assign_sw_controller(sw=str(j),ip1=main.params['CTRL']['ip3'],port1=main.params['CTRL']['port3'])
                 time.sleep(1)
-                main.Mininet1.assign_sw_controller(sw=str(j),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'])
+                main.Mininet1.assign_sw_controller(sw=str(j),count=4,ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'])
             else:
                 j=i+16
                 main.Mininet1.assign_sw_controller(sw=str(j),ip1=main.params['CTRL']['ip4'],port1=main.params['CTRL']['port4'])
                 time.sleep(1)
-                main.Mininet1.assign_sw_controller(sw=str(j),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'])
+                main.Mininet1.assign_sw_controller(sw=str(j),count=4,ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'])
         main.Mininet1.get_sw_controller("s1")       
 
         for i in range(9):
@@ -148,10 +154,13 @@ class RCOnosCHO4nodes :
 
         main.case("Taking care of these flows!") 
         main.step("Cleaning out any leftover flows...")
-        main.ONOS1.delete_flow("all")
+        #main.ONOS1.delete_flow("all")
+        main.ONOS1.rm_flow()
         time.sleep(5)
+        main.ONOS1.purge()
         strtTime = time.time()
-        main.ONOS1.add_flow(main.params['FLOWDEF'])
+        #main.ONOS1.add_flow(main.params['FLOWDEF'])
+        main.ONOS1.ad_flow()
         main.case("Checking flows")
         
         pingAttempts = main.params['pingAttempts']
@@ -335,7 +344,7 @@ class RCOnosCHO4nodes :
             if ping == main.FALSE and count < int(pingAttempts):
                 count = count + 1
                 main.log.report("Ping failed, making attempt number "+str(count)+" in "+str(pingSleep)+" seconds")
-                i = 6
+                #i = 6
                 time.sleep(int(pingSleep))
             elif ping == main.FALSE and count == int(pingAttempts):
                 main.log.error("Ping test failed")

@@ -155,7 +155,7 @@ class MininetCliDriver(Emulator):
         '''
         args = utilities.parse_args(["SRC","TARGET"],**pingParams)
         #command = args["SRC"] + " ping -" + args["CONTROLLER"] + " " +args ["TARGET"]
-        command = args["SRC"] + " ping "+args ["TARGET"]+" -c 1 -i .2 -w 8"
+        command = args["SRC"] + " ping "+args ["TARGET"]+" -c 1 -i .2 -W 8"
         try:
             main.log.warn("Sending: " + command)
             #response = self.execute(cmd=command,prompt="mininet",timeout=10 )

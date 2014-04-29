@@ -9,8 +9,23 @@ class RCOnosSanity4nodesJ :
 #Tests the startup of Zookeeper1, RamCloud1, and ONOS1 to be certain that all started up successfully
     def CASE1(self,main) :  #Check to be sure ZK, Cass, and ONOS are up, then get ONOS version
         import time
+        main.ONOS1.handle.sendline("cp ~/onos.properties.proactive ~/ONOS/conf/onos.properties")
+        main.ONOS2.handle.sendline("cp ~/onos.properties.proactive ~/ONOS/conf/onos.properties")
+        main.ONOS3.handle.sendline("cp ~/onos.properties.proactive ~/ONOS/conf/onos.properties")
+        main.ONOS4.handle.sendline("cp ~/onos.properties.proactive ~/ONOS/conf/onos.properties")
+        
         main.Zookeeper1.start()
-        time.sleep(20)
+        main.Zookeeper2.start()
+        main.Zookeeper3.start()
+        main.Zookeeper4.start()
+        main.RamCloud1.stop_coor()
+        main.RamCloud1.stop_serv()
+        main.RamCloud2.stop_serv()
+        main.RamCloud3.stop_serv()
+        main.RamCloud4.stop_serv()
+
+        
+        main.Zookeeper1.start()
         main.Zookeeper2.start()
         main.Zookeeper3.start()
         main.Zookeeper4.start()
@@ -28,7 +43,8 @@ class RCOnosSanity4nodesJ :
                 main.ONOS2.git_pull("ONOS1 master")
                 main.ONOS3.git_pull("ONOS1 master")
                 main.ONOS4.git_pull("ONOS1 master")
-        if uptodate==0:
+       #if uptodate==0
+        if 1:
             main.ONOS1.git_compile()
             main.ONOS2.git_compile()
             main.ONOS3.git_compile()
@@ -43,19 +59,18 @@ class RCOnosSanity4nodesJ :
        # main.ONOS3.get_version()
        # main.ONOS4.get_version()
         main.RamCloud1.start_coor()
-        time.sleep(20)
+        time.sleep(1)
         main.RamCloud1.start_serv()
         main.RamCloud2.start_serv()
         main.RamCloud3.start_serv()
         main.RamCloud4.start_serv()
-        time.sleep(20)
         main.ONOS1.start()
-        time.sleep(20)
+        time.sleep(5)
         main.ONOS2.start()
         main.ONOS3.start()
         main.ONOS4.start()
         main.ONOS1.start_rest()
-        time.sleep(5)
+        time.sleep(10)
         test= main.ONOS1.rest_status()
         if test == main.FALSE:
             main.ONOS1.start_rest()
@@ -66,7 +81,7 @@ class RCOnosSanity4nodesJ :
         data =  main.Zookeeper1.isup()
         utilities.assert_equals(expect=main.TRUE,actual=data,onpass="Zookeeper is up!",onfail="Zookeeper is down...")
         main.step("Testing startup RamCloud")   
-        data =  main.RamCloud1.status() 
+        data =  main.RamCloud1.status_serv() 
         if data == main.FALSE:
             main.RamCloud1.stop_coor()
             main.RamCloud1.stop_serv()
@@ -143,10 +158,12 @@ class RCOnosSanity4nodesJ :
         main.step("Cleaning out any leftover flows...")
         #main.ONOS1.delete_flow("all")
         strtTime = time.time()
-        print("hello")
         main.ONOS1.rm_flow()
         print("world")
         main.ONOS1.ad_flow()
+        time.sleep(2)
+        main.ONOS1.ad_flow()
+        print("hello")
        # main.ONOS1.add_flow(main.params['FLOWDEF']['testONip'],main.params['FLOWDEF']['user'],main.params['FLOWDEF']['password'],main.params['FLOWDEF']['flowDef'])
         main.case("Checking flows")
        
@@ -370,7 +387,7 @@ class RCOnosSanity4nodesJ :
         main.case("Bringing Link up... ")
         result = main.Mininet1.link(END1=main.params['LINK']['begin'],END2=main.params['LINK']['end'],OPTION="up")
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Link UP!",onfail="Link not brought up...")
-      
+        time.sleep(5) 
         strtTime = time.time() 
         result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
         for i in range(2):

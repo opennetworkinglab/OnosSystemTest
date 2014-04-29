@@ -1,6 +1,6 @@
 TestON, a testing infastructure by Paxterra
 =======================================
-TestON is the testing platform that all the ONOS tests are being run on curretly. 
+TestON is the testing platform that all the ONOS tests are being run on currently. 
 
 
 Setup 

@@ -155,9 +155,20 @@ class MininetCliDriver(Emulator):
         '''
         args = utilities.parse_args(["SRC","TARGET"],**pingParams)
         #command = args["SRC"] + " ping -" + args["CONTROLLER"] + " " +args ["TARGET"]
-        command = args["SRC"] + " ping "+args ["TARGET"]+" -c 1 -i 1"
+        command = args["SRC"] + " ping "+args ["TARGET"]+" -c 1 -i .2 -W 8"
         try:
-            response = self.execute(cmd=command,prompt="mininet",timeout=10 )
+            main.log.warn("Sending: " + command)
+            #response = self.execute(cmd=command,prompt="mininet",timeout=10 )
+            self.handle.sendline(command)
+            i = self.handle.expect([command,pexpect.TIMEOUT])
+            if i == 1:
+                main.log.error(self.name + ": timeout when waiting for response from mininet")
+                main.log.error("response: " + str(self.handle.before))
+            i = self.handle.expect(["mininet>",pexpect.TIMEOUT])
+            if i == 1:
+                main.log.error(self.name + ": timeout when waiting for response from mininet")
+                main.log.error("response: " + str(self.handle.before))
+            response = self.handle.before
         except pexpect.EOF:  
             main.log.error(self.name + ": EOF exception found")
             main.log.error(self.name + ":     " + self.handle.before)
@@ -166,7 +177,7 @@ class MininetCliDriver(Emulator):
         main.log.info(self.name+": Ping Response: "+ response )
         #if utilities.assert_matches(expect=',\s0\%\spacket\sloss',actual=response,onpass="No Packet loss",onfail="Host is not reachable"):
         if re.search(',\s0\%\spacket\sloss',response):
-            main.log.info(self.name+": NO PACKET LOSS, HOST IS REACHABLE")
+            main.log.info(self.name+": no packets lost, host is reachable")
             main.last_result = main.TRUE 
             return main.TRUE
         else :

@@ -1,5 +1,5 @@
 
-class RCOnosSanity4nodesJ :
+class RRCOnosSanity4nodesJ :
 
     def __init__(self) :
         self.default = ''
@@ -9,11 +9,6 @@ class RCOnosSanity4nodesJ :
 #Tests the startup of Zookeeper1, RamCloud1, and ONOS1 to be certain that all started up successfully
     def CASE1(self,main) :  #Check to be sure ZK, Cass, and ONOS are up, then get ONOS version
         import time
-        main.ONOS1.handle.sendline("cp ~/onos.properties.proactive ~/ONOS/conf/onos.properties")
-        main.ONOS2.handle.sendline("cp ~/onos.properties.proactive ~/ONOS/conf/onos.properties")
-        main.ONOS3.handle.sendline("cp ~/onos.properties.proactive ~/ONOS/conf/onos.properties")
-        main.ONOS4.handle.sendline("cp ~/onos.properties.proactive ~/ONOS/conf/onos.properties")
-        
         main.Zookeeper1.start()
         main.Zookeeper2.start()
         main.Zookeeper3.start()
@@ -23,7 +18,11 @@ class RCOnosSanity4nodesJ :
         main.RamCloud2.stop_serv()
         main.RamCloud3.stop_serv()
         main.RamCloud4.stop_serv()
-
+        
+        main.ONOS1.handle.sendline("cp ~/onos.properties.reactive ~/ONOS/conf/onos.properties")
+        main.ONOS2.handle.sendline("cp ~/onos.properties.reactive ~/ONOS/conf/onos.properties")
+        main.ONOS3.handle.sendline("cp ~/onos.properties.reactive ~/ONOS/conf/onos.properties")
+        main.ONOS4.handle.sendline("cp ~/onos.properties.reactive ~/ONOS/conf/onos.properties")
         
         main.Zookeeper1.start()
         main.Zookeeper2.start()
@@ -43,7 +42,7 @@ class RCOnosSanity4nodesJ :
                 main.ONOS2.git_pull("ONOS1 master")
                 main.ONOS3.git_pull("ONOS1 master")
                 main.ONOS4.git_pull("ONOS1 master")
-       #if uptodate==0
+        #if uptodate==0:
         if 1:
             main.ONOS1.git_compile()
             main.ONOS2.git_compile()
@@ -70,7 +69,7 @@ class RCOnosSanity4nodesJ :
         main.ONOS3.start()
         main.ONOS4.start()
         main.ONOS1.start_rest()
-        time.sleep(10)
+        time.sleep(5)
         test= main.ONOS1.rest_status()
         if test == main.FALSE:
             main.ONOS1.start_rest()
@@ -145,6 +144,7 @@ class RCOnosSanity4nodesJ :
                 time.sleep(1)
                 main.Mininet1.assign_sw_controller(sw=str(j),count=4,ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'])
         main.Mininet1.get_sw_controller("s1")       
+        main.ONOS1.purge()
  
 # **********************************************************************************************************************************************************************************************
 #Add Flows
@@ -158,12 +158,10 @@ class RCOnosSanity4nodesJ :
         main.step("Cleaning out any leftover flows...")
         #main.ONOS1.delete_flow("all")
         strtTime = time.time()
+        print("hello")
         main.ONOS1.rm_flow()
         print("world")
         main.ONOS1.ad_flow()
-        time.sleep(2)
-        main.ONOS1.ad_flow()
-        print("hello")
        # main.ONOS1.add_flow(main.params['FLOWDEF']['testONip'],main.params['FLOWDEF']['user'],main.params['FLOWDEF']['password'],main.params['FLOWDEF']['flowDef'])
         main.case("Checking flows")
        

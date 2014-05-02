@@ -155,7 +155,7 @@ class MininetCliDriver(Emulator):
         '''
         args = utilities.parse_args(["SRC","TARGET"],**pingParams)
         #command = args["SRC"] + " ping -" + args["CONTROLLER"] + " " +args ["TARGET"]
-        command = args["SRC"] + " ping "+args ["TARGET"]+" -c 1 -i .2 -W 8"
+        command = args["SRC"] + " ping "+args ["TARGET"]+" -c 1 -i 1 -w 8"
         try:
             main.log.warn("Sending: " + command)
             #response = self.execute(cmd=command,prompt="mininet",timeout=10 )
@@ -433,7 +433,9 @@ class MininetCliDriver(Emulator):
         option = args["OPTION"] if args["OPTION"] != None else ""
         command = "link "+str(end1) + " " + str(end2)+ " " + str(option)
         try:
-            response = self.execute(cmd=command,prompt="mininet>",timeout=10)
+            #response = self.execute(cmd=command,prompt="mininet>",timeout=10)
+            self.handle.sendline(command)
+            self.handle.expect("mininet>")    
         except pexpect.EOF:  
             main.log.error(self.name + ": EOF exception found")
             main.log.error(self.name + ":     " + self.handle.before)
@@ -566,6 +568,7 @@ class MininetCliDriver(Emulator):
             try:
                 response = self.execute(cmd="exit",prompt="(.*)",timeout=120)
                 response = self.execute(cmd="exit",prompt="(.*)",timeout=120)
+                self.handle.sendline("sudo mn -c")
             except pexpect.EOF:  
                 main.log.error(self.name + ": EOF exception found")
                 main.log.error(self.name + ":     " + self.handle.before)

@@ -1,0 +1,139 @@
+<TOPOLOGY>
+
+    <COMPONENT>
+        <Zookeeper1>
+            <host>10.128.4.151</host>
+            <user>admin</user>
+            <password></password>
+            <type>ZookeeperCliDriver</type>
+            <connect_order>1</connect_order>
+            <COMPONENTS>
+             </COMPONENTS>
+        </Zookeeper1>
+
+        <Zookeeper2>
+            <host>10.128.4.152</host>
+            <user>admin</user>
+            <password></password>
+            <type>ZookeeperCliDriver</type>
+            <connect_order>2</connect_order>
+            <COMPONENTS>
+             </COMPONENTS>
+        </Zookeeper2>
+
+        <Zookeeper3>
+            <host>10.128.4.153</host>
+            <user>admin</user>
+            <password></password>
+            <type>ZookeeperCliDriver</type>
+            <connect_order>3</connect_order>
+            <COMPONENTS>
+             </COMPONENTS>
+        </Zookeeper3>
+       
+        <Zookeeper4>
+            <host>10.128.4.154</host>
+            <user>admin</user>
+            <password></password>
+            <type>ZookeeperCliDriver</type>
+            <connect_order>4</connect_order>
+            <COMPONENTS>
+             </COMPONENTS>
+        </Zookeeper4>
+
+        <RC1>
+            <host>10.128.4.151</host>
+            <user>admin</user>
+            <password></password>
+            <type>RamCloudCliDriver</type>
+            <connect_order>5</connect_order>
+            <COMPONENTS>
+             </COMPONENTS>
+        </RC1>
+
+        <RC2>
+            <host>10.128.4.152</host>
+            <user>admin</user>
+            <password></password>
+            <type>RamCloudCliDriver</type>
+            <connect_order>6</connect_order>
+            <COMPONENTS>
+             </COMPONENTS>
+        </RC2>
+       
+        <RC3>
+            <host>10.128.4.153</host>
+            <user>admin</user>
+            <password></password>
+            <type>RamCloudCliDriver</type>
+            <connect_order>7</connect_order>
+            <COMPONENTS>
+             </COMPONENTS>
+        </RC3>
+       
+        <RC4>
+            <host>10.128.4.154</host>
+            <user>admin</user>
+            <password></password>
+            <type>RamCloudCliDriver</type>
+            <connect_order>8</connect_order>
+            <COMPONENTS>
+             </COMPONENTS>
+        </RC4>
+
+        <ONOS1>
+            <host>10.128.4.151</host>
+            <user>admin</user>
+            <password></password>
+            <type>OnosCliDriver</type>
+            <connect_order>9</connect_order>
+            <COMPONENTS>
+             </COMPONENTS>
+        </ONOS1>
+
+        <ONOS2>
+            <host>10.128.4.152</host>
+            <user>admin</user>
+            <password></password>
+            <type>OnosCliDriver</type>
+            <connect_order>10</connect_order>
+            <COMPONENTS>
+             </COMPONENTS>
+        </ONOS2>
+
+        <ONOS3>
+            <host>10.128.4.153</host>
+            <user>admin</user>
+            <password></password>
+            <type>OnosCliDriver</type>
+            <connect_order>11</connect_order>
+            <COMPONENTS>
+             </COMPONENTS>
+        </ONOS3>
+       
+        <ONOS4>
+            <host>10.128.4.154</host>
+            <user>admin</user>
+            <password></password>
+            <type>OnosCliDriver</type>
+            <connect_order>12</connect_order>
+            <COMPONENTS>
+             </COMPONENTS>
+        </ONOS4>
+
+        <Mininet1>
+            <host>10.128.4.159</host>
+            <user>admin</user>
+            <password></password>
+            <type>MininetCliDriver</type>
+            <connect_order>13</connect_order>
+            <COMPONENTS>
+                # Specify the Option for mininet
+                <arg1> --custom ~/mininet/custom/topo-onos4nodeNEW.py </arg1>
+                <arg2> --topo mytopo --arp</arg2>
+                <controller> remote </controller>
+             </COMPONENTS>
+        </Mininet1>
+
+    </COMPONENT>
+</TOPOLOGY>

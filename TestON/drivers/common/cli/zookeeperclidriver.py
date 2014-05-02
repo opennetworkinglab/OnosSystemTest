@@ -135,7 +135,7 @@ class ZookeeperCliDriver(CLI):
         Calls the zookeeper status and returns TRUE if it has an assigned Mode to it. 
         '''
         self.execute(cmd="\n",prompt="\$",timeout=10)
-        response = self.execute(cmd=self.home + "/bin/zkServer.sh status ",prompt="Mode",timeout=10)
+        response = self.execute(cmd=self.home + "/onos.sh zk status ",prompt="Mode",timeout=10)
         pattern = '(.*)Mode(.*)'
         if re.search(pattern, response): 
 	    main.log.info(self.name + ": Zookeeper is up.") 

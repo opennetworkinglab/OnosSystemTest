@@ -122,7 +122,18 @@ class OnosCliDriver(CLI):
             main.log.info(":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
             main.cleanup()
             main.exit()
- 
+
+    def start_all(self):
+        '''
+        starts ZK, RC, and ONOS
+        '''
+        self.handle.sendline("cd "+self.home)
+        self.handle.sendline("./onos.sh start")
+        self.handle.expect("./onos.sh start")
+        self.handle.expect(["\$",pexpect.TIMEOUT])
+
+
+
     def start_rest(self):
         '''
         Starts the rest server on ONOS.
@@ -196,23 +207,25 @@ class OnosCliDriver(CLI):
             self.execute(cmd="\n",prompt="\$",timeout=10)
             tail2 = self.execute(cmd="tail " + self.home + "/onos-logs/onos.*.log",prompt="\$",timeout=10)
             pattern = '(.*)1 instance(.*)'
+            patternUp = 'Sending LLDP out'
             pattern2 = '(.*)Exception: Connection refused(.*)'
            # if utilities.assert_matches(expect=pattern,actual=response,onpass="ONOS process is running...",onfail="ONOS process not running..."):
             
             if re.search(pattern, response):
-                main.log.info(self.name + ": ONOS process is running...")
-                if tail1 == tail2:
-                    main.log.error(self.name + ": ONOS is frozen...")#logs aren't moving
-                    return main.FALSE
-                elif re.search( pattern2,tail1 ):
-                    main.log.info(self.name + ": Connection Refused found in onos log")
-                    return main.FALSE
-                elif re.search( pattern2,tail2 ):
-                    main.log.info(self.name + ": Connection Refused found in onos log")
-                    return main.FALSE
-                else:
-                    main.log.info(self.name + ": Onos log is moving! It's looking good!")
-                    return main.TRUE
+                if re.search(patternUp,tail2):
+                    main.log.info(self.name + ": ONOS process is running...")
+                    if tail1 == tail2:
+                        main.log.error(self.name + ": ONOS is frozen...")#logs aren't moving
+                        return main.FALSE
+                    elif re.search( pattern2,tail1 ):
+                        main.log.info(self.name + ": Connection Refused found in onos log")
+                        return main.FALSE
+                    elif re.search( pattern2,tail2 ):
+                        main.log.info(self.name + ": Connection Refused found in onos log")
+                        return main.FALSE
+                    else:
+                        main.log.info(self.name + ": Onos log is moving! It's looking good!")
+                        return main.TRUE
             else:
                 main.log.error(self.name + ": ONOS process not running...")
                 return main.FALSE
@@ -813,8 +826,8 @@ class OnosCliDriver(CLI):
 
         '''
         try:
-            main.log.info(self.name + ": Stopping ONOS")
-            self.stop()
+            # main.log.info(self.name + ": Stopping ONOS")
+            #self.stop()
             self.handle.sendline("cd " + self.home)
             self.handle.expect("ONOS\$")
             if comp1=="":

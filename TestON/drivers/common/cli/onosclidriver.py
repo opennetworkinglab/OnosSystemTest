@@ -399,8 +399,10 @@ class OnosCliDriver(CLI):
         main.log.info("AD_FLOW RUNNING!!!!")
         self.handle.sendline("cd "+self.home+ "/scripts")
         self.handle.expect("scripts")
-        print("Adding flows")
+        main.log.info("Adding flows")
         self.handle.sendline("./pyintents.py")
+        self.handle.expect(["$",pexpect.EOF,pexpect.TIMEOUT])
+        response = self.handle.before
         self.handle.sendline("cd "+self.home)
         return main.TRUE
 
@@ -408,8 +410,10 @@ class OnosCliDriver(CLI):
         main.log.info("RM_FLOW RUNNING!!!")
         self.handle.sendline("cd "+self.home+ "/scripts")
         self.handle.expect("scripts")
-        print("Removing flows")
+        main.log.info("Removing flows")
         self.handle.sendline("./rmpyintents.py")
+        self.handle.expect(["$",pexpect.EOF,pexpect.TIMEOUT])
+        response = self.handle.before
         self.handle.sendline("cd "+self.home)
         return main.TRUE
         

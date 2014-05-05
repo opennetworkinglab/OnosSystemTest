@@ -1,0 +1,70 @@
+<PARAMS>
+    <testcases> 1,2,3,4,5,6,7</testcases>
+    <CASE1>
+        <destination> h2  </destination>
+    </CASE1>
+	
+    <CASE2>
+	<destination> h2 </destination>	
+    </CASE2>
+
+    <CASE3>
+	<destination> h2 </destination>
+    </CASE3>
+	
+    <CASE4>
+	<destination> h2 </destination>
+    </CASE4>    
+
+    <CASE5>
+	<destination> h2 </destination>
+    </CASE5>
+
+    <CASE6>
+        <destination> h2 </destination>
+    </CASE6>
+
+    <CASE7>
+        <destination> h2 </destination>
+    </CASE7>    
+
+    <NW_CREATION>
+	<protocol> tcp </protocol>
+	<ctrllerIP> 10.128.100.29 </ctrllerIP>
+	<ctrllerPort> 6633 </ctrllerPort>
+	<IPRange> 10.0.0.0 </IPRange>
+	<mask> 24 </mask>
+    </NW_CREATION>
+
+    <SW_CREATION>
+        <nwID> 1 </nwID>
+        <sw1dpid> 0000000000000001 </sw1dpid>
+        <sw2dpid> 0000000000000002 </sw2dpid>
+	<sw3dpid> 0000000000000003 </sw3dpid>
+    </SW_CREATION>
+
+    <PORT_CREATION>
+        <p1sw1> 1 </p1sw1> 	
+        <p2sw1> 2 </p2sw1>	<!-- PhysicalSwitch 1's PhysicalPort 2 -->
+        <p1sw2> 2 </p1sw2>	<!-- PhysicalSwitch 2's PhysicalPort 2 -->
+        <p2sw2> 3 </p2sw2>	<!-- PhysicalSwitch 2's PhysicalPort 3 -->
+        <p1sw3> 2 </p1sw3>	<!-- PhysicalSwitch 3's PhysicalPort 2 -->
+        <p2sw3> 1 </p2sw3>	<!-- PhysicalSwitch 3's PhysicalPort 1 -->
+    </PORT_CREATION>
+
+    <LINK_CONNECTION>
+        <nwID> 1 </nwID>
+        <Vdpid1> 00:a4:23:05:00:00:00:01 </Vdpid1> 	<!-- Virtual Switch1 dpid -->
+        <Vsw1port2> 2 </Vsw1port2>			<!-- Source Virtual Switch1 Port2 -->
+        <Vdpid2> 00:a4:23:05:00:00:00:02 </Vdpid2>	<!-- Virtual Switch2 dpid -->
+        <Vsw2port1> 1 </Vsw2port1>			<!-- Virtual Switch2 port1 -->
+        <Vsw2port2> 2 </Vsw2port2>			<!-- Virtual Switch2 port2 -->
+        <Vdpid3> 00:a4:23:05:00:00:00:03 </Vdpid3>	<!-- Virtual Switch3 dpid -->
+        <Vsw3port2> 2 </Vsw3port2>			<!-- Virtual Switch3 port2 -->
+        <routingType> spf </routingType>		<!-- Routing type can be either spf(shortest path first) or manual -->
+        <num_of_backupPaths> 1 </num_of_backupPaths>	<!-- Num of backup paths that have to be computed -->
+    </LINK CONNECTION>
+
+
+</PARAMS>
+        

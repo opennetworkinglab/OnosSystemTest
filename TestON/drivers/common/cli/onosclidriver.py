@@ -250,7 +250,7 @@ class OnosCliDriver(CLI):
         ''' 
         Copies the flowdef file from TestStation -> ONOS machine
         Then runs ./add_flow.py to add the flows to ONOS
-        ''' 
+        '''
         main.log.info("Adding Flows...")
         self.handle.sendline("scp admin@10.128.7.7:%s /tmp/flowtmp" % path) 
         self.handle.expect("100%")

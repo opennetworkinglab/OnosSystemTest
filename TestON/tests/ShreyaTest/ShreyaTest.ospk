@@ -1,0 +1,6 @@
+CASE 1
+    NAME "Testing the configuration of the host"
+    STEP "Host IP Checking using checkIP"
+    STORE ON Mininet1 DO checkIP USING CASE['destination'] IN result
+    STEP "Verifying the result"
+    ASSERT result EQUALS main.TRUE ONPASS "Host h2 IP address configured" ONFAIL "Host h2 IP address didn't configured"

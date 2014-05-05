@@ -1,0 +1,35 @@
+<TOPOLOGY>
+    <COMPONENT>
+              
+       <FlowVisor>
+            <host>10.128.100.29</host>
+            <user>user_one</user>
+            <fvadmin_pwd></fvadmin_pwd>
+            <password>user_one</password>
+            <type>FlowVisorCliDriver</type>
+            <COMPONENTS>
+		<home>/home/user_one/flowvisor</home>
+            </COMPONENTS>
+        </FlowVisor>   
+               
+        <FakeDevice1>
+            <host>127.0.0.1</host>
+            <user>ovx</user>
+            <password>ovxRocks</password>
+            <type>FakeDeviceDriver</type>
+            <COMPONENTS>
+            </COMPONENTS>
+        </FakeDevice1>   
+               
+         <TestUtils>
+            <host>127.0.0.1</host>
+            <user>ovx</user>
+            <password>ovxRocks</password>
+            <type>TestUtilsDriver</type>
+            <COMPONENTS>
+            </COMPONENTS>
+          </TestUtils>   
+              
+    </COMPONENT>
+    
+</TOPOLOGY>

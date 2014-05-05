@@ -61,11 +61,11 @@ class MininetCliDriver(Emulator):
             main.log.info("Clearing any residual state or processes")
             self.handle.sendline("sudo mn -c")
 
-            i=self.handle.expect(['password\sfor\sadmin','Cleanup\scomplete',pexpect.EOF,pexpect.TIMEOUT],60)
+            i=self.handle.expect(['password\sfor\sovx','\sCleanup\scomplete',pexpect.EOF,pexpect.TIMEOUT],60)
             if i==0:
                 main.log.info("sending sudo password")
-                self.handle.sendline('onos_test')
-                i=self.handle.expect(['admin:','\$',pexpect.EOF,pexpect.TIMEOUT],60)
+                self.handle.sendline('ovxRocks')
+                i=self.handle.expect(['ovx:','\$',pexpect.EOF,pexpect.TIMEOUT],60)
             if i==1:
                 main.log.info("Clean")
 
@@ -79,12 +79,13 @@ class MininetCliDriver(Emulator):
             main.log.info("building fresh mininet") 
 
             #### for reactive/PARP enabled tests
-            cmdString = "sudo mn " + self.options['arg1'] + " " + self.options['arg2'] +  " --mac --controller " + self.options['controller']
+            cmdString = "sudo mn " + self.options['arg1'] + " " + self.options['arg2'] +" --mac --controller remote,ip="+self.options['controller']
             #### for proactive flow with static ARP entries
             #cmdString = "sudo mn " + self.options['arg1'] + " " + self.options['arg2'] +  " --mac --arp --controller " + self.options['controller']
             #resultCommand = self.execute(cmd=cmdString,prompt='mininet>',timeout=120)
-            self.handle.sendline(cmdString)
-            self.handle.expect("sudo mn")
+            print cmdString
+	    self.handle.sendline(cmdString)
+            #self.handle.expect("sudo mn")
             while 1: 
                 i=self.handle.expect(['mininet>','\*\*\*','Exception',pexpect.EOF,pexpect.TIMEOUT],300)
                 if i==0:

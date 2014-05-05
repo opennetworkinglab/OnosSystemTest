@@ -1,0 +1,9 @@
+<PARAMS>
+    <testcases> 1 </testcases>
+    #'log_dir' = '/home/user/Desktop/openflow_logs/'
+    <CASE1>
+        <destination> h2 </destination>
+    </CASE1>
+	
+</PARAMS>
+        

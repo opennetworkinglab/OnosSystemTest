@@ -1,0 +1,19 @@
+This example shows , how we can use the topology file:
+
+In topo file we can specify the component like below:
+[TOPOLOGY]   
+
+    [[COMPONENT]]
+        [[["Mininet1"]]]
+       
+The usage of this component in the test script like below:
+
+main.Mininet1.checkIP(main.params['CASE1']['destination'])
+
+Here we are using the Mininet1 which of type Mininet 
+
+
+
+cd ~/bin/
+./launcher --example Topology 
+   will execute this example.

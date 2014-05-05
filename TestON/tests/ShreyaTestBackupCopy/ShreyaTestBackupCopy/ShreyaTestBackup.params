@@ -1,0 +1,52 @@
+<PARAMS>
+    <testcases> 1,2,3,4,5,6 </testcases>
+    #'log_dir' = '/home/user/Desktop/openflow_logs/'
+    <CASE1>
+        <destination> h2  </destination>
+    </CASE1>
+	
+    <CASE2>
+	<destination> h2 </destination>	
+    </CASE2>
+
+    <CASE3>
+	<destination> h2 </destination>
+    </CASE3>
+	
+    <CASE4>
+	<destination> h2 </destination>
+    </CASE4>    
+
+    <CASE5>
+	<destination> h2 </destination>
+    </CASE5>
+
+    <CASE6>
+        <destination> h2 </destination>
+    </CASE6>
+
+    <NW_CREATION>
+	<protocol> tcp </protocol>
+	<ctrllerIP> 10.128.100.29 </ctrllerIP>
+	<ctrllerPort> 6633 </ctrllerPort>
+	<IPRange> 10.0.0.0 </IPRange>
+	<mask> 24 </mask>
+    </NW_CREATION>
+
+    <SW_CREATION>
+        <nwID> 1 </nwID>
+        <sw1dpid> 0000000000000001 </sw1dpid>
+        <sw2dpid> 0000000000000002 </sw2dpid>
+	<sw3dpid> 0000000000000003 </sw3dpid>
+    </SW_CREATION>
+
+    <PORT_CREATION>
+        <p1sw1> 1 </p1sw1> 	#PhysicalSwitch 1's PhysicalPort 1
+        <p2sw1> 2 </p2sw1>	#PhysicalSwitch 1's PhysicalPort 2
+        <p1sw2> 2 </p1sw2>	#PhysicalSwitch 2's PhysicalPort 2
+        <p2sw2> 3 </p2sw2>	#PhysicalSwitch 2's PhysicalPort 3
+        <p1sw3> 2 </p1sw3>	#PhysicalSwitch 3's PhysicalPort 2
+        <p2sw3> 1 </p2sw3>	#PhysicalSwitch 3's PhysicalPort 1
+    </PORT_CREATION>
+</PARAMS>
+        

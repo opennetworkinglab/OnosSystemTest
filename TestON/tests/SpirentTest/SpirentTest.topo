@@ -1,0 +1,11 @@
+<TOPOLOGY>
+
+    <COMPONENT>
+        <Stc1>
+            <type>StcDriver</type>
+            <COMPONENTS>
+            </COMPONENTS>   
+        </Stc1>        
+               
+    </COMPONENT>
+</TOPOLOGY>

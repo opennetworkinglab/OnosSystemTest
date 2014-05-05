@@ -1,0 +1,222 @@
+CASE 1
+    NAME "Basic Spirent test"
+    STEP "Check if handle is created"
+    INFO "Handle created successfully"
+   
+    STORE '400000' IN mintraffic
+    STORE '9.00000000' IN minbitpercent
+    STORE '10.254.1.102' IN chassisAddress
+    STORE '1' IN slot
+    STORE '1' IN p1
+    STORE '2' IN p2
+    
+    NAME "Creating a Project"
+    STEP "Checking the creation of project"
+    STORE ON Stc1 DO create USING 'project', name AS 'project1' IN project
+
+    STEP "Get Project attributes"
+    STORE ON Stc1 DO get USING project ,'name' IN projectAtt
+    ##ASSERT str(type(projectAtt)) EQUALS "<type> 'str'" ONPASS "project created successfully" ONFAIL "project not created"
+
+    
+    STEP "Creating ports under the Project"
+    STORE ON Stc1 DO create USING 'port',under=project IN port1
+    STORE ON Stc1 DO create USING 'port',under=project IN port2
+    
+    STEP "configuring the port locations"
+    ON Stc1 DO config USING  port1, location AS "//%s/%s/%s" % (chassisAddress, slot,p1)
+    ON Stc1 DO config USING  port2, location AS "//%s/%s/%s" % (chassisAddress, slot,p2)
+     
+    STEP "Creating streamBlock on port1"
+    STORE ON Stc1 DO create USING 'streamBlock',under=port1 IN streamBlock
+    STORE ON Stc1 DO get USING port1,'children-generator' IN generator
+    STORE ON Stc1 DO get USING port2,'children-Analyzer' IN analyzer
+
+ 
+    STEP "Attaching Ports..."
+    ON Stc1 DO perform USING 'AttachPorts', portList = [port1 , port2], autoConnect='TRUE'
+    ON Stc1 DO apply 
+
+    NAME "Subscribe the ports ports from Project"
+    STEP "Call Subscribe..."
+    STORE ON Stc1 DO subscribe USING Parent AS project, ResultParent AS port1, ConfigType AS 'Generator', resulttype AS 'GeneratorPortResults', filenameprefix AS "Generator_port1_counter%s"% port1 ,Interval AS '2' IN port1GeneratorResult   
+    STORE ON Stc1 DO subscribe USING Parent AS project, ResultParent AS port2, ConfigType AS 'Analyzer', resulttype AS 'AnalyzerPortResults',filenameprefix AS "Analyzer_port2_counter%s"% port2 IN port2AnalyzerResult
+   
+    STEP "Starting traffic"
+    ON Stc1 DO perform USING 'AnalyzerStart', analyzerList AS analyzer
+    
+    STEP "Start Analyzer"
+    INFO "# wait for analyzer to start"    
+    ON Stc1 DO sleep USING 1
+    ON Stc1 DO perform USING 'GeneratorStart', generatorList AS generator
+   
+    STEP "Sleep 5 seconds..."
+    INFO "# generate traffic for 5 seconds"    
+    ON Stc1 DO sleep USING 5
+  
+    STEP "Stopping Traffic..."
+    INFO "stop generator"
+    ON Stc1 DO perform USING 'GeneratorStop', generatorList AS generator
+    INFO "Stop analyzer"
+    ON Stc1 DO perform USING 'AnalyzerStop', analyzerList AS analyzer
+   
+    STEP "Call Unsubscribe..."
+    ON Stc1 DO unsubscribe USING port2AnalyzerResult
+    ON Stc1 DO unsubscribe USING port1GeneratorResult
+
+    STEP "Call Disconnect..."
+    ON Stc1 DO disconnect USING chassisAddress
+    ON Stc1 DO delete USING project
+
+    INFO "##############################Checking Analyzer port results###################################"
+    STEP "Checking the result of ResultObject"
+    STORE ON Stc1 DO parseresults USING CsvFile AS 'Analyzer_port2_counterport2.csv',Attribute AS "ResultObject" IN result
+    ASSERT result EQUALS str(result) ONPASS "Resultobject passed" ONFAIL "resultobject not getting"
+  
+    STEP "Checking the result for TotalFrameCount"
+    STORE ON Stc1 DO parseresults USING CsvFile AS 'Analyzer_port2_counterport2.csv',Attribute AS "ResultObjectName" IN result
+    ASSERT result EQUALS str(result) ONPASS "ResultObjectName is getting" ONFAIL "ResultObjectName not getting"
+
+    STEP "Checking for ResultParent value"
+    STORE ON Stc1 DO parseresults USING CsvFile AS 'Analyzer_port2_counterport2.csv',Attribute AS "ResultParent" IN result
+    ASSERT result EQUALS str(result) ONPASS "ResultParent is getting" ONFAIL "ResultParent not getting"
+    
+    STEP "Checking ResultParentName in results"
+    STORE ON Stc1 DO parseresults USING CsvFile AS 'Analyzer_port2_counterport2.csv',Attribute AS "ResultParentName" IN result
+    ASSERT result MATCHES str(result) ONPASS "ResultParentName is getting" ONFAIL "ResultParentName not getting"
+    
+    STEP "Checking TotalFrameCount in results"
+    STORE ON Stc1 DO parseresults USING CsvFile AS 'Analyzer_port2_counterport2.csv',Attribute AS "TotalFrameCount" IN result
+    ASSERT result GREATER THAN mintraffic ONPASS "TotalFrameCount is getting" ONFAIL "TotalFrameCount not getting"
+
+    STEP "Checking TotalOctetCount in results"
+    STORE ON Stc1 DO parseresults USING CsvFile AS 'Analyzer_port2_counterport2.csv',Attribute AS "TotalOctetCount" IN result
+    ASSERT result GREATER THAN mintraffic ONPASS "TotalOctetCount is getting" ONFAIL "TotalOctetCount not getting"
+
+    STEP "Checking SigFrameCount in results"
+    STORE ON Stc1 DO parseresults USING CsvFile AS 'Analyzer_port2_counterport2.csv',Attribute AS "SigFrameCount" IN result
+    ASSERT result GREATER THAN mintraffic ONPASS "SigFrameCount is getting" ONFAIL "SigFrameCount not getting"
+
+    STEP "Checking TotalFrameRate in results"
+    STORE ON Stc1 DO parseresults USING CsvFile AS 'Analyzer_port2_counterport2.csv',Attribute AS "TotalFrameRate" IN result
+    ASSERT result GREATER THAN mintraffic ONPASS "TotalFrameRate is getting" ONFAIL "TotalFrameRate not getting"
+
+    STEP "Checking TotalOctetRate in results"
+    STORE ON Stc1 DO parseresults USING CsvFile AS 'Analyzer_port2_counterport2.csv',Attribute AS "TotalOctetRate" IN result
+    ASSERT result GREATER THAN mintraffic ONPASS "TotalOctetRate is getting" ONFAIL "TotalOctetRate not getting"
+
+    STEP "Checking TotalBitRate in results"
+    STORE ON Stc1 DO parseresults USING CsvFile AS 'Analyzer_port2_counterport2.csv',Attribute AS "TotalBitRate" IN result
+    ASSERT result GREATER THAN mintraffic ONPASS "TotalBitRate is getting" ONFAIL "TotalBitRate not getting"
+ 
+    STEP "Checking TotalBitCount in results"
+    STORE ON Stc1 DO parseresults USING CsvFile AS 'Analyzer_port2_counterport2.csv',Attribute AS "TotalBitCount" IN result
+    ASSERT result GREATER THAN mintraffic ONPASS "TotalBitCount is getting" ONFAIL "TotalBitCount not getting"
+    
+    STEP "Checking L1BitCount in results"
+    STORE ON Stc1 DO parseresults USING CsvFile AS 'Analyzer_port2_counterport2.csv',Attribute AS "L1BitCount" IN result
+    ASSERT result GREATER THAN mintraffic ONPASS "L1BitCount is getting" ONFAIL "L1BitCount not getting"
+    
+    STEP "Checking L1BitRate in results"
+    STORE ON Stc1 DO parseresults USING CsvFile AS 'Analyzer_port2_counterport2.csv',Attribute AS "L1BitRate" IN result
+    ASSERT result GREATER THAN mintraffic ONPASS "L1BitRate is getting" ONFAIL "L1BitRate not getting"
+
+    STEP "Checking L1BitRatePercent in results"
+    STORE ON Stc1 DO parseresults USING CsvFile AS 'Analyzer_port2_counterport2.csv',Attribute AS "L1BitRatePercent" IN result
+    ASSERT result GREATER THAN minbitpercent ONPASS "L1BitRatePercent is getting" ONFAIL "L1BitRatePercent not getting"
+
+    STEP "Checking SigFrameRate in results"
+    STORE ON Stc1 DO parseresults USING CsvFile AS 'Analyzer_port2_counterport2.csv',Attribute AS "SigFrameRate" IN result
+    ASSERT result GREATER THAN mintraffic ONPASS "SigFrameRate is getting" ONFAIL "SigFrameRate not getting"
+
+    STEP "Checking PrbsFillOctetRate in results"
+    STORE ON Stc1 DO parseresults USING CsvFile AS 'Analyzer_port2_counterport2.csv',Attribute AS "PrbsFillOctetRate" IN result
+    ASSERT result EQUALS main.FALSE ONPASS "PrbsFillOctetRate is not getting" ONFAIL "PrbsFillOctetRate is getting"
+   
+    INFO "##############################Checking Generator port results################################" 
+    STEP "Checking ResultObject in results"
+    STORE ON Stc1 DO parseresults USING CsvFile AS 'Generator_port1_counterport1.csv',Attribute AS "ResultObject" IN result
+    ASSERT result EQUALS str(result) ONPASS "Resultobject passed" ONFAIL "resultobject not getting"
+  
+    STEP "Checking ResultObjectName in results"
+    STORE ON Stc1 DO parseresults USING CsvFile AS 'Generator_port1_counterport1.csv',Attribute AS "ResultObjectName" IN result
+    ASSERT result EQUALS str(result) ONPASS "ResultObjectName is getting" ONFAIL "ResultObjectName not getting"
+
+    STEP "Checking ResultParent in results"
+    STORE ON Stc1 DO parseresults USING CsvFile AS 'Generator_port1_counterport1.csv',Attribute AS "ResultParent" IN result
+    ASSERT result EQUALS str(result) ONPASS "ResultParent is getting" ONFAIL "ResultParent not getting"
+    
+    STEP "Checking ResultParentName in results"
+    STORE ON Stc1 DO parseresults USING CsvFile AS 'Generator_port1_counterport1.csv',Attribute AS "ResultParentName" IN result
+    ASSERT result EQUALS str(result) ONPASS "ResultParentName is getting" ONFAIL "ResultParentName not getting"
+    
+    STEP "Checking TotalFrameCount in results"
+    STORE ON Stc1 DO parseresults USING CsvFile AS 'Generator_port1_counterport1.csv',Attribute AS "TotalFrameCount" IN result
+    ASSERT result GREATER THAN mintraffic ONPASS "TotalFrameCount is getting" ONFAIL "TotalFrameCount not getting"
+
+    STEP "Checking TotalOctetCount in results"
+    STORE ON Stc1 DO parseresults USING CsvFile AS 'Generator_port1_counterport1.csv',Attribute AS "TotalOctetCount" IN result
+    ASSERT result GREATER THAN mintraffic ONPASS "TotalOctetCount is getting" ONFAIL "TotalOctetCount not getting"
+
+    STEP "Checking GeneratorFrameCount in results"
+    STORE ON Stc1 DO parseresults USING CsvFile AS 'Generator_port1_counterport1.csv',Attribute AS "GeneratorFrameCount" IN result
+    ASSERT result GREATER THAN mintraffic ONPASS "GeneratorFrameCount is getting" ONFAIL "GeneratorFrameCount not getting"
+  
+    STEP "Checking GeneratorSigFrameCount in results"
+    STORE ON Stc1 DO parseresults USING CsvFile AS 'Generator_port1_counterport1.csv',Attribute AS "GeneratorSigFrameCount" IN result
+    ASSERT result GREATER THAN mintraffic ONPASS "GeneratorSigFrameCount is getting" ONFAIL "GeneratorSigFrameCount not getting"
+
+    STEP "Checking for GeneratorOctetCount value"
+    STORE ON Stc1 DO parseresults USING CsvFile AS 'Generator_port1_counterport1.csv',Attribute AS "GeneratorOctetCount" IN result
+    ASSERT result GREATER THAN mintraffic ONPASS "GeneratorOctetCount is getting" ONFAIL "GeneratorOctetCount not getting"
+    
+    STEP "Checking TotalFrameRate in results"
+    STORE ON Stc1 DO parseresults USING CsvFile AS 'Generator_port1_counterport1.csv',Attribute AS "TotalFrameRate" IN result
+    ASSERT result GREATER THAN mintraffic ONPASS "TotalFrameRate is getting" ONFAIL "TotalFrameRate not getting"
+    
+    STEP "Checking TotalOctetRate in results"
+    STORE ON Stc1 DO parseresults USING CsvFile AS 'Generator_port1_counterport1.csv',Attribute AS "TotalOctetRate" IN result
+    ASSERT result GREATER THAN mintraffic ONPASS "TotalOctetRate is getting" ONFAIL "TotalOctetRate not getting"
+
+    STEP "Checking TotalBitRate in results"
+    STORE ON Stc1 DO parseresults USING CsvFile AS 'Generator_port1_counterport1.csv',Attribute AS "TotalBitRate" IN result
+    ASSERT result GREATER THAN mintraffic ONPASS "TotalBitRate is getting" ONFAIL "TotalBitRate not getting"
+
+    STEP "Checking TotalBitCount in results"
+    STORE ON Stc1 DO parseresults USING CsvFile AS 'Generator_port1_counterport1.csv',Attribute AS "TotalBitCount" IN result
+    ASSERT result GREATER THAN mintraffic ONPASS "TotalBitCount is getting" ONFAIL "TotalBitCount not getting"
+    
+    STEP "Checking L1BitCount in results"
+    STORE ON Stc1 DO parseresults USING CsvFile AS 'Generator_port1_counterport1.csv',Attribute AS "L1BitCount" IN result
+    ASSERT result GREATER THAN mintraffic ONPASS "L1BitCount is getting" ONFAIL "L1BitCount not getting"
+
+    STEP "Checking L1BitRate in results"
+    STORE ON Stc1 DO parseresults USING CsvFile AS 'Generator_port1_counterport1.csv',Attribute AS "L1BitRate" IN result
+    ASSERT result GREATER THAN mintraffic ONPASS "L1BitRate is getting" ONFAIL "L1BitRate not getting"
+   
+    STEP "Checking L1BitRatePercent in results"
+    STORE ON Stc1 DO parseresults USING CsvFile AS 'Generator_port1_counterport1.csv',Attribute AS "L1BitRatePercent" IN result
+    ASSERT result GREATER THAN minbitpercent ONPASS "L1BitRatePercent is getting" ONFAIL "L1BitRatePercent not getting"
+    
+    STEP "Checking GeneratorFrameRate in results"
+    STORE ON Stc1 DO parseresults USING CsvFile AS 'Generator_port1_counterport1.csv',Attribute AS "GeneratorFrameRate" IN result
+    ASSERT result GREATER THAN mintraffic ONPASS "GeneratorFrameRate is getting" ONFAIL "GeneratorFrameRate not getting"
+
+    STEP "Checking GeneratorSigFrameRate in results"
+    STORE ON Stc1 DO parseresults USING CsvFile AS 'Generator_port1_counterport1.csv',Attribute AS "GeneratorSigFrameRate" IN result
+    ASSERT result GREATER THAN mintraffic ONPASS "GeneratorSigFrameRate is getting" ONFAIL "GeneratorSigFrameRate not getting"
+
+    STEP "Checking GeneratorOctetRate in results"
+    STORE ON Stc1 DO parseresults USING CsvFile AS 'Generator_port1_counterport1.csv',Attribute AS "GeneratorOctetRate" IN result
+    ASSERT result GREATER THAN mintraffic ONPASS "GeneratorOctetRate is getting" ONFAIL "GeneratorOctetRate not getting"
+
+    STEP "Checking GeneratorBitRate in results"
+    STORE ON Stc1 DO parseresults USING CsvFile AS 'Generator_port1_counterport1.csv',Attribute AS "GeneratorBitRate" IN result
+    ASSERT result GREATER THAN mintraffic ONPASS "GeneratorBitRate is getting" ONFAIL "GeneratorBitRate not getting"
+
+    STEP "Checking TotalIpv4FrameRate in results"
+    STORE ON Stc1 DO parseresults USING CsvFile AS 'Generator_port1_counterport1.csv',Attribute AS "TotalIpv4FrameRate" IN result
+    ASSERT result EQUALS main.FALSE ONPASS "TotalIpv4FrameRate is not getting" ONFAIL "TotalIpv4FrameRate is getting"
+   
+    
+     

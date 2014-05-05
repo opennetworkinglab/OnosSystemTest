@@ -52,32 +52,32 @@ class CLI(Component):
         else :
             self.handle =pexpect.spawn('ssh -X '+self.user_name+'@'+self.ip_address,maxread=50000)
 
-        self.handle.logfile = self.logfile_handler
-        i=self.handle.expect([ssh_newkey,'password:',pexpect.EOF,pexpect.TIMEOUT,refused,'>|#|$'],120)
+        self.handlspawn.logfile = self.logfile_handler
+	i = 5
+	while i == 5:
+	    i=self.handle.expect([ssh_newkey,'password:',pexpect.EOF,pexpect.TIMEOUT,refused,'teston>','>|#|\$'],120)
+	    if i==0:
+	        main.log.info("ssh key confirmation received, send yes")
+	        self.handle.sendline('yes')
+	        i=self.handle.expect([ssh_newkey,'password:',pexpect.EOF])
+	    if i==1:
+	        main.log.info("ssh connection asked for password, gave password")
+	        self.handle.sendline(self.pwd)
+	        self.handle.expect('>|#|\$')
+	    elif i==2:
+	        main.log.error("Connection timeout")
+	        return main.FALSE
+	    elif i==3: #timeout
+	        main.log.error("No route to the Host "+self.user_name+"@"+self.ip_address)
+	        return main.FALSE
+	    elif i==4:
+	        main.log.error("ssh: connect to host "+self.ip_address+" port 22: Connection refused")
+	        return main.FALSE
+	    elif i==6:
+	        main.log.info("Password not required logged in")
 
-        if i==0:
-            main.log.info("ssh key confirmation received, send yes")
-            self.handle.sendline('yes')
-            i=self.handle.expect([ssh_newkey,'password:',pexpect.EOF])
-        if i==1:
-            main.log.info("ssh connection asked for password, gave password")
-            self.handle.sendline(self.pwd)
-            self.handle.expect('>|#|$')
-
-        elif i==2:
-            main.log.error("Connection timeout")
-            return main.FALSE
-        elif i==3: #timeout
-            main.log.error("No route to the Host "+self.user_name+"@"+self.ip_address)
-            return main.FALSE
-        elif i==4:
-            main.log.error("ssh: connect to host "+self.ip_address+" port 22: Connection refused")
-            return main.FALSE
-        elif i==5:
-            main.log.info("Password not required logged in")
-
-        self.handle.sendline("\r")
-        self.handle.expect('>|#|$', 2)
+        self.handle.sendline("\n")
+        self.handle.expect('>|#|\$')
         return self.handle
 
     
@@ -99,7 +99,7 @@ class CLI(Component):
         '''
 
         result = super(CLI, self).execute(self)
-        defaultPrompt = '.*[$>\#]'
+        defaultPrompt = '.*[\$|>|\#]'
         args = utilities.parse_args(["CMD", "TIMEOUT", "PROMPT", "MORE"], **execparams)
         expectPrompt = args["PROMPT"] if args["PROMPT"] else defaultPrompt
         self.LASTRSP = ""
@@ -163,7 +163,7 @@ class CLI(Component):
         i = handle.expect([".ssword:*",default, pexpect.EOF])
         if i==0:
             handle.sendline(pwd)
-            handle.sendline("\r")
+            handle.sendline("\n")
 
         if i==1:
             handle.expect(default)
@@ -212,7 +212,7 @@ class CLI(Component):
             main.log.error("ssh: connect to host "+ip_address+" port 22: Connection refused")
             return main.FALSE
 
-        self.handle.sendline("\r")
+        self.handle.sendline("\n")
         
         return self.handle
     

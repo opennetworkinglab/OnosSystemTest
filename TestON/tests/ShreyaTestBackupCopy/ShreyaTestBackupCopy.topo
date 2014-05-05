@@ -1,0 +1,37 @@
+<TOPOLOGY>    
+
+    <COMPONENT>
+        <Mininet1>
+            <host> 10.128.100.49 </host>
+            <user> ovx </user>
+	    <password> ovxRocks </password>
+            <type> MininetCliDriver </type>
+	    <COMPONENTS>
+	    	<arg1> </arg1>
+		<arg2> </arg2>
+		<controller> 10.128.100.29 </controller>
+ 	    </COMPONENTS>
+	</Mininet1>
+
+	<Floodlight1>
+		<host> 10.128.100.29 </host>
+		<user> user_one </user>
+		<password> user_one </password>
+		<type> FloodLightCliDriver </type>
+		<COMPONENTS>
+			<arg1> </arg1>
+		</COMPONENTS>
+	</Floodlight1>
+
+	<OVX1>
+		<host> 10.128.100.54 </host>
+		<user> ovx </user>
+		<password> ovxRocks </password>
+		<type> OVXCliDriver </type>
+		<COMPONENTS>
+			<arg1> </arg1>
+		</COMPONENTS>
+	</OVX1>
+
+    </COMPONENT>
+</TOPOLOGY>

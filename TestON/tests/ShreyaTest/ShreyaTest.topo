@@ -1,0 +1,17 @@
+<TOPOLOGY>    
+
+    <COMPONENT>
+        <Mininet1>
+            <host> 10.128.100.49 </host>
+            <user> ovx </user>
+	    <password> ovxRocks </password>
+            <type> MininetCliDriver </type>
+	    <COMPONENTS>
+	    	<arg1> </arg1>
+		<arg2> </arg2>
+		<controller> none </controller>
+ 	    </COMPONENTS>
+	</Mininet1>
+
+    </COMPONENT>
+</TOPOLOGY>

@@ -14,6 +14,10 @@ class OnosSanity4nodes :
         main.ONOS2.git_pull()
         main.ONOS3.git_pull()
         main.ONOS4.git_pull()
+        main.Cassandra1.stop()
+        main.Cassandra2.stop()
+        main.Cassandra3.stop()
+        main.Cassandra4.stop()
         main.Cassandra1.start()
         main.Cassandra2.start()
         main.Cassandra3.start()
@@ -443,7 +447,7 @@ class OnosSanity4nodes :
             main.log.report("\tPASSED - Found host IP = " + hostip + "; MAC = " + "".join(MAC) + "; attached to switchDPID = " + "".join(Switch) + "; at port = " + "".join(Port))
             result4 = main.TRUE
         elif Reststatus > 1:
-            main.log.report("\t FAILED - Host " + host + " with MAC:" + str(mac) + " has " + str(Reststatuas) + " duplicated IP addresses. FAILED")
+            main.log.report("\t FAILED - Host " + host + " with MAC:" + str(mac) + " has " + str(Reststatus) + " duplicated IP addresses. FAILED")
             main.log.report("switches are: " + "; ".join(Switch))
             main.log.report("Ports are: " + "; ".join(Port))
             main.log.report("MACs are: " + "; ".join(MAC))            
@@ -463,6 +467,7 @@ class OnosSanity4nodes :
         i = 6
         while i < 16 :
             main.log.info("\n\t\t\t\th"+str(i)+" IS PINGING h"+str(i+25) )
+            strtTime = time.time() 
             ping = main.Mininet1.pingHost(src="h"+str(i),target="h"+str(i+25))
             if ping == main.FALSE and count < 6:
                 count = count + 1

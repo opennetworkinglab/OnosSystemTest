@@ -1,488 +1,0 @@
-2013-11-21 11:56:02,471  ONOS2     : INFO    : 
-                                +----------------+
------------------------------- { Script And Files }  ------------------------------
-                                +----------------+
-
-	Script Log File : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_21_Nov_2013_11_55_50/OnosSanity4nodes_21_Nov_2013_11_55_50.log
-	Report Log File : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_21_Nov_2013_11_55_50/OnosSanity4nodes_21_Nov_2013_11_55_50.rpt
-	ONOS4 Session Log : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_21_Nov_2013_11_55_50/ONOS4.session
-	ONOS2 Session Log : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_21_Nov_2013_11_55_50/ONOS2.session
-	ONOS3 Session Log : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_21_Nov_2013_11_55_50/ONOS3.session
-	ONOS1 Session Log : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_21_Nov_2013_11_55_50/ONOS1.session
-	Zookeeper4 Session Log : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_21_Nov_2013_11_55_50/Zookeeper4.session
-	Cassandra1 Session Log : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_21_Nov_2013_11_55_50/Cassandra1.session
-	Cassandra2 Session Log : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_21_Nov_2013_11_55_50/Cassandra2.session
-	Cassandra3 Session Log : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_21_Nov_2013_11_55_50/Cassandra3.session
-	Cassandra4 Session Log : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_21_Nov_2013_11_55_50/Cassandra4.session
-	Zookeeper1 Session Log : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_21_Nov_2013_11_55_50/Zookeeper1.session
-	Zookeeper2 Session Log : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_21_Nov_2013_11_55_50/Zookeeper2.session
-	Zookeeper3 Session Log : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_21_Nov_2013_11_55_50/Zookeeper3.session
-	Mininet1 Session Log : /home/admin/ONLabTest/TestON/logs/OnosSanity4nodes_21_Nov_2013_11_55_50/Mininet1.session
-	Test Script :/home/admin/ONLabTest/TestON/Tests/OnosSanity4nodes.py
-	Test Params : /home/admin/ONLabTest/TestON/Tests/OnosSanity4nodes.params
-	Topology : /home/admin/ONLabTest/TestON/Tests/OnosSanity4nodes.tpl
-                              +------------------+
----------------------------  { Script Exec Params }  ---------------------------
-                              +------------------+
-
-	
-	'CTRL': 
-	'ip2': '10.128.100.4'
-	 'ip3': '10.128.100.5'
-	 'ip1': '10.128.100.1'
-	 'ip4': '10.128.100.6'
-	 'port4': '6633'
-	 'port2': '6633'
-	 'port3': '6633'
-	 'port1': '6633'
-	
-	 'NR_Links': '50'
-	 'LINK': 
-	'begin': 's1'
-	 'end': 's2'
-	
-	 'RESTCALL': 
-	'restIP1': '10.128.100.1'
-	 'restIP2': '10.128.100.5'
-	 'restPort': '8080'
-	 'restURL': '/wm/device/'
-	
-	 'CASE1': 
-	'destination': 'h6'
-	
-	 'PLUG': 
-	'sw1': 's1'
-	 'intf': 's1-eth1'
-	 'sw6': 's6'
-	
-	 'PING': 
-	'source2': 'h8'
-	 'source1': 'h6'
-	 'target2': 'h33'
-	 'target1': 'h31'
-	
-	 'FLOWDEF': '~/flowdef_files/Center_Triangle/flowdef_20.txt'
-	 'testcases': '1
-	2
-	21
-	3
-	4
-	5
-	6
-	7'
-	 'RestIP': '10.128.100.1'
-	 'NR_Switches': '25'
-	 'YANK': 
-	'hostmac': '00:00:00:00:00:01'
-	 'sw1': 's1'
-	 'hostname': 'h1'
-	 'intf': 's1-eth1'
-	 'sw6': 's6'
-	
-	
-
-                               +---------------+
------------------------------ { Components Used }  -----------------------------
-                               +---------------+
-	ONOS4
-	ONOS2
-	ONOS3
-	ONOS1
-	Zookeeper4
-	Cassandra1
-	Cassandra2
-	Cassandra3
-	Cassandra4
-	Zookeeper1
-	Zookeeper2
-	Zookeeper3
-	Mininet1
-
-
-                              +--------+
----------------------------- { Topology }  ----------------------------
-                              +--------+
-
-	
-	'ONOS4': 
-	'connect_order': '12'
-	 'host': '10.128.100.6'
-	 'user': 'admin'
-	 'COMPONENTS': ''
-	 'password': None
-	 'type': 'OnosCliDriver'
-	
-	 'ONOS2': 
-	'connect_order': '10'
-	 'host': '10.128.100.4'
-	 'user': 'admin'
-	 'COMPONENTS': ''
-	 'password': None
-	 'type': 'OnosCliDriver'
-	
-	 'ONOS3': 
-	'connect_order': '11'
-	 'host': '10.128.100.5'
-	 'user': 'admin'
-	 'COMPONENTS': ''
-	 'password': None
-	 'type': 'OnosCliDriver'
-	
-	 'ONOS1': 
-	'connect_order': '9'
-	 'host': '10.128.100.1'
-	 'user': 'admin'
-	 'COMPONENTS': ''
-	 'password': None
-	 'type': 'OnosCliDriver'
-	
-	 'Zookeeper4': 
-	'connect_order': '4'
-	 'host': '10.128.100.6'
-	 'user': 'admin'
-	 'COMPONENTS': ''
-	 'password': None
-	 'type': 'ZookeeperCliDriver'
-	
-	 'Cassandra1': 
-	'connect_order': '5'
-	 'host': '10.128.100.1'
-	 'user': 'admin'
-	 'COMPONENTS': ''
-	 'password': None
-	 'type': 'CassandraCliDriver'
-	
-	 'Cassandra2': 
-	'connect_order': '6'
-	 'host': '10.128.100.4'
-	 'user': 'admin'
-	 'COMPONENTS': ''
-	 'password': None
-	 'type': 'CassandraCliDriver'
-	
-	 'Cassandra3': 
-	'connect_order': '7'
-	 'host': '10.128.100.5'
-	 'user': 'admin'
-	 'COMPONENTS': ''
-	 'password': None
-	 'type': 'CassandraCliDriver'
-	
-	 'Cassandra4': 
-	'connect_order': '8'
-	 'host': '10.128.100.6'
-	 'user': 'admin'
-	 'COMPONENTS': ''
-	 'password': None
-	 'type': 'CassandraCliDriver'
-	
-	 'Zookeeper1': 
-	'connect_order': '1'
-	 'host': '10.128.100.1'
-	 'user': 'admin'
-	 'COMPONENTS': ''
-	 'password': None
-	 'type': 'ZookeeperCliDriver'
-	
-	 'Zookeeper2': 
-	'connect_order': '2'
-	 'host': '10.128.100.4'
-	 'user': 'admin'
-	 'COMPONENTS': ''
-	 'password': None
-	 'type': 'ZookeeperCliDriver'
-	
-	 'Zookeeper3': 
-	'connect_order': '3'
-	 'host': '10.128.100.5'
-	 'user': 'admin'
-	 'COMPONENTS': ''
-	 'password': None
-	 'type': 'ZookeeperCliDriver'
-	
-	 'Mininet1': 
-	'connect_order': '13'
-	 'host': '10.128.100.11'
-	 'user': 'admin'
-	 'COMPONENTS': 
-	'arg1': '--custom ~/mininet/custom/topo-onos4node.py'
-	 'arg2': '--topo mytopo --arp'
-	 'controller': 'remote'
-	
-	 'password': None
-	 'type': 'MininetCliDriver'
-	
-	
-------------------------------------------------------------
-
-                                                                               teston> 
-
-
-2013-11-21 11:56:27,499  ONOS2     : INFO    : 
-****************************************
-Start of Test Case1 : 
-
-Welcome to Ubuntu 12.04.2 LTS (GNU/Linux 3.2.0-44-virtual x86_64)
-
- * Documentation:  https://help.ubuntu.com/
-
-  System information as of Thu Nov 21 11:56:03 PST 2013
-
-  System load:  0.22               Processes:           95
-  Usage of /:   24.2% of 19.67GB   Users logged in:     1
-  Memory usage: 27%                IP address for eth0: 10.128.100.4
-  Swap usage:   0%
-
-  Graph this data and manage this system at https://landscape.canonical.com/
-
-  Get cloud support with Ubuntu Advantage Cloud Guest:
-    http://www.ubuntu.com/business/services/cloud
-
-  Use Juju to deploy your cloud instances and workloads:
-    https://juju.ubuntu.com/#cloud-precise
-
-129 packages can be updated.
-65 updates are security updates.
-
-Last login: Thu Nov 21 11:56:03 2013 from 10.128.7.7
-
-
-admin@autoONOS2:~$ 
-admin@autoONOS2:~$ 
-admin@autoONOS2:~$ ~/ONOS/start-onos.sh stop
-
-admin@autoONOS2:~$ ~/ONOS/start-onos.sh stop
-admin@autoONOS2:~$ cd ~/ONOS
-cd ~/ONOS
-admin@autoONOS2:~/ONOS$ git pull
-git pull
-remote: Counting objects: 444, done.        
-remote: Compressing objects:   0% (1/265)           remote: Compressing objects:   1% (3/265)           remote: Compressing objects:   2% (6/265)           remote: Compressing objects:   3% (8/265)           remote: Compressing objects:   4% (11/265)           remote: Compressing objects:   5% (14/265)           remote: Compressing objects:   6% (16/265)           remote: Compressing objects:   7% (19/265)           remote: Compressing objects:   8% (22/265)           remote: Compressing objects:   9% (24/265)           remote: Compressing objects:  10% (27/265)           remote: Compressing objects:  11% (30/265)           remote: Compressing objects:  12% (32/265)           remote: Compressing objects:  13% (35/265)           remote: Compressing objects:  14% (38/265)           remote: Compressing objects:  15% (40/265)           remote: Compressing objects:  16% (43/265)           remote: Compressing objects:  17% (46/265)           remote: Compressing objects:  18% (48/265)           remote: Compressing objects:  19% (51/265)           remote: Compressing objects:  20% (53/265)           remote: Compressing objects:  21% (56/265)           remote: Compressing objects:  22% (59/265)           remote: Compressing objects:  23% (61/265)           remote: Compressing objects:  24% (64/265)           remote: Compressing objects:  25% (67/265)           remote: Compressing objects:  26% (69/265)           remote: Compressing objects:  27% (72/265)           remote: Compressing objects:  28% (75/265)           remote: Compressing objects:  29% (77/265)           remote: Compressing objects:  30% (80/265)           remote: Compressing objects:  31% (83/265)           remote: Compressing objects:  32% (85/265)           remote: Compressing objects:  33% (88/265)           remote: Compressing objects:  34% (91/265)           remote: Compressing objects:  35% (93/265)           remote: Compressing objects:  36% (96/265)           remote: Compressing objects:  37% (99/265)           remote: Compressing objects:  38% (101/265)           remote: Compressing objects:  39% (104/265)           remote: Compressing objects:  40% (106/265)           remote: Compressing objects:  41% (109/265)           remote: Compressing objects:  42% (112/265)           remote: Compressing objects:  43% (114/265)           remote: Compressing objects:  44% (117/265)           remote: Compressing objects:  45% (120/265)           remote: Compressing objects:  46% (122/265)           remote: Compressing objects:  47% (125/265)           remote: Compressing objects:  48% (128/265)           remote: Compressing objects:  49% (130/265)           remote: Compressing objects:  50% (133/265)           remote: Compressing objects:  51% (136/265)           remote: Compressing objects:  52% (138/265)           remote: Compressing objects:  53% (141/265)           remote: Compressing objects:  54% (144/265)           remote: Compressing objects:  55% (146/265)           remote: Compressing objects:  56% (149/265)           remote: Compressing objects:  57% (152/265)           remote: Compressing objects:  58% (154/265)           remote: Compressing objects:  59% (157/265)           remote: Compressing objects:  60% (159/265)           remote: Compressing objects:  61% (162/265)           remote: Compressing objects:  62% (165/265)           remote: Compressing objects:  63% (167/265)           remote: Compressing objects:  64% (170/265)           remote: Compressing objects:  65% (173/265)           remote: Compressing objects:  66% (175/265)           remote: Compressing objects:  67% (178/265)           remote: Compressing objects:  68% (181/265)           remote: Compressing objects:  69% (183/265)           remote: Compressing objects:  70% (186/265)           remote: Compressing objects:  71% (189/265)           remote: Compressing objects:  72% (191/265)           remote: Compressing objects:  73% (194/265)           remote: Compressing objects:  74% (197/265)           remote: Compressing objects:  75% (199/265)           remote: Compressing objects:  76% (202/265)           remote: Compressing objects:  77% (205/265)           remote: Compressing objects:  78% (207/265)           remote: Compressing objects:  79% (210/265)           remote: Compressing objects:  80% (212/265)           remote: Compressing objects:  81% (215/265)           remote: Compressing objects:  82% (218/265)           remote: Compressing objects:  83% (220/265)           remote: Compressing objects:  84% (223/265)           remote: Compressing objects:  85% (226/265)           remote: Compressing objects:  86% (228/265)           remote: Compressing objects:  87% (231/265)           remote: Compressing objects:  88% (234/265)           remote: Compressing objects:  89% (236/265)           remote: Compressing objects:  90% (239/265)           remote: Compressing objects:  91% (242/265)           remote: Compressing objects:  92% (244/265)           remote: Compressing objects:  93% (247/265)           remote: Compressing objects:  94% (250/265)           remote: Compressing objects:  95% (252/265)           remote: Compressing objects:  96% (255/265)           remote: Compressing objects:  97% (258/265)           remote: Compressing objects:  98% (260/265)           remote: Compressing objects:  99% (263/265)           remote: Compressing objects: 100% (265/265)           remote: Compressing objects: 100% (265/265), done.        
-Receiving objects:   0% (1/351)   Receiving objects:   1% (4/351)   Receiving objects:   2% (8/351)   Receiving objects:   3% (11/351)   Receiving objects:   4% (15/351)   Receiving objects:   5% (18/351)   Receiving objects:   6% (22/351)   Receiving objects:   7% (25/351)   Receiving objects:   8% (29/351)   Receiving objects:   9% (32/351)   Receiving objects:  10% (36/351)   Receiving objects:  11% (39/351)   Receiving objects:  12% (43/351)   Receiving objects:  13% (46/351)   Receiving objects:  14% (50/351)   Receiving objects:  15% (53/351)   Receiving objects:  16% (57/351)   Receiving objects:  17% (60/351)   Receiving objects:  18% (64/351)   Receiving objects:  19% (67/351)   Receiving objects:  20% (71/351)   Receiving objects:  21% (74/351)   Receiving objects:  22% (78/351)   Receiving objects:  23% (81/351)   Receiving objects:  24% (85/351)   Receiving objects:  25% (88/351)   Receiving objects:  26% (92/351)   Receiving objects:  27% (95/351)   Receiving objects:  28% (99/351)   Receiving objects:  29% (102/351)   Receiving objects:  30% (106/351)   Receiving objects:  31% (109/351)   Receiving objects:  32% (113/351)   Receiving objects:  33% (116/351)   Receiving objects:  34% (120/351)   Receiving objects:  35% (123/351)   Receiving objects:  36% (127/351)   Receiving objects:  37% (130/351)   Receiving objects:  38% (134/351)   Receiving objects:  39% (137/351)   Receiving objects:  40% (141/351)   Receiving objects:  41% (144/351)   Receiving objects:  42% (148/351)   Receiving objects:  43% (151/351)   Receiving objects:  44% (155/351)   Receiving objects:  45% (158/351)   Receiving objects:  46% (162/351)   Receiving objects:  47% (165/351)   Receiving objects:  48% (169/351)   Receiving objects:  49% (172/351)   Receiving objects:  50% (176/351)   Receiving objects:  51% (180/351)   Receiving objects:  52% (183/351)   Receiving objects:  53% (187/351)   Receiving objects:  54% (190/351)   Receiving objects:  55% (194/351)   Receiving objects:  56% (197/351)   Receiving objects:  57% (201/351)   Receiving objects:  58% (204/351)   Receiving objects:  59% (208/351)   Receiving objects:  60% (211/351)   Receiving objects:  61% (215/351)   Receiving objects:  62% (218/351)   Receiving objects:  63% (222/351)   Receiving objects:  64% (225/351)   Receiving objects:  65% (229/351)   Receiving objects:  66% (232/351)   Receiving objects:  67% (236/351)   remote: Total 351 (delta 132), reused 273 (delta 57)        
-Receiving objects:  68% (239/351)   Receiving objects:  69% (243/351)   Receiving objects:  70% (246/351)   Receiving objects:  71% (250/351)   Receiving objects:  72% (253/351)   Receiving objects:  73% (257/351)   Receiving objects:  74% (260/351)   Receiving objects:  75% (264/351)   Receiving objects:  76% (267/351)   Receiving objects:  77% (271/351)   Receiving objects:  78% (274/351)   Receiving objects:  79% (278/351)   Receiving objects:  80% (281/351)   Receiving objects:  81% (285/351)   Receiving objects:  82% (288/351)   Receiving objects:  83% (292/351)   Receiving objects:  84% (295/351)   Receiving objects:  85% (299/351)   Receiving objects:  86% (302/351)   Receiving objects:  87% (306/351)   Receiving objects:  88% (309/351)   Receiving objects:  89% (313/351)   Receiving objects:  90% (316/351)   Receiving objects:  91% (320/351)   Receiving objects:  92% (323/351)   Receiving objects:  93% (327/351)   Receiving objects:  94% (330/351)   Receiving objects:  95% (334/351)   Receiving objects:  96% (337/351)   Receiving objects:  97% (341/351)   Receiving objects:  98% (344/351)   Receiving objects:  99% (348/351)   Receiving objects: 100% (351/351)   Receiving objects: 100% (351/351), 92.75 KiB, done.
-Resolving deltas:   0% (0/132)   Resolving deltas:   2% (3/132)   Resolving deltas:   6% (9/132)   Resolving deltas:   8% (11/132)   Resolving deltas:   9% (13/132)   Resolving deltas:  10% (14/132)   Resolving deltas:  11% (15/132)   Resolving deltas:  12% (16/132)   Resolving deltas:  16% (22/132)   Resolving deltas:  17% (23/132)   Resolving deltas:  18% (25/132)   Resolving deltas:  20% (27/132)   Resolving deltas:  22% (30/132)   Resolving deltas:  24% (32/132)   Resolving deltas:  25% (34/132)   Resolving deltas:  27% (36/132)   Resolving deltas:  31% (42/132)   Resolving deltas:  33% (44/132)   Resolving deltas:  34% (46/132)   Resolving deltas:  35% (47/132)   Resolving deltas:  36% (48/132)   Resolving deltas:  41% (55/132)   Resolving deltas:  43% (57/132)   Resolving deltas:  45% (60/132)   Resolving deltas:  47% (63/132)   Resolving deltas:  50% (66/132)   Resolving deltas:  67% (89/132)   Resolving deltas:  68% (91/132)   Resolving deltas:  69% (92/132)   Resolving deltas:  70% (93/132)   Resolving deltas:  71% (94/132)   Resolving deltas:  75% (100/132)   Resolving deltas:  76% (101/132)   Resolving deltas:  77% (102/132)   Resolving deltas:  86% (114/132)   Resolving deltas:  91% (121/132)   Resolving deltas:  95% (126/132)   Resolving deltas:  96% (127/132)   Resolving deltas:  97% (129/132)   Resolving deltas:  98% (130/132)   Resolving deltas:  99% (131/132)   Resolving deltas: 100% (132/132)   Resolving deltas: 100% (132/132), completed with 33 local objects.
-From github.com:OPENNETWORKINGLAB/ONOS
-   089eaf3..67174b8  master     -> origin/master
-Updating 089eaf3..67174b8
-Fast-forward
- conf/onos-embedded.properties                      |    1 +
- conf/onos.properties                               |    1 +
- .../java/net/onrc/onos/flow/FlowManagerImpl.java   |    1 +
- .../core/internal/DeviceStorageImpl.java           |   15 +-
- .../core/internal/SwitchStorageImpl.java           |  124 ++-
- .../flowmanager/FlowDatabaseOperation.java         |    4 +-
- .../onos/ofcontroller/flowmanager/FlowManager.java |   65 +-
- .../flowmanager/FlowSwitchOperation.java           |    5 +-
- .../flowprogrammer/FlowProgrammer.java             |   81 ++
- .../ofcontroller/flowprogrammer/FlowPusher.java    | 1006 ++++++++++++++++++++
- .../flowprogrammer/FlowSynchronizer.java           |  306 ++++++
- .../flowprogrammer/IFlowPusherService.java         |   43 +
- .../flowprogrammer/IFlowSyncService.java           |   13 +
- .../onrc/onos/ofcontroller/util/FlowEntryId.java   |   23 +
- ...odlightcontroller.core.module.IFloodlightModule |    3 +-
- 15 files changed, 1622 insertions(+), 69 deletions(-)
- create mode 100644 src/main/java/net/onrc/onos/ofcontroller/flowprogrammer/FlowProgrammer.java
- create mode 100644 src/main/java/net/onrc/onos/ofcontroller/flowprogrammer/FlowPusher.java
- create mode 100644 src/main/java/net/onrc/onos/ofcontroller/flowprogrammer/FlowSynchronizer.java
- create mode 100644 src/main/java/net/onrc/onos/ofcontroller/flowprogrammer/IFlowPusherService.java
- create mode 100644 src/main/java/net/onrc/onos/ofcontroller/flowprogrammer/IFlowSyncService.java
-admin@autoONOS2:~/ONOS$ 
-~/ONOS/start-onos.sh start
-
-admin@autoONOS2:~/ONOS$ ~/ONOS/start-onos.sh start
-rotate log: ./onos-logs/onos.autoONOS2.log
-rotate log: ./onos-logs/onos.autoONOS2.pcap
-Starting ONOS controller ...
-
-/home/admin/ONOS
-/home/admin/ONOS
-mvn -o exec:exec -Dexec.executable="java" -Dexec.args=" -javaagent:/home/admin/ONOS/lib/jacocoagent.jar=dumponexit=true,output=file,destfile=./onos-logs/jacoco.exec -server -d64 -Xmx1g -Xms1g -Xmn800m -XX:+UseConcMarkSweepGC -XX:+UseAdaptiveSizePolicy -XX:+AggressiveOpts -XX:+UseFastAccessorMethods -XX:MaxInlineSize=8192 -XX:FreqInlineSize=8192 -XX:CompileThreshold=1500 -XX:PreBlockSpin=8 -XX:OnError=crash-logger -XX:CompileThreshold=1500 -XX:PreBlockSpin=8 		-XX:+UseThreadPriorities 		-XX:ThreadPriorityPolicy=42 		-XX:+UseCompressedOops 		-Dcom.sun.management.jmxremote.port=7189 		-Dcom.sun.management.jmxremote.ssl=false 		-Dcom.sun.management.jmxremote.authenticate=false -Dhazelcast.logging.type=slf4j -Dlogback.configurationFile=./logback.autoONOS2.xml -cp %classpath net.onrc.onos.ofcontroller.core.Main -cf ./conf/onos.properties"
-Waiting for ONOS to start...
-.....
-admin@autoONOS2:~/ONOS$ 2013-11-21 12:02:18,922  ONOS2     : INFO    :  Checking if the startup was clean...
-****************************************
-
-2013-11-21 12:02:18,926  ONOS2     : INFO    : 
----------------------------------------------
-Start of Step INIT : Initializing the test case :Checking if the startup was clean...
----------------------------------------------
-
-2013-11-21 12:02:18,930  ONOS2     : INFO    : 
----------------------------------------------
-Start of Step 1.1: Testing startup Zookeeper
----------------------------------------------
-
-2013-11-21 12:02:19,721  ONOS2     : INFO    : 
----------------------------------------------
-End of Step  1.1: Testing startup Zookeeper
----------------------------------------------
-
----------------------------------------------
-Start of Step 1.2: Testing startup Cassandra
----------------------------------------------
-
-2013-11-21 12:02:21,270  ONOS2     : INFO    : 
----------------------------------------------
-End of Step  1.2: Testing startup Cassandra
----------------------------------------------
-
----------------------------------------------
-Start of Step 1.3: Testing startup ONOS
----------------------------------------------
-
-2013-11-21 12:02:46,205  ONOS2     : INFO    : 
-****************************************
-Start of Test Case2 : 
-2013-11-21 12:02:46,210  ONOS2     : INFO    :  Checking if one MN host exists
-****************************************
-
-2013-11-21 12:02:46,214  ONOS2     : INFO    : 
----------------------------------------------
-Start of Step INIT : Initializing the test case :Checking if one MN host exists
----------------------------------------------
-
-2013-11-21 12:02:46,218  ONOS2     : INFO    : 
----------------------------------------------
-Start of Step 2.1: Host IP Checking using checkIP
----------------------------------------------
-
-2013-11-21 12:02:46,353  ONOS2     : INFO    : 
----------------------------------------------
-End of Step  2.1: Host IP Checking using checkIP
----------------------------------------------
-
----------------------------------------------
-Start of Step 2.2: Verifying the result
----------------------------------------------
-
-2013-11-21 12:02:46,363  ONOS2     : INFO    : 
----------------------------------------------
-End of Step  2.2: Verifying the result
----------------------------------------------
-
----------------------------------------------
-Start of Step 2.3: assigning ONOS controllers to switches
----------------------------------------------
-
-2013-11-21 12:03:19,658  ONOS2     : INFO    : 
-****************************************
-Start of Test Case21 : 
-2013-11-21 12:03:23,021  ONOS2     : INFO    :  Yankout s6-eth1 (link to h1) from s1
-****************************************
-
-2013-11-21 12:03:29,523  ONOS2     : INFO    :  Plug s1-eth1 to s6
-****************************************
-
-2013-11-21 12:03:36,155  ONOS2     : INFO    :  Move s1-eth1 back to s1
-****************************************
-
-2013-11-21 12:03:42,862  ONOS2     : INFO    : 
-****************************************
-Start of Test Case3 : 
-2013-11-21 12:04:14,439  ONOS2     : INFO    :  Taking care of these flows!
-****************************************
-
-2013-11-21 12:04:14,443  ONOS2     : INFO    : 
----------------------------------------------
-Start of Step INIT : Initializing the test case :Taking care of these flows!
----------------------------------------------
-
-2013-11-21 12:04:14,450  ONOS2     : INFO    : 
----------------------------------------------
-Start of Step 3.1: Cleaning out any leftover flows...
----------------------------------------------
-
-2013-11-21 12:04:24,751  ONOS2     : INFO    :  Checking flows
-****************************************
-
-2013-11-21 12:04:24,754  ONOS2     : INFO    : 
----------------------------------------------
-Start of Step 3.1: Waiting
----------------------------------------------
-
-2013-11-21 12:04:29,763  ONOS2     : INFO    : 
----------------------------------------------
-Start of Step 3.1: Checking
----------------------------------------------
-
-2013-11-21 12:04:31,331  ONOS2     : INFO    : 
----------------------------------------------
-Start of Step 3.1: Waiting
----------------------------------------------
-
-2013-11-21 12:04:36,339  ONOS2     : INFO    : 
----------------------------------------------
-Start of Step 3.1: Checking
----------------------------------------------
-
-2013-11-21 12:04:37,945  ONOS2     : INFO    : 
----------------------------------------------
-Start of Step 3.1: Waiting
----------------------------------------------
-
-2013-11-21 12:04:42,954  ONOS2     : INFO    : 
----------------------------------------------
-Start of Step 3.1: Checking
----------------------------------------------
-
-2013-11-21 12:04:44,549  ONOS2     : INFO    : 
----------------------------------------------
-Start of Step 3.1: Waiting
----------------------------------------------
-
-2013-11-21 12:04:49,558  ONOS2     : INFO    : 
----------------------------------------------
-Start of Step 3.1: Checking
----------------------------------------------
-
-2013-11-21 12:04:51,152  ONOS2     : INFO    : 
----------------------------------------------
-Start of Step 3.1: Waiting
----------------------------------------------
-
-2013-11-21 12:04:56,156  ONOS2     : INFO    : 
----------------------------------------------
-Start of Step 3.1: Checking
----------------------------------------------
-
-2013-11-21 12:04:57,788  ONOS2     : INFO    : 
----------------------------------------------
-Start of Step 3.1: Waiting
----------------------------------------------
-
-2013-11-21 12:05:02,797  ONOS2     : INFO    : 
----------------------------------------------
-Start of Step 3.1: Checking
----------------------------------------------
-
-2013-11-21 12:05:34,747  ONOS2     : INFO    : 
----------------------------------------------
-End of Step  3.1: Checking
----------------------------------------------
-
----------------------------------------------
-Start of Step 3.2: Verifying the result
----------------------------------------------
-
-2013-11-21 12:05:34,753  ONOS2     : INFO    : 
-****************************************
-Start of Test Case4 : 
-2013-11-21 12:07:15,044  ONOS2     : INFO    : 
-****************************************
-Start of Test Case5 : 
-2013-11-21 12:08:46,893  ONOS2     : INFO    : 
-****************************************
-Start of Test Case6 : 
-2013-11-21 12:08:46,901  ONOS2     : INFO    :  Bringing Link down... 
-****************************************
-
-2013-11-21 12:10:59,959  ONOS2     : INFO    : 
-****************************************
-Start of Test Case7 : 
-2013-11-21 12:10:59,967  ONOS2     : INFO    :  Bringing Link up... 
-****************************************
-
-exit
-exit
-logout
-Connection to 10.128.100.4 closed.

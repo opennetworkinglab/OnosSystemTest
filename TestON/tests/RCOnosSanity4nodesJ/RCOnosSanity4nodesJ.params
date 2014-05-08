@@ -3,6 +3,7 @@
     <FLOWDEF>~/flowdef_files/Center_Triangle/flowdef_20.txt</FLOWDEF>
     <CASE1>       
         <destination>h6</destination>
+        <target>h40</target>
     </CASE1>       
     <PING>
         <source1>h7</source1>

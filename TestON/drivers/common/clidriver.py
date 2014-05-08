@@ -99,7 +99,7 @@ class CLI(Component):
         '''
 
         result = super(CLI, self).execute(self)
-        defaultPrompt = '.*[\$|>|#]'
+        defaultPrompt = '.*[$>\#]'
         args = utilities.parse_args(["CMD", "TIMEOUT", "PROMPT", "MORE"], **execparams)
         expectPrompt = args["PROMPT"] if args["PROMPT"] else defaultPrompt
         self.LASTRSP = ""
@@ -163,7 +163,7 @@ class CLI(Component):
         i = handle.expect([".ssword:*",default, pexpect.EOF])
         if i==0:
             handle.sendline(pwd)
-            handle.sendline("\n")
+            handle.sendline("\r")
 
         if i==1:
             handle.expect(default)
@@ -212,7 +212,7 @@ class CLI(Component):
             main.log.error("ssh: connect to host "+ip_address+" port 22: Connection refused")
             return main.FALSE
 
-        self.handle.sendline("\n")
+        self.handle.sendline("\r")
         
         return self.handle
     

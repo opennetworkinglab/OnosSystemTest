@@ -110,7 +110,16 @@ class ONOSSanity4 :
             main.cleanup()
             main.exit()
 
-            
+        main.step("Test startup of Mininet")
+        main.log.report("Host IP Checking using checkIP")
+        result1 = main.Mininet1.checkIP(main.params['CASE1']['destination'])
+        result2 = main.Mininet1.checkIP(main.params['CASE1']['target'])
+        result = result1 and result2
+        utilities.assert_equals(expect=main.TRUE,actual=result, onpass="Host IP addresses configured",onfail="Host IP addresses not configured")
+        if result==main.FALSE:
+            main.cleanup()
+            main.exit()
+
 
 
 
@@ -126,6 +135,13 @@ class ONOSSanity4 :
         3. Assign all controllers to all switches
         4. Verify all controllers
         '''
+        main.case("Assign Controllers")
+        main.step("Assign a master controller to each switch")
+        for i in range(25):
+            if i<3:
+                main.Mininet1.assign_sw_controller(sw=str(i+1),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'])
+
+        main.step("Verify Master controllers of each switch")
 #************************************************************************************************************************************
 
 

@@ -9,16 +9,16 @@ class RRCOnosSanity4nodesJ :
 #Tests the startup of Zookeeper1, RamCloud1, and ONOS1 to be certain that all started up successfully
     def CASE1(self,main) :  #Check to be sure ZK, Cass, and ONOS are up, then get ONOS version
         import time
-        main.Zookeeper1.start()
-        main.Zookeeper2.start()
-        main.Zookeeper3.start()
-        main.Zookeeper4.start()
+        main.Zookeeper1.stop()
+        main.Zookeeper2.stop()
+        main.Zookeeper3.stop()
+        main.Zookeeper4.stop()
         main.RamCloud1.stop_coor()
         main.RamCloud1.stop_serv()
         main.RamCloud2.stop_serv()
         main.RamCloud3.stop_serv()
         main.RamCloud4.stop_serv()
-        
+                
         main.ONOS1.handle.sendline("cp ~/onos.properties.reactive ~/ONOS/conf/onos.properties")
         main.ONOS2.handle.sendline("cp ~/onos.properties.reactive ~/ONOS/conf/onos.properties")
         main.ONOS3.handle.sendline("cp ~/onos.properties.reactive ~/ONOS/conf/onos.properties")
@@ -28,6 +28,10 @@ class RRCOnosSanity4nodesJ :
         main.Zookeeper2.start()
         main.Zookeeper3.start()
         main.Zookeeper4.start()
+        main.ONOS1.handle.sendline("~/ONOS/onos.sh rc deldb")
+        main.ONOS2.handle.sendline("~/ONOS/onos.sh rc deldb")
+        main.ONOS3.handle.sendline("~/ONOS/onos.sh rc deldb")
+        main.ONOS4.handle.sendline("~/ONOS/onos.sh rc deldb")
         main.log.report("Pulling latest code from github to all nodes")
         for i in range(2):
             uptodate = main.ONOS1.git_pull()

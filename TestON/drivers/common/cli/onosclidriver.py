@@ -212,6 +212,7 @@ class OnosCliDriver(CLI):
            # if utilities.assert_matches(expect=pattern,actual=response,onpass="ONOS process is running...",onfail="ONOS process not running..."):
             
             if re.search(pattern, response):
+                time.sleep(10)
                 if re.search(patternUp,tail2):
                     main.log.info(self.name + ": ONOS process is running...")
                     if tail1 == tail2:
@@ -920,7 +921,6 @@ class OnosCliDriver(CLI):
                     return main.FALSE
                 elif i == 2:
                     main.log.info(self.name + ": Build success!")
-                    return main.TRUE
                 elif i == 3:
                     main.log.info(self.name + ": Build complete")
                     return main.TRUE

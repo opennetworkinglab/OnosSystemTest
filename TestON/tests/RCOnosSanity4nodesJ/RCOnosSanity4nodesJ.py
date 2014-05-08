@@ -23,12 +23,12 @@ class RCOnosSanity4nodesJ :
         main.RamCloud2.stop_serv()
         main.RamCloud3.stop_serv()
         main.RamCloud4.stop_serv()
-
-        
-        main.Zookeeper1.start()
-        main.Zookeeper2.start()
-        main.Zookeeper3.start()
-        main.Zookeeper4.start()
+        time.sleep(10)
+        main.ONOS1.handle.sendline("~/ONOS/onos.sh rc deldb") 
+        main.ONOS2.handle.sendline("~/ONOS/onos.sh rc deldb") 
+        main.ONOS3.handle.sendline("~/ONOS/onos.sh rc deldb") 
+        main.ONOS4.handle.sendline("~/ONOS/onos.sh rc deldb") 
+        time.sleep(10)
         main.log.report("Pulling latest code from github to all nodes")
         for i in range(2):
             uptodate = main.ONOS1.git_pull()
@@ -98,14 +98,18 @@ class RCOnosSanity4nodesJ :
         utilities.assert_equals(expect=main.TRUE,actual=data,onpass="RamCloud is up!",onfail="RamCloud is down...")
         main.step("Testing startup ONOS")   
         data = main.ONOS1.isup()
-        if data == main.FALSE: 
-            main.log.report("Something is funny... restarting ONOS")
-            main.ONOS1.stop()
-            time.sleep(3)
-            main.ONOS1.start()
-            time.sleep(5) 
-            data = main.ONOS1.isup()
+        for i in range(3):
+            if data == main.FALSE: 
+                #main.log.report("Something is funny... restarting ONOS")
+                #main.ONOS1.stop()
+                time.sleep(3)
+                #main.ONOS1.start()
+                #time.sleep(5) 
+                data = main.ONOS1.isup()
+            else:
+                break
         utilities.assert_equals(expect=main.TRUE,actual=data,onpass="ONOS is up and running!",onfail="ONOS didn't start...")
+        time.sleep(20)
            
 #**********************************************************************************************************************************************************************************************
 #Assign Controllers
@@ -304,7 +308,7 @@ class RCOnosSanity4nodesJ :
       
         strtTime = time.time() 
         result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
-        for i in range(2):
+        for i in range(10):
             if result == main.FALSE:
                 time.sleep(5)
                 result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
@@ -347,7 +351,7 @@ class RCOnosSanity4nodesJ :
        
         strtTime = time.time() 
         result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],str(int(main.params['NR_Links'])-2))
-        for i in range(2):
+        for i in range(10):
             if result == main.FALSE:
                 time.sleep(5)
                 result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],str(int(main.params['NR_Links'])-2))

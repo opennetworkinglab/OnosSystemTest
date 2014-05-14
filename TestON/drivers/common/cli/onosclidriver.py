@@ -1043,3 +1043,39 @@ class OnosCliDriver(CLI):
             main.log.info(":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
             main.cleanup()
             main.exit()
+
+    def check_exceptions(self):
+        '''
+        Greps the logs for "xception"
+        '''
+        try:
+            output = ''
+            self.handle.sendline("")
+            self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT])
+            self.handle.sendline("cd "+self.home+"/onos-logs")
+            self.handle.sendline("grep \"xception\" * -c")
+            self.handle.expect("\s-c")
+            self.handle.expect("\$")
+            response = self.handle.before
+            for line in response.splitlines():
+                if re.search("log:", line):
+                    output +="Exceptions found in " + line + "\n"
+                elif re.search("std...:",line):
+                    output+="Exceptions found in " + line + "\n"
+                else:
+                    pass
+                    #these should be the old logs
+            return output
+        except pexpect.TIMEOUT:
+            main.log.error(self.name + ": Timeout exception found in check_exceptions function")
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":     " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name + ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
+            main.log.error( traceback.print_exc() )
+            main.log.info(":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
+            main.cleanup()
+            main.exit()

@@ -1051,20 +1051,27 @@ class OnosCliDriver(CLI):
         try:
             output = ''
             self.handle.sendline("")
-            self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT])
+            i = self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT])
+            #main.log.warn("first expect response: " +str(i))
             self.handle.sendline("cd "+self.home+"/onos-logs")
-            self.handle.sendline("grep \"xception\" * -c")
-            self.handle.expect("\s-c")
-            self.handle.expect("\$")
+            self.handle.sendline("grep \"xception\" *")
+            i = self.handle.expect(["\*",pexpect.EOF,pexpect.TIMEOUT])
+            #main.log.warn("second expect response: " +str(i))
+            i = self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT])
+            #main.log.warn("third expect response: " +str(i))
             response = self.handle.before
+            count = 0
             for line in response.splitlines():
                 if re.search("log:", line):
                     output +="Exceptions found in " + line + "\n"
+                    count +=1
                 elif re.search("std...:",line):
                     output+="Exceptions found in " + line + "\n"
+                    count +=1
                 else:
                     pass
                     #these should be the old logs
+            main.log.report(str(count) + "Exceptions were found on "+self.name)
             return output
         except pexpect.TIMEOUT:
             main.log.error(self.name + ": Timeout exception found in check_exceptions function")

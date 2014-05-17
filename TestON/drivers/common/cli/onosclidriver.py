@@ -923,6 +923,8 @@ class OnosCliDriver(CLI):
                     main.log.info(self.name + ": Build success!")
                 elif i == 3:
                     main.log.info(self.name + ": Build complete")
+                    self.handle.sendline("./build-ramcloud-java-bindings.sh")
+                    self.handle.expect("\$")
                     return main.TRUE
                 elif i == 4:
                     main.log.error(self.name + ": mvn compile TIMEOUT!")

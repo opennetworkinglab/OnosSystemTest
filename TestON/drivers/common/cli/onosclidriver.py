@@ -227,6 +227,9 @@ class OnosCliDriver(CLI):
                     else:
                         main.log.info(self.name + ": Onos log is moving! It's looking good!")
                         return main.TRUE
+                else:
+                    main.log.info(self.name + ": ONOS not yet sending out LLDP messages")
+                    return main.FALSE
             else:
                 main.log.error(self.name + ": ONOS process not running...")
                 return main.FALSE

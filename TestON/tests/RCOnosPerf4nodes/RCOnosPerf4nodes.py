@@ -12,6 +12,10 @@ class RCOnosPerf4nodes:
         The test will only pass if ONOS is running properly, and has a full view of all topology elements.
         '''
         import time
+
+
+
+
         main.ONOS1.stop()
         main.ONOS2.stop()
         main.ONOS3.stop()
@@ -21,14 +25,21 @@ class RCOnosPerf4nodes:
         main.RamCloud2.stop_serv()
         main.RamCloud3.stop_serv()
         main.RamCloud4.stop_serv()
-        main.ONOS1.handle.sendline("~/ONOS/onos.sh rc deldb")
-        main.ONOS1.handle.sendline("y")
-        main.ONOS2.handle.sendline("~/ONOS/onos.sh rc deldb")
-        main.ONOS2.handle.sendline("y")
-        main.ONOS3.handle.sendline("~/ONOS/onos.sh rc deldb")
-        main.ONOS3.handle.sendline("y")
-        main.ONOS4.handle.sendline("~/ONOS/onos.sh rc deldb")
-        main.ONOS4.handle.sendline("y")
+        main.Zookeeper1.stop()
+        main.Zookeeper2.stop()
+        main.Zookeeper3.stop()
+        main.Zookeeper4.stop()
+
+        main.Zookeeper1.start()
+        main.Zookeeper2.start()
+        main.Zookeeper3.start()
+        main.Zookeeper4.start()
+        main.RamCloud1.del_db()
+        main.RamCloud2.del_db()
+        main.RamCloud3.del_db()
+        main.RamCloud4.del_db()
+
+        
         time.sleep(10)
         main.RamCloud1.start_coor()
         main.RamCloud1.start_serv()
@@ -426,4 +437,20 @@ class RCOnosPerf4nodes:
         main.case("Killing remote ping processes ")
         result =  result & main.Mininet4.pingKill()
         utilities.assert_equals(expect=main.TRUE,actual=result)
+
+    def CASE66(self, main):
+        main.log.report("Checking ONOS logs for exceptions")
+        check1 = main.ONOS1.check_exceptions()
+        main.log.report("Exceptions in ONOS1 logs: \n" + check1)
+        check2 = main.ONOS2.check_exceptions()
+        main.log.report("Exceptions in ONOS2 logs: \n" + check2)
+        check3 = main.ONOS3.check_exceptions()
+        main.log.report("Exceptions in ONOS3 logs: \n" + check3)
+        check4 = main.ONOS4.check_exceptions()
+        main.log.report("Exceptions in ONOS4 logs: \n" + check4)
+        result = main.FALSE
+        if (check1 or check2 or check3 or check4):
+            result = main.TRUE
+        utilities.assert_equals(expect=main.TRUE,actual=result,onpass="No Exceptions found in the logs",onfail="Exceptions found")
+
 

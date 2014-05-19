@@ -590,11 +590,22 @@ class RCOnosSanity4nodesJ :
             main.log.report("\tPING TEST FAIL")
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="NO PACKET LOSS, HOST IS REACHABLE",onfail="PACKET LOST, HOST IS NOT REACHABLE")
 
+
     def CASE66(self, main):
         main.log.report("Checking ONOS logs for exceptions")
-        main.log.report("Exceptions in ONOS1 logs: \n" + main.ONOS1.check_exceptions())
-        main.log.report("Exceptions in ONOS2 logs: \n" + main.ONOS2.check_exceptions())
-        main.log.report("Exceptions in ONOS3 logs: \n" + main.ONOS3.check_exceptions())
-        main.log.report("Exceptions in ONOS4 logs: \n" + main.ONOS4.check_exceptions())
-        utilities.assert_equals(expect=main.TRUE,actual=main.TRUE,onpass="Exception check pass",onfail="Exception check fail")
+        count = 0
+        check1 = main.ONOS1.check_exceptions()
+        main.log.report("Exceptions in ONOS1 logs: \n" + check1)
+        check2 = main.ONOS2.check_exceptions()
+        main.log.report("Exceptions in ONOS2 logs: \n" + check2)
+        check3 = main.ONOS3.check_exceptions()
+        main.log.report("Exceptions in ONOS3 logs: \n" + check3)
+        check4 = main.ONOS4.check_exceptions()
+        main.log.report("Exceptions in ONOS4 logs: \n" + check4)
+        result = main.FALSE
+        if (check1 or check2 or check3 or check4):
+            result = main.TRUE
+            count = len(check1.splitlines()) + len(check2.splitlines()) + len(check3.splitlines()) + len(check4.splitlines())
+        utilities.assert_equals(expect=main.TRUE,actual=result,onpass="No Exceptions found in the logs",onfail=str(count) + "Exceptions were found in the logs")
+
 

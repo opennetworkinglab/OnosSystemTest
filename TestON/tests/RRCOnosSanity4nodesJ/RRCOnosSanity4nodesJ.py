@@ -28,14 +28,11 @@ class RRCOnosSanity4nodesJ :
         main.Zookeeper2.start()
         main.Zookeeper3.start()
         main.Zookeeper4.start()
-        main.ONOS1.handle.sendline("~/ONOS/onos.sh rc deldb")
-        main.ONOS1.handle.sendline("y")
-        main.ONOS2.handle.sendline("~/ONOS/onos.sh rc deldb")
-        main.ONOS2.handle.sendline("y")
-        main.ONOS3.handle.sendline("~/ONOS/onos.sh rc deldb")
-        main.ONOS3.handle.sendline("y")
-        main.ONOS4.handle.sendline("~/ONOS/onos.sh rc deldb")
-        main.ONOS4.handle.sendline("y")
+        time.sleep(3)
+        main.RamCloud1.del_db()
+        main.RamCloud2.del_db()
+        main.RamCloud3.del_db()
+        main.RamCloud4.del_db()
         for i in range(2):
             uptodate = main.ONOS1.git_pull()
             main.ONOS2.git_pull()
@@ -590,4 +587,21 @@ class RRCOnosSanity4nodesJ :
         else:
             main.log.report("\tPING TEST FAIL")
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="NO PACKET LOSS, HOST IS REACHABLE",onfail="PACKET LOST, HOST IS NOT REACHABLE")
+
+
+    def CASE66(self, main):
+        main.log.report("Checking ONOS logs for exceptions")
+        check1 = main.ONOS1.check_exceptions()
+        main.log.report("Exceptions in ONOS1 logs: \n" + check1)
+        check2 = main.ONOS2.check_exceptions()
+        main.log.report("Exceptions in ONOS2 logs: \n" + check2)
+        check3 = main.ONOS3.check_exceptions()
+        main.log.report("Exceptions in ONOS3 logs: \n" + check3)
+        check4 = main.ONOS4.check_exceptions()
+        main.log.report("Exceptions in ONOS4 logs: \n" + check4)
+        result = main.FALSE
+        if (check1 or check2 or check3 or check4):
+            result = main.TRUE
+        utilities.assert_equals(expect=main.TRUE,actual=result,onpass="No Exceptions found in the logs",onfail="Exceptions found")
+
 

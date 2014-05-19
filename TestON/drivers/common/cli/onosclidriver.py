@@ -1076,7 +1076,7 @@ class OnosCliDriver(CLI):
                 else:
                     pass
                     #these should be the old logs
-            main.log.report(str(count) + "Exceptions were found on "+self.name)
+            main.log.report(str(count) + " Exceptions were found on "+self.name)
             return output
         except pexpect.TIMEOUT:
             main.log.error(self.name + ": Timeout exception found in check_exceptions function")

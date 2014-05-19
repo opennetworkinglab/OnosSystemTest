@@ -194,16 +194,16 @@ RamCloudCliDriver is the basic driver which will handle the RamCloud server func
         self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT])
         self.handle.sendline("cd "+self.home)
         self.handle.sendline("./onos.sh rc deldb")
-        self.handle.expect(["[y/N]",pexpect.EOF,pexpect.TIMEOUT])
+        self.handle.expect(["\[y/N\]",pexpect.EOF,pexpect.TIMEOUT])
         self.handle.sendline("y")
         self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT])
         response = self.handle.before + self.handle.after
-        main.log.info(response)
-        if re.search("DONE",response):
+        if re.search("DONE",response) or re.search("Terminated",response):
             main.log.info("RAMCloud Database Cleaned")
             return main.TRUE
         else:
             main.log.warn("Something wrong in Cleaning Database")
+            main.log.warn(self.handle.before)
             return main.FALSE
            
 

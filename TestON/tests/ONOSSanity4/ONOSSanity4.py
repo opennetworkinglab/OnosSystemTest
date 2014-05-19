@@ -51,10 +51,19 @@ class ONOSSanity4 :
             main.ONOS4.git_compile()
         main.ONOS1.print_version()
         main.step("Start up ZK, RC, and ONOS")
+        main.Zookeeper1.start()
+        main.Zookeeper2.start()
+        main.Zookeeper3.start()
+        main.Zookeeper4.start()
+        main.RC1.del_db()
+        main.RC2.del_db()
+        main.RC3.del_db()
+        main.RC4.del_db()
         main.ONOS1.start_all()
         main.ONOS2.start_all()
         main.ONOS3.start_all()
         main.ONOS4.start_all()
+
         #main.step("Start Up Mininet")
         main.step("Start up Rest Server")
         main.ONOS1.start_rest()
@@ -140,8 +149,16 @@ class ONOSSanity4 :
         for i in range(25):
             if i<3:
                 main.Mininet1.assign_sw_controller(sw=str(i+1),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'])
-
+            elif i<5:
+                main.Mininet1.assign_sw_controller(sw=str(i+1),ip1=main.params['CTRL']['ip2'],port1=main.params['CTRL']['port2'])
+            elif i<16:
+                main.Mininet1.assign_sw_controller(sw=str(i+1),ip1=main.params['CTRL']['ip3'],port1=main.params['CTRL']['port3'])
+            else:
+                main.Mininet1.assign_sw_controller(sw=str(i+1),ip1=main.params['CTRL']['ip4'],port1=main.params['CTRL']['port4'])
         main.step("Verify Master controllers of each switch")
+        for i in range(25):
+            if i<3:
+                
 #************************************************************************************************************************************
 
 

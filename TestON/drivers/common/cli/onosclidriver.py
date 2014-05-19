@@ -926,6 +926,8 @@ class OnosCliDriver(CLI):
                     main.log.info(self.name + ": Build success!")
                 elif i == 3:
                     main.log.info(self.name + ": Build complete")
+                    self.handle.sendline("./build-ramcloud-java-bindings.sh")
+                    self.handle.expect("\$")
                     return main.TRUE
                 elif i == 4:
                     main.log.error(self.name + ": mvn compile TIMEOUT!")
@@ -1035,6 +1037,49 @@ class OnosCliDriver(CLI):
                                 retcode = retcode +1
                                 foundIP =''
             return(retcode, retswitch, retport, retmac)
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":     " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name + ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
+            main.log.error( traceback.print_exc() )
+            main.log.info(":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
+            main.cleanup()
+            main.exit()
+
+    def check_exceptions(self):
+        '''
+        Greps the logs for "xception"
+        '''
+        try:
+            output = ''
+            self.handle.sendline("")
+            i = self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT])
+            #main.log.warn("first expect response: " +str(i))
+            self.handle.sendline("cd "+self.home+"/onos-logs")
+            self.handle.sendline("grep \"xception\" *")
+            i = self.handle.expect(["\*",pexpect.EOF,pexpect.TIMEOUT])
+            #main.log.warn("second expect response: " +str(i))
+            i = self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT])
+            #main.log.warn("third expect response: " +str(i))
+            response = self.handle.before
+            count = 0
+            for line in response.splitlines():
+                if re.search("log:", line):
+                    output +="Exceptions found in " + line + "\n"
+                    count +=1
+                elif re.search("std...:",line):
+                    output+="Exceptions found in " + line + "\n"
+                    count +=1
+                else:
+                    pass
+                    #these should be the old logs
+            main.log.report(str(count) + "Exceptions were found on "+self.name)
+            return output
+        except pexpect.TIMEOUT:
+            main.log.error(self.name + ": Timeout exception found in check_exceptions function")
         except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
             main.log.error(self.name + ":     " + self.handle.before)

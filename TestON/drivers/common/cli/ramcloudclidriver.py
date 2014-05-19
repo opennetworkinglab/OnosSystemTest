@@ -184,6 +184,27 @@ RamCloudCliDriver is the basic driver which will handle the RamCloud server func
         else:
             main.log.warn(self.name+": RAMCloud is not Running")
             return main.FALSE
+
+    def del_db(self):
+        '''
+        This function will clean out the database
+        '''
+        main.log.info(self.name + ": Deleting RC Database")
+        self.handle.sendline("")
+        self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT])
+        self.handle.sendline("cd "+self.home)
+        self.handle.sendline("./onos.sh rc deldb")
+        self.handle.expect(["[y/N]",pexpect.EOF,pexpect.TIMEOUT])
+        self.handle.sendline("y")
+        self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT])
+        response = self.handle.before + self.handle.after
+        main.log.info(response)
+        if re.search("DONE",response):
+            main.log.info("RAMCloud Database Cleaned")
+            return main.TRUE
+        else:
+            main.log.warn("Something wrong in Cleaning Database")
+            return main.FALSE
            
 
     def stop_coor(self):

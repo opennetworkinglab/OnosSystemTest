@@ -24,10 +24,10 @@ class RCOnosSanity4nodesJ :
         main.RamCloud3.stop_serv()
         main.RamCloud4.stop_serv()
         time.sleep(10)
-        main.ONOS1.handle.sendline("~/ONOS/onos.sh rc deldb") 
-        main.ONOS2.handle.sendline("~/ONOS/onos.sh rc deldb") 
-        main.ONOS3.handle.sendline("~/ONOS/onos.sh rc deldb") 
-        main.ONOS4.handle.sendline("~/ONOS/onos.sh rc deldb") 
+        main.RamCloud1.del_db()
+        main.RamCloud2.del_db()
+        main.RamCloud3.del_db()
+        main.RamCloud4.del_db()
         time.sleep(10)
         main.log.report("Pulling latest code from github to all nodes")
         for i in range(2):
@@ -589,4 +589,12 @@ class RCOnosSanity4nodesJ :
         else:
             main.log.report("\tPING TEST FAIL")
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="NO PACKET LOSS, HOST IS REACHABLE",onfail="PACKET LOST, HOST IS NOT REACHABLE")
+
+    def CASE66(self, main):
+        main.log.report("Checking ONOS logs for exceptions")
+        main.log.report("Exceptions in ONOS1 logs: \n" + main.ONOS1.check_exceptions())
+        main.log.report("Exceptions in ONOS2 logs: \n" + main.ONOS2.check_exceptions())
+        main.log.report("Exceptions in ONOS3 logs: \n" + main.ONOS3.check_exceptions())
+        main.log.report("Exceptions in ONOS4 logs: \n" + main.ONOS4.check_exceptions())
+        utilities.assert_equals(expect=main.TRUE,actual=main.TRUE,onpass="Exception check pass",onfail="Exception check fail")
 

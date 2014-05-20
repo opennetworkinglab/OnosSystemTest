@@ -1001,12 +1001,11 @@ class OnosCliDriver(CLI):
             main.cleanup()
             main.exit()
 
-    def find_host(self,RestIP,RestPort,RestAPI,hostIP):
-        retcode = 0
-        retswitch = []
-        retport = []
-        retmac = []
-        foundIP = []
+    def find_host(self,RestIP,RestPort,RestAPI,hostMAC):
+        retcode = 0 # number of devices found with given MAC
+        retswitch = [] # Switch DPID's of devices found with MAC
+        retport = [] # Switch port connected to to devices found with MAC
+        foundHost = []
         try:
             ##### device rest API is: 'host:8080/wm/onos/topology/switches/json' ###
             url ="http://%s:%s%s" %(RestIP,RestPort,RestAPI)
@@ -1021,22 +1020,39 @@ class OnosCliDriver(CLI):
                 parsedResult = ""
 
             if parsedResult == "":
-                return (retcode, "Rest API has an error", retport, retmac)
+                return (retcode, "Rest API has an error", retport)
             else:
+                for host in enumerate(parsedResult):
+                    print host
+                    if (host[1] != []):
+                        try:
+                            foundHost = host[1]['mac']
+                        except:
+                            print "Error in detecting MAC address."
+                        print foundHost
+                        print hostMAC
+                        if foundHost == hostMAC:
+                            for switch in enumerate(host[1]['attachmentPoints']):
+                                retswitch.append(switch[1]['dpid'])
+                                retport.append(switch[1]['port'])
+                            retcode = retcode +1
+                            foundHost ='' 
+                '''
                 for switch in enumerate(parsedResult):
                     for port in enumerate(switch[1]['ports']):
                         if ( port[1]['devices'] != [] ):
                             try:
-                                foundIP = port[1]['devices'][0]['ipv4addresses'][0]['ipv4']
+                                foundHost = port[1]['devices'][0]['ipv4addresses'][0]['ipv4']
                             except:
-                                print "Error in detecting IP address."
-                            if foundIP == hostIP:
+                                print "Error in detecting MAC address."
+                            if foundHost == hostMAC:
                                 retswitch.append(switch[1]['dpid'])
                                 retport.append(port[1]['desc'])
                                 retmac.append(port[1]['devices'][0]['mac'])
                                 retcode = retcode +1
-                                foundIP =''
-            return(retcode, retswitch, retport, retmac)
+                                foundHost =''
+                '''
+            return(retcode, retswitch, retport)
         except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
             main.log.error(self.name + ":     " + self.handle.before)

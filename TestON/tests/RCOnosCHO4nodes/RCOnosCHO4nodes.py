@@ -9,10 +9,10 @@ class RCOnosCHO4nodes :
 #Tests the startup of Zookeeper1, RamCloud1, and ONOS1 to be certain that all started up successfully
     def CASE1(self,main) :  #Check to be sure ZK, Cass, and ONOS are up, then get ONOS version
         import time
-        main.ONOS1.handle.sendline("cp ~/onos.properties.proactive ~/ONOS/conf/onos.properties")
-        main.ONOS2.handle.sendline("cp ~/onos.properties.proactive ~/ONOS/conf/onos.properties")
-        main.ONOS3.handle.sendline("cp ~/onos.properties.proactive ~/ONOS/conf/onos.properties")
-        main.ONOS4.handle.sendline("cp ~/onos.properties.proactive ~/ONOS/conf/onos.properties")
+        main.ONOS1.handle.sendline("cp ~/onos.properties.reactive ~/ONOS/conf/onos.properties")
+        main.ONOS2.handle.sendline("cp ~/onos.properties.reactive ~/ONOS/conf/onos.properties")
+        main.ONOS3.handle.sendline("cp ~/onos.properties.reactive ~/ONOS/conf/onos.properties")
+        main.ONOS4.handle.sendline("cp ~/onos.properties.reactive ~/ONOS/conf/onos.properties")
 
         main.Zookeeper1.start()
         main.Zookeeper2.start()
@@ -183,7 +183,7 @@ class RCOnosCHO4nodes :
         main.ONOS1.purge()
         strtTime = time.time()
         main.ONOS1.ad_flow()
-        main.case("Checking flows")
+        main.case("Checking flows with pings")
         
         pingAttempts = main.params['pingAttempts']
         pingSleep = main.params['pingSleep']
@@ -434,6 +434,57 @@ class RCOnosCHO4nodes :
         main.ONOS4.check_exceptions()
 
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="NO PACKET LOSS, HOST IS REACHABLE",onfail="PACKET LOST, HOST IS NOT REACHABLE")
+
+
+# **********************************************************************************************************************************************************************************************
+# Runs reactive ping test
+    def CASE8(self,main) :
+        main.log.report("Reactive flow ping test:ping until the routes are active or fail after 10 attempts")
+        import time
+      
+        strtTime = time.time() 
+        result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
+        for counter in range(9):
+            if result == main.FALSE:
+                time.sleep(3)
+                result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
+            else:
+                break
+
+        pingAttempts = main.params['pingAttempts']
+        pingSleep = main.params['pingSleep']
+
+        strtTime = time.time()
+        count = 1
+        i = 6
+        while i < 16 :
+            main.log.info("\n\t\t\t\th"+str(i)+" IS PINGING h"+str(46-i) )
+            ping = main.Mininet1.pingHost(src="h"+str(i),target="h"+str(46-i))
+            if ping == main.FALSE and count < int(pingAttempts):
+                count = count + 1
+                main.log.report("Ping failed, making attempt number "+str(count)+" in " +str(pingSleep)+" seconds")
+                #i = 6
+                time.sleep(int(pingSleep))
+            elif ping == main.FALSE and count == int(pingAttempts):
+                main.log.error("Ping test failed")
+                i = 17
+                result = main.FALSE
+            elif ping == main.TRUE:
+                i = i + 1
+                result = main.TRUE
+        endTime = time.time()
+        if result == main.TRUE:
+            main.log.report("\tTime to complete ping test: "+str(round(endTime-strtTime,2))+" seconds")
+        else:
+            main.log.report("\tPING TESTS FAILED")
+        
+        main.ONOS1.check_exceptions()
+        main.ONOS2.check_exceptions()
+        main.ONOS3.check_exceptions()
+        main.ONOS4.check_exceptions()
+
+        utilities.assert_equals(expect=main.TRUE,actual=result,onpass="NO PACKET LOSS, HOST IS REACHABLE",onfail="PACKET LOST, HOST IS NOT REACHABLE")
+
 
 
 # ******************************************************************************************************************************************************************

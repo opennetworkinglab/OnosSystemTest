@@ -21,6 +21,10 @@ class RCOnosScale4nodes:
         main.RamCloud2.stop_serv()
         main.RamCloud3.stop_serv()
         main.RamCloud4.stop_serv()
+        main.Zookeeper1.start()
+        main.Zookeeper2.start()
+        main.Zookeeper3.start()
+        main.Zookeeper4.start()
         time.sleep(4)
         main.RamCloud1.del_db()
         main.RamCloud2.del_db()
@@ -273,8 +277,9 @@ class RCOnosScale4nodes:
  
         utilities.assert_equals(expect=main.TRUE,actual=test)
 
-      def CASE66(self, main):
+    def CASE66(self, main):
         main.log.report("Checking ONOS logs for exceptions")
+        count = 0
         check1 = main.ONOS1.check_exceptions()
         main.log.report("Exceptions in ONOS1 logs: \n" + check1)
         check2 = main.ONOS2.check_exceptions()
@@ -283,9 +288,10 @@ class RCOnosScale4nodes:
         main.log.report("Exceptions in ONOS3 logs: \n" + check3)
         check4 = main.ONOS4.check_exceptions()
         main.log.report("Exceptions in ONOS4 logs: \n" + check4)
-        result = main.FALSE
+        result = main.TRUE
         if (check1 or check2 or check3 or check4):
-            result = main.TRUE
-        utilities.assert_equals(expect=main.TRUE,actual=result,onpass="No Exceptions found in the logs",onfail="Exceptions found")
+            result = main.FALSE
+            count = len(check1.splitlines()) + len(check2.splitlines()) + len(check3.splitlines()) + len(check4.splitlines())
+        utilities.assert_equals(expect=main.TRUE,actual=result,onpass="No Exceptions found in the logs",onfail=str(count) + " Exceptions were found in the logs")
 
- 
+

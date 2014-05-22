@@ -436,7 +436,6 @@ class RCOnosSanity4nodesJ :
         main.log.report("Check initially hostMAC/IP exist on the mininet...")
         host = main.params['YANK']['hostname']
         mac = main.params['YANK']['hostmac']
-        hostip = main.params['YANK']['hostip']
         RestIP1 = main.params['RESTCALL']['restIP1']
         RestPort = main.params['RESTCALL']['restPort']
         url = main.params['RESTCALL']['restURL']
@@ -450,16 +449,15 @@ class RCOnosSanity4nodesJ :
         main.log.info("\n\t\t\t\t ping issue one ping from " + str(host) + " to generate arp to switch. Ping result is not important" )
         ping = main.Mininet1.pingHost(src = str(host),target = "10.0.0.254")
         time.sleep(t_restwait)
-        Reststatus, Switch, Port, MAC = main.ONOS1.find_host(RestIP1,RestPort,url, hostip)
-        main.log.report("Number of host with IP=10.0.0.1 found by ONOS is: " + str(Reststatus))
+        Reststatus, Switch, Port = main.ONOS1.find_host(RestIP1,RestPort,url, mac)
+        main.log.report("Number of host with MAC address = " + mac + " found by ONOS is: " + str(Reststatus))
         if Reststatus == 1:
-            main.log.report("\t PASSED - Found host IP = " + hostip + "; MAC = " + "".join(MAC) + "; attached to switchDPID = " + "".join(Switch) + "; at port = " + "".join(Port))
+            main.log.report("\t PASSED - Found host mac = " + mac + ";  attached to switchDPID = " +"".join(Switch) + "; at port = " + str(Port[0]))
             result1 = main.TRUE
         elif Reststatus > 1:
-            main.log.report("\t FAILED - Host " + host + " with MAC:" + mac + " has " + str(Reststatus) + " duplicated IP addresses. FAILED")
+            main.log.report("\t FAILED - Host " + host + " with MAC:" + mac + " has " + str(Reststatus) + " duplicated mac  addresses. FAILED")
             main.log.report("switches are: " + "; ".join(Switch))
             main.log.report("Ports are: " + "; ".join(Port))
-            main.log.report("MACs are: " + "; ".join(MAC))
             result1 = main.FALSE
         elif Reststatus == 0 and Switch == []:
             main.log.report("\t FAILED - Host " + host + " with MAC:" + mac + " does not exist. FAILED")
@@ -480,11 +478,11 @@ class RCOnosSanity4nodesJ :
         main.log.info("\n\t\t\t\t ping issue one ping from " + str(host) + " to generate arp to switch. Ping result is not important" )
         ping = main.Mininet1.pingHost(src = str(host),target = "10.0.0.254")
         time.sleep(t_restwait)
-        Reststatus, Switch, Port, MAC = main.ONOS1.find_host(RestIP1,RestPort,url, hostip)
+        Reststatus, Switch, Port = main.ONOS1.find_host(RestIP1,RestPort,url, mac)
 
-        main.log.report("Number of host with IP=10.0.0.1 found by ONOS is: " + str(Reststatus))
+        main.log.report("Number of host with MAC = " + mac + " found by ONOS is: " + str(Reststatus))
         if Reststatus == 1:
-            main.log.report("\tFAILED - Found host IP = " + hostip + "; MAC = " + "".join(MAC) + "; attached to switchDPID = " + "".join(Switch) + "; at port = " + "".join(Port))
+            main.log.report("\tFAILED - Found host MAC = " + mac + "; attached to switchDPID = " + "".join(Switch) + "; at port = " + str(Port))
             result2 = main.FALSE
         elif Reststatus > 1:
             main.log.report("\t FAILED - Host " + host + " with MAC:" + str(mac) + " has " + str(Reststatus) + " duplicated IP addresses. FAILED")
@@ -509,11 +507,11 @@ class RCOnosSanity4nodesJ :
 
         ping = main.Mininet1.pingHost(src = str(host),target = "10.0.0.254")
         time.sleep(t_restwait)
-        Reststatus, Switch, Port, MAC = main.ONOS1.find_host(RestIP1,RestPort,url, hostip)
+        Reststatus, Switch, Port = main.ONOS1.find_host(RestIP1,RestPort,url, mac)
 
-        main.log.report("Number of host with IP=10.0.0.1 found by ONOS is: " + str(Reststatus))
+        main.log.report("Number of host with MAC " + mac + " found by ONOS is: " + str(Reststatus))
         if Reststatus == 1:
-            main.log.report("\tPASSED - Found host IP = " + hostip + "; MAC = " + "".join(MAC) + "; attached to switchDPID = " + "".join(Switch) + "; at port = " + "".join(Port))
+            main.log.report("\tPASSED - Found host MAC = " + mac + "; attached to switchDPID = " + "".join(Switch) + "; at port = " + str(Port[0]))
             result3 = main.TRUE
         elif Reststatus > 1:
             main.log.report("\t FAILED - Host " + host + " with MAC:" + str(mac) + " has " + str(Reststatus) + " duplicated IP addresses. FAILED")
@@ -539,11 +537,11 @@ class RCOnosSanity4nodesJ :
 
         ping = main.Mininet1.pingHost(src = str(host),target = "10.0.0.254")
         time.sleep(t_restwait)
-        Reststatus, Switch, Port, MAC = main.ONOS1.find_host(RestIP1,RestPort,url, hostip)
+        Reststatus, Switch, Port = main.ONOS1.find_host(RestIP1,RestPort,url, mac)
 
         main.log.report("Number of host with IP=10.0.0.1 found by ONOS is: " + str(Reststatus))
         if Reststatus == 1:
-            main.log.report("\tPASSED - Found host IP = " + hostip + "; MAC = " + "".join(MAC) + "; attached to switchDPID = " + "".join(Switch) + "; at port = " + "".join(Port))
+            main.log.report("\tPASSED - Found host MAC = " + mac + "; attached to switchDPID = " + "".join(Switch) + "; at port = " + str(Port[0]))
             result4 = main.TRUE
         elif Reststatus > 1:
             main.log.report("\t FAILED - Host " + host + " with MAC:" + str(mac) + " has " + str(Reststatuas) + " duplicated IP addresses. FAILED")
@@ -557,6 +555,15 @@ class RCOnosSanity4nodesJ :
         else:# check if rest server is working
             main.log.error("Issue with find host")
             result4 = main.FALSE
+        time.sleep(6)
+        Reststatus, Switch, Port = main.ONOS1.find_host(RestIP1,RestPort,url,mac)
+        main.log.report("Number of host with IP=10.0.0.1 found by ONOS is: " + str(Reststatus))
+        if Reststatus ==1:
+            main.log.report("\t FAILED - Host " + host + "with MAC:" + str(mac) + "was still found after expected timeout")
+        elif Reststatus>1:
+            main.log.report("\t FAILED - Host " + host + "with MAC:" + str(mac) + "was still found after expected timeout(multiple found)")
+        elif Reststatus==0:
+            main.log.report("\t PASSED - Device cleared after timeout")
 
         result = result1 and result2 and result3 and result4
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="DEVICE DISCOVERY TEST PASSED PLUG/UNPLUG/MOVE TEST",onfail="DEVICE DISCOVERY TEST FAILED")
@@ -602,10 +609,10 @@ class RCOnosSanity4nodesJ :
         main.log.report("Exceptions in ONOS3 logs: \n" + check3)
         check4 = main.ONOS4.check_exceptions()
         main.log.report("Exceptions in ONOS4 logs: \n" + check4)
-        result = main.FALSE
+        result = main.TRUE
         if (check1 or check2 or check3 or check4):
-            result = main.TRUE
+            result = main.FALSE
             count = len(check1.splitlines()) + len(check2.splitlines()) + len(check3.splitlines()) + len(check4.splitlines())
-        utilities.assert_equals(expect=main.TRUE,actual=result,onpass="No Exceptions found in the logs",onfail=str(count) + "Exceptions were found in the logs")
+        utilities.assert_equals(expect=main.TRUE,actual=result,onpass="No Exceptions found in the logs",onfail=str(count) + " Exceptions were found in the logs")
 
 

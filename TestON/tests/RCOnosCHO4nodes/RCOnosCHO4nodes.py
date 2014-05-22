@@ -9,11 +9,26 @@ class RCOnosCHO4nodes :
 #Tests the startup of Zookeeper1, RamCloud1, and ONOS1 to be certain that all started up successfully
     def CASE1(self,main) :  #Check to be sure ZK, Cass, and ONOS are up, then get ONOS version
         import time
+        main.ONOS1.handle.sendline("cp ~/onos.properties.reactive ~/ONOS/conf/onos.properties")
+        main.ONOS2.handle.sendline("cp ~/onos.properties.reactive ~/ONOS/conf/onos.properties")
+        main.ONOS3.handle.sendline("cp ~/onos.properties.reactive ~/ONOS/conf/onos.properties")
+        main.ONOS4.handle.sendline("cp ~/onos.properties.reactive ~/ONOS/conf/onos.properties")
+
         main.Zookeeper1.start()
-        time.sleep(5)
         main.Zookeeper2.start()
         main.Zookeeper3.start()
         main.Zookeeper4.start()
+        main.RamCloud1.stop_coor()
+        main.RamCloud1.stop_serv()
+        main.RamCloud2.stop_serv()
+        main.RamCloud3.stop_serv()
+        main.RamCloud4.stop_serv()
+        time.sleep(10)
+        main.RamCloud1.del_db()
+        main.RamCloud2.del_db()
+        main.RamCloud3.del_db()
+        main.RamCloud4.del_db()
+        time.sleep(10)
         main.log.report("Pulling latest code from github to all nodes")
         for i in range(2):
             uptodate = main.ONOS1.git_pull()
@@ -28,31 +43,45 @@ class RCOnosCHO4nodes :
                 main.ONOS2.git_pull("ONOS1 master")
                 main.ONOS3.git_pull("ONOS1 master")
                 main.ONOS4.git_pull("ONOS1 master")
-        if uptodate==0:
+       #if uptodate==0
+        if 1:
             main.ONOS1.git_compile()
             main.ONOS2.git_compile()
             main.ONOS3.git_compile()
             main.ONOS4.git_compile()
         main.ONOS1.print_version()
+       # main.RamCloud1.git_pull()
+       # main.RamCloud2.git_pull()
+       # main.RamCloud3.git_pull()
+       # main.RamCloud4.git_pull()
+       # main.ONOS1.get_version()
+       # main.ONOS2.get_version()
+       # main.ONOS3.get_version()
+       # main.ONOS4.get_version()
         main.RamCloud1.start_coor()
-        time.sleep(10)
+        time.sleep(1)
         main.RamCloud1.start_serv()
         main.RamCloud2.start_serv()
         main.RamCloud3.start_serv()
-        main.RamCloud4.start_serv() 
-        time.sleep(20)
+        main.RamCloud4.start_serv()
         main.ONOS1.start()
-        time.sleep(30)
+        time.sleep(5)
         main.ONOS2.start()
         main.ONOS3.start()
         main.ONOS4.start()
+        main.ONOS1.start_rest()
+        time.sleep(10)
+        test= main.ONOS1.rest_status()
+        if test == main.FALSE:
+            main.ONOS1.start_rest()
+        main.ONOS1.get_version()
         main.log.report("Startup check Zookeeper1, RamCloud1, and ONOS1 connections")
         main.case("Checking if the startup was clean...")
-        main.step("Testing startup Zookeeper")   
+        main.step("Testing startup Zookeeper")
         data =  main.Zookeeper1.isup()
         utilities.assert_equals(expect=main.TRUE,actual=data,onpass="Zookeeper is up!",onfail="Zookeeper is down...")
-        main.step("Testing startup RamCloud")   
-        data =  main.RamCloud1.status() 
+        main.step("Testing startup RamCloud")
+        data =  main.RamCloud1.status_serv()
         if data == main.FALSE:
             main.RamCloud1.stop_coor()
             main.RamCloud1.stop_serv()
@@ -61,34 +90,28 @@ class RCOnosCHO4nodes :
             main.RamCloud4.stop_serv()
 
             time.sleep(5)
- 
             main.RamCloud1.start_coor()
             main.RamCloud1.start_serv()
             main.RamCloud2.start_serv()
             main.RamCloud3.start_serv()
-            main.RamCloud4.start_serv() 
+            main.RamCloud4.start_serv()
         utilities.assert_equals(expect=main.TRUE,actual=data,onpass="RamCloud is up!",onfail="RamCloud is down...")
-        main.step("Testing startup ONOS")   
-        data = main.ONOS1.isup() 
-        data = data and main.ONOS2.isup() 
-        data = data and main.ONOS3.isup() 
-        data = data and main.ONOS4.isup()
-        if data == main.FALSE: 
-            main.log.report("Something is funny... restarting ONOS")
-            main.ONOS1.stop()
-            main.ONOS2.stop()
-            main.ONOS3.stop()
-            main.ONOS4.stop()
-            time.sleep(5)
-            main.ONOS1.start()
-            time.sleep(30)
-            main.ONOS2.start()
-            main.ONOS3.start()
-            main.ONOS4.start()
-            data = main.ONOS1.isup()
-            main.ONOS1.start_rest()
+        main.step("Testing startup ONOS")
+        data = main.ONOS1.isup()
+        for i in range(3):
+            if data == main.FALSE:
+                #main.log.report("Something is funny... restarting ONOS")
+                #main.ONOS1.stop()
+                time.sleep(3)
+                #main.ONOS1.start()
+                #time.sleep(5)
+                data = main.ONOS1.isup()
+            else:
+                break
         utilities.assert_equals(expect=main.TRUE,actual=data,onpass="ONOS is up and running!",onfail="ONOS didn't start...")
-           
+        time.sleep(20)
+
+          
 #**********************************************************************************************************************************************************************************************
 #Assign Controllers
 #This test first checks the ip of a mininet host, to be certain that the mininet exists(Host is defined in Params as <CASE1><destination>).
@@ -141,7 +164,7 @@ class RCOnosCHO4nodes :
 #NOTE: THE FLOWDEF FILE MUST BE PRESENT ON TESTON VM!!! TestON will copy the file from its home machine into /tmp/flowtmp on the machine the ONOS instance is present on
 
     def CASE3(self,main) :    #Delete any remnant flows, then add flows, and time how long it takes flow tables to update
-        main.log.report("Delete any flows from previous tests, then add flows from FLOWDEF file, then wait for switch flow tables to update")
+        main.log.report("Delete any flows from previous tests, then add flows using intents and wait for switch flow tables to update")
         import time
 
         result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
@@ -159,9 +182,8 @@ class RCOnosCHO4nodes :
         time.sleep(5)
         main.ONOS1.purge()
         strtTime = time.time()
-        #main.ONOS1.add_flow(main.params['FLOWDEF'])
         main.ONOS1.ad_flow()
-        main.case("Checking flows")
+        main.case("Checking flows with pings")
         
         pingAttempts = main.params['pingAttempts']
         pingSleep = main.params['pingSleep']
@@ -173,7 +195,7 @@ class RCOnosCHO4nodes :
             ping = main.Mininet1.pingHost(src="h"+str(i),target="h"+str(i+25))
             if ping == main.FALSE and count < int(pingAttempts):
                 count = count + 1
-                i = 6
+               # i = 6
                 main.log.report("Ping failed, making attempt number "+str(count)+" in "+str(pingSleep)+"  seconds")
                 time.sleep(int(pingSleep))
             elif ping == main.FALSE and count == int(pingAttempts):
@@ -185,7 +207,7 @@ class RCOnosCHO4nodes :
                 result = main.TRUE
         endTime = time.time()
         if result == main.TRUE:
-             main.log.report("\n\t\t\t\tTime to add flows: "+str(round(endTime-strtTime,2))+" seconds")
+             main.log.report("\n\t\t\t\tTime from pushing intents to successful ping test: "+str(round(endTime-strtTime,2))+" seconds")
         else:
             main.log.report("\tFlows failed check")
 
@@ -247,7 +269,7 @@ class RCOnosCHO4nodes :
             ping = main.Mininet1.pingHost(src="h"+str(i),target="h"+str(i+25))
             if ping == main.FALSE and count < int(pingAttempts):
                 count = count + 1
-                i = 6
+               # i = 6
                 main.log.report("Ping failed, making attempt number "+str(count)+" in "+str(pingSleep)+" seconds")
                 time.sleep(int(pingSleep))
             elif ping == main.FALSE and count == int(pingAttempts):
@@ -297,7 +319,7 @@ class RCOnosCHO4nodes :
             ping = main.Mininet1.pingHost(src="h"+str(i),target="h"+str(i+25))
             if ping == main.FALSE and count < int(pingAttempts):
                 count = count + 1
-                i = 6
+               # i = 6
                 main.log.report("Ping failed, making attempt number "+str(count)+" in "+str(pingSleep)+" seconds")
                 time.sleep(int(pingSleep))
             elif ping == main.FALSE and count == int(pingAttempts):
@@ -391,7 +413,7 @@ class RCOnosCHO4nodes :
             if ping == main.FALSE and count < int(pingAttempts):
                 count = count + 1
                 main.log.report("Ping failed, making attempt number "+str(count)+" in " +str(pingSleep)+" seconds")
-                i = 6
+                #i = 6
                 time.sleep(int(pingSleep))
             elif ping == main.FALSE and count == int(pingAttempts):
                 main.log.error("Ping test failed")
@@ -405,7 +427,64 @@ class RCOnosCHO4nodes :
             main.log.report("\tTime to complete ping test: "+str(round(endTime-strtTime,2))+" seconds")
         else:
             main.log.report("\tPING TESTS FAILED")
+        
+        main.ONOS1.check_exceptions()
+        main.ONOS2.check_exceptions()
+        main.ONOS3.check_exceptions()
+        main.ONOS4.check_exceptions()
+
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="NO PACKET LOSS, HOST IS REACHABLE",onfail="PACKET LOST, HOST IS NOT REACHABLE")
+
+
+# **********************************************************************************************************************************************************************************************
+# Runs reactive ping test
+    def CASE8(self,main) :
+        main.log.report("Reactive flow ping test:ping until the routes are active or fail after 10 attempts")
+        import time
+      
+        strtTime = time.time() 
+        result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
+        for counter in range(9):
+            if result == main.FALSE:
+                time.sleep(3)
+                result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
+            else:
+                break
+
+        pingAttempts = main.params['pingAttempts']
+        pingSleep = main.params['pingSleep']
+
+        strtTime = time.time()
+        count = 1
+        i = 6
+        while i < 16 :
+            main.log.info("\n\t\t\t\th"+str(i)+" IS PINGING h"+str(46-i) )
+            ping = main.Mininet1.pingHost(src="h"+str(i),target="h"+str(46-i))
+            if ping == main.FALSE and count < int(pingAttempts):
+                count = count + 1
+                main.log.report("Ping failed, making attempt number "+str(count)+" in " +str(pingSleep)+" seconds")
+                #i = 6
+                time.sleep(int(pingSleep))
+            elif ping == main.FALSE and count == int(pingAttempts):
+                main.log.error("Ping test failed")
+                i = 17
+                result = main.FALSE
+            elif ping == main.TRUE:
+                i = i + 1
+                result = main.TRUE
+        endTime = time.time()
+        if result == main.TRUE:
+            main.log.report("\tTime to complete ping test: "+str(round(endTime-strtTime,2))+" seconds")
+        else:
+            main.log.report("\tPING TESTS FAILED")
+        
+        main.ONOS1.check_exceptions()
+        main.ONOS2.check_exceptions()
+        main.ONOS3.check_exceptions()
+        main.ONOS4.check_exceptions()
+
+        utilities.assert_equals(expect=main.TRUE,actual=result,onpass="NO PACKET LOSS, HOST IS REACHABLE",onfail="PACKET LOST, HOST IS NOT REACHABLE")
+
 
 
 # ******************************************************************************************************************************************************************

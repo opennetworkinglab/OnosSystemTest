@@ -155,7 +155,7 @@ class MininetCliDriver(Emulator):
         '''
         args = utilities.parse_args(["SRC","TARGET"],**pingParams)
         #command = args["SRC"] + " ping -" + args["CONTROLLER"] + " " +args ["TARGET"]
-        command = args["SRC"] + " ping "+args ["TARGET"]+" -c 1 -i 1 -w 8"
+        command = args["SRC"] + " ping "+args ["TARGET"]+" -c 1 -i 1 -W 8"
         try:
             main.log.warn("Sending: " + command)
             #response = self.execute(cmd=command,prompt="mininet",timeout=10 )
@@ -560,6 +560,23 @@ class MininetCliDriver(Emulator):
             main.log.info(":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
             main.cleanup()
             main.exit()
+
+    def delete_sw_controller(self,sw):
+        '''
+        Removes the controller target from sw
+        '''
+
+        command = "sh ovs-vsctl del-controller "+str(sw)
+        try:
+            response = self.execute(cmd=command,prompt="mininet>",timeout=10)
+        except pexpect.EOF:  
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":     " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        else:
+            main.log.info(response)
+
 
     def disconnect(self):
         main.log.info(self.name+": Disconnecting mininet...")

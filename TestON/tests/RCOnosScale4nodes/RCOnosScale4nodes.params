@@ -6,4 +6,14 @@
     <RestIP>10.128.4.151</RestIP>
     <NR_Switches>100</NR_Switches>
     <NR_Links>198</NR_Links>
+    <CTRL>
+        <ip1>10.128.4.151</ip1>
+        <port1>6633</port1>
+        <ip2>10.128.4.152</ip2>
+        <port2>6633</port2>
+        <ip3>10.128.4.153</ip3>
+        <port3>6633</port3>
+        <ip4>10.128.4.154</ip4>
+        <port4>6633</port4>
+    </CTRL>
 </PARAMS>      

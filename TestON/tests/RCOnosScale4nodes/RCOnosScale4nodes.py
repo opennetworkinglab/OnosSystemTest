@@ -30,7 +30,6 @@ class RCOnosScale4nodes:
         main.RamCloud2.del_db()
         main.RamCloud3.del_db()
         main.RamCloud4.del_db()
-        time.sleep(10)
         
         main.RamCloud1.start_coor()
         time.sleep(10)
@@ -63,6 +62,10 @@ class RCOnosScale4nodes:
             main.RamCloud2.stop_serv()
             main.RamCloud3.stop_serv()
             main.RamCloud4.stop_serv()
+            main.RamCloud1.del_db()
+            main.RamCloud2.del_db()
+            main.RamCloud3.del_db()
+            main.RamCloud4.del_db()
 
             time.sleep(5)
 
@@ -104,7 +107,8 @@ class RCOnosScale4nodes:
         main.case("Timing Onos Convergence for switch -> a single ONOS node in the cluster")
         main.step("Bringing ONOS down...") 
         main.log.info("all switch no controllers") 
-        main.Mininet1.ctrl_none()
+        for i in range(1,int(main.params['NR_Switches'])+1):
+            main.Mininet1.delete_sw_controller("s"+i)
         main.log.info("bringing ONOS down") 
         main.ONOS1.stop()
         main.ONOS2.stop()
@@ -115,6 +119,10 @@ class RCOnosScale4nodes:
         main.RamCloud2.stop_serv()
         main.RamCloud3.stop_serv()
         main.RamCloud4.stop_serv()
+        main.RamCloud1.del_db()
+        main.RamCloud2.del_db()
+        main.RamCloud3.del_db()
+        main.RamCloud4.del_db()
 
         time.sleep(5)
 
@@ -130,14 +138,20 @@ class RCOnosScale4nodes:
         main.ONOS2.start()
         main.ONOS3.start()
         main.ONOS4.start()
+        time.sleep(10)
         main.ONOS1.isup()
         main.ONOS2.isup()
         main.ONOS3.isup()
         main.ONOS4.isup()
         main.ONOS1.check_status(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
+
         main.log.info("Pointing the Switches at ONE controller... then BEGIN time") 
-        main.Mininet1.ctrl_local()
-        t1 = time.time()
+        for i in range(1,int(main.params['NR_Switches'])+1):
+            main.Mininet1.assign_sw_controller(sw=str(i),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'])
+
+
+
+    t1 = time.time()
         for i in range(15) : 
             result = main.ONOS1.check_status(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
             if result == 1 : 
@@ -172,7 +186,8 @@ class RCOnosScale4nodes:
         main.case("Timing Onos Convergence for switch -> all ONOS nodes in cluster")
         main.step("Bringing ONOS down...") 
         main.log.info("all switch no controllers") 
-        main.Mininet1.ctrl_none()
+        for i in range(1,int(main.params['NR_Switches'])+1):
+            main.Mininet1.delete_sw_controller("s"+i)
         main.log.info("bringing ONOS down") 
         main.ONOS1.stop()
         main.ONOS2.stop()
@@ -194,7 +209,8 @@ class RCOnosScale4nodes:
         main.ONOS4.isup()
         main.ONOS1.check_status(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
         main.log.info("Pointing the Switches at ALL controllers... then BEGIN time") 
-        main.Mininet1.ctrl_all()
+        for i in range(1,int(main.params['NR_Switches'])+1):
+            main.Mininet1.assign_sw_controller(sw=str(i),count=4,ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'])
         t1 = time.time()
         for i in range(15) : 
             result = main.ONOS1.check_status(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
@@ -230,7 +246,8 @@ class RCOnosScale4nodes:
         main.case("Timing Onos Convergence for even single controller distribution")
         main.step("Bringing ONOS down...") 
         main.log.info("all switch no controllers") 
-        main.Mininet1.ctrl_none()
+        for i in range(1,):
+            main.Mininet1.delete_sw_controller("s"+i)
         main.log.info("bringing ONOS down") 
         main.ONOS1.stop()
         main.ONOS2.stop()
@@ -251,8 +268,17 @@ class RCOnosScale4nodes:
         main.ONOS3.isup()
         main.ONOS4.isup()
         main.ONOS1.check_status(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
+
+
         main.log.info("Pointing the Switches to alternating controllers... then BEGIN time") 
-        main.Mininet1.ctrl_divide()
+        count = 0
+        for i in range(1,int(main.params['NR_Switches'])+1):
+            num = count % len(4)
+            #num = count % len(controllers) #TODO: check number of controllers in cluster
+            main.Mininet1.assign_sw_controller(sw=str(i),ip1=main.params['CTRL']['ip'+str(num)],port1=main.params['CTRL']['port'+str(num)])
+            count = count + 1
+
+
         t1 = time.time()
         for i in range(15) : 
             result = main.ONOS1.check_status(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])

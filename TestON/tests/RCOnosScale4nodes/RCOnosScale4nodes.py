@@ -151,7 +151,7 @@ class RCOnosScale4nodes:
 
 
 
-    t1 = time.time()
+        t1 = time.time()
         for i in range(15) : 
             result = main.ONOS1.check_status(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
             if result == 1 : 

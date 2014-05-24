@@ -25,7 +25,7 @@ class RCOnosScale4nodes:
         main.Zookeeper2.start()
         main.Zookeeper3.start()
         main.Zookeeper4.start()
-        time.sleep(4)
+        time.sleep(10)
         main.RamCloud1.del_db()
         main.RamCloud2.del_db()
         main.RamCloud3.del_db()
@@ -77,23 +77,19 @@ class RCOnosScale4nodes:
         data =  main.RamCloud1.isup()
         utilities.assert_equals(expect=main.TRUE,actual=data,onpass="RamCloud is up!",onfail="RamCloud is down...")
         main.step("Testing startup ONOS")
+        time.sleep(10)
         data = main.ONOS1.isup()
         data = data and main.ONOS2.isup()
         data = data and main.ONOS3.isup()
         data = data and main.ONOS4.isup()
         if data == main.FALSE:
             main.log.report("Something is funny... restarting ONOS")
-            main.ONOS1.stop()
-            main.ONOS2.stop()
-            main.ONOS3.stop()
-            main.ONOS4.stop()
-            time.sleep(5)
-            main.ONOS1.start()
             time.sleep(10)
-            main.ONOS2.start()
-            main.ONOS3.start()
-            main.ONOS4.start()
             data = main.ONOS1.isup()
+            data = data and main.ONOS2.isup()
+            data = data and main.ONOS3.isup()
+            data = data and main.ONOS4.isup()
+
         utilities.assert_equals(expect=main.TRUE,actual=data,onpass="ONOS is up and running!",onfail="ONOS didn't start...")
 
     def CASE2(self,main) :
@@ -108,7 +104,7 @@ class RCOnosScale4nodes:
         main.step("Bringing ONOS down...") 
         main.log.info("all switch no controllers") 
         for i in range(1,int(main.params['NR_Switches'])+1):
-            main.Mininet1.delete_sw_controller("s"+i)
+            main.Mininet1.delete_sw_controller("s"+str(i))
         main.log.info("bringing ONOS down") 
         main.ONOS1.stop()
         main.ONOS2.stop()
@@ -119,6 +115,11 @@ class RCOnosScale4nodes:
         main.RamCloud2.stop_serv()
         main.RamCloud3.stop_serv()
         main.RamCloud4.stop_serv()
+        main.Zookeeper1.start()
+        main.Zookeeper2.start()
+        main.Zookeeper3.start()
+        main.Zookeeper4.start()
+        time.sleep(4)
         main.RamCloud1.del_db()
         main.RamCloud2.del_db()
         main.RamCloud3.del_db()
@@ -139,10 +140,19 @@ class RCOnosScale4nodes:
         main.ONOS3.start()
         main.ONOS4.start()
         time.sleep(10)
-        main.ONOS1.isup()
-        main.ONOS2.isup()
-        main.ONOS3.isup()
-        main.ONOS4.isup()
+        data = main.ONOS1.isup()
+        data = data and main.ONOS2.isup()
+        data = data and main.ONOS3.isup()
+        data = data and main.ONOS4.isup()
+        if data == main.FALSE:
+            main.log.report("Something is funny... restarting ONOS")
+            time.sleep(10)
+            data = main.ONOS1.isup()
+            data = data and main.ONOS2.isup()
+            data = data and main.ONOS3.isup()
+            data = data and main.ONOS4.isup()
+        if data == main.FALSE:
+            main.log.report("Something is funny... restarting ONOS")
         main.ONOS1.check_status(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
 
         main.log.info("Pointing the Switches at ONE controller... then BEGIN time") 
@@ -151,7 +161,7 @@ class RCOnosScale4nodes:
 
 
 
-    t1 = time.time()
+        t1 = time.time()
         for i in range(15) : 
             result = main.ONOS1.check_status(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
             if result == 1 : 
@@ -187,7 +197,7 @@ class RCOnosScale4nodes:
         main.step("Bringing ONOS down...") 
         main.log.info("all switch no controllers") 
         for i in range(1,int(main.params['NR_Switches'])+1):
-            main.Mininet1.delete_sw_controller("s"+i)
+            main.Mininet1.delete_sw_controller("s"+str(i))
         main.log.info("bringing ONOS down") 
         main.ONOS1.stop()
         main.ONOS2.stop()
@@ -246,8 +256,8 @@ class RCOnosScale4nodes:
         main.case("Timing Onos Convergence for even single controller distribution")
         main.step("Bringing ONOS down...") 
         main.log.info("all switch no controllers") 
-        for i in range(1,):
-            main.Mininet1.delete_sw_controller("s"+i)
+        for i in range(1,int(main.params['NR_Switches'])+1):
+            main.Mininet1.delete_sw_controller("s"+str(i))
         main.log.info("bringing ONOS down") 
         main.ONOS1.stop()
         main.ONOS2.stop()
@@ -273,7 +283,7 @@ class RCOnosScale4nodes:
         main.log.info("Pointing the Switches to alternating controllers... then BEGIN time") 
         count = 0
         for i in range(1,int(main.params['NR_Switches'])+1):
-            num = count % len(4)
+            num = (count % 4)+1
             #num = count % len(controllers) #TODO: check number of controllers in cluster
             main.Mininet1.assign_sw_controller(sw=str(i),ip1=main.params['CTRL']['ip'+str(num)],port1=main.params['CTRL']['port'+str(num)])
             count = count + 1

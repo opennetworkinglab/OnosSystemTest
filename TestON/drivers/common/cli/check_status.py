@@ -3,8 +3,8 @@ import json
 import os
 import sys
 
-# http://localhost:8080/wm/onos/ng/switches/json
-# http://localhost:8080/wm/onos/ng/links/json
+# http://localhost:8080/wm/onos/topology/switches
+# http://localhost:8080/wm/onos/topology/links
 # http://localhost:8080/wm/onos/registry/controllers/json
 # http://localhost:8080/wm/onos/registry/switches/json"
 
@@ -28,7 +28,7 @@ def check_switch(RestIP,correct_nr_switch ):
   retcode = 0
   RestPort="8080"
 
-  url="http://%s:%s/wm/onos/ng/switches/json" % (RestIP, RestPort)
+  url="http://%s:%s/wm/onos/topology/switches" % (RestIP, RestPort)
   parsedResult = get_json(url)
 
   if parsedResult == "":
@@ -72,7 +72,7 @@ def check_link(RestIP, nr_links):
   buf = ""
   retcode = 0
 
-  url = "http://%s:%s/wm/onos/ng/links/json" % (RestIP, RestPort)
+  url = "http://%s:%s/wm/onos/topology/links" % (RestIP, RestPort)
   parsedResult = get_json(url)
 
   if parsedResult == "":

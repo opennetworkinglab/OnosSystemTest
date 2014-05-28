@@ -652,7 +652,7 @@ class OnosCliDriver(CLI):
         try:
             buf = ""
             retcode = 0
-            url="http://%s:%s/wm/onos/topology/switches/json" % (RestIP, RestPort)
+            url="http://%s:%s/wm/onos/topology/switches" % (RestIP, RestPort)
             parsedResult = self.get_json(url)
             if parsedResult == "":
                 retcode = 1
@@ -702,7 +702,7 @@ class OnosCliDriver(CLI):
             buf = ""
             retcode = 0
         
-            url = "http://%s:%s/wm/onos/topology/links/json" % (RestIP, RestPort)
+            url = "http://%s:%s/wm/onos/topology/links" % (RestIP, RestPort)
             parsedResult = self.get_json(url)
         
             if parsedResult == "":

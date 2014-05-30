@@ -534,7 +534,7 @@ class OnosCliDriver(CLI):
             time.sleep(1)
             self.handle.sendline(self.home + "/web/get_flow.py all")
             self.handle.expect("get_flow")
-            while 1:
+            for x in range(15):
                 i=self.handle.expect(['FlowPath','FlowEntry','NOT','\$',pexpect.TIMEOUT],timeout=180)
                 if i==0:
                     count = count + 1

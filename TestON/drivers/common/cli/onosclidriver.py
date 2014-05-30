@@ -611,8 +611,8 @@ class OnosCliDriver(CLI):
             main.exit()
 
 
-# http://localhost:8080/wm/onos/topology/switches/json
-# http://localhost:8080/wm/onos/topology/links/json
+# http://localhost:8080/wm/onos/topology/switches
+# http://localhost:8080/wm/onos/topology/links
 # http://localhost:8080/wm/onos/registry/controllers/json
 # http://localhost:8080/wm/onos/registry/switches/json"
 
@@ -1007,7 +1007,7 @@ class OnosCliDriver(CLI):
         retport = [] # Switch port connected to to devices found with MAC
         foundHost = []
         try:
-            ##### device rest API is: 'host:8080/wm/onos/topology/switches/json' ###
+            ##### device rest API is: 'host:8080/wm/onos/topology/switches' ###
             url ="http://%s:%s%s" %(RestIP,RestPort,RestAPI)
 
             try:

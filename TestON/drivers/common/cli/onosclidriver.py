@@ -844,7 +844,7 @@ class OnosCliDriver(CLI):
                 self.handle.sendline("git pull " + comp1)
            
             uptodate = 0
-            i=self.handle.expect(['fatal','Username\sfor\s(.*):\s','Unpacking\sobjects',pexpect.TIMEOUT,'Already up-to-date','Aborting'],timeout=1800)
+            i=self.handle.expect(['fatal','Username\sfor\s(.*):\s','Unpacking\sobjects',pexpect.TIMEOUT,'Already up-to-date','Aborting','You\sare\snot\scurrently\son\sa\sbranch'],timeout=1700)
             #debug
            #main.log.report(self.name +": \n"+"git pull response: " + str(self.handle.before) + str(self.handle.after))
             if i==0:
@@ -865,6 +865,9 @@ class OnosCliDriver(CLI):
                 return 1
             elif i==5:
                 main.log.info(self.name + ": Git Pull - Aborting... Are there conflicting git files?")
+                return main.ERROR
+            elif i==6:
+                main.log.info(self.name + ": Git Pull - You are not currently on a branch so git pull failed!")
                 return main.ERROR
             else:
                 main.log.error(self.name + ": Git Pull - Unexpected response, check for pull errors")
@@ -926,7 +929,6 @@ class OnosCliDriver(CLI):
                     main.log.info(self.name + ": Build success!")
                 elif i == 3:
                     main.log.info(self.name + ": Build complete")
-                    self.handle.sendline("./build-ramcloud-java-bindings.sh")
                     self.handle.expect("\$", timeout=60)
                     return main.TRUE
                 elif i == 4:

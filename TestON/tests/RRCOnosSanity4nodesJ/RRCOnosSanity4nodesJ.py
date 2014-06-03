@@ -9,16 +9,6 @@ class RRCOnosSanity4nodesJ :
 #Tests the startup of Zookeeper1, RamCloud1, and ONOS1 to be certain that all started up successfully
     def CASE1(self,main) :  #Check to be sure ZK, Cass, and ONOS are up, then get ONOS version
         import time
-        main.Zookeeper1.stop()
-        main.Zookeeper2.stop()
-        main.Zookeeper3.stop()
-        main.Zookeeper4.stop()
-        main.RamCloud1.stop_coor()
-        main.RamCloud1.stop_serv()
-        main.RamCloud2.stop_serv()
-        main.RamCloud3.stop_serv()
-        main.RamCloud4.stop_serv()
-                
         main.ONOS1.handle.sendline("cp ~/onos.properties.reactive ~/ONOS/conf/onos.properties")
         main.ONOS2.handle.sendline("cp ~/onos.properties.reactive ~/ONOS/conf/onos.properties")
         main.ONOS3.handle.sendline("cp ~/onos.properties.reactive ~/ONOS/conf/onos.properties")
@@ -28,11 +18,18 @@ class RRCOnosSanity4nodesJ :
         main.Zookeeper2.start()
         main.Zookeeper3.start()
         main.Zookeeper4.start()
-        time.sleep(3)
+        main.RamCloud1.stop_coor()
+        main.RamCloud1.stop_serv()
+        main.RamCloud2.stop_serv()
+        main.RamCloud3.stop_serv()
+        main.RamCloud4.stop_serv()
+        time.sleep(10)
         main.RamCloud1.del_db()
         main.RamCloud2.del_db()
         main.RamCloud3.del_db()
         main.RamCloud4.del_db()
+        time.sleep(10)
+        main.log.report("Pulling latest code from github to all nodes")
         for i in range(2):
             uptodate = main.ONOS1.git_pull()
             main.ONOS2.git_pull()
@@ -46,7 +43,7 @@ class RRCOnosSanity4nodesJ :
                 main.ONOS2.git_pull("ONOS1 master")
                 main.ONOS3.git_pull("ONOS1 master")
                 main.ONOS4.git_pull("ONOS1 master")
-        #if uptodate==0:
+       #if uptodate==0
         if 1:
             main.ONOS1.git_compile()
             main.ONOS2.git_compile()
@@ -72,11 +69,11 @@ class RRCOnosSanity4nodesJ :
         main.ONOS2.start()
         main.ONOS3.start()
         main.ONOS4.start()
-        main.ONOS1.start_rest()
-        time.sleep(5)
-        test= main.ONOS1.rest_status()
+        main.ONOS2.start_rest()
+        time.sleep(10)
+        test= main.ONOS2.rest_status()
         if test == main.FALSE:
-            main.ONOS1.start_rest()
+            main.ONOS2.start_rest()
         main.ONOS1.get_version()
         main.log.report("Startup check Zookeeper1, RamCloud1, and ONOS1 connections")
         main.case("Checking if the startup was clean...")
@@ -84,7 +81,7 @@ class RRCOnosSanity4nodesJ :
         data =  main.Zookeeper1.isup()
         utilities.assert_equals(expect=main.TRUE,actual=data,onpass="Zookeeper is up!",onfail="Zookeeper is down...")
         main.step("Testing startup RamCloud")   
-        data =  main.RamCloud1.status_serv() 
+        data =  main.RamCloud1.status_serv() and main.RamCloud2.status_serv() and main.RamCloud3.status_serv() and main.RamCloud4.status_serv()
         if data == main.FALSE:
             main.RamCloud1.stop_coor()
             main.RamCloud1.stop_serv()
@@ -98,17 +95,25 @@ class RRCOnosSanity4nodesJ :
             main.RamCloud2.start_serv()
             main.RamCloud3.start_serv()
             main.RamCloud4.start_serv()
+            time.sleep(5)
+            data =  main.RamCloud1.status_serv() and main.RamCloud2.status_serv() and main.RamCloud3.status_serv() and main.RamCloud4.status_serv()
+            
+
         utilities.assert_equals(expect=main.TRUE,actual=data,onpass="RamCloud is up!",onfail="RamCloud is down...")
         main.step("Testing startup ONOS")   
-        data = main.ONOS1.isup()
-        if data == main.FALSE: 
-            main.log.report("Something is funny... restarting ONOS")
-        #    main.ONOS1.stop()
-            time.sleep(3)
-        #    main.ONOS1.start()
-        #    time.sleep(5) 
-            data = main.ONOS1.isup()
+        data = main.ONOS1.isup() and main.ONOS2.isup() and main.ONOS3.isup() and main.ONOS4.isup()
+        for i in range(3):
+            if data == main.FALSE: 
+                #main.log.report("Something is funny... restarting ONOS")
+                #main.ONOS1.stop()
+                time.sleep(3)
+                #main.ONOS1.start()
+                #time.sleep(5) 
+                data = main.ONOS1.isup() and main.ONOS2.isup() and main.ONOS3.isup() and main.ONOS4.isup()
+            else:
+                break
         utilities.assert_equals(expect=main.TRUE,actual=data,onpass="ONOS is up and running!",onfail="ONOS didn't start...")
+        time.sleep(20)
            
 #**********************************************************************************************************************************************************************************************
 #Assign Controllers
@@ -148,7 +153,6 @@ class RRCOnosSanity4nodesJ :
                 time.sleep(1)
                 main.Mininet1.assign_sw_controller(sw=str(j),count=4,ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'])
         main.Mininet1.get_sw_controller("s1")       
-        main.ONOS1.purge()
  
 # **********************************************************************************************************************************************************************************************
 #Add Flows
@@ -162,10 +166,12 @@ class RRCOnosSanity4nodesJ :
         main.step("Cleaning out any leftover flows...")
         #main.ONOS1.delete_flow("all")
         strtTime = time.time()
-        print("hello")
         main.ONOS1.rm_flow()
         print("world")
         main.ONOS1.ad_flow()
+        time.sleep(2)
+        main.ONOS1.ad_flow()
+        print("hello")
        # main.ONOS1.add_flow(main.params['FLOWDEF']['testONip'],main.params['FLOWDEF']['user'],main.params['FLOWDEF']['password'],main.params['FLOWDEF']['flowDef'])
         main.case("Checking flows")
        
@@ -306,7 +312,7 @@ class RRCOnosSanity4nodesJ :
       
         strtTime = time.time() 
         result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
-        for i in range(2):
+        for i in range(10):
             if result == main.FALSE:
                 time.sleep(5)
                 result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
@@ -349,7 +355,7 @@ class RRCOnosSanity4nodesJ :
        
         strtTime = time.time() 
         result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],str(int(main.params['NR_Links'])-2))
-        for i in range(2):
+        for i in range(10):
             if result == main.FALSE:
                 time.sleep(5)
                 result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],str(int(main.params['NR_Links'])-2))
@@ -392,9 +398,12 @@ class RRCOnosSanity4nodesJ :
         time.sleep(5) 
         strtTime = time.time() 
         result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
-        for i in range(2):
+        for i in range(10):
             if result == main.FALSE:
-                time.sleep(5)
+                time.sleep(15)
+                main.ONOS2.check_status_report(main.params['restIP2'],main.params['NR_Switches'],main.params['NR_Links'])
+                main.ONOS3.check_status_report(main.params['restIP3'],main.params['NR_Switches'],main.params['NR_Links'])
+                main.ONOS4.check_status_report(main.params['restIP4'],main.params['NR_Switches'],main.params['NR_Links'])
                 result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
             else:
                 break
@@ -437,8 +446,8 @@ class RRCOnosSanity4nodesJ :
         RestIP1 = main.params['RESTCALL']['restIP1']
         RestPort = main.params['RESTCALL']['restPort']
         url = main.params['RESTCALL']['restURL']
-    
-        t_topowait = 0 
+       
+        t_topowait = 5
         t_restwait = 10
         main.log.report( "Wait time from topo change to ping set to " + str(t_topowait))
         main.log.report( "Wait time from ping to rest call set to " + str(t_restwait))
@@ -448,10 +457,10 @@ class RRCOnosSanity4nodesJ :
         ping = main.Mininet1.pingHost(src = str(host),target = "10.0.0.254")
         time.sleep(t_restwait)
         Reststatus, Switch, Port = main.ONOS1.find_host(RestIP1,RestPort,url, mac)
-        main.log.report("Number of host with MAC address = " + mac + " found by ONOS is: " + str(Reststatus))        
+        main.log.report("Number of host with MAC address = " + mac + " found by ONOS is: " + str(Reststatus))
         if Reststatus == 1:
             main.log.report("\t PASSED - Found host mac = " + mac + ";  attached to switchDPID = " +"".join(Switch) + "; at port = " + str(Port[0]))
-            result1 = main.TRUE 
+            result1 = main.TRUE
         elif Reststatus > 1:
             main.log.report("\t FAILED - Host " + host + " with MAC:" + mac + " has " + str(Reststatus) + " duplicated mac  addresses. FAILED")
             main.log.report("switches are: " + "; ".join(Switch))
@@ -465,7 +474,7 @@ class RRCOnosSanity4nodesJ :
             result1 = main.FALSE
 
 
-                ##### Step to yank out "s1-eth1" from s1, which is on autoONOS1 #####
+        ##### Step to yank out "s1-eth1" from s1, which is on autoONOS1 #####
 
         main.log.report("Yank out s1-eth1")
         main.case("Yankout s6-eth1 (link to h1) from s1")
@@ -481,7 +490,7 @@ class RRCOnosSanity4nodesJ :
         main.log.report("Number of host with MAC = " + mac + " found by ONOS is: " + str(Reststatus))
         if Reststatus == 1:
             main.log.report("\tFAILED - Found host MAC = " + mac + "; attached to switchDPID = " + "".join(Switch) + "; at port = " + str(Port))
-            result2 = main.FALSE 
+            result2 = main.FALSE
         elif Reststatus > 1:
             main.log.report("\t FAILED - Host " + host + " with MAC:" + str(mac) + " has " + str(Reststatus) + " duplicated IP addresses. FAILED")
             main.log.report("switches are: " + "; ".join(Switch))
@@ -494,7 +503,7 @@ class RRCOnosSanity4nodesJ :
         else:# check if rest server is working
             main.log.error("Issue with find host")
             result2 = main.FALSE
-
+         
         ##### Step to plug "s1-eth1" to s6, which is on autoONOS3  ######
         main.log.report("Plug s1-eth1 into s6")
         main.case("Plug s1-eth1 to s6")
@@ -515,7 +524,7 @@ class RRCOnosSanity4nodesJ :
             main.log.report("\t FAILED - Host " + host + " with MAC:" + str(mac) + " has " + str(Reststatus) + " duplicated IP addresses. FAILED")
             main.log.report("switches are: " + "; ".join(Switch))
             main.log.report("Ports are: " + "; ".join(Port))
-            main.log.report("MACs are: " + "; ".join(MAC))
+            main.log.report("MACs are: " + "; ".join(MAC))            
             result3 = main.FALSE
         elif Reststatus == 0 and Switch == []:
             main.log.report("\t FAILED - Host " + host + " with MAC:" + str(mac) + " does not exist. FAILED")
@@ -523,7 +532,7 @@ class RRCOnosSanity4nodesJ :
         else:# check if rest server is working
             main.log.error("Issue with find host")
             result3 = main.FALSE
-       
+
         ###### Step to put interface "s1-eth1" back to s1"#####
         main.log.report("Move s1-eth1 back on to s1")
         main.case("Move s1-eth1 back to s1")
@@ -545,7 +554,7 @@ class RRCOnosSanity4nodesJ :
             main.log.report("\t FAILED - Host " + host + " with MAC:" + str(mac) + " has " + str(Reststatuas) + " duplicated IP addresses. FAILED")
             main.log.report("switches are: " + "; ".join(Switch))
             main.log.report("Ports are: " + "; ".join(Port))
-            main.log.report("MACs are: " + "; ".join(MAC))
+            main.log.report("MACs are: " + "; ".join(MAC))            
             result4 = main.FALSE
         elif Reststatus == 0 and Switch == []:
             main.log.report("\t FAILED -Host " + host + " with MAC:" + str(mac) + " does not exist. FAILED")
@@ -553,10 +562,18 @@ class RRCOnosSanity4nodesJ :
         else:# check if rest server is working
             main.log.error("Issue with find host")
             result4 = main.FALSE
+        time.sleep(20)
+        Reststatus, Switch, Port = main.ONOS1.find_host(RestIP1,RestPort,url,mac)
+        main.log.report("Number of host with IP=10.0.0.1 found by ONOS is: " + str(Reststatus))
+        if Reststatus ==1:
+            main.log.report("\t FAILED - Host " + host + "with MAC:" + str(mac) + "was still found after expected timeout")
+        elif Reststatus>1:
+            main.log.report("\t FAILED - Host " + host + "with MAC:" + str(mac) + "was still found after expected timeout(multiple found)")
+        elif Reststatus==0:
+            main.log.report("\t PASSED - Device cleared after timeout")
 
         result = result1 and result2 and result3 and result4
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="DEVICE DISCOVERY TEST PASSED PLUG/UNPLUG/MOVE TEST",onfail="DEVICE DISCOVERY TEST FAILED")
-
 
 # Run a pure ping test. 
 
@@ -586,6 +603,7 @@ class RRCOnosSanity4nodesJ :
         else:
             main.log.report("\tPING TEST FAIL")
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="NO PACKET LOSS, HOST IS REACHABLE",onfail="PACKET LOST, HOST IS NOT REACHABLE")
+
 
     def CASE66(self, main):
         main.log.report("Checking ONOS logs for exceptions")

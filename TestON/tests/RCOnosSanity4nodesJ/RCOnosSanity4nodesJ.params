@@ -1,6 +1,5 @@
 <PARAMS>
-    <testcases>1,2,21,3,31,4,41,5,6,7,3,4,5,6,7,66</testcases>
-    <FLOWDEF>~/flowdef_files/Center_Triangle/flowdef_20.txt</FLOWDEF>
+    <testcases>1,2,21,3,31,6,7,6,7,6,7,4,5,6,7,6,7,66</testcases>
     <CASE1>       
         <destination>h6</destination>
         <target>h40</target>
@@ -38,7 +37,10 @@
         <ip4>10.128.100.24</ip4>
         <port4>6633</port4>
     </CTRL>
-    <RestIP>10.128.100.21</RestIP>
+    <RestIP>10.128.4.151</RestIP>
+    <RestIP2>10.128.4.152</RestIP2>
+    <RestIP3>10.128.4.153</RestIP3>
+    <RestIP4>10.128.4.154</RestIP4>
     <NR_Switches>25</NR_Switches>
     <NR_Links>50</NR_Links>
     <RESTCALL>

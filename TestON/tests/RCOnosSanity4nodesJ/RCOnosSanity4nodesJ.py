@@ -81,7 +81,7 @@ class RCOnosSanity4nodesJ :
         data =  main.Zookeeper1.isup()
         utilities.assert_equals(expect=main.TRUE,actual=data,onpass="Zookeeper is up!",onfail="Zookeeper is down...")
         main.step("Testing startup RamCloud")   
-        data =  main.RamCloud1.status_serv() 
+        data =  main.RamCloud1.status_serv() and main.RamCloud2.status_serv() and main.RamCloud3.status_serv() and main.RamCloud4.status_serv()
         if data == main.FALSE:
             main.RamCloud1.stop_coor()
             main.RamCloud1.stop_serv()
@@ -95,9 +95,13 @@ class RCOnosSanity4nodesJ :
             main.RamCloud2.start_serv()
             main.RamCloud3.start_serv()
             main.RamCloud4.start_serv()
+            time.sleep(5)
+            data =  main.RamCloud1.status_serv() and main.RamCloud2.status_serv() and main.RamCloud3.status_serv() and main.RamCloud4.status_serv()
+            
+
         utilities.assert_equals(expect=main.TRUE,actual=data,onpass="RamCloud is up!",onfail="RamCloud is down...")
         main.step("Testing startup ONOS")   
-        data = main.ONOS1.isup()
+        data = main.ONOS1.isup() and main.ONOS2.isup() and main.ONOS3.isup() and main.ONOS4.isup()
         for i in range(3):
             if data == main.FALSE: 
                 #main.log.report("Something is funny... restarting ONOS")
@@ -105,7 +109,7 @@ class RCOnosSanity4nodesJ :
                 time.sleep(3)
                 #main.ONOS1.start()
                 #time.sleep(5) 
-                data = main.ONOS1.isup()
+                data = main.ONOS1.isup() and main.ONOS2.isup() and main.ONOS3.isup() and main.ONOS4.isup()
             else:
                 break
         utilities.assert_equals(expect=main.TRUE,actual=data,onpass="ONOS is up and running!",onfail="ONOS didn't start...")
@@ -389,14 +393,15 @@ class RCOnosSanity4nodesJ :
         main.log.report("Bring Link between s1 and s2 up, then ping until all hosts are reachable or fail after 10 attempts")
         import time
         main.case("Bringing Link up... ")
+        result = main.Mininet1.link(END1='s1',END2='s3',OPTION="down")
         result = main.Mininet1.link(END1=main.params['LINK']['begin'],END2=main.params['LINK']['end'],OPTION="up")
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Link UP!",onfail="Link not brought up...")
-        time.sleep(5) 
+        time.sleep(10) 
         strtTime = time.time() 
-        result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
-        for i in range(2):
+        result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],str(int(main.params['NR_Links'])-2))
+        for i in range(10):
             if result == main.FALSE:
-                time.sleep(5)
+                time.sleep(15)
                 result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
             else:
                 break
@@ -424,6 +429,7 @@ class RCOnosSanity4nodesJ :
             main.log.report("\tTime to complete ping test: "+str(round(endTime-strtTime,2))+" seconds")
         else:
             main.log.report("\tPING TESTS FAILED")
+        result = main.Mininet1.link(END1='s1',END2='s3',OPTION="up")
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="NO PACKET LOSS, HOST IS REACHABLE",onfail="PACKET LOST, HOST IS NOT REACHABLE")
 
 
@@ -555,7 +561,7 @@ class RCOnosSanity4nodesJ :
         else:# check if rest server is working
             main.log.error("Issue with find host")
             result4 = main.FALSE
-        time.sleep(6)
+        time.sleep(20)
         Reststatus, Switch, Port = main.ONOS1.find_host(RestIP1,RestPort,url,mac)
         main.log.report("Number of host with IP=10.0.0.1 found by ONOS is: " + str(Reststatus))
         if Reststatus ==1:

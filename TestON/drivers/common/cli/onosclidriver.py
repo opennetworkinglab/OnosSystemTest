@@ -203,7 +203,7 @@ class OnosCliDriver(CLI):
             response = self.execute(cmd= "./onos.sh core status ",prompt="running",timeout=10)
             self.execute(cmd="\n",prompt="\$",timeout=10)
             tail1 = self.execute(cmd="tail " + self.home + "/onos-logs/onos.*.log",prompt="\$",timeout=10)
-            time.sleep(30)
+            time.sleep(10)
             self.execute(cmd="\n",prompt="\$",timeout=10)
             tail2 = self.execute(cmd="tail " + self.home + "/onos-logs/onos.*.log",prompt="\$",timeout=10)
             pattern = '(.*)1 instance(.*)'
@@ -212,7 +212,6 @@ class OnosCliDriver(CLI):
            # if utilities.assert_matches(expect=pattern,actual=response,onpass="ONOS process is running...",onfail="ONOS process not running..."):
             
             if re.search(pattern, response):
-                time.sleep(10)
                 if re.search(patternUp,tail2):
                     main.log.info(self.name + ": ONOS process is running...")
                     if tail1 == tail2:
@@ -261,6 +260,36 @@ class OnosCliDriver(CLI):
                 return main.FALSE
             else :
                 main.log.error(self.name + ": No response" +response)
+                return main.FALSE
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":     " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name + ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
+            main.log.error( traceback.print_exc() )
+            main.log.info(":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
+            main.cleanup()
+            main.exit()
+
+    def stop_all(self):
+        '''
+        Runs ./onos.sh stop
+        '''
+        try:
+            self.handle.sendline("")
+            self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT])
+            self.handle.sendline("cd "+self.home)
+            self.handle.sendline("./onos.sh stop")
+            i=self.handle.expect(["Stop",pexpect.EOF,pexpect.TIMEOUT])
+            self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT], 60)
+            result = self.handle.before
+            if re.search("Killed", result):
+                main.log.info(self.name + ": ONOS Killed Successfully")
+                return main.TRUE
+            else :
+                main.log.warn(self.name + ": ONOS wasn't running")
                 return main.FALSE
         except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")

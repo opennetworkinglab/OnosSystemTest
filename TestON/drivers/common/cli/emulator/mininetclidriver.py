@@ -515,6 +515,7 @@ class MininetCliDriver(Emulator):
         command = "sh ovs-vsctl get-controller "+str(sw)
         try:
             response = self.execute(cmd=command,prompt="mininet>",timeout=10)
+            return response
         except pexpect.EOF:  
             main.log.error(self.name + ": EOF exception found")
             main.log.error(self.name + ":     " + self.handle.before)

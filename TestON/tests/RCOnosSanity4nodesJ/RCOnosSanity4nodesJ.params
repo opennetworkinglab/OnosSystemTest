@@ -1,5 +1,10 @@
 <PARAMS>
-    <testcases>1,2,21,3,31,6,7,6,7,6,7,4,5,6,7,6,7,66</testcases>
+    <testcases>1,2,3,31,67,6,7,6,7,4,6,7,5,6,7,41,6,7,5,6,7,66</testcases>
+    <tcpdump> 
+        <intf>eth0</intf>
+        <port>port 6633</port>
+        <filename>~/packet_captures/Sanity.pcap</filename>
+    </tcpdump>
     <CASE1>       
         <destination>h6</destination>
         <target>h40</target>
@@ -37,6 +42,11 @@
         <ip4>10.128.4.154</ip4>
         <port4>6633</port4>
     </CTRL>
+    <INTENTREST>
+        <intentIP>10.128.4.151</intentIP>
+        <intentPort>8080</intentPort>
+        <intentURL>wm/onos/intent/high</intentURL>
+    </INTENTREST>
     <RestIP>10.128.4.151</RestIP>
     <RestIP2>10.128.4.152</RestIP2>
     <RestIP3>10.128.4.153</RestIP3>
@@ -47,6 +57,6 @@
 	<restIP1>10.128.4.151</restIP1>
 	<restIP2>10.128.4.152</restIP2>
 	<restPort>8080</restPort>
-	<restURL>/wm/onos/topology/devices</restURL>
+	<restURL>/wm/onos/topology/hosts</restURL>
     </RESTCALL>
 </PARAMS>      

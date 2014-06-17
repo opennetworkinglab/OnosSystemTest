@@ -1,23 +1,33 @@
 
 class RCOnosSanity4nodesJ :
 
+
+
     def __init__(self) :
         self.default = ''
 
+#        def print_hello_world(self,main):
+#            print("hello world")
 #*****************************************************************************************************************************************************************************************
 #Test startup
 #Tests the startup of Zookeeper1, RamCloud1, and ONOS1 to be certain that all started up successfully
     def CASE1(self,main) :  #Check to be sure ZK, Cass, and ONOS are up, then get ONOS version
+        main.case("Initial setup")
+        main.step("Stop ONOS")
         import time
         main.ONOS1.stop_all()
         main.ONOS2.stop_all()
         main.ONOS3.stop_all()
+#        main.print_hello_world()
         main.ONOS4.stop_all()
         main.ONOS2.stop_rest()
         main.ONOS1.handle.sendline("cp ~/onos.properties.proactive ~/ONOS/conf/onos.properties")
         main.ONOS2.handle.sendline("cp ~/onos.properties.proactive ~/ONOS/conf/onos.properties")
         main.ONOS3.handle.sendline("cp ~/onos.properties.proactive ~/ONOS/conf/onos.properties")
         main.ONOS4.handle.sendline("cp ~/onos.properties.proactive ~/ONOS/conf/onos.properties")        
+        main.step("Start tcpdump on mn")
+        main.Mininet2.start_tcpdump(main.params['tcpdump']['filename'], intf = main.params['tcpdump']['intf'], port = main.params['tcpdump']['port'])
+        main.step("Start ONOS")
         main.Zookeeper1.start()
         main.Zookeeper2.start()
         main.Zookeeper3.start()
@@ -66,7 +76,6 @@ class RCOnosSanity4nodesJ :
             main.ONOS1.start_rest()
         main.ONOS1.get_version()
         main.log.report("Startup check Zookeeper1, RamCloud1, and ONOS1 connections")
-        main.case("Checking if the startup was clean...")
         main.step("Testing startup Zookeeper")   
         data =  main.Zookeeper1.isup()
         utilities.assert_equals(expect=main.TRUE,actual=data,onpass="Zookeeper is up!",onfail="Zookeeper is down...")
@@ -140,9 +149,10 @@ class RCOnosSanity4nodesJ :
             else:
                 j=i+16
                 main.Mininet1.assign_sw_controller(sw=str(j),ip1=main.params['CTRL']['ip4'],port1=main.params['CTRL']['port4'])
-                time.sleep(1)
+                time.sleep(2)
                 main.Mininet1.assign_sw_controller(sw=str(j),count=4,ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'])
         main.Mininet1.get_sw_controller("s1")       
+        time.sleep(30)
  
 # **********************************************************************************************************************************************************************************************
 #Add Flows
@@ -156,11 +166,11 @@ class RCOnosSanity4nodesJ :
         main.step("Cleaning out any leftover flows...")
         #main.ONOS1.delete_flow("all")
         strtTime = time.time()
-        main.ONOS1.rm_flow()
+        main.ONOS1.rm_intents()
         print("world")
-        main.ONOS1.ad_flow()
+        main.ONOS1.add_intents()
         time.sleep(2)
-        main.ONOS1.ad_flow()
+        main.ONOS1.add_intents()
         print("hello")
        # main.ONOS1.add_flow(main.params['FLOWDEF']['testONip'],main.params['FLOWDEF']['user'],main.params['FLOWDEF']['password'],main.params['FLOWDEF']['flowDef'])
         main.case("Checking flows")
@@ -199,9 +209,13 @@ class RCOnosSanity4nodesJ :
 #If the ping test fails 6 times, then the test case will return false
     def CASE41(self,main) :
         main.log.report("Testing Removal")
+        time.sleep(20)
         main.ONOS2.stop()
+        time.sleep(30)
         main.ONOS3.stop()
+        time.sleep(30)
         main.ONOS4.stop()
+        time.sleep(45)
         strtTime = time.time() 
         result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
         for i in range(10):
@@ -238,7 +252,7 @@ class RCOnosSanity4nodesJ :
         main.ONOS2.start() 
         main.ONOS3.start()
         main.ONOS4.start() 
-        time.sleep(10)
+        time.sleep(20)
 
 
     def CASE4(self,main) :
@@ -292,14 +306,27 @@ class RCOnosSanity4nodesJ :
     def CASE5(self,main) :
         main.log.report("Restore ONOS 2,3,4 then ping until all hosts are reachable or fail after 6 attempts")
         import time
-        for i in range(25):
-            if i < 15:
+        for i in range(25): 
+            if i < 3:
                 j=i+1
+                main.Mininet1.assign_sw_controller(sw=str(j),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'])
+                time.sleep(1)
+                main.Mininet1.assign_sw_controller(sw=str(j),count=4,ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'])
+            elif i >= 3 and i < 5:
+                j=i+1
+                main.Mininet1.assign_sw_controller(sw=str(j),ip1=main.params['CTRL']['ip2'],port1=main.params['CTRL']['port2'])
+                time.sleep(1)
+                main.Mininet1.assign_sw_controller(sw=str(j),count=4,ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'])
+            elif i >= 5 and i < 15:
+                j=i+1
+                main.Mininet1.assign_sw_controller(sw=str(j),ip1=main.params['CTRL']['ip3'],port1=main.params['CTRL']['port3'])
+                time.sleep(1)
                 main.Mininet1.assign_sw_controller(sw=str(j),count=4,ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'])
             else:
                 j=i+16
+                main.Mininet1.assign_sw_controller(sw=str(j),ip1=main.params['CTRL']['ip4'],port1=main.params['CTRL']['port4'])
                 main.Mininet1.assign_sw_controller(sw=str(j),count=4,ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'])
-      
+                time.sleep(1)
         strtTime = time.time() 
         result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
         for i in range(10):
@@ -392,7 +419,7 @@ class RCOnosSanity4nodesJ :
         for i in range(10):
             if result == main.FALSE:
                 time.sleep(15)
-                result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
+                result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],str(int(main.params['NR_Links'])-2))
             else:
                 break
 
@@ -419,7 +446,7 @@ class RCOnosSanity4nodesJ :
             main.log.report("\tTime to complete ping test: "+str(round(endTime-strtTime,2))+" seconds")
         else:
             main.log.report("\tPING TESTS FAILED")
-        result = main.Mininet1.link(END1='s1',END2='s3',OPTION="up")
+        data = main.Mininet1.link(END1='s1',END2='s3',OPTION="up")
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="NO PACKET LOSS, HOST IS REACHABLE",onfail="PACKET LOST, HOST IS NOT REACHABLE")
 
 
@@ -436,8 +463,8 @@ class RCOnosSanity4nodesJ :
         RestPort = main.params['RESTCALL']['restPort']
         url = main.params['RESTCALL']['restURL']
        
-        t_topowait = 0
-        t_restwait = 10
+        t_topowait = 5
+        t_restwait = 5
         main.log.report( "Wait time from topo change to ping set to " + str(t_topowait))
         main.log.report( "Wait time from ping to rest call set to " + str(t_restwait))
         #print "host=" + host + ";  RestIP=" + RestIP1 + ";  RestPort=" + str(RestPort)
@@ -610,5 +637,251 @@ class RCOnosSanity4nodesJ :
             result = main.FALSE
             count = len(check1.splitlines()) + len(check2.splitlines()) + len(check3.splitlines()) + len(check4.splitlines())
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="No Exceptions found in the logs",onfail=str(count) + " Exceptions were found in the logs")
+        main.Mininet1.stop_tcpdump()
 
 
+    def CASE8(self,main) :
+        main.log.report("Testing Removal of Zookeeper")
+        main.Zookeeper2.stop()
+        main.Zookeeper3.stop()
+        main.Zookeeper4.stop()
+        strtTime = time.time() 
+        result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
+        for i in range(10):
+            if result == main.FALSE:
+                time.sleep(5)
+                result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
+            else:
+                break
+
+        count = 1
+        i = 6
+        while i < 16 :
+            main.log.info("\n\t\t\t\th"+str(i)+" IS PINGING h"+str(i+25) )
+            ping = main.Mininet1.pingHost(src="h"+str(i),target="h"+str(i+25))
+            if ping == main.FALSE and count < 6:
+                count = count + 1
+                i = 6
+                main.log.info("Ping failed, making attempt number "+str(count)+" in 2 seconds")
+                time.sleep(2)
+            elif ping == main.FALSE and count ==6:
+                main.log.error("Ping test failed")
+                i = 17
+                result = main.FALSE
+            elif ping == main.TRUE:
+                i = i + 1
+                result = main.TRUE
+        endTime = time.time() 
+        if result == main.TRUE:
+            main.log.report("\tTime to complete ping test: "+str(round(endTime-strtTime,2))+" seconds")
+        else:
+            main.log.report("\tPING TEST FAIL")
+        utilities.assert_equals(expect=main.TRUE,actual=result,onpass="NO PACKET LOSS, HOST IS REACHABLE",onfail="PACKET LOST, HOST IS NOT REACHABLE")
+        time.sleep(10)
+        main.Zookeeper2.start() 
+        main.Zookeeper3.start()
+        main.Zookeeper4.start() 
+        time.sleep(10)
+
+
+    def CASE67(self, main) :
+        main.case("Flapping link s1-s2")
+        main.log.report("Toggling of link s1-s2 multiple times")
+        result = main.Mininet1.link(END1=main.params['LINK']['begin'],END2=main.params['LINK']['end'],OPTION="up")
+        result = main.Mininet1.link(END1=main.params['LINK']['begin'],END2=main.params['LINK']['end'],OPTION="down")
+        result = main.Mininet1.link(END1=main.params['LINK']['begin'],END2=main.params['LINK']['end'],OPTION="up")
+        result = main.Mininet1.link(END1=main.params['LINK']['begin'],END2=main.params['LINK']['end'],OPTION="down")
+        result = main.Mininet1.link(END1=main.params['LINK']['begin'],END2=main.params['LINK']['end'],OPTION="up")
+        result = main.Mininet1.link(END1=main.params['LINK']['begin'],END2=main.params['LINK']['end'],OPTION="down")
+        result = main.Mininet1.link(END1=main.params['LINK']['begin'],END2=main.params['LINK']['end'],OPTION="up")
+        result = main.Mininet1.link(END1=main.params['LINK']['begin'],END2=main.params['LINK']['end'],OPTION="down")
+        result = main.Mininet1.link(END1=main.params['LINK']['begin'],END2=main.params['LINK']['end'],OPTION="up")
+        result = main.Mininet1.link(END1=main.params['LINK']['begin'],END2=main.params['LINK']['end'],OPTION="down")
+        result = main.Mininet1.link(END1=main.params['LINK']['begin'],END2=main.params['LINK']['end'],OPTION="up")
+        result = main.Mininet1.link(END1=main.params['LINK']['begin'],END2=main.params['LINK']['end'],OPTION="down")
+        result = main.Mininet1.link(END1=main.params['LINK']['begin'],END2=main.params['LINK']['end'],OPTION="up")
+        result = main.Mininet1.link(END1=main.params['LINK']['begin'],END2=main.params['LINK']['end'],OPTION="down")
+        result = main.Mininet1.link(END1=main.params['LINK']['begin'],END2=main.params['LINK']['end'],OPTION="up")
+        result = main.Mininet1.link(END1=main.params['LINK']['begin'],END2=main.params['LINK']['end'],OPTION="down")
+        result = main.Mininet1.link(END1=main.params['LINK']['begin'],END2=main.params['LINK']['end'],OPTION="up")
+        result = main.Mininet1.link(END1=main.params['LINK']['begin'],END2=main.params['LINK']['end'],OPTION="down")
+        result = main.Mininet1.link(END1=main.params['LINK']['begin'],END2=main.params['LINK']['end'],OPTION="up")
+        result = main.Mininet1.link(END1=main.params['LINK']['begin'],END2=main.params['LINK']['end'],OPTION="down")
+        result = main.Mininet1.link(END1=main.params['LINK']['begin'],END2=main.params['LINK']['end'],OPTION="up")
+        result = main.Mininet1.link(END1=main.params['LINK']['begin'],END2=main.params['LINK']['end'],OPTION="down")
+        result = main.Mininet1.link(END1=main.params['LINK']['begin'],END2=main.params['LINK']['end'],OPTION="up")
+        result = main.Mininet1.link(END1=main.params['LINK']['begin'],END2=main.params['LINK']['end'],OPTION="down")
+        result = main.Mininet1.link(END1=main.params['LINK']['begin'],END2=main.params['LINK']['end'],OPTION="up")
+        result = main.Mininet1.link(END1=main.params['LINK']['begin'],END2=main.params['LINK']['end'],OPTION="down")
+        result = main.Mininet1.link(END1=main.params['LINK']['begin'],END2=main.params['LINK']['end'],OPTION="up")
+        result = main.Mininet1.link(END1=main.params['LINK']['begin'],END2=main.params['LINK']['end'],OPTION="down")
+        result = main.Mininet1.link(END1=main.params['LINK']['begin'],END2=main.params['LINK']['end'],OPTION="up")
+        result = main.Mininet1.link(END1=main.params['LINK']['begin'],END2=main.params['LINK']['end'],OPTION="down")
+        result = main.Mininet1.link(END1=main.params['LINK']['begin'],END2=main.params['LINK']['end'],OPTION="up")
+        result = main.Mininet1.link(END1=main.params['LINK']['begin'],END2=main.params['LINK']['end'],OPTION="down")
+        result = main.Mininet1.link(END1=main.params['LINK']['begin'],END2=main.params['LINK']['end'],OPTION="up")
+        result = main.Mininet1.link(END1=main.params['LINK']['begin'],END2=main.params['LINK']['end'],OPTION="down")
+        result = main.Mininet1.link(END1=main.params['LINK']['begin'],END2=main.params['LINK']['end'],OPTION="up")
+        result = main.Mininet1.link(END1=main.params['LINK']['begin'],END2=main.params['LINK']['end'],OPTION="down")
+        result = main.Mininet1.link(END1=main.params['LINK']['begin'],END2=main.params['LINK']['end'],OPTION="up")
+        result = main.Mininet1.link(END1=main.params['LINK']['begin'],END2=main.params['LINK']['end'],OPTION="down")
+        result = main.Mininet1.link(END1=main.params['LINK']['begin'],END2=main.params['LINK']['end'],OPTION="up")
+        result = main.Mininet1.link(END1=main.params['LINK']['begin'],END2=main.params['LINK']['end'],OPTION="down")
+        result = main.Mininet1.link(END1=main.params['LINK']['begin'],END2=main.params['LINK']['end'],OPTION="up")
+        result = main.Mininet1.link(END1=main.params['LINK']['begin'],END2=main.params['LINK']['end'],OPTION="down")
+        result = main.Mininet1.link(END1=main.params['LINK']['begin'],END2=main.params['LINK']['end'],OPTION="up")
+        result = main.Mininet1.link(END1=main.params['LINK']['begin'],END2=main.params['LINK']['end'],OPTION="down")
+        result = main.Mininet1.link(END1=main.params['LINK']['begin'],END2=main.params['LINK']['end'],OPTION="up")
+        result = main.Mininet1.link(END1=main.params['LINK']['begin'],END2=main.params['LINK']['end'],OPTION="down")
+        result = main.Mininet1.link(END1=main.params['LINK']['begin'],END2=main.params['LINK']['end'],OPTION="up")
+        result = main.Mininet1.link(END1=main.params['LINK']['begin'],END2=main.params['LINK']['end'],OPTION="down")
+        result = main.Mininet1.link(END1=main.params['LINK']['begin'],END2=main.params['LINK']['end'],OPTION="up")
+        result = main.Mininet1.link(END1=main.params['LINK']['begin'],END2=main.params['LINK']['end'],OPTION="down")
+        result = main.Mininet1.link(END1=main.params['LINK']['begin'],END2=main.params['LINK']['end'],OPTION="up")
+        result = main.Mininet1.link(END1=main.params['LINK']['begin'],END2=main.params['LINK']['end'],OPTION="down")
+        result = main.Mininet1.link(END1=main.params['LINK']['begin'],END2=main.params['LINK']['end'],OPTION="up")
+        result = main.Mininet1.link(END1=main.params['LINK']['begin'],END2=main.params['LINK']['end'],OPTION="down")
+        result = main.Mininet1.link(END1=main.params['LINK']['begin'],END2=main.params['LINK']['end'],OPTION="up")
+        result = main.Mininet1.link(END1=main.params['LINK']['begin'],END2=main.params['LINK']['end'],OPTION="down")
+        result = main.Mininet1.link(END1=main.params['LINK']['begin'],END2=main.params['LINK']['end'],OPTION="up")
+        result = main.Mininet1.link(END1=main.params['LINK']['begin'],END2=main.params['LINK']['end'],OPTION="down")
+        result = main.Mininet1.link(END1=main.params['LINK']['begin'],END2=main.params['LINK']['end'],OPTION="up")
+        result = main.Mininet1.link(END1=main.params['LINK']['begin'],END2=main.params['LINK']['end'],OPTION="down")
+        result = main.Mininet1.link(END1=main.params['LINK']['begin'],END2=main.params['LINK']['end'],OPTION="up")
+        result = main.Mininet1.link(END1=main.params['LINK']['begin'],END2=main.params['LINK']['end'],OPTION="down")
+        result = main.Mininet1.link(END1=main.params['LINK']['begin'],END2=main.params['LINK']['end'],OPTION="up")
+
+        result = main.Mininet1.link(END1=main.params['LINK']['begin'],END2=main.params['LINK']['end'],OPTION="down")
+        result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],str(int(main.params['NR_Links'])-2))
+        for i in range(10):
+            if result == main.FALSE:
+                time.sleep(15)
+                result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],str(int(main.params['NR_Links'])-2))
+            else:
+                break
+
+        result = main.Mininet1.link(END1=main.params['LINK']['begin'],END2=main.params['LINK']['end'],OPTION="up")
+        result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],str(int(main.params['NR_Links'])))
+        for i in range(10):
+            if result == main.FALSE:
+                time.sleep(15)
+                result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],str(int(main.params['NR_Links'])))
+            else:
+                break
+        result = main.Mininet1.link(END1=main.params['LINK']['begin'],END2=main.params['LINK']['end'],OPTION="down")
+        result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],str(int(main.params['NR_Links'])-2))
+        for i in range(10):
+            if result == main.FALSE:
+                time.sleep(15)
+                result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],str(int(main.params['NR_Links'])-2))
+            else:
+                break
+           
+
+
+    def CASE101(self,main) :
+        import time
+        import json
+        import re
+        main.case("Testing the Intent Framework of ONOS")
+        
+        main.step("Assigning Master Controllers to the Switches and check")
+        for i in range(25):
+            if i<3:
+                j=i+1
+                main.Mininet1.assign_sw_controller(sw=str(j),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'])
+            elif i>=3 and i<5:
+                j=i+1
+                main.Mininet1.assign_sw_controller(sw=str(j),ip1=main.params['CTRL']['ip2'],port1=main.params['CTRL']['port1'])
+            elif i>=5 and i<15:
+                j=j+1
+                main.Mininet1.assign_sw_controller(sw=str(j),ip1=main.params['CTRL']['ip3'],port1=main.params['CTRL']['port1'])
+            else:
+                j=i+16
+                main.Mininet1.assign_sw_controller(sw=str(j),ip1=main.params['CTRL']['ip4'],port1=main.params['CTRL']['port1'])
+        result = main.TRUE
+        for i in range(25):
+            if i<3:
+                j=i+1
+                response=main.Mininet1.get_sw_controller("s"+str(j))
+                print(response)
+                if re.search("tcp:"+main.params['CTRL']['ip1'],response) :
+                    result = result and main.TRUE
+                else:
+                    result = main.FALSE
+            elif i>=3 and i<5:
+                j=i+1
+                response=main.Mininet1.get_sw_controller("s"+str(j))
+                if re.search("tcp:"+main.params['CTRL']['ip2'],response) :
+                    result = result and main.TRUE
+                else:
+                    result = main.FALSE
+            elif i>=5 and i<15:
+                j=j+1
+                response=main.Mininet1.get_sw_controller("s"+str(j))
+                if re.search("tcp:"+main.params['CTRL']['ip3'],response) :
+                    result = result and main.TRUE
+                else:
+                    result = main.FALSE
+            else:
+                j=i+16
+                response=main.Mininet1.get_sw_controller("s"+str(j))
+                if re.search("tcp:"+main.params['CTRL']['ip4'],response) :
+                    result = result and main.TRUE
+                else:
+                    result = main.FALSE
+            print(result)
+        utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Master Controllers assigned Properly",onfail="FAILED TO ASSIGN MASTER CONTROLLERS!")
+
+        main.step("Assigning all Controllers as Backups to Switches and Check")
+        for i in range(25):
+            if i<15:
+                j=i+1
+                main.Mininet1.assign_sw_controller(sw=str(j),count=4,ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'])
+            else:
+                j=i+16
+                main.Mininet1.assign_sw_controller(sw=str(j),count=4,ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'])
+        result = main.TRUE
+        for i in range(25):
+            if i<15:
+                j=i+1
+                response=main.Mininet1.get_sw_controller("s"+str(j))
+                if re.search("tcp:"+main.params['CTRL']['ip1'],response) and re.search("tcp:"+main.params['CTRL']['ip2'],response) and re.search("tcp:"+main.params['CTRL']['ip3'],response) and re.search("tcp:"+main.params['CTRL']['ip4'],response):
+                    result = result and main.TRUE
+                else:
+                    result = main.FALSE
+            else:
+                j=i+16
+                response=main.Mininet1.get_sw_controller("s"+str(j))
+                if re.search("tcp:"+main.params['CTRL']['ip1'],response) and re.search("tcp:"+main.params['CTRL']['ip2'],response) and re.search("tcp:"+main.params['CTRL']['ip3'],response) and re.search("tcp:"+main.params['CTRL']['ip4'],response):
+                    result = result and main.TRUE
+                else:
+                    result = main.FALSE
+        utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Controllers assigned properly to all switches",onfail="FAILED TO ASSIGN CONTROLLERS PROPERLY!")
+        
+        main.step("Install intents and Check for Installation of Flows")
+        intentIP = main.params['INTENTREST']['intentIP']
+        intentPort=main.params['INTENTREST']['intentPort']
+        intentURL=main.params['INTENTREST']['intentURL']
+        for i in range(6,16):
+            srcMac = '00:00:00:00:00:' + str(hex(i)[2:]).zfill(2)
+            dstMac = '00:00:00:00:00:'+str(hex(i+25)[2:])
+        #    srcDPID=str(i)
+        #    dstDPID=str(i+10)
+            srcDPID = '00:00:00:00:00:00:10:'+str(i).zfill(2)
+            dstDPID= '00:00:00:00:00:00:20:' +str(i+25)
+            main.ONOS1.add_intent(intent_id=str(i),src_dpid=srcDPID,dst_dpid=dstDPID,src_mac=srcMac,dst_mac=dstMac,intentIP=intentIP,intentPort=intentPort,intentURL=intentURL)
+        result = main.TRUE
+        response = main.Mininet1.check_flows(sw="s1")
+        for i in range(6,16):
+            if re.search("dl_src=00:00:00:00:00:"+''.join('%02x'%i),response) and re.search("dl_src=00:00:00:00:00:"+''.join('%02x'%(i+10)),response) and re.search("dl_dst=00:00:00:00:00:"+''.join('%02x'%i),response) and re.search("dl_dst=00:00:00:00:00:"+''.join('%02x'%(i+10)),response):   
+                result = result and main.TRUE
+            else:
+                result = main.FALSE
+        utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Flows added Properly",onfail="Flows were not added properly")
+ 
+
+
+    def CASE10(self, main) :
+        import time
+        time.sleep(600)

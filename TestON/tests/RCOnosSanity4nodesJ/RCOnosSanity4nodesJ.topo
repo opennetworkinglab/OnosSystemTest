@@ -135,5 +135,19 @@
              </COMPONENTS>
         </Mininet1>
 
+        <Mininet2>
+            <host>10.128.4.159</host>
+            <user>admin</user>
+            <password></password>
+            <type>RemoteMininetDriver</type>
+            <connect_order>14</connect_order>
+            <COMPONENTS>
+                # Specify the Option for mininet
+                <arg1> --custom ~/mininet/custom/topo-onos4node.py </arg1>
+                <arg2> --topo mytopo --arp</arg2>
+                <controller> remote </controller>
+             </COMPONENTS>
+        </Mininet2>
+
     </COMPONENT>
 </TOPOLOGY>

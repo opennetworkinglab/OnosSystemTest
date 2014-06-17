@@ -21,7 +21,7 @@ Created on 26-Oct-2012
 
 MininetCliDriver is the basic driver which will handle the Mininet functions
 '''
-
+import traceback
 import pexpect
 import struct
 import fcntl
@@ -300,6 +300,66 @@ class RemoteMininetDriver(Emulator):
  #               
  #           
  #       return version    
+    def start_tcpdump(self, filename, intf = "eth0", port = "port 6633"):
+        ''' 
+        Runs tpdump on an intferface and saves the file
+        intf can be specified, or the default eth0 is used
+        '''
+        try:
+            self.handle.sendline("")
+            self.handle.sendline("sudo tcpdump -n -i "+ intf + " " + port + " -w " + filename.strip() + "  &")
+            self.handle.sendline("")
+            self.handle.sendline("")
+            i=self.handle.expect(['No\ssuch\device','listening\son',pexpect.TIMEOUT,"\$"],timeout=10)
+            main.log.warn(self.handle.before + self.handle.after)
+            if i == 0:
+                main.log.error(self.name + ": tcpdump - No such device exists. tcpdump attempted on: " + intf)
+                return main.FALSE
+            elif i == 1:
+                main.log.info(self.name + ": tcpdump started on " + intf)
+                return main.TRUE
+            elif i == 2:
+                main.log.error(self.name + ": tcpdump command timed out! Check interface name, given interface was: " + intf)
+                return main.FALSE
+            elif i ==3: 
+                main.log.info(self.name +": " +  self.handle.before)
+                return main.TRUE
+            else:
+                main.log.error(self.name + ": tcpdump - unexpected response")
+            return main.FALSE
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":     " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name + ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
+            main.log.error( traceback.print_exc() )
+            main.log.info(":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
+            main.cleanup()
+            main.exit()
+
+    def stop_tcpdump(self):
+        "pkills tcpdump"
+        try:
+            self.handle.sendline("sudo pkill tcpdump")
+            self.handle.sendline("")
+            self.handle.sendline("")
+            self.handle.expect("\$")
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":     " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name + ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
+            main.log.error( traceback.print_exc() )
+            main.log.info(":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
+            main.cleanup()
+            main.exit()
+
+
+
 
     def disconnect(self):
         '''    

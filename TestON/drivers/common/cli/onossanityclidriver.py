@@ -1,40 +1,29 @@
 #!/usr/bin/env python
 '''
-Created on 31-May-2013
-
-@author: Anil Kumar (anilkumar.s@paxterrasolutions.com)
-
-TestON is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 2 of the License, or
-(at your option) any later version.
-
-TestON is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with TestON. If not, see <http://www.gnu.org/licenses/>.
-
-
 '''
-import time
+
 import pexpect
-import struct, fcntl, os, sys, signal
+import struct
+import fcntl
+import os
+import signal
 import re
+import sys
+import core.teston
+import time
 import json
 import traceback
-import urllib2
-from urllib2 import URLError, HTTPError
+import requests
+
 sys.path.append("../")
 from drivers.common.clidriver import CLI
 
-class OnosCliDriver(CLI):
-    
+class onossanityclidriver(CLI):
+    '''
+    '''
     def __init__(self):
         super(CLI, self).__init__()
-        
+
     def connect(self,**connectargs):
         '''
         Creates ssh handle for ONOS.
@@ -50,7 +39,7 @@ class OnosCliDriver(CLI):
 
             
             self.name = self.options['name']
-            self.handle = super(OnosCliDriver,self).connect(user_name = self.user_name, ip_address = self.ip_address,port = self.port, pwd = self.pwd, home = self.home)
+            self.handle = super(onossanityclidriver,self).connect(user_name = self.user_name, ip_address = self.ip_address,port = self.port, pwd = self.pwd, home = self.home)
 
             if self.handle:
                 return self.handle
@@ -67,8 +56,8 @@ class OnosCliDriver(CLI):
             main.log.error( traceback.print_exc() )
             main.log.info(":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
             main.cleanup()
-            main.exit()
-        
+            main.exit()   
+ 
     def start(self):
         '''
         Starts ONOS on remote machine.
@@ -78,36 +67,64 @@ class OnosCliDriver(CLI):
             self.handle.sendline("")
             self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT])
             self.handle.sendline("cd "+self.home)
-            self.handle.sendline("./onos.sh core start")
-            i=self.handle.expect(["STARTED","FAILED",pexpect.EOF,pexpect.TIMEOUT])
-            response = self.handle.before + str(self.handle.after)
+            self.handle.sendline("./onos.sh zk start") 
+	    self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT])
+            self.handle.sendline("./onos.sh rc deldb")
+	    self.handle.sendline("y")
+            self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT])
+	    #Send a confirmation to delete ramcloud
+	    #self.handle.sendline("y")
+	    main.log.info("Ramcloud db deleted")
+            #self.handle.sendline("./onos.sh zk start")
+            #Check if zookeeper is running
+            #delete database ./onos.sh rc deldb
+            #main.log.info(self.name + ": ZooKeeper Started Separately")
+            time.sleep(2) 
+	    self.handle.sendline("./onos.sh start")
+            i=self.handle.expect(["STARTED","FAILED","running",pexpect.EOF,pexpect.TIMEOUT])
             if i==0:
-                j = self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT], timeout=60)
-                if re.search("Killed",response):
-                    main.log.warn(self.name + ": Killed existing process")
-                if j==0:
-                    main.log.info(self.name + ": ONOS Started ")
-                    return main.TRUE
-                elif j==1:
-                    main.log.error(self.name + ": EOF exception found")
-                    main.log.error(self.name + ":     " + self.handle.before)
-                    main.cleanup()
-                    main.exit()
-                elif j==2:
-                    main.log.info(self.name + ": ONOS NOT Started, stuck while waiting for it to start ")
-                    return main.FALSE
-                else:
-                    main.log.warn(self.name +": Unexpected response in start")
+                    main.log.info(self.name + ": ZooKeeper, Ramcloud and ONOS Started ")
                     return main.TRUE
             elif i==1:
-                main.log.error(self.name + ": ONOS Failed to start")
+                main.log.error(self.name + ": Failed to start")
                 return main.FALSE
-            elif i==2:
+	    elif i==2:
+		main.log.info(self.name + ": Already running, so Restarting ONOS")
+		self.handle.sendline("./onos.sh restart")
+		j=self.handle.expect(["STARTED","FAILED",pexpect.EOF,pexpect.TIMEOUT])
+		if j==0:
+		    main.log.info(self.name + ": ZooKeeper, Ramcloud and ONOS Started ")
+		    return main.TRUE
+		else:
+		    main.log.error(self.name + ": ONOS Failed to Start")
+            elif i==3:
+                main.log.error(self.name + ": EOF exception found")
+                main.log.error(self.name + ":     " + self.handle.before)
+                main.cleanup()
+	    elif i==2:
+		main.log.info(self.name + ": Already running, so Restarting ONOS")
+		self.handle.sendline("./onos.sh restart")
+		j=self.handle.expect(["STARTED","FAILED",pexpect.EOF,pexpect.TIMEOUT])
+		if j==0:
+		    main.log.info(self.name + ": ZooKeeper, Ramcloud and ONOS Started ")
+		    return main.TRUE
+		elif j==1:
+		    main.log.error(self.name + ": ONOS Failed to Start")
+		    main.log.info(self.name + ": cleaning up and exiting...")
+		    main.cleanup()
+		    main.exit()
+		elif j==2: 
+		    main.log.error(self.name + ": EOF exception found")
+		    main.log.error(self.name + ":    " + self.handle.before)
+		    main.log.info(self.name + ": cleaning up and exiting...")
+		    main.cleanup()
+		    main.exit() 
+            elif i==3:
                 main.log.error(self.name + ": EOF exception found")
                 main.log.error(self.name + ":     " + self.handle.before)
                 main.cleanup()
                 main.exit()
-            elif i==3:
+            elif i==4:
                 main.log.error(self.name + ": ONOS timedout while starting")
                 return main.FALSE
             else:
@@ -124,47 +141,10 @@ class OnosCliDriver(CLI):
             main.log.info(":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
             main.cleanup()
             main.exit()
-
-    def start_all(self):
-        '''
-        starts ZK, RC, and ONOS
-        '''
-        self.handle.sendline("cd "+self.home)
-        self.handle.sendline("./onos.sh start")
-        self.handle.expect("./onos.sh start")
-        self.handle.expect(["\$",pexpect.TIMEOUT])
-
-
-
-    def start_rest(self):
-        '''
-        Starts the rest server on ONOS.
-        '''
-        try:
-            self.handle.sendline("cd "+self.home)
-            response = self.execute(cmd= "./start-rest.sh start",prompt="\$",timeout=10)
-            if re.search("admin",response):
-                main.log.info(self.name + ": Rest Server Started Successfully")
-                time.sleep(5)
-                return main.TRUE
-            else :
-                main.log.warn(self.name + ": Failed to start Rest Server")
-                return main.FALSE
-        except pexpect.EOF:
-            main.log.error(self.name + ": EOF exception found")
-            main.log.error(self.name + ":     " + self.handle.before)
-            main.cleanup()
-            main.exit()
-        except:
-            main.log.info(self.name + ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
-            main.log.error( traceback.print_exc() )
-            main.log.info(":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
-            main.cleanup()
-            main.exit()
     
     def status(self):
         '''
-        Called onos.sh core status and returns TRUE/FALSE accordingly
+        Calls onos.sh core status and returns TRUE/FALSE accordingly
         '''
         try:
             self.execute(cmd="\n",prompt="\$",timeout=10)
@@ -177,6 +157,7 @@ class OnosCliDriver(CLI):
                 return main.FALSE
             else :
                 main.log.info( self.name + " WARNING: status recieved unknown response")
+		main.log.info( self.name + " For details: check onos core status manually")
                 return main.FALSE
         except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
@@ -190,78 +171,26 @@ class OnosCliDriver(CLI):
             main.cleanup()
             main.exit()
 
-
-    def isup(self):
+    def zk_status(self):
         '''
-        A more complete check to see if ONOS is up and running properly.
-        First, it checks if the process is up.
-        Second, it reads the logs for "Exception: Connection refused"
-        Third, it makes sure the logs are actually moving.
-        returns TRUE/FALSE accordingly.
+        Calls the zookeeper status and returns TRUE if it has an assigned Mode to it. 
         '''
         try:
-            self.execute(cmd="\n",prompt="\$",timeout=10)
+	    self.execute(cmd="\n",prompt="\$",timeout=10)
             self.handle.sendline("cd "+self.home)
-            response = self.execute(cmd= "./onos.sh core status ",prompt="running",timeout=10)
-            self.execute(cmd="\n",prompt="\$",timeout=10)
-            tail1 = self.execute(cmd="tail " + self.home + "/onos-logs/onos.*.log",prompt="\$",timeout=10)
-            time.sleep(10)
-            self.execute(cmd="\n",prompt="\$",timeout=10)
-            tail2 = self.execute(cmd="tail " + self.home + "/onos-logs/onos.*.log",prompt="\$",timeout=10)
-            pattern = '(.*)1 instance(.*)'
-            pattern2 = '(.*)Exception: Connection refused(.*)'
-           # if utilities.assert_matches(expect=pattern,actual=response,onpass="ONOS process is running...",onfail="ONOS process not running..."):
-            running = self.execute(cmd="cat "+self.home+"/onos-logs/onos.*.log | grep 'Sending LLDP out on all ports'",prompt="\$",timeout=10) 
-            if re.search(pattern, response):
-                if running != "":
-                    main.log.info(self.name + ": ONOS process is running...")
-                    if tail1 == tail2:
-                        main.log.error(self.name + ": ONOS is frozen...")#logs aren't moving
-                        return main.FALSE
-                    elif re.search( pattern2,tail1 ):
-                        main.log.info(self.name + ": Connection Refused found in onos log")
-                        return main.FALSE
-                    elif re.search( pattern2,tail2 ):
-                        main.log.info(self.name + ": Connection Refused found in onos log")
-                        return main.FALSE
-                    else:
-                        main.log.info(self.name + ": Onos log is moving! It's looking good!")
-                        return main.TRUE
-                else:
-                    main.log.info(self.name + ": ONOS not yet sending out LLDP messages")
-                    return main.FALSE
-            else:
-                main.log.error(self.name + ": ONOS process not running...")
-                return main.FALSE
-        except pexpect.EOF:
-            main.log.error(self.name + ": EOF exception found")
-            main.log.error(self.name + ":     " + self.handle.before)
-            main.cleanup()
-            main.exit()
-        except:
-            main.log.info(self.name + ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
-            main.log.error( traceback.print_exc() )
-            main.log.info(":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
-            main.cleanup()
-            main.exit()
-
-
-        
-    def rest_status(self):
-        '''
-        Checks if the rest server is running.
-        '''
-        try:
-            response = self.execute(cmd= self.home + "/start-rest.sh status ",prompt="running",timeout=10)
-            if re.search("rest\sserver\sis\srunning",response):
-                main.log.info(self.name + ": Rest Server is running")
+	    self.handle.sendline("./onos.sh zk status")
+	    i=self.handle.expect(["standalone","Error",pexpect.EOF,pexpect.TIMEOUT])
+            if i==0: 
+	        main.log.info(self.name + ": Zookeeper is running.") 
                 return main.TRUE
-            elif re.search("rest\sserver\sis\snot\srunning",response):
-                main.log.warn(self.name + ": Rest Server is not Running")
-                return main.FALSE
-            else :
-                main.log.error(self.name + ": No response" +response)
-                return main.FALSE
+            elif i==1:
+	        main.log.error(self.name + ": Error with zookeeper") 
+                main.log.info(self.name + ": Directory used: "+self.home)
+		return main.FALSE
+	    elif i==3:
+		main.log.error(self.name + ": Zookeeper timed out")
+		main.log.info(self.name + ": Directory used: "+self.home)
+		return main.FALSE
         except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
             main.log.error(self.name + ":     " + self.handle.before)
@@ -272,11 +201,58 @@ class OnosCliDriver(CLI):
             main.log.error( traceback.print_exc() )
             main.log.info(":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
             main.cleanup()
-            main.exit()
+            main.exit()	
 
-    def stop_all(self):
+    def rcs_status(self):
         '''
-        Runs ./onos.sh stop
+        This Function will return the Status of the RAMCloud Server
+        '''
+        main.log.info(self.name + ": Getting RC-Server Status")
+        self.handle.sendline("")
+        self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT])
+        self.handle.sendline("cd "+self.home)
+        self.handle.sendline("./onos.sh rc-server status")
+        self.handle.expect(["onos.sh rc-server status",pexpect.EOF,pexpect.TIMEOUT])
+        self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT])
+        response = self.handle.before + self.handle.after
+
+        if re.search("0\sRAMCloud\sserver\srunning", response) :
+            main.log.info(self.name+": RAMCloud not running")
+            return main.TRUE
+        elif re.search("1\sRAMCloud\sserver\srunning",response):
+            main.log.warn(self.name+": RAMCloud Running")
+            return main.TRUE
+        else:
+            main.log.info( self.name+":  WARNING: status recieved unknown response")
+            return main.FALSE
+            
+    def rcc_status(self):
+        '''
+        This Function will return the Status of the RAMCloud Coord
+        '''
+        main.log.info(self.name + ": Getting RC-Coord Status")
+        self.handle.sendline("")
+        self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT])
+        self.handle.sendline("cd "+self.home)
+        self.handle.sendline("./onos.sh rc-coord status")
+        i=self.handle.expect(["onos.sh rc-coord status",pexpect.EOF,pexpect.TIMEOUT])
+        self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT])
+        response = self.handle.before + self.handle.after
+        #return response
+        
+        if re.search("0\sRAMCloud\scoordinator\srunning", response) :
+            main.log.warn(self.name+": RAMCloud Coordinator not running")
+            return main.TRUE
+        elif re.search("1\sRAMCloud\scoordinator\srunning", response):
+            main.log.info(self.name+": RAMCloud Coordinator Running")
+            return main.TRUE
+        else:
+            main.log.warn( self.name+": coordinator status recieved unknown response")
+            return main.FALSE
+
+    def stop(self):
+        '''
+        Runs ./onos.sh core stop to stop ONOS
         '''
         try:
             self.handle.sendline("")
@@ -303,25 +279,22 @@ class OnosCliDriver(CLI):
             main.log.info(":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
             main.cleanup()
             main.exit()
-       
 
-    def stop(self):
+    def start_rest(self):
         '''
-        Runs ./onos.sh core stop to stop ONOS
+        Starts the rest server on ONOS.
         '''
         try:
-            self.handle.sendline("")
-            self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT])
             self.handle.sendline("cd "+self.home)
-            self.handle.sendline("./onos.sh core stop")
-            i=self.handle.expect(["Stop",pexpect.EOF,pexpect.TIMEOUT])
-            self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT], 60)
-            result = self.handle.before
-            if re.search("Killed", result):
-                main.log.info(self.name + ": ONOS Killed Successfully")
+            response = self.execute(cmd= "./start-rest.sh start",prompt="\$",timeout=10)
+            if re.search(self.user_name,response):
+                main.log.info(self.name + ": Rest Server Started Successfully")
+                time.sleep(5)
                 return main.TRUE
             else :
-                main.log.warn(self.name + ": ONOS wasn't running")
+                main.log.warn(self.name + ": Failed to start Rest Server")
+		main.log.info(self.name + ": Directory used: "+self.home )
+		main.log.info(self.name + ": Rest server response: "+response)
                 return main.FALSE
         except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
@@ -334,20 +307,21 @@ class OnosCliDriver(CLI):
             main.log.info(":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
             main.cleanup()
             main.exit()
-    
-    
+
     def rest_stop(self):
         '''
         Runs ./start-rest.sh stop to stop ONOS rest server
         '''
         try:
-            response = self.execute(cmd= self.home + "/start-rest.sh stop ",prompt="killing",timeout=10)
+            response = self.execute(cmd= self.home + "./start-rest.sh stop ",prompt="killing",timeout=10)
             self.execute(cmd="\n",prompt="\$",timeout=10)
             if re.search("killing", response):
                 main.log.info(self.name + ": Rest Server Stopped")
                 return main.TRUE
             else :
                 main.log.error(self.name + ": Failed to Stop, Rest Server is not Running")
+		main.log.info(self.name + ": Directory used: "+self.home)
+		main.log.info(self.name + ": Rest server response: " + response)
                 return main.FALSE
         except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
@@ -361,6 +335,36 @@ class OnosCliDriver(CLI):
             main.cleanup()
             main.exit()
 
+    def rest_status(self):
+        '''
+        Checks if the rest server is running.
+        '''
+        #this function does not capture the status response correctly...
+        #when cmd is executed, the prompt expected should be a string containing
+        #status message, but instead returns the user@user$ Therefore prompt="running"
+        #was changed to prompt="\$"
+        try:
+            response = self.execute(cmd= self.home + "./start-rest.sh status ",prompt="\$",timeout=10)
+            if re.search(self.user_name,response):
+                main.log.info(self.name + ": Rest Server is running")
+                return main.TRUE
+            elif re.search("rest\sserver\sis\snot\srunning",response):
+                main.log.warn(self.name + ": Rest Server is not Running")
+                return main.FALSE
+            else :
+                main.log.error(self.name + ": No response" +response)
+                return main.FALSE
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":     " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name + ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
+            main.log.error( traceback.print_exc() )
+            main.log.info(":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
+            main.cleanup()
+            main.exit()
 
     def disconnect(self):
         '''
@@ -429,173 +433,51 @@ class OnosCliDriver(CLI):
             main.cleanup()
             main.exit()
 
-
-    def add_intent(self, intent_id,src_dpid,dst_dpid,src_mac,dst_mac,intentIP,intentPort=8080,intentURL="wm/onos/intent/high" , intent_type = 'SHORTEST_PATH', static_path=False, src_port=1,dst_port=1):
-        "CLI command callback: set intent"
-
-        intents = []
-        oper = {}
-        # Create the POST payload
-        oper['intentId'] = intent_id
-        oper['intentType'] = intent_type    # XXX: Hardcoded
-        oper['staticPath'] = static_path              # XXX: Hardcoded
-        oper['srcSwitchDpid'] = src_dpid
-        oper['srcSwitchPort'] = src_port
-        oper['dstSwitchDpid'] = dst_dpid
-        oper['dstSwitchPort'] = dst_port
-        oper['matchSrcMac'] = src_mac
-        oper['matchDstMac'] = dst_mac
-        intents.append(oper)
-        url = "http://%s:%s/%s"%(intentIP,intentPort,intentURL)
-        parsed_result = []
-        data_json = json.dumps(intents)
-        try:
-            request = urllib2.Request(url,data_json)
-            request.add_header("Content-Type", "application/json")
-            response=urllib2.urlopen(request)
-            result = response.read()
-            response.close()
-            if len(result) != 0:
-                parsed_result = json.loads(result)
-        except HTTPError as exc:
-            print "ERROR:"
-            print "  REST GET URL: %s" % url
-            # NOTE: exc.fp contains the object with the response payload
-            error_payload = json.loads(exc.fp.read())
-            print "  REST Error Code: %s" % (error_payload['code'])
-            print "  REST Error Summary: %s" % (error_payload['summary'])
-            print "  REST Error Description: %s" % (error_payload['formattedDescription'])
-            print "  HTTP Error Code: %s" % exc.code
-            print "  HTTP Error Reason: %s" % exc.reason
-        except URLError as exc:
-            print "ERROR:"
-            print "  REST GET URL: %s" % url
-            print "  URL Error Reason: %s" % exc.reason
-        return parsed_result
-
-        
-
-
-    def add_intents(self):
-        main.log.info("Sending new intents to ONOS")
-        self.handle.sendline("cd "+self.home+ "/scripts")
-        self.handle.expect("scripts")
-        main.log.info("Adding intents")
-        self.handle.sendline("./pyintents.py")
-        self.handle.expect(["$",pexpect.EOF,pexpect.TIMEOUT])
-        response = self.handle.before
-        self.handle.sendline("cd "+self.home)
-        return main.TRUE
-
-    def rm_intents(self):
-        main.log.info("Deleteing Intents from ONOS")
-        self.handle.sendline("cd "+self.home+ "/scripts")
-        self.handle.expect("scripts")
-        main.log.info("Deleting Intnents")
-        self.handle.sendline("./rmpyintents.py")
-        self.handle.expect(["$",pexpect.EOF,pexpect.TIMEOUT])
-        response = self.handle.before
-        self.handle.sendline("cd "+self.home)
-        return main.TRUE
-        
-    def purge_intents(self):
-        main.log.info("Purging dead intents")
-        self.handle.sendline("cd "+self.home+ "/scripts")
-        self.handle.expect("scripts")
-        main.log.info("Sending Purge Intent Rest call to ONOS")
-        self.handle.sendline("./purgeintents.py")
-        self.handle.sendline("cd "+self.home)
-        return main.TRUE
-
-
-
-    def add_flow(self, testONip, user = "admin", password = "", flowDef = "/flowdef.txt"):
-        '''
-        Copies the flowdef file from TestStation -> ONOS machine
-        Then runs ./add_flow.py to add the flows to ONOS
-        '''
-        try:
-            main.log.info("Adding Flows...")
-            self.handle.sendline("scp %s@%s:%s /tmp/flowtmp" %(user,testONip,flowDef))
-            i=self.handle.expect(['[pP]assword:', '100%', pexpect.TIMEOUT],30)
-            if(i==0):
-                    self.handle.sendline("%s" %(password))
-                    self.handle.sendline("")
-                    self.handle.expect("100%")
-                    self.handle.expect("\$", 30)
-                    self.handle.sendline(self.home + "/web/add_flow.py -m onos -f /tmp/flowtmp")
-                    self.handle.expect("\$", 1000)
-                    main.log.info("Flows added")
-                    return main.TRUE
-
-            elif(i==1):
-                    self.handle.sendline("")
-                    self.handle.expect("\$", 10)
-                    self.handle.sendline( self.home + "/web/add_flow.py -m onos -f /tmp/flowtmp")
-                    self.handle.expect("\$", 1000)
-                    main.log.info("Flows added")
-                    return main.TRUE
-
-            elif(i==2):
-                    main.log.error("Flow Def file SCP Timed out...")
-                    return main.FALSE
-
-            else:
-                    main.log.error("Failed to add flows...")
-                    return main.FALSE
-        except pexpect.EOF:
-            main.log.error(self.name + ": EOF exception found")
-            main.log.error(self.name + ":     " + self.handle.before)
-            main.cleanup()
-            main.exit()
-        except:
+    def add_flow(self, intentFile, path):
+	try:
+            main.log.info("add_flow running...")
+	    main.log.info("using directory: "+path) 
+            time.sleep(10)
+            self.handle.sendline("cd " + path)
+            self.handle.expect("tests")
+            self.handle.sendline("./"+intentFile)
+            time.sleep(10)
+            self.handle.sendline("cd "+self.home)
+            return main.TRUE
+	except pexepct.EOF:
+	    main.log.error(self.name + ": EOF exception found")
+	    main.log.error(self.name + ":    " + self.handle.before)
+	    main.cleanup()
+	    main.exit()
+	except:
             main.log.info(self.name + ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
-            main.log.error( traceback.print_exc() )
+	    main.log.error( traceback.print_exc() )	       
             main.log.info(":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
-            main.cleanup()
-            main.exit()
+	    main.cleanup()
+	    main.exit()
 
-
-    def delete_flow(self, *delParams):
-        '''
-        Deletes a specific flow, a range of flows, or all flows.
-        '''
-        try:
-            if len(delParams)==1:
-                if str(delParams[0])=="all":
-                    main.log.info(self.name + ": Deleting ALL flows...")
-                    #self.execute(cmd="~/ONOS/scripts/TestON_delete_flow.sh all",prompt="done",timeout=150)
-                    self.handle.sendline(self.home + "/web/delete_flow.py all")
-                    self.handle.expect("delete_flow")
-                    self.handle.expect("\$",1000)
-                    main.log.info(self.name + ": Flows deleted")
-                else:
-                    main.log.info(self.name + ": Deleting flow "+str(delParams[0])+"...")
-                    #self.execute(cmd="~/ONOS/scripts/TestON_delete_flow.sh "+str(delParams[0]),prompt="done",timeout=150)
-                    #self.execute(cmd="\n",prompt="\$",timeout=60)
-                    self.handle.sendline(self.home +"/web/delete_flow.py %d" % int(delParams[0]))
-                    self.handle.expect("delete_flow")
-                    self.handle.expect("\$",60)
-                    main.log.info(self.name + ": Flow deleted")
-            elif len(delParams)==2:
-                 main.log.info(self.name + ": Deleting flows "+str(delParams[0])+" through "+str(delParams[1])+"...")
-                 #self.execute(cmd="~/ONOS/scripts/TestON_delete_flow.sh "+str(delParams[0])+" "+str(delParams[1]),prompt="done",timeout=150)
-                 #self.execute(cmd="\n",prompt="\$",timeout=60)
-                 self.handle.sendline(self.home + "/web/delete_flow.py %d %d" % (int(delParams[0]), int(delParams[1])))
-                 self.handle.expect("delete_flow")
-                 self.handle.expect("\$",600)
-                 main.log.info(self.name + ": Flows deleted")
-        except pexpect.EOF:
-            main.log.error(self.name + ": EOF exception found")
-            main.log.error(self.name + ":     " + self.handle.before)
-            main.cleanup()
-            main.exit()
-        except:
+    def delete_flow(self, intentFile, path):
+	try:
+            main.log.info("delete_flow running...")
+	    main.log.info("using directory: " + path)
+	    main.log.info("using file: " + intentFile)
+            self.handle.sendline("cd " + path)
+            self.handle.expect("tests")
+            self.handle.sendline("./" + intentFile)
+            time.sleep(10)
+            self.handle.sendline("cd "+self.home)
+            return main.TRUE
+	except pexepct.EOF:
+	    main.log.error(self.name + ": EOF exception found")
+	    main.log.error(self.name + ":    " + self.handle.before)
+	    main.cleanup()
+	    main.exit()
+	except:
             main.log.info(self.name + ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
-            main.log.error( traceback.print_exc() )
+	    main.log.error( traceback.print_exc() )	       
             main.log.info(":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
-            main.cleanup()
-            main.exit()
+	    main.cleanup()
+	    main.exit()	
 
     def check_flow(self):
         '''
@@ -611,7 +493,7 @@ class OnosCliDriver(CLI):
             time.sleep(1)
             self.handle.sendline(self.home + "/web/get_flow.py all")
             self.handle.expect("get_flow")
-            for x in range(15):
+            while 1:
                 i=self.handle.expect(['FlowPath','FlowEntry','NOT','\$',pexpect.TIMEOUT],timeout=180)
                 if i==0:
                     count = count + 1
@@ -688,8 +570,8 @@ class OnosCliDriver(CLI):
             main.exit()
 
 
-# http://localhost:8080/wm/onos/topology/switches
-# http://localhost:8080/wm/onos/topology/links
+# http://localhost:8080/wm/onos/ng/switches/json
+# http://localhost:8080/wm/onos/ng/links/json
 # http://localhost:8080/wm/onos/registry/controllers/json
 # http://localhost:8080/wm/onos/registry/switches/json"
 
@@ -734,7 +616,7 @@ class OnosCliDriver(CLI):
             if parsedResult == "":
                 retcode = 1
                 return (retcode, "Rest API has an issue")
-            url = "http://%s:%s/wm/onos/registry/switches/json" % (RestIP, RestPort)
+            url = "http://%s:%s/wm/onos/registry/switches" % (RestIP, RestPort)
             registry = self.get_json(url)
         
             if registry == "":
@@ -911,8 +793,8 @@ class OnosCliDriver(CLI):
 
         '''
         try:
-            # main.log.info(self.name + ": Stopping ONOS")
-            #self.stop()
+            main.log.info(self.name + ": Stopping ONOS")
+            self.stop()
             self.handle.sendline("cd " + self.home)
             self.handle.expect("ONOS\$")
             if comp1=="":
@@ -921,7 +803,7 @@ class OnosCliDriver(CLI):
                 self.handle.sendline("git pull " + comp1)
            
             uptodate = 0
-            i=self.handle.expect(['fatal','Username\sfor\s(.*):\s','Unpacking\sobjects',pexpect.TIMEOUT,'Already up-to-date','Aborting','You\sare\snot\scurrently\son\sa\sbranch'],timeout=1700)
+            i=self.handle.expect(['fatal','Username\sfor\s(.*):\s','Unpacking\sobjects',pexpect.TIMEOUT,'Already up-to-date','Aborting'],timeout=1800)
             #debug
            #main.log.report(self.name +": \n"+"git pull response: " + str(self.handle.before) + str(self.handle.after))
             if i==0:
@@ -942,9 +824,6 @@ class OnosCliDriver(CLI):
                 return 1
             elif i==5:
                 main.log.info(self.name + ": Git Pull - Aborting... Are there conflicting git files?")
-                return main.ERROR
-            elif i==6:
-                main.log.info(self.name + ": Git Pull - You are not currently on a branch so git pull failed!")
                 return main.ERROR
             else:
                 main.log.error(self.name + ": Git Pull - Unexpected response, check for pull errors")
@@ -1004,9 +883,9 @@ class OnosCliDriver(CLI):
                     return main.FALSE
                 elif i == 2:
                     main.log.info(self.name + ": Build success!")
+                    return main.TRUE
                 elif i == 3:
                     main.log.info(self.name + ": Build complete")
-                    self.handle.expect("\$", timeout=60)
                     return main.TRUE
                 elif i == 4:
                     main.log.error(self.name + ": mvn compile TIMEOUT!")
@@ -1080,58 +959,44 @@ class OnosCliDriver(CLI):
             main.cleanup()
             main.exit()
 
-    def find_host(self,RestIP,RestPort,RestAPI,hostMAC):
-        retcode = 0 # number of hosts found with given MAC
-        retswitch = [] # Switch DPID's of hosts found with MAC
-        retport = [] # Switch port connected to to hosts found with MAC
-        foundHost = []
+    def find_host(self,RestIP,RestPort,RestAPI,hostIP):
+        retcode = 0
+        retswitch = []
+        retport = []
+        retmac = []
+        foundIP = []
         try:
-            ##### device rest API is: 'host:8080/wm/onos/topology/switches' ###
+            ##### device rest API is: 'host:8080/wm/onos/ng/switches/json' ###
             url ="http://%s:%s%s" %(RestIP,RestPort,RestAPI)
+            print url
 
             try:
                 command = "curl -s %s" % (url)
                 result = os.popen(command).read()
                 parsedResult = json.loads(result)
-                # print parsedResult
+                print parsedResult
             except:
                 print "REST IF %s has issue" % command
                 parsedResult = ""
 
             if parsedResult == "":
-                return (retcode, "Rest API has an error", retport)
+                return (retcode, "Rest API has an error", retport, retmac)
             else:
-                for host in enumerate(parsedResult):
-                    print host
-                    if (host[1] != []):
-                        try:
-                            foundHost = host[1]['mac']
-                        except:
-                            print "Error in detecting MAC address."
-                        print foundHost
-                        print hostMAC
-                        if foundHost == hostMAC:
-                            for switch in enumerate(host[1]['attachmentPoints']):
-                                retswitch.append(switch[1]['dpid'])
-                                retport.append(switch[1]['port'])
-                            retcode = retcode +1
-                            foundHost ='' 
-                '''
                 for switch in enumerate(parsedResult):
+                    #print switch
                     for port in enumerate(switch[1]['ports']):
-                        if ( port[1]['hosts'] != [] ):
+                        if ( port[1]['devices'] != [] ):
                             try:
-                                foundHost = port[1]['hosts'][0]['ipv4addresses'][0]['ipv4']
+                                foundIP = port[1]['devices'][0]['ipv4addresses'][0]['ipv4']
                             except:
-                                print "Error in detecting MAC address."
-                            if foundHost == hostMAC:
+                                print "Error in detecting IP address."
+                            if foundIP == hostIP:
                                 retswitch.append(switch[1]['dpid'])
                                 retport.append(port[1]['desc'])
-                                retmac.append(port[1]['hosts'][0]['mac'])
+                                retmac.append(port[1]['devices'][0]['mac'])
                                 retcode = retcode +1
-                                foundHost =''
-                '''
-            return(retcode, retswitch, retport)
+                                foundIP =''
+            return(retcode, retswitch, retport, retmac)
         except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
             main.log.error(self.name + ":     " + self.handle.before)
@@ -1144,37 +1009,174 @@ class OnosCliDriver(CLI):
             main.cleanup()
             main.exit()
 
-    def check_exceptions(self):
+#Perf test related functions
+
+    def addPerfFlows(self, flowdef, numflows):
+        main.log.info("ADD_FLOW RUNNING!!!! ")
+        startTime=time.time()
+        self.execute(cmd="/home/admin/ONOS/scripts"+"/add_"+str(numflows)+".py",prompt="\$",timeout=10)
+        elapsedTime=time.time()-startTime
+        main.log.info("AddFlows script run time: " + str(elapsedTime) + " seconds")
+        time.sleep(15)
+        return main.TRUE
+
+    def removePerfFlows(self, flowdef, numflows):
+        main.log.info("REMOVE_FLOW RUNNING!!!! ")
+        startTime=time.time()
+        self.execute(cmd="/home/admin/ONOS/scripts"+"/remove_"+str(numflows)+".py",prompt="\$",timeout=10)
+        elapsedTime=time.time()-startTime
+        main.log.info("RemoveFlows script run time: " + str(elapsedTime) + " seconds")
+        time.sleep(15)
+        return main.TRUE
+
+    def start_tshark(self,flowtype, numflows):
+        self.handle.sendline("")
+        self.handle.expect("\$")
+        self.execute(cmd='''rm /tmp/wireshark*''')
+        self.handle.sendline("y")
+        self.handle.expect("\$")
+        self.execute(cmd='''tshark -i lo -t e | grep --color=auto CSM | grep --color=auto -E 'Flow|Barrier' > /tmp/tdump_'''+flowtype+"_"+str(numflows)+".txt &",prompt="Capturing",timeout=10)
+        self.handle.sendline("")
+        self.handle.expect("\$")
+        main.log.info("TSHARK STARTED!!!")
+        return main.TRUE
+
+    def stop_tshark(self):
+        self.handle.sendline("")
+        self.handle.expect("\$")
+        self.handle.sendline("sudo kill -9 `ps -ef | grep \"tshark -i\" | grep -v grep | awk '{print $2}'`")
+        self.handle.sendline("")
+        self.handle.expect("\$")
+        main.log.info("TSHARK STOPPED!!!")
+        return main.TRUE
+
+    def generateFlows(self, flowdef, flowtype, numflows, ip):
+        main.log.info("GENERATE FLOWS RUNNING!!!")
+        #main.log.info("Test" + flowdef+"/"+flowtype+"_"+str(numflows)+".py")
+        f = open(flowdef+"/"+flowtype+"_"+str(numflows)+".py", 'w')
+        f.write('''#! /usr/bin/python\n''')
+        f.write('import json\n')
+        f.write('import requests\n')
+        f.write('''url = 'http://'''+ip+''':8080/wm/onos/datagrid/add/intents/json'\n''')
+        f.write('''headers = {'Content-type': 'application/json', 'Accept': 'application/json'}\n''') 
+        
+        intents = []
+        idx = 0
+        for i in range(6,(numflows+6)):
+	    mac3 = idx / 255
+	    mac4 = idx % 255
+	    str_mac3 = "%0.2x" % mac3
+	    str_mac4 = "%0.2x" % mac4
+	    srcMac = '00:01:'+str_mac3+':'+str_mac4+':00:00'
+	    dstMac = '00:02:'+str_mac3+':'+str_mac4+':00:00'
+	    srcSwitch = '00:00:00:00:00:00:10:00'
+	    dstSwitch = '00:00:00:00:00:00:10:00'
+	    srcPort = 1
+	    dstPort = 2
+	
+	    intent = {'intent_id': '%d' %(i),'intent_type':'shortest_intent_type','intent_op':flowtype,'srcSwitch':srcSwitch,'srcPort':srcPort,'srcMac':srcMac,'dstSwitch':dstSwitch,'dstPort':dstPort,'dstMac':dstMac}
+	    intents.append(intent)
+	    idx = idx + 1
+        f.write('''s=''')
+        f.write(json.dumps(intents, sort_keys = True))
+        f.write('''\nr = requests.post(url, data=json.dumps(s), headers = headers)''')
+        #f.flush()
+        #subprocess.Popen(flowdef, stdout=f, stderr=f, shell=True)
+        #f.close()
+        os.system("chmod a+x "+flowdef+"/"+flowtype+"_"+str(numflows)+".py")
+        
+        return main.TRUE
+    
+    def getFile(self, numflows, ip, directory, flowparams):
+        main.log.info("GETTING FILES FROM TEST STATION: "+str(ip))
+        #for i in range(0,3):
+        print str(numflows) + " "+str(flowparams[numflows])
+        self.handle.sendline("scp admin@10.128.7.7:/home/admin/TestON/tests/OnosFlowPerf/add_"+str(flowparams[numflows])+".py admin@10.128.5.51:/home/admin/ONOS/scripts/" )
+            
+        self.handle.sendline("scp admin@10.128.7.7:/home/admin/TestON/tests/OnosFlowPerf/remove_"+str(flowparams[numflows])+".py admin@10.128.5.51:/home/admin/ONOS/scripts/" ) 
+
+        return main.TRUE
+
+    def printPerfResults(self, flowtype, numflows, stime):
+        import datetime  
+        self.handle.sendline("")
+        self.handle.expect("\$")
+        for (i,j) in zip(numflows,stime):
+            startTime=datetime.datetime.fromtimestamp(j)
+            tshark_file=open("/tmp/tdump_"+flowtype+"_"+str(i)+".txt",'r')
+            allFlowmods=tshark_file.readlines()
+            time.sleep(5)
+            firstFlowmod=allFlowmods[0]
+            lastBarrierReply=allFlowmods[-1]
+            #self.handle.sendline("")
+            #self.handle.expect("\$")
+            #self.handle.sendline("head -1 /tmp/tdump_"+flowtype+"_"+str(i)+".txt")
+            #self.handle.expect("\(CSM\)")
+            #firstFlowmod=self.handle.before
+            #firstFlowmod=self.execute(cmd="head -1 /tmp/tdump_"+flowtype+"_"+str(i)+".txt",prompt="\$",timeout=10)
+            #lastBarrierReply=self.execute(cmd="tail -n 1 /tmp/tdump_"+flowtype+"_"+str(i)+".txt",prompt="\$",timeout=10)
+            firstFlowmodSplit=firstFlowmod.split()
+            firstFlowmodTS=datetime.datetime.fromtimestamp(float(firstFlowmodSplit[0]))
+            lastBarrierSplit=lastBarrierReply.split()
+            lastBarrierTS=datetime.datetime.fromtimestamp(float(lastBarrierSplit[0]))
+            main.log.report("Number of Flows: " + str(i))
+            #main.log.info("Add Flow Start Time: " + str(startTime))
+            main.log.report("First Flow mod seen after: " + str(float(datetime.timedelta.total_seconds(firstFlowmodTS-startTime)*1000))+"ms")
+            main.log.report("Last Barrier Reply seen after: " + str(float(datetime.timedelta.total_seconds(lastBarrierTS-startTime)*1000))+"ms\n")
+            main.log.report("Total Flow Setup Delay(from first flowmod): " + str(float(datetime.timedelta.total_seconds(lastBarrierTS-firstFlowmodTS)*1000))+"ms")
+            main.log.report("Total Flow Setup Delay(from start): " + str(float(datetime.timedelta.total_seconds(lastBarrierTS-startTime)*1000))+"ms\n")
+            main.log.report("Flow Setup Rate (using first flowmod TS): " + str(int(1000/datetime.timedelta.total_seconds(lastBarrierTS-firstFlowmodTS)))+" flows/sec")
+            main.log.report("Flow Setup Rate (using start time): " + str(int(1000/datetime.timedelta.total_seconds(lastBarrierTS-startTime)))+" flows/sec")
+            print "*****************************************************************"
+            #main.log.info("first: " + str(firstFlowmod))
+            #main.log.info(firstFlowmodSplit)
+            #main.log.info("last: " + str(lastBarrierReply))
+            tshark_file.close()
+        return main.TRUE
+
+    def isup(self):
         '''
-        Greps the logs for "xception"
+        A more complete check to see if ONOS is up and running properly.
+        First, it checks if the process is up.
+        Second, it reads the logs for "Exception: Connection refused"
+        Third, it makes sure the logs are actually moving.
+        returns TRUE/FALSE accordingly.
         '''
         try:
-            output = ''
-            self.handle.sendline("")
-            i = self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT])
-            #main.log.warn("first expect response: " +str(i))
-            self.handle.sendline("cd "+self.home+"/onos-logs")
-            self.handle.sendline("grep \"xception\" *")
-            i = self.handle.expect(["\*",pexpect.EOF,pexpect.TIMEOUT])
-            #main.log.warn("second expect response: " +str(i))
-            i = self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT])
-            #main.log.warn("third expect response: " +str(i))
-            response = self.handle.before
-            count = 0
-            for line in response.splitlines():
-                if re.search("log:", line):
-                    output +="Exceptions found in " + line + "\n"
-                    count +=1
-                elif re.search("std...:",line):
-                    output+="Exceptions found in " + line + "\n"
-                    count +=1
+            self.execute(cmd="\n",prompt="\$",timeout=10)
+            self.handle.sendline("cd "+self.home)
+            response = self.execute(cmd= "./onos.sh core status ",prompt="running",timeout=10)
+            self.execute(cmd="\n",prompt="\$",timeout=10)
+            tail1 = self.execute(cmd="tail " + self.home + "/onos-logs/onos.*.log",prompt="\$",timeout=10)
+            time.sleep(10)
+            self.execute(cmd="\n",prompt="\$",timeout=10)
+            tail2 = self.execute(cmd="tail " + self.home + "/onos-logs/onos.*.log",prompt="\$",timeout=10)
+            pattern = '(.*)1 instance(.*)'
+            patternUp = 'Sending LLDP out'
+            pattern2 = '(.*)Exception: Connection refused(.*)'
+           # if utilities.assert_matches(expect=pattern,actual=response,onpass="ONOS process is running...",onfail="ONOS process not running..."):
+            
+            if re.search(pattern, response):
+                if re.search(patternUp,tail2):
+                    main.log.info(self.name + ": ONOS process is running...")
+                    if tail1 == tail2:
+                        main.log.error(self.name + ": ONOS is frozen...")#logs aren't moving
+                        return main.FALSE
+                    elif re.search( pattern2,tail1 ):
+                        main.log.info(self.name + ": Connection Refused found in onos log")
+                        return main.FALSE
+                    elif re.search( pattern2,tail2 ):
+                        main.log.info(self.name + ": Connection Refused found in onos log")
+                        return main.FALSE
+                    else:
+                        main.log.info(self.name + ": Onos log is moving! It's looking good!")
+                        return main.TRUE
                 else:
-                    pass
-                    #these should be the old logs
-            main.log.report(str(count) + " Exceptions were found on "+self.name)
-            return output
-        except pexpect.TIMEOUT:
-            main.log.error(self.name + ": Timeout exception found in check_exceptions function")
+                    main.log.info(self.name + ": ONOS not yet sending out LLDP messages")
+                    return main.FALSE
+            else:
+                main.log.error(self.name + ": ONOS process not running...")
+                return main.FALSE
         except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
             main.log.error(self.name + ":     " + self.handle.before)
@@ -1186,3 +1188,6 @@ class OnosCliDriver(CLI):
             main.log.info(":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
             main.cleanup()
             main.exit()
+
+    def sendline(self, cmd):
+        self.handle.sendline(cmd)

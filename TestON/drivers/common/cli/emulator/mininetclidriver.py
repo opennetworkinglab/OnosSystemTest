@@ -21,7 +21,7 @@ Created on 26-Oct-2012
 
 MininetCliDriver is the basic driver which will handle the Mininet functions
 '''
-
+import traceback
 import pexpect
 import struct
 import fcntl
@@ -191,7 +191,11 @@ class MininetCliDriver(Emulator):
         '''
         if self.handle :
             try:
+                self.handle.sendline("")
                 response = self.execute(cmd=host+" ifconfig",prompt="mininet>",timeout=10)
+                print(str(self.handle.before))
+                print(str(self.handle.after))
+                print(response)
             except pexpect.EOF:  
                 main.log.error(self.name + ": EOF exception found")
                 main.log.error(self.name + ":     " + self.handle.before)
@@ -199,7 +203,7 @@ class MininetCliDriver(Emulator):
                 main.exit()
 
             pattern = "inet\s(addr|Mask):([0-1]{1}[0-9]{1,2}|2[0-4][0-9]|25[0-5]|[0-9]{1,2}).([0-1]{1}[0-9]{1,2}|2[0-4][0-9]|25[0-5]|[0-9]{1,2}).([0-1]{1}[0-9]{1,2}|2[0-4][0-9]|25[0-5]|[0-9]{1,2}).([0-1]{1}[0-9]{1,2}|2[0-4][0-9]|25[0-5]|[0-9]{1,2})"
-            #pattern = "inet\saddr:10.0.0.6"  
+            #pattern = "inet addr:10.0.0.6"  
             #if utilities.assert_matches(expect=pattern,actual=response,onpass="Host Ip configured properly",onfail="Host IP not found") :
             if re.search(pattern,response):
                 main.log.info(self.name+": Host Ip configured properly")
@@ -511,11 +515,31 @@ class MininetCliDriver(Emulator):
                 version = result.group(0)
         return version 
 
+    def get_sw_controller_sanity(self, sw):
+        command = "sh ovs-vsctl get-controller "+str(sw)
+        try:
+            response = self.execute(cmd=command,prompt="mininet>",timeout=10)
+            if response:
+                return main.TRUE
+            else:
+                return main.FALSE
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":     " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        else:
+            main.log.info(response)
+
     def get_sw_controller(self,sw):
         command = "sh ovs-vsctl get-controller "+str(sw)
         try:
             response = self.execute(cmd=command,prompt="mininet>",timeout=10)
-            return response
+            print(response)
+            if response:
+                return response
+            else:
+                return main.FALSE
         except pexpect.EOF:  
             main.log.error(self.name + ": EOF exception found")
             main.log.error(self.name + ":     " + self.handle.before)
@@ -614,7 +638,109 @@ class MininetCliDriver(Emulator):
 
     def decToHex(num):
         return hex(num).split('x')[1]
+    
+    def getSwitchFlowCount(self, switch):
+        '''
+        return the Flow Count of the switch
+        '''
+        if self.handle:
+            cmd = "sh ovs-ofctl dump-aggregate %s" % switch
+            try:
+                response = self.execute(cmd=cmd, prompt="mininet>", timeout=10)
+            except pexpect.EOF:
+                main.log.error(self.name + ": EOF exception found")
+                main.log.error(self.name + "     " + self.handle.before)
+                main.cleanup()
+                main.exit()
+            pattern = "flow_count=(\d+)"
+            result = re.search(pattern, response, re.MULTILINE)
+            if result is None:
+                print "no flow on switch print test"
+                main.log.info("Couldn't find flows on switch '', found: %s" % (switch, response))
+                return main.FALSE
+            return result.group(1)
+        else:
+            main.log.error("Connection failed to the Mininet host")
+    
+    def check_flows(self, sw):
+        command = "sh ovs-ofctl dump-flows "+str(sw)
+        try:
+            response=self.execute(cmd=command,prompt="mininet>",timeout=10)
+            return response
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":     " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        else:
+            main.log.info(response)
+
+    def start_tcpdump(self, filename, intf = "eth0", port = "port 6633"):
+        '''
+        Runs tpdump on an intferface and saves the file
+        intf can be specified, or the default eth0 is used
+        '''
+        try:
+            self.handle.sendline("")
+            self.handle.expect("mininet>")
+            self.handle.sendline("sh sudo tcpdump -n -i "+ intf + " " + port + " -w " + filename.strip() + "  &")
+            self.handle.sendline("")
+            self.handle.sendline("")
+            i=self.handle.expect(['No\ssuch\device','listening\son',pexpect.TIMEOUT,"mininet>"],timeout=10)
+            main.log.warn(self.handle.before + self.handle.after)
+            if i == 0:
+                main.log.error(self.name + ": tcpdump - No such device exists. tcpdump attempted on: " + intf)
+                return main.FALSE
+            elif i == 1:
+                main.log.info(self.name + ": tcpdump started on " + intf)
+                return main.TRUE
+            elif i == 2:
+                main.log.error(self.name + ": tcpdump command timed out! Check interface name, given interface was: " + intf)
+                return main.FALSE
+            elif i ==3: 
+                main.log.info(self.name +": " +  self.handle.before)
+                return main.TRUE
+            else:
+                main.log.error(self.name + ": tcpdump - unexpected response")
+            return main.FALSE
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":     " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name + ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
+            main.log.error( traceback.print_exc() )
+            main.log.info(":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
+            main.cleanup()
+            main.exit()
+
+    def stop_tcpdump(self):
+        "pkills tcpdump"
+        try:
+            self.handle.sendline("sh sudo pkill tcpdump")
+            self.handle.sendline("")
+            self.handle.sendline("")
+            self.handle.expect("mininet>")
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":     " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name + ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
+            main.log.error( traceback.print_exc() )
+            main.log.info(":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
+            main.cleanup()
+            main.exit()
+
+
+
+
+
+
 
 if __name__ != "__main__":
     import sys
     sys.modules[__name__] = MininetCliDriver()
+

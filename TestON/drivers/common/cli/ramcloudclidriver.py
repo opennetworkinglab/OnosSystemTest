@@ -134,7 +134,7 @@ RamCloudCliDriver is the basic driver which will handle the RamCloud server func
 
         if re.search("0\sRAMCloud\sserver\srunning", response) :
             main.log.info(self.name+": RAMCloud not running")
-            return main.TRUE
+            return main.FALSE
         elif re.search("1\sRAMCloud\sserver\srunning",response):
             main.log.warn(self.name+": RAMCloud Running")
             return main.TRUE
@@ -158,7 +158,7 @@ RamCloudCliDriver is the basic driver which will handle the RamCloud server func
         
         if re.search("0\sRAMCloud\scoordinator\srunning", response) :
             main.log.warn(self.name+": RAMCloud Coordinator not running")
-            return main.TRUE
+            return main.FALSE
         elif re.search("1\sRAMCloud\scoordinator\srunning", response):
             main.log.info(self.name+": RAMCloud Coordinator Running")
             return main.TRUE

@@ -1,5 +1,10 @@
 <PARAMS>
-    <testcases>1,2,3,4,5,6,7,4,8,7,4,9,7</testcases>
+    <testcases>1,2,3,4,5,6,7,4,8,7,4,9,7,66</testcases>
+    <tcpdump>
+        <intf>eth0</intf>
+        <port>port 6633</port>
+        <filename>~/packet_captures/Perf.pcap</filename>
+    </tcpdump>
     <Iterations>3</Iterations>
     <WaitTime>60</WaitTime>
     <RestIP>10.128.4.151</RestIP>

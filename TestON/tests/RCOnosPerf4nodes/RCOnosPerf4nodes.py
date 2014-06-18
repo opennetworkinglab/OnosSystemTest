@@ -12,46 +12,27 @@ class RCOnosPerf4nodes:
         The test will only pass if ONOS is running properly, and has a full view of all topology elements.
         '''
         import time
-
-
-
-
-        main.ONOS1.stop()
-        main.ONOS2.stop()
-        main.ONOS3.stop()
-        main.ONOS4.stop()
-        main.RamCloud1.stop_coor()
-        main.RamCloud1.stop_serv()
-        main.RamCloud2.stop_serv()
-        main.RamCloud3.stop_serv()
-        main.RamCloud4.stop_serv()
-        main.Zookeeper1.stop()
-        main.Zookeeper2.stop()
-        main.Zookeeper3.stop()
-        main.Zookeeper4.stop()
-
+        main.case("Initial Setup")
+        main.step("Stopping ONOS")
+        main.ONOS1.stop_all()
+        main.ONOS2.stop_all()
+        main.ONOS3.stop_all()
+        main.ONOS4.stop_all()
         main.Zookeeper1.start()
         main.Zookeeper2.start()
         main.Zookeeper3.start()
         main.Zookeeper4.start()
-        time.sleep(4)
         main.RamCloud1.del_db()
         main.RamCloud2.del_db()
         main.RamCloud3.del_db()
         main.RamCloud4.del_db()
-
-        
-        time.sleep(10)
-        main.RamCloud1.start_coor()
-        main.RamCloud1.start_serv()
-        main.RamCloud2.start_serv()
-        main.RamCloud3.start_serv()
-        main.RamCloud4.start_serv()
-        main.ONOS1.start()
-        time.sleep(10)
-        main.ONOS2.start()
-        main.ONOS3.start()
-        main.ONOS4.start()
+        main.step("Start tcpdump on mn")
+        main.Mininet1.start_tcpdump(main.params['tcpdump']['filename'], intf = main.params['tcpdump']['intf'], port = main.params['tcpdump']['port'])
+        main.step("Starting ONOS")
+        main.ONOS1.start_all()
+        main.ONOS2.start_all()
+        main.ONOS3.start_all()
+        main.ONOS4.start_all()
         main.ONOS1.start_rest()
         time.sleep(5)
         test= main.ONOS1.rest_status()
@@ -59,12 +40,11 @@ class RCOnosPerf4nodes:
             main.ONOS1.start_rest()
         main.ONOS1.get_version()
         main.log.report("Startup check Zookeeper1, RamCloud1, and ONOS1 connections")
-        main.case("Checking if the startup was clean...")
         main.step("Testing startup Zookeeper")
         data =  main.Zookeeper1.isup()
         utilities.assert_equals(expect=main.TRUE,actual=data,onpass="Zookeeper is up!",onfail="Zookeeper is down...")
         main.step("Testing startup RamCloud")
-        data =  main.RamCloud1.server_status()
+        data =  main.RamCloud1.status_serv()
         if data == main.FALSE:
             main.RamCloud1.stop_coor()
             main.RamCloud1.stop_serv()
@@ -78,25 +58,23 @@ class RCOnosPerf4nodes:
             main.RamCloud2.start_serv()
             main.RamCloud3.start_serv()
             main.RamCloud4.start_serv()
+            data = main.RamCloud1.status_serv()
         utilities.assert_equals(expect=main.TRUE,actual=data,onpass="RamCloud is up!",onfail="RamCloud is down...")
         main.step("Testing startup ONOS")
         data = main.ONOS1.isup()
         data = data and main.ONOS2.isup()
         data = data and main.ONOS3.isup()
         data = data and main.ONOS4.isup()
-        if data == main.FALSE:
-            main.log.report("Something is funny... restarting ONOS")
-            main.ONOS1.stop()
-            main.ONOS2.stop()
-            main.ONOS3.stop()
-            main.ONOS4.stop()
-            time.sleep(5)
-            main.ONOS1.start()
-            time.sleep(10)
-            main.ONOS2.start()
-            main.ONOS3.start()
-            main.ONOS4.start()
-            data = main.ONOS1.isup()
+        for i in range(3):
+            if data == main.FALSE:
+                main.log.report("Something is funny... rechecking ONOS")
+                time.sleep(5)
+                data = main.ONOS1.isup()
+                data = data and main.ONOS2.isup()
+                data = data and main.ONOS3.isup()
+                data = data and main.ONOS4.isup()
+            else:
+                break
         utilities.assert_equals(expect=main.TRUE,actual=data,onpass="ONOS is up and running!",onfail="ONOS didn't start...")
 
     def CASE2(self,main) :
@@ -106,6 +84,7 @@ class RCOnosPerf4nodes:
         Proves that there is actually a mininet that we are working with
         '''
         import time
+        import re
         main.step("Checking if MN switches exist")
         main.log.report("Check if MN switches exist")
         #result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
@@ -119,28 +98,62 @@ class RCOnosPerf4nodes:
         #utilities.assert_equals(expect=main.TRUE,actual=result,onpass="MN switches exist",onfail="MN is missing switches and or links...")
 
         main.step("assigning ONOS controllers to switches")
+        data = main.TRUE
         for i in range(25):
             if i < 3:
                 j=i+1
                 main.Mininet1.assign_sw_controller(sw=str(j),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'])
+                controllers = main.Mininet1.get_sw_controller("s"+str(j))
+
+                if re.search("tcp:"+main.params['CTRL']['ip1'],controllers):
+                    main.log.report("SW" + str(j) + " Master Controller Set Correctly")
+                    data = data and main.TRUE
+                else:
+                    main.log.report("SW" + str(j) + " MASTER CONTROLLER SET INCORRECTLY!!")
+                    data = main.FALSE
                 time.sleep(1)
+
                 main.Mininet1.assign_sw_controller(sw=str(j),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'])
+
             elif i >= 3 and i < 5:
                 j=i+1
                 main.Mininet1.assign_sw_controller(sw=str(j),ip1=main.params['CTRL']['ip2'],port1=main.params['CTRL']['port2'])
+                controllers = main.Mininet1.get_sw_controller("s"+str(j))
+                if re.search("tcp:"+ main.params['CTRL']['ip2'],controllers):
+                    main.log.report("SW" + str(j) + " Master Controller Set Correctly")
+                    data = data and main.TRUE
+                else:
+                    main.log.report("SW" + str(j) + " MASTER CONTROLLER SET INCORRECTLY!!")
+                    data = main.FALSE
                 time.sleep(1)
                 main.Mininet1.assign_sw_controller(sw=str(j),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'])
             elif i >= 5 and i < 15:
                 j=i+1
                 main.Mininet1.assign_sw_controller(sw=str(j),ip1=main.params['CTRL']['ip3'],port1=main.params['CTRL']['port3'])
+                controllers = main.Mininet1.get_sw_controller("s"+str(j))
+                if re.search("tcp:"+ main.params['CTRL']['ip3'],controllers):
+                    main.log.report("SW" + str(j) + " Master Controller Set Correctly")
+                    data = data and main.TRUE
+                else:
+                    main.log.report("SW" + str(j) + " MASTER CONTROLLER SET INCORRECTLY!!")
+                    data = main.FALSE
                 time.sleep(1)
                 main.Mininet1.assign_sw_controller(sw=str(j),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'])
             else:
                 j=i+16
                 main.Mininet1.assign_sw_controller(sw=str(j),ip1=main.params['CTRL']['ip4'],port1=main.params['CTRL']['port4'])
+
+                controllers = main.Mininet1.get_sw_controller("s"+str(j))
+                if re.search("tcp:"+ main.params['CTRL']['ip4'],controllers):
+                    main.log.report("SW" + str(j) + " Master Controller Set Correctly")
+                    data = data and main.TRUE
+                else:
+                    main.log.report("SW" + str(j) + " MASTER CONTROLLER SET INCORRECTLY!!")
+                    data = main.FALSE
                 time.sleep(1)
                 main.Mininet1.assign_sw_controller(sw=str(j),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'])
         main.Mininet1.get_sw_controller("s1")
+        utilities.assert_equals(expect=main.TRUE,actual=data,onpass="Mininet Controllers Set!",onfail="Mininet Controllers not correct!!!!!!!!!!!!!!!!!!!!")
         time.sleep(5)        
 
     def CASE3(self,main) :
@@ -181,15 +194,16 @@ class RCOnosPerf4nodes:
         main.case("Taking care of these flows!") 
         main.step("Cleaning out any leftover flows...")
         main.log.info("deleting...")
-        main.ONOS1.rm_flow()
+        main.ONOS1.rm_intents()
        # main.ONOS1.delete_flow("all")
         main.log.info("adding...")
         t1 = time.time()
-        main.ONOS1.ad_flow()
+        main.ONOS1.add_intents()
        # main.ONOS1.add_flow(main.params['FLOWDEF'])   
         main.log.info("Checking...")
         for i in range(15):
-            result = main.ONOS1.check_flow()
+            #result = main.ONOS1.check_flow()
+            result = main.TRUE
             if result == main.TRUE: 
                 t2 = time.time()
                 main.log.info( 'Adding flows took %0.3f s' % (t2-t1))
@@ -455,5 +469,6 @@ class RCOnosPerf4nodes:
             result = main.FALSE
             count = len(check1.splitlines()) + len(check2.splitlines()) + len(check3.splitlines()) + len(check4.splitlines())
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="No Exceptions found in the logs",onfail=str(count) + " Exceptions were found in the logs")
+        main.Mininet1.stop_tcpdump()
 
 

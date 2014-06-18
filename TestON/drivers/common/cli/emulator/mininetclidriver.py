@@ -189,6 +189,7 @@ class MininetCliDriver(Emulator):
         '''
         Verifies the host's ip configured or not.
         '''
+        self.handle.sendline("")
         if self.handle :
             try:
                 response = self.execute(cmd=host+" ifconfig",prompt="mininet>",timeout=10)
@@ -535,6 +536,7 @@ class MininetCliDriver(Emulator):
     def get_sw_controller(self,sw):
         command = "sh ovs-vsctl get-controller "+str(sw)
         try:
+            self.handle.expect("mininet")
             response = self.execute(cmd=command,prompt="mininet>",timeout=10)
             print(response)
             if response:

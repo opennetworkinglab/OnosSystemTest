@@ -178,11 +178,11 @@ class RCOnosCHO4nodes :
         main.case("Taking care of these flows!") 
         main.step("Cleaning out any leftover flows...")
         #main.ONOS1.delete_flow("all")
-        main.ONOS1.rm_flow()
+        main.ONOS1.rm_intents()
         time.sleep(5)
-        main.ONOS1.purge()
+        main.ONOS1.purge_intents()
         strtTime = time.time()
-        main.ONOS1.ad_flow()
+        main.ONOS1.add_intents()
         main.case("Checking flows with pings")
         
         pingAttempts = main.params['pingAttempts']

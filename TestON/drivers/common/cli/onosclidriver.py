@@ -69,7 +69,7 @@ class OnosCliDriver(CLI):
             main.cleanup()
             main.exit()
         
-    def start(self):
+    def start(self, env = ''):
         '''
         Starts ONOS on remote machine.
         Returns false if any errors were encountered.
@@ -78,7 +78,7 @@ class OnosCliDriver(CLI):
             self.handle.sendline("")
             self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT])
             self.handle.sendline("cd "+self.home)
-            self.handle.sendline("./onos.sh core start")
+            self.handle.sendline(env + "./onos.sh core start")
             i=self.handle.expect(["STARTED","FAILED",pexpect.EOF,pexpect.TIMEOUT])
             response = self.handle.before + str(self.handle.after)
             if i==0:
@@ -176,7 +176,8 @@ class OnosCliDriver(CLI):
             elif re.search("0\sinstance\sof\sonos\srunning",response):
                 return main.FALSE
             else :
-                main.log.info( self.name + " WARNING: status recieved unknown response")
+                main.log.warn(self.name + " WARNING: status recieved unknown response")
+                main.log.warn(response)
                 return main.FALSE
         except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")

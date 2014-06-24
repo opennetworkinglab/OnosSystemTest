@@ -107,7 +107,7 @@ class ZookeeperCliDriver(CLI):
         This Function will stop the Zookeeper if it is Running
         ''' 
         self.execute(cmd="\n",prompt="\$",timeout=10)
-        time.sleep(5)
+        time.sleep(1)
         self.handle.sendline("cd "+self.home)
         response = self.execute(cmd="./onos.sh zk stop ",prompt="$",timeout=10)
         if re.search("stopping",response):

@@ -69,7 +69,7 @@ class OnosCliDriver(CLI):
             main.cleanup()
             main.exit()
         
-    def start(self):
+    def start(self, env = ''):
         '''
         Starts ONOS on remote machine.
         Returns false if any errors were encountered.
@@ -78,7 +78,7 @@ class OnosCliDriver(CLI):
             self.handle.sendline("")
             self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT])
             self.handle.sendline("cd "+self.home)
-            self.handle.sendline("./onos.sh core start")
+            self.handle.sendline(env + "./onos.sh core start")
             i=self.handle.expect(["STARTED","FAILED",pexpect.EOF,pexpect.TIMEOUT])
             response = self.handle.before + str(self.handle.after)
             if i==0:
@@ -176,7 +176,8 @@ class OnosCliDriver(CLI):
             elif re.search("0\sinstance\sof\sonos\srunning",response):
                 return main.FALSE
             else :
-                main.log.info( self.name + " WARNING: status recieved unknown response")
+                main.log.warn(self.name + " WARNING: status recieved unknown response")
+                main.log.warn(response)
                 return main.FALSE
         except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
@@ -1295,16 +1296,19 @@ class OnosCliDriver(CLI):
             i = self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT])
             #main.log.warn("first expect response: " +str(i))
             self.handle.sendline("cd "+self.home+"/onos-logs")
-            self.handle.sendline("grep \"xception\" *")
+            self.handle.sendline("zgrep \"xception\" *")
             i = self.handle.expect(["\*",pexpect.EOF,pexpect.TIMEOUT])
             #main.log.warn("second expect response: " +str(i))
-            i = self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT])
+            i = self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT],timeout=120)
             #main.log.warn("third expect response: " +str(i))
             response = self.handle.before
             count = 0
             for line in response.splitlines():
                 if re.search("log:", line):
                     output +="Exceptions found in " + line + "\n"
+                    count +=1
+                elif re.search("log\.gz:",line):
+                    output+="Exceptions found in " + line + "\n"
                     count +=1
                 elif re.search("std...:",line):
                     output+="Exceptions found in " + line + "\n"

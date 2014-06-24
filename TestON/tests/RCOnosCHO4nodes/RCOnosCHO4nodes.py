@@ -9,10 +9,10 @@ class RCOnosCHO4nodes :
 #Tests the startup of Zookeeper1, RamCloud1, and ONOS1 to be certain that all started up successfully
     def CASE1(self,main) :  #Check to be sure ZK, Cass, and ONOS are up, then get ONOS version
         import time
-        main.ONOS1.handle.sendline("cp ~/onos.properties.reactive ~/ONOS/conf/onos.properties")
-        main.ONOS2.handle.sendline("cp ~/onos.properties.reactive ~/ONOS/conf/onos.properties")
-        main.ONOS3.handle.sendline("cp ~/onos.properties.reactive ~/ONOS/conf/onos.properties")
-        main.ONOS4.handle.sendline("cp ~/onos.properties.reactive ~/ONOS/conf/onos.properties")
+        main.ONOS1.handle.sendline("cp ~/onos.properties.proactive ~/ONOS/conf/onos.properties")
+        main.ONOS2.handle.sendline("cp ~/onos.properties.proactive ~/ONOS/conf/onos.properties")
+        main.ONOS3.handle.sendline("cp ~/onos.properties.proactive ~/ONOS/conf/onos.properties")
+        main.ONOS4.handle.sendline("cp ~/onos.properties.proactive ~/ONOS/conf/onos.properties")
 
         main.Zookeeper1.start()
         main.Zookeeper2.start()
@@ -149,7 +149,10 @@ class RCOnosCHO4nodes :
                 main.Mininet1.assign_sw_controller(sw=str(j),ip1=main.params['CTRL']['ip4'],port1=main.params['CTRL']['port4'])
                 time.sleep(1)
                 main.Mininet1.assign_sw_controller(sw=str(j),count=4,ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'])
-        main.Mininet1.get_sw_controller("s1")       
+        result =  main.Mininet1.get_sw_controller("s1")
+        if result:
+            result = main.TRUE
+        utilities.assert_equals(expect=main.TRUE,actual=result,onpass="S1 assigned to controller",onfail="S1 not assigned to controller")
 
         for i in range(9):
             if result == main.FALSE:
@@ -174,15 +177,16 @@ class RCOnosCHO4nodes :
                 result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
             else:
                 break
+        utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Topology check pass",onfail="Topology check FAIL")
 
         main.case("Taking care of these flows!") 
         main.step("Cleaning out any leftover flows...")
         #main.ONOS1.delete_flow("all")
-        main.ONOS1.rm_flow()
+        main.ONOS1.rm_intents()
         time.sleep(5)
-        main.ONOS1.purge()
+        main.ONOS1.purge_intents()
         strtTime = time.time()
-        main.ONOS1.ad_flow()
+        main.ONOS1.add_intents()
         main.case("Checking flows with pings")
         
         pingAttempts = main.params['pingAttempts']
@@ -201,18 +205,20 @@ class RCOnosCHO4nodes :
             elif ping == main.FALSE and count == int(pingAttempts):
                 main.log.error("Ping test failed")
                 i = 17
-                result = main.FALSE
+                result2 = main.FALSE
             elif ping == main.TRUE:
                 i = i + 1
-                result = main.TRUE
+                result2 = main.TRUE
         endTime = time.time()
+        result = result and result2
         if result == main.TRUE:
              main.log.report("\n\t\t\t\tTime from pushing intents to successful ping test: "+str(round(endTime-strtTime,2))+" seconds")
         else:
             main.log.report("\tFlows failed check")
 
         main.step("Verifying the result")
-        utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Flow check PASS",onfail="Flow check FAIL")
+        utilities.assert_equals(expect=main.TRUE,actual=result2,onpass="NO PACKET LOSS, HOST IS REACHABLE",onfail="PACKET LOST, HOST IS NOT REACHABLE")
+        utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Testcase passed",onfail="Testcase failed")
 
 #**********************************************************************************************************************************************************************************************
 #This test case removes Controllers 2,3, and 4 then performs a ping test.
@@ -221,7 +227,7 @@ class RCOnosCHO4nodes :
 #If the ping test fails 6 times, then the test case will return false
 
     def CASE4(self,main) :
-        main.log.report("Remove all but one ONOS then ping until all hosts are reachable or fail after 6 attempts")
+        main.log.report("Assign all switches to just one ONOS instance then ping until all hosts are reachable or fail after 6 attempts")
         import time
         import random
 
@@ -258,6 +264,7 @@ class RCOnosCHO4nodes :
                 result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
             else:
                 break
+        utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Topology check pass",onfail="Topology check FAIL")
 
         pingAttempts = main.params['pingAttempts']
         pingSleep = main.params['pingSleep']
@@ -275,30 +282,32 @@ class RCOnosCHO4nodes :
             elif ping == main.FALSE and count == int(pingAttempts):
                 main.log.error("Ping test failed")
                 i = 17
-                result = main.FALSE
+                result2 = main.FALSE
             elif ping == main.TRUE:
                 i = i + 1
-                result = main.TRUE
+                result2 = main.TRUE
         endTime = time.time() 
+        result = result and result2
         if result == main.TRUE:
             main.log.report("\tTime to complete ping test: "+str(round(endTime-strtTime,2))+" seconds")
         else:
             main.log.report("\tPING TEST FAIL")
-        utilities.assert_equals(expect=main.TRUE,actual=result,onpass="NO PACKET LOSS, HOST IS REACHABLE",onfail="PACKET LOST, HOST IS NOT REACHABLE")
+        utilities.assert_equals(expect=main.TRUE,actual=result2,onpass="NO PACKET LOSS, HOST IS REACHABLE",onfail="PACKET LOST, HOST IS NOT REACHABLE")
+        utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Testcase passed",onfail="Testcase failed")
 
 # **********************************************************************************************************************************************************************************************
 #This test case restores the controllers removed by Case 4 then performs a ping test.
 
     def CASE5(self,main) :
-        main.log.report("Restore ONOS 2,3,4 then ping until all hosts are reachable or fail after 6 attempts")
+        main.log.report("Restore switch assignments to all 4 ONOS instances then ping until all hosts are reachable or fail after 6 attempts")
         import time
         for i in range(25):
             if i < 15:
                 j=i+1
-                main.Mininet1.assign_sw_controller(sw=str(j),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'])
+                main.Mininet1.assign_sw_controller(sw=str(j),count=4,ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'])
             else:
                 j=i+16
-                main.Mininet1.assign_sw_controller(sw=str(j),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'])
+                main.Mininet1.assign_sw_controller(sw=str(j),count=4,ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'])
       
         strtTime = time.time() 
         result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
@@ -308,6 +317,7 @@ class RCOnosCHO4nodes :
                 result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
             else:
                 break
+        utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Topology check pass",onfail="Topology check FAIL")
 
         pingAttempts = main.params['pingAttempts']
         pingSleep = main.params['pingSleep']
@@ -325,16 +335,18 @@ class RCOnosCHO4nodes :
             elif ping == main.FALSE and count == int(pingAttempts):
                 main.log.error("Ping test failed")
                 i = 17
-                result = main.FALSE
+                result2 = main.FALSE
             elif ping == main.TRUE:
                 i = i + 1
-                result = main.TRUE
+                result2 = main.TRUE
         endTime = time.time()
+        result = result and result2
         if result == main.TRUE:
             main.log.report("\tTime to complete ping test: "+str(round(endTime-strtTime,2))+" seconds")
         else:
             main.log.report("\tPING TEST FAILED")
-        utilities.assert_equals(expect=main.TRUE,actual=result,onpass="NO PACKET LOSS, HOST IS REACHABLE",onfail="PACKET LOST, HOST IS NOT REACHABLE")
+        utilities.assert_equals(expect=main.TRUE,actual=result2,onpass="NO PACKET LOSS, HOST IS REACHABLE",onfail="PACKET LOST, HOST IS NOT REACHABLE")
+        utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Testcase passed",onfail="Testcase failed")
 
 # **********************************************************************************************************************************************************************************************
 #Brings a link that all flows pass through in the mininet down, then runs a ping test to view reroute time
@@ -342,18 +354,27 @@ class RCOnosCHO4nodes :
     def CASE6(self,main) :
         main.log.report("Bring Link between s1 and s2 down, then ping until all hosts are reachable or fail after 10 attempts")
         import time
+
+        #add a wait as a work around for a known bug where topology changes after a switch mastership change cuses intents to not reroute
+        time.sleep(30)
+
         main.case("Bringing Link down... ")
         result = main.Mininet1.link(END1=main.params['LINK']['begin'],END2=main.params['LINK']['end'],OPTION="down")
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Link DOWN!",onfail="Link not brought down...")
+
+        #add a wait as a work around for a known bug where topology changes after a switch mastership change cuses intents to not reroute
+        time.sleep(30)
+
        
         strtTime = time.time() 
-        result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],str(int(main.params['NR_Links'])-2))
+        result1 = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],str(int(main.params['NR_Links'])-2))
         for counter in range(9):
-            if result == main.FALSE:
+            if result1 == main.FALSE:
                 time.sleep(3)
-                result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],str(int(main.params['NR_Links'])-2))
+                result1 = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],str(int(main.params['NR_Links'])-2))
             else:
                 break
+        utilities.assert_equals(expect=main.TRUE,actual=result1,onpass="Topology check pass",onfail="Topology check FAIL")
 
         pingAttempts = main.params['pingAttempts']
         pingSleep = main.params['pingSleep']
@@ -371,16 +392,18 @@ class RCOnosCHO4nodes :
             elif ping == main.FALSE and count == int(pingAttempts):
                 main.log.error("Ping test failed")
                 i = 17
-                result = main.FALSE
+                result2 = main.FALSE
             elif ping == main.TRUE:
                 i = i + 1
-                result = main.TRUE
+                result2 = main.TRUE
         endTime = time.time()
+        result = result and result2 and result1
         if result == main.TRUE:
             main.log.report("\tTime to complete ping test: "+str(round(endTime-strtTime,2))+" seconds")
         else:
             main.log.report("\tPING TEST FAILED")
-        utilities.assert_equals(expect=main.TRUE,actual=result,onpass="NO PACKET LOSS, HOST IS REACHABLE",onfail="PACKET LOST, HOST IS NOT REACHABLE")
+        utilities.assert_equals(expect=main.TRUE,actual=result2,onpass="NO PACKET LOSS, HOST IS REACHABLE",onfail="PACKET LOST, HOST IS NOT REACHABLE")
+        utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Testcase passed",onfail="Testcase failed")
 
 # **********************************************************************************************************************************************************************************************
 #Brings the link that Case 6 took down  back up, then runs a ping test to view reroute time
@@ -389,17 +412,22 @@ class RCOnosCHO4nodes :
         main.log.report("Bring Link between s1 and s2 up, then ping until all hosts are reachable or fail after 10 attempts")
         import time
         main.case("Bringing Link up... ")
+
+        #add a wait as a work around for a known bug where topology changes after a switch mastership change cuses intents to not reroute
+        time.sleep(30)
+
         result = main.Mininet1.link(END1=main.params['LINK']['begin'],END2=main.params['LINK']['end'],OPTION="up")
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Link UP!",onfail="Link not brought up...")
       
         strtTime = time.time() 
-        result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
+        result1 = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
         for counter in range(9):
-            if result == main.FALSE:
+            if result1 == main.FALSE:
                 time.sleep(3)
-                result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
+                result1 = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
             else:
                 break
+        utilities.assert_equals(expect=main.TRUE,actual=result1,onpass="Topology check pass",onfail="Topology check FAIL")
 
         pingAttempts = main.params['pingAttempts']
         pingSleep = main.params['pingSleep']
@@ -418,11 +446,12 @@ class RCOnosCHO4nodes :
             elif ping == main.FALSE and count == int(pingAttempts):
                 main.log.error("Ping test failed")
                 i = 17
-                result = main.FALSE
+                result2 = main.FALSE
             elif ping == main.TRUE:
                 i = i + 1
-                result = main.TRUE
+                result2 = main.TRUE
         endTime = time.time()
+        result = result and result2 and result1
         if result == main.TRUE:
             main.log.report("\tTime to complete ping test: "+str(round(endTime-strtTime,2))+" seconds")
         else:
@@ -433,7 +462,12 @@ class RCOnosCHO4nodes :
         main.ONOS3.check_exceptions()
         main.ONOS4.check_exceptions()
 
-        utilities.assert_equals(expect=main.TRUE,actual=result,onpass="NO PACKET LOSS, HOST IS REACHABLE",onfail="PACKET LOST, HOST IS NOT REACHABLE")
+        utilities.assert_equals(expect=main.TRUE,actual=result2,onpass="NO PACKET LOSS, HOST IS REACHABLE",onfail="PACKET LOST, HOST IS NOT REACHABLE")
+        utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Testcase passed",onfail="Testcase failed")
+
+        #add a wait as a work around for a known bug where topology changes after a switch mastership change cuses intents to not reroute
+        time.sleep(30)
+
 
 
 # **********************************************************************************************************************************************************************************************
@@ -450,6 +484,7 @@ class RCOnosCHO4nodes :
                 result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
             else:
                 break
+        utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Topology check pass",onfail="Topology check FAIL")
 
         pingAttempts = main.params['pingAttempts']
         pingSleep = main.params['pingSleep']
@@ -468,11 +503,12 @@ class RCOnosCHO4nodes :
             elif ping == main.FALSE and count == int(pingAttempts):
                 main.log.error("Ping test failed")
                 i = 17
-                result = main.FALSE
+                result2 = main.FALSE
             elif ping == main.TRUE:
                 i = i + 1
-                result = main.TRUE
+                result2 = main.TRUE
         endTime = time.time()
+        result = result and result2
         if result == main.TRUE:
             main.log.report("\tTime to complete ping test: "+str(round(endTime-strtTime,2))+" seconds")
         else:
@@ -483,9 +519,74 @@ class RCOnosCHO4nodes :
         main.ONOS3.check_exceptions()
         main.ONOS4.check_exceptions()
 
-        utilities.assert_equals(expect=main.TRUE,actual=result,onpass="NO PACKET LOSS, HOST IS REACHABLE",onfail="PACKET LOST, HOST IS NOT REACHABLE")
+        utilities.assert_equals(expect=main.TRUE,actual=result2,onpass="NO PACKET LOSS, HOST IS REACHABLE",onfail="PACKET LOST, HOST IS NOT REACHABLE")
+        utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Testcase passed",onfail="Testcase failed")
 
 
+# ******************************************************************************************************************************************************************
+# Test Device Discovery function by yanking s6:s6-eth0 interface and re-plug it into a switch
+
+    def CASE9(self,main) :
+        main.case("Checking component status")
+        result = main.TRUE
+
+        main.step("Checking Zookeeper status")
+        result1 = main.Zookeeper1.status()
+        if not result1:
+            main.log.report("Zookeeper1 encountered a tragic death!")
+        result2 = main.Zookeeper2.status()
+        if not result2:
+            main.log.report("Zookeeper2 encountered a tragic death!")
+        result3 = main.Zookeeper3.status()
+        if not result3:
+            main.log.report("Zookeeper3 encountered a tragic death!")
+        result4 = main.Zookeeper4.status()
+        if not result4:
+            main.log.report("Zookeeper4 encountered a tragic death!")
+        result = result and result1 and result2 and result3 and result4
+
+        main.step("Checking RamCloud status")
+        result5 = main.RamCloud1.status_coor()
+        if not result5:
+            main.log.report("RamCloud Coordinator1 encountered a tragic death!")
+        result6 = main.RamCloud1.status_serv()
+        if not result6:
+            main.log.report("RamCloud Server1 encountered a tragic death!")
+        result7 = main.RamCloud2.status_serv()
+        if not result7:
+            main.log.report("RamCloud Server2 encountered a tragic death!")
+        result8 = main.RamCloud3.status_serv()
+        if not result8:
+            main.log.report("RamCloud Server3 encountered a tragic death!")
+        result9 = main.RamCloud4.status_serv()
+        if not result9:
+            main.log.report("RamCloud Server4 encountered a tragic death!")
+        result = result and result5 and result6 and result7 and result8 and result9
+
+
+        main.step("Checking ONOS status")
+        result10 = main.ONOS1.status()
+        if not result10:
+            main.log.report("ONOS1 core encountered a tragic death!")
+        result11 = main.ONOS2.status()
+        if not result11:
+            main.log.report("ONOS2 core encountered a tragic death!")
+        result12 = main.ONOS3.status()
+        if not result12:
+            main.log.report("ONOS3 core encountered a tragic death!")
+        result13 = main.ONOS4.status()
+        if not result13:
+            main.log.report("ONOS4 core encountered a tragic death!")
+        result = result and result10 and result11 and result12 and result13
+
+
+
+        rest_result =  main.ONOS1.rest_status()
+        if not rest_result:
+            main.log.report("Simple Rest GUI server is not running on ONOS1")
+
+
+        utilities.assert_equals(expect=main.TRUE,actual=result,onpass="All Components are running",onfail="One or more components failed")
 
 # ******************************************************************************************************************************************************************
 # Test Device Discovery function by yanking s6:s6-eth0 interface and re-plug it into a switch

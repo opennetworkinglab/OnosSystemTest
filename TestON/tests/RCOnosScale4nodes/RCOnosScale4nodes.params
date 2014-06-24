@@ -1,5 +1,10 @@
 <PARAMS>
     <testcases>1,2,3,4,66</testcases>
+    <tcpdump>
+        <intf>eth0</intf>
+        <port>port 6633</port>
+        <filename>~/packet_captures/Scale.pcap</filename>
+    </tcpdump>
     <Iterations>2</Iterations>
     <WaitTime>50</WaitTime>
     <TargetTime>50</TargetTime>

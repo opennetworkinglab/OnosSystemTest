@@ -9,6 +9,8 @@ class RRCOnosSanity4nodesJ :
 #Tests the startup of Zookeeper1, RamCloud1, and ONOS1 to be certain that all started up successfully
     def CASE1(self,main) :  #Check to be sure ZK, Cass, and ONOS are up, then get ONOS version
         import time
+        main.case("Initial Setup")
+        main.step("stop onos")
         main.ONOS1.handle.sendline("cp ~/onos.properties.reactive ~/ONOS/conf/onos.properties")
         main.ONOS2.handle.sendline("cp ~/onos.properties.reactive ~/ONOS/conf/onos.properties")
         main.ONOS3.handle.sendline("cp ~/onos.properties.reactive ~/ONOS/conf/onos.properties")
@@ -16,7 +18,10 @@ class RRCOnosSanity4nodesJ :
         main.ONOS1.stop_all()        
         main.ONOS2.stop_all()        
         main.ONOS3.stop_all()        
-        main.ONOS4.stop_all()        
+        main.ONOS4.stop_all() 
+        main.step("Start tcpdump on mn")
+        main.Mininet1.start_tcpdump(main.params['tcpdump']['filename'], intf = main.params['tcpdump']['intf'], port = main.params['tcpdump']['port']) 
+        main.step("start ONOS")
         main.Zookeeper1.start()
         main.Zookeeper2.start()
         main.Zookeeper3.start()
@@ -65,7 +70,6 @@ class RRCOnosSanity4nodesJ :
             main.ONOS2.start_rest()
         main.ONOS1.get_version()
         main.log.report("Startup check Zookeeper1, RamCloud1, and ONOS1 connections")
-        main.case("Checking if the startup was clean...")
         main.step("Testing startup Zookeeper")   
         data =  main.Zookeeper1.isup()
         utilities.assert_equals(expect=main.TRUE,actual=data,onpass="Zookeeper is up!",onfail="Zookeeper is down...")
@@ -155,11 +159,11 @@ class RRCOnosSanity4nodesJ :
         main.step("Cleaning out any leftover flows...")
         #main.ONOS1.delete_flow("all")
         strtTime = time.time()
-        main.ONOS1.rm_flow()
+        main.ONOS1.rm_intents()
         print("world")
-        main.ONOS1.ad_flow()
+        main.ONOS1.add_intents()
         time.sleep(2)
-        main.ONOS1.ad_flow()
+        main.ONOS1.add_intents()
         print("hello")
        # main.ONOS1.add_flow(main.params['FLOWDEF']['testONip'],main.params['FLOWDEF']['user'],main.params['FLOWDEF']['password'],main.params['FLOWDEF']['flowDef'])
         main.case("Checking flows")
@@ -390,9 +394,9 @@ class RRCOnosSanity4nodesJ :
         for i in range(10):
             if result == main.FALSE:
                 time.sleep(15)
-                main.ONOS2.check_status_report(main.params['restIP2'],main.params['NR_Switches'],main.params['NR_Links'])
-                main.ONOS3.check_status_report(main.params['restIP3'],main.params['NR_Switches'],main.params['NR_Links'])
-                main.ONOS4.check_status_report(main.params['restIP4'],main.params['NR_Switches'],main.params['NR_Links'])
+                main.ONOS2.check_status_report(main.params['RestIP2'],main.params['NR_Switches'],main.params['NR_Links'])
+                main.ONOS3.check_status_report(main.params['RestIP3'],main.params['NR_Switches'],main.params['NR_Links'])
+                main.ONOS4.check_status_report(main.params['RestIP4'],main.params['NR_Switches'],main.params['NR_Links'])
                 result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
             else:
                 break
@@ -610,5 +614,6 @@ class RRCOnosSanity4nodesJ :
             result = main.FALSE
             count = len(check1.splitlines()) + len(check2.splitlines()) + len(check3.splitlines()) + len(check4.splitlines())
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="No Exceptions found in the logs",onfail=str(count) + " Exceptions were found in the logs")
+        main.Mininet1.stop_tcpdump()
 
 

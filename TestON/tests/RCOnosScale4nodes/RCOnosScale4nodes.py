@@ -12,6 +12,8 @@ class RCOnosScale4nodes:
         The test will only pass if ONOS is running properly, and has a full view of all topology elements.
         '''
         import time
+        main.case("Initial setup")
+        main.step("stopping ONOS")
         main.ONOS1.stop()
         main.ONOS2.stop()
         main.ONOS3.stop()
@@ -21,6 +23,9 @@ class RCOnosScale4nodes:
         main.RamCloud2.stop_serv()
         main.RamCloud3.stop_serv()
         main.RamCloud4.stop_serv()
+        main.step("Start tcpdump on mn")
+        main.Mininet1.start_tcpdump(main.params['tcpdump']['filename'], intf = main.params['tcpdump']['intf'], port = main.params['tcpdump']['port'])
+        main.step("Starting ONOS")
         main.Zookeeper1.start()
         main.Zookeeper2.start()
         main.Zookeeper3.start()
@@ -50,7 +55,6 @@ class RCOnosScale4nodes:
             main.ONOS1.start_rest()
         main.ONOS1.get_version()
         main.log.report("Startup check Zookeeper1, RamCloud1, and ONOS1 connections")
-        main.case("Checking if the startup was clean...")
         main.step("Testing startup Zookeeper")
         data =  main.Zookeeper1.isup()
         utilities.assert_equals(expect=main.TRUE,actual=data,onpass="Zookeeper is up!",onfail="Zookeeper is down...")
@@ -329,5 +333,6 @@ class RCOnosScale4nodes:
             result = main.FALSE
             count = len(check1.splitlines()) + len(check2.splitlines()) + len(check3.splitlines()) + len(check4.splitlines())
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="No Exceptions found in the logs",onfail=str(count) + " Exceptions were found in the logs")
+        main.Mininet1.stop_tcpdump()
 
 

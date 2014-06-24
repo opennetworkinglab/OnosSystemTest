@@ -178,9 +178,9 @@ class RRCOnosSanity4nodesJ :
         #main.ONOS1.delete_flow("all")
         strtTime = time.time()
         print("hello")
-        main.ONOS1.rm_flow()
+        main.ONOS1.rm_intents()
         print("world")
-        main.ONOS1.ad_flow()
+        main.ONOS1.add_intents()
        # main.ONOS1.add_flow(main.params['FLOWDEF']['testONip'],main.params['FLOWDEF']['user'],main.params['FLOWDEF']['password'],main.params['FLOWDEF']['flowDef'])
         main.case("Checking flows")
        

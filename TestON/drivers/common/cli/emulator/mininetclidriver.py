@@ -192,11 +192,6 @@ class MininetCliDriver(Emulator):
         if self.handle :
             try:
                 response = self.execute(cmd=host+" ifconfig",prompt="mininet>",timeout=10)
-                print("response 2"+ response)
-                self.handle.sendline(host+" ifconfig")
-                self.handle.expect(["mininet>",pexpect.TIMEOUT])
-                response = self.handle.before + self.handle.after
-                print(response)
             except pexpect.EOF:  
                 main.log.error(self.name + ": EOF exception found")
                 main.log.error(self.name + ":     " + self.handle.before)
@@ -538,6 +533,7 @@ class MininetCliDriver(Emulator):
             response = self.execute(cmd=command,prompt="mininet>",timeout=10)
             print(response)
             if response:
+                print("**********************")
                 return response
             else:
                 return main.FALSE

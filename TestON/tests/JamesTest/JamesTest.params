@@ -1,12 +1,17 @@
 <PARAMS>
-    <testcases>1,2,21,31,3,4,5,6,7</testcases>
-    <FLOWDEF>~/flowdef_files/Center_Triangle/flowdef_20.txt</FLOWDEF>
+    <testcases>101,66,10</testcases>
+    <tcpdump> 
+        <intf>eth0</intf>
+        <port>port 6633</port>
+        <filename>~/packet_captures/Sanity.pcap</filename>
+    </tcpdump>
     <CASE1>       
         <destination>h6</destination>
+        <target>h40</target>
     </CASE1>       
     <PING>
-        <source1>h6</source1>
-        <target1>h31</target1>
+        <source1>h7</source1>
+        <target1>h32</target1>
         <source2>h8</source2>
         <target2>h33</target2>
     </PING>
@@ -37,13 +42,21 @@
         <ip4>10.128.4.154</ip4>
         <port4>6633</port4>
     </CTRL>
+    <INTENTREST>
+        <intentIP>10.128.4.151</intentIP>
+        <intentPort>8080</intentPort>
+        <intentURL>wm/onos/intent</intentURL>
+    </INTENTREST>
     <RestIP>10.128.4.151</RestIP>
+    <RestIP2>10.128.4.152</RestIP2>
+    <RestIP3>10.128.4.153</RestIP3>
+    <RestIP4>10.128.4.154</RestIP4>
     <NR_Switches>25</NR_Switches>
     <NR_Links>50</NR_Links>
     <RESTCALL>
 	<restIP1>10.128.4.151</restIP1>
 	<restIP2>10.128.4.152</restIP2>
 	<restPort>8080</restPort>
-	<restURL>/wm/onos/topology/switches</restURL>
+	<restURL>/wm/onos/topology/hosts</restURL>
     </RESTCALL>
 </PARAMS>      

@@ -430,7 +430,148 @@ class OnosCliDriver(CLI):
             main.exit()
 
 
-    def add_intent(self, intent_id,src_dpid,dst_dpid,src_mac,dst_mac,intentIP,intentPort=8080,intentURL="wm/onos/intent/high" , intent_type = 'SHORTEST_PATH', static_path=False, src_port=1,dst_port=1):
+
+#*********************************************************************
+#*********************************************************************
+# shortest_path is a command to find the shortest path between two 
+# switches. It is called using the IP, port, and source and 
+# destination dpids
+#*********************************************************************
+#*********************************************************************
+
+    def shortest_path(self,ONOSIP,ONOSPort,srcDPID,dstDPID):
+        main.log.report("Finding the shortest Path between "+str(srcDPID) + " to " + str(dstDPID))
+        url = "http://%s:%s/wm/onos/intent/path/switch/%s/shortest-path/%s"%(ONOSIP,ONOSPort,srcDPID,dstDPID)
+        parsed_result = []
+        try: 
+            response = urllib2.urlopen(url)
+            result = response.read()
+            response.close()
+            if len(result) != 0:
+                parsed_result = json.loads(result)
+        except HTTPError as exc: 
+            print "ERROR:"
+            print "  REST GET URL: %s" % url
+            # NOTE: exc.fp contains the object with the response payload
+            error_payload = json.loads(exc.fp.read())
+            print "  REST Error Code: %s" % (error_payload['code'])
+            print "  REST Error Summary: %s" % (error_payload['summary'])
+            print "  REST Error Description: %s" % (error_payload['formattedDescription'])
+            print "  HTTP Error Code: %s" % exc.code
+            print "  HTTP Error Reason: %s" % exc.reason
+        except URLError as exc: 
+            print "ERROR:"
+            print "  REST GET URL: %s" % url
+            print "  URL Error Reason: %s" % exc.reason
+     
+        if len(parsed_result)==0:
+            return
+        result = json.dumps(parsed_result,indent=4)
+        print(str(result))
+        return result
+
+
+#*********************************************************************
+#*********************************************************************
+# show_intent is a command to show intents. 
+# Parameters include intentIP, intentPort, intentURL, and intent_id
+# Based on the url, it will show either high or low intents
+# If intent_id is left blank, it will show all high or all low intents
+# Else it will show the intent with the id
+#*********************************************************************
+#*********************************************************************
+
+
+
+    def show_intent(self,intentIP,intentPort=8080,intentURL="wm/onos/intent",intent_type="high",intent_id="all"):
+        main.log.report("Getting (an) intent(s)")
+        if intent_id=="all":
+            url = "http://%s:%s/%s/%s"%(intentIP,intentPort,intentURL,intent_type)
+        else:
+            url = "http://%s:%s/%s/%s/%s"%(intentIP,intentPort,intentURL,intent_type,intent_id)
+        print(url)
+        parsed_result = []
+        try:
+            response = urllib2.urlopen(url)
+            result = response.read()
+            response.close()
+            if len(result) != 0:
+                parsed_result = json.loads(result)
+        except HTTPError as exc:
+            print "ERROR:"
+            print "  REST GET URL: %s" % url
+            # NOTE: exc.fp contains the object with the response payload
+            error_payload = json.loads(exc.fp.read())
+            print "  REST Error Code: %s" % (error_payload['code'])
+            print "  REST Error Summary: %s" % (error_payload['summary'])
+            print "  REST Error Description: %s" % (error_payload['formattedDescription'])
+            print "  HTTP Error Code: %s" % exc.code
+            print "  HTTP Error Reason: %s" % exc.reason
+            return str(error_payload['code'])
+        except URLError as exc:
+            print "ERROR:"
+            print "  REST GET URL: %s" % url
+            print "  URL Error Reason: %s" % exc.reason
+            return str(error_payload['code'])
+        
+        if len(parsed_result)==0:
+            return
+        result = json.dumps(parsed_result,indent=4)
+        print(str(result))
+        return result
+
+
+#*********************************************************************
+#*********************************************************************
+# del_intent is to delete either all or some or one intents
+# if intent_id is left blank, it will delete all intents
+# else, intent_id should be of  the form "intent_id=1,2,3"
+#*********************************************************************
+#*********************************************************************
+
+    def del_intent(self,intentIP,intentPort=8080,intentURL="wm/onos/intent",intent_id="all"):
+        main.log.report("Deleting (an) intent(s)")
+        if intent_id=="all":
+            url = "http://%s:%s/%s/high"%(intentIP,intentPort,intentURL)
+        else:
+            url = "http://%s:%s/%s/high?%s"%(intentIP,intentPort,intentURL,intent_id)
+
+        print(url)
+
+        parsed_result = []
+        try:
+            request = urllib2.Request(url)
+            request.get_method = lambda: 'DELETE'
+            response = urllib2.urlopen(request)
+            result = response.read()
+            response.close()
+            if len(result) != 0:
+                parsed_result = json.loads(result)
+                print(parsed_result)
+        except HTTPError as exc:
+            print "ERROR:"
+            print "  REST DELETE URL: %s" % url
+            # NOTE: exc.fp contains the object with the response payload
+            error_payload = json.loads(exc.fp.read())
+            print "  REST Error Code: %s" % (error_payload['code'])
+            print "  REST Error Summary: %s" % (error_payload['summary'])
+            print "  REST Error Description: %s" % (error_payload['formattedDescription'])
+            print "  HTTP Error Code: %s" % exc.code
+            print "  HTTP Error Reason: %s" % exc.reason
+        except URLError as exc:
+            print "ERROR:"
+            print "  REST DELETE URL: %s" % url
+            print "  URL Error Reason: %s" % exc.reason
+        return result
+
+#*********************************************************************
+#*********************************************************************
+# add_intent will add a single intent by using dpids and macs. 
+#*********************************************************************
+#*********************************************************************
+
+
+    def add_intent(self, intent_id,src_dpid,dst_dpid,src_mac,dst_mac,intentIP,intentPort=8080,intentURL="wm/onos/intent" , intent_type = 'SHORTEST_PATH', static_path=False, src_port=1,dst_port=1):
         "CLI command callback: set intent"
 
         intents = []
@@ -446,7 +587,7 @@ class OnosCliDriver(CLI):
         oper['matchSrcMac'] = src_mac
         oper['matchDstMac'] = dst_mac
         intents.append(oper)
-        url = "http://%s:%s/%s"%(intentIP,intentPort,intentURL)
+        url = "http://%s:%s/%s/high"%(intentIP,intentPort,intentURL)
         parsed_result = []
         data_json = json.dumps(intents)
         try:
@@ -471,7 +612,7 @@ class OnosCliDriver(CLI):
             print "ERROR:"
             print "  REST GET URL: %s" % url
             print "  URL Error Reason: %s" % exc.reason
-        return parsed_result
+        return result
 
         
 

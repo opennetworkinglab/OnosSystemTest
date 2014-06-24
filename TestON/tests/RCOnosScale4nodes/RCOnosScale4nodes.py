@@ -25,6 +25,8 @@ class RCOnosScale4nodes:
         main.RamCloud4.stop_serv()
         main.step("Start tcpdump on mn")
         main.Mininet1.start_tcpdump(main.params['tcpdump']['filename'], intf = main.params['tcpdump']['intf'], port = main.params['tcpdump']['port'])
+#        main.step("Start tcpdump on mn")
+#        main.Mininet1.start_tcpdump(main.params['tcpdump']['filename'], intf = main.params['tcpdump']['intf'], port = main.params['tcpdump']['port'])
         main.step("Starting ONOS")
         main.Zookeeper1.start()
         main.Zookeeper2.start()

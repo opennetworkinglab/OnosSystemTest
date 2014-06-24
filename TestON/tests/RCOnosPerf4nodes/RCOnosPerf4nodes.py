@@ -28,6 +28,8 @@ class RCOnosPerf4nodes:
         main.RamCloud4.del_db()
         main.step("Start tcpdump on mn")
         main.Mininet1.start_tcpdump(main.params['tcpdump']['filename'], intf = main.params['tcpdump']['intf'], port = main.params['tcpdump']['port'])
+#        main.step("Start tcpdump on mn")
+#        main.Mininet1.start_tcpdump(main.params['tcpdump']['filename'], intf = main.params['tcpdump']['intf'], port = main.params['tcpdump']['port'])
         main.step("Starting ONOS")
         main.ONOS1.start_all()
         main.ONOS2.start_all()

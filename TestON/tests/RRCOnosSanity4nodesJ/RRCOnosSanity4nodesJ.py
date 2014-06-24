@@ -21,6 +21,8 @@ class RRCOnosSanity4nodesJ :
         main.ONOS4.stop_all() 
         main.step("Start tcpdump on mn")
         main.Mininet1.start_tcpdump(main.params['tcpdump']['filename'], intf = main.params['tcpdump']['intf'], port = main.params['tcpdump']['port']) 
+#        main.step("Start tcpdump on mn")
+#        main.Mininet1.start_tcpdump(main.params['tcpdump']['filename'], intf = main.params['tcpdump']['intf'], port = main.params['tcpdump']['port']) 
         main.step("start ONOS")
         main.Zookeeper1.start()
         main.Zookeeper2.start()

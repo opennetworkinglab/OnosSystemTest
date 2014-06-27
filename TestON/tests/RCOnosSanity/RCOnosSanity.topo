@@ -1,0 +1,29 @@
+<TOPOLOGY>
+
+    <COMPONENT>
+
+        <ONOS>
+            <host>192.168.56.10</host>
+            <user>onos</user>
+            <password>onos</password>
+            <type>onossanityclidriver</type>
+            <connect_order>1</connect_order>
+            <COMPONENTS>
+             </COMPONENTS>
+        </ONOS>
+
+        <Mininet>
+            <host>192.168.56.10</host>
+            <user>onos</user>
+            <password>onos</password>
+            <type>MininetCliDriver</type>
+            <connect_order>2</connect_order>
+            <COMPONENTS>
+                <arg1> --custom ~/mininet/custom/topo-onos1node.py </arg1>
+                <arg2> --topo mytopo --arp --mac</arg2>
+                <controller>remote</controller>
+             </COMPONENTS>
+        </Mininet>
+
+    </COMPONENT>
+</TOPOLOGY>

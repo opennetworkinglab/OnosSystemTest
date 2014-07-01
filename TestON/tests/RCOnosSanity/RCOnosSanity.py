@@ -11,6 +11,7 @@ class RCOnosSanity :
         import time
         main.ONOS.start()
         time.sleep(20)
+        main.ONOS.rest_stop()
         main.ONOS.start_rest()
         test= main.ONOS.rest_status()
         if test == main.FALSE:
@@ -55,7 +56,7 @@ class RCOnosSanity :
             else:
                 j=i+16
                 main.Mininet.assign_sw_controller(sw=str(j),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'])
-	time.sleep(5)
+        #time.sleep(1)
         main.Mininet.get_sw_controller("s1")
 
 # **********************************************************************************************************************************************************************************************

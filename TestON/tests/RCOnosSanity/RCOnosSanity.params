@@ -2,7 +2,7 @@
     <testcases>1,2,200,3,4,5,6,7</testcases>
     <FLOWDEF>/home/onos/ONLabTest/TestON/tests/RCOnosSanity</FLOWDEF>
     <INTENTS>
-    	<add>add_intent_sanity.py</add>
+    	<add>pyintents.py</add>
 	<rem>rem_intent_sanity.py</rem>
     </INTENTS>
     <RESTTEST>

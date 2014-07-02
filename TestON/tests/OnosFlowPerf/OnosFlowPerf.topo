@@ -1,0 +1,49 @@
+<TOPOLOGY>
+
+    <COMPONENT>    
+        <Zookeeper1>
+            <host>10.128.5.52</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>ZookeeperCliDriver</type>
+            <connect_order>1</connect_order>
+            <COMPONENTS>
+             </COMPONENTS>
+        </Zookeeper1>
+
+        <RamCloud1>
+            <host>10.128.5.52</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>RamCloudCliDriver</type>
+            <connect_order>5</connect_order>
+            <COMPONENTS>
+             </COMPONENTS>
+        </RamCloud1>
+
+        <ONOS1>
+            <host>10.128.5.52</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>onossanityclidriver</type>
+            <connect_order>9</connect_order>
+            <COMPONENTS>
+             </COMPONENTS>
+        </ONOS1>
+
+        <Mininet1>
+            <host>10.128.5.59</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>MininetCliDriver</type>
+            <connect_order>2</connect_order>
+            <COMPONENTS>
+                # Specify the Option for mininet
+                <arg1> --custom ~/mininet/custom/topo-onos1node.py </arg1>
+                <arg2> --topo mytopo --arp --mac</arg2>
+                <controller>remote</controller>
+             </COMPONENTS>
+        </Mininet1>
+
+    </COMPONENT>
+</TOPOLOGY>

@@ -1035,7 +1035,7 @@ class onossanityclidriver(CLI):
         self.execute(cmd='''rm /tmp/wireshark*''')
         self.handle.sendline("y")
         self.handle.expect("\$")
-        self.execute(cmd='''tshark -i lo -t e | grep --color=auto CSM | grep --color=auto -E 'Flow|Barrier' > /tmp/tdump_'''+flowtype+"_"+str(numflows)+".txt &",prompt="Capturing",timeout=10)
+        self.execute(cmd='''tshark -i eth0 -t e | grep --color=auto CSM | grep --color=auto -E 'Flow|Barrier' > /tmp/tdump_'''+flowtype+"_"+str(numflows)+".txt &",prompt="Capturing",timeout=10)
         self.handle.sendline("")
         self.handle.expect("\$")
         main.log.info("TSHARK STARTED!!!")

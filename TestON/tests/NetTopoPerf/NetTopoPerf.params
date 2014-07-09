@@ -1,5 +1,5 @@
 <PARAMS>
-    <testcases>1,2,3</testcases>
+    <testcases>1,2</testcases>
     <tcpdump> 
         <intf>eth0</intf>
         <port>port 6633</port>
@@ -33,6 +33,8 @@
 	<sw1>s1</sw1>
     </PLUG>
     <CTRL>
+        <ip0>10.128.5.50</ip0>
+        <port0>6633</port0>
         <ip1>10.128.5.51</ip1>
         <port1>6633</port1>
         <ip2>10.128.5.52</ip2>
@@ -43,11 +45,12 @@
         <port4>6633</port4>
     </CTRL>
     <INTENTREST>
-        <intentIP>10.128.5.51</intentIP>
+        <intentIP>10.128.5.52</intentIP>
         <intentPort>8080</intentPort>
         <intentURL>wm/onos/intent/high</intentURL>
     </INTENTREST>
-    <RestIP>10.128.5.51</RestIP>
+    <RestIP0>10.128.5.50</RestIP0>
+    <RestIP1>10.128.5.51</RestIP1>
     <RestIP2>10.128.5.52</RestIP2>
     <RestIP3>10.128.5.53</RestIP3>
     <RestIP4>10.128.5.54</RestIP4>

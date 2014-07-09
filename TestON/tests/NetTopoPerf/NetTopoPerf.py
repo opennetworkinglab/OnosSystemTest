@@ -12,12 +12,13 @@ class NetTopoPerf:
         main.case("Initial setup")
         main.step("Stop ONOS")
         import time
+        main.ONOS0.stop_all()
         main.ONOS1.stop_all()
         main.ONOS2.stop_all()
         main.ONOS3.stop_all()
-#        main.print_hello_world()
         main.ONOS4.stop_all()
         main.ONOS2.stop_rest()
+        main.ONOS0.handle.sendline("cp ~/onos.properties.proactive ~/ONOS/conf/onos.properties")
         main.ONOS1.handle.sendline("cp ~/onos.properties.proactive ~/ONOS/conf/onos.properties")
         main.ONOS2.handle.sendline("cp ~/onos.properties.proactive ~/ONOS/conf/onos.properties")
         main.ONOS3.handle.sendline("cp ~/onos.properties.proactive ~/ONOS/conf/onos.properties")
@@ -25,36 +26,38 @@ class NetTopoPerf:
         main.step("Start tcpdump on mn")
         main.Mininet2.start_tcpdump(main.params['tcpdump']['filename'], intf = main.params['tcpdump']['intf'], port = main.params['tcpdump']['port'])
         main.step("Start ONOS")
+        main.Zookeeper0.start()
         main.Zookeeper1.start()
         main.Zookeeper2.start()
         main.Zookeeper3.start()
         main.Zookeeper4.start()
         time.sleep(1)
+        main.RamCloud0.del_db()
         main.RamCloud1.del_db()
         main.RamCloud2.del_db()
         main.RamCloud3.del_db()
         main.RamCloud4.del_db()
-        main.log.report("Pulling latest code from github to all nodes")
-        for i in range(2):
-            uptodate = main.ONOS1.git_pull()
-            main.ONOS2.git_pull()
-            main.ONOS3.git_pull()
-            main.ONOS4.git_pull()
-            ver1 = main.ONOS1.get_version()
-            ver2 = main.ONOS4.get_version()
-            if ver1==ver2:
-                break
-            elif i==1:
-                main.ONOS2.git_pull("ONOS1 master")
-                main.ONOS3.git_pull("ONOS1 master")
-                main.ONOS4.git_pull("ONOS1 master")
-        if uptodate==0:
+#        main.log.report("Pulling latest code from github to all nodes")
+#        for i in range(2):
+#            uptodate = main.ONOS1.git_pull()
+#            main.ONOS2.git_pull()
+#            main.ONOS3.git_pull()
+#            main.ONOS4.git_pull()
+#            ver1 = main.ONOS1.get_version()
+#            ver2 = main.ONOS4.get_version()
+#            if ver1==ver2:
+#                break
+#            elif i==1:
+#                main.ONOS2.git_pull("ONOS1 master")
+#                main.ONOS3.git_pull("ONOS1 master")
+#                main.ONOS4.git_pull("ONOS1 master")
+#        if uptodate==0:
        # if 1:
-            main.ONOS1.git_compile()
-            main.ONOS2.git_compile()
-            main.ONOS3.git_compile()
-            main.ONOS4.git_compile()
-        main.ONOS1.print_version()    
+#            main.ONOS1.git_compile()
+#            main.ONOS2.git_compile()
+#            main.ONOS3.git_compile()
+#            main.ONOS4.git_compile()
+#        main.ONOS1.print_version()    
        # main.RamCloud1.git_pull()
        # main.RamCloud2.git_pull()
        # main.RamCloud3.git_pull()
@@ -63,6 +66,7 @@ class NetTopoPerf:
        # main.ONOS2.get_version()
        # main.ONOS3.get_version()
        # main.ONOS4.get_version()
+        main.ONOS0.start_all()
         main.ONOS1.start_all()
         main.ONOS2.start_all()
         main.ONOS3.start_all()
@@ -77,9 +81,10 @@ class NetTopoPerf:
         data =  main.Zookeeper1.isup()
         utilities.assert_equals(expect=main.TRUE,actual=data,onpass="Zookeeper is up!",onfail="Zookeeper is down...")
         main.step("Testing startup RamCloud")   
-        data =  main.RamCloud1.status_serv() and main.RamCloud2.status_serv() and main.RamCloud3.status_serv() and main.RamCloud4.status_serv()
+        data =  main.RamCloud0.status_serv() and main.RamCloud1.status_serv() and main.RamCloud2.status_serv() and main.RamCloud3.status_serv() and main.RamCloud4.status_serv()
         if data == main.FALSE:
             main.RamCloud1.stop_coor()
+            main.RamCloud0.stop_serv()
             main.RamCloud1.stop_serv()
             main.RamCloud2.stop_serv()
             main.RamCloud3.stop_serv()
@@ -87,17 +92,17 @@ class NetTopoPerf:
 
             time.sleep(5)
             main.RamCloud1.start_coor()
+            main.RamCloud0.start_serv()
             main.RamCloud1.start_serv()
             main.RamCloud2.start_serv()
             main.RamCloud3.start_serv()
             main.RamCloud4.start_serv()
             time.sleep(5)
-            data =  main.RamCloud1.status_serv() and main.RamCloud2.status_serv() and main.RamCloud3.status_serv() and main.RamCloud4.status_serv()
+            data =  main.RamCloud0.status_serv() and main.RamCloud1.status_serv() and main.RamCloud2.status_serv() and main.RamCloud3.status_serv() and main.RamCloud4.status_serv()
             
-
         utilities.assert_equals(expect=main.TRUE,actual=data,onpass="RamCloud is up!",onfail="RamCloud is down...")
         main.step("Testing startup ONOS")   
-        data = main.ONOS1.isup() and main.ONOS2.isup() and main.ONOS3.isup() and main.ONOS4.isup()
+        data = main.ONOS0.isup() and main.ONOS1.isup() and main.ONOS2.isup() and main.ONOS3.isup() and main.ONOS4.isup()
         for i in range(3):
             if data == main.FALSE: 
                 #main.log.report("Something is funny... restarting ONOS")
@@ -105,86 +110,53 @@ class NetTopoPerf:
                 time.sleep(3)
                 #main.ONOS1.start()
                 #time.sleep(5) 
-                data = main.ONOS1.isup() and main.ONOS2.isup() and main.ONOS3.isup() and main.ONOS4.isup()
+                data = main.ONOS0.isup() and main.ONOS1.isup() and main.ONOS2.isup() and main.ONOS3.isup() and main.ONOS4.isup()
             else:
                 break
         utilities.assert_equals(expect=main.TRUE,actual=data,onpass="ONOS is up and running!",onfail="ONOS didn't start...")
         time.sleep(20)
            
 #**********************************************************************************************************************************************************************************************
-#Assign Controllers
-#This test first checks the ip of a mininet host, to be certain that the mininet exists(Host is defined in Params as <CASE1><destination>).
-#Then the program assignes each ONOS instance a single controller to a switch(To be the initial master), then assigns all controllers.
-#NOTE: The reason why all four controllers are assigned although one was already assigned as the master is due to the 'ovs-vsctl set-controller' command erases all present controllers if
-#      the controllers already assigned to the switch are not specified.
+#Assign a single switch to a controller and verify assignment. Measure time to add switch
 
     def CASE2(self,main) :    #Make sure mininet exists, then assign controllers to switches
+        import re
         import time
         main.log.report("Check if mininet started properly, then assign controllers ONOS 1,2,3 and 4")
-        main.case("Checking if one MN host exists")
-        main.step("Host IP Checking using checkIP")
-        result = main.Mininet1.checkIP(main.params['CASE1']['destination'])
-        main.step("Verifying the result")
-        utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Host IP address configured",onfail="Host IP address not configured")
-        main.step("assigning ONOS controllers to switches")
-        #Assign 5 switches to 5 different ONOS instances
-        main.Mininet1.assign_sw_controller(sw=str(1),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'])
+        #main.case("Checking if one MN host exists")
+        #main.step("Host IP Checking using checkIP")
+        #result = main.Mininet1.checkIP(main.params['CASE1']['destination'])
+        #main.step("Verifying the result")
+        #utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Host IP address configured",onfail="Host IP address not configured")
+        main.case("Assigning a switch to the ONOS controller")
+        #main.Mininet1.assign_sw_contorller(sw=str(1),ip0=main.params['CTRL']['ip0'],port0=main.params['CTRL']['port0'])
+        main.Mininet1.handle.sendline("sh ovs-vsctl set-controller s1 tcp:10.128.5.50:6633")
         time.sleep(1)
-        main.Mininet1.assign_sw_controller(sw=str(2),ip1=main.params['CTRL']['ip2'],port1=main.params['CTRL']['port2'])
-        time.sleep(1)
-        main.Mininet1.assign_sw_controller(sw=str(3),ip1=main.params['CTRL']['ip3'],port1=main.params['CTRL']['port3'])
-        time.sleep(1)
-        main.Mininet1.assign_sw_controller(sw=str(4),ip1=main.params['CTRL']['ip4'],port1=main.params['CTRL']['port4'])
-        time.sleep(1)
-        main.Mininet1.assign_sw_contorller(sw=str(5),ip1=main.params['CTRL']['ip5'],port1=main.params['CTRL']['port5'])
-        time.sleep(30)
-# **********************************************************************************************************************************************************************************************
-#Add Flows
-#Deletes any remnant flows from any previous test, add flows from the file labeled <FLOWDEF>, then runs the check flow test
-#NOTE: THE FLOWDEF FILE MUST BE PRESENT ON TESTON VM!!! TestON will copy the file from its home machine into /tmp/flowtmp on the machine the ONOS instance is present on
-
-    def CASE3(self,main) :    #Delete any remnant flows, then add flows, and time how long it takes flow tables to update
-        main.log.report("Delete any flows from previous tests, then add flows from FLOWDEF file, then wait for switch flow tables to update")
-        import time
-        main.case("Taking care of these flows!") 
-        main.step("Cleaning out any leftover flows...")
-        #main.ONOS1.delete_flow("all")
-        strtTime = time.time()
-        main.ONOS1.rm_intents()
-        print("world")
-        main.ONOS1.add_intents()
-        time.sleep(2)
-        main.ONOS1.add_intents()
-        print("hello")
-       # main.ONOS1.add_flow(main.params['FLOWDEF']['testONip'],main.params['FLOWDEF']['user'],main.params['FLOWDEF']['password'],main.params['FLOWDEF']['flowDef'])
-        main.case("Checking flows")
-       
-        count = 1
-        i = 6
-        while i < 16 :
-            main.log.info("\n\t\t\t\th"+str(i)+" IS PINGING h"+str(i+25) )
-            ping = main.Mininet1.pingHost(src="h"+str(i),target="h"+str(i+25))
-            if ping == main.FALSE and count < 9:
-                count = count + 1
-                i = 6
-                main.log.info("Ping failed, making attempt number "+str(count)+" in 2 seconds")
-                time.sleep(2)
-            elif ping == main.FALSE and count ==9:
-                main.log.error("Ping test failed")
-                i = 17
-                result = main.FALSE
-            elif ping == main.TRUE:
-                i = i + 1
-                result = main.TRUE
-        endTime = time.time()
-        if result == main.TRUE:
-            main.log.report("\tTime to add flows: "+str(round(endTime-strtTime,2))+" seconds")
+        main.step("Verifying that switch is assigned properly")
+        response=main.Mininet1.get_sw_controller("s1")
+        if re.search("tcp:"+main.params['CTRL']['ip0'],response):
+            main.log.report("Switch assigned correctly")
         else:
-            main.log.report("\tFlows failed check")
+            main.log.error("Switch was NOT assigned correctly")
+            print response
+        #TODO: Obtain timestamp here 
+        time.sleep(5)
+  
+        main.case("Removing the switch from the controller")
+        main.Mininet1.handle.sendline("sh ovs-vsctl del-controller s1")
+        time.sleep(1)
+        main.step("Verifying that switch was removed")
+        response = main.Mininet1.get_sw_controller("s1")
+        print "response: " + response
+        
 
-        result2 = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
-        main.step("Verifying the result")
-        utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Flow check PASS",onfail="Flow check FAIL")
+# **********************************************************************************************************************************************************************************************
+#Delete the controller from case 2 and verify deletion. Measure time to delete    
+    def CASE3(self,main):
+        import re
+        import time
+
+        main.log.report("Deleting controller from case 2")
 
 #**********************************************************************************************************************************************************************************************
 #This test case removes Controllers 2,3, and 4 then performs a ping test.
@@ -201,11 +173,11 @@ class NetTopoPerf:
         main.ONOS4.stop()
         time.sleep(45)
         strtTime = time.time() 
-        result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
+        result = main.ONOS1.check_status_report(main.params['RestIP0'],main.params['NR_Switches'],main.params['NR_Links'])
         for i in range(10):
             if result == main.FALSE:
                 time.sleep(5)
-                result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
+                result = main.ONOS1.check_status_report(main.params['RestIP0'],main.params['NR_Switches'],main.params['NR_Links'])
             else:
                 break
 
@@ -251,11 +223,11 @@ class NetTopoPerf:
                 main.Mininet1.assign_sw_controller(sw=str(j),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'])
       
         strtTime = time.time() 
-        result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
+        result = main.ONOS1.check_status_report(main.params['RestIP0'],main.params['NR_Switches'],main.params['NR_Links'])
         for i in range(10):
             if result == main.FALSE:
                 time.sleep(5)
-                result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
+                result = main.ONOS1.check_status_report(main.params['RestIP0'],main.params['NR_Switches'],main.params['NR_Links'])
             else:
                 break
 
@@ -312,11 +284,11 @@ class NetTopoPerf:
                 main.Mininet1.assign_sw_controller(sw=str(j),count=4,ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'])
                 time.sleep(1)
         strtTime = time.time() 
-        result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
+        result = main.ONOS1.check_status_report(main.params['RestIP0'],main.params['NR_Switches'],main.params['NR_Links'])
         for i in range(10):
             if result == main.FALSE:
                 time.sleep(5)
-                result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
+                result = main.ONOS1.check_status_report(main.params['RestIP0'],main.params['NR_Switches'],main.params['NR_Links'])
             else:
                 break
 
@@ -355,11 +327,11 @@ class NetTopoPerf:
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Link DOWN!",onfail="Link not brought down...")
        
         strtTime = time.time() 
-        result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],str(int(main.params['NR_Links'])-2))
+        result = main.ONOS1.check_status_report(main.params['RestIP0'],main.params['NR_Switches'],str(int(main.params['NR_Links'])-2))
         for i in range(10):
             if result == main.FALSE:
                 time.sleep(5)
-                result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],str(int(main.params['NR_Links'])-2))
+                result = main.ONOS1.check_status_report(main.params['RestIP0'],main.params['NR_Switches'],str(int(main.params['NR_Links'])-2))
             else:
                 break
 
@@ -399,7 +371,7 @@ class NetTopoPerf:
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Link UP!",onfail="Link not brought up...")
         time.sleep(10) 
         strtTime = time.time() 
-        result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],str(int(main.params['NR_Links'])-2))
+        result = main.ONOS1.check_status_report(main.params['RestIP0'],main.params['NR_Switches'],str(int(main.params['NR_Links'])-2))
         for i in range(10):
             if result == main.FALSE:
                 time.sleep(15)

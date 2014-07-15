@@ -1,15 +1,6 @@
 <TOPOLOGY>
 
     <COMPONENT>
-        <Zookeeper0>
-            <host>10.128.5.50</host>
-            <user>admin</user>
-            <password>onos_test</password>
-            <type>ZookeeperCliDriver</type>
-            <connect_order>1</connect_order>
-            <COMPONENTS>
-            </COMPONENTS>
-        </Zookeeper0>
 
         <Zookeeper1>
             <host>10.128.5.51</host>
@@ -40,26 +31,6 @@
             <COMPONENTS>
              </COMPONENTS>
         </Zookeeper3>
-       
-        <Zookeeper4>
-            <host>10.128.5.54</host>
-            <user>admin</user>
-            <password>onos_test</password>
-            <type>ZookeeperCliDriver</type>
-            <connect_order>5</connect_order>
-            <COMPONENTS>
-             </COMPONENTS>
-        </Zookeeper4>
-
-        <RamCloud0>
-            <host>10.128.5.50</host>
-            <user>admin</user>
-            <password>onos_test</password>
-            <type>RamCloudCliDriver</type>
-            <connect_order>6</connect_order>
-            <COMPONENTS>
-             </COMPONENTS> 
-        </RamCloud0>
 
         <RamCloud1>
             <host>10.128.5.51</host>
@@ -90,32 +61,12 @@
             <COMPONENTS>
              </COMPONENTS>
         </RamCloud3>
-       
-        <RamCloud4>
-            <host>10.128.5.54</host>
-            <user>admin</user>
-            <password>onos_test</password>
-            <type>RamCloudCliDriver</type>
-            <connect_order>10</connect_order>
-            <COMPONENTS>
-             </COMPONENTS>
-        </RamCloud4>
-
-        <ONOS0>
-            <host>10.128.5.50</host>
-            <user>admin</user>
-            <password>onos_test</password>
-            <type>OnosCliDriver</type>
-            <connect_order>11</connect_order>
-            <COMPONENTS>
-             </COMPONENTS>
-        </ONOS0>
 
         <ONOS1>
             <host>10.128.5.51</host>
             <user>admin</user>
             <password>onos_test</password>
-            <type>OnosCliDriver</type>
+            <type>onossanityclidriver</type>
             <connect_order>12</connect_order>
             <COMPONENTS>
              </COMPONENTS>
@@ -125,7 +76,7 @@
             <host>10.128.5.52</host>
             <user>admin</user>
             <password>onos_test</password>
-            <type>OnosCliDriver</type>
+            <type>onossanityclidriver</type>
             <connect_order>13</connect_order>
             <COMPONENTS>
              </COMPONENTS>
@@ -135,21 +86,11 @@
             <host>10.128.5.53</host>
             <user>admin</user>
             <password>onos_test</password>
-            <type>OnosCliDriver</type>
+            <type>onossanityclidriver</type>
             <connect_order>14</connect_order>
             <COMPONENTS>
              </COMPONENTS>
         </ONOS3>
-       
-        <ONOS4>
-            <host>10.128.5.54</host>
-            <user>admin</user>
-            <password>onos_test</password>
-            <type>OnosCliDriver</type>
-            <connect_order>15</connect_order>
-            <COMPONENTS>
-             </COMPONENTS>
-        </ONOS4>
 
         <Mininet1>
             <host>10.128.5.59</host>

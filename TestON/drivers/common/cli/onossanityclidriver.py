@@ -1011,23 +1011,35 @@ class onossanityclidriver(CLI):
 
 #Perf test related functions
 
-    def addPerfFlows(self, flowdef, numflows):
+    def addPerfFlows(self, onosdir, numflows):
         main.log.info("ADD_FLOW RUNNING!!!! ")
         startTime=time.time()
-        self.execute(cmd="/home/admin/ONOS/scripts"+"/add_"+str(numflows)+".py",prompt="\$",timeout=10)
+        self.execute(cmd=onosdir+"/scripts"+"/add_"+str(numflows)+".py",prompt="\$",timeout=10)
         elapsedTime=time.time()-startTime
         main.log.info("AddFlows script run time: " + str(elapsedTime) + " seconds")
         time.sleep(15)
         return main.TRUE
 
-    def removePerfFlows(self, flowdef, numflows):
+    def removePerfFlows(self, onosdir, numflows):
         main.log.info("REMOVE_FLOW RUNNING!!!! ")
         startTime=time.time()
-        self.execute(cmd="/home/admin/ONOS/scripts"+"/remove_"+str(numflows)+".py",prompt="\$",timeout=10)
+        self.execute(cmd=onosdir+"/scripts"+"/remove_"+str(numflows)+".py",prompt="\$",timeout=10)
         elapsedTime=time.time()-startTime
         main.log.info("RemoveFlows script run time: " + str(elapsedTime) + " seconds")
         time.sleep(15)
         return main.TRUE
+
+    def tshark_of(self):
+        self.handle.sendline("")
+        self.handle.expect("\$")
+        self.execute(cmd='''rm /tmp/wireshark*''')
+        self.handle.sendline("y")
+        self.handle.expect("\$")
+        self.execute(cmd='''tshark -i eth0 -t e | grep --color=auto CSM | grep --color=auto -E 'Flow|Barrier' > /tmp/tshark_of.txt''',prompt="Capturing",timeout=10)
+        self.handle.sendline("")
+        self.handle.expect("\$")
+        main.log.info("tshark_of started")
+        return main.True
 
     def start_tshark(self,flowtype, numflows):
         self.handle.sendline("")
@@ -1036,6 +1048,7 @@ class onossanityclidriver(CLI):
         self.handle.sendline("y")
         self.handle.expect("\$")
         self.execute(cmd='''tshark -i eth0 -t e | grep --color=auto CSM | grep --color=auto -E 'Flow|Barrier' > /tmp/tdump_'''+flowtype+"_"+str(numflows)+".txt &",prompt="Capturing",timeout=10)
+        
         self.handle.sendline("")
         self.handle.expect("\$")
         main.log.info("TSHARK STARTED!!!")
@@ -1057,7 +1070,7 @@ class onossanityclidriver(CLI):
         f.write('''#! /usr/bin/python\n''')
         f.write('import json\n')
         f.write('import requests\n')
-        f.write('''url = 'http://'''+ip+''':8080/wm/onos/datagrid/add/intents/json'\n''')
+        f.write('''url = 'http://127.0.0.1:8080/wm/onos/datagrid/add/intents/json'\n''') 
         f.write('''headers = {'Content-type': 'application/json', 'Accept': 'application/json'}\n''') 
         
         intents = []
@@ -1080,45 +1093,68 @@ class onossanityclidriver(CLI):
         f.write('''s=''')
         f.write(json.dumps(intents, sort_keys = True))
         f.write('''\nr = requests.post(url, data=json.dumps(s), headers = headers)''')
-        #f.flush()
+        f.flush()
         #subprocess.Popen(flowdef, stdout=f, stderr=f, shell=True)
-        #f.close()
+        f.close()
         os.system("chmod a+x "+flowdef+"/"+flowtype+"_"+str(numflows)+".py")
         
         return main.TRUE
     
-    def getFile(self, numflows, ip, directory, flowparams):
-        main.log.info("GETTING FILES FROM TEST STATION: "+str(ip))
-        #for i in range(0,3):
-        print str(numflows) + " "+str(flowparams[numflows])
-        self.handle.sendline("scp admin@10.128.7.7:/home/admin/TestON/tests/OnosFlowPerf/add_"+str(flowparams[numflows])+".py admin@10.128.5.51:/home/admin/ONOS/scripts/" )
-            
-        self.handle.sendline("scp admin@10.128.7.7:/home/admin/TestON/tests/OnosFlowPerf/remove_"+str(flowparams[numflows])+".py admin@10.128.5.51:/home/admin/ONOS/scripts/" ) 
-
+    def getFile(self, numflows, onosIp, testIp, testdirectory, onosdirectory, flowparams):
+        import datetime
+        time.sleep(15)
+        main.log.info("SCP'ing FILES FROM TEST STATION: "+str(testIp)+ " TO ONOS: "+str(onosIp))
+        for i in range(0,numflows):
+            self.handle.sendline("scp admin@"+testIp+":"+testdirectory+"/add_"+str(flowparams[i])+".py admin@"+onosIp+":"+onosdirectory+"/scripts/" )
+            self.handle.sendline("scp admin@"+testIp+":"+testdirectory+"/remove_"+str(flowparams[i])+".py admin@"+onosIp+":"+onosdirectory+"/scripts/" ) 
+        time.sleep(15)
         return main.TRUE
 
-    def printPerfResults(self, flowtype, numflows, stime):
+    def printPerfResults(self, flowtype, numflows, stime, onosip):
         import datetime  
+        import os
+        import subprocess
         self.handle.sendline("")
         self.handle.expect("\$")
         for (i,j) in zip(numflows,stime):
             startTime=datetime.datetime.fromtimestamp(j)
-            tshark_file=open("/tmp/tdump_"+flowtype+"_"+str(i)+".txt",'r')
-            allFlowmods=tshark_file.readlines()
-            time.sleep(5)
-            firstFlowmod=allFlowmods[0]
-            lastBarrierReply=allFlowmods[-1]
-            #self.handle.sendline("")
-            #self.handle.expect("\$")
+            #tshark_file=os.popen("/tmp/tdump_"+flowtype+"_"+str(i)+".txt",'r')
+            #allFlowmods=tshark_file.read()
+            #time.sleep(5)
+            #firstFlowmod=allFlowmods[0]
+            #lastBarrierReply=allFlowmods[-1]
+            self.handle.sendline("")
+            self.handle.expect("\$")
+            ssh = subprocess.Popen(['ssh', 'admin@'+onosip, 'cat', "/tmp/tdump_"+flowtype+"_"+str(i)+".txt"], stdout=subprocess.PIPE)
+            firstline = ""
+            lastline = ""
+            count = 0
+            while True:
+                line = ssh.stdout.readline() 
+                if count == 0:
+                    firstline = line
+                    count = 1
+                elif line != '':
+                    lastline = line
+                if not line:
+                    break
+            print firstline
+            print lastline
+            firstFlowmod = firstline
+            lastBarrierReply = lastline
             #self.handle.sendline("head -1 /tmp/tdump_"+flowtype+"_"+str(i)+".txt")
             #self.handle.expect("\(CSM\)")
             #firstFlowmod=self.handle.before
             #firstFlowmod=self.execute(cmd="head -1 /tmp/tdump_"+flowtype+"_"+str(i)+".txt",prompt="\$",timeout=10)
             #lastBarrierReply=self.execute(cmd="tail -n 1 /tmp/tdump_"+flowtype+"_"+str(i)+".txt",prompt="\$",timeout=10)
+            print "first flow: " + firstFlowmod
+            print "last barrier: " + lastBarrierReply
             firstFlowmodSplit=firstFlowmod.split()
             firstFlowmodTS=datetime.datetime.fromtimestamp(float(firstFlowmodSplit[0]))
             lastBarrierSplit=lastBarrierReply.split()
             lastBarrierTS=datetime.datetime.fromtimestamp(float(lastBarrierSplit[0]))
+            print firstFlowmodTS
+            print startTime
             main.log.report("Number of Flows: " + str(i))
             #main.log.info("Add Flow Start Time: " + str(startTime))
             main.log.report("First Flow mod seen after: " + str(float(datetime.timedelta.total_seconds(firstFlowmodTS-startTime)*1000))+"ms")
@@ -1131,7 +1167,7 @@ class onossanityclidriver(CLI):
             #main.log.info("first: " + str(firstFlowmod))
             #main.log.info(firstFlowmodSplit)
             #main.log.info("last: " + str(lastBarrierReply))
-            tshark_file.close()
+            #tshark_file.close()
         return main.TRUE
 
     def isup(self):

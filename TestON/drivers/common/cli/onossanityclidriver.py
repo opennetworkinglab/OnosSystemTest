@@ -439,12 +439,12 @@ class onossanityclidriver(CLI):
 	    main.log.info("using directory: "+path) 
             time.sleep(10)
             self.handle.sendline("cd " + path)
-            self.handle.expect("tests")
+            #self.handle.expect("tests")
             self.handle.sendline("./"+intentFile)
             time.sleep(10)
             self.handle.sendline("cd "+self.home)
             return main.TRUE
-	except pexepct.EOF:
+	except pexpect.EOF:
 	    main.log.error(self.name + ": EOF exception found")
 	    main.log.error(self.name + ":    " + self.handle.before)
 	    main.cleanup()
@@ -1029,17 +1029,16 @@ class onossanityclidriver(CLI):
         time.sleep(15)
         return main.TRUE
 
-    def tshark_of(self):
+    def tshark_of(self, capture_type):
         self.handle.sendline("")
-        self.handle.expect("\$")
+        #self.handle.expect("\$")
         self.execute(cmd='''rm /tmp/wireshark*''')
         self.handle.sendline("y")
-        self.handle.expect("\$")
-        self.execute(cmd='''tshark -i eth0 -t e | grep --color=auto CSM | grep --color=auto -E 'Flow|Barrier' > /tmp/tshark_of.txt''',prompt="Capturing",timeout=10)
+        #self.handle.expect("\$")
+        self.execute(cmd='''tshark -i eth0 -t e | grep --color=auto CSM | grep --color=auto -E 'Flow|Barrier' > /tmp/tshark_of_'''+capture_type+''' .txt''',prompt="Capturing",timeout=10)
         self.handle.sendline("")
-        self.handle.expect("\$")
         main.log.info("tshark_of started")
-        return main.True
+        return main.TRUE
 
     def start_tshark(self,flowtype, numflows):
         self.handle.sendline("")
@@ -1224,6 +1223,4 @@ class onossanityclidriver(CLI):
             main.log.info(":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
             main.cleanup()
             main.exit()
-
-    def sendline(self, cmd):
-        self.handle.sendline(cmd)
+         

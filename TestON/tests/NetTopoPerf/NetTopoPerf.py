@@ -116,7 +116,7 @@ class NetTopoPerf:
         #utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Host IP address configured",onfail="Host IP address not configured")
         main.case("Starting tshark open flow capture")
         main.ONOS1.stop_tshark() 
-        main.ONOS1.tshark_of()
+        main.ONOS1.tshark_of("add")
         main.case("Assigning a switch to the ONOS controller")
         #main.Mininet1.assign_sw_contorller(sw=str(1),ip0=main.params['CTRL']['ip0'],port0=main.params['CTRL']['port0'])
         main.Mininet1.handle.sendline("sh ovs-vsctl set-controller s1 tcp:10.128.5.51:6633")
@@ -130,25 +130,57 @@ class NetTopoPerf:
             print response
         main.case("Stopping tshark open flow capture")
         main.ONOS1.stop_tshark()
-        #TODO: Obtain timestamp here 
+        #TODO: Obtain timestamp via rest here 
         time.sleep(5)
-  
+ 
+        main.ONOS1.tshark_of("remove")
         main.case("Removing the switch from the controller")
         main.Mininet1.handle.sendline("sh ovs-vsctl del-controller s1")
         time.sleep(1)
         main.step("Verifying that switch was removed")
         response = main.Mininet1.get_sw_controller("s1")
         print "response: " + response
-        
+        main.ONOS1.stop_tshark()
+        #TODO: Obtain timestamp via rest here
+        time.sleep(5)
 
 # **********************************************************************************************************************************************************************************************
-#Delete the controller from case 2 and verify deletion. Measure time to delete    
+#Disable a port on a switch and add to controller. enable and obtain timestamps
     def CASE3(self,main):
         import re
         import time
 
-        main.log.report("Deleting controller from case 2")
+        main.log.report("Measuring time to enable / disable port")
+   
+        #Disable the port connected to host on switch 1
+        main.Mininet1.handle.sendline("sudo ifconfig s1-eth1 down")
+        main.Mininet1.handle.expect("\$")
+        #Assign switch to controller 
+        main.Mininet1.handle.sendline("sh ovs-vsctl set-controller s1 tcp:10.128.5.51:6633")
+        time.sleep(1)
+        main.step("Verifying that switch is assigned properly")
+        response=main.Mininet1.get_sw_controller("s1")
+        if re.search("tcp:"+main.params['CTRL']['ip1'],response):
+            main.log.report("Switch assigned correctly")
+        else:
+            main.log.error("Switch was NOT assigned correctly")
+            print response
+        
+        #Start tshark and re-enable the port
+        main.ONOS1.tshark_of("port_enable")
+        main.Mininet1.handle.sendline("sudo ifconfig s1-eth1 up")
+        #TODO: get timestamps from ONOS instances of ports coming up
 
+    def CASE99(self, main):
+    #TEST CASE 99 - remove when done
+        for i in range(5): 
+            main.Mininet1.assign_sw_controller(sw=str(i+1),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'])
+        main.ONOS1.add_flow("add_intent_packet.py", "~/ONOS/scripts")
+        response = main.Mininet1.fping_loss(src="h1", target="h2", size="4000")
+        print response
+
+
+ 
 #**********************************************************************************************************************************************************************************************
 #This test case removes Controllers 2,3, and 4 then performs a ping test.
 #The assign controller is used because the ovs-vsctl module deletes all current controllers when a new controller is assigned.

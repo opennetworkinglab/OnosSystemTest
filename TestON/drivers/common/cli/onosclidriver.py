@@ -1038,7 +1038,7 @@ class OnosCliDriver(CLI):
                 self.handle.sendline("git pull " + comp1)
            
             uptodate = 0
-            i=self.handle.expect(['fatal','Username\sfor\s(.*):\s','Unpacking\sobjects',pexpect.TIMEOUT,'Already up-to-date','Aborting','You\sare\snot\scurrently\son\sa\sbranch'],timeout=1700)
+            i=self.handle.expect(['fatal','Username\sfor\s(.*):\s','\sfile(s*) changed,\s',pexpect.TIMEOUT,'Already up-to-date','Aborting','You\sare\snot\scurrently\son\sa\sbranch'],timeout=1700)
             #debug
            #main.log.report(self.name +": \n"+"git pull response: " + str(self.handle.before) + str(self.handle.after))
             if i==0:
@@ -1053,6 +1053,7 @@ class OnosCliDriver(CLI):
                 return 0
             elif i==3:
                 main.log.error(self.name + ": Git Pull - TIMEOUT")
+                main.log.error(self.name + " Response was: " + str(self.handle.before))
                 return main.ERROR
             elif i==4:
                 main.log.info(self.name + ": Git Pull - Already up to date")

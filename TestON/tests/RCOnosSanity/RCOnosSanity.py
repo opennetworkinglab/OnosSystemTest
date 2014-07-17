@@ -42,7 +42,7 @@ class RCOnosSanity :
 
     def CASE2(self,main) :    #Make sure mininet exists, then assign controllers to switches
         import time
-        main.log.report("Check if mininet started properly, then assign controllers ONOS 1,2,3 and 4")
+        main.log.report("Check if mininet started properly, then assign the switches to ONOS")
         main.case("Checking if one MN host exists")
         main.step("Host IP Checking using checkIP")
         result = main.Mininet.checkIP(main.params['CASE1']['destination'])
@@ -99,50 +99,6 @@ class RCOnosSanity :
         result2 = main.ONOS.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
         main.step("Verifying the result")
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Flow check PASS",onfail="Flow check FAIL")
-
-#*************************************************************************************
-#**************************************************************************************
-#*******************
-#This test case removes Controllers 2,3, and 4 then performs a ping test.
-#The assign controller is used because the ovs-vsctl module deletes all current controllers when a new #controller is #assigned.
-#The ping test performs single pings on hosts from opposite sides of the topology. If 
-#one ping fails, the test waits 5 seconds before trying again.
-#If the ping test fails 6 times, then the test case will return false
-    def CASE41(self,main) :
-        main.log.report("Testing Removal")
-        strtTime = time.time() 
-        result = main.ONOS.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
-        for i in range(10):
-            if result == main.FALSE:
-                time.sleep(5)
-                result = main.ONOS.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
-            else:
-                break
-
-        count = 1
-        i = 6
-        while i < 16 :
-            main.log.info("\n\t\t\t\th"+str(i)+" IS PINGING h"+str(i+25) )
-            ping = main.Mininet.pingHost(src="h"+str(i),target="h"+str(i+25))
-            if ping == main.FALSE and count < 6:
-                count = count + 1
-                i = 6
-                main.log.info("Ping failed, making attempt number "+str(count)+" in 2 seconds")
-                time.sleep(2)
-            elif ping == main.FALSE and count ==6:
-                main.log.error("Ping test failed")
-                i = 17
-                result = main.FALSE
-            elif ping == main.TRUE:
-                i = i + 1
-                result = main.TRUE
-        endTime = time.time() 
-        if result == main.TRUE:
-            main.log.report("\tTime to complete ping test: "+str(round(endTime-strtTime,2))+" seconds")
-        else:
-            main.log.report("\tPING TEST FAIL")
-        utilities.assert_equals(expect=main.TRUE,actual=result,onpass="NO PACKET LOSS,HOST IS REACHABLE",onfail="PACKET LOST, HOST IS NOT REACHABLE")
-        time.sleep(10)
 
 ##########*****************************************************
     def CASE4(self,main) :

@@ -1,10 +1,23 @@
 <PARAMS>
-    <testcases>[1,2]</testcases>
+    <testcases>1,4</testcases>
     <tcpdump> 
         <intf>eth0</intf>
         <port>port 6633</port>
         <filename>~/packet_captures/Sanity.pcap</filename>
     </tcpdump>
+    
+    <INTENTS>
+        <url>http://10.128.5.52:8080/wm/onos/datagrid/add/intents/json</url>
+        <intent_id>1</intent_id>
+        <intent_type>shortest_intent_type</intent_type>
+        <srcSwitch>00:00:00:00:00:00:10:01</srcSwitch>
+        <dstSwitch>00:00:00:00:00:00:20:07</dstSwitch>
+        <srcPort>1</srcPort>
+        <dstPort>1</dstPort>
+        <srcMac>00:00:00:00:00:01</srcMac> 
+        <dstMac>00:00:00:00:00:02</dstMac>
+    </INTENTS>
+
     <CASE1>       
         <destination>h6</destination>
         <target>h40</target>

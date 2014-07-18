@@ -64,7 +64,7 @@ class NetTopoPerf:
         main.ONOS2.start_rest()
         test= main.ONOS2.rest_status()
         if test == main.FALSE:
-            main.ONOS1.start_rest()
+            main.ONOS2.start_rest()
         main.ONOS1.get_version()
         main.log.report("Startup check Zookeeper1, RamCloud1, and ONOS1 connections")
         main.step("Testing startup Zookeeper")   
@@ -170,115 +170,100 @@ class NetTopoPerf:
         main.ONOS1.tshark_of("port_enable")
         main.Mininet1.handle.sendline("sudo ifconfig s1-eth1 up")
         #TODO: get timestamps from ONOS instances of ports coming up
+        main.ONOS1.stop_tshark()
 
     def CASE99(self, main):
     #TEST CASE 99 - remove when done
         for i in range(5): 
             main.Mininet1.assign_sw_controller(sw=str(i+1),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'])
-        main.ONOS1.add_flow("add_intent_packet.py", "~/ONOS/scripts")
-        response = main.Mininet1.fping_loss(src="h1", target="h2", size="4000")
+        #main.ONOS1.add_flow("add_intent_packet.py", "~/ONOS/scripts")
+        #response = main.Mininet1.fping_loss(src="h1", target="h2", size="4000")
         print response
 
-
- 
-#**********************************************************************************************************************************************************************************************
-#This test case removes Controllers 2,3, and 4 then performs a ping test.
-#The assign controller is used because the ovs-vsctl module deletes all current controllers when a new controller is assigned.
-#The ping test performs single pings on hosts from opposite sides of the topology. If one ping fails, the test waits 5 seconds before trying again.
-#If the ping test fails 6 times, then the test case will return false
-    def CASE41(self,main) :
-        main.log.report("Testing Removal")
-        time.sleep(20)
-        main.ONOS2.stop()
-        time.sleep(30)
-        main.ONOS3.stop()
-        time.sleep(30)
-        main.ONOS4.stop()
-        time.sleep(45)
-        strtTime = time.time() 
-        result = main.ONOS1.check_status_report(main.params['RestIP0'],main.params['NR_Switches'],main.params['NR_Links'])
-        for i in range(10):
-            if result == main.FALSE:
-                time.sleep(5)
-                result = main.ONOS1.check_status_report(main.params['RestIP0'],main.params['NR_Switches'],main.params['NR_Links'])
-            else:
-                break
-
-        count = 1
-        i = 6
-        while i < 16 :
-            main.log.info("\n\t\t\t\th"+str(i)+" IS PINGING h"+str(i+25) )
-            ping = main.Mininet1.pingHost(src="h"+str(i),target="h"+str(i+25))
-            if ping == main.FALSE and count < 6:
-                count = count + 1
-                i = 6
-                main.log.info("Ping failed, making attempt number "+str(count)+" in 2 seconds")
-                time.sleep(2)
-            elif ping == main.FALSE and count ==6:
-                main.log.error("Ping test failed")
-                i = 17
-                result = main.FALSE
-            elif ping == main.TRUE:
-                i = i + 1
-                result = main.TRUE
-        endTime = time.time() 
-        if result == main.TRUE:
-            main.log.report("\tTime to complete ping test: "+str(round(endTime-strtTime,2))+" seconds")
-        else:
-            main.log.report("\tPING TEST FAIL")
-        utilities.assert_equals(expect=main.TRUE,actual=result,onpass="NO PACKET LOSS, HOST IS REACHABLE",onfail="PACKET LOST, HOST IS NOT REACHABLE")
-        time.sleep(10)
-        main.ONOS2.start() 
-        main.ONOS3.start()
-        main.ONOS4.start() 
-        time.sleep(20)
-
-
-    def CASE4(self,main) :
-        main.log.report("Remove ONOS 2,3,4 then ping until all hosts are reachable or fail after 6 attempts")
+#**********************************************
+#Single intent add / delete performance    
+    def CASE4(self, main):
+        import requests
+        import json
         import time
-        for i in range(25):
-            if i < 15:
-                j=i+1
-                main.Mininet1.assign_sw_controller(sw=str(j),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'])  #Assigning a single controller removes all other controllers
-            else:
-                j=i+16
-                main.Mininet1.assign_sw_controller(sw=str(j),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'])
-      
-        strtTime = time.time() 
-        result = main.ONOS1.check_status_report(main.params['RestIP0'],main.params['NR_Switches'],main.params['NR_Links'])
-        for i in range(10):
-            if result == main.FALSE:
-                time.sleep(5)
-                result = main.ONOS1.check_status_report(main.params['RestIP0'],main.params['NR_Switches'],main.params['NR_Links'])
-            else:
-                break
 
-        count = 1
-        i = 6
-        while i < 16 :
-            main.log.info("\n\t\t\t\th"+str(i)+" IS PINGING h"+str(i+25) )
-            ping = main.Mininet1.pingHost(src="h"+str(i),target="h"+str(i+25))
-            if ping == main.FALSE and count < 6:
-                count = count + 1
-                i = 6
-                main.log.info("Ping failed, making attempt number "+str(count)+" in 2 seconds")
-                time.sleep(2)
-            elif ping == main.FALSE and count ==6:
-                main.log.error("Ping test failed")
-                i = 17
-                result = main.FALSE
-            elif ping == main.TRUE:
-                i = i + 1
-                result = main.TRUE
-        endTime = time.time() 
-        if result == main.TRUE:
-            main.log.report("\tTime to complete ping test: "+str(round(endTime-strtTime,2))+" seconds")
-        else:
-            main.log.report("\tPING TEST FAIL")
-        utilities.assert_equals(expect=main.TRUE,actual=result,onpass="NO PACKET LOSS, HOST IS REACHABLE",onfail="PACKET LOST, HOST IS NOT REACHABLE")
-        time.sleep(10)
+        #need to assign all switches to the right controllers first
+        for i in range(1,8):
+            if i < 3:
+                main.Mininet1.assign_sw_controller(sw=str(i),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'])
+                time.sleep(1) 
+                main.Mininet1.assign_sw_controller(sw=str(i),count=3,\
+                                                   ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],\
+                                                   ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],\
+                                                   ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'])
+            elif i < 6 and i > 2:
+                main.Mininet1.assign_sw_controller(sw=str(i),ip1=main.params['CTRL']['ip2'],port1=main.params['CTRL']['port2'])
+                time.sleep(1)
+                main.Mininet1.assign_sw_controller(sw=str(i),count=3,\
+                                                   ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],\
+                                                   ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],\
+                                                   ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'])
+            elif i < 8 and i > 5:
+                main.Mininet1.assign_sw_controller(sw=str(i),ip1=main.params['CTRL']['ip3'],port1=main.params['CTRL']['port3'])
+                time.sleep(1)
+                main.Mininet1.assign_sw_controller(sw=str(i),count=3,\
+                                                   ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],\
+                                                   ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],\
+                                                   ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'])
+        time.sleep(30)        
+        ctrl = main.Mininet1.get_sw_controller("s1")       
+        ctrl2 = main.Mininet1.get_sw_controller("s2")
+        ctrl3 = main.Mininet1.get_sw_controller("s3")
+        print ctrl  
+        print ctrl2
+        print ctrl3
+ 
+        url = main.params['INTENTS']['url']
+        headers = {'Content-type': 'application/json', 'Accept': 'application/json'}
+        intent_id = main.params['INTENTS']['intent_id']
+        intent_type = main.params['INTENTS']['intent_type']
+        srcSwitch = main.params['INTENTS']['srcSwitch']
+        srcPort = int(main.params['INTENTS']['srcPort'])
+        srcMac = main.params['INTENTS']['srcMac']
+        dstSwitch = main.params['INTENTS']['dstSwitch']
+        dstPort = int(main.params['INTENTS']['dstPort'])
+        dstMac = main.params['INTENTS']['dstMac']
+        url_remove = "http://"+main.params['INTENTREST']['intentIP']+":"+main.params['INTENTREST']['intentPort']+"/wm/onos/intent/high/"+main.params['INTENTS']['intent_id']
+         
+        intent_forward = [{'intent_id':intent_id,\
+                           'intent_type':intent_type,\
+                           'intent_op':'add',\
+                           'srcSwitch':srcSwitch,\
+                           'srcPort':srcPort,\
+                           'srcMac':srcMac,\
+                           'dstSwitch':dstSwitch,\
+                           'dstPort':dstPort,\
+                           'dstMac':dstMac\
+                         }]
+        print intent_forward
+        r_forward = requests.post(url, data=json.dumps(intent_forward, sort_keys=True), headers = headers)
+        print r_forward        
 
+        result = main.Mininet1.pingHost(src="h1",target="h7")
+        print result
+
+        intent_receive = [{'intent_id':intent_id,\
+                           'intent_type':intent_type,\
+                           'intent_op':'add',\
+                           'srcSwitch':dstSwitch,\
+                           'srcPort':dstPort,\
+                           'srcMac':dstMac,\
+                           'dstSwitch':srcSwitch,\
+                           'dstPort':srcPort,\
+                           'dstMac':srcMac\
+                         }]     
+        print intent_receive
+        r_receive = requests.post(url, data=json.dumps(intent_receive, sort_keys=True), headers = headers)
+        print r_receive
+
+        r_remove = requests.post(url_remove, data=json.dumps(intent_receive), headers=headers)
+        print r_remove
+  
 # **********************************************************************************************************************************************************************************************
 #This test case restores the controllers removed by Case 4 then performs a ping test.
 

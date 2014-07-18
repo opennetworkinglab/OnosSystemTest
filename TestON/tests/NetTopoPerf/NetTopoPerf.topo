@@ -100,8 +100,8 @@
             <connect_order>13</connect_order>
             <COMPONENTS>
                 # Specify the Option for mininet
-                <arg1> --custom ~/mininet/custom/topo-onos5node-perf.py </arg1>
-                <arg2> --topo mytopo --arp --link tc,loss=10</arg2>
+                <arg1> --custom ~/mininet/custom/topo-onos3node-perf-intent.py </arg1>
+                <arg2> --topo mytopo --arp</arg2>
                 <controller> remote </controller>
              </COMPONENTS>
         </Mininet1>
@@ -114,8 +114,8 @@
             <connect_order>14</connect_order>
             <COMPONENTS>
                 # Specify the Option for mininet
-                <arg1> --custom ~/mininet/custom/topo-onos5node-perf.py </arg1>
-                <arg2> --topo mytopo --arp --link tc,loss=10</arg2>
+                <arg1> --custom ~/mininet/custom/topo-onos3node-perf-intent.py </arg1>
+                <arg2> --topo mytopo --arp</arg2>
                 <controller> remote </controller>
              </COMPONENTS>
         </Mininet2>

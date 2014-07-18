@@ -25,7 +25,6 @@ teston is the main module.
 '''
 
 import sys
-import pprint
 import getpass
 import os
 import re
@@ -68,7 +67,7 @@ class TestON:
         '''
         # Initialization of the variables.
         __builtin__.main = self
-        pprint.pprint(sys.path)  
+        
         __builtin__.path = path
         __builtin__.utilities = Utilities()
         self.TRUE = 1
@@ -91,6 +90,7 @@ class TestON:
         self.loggerClass = "Logger"
         self.logs_path = logs_path
         self.driver = ''
+	
         
         self.configparser()
         verifyOptions(options)
@@ -184,22 +184,29 @@ class TestON:
         '''
         
         self.testCaseResult = {}
+        self.TOTAL_TC = 0
         self.TOTAL_TC_RUN = 0
+        self.TOTAL_TC_PLANNED = 0 
         self.TOTAL_TC_NORESULT = 0
         self.TOTAL_TC_FAIL = 0
         self.TOTAL_TC_PASS = 0
+        self.TEST_ITERATION = 0
         self.stepCount = 0
         self.CASERESULT = self.TRUE
         
-        import testparser
+        import testparser 
         testFile = self.tests_path + "/"+self.TEST + "/"+self.TEST + ".py"
         test = testparser.TestParser(testFile)
         self.testscript = test.testscript
         self.code = test.getStepCode()
+	repeat= int(self.params['repeat']) if ('repeat' in self.params) else 1
+	main.TOTAL_TC_PLANNED = len(self.testcases_list)*repeat
         
         result = self.TRUE
-        for self.CurrentTestCaseNumber in self.testcases_list:
-            result = self.runCase(self.CurrentTestCaseNumber)
+	while(repeat):
+            for self.CurrentTestCaseNumber in self.testcases_list:
+                result = self.runCase(self.CurrentTestCaseNumber) 
+	    repeat-=1                   
         return result
     
     def runCase(self,testCaseNumber):
@@ -289,13 +296,12 @@ class TestON:
             #tempObject.execute(cmd="exit",prompt="(.*)",timeout=120) 
 
         except(Exception):
-            print " There is an error with closing hanldes"
+            #print " There is an error with closing hanldes"
             result = self.FALSE
         # Closing all the driver's session files
         for driver in self.componentDictionary.keys():
            vars(self)[driver].close_log_handles()
            
-        print( "CLEAN!" )
         return result
         
     def pause(self):
@@ -410,7 +416,8 @@ class TestON:
             lineMatch = re.match('\s+def CASE(\d+)(.*):',testFileList[index],0)
             if lineMatch:
                 counter  = counter + 1
-                self.TOTAL_TC_PLANNED = counter
+                self.TC_PLANNED = len(self.testcases_list)
+        
                 
     def response_parser(self,response, return_format):
         ''' It will load the default response parser '''
@@ -577,16 +584,24 @@ def verifyMail(options):
 def verifyTestCases(options):
     #Getting Test cases list 
     if options.testcases:
+	testcases_list = options.testcases 
+        sys.exit() 
         testcases_list = re.sub("(\[|\])", "", options.testcases)
         main.testcases_list = eval(testcases_list+",")
     else :
         if 'testcases' in main.params.keys():
-            main.params['testcases'] = re.sub("(\[|\])", "", main.params['testcases'])
-            if re.search('\d+', main.params['testcases'], 0):
-                main.testcases_list = eval(main.params['testcases']+",")
-            else :
-                print "Please provide the testcases list in Params file"
-                sys.exit()
+            temp = eval(main.params['testcases']+",")
+            list1=[]
+            if type(temp[0])==list:
+	        for test in temp:
+      	            temp=test
+	    else :
+	    	temp=list(temp)
+      	    for testcase in temp:
+	        if type(testcase)==int:
+	            testcase=[testcase]
+	        list1.extend(testcase)
+	    main.testcases_list=list1	                                     
         else :
             print "testcases not specifed in params, please provide in params file or 'testcases' commandline argument"
             sys.exit() 
@@ -608,7 +623,6 @@ def verifyTestScript(options):
         main.exit()
               
     try :
-        print main.classPath
         testModule = __import__(main.classPath, globals(), locals(), [main.TEST], -1)
     except(ImportError):
         print "There is no test like "+main.TEST

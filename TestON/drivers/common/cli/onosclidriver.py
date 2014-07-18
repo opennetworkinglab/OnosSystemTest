@@ -175,6 +175,8 @@ class OnosCliDriver(CLI):
                 return main.TRUE
             elif re.search("0\sinstance\sof\sonos\srunning",response):
                 return main.FALSE
+            elif re.search("Expected\sPrompt\snot found\s,\sTime Out!!",response):
+                return main.ERROR
             else :
                 main.log.warn(self.name + " WARNING: status recieved unknown response")
                 main.log.warn(response)
@@ -387,7 +389,7 @@ class OnosCliDriver(CLI):
             self.handle.sendline("export TERM=xterm-256color")
             self.handle.expect("xterm-256color")
             self.handle.expect("\$")
-            self.handle.sendline("cd " + self.home + "; git log -1 --pretty=fuller | grep -A 5 \"commit\"; cd \.\.")
+            self.handle.sendline("cd " + self.home + "; git log -1 --pretty=fuller | grep -A 5 \"commit\" --color=never; cd \.\.")
             self.handle.expect("cd ..")
             self.handle.expect("\$")
             response=(self.name +": \n"+ str(self.handle.before + self.handle.after))
@@ -410,7 +412,7 @@ class OnosCliDriver(CLI):
             self.handle.sendline("export TERM=xterm-256color")
             self.handle.expect("xterm-256color")
             self.handle.expect("\$")
-            self.handle.sendline("cd " + self.home + "; git log -1 --pretty=fuller | grep -A 5 \"commit\"; cd \.\.")
+            self.handle.sendline("cd " + self.home + "; git log -1 --pretty=fuller | grep -A 5 \"commit\" --color=never; cd \.\.")
             self.handle.expect("cd ..")
             self.handle.expect("\$")
             response=(self.name +": \n"+ str(self.handle.before + self.handle.after))
@@ -1010,33 +1012,6 @@ class OnosCliDriver(CLI):
             main.cleanup()
             main.exit()
  
-    def check_for_no_exceptions(self):
-        '''
-        TODO: Rewrite
-        Used by CassndraCheck.py to scan ONOS logs for Exceptions
-        '''
-        try:
-            self.handle.sendline("dsh 'grep Exception ~/ONOS/onos-logs/onos.*.log'")
-            self.handle.expect("\$ dsh")
-            self.handle.expect("\$")
-            output = self.handle.before
-            main.log.info(self.name + ": " + output )
-            if re.search("Exception",output):
-                return main.FALSE
-            else :
-                return main.TRUE
-        except pexpect.EOF:
-            main.log.error(self.name + ": EOF exception found")
-            main.log.error(self.name + ":     " + self.handle.before)
-            main.cleanup()
-            main.exit()
-        except:
-            main.log.info(self.name + ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
-            main.log.error( traceback.print_exc() )
-            main.log.info(":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
-            main.cleanup()
-            main.exit()
-
 
     def git_pull(self, comp1=""):
         '''
@@ -1063,7 +1038,7 @@ class OnosCliDriver(CLI):
                 self.handle.sendline("git pull " + comp1)
            
             uptodate = 0
-            i=self.handle.expect(['fatal','Username\sfor\s(.*):\s','Unpacking\sobjects',pexpect.TIMEOUT,'Already up-to-date','Aborting','You\sare\snot\scurrently\son\sa\sbranch'],timeout=1700)
+            i=self.handle.expect(['fatal','Username\sfor\s(.*):\s','\sfile(s*) changed,\s',pexpect.TIMEOUT,'Already up-to-date','Aborting','You\sare\snot\scurrently\son\sa\sbranch'],timeout=1700)
             #debug
            #main.log.report(self.name +": \n"+"git pull response: " + str(self.handle.before) + str(self.handle.after))
             if i==0:
@@ -1078,6 +1053,7 @@ class OnosCliDriver(CLI):
                 return 0
             elif i==3:
                 main.log.error(self.name + ": Git Pull - TIMEOUT")
+                main.log.error(self.name + " Response was: " + str(self.handle.before))
                 return main.ERROR
             elif i==4:
                 main.log.info(self.name + ": Git Pull - Already up to date")
@@ -1255,7 +1231,7 @@ class OnosCliDriver(CLI):
                         if foundHost == hostMAC:
                             for switch in enumerate(host[1]['attachmentPoints']):
                                 retswitch.append(switch[1]['dpid'])
-                                retport.append(switch[1]['port'])
+                                retport.append(switch[1]['portNumber'])
                             retcode = retcode +1
                             foundHost ='' 
                 '''
@@ -1296,15 +1272,18 @@ class OnosCliDriver(CLI):
             i = self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT])
             #main.log.warn("first expect response: " +str(i))
             self.handle.sendline("cd "+self.home+"/onos-logs")
-            self.handle.sendline("zgrep \"xception\" *")
+            self.handle.sendline("zgrep \"xception\" *.log *.log.gz *.stderr *.stdout")
             i = self.handle.expect(["\*",pexpect.EOF,pexpect.TIMEOUT])
             #main.log.warn("second expect response: " +str(i))
             i = self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT],timeout=120)
             #main.log.warn("third expect response: " +str(i))
             response = self.handle.before
             count = 0
+            print response
             for line in response.splitlines():
-                if re.search("log:", line):
+                if re.search("gzip: \*\.log\.gz:", line):
+                    pass
+                elif re.search("log:", line):
                     output +="Exceptions found in " + line + "\n"
                     count +=1
                 elif re.search("log\.gz:",line):

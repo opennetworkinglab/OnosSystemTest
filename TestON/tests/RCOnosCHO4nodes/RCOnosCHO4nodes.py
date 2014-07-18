@@ -9,11 +9,15 @@ class RCOnosCHO4nodes :
 #Tests the startup of Zookeeper1, RamCloud1, and ONOS1 to be certain that all started up successfully
     def CASE1(self,main) :  #Check to be sure ZK, Cass, and ONOS are up, then get ONOS version
         import time
-        main.ONOS1.handle.sendline("cp ~/onos.properties.proactive ~/ONOS/conf/onos.properties")
-        main.ONOS2.handle.sendline("cp ~/onos.properties.proactive ~/ONOS/conf/onos.properties")
-        main.ONOS3.handle.sendline("cp ~/onos.properties.proactive ~/ONOS/conf/onos.properties")
-        main.ONOS4.handle.sendline("cp ~/onos.properties.proactive ~/ONOS/conf/onos.properties")
+        main.ONOS1.handle.sendline("cp ~/onos.properties.reactive ~/ONOS/conf/onos.properties")
+        main.ONOS2.handle.sendline("cp ~/onos.properties.reactive ~/ONOS/conf/onos.properties")
+        main.ONOS3.handle.sendline("cp ~/onos.properties.reactive ~/ONOS/conf/onos.properties")
+        main.ONOS4.handle.sendline("cp ~/onos.properties.reactive ~/ONOS/conf/onos.properties")
 
+        main.ONOS1.stop_all()
+        main.ONOS2.stop_all()
+        main.ONOS3.stop_all()
+        main.ONOS4.stop_all()
         main.Zookeeper1.start()
         main.Zookeeper2.start()
         main.Zookeeper3.start()
@@ -64,11 +68,11 @@ class RCOnosCHO4nodes :
         main.RamCloud2.start_serv()
         main.RamCloud3.start_serv()
         main.RamCloud4.start_serv()
-        main.ONOS1.start()
+        main.ONOS1.start("env JVM_OPTS=\"-Xmx2g -Xms2g -Xmn800m\" ")
         time.sleep(5)
-        main.ONOS2.start()
-        main.ONOS3.start()
-        main.ONOS4.start()
+        main.ONOS2.start("env JVM_OPTS=\"-Xmx2g -Xms2g -Xmn800m\" ")
+        main.ONOS3.start("env JVM_OPTS=\"-Xmx2g -Xms2g -Xmn800m\" ")
+        main.ONOS4.start("env JVM_OPTS=\"-Xmx2g -Xms2g -Xmn800m\" ")
         main.ONOS1.start_rest()
         time.sleep(10)
         test= main.ONOS1.rest_status()
@@ -109,7 +113,7 @@ class RCOnosCHO4nodes :
             else:
                 break
         utilities.assert_equals(expect=main.TRUE,actual=data,onpass="ONOS is up and running!",onfail="ONOS didn't start...")
-        time.sleep(20)
+        time.sleep(10)
 
           
 #**********************************************************************************************************************************************************************************************
@@ -159,6 +163,9 @@ class RCOnosCHO4nodes :
                 time.sleep(3)
                 result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
             else:
+                main.ONOS2.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
+                main.ONOS3.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
+                main.ONOS4.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
                 break 
  
 # **********************************************************************************************************************************************************************************************
@@ -176,6 +183,9 @@ class RCOnosCHO4nodes :
                 time.sleep(3)
                 result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
             else:
+                main.ONOS2.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
+                main.ONOS3.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
+                main.ONOS4.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
                 break
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Topology check pass",onfail="Topology check FAIL")
 
@@ -263,6 +273,9 @@ class RCOnosCHO4nodes :
                 time.sleep(3)
                 result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
             else:
+                main.ONOS2.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
+                main.ONOS3.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
+                main.ONOS4.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
                 break
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Topology check pass",onfail="Topology check FAIL")
 
@@ -292,6 +305,7 @@ class RCOnosCHO4nodes :
             main.log.report("\tTime to complete ping test: "+str(round(endTime-strtTime,2))+" seconds")
         else:
             main.log.report("\tPING TEST FAIL")
+            main.ONOS1.show_intent(main.params['RestIP'])
         utilities.assert_equals(expect=main.TRUE,actual=result2,onpass="NO PACKET LOSS, HOST IS REACHABLE",onfail="PACKET LOST, HOST IS NOT REACHABLE")
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Testcase passed",onfail="Testcase failed")
 
@@ -301,6 +315,10 @@ class RCOnosCHO4nodes :
     def CASE5(self,main) :
         main.log.report("Restore switch assignments to all 4 ONOS instances then ping until all hosts are reachable or fail after 6 attempts")
         import time
+
+        #add a wait as a work around for a known bug where topology changes after a switch mastership change causes intents to not reroute
+        time.sleep(10)
+
         for i in range(25):
             if i < 15:
                 j=i+1
@@ -316,6 +334,9 @@ class RCOnosCHO4nodes :
                 time.sleep(3)
                 result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
             else:
+                main.ONOS2.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
+                main.ONOS3.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
+                main.ONOS4.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
                 break
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Topology check pass",onfail="Topology check FAIL")
 
@@ -345,6 +366,7 @@ class RCOnosCHO4nodes :
             main.log.report("\tTime to complete ping test: "+str(round(endTime-strtTime,2))+" seconds")
         else:
             main.log.report("\tPING TEST FAILED")
+            main.ONOS1.show_intent(main.params['RestIP'])
         utilities.assert_equals(expect=main.TRUE,actual=result2,onpass="NO PACKET LOSS, HOST IS REACHABLE",onfail="PACKET LOST, HOST IS NOT REACHABLE")
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Testcase passed",onfail="Testcase failed")
 
@@ -355,16 +377,12 @@ class RCOnosCHO4nodes :
         main.log.report("Bring Link between s1 and s2 down, then ping until all hosts are reachable or fail after 10 attempts")
         import time
 
-        #add a wait as a work around for a known bug where topology changes after a switch mastership change cuses intents to not reroute
-        time.sleep(30)
+        #add a wait as a work around for a known bug where topology changes after a switch mastership change causes intents to not reroute
+        time.sleep(10)
 
         main.case("Bringing Link down... ")
         result = main.Mininet1.link(END1=main.params['LINK']['begin'],END2=main.params['LINK']['end'],OPTION="down")
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Link DOWN!",onfail="Link not brought down...")
-
-        #add a wait as a work around for a known bug where topology changes after a switch mastership change cuses intents to not reroute
-        time.sleep(30)
-
        
         strtTime = time.time() 
         result1 = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],str(int(main.params['NR_Links'])-2))
@@ -373,6 +391,9 @@ class RCOnosCHO4nodes :
                 time.sleep(3)
                 result1 = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],str(int(main.params['NR_Links'])-2))
             else:
+                main.ONOS2.check_status_report(main.params['RestIP'],main.params['NR_Switches'],str(int(main.params['NR_Links'])-2))
+                main.ONOS3.check_status_report(main.params['RestIP'],main.params['NR_Switches'],str(int(main.params['NR_Links'])-2))
+                main.ONOS4.check_status_report(main.params['RestIP'],main.params['NR_Switches'],str(int(main.params['NR_Links'])-2))
                 break
         utilities.assert_equals(expect=main.TRUE,actual=result1,onpass="Topology check pass",onfail="Topology check FAIL")
 
@@ -402,6 +423,7 @@ class RCOnosCHO4nodes :
             main.log.report("\tTime to complete ping test: "+str(round(endTime-strtTime,2))+" seconds")
         else:
             main.log.report("\tPING TEST FAILED")
+            main.ONOS1.show_intent(main.params['RestIP'])
         utilities.assert_equals(expect=main.TRUE,actual=result2,onpass="NO PACKET LOSS, HOST IS REACHABLE",onfail="PACKET LOST, HOST IS NOT REACHABLE")
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Testcase passed",onfail="Testcase failed")
 
@@ -413,8 +435,8 @@ class RCOnosCHO4nodes :
         import time
         main.case("Bringing Link up... ")
 
-        #add a wait as a work around for a known bug where topology changes after a switch mastership change cuses intents to not reroute
-        time.sleep(30)
+        #add a wait as a work around for a known bug where topology changes after a switch mastership change causes intents to not reroute
+        time.sleep(10)
 
         result = main.Mininet1.link(END1=main.params['LINK']['begin'],END2=main.params['LINK']['end'],OPTION="up")
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Link UP!",onfail="Link not brought up...")
@@ -426,6 +448,9 @@ class RCOnosCHO4nodes :
                 time.sleep(3)
                 result1 = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
             else:
+                main.ONOS2.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
+                main.ONOS3.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
+                main.ONOS4.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
                 break
         utilities.assert_equals(expect=main.TRUE,actual=result1,onpass="Topology check pass",onfail="Topology check FAIL")
 
@@ -456,18 +481,15 @@ class RCOnosCHO4nodes :
             main.log.report("\tTime to complete ping test: "+str(round(endTime-strtTime,2))+" seconds")
         else:
             main.log.report("\tPING TESTS FAILED")
+            main.ONOS1.show_intent(main.params['RestIP'])
         
-        main.ONOS1.check_exceptions()
-        main.ONOS2.check_exceptions()
-        main.ONOS3.check_exceptions()
-        main.ONOS4.check_exceptions()
+        print main.ONOS1.check_exceptions()
+        print main.ONOS2.check_exceptions()
+        print main.ONOS3.check_exceptions()
+        print main.ONOS4.check_exceptions()
 
         utilities.assert_equals(expect=main.TRUE,actual=result2,onpass="NO PACKET LOSS, HOST IS REACHABLE",onfail="PACKET LOST, HOST IS NOT REACHABLE")
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Testcase passed",onfail="Testcase failed")
-
-        #add a wait as a work around for a known bug where topology changes after a switch mastership change cuses intents to not reroute
-        time.sleep(30)
-
 
 
 # **********************************************************************************************************************************************************************************************
@@ -483,6 +505,9 @@ class RCOnosCHO4nodes :
                 time.sleep(3)
                 result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
             else:
+                main.ONOS2.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
+                main.ONOS3.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
+                main.ONOS4.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
                 break
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Topology check pass",onfail="Topology check FAIL")
 
@@ -513,18 +538,144 @@ class RCOnosCHO4nodes :
             main.log.report("\tTime to complete ping test: "+str(round(endTime-strtTime,2))+" seconds")
         else:
             main.log.report("\tPING TESTS FAILED")
+            main.ONOS1.show_intent(main.params['RestIP'])
         
-        main.ONOS1.check_exceptions()
-        main.ONOS2.check_exceptions()
-        main.ONOS3.check_exceptions()
-        main.ONOS4.check_exceptions()
+        print main.ONOS1.check_exceptions()
+        print main.ONOS2.check_exceptions()
+        print main.ONOS3.check_exceptions()
+        print main.ONOS4.check_exceptions()
+
+        utilities.assert_equals(expect=main.TRUE,actual=result2,onpass="NO PACKET LOSS, HOST IS REACHABLE",onfail="PACKET LOST, HOST IS NOT REACHABLE")
+        utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Testcase passed",onfail="Testcase failed")
+# **********************************************************************************************************************************************************************************************
+#Brings a link that all flows pass through in the mininet down, then runs a ping test to view reroute time
+# This is the same as case 6, but specifically for the reactive tests
+
+    def CASE61(self,main) :
+        main.log.report("Bring Link between s1 and s2 down, then ping until all hosts are reachable or fail after 10 attempts")
+        import time
+
+        #add a wait as a work around for a known bug where topology changes after a switch mastership change causes intents to not reroute
+        time.sleep(10)
+
+        main.case("Bringing Link down... ")
+        result = main.Mininet1.link(END1=main.params['LINK']['begin'],END2=main.params['LINK']['end'],OPTION="down")
+        utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Link DOWN!",onfail="Link not brought down...")
+       
+        strtTime = time.time() 
+        result1 = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],str(int(main.params['NR_Links'])-2))
+        for counter in range(9):
+            if result1 == main.FALSE:
+                time.sleep(3)
+                result1 = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],str(int(main.params['NR_Links'])-2))
+            else:
+                main.ONOS2.check_status_report(main.params['RestIP'],main.params['NR_Switches'],str(int(main.params['NR_Links'])-2))
+                main.ONOS3.check_status_report(main.params['RestIP'],main.params['NR_Switches'],str(int(main.params['NR_Links'])-2))
+                main.ONOS4.check_status_report(main.params['RestIP'],main.params['NR_Switches'],str(int(main.params['NR_Links'])-2))
+                break
+        utilities.assert_equals(expect=main.TRUE,actual=result1,onpass="Topology check pass",onfail="Topology check FAIL")
+
+        pingAttempts = main.params['pingAttempts']
+        pingSleep = main.params['pingSleep']
+
+        count = 1
+        i = 6
+        while i < 16 :
+            main.log.info("\n\t\t\t\th"+str(i)+" IS PINGING h"+str(46-i) )
+            ping = main.Mininet1.pingHost(src="h"+str(i),target="h"+str(46-i))
+            if ping == main.FALSE and count < int(pingAttempts):
+                count = count + 1
+                main.log.report("Ping failed, making attempt number "+str(count)+" in "+str(pingSleep)+" seconds")
+                #i = 6
+                time.sleep(int(pingSleep))
+            elif ping == main.FALSE and count == int(pingAttempts):
+                main.log.error("Ping test failed")
+                i = 17
+                result2 = main.FALSE
+            elif ping == main.TRUE:
+                i = i + 1
+                result2 = main.TRUE
+        endTime = time.time()
+        result = result and result2 and result1
+        if result == main.TRUE:
+            main.log.report("\tTime to complete ping test: "+str(round(endTime-strtTime,2))+" seconds")
+        else:
+            main.log.report("\tPING TEST FAILED")
+            main.ONOS1.show_intent(main.params['RestIP'])
+        utilities.assert_equals(expect=main.TRUE,actual=result2,onpass="NO PACKET LOSS, HOST IS REACHABLE",onfail="PACKET LOST, HOST IS NOT REACHABLE")
+        utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Testcase passed",onfail="Testcase failed")
+
+
+# **********************************************************************************************************************************************************************************************
+#Brings the link that Case 6 took down  back up, then runs a ping test to view reroute time
+# Specifically for the Reactive tests
+
+    def CASE71(self,main) :
+        main.log.report("Bring Link between s1 and s2 up, then ping until all hosts are reachable or fail after 10 attempts")
+        import time
+        main.case("Bringing Link up... ")
+
+        #add a wait as a work around for a known bug where topology changes after a switch mastership change causes intents to not reroute
+        time.sleep(10)
+
+        result = main.Mininet1.link(END1=main.params['LINK']['begin'],END2=main.params['LINK']['end'],OPTION="up")
+        utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Link UP!",onfail="Link not brought up...")
+      
+        strtTime = time.time() 
+        result1 = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
+        for counter in range(9):
+            if result1 == main.FALSE:
+                time.sleep(3)
+                result1 = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
+            else:
+                main.ONOS2.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
+                main.ONOS3.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
+                main.ONOS4.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
+                break
+        utilities.assert_equals(expect=main.TRUE,actual=result1,onpass="Topology check pass",onfail="Topology check FAIL")
+
+        pingAttempts = main.params['pingAttempts']
+        pingSleep = main.params['pingSleep']
+
+        strtTime = time.time()
+        count = 1
+        i = 6
+        while i < 16 :
+            main.log.info("\n\t\t\t\th"+str(i)+" IS PINGING h"+str(46-i) )
+            ping = main.Mininet1.pingHost(src="h"+str(i),target="h"+str(46-i))
+            if ping == main.FALSE and count < int(pingAttempts):
+                count = count + 1
+                main.log.report("Ping failed, making attempt number "+str(count)+" in " +str(pingSleep)+" seconds")
+                #i = 6
+                time.sleep(int(pingSleep))
+            elif ping == main.FALSE and count == int(pingAttempts):
+                main.log.error("Ping test failed")
+                i = 17
+                result2 = main.FALSE
+            elif ping == main.TRUE:
+                i = i + 1
+                result2 = main.TRUE
+        endTime = time.time()
+        result = result and result2 and result1
+        if result == main.TRUE:
+            main.log.report("\tTime to complete ping test: "+str(round(endTime-strtTime,2))+" seconds")
+        else:
+            main.log.report("\tPING TESTS FAILED")
+            main.ONOS1.show_intent(main.params['RestIP'])
+        
+        print main.ONOS1.check_exceptions()
+        print main.ONOS2.check_exceptions()
+        print main.ONOS3.check_exceptions()
+        print main.ONOS4.check_exceptions()
 
         utilities.assert_equals(expect=main.TRUE,actual=result2,onpass="NO PACKET LOSS, HOST IS REACHABLE",onfail="PACKET LOST, HOST IS NOT REACHABLE")
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Testcase passed",onfail="Testcase failed")
 
 
+
+
 # ******************************************************************************************************************************************************************
-# Test Device Discovery function by yanking s6:s6-eth0 interface and re-plug it into a switch
+# Check for ONOS Components health
 
     def CASE9(self,main) :
         main.case("Checking component status")
@@ -593,118 +744,139 @@ class RCOnosCHO4nodes :
 
     def CASE21(self,main) :
         import json
-        from drivers.common.api.onosrestapidriver import *
-        main.log.report("Test device discovery function, by attach/detach/move host h1 from s1->s6->s1.")
-        main.log.report("Check initially hostMAC exist on the mininet...")
+        main.log.report("Test device discovery function, by attach, detach, and move host h1 from s1->s6->s1. Per mininet naming, the name of the switch port the host attaches to will remain as 's1-eth1' throughout the test.")
+        main.log.report("Check initially hostMAC/IP exist on the mininet...")
         host = main.params['YANK']['hostname']
         mac = main.params['YANK']['hostmac']
         RestIP1 = main.params['RESTCALL']['restIP1']
-        RestIP2 = main.params['RESTCALL']['restIP2']
         RestPort = main.params['RESTCALL']['restPort']
         url = main.params['RESTCALL']['restURL']
+       
+        t_topowait = 5
+        t_restwait = 0
+        main.log.report( "Wait time from topo change to ping set to " + str(t_topowait))
+        main.log.report( "Wait time from ping to rest call set to " + str(t_restwait))
         #print "host=" + host + ";  RestIP=" + RestIP1 + ";  RestPort=" + str(RestPort)
-        
-        main.log.info("\n\t\t\t\t ping issue one ping from" + str(host) + "to generate arp to switch. Ping result is not important" )
+        time.sleep(t_topowait) 
+        main.log.info("\n\t\t\t\t ping issue one ping from " + str(host) + " to generate arp to switch. Ping result is not important" )
         ping = main.Mininet1.pingHost(src = str(host),target = "10.0.0.254")
-        restcall = OnosRestApiDriver()
-        Reststatus, Hoststatus = restcall.find_host(RestIP1,RestPort,url,mac)
-        try:
-            attachedSW = Hoststatus[0]['attachmentPoint'][0]['switchDPID']
-            ip_found = Hoststatus[0]['ipv4'][0]
-        except:
-            Reststatus = 0
-
+        time.sleep(t_restwait)
+        Reststatus, Switch, Port = main.ONOS1.find_host(RestIP1,RestPort,url, mac)
+        main.log.report("Number of host with MAC address = " + mac + " found by ONOS is: " + str(Reststatus))
         if Reststatus == 1:
-            main.log.report("\tFound host " + host + " attached to switchDPID = " + attachedSW)
-            if ip_found != None:
-                main.log.report("\t IP discovered is ip_found ( " + ip_found + " ).")
-                result = main.TRUE
-            else:
-                main.log.report("\t Found host attached to switch, but no IP address discovered.")
-                result = main.FALSE
-        else:
-            main.log.report("\t Host " + host + " with MAC:" + str(mac) + " does not exist. FAILED")
-            result = main.FALSE
+            main.log.report("\t PASSED - Found host mac = " + mac + ";  attached to switchDPID = " +"".join(Switch) + "; at port = " + str(Port[0]))
+            result1 = main.TRUE
+        elif Reststatus > 1:
+            main.log.report("\t FAILED - Host " + host + " with MAC:" + mac + " has " + str(Reststatus) + " duplicated mac  addresses. FAILED")
+            main.log.report("switches are: " + "; ".join(Switch))
+            main.log.report("Ports are: " + "; ".join(Port))
+            result1 = main.FALSE
+        elif Reststatus == 0 and Switch == []:
+            main.log.report("\t FAILED - Host " + host + " with MAC:" + mac + " does not exist. FAILED")
+            result1 = main.FALSE
+        else:# check if rest server is working
+            main.log.error("Issue with find host")
+            result1 = main.FALSE
+
 
         ##### Step to yank out "s1-eth1" from s1, which is on autoONOS1 #####
 
         main.log.report("Yank out s1-eth1")
         main.case("Yankout s6-eth1 (link to h1) from s1")
         result = main.Mininet1.yank(SW=main.params['YANK']['sw1'],INTF=main.params['YANK']['intf'])
-        time.sleep(3)
+        time.sleep(t_topowait)
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Yank command suceeded",onfail="Yank command failed...")
+
+        main.log.info("\n\t\t\t\t ping issue one ping from " + str(host) + " to generate arp to switch. Ping result is not important" )
         ping = main.Mininet1.pingHost(src = str(host),target = "10.0.0.254")
-        Reststatus, Hoststatus = restcall.find_host(RestIP1,RestPort,url,mac)
-        try:
-            attachedSW = Hoststatus[0]['attachmentPoint'][0]['switchDPID']
-        except:
-            Reststatus = 0
-        if Reststatus == 0:
-            main.log.report("Attempt to yank out s1-eth1 from s1 sucessfully")
-            result = main.TRUE
-        else:
-            main.log.report("Attempt to yank out s1-eht1 from s1 failed.")
-            result = main.FALSE
-        
+        time.sleep(t_restwait)
+        Reststatus, Switch, Port = main.ONOS1.find_host(RestIP1,RestPort,url, mac)
+
+        main.log.report("Number of host with MAC = " + mac + " found by ONOS is: " + str(Reststatus))
+        if Reststatus == 1:
+            main.log.report("\tFAILED - Found host MAC = " + mac + "; attached to switchDPID = " + "".join(Switch) + "; at port = " + str(Port))
+            result2 = main.FALSE
+        elif Reststatus > 1:
+            main.log.report("\t FAILED - Host " + host + " with MAC:" + str(mac) + " has " + str(Reststatus) + " duplicated IP addresses. FAILED")
+            main.log.report("switches are: " + "; ".join(Switch))
+            main.log.report("Ports are: " + "; ".join(Port))
+            main.log.report("MACs are: " + "; ".join(MAC))
+            result2 = main.FALSE
+        elif Reststatus == 0 and Switch == []:
+            main.log.report("\t PASSED - Host " + host + " with MAC:" + str(mac) + " does not exist. PASSED - host is not supposed to be attached to the switch.")
+            result2 = main.TRUE
+        else:# check if rest server is working
+            main.log.error("Issue with find host")
+            result2 = main.FALSE
+
         ##### Step to plug "s1-eth1" to s6, which is on autoONOS3  ######
         main.log.report("Plug s1-eth1 into s6")
         main.case("Plug s1-eth1 to s6")
         result = main.Mininet1.plug(SW=main.params['PLUG']['sw6'],INTF=main.params['PLUG']['intf'])
-        time.sleep(3)
+        time.sleep(t_topowait)
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Plug command suceeded",onfail="Plug command failed...")
+        main.log.info("\n\t\t\t\t ping issue one ping from " + str(host) + " to generate arp to switch. Ping result is not important" )
+
         ping = main.Mininet1.pingHost(src = str(host),target = "10.0.0.254")
-        Reststatus, Hoststatus = restcall.find_host(RestIP2,RestPort,url,mac)
-        try:
-            attachedSW = Hoststatus[0]['attachmentPoint'][0]['switchDPID']
-            ip_found = Hoststatus[0]['ipv4'][0]
-        except:
-            Reststatus = 0
-        if Reststatus == 0:
-            main.log.report("Attempt to plug s1-eth1 to s6 FAILED")
-            result = main.FALSE
-        elif attachedSW == "00:00:00:00:00:00:00:06":
-            main.log.report("Attempt to plug s1-eht1 to s6 succeded.")
-            if ip_found != None:
-                main.log.report("\t IP discovered is ip_found ( " + ip_found + " ).")
-                result = main.TRUE
-            else:
-                main.log.report("\t Found host attached to switch, but no IP address discovered.")
-                result = main.FALSE
-        else:
-            main.log.report( "FAILED to attach s1-eth1 to s6 correctly!")
-            result = main.FALSE
+        time.sleep(t_restwait)
+        Reststatus, Switch, Port = main.ONOS1.find_host(RestIP1,RestPort,url, mac)
+
+        main.log.report("Number of host with MAC " + mac + " found by ONOS is: " + str(Reststatus))
+        if Reststatus == 1:
+            main.log.report("\tPASSED - Found host MAC = " + mac + "; attached to switchDPID = " + "".join(Switch) + "; at port = " + str(Port[0]))
+            result3 = main.TRUE
+        elif Reststatus > 1:
+            main.log.report("\t FAILED - Host " + host + " with MAC:" + str(mac) + " has " + str(Reststatus) + " duplicated IP addresses. FAILED")
+            main.log.report("switches are: " + "; ".join(Switch))
+            main.log.report("Ports are: " + "; ".join(Port))
+            main.log.report("MACs are: " + "; ".join(MAC))
+            result3 = main.FALSE
+        elif Reststatus == 0 and Switch == []:
+            main.log.report("\t FAILED - Host " + host + " with MAC:" + str(mac) + " does not exist. FAILED")
+            result3 = main.FALSE
+        else:# check if rest server is working
+            main.log.error("Issue with find host")
+            result3 = main.FALSE
 
         ###### Step to put interface "s1-eth1" back to s1"#####
         main.log.report("Move s1-eth1 back on to s1")
         main.case("Move s1-eth1 back to s1")
         result = main.Mininet1.yank(SW=main.params['YANK']['sw6'],INTF=main.params['YANK']['intf'])
-        time.sleep(3)
-        retult = main.Mininet1.plug(SW=main.params['PLUG']['sw1'],INTF=main.params['PLUG']['intf'])
+        time.sleep(t_topowait)
+        result = main.Mininet1.plug(SW=main.params['PLUG']['sw1'],INTF=main.params['PLUG']['intf'])
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Yank/Plug command suceeded",onfail="Yank/Plug command failed...")
+        main.log.info("\n\t\t\t\t ping issue one ping from " + str(host) + " to generate arp to switch. Ping result is not important" )
+
         ping = main.Mininet1.pingHost(src = str(host),target = "10.0.0.254")
-        Reststatus, Hoststatus = restcall.find_host(RestIP1,RestPort,url,mac)
-        try:
-            attachedSW = Hoststatus[0]['attachmentPoint'][0]['switchDPID']
-            ip_found = Hoststatus[0]['ipv4'][0]
-        except:
-            Reststatus = 0
-        if Reststatus == 0:
-            main.log.report("Attempt to plug s1-eth1 back to s1 FAILED")
-            result = main.FALSE
-        elif attachedSW == "00:00:00:00:00:00:00:01":
-            main.log.report("Attempt to plug s1-eht1 back to s1 succeded.")
-            if ip_found != None:
-                main.log.report("\t IP discovered is ip_found ( " + ip_found + " ).")
-                result = main.TRUE
-            else:
-                main.log.report("\t Found host attached to switch, but no IP address discovered.")
-                result = main.FALSE
-        else:
-            main.log.report( "FAIL to attach s1-eth1 to s1 correctly!")
-            result = main.FALSE
+        time.sleep(t_restwait)
+        Reststatus, Switch, Port = main.ONOS1.find_host(RestIP1,RestPort,url, mac)
 
+        main.log.report("Number of host with IP=10.0.0.1 found by ONOS is: " + str(Reststatus))
+        if Reststatus == 1:
+            main.log.report("\tPASSED - Found host MAC = " + mac + "; attached to switchDPID = " + "".join(Switch) + "; at port = " + str(Port[0]))
+            result4 = main.TRUE
+        elif Reststatus > 1:
+            main.log.report("\t FAILED - Host " + host + " with MAC:" + str(mac) + " has " + str(Reststatuas) + " duplicated IP addresses. FAILED")
+            main.log.report("switches are: " + "; ".join(Switch))
+            main.log.report("Ports are: " + "; ".join(Port))
+            main.log.report("MACs are: " + "; ".join(MAC))
+            result4 = main.FALSE
+        elif Reststatus == 0 and Switch == []:
+            main.log.report("\t FAILED -Host " + host + " with MAC:" + str(mac) + " does not exist. FAILED")
+            result4 = main.FALSE
+        else:# check if rest server is working
+            main.log.error("Issue with find host")
+            result4 = main.FALSE
+        time.sleep(20)
+        Reststatus, Switch, Port = main.ONOS1.find_host(RestIP1,RestPort,url,mac)
+        main.log.report("Number of host with IP=10.0.0.1 found by ONOS is: " + str(Reststatus))
+        if Reststatus ==1:
+            main.log.report("\t FAILED - Host " + host + "with MAC:" + str(mac) + "was still found after expected timeout")
+        elif Reststatus>1:
+            main.log.report("\t FAILED - Host " + host + "with MAC:" + str(mac) + "was still found after expected timeout(multiple found)")
+        elif Reststatus==0:
+            main.log.report("\t PASSED - Device cleared after timeout")
+
+        result = result1 and result2 and result3 and result4
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="DEVICE DISCOVERY TEST PASSED PLUG/UNPLUG/MOVE TEST",onfail="DEVICE DISCOVERY TEST FAILED")
-
-
-
 

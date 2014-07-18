@@ -769,6 +769,13 @@ class JamesTest :
             else:
                 break
            
+#*****************************************************************************************
+#*****************************************************************************************
+# CASE101:
+# This case is designed to test the intents framework
+# It will cover Installation, Deletion, Rerouting, and Calling of Intents
+#*****************************************************************************************
+#*****************************************************************************************
 
 
     def CASE101(self,main) :
@@ -896,6 +903,7 @@ class JamesTest :
             srcDPID= '00:00:00:00:00:00:20:' +str(i+25)
             main.ONOS1.add_intent(intent_id=str(count),src_dpid=srcDPID,dst_dpid=dstDPID,src_mac=srcMac,dst_mac=dstMac,intentIP=intentIP,intentPort=intentPort,intentURL=intentURL)
             count+=1
+        main.ONOS1.show_intent(intentIP=intentIP,intentPort=intentPort,intentURL=intentURL)
         result = main.TRUE
         response = main.Mininet1.check_flows(sw="s1")
         print(response)
@@ -964,7 +972,7 @@ class JamesTest :
                 main.log.error("Intent was not deleted correctly")
                 result = main.FALSE
             else:
-                main.log.info("So far so good, attempting "+str(4-count) + " more times")
+                main.log.info("So far so good, attempting "+str(2-count) + " more times")
         if result == main.TRUE:
             main.log.report("\tIntent Deleted!")
         else:
@@ -984,8 +992,14 @@ class JamesTest :
 
         main.step("Installing incorrect intent and checking for deletion")
         main.ONOS1.add_intent(intent_id=str(200),src_dpid="00:00:00:00:00:00:45:67",dst_dpid="00:00:00:00:00:32:21:10",src_mac="00:00:00:01:11:11",dst_mac="00:12:12:12:12:12",intentIP=intentIP,intentPort=intentPort,intentURL=intentURL)
-
-        
+        main.ONOS1.show_intent(intent_id=str(200),intentIP=intentIP,intentPort=intentPort,intentURL=intentURL)
+        main.ONOS1.del_intent(intent_id=str(200),intentIP=intentIP,intentPort=intentPort,intentURL=intentURL)
+        time.sleep(2)
+        response = main.ONOS1.show_intent(intentIP=intentIP,intentPort=intentPort,intentURL=intentURL,intent_id=200)
+        if re.search("INTENT_NOT_FOUND",response):
+            main.log.report("Intent Removed Properly!")
+        else:
+            main.log.report("ERROR REMOVING INTENT")
         
 
 

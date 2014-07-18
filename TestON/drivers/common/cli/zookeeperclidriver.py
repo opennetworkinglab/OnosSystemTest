@@ -50,6 +50,8 @@ class ZookeeperCliDriver(CLI):
         for key in connectargs:
             vars(self)[key] = connectargs[key]       
         self.home = "~/ONOS"
+        self.zkhome = "~/zookeeper-3.4.6"
+        self.clustername = "sanity-rc-onos"
         #self.home = "~/zookeeper-3.4.5"
         for key in self.options:
             if key == "home":
@@ -129,6 +131,28 @@ class ZookeeperCliDriver(CLI):
             main.log.error(self.name + ": Connection failed to the host")
             response = main.FALSE
         return response 
+    
+    def findMaster(self, switchDPID, ip="localhost"):
+        import json
+        time.sleep(1)
+        command = "curl "+ip+":8080/wm/onos/registry/switches/json > master.txt"
+        response = self.execute(cmd=command,prompt="\$",timeout=10)
+        self.handle.sendline("cat master.txt")
+        response = self.execute(cmd=command,prompt="\$",timeout=10)
+        self.handle.expect(["cat master.txt",pexpect.EOF,pexpect.TIMEOUT])
+        self.handle.expect(["admin",pexpect.EOF,pexpect.TIMEOUT])
+        response = self.handle.before
+        decoded = json.loads(response)
+        for k in decoded.iteritems():
+            k2 = json.dumps(k)
+            if re.search(switchDPID,k2):
+                k3 = k2.split(',')
+                k4 = k3[1].split()
+                k5 = k4[1].split('"')
+                print k5[1]
+                return k5[1]
+            else:
+                return "NO SWITCH WITH THIS DPID!"
 
     def isup(self):
         '''

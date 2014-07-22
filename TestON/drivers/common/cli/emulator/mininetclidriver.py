@@ -315,7 +315,7 @@ class MininetCliDriver(Emulator):
             if result is None:
                 main.log.info("Couldn't find DPID for switch '', found: %s" % (switch, response))
                 return main.FALSE
-            return int(result.group('dpid'))
+            return str(result.group(0))
         else:
             main.log.error("Connection failed to the host")
 

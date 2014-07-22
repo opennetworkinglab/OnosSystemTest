@@ -12,23 +12,28 @@ class NetTopoPerf:
         main.case("Initial setup")
         main.step("Stop ONOS")
         import time
-        main.ONOS1.stop_all()
-        main.ONOS2.stop_all()
-        main.ONOS3.stop_all()
-        main.ONOS2.stop_rest()
+#        main.ONOS1.stop_all()
+#        main.ONOS2.stop_all()
+#        main.ONOS3.stop_all()
+#        main.ONOS2.stop_rest()
         main.ONOS1.handle.sendline("cp ~/onos.properties.proactive ~/ONOS/conf/onos.properties")
         main.ONOS2.handle.sendline("cp ~/onos.properties.proactive ~/ONOS/conf/onos.properties")
         main.ONOS3.handle.sendline("cp ~/onos.properties.proactive ~/ONOS/conf/onos.properties")
         main.step("Start tcpdump on mn")
         main.Mininet2.start_tcpdump(main.params['tcpdump']['filename'], intf = main.params['tcpdump']['intf'], port = main.params['tcpdump']['port'])
         main.step("Start ONOS")
-        main.Zookeeper1.start()
-        main.Zookeeper2.start()
-        main.Zookeeper3.start()
+#        main.Zookeeper1.start()
+#        main.Zookeeper2.start()
+#        main.Zookeeper3.start()
         time.sleep(1)
         main.RamCloud1.del_db()
         main.RamCloud2.del_db()
         main.RamCloud3.del_db()
+        time.sleep(3)
+        main.ONOS1.stop_all()
+        main.ONOS2.stop_all()
+        main.ONOS3.stop_all()
+        main.ONOS2.stop_rest()
 #        main.log.report("Pulling latest code from github to all nodes")
 #        for i in range(2):
 #            uptodate = main.ONOS1.git_pull()
@@ -186,39 +191,33 @@ class NetTopoPerf:
         import requests
         import json
         import time
-
         #need to assign all switches to the right controllers first
         for i in range(1,8):
             if i < 3:
                 main.Mininet1.assign_sw_controller(sw=str(i),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'])
-                time.sleep(1) 
-                main.Mininet1.assign_sw_controller(sw=str(i),count=3,\
-                                                   ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],\
-                                                   ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],\
-                                                   ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'])
+                time.sleep(5) 
+                #main.Mininet1.assign_sw_controller(sw=str(i),count=3,\
+                #                                   ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],\
+                #                                   ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],\
+                #                                   ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'])
             elif i < 6 and i > 2:
                 main.Mininet1.assign_sw_controller(sw=str(i),ip1=main.params['CTRL']['ip2'],port1=main.params['CTRL']['port2'])
-                time.sleep(1)
-                main.Mininet1.assign_sw_controller(sw=str(i),count=3,\
-                                                   ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],\
-                                                   ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],\
-                                                   ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'])
+                time.sleep(5)
+                #main.Mininet1.assign_sw_controller(sw=str(i),count=3,\
+                #                                   ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],\
+                #                                   ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],\
+                #                                   ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'])
             elif i < 8 and i > 5:
                 main.Mininet1.assign_sw_controller(sw=str(i),ip1=main.params['CTRL']['ip3'],port1=main.params['CTRL']['port3'])
-                time.sleep(1)
-                main.Mininet1.assign_sw_controller(sw=str(i),count=3,\
-                                                   ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],\
-                                                   ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],\
-                                                   ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'])
-        time.sleep(30)        
-        ctrl = main.Mininet1.get_sw_controller("s1")       
-        ctrl2 = main.Mininet1.get_sw_controller("s2")
-        ctrl3 = main.Mininet1.get_sw_controller("s3")
-        print ctrl  
-        print ctrl2
-        print ctrl3
- 
-        url = main.params['INTENTS']['url']
+                time.sleep(5)
+                #main.Mininet1.assign_sw_controller(sw=str(i),count=3,\
+                #                                   ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],\
+                #                                   ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],\
+                #                                   ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'])
+        time.sleep(20)        
+        
+        url = main.params['INTENTS']['url_new']
+        print url
         headers = {'Content-type': 'application/json', 'Accept': 'application/json'}
         intent_id = main.params['INTENTS']['intent_id']
         intent_type = main.params['INTENTS']['intent_type']
@@ -229,7 +228,8 @@ class NetTopoPerf:
         dstPort = int(main.params['INTENTS']['dstPort'])
         dstMac = main.params['INTENTS']['dstMac']
         url_remove = "http://"+main.params['INTENTREST']['intentIP']+":"+main.params['INTENTREST']['intentPort']+"/wm/onos/intent/high/"+main.params['INTENTS']['intent_id']
-         
+        url_add = "http://10.128.5.52:8080/wm/onos/metrics?ids=Intents.Timestamps.AddIntentBegin,Intents.Timestamps.AddIntentEnd"
+
         intent_forward = [{'intent_id':intent_id,\
                            'intent_type':intent_type,\
                            'intent_op':'add',\
@@ -240,14 +240,12 @@ class NetTopoPerf:
                            'dstPort':dstPort,\
                            'dstMac':dstMac\
                          }]
-        print intent_forward
-        r_forward = requests.post(url, data=json.dumps(intent_forward, sort_keys=True), headers = headers)
-        print r_forward        
+        #data = json.dumps(intent_forward)
+        #print data 
+        #r_forward = requests.post(url, data=json.dumps(intent_forward), headers = headers)
+        #print r_forward
 
-        result = main.Mininet1.pingHost(src="h1",target="h7")
-        print result
-
-        intent_receive = [{'intent_id':intent_id,\
+        intent_receive = [{'intent_id':"1"+intent_id,\
                            'intent_type':intent_type,\
                            'intent_op':'add',\
                            'srcSwitch':dstSwitch,\
@@ -257,9 +255,29 @@ class NetTopoPerf:
                            'dstPort':srcPort,\
                            'dstMac':srcMac\
                          }]     
-        print intent_receive
-        r_receive = requests.post(url, data=json.dumps(intent_receive, sort_keys=True), headers = headers)
-        print r_receive
+
+        #data = json.dumps(intent_receive)
+        #print data
+
+        main.ONOS2.add_intent(intent_id = intent_id, src_dpid = srcSwitch, dst_dpid = dstSwitch, src_mac = srcMac, dst_mac = dstMac, intentIP = "10.128.5.52")
+        main.ONOS2.add_intent(intent_id = "1"+intent_id, src_dpid = dstSwitch, dst_dpid = srcSwitch, src_mac = dstMac, dst_mac = srcMac, intentIP = "10.128.5.52")
+
+        #r_receive = requests.post(url, data=json.dumps(intent_receive), headers = headers)
+        #print r_receive
+
+
+        #TODO: Verify intent has been successfully installed
+        #TODO: Obtain timestamp: 1) intent received and 2) intent updated
+        intent_add = main.ONOS2.get_json(url_add) 
+        print intent_add
+        #metrics = main.ONOS2.get_json("http://10.128.5.52:8080/wm/onos/metrics")
+        #Calculate metrics value difference
+        begin_add = intent_add['gauges'][0]['gauge']['value'] 
+        end_add = intent_add['gauges'][1]['gauge']['value']
+        print begin_add
+        print end_add
+
+        result = main.Mininet1.pingHost(src="h3",target="h5")
 
         r_remove = requests.post(url_remove, data=json.dumps(intent_receive), headers=headers)
         print r_remove

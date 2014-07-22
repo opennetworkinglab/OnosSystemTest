@@ -8,14 +8,15 @@
     
     <INTENTS>
         <url>http://10.128.5.52:8080/wm/onos/datagrid/add/intents/json</url>
+        <url_new>http://10.128.5.52:8080/wm/onos/intent/high</url_new>
         <intent_id>1</intent_id>
         <intent_type>shortest_intent_type</intent_type>
-        <srcSwitch>00:00:00:00:00:00:10:01</srcSwitch>
-        <dstSwitch>00:00:00:00:00:00:20:07</dstSwitch>
+        <srcSwitch>00:00:00:00:00:00:30:00</srcSwitch>
+        <dstSwitch>00:00:00:00:00:00:50:00</dstSwitch>
         <srcPort>1</srcPort>
         <dstPort>1</dstPort>
-        <srcMac>00:00:00:00:00:01</srcMac> 
-        <dstMac>00:00:00:00:00:02</dstMac>
+        <srcMac>00:00:00:00:00:03</srcMac> 
+        <dstMac>00:00:00:00:00:05</dstMac>
     </INTENTS>
 
     <CASE1>       

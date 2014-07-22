@@ -14,7 +14,7 @@ import time
 import json
 import traceback
 import requests
-
+import urllib2
 sys.path.append("../")
 from drivers.common.clidriver import CLI
 
@@ -1031,10 +1031,9 @@ class onossanityclidriver(CLI):
 
     def tshark_of(self, capture_type):
         self.handle.sendline("")
-        #self.handle.expect("\$")
-        self.execute(cmd='''rm /tmp/wireshark*''')
-        self.handle.sendline("y")
-        #self.handle.expect("\$")
+        self.handle.expect("\$")
+        self.handle.sendline("rm /tmp/wireshark*")
+        self.handle.expect("\$")
         self.execute(cmd='''tshark -i eth0 -t e | grep --color=auto CSM | grep --color=auto -E 'Flow|Barrier' > /tmp/tshark_of_'''+capture_type+''' .txt''',prompt="Capturing",timeout=10)
         self.handle.sendline("")
         main.log.info("tshark_of started")
@@ -1047,7 +1046,6 @@ class onossanityclidriver(CLI):
         self.handle.sendline("y")
         self.handle.expect("\$")
         self.execute(cmd='''tshark -i eth0 -t e | grep --color=auto CSM | grep --color=auto -E 'Flow|Barrier' > /tmp/tdump_'''+flowtype+"_"+str(numflows)+".txt &",prompt="Capturing",timeout=10)
-        
         self.handle.sendline("")
         self.handle.expect("\$")
         main.log.info("TSHARK STARTED!!!")
@@ -1055,10 +1053,10 @@ class onossanityclidriver(CLI):
 
     def stop_tshark(self):
         self.handle.sendline("")
-        self.handle.expect("\$")
+        #self.handle.expect("\$")
         self.handle.sendline("sudo kill -9 `ps -ef | grep \"tshark -i\" | grep -v grep | awk '{print $2}'`")
         self.handle.sendline("")
-        self.handle.expect("\$")
+        #self.handle.expect("\$")
         main.log.info("TSHARK STOPPED!!!")
         return main.TRUE
 
@@ -1223,4 +1221,45 @@ class onossanityclidriver(CLI):
             main.log.info(":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
             main.cleanup()
             main.exit()
-         
+        
+
+    def add_intent(self, intent_id,src_dpid,dst_dpid,src_mac,dst_mac,intentIP,intentPort=8080,intentURL="wm/onos/intent/high" , intent_type = 'SHORTEST_PATH', static_path=False, src_port=1,dst_port=1):
+        from urllib2 import URLError, HTTPError 
+        intents = []
+        oper = {}
+        oper['intentId'] = intent_id
+        oper['intentType'] = intent_type    # XXX: Hardcoded
+        oper['staticPath'] = static_path              # XXX: Hardcoded
+        oper['srcSwitchDpid'] = src_dpid
+        oper['srcSwitchPort'] = src_port
+        oper['dstSwitchDpid'] = dst_dpid
+        oper['dstSwitchPort'] = dst_port
+        oper['matchSrcMac'] = src_mac
+        oper['matchDstMac'] = dst_mac
+        intents.append(oper)
+        print intents
+        url = "http://%s:%s/%s"%(intentIP,intentPort,intentURL)
+        parsed_result = []
+        data_json = json.dumps(intents)
+       
+        request = urllib2.Request(url,data_json)
+        request.add_header("Content-Type", "application/json")
+        response=urllib2.urlopen(request)
+        result = response.read()
+        response.close()
+        if len(result) != 0:
+            parsed_result = json.loads(result)
+        #except HTTPError as exc:
+        #    print "ERROR:"
+        #    print "  REST GET URL: %s" % url
+        #    error_payload = json.loads(exc.fp.read())
+        #    print "  REST Error Code: %s" % (error_payload['code'])
+        #    print "  REST Error Summary: %s" % (error_payload['summary'])
+        #    print "  REST Error Description: %s" % (error_payload['formattedDescription'])
+        #    print "  HTTP Error Code: %s" % exc.code
+        #    print "  HTTP Error Reason: %s" % exc.reason
+        #except URLError as exc:
+        #    print "ERROR:"
+        #    print "  REST GET URL: %s" % url
+        #    print "  URL Error Reason: %s" % exc.reason
+        return parsed_result                                                  

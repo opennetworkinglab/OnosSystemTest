@@ -1,5 +1,5 @@
 <PARAMS>
-    <testcases>101,66,10</testcases>
+    <testcases>2,3,66</testcases>
     <tcpdump> 
         <intf>eth0</intf>
         <port>port 6633</port>

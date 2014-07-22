@@ -141,7 +141,7 @@ class ZookeeperCliDriver(CLI):
 #**********************************************************************************************
 
 
-    def findMaster(self, switchDPID, switchList,ip="localhost"):
+    def findMaster(self, switchDPID, switchList):
         import json
         decoded = json.loads(switchList)
         for k in decoded.iteritems():

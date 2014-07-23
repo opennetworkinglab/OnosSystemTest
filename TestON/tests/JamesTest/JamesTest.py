@@ -159,6 +159,11 @@ class JamesTest :
         main.step("Cleaning out any leftover flows...")
         masterSwitches = []
         masterSwitches2 = []
+        hello = main.Mininet2.checkForLoss(fileName='/tmp/ping.h10')
+        if hello==main.FALSE:
+            main.log.info("CRAP")
+        else:
+            main.log.info("YAY")
         for i in range(25): 
             if i < 15:
                 j=i+1
@@ -237,6 +242,38 @@ class JamesTest :
         main.step("Verifying the result")
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Flow check PASS",onfail="Flow check FAIL")
 
+
+        main.Mininet2.pingLong(src=main.params['PING']['source1'],target=main.params['PING']['target1'],pingTime=5)
+        main.Mininet2.pingLong(src=main.params['PING']['source2'],target=main.params['PING']['target2'],pingTime=5)
+        main.Mininet2.pingLong(src=main.params['PING']['source3'],target=main.params['PING']['target3'],pingTime=5)
+        main.Mininet2.pingLong(src=main.params['PING']['source4'],target=main.params['PING']['target4'],pingTime=5)
+        main.Mininet2.pingLong(src=main.params['PING']['source5'],target=main.params['PING']['target5'],pingTime=5)
+        main.Mininet2.pingLong(src=main.params['PING']['source6'],target=main.params['PING']['target6'],pingTime=5)
+        main.Mininet2.pingLong(src=main.params['PING']['source7'],target=main.params['PING']['target7'],pingTime=5)
+        main.Mininet2.pingLong(src=main.params['PING']['source8'],target=main.params['PING']['target8'],pingTime=5)
+        main.Mininet2.pingLong(src=main.params['PING']['source9'],target=main.params['PING']['target9'],pingTime=5)
+        main.Mininet2.pingLong(src=main.params['PING']['source10'],target=main.params['PING']['target10'],pingTime=5)
+        main.step("Check that the pings are going") 
+        result = main.Mininet2.pingstatus(src=main.params['PING']['source1'])
+        result = result & main.Mininet2.pingstatus(src=main.params['PING']['source2'])
+        result = result & main.Mininet2.pingstatus(src=main.params['PING']['source3'])
+        result = result & main.Mininet2.pingstatus(src=main.params['PING']['source4'])
+        result = result & main.Mininet2.pingstatus(src=main.params['PING']['source5'])
+        result = result & main.Mininet2.pingstatus(src=main.params['PING']['source6'])
+        result = result & main.Mininet2.pingstatus(src=main.params['PING']['source7'])
+        result = result & main.Mininet2.pingstatus(src=main.params['PING']['source8'])
+        result = result & main.Mininet2.pingstatus(src=main.params['PING']['source9'])
+        result = result & main.Mininet2.pingstatus(src=main.params['PING']['source10'])
+        time.sleep(20)
+        main.Mininet2.pingKill()
+        if main.Mininet2.checkForLoss(fileName="/tmp/ping.h10"):
+            main.log.info("LOSS FOUND!!!")
+        else:
+            main.log.info("No Loss of Packets!!!")
+
+
+         
+        
 #**********************************************************************************************************************************************************************************************
 #This test case removes Controllers 2,3, and 4 then performs a ping test.
 #The assign controller is used because the ovs-vsctl module deletes all current controllers when a new controller is assigned.

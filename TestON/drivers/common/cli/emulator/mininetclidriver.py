@@ -738,6 +738,14 @@ class MininetCliDriver(Emulator):
         compares mn topology with ONOS topology
         onos_list is a list of ONOS controllers, each element of the list should be (handle, name, ip, port)
         onos_json is the output of the onos get_json function calling the /wm/onos/topology REST API
+        Returns: True if MN and ONOS topology match and False if the differ. 
+        Differences between ONOS and MN topology will be printed to the log.
+
+        Dependency: Requires STS to be installed on the TestON machine. STS can be pulled 
+        from https://github.com/ucb-sts/sts.git . Currently the required functions from STS are located in the 
+        topology_refactoring2 branch, but may be merged into the master branch soon. You may need to install some
+        python modules such as networkx to use the STS functions.
+
         '''
         from sts.topology.teston_topology import TestONTopology # assumes that sts already in you PYTHONPATH
         import sts.entities.base as base

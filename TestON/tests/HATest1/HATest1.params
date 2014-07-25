@@ -1,0 +1,15 @@
+<PARAMS>
+    <testcases>2,3</testcases>
+    <CTRL>
+        <ip1>10.128.9.1</ip1>
+        <ip2>10.128.9.2</ip2>
+        <ip3>10.128.9.3</ip3>
+        <ip4>10.128.9.4</ip4>
+        <ip5>10.128.9.5</ip5>
+        <port1>6633</port1>
+    </CTRL>
+    <INTENTS>
+        <intentPort>8080</intentPort>
+        <intentURL>wm/onos/intent</intentURL>
+    </INTENTS>
+</PARAMS>

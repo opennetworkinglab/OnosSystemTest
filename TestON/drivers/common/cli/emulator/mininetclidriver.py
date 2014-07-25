@@ -748,7 +748,8 @@ class MininetCliDriver(Emulator):
 
         '''
         from sts.topology.teston_topology import TestONTopology # assumes that sts already in you PYTHONPATH
-        import sts.entities.base as base
+        #import sts.entities.base as base
+        import json
         topo = TestONTopology(self, onos_list)
 
         link_results = main.TRUE
@@ -757,23 +758,23 @@ class MininetCliDriver(Emulator):
 
         ########Switches#######
         output = {"switches":[]}
-        for switch in topo.graph.switches:
+        for switch in topo.graph.switches: #iterate through the MN topology and pull out switches and and port info
             ports = []
             for port in switch.ports.values():
                 ports.append({'of_port': port.port_no, 'mac': port.hw_addr.replace('\'',''), 'name': port.name})
             output['switches'].append({"name": switch.name, "dpid": switch.dpid, "ports": ports })
         #print output
 
-        import json
         #print json.dumps(output, sort_keys=True,indent=4,separators=(',', ': '))
 
 
+        # created sorted list of dpid's in MN and ONOS for comparison
         mnDPIDs=[]
         for switch in output['switches']:
             mnDPIDs.append(switch['dpid'])
         mnDPIDs.sort()
         #print mnDPIDs
-        if onos_json == "":
+        if onos_json == "":#if rest call fails
             main.log.error(self.name + ".compare_topo(): Empty JSON object given from ONOS rest call")
             return main.FALSE
         onos=onos_json
@@ -815,7 +816,7 @@ class MininetCliDriver(Emulator):
 
 
         #######Links########
-        
+        # iterate through MN links and check if and ONOS link exists in both directions
         for link in topo.patch_panel.network_links: 
             #print "Link: %s" % link
             #TODO: Find a more efficient search method

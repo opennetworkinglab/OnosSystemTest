@@ -131,28 +131,27 @@ class ZookeeperCliDriver(CLI):
             main.log.error(self.name + ": Connection failed to the host")
             response = main.FALSE
         return response 
-    
-    def findMaster(self, switchDPID, ip="localhost"):
+   
+#**********************************************************************************************
+#**********************************************************************************************
+# findMaster is used to determine the master controller of a switch. 
+# it uses the switchList which is a json dict, and finds the first controller of 
+# each switch
+#**********************************************************************************************
+#**********************************************************************************************
+
+
+    def findMaster(self, switchDPID, switchList):
         import json
-        time.sleep(1)
-        command = "curl "+ip+":8080/wm/onos/registry/switches/json > master.txt"
-        response = self.execute(cmd=command,prompt="\$",timeout=10)
-        self.handle.sendline("cat master.txt")
-        response = self.execute(cmd=command,prompt="\$",timeout=10)
-        self.handle.expect(["cat master.txt",pexpect.EOF,pexpect.TIMEOUT])
-        self.handle.expect(["admin",pexpect.EOF,pexpect.TIMEOUT])
-        response = self.handle.before
-        decoded = json.loads(response)
+        decoded = json.loads(switchList)
         for k in decoded.iteritems():
             k2 = json.dumps(k)
             if re.search(switchDPID,k2):
                 k3 = k2.split(',')
                 k4 = k3[1].split()
                 k5 = k4[1].split('"')
-                print k5[1]
                 return k5[1]
-            else:
-                return "NO SWITCH WITH THIS DPID!"
+        return "NO SWITCH FOUND"
 
     def isup(self):
         '''

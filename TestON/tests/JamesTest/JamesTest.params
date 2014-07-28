@@ -1,5 +1,5 @@
 <PARAMS>
-    <testcases>101,66,10</testcases>
+    <testcases>2,3,66</testcases>
     <tcpdump> 
         <intf>eth0</intf>
         <port>port 6633</port>
@@ -42,6 +42,28 @@
         <ip4>10.128.4.154</ip4>
         <port4>6633</port4>
     </CTRL>
+    <PING>
+        <source1>h6</source1>
+        <source2>h7</source2>
+        <source3>h8</source3>
+        <source4>h9</source4>
+        <source5>h10</source5>
+        <source6>h11</source6>
+        <source7>h12</source7>
+        <source8>h13</source8>
+        <source9>h14</source9>
+        <source10>h15</source10>
+        <target1>10.0.0.16</target1>
+        <target2>10.0.0.17</target2>
+        <target3>10.0.0.18</target3>
+        <target4>10.0.0.19</target4>
+        <target5>10.0.0.20</target5>
+        <target6>10.0.0.21</target6>
+        <target7>10.0.0.22</target7>
+        <target8>10.0.0.23</target8>
+        <target9>10.0.0.24</target9>
+        <target10>10.0.0.25</target10>
+    </PING>
     <INTENTREST>
         <intentIP>10.128.4.151</intentIP>
         <intentPort>8080</intentPort>

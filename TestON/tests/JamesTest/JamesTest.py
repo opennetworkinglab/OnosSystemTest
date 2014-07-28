@@ -154,16 +154,64 @@ class JamesTest :
     def CASE3(self,main) :    #Delete any remnant flows, then add flows, and time how long it takes flow tables to update
         main.log.report("Delete any flows from previous tests, then add flows from FLOWDEF file, then wait for switch flow tables to update")
         import time
+        from subprocess import Popen, PIPE
         main.case("Taking care of these flows!") 
         main.step("Cleaning out any leftover flows...")
+        masterSwitches = []
+        masterSwitches2 = []
+        hello = main.Mininet2.checkForLoss(fileName='/tmp/ping.h10')
+        if hello==main.FALSE:
+            main.log.info("CRAP")
+        else:
+            main.log.info("YAY")
+        for i in range(25): 
+            if i < 15:
+                j=i+1
+            else:
+                j=i+16
+            (stdout, stderr) = Popen(["curl",main.params['RESTCALL']['restIP1']+":"+main.params['RESTCALL']['restPort']+"/wm/onos/registry/switches/json"],stdout=PIPE).communicate()
+            switchDPID1 = main.Mininet1.getSwitchDPID(switch="s"+str(j))
+            sDPID1 = str(switchDPID1)
+            switchDPID2 = sDPID1[:2]+":"+sDPID1[2:4]+":"+sDPID1[4:6]+":"+sDPID1[6:8]+":"+sDPID1[8:10]+":"+sDPID1[10:12]+":"+sDPID1[12:14]+":"+sDPID1[14:]
+            master=main.Zookeeper1.findMaster(switchDPID = switchDPID2, switchList=stdout)
+            masterSwitches.append("s"+str(j)+" " + master)
+
+        for i in range(25): 
+            if i < 15:
+                j=i+1
+            else:
+                j=i+16
+            print j
+            (stdout, stderr) = Popen(["curl",main.params['RESTCALL']['restIP1']+":"+main.params['RESTCALL']['restPort']+"/wm/onos/registry/switches/json"],stdout=PIPE).communicate()
+            switchDPID1 = main.Mininet1.getSwitchDPID(switch="s"+str(j))
+            sDPID1 = str(switchDPID1)
+            switchDPID2 = sDPID1[:2]+":"+sDPID1[2:4]+":"+sDPID1[4:6]+":"+sDPID1[6:8]+":"+sDPID1[8:10]+":"+sDPID1[10:12]+":"+sDPID1[12:14]+":"+sDPID1[14:]
+            master=main.Zookeeper1.findMaster(switchDPID = switchDPID2, switchList=stdout)
+            masterSwitches2.append("s"+str(j)+" " + master)
+       
+
+
+
+        print masterSwitches
+        print "\n\n\n"
+        print masterSwitches2
+        print masterSwitches == masterSwitches2
         #main.ONOS1.delete_flow("all")
         strtTime = time.time()
         main.ONOS1.rm_intents()
-        print("world")
+        (stdout,stderr) = Popen(["curl",main.params['RESTCALL']['restIP1']+":"+main.params['RESTCALL']['restPort']+"/wm/onos/intent/high"],stdout=PIPE).communicate()
+        intent1 = stdout
+        print intent1 + "\n\n\n Intent 1 \n\n\n"
         main.ONOS1.add_intents()
         time.sleep(2)
-        main.ONOS1.add_intents()
-        print("hello")
+        (stdout,stderr) = Popen(["curl",main.params['RESTCALL']['restIP1']+":"+main.params['RESTCALL']['restPort']+"/wm/onos/intent/high"],stdout=PIPE).communicate()
+        intent2 = stdout
+        print intent2 + "\n\n\n Intent 2 \n\n\n"
+        changesMade = main.ONOS1.comp_intents(preIntents=intent1,postIntents=intent2)
+        print changesMade
+        if not changesMade:
+            print "Intents were Constant"
+            print changesMade
        # main.ONOS1.add_flow(main.params['FLOWDEF']['testONip'],main.params['FLOWDEF']['user'],main.params['FLOWDEF']['password'],main.params['FLOWDEF']['flowDef'])
         main.case("Checking flows")
        
@@ -194,6 +242,38 @@ class JamesTest :
         main.step("Verifying the result")
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Flow check PASS",onfail="Flow check FAIL")
 
+
+        main.Mininet2.pingLong(src=main.params['PING']['source1'],target=main.params['PING']['target1'],pingTime=5)
+        main.Mininet2.pingLong(src=main.params['PING']['source2'],target=main.params['PING']['target2'],pingTime=5)
+        main.Mininet2.pingLong(src=main.params['PING']['source3'],target=main.params['PING']['target3'],pingTime=5)
+        main.Mininet2.pingLong(src=main.params['PING']['source4'],target=main.params['PING']['target4'],pingTime=5)
+        main.Mininet2.pingLong(src=main.params['PING']['source5'],target=main.params['PING']['target5'],pingTime=5)
+        main.Mininet2.pingLong(src=main.params['PING']['source6'],target=main.params['PING']['target6'],pingTime=5)
+        main.Mininet2.pingLong(src=main.params['PING']['source7'],target=main.params['PING']['target7'],pingTime=5)
+        main.Mininet2.pingLong(src=main.params['PING']['source8'],target=main.params['PING']['target8'],pingTime=5)
+        main.Mininet2.pingLong(src=main.params['PING']['source9'],target=main.params['PING']['target9'],pingTime=5)
+        main.Mininet2.pingLong(src=main.params['PING']['source10'],target=main.params['PING']['target10'],pingTime=5)
+        main.step("Check that the pings are going") 
+        result = main.Mininet2.pingstatus(src=main.params['PING']['source1'])
+        result = result & main.Mininet2.pingstatus(src=main.params['PING']['source2'])
+        result = result & main.Mininet2.pingstatus(src=main.params['PING']['source3'])
+        result = result & main.Mininet2.pingstatus(src=main.params['PING']['source4'])
+        result = result & main.Mininet2.pingstatus(src=main.params['PING']['source5'])
+        result = result & main.Mininet2.pingstatus(src=main.params['PING']['source6'])
+        result = result & main.Mininet2.pingstatus(src=main.params['PING']['source7'])
+        result = result & main.Mininet2.pingstatus(src=main.params['PING']['source8'])
+        result = result & main.Mininet2.pingstatus(src=main.params['PING']['source9'])
+        result = result & main.Mininet2.pingstatus(src=main.params['PING']['source10'])
+        time.sleep(20)
+        main.Mininet2.pingKill()
+        if main.Mininet2.checkForLoss(fileName="/tmp/ping.h10"):
+            main.log.info("LOSS FOUND!!!")
+        else:
+            main.log.info("No Loss of Packets!!!")
+
+
+         
+        
 #**********************************************************************************************************************************************************************************************
 #This test case removes Controllers 2,3, and 4 then performs a ping test.
 #The assign controller is used because the ovs-vsctl module deletes all current controllers when a new controller is assigned.
@@ -978,7 +1058,19 @@ class JamesTest :
         else:
             main.log.report("\tINTENT FAILED TO BE DELETED")
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Intent Deleted Properly - Step Passed",onfail="INTENT NOT DELETED - STEP FAILED")
-        main.ONOS1.del_intent(intentIP=intentIP,intentPort=intentPort,intentURL=intentURL)
+        #main.ONOS1.del_intent(intentIP=intentIP,intentPort=intentPort,intentURL=intentURL)
+        main.ONOS1.add_intent(intent_id=str(10),src_dpid="00:00:00:00:00:00:10:67",dst_dpid="00:00:00:00:00:32:21:10",src_mac="00:00:00:01:11:11",dst_mac="00:12:12:12:12:12",intentIP=intentIP,intentPort=intentPort,intentURL=intentURL)
+
+
+
+#*****************************************************************************************
+#*****************************************************************************************
+# Delete all intents, and ensure that all flows were deleted
+# Will delete, then call for intents.
+# Lastly try a ping test to check that all flows are deleted. 
+#*****************************************************************************************
+#*****************************************************************************************
+        main.step("Deleting all flows and check that they are all gone")
 
 
 #*****************************************************************************************
@@ -993,7 +1085,7 @@ class JamesTest :
         main.step("Installing incorrect intent and checking for deletion")
         main.ONOS1.add_intent(intent_id=str(200),src_dpid="00:00:00:00:00:00:45:67",dst_dpid="00:00:00:00:00:32:21:10",src_mac="00:00:00:01:11:11",dst_mac="00:12:12:12:12:12",intentIP=intentIP,intentPort=intentPort,intentURL=intentURL)
         main.ONOS1.show_intent(intent_id=str(200),intentIP=intentIP,intentPort=intentPort,intentURL=intentURL)
-        main.ONOS1.del_intent(intent_id=str(200),intentIP=intentIP,intentPort=intentPort,intentURL=intentURL)
+        main.ONOS1.del_intent(intent_id="intent_id=200",intentIP=intentIP,intentPort=intentPort,intentURL=intentURL)
         time.sleep(2)
         response = main.ONOS1.show_intent(intentIP=intentIP,intentPort=intentPort,intentURL=intentURL,intent_id=200)
         if re.search("INTENT_NOT_FOUND",response):

@@ -337,8 +337,68 @@ class OnosCliDriver(CLI):
             main.log.info(":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
             main.cleanup()
             main.exit()
+#**********************************************************************************************
+#**********************************************************************************************
+# The purpose of comp_intents is to find if the high level intents have changed. preIntents
+# and postIntents should be the output of curl of the intents. preIntents being the original
+# and postIntents being the later. We are looking at the intents with the same id from both
+# and comparing the dst and src DPIDs and macs, and the state. If any of these are changed
+# we print that there are changes, then return a list of the intents that have changes`
+#**********************************************************************************************
+#**********************************************************************************************
+    def comp_intents(self,preIntents,postIntents):
+        import json
+        preDecoded = json.loads(preIntents)
+        postDecoded = json.loads(postIntents)
+        changes = []
+        if not preDecoded:
+            if postDecoded:
+                print "THERE ARE CHANGES TO THE HIGH LEVEL INTENTS!!!!"
+                return postDecoded
+        for k in preDecoded:
+            for l in postDecoded:
+                if l['id']==k['id']:
+                    if k['dstSwitchDpid']==l['dstSwitchDpid'] and k['srcMac']==l['srcMac'] and k['dstMac']==l['dstMac'] and k['srcSwitchDpid']==l['srcSwitchDpid'] and k['state']==l['state']:
+                        postDecoded.remove(l)
+                    else:
+                        changes.append(k)
+                        print ("THERE ARE CHANGES TO THE HIGH LEVEL INTENTS!!!")
+        return changes
     
-    
+#**********************************************************************************************
+#**********************************************************************************************
+# the purpose of comp_low is to find if the low level intents have changed. The main idea
+# is to determine if the path has changed. Again, like with the comp_intents function, the
+# pre and post Intents variables are the json dumps of wm/onos/intent/low. The variables
+# that will be compared are the state, and the path.
+#**********************************************************************************************
+#**********************************************************************************************
+    def comp_low(self, preIntents,postIntents):
+        import json
+        preDecoded = json.loads(preIntents)
+        postDecoded = json.loads(postIntents)
+        changes = []
+        if not preDecoded:
+            if postDecoded:
+                print "THERE ARE CHANGES TO THE LOW LEVEL INTENTS!!!"
+                return postDecoded
+        for k in preDecoded:
+            for l in postDecoded:
+                if l['id']==k['id']:
+                    if l['path']!=k['path']:
+                        changes.append(l)
+                        print "\n\n\n\nTHERE ARE CHANGES TO THE LOW LEVEL INTENTS!!!"
+                    else:
+                        if k['state']!=l['state']:
+                            changes.append(l)
+                            print "\n\n\n\nTHERE ARE CHANGES TO THE LOW LEVEL INTENTS!!!"
+                        else:
+                            print "NO CHANGES SO FAR\n\n\n"
+
+
+        return changes
+
+
     def rest_stop(self):
         '''
         Runs ./start-rest.sh stop to stop ONOS rest server
@@ -1278,6 +1338,7 @@ class OnosCliDriver(CLI):
             i = self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT],timeout=120)
             #main.log.warn("third expect response: " +str(i))
             response = self.handle.before
+            print response
             count = 0
             print response
             for line in response.splitlines():

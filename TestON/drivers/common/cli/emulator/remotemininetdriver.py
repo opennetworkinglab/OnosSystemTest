@@ -66,15 +66,34 @@ class RemoteMininetDriver(Emulator):
             main.log.error("Connection failed to the host "+self.user_name+"@"+self.ip_address) 
             main.log.error("Failed to connect to the Mininet")
             return main.FALSE
-  
+
+#*********************************************************************************************
+#*********************************************************************************************
+# checkForLoss will determine if any of the pings had any packets lost during the course of 
+# the pingLong.
+#*********************************************************************************************
+#*********************************************************************************************
+
+    def checkForLoss(self, fileName):
+        import os
+        if os.stat(fileName)[6]==0:
+            return main.TRUE
+        pingFile= open(fileName,'r')
+        pingList = pingFile.read()
+        
+        if re.search("0% packet loss",pingList):
+            return main.FALSE
+        return main.TRUE
+
+
     def pingLong(self,**pingParams):
         '''
         Starts a continuous ping on the mininet host outputing to a file in the /tmp dir. 
         '''
-        args = utilities.parse_args(["SRC","TARGET"],**pingParams)
+        args = utilities.parse_args(["SRC","TARGET","PINGTIME"],**pingParams)
         precmd = "rm /tmp/ping." + args["SRC"]
         self.execute(cmd=precmd,prompt="(.*)",timeout=10)
-        command = "mininet/util/m " + args["SRC"] + " ping "+args ["TARGET"]+" -i 1 -W 1 > /tmp/ping." + args["SRC"] + " &"
+        command = "mininet/util/m " + args["SRC"] + " ping "+args ["TARGET"]+" -i .2 -w " + str(args['PINGTIME']) + " > /tmp/ping." + args["SRC"] + " &"
         main.log.info( command ) 
         self.execute(cmd=command,prompt="(.*)",timeout=10)
         return main.TRUE

@@ -151,7 +151,7 @@ class ZookeeperCliDriver(CLI):
                 k4 = k3[1].split()
                 k5 = k4[1].split('"')
                 return k5[1]
-        return "NO SWITCH FOUND"
+        return "NO CONTROLLERS FOUND"
 
     def isup(self):
         '''

@@ -189,7 +189,6 @@ class MininetCliDriver(Emulator):
         '''
         Verifies the host's ip configured or not.
         '''
-        self.handle.sendline("")
         if self.handle :
             try:
                 response = self.execute(cmd=host+" ifconfig",prompt="mininet>",timeout=10)
@@ -318,6 +317,23 @@ class MininetCliDriver(Emulator):
             return str(result.group(0))
         else:
             main.log.error("Connection failed to the host")
+
+    def getDPID(self, switch):
+        if self.handle:
+            self.handle.sendline("")
+            self.expect("mininet>")
+            cmd = "py %s.dpid" %switch
+            try:
+                response = self.execute(cmd=cmd,prompt="mininet>",timeout=10)
+                self.handle.expect("mininet>")
+                response = self.handle.before
+                return response
+            except pexpect.EOF:
+                main.log.error(self.name + ": EOF exception found")
+                main.log.error(self.name + ":     " + self.handle.before)
+                main.cleanup()
+                main.exit()
+
 
     def getInterfaces(self, node):
         '''
@@ -531,7 +547,6 @@ class MininetCliDriver(Emulator):
     def get_sw_controller(self,sw):
         command = "sh ovs-vsctl get-controller "+str(sw)
         try:
-            self.handle.expect("mininet")
             response = self.execute(cmd=command,prompt="mininet>",timeout=10)
             print(response)
             if response:
@@ -733,7 +748,147 @@ class MininetCliDriver(Emulator):
             main.cleanup()
             main.exit()
 
+    def compare_topo(self, onos_list, onos_json):
+        '''
+        compares mn topology with ONOS topology
+        onos_list is a list of ONOS controllers, each element of the list should be (handle, name, ip, port)
+        onos_json is the output of the onos get_json function calling the /wm/onos/topology REST API
+        Returns: True if MN and ONOS topology match and False if the differ. 
+        Differences between ONOS and MN topology will be printed to the log.
 
+        Dependency: Requires STS to be installed on the TestON machine. STS can be pulled 
+        from https://github.com/ucb-sts/sts.git . Currently the required functions from STS are located in the 
+        topology_refactoring2 branch, but may be merged into the master branch soon. You may need to install some
+        python modules such as networkx to use the STS functions.
+
+        '''
+        from sts.topology.teston_topology import TestONTopology # assumes that sts already in you PYTHONPATH
+        #import sts.entities.base as base
+        import json
+        topo = TestONTopology(self, onos_list)
+
+        link_results = main.TRUE
+        switch_results = main.TRUE
+        port_results = main.TRUE
+
+        ########Switches#######
+        output = {"switches":[]}
+        for switch in topo.graph.switches: #iterate through the MN topology and pull out switches and and port info
+            ports = []
+            for port in switch.ports.values():
+                ports.append({'of_port': port.port_no, 'mac': port.hw_addr.replace('\'',''), 'name': port.name})
+            output['switches'].append({"name": switch.name, "dpid": switch.dpid, "ports": ports })
+        #print output
+
+        #print json.dumps(output, sort_keys=True,indent=4,separators=(',', ': '))
+
+
+        # created sorted list of dpid's in MN and ONOS for comparison
+        mnDPIDs=[]
+        for switch in output['switches']:
+            mnDPIDs.append(switch['dpid'])
+        mnDPIDs.sort()
+        #print mnDPIDs
+        if onos_json == "":#if rest call fails
+            main.log.error(self.name + ".compare_topo(): Empty JSON object given from ONOS rest call")
+            return main.FALSE
+        onos=onos_json
+        onosDPIDs=[]
+        for switch in onos['switches']:
+            onosDPIDs.append(switch['dpid'].replace(":",''))
+        onosDPIDs.sort()
+        #print onosDPIDs
+
+        if mnDPIDs!=onosDPIDs:
+            switch_results = main.FALSE
+            main.log.report( "Switches in MN but not in ONOS:")
+            main.log.report( str([switch for switch in mnDPIDs if switch not in onosDPIDs]))
+            main.log.report( "Switches in ONOS but not in MN:")
+            main.log.report(  str([switch for switch in onosDPIDs if switch not in mnDPIDs]))
+        else:#list of dpid's match in onos and mn
+            switch_results = main.TRUE
+
+        ################ports#############
+            for switch in output['switches']:
+                mn_ports = []
+                onos_ports = []
+                for port in switch['ports']:
+                    mn_ports.append(port['of_port'])
+                for onos_switch in onos['switches']:
+                    if onos_switch['dpid'].replace(':','') == switch['dpid']:
+                        for port in onos_switch['ports']:
+                            onos_ports.append(port['portNumber']) 
+                mn_ports.sort()
+                onos_ports.sort()
+                if mn_ports == onos_ports:
+                    pass #don't set results to true here as this is just one of many checks and it might override a failure
+                else: #the ports of this switch don't match
+                    port_results = main.FALSE
+                    main.log.report("ports in MN switch %s(%s) but not in ONOS:" % (switch['name'],switch['dpid'])) 
+                    main.log.report( str([port for port in mn_ports if port not in onos_ports]))
+                    main.log.report("ports in ONOS switch %s(%s) but not in MN:" % (switch['name'],switch['dpid']))
+                    main.log.report( str([port for port in onos_ports if port not in mn_ports]))
+
+
+        #######Links########
+        # iterate through MN links and check if and ONOS link exists in both directions
+        for link in topo.patch_panel.network_links: 
+            #print "Link: %s" % link
+            #TODO: Find a more efficient search method
+            node1 = None
+            port1 = None
+            node2 = None
+            port2 = None
+            first_dir = main.FALSE
+            second_dir = main.FALSE
+            for switch in output['switches']:
+                if switch['name'] == link.node1.name:
+                    node1 = switch['dpid']
+                    for port in switch['ports']:
+                        if str(port['name']) == str(link.port1):
+                            port1 = port['of_port'] 
+                    if node1 is not None and node2 is not None:
+                        break
+                if switch['name'] == link.node2.name:
+                    node2 = switch['dpid']
+                    for port in switch['ports']: 
+                        if str(port['name']) == str(link.port2):
+                            port2 = port['of_port'] 
+                    if node1 is not None and node2 is not None:
+                        break
+            # check onos link from node1 to node2
+            for onos_link in onos['links']:
+                if onos_link['src']['dpid'].replace(":",'') == node1 and onos_link['dst']['dpid'].replace(":",'') == node2:
+                    if onos_link['src']['portNumber'] == port1 and onos_link['dst']['portNumber'] == port2:
+                        first_dir = main.TRUE
+                    else:
+                        main.log.report('the port numbers do not match for ' +str(link) + ' between ONOS and MN')
+                    #print node1, ' to ', node2
+                elif onos_link['src']['dpid'].replace(":",'') == node2 and onos_link['dst']['dpid'].replace(":",'') == node1:
+                    if onos_link['src']['portNumber'] == port2 and onos_link['dst']['portNumber'] == port1:
+                        second_dir = main.TRUE
+                    else:
+                        main.log.report('the port numbers do not match for ' +str(link) + ' between ONOS and MN')
+                    #print node2, ' to ', node1
+                else:#this is not the link you're looking for
+                    pass
+            if not first_dir:
+                main.log.report('ONOS has issues with the link from '+str(link.node1.name) +"(dpid: "+ str(node1)+"):"+str(link.port1)+"(portNumber: "+str(port1)+")"+ ' to ' + str(link.node2.name) +"(dpid: "+ str(node2)+"):"+str(link.port2)+"(portNumber: "+str(port2)+")")
+            if not second_dir:
+                main.log.report('ONOS has issues with the link from '+str(link.node2.name) +"(dpid: "+ str(node2)+"):"+str(link.port2)+"(portNumber: "+str(port2)+")"+ ' to ' + str(link.node1.name) +"(dpid: "+ str(node1)+"):"+str(link.port1)+"(portNumber: "+str(port1)+")")
+            link_results = link_results and first_dir and second_dir
+
+        
+        results =  switch_results and port_results and link_results
+        '''
+        if not results: #To print out both topologies
+            main.log.error("Topology comparison failed, printing json objects, MN then ONOS")
+            main.log.error(str(json.dumps(output, sort_keys=True,indent=4,separators=(',', ': '))))
+            main.log.error('MN Links:')
+            for link in topo.patch_panel.network_links: main.log.error(str("\tLink: %s" % link))
+            main.log.error(str(json.dumps(onos, sort_keys=True,indent=4,separators=(',', ': '))))
+        '''
+        return results
 
 
 

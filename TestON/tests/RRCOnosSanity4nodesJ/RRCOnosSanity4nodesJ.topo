@@ -134,6 +134,13 @@
                 <controller> remote </controller>
              </COMPONENTS>
         </Mininet1>
+        <Mininet2>
+            <host>10.128.4.159</host>
+            <user>admin</user>
+            <password></password>
+            <type>RemoteMininetDriver</type>
+            <connect_order>14</connect_order>
+        </Mininet2>
 
     </COMPONENT>
 </TOPOLOGY>

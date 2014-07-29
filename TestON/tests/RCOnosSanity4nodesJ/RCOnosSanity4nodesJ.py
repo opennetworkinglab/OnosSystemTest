@@ -153,6 +153,8 @@ class RCOnosSanity4nodesJ :
                 main.Mininet1.assign_sw_controller(sw=str(j),count=4,ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'])
         main.Mininet1.get_sw_controller("s1")       
         time.sleep(30)
+
+        main.Zookeeper1.findMaster(switchDPID="00:00:00:00:00:00:10:00")
  
 # **********************************************************************************************************************************************************************************************
 #Add Flows
@@ -369,7 +371,7 @@ class RCOnosSanity4nodesJ :
         main.case("Bringing Link down... ")
         result = main.Mininet1.link(END1=main.params['LINK']['begin'],END2=main.params['LINK']['end'],OPTION="down")
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Link DOWN!",onfail="Link not brought down...")
-        time.sleep(10)
+        time.sleep(30)
         strtTime = time.time() 
         result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],str(int(main.params['NR_Links'])-2))
         for i in range(10):
@@ -413,7 +415,7 @@ class RCOnosSanity4nodesJ :
         result = main.Mininet1.link(END1='s1',END2='s3',OPTION="down")
         result = main.Mininet1.link(END1=main.params['LINK']['begin'],END2=main.params['LINK']['end'],OPTION="up")
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Link UP!",onfail="Link not brought up...")
-        time.sleep(10) 
+        time.sleep(30) 
         strtTime = time.time() 
         result = main.ONOS1.check_status_report(main.params['RestIP'],main.params['NR_Switches'],str(int(main.params['NR_Links'])-2))
         for i in range(10):

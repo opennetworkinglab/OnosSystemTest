@@ -1,7 +1,11 @@
 
 class HATest1:
 
-    
+    global topology
+    global masterSwitchList
+    global highIntentList
+    global lowIntentList
+    global flowTable
     def __init__(self) :
         self.default = ''
 
@@ -69,13 +73,13 @@ class HATest1:
             if i ==1:
                 main.Mininet1.assign_sw_controller(sw=str(i),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'])
             elif i>=2 and i<5:
-                main.Mininet1.assign_sw_controller(sw=str(i),ip1=main.params['CTRL']['ip2'],port1=main.params['CTRL']['port1'])
+                main.Mininet1.assign_sw_controller(sw=str(i),ip1=main.params['CTRL']['ip2'],port1=main.params['CTRL']['port2'])
             elif i>=5 and i<8:
-                main.Mininet1.assign_sw_controller(sw=str(i),ip1=main.params['CTRL']['ip3'],port1=main.params['CTRL']['port1'])
+                main.Mininet1.assign_sw_controller(sw=str(i),ip1=main.params['CTRL']['ip3'],port1=main.params['CTRL']['port3'])
             elif i>=8 and i<18:
-                main.Mininet1.assign_sw_controller(sw=str(i),ip1=main.params['CTRL']['ip4'],port1=main.params['CTRL']['port1'])
+                main.Mininet1.assign_sw_controller(sw=str(i),ip1=main.params['CTRL']['ip4'],port1=main.params['CTRL']['port4'])
             elif i>=18 and i<28:
-                main.Mininet1.assign_sw_controller(sw=str(i),ip1=main.params['CTRL']['ip5'],port1=main.params['CTRL']['port1'])
+                main.Mininet1.assign_sw_controller(sw=str(i),ip1=main.params['CTRL']['ip5'],port1=main.params['CTRL']['port5'])
             else:
                 main.Mininet1.assign_sw_controller(sw=str(i),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'])
         
@@ -124,7 +128,6 @@ class HATest1:
                 else:
                     result = main.FALSE
         utilities.assert_equals(expect = main.TRUE,actual=result,onpass="MasterControllers assigned correctly")
-        time.sleep(30)
 
     def CASE3(self,main) :
         import time
@@ -148,7 +151,6 @@ class HATest1:
             srcMac = '00:00:00:00:00:'+str(hex(i+10)[2:])
             main.ONOS1.add_intent(intent_id=str(count),src_dpid=srcDPID,dst_dpid=dstDPID,src_mac=srcMac,dst_mac=dstMac,intentIP=intentIP,intentPort=intentPort,intentURL=intentURL)
             count+=1
-        time.sleep(400)
         count = 1
         i = 8
         result = main.TRUE
@@ -179,8 +181,113 @@ class HATest1:
         
 
     def CASE4(self,main) :
+        import time
+        from subprocess import Popen, PIPE
         main.case("Setting up and Gathering data for current state")
+        main.step("Get the current In-Memory Topology on each ONOS Instance")
+        ctrls = []
+        count = 1
+        while True:
+            temp = ()
+            if ('ip'+str(count)) in main.params['CTRL']:
+                temp = temp+(getattr(main,('ONOS'+str(count))),)
+                temp = temp + ("ONOS"+str(count),)
+                temp = temp + (main.params['CTRL']['ip'+str(count)],)
+                temp = temp + (eval(main.params['CTRL']['port'+str(count)]),)
+                ctrls.append(temp)
+                count+=1
+            else:
+                break
+        topo_result = main.TRUE
+        for n in range(1,count):
+            temp_result = main.Mininet1.compare_topo(ctrls,main.ONOS1.get_json(main.params['CTRL']['ip'+str(n)]+":"+main.params['CTRL']['restPort'+str(n)]+main.params['TopoRest']))
+
+        main.step("Get the Mastership of each switch")
+        (stdout,stderr)=Popen(["curl",main.params['CTRL']['ip1']+":"+main.params['CTRL']['apiPort']+main.params['CTRL']['switchURL']],stdout=PIPE).communicate()
+        global masterSwitchList1
+        masterSwitchList1 = stdout
+
+        main.step("Get the High Level Intents")
+        (stdout,stderr)=Popen(["curl",main.params['CTRL']['ip1']+":"+main.params['CTRL']['apiPort']+main.params['CTRL']['intentHighURL']],stdout=PIPE).communicate()
+        global highIntentList1
+        highIntentList1 = stdout
         
+        main.step("Get the Low level Intents")
+        (stdout,stderr)=Popen(["curl",main.params['CTRL']['ip1']+":"+main.params['CTRL']['apiPort']+main.params['CTRL']['intentLowURL']],stdout=PIPE).communicate()
+        global lowIntentList1
+        lowIntentList1= stdout
+        
+        main.step("Get the OF Table entries")
+        
+        main.step("Start continuous pings")
+        main.Mininet2.pingLong(src=main.params['PING']['source1'],target=main.params['PING']['target1'],pingTime=500)
+        main.Mininet2.pingLong(src=main.params['PING']['source2'],target=main.params['PING']['target2'],pingTime=500)
+        main.Mininet2.pingLong(src=main.params['PING']['source3'],target=main.params['PING']['target3'],pingTime=500)
+        main.Mininet2.pingLong(src=main.params['PING']['source4'],target=main.params['PING']['target4'],pingTime=500)
+        main.Mininet2.pingLong(src=main.params['PING']['source5'],target=main.params['PING']['target5'],pingTime=500)
+        main.Mininet2.pingLong(src=main.params['PING']['source6'],target=main.params['PING']['target6'],pingTime=500)
+        main.Mininet2.pingLong(src=main.params['PING']['source7'],target=main.params['PING']['target7'],pingTime=500)
+        main.Mininet2.pingLong(src=main.params['PING']['source8'],target=main.params['PING']['target8'],pingTime=500)
+        main.Mininet2.pingLong(src=main.params['PING']['source9'],target=main.params['PING']['target9'],pingTime=500)
+        main.Mininet2.pingLong(src=main.params['PING']['source10'],target=main.params['PING']['target10'],pingTime=500)
+
+
+    def CASE5(self,main) :
+        main.case("MAIN COMPONENT FAILURE AND SCENARIO SPECIFIC TESTS")
+        
+
+    def CASE6(self,main) :
+        import os
+        main.case("Running ONOS Constant State Tests")
+        main.step("Get the current In-Memory Topology on each ONOS Instance and Compare it to the Topology before component failure")
+
+        main.step("Get the Mastership of each switch and compare to the Mastership before component failure")
+        (stdout,stderr)=Popen(["curl",main.params['CTRL']['ip1']+":"+main.params['CTRL']['apiPort']+main.params['CTRL']['switchURL']],stdout=PIPE).communicate()
+        result = main.TRUE
+        for i in range(1,28):
+            if main.ZK1.findMaster(switchDPID="s"+str(i),switchList=masterSwitchList1)==main.ZK1.findMaster(switchDPID="s"+str(i),switchList=stdout):
+                result = result and main.TRUE
+            else:
+                result = main.FALSE
+        utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Mastership of Switches was not changed",onfail="MASTERSHIP OF SWITCHES HAS CHANGED!!!")
+
+        main.step("Get the High Level Intents and compare to before component failure")
+        (stdout,stderr)=Popen(["curl",main.params['CTRL']['ip1']+":"+main.params['CTRL']['apiPort']+main.params['CTRL']['intentHighURL']],stdout=PIPE).communicate()
+        changesInIntents=main.ONOS1.comp_intents(preIntents=highIntentList1,postIntents=stdout)
+        if not changesInIntents:
+            result = main.TRUE
+        else:
+            main.log.info("THERE WERE CHANGES TO THE HIGH LEVEL INTENTS! CHANGES WERE: "+str(changesInIntents))
+            result = main.FALSE
+        utilities.assert_equals(expect=main.TRUE,actual=result,onpass="No changes to High level Intents",onfail="CHANGES WERE MADE TO HIGH LEVEL INTENTS")
+
+        main.step("Get the Low level Intents and compare to before component failure")
+        (stdout,stderr)=Popen(["curl",main.params['CTRL']['ip1']+":"+main.params['CTRL']['apiPort']+main.params['CTRL']['intentLowURL']],stdout=PIPE).communicate()
+        changesInIntents=main.ONOS1.comp_low(preIntents=lowIntentList1,postIntents=stdout)
+        if not changesInIntents:
+            result = main.TRUE
+        else:
+            main.log.info("THERE WERE CHANGES TO THE LOW LEVEL INTENTS! CHANGES WERE: "+str(changesInIntents))
+            result = main.FALSE
+        utilities.assert_equals(expect=main.TRUE,actual=result,onpass="No changes to Low level Intents",onfail="CHANGES WERE MADE TO LOW LEVEL INTENTS")
+
+
+        main.step("Get the OF Table entries and compare to before component failure")
+        
+        main.step("Check the continuous pings to ensure that no packets were dropped during component failure")
+        main.Mininet2.pingKill()
+        result = main.FALSE
+        for i in range(8,18):
+            result = result or main.Mininet2.checkForLoss("/tmp/ping.h"+str(i))
+        if result==main.TRUE:
+            main.log.info("LOSS IN THE PINGS!")
+        elif result == main.ERROR:
+            main.log.info("There are multiple mininet process running!!")
+        else:
+            main.log.info("No Loss in the pings!")
+        utilities.assert_equals(expect=main.FALSE,actual=result,onpass="No Loss of connectivity!",onfail="LOSS OF CONNECTIVITY")
+
+
 
 
 

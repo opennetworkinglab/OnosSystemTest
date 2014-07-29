@@ -397,17 +397,23 @@ class RemoteMininetDriver(Emulator):
             response = main.FALSE
         return response  
 
-    def flow_cmp(self,sw):
+    def get_flowTable(self,sw):
         self.handle.sendline("cd")
         self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT])
         command = "sudo ovs-ofctl dump-flows " + sw + " | awk '{OFS=\",\" ; print $1 $6 $7 }' |sort -n -k1"
-        #command = "sudo ovs-ofctl dump-flows " + sw 
         self.handle.sendline(command)
         self.handle.expect(["sort -n -k1",pexpect.EOF,pexpect.TIMEOUT])
         self.handle.expect(["NXST_FLOW",pexpect.EOF,pexpect.TIMEOUT])
-        #response = self.execute(cmd=command, prompt="\$",timeout=10)
         response = self.handle.before
-        print response
+        return response 
+        
+
+    def flow_comp(self,flow1,flow2):
+        if flow1==flow2:
+            return main.TRUE
+        else:
+            return main.FALSE
+
 if __name__ != "__main__":
     import sys
     sys.modules[__name__] = RemoteMininetDriver()

@@ -74,15 +74,18 @@ class RemoteMininetDriver(Emulator):
 #*********************************************************************************************
 #*********************************************************************************************
 
-    def checkForLoss(self, fileName):
+    def checkForLoss(self, pingList):
         import os
-        if os.stat(fileName)[6]==0:
-            return main.TRUE
-        pingFile= open(fileName,'r')
-        pingList = pingFile.read()
-        
-        if re.search("0% packet loss",pingList):
+        self.handle.sendline("")
+        self.handle.expect("\$")
+        self.handle.sendline("cat " + pingList)
+        self.handle.expect(pingList)
+        self.handle.expect("\$")
+        outputs = self.handle.before + self.handle.after
+        if re.search(" 0% packet loss",outputs):
             return main.FALSE
+        elif re.search("found multiple mininet",outputs):
+            return main.ERROR
         return main.TRUE
 
 
@@ -123,7 +126,7 @@ class RemoteMininetDriver(Emulator):
         Then copies all the ping files to the TestStation.
         '''
         import time
-        command = "sudo pkill ping" 
+        command = "sudo kill -SIGINT `pgrep ping`" 
         main.log.info( command ) 
         self.execute(cmd=command,prompt="(.*)",timeout=10)
         main.log.info( "Removing old ping data" )
@@ -133,6 +136,14 @@ class RemoteMininetDriver(Emulator):
         main.log.info( "Transferring ping files to TestStation" )
         command = "scp /tmp/ping.* admin@10.128.7.7:/tmp/" 
         self.execute(cmd=command,prompt="100%",timeout=20)
+        print("finished kill")
+        return main.TRUE
+    
+    def pingLongKill(self):
+        import time
+        command = "sudo kill -SIGING `pgrep ping`"
+        main.log.info(command)
+        self.execute(cmd=command,prompt="(.*)",timeout=10)
         return main.TRUE
         
     def pingHost(self,**pingParams):

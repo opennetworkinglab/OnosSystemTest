@@ -189,7 +189,6 @@ class MininetCliDriver(Emulator):
         '''
         Verifies the host's ip configured or not.
         '''
-        self.handle.sendline("")
         if self.handle :
             try:
                 response = self.execute(cmd=host+" ifconfig",prompt="mininet>",timeout=10)
@@ -318,6 +317,23 @@ class MininetCliDriver(Emulator):
             return str(result.group(0))
         else:
             main.log.error("Connection failed to the host")
+
+    def getDPID(self, switch):
+        if self.handle:
+            self.handle.sendline("")
+            self.expect("mininet>")
+            cmd = "py %s.dpid" %switch
+            try:
+                response = self.execute(cmd=cmd,prompt="mininet>",timeout=10)
+                self.handle.expect("mininet>")
+                response = self.handle.before
+                return response
+            except pexpect.EOF:
+                main.log.error(self.name + ": EOF exception found")
+                main.log.error(self.name + ":     " + self.handle.before)
+                main.cleanup()
+                main.exit()
+
 
     def getInterfaces(self, node):
         '''
@@ -531,7 +547,6 @@ class MininetCliDriver(Emulator):
     def get_sw_controller(self,sw):
         command = "sh ovs-vsctl get-controller "+str(sw)
         try:
-            self.handle.expect("mininet")
             response = self.execute(cmd=command,prompt="mininet>",timeout=10)
             print(response)
             if response:

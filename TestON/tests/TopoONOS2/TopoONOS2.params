@@ -1,0 +1,55 @@
+<PARAMS>
+    <testcases>2,100 </testcases>
+    <pingSleep>1</pingSleep>
+    <pingAttempts>60</pingAttempts>
+    <CASE1>       
+        <destination>h6</destination>
+    </CASE1>       
+    <PING>
+        <source1>h6</source1>
+        <target1>h31</target1>
+        <source2>h8</source2>
+        <target2>h33</target2>
+    </PING>
+    <LINK>
+        <begin>s1</begin>
+        <end>s2</end>
+    </LINK>
+    <CTRL>
+        <ip1>10.128.11.1</ip1>
+        <port1>6633</port1>
+        <restPort1>8080</restPort1>
+        <ip2>10.128.11.2</ip2>
+        <port2>6633</port2>
+        <restPort2>8080</restPort2>
+        <ip3>10.128.11.3</ip3>
+        <port3>6633</port3>
+        <restPort3>8080</restPort3>
+        <ip4>10.128.11.4</ip4>
+        <port4>6633</port4>
+        <restPort4>8080</restPort4>
+    </CTRL>
+    <TopoRest>/wm/onos/topology</TopoRest>
+    <RestIP> 10.128.11.1 </RestIP>
+    <NR_Switches>25</NR_Switches>
+    <NR_Links>50</NR_Links>
+    <YANK>
+        <hostname>h1</hostname>
+        <hostip>10.0.0.1</hostip>
+        <hostmac>00:00:00:00:00:01</hostmac>
+        <sw1>s1</sw1>
+        <sw6>s6</sw6>
+        <intf>s1-eth1</intf>
+    </YANK>
+    <PLUG>
+        <intf>s1-eth1</intf>
+        <sw6>s6</sw6>
+        <sw1>s1</sw1>
+    </PLUG>
+    <RESTCALL>
+        <restIP1>10.128.11.1</restIP1>
+        <restIP2>10.128.11.2</restIP2>
+        <restPort>8080</restPort>
+        <restURL>/wm/onos/topology/hosts</restURL>
+    </RESTCALL>
+</PARAMS>      

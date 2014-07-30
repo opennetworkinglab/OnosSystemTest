@@ -70,7 +70,7 @@ class onossanityclidriver(CLI):
             self.handle.sendline("./onos.sh zk start") 
 	    self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT])
             self.handle.sendline("./onos.sh rc deldb")
-	    self.handle.sendline("y")
+            self.handle.sendline("y")
             self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT])
 	    #Send a confirmation to delete ramcloud
 	    #self.handle.sendline("y")
@@ -79,7 +79,6 @@ class onossanityclidriver(CLI):
             #Check if zookeeper is running
             #delete database ./onos.sh rc deldb
             #main.log.info(self.name + ": ZooKeeper Started Separately")
-            time.sleep(2) 
 	    self.handle.sendline("./onos.sh start")
             i=self.handle.expect(["STARTED","FAILED","running",pexpect.EOF,pexpect.TIMEOUT])
             if i==0:
@@ -252,7 +251,7 @@ class onossanityclidriver(CLI):
 
     def stop(self):
         '''
-        Runs ./onos.sh core stop to stop ONOS
+        Runs ./onos.sh stop to stop ONOS
         '''
         try:
             self.handle.sendline("")
@@ -1034,7 +1033,8 @@ class onossanityclidriver(CLI):
         self.handle.expect("\$")
         self.handle.sendline("rm /tmp/wireshark*")
         self.handle.expect("\$")
-        self.execute(cmd='''tshark -i eth0 -t e | grep --color=auto CSM | grep --color=auto -E 'Flow|Barrier' > /tmp/tshark_of_'''+capture_type+''' .txt''',prompt="Capturing",timeout=10)
+        #self.execute(cmd='''tshark -i eth0 -t e | grep --color=auto CSM | grep --color=auto -E 'Flow|Barrier' > /tmp/tshark_of_'''+capture_type+''' .txt''',prompt="Capturing",timeout=10)
+        self.execute(cmd="tshark -i eth0 -t e | grep OFP > /tmp/tshark_of_"+capture_type+".txt", prompt="Capturing", timeout=10) 
         self.handle.sendline("")
         main.log.info("tshark_of started")
         return main.TRUE
@@ -1059,6 +1059,63 @@ class onossanityclidriver(CLI):
         #self.handle.expect("\$")
         main.log.info("TSHARK STOPPED!!!")
         return main.TRUE
+
+    def dynamicIntent(self, **kwargs):
+        import json
+        import requests
+        args = utilities.parse_args(["NUMFLOWS","INTADDR","OPTION"],**kwargs)
+        print args
+        url = args['INTADDR']
+        option = args['OPTION']
+        intents = []
+        idx=0
+        
+        if args['NUMFLOWS'] != None: 
+            numflows = int(args['NUMFLOWS'])
+        else: 
+            numflows = 0       
+        
+        if(option == "ADD"): 
+            for i in range(6,numflows+6):
+                oper = {}
+                mac3 = idx / 255
+                mac4 = idx % 255
+                str_mac3 = "%0.2x" % mac3
+                str_mac4 = "%0.2x" % mac4
+                src_mac = "00:01:"+str_mac3+":"+str_mac4+":00:00"
+                dst_mac = "00:02:"+str_mac3+":"+str_mac4+":00:00"
+                src_dpid = "00:00:00:00:00:00:30:00"
+                dst_dpid = "00:00:00:00:00:00:30:00"
+                oper['intentId'] = str(idx) 
+                oper['intentType'] = 'SHORTEST_PATH'   # XXX: Hardcoded
+                oper['staticPath'] = False            # XXX: Hardcoded
+                oper['srcSwitchDpid'] = src_dpid
+                oper['srcSwitchPort'] = 1
+                oper['dstSwitchDpid'] = dst_dpid
+                oper['dstSwitchPort'] = 1
+                oper['matchSrcMac'] = str(src_mac)
+                oper['matchDstMac'] = str(dst_mac)
+                intents.append(oper)
+                idx = idx + 1
+
+            parsed_result = []
+            data_json = json.dumps(intents)
+            request = urllib2.Request(url,data_json)
+            request.add_header("Content-Type", "application/json")
+            response=urllib2.urlopen(request)
+            result = response.read()
+            response.close()
+            if len(result) != 0:
+                parsed_result = json.loads(result)
+                return main.TRUE
+                
+        elif(option == "REM"):
+            #passing in just the url should delete all existing high level intents
+            intent_del = requests.delete(url)
+            return main.TRUE
+   
+        else:
+            return main.FALSE
 
     def generateFlows(self, flowdef, flowtype, numflows, ip):
         main.log.info("GENERATE FLOWS RUNNING!!!")
@@ -1106,6 +1163,21 @@ class onossanityclidriver(CLI):
             self.handle.sendline("scp admin@"+testIp+":"+testdirectory+"/remove_"+str(flowparams[i])+".py admin@"+onosIp+":"+onosdirectory+"/scripts/" ) 
         time.sleep(15)
         return main.TRUE
+
+    def sendFile(self, **kwargs):
+        import datetime
+        time.sleep(15)
+        args = utilities.parse_args(["TESTIP","ONOSIP","TESTDIR","ONOSDIR","TESTUSER","ONOSUSER","FILENAME"],**kwargs)
+        if(args["TESTDIR"][:-1] != "/"):
+            args["TESTDIR"] = args["TESTDIR"] + "/"
+        if(args["ONOSDIR"][:-1] != "/"):
+            args["ONOSDIR"] = args["ONOSDIR"] + "/"
+        main.log.info("Using SCP to copy files")
+        sendstr = "scp "+args["TESTUSER"]+"@"+args["TESTIP"]+":"+args["TESTDIR"]+args["FILENAME"]+".py "+args["ONOSUSR"]+"@"+args["ONOSIP"]\
+                  +":"+args["ONOSDIR"]
+        print sendstr
+        self.handle.sendline(sendstr) 
+        
 
     def printPerfResults(self, flowtype, numflows, stime, onosip):
         import datetime  
@@ -1225,6 +1297,8 @@ class onossanityclidriver(CLI):
 
     def add_intent(self, intent_id,src_dpid,dst_dpid,src_mac,dst_mac,intentIP,intentPort=8080,intentURL="wm/onos/intent/high" , intent_type = 'SHORTEST_PATH', static_path=False, src_port=1,dst_port=1):
         from urllib2 import URLError, HTTPError 
+        import json
+        import requests
         intents = []
         oper = {}
         oper['intentId'] = intent_id
@@ -1237,11 +1311,13 @@ class onossanityclidriver(CLI):
         oper['matchSrcMac'] = src_mac
         oper['matchDstMac'] = dst_mac
         intents.append(oper)
-        print intents
         url = "http://%s:%s/%s"%(intentIP,intentPort,intentURL)
         parsed_result = []
         data_json = json.dumps(intents)
-       
+        headers = {'content-type': 'application/json'} 
+        
+        #r = requests.post(url, data=json.dumps(intents), headers=headers)
+        #parsed_result = r
         request = urllib2.Request(url,data_json)
         request.add_header("Content-Type", "application/json")
         response=urllib2.urlopen(request)
@@ -1249,6 +1325,7 @@ class onossanityclidriver(CLI):
         response.close()
         if len(result) != 0:
             parsed_result = json.loads(result)
+            return main.TRUE
         #except HTTPError as exc:
         #    print "ERROR:"
         #    print "  REST GET URL: %s" % url
@@ -1262,4 +1339,69 @@ class onossanityclidriver(CLI):
         #    print "ERROR:"
         #    print "  REST GET URL: %s" % url
         #    print "  URL Error Reason: %s" % exc.reason
-        return parsed_result                                                  
+        return main.FALSE
+        
+    def get_single_intent_latency(self, json_obj):
+        begin_time = json_obj['gauges'][0]['gauge']['value']
+        end_time = json_obj['gauges'][1]['gauge']['value']
+        intent_lat_ms = int(end_time) - int(begin_time)
+        return intent_lat_ms                                      
+ 
+# purpose of comp_intents is to find if the high level intents have changed. preIntents
+# and postIntents should be the output of curl of the intents. preIntents being the original
+# and postIntents being the later. We are looking at the intents with the same id from both
+# and comparing the dst and src DPIDs and macs, and the state. If any of these are changed
+# we print that there are changes, then return a list of the intents that have changes`
+#**********************************************************************************************
+#**********************************************************************************************
+    def comp_intents(self,preIntents,postIntents):
+        import json
+        preDecoded = json.loads(preIntents)
+        postDecoded = json.loads(postIntents)
+        print preDecoded
+        print postDecoded
+        changes = []
+        if not preDecoded:
+            if postDecoded:
+                print "THERE ARE CHANGES TO THE HIGH LEVEL INTENTS!!!!"
+                return postDecoded
+        for k in preDecoded:
+            for l in postDecoded:
+                if l['id']==k['id']:
+                    if k['dstSwitchDpid']==l['dstSwitchDpid'] and k['srcMac']==l['srcMac'] and k['dstMac']==l['dstMac'] and k['srcSwitchDpid']==l['srcSwitchDpid'] and k['state']==l['state']:
+                        postDecoded.remove(l)
+                    else:
+                        changes.append(k)
+                        print ("THERE ARE CHANGES TO THE HIGH LEVEL INTENTS!!!")
+        return changes
+    
+#**********************************************************************************************
+#**********************************************************************************************
+# the purpose of comp_low is to find if the low level intents have changed. The main idea
+# is to determine if the path has changed. Again, like with the comp_intents function, the
+# pre and post Intents variables are the json dumps of wm/onos/intent/low. The variables
+# that will be compared are the state, and the path.
+#**********************************************************************************************
+#**********************************************************************************************
+    def comp_low(self, preIntents,postIntents):
+        import json
+        preDecoded = json.loads(preIntents)
+        postDecoded = json.loads(postIntents)
+        changes = []
+        if not preDecoded:
+            if postDecoded:
+                print "THERE ARE CHANGES TO THE LOW LEVEL INTENTS!!!"
+                return postDecoded
+        for k in preDecoded:
+            for l in postDecoded:
+                if l['id']==k['id']:
+                    if l['path']!=k['path']:
+                        changes.append(l)
+                        print "\n\n\n\nTHERE ARE CHANGES TO THE LOW LEVEL INTENTS!!!"
+                    else:
+                        if k['state']!=l['state']:
+                            changes.append(l)
+                            print "\n\n\n\nTHERE ARE CHANGES TO THE LOW LEVEL INTENTS!!!"
+                        else:
+                            print "NO CHANGES SO FAR\n\n\n"
+        return changes

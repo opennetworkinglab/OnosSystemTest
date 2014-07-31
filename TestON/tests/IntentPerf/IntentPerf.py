@@ -253,6 +253,10 @@ class IntentPerf:
         numiter = main.params['INTENTS']['numIter']
         latency = []
 
+        main.step("Removing any old intents")
+        requests.delete(url)
+        time.sleep(5)
+
         for i in range(0,int(numiter)): 
 
             #Add intents in both directions
@@ -261,7 +265,8 @@ class IntentPerf:
 
             main.step("Checking flow")
             result = main.Mininet1.pingHost(src="h1",target="h7") 
- 
+
+            time.sleep(5) 
             main.step("Starting tshark open flow capture") 
             #TODO: research tshark capture options to filter OFP packets. 
             main.ONOS2.handle.sendline("")
@@ -275,6 +280,7 @@ class IntentPerf:
             time.sleep(10) 
             #Bring down interface (port)
             main.Mininet2.handle.sendline("sudo ifconfig s3-eth2 down")
+            time.sleep(5)
             #call rest to obtain timestamp
             json_obj = main.ONOS2.get_json(url_add_end) 
 
@@ -316,7 +322,7 @@ class IntentPerf:
 
             main.step("Removing intents")
             intent_del = requests.delete(url)
-            time.sleep(5)
+            time.sleep(10)
         
         assertion = ""
         if(latency):

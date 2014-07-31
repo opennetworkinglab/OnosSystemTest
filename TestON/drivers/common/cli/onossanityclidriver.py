@@ -1084,8 +1084,8 @@ class onossanityclidriver(CLI):
                 str_mac4 = "%0.2x" % mac4
                 src_mac = "00:01:"+str_mac3+":"+str_mac4+":00:00"
                 dst_mac = "00:02:"+str_mac3+":"+str_mac4+":00:00"
-                src_dpid = "00:00:00:00:00:00:30:00"
-                dst_dpid = "00:00:00:00:00:00:30:00"
+                src_dpid = "00:00:00:00:00:00:10:00"
+                dst_dpid = "00:00:00:00:00:00:70:00"
                 oper['intentId'] = str(idx) 
                 oper['intentType'] = 'SHORTEST_PATH'   # XXX: Hardcoded
                 oper['staticPath'] = False            # XXX: Hardcoded
@@ -1405,3 +1405,5 @@ class onossanityclidriver(CLI):
                         else:
                             print "NO CHANGES SO FAR\n\n\n"
         return changes
+
+

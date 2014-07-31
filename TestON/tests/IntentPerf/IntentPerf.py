@@ -152,7 +152,9 @@ class IntentPerf:
         import requests
         import json
         import time
-       
+        import os
+ 
+        main.case("Single Intent add / delete latency") 
         #Assign variables from params file 
         intent_ip = main.params['INTENTREST']['intentIP']
         url = main.params['INTENTS']['url_new']
@@ -169,7 +171,9 @@ class IntentPerf:
         numIter = main.params['INTENTS']['numIter']
         url_add = main.params['INTENTS']['urlAddIntent'] 
         url_rem = main.params['INTENTS']['urlRemIntent']
- 
+        host_ip = main.params['INTENTS']['hostIP'] 
+        assertion = ""
+
         intent_add_lat_list = []
         intent_rem_lat_list = []
 
@@ -185,7 +189,6 @@ class IntentPerf:
             intent_lat_add = main.ONOS1.get_single_intent_latency(json_obj)
             main.log.report("Intent Add Latency of Intent ID "+intent_id+": " + str(intent_lat_add) + " ms")
             intent_add_lat_list.append(intent_lat_add)
-            print intent_add_lat_list
 
             intent_del = requests.delete(url+"/"+intent_id)
             time.sleep(5)
@@ -193,25 +196,35 @@ class IntentPerf:
             intent_lat_rem = main.ONOS1.get_single_intent_latency(json_obj)
             main.log.report("Intent Rem Latency of Intent ID "+intent_id+": " + str(intent_lat_rem) + "ms")
             intent_rem_lat_list.append(intent_lat_rem)
-            print intent_rem_lat_list
 
             time.sleep(2)
 
-        min_lat = min(intent_add_lat_list)
-        max_lat = max(intent_add_lat_list)
-        avg_lat = sum(intent_add_lat_list) / len(intent_add_lat_list)
+        if intent_add_lat_list: 
+            min_lat = str(min(intent_add_lat_list))
+            max_lat = str(max(intent_add_lat_list))
+            avg_lat = str(sum(intent_add_lat_list) / len(intent_add_lat_list))
         
-        main.log.report("Intent add latency min: "+ str(min_lat))
-        main.log.report("Intent add latency max: "+ str(max_lat))
-        main.log.report("Intent add latency avg: "+ str(avg_lat))
+            main.log.report("Intent add latency min: "+ min_lat+" ms")
+            main.log.report("Intent add latency max: "+ max_lat+" ms")
+            main.log.report("Intent add latency avg: "+ avg_lat+" ms")
+    
+            os.system("~/TestON/scripts/./perfdatagraph.py --name='1 intent add' --minimum='"+min_lat+"' --maximum='"+max_lat+"' --average='"+avg_lat+"' ")
+            
+            if intent_rem_lat_list:
+                min_lat = min(intent_rem_lat_list)
+                max_lat = max(intent_rem_lat_list)
+                avg_lat = sum(intent_rem_lat_list) / len(intent_rem_lat_list)
 
-        min_lat = min(intent_rem_lat_list)
-        max_lat = max(intent_rem_lat_list)
-        avg_lat = sum(intent_rem_lat_list) / len(intent_rem_lat_list)
+                main.log.report("Intent rem latency min: "+ str(min_lat)+" ms")
+                main.log.report("Intent rem latency max: "+ str(max_lat)+" ms")
+                main.log.report("Intent rem latency avg: "+ str(avg_lat)+" ms") 
+                assertion = main.TRUE
+        
+        else:
+            assertion = main.FALSE
 
-        main.log.report("Intent rem latency min: "+ str(min_lat))
-        main.log.report("Intent rem latency max: "+ str(max_lat))
-        main.log.report("Intent rem latency avg: "+ str(avg_lat)) 
+        utilities.assert_equals(expect=main.TRUE,actual=assertion,onpass="Single intent add / rem successful",onfail="Single intent add / rem NOT successful")
+
 # **********************************************************************************************************************************************************************************************
 #This case tests performance of Intent Reroute Installation
 
@@ -221,6 +234,8 @@ class IntentPerf:
         import time 
         import subprocess
 
+
+        main.case("Single Intent reroute latency")
         #To bring link down: link s1 s2 down
         #Assign variables from params file 
         url = main.params['INTENTS']['url_new']
@@ -235,60 +250,96 @@ class IntentPerf:
         dstPort = int(main.params['INTENTS']['dstPort'])
         dstMac = main.params['INTENTS']['dstMac2']
         intent_id2 = "1"+intent_id
+        numiter = main.params['INTENTS']['numIter']
+        latency = []
 
-        #Add intents in both directions
-        main.ONOS1.add_intent(intent_id = intent_id, src_dpid = srcSwitch, dst_dpid = dstSwitch, src_mac = srcMac, dst_mac = dstMac, intentIP = main.params['INTENTREST']['intentIP'])
-        main.ONOS1.add_intent(intent_id = intent_id2, src_dpid = dstSwitch, dst_dpid = srcSwitch, src_mac = dstMac, dst_mac = srcMac, intentIP = main.params['INTENTREST']['intentIP'])
+        for i in range(0,int(numiter)): 
 
-        result = main.Mininet1.pingHost(src="h1",target="h7") 
-        print result
+            #Add intents in both directions
+            main.ONOS1.add_intent(intent_id = intent_id, src_dpid = srcSwitch, dst_dpid = dstSwitch, src_mac = srcMac, dst_mac = dstMac, intentIP = main.params['INTENTREST']['intentIP'])
+            main.ONOS1.add_intent(intent_id = intent_id2, src_dpid = dstSwitch, dst_dpid = srcSwitch, src_mac = dstMac, dst_mac = srcMac, intentIP = main.params['INTENTREST']['intentIP'])
 
-        main.ONOS1.stop_tshark() 
-        
-        time.sleep(5)
-        main.case("Starting tshark open flow capture") 
-        #TODO: research tshark capture options to filter OFP packets. 
-        main.ONOS2.handle.sendline("")
-        main.ONOS2.handle.expect("\$")
-        #main.ONOS2.execute(cmd="tshark -i eth0 -t e | grep 'OFP 130 Port Status' > /tmp/tshark_of_port.txt",prompt="Capturing",timeout=10)
-        main.ONOS2.handle.sendline("tshark -i eth0 -t e | \"OFP 130\" > /tmp/tshark_of_port.txt")
-        main.ONOS2.handle.expect("Capturing on eth0")
-        #time.sleep(2) 
-        #Bring down interface (port)
-        main.Mininet2.handle.sendline("")
-        main.Mininet2.handle.sendline("sudo ifconfig s3-eth2 down")
-        #main.Mininet1.handle.sendline("ifconfig")
-        #call rest to obtain timestamp
-        json_obj = main.ONOS2.get_json(url_add_end) 
-
-        time.sleep(5)
-        main.ONOS2.stop_tshark()
-        #Check flow
-        result = main.Mininet1.pingHost(src="h1",target="h7") 
-       
-        #Read ONOS tshark_of_port file and get first line
-        #TODO: improve accuracy of timestamp by parsing packet data using "tshark -V" option
-        ssh = subprocess.Popen(['ssh', 'admin@'+main.params['CTRL']['ip2'], 'cat', '/tmp/tshark_of_port.txt'],stdout=subprocess.PIPE)
-        text = ssh.stdout.readline()
-        obj = text.split(" ")
-        timestamp = obj[0] 
-        port_down_time_ms = timestamp*1000
+            main.step("Checking flow")
+            result = main.Mininet1.pingHost(src="h1",target="h7") 
  
-        #TODO: Obtain timestamp from rest and compare
-        #NOTE: The url may change
-        end_time = json_obj['gauges'][0]['gauge']['value'] 
-        reroute_latency = end_time - port_down_time_ms
-        main.log.report("Intent Reroute Latency: "+reroute_latency+" ms") 
+            main.step("Starting tshark open flow capture") 
+            #TODO: research tshark capture options to filter OFP packets. 
+            main.ONOS2.handle.sendline("")
+            main.ONOS2.handle.expect("\$")
+            main.ONOS2.handle.sendline("\r")
+            main.ONOS2.handle.sendline("tshark -i eth0 -t e | grep \"OFP 130\" > /tmp/tshark_of_port.txt &")
+            main.ONOS2.handle.sendline("\r")
+            main.ONOS2.handle.expect("Capturing on eth0")
+            main.ONOS2.handle.sendline("\r")
+            main.ONOS2.handle.expect("\$")
+            time.sleep(10) 
+            #Bring down interface (port)
+            main.Mininet2.handle.sendline("sudo ifconfig s3-eth2 down")
+            #call rest to obtain timestamp
+            json_obj = main.ONOS2.get_json(url_add_end) 
 
-        time.sleep(10)
-        main.Mininet1.pingHost(src="h1",target="h7") 
+            time.sleep(20)
+            main.ONOS2.stop_tshark()
+            main.step("Checking flow")
+            result = main.Mininet1.pingHost(src="h1",target="h7") 
+             
+            #Read ONOS tshark_of_port file and get first line
+            #TODO: improve accuracy of timestamp by parsing packet data using "tshark -V" option
+            ssh = subprocess.Popen(['ssh', 'admin@'+main.params['CTRL']['ip2'], 'cat', '/tmp/tshark_of_port.txt'],stdout=subprocess.PIPE)
+            text = ssh.stdout.readline()
+            obj = text.split(" ")
+            timestamp = int(float(obj[0])*1000)
+            if timestamp: 
+                port_down_time_ms = timestamp
+            else:
+                port_down_time_ms = 0
+ 
+            #TODO: Obtain timestamp from rest and compare
+            #NOTE: The url may change
+            end_time = json_obj['gauges'][0]['gauge']['value'] 
+            print end_time
+            reroute_latency = int(end_time) - int(port_down_time_ms)
+          
+            #NOTE: alter threshold as needed
+            if(reroute_latency > 0 and reroute_latency < 100000):
+                 main.log.report("Intent Reroute Latency: "+str(reroute_latency)+" ms")
+                 latency.append(int(reroute_latency)) 
+            else:
+                 main.log.report("Unexpected results for Reroute Latency. Omitting iteration "+str(i))
+                 main.log.report("Latency calculation returned: "+str(reroute_latency))
+ 
+            time.sleep(10)
+
+            main.step("Bringing interface up")
+            main.Mininet2.handle.sendline("sudo ifconfig s3-eth2 up")
+            time.sleep(10)
+
+            main.step("Removing intents")
+            intent_del = requests.delete(url)
+            time.sleep(5)
+        
+        assertion = ""
+        if(latency):
+            main.step("Calculating latency min,max,avg")
+            min_lat = str(min(latency))
+            max_lat = str(max(latency))
+            avg_lat = str(sum(latency) / len(latency))
+            main.log.report("Single Intent Reroute latency MIN: "+min_lat+" ms")
+            main.log.report("Single Intent Reroute latency MAX: "+max_lat+" ms") 
+            main.log.report("Single Intent Reroute latency AVG: "+avg_lat+" ms") 
+            os.system("~/TestON/scripts/./perfdatagraph.py --name='1 intent reroute' --minimum='"+min_lat+"' --maximum='"+max_lat+"' --average='"+avg_lat+"' ")
+            assertion = main.TRUE
+        else:
+            assertion = main.FALSE
+        
+        utilities.assert_equals(expect=main.TRUE,actual=assertion,onpass="Single Intent Reroute Successful", onfail="Single Intent Reroute NOT successful...") 
  
 # **********************************************************************************************************************************************************************************************
 # Intent Batch Installation Latency
 
     def CASE5(self,main):
         import time
-        main.log.report("Adding batch of intents to calculate latency")
+        main.case("Adding batch of intents to calculate latency")
         numflows = main.params['INTENTS']['numFlows']
         ip = main.params['INTENTREST']['intentIP']
         intaddr = main.params['INTENTS']['url_new']
@@ -303,21 +354,134 @@ class IntentPerf:
         for i in range(0,int(numiter)):
             result = main.ONOS1.dynamicIntent(NUMFLOWS = numflows, INTADDR = intaddr, OPTION = "ADD")
             utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Batch installation successful",onfail="Batch installation NOT successful...")
-       
-            time.sleep(10)
 
-            result = main.ONOS1.dynamicIntent(INTADDR = intaddr, OPTION = "REM")
-            utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Intent removal successful",onfail="Intent removal NOT successful...")
- 
             time.sleep(5)
  
             json_obj = main.ONOS1.get_json(url_add) 
             intent_lat_add = main.ONOS1.get_single_intent_latency(json_obj)
-            main.log.report("Intent Add Batch latency: " + str(intent_lat_add) + " ms")
-            latency.append(intent_lat_add)
+            if(intent_lat_add > 0):
+                main.log.report("Intent Add Batch latency: " + str(intent_lat_add) + " ms")
+                latency.append(intent_lat_add)       
+            else:
+                main.log.report("Intent Add Batch calculation returned unexpected results")
+                main.log.report("Omitting iteration "+numiter)   
+    
+            result = main.ONOS1.dynamicIntent(INTADDR = intaddr, OPTION = "REM")
+            utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Intent removal successful",onfail="Intent removal NOT successful...") 
 
             time.sleep(3) 
 
-        main.log.report("Max latency of "+numiter+" iterations: "+ str(max(latency)))
-        main.log.report("Min latency of "+numiter+" iterations: "+ str(min(latency)))
-        main.log.report("Avg latency of "+numiter+" iterations: "+ str((sum(latency) / len(latency))))
+        assertion = ""
+ 
+        if(latency): 
+            min_lat = str(min(latency))
+            max_lat = str(max(latency))
+            avg_lat = str(sum(latency) / len(latency))
+            main.log.report("Min latency of "+numiter+" iterations: "+ min_lat)
+            main.log.report("Max latency of "+numiter+" iterations: "+ max_lat)
+            main.log.report("Avg latency of "+numiter+" iterations: "+ avg_lat)
+            assertion = main.TRUE
+            os.system("~/TestON/scripts/./perfdatagraph.py --name='1000 intents add' --minimum='"+min_lat+"' --maximum='"+max_lat+"' --average='"+avg_lat+"' ")
+        else:
+            assertion = main.FALSE
+
+        utilities.assert_equals(expect=main.TRUE,actual=assertion,onpass="Intent Batch Latency Calculation successful",onfail="Intent Batch Latency Calculation unsuccessful")
+
+
+#********************************************************
+#Intent Batch Reroute Latency
+
+    def CASE6(self, main):
+        import requests
+        import json
+        import time
+        import subprocess
+        numflows = main.params['INTENTS']['numFlows']
+        intentIp = main.params['INTENTREST']['intentIP']
+        intaddr = main.params['INTENTS']['url_new']
+        numiter = main.params['INTENTS']['numIter']
+        url_add_end = main.params['INTENTS']['urlAddIntentEnd']
+
+        main.case("Calculating batch reroute latency")
+
+        end_time_temp = ""        
+        latency = []
+	
+        main.step("Removing any old intents before adding")
+        intent_del = requests.delete(intaddr)
+        time.sleep(5)
+
+        for i in range(0, int(numiter)):
+            main.step("Adding "+numflows+" intents")
+            result = main.ONOS1.dynamicIntent(NUMFLOWS = numflows, INTADDR = intaddr, OPTION = "ADD")
+            utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Batch installation successful",onfail="Batch installation NOT successful...")
+
+            time.sleep(10)
+
+            main.step("Starting wireshark")
+            main.ONOS2.handle.sendline("")
+            main.ONOS2.handle.expect("\$")
+            main.ONOS2.handle.sendline("\r")
+            main.ONOS2.handle.sendline("tshark -i eth0 -t e | grep \"OFP 130\" > /tmp/tshark_of_port_batch.txt &")
+            main.ONOS2.handle.expect("Capturing on eth0")
+            main.ONOS2.handle.sendline("\r")
+            main.ONOS2.handle.expect("\$")
+            time.sleep(10)            
+
+            main.step("Bringing interface down")
+           
+            main.Mininet2.handle.sendline("sudo ifconfig s3-eth2 down") 
+            
+            time.sleep(30)
+            main.ONOS2.stop_tshark()
+
+            main.step("Getting timestamp from REST")
+            json_obj = main.ONOS2.get_json(url_add_end)
+            end_time = json_obj['gauges'][0]['gauge']['value']
+
+            ssh = subprocess.Popen(['ssh', 'admin@'+main.params['CTRL']['ip2'], 'cat', '/tmp/tshark_of_port_batch.txt'],stdout=subprocess.PIPE)
+            text = ssh.stdout.readline()
+            obj = text.split(" ")
+            #Only calculate timestamp if text exists. 
+            if text:
+                timestamp = int(float(obj[0])*1000)
+            else:
+                timestamp = 0
+            delta = int(end_time) - int(timestamp)
+           
+            #NOTE: Modify threshold for what is reasonable 
+            if delta > 0 and delta < 1000000:
+                main.log.report("Latency of reroute: "+str(delta)+" ms") 
+                latency.append(int(delta))
+            else:
+                main.log.report("Unexpected result from latency calculation. Omitting iteration "+str(i))
+                main.log.report("Calculation result: "+str(delta))
+ 
+            time.sleep(5)
+            main.step("Removing intents")
+            intent_del = requests.delete(intaddr)            
+            time.sleep(5) 
+
+            main.step("Bringing interface up") 
+            main.Mininet2.handle.sendline("sudo ifconfig s3-eth2 up")
+            time.sleep(10)
+
+        assertion = ""
+        if latency:
+            main.step("Calculate latency max, min, average")
+            max_lat = str(max(latency))
+            min_lat = str(min(latency))
+            avg_lat = str(sum(latency) / len(latency))
+  
+            main.log.report("Intent batch reroute latency MIN: "+min_lat+" ms")
+            main.log.report("Intent batch reroute latency MAX: "+max_lat+" ms")
+            main.log.report("Intent batch reroute latency AVG: "+avg_lat+" ms")
+
+            os.system("~/TestON/scripts/./perfdatagraph.py --name='1000 intents reroute' --minimum='"+min_lat+"' --maximum='"+max_lat+"' --average='"+avg_lat+"' ")
+            assertion = main.TRUE
+        else:
+            assertion = main.FALSE
+        utilities.assert_equals(expect=main.TRUE,actual=assertion,onpass="Batch Reroute Latency Calculations Successful",onfail="Batch Reroute Latency Calculations NOT successful")
+
+
+

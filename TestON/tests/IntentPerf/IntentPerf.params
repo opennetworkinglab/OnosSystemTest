@@ -1,5 +1,5 @@
 <PARAMS>
-    <testcases>1,2,4,5</testcases>
+    <testcases>1,2,3,4,5,6</testcases>
     <tcpdump> 
         <intf>eth0</intf>
         <port>port 6633</port>
@@ -25,8 +25,9 @@
         <dstMac>00:00:00:00:00:05</dstMac>
         <srcMac2>00:00:00:00:00:01</srcMac2> 
         <dstMac2>00:00:00:00:00:07</dstMac2>
-        <numFlows>100</numFlows>
+        <numFlows>1000</numFlows>
         <numIter>5</numIter>
+        <hostIP>10.128.5.54</hostIP>
     </INTENTS>
 
     <CASE1>       

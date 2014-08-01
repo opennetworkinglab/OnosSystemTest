@@ -676,8 +676,11 @@ class MininetCliDriver(Emulator):
         else:
             main.log.error("Connection failed to the Mininet host")
     
-    def check_flows(self, sw):
-        command = "sh ovs-ofctl dump-flows "+str(sw)
+    def check_flows(self, sw, dump_format=None):
+        if dump_format:
+          command = "sh ovs-ofctl -F " + dump_format + " dump-flows " + str(sw)
+        else:
+          command = "sh ovs-ofctl dump-flows "+str(sw)
         try:
             response=self.execute(cmd=command,prompt="mininet>",timeout=10)
             return response

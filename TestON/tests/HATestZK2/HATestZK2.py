@@ -1,5 +1,5 @@
 
-class HATestZK:
+class HATestZK2:
 
     global topology
     global masterSwitchList
@@ -254,73 +254,42 @@ class HATestZK:
     def CASE5(self,main) :
         import re
         main.case("MAIN COMPONENT FAILURE AND SCENARIO SPECIFIC TESTS")
+        main.step("Determine the current number of switches and links")
+        (number,active)=main.ONOS1.num_switch(RestIP=main.params['CTRL']['ip1'])
+        links = main.ONOS1.num_link(RestIP=main.params['CTRL']['ip1'])
+        
         main.step("Zookeeper Server Failure!")
-        result = main.TRUE
-        master1 = main.ZK1.status()
-        print master1
-        if re.search("leader",master1):
-            main.ZK1.stop()
-            main.log.info("ZK1 was Master and Killed! Also Killing ZK2")
-            main.ZK2.stop()
-            time.sleep(10)
-            if re.search("leader",main.ZK3.status()) or re.search("leader",main.ZK4.status()) or re.search("leader",main.ZK5.status()):
-                result = main.TRUE
-                main.log.info("New Leader Elected")
-            else:
-                result = main.FALSE
-                main.log.info("NO NEW ZK LEADER ELECTED!!!")
-        else:
-            master2 = main.ZK2.status()
-            if re.search("leader",master2):
-                main.ZK2.stop()
-                main.log.info("ZK2 was Master and Killed! Also Killing ZK3")
-                main.ZK3.stop()
-                time.sleep(10)
-                if re.search("leader",main.ZK1.status()) or re.search("leader",main.ZK4.status()) or re.search("leader",main.ZK5.status()):
-                    result = main.TRUE
-                    main.log.info("New Leader Elected")
-                else:
-                    result = main.FALSE
-                    main.log.info("NO NEW ZK LEADER ELECTED!!!")
-            else:
-                master3 = main.ZK3.status()
-                if re.search("leader",master3):
-                    main.ZK3.stop()
-                    main.log.info("ZK3 was Master and Killed! Also Killing ZK4")
-                    main.ZK4.stop()
-                    time.sleep(10)
-                    if re.search("leader",main.ZK1.status()) or re.search("leader",main.ZK2.status()) or re.search("leader",main.ZK5.status()):
-                        result = main.TRUE
-                        main.log.info("New Leader Elected")
-                    else:
-                        result = main.FALSE
-                        main.log.info("NO NEW ZK LEADER ELECTED!!!")
-                else:
-                    master4 = main.ZK4.status()
-                    if re.search("leader",master4):
-                        main.ZK4.stop()
-                        main.log.info("ZK4 was Master and Killed! Also Killing ZK5")
-                        main.ZK5.stop()
-                        time.sleep(10)
-                        if re.search("leader",main.ZK1.status()) or re.search("leader",main.ZK2.status()) or re.search("leader",main.ZK3.status()):
-                            result = main.TRUE
-                            main.log.info("New Leader Elected")
-                        else:
-                            result = main.FALSE
-                            main.log.info("NO NEW ZK LEADER ELECTED!!!")
-                    else:
-                        main.ZK5.stop()
-                        main.log.info("ZK5 was Master and Killed! Also Killing ZK1")
-                        main.ZK1.stop()
-                        time.sleep(10)
-                        if re.search("leader",main.ZK3.status()) or re.search("leader",main.ZK4.status()) or re.search("leader",main.ZK2.status()):
-                            result = main.TRUE
-                            main.log.info("New Leader Elected")
-                        else:
-                            result = main.FALSE
-                            main.log.info("NO NEW ZK LEADER ELECTED!!!")
-        utilities.assert_equals(expect=main.TRUE,actual=result,onpass="New Leader was Elected!",onfail="NO NEW LEADER WAS ELECTED!!!!")
+        main.ZK1.stop()
+        main.ZK2.stop()
+        main.ZK3.stop()
+        main.ZK4.stop()
+        main.ZK5.stop()
+        main.Mininet2.del_switch("s1")
+        time.sleep(31)
+        result = main.ONOS1.check_status_report(main.params['CTRL']['ip1'],str(int(active)-1),str(int(links)-2))
+        utilities.assert_equals(expect=main.FALSE,actual=result,onpass="Registry is no longer active",onfail="Registry is still being updated")
 
+        main.step("Restart Zookeeper")
+        main.ZK1.start()
+        main.ZK2.start()
+        main.ZK3.start()
+        main.ZK4.start()
+        main.ZK5.start()
+        time.sleep(10) # Time for Zookeeper to reboot
+        master1=main.ZK1.status()
+        master2=main.ZK2.status()
+        master3=main.ZK3.status()
+        master4=main.ZK4.status()
+        master5=main.ZK5.status()
+        if re.search("leader",master1) or re.search("leader",master2) or re.search("leader",master3) or re.search("leader",master4) or re.search("leader",master5):
+            main.log.info("New ZK Leader Elected")
+        else:
+            main.log.info("NO NEW ZK LEADER ELECTED!!!")
+        main.step("Add back s1")
+        main.Mininet2.add_switch("s1")
+        main.Mininet1.assign_sw_controller(sw="1",ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'])
+        main.Mininet1.assign_sw_controller(sw="1",count=5,ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'],ip5=main.params['CTRL']['ip5'],port5=main.params['CTRL']['port5']) 
+        time.sleep(31)
 
 
     def CASE6(self,main) :

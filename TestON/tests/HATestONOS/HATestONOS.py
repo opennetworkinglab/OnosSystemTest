@@ -1,5 +1,5 @@
 
-class HATestZK:
+class HATestONOS:
 
     global topology
     global masterSwitchList
@@ -62,9 +62,6 @@ class HATestZK:
         vm5 = main.RC5.status_coor and main.ONOS5.isup()
         result = result1 and vm1 and vm2 and vm3 and vm4 and vm5
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Everything started successfully",onfail="EVERYTHING FAILED TO START")
-        if result==main.FALSE:
-            main.cleanup()
-            main.exit()
 
     '''
     CASE2
@@ -215,11 +212,12 @@ class HATestZK:
         for n in range(1,count):
             temp_result = main.Mininet1.compare_topo(ctrls,main.ONOS1.get_json(main.params['CTRL']['ip'+str(n)]+":"+main.params['CTRL']['restPort'+str(n)]+main.params['TopoRest']))
         '''
-
+        '''
         main.step("Get the Mastership of each switch")
         (stdout,stderr)=Popen(["curl",main.params['CTRL']['ip1']+":"+main.params['CTRL']['restPort1']+main.params['CTRL']['switchURL']],stdout=PIPE).communicate()
         global masterSwitchList1
         masterSwitchList1 = stdout
+        '''
 
         main.step("Get the High Level Intents")
         (stdout,stderr)=Popen(["curl",main.params['CTRL']['ip1']+":"+main.params['CTRL']['restPort1']+main.params['CTRL']['intentHighURL']],stdout=PIPE).communicate()
@@ -253,74 +251,46 @@ class HATestZK:
 
     def CASE5(self,main) :
         import re
+        from random import randint
         main.case("MAIN COMPONENT FAILURE AND SCENARIO SPECIFIC TESTS")
-        main.step("Zookeeper Server Failure!")
-        result = main.TRUE
-        master1 = main.ZK1.status()
-        print master1
-        if re.search("leader",master1):
-            main.ZK1.stop()
-            main.log.info("ZK1 was Master and Killed! Also Killing ZK2")
-            main.ZK2.stop()
-            time.sleep(10)
-            if re.search("leader",main.ZK3.status()) or re.search("leader",main.ZK4.status()) or re.search("leader",main.ZK5.status()):
-                result = main.TRUE
-                main.log.info("New Leader Elected")
-            else:
-                result = main.FALSE
-                main.log.info("NO NEW ZK LEADER ELECTED!!!")
+        main.step("ONOS CORE Failure!")
+        kill = randint(1,4)
+        if kill==1:
+            main.ONOS2.stop()
+        elif kill==2:
+            main.ONOS2.stop()
+        elif kill==3:
+            main.ONOS3.stop()
+        elif kill==4:
+            main.ONOS4.stop()
         else:
-            master2 = main.ZK2.status()
-            if re.search("leader",master2):
-                main.ZK2.stop()
-                main.log.info("ZK2 was Master and Killed! Also Killing ZK3")
-                main.ZK3.stop()
-                time.sleep(10)
-                if re.search("leader",main.ZK1.status()) or re.search("leader",main.ZK4.status()) or re.search("leader",main.ZK5.status()):
-                    result = main.TRUE
-                    main.log.info("New Leader Elected")
-                else:
-                    result = main.FALSE
-                    main.log.info("NO NEW ZK LEADER ELECTED!!!")
-            else:
-                master3 = main.ZK3.status()
-                if re.search("leader",master3):
-                    main.ZK3.stop()
-                    main.log.info("ZK3 was Master and Killed! Also Killing ZK4")
-                    main.ZK4.stop()
-                    time.sleep(10)
-                    if re.search("leader",main.ZK1.status()) or re.search("leader",main.ZK2.status()) or re.search("leader",main.ZK5.status()):
-                        result = main.TRUE
-                        main.log.info("New Leader Elected")
-                    else:
-                        result = main.FALSE
-                        main.log.info("NO NEW ZK LEADER ELECTED!!!")
-                else:
-                    master4 = main.ZK4.status()
-                    if re.search("leader",master4):
-                        main.ZK4.stop()
-                        main.log.info("ZK4 was Master and Killed! Also Killing ZK5")
-                        main.ZK5.stop()
-                        time.sleep(10)
-                        if re.search("leader",main.ZK1.status()) or re.search("leader",main.ZK2.status()) or re.search("leader",main.ZK3.status()):
-                            result = main.TRUE
-                            main.log.info("New Leader Elected")
-                        else:
-                            result = main.FALSE
-                            main.log.info("NO NEW ZK LEADER ELECTED!!!")
-                    else:
-                        main.ZK5.stop()
-                        main.log.info("ZK5 was Master and Killed! Also Killing ZK1")
-                        main.ZK1.stop()
-                        time.sleep(10)
-                        if re.search("leader",main.ZK3.status()) or re.search("leader",main.ZK4.status()) or re.search("leader",main.ZK2.status()):
-                            result = main.TRUE
-                            main.log.info("New Leader Elected")
-                        else:
-                            result = main.FALSE
-                            main.log.info("NO NEW ZK LEADER ELECTED!!!")
-        utilities.assert_equals(expect=main.TRUE,actual=result,onpass="New Leader was Elected!",onfail="NO NEW LEADER WAS ELECTED!!!!")
+            main.ONOS5.stop()
 
+        kill2 = randint(1,5)
+        if kill2==kill:
+            if kill2==5:
+                main.ONOS4.stop()
+            elif kill2==1:
+                main.ONOS3.stop()
+            else:
+                main.ONOS5.stop()
+        else:
+            if kill2==1:
+                main.ONOS5.stop()
+            elif kill2==2:
+                main.ONOS2.stop()
+            elif kill2==3:
+                main.ONOS3.stop()
+            elif kill2==4:
+                main.ONOS4.stop()
+            else:
+                main.ONOS5.stop()
+        time.sleep(10)
+        main.step("Get the Mastership of each switch")
+        (stdout,stderr)=Popen(["curl",main.params['CTRL']['ip1']+":"+main.params['CTRL']['restPort1']+main.params['CTRL']['switchURL']],stdout=PIPE).communicate()
+        global masterSwitchList1
+        masterSwitchList1 = stdout
+  
 
 
     def CASE6(self,main) :
@@ -352,7 +322,7 @@ class HATestZK:
             main.log.info("THERE WERE CHANGES TO THE HIGH LEVEL INTENTS! CHANGES WERE: "+str(changesInIntents))
             result = main.FALSE
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="No changes to High level Intents",onfail="CHANGES WERE MADE TO HIGH LEVEL INTENTS")
-        result2=result
+        result2 = result
 
         main.step("Get the Low level Intents and compare to before component failure")
         (stdout,stderr)=Popen(["curl",main.params['CTRL']['ip1']+":"+main.params['CTRL']['restPort1']+main.params['CTRL']['intentLowURL']],stdout=PIPE).communicate()
@@ -363,7 +333,7 @@ class HATestZK:
             main.log.info("THERE WERE CHANGES TO THE LOW LEVEL INTENTS! CHANGES WERE: "+str(changesInIntents))
             result = main.FALSE
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="No changes to Low level Intents",onfail="CHANGES WERE MADE TO LOW LEVEL INTENTS")
-        result3=result
+        result3 = result
 
 
         main.step("Get the OF Table entries and compare to before component failure")
@@ -390,9 +360,9 @@ class HATestZK:
         else:
             main.log.info("No Loss in the pings!")
         utilities.assert_equals(expect=main.FALSE,actual=result,onpass="No Loss of connectivity!",onfail="LOSS OF CONNECTIVITY")
-        result5=not result
+        result5 = not result
         result = result1 and result2 and result3 and result4 and result5
-        utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Constant State Tests Passed!",onfail="CONSTANT STATE TESTS FAILED!!")
+        utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Constant State Tests Passed", onfail="CONSTANT STATE TESTS FAILED!!")
 
     def CASE7 (self,main):
         main.case("Killing a link to Ensure that Link Discovery is Working Properly")
@@ -412,9 +382,10 @@ class HATestZK:
         (number,active)=main.ONOS1.num_switch(RestIP=main.params['CTRL']['ip1'])
         links = main.ONOS1.num_link(RestIP=main.params['CTRL']['ip1'])
         main.log.info("Currently there are %s switches, %s are active, and %s links" %(number,active,links))
-        
+
         main.step("Kill Link between s3 and s28")
         main.Mininet1.link(END1="s3",END2="s28",OPTION="down")
+        time.sleep(5)
         result = main.ONOS1.check_status_report(main.params['CTRL']['ip1'],active,str(int(links)-2))
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Link Down discovered properly",onfail="LINKS NOT DISCOVERED PROPERLY")
         result1 = result
@@ -434,9 +405,7 @@ class HATestZK:
         utilities.assert_equals(expect=main.FALSE,actual=result,onpass="No Loss of connectivity!",onfail="LOSS OF CONNECTIVITY")
         result2 = result
         result = result1 and not result2
-        utilities.assert_equals(expect=main.FALSE,actual=result,onpass="Link failure is discovered correctly and no traffic is lost!",onfail="Link Discovery failed or traffic was dropped!!!")
-        
-
+        utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Link failure is discovered correctly and no traffic is lost!",onfail="Link Discovery failed or traffic was dropped!!!")
     
     def CASE8 (self, main) :
         import time
@@ -457,7 +426,7 @@ class HATestZK:
         (number,active)=main.ONOS1.num_switch(RestIP=main.params['CTRL']['ip1'])
         links = main.ONOS1.num_link(RestIP=main.params['CTRL']['ip1'])
         main.log.info("Currently there are %s switches, %s are active, and %s links" %(number,active,links))
-        
+    
         main.step("Kill s28 ")
         main.Mininet2.del_switch("s28")
         time.sleep(31)
@@ -487,4 +456,3 @@ class HATestZK:
         utilities.assert_equals(expect=main.FALSE,actual=result,onpass="No Loss of connectivity!",onfail="LOSS OF CONNECTIVITY")
         result = not result and result1
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Switch Discovered Correctly and No Loss of traffic",onfail="Switch discovery failed or there was loss of traffic")
-

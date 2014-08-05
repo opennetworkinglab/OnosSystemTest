@@ -2,12 +2,7 @@
 class IntentPerf:
     def __init__(self) :
         self.default = ''
-
-#        def print_hello_world(self,main):
-#            print("hello world")
-#*****************************************************************************************************************************************************************************************
 #Test startup
-#Tests the startup of Zookeeper1, RamCloud1, and ONOS1 to be certain that all started up successfully
     def CASE1(self,main) :  #Check to be sure ZK, Cass, and ONOS are up, then get ONOS version
         main.case("Initial setup")
         main.step("Stop ONOS")
@@ -25,42 +20,6 @@ class IntentPerf:
         main.RamCloud1.del_db()
         main.RamCloud2.del_db()
         main.RamCloud3.del_db()
-        #time.sleep(5)
-        #main.ONOS1.stop_all()
-        #main.ONOS2.stop_all()
-        #main.ONOS3.stop_all()
-        #main.ONOS2.stop_rest()
-#        main.log.report("Pulling latest code from github to all nodes")
-#        for i in range(2):
-#            uptodate = main.ONOS1.git_pull()
-#            main.ONOS2.git_pull()
-#            main.ONOS3.git_pull()
-#            main.ONOS4.git_pull()
-#            ver1 = main.ONOS1.get_version()
-#            ver2 = main.ONOS4.get_version()
-#            if ver1==ver2:
-#                break
-#            elif i==1:
-#                main.ONOS2.git_pull("ONOS1 master")
-#                main.ONOS3.git_pull("ONOS1 master")
-#                main.ONOS4.git_pull("ONOS1 master")
-#        if uptodate==0:
-       # if 1:
-#            main.ONOS1.git_compile()
-#            main.ONOS2.git_compile()
-#            main.ONOS3.git_compile()
-#            main.ONOS4.git_compile()
-#        main.ONOS1.print_version()    
-       # main.RamCloud1.git_pull()
-       # main.RamCloud2.git_pull()
-       # main.RamCloud3.git_pull()
-       # main.RamCloud4.git_pull()
-       # main.ONOS1.get_version()
-       # main.ONOS2.get_version()
-       # main.ONOS3.get_version()
-       # main.ONOS4.get_version()
-        #main.RamCloud1.start_coor()
-       
         main.ONOS1.start()
         main.ONOS2.start()
         main.ONOS3.start()
@@ -96,32 +55,18 @@ class IntentPerf:
             data = main.RamCloud1.status_serv() and main.RamCloud2.status_serv() and main.RamCloud3.status_serv()
             
         utilities.assert_equals(expect=main.TRUE,actual=data,onpass="RamCloud is up!",onfail="RamCloud is down...")
-        #main.step("Testing startup ONOS")   
-        #data = main.ONOS1.isup() and main.ONOS2.isup() and main.ONOS3.isup()
-        #for i in range(3):
-        #    if data == main.FALSE: 
-                #main.log.report("Something is funny... restarting ONOS")
-                #main.ONOS1.stop()
-                #main.ONOS2.stop()
-                #main.ONOS3.stop()
-                #time.sleep(3)
-        #        main.ONOS1.handle.sendline("cd ~/ONOS")
-        #        main.ONOS2.handle.sendline("cd ~/ONOS")
-        #        main.ONOS3.handle.sendline("cd ~/ONOS")
-
-        #        main.ONOS1.handle.sendline("./onos.sh start")
-        #        main.ONOS2.handle.sendline("./onos.sh start")
-        #        main.ONOS3.handle.sendline("./onos.sh start")
-        #        time.sleep(5) 
-        #        data = main.ONOS1.isup() and main.ONOS2.isup() and main.ONOS3.isup()
-        #    else:
-        #        break
-        #utilities.assert_equals(expect=main.TRUE,actual=data,onpass="ONOS is up and running!",onfail="ONOS didn't start...")
         time.sleep(20)
 
+#******************************************
+#CASE2
+#Assign switches to controllers
+#7 switches 
+#s1, s2 = controller 1
+#s3, s4, s5 = controller 2
+#s6, s7 = controller3
+#******************************************
     def CASE2(self, main):
         import time
-        #Assign all switches to controllers
         for i in range(1,8):
             if i < 3:
                 main.Mininet1.assign_sw_controller(sw=str(i),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'])
@@ -132,22 +77,12 @@ class IntentPerf:
             elif i < 8 and i > 5:
                 main.Mininet1.assign_sw_controller(sw=str(i),ip1=main.params['CTRL']['ip3'],port1=main.params['CTRL']['port3'])
                 time.sleep(5)
-        #time.sleep(10)        
-        
- 
-    def CASE99(self, main):
-    #TEST CASE 99 - remove when done
-        import time
-        main.ONOS2.handle.sendline("cd ~/ONOS/scripts")
-        main.ONOS2.handle.sendline("./pyintents.py")
-        time.sleep(10) 
-        main.ONOS2.handle.sendline("cd ..")
-        url = main.params['INTENTS']['url_new']
-        string = main.ONOS2.handle.sendline("curl -s "+url) 
-        print string
-        main.ONOS2.comp_intents(string, string)
 
-    #Single intent add / delete performance    
+#***************************************** 
+#CASE3
+#Add intent to ONOS 1 and obtain metrics
+#via REST call        
+#***************************************** 
     def CASE3(self, main):
         import requests
         import json
@@ -173,15 +108,13 @@ class IntentPerf:
         url_rem = main.params['INTENTS']['urlRemIntent']
         host_ip = main.params['INTENTS']['hostIP'] 
         assertion = ""
+        db_script = main.params['INTENTS']['databaseScript']
 
         intent_add_lat_list = []
         intent_rem_lat_list = []
 
         #NOTE: REST call may change in the future
-        #For number of iterations, repeat add / remove and obtain latency min/max/avg calculations
         for i in range(0, int(numIter)):
-            print "Iteration " + str(i)
-
             result = main.ONOS1.add_intent(intent_id = intent_id, src_dpid = srcSwitch, dst_dpid = dstSwitch, src_mac = srcMac, dst_mac = dstMac, intentIP = intent_ip)
             utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Intent Add Successful",onfail="Intent Add NOT successful...") 
             time.sleep(5)
@@ -207,8 +140,9 @@ class IntentPerf:
             main.log.report("Intent add latency min: "+ min_lat+" ms")
             main.log.report("Intent add latency max: "+ max_lat+" ms")
             main.log.report("Intent add latency avg: "+ avg_lat+" ms")
-    
-            os.system("~/TestON/scripts/./perfdatagraph.py --name='1 intent add' --minimum='"+min_lat+"' --maximum='"+max_lat+"' --average='"+avg_lat+"' ")
+           
+            #NOTE: os.system runs a command on TestON machine. Hence, place the db_script in a TestON location 
+            os.system(db_script + " --name='1 intent add' --minimum='"+min_lat+"' --maximum='"+max_lat+"' --average='"+avg_lat+"' ")
             
             if intent_rem_lat_list:
                 min_lat = min(intent_rem_lat_list)
@@ -225,19 +159,21 @@ class IntentPerf:
 
         utilities.assert_equals(expect=main.TRUE,actual=assertion,onpass="Single intent add / rem successful",onfail="Single intent add / rem NOT successful")
 
-# **********************************************************************************************************************************************************************************************
-#This case tests performance of Intent Reroute Installation
-
+#***************************************
+#CASE4
+#cut link between s3 - s5 
+#measure reroute latency 
+#tshark measures t0 on ONOS2
+#REST call measures t1 
+#***************************************
     def CASE4(self,main):
         import requests
         import json
         import time 
         import subprocess
-
+        import os
 
         main.case("Single Intent reroute latency")
-        #To bring link down: link s1 s2 down
-        #Assign variables from params file 
         url = main.params['INTENTS']['url_new']
         url_add_end = main.params['INTENTS']['urlAddIntentEnd']
         headers = {'Content-type': 'application/json', 'Accept': 'application/json'}
@@ -249,6 +185,7 @@ class IntentPerf:
         dstSwitch = main.params['INTENTS']['dstSwitch2']
         dstPort = int(main.params['INTENTS']['dstPort'])
         dstMac = main.params['INTENTS']['dstMac2']
+        db_script = main.params['INTENTS']['databaseScript']
         intent_id2 = "1"+intent_id
         numiter = main.params['INTENTS']['numIter']
         latency = []
@@ -333,24 +270,31 @@ class IntentPerf:
             main.log.report("Single Intent Reroute latency MIN: "+min_lat+" ms")
             main.log.report("Single Intent Reroute latency MAX: "+max_lat+" ms") 
             main.log.report("Single Intent Reroute latency AVG: "+avg_lat+" ms") 
-            os.system("~/TestON/scripts/./perfdatagraph.py --name='1 intent reroute' --minimum='"+min_lat+"' --maximum='"+max_lat+"' --average='"+avg_lat+"' ")
+            os.system(db_script + " --name='1 intent reroute' --minimum='"+min_lat+"' --maximum='"+max_lat+"' --average='"+avg_lat+"' ")
             assertion = main.TRUE
         else:
             assertion = main.FALSE
         
         utilities.assert_equals(expect=main.TRUE,actual=assertion,onpass="Single Intent Reroute Successful", onfail="Single Intent Reroute NOT successful...") 
- 
-# **********************************************************************************************************************************************************************************************
-# Intent Batch Installation Latency
+#********************************** 
+#CASE5
+#Intent Batch Installation Latency
+#create a specified number of intents via dynamicIntent function
+#This function is hardcoded to add intents on s1 to s7
+#Measure latency of intent add via rest calls
+#**********************************
 
     def CASE5(self,main):
         import time
+        import os
         main.case("Adding batch of intents to calculate latency")
         numflows = main.params['INTENTS']['numFlows']
         ip = main.params['INTENTREST']['intentIP']
         intaddr = main.params['INTENTS']['url_new']
         url_add = main.params['INTENTS']['urlAddIntent']
         numiter = main.params['INTENTS']['numIter']
+        db_script = main.params['INTENTS']['databaseScript']
+        assertion = ""
 
         latency = []
 
@@ -359,10 +303,17 @@ class IntentPerf:
 
         for i in range(0,int(numiter)):
             result = main.ONOS1.dynamicIntent(NUMFLOWS = numflows, INTADDR = intaddr, OPTION = "ADD")
-            utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Batch installation successful",onfail="Batch installation NOT successful...")
 
             time.sleep(5)
- 
+            num_flows1 = main.Mininet1.getSwitchFlowCount("s1")
+            num_flows2 = main.Mininet1.getSwitchFlowCount("s7")
+            utilities.assert_equals(expect=numflows,actual=num_flows1,onpass="Intents on S1 installed correctly",onfail="Intents on S1 NOT installed correctly")
+            utilities.assert_equals(expect=numflows,actual=num_flows1,onpass="Intents on S7 installed correctly",onfail="Intents on S7 NOT installed correctly")
+
+            if(num_flows1 != numflows): 
+                main.log.report("Flow count on s1 returned: " + str(num_flows1))
+                main.log.report("Flow count on s7 returned: " + str(num_flows2))
+
             json_obj = main.ONOS1.get_json(url_add) 
             intent_lat_add = main.ONOS1.get_single_intent_latency(json_obj)
             if(intent_lat_add > 0):
@@ -377,7 +328,6 @@ class IntentPerf:
 
             time.sleep(3) 
 
-        assertion = ""
  
         if(latency): 
             min_lat = str(min(latency))
@@ -386,17 +336,22 @@ class IntentPerf:
             main.log.report("Min latency of "+numiter+" iterations: "+ min_lat)
             main.log.report("Max latency of "+numiter+" iterations: "+ max_lat)
             main.log.report("Avg latency of "+numiter+" iterations: "+ avg_lat)
-            assertion = main.TRUE
-            os.system("~/TestON/scripts/./perfdatagraph.py --name='1000 intents add' --minimum='"+min_lat+"' --maximum='"+max_lat+"' --average='"+avg_lat+"' ")
+            if(assertion == ""):
+                assertion = main.TRUE
+            os.system(db_script + " --name='1000 intents add' --minimum='"+min_lat+"' --maximum='"+max_lat+"' --average='"+avg_lat+"' ")
         else:
             assertion = main.FALSE
 
         utilities.assert_equals(expect=main.TRUE,actual=assertion,onpass="Intent Batch Latency Calculation successful",onfail="Intent Batch Latency Calculation unsuccessful")
 
 
-#********************************************************
+#********************************
+#CASE6
 #Intent Batch Reroute Latency
-
+#Add batch of intents via dynamicIntent function
+#obtain tshark timestamp value from ONOS2
+#obtain rest timestamp value and get delta
+#********************************
     def CASE6(self, main):
         import requests
         import json
@@ -407,6 +362,7 @@ class IntentPerf:
         intaddr = main.params['INTENTS']['url_new']
         numiter = main.params['INTENTS']['numIter']
         url_add_end = main.params['INTENTS']['urlAddIntentEnd']
+        db_script = main.params['INTENTS']['databaseScript']
 
         main.case("Calculating batch reroute latency")
 
@@ -423,6 +379,14 @@ class IntentPerf:
             utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Batch installation successful",onfail="Batch installation NOT successful...")
 
             time.sleep(10)
+            num_flows1 = main.Mininet1.getSwitchFlowCount("s1")
+            num_flows2 = main.Mininet1.getSwitchFlowCount("s7")
+            utilities.assert_equals(expect=numflows,actual=num_flows1,onpass="Intents on S1 installed correctly",onfail="Intents on S1 NOT installed correctly")
+            utilities.assert_equals(expect=numflows,actual=num_flows2,onpass="Intents on S7 installed correctly",onfail="Intents on S7 NOT installed correctly")
+
+            if(num_flows1 != numflows):
+                main.log.report("Flow count on s1 returned: " + str(num_flows1))
+                main.log.report("Flow count on s7 returned: " + str(num_flows2))
 
             main.step("Starting wireshark")
             main.ONOS2.handle.sendline("")
@@ -451,6 +415,7 @@ class IntentPerf:
             #Only calculate timestamp if text exists. 
             if text:
                 timestamp = int(float(obj[0])*1000)
+            #Making timestamp 0 will make delta exceed the threshold below, throwing an omit
             else:
                 timestamp = 0
             delta = int(end_time) - int(timestamp)
@@ -483,11 +448,14 @@ class IntentPerf:
             main.log.report("Intent batch reroute latency MAX: "+max_lat+" ms")
             main.log.report("Intent batch reroute latency AVG: "+avg_lat+" ms")
 
-            os.system("~/TestON/scripts/./perfdatagraph.py --name='1000 intents reroute' --minimum='"+min_lat+"' --maximum='"+max_lat+"' --average='"+avg_lat+"' ")
+            os.system(db_script + " --name='1000 intents reroute' --minimum='"+min_lat+"' --maximum='"+max_lat+"' --average='"+avg_lat+"' ")
             assertion = main.TRUE
         else:
             assertion = main.FALSE
         utilities.assert_equals(expect=main.TRUE,actual=assertion,onpass="Batch Reroute Latency Calculations Successful",onfail="Batch Reroute Latency Calculations NOT successful")
 
 
-
+#**********
+#END SCRIPT
+#andrew@onlab.us
+#**********

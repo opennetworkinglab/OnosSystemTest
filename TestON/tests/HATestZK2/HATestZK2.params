@@ -1,5 +1,5 @@
 <PARAMS>
-    <testcases>2,3,4,5,6</testcases>
+    <testcases>1,2,3,4,5,6,7,8</testcases>
     <CTRL>
         <ip1>10.128.9.1</ip1>
         <port1>6633</port1>
@@ -18,7 +18,7 @@
         <restPort5>8080</restPort5>
         <switchURL>/wm/onos/registry/switches/json</switchURL>
         <intentHighURL>/wm/onos/intent/high</intentHighURL>
-        <intentLowURL>/wm/onos/intent/log</intentLowURL>
+        <intentLowURL>/wm/onos/intent/low</intentLowURL>
     </CTRL>
     <TopoRest>/wm/onos/topology</TopoRest>
     <INTENTS>

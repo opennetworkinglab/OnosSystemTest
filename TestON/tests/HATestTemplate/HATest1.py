@@ -5,7 +5,9 @@ class HATest1:
     global masterSwitchList
     global highIntentList
     global lowIntentList
-    global flowTable
+    global flows
+    flows = []
+
     def __init__(self) :
         self.default = ''
 
@@ -185,6 +187,8 @@ class HATest1:
         from subprocess import Popen, PIPE
         main.case("Setting up and Gathering data for current state")
         main.step("Get the current In-Memory Topology on each ONOS Instance")
+
+        '''
         ctrls = []
         count = 1
         while True:
@@ -199,25 +203,33 @@ class HATest1:
             else:
                 break
         topo_result = main.TRUE
+
         for n in range(1,count):
             temp_result = main.Mininet1.compare_topo(ctrls,main.ONOS1.get_json(main.params['CTRL']['ip'+str(n)]+":"+main.params['CTRL']['restPort'+str(n)]+main.params['TopoRest']))
+        '''
 
         main.step("Get the Mastership of each switch")
-        (stdout,stderr)=Popen(["curl",main.params['CTRL']['ip1']+":"+main.params['CTRL']['apiPort']+main.params['CTRL']['switchURL']],stdout=PIPE).communicate()
+        (stdout,stderr)=Popen(["curl",main.params['CTRL']['ip1']+":"+main.params['CTRL']['restPort1']+main.params['CTRL']['switchURL']],stdout=PIPE).communicate()
         global masterSwitchList1
         masterSwitchList1 = stdout
 
         main.step("Get the High Level Intents")
-        (stdout,stderr)=Popen(["curl",main.params['CTRL']['ip1']+":"+main.params['CTRL']['apiPort']+main.params['CTRL']['intentHighURL']],stdout=PIPE).communicate()
+        (stdout,stderr)=Popen(["curl",main.params['CTRL']['ip1']+":"+main.params['CTRL']['restPort1']+main.params['CTRL']['intentHighURL']],stdout=PIPE).communicate()
         global highIntentList1
         highIntentList1 = stdout
         
         main.step("Get the Low level Intents")
-        (stdout,stderr)=Popen(["curl",main.params['CTRL']['ip1']+":"+main.params['CTRL']['apiPort']+main.params['CTRL']['intentLowURL']],stdout=PIPE).communicate()
+        (stdout,stderr)=Popen(["curl",main.params['CTRL']['ip1']+":"+main.params['CTRL']['restPort1']+main.params['CTRL']['intentLowURL']],stdout=PIPE).communicate()
         global lowIntentList1
         lowIntentList1= stdout
         
         main.step("Get the OF Table entries")
+        global flows
+        flows=[]
+        for i in range(1,28):
+            print main.Mininet2.get_flowTable("s"+str(i))
+            flows.append(main.Mininet2.get_flowTable("s"+str(i)))
+
         
         main.step("Start continuous pings")
         main.Mininet2.pingLong(src=main.params['PING']['source1'],target=main.params['PING']['target1'],pingTime=500)
@@ -233,8 +245,74 @@ class HATest1:
 
 
     def CASE5(self,main) :
+        import re
         main.case("MAIN COMPONENT FAILURE AND SCENARIO SPECIFIC TESTS")
-        
+        main.step("Zookeeper Server Failure!")
+        result = main.TRUE
+        master1 = main.ZK1.status()
+        print master1
+        if re.search("leader",master1):
+            main.ZK1.stop()
+            main.log.info("ZK1 was Master and Killed! Also Killing ZK2")
+            main.ZK2.stop()
+            time.sleep(10)
+            if re.search("leader",main.ZK3.status()) or re.search("leader",main.ZK4.status()) or re.search("leader",main.ZK5.status()):
+                result = main.TRUE
+                main.log.info("New Leader Elected")
+            else:
+                result = main.FALSE
+                main.log.info("NO NEW ZK LEADER ELECTED!!!")
+        else:
+            master2 = main.ZK2.status()
+            if re.search("leader",master2):
+                main.ZK2.stop()
+                main.log.info("ZK2 was Master and Killed! Also Killing ZK3")
+                main.ZK3.stop()
+                time.sleep(10)
+                if re.search("leader",main.ZK1.status()) or re.search("leader",main.ZK4.status()) or re.search("leader",main.ZK5.status()):
+                    result = main.TRUE
+                    main.log.info("New Leader Elected")
+                else:
+                    result = main.FALSE
+                    main.log.info("NO NEW ZK LEADER ELECTED!!!")
+            else:
+                master3 = main.ZK3.status()
+                if re.search("leader",master3):
+                    main.ZK3.stop()
+                    main.log.info("ZK3 was Master and Killed! Also Killing ZK4")
+                    main.ZK4.stop()
+                    time.sleep(10)
+                    if re.search("leader",main.ZK1.status()) or re.search("leader",main.ZK2.status()) or re.search("leader",main.ZK5.status()):
+                        result = main.TRUE
+                        main.log.info("New Leader Elected")
+                    else:
+                        result = main.FALSE
+                        main.log.info("NO NEW ZK LEADER ELECTED!!!")
+                else:
+                    master4 = main.ZK4.status()
+                    if re.search("leader",master4):
+                        main.ZK4.stop()
+                        main.log.info("ZK4 was Master and Killed! Also Killing ZK5")
+                        main.ZK5.stop()
+                        time.sleep(10)
+                        if re.search("leader",main.ZK1.status()) or re.search("leader",main.ZK2.status()) or re.search("leader",main.ZK3.status()):
+                            result = main.TRUE
+                            main.log.info("New Leader Elected")
+                        else:
+                            result = main.FALSE
+                            main.log.info("NO NEW ZK LEADER ELECTED!!!")
+                    else:
+                        main.ZK5.stop()
+                        main.log.info("ZK5 was Master and Killed! Also Killing ZK1")
+                        main.ZK1.stop()
+                        time.sleep(10)
+                        if re.search("leader",main.ZK3.status()) or re.search("leader",main.ZK4.status()) or re.search("leader",main.ZK2.status()):
+                            result = main.TRUE
+                            main.log.info("New Leader Elected")
+                        else:
+                            result = main.FALSE
+                            main.log.info("NO NEW ZK LEADER ELECTED!!!")
+
 
     def CASE6(self,main) :
         import os
@@ -242,7 +320,7 @@ class HATest1:
         main.step("Get the current In-Memory Topology on each ONOS Instance and Compare it to the Topology before component failure")
 
         main.step("Get the Mastership of each switch and compare to the Mastership before component failure")
-        (stdout,stderr)=Popen(["curl",main.params['CTRL']['ip1']+":"+main.params['CTRL']['apiPort']+main.params['CTRL']['switchURL']],stdout=PIPE).communicate()
+        (stdout,stderr)=Popen(["curl",main.params['CTRL']['ip1']+":"+main.params['CTRL']['restPort1']+main.params['CTRL']['switchURL']],stdout=PIPE).communicate()
         result = main.TRUE
         for i in range(1,28):
             if main.ZK1.findMaster(switchDPID="s"+str(i),switchList=masterSwitchList1)==main.ZK1.findMaster(switchDPID="s"+str(i),switchList=stdout):
@@ -252,7 +330,7 @@ class HATest1:
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Mastership of Switches was not changed",onfail="MASTERSHIP OF SWITCHES HAS CHANGED!!!")
 
         main.step("Get the High Level Intents and compare to before component failure")
-        (stdout,stderr)=Popen(["curl",main.params['CTRL']['ip1']+":"+main.params['CTRL']['apiPort']+main.params['CTRL']['intentHighURL']],stdout=PIPE).communicate()
+        (stdout,stderr)=Popen(["curl",main.params['CTRL']['ip1']+":"+main.params['CTRL']['restPort1']+main.params['CTRL']['intentHighURL']],stdout=PIPE).communicate()
         changesInIntents=main.ONOS1.comp_intents(preIntents=highIntentList1,postIntents=stdout)
         if not changesInIntents:
             result = main.TRUE
@@ -262,7 +340,7 @@ class HATest1:
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="No changes to High level Intents",onfail="CHANGES WERE MADE TO HIGH LEVEL INTENTS")
 
         main.step("Get the Low level Intents and compare to before component failure")
-        (stdout,stderr)=Popen(["curl",main.params['CTRL']['ip1']+":"+main.params['CTRL']['apiPort']+main.params['CTRL']['intentLowURL']],stdout=PIPE).communicate()
+        (stdout,stderr)=Popen(["curl",main.params['CTRL']['ip1']+":"+main.params['CTRL']['restPort1']+main.params['CTRL']['intentLowURL']],stdout=PIPE).communicate()
         changesInIntents=main.ONOS1.comp_low(preIntents=lowIntentList1,postIntents=stdout)
         if not changesInIntents:
             result = main.TRUE
@@ -273,6 +351,17 @@ class HATest1:
 
 
         main.step("Get the OF Table entries and compare to before component failure")
+        result = main.TRUE
+        flows2=[]
+        for i in range(27):
+            flows2.append(main.Mininet2.get_flowTable(sw="s"+str(i+1)))
+            result = result and main.Mininet2.flow_comp(flow1=flows[i], flow2=main.Mininet2.get_flowTable(sw="s"+str(i+1)))   
+            print flows[i]
+            print flows2[i]
+            if result == main.FALSE:
+                main.log.info("DIFFERENCES IN FLOW TABLES FOR SWITCH "+str(i))
+                break
+        utilities.assert_equals(expect=main.TRUE,actual=result,onpass="No changes in the flow tables",onfail="CHANGES IN THE FLOW TABLES!!")
         
         main.step("Check the continuous pings to ensure that no packets were dropped during component failure")
         main.Mininet2.pingKill()

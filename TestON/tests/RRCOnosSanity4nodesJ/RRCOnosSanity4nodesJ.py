@@ -20,7 +20,7 @@ class RRCOnosSanity4nodesJ :
         main.ONOS3.stop_all()        
         main.ONOS4.stop_all() 
         main.step("Start tcpdump on mn")
-        main.Mininet1.start_tcpdump(main.params['tcpdump']['filename'], intf = main.params['tcpdump']['intf'], port = main.params['tcpdump']['port']) 
+        main.Mininet2.start_tcpdump(main.params['tcpdump']['filename'], intf = main.params['tcpdump']['intf'], port = main.params['tcpdump']['port']) 
 #        main.step("Start tcpdump on mn")
 #        main.Mininet1.start_tcpdump(main.params['tcpdump']['filename'], intf = main.params['tcpdump']['intf'], port = main.params['tcpdump']['port']) 
         main.step("start ONOS")
@@ -616,6 +616,6 @@ class RRCOnosSanity4nodesJ :
             result = main.FALSE
             count = len(check1.splitlines()) + len(check2.splitlines()) + len(check3.splitlines()) + len(check4.splitlines())
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="No Exceptions found in the logs",onfail=str(count) + " Exceptions were found in the logs")
-        main.Mininet1.stop_tcpdump()
+        main.Mininet2.stop_tcpdump()
 
 

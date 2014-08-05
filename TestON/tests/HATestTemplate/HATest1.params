@@ -18,7 +18,7 @@
         <restPort5>8080</restPort5>
         <switchURL>/wm/onos/registry/switches/json</switchURL>
         <intentHighURL>/wm/onos/intent/high</intentHighURL>
-        <intentLowURL>/wm/onos/intent/log</intentLowURL>
+        <intentLowURL>/wm/onos/intent/low</intentLowURL>
     </CTRL>
     <TopoRest>/wm/onos/topology</TopoRest>
     <INTENTS>

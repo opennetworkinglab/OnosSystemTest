@@ -746,6 +746,17 @@ class MininetCliDriver(Emulator):
         topology_refactoring2 branch, but may be merged into the master branch soon. You may need to install some
         python modules such as networkx to use the STS functions.
 
+        To install sts:
+            $ git clone git://github.com/ucb-sts/sts.git
+            $ cd sts
+            $ git clone -b debugger git://github.com/ucb-sts/pox.git
+            $ sudo apt-get install python-dev
+            $ ./tools/install_hassel_python.sh
+            $ sudo pip install networkx
+
+        Include sts in your PYTHONPATH. it should looks comething like: 
+            PYTHONPATH=/home/admin/TestON:/home/admin/sts
+
         '''
         from sts.topology.teston_topology import TestONTopology # assumes that sts already in you PYTHONPATH
         #import sts.entities.base as base
@@ -761,8 +772,9 @@ class MininetCliDriver(Emulator):
         for switch in topo.graph.switches: #iterate through the MN topology and pull out switches and and port info
             ports = []
             for port in switch.ports.values():
-                ports.append({'of_port': port.port_no, 'mac': port.hw_addr.replace('\'',''), 'name': port.name})
-            output['switches'].append({"name": switch.name, "dpid": switch.dpid, "ports": ports })
+                #print port.hw_addr.toStr(separator = '')
+                ports.append({'of_port': port.port_no, 'mac': str(port.hw_addr).replace('\'',''), 'name': port.name})
+            output['switches'].append({"name": switch.name, "dpid": str(switch.dpid).zfill(16), "ports": ports })
         #print output
 
         #print json.dumps(output, sort_keys=True,indent=4,separators=(',', ': '))
@@ -773,7 +785,7 @@ class MininetCliDriver(Emulator):
         for switch in output['switches']:
             mnDPIDs.append(switch['dpid'])
         mnDPIDs.sort()
-        #print mnDPIDs
+        print mnDPIDs
         if onos_json == "":#if rest call fails
             main.log.error(self.name + ".compare_topo(): Empty JSON object given from ONOS rest call")
             return main.FALSE
@@ -782,7 +794,7 @@ class MininetCliDriver(Emulator):
         for switch in onos['switches']:
             onosDPIDs.append(switch['dpid'].replace(":",''))
         onosDPIDs.sort()
-        #print onosDPIDs
+        print onosDPIDs
 
         if mnDPIDs!=onosDPIDs:
             switch_results = main.FALSE

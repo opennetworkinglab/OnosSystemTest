@@ -1330,25 +1330,32 @@ class OnosCliDriver(CLI):
             output = ''
             self.handle.sendline("")
             i = self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT])
-            #main.log.warn("first expect response: " +str(i))
+            main.log.warn("first expect response: " +str(i))
             self.handle.sendline("cd "+self.home+"/onos-logs")
-            self.handle.sendline("zgrep \"xception\" *.log *.log.gz *.stderr *.stdout")
-            i = self.handle.expect(["\*",pexpect.EOF,pexpect.TIMEOUT])
-            #main.log.warn("second expect response: " +str(i))
-            i = self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT],timeout=120)
+            i = self.handle.expect(["onos-logs\$",pexpect.EOF,pexpect.TIMEOUT])
+            main.log.warn("second expect response: " +str(i))
+
+            self.handle.sendline("zgrep \"xception\" *.log *.log.gz *.stderr")
+            #i = self.handle.expect(["\*.stdout",pexpect.EOF,pexpect.TIMEOUT])
             #main.log.warn("third expect response: " +str(i))
+            print self.handle.before
+            print 
+            print self.handle.after
+            i = self.handle.expect(["ONOS/onos-logs\$",pexpect.EOF,pexpect.TIMEOUT],timeout=120)
+            main.log.warn("fourth expect response: " +str(i))
             response = self.handle.before
             print response
             count = 0
             print response
             for line in response.splitlines():
                 if re.search("gzip: \*\.log\.gz:", line):
+                    #gzip complaining about file not found
                     pass
-                elif re.search("log:", line):
-                    output +="Exceptions found in " + line + "\n"
-                    count +=1
                 elif re.search("log\.gz:",line):
                     output+="Exceptions found in " + line + "\n"
+                    count +=1
+                elif re.search("log:", line):
+                    output +="Exceptions found in " + line + "\n"
                     count +=1
                 elif re.search("std...:",line):
                     output+="Exceptions found in " + line + "\n"

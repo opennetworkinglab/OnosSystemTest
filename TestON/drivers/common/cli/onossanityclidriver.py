@@ -1039,6 +1039,22 @@ class onossanityclidriver(CLI):
         main.log.info("tshark_of started")
         return main.TRUE
 
+    def tshark_grep(self, grep, directory):
+        '''
+        tshark_grep: pass in a string to grep for tshark
+        ex: grep = "OFP" #grep for Open Flow Packet
+        hardcoded to capture on interface eth0 and return epoch timestamp
+        specify directory to save output
+        '''
+        self.handle.sendline("")
+        self.handle.expect("\$")
+        self.handle.sendline("\r")
+        self.handle.sendline("tshark -i eth0 -t e | grep \""+str(grep)+"\" > "+directory+" &")
+        self.handle.sendline("\r")
+        self.handle.expect("Capturing on eth0")
+        self.handle.sendline("\r")
+        self.handle.expect("\$")
+
     def start_tshark(self,flowtype, numflows):
         self.handle.sendline("")
         self.handle.expect("\$")
@@ -1052,6 +1068,7 @@ class onossanityclidriver(CLI):
         return main.TRUE
 
     def stop_tshark(self):
+        self.execute(cmd="rm /tmp/wireshark*")
         self.handle.sendline("")
         #self.handle.expect("\$")
         self.handle.sendline("sudo kill -9 `ps -ef | grep \"tshark -i\" | grep -v grep | awk '{print $2}'`")

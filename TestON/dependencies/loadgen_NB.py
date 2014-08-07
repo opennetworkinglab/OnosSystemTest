@@ -178,8 +178,8 @@ if __name__ == '__main__':
     parser.add_argument("-u", "--urls", dest="urls", default="10.128.10.1", type=str, help="a string to show urls to post intents to separated by space, ex. '10.128.10.1:8080 10.128.10.2:80080' ")
     parser.add_argument("-i", "--intentsPerGroup", dest="intPerGroup", default=100, type=int, help="number of intents in one restcall group")
     parser.add_argument("-g", "--groups", dest="groups", default=1, type=int, help="number of groups")
-    parser.add_argument("-a", "--addrate", dest="addrate", default=10, type=int, help="rate to add intents groups, groups per second")
-    parser.add_argument("-d", "--delrate", dest="delrate", default=100, type=int, help= "rate to delete intents, intents/second")
+    parser.add_argument("-a", "--addrate", dest="addrate", default=10, type=float, help="rate to add intents groups, groups per second")
+    parser.add_argument("-d", "--delrate", dest="delrate", default=100, type=float, help= "rate to delete intents, intents/second")
     parser.add_argument("-p", "--pause", dest="pause", default=0, type=int, help= "pausing time between add and delete of intents")
     args = parser.parse_args()
 
@@ -199,7 +199,7 @@ if __name__ == '__main__':
     urlindex = 0
 
     intents,id = myloadgen.setIntJSN(7, args.intPerGroup, args.groups)
-    print json.dumps(intents)
+    #print json.dumps(intents)
     print ("Number of intents: " + str(id) )    
     print ("Number of url: " + str(len(urllist)) )
     

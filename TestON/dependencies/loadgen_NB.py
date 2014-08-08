@@ -6,143 +6,96 @@ import requests
 import urllib2
 from urllib2 import URLError, HTTPError
 
+'''
+    This script is for Intent Throughput testing. Use linear 7-switch topo. Intents are from S1P1 to/from S7/P1, with incrementing src/dst Mac addresses.
+'''
 
-class Loadgen_SB_thread:
-    '''
-    This script is for Intent Throughput testing. Use linear 7-switch topo. Intents are from S1P1 to/from S7/P1, with incrementing src/dst Mac addresses'''
+def setIntentJSN(node_id, intPerGroup, group_id, intent_id):
+    intents = [None for i in range(intPerGroup)]
+    oper = {}
+    index = 0
+    for i in range(intPerGroup / 2):
+        smac = str("%x" %(node_id * 0x100000000000 + 0x010000000000 + (group_id * 0x000001000000) +i + 1))
+        dmac = str("%x" %(node_id * 0x100000000000 + 0x070000000000 + (group_id * 0x000001000000) +i + 1))
+        srcMac = ':'.join(smac[i:i+2] for i in range(0, len(smac), 2))
+        dstMac = ':'.join(dmac[i:i+2] for i in range(0, len(dmac), 2))
+        srcSwitch = "00:00:00:00:00:00:00:01"
+        dstSwitch = "00:00:00:00:00:00:00:07"
+        srcPort = 1
+        dstPort = 1
 
-    '''response
-    [{'intent_id':'5','status':'CREATED','log':['created, time:73268214932534']}]
-    '''
-
-    def __init__(self, urls, intPerGroup, groups, addrate, delrate, pause):
-        self.intPerGroup = intPerGroup
-        self.groups = groups
-        self.urls = urls
-        self.addrate = addrate
-        self.delrate = delrate
-        self.pause = pause
-        
-        intents = [[0 for group in range(self.groups)] for i in range(self.intPerGroup)]
-
-    def setIntJSN(self, node_id, intPerGroup, groups):
-        intents = [[None for a in range(self.intPerGroup)] for g in range(self.groups)]
-        id = 0
+        oper['intentId'] = intent_id
+        oper['intentType'] = 'SHORTEST_PATH'    # XXX: Hardcode
+        oper['staticPath'] = False              # XXX: Hardcoded
+        oper['srcSwitchDpid'] = srcSwitch
+        oper['srcSwitchPort'] = srcPort
+        oper['dstSwitchDpid'] = dstSwitch
+        oper['dstSwitchPort'] = dstPort
+        oper['matchSrcMac'] = srcMac
+        oper['matchDstMac'] = dstMac
+        intents[index] = oper
+        #print ("perGroup Intents-0 are: " + json.dumps(intents) + "\n\n\n" )
+        index += 1
+        intent_id += 1
         oper = {}
-        for group in range(groups):
-            index = 0
-            for i in range(intPerGroup / 2):
-                smac = str("%x" %(node_id * 0x100000000000 + 0x010000000000 + (group * 0x000001000000) +i + 1))
-                dmac = str("%x" %(node_id * 0x100000000000 + 0x070000000000 + (group * 0x000001000000) +i + 1))
-                srcMac = ':'.join(smac[i:i+2] for i in range(0, len(smac), 2))
-                dstMac = ':'.join(dmac[i:i+2] for i in range(0, len(dmac), 2))
-                srcSwitch = "00:00:00:00:00:00:00:01"
-                dstSwitch = "00:00:00:00:00:00:00:07"
-                srcPort = 1
-                dstPort = 1
+        #print ("ID:" + str(id))
 
-                oper['intentId'] = id
-                oper['intentType'] = 'SHORTEST_PATH'    # XXX: Hardcoded
-                oper['staticPath'] = False              # XXX: Hardcoded
-                oper['srcSwitchDpid'] = srcSwitch
-                oper['srcSwitchPort'] = srcPort
-                oper['dstSwitchDpid'] = dstSwitch
-                oper['dstSwitchPort'] = dstPort
-                oper['matchSrcMac'] = srcMac
-                oper['matchDstMac'] = dstMac
-                intents[group][index] = oper
-                #print ("perGroup Intents-0 are: " + json.dumps(intents) + "\n\n\n" )
-                index =index + 1
-                id =id+1
-                oper = {}
-                #print ("ID:" + str(id))
+        oper['intentId'] = intent_id
+        oper['intentType'] = 'SHORTEST_PATH'    # XXX: Hardcoded
+        oper['staticPath'] = False              # XXX: Hardcoded
+        oper['srcSwitchDpid'] = dstSwitch
+        oper['srcSwitchPort'] = dstPort
+        oper['dstSwitchDpid'] = srcSwitch
+        oper['dstSwitchPort'] = srcPort
+        oper['matchSrcMac'] = dstMac
+        oper['matchDstMac'] = srcMac
+        intents[index] = oper
+        index += 1 
+        intent_id += 1
+        oper = {}
+        #print ("ID: " + str(id))
+        #print ("perGroup Intents-1 are: " + json.dumps(intents) + "\n\n\n" )
+    #print ("contructed intents are: " + json.dumps(intents) + "\n\n\n")
+    return intents, intent_id
 
-                oper['intentId'] = id
-                oper['intentType'] = 'SHORTEST_PATH'    # XXX: Hardcoded
-                oper['staticPath'] = False              # XXX: Hardcoded
-                oper['srcSwitchDpid'] = dstSwitch
-                oper['srcSwitchPort'] = dstPort
-                oper['dstSwitchDpid'] = srcSwitch
-                oper['dstSwitchPort'] = srcPort
-                oper['matchSrcMac'] = dstMac
-                oper['matchDstMac'] = srcMac
-                intents[group][index] = oper
-                index = index + 1 
-                id = id + 1
-                oper = {}
-                #print ("ID: " + str(id))
-                #print ("perGroup Intents-1 are: " + json.dumps(intents) + "\n\n\n" )
-        #print ("contructed intents are: " + json.dumps(intents) + "\n\n\n")
-        return intents, id
-
-    def post_json(self, url, data):
-        """Make a REST POST call and return the JSON result
+def post_json(url, data):
+    """Make a REST POST call and return the JSON result
            url: the URL to call
            data: the data to POST"""
-        posturl = "http://%s/wm/onos/intent/high" %(url)
-        print ("\nPost url is : " + posturl + "\n")
-        parsed_result = []
-        data_json = json.dumps(data)
-        try:
-            request = urllib2.Request(posturl, data_json)
-            request.add_header("Content-Type", "application/json")
-            response = urllib2.urlopen(request)
-            result = response.read()
-            response.close()
-            if len(result) != 0:
-                parsed_result = json.loads(result)
-        except HTTPError as exc:
-            print "ERROR:"
-            print "  REST POST URL: %s" % posturl
-            # NOTE: exc.fp contains the object with the response payload
-            error_payload = json.loads(exc.fp.read())
-            print "  REST Error Code: %s" % (error_payload['code'])
-            print "  REST Error Summary: %s" % (error_payload['summary'])
-            print "  REST Error Description: %s" % (error_payload['formattedDescription'])
-            print "  HTTP Error Code: %s" % exc.code
-            print "  HTTP Error Reason: %s" % exc.reason
-        except URLError as exc:
-            print "ERROR:"
-            print "  REST POST URL: %s" % posturl
-            print "  URL Error Reason: %s" % exc.reason
-        return parsed_result
+    posturl = "http://%s/wm/onos/intent/high" %(url)
+    #print ("\nPost url is : " + posturl + "\n")
+    parsed_result = []
+    data_json = json.dumps(data)
+    try:
+        request = urllib2.Request(posturl, data_json)
+        request.add_header("Content-Type", "application/json")
+        response = urllib2.urlopen(request)
+        result = response.read()
+        response.close()
+        if len(result) != 0:
+            parsed_result = json.loads(result)
+    except HTTPError as exc:
+        print "ERROR:"
+        print "  REST POST URL: %s" % posturl
+        # NOTE: exc.fp contains the object with the response payload
+        error_payload = json.loads(exc.fp.read())
+        print "  REST Error Code: %s" % (error_payload['code'])
+        print "  REST Error Summary: %s" % (error_payload['summary'])
+        print "  REST Error Description: %s" % (error_payload['formattedDescription'])
+        print "  HTTP Error Code: %s" % exc.code
+        print "  HTTP Error Reason: %s" % exc.reason
+    except URLError as exc:
+        print "ERROR:"
+        print "  REST POST URL: %s" % posturl
+        print "  URL Error Reason: %s" % exc.reason
+    return parsed_result
 
-    def delete_json(self, url, startID):
-        """Make a REST DELETE call and return the JSON result
+def delete_json(self, url, intPerGroup, startID):
+    """Make a REST DELETE call and return the JSON result
            url: the URL to call"""
-        #url = "localhost:8080"
-        for i in range(self.intPerGroup):
-            posturl = "http://%s/wm/onos/intent/high/%s" %(url, str(i + startID))
-            parsed_result = []
-            try:
-                request = urllib2.Request(posturl)
-                request.get_method = lambda: 'DELETE'
-                response = urllib2.urlopen(request)
-                result = response.read()
-                response.close()
-                #if len(result) != 0:
-                #    parsed_result = json.loads(result)
-            except HTTPError as exc:
-                print "ERROR:"
-                print "  REST DELETE URL: %s" % posturl
-                # NOTE: exc.fp contains the object with the response payload
-                error_payload = json.loads(exc.fp.read())
-                print "  REST Error Code: %s" % (error_payload['code'])
-                print "  REST Error Summary: %s" % (error_payload['summary'])
-                print "  REST Error Description: %s" % (error_payload['formattedDescription'])
-                print "  HTTP Error Code: %s" % exc.code
-                print "  HTTP Error Reason: %s" % exc.reason
-            except URLError as exc:
-                print "ERROR:"
-                print "  REST DELETE URL: %s" % posturl
-                print "  URL Error Reason: %s" % exc.reason
-        return parsed_result
-
-    def delete_all_json(self, url):
-        """Make a REST DELETE call and return the JSON result
-           url: the URL to call"""
-        #url = "localhost:8080"
-        posturl = "http://%s/wm/onos/intent/high" %(url)
+    #url = "localhost:8080"
+    for i in range(intPerGroup):
+        posturl = "http://%s/wm/onos/intent/high/%s" %(url, str(i + startID))
         parsed_result = []
         try:
             request = urllib2.Request(posturl)
@@ -150,8 +103,8 @@ class Loadgen_SB_thread:
             response = urllib2.urlopen(request)
             result = response.read()
             response.close()
-            if len(result) != 0:
-                parsed_result = json.loads(result)
+            #if len(result) != 0:
+            #    parsed_result = json.loads(result)
         except HTTPError as exc:
             print "ERROR:"
             print "  REST DELETE URL: %s" % posturl
@@ -166,92 +119,107 @@ class Loadgen_SB_thread:
             print "ERROR:"
             print "  REST DELETE URL: %s" % posturl
             print "  URL Error Reason: %s" % exc.reason
-        return parsed_result
+    return parsed_result
 
+def delete_all_json(url):
+    """Make a REST DELETE call and return the JSON result
+           url: the URL to call"""
+    #url = "localhost:8080"
+    posturl = "http://%s/wm/onos/intent/high" %(url)
+    parsed_result = []
+    try:
+        request = urllib2.Request(posturl)
+        request.get_method = lambda: 'DELETE'
+        response = urllib2.urlopen(request)
+        result = response.read()
+        response.close()
+        if len(result) != 0:
+            parsed_result = json.loads(result)
+    except HTTPError as exc:
+        print "ERROR:"
+        print "  REST DELETE URL: %s" % posturl
+        # NOTE: exc.fp contains the object with the response payload
+        error_payload = json.loads(exc.fp.read())
+        print "  REST Error Code: %s" % (error_payload['code'])
+        print "  REST Error Summary: %s" % (error_payload['summary'])
+        print "  REST Error Description: %s" % (error_payload['formattedDescription'])
+        print "  HTTP Error Code: %s" % exc.code
+        print "  HTTP Error Reason: %s" % exc.reason
+    except URLError as exc:
+        print "ERROR:"
+        print "  REST DELETE URL: %s" % posturl
+        print "  URL Error Reason: %s" % exc.reason
+    return parsed_result
 
-if __name__ == '__main__':
+def loadIntents(node_id, urllist, intPerGroup, addrate, duration):
+    urlindex = 0
+    group = 0
+    start_id = 0
+    sleeptimer = (1.000/addrate)
+    tstart = time.time()
+    while ( (time.time() - tstart) <= duration ):
+        if urlindex < len(urllist):
+            realurlind = urlindex
+        else:
+            realurlind = 0
+            urlindex = 0
+
+        u = str(urllist[realurlind])
+        gstart = time.time()
+        intents,start_id = setIntentJSN(node_id, intPerGroup, group, start_id)
+        #print (str(intents))
+        #print ("Starting intent id: " + str(start_id))
+        result = post_json(u, intents)
+        #print json.dumps(intents[group])
+        #print ("post result: " + str(result))
+        gelapse = time.time() - gstart
+        print ("Group: " + str(group) + " with " + str(intPerGroup) + " intents were added in " + str('%.3f' %gelapse) + " seconds.")
+        sleep(sleeptimer)
+        urlindex += 1
+        group += 1
+
+    telapse = time.time() - tstart
+    #print ( "Number of groups: " + str(group) + "; Totoal " + str(args.groups * args.intPerGroup) + " intents were added in " + str(telapse) + " seconds.")
+    return telapse, group
+
+def main():
     import argparse
-    import threading
-    from threading import Thread
 
     parser = argparse.ArgumentParser(description="less script")
+    parser.add_argument("-n", "--node_id", dest="node_id", default = 1, type=int, help="id of the node generating the intents, this is used to distinguish intents when multiple nodes are use to generate intents")
     parser.add_argument("-u", "--urls", dest="urls", default="10.128.10.1", type=str, help="a string to show urls to post intents to separated by space, ex. '10.128.10.1:8080 10.128.10.2:80080' ")
     parser.add_argument("-i", "--intentsPerGroup", dest="intPerGroup", default=100, type=int, help="number of intents in one restcall group")
-    parser.add_argument("-g", "--groups", dest="groups", default=1, type=int, help="number of groups")
     parser.add_argument("-a", "--addrate", dest="addrate", default=10, type=float, help="rate to add intents groups, groups per second")
-    parser.add_argument("-d", "--delrate", dest="delrate", default=100, type=float, help= "rate to delete intents, intents/second")
+    parser.add_argument("-d", "--delrate", dest="delrate", default=100, type=float, help= "### Not Effective -for now intents are delete as bulk #### rate to delete intents, intents/second")
+    parser.add_argument("-l", "--length", dest="duration", default=300, type=int, help="duration/length of time the intents are posted")
     parser.add_argument("-p", "--pause", dest="pause", default=0, type=int, help= "pausing time between add and delete of intents")
     args = parser.parse_args()
 
-    myloadgen = Loadgen_SB_thread(args.urls, args.intPerGroup, args.groups, args.addrate, args.delrate, args.pause) 
-    print ("Intent posting urls are: " + args.urls)
-    print ("Number of Intents per group: " + str(args.intPerGroup))
-    print ("Number of Intent Groups: " + str(args.groups))
-    print ("Intent group add rate: " + str(args.addrate) )
-    print ("Intent delete rate:" + str(args.delrate) )
-    addsleeptimer = (1.000/args.addrate)
-    print ("Add Sleep timer: " + str(addsleeptimer) )
-    delsleeptimer = (1.000/args.delrate)
-    print ("Del Sleep timer: " + str(delsleeptimer) )
-    print ("Pause between add and delete: " + str(args.pause))
- 
+    node_id = args.node_id
     urllist = args.urls.split()
-    urlindex = 0
+    intPerGroup = args.intPerGroup
+    addrate = args.addrate
+    delrate = args.delrate
+    duration = args.duration    
+    pause = args.pause
 
-    intents,id = myloadgen.setIntJSN(7, args.intPerGroup, args.groups)
-    #print json.dumps(intents)
-    print ("Number of intents: " + str(id) )    
-    print ("Number of url: " + str(len(urllist)) )
-    
-    tstart = time.time()
-    for group in range(args.groups):
-        if urlindex < len(urllist):
-            realurlind = urlindex
-        else:
-            realurlind = 0
-            urlindex = 0
+    print ("Intent posting urls are: " + str(urllist))
+    print ("Number of Intents per group: " + str(intPerGroup))
+    print ("Intent group add rate: " + str(addrate) )
+    print ("Intent delete rate:" + str(delrate) )
+    print ("Duration: " + str(duration) )
+    print ("Pause between add and delete: " + str(args.pause))
+
+    telapse, group = loadIntents(node_id, urllist, intPerGroup, addrate, duration)
+    print ("\n\n#####################")
+    print ( str(group) + " groups " + " of " + str(intPerGroup) + " Intents per group - Total " + str(group * intPerGroup) + " intents were added in " + str('%.3f' %telapse) + " seconds.")
+    print ( "Effective intents posting rate is: " + str( '%.1f' %( (group * intPerGroup)/telapse ) ) + " Intents/second." )
+    print ("#####################\n\n")
+    print ("Sleep for " + str(pause) + " seconds before deleting all intents...")
+    time.sleep(pause)
+    print ("Cleaning up intents in all nodes...")
+    for url in urllist:
+        delete_all_json(url)
         
-        u = str(urllist[realurlind])
-        gstart = time.time()
-        #print json.dumps(intents[group])
-        print ("urlindex is : " + str(urlindex) + "realurlindex is: " + str(realurlind))
-        print ("post url is: " + str(urllist[realurlind]) )
-        print ("intent group is : " + str(group))
-        result = myloadgen.post_json(u,intents[group])
-        #print ("post result: " + str(result))
-        gelapse = time.time() - gstart
-        print ("Group: " + str(group) + " of " + str(args.groups) + " with " +str(args.intPerGroup) + " intents were added in " + str(gelapse) + " seconds.")
-        sleep(1.000/myloadgen.addrate)
-        urlindex = urlindex + 1
-    
-    telapse = time.time() - tstart
-    print ( str(args.groups * args.intPerGroup) + " intents were added in " + str(telapse) + " seconds.")
-
-    sleep(myloadgen.pause)
- 
-    urlindex = 0 
-    inID = 0
-    tstart = time.time()
-    for group in range(args.groups):
-        if urlindex < len(urllist):
-            realurlind = urlindex
-        else:
-            realurlind = 0
-            urlindex = 0
-        
-        inID = group * args.intPerGroup
-        gstart = time.time()
-        u = str(urllist[realurlind])
-        for i in range(args.intPerGroup):
-            result = myloadgen.delete_json(u, inID)
-            #print ("post result: " + str(result))
-        gelapse = time.time() - gstart
-        print ("Group: " + str(group) + " of " + str(args.groups) " with " + str(args.intPerGroup) + " intents were deleted in " + str(gelapse) + " seconds.")
-        sleep(1.000/myloadgen.delrate)
-        urlindex = urlindex +1
-    telapse = time.time() - tstart
-    print ( str(args.groups * args.intPerGroup) + " intents were deleted in " + str(telapse) + " seconds.")
-
-    print ("Final cleanup to delete all intents on nodes."
-    for u in urllist:
-        myloadgen.delete_all(u)
+if __name__ == '__main__':
+    main()

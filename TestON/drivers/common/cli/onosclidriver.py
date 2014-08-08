@@ -716,6 +716,7 @@ class OnosCliDriver(CLI):
         url = "http://%s:%s/%s/high"%(intentIP,intentPort,intentURL)
         parsed_result = []
         data_json = json.dumps(intents)
+        result = main.FALSE
         try:
             request = urllib2.Request(url,data_json)
             request.add_header("Content-Type", "application/json")
@@ -734,10 +735,12 @@ class OnosCliDriver(CLI):
             print "  REST Error Description: %s" % (error_payload['formattedDescription'])
             print "  HTTP Error Code: %s" % exc.code
             print "  HTTP Error Reason: %s" % exc.reason
+            return "  HTTP Error Code: %s, Reason: %s" % exc.code, exc.reason
         except URLError as exc:
             print "ERROR:"
             print "  REST GET URL: %s" % url
             print "  URL Error Reason: %s" % exc.reason
+            return "  HTTP Error Reason: %s" % exc.reason
         return result
 
         

@@ -259,9 +259,9 @@ class HATestZK:
         master1 = main.ZK1.status()
         print master1
         if re.search("leader",master1):
-            main.ZK1.stop()
+            main.ZK1.kill()
             main.log.info("ZK1 was Master and Killed! Also Killing ZK2")
-            main.ZK2.stop()
+            main.ZK2.kill()
             time.sleep(10)
             if re.search("leader",main.ZK3.status()) or re.search("leader",main.ZK4.status()) or re.search("leader",main.ZK5.status()):
                 result = main.TRUE
@@ -272,9 +272,9 @@ class HATestZK:
         else:
             master2 = main.ZK2.status()
             if re.search("leader",master2):
-                main.ZK2.stop()
+                main.ZK2.kill()
                 main.log.info("ZK2 was Master and Killed! Also Killing ZK3")
-                main.ZK3.stop()
+                main.ZK3.kill()
                 time.sleep(10)
                 if re.search("leader",main.ZK1.status()) or re.search("leader",main.ZK4.status()) or re.search("leader",main.ZK5.status()):
                     result = main.TRUE
@@ -285,9 +285,9 @@ class HATestZK:
             else:
                 master3 = main.ZK3.status()
                 if re.search("leader",master3):
-                    main.ZK3.stop()
+                    main.ZK3.kill()
                     main.log.info("ZK3 was Master and Killed! Also Killing ZK4")
-                    main.ZK4.stop()
+                    main.ZK4.kill()
                     time.sleep(10)
                     if re.search("leader",main.ZK1.status()) or re.search("leader",main.ZK2.status()) or re.search("leader",main.ZK5.status()):
                         result = main.TRUE
@@ -298,9 +298,9 @@ class HATestZK:
                 else:
                     master4 = main.ZK4.status()
                     if re.search("leader",master4):
-                        main.ZK4.stop()
+                        main.ZK4.kill()
                         main.log.info("ZK4 was Master and Killed! Also Killing ZK5")
-                        main.ZK5.stop()
+                        main.ZK5.kill()
                         time.sleep(10)
                         if re.search("leader",main.ZK1.status()) or re.search("leader",main.ZK2.status()) or re.search("leader",main.ZK3.status()):
                             result = main.TRUE
@@ -309,9 +309,9 @@ class HATestZK:
                             result = main.FALSE
                             main.log.info("NO NEW ZK LEADER ELECTED!!!")
                     else:
-                        main.ZK5.stop()
+                        main.ZK5.kill()
                         main.log.info("ZK5 was Master and Killed! Also Killing ZK1")
-                        main.ZK1.stop()
+                        main.ZK1.kill()
                         time.sleep(10)
                         if re.search("leader",main.ZK3.status()) or re.search("leader",main.ZK4.status()) or re.search("leader",main.ZK2.status()):
                             result = main.TRUE
@@ -487,4 +487,10 @@ class HATestZK:
         utilities.assert_equals(expect=main.FALSE,actual=result,onpass="No Loss of connectivity!",onfail="LOSS OF CONNECTIVITY")
         result = not result and result1
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Switch Discovered Correctly and No Loss of traffic",onfail="Switch discovery failed or there was loss of traffic")
+
+# Authored by James Lee
+# Just wanted to see how many people were paying attention here.
+# Elayne Boosler once said "I have six locks on my door all in a row
+# When I go out, I lock every other one. I figure no matter how long 
+# somebody stands there picking the locks, they are always locking three"
 

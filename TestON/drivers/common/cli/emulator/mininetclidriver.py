@@ -773,6 +773,8 @@ class MininetCliDriver(Emulator):
             PYTHONPATH=/home/admin/TestON:/home/admin/sts
 
         '''
+        #NOTE: Create this once per Test and pass the TestONTopology object around. It takes too long to create this object.
+        #      This will make it easier to use the sts methods for severing links and solve that issue
         from sts.topology.teston_topology import TestONTopology # assumes that sts already in you PYTHONPATH
         #import sts.entities.base as base
         import json
@@ -800,7 +802,7 @@ class MininetCliDriver(Emulator):
         for switch in output['switches']:
             mnDPIDs.append(switch['dpid'])
         mnDPIDs.sort()
-        print mnDPIDs
+        #print mnDPIDs
         if onos_json == "":#if rest call fails
             main.log.error(self.name + ".compare_topo(): Empty JSON object given from ONOS rest call")
             return main.FALSE
@@ -809,7 +811,7 @@ class MininetCliDriver(Emulator):
         for switch in onos['switches']:
             onosDPIDs.append(switch['dpid'].replace(":",''))
         onosDPIDs.sort()
-        print onosDPIDs
+        #print onosDPIDs
 
         if mnDPIDs!=onosDPIDs:
             switch_results = main.FALSE
@@ -844,6 +846,9 @@ class MininetCliDriver(Emulator):
 
         #######Links########
         # iterate through MN links and check if and ONOS link exists in both directions
+        # NOTE: Will currently only show mn links as down if they are cut through STS. 
+        #       We can either do everything through STS or wait for up_network_links 
+        #       and down_network_links to be fully implemented.
         for link in topo.patch_panel.network_links: 
             #print "Link: %s" % link
             #TODO: Find a more efficient search method
@@ -892,14 +897,12 @@ class MininetCliDriver(Emulator):
 
         
         results =  switch_results and port_results and link_results
-        '''
-        if not results: #To print out both topologies
-            main.log.error("Topology comparison failed, printing json objects, MN then ONOS")
-            main.log.error(str(json.dumps(output, sort_keys=True,indent=4,separators=(',', ': '))))
-            main.log.error('MN Links:')
-            for link in topo.patch_panel.network_links: main.log.error(str("\tLink: %s" % link))
-            main.log.error(str(json.dumps(onos, sort_keys=True,indent=4,separators=(',', ': '))))
-        '''
+#        if not results: #To print out both topologies
+#            main.log.error("Topology comparison failed, printing json objects, MN then ONOS")
+#            main.log.error(str(json.dumps(output, sort_keys=True,indent=4,separators=(',', ': '))))
+#            main.log.error('MN Links:')
+#            for link in topo.patch_panel.network_links: main.log.error(str("\tLink: %s" % link))
+#            main.log.error(str(json.dumps(onos, sort_keys=True,indent=4,separators=(',', ': '))))
         return results
 
 

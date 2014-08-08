@@ -1,36 +1,18 @@
 <PARAMS>
-    <testcases>1,3</testcases>
+    <testcases>1,2,3,4,5</testcases>
     <tcpdump> 
         <intf>eth0</intf>
         <port>port 6633</port>
         <filename>~/packet_captures/Sanity.pcap</filename>
     </tcpdump>
     
-    <INTENTS>
-        <urlAddIntent>http://10.128.5.52:8080/wm/onos/metrics?ids=Intents.AddOperation.BeginOperationTimestamp.EpochMs,Intents.AddOperation.EndOperationTimestamp.EpochMs</urlAddIntent>
-        <urlRemIntent>http://10.128.5.52:8080/wm/onos/metrics?ids=Intents.RemoveOperation.BeginOperationTimestamp.EpochMs,Intents.RemoveOperation.EndOperationTimestamp.EpochMs</urlRemIntent>
-        <urlAddIntentEnd>http://10.128.5.52:8080/wm/onos/metrics?ids=Intents.AddOperation.EndOperationTimestamp.EpochMs</urlAddIntentEnd>
+    <TOPO>
         <url_topo>http://10.128.5.52:8080/wm/onos/metrics?ids=Topology.EventNotification.LastEventTimestamp.EpochMs</url_topo>
-        <url>http://10.128.5.52:8080/wm/onos/datagrid/add/intents/json</url>
-        <url_new>http://10.128.5.52:8080/wm/onos/intent/high</url_new>
-        <intent_id>1</intent_id>
-        <intent_id2>11</intent_id2>
-        <intent_type>shortest_intent_type</intent_type>
-        <srcSwitch>00:00:00:00:00:00:10:00</srcSwitch>
-        <dstSwitch>00:00:00:00:00:00:30:00</dstSwitch>
-        <srcSwitch2>00:00:00:00:00:00:10:00</srcSwitch2>
-        <dstSwitch2>00:00:00:00:00:00:30:00</dstSwitch2>
-        <srcPort>1</srcPort>
-        <dstPort>1</dstPort>
-        <srcMac>00:00:00:00:00:01</srcMac> 
-        <dstMac>00:00:00:00:00:03</dstMac>
-        <srcMac2>00:00:00:00:00:01</srcMac2> 
-        <dstMac2>00:00:00:00:00:03</dstMac2>
-        <numFlows>1000</numFlows>
+        <url_links>http://10.128.5.52:8080/wm/onos/topology/links</url_links>
         <numIter>5</numIter>
         <hostIP>10.128.5.54</hostIP>
         <databaseScript>~/TestON/scripts/./perfdatagraph.py</databaseScript>
-    </INTENTS>
+    </TOPO>
 
     <CASE1>       
         <destination>h6</destination>

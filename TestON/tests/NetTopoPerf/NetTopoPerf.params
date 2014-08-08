@@ -1,5 +1,5 @@
 <PARAMS>
-    <testcases>1,4</testcases>
+    <testcases>1,11,6</testcases>
     <tcpdump> 
         <intf>eth0</intf>
         <port>port 6633</port>
@@ -7,16 +7,25 @@
     </tcpdump>
     
     <INTENTS>
+        <urlAddIntent>http://10.128.5.52:8080/wm/onos/metrics?ids=Intents.AddOperation.BeginOperationTimestamp.EpochMs,Intents.AddOperation.EndOperationTimestamp.EpochMs</urlAddIntent>
+        <urlRemIntent>http://10.128.5.52:8080/wm/onos/metrics?ids=Intents.RemoveOperation.BeginOperationTimestamp.EpochMs,Intents.RemoveOperation.EndOperationTimestamp.EpochMs</urlRemIntent>
         <url>http://10.128.5.52:8080/wm/onos/datagrid/add/intents/json</url>
         <url_new>http://10.128.5.52:8080/wm/onos/intent/high</url_new>
         <intent_id>1</intent_id>
+        <intent_id2>11</intent_id2>
         <intent_type>shortest_intent_type</intent_type>
         <srcSwitch>00:00:00:00:00:00:30:00</srcSwitch>
         <dstSwitch>00:00:00:00:00:00:50:00</dstSwitch>
+        <srcSwitch2>00:00:00:00:00:00:10:00</srcSwitch2>
+        <dstSwitch2>00:00:00:00:00:00:70:00</dstSwitch2>
         <srcPort>1</srcPort>
         <dstPort>1</dstPort>
         <srcMac>00:00:00:00:00:03</srcMac> 
         <dstMac>00:00:00:00:00:05</dstMac>
+        <srcMac2>00:00:00:00:00:01</srcMac2> 
+        <dstMac2>00:00:00:00:00:07</dstMac2>
+        <numFlows>10</numFlows>
+        <numIter>10</numIter>
     </INTENTS>
 
     <CASE1>       

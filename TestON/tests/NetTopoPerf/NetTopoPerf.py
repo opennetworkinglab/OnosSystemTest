@@ -12,28 +12,29 @@ class NetTopoPerf:
         main.case("Initial setup")
         main.step("Stop ONOS")
         import time
-#        main.ONOS1.stop_all()
-#        main.ONOS2.stop_all()
-#        main.ONOS3.stop_all()
-#        main.ONOS2.stop_rest()
-        main.ONOS1.handle.sendline("cp ~/onos.properties.proactive ~/ONOS/conf/onos.properties")
-        main.ONOS2.handle.sendline("cp ~/onos.properties.proactive ~/ONOS/conf/onos.properties")
-        main.ONOS3.handle.sendline("cp ~/onos.properties.proactive ~/ONOS/conf/onos.properties")
-        main.step("Start tcpdump on mn")
-        main.Mininet2.start_tcpdump(main.params['tcpdump']['filename'], intf = main.params['tcpdump']['intf'], port = main.params['tcpdump']['port'])
+        main.ONOS1.stop()
+        main.ONOS2.stop()
+        main.ONOS3.stop()
+        main.ONOS2.rest_stop()
+        #main.ONOS1.handle.sendline("cp ~/onos.properties.proactive ~/ONOS/conf/onos.properties")
+        #main.ONOS2.handle.sendline("cp ~/onos.properties.proactive ~/ONOS/conf/onos.properties")
+        #main.ONOS3.handle.sendline("cp ~/onos.properties.proactive ~/ONOS/conf/onos.properties")
+        #main.step("Start tcpdump on mn")
+        #main.Mininet2.start_tcpdump(main.params['tcpdump']['filename'], intf = main.params['tcpdump']['intf'], port = main.params['tcpdump']['port'])
         main.step("Start ONOS")
-#        main.Zookeeper1.start()
-#        main.Zookeeper2.start()
-#        main.Zookeeper3.start()
-        time.sleep(1)
+        time.sleep(5)
+        main.Zookeeper1.start()
+        main.Zookeeper2.start()
+        main.Zookeeper3.start()
+        time.sleep(5)
         main.RamCloud1.del_db()
         main.RamCloud2.del_db()
         main.RamCloud3.del_db()
-        time.sleep(3)
-        main.ONOS1.stop_all()
-        main.ONOS2.stop_all()
-        main.ONOS3.stop_all()
-        main.ONOS2.stop_rest()
+        #time.sleep(5)
+        #main.ONOS1.stop_all()
+        #main.ONOS2.stop_all()
+        #main.ONOS3.stop_all()
+        #main.ONOS2.stop_rest()
 #        main.log.report("Pulling latest code from github to all nodes")
 #        for i in range(2):
 #            uptodate = main.ONOS1.git_pull()
@@ -63,10 +64,18 @@ class NetTopoPerf:
        # main.ONOS2.get_version()
        # main.ONOS3.get_version()
        # main.ONOS4.get_version()
-        main.ONOS1.start_all()
-        main.ONOS2.start_all()
-        main.ONOS3.start_all()
+        #main.RamCloud1.start_coor()
+       
+        main.ONOS1.start()
+        main.ONOS2.start()
+        main.ONOS3.start()
         main.ONOS2.start_rest()
+        time.sleep(3)
+       
+        main.ONOS1.handle.sendline("./onos.sh core start")
+        main.ONOS2.handle.sendline("./onos.sh core start")
+        main.ONOS3.handle.sendline("./onos.sh core start")
+
         test= main.ONOS2.rest_status()
         if test == main.FALSE:
             main.ONOS2.start_rest()
@@ -83,12 +92,12 @@ class NetTopoPerf:
             main.RamCloud2.stop_serv()
             main.RamCloud3.stop_serv()
 
-            time.sleep(5)
+            time.sleep(10)
             main.RamCloud1.start_coor()
             main.RamCloud1.start_serv()
             main.RamCloud2.start_serv()
             main.RamCloud3.start_serv()
-            time.sleep(5)
+            time.sleep(10)
             data = main.RamCloud1.status_serv() and main.RamCloud2.status_serv() and main.RamCloud3.status_serv()
             
         utilities.assert_equals(expect=main.TRUE,actual=data,onpass="RamCloud is up!",onfail="RamCloud is down...")
@@ -98,9 +107,17 @@ class NetTopoPerf:
             if data == main.FALSE: 
                 #main.log.report("Something is funny... restarting ONOS")
                 #main.ONOS1.stop()
-                time.sleep(3)
-                #main.ONOS1.start()
-                #time.sleep(5) 
+                #main.ONOS2.stop()
+                #main.ONOS3.stop()
+                #time.sleep(3)
+                main.ONOS1.handle.sendline("cd ~/ONOS")
+                main.ONOS2.handle.sendline("cd ~/ONOS")
+                main.ONOS3.handle.sendline("cd ~/ONOS")
+
+                main.ONOS1.handle.sendline("./onos.sh start")
+                main.ONOS2.handle.sendline("./onos.sh start")
+                main.ONOS3.handle.sendline("./onos.sh start")
+                time.sleep(5) 
                 data = main.ONOS1.isup() and main.ONOS2.isup() and main.ONOS3.isup()
             else:
                 break
@@ -177,21 +194,11 @@ class NetTopoPerf:
         #TODO: get timestamps from ONOS instances of ports coming up
         main.ONOS1.stop_tshark()
 
-    def CASE99(self, main):
-    #TEST CASE 99 - remove when done
-        for i in range(5): 
-            main.Mininet1.assign_sw_controller(sw=str(i+1),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'])
-        #main.ONOS1.add_flow("add_intent_packet.py", "~/ONOS/scripts")
-        #response = main.Mininet1.fping_loss(src="h1", target="h2", size="4000")
-        print response
-
-#**********************************************
-#Single intent add / delete performance    
-    def CASE4(self, main):
+    def CASE11(self, main):
         import requests
         import json
         import time
-        #need to assign all switches to the right controllers first
+        #Assign all switches to controllers
         for i in range(1,8):
             if i < 3:
                 main.Mininet1.assign_sw_controller(sw=str(i),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'])
@@ -214,12 +221,58 @@ class NetTopoPerf:
                 #                                   ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],\
                 #                                   ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],\
                 #                                   ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'])
-        time.sleep(20)        
+        time.sleep(10)        
         
+ 
+    def CASE99(self, main):
+    #TEST CASE 99 - remove when done
+        import time
+        main.ONOS2.handle.sendline("cd ~/ONOS/scripts")
+        main.ONOS2.handle.sendline("./pyintents.py")
+        time.sleep(10) 
+        main.ONOS2.handle.sendline("cd ..")
         url = main.params['INTENTS']['url_new']
-        print url
+        string = main.ONOS2.handle.sendline("curl -s "+url) 
+        print string
+        main.ONOS2.comp_intents(string, string)
+
+#**********************************************
+#Single intent add / delete performance    
+    def CASE4(self, main):
+        import requests
+        import json
+        import time
+        #Assign all switches to controllers
+        for i in range(1,8):
+            if i < 3:
+                main.Mininet1.assign_sw_controller(sw=str(i),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'])
+                time.sleep(5) 
+                #main.Mininet1.assign_sw_controller(sw=str(i),count=3,\
+                #                                   ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],\
+                #                                   ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],\
+                #                                   ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'])
+            elif i < 6 and i > 2:
+                main.Mininet1.assign_sw_controller(sw=str(i),ip1=main.params['CTRL']['ip2'],port1=main.params['CTRL']['port2'])
+                time.sleep(5)
+                #main.Mininet1.assign_sw_controller(sw=str(i),count=3,\
+                #                                   ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],\
+                #                                   ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],\
+                #                                   ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'])
+            elif i < 8 and i > 5:
+                main.Mininet1.assign_sw_controller(sw=str(i),ip1=main.params['CTRL']['ip3'],port1=main.params['CTRL']['port3'])
+                time.sleep(5)
+                #main.Mininet1.assign_sw_controller(sw=str(i),count=3,\
+                #                                   ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],\
+                #                                   ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],\
+                #                                   ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'])
+        time.sleep(10)        
+       
+        #Assign variables from params file 
+        intent_ip = main.params['INTENTREST']['intentIP']
+        url = main.params['INTENTS']['url_new']
         headers = {'Content-type': 'application/json', 'Accept': 'application/json'}
         intent_id = main.params['INTENTS']['intent_id']
+        intent_id2 = main.params['INTENTS']['intent_id2'] 
         intent_type = main.params['INTENTS']['intent_type']
         srcSwitch = main.params['INTENTS']['srcSwitch']
         srcPort = int(main.params['INTENTS']['srcPort'])
@@ -227,163 +280,149 @@ class NetTopoPerf:
         dstSwitch = main.params['INTENTS']['dstSwitch']
         dstPort = int(main.params['INTENTS']['dstPort'])
         dstMac = main.params['INTENTS']['dstMac']
-        url_remove = "http://"+main.params['INTENTREST']['intentIP']+":"+main.params['INTENTREST']['intentPort']+"/wm/onos/intent/high/"+main.params['INTENTS']['intent_id']
-        url_add = "http://10.128.5.52:8080/wm/onos/metrics?ids=Intents.Timestamps.AddIntentBegin,Intents.Timestamps.AddIntentEnd"
+        numIter = main.params['INTENTS']['numIter']
+        url_add = main.params['INTENTS']['urlAddIntent'] 
+        url_rem = main.params['INTENTS']['urlRemIntent']
+ 
+        intent_add_lat_list = []
+        intent_rem_lat_list = []
 
-        intent_forward = [{'intent_id':intent_id,\
-                           'intent_type':intent_type,\
-                           'intent_op':'add',\
-                           'srcSwitch':srcSwitch,\
-                           'srcPort':srcPort,\
-                           'srcMac':srcMac,\
-                           'dstSwitch':dstSwitch,\
-                           'dstPort':dstPort,\
-                           'dstMac':dstMac\
-                         }]
-        #data = json.dumps(intent_forward)
-        #print data 
-        #r_forward = requests.post(url, data=json.dumps(intent_forward), headers = headers)
-        #print r_forward
+        #NOTE: REST call may change in the future
+        #For number of iterations, repeat add / remove and obtain latency min/max/avg calculations
+        for i in range(0, int(numIter)):
+            print "Iteration " + str(i)
 
-        intent_receive = [{'intent_id':"1"+intent_id,\
-                           'intent_type':intent_type,\
-                           'intent_op':'add',\
-                           'srcSwitch':dstSwitch,\
-                           'srcPort':dstPort,\
-                           'srcMac':dstMac,\
-                           'dstSwitch':srcSwitch,\
-                           'dstPort':srcPort,\
-                           'dstMac':srcMac\
-                         }]     
+            result = main.ONOS1.add_intent(intent_id = intent_id, src_dpid = srcSwitch, dst_dpid = dstSwitch, src_mac = srcMac, dst_mac = dstMac, intentIP = intent_ip)
+            utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Intent Add Successful",onfail="Intent Add NOT successful...") 
+            time.sleep(5)
+            json_obj = main.ONOS1.get_json(url_add) 
+            intent_lat_add = main.ONOS1.get_single_intent_latency(json_obj)
+            main.log.report("Intent Add Latency of Intent ID "+intent_id+": " + str(intent_lat_add) + " ms")
+            intent_add_lat_list.append(intent_lat_add)
+            print intent_add_lat_list
 
-        #data = json.dumps(intent_receive)
-        #print data
+            intent_del = requests.delete(url+"/"+intent_id)
+            time.sleep(5)
+            json_obj = main.ONOS1.get_json(url_rem)
+            intent_lat_rem = main.ONOS1.get_single_intent_latency(json_obj)
+            main.log.report("Intent Rem Latency of Intent ID "+intent_id+": " + str(intent_lat_rem) + "ms")
+            intent_rem_lat_list.append(intent_lat_rem)
+            print intent_rem_lat_list
 
-        main.ONOS2.add_intent(intent_id = intent_id, src_dpid = srcSwitch, dst_dpid = dstSwitch, src_mac = srcMac, dst_mac = dstMac, intentIP = "10.128.5.52")
-        main.ONOS2.add_intent(intent_id = "1"+intent_id, src_dpid = dstSwitch, dst_dpid = srcSwitch, src_mac = dstMac, dst_mac = srcMac, intentIP = "10.128.5.52")
+            time.sleep(2)
 
-        #r_receive = requests.post(url, data=json.dumps(intent_receive), headers = headers)
-        #print r_receive
+        min_lat = min(intent_add_lat_list)
+        max_lat = max(intent_add_lat_list)
+        avg_lat = sum(intent_add_lat_list) / len(intent_add_lat_list)
+        
+        main.log.report("Intent add latency min: "+ str(min_lat))
+        main.log.report("Intent add latency max: "+ str(max_lat))
+        main.log.report("Intent add latency avg: "+ str(avg_lat))
 
+        min_lat = min(intent_rem_lat_list)
+        max_lat = max(intent_rem_lat_list)
+        avg_lat = sum(intent_rem_lat_list) / len(intent_rem_lat_list)
 
-        #TODO: Verify intent has been successfully installed
-        #TODO: Obtain timestamp: 1) intent received and 2) intent updated
-        intent_add = main.ONOS2.get_json(url_add) 
-        print intent_add
-        #metrics = main.ONOS2.get_json("http://10.128.5.52:8080/wm/onos/metrics")
-        #Calculate metrics value difference
-        begin_add = intent_add['gauges'][0]['gauge']['value'] 
-        end_add = intent_add['gauges'][1]['gauge']['value']
-        print begin_add
-        print end_add
-
-        result = main.Mininet1.pingHost(src="h3",target="h5")
-
-        r_remove = requests.post(url_remove, data=json.dumps(intent_receive), headers=headers)
-        print r_remove
-  
+        main.log.report("Intent rem latency min: "+ str(min_lat))
+        main.log.report("Intent rem latency max: "+ str(max_lat))
+        main.log.report("Intent rem latency avg: "+ str(avg_lat)) 
 # **********************************************************************************************************************************************************************************************
-#This test case restores the controllers removed by Case 4 then performs a ping test.
+#This case tests performance of Intent Reroute Installation
 
-    def CASE5(self,main) :
-        main.log.report("Restore ONOS 2,3,4 then ping until all hosts are reachable or fail after 6 attempts")
-        import time
-        for i in range(25): 
-            if i < 3:
-                j=i+1
-                main.Mininet1.assign_sw_controller(sw=str(j),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'])
-                time.sleep(1)
-                main.Mininet1.assign_sw_controller(sw=str(j),count=4,ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'])
-            elif i >= 3 and i < 5:
-                j=i+1
-                main.Mininet1.assign_sw_controller(sw=str(j),ip1=main.params['CTRL']['ip2'],port1=main.params['CTRL']['port2'])
-                time.sleep(1)
-                main.Mininet1.assign_sw_controller(sw=str(j),count=4,ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'])
-            elif i >= 5 and i < 15:
-                j=i+1
-                main.Mininet1.assign_sw_controller(sw=str(j),ip1=main.params['CTRL']['ip3'],port1=main.params['CTRL']['port3'])
-                time.sleep(1)
-                main.Mininet1.assign_sw_controller(sw=str(j),count=4,ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'])
-            else:
-                j=i+16
-                main.Mininet1.assign_sw_controller(sw=str(j),ip1=main.params['CTRL']['ip4'],port1=main.params['CTRL']['port4'])
-                main.Mininet1.assign_sw_controller(sw=str(j),count=4,ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'])
-                time.sleep(1)
-        strtTime = time.time() 
-        result = main.ONOS1.check_status_report(main.params['RestIP0'],main.params['NR_Switches'],main.params['NR_Links'])
-        for i in range(10):
-            if result == main.FALSE:
-                time.sleep(5)
-                result = main.ONOS1.check_status_report(main.params['RestIP0'],main.params['NR_Switches'],main.params['NR_Links'])
-            else:
-                break
+    def CASE5(self,main):
+        import requests
+        import json
+        import time 
+        import subprocess
 
-        count = 1
-        i = 6
-        while i < 16 :
-            main.log.info("\n\t\t\t\th"+str(i)+" IS PINGING h"+str(i+25) )
-            ping = main.Mininet1.pingHost(src="h"+str(i),target="h"+str(i+25))
-            if ping == main.FALSE and count < 6:
-                count = count + 1
-                i = 6
-                main.log.info("Ping failed, making attempt number "+str(count)+" in 2 seconds")
-                time.sleep(2)
-            elif ping == main.FALSE and count ==6:
-                main.log.error("Ping test failed")
-                i = 17
-                result = main.FALSE
-            elif ping == main.TRUE:
-                i = i + 1
-                result = main.TRUE
-        endTime = time.time()
-        if result == main.TRUE:
-            main.log.report("\tTime to complete ping test: "+str(round(endTime-strtTime,2))+" seconds")
-        else:
-            main.log.report("\tPING TEST FAILED")
-        utilities.assert_equals(expect=main.TRUE,actual=result,onpass="NO PACKET LOSS, HOST IS REACHABLE",onfail="PACKET LOST, HOST IS NOT REACHABLE")
+        #To bring link down: link s1 s2 down
+        #Assign variables from params file 
+        url = main.params['INTENTS']['url_new']
+        headers = {'Content-type': 'application/json', 'Accept': 'application/json'}
+        intent_id = main.params['INTENTS']['intent_id']
+        intent_type = main.params['INTENTS']['intent_type']
+        srcSwitch = main.params['INTENTS']['srcSwitch2']
+        srcPort = int(main.params['INTENTS']['srcPort'])
+        srcMac = main.params['INTENTS']['srcMac2']
+        dstSwitch = main.params['INTENTS']['dstSwitch2']
+        dstPort = int(main.params['INTENTS']['dstPort'])
+        dstMac = main.params['INTENTS']['dstMac2']
+        intent_id2 = "1"+intent_id
 
-# **********************************************************************************************************************************************************************************************
-#Brings a link that all flows pass through in the mininet down, then runs a ping test to view reroute time
+        #Add intents in both directions
+        main.ONOS1.add_intent(intent_id = intent_id, src_dpid = srcSwitch, dst_dpid = dstSwitch, src_mac = srcMac, dst_mac = dstMac, intentIP = main.params['INTENTREST']['intentIP'])
+        main.ONOS1.add_intent(intent_id = intent_id2, src_dpid = dstSwitch, dst_dpid = srcSwitch, src_mac = dstMac, dst_mac = srcMac, intentIP = main.params['INTENTREST']['intentIP'])
 
-    def CASE6(self,main) :
-        main.log.report("Bring Link between s1 and s2 down, then ping until all hosts are reachable or fail after 10 attempts")
-        import time
-        main.case("Bringing Link down... ")
-        result = main.Mininet1.link(END1=main.params['LINK']['begin'],END2=main.params['LINK']['end'],OPTION="down")
-        utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Link DOWN!",onfail="Link not brought down...")
+        result = main.Mininet1.pingHost(src="h1",target="h7") 
+        print result
+
+        main.ONOS1.stop_tshark() 
+        
+        time.sleep(5)
+        main.case("Starting tshark open flow capture") 
+        #TODO: research tshark capture options to filter OFP packets. 
+        #main.ONOS1.handle.sendline("tshark -i eth0 -t e | grep 'OFP 130 Port Status' > /tmp/tshark_of_port.txt")
+        #main.ONOS2.handle.sendline("tshark -i eth0 -t e | grep 'OFP 130 Port Status' > /tmp/tshark_of_port.txt")
+        #main.ONOS3.handle.sendline("tshark -i eth0 -t e | grep 'OFP 130 Port Status' > /tmp/tshark_of_port.txt")
+         
+        main.ONOS2.handle.sendline("tshark - i eth0 -t e | grep 'OFP' > /tmp/tshark_of_port.txt")
+
+        #main.ONOS1.handle.sendline("tshark -i eth0 -t e -P -w | grep 'OFP 130 Port Status' > /tmp/tshark_of_port_raw.txt")
+        time.sleep(10) 
+        #Bring down interface (port)
+        main.Mininet1.link(END1="s3",END2="s5",OPTION="down") 
+        main.Mininet1.handle.sendline("")
+        #main.Mininet1.handle.sendline("sudo ifconfig s3-eth2 down")
+        #main.Mininet1.handle.sendline("ifconfig")
+
+        time.sleep(5)
+        main.ONOS1.stop_tshark()
+        #Check flow
+        result = main.Mininet1.pingHost(src="h1",target="h7") 
        
-        strtTime = time.time() 
-        result = main.ONOS1.check_status_report(main.params['RestIP0'],main.params['NR_Switches'],str(int(main.params['NR_Links'])-2))
-        for i in range(10):
-            if result == main.FALSE:
-                time.sleep(5)
-                result = main.ONOS1.check_status_report(main.params['RestIP0'],main.params['NR_Switches'],str(int(main.params['NR_Links'])-2))
-            else:
-                break
+        #TESTING IF link down actually even works. If it does, ping should not go through
+        main.Mininet1.link(END1="s3",END2="s4",OPTION="down")
+        result = main.Mininet1.pingHost(src="h1",target="h7")
+ 
+        #Read ONOS tshark_of_port file and get first line
+        #TODO: improve accuracy of timestamp by parsing packet data using "tshark -V" option
+        ssh = subprocess.Popen(['ssh', 'admin@'+main.params['CTRL']['ip1'], 'cat', '/tmp/tshark_of_port.txt'],stdout=subprocess.PIPE)
+        port_down_time = ssh.stdout.readline()
+        ssh2 = subprocess.Popen(['ssh', 'admin@'+main.params['CTRL']['ip2'], 'cat', '/tmp/tshark_of_port.txt'],stdout=subprocess.PIPE)
+        port_down_time2 = ssh.stdout.readline()
+        ssh3 = subprocess.Popen(['ssh', 'admin@'+main.params['CTRL']['ip3'], 'cat', '/tmp/tshark_of_port.txt'],stdout=subprocess.PIPE)
+        port_down_time3 = ssh.stdout.readline()        
 
-        count = 1
-        i = 6
-        while i < 16 :
-            main.log.info("\n\t\t\t\th"+str(i)+" IS PINGING h"+str(i+25) )
-            ping = main.Mininet1.pingHost(src="h"+str(i),target="h"+str(i+25))
-            if ping == main.FALSE and count < 10:
-                count = count + 1
-                main.log.info("Ping failed, making attempt number "+str(count)+" in 2 seconds")
-                i = 6
-                time.sleep(2)
-            elif ping == main.FALSE and count == 10:
-                main.log.error("Ping test failed")
-                i = 17
-                result = main.FALSE
-            elif ping == main.TRUE:
-                i = i + 1
-                result = main.TRUE
-        endTime = time.time()
-        if result == main.TRUE:
-            main.log.report("\tTime to complete ping test: "+str(round(endTime-strtTime,2))+" seconds")
-        else:
-            main.log.report("\tPING TEST FAILED")
-        utilities.assert_equals(expect=main.TRUE,actual=result,onpass="NO PACKET LOSS, HOST IS REACHABLE",onfail="PACKET LOST, HOST IS NOT REACHABLE")
+        print port_down_time 
+        print port_down_time2 
+        print port_down_time3
+
+        obj = port_down_time.split(" ")
+        timestamp = obj[0] 
+        print obj
+        print timestamp
+ 
+        time.sleep(10)
+        main.Mininet1.pingHost(src="h1",target="h7") 
+ 
+# **********************************************************************************************************************************************************************************************
+# Intent Batch Installation Latency
+
+    def CASE6(self,main):
+        main.log.report("Adding batch of intents to calculate latency")
+        numflows = main.params['INTENTS']['numFlows']
+        ip = main.params['INTENTREST']['intentIP']
+        intaddr = main.params['INTENTS']['url_new']
+        url_add = main.params['INTENTS']['urlAddIntent']
+
+        result = main.ONOS1.dynamicIntent(NUMFLOWS = numflows, INTADDR = intaddr, OPTION = "ADD")
+        utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Batch installation successful",onfail="Batch installation NOT successful...")
+        
+        #TODO: get timestamp of batch installation here
+        json_obj = main.ONOS1.get_json(url_add) 
+        intent_lat_add = main.ONOS1.get_single_intent_latency(json_obj)
+        main.log.report("Intent Add Batch latency: " + str(intent_lat_add) + " ms")
+ 
 
 # **********************************************************************************************************************************************************************************************
 #Brings the link that Case 6 took down  back up, then runs a ping test to view reroute time

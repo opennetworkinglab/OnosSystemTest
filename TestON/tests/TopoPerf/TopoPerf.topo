@@ -101,7 +101,7 @@
             <COMPONENTS>
                 # Specify the Option for mininet
                 <arg1> --custom ~/mininet/custom/topo-onos3node-topo-intent.py </arg1>
-                <arg2> --topo mytopo --arp</arg2>
+                <arg2> --topo mytopo --arp --mac --link tc</arg2>
                 <controller> remote </controller>
              </COMPONENTS>
         </Mininet1>
@@ -115,7 +115,7 @@
             <COMPONENTS>
                 # Specify the Option for mininet
                 <arg1> --custom ~/mininet/custom/topo-onos3node-topo-intent.py </arg1>
-                <arg2> --topo mytopo --arp --mac</arg2>
+                <arg2> --topo mytopo --arp --mac --link tc</arg2>
                 <controller> remote </controller>
              </COMPONENTS>
         </Mininet2>

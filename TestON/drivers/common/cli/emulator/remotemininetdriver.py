@@ -388,7 +388,46 @@ class RemoteMininetDriver(Emulator):
             main.cleanup()
             main.exit()
 
+    def del_switch(self,sw):
+        self.handle.sendline("")
+        self.handle.expect("\$")
+        self.handle.sendline("sudo ovs-vsctl del-br "+sw)
+        self.handle.expect("\$")
+        return main.TRUE
 
+    def add_switch(self,sw):
+        self.handle.sendline("")
+        self.handle.expect("\$")
+        self.handle.sendline("sudo ovs-vsctl add-br "+sw)
+        self.handle.expect("\$")
+        self.handle.sendline("sudo ovs-vsctl add-port "+sw+" " + sw + "-eth1")
+        self.handle.expect("\$")
+        self.handle.sendline("sudo ovs-vsctl add-port "+sw+" " + sw + "-eth2")
+        self.handle.expect("\$")
+        self.handle.sendline("sudo ovs-vsctl add-port "+sw+" " + sw + "-eth3")
+        self.handle.expect("\$")
+        self.handle.sendline("sudo ovs-vsctl add-port "+sw+" " + sw + "-eth4")
+        self.handle.expect("\$")
+        self.handle.sendline("sudo ovs-vsctl add-port "+sw+" " + sw + "-eth5")
+        self.handle.expect("\$")
+        self.handle.sendline("sudo ovs-vsctl add-port "+sw+" " + sw + "-eth6")
+        self.handle.expect("\$")
+        self.handle.sendline("sudo ovs-vsctl add-port "+sw+" " + sw + "-eth7")
+        self.handle.expect("\$")
+        self.handle.sendline("sudo ovs-vsctl add-port "+sw+" " + sw + "-eth8")
+        self.handle.expect("\$")
+        self.handle.sendline("sudo ovs-vsctl add-port "+sw+" " + sw + "-eth9")
+        self.handle.expect("\$")
+        self.handle.sendline("sudo ovs-vsctl add-port "+sw+" " + sw + "-eth10")
+        self.handle.expect("\$")
+        self.handle.sendline("sudo ovs-vsctl add-port "+sw+" " + sw + "-eth11")
+        self.handle.expect("\$")
+        self.handle.sendline("sudo ovs-vsctl add-port "+sw+" " + sw + "-eth12")
+        self.handle.expect("\$")
+        self.handle.sendline("sudo ovs-vsctl add-port "+sw+" " + sw + "-eth13")
+        self.handle.expect("\$")
+        self.handle.sendline("sudo ovs-vsctl add-port "+sw+" " + sw + "-eth14")
+        self.handle.expect("\$")
 
 
     def disconnect(self):

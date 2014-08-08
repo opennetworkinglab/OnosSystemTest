@@ -66,6 +66,55 @@ RamCloudCliDriver is the basic driver which will handle the RamCloud server func
             main.log.error(self.name+": Connection failed to the host "+self.user_name+"@"+self.ip_address) 
             main.log.error(self.name+": Failed to connect to the Onos system")
             return main.FALSE
+
+    def kill_serv(self):
+        import re
+        try: 
+            self.handle.sendline("ps -ef |grep 'master/server' |awk 'NR==1 {print $2}' |xargs sudo kill -9")
+            self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT])
+            self.handle.sendline("ps -ef |grep 'master/server' |wc -l")
+            self.handle.expect(["wc -l",pexpect.EOF,pexpect.TIMEOUT])
+            response = self.handle.after
+            if re.search("1",response):
+                return "RAMCloud Server Killed!"
+            else:
+                return "ERROR!!! RAMCLOUd SERVER MAY NOT HAVE BEEN KILLED PROPERLY!!!"
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.hane + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name + ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
+            main.log.error( traceback.print_exc() )
+            main.log.info(":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
+            main.cleanup()
+            main.exit() 
+   
+    def kill_coord(self):
+        import re
+        try: 
+            self.handle.sendline("ps -ef |grep 'master/coordinator' |awk 'NR==1 {print $2}' |xargs sudo kill -9")
+            self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT])
+            self.handle.sendline("ps -ef |grep 'master/coordinator' |wc -l")
+            self.handle.expect(["wc -l",pexpect.EOF,pexpect.TIMEOUT])
+            response = self.handle.after
+            if re.search("1",response):
+                return "RAMCloud Coordinator Killed!"
+            else:
+                return "ERROR!!! RAMCLOUD COORDINATOR MAY NOT HAVE BEEN KILLED PROPERLY!!!"
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.hane + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name + ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
+            main.log.error( traceback.print_exc() )
+            main.log.info(":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
+            main.cleanup()
+            main.exit()
+
    
  
     def start_serv(self):

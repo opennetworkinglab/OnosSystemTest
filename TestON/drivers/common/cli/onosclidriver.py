@@ -68,6 +68,43 @@ class OnosCliDriver(CLI):
             main.log.info(":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
             main.cleanup()
             main.exit()
+
+    def portKill(self, port):
+        try:
+            self.handle.sendline("")
+            self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT])
+            cmd = "sudo tcpkill -i eth0 port " + str(port) + " 2>/dev/null 1>/dev/null &"
+            self.handle.sendline(cmd)
+            self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT])
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":     " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name + ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
+            main.log.error( traceback.print_exc() )
+            main.log.info(":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
+            main.cleanup()
+            main.exit()
+
+    def endPortKill(self,port):
+        try:
+            self.handle.sendline("")
+            self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT])
+            self.handle.sendline("sudo pkill tcpkill")
+            self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT])
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":     " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name + ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
+            main.log.error( traceback.print_exc() )
+            main.log.info(":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
+            main.cleanup()
+            main.exit()
         
     def start(self, env = ''):
         '''
@@ -423,6 +460,32 @@ class OnosCliDriver(CLI):
             main.log.info(":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
             main.cleanup()
             main.exit()
+
+
+    def kill(self):
+        import re
+        try: 
+            self.handle.sendline("ps -ef |grep 'ONOS/conf/logback' |awk 'NR==1 {print $2}' |xargs sudo kill -9")
+            self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT])
+            self.handle.sendline("ps -ef |grep 'ONOS/conf/logback' |wc -l")
+            self.handle.expect(["wc -l",pexpect.EOF,pexpect.TIMEOUT])
+            response = self.handle.after
+            if re.search("1",response):
+                return "ONOS Killed!"
+            else:
+                return "ERROR!!! ONOS MAY NOT HAVE BEEN KILLED PROPERLY!!!"
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.hane + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name + ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
+            main.log.error( traceback.print_exc() )
+            main.log.info(":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
+            main.cleanup()
+            main.exit()
+
 
 
     def disconnect(self):
@@ -926,6 +989,26 @@ class OnosCliDriver(CLI):
             main.cleanup()
             main.exit()
 
+    def num_switch(self,RestIP,RestPort="8080"):
+        url = "http://%s:%s/wm/onos/topology/switches" %(RestIP,RestPort)
+        parsedResult = self.get_json(url)
+        if parsedResult == "":
+            retcode = 1
+            return (retcode, "RestAPI has an issue")
+        url = "http://%s:%s/wm/onos/registry/switches/json" %(RestIP,RestPort)
+        registry = self.get_json(url)
+        if registry == "":
+            retcode = 1
+            return (retcode, "REST API has an Issue")
+        cnt = 0
+        active = 0
+        for s in parsedResult:
+            cnt +=1
+            if s['state']=="ACTIVE":
+                active+=1
+        return (cnt,active)
+
+
     def check_switch(self,RestIP,correct_nr_switch, RestPort ="8080" ):
         '''
         Used by check_status
@@ -974,6 +1057,17 @@ class OnosCliDriver(CLI):
             main.log.info(":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
             main.cleanup()
             main.exit()
+
+    def num_link(self,RestIP,RestPort="8080"):
+        url = "http://%s:%s/wm/onos/topology/links" % (RestIP,RestPort)
+        parsedResult = self.get_json(url)
+        if parsedResult == "":
+            retcode = 1
+            return (retcode,"RestAPI has an issue")
+        intra = 0
+        for s in parsedResult:
+            intra+=1
+        return intra
 
     def check_link(self,RestIP, nr_links, RestPort = "8080"):
         '''
@@ -1139,6 +1233,100 @@ class OnosCliDriver(CLI):
             main.cleanup()
             main.exit()
 #********************************************************           
+
+
+
+
+    def git_checkout(self, branch="onos13integration"):
+        '''
+        Assumes that "git pull" works without login
+        
+        This function will perform a git pull on the ONOS instance.
+        If used as git_pull("NODE") it will do git pull + NODE. This is
+        for the purpose of pulling from other nodes if necessary.
+
+        Otherwise, this function will perform a git pull in the 
+        ONOS repository. If it has any problems, it will return main.ERROR
+        If it successfully does a git_pull, it will return a 1.
+        If it has no updates, it will return a 0.
+
+        '''
+        try:
+            # main.log.info(self.name + ": Stopping ONOS")
+            #self.stop()
+            self.handle.sendline("cd " + self.home)
+            self.handle.expect("ONOS\$")
+            if branch != 'master':
+                #self.handle.sendline('git stash')
+                #self.handle.expect('ONOS\$')
+                #print "After issuing git stash cmnd: ", self.handle.before
+                cmd = "git checkout "+branch
+                print "checkout cmd = ", cmd
+                self.handle.sendline(cmd)
+                uptodate = 0
+                i=self.handle.expect(['fatal','Username\sfor\s(.*):\s','Already\son\s\'onos13integration\'','Switched\sto\sbranch\s\'onos13integration\'', pexpect.TIMEOUT],timeout=60)
+            else:
+                #self.handle.sendline('git stash apply')
+                #self.handle.expect('ONOS\$')
+                #print "After issuing git stash apply cmnd: ", self.handle.before
+                cmd = "git checkout "+branch
+                print "checkout cmd = ", cmd
+                self.handle.sendline(cmd)
+                uptodate = 0
+                switchedToMaster = 0
+                i=self.handle.expect(['fatal','Username\sfor\s(.*):\s','Already\son\s\'master\'','Switched\sto\sbranch\s\'master\'', pexpect.TIMEOUT],timeout=60)
+ 
+
+            if i==0:
+                main.log.error(self.name + ": Git checkout had some issue...")
+                return main.ERROR
+            elif i==1:
+                main.log.error(self.name + ": Git checkout Asking for username!!! BADD!")
+                return main.ERROR
+            elif i==2:
+                main.log.info(self.name + ": Git Checkout %s : Already on this branch" %branch)
+                self.handle.expect("ONOS\$")
+                print "after checkout cmd = ", self.handle.before
+                switchedToMaster = 1
+                return 1
+            elif i==3:
+                main.log.info(self.name + ": Git checkout %s - Switched to this branch" %branch)
+                self.handle.expect("ONOS\$")
+                print "after checkout cmd = ", self.handle.before
+                switchedToMaster = 1
+                return 1
+            elif i==4:
+                main.log.error(self.name + ": Git Checkout- TIMEOUT")
+                main.log.error(self.name + " Response was: " + str(self.handle.before))
+                return main.ERROR
+            else:
+                main.log.error(self.name + ": Git Checkout - Unexpected response, check for pull errors")
+                return main.ERROR
+
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":     " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name + ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
+            main.log.error( traceback.print_exc() )
+            main.log.info(":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
+            main.cleanup()
+            main.exit()
+#********************************************************     
+        self.handle.sendline("git branch")
+        self.handle.expect("ONOS\$")
+        print "git branch output = ", self.handle.before
+        print "*****************************************"
+        self.handle.sendline('cd\.\.') 
+        self.handle.expect("\$")
+
+
+
+
+
+
 
 
     def git_compile(self):

@@ -773,6 +773,8 @@ class MininetCliDriver(Emulator):
             PYTHONPATH=/home/admin/TestON:/home/admin/sts
 
         '''
+        import sys
+        sys.path.append("~/sts")
         from sts.topology.teston_topology import TestONTopology # assumes that sts already in you PYTHONPATH
         #import sts.entities.base as base
         import json

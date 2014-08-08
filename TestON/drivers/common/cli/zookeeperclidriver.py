@@ -44,6 +44,32 @@ class ZookeeperCliDriver(CLI):
         self.handle = self
         self.wrapped = sys.modules[__name__]
 
+    def kill(self):
+        import re
+        try: 
+            self.handle.sendline("ps -ef |grep 'zookeeper.log.dir' |awk 'NR==1 {print $2}' |xargs sudo kill -9")
+            self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT])
+            self.handle.sendline("ps -ef |grep 'zookeeper.log.dir' |wc -l")
+            self.handle.expect(["wc -l",pexpect.EOF,pexpect.TIMEOUT])
+            response = self.handle.after
+            if re.search("1",response):
+                return "Zookeeper Killed!"
+            else:
+                return "ERROR!!! ZOOKEEPER MAY NOT HAVE BEEN KILLED PROPERLY!!!"
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.hane + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name + ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
+            main.log.error( traceback.print_exc() )
+            main.log.info(":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
+            main.cleanup()
+            main.exit()
+
+
+
     def connect(self, **connectargs):
         # Here the main is the TestON instance after creating all the log handles.
         self.port = None
@@ -96,13 +122,12 @@ class ZookeeperCliDriver(CLI):
         '''
         This Function will return the Status of the Zookeeper 
         '''
-        time.sleep(5)
         self.execute(cmd="\n",prompt="\$",timeout=10)
         self.handle.sendline("cd "+self.home)
         response = self.execute(cmd="./onos.sh zk status ",prompt="JMX",timeout=10)
-       
+        response=self.handle.after
         self.execute(cmd="\n",prompt="\$",timeout=10)
-        return response
+        return self.handle.before + self.handle.after
         
     def stop(self):
         '''
@@ -144,6 +169,8 @@ class ZookeeperCliDriver(CLI):
     def findMaster(self, switchDPID, switchList):
         import json
         decoded = json.loads(switchList)
+        if switchList=="":
+            return "NO CONTROLLERS FOUND"
         for k in decoded.iteritems():
             k2 = json.dumps(k)
             if re.search(switchDPID,k2):

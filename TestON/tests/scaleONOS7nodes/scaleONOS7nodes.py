@@ -23,6 +23,7 @@ class scaleONOS7nodes :
        # main.ONOS6.stop_all()
        # main.ONOS7.stop_all()
         main.ONOS2.stop_rest()
+        time.sleep(5)
         #main.ONOS1.handle.sendline("cp ~/onos.properties.proactive ~/ONOS/conf/onos.properties")
         #main.ONOS2.handle.sendline("cp ~/onos.properties.proactive ~/ONOS/conf/onos.properties")
         #main.ONOS3.handle.sendline("cp ~/onos.properties.proactive ~/ONOS/conf/onos.properties")
@@ -155,8 +156,10 @@ class scaleONOS7nodes :
         print loop
         sleep_t =int( main.params['sleep_t'])
         main.case("Starting SB load on 3 nodes from mininet with " + rate1 +"  added/removed/s for " + run_dur)
-        main.Mininet2.handle.sendline("./loadgen_SB.sh startload \"" + ip1 + " " + ip2 + " " + ip3 + "\"" + " " + switches_num + " " + port +  " " + rate1 + " " + run_dur +  "  \"11\"")
-        main.Mininet2.handle.expect("starting to generate south bound load ....", timeout=400)
+        main.Mininet2.handle.sendline("sudo ./loadgen_SB.py -u \"" + ip1 + " " + ip2 + " " + ip3 + "\"" + " -s " + switches_num + " -p " + port + " -a " + rate1 + " -d " + rate1 + " -l " + run_dur)
+        main.log.info("Adding switches and ports.....")
+        main.Mininet2.handle.expect("Starting SB load....", timeout=400)
+        main.log.info("Starting SB load....")
         import time
         import json
         open("/home/admin/TestON/tests/scaleONOS7nodes/logs/scale3nodesrate1", 'w').close()
@@ -232,9 +235,10 @@ class scaleONOS7nodes :
         port = main.params['port']
         switches_num = main.params['switches_num']
         main.case("Starting SB load on 3 nodes from mininet with " + rate2 +"  added/removed/s for " + run_dur)
-        main.Mininet2.handle.sendline("./loadgen_SB.sh startload \"" + ip1 + " " + ip2 + " " + ip3 + "\"" + " " + switches_num + " " + port + " " + rate2 + " " + run_dur +  "  \"11\"")
+        #main.Mininet2.handle.sendline("./loadgen_SB.sh startload \"" + ip1 + " " + ip2 + " " + ip3 + "\"" + " " + switches_num + " " + port + " " + rate2 + " " + run_dur +  "  \"11\"")
+        main.Mininet2.handle.sendline("sudo ./loadgen_SB.py -u \"" + ip1 + " " + ip2 + " " + ip3 + "\"" + " -s " + switches_num + " -p " + port + " -a " + rate2 + " -d " + rate2 + " -l " + run_dur)
        #main.Mininet2.handle.sendline("./loadgen_SB.sh startload \"10.128.10.1\" 100 50 1200 \"11\"")
-        main.Mininet2.handle.expect("starting to generate south bound load ....", timeout=900 )
+        main.Mininet2.handle.expect("Starting SB load....", timeout=900 )
         
         import json
         
@@ -421,6 +425,12 @@ class scaleONOS7nodes :
         import time
        # main.RamCloud4.start_serv()
         main.Zookeeper1.start()
+        time.sleep(5)
+        
+        main.RamCloud4.del_db()
+        time.sleep(3)
+        main.RamCloud4.start_serv()
+        time.sleep(3)
         main.ONOS4.start()
         main.ONOS4.start_rest()
         time.sleep(5)
@@ -452,8 +462,9 @@ class scaleONOS7nodes :
         print loop
         sleep_t =int( main.params['sleep_t'])
         main.case("Starting SB load on 4 nodes from mininet with " + rate1 +"  added/removed/s for " + run_dur)
-        main.Mininet2.handle.sendline("./loadgen_SB.sh startload \"" + ip1 + " " + ip2 + " " + ip3 + " " + ip4 + "\"" + " " + switches_num + " " + port + " " + rate1 + " " + run_dur +  "  \"11\"")
-        main.Mininet2.handle.expect("starting to generate south bound load ....", timeout=900)
+        #main.Mininet2.handle.sendline("./loadgen_SB.sh startload \"" + ip1 + " " + ip2 + " " + ip3 + " " + ip4 + "\"" + " " + switches_num + " " + port + " " + rate1 + " " + run_dur +  "  \"11\"")
+        main.Mininet2.handle.sendline("sudo ./loadgen_SB.py -u \"" + ip1 + " " + ip2 + " " + ip3 + " " + ip4 +  "\"" + " -s " + switches_num + " -p " + port + " -a " + rate1 + " -d " + rate1 + " -l " + run_dur)
+        main.Mininet2.handle.expect("Starting SB load....", timeout=900)
         import time
         import json
         open("/home/admin/TestON/tests/scaleONOS7nodes/logs/scale4nodesrate1", 'w').close()
@@ -548,11 +559,12 @@ class scaleONOS7nodes :
         run_dur = main.params['RUN_DUR']
         loop = int(main.params['loop'])
         sleep_t = int(main.params['sleep_t'])
-        switches_num = main.params['sitches_num']
+        switches_num = main.params['switches_num']
         port = main.params['port']
         main.case("Starting SB load on 4 nodes from mininet with " + rate2 +"  added/removed/s for " + run_dur)
-        main.Mininet2.handle.sendline("./loadgen_SB.sh startload \"" + ip1 + " " + ip2 + " " + ip3 + " " + ip4 +  "\"" + " " + switches_num + " " + port +  " " + rate2 + " " + run_dur +  "  \"11\"")
-        main.Mininet2.handle.expect("starting to generate south bound load ....", timeout=900 )
+        #main.Mininet2.handle.sendline("./loadgen_SB.sh startload \"" + ip1 + " " + ip2 + " " + ip3 + " " + ip4 +  "\"" + " " + switches_num + " " + port +  " " + rate2 + " " + run_dur +  "  \"11\"")
+        main.Mininet2.handle.sendline("sudo ./loadgen_SB.py -u \"" + ip1 + " " + ip2 + " " + ip3 + " " + ip4 +  "\"" + " -s " + switches_num + " -p " + port + " -a " + rate2 + " -d " + rate2 + " -l " + run_dur)
+        main.Mininet2.handle.expect("Starting SB load....", timeout=900 )
         
         open("/home/admin/TestON/tests/scaleONOS7nodes/logs/scale4nodesrate2", 'w').close()
         url1 = "http://10.128.10.1:8080/wm/onos/metrics"

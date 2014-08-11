@@ -417,6 +417,19 @@ class HATestZK:
         result5=not result
 
         main.step("Check that ONOS Topology is consistent with MN Topology")
+        ctrls = []
+        count = 1
+        while True:
+            temp = ()
+            if ('ip' + str(count)) in main.params['CTRL']:
+                temp = temp + (getattr(main,('ONOS' + str(count))),)
+                temp = temp + ("ONOS"+str(count),)
+                temp = temp + (main.params['CTRL']['ip'+str(count)],)
+                temp = temp + (eval(main.params['CTRL']['port'+str(count)]),)
+                ctrls.append(temp)
+                count = count + 1
+            else:
+                break
 
 
         result6 = main.TRUE

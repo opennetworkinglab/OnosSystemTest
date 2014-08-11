@@ -1,4 +1,9 @@
+'''
+Description: This case is to ensure that in the event of Zookeeper failures (including the leader node)
+the cluster should continue to function properly by the passing of Zookeeper functionality to the 
+remaining nodes. In this test, a quorum of the Zookeeper instances must be kept alive.
 
+'''
 class HATestZK:
 
     global topology
@@ -250,6 +255,25 @@ class HATestZK:
         main.Mininet2.pingLong(src=main.params['PING']['source9'],target=main.params['PING']['target9'],pingTime=500)
         main.Mininet2.pingLong(src=main.params['PING']['source10'],target=main.params['PING']['target10'],pingTime=500)
 
+        main.step("Create TestONTopology object")
+        ctrls = []
+        count = 1
+        while True:
+            temp = ()
+            if ('ip' + str(count)) in main.params['CTRL']:
+                temp = temp + (getattr(main,('ONOS' + str(count))),)
+                temp = temp + ("ONOS"+str(count),)
+                temp = temp + (main.params['CTRL']['ip'+str(count)],)
+                temp = temp + (eval(main.params['CTRL']['port'+str(count)]),)
+                ctrls.append(temp)
+                count = count + 1
+            else:
+                break
+        from sts.topology.teston_topology import TestONTopology # assumes that sts is already in you PYTHONPATH
+        global MNTopo 
+        Topo = TestONTopology(main.Mininet1, ctrls) # can also add Intent API info for intent operations
+        MNTopo = Topo
+
 
     def CASE5(self,main) :
         import re
@@ -391,7 +415,16 @@ class HATestZK:
             main.log.info("No Loss in the pings!")
         utilities.assert_equals(expect=main.FALSE,actual=result,onpass="No Loss of connectivity!",onfail="LOSS OF CONNECTIVITY")
         result5=not result
-        result = result1 and result2 and result3 and result4 and result5
+
+        main.step("Check that ONOS Topology is consistent with MN Topology")
+
+
+        result6 = main.TRUE
+        for n in range(1,5):
+            result = main.Mininet1.compare_topo(MNTopo, main.ONOS1.get_json(main.params['CTRL']['ip'+str(n)]+":"+main.params['CTRL']['restPort'+str(n)]+main.params['TopoRest']))
+            utilities.assert_equals(expect=main.TRUE,actual=result,onpass="ONOS" + str(n) + " Topology matches MN Topology",onfail="ONOS" + str(n) + " Topology does not match MN Topology")
+            result6 = result6 and result
+        result = result1 and result2 and result3 and result4 and result5 and result6
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Constant State Tests Passed!",onfail="CONSTANT STATE TESTS FAILED!!")
 
     def CASE7 (self,main):

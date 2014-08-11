@@ -21,10 +21,10 @@ class RCOnosSanity4nodesJ :
 #        main.print_hello_world()
         main.ONOS4.stop_all()
         main.ONOS2.stop_rest()
-        main.ONOS1.handle.sendline("cp ~/onos.properties.proactive ~/ONOS/conf/onos.properties")
-        main.ONOS2.handle.sendline("cp ~/onos.properties.proactive ~/ONOS/conf/onos.properties")
-        main.ONOS3.handle.sendline("cp ~/onos.properties.proactive ~/ONOS/conf/onos.properties")
-        main.ONOS4.handle.sendline("cp ~/onos.properties.proactive ~/ONOS/conf/onos.properties")        
+        main.ONOS1.handle.sendline("cp ~/onos.properties.proactive ~/ONOS/conf/onos.sanity-rc-onos1.properties")
+        main.ONOS2.handle.sendline("cp ~/onos.properties.proactive ~/ONOS/conf/onos.sanity-rc-onos2.properties")
+        main.ONOS3.handle.sendline("cp ~/onos.properties.proactive ~/ONOS/conf/onos.sanity-rc-onos3.properties")
+        main.ONOS4.handle.sendline("cp ~/onos.properties.proactive ~/ONOS/conf/onos.sanity-rc-onos4.properties")        
         main.step("Start tcpdump on mn")
         main.Mininet2.start_tcpdump(main.params['tcpdump']['filename'], intf = main.params['tcpdump']['intf'], port = main.params['tcpdump']['port'])
         main.step("Start ONOS")
@@ -154,7 +154,6 @@ class RCOnosSanity4nodesJ :
         main.Mininet1.get_sw_controller("s1")       
         time.sleep(30)
 
-        main.Zookeeper1.findMaster(switchDPID="00:00:00:00:00:00:10:00")
  
 # **********************************************************************************************************************************************************************************************
 #Add Flows
@@ -170,8 +169,7 @@ class RCOnosSanity4nodesJ :
         strtTime = time.time()
         main.ONOS1.rm_intents()
         print("world")
-        main.ONOS1.add_intents()
-        time.sleep(2)
+        time.sleep(5)
         main.ONOS1.add_intents()
         print("hello")
        # main.ONOS1.add_flow(main.params['FLOWDEF']['testONip'],main.params['FLOWDEF']['user'],main.params['FLOWDEF']['password'],main.params['FLOWDEF']['flowDef'])

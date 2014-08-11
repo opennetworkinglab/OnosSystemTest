@@ -256,35 +256,35 @@ class HATestONOS:
         main.step("ONOS CORE Failure!")
         kill = randint(1,4)
         if kill==1:
-            main.ONOS2.stop()
+            main.ONOS2.kill()
         elif kill==2:
-            main.ONOS2.stop()
+            main.ONOS2.kill()
         elif kill==3:
-            main.ONOS3.stop()
+            main.ONOS3.kill()
         elif kill==4:
-            main.ONOS4.stop()
+            main.ONOS4.kill()
         else:
-            main.ONOS5.stop()
+            main.ONOS5.kill()
 
         kill2 = randint(1,5)
         if kill2==kill:
             if kill2==5:
-                main.ONOS4.stop()
+                main.ONOS4.kill()
             elif kill2==1:
-                main.ONOS3.stop()
+                main.ONOS3.kill()
             else:
-                main.ONOS5.stop()
+                main.ONOS5.kill()
         else:
             if kill2==1:
-                main.ONOS5.stop()
+                main.ONOS5.kill()
             elif kill2==2:
-                main.ONOS2.stop()
+                main.ONOS2.kill()
             elif kill2==3:
-                main.ONOS3.stop()
+                main.ONOS3.kill()
             elif kill2==4:
-                main.ONOS4.stop()
+                main.ONOS4.kill()
             else:
-                main.ONOS5.stop()
+                main.ONOS5.kill()
         time.sleep(10)
         main.step("Get the Mastership of each switch")
         (stdout,stderr)=Popen(["curl",main.params['CTRL']['ip1']+":"+main.params['CTRL']['restPort1']+main.params['CTRL']['switchURL']],stdout=PIPE).communicate()

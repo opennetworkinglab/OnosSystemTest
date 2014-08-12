@@ -59,8 +59,6 @@ class TopoPerf:
             data = main.RamCloud1.status_serv() and main.RamCloud2.status_serv() and main.RamCloud3.status_serv()
             
         utilities.assert_equals(expect=main.TRUE,actual=data,onpass="RamCloud is up!",onfail="RamCloud is down...")
-        data = main.ONOS1.isup() and main.ONOS2.isup() and main.ONOS3.isup()
-        print data
 
         time.sleep(20)
 
@@ -104,13 +102,13 @@ class TopoPerf:
         text = ssh.stdout.readline()
         obj = text.split(" ")
         print text
-        if obj[0]:
-            timestamp = int(float(obj[0])*1000)
-            topo_ms_begin = timestamp
-        else:
-            main.log.error("Tshark output file returned unexpected value")
-            topo_ms_begin = 0
-            assertion = main.FALSE    
+        #if text:
+        timestamp = int(float(obj[0])*1000)
+        topo_ms_begin = timestamp
+        #else:
+        #    main.log.error("Tshark output file returned unexpected value")
+        #    topo_ms_begin = 0
+        #    assertion = main.FALSE    
  
         main.step("Verify that switch s1 has been assigned properly") 
         response = main.Mininet1.get_sw_controller(sw="s1")
@@ -189,8 +187,8 @@ class TopoPerf:
         ssh_down = subprocess.Popen(['ssh', 'admin@'+ctrl_1, 'cat', tshark_output_down],stdout=subprocess.PIPE)
         text_down = ssh_down.stdout.readline()
         obj_down = text_down.split(" ")
-        if obj_down[0]:
-            timestamp_begin_pt_down = int(float(obj_down[0])*1000)
+        #if obj_down[0]:
+        timestamp_begin_pt_down = int(float(obj_down[0])*1000)
 
         json_obj = main.ONOS1.get_json(url_topo)
         timestamp_end_pt_down = json_obj['gauges'][0]['gauge']['value']
@@ -220,10 +218,13 @@ class TopoPerf:
  
         ssh_up = subprocess.Popen(['ssh', 'admin@'+ctrl_1, 'cat', tshark_output_up], stdout=subprocess.PIPE)
         text1 = ssh_up.stdout.readline()
+        #read second line 
         text_up = ssh_up.stdout.readline()
         obj_up = text_up.split(" ")
-        if obj_up[0]:
+        if text_up:
             timestamp_begin_pt_up = int(float(obj_up[0])*1000)
+        else: 
+            timestamp_begin_pt_up = 0
 
         json_obj_up = main.ONOS1.get_json(url_topo)
         timestamp_end_pt_up = json_obj_up['gauges'][0]['gauge']['value']
@@ -384,6 +385,12 @@ class TopoPerf:
         assertion = main.TRUE
 
         main.case("Measure latency of adding 25 switches")
+
+        main.step("Deleting previously added switches")
+        main.Mininet1.handle.sendline("sh ovs-vsctl del-controller s1")
+        main.Mininet1.handle.sendline("sh ovs-vsctl del-controller s2")
+        main.Mininet1.handle.sendline("sh ovs-vsctl del-controller s3")
+
         main.step("Starting tshark open flow capture") 
 
         #***********************************************************************************
@@ -431,8 +438,7 @@ class TopoPerf:
         ssh = subprocess.Popen(['ssh', 'admin@'+ctrl_1, 'cat', tshark_output],stdout=subprocess.PIPE)
         text = ssh.stdout.readline()
         obj = text.split(" ")
-        print text
-        if obj[0]:
+        if text:
             timestamp = int(float(obj[0])*1000)
             topo_ms_begin = timestamp
         else:

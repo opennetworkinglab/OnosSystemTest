@@ -89,7 +89,7 @@ class IntentPerf:
         import time
         import os
  
-        main.case("Single Intent add / delete latency") 
+        main.log.report("Single Intent add / delete latency") 
         #Assign variables from params file 
         intent_ip = main.params['INTENTREST']['intentIP']
         url = main.params['INTENTS']['url_new']
@@ -173,7 +173,7 @@ class IntentPerf:
         import subprocess
         import os
 
-        main.case("Single Intent reroute latency")
+        main.log.report("Single Intent reroute latency")
         url = main.params['INTENTS']['url_new']
         url_add_end = main.params['INTENTS']['urlAddIntentEnd']
         headers = {'Content-type': 'application/json', 'Accept': 'application/json'}
@@ -287,7 +287,7 @@ class IntentPerf:
     def CASE5(self,main):
         import time
         import os
-        main.case("Adding batch of intents to calculate latency")
+        main.log.report("Adding batch of intents to calculate latency")
         numflows = main.params['INTENTS']['numFlows']
         ip = main.params['INTENTREST']['intentIP']
         intaddr = main.params['INTENTS']['url_new']
@@ -364,7 +364,7 @@ class IntentPerf:
         url_add_end = main.params['INTENTS']['urlAddIntentEnd']
         db_script = main.params['INTENTS']['databaseScript']
 
-        main.case("Calculating batch reroute latency")
+        main.log.report("Calculating batch reroute latency")
 
         end_time_temp = ""        
         latency = []

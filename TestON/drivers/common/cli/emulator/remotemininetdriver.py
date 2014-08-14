@@ -75,6 +75,11 @@ class RemoteMininetDriver(Emulator):
 #*********************************************************************************************
 
     def checkForLoss(self, pingList):
+        '''
+        Returns main.FALSE for 0% packet loss and
+        Returns main.ERROR if "found multiple mininet" is found and
+        Returns main.TRUE else
+        '''
         import os
         self.handle.sendline("")
         self.handle.expect("\$")
@@ -93,23 +98,31 @@ class RemoteMininetDriver(Emulator):
         '''
         Starts a continuous ping on the mininet host outputing to a file in the /tmp dir. 
         '''
+        self.handle.sendline("")
+        self.handle.expect("\$")
         args = utilities.parse_args(["SRC","TARGET","PINGTIME"],**pingParams)
-        precmd = "rm /tmp/ping." + args["SRC"]
+        precmd = "sudo rm /tmp/ping." + args["SRC"]
         self.execute(cmd=precmd,prompt="(.*)",timeout=10)
-        command = "mininet/util/m " + args["SRC"] + " ping "+args ["TARGET"]+" -i .2 -w " + str(args['PINGTIME']) + " > /tmp/ping." + args["SRC"] + " &"
+        command = "sudo mininet/util/m " + args["SRC"] + " ping "+args ["TARGET"]+" -i .2 -w " + str(args['PINGTIME']) + " > /tmp/ping." + args["SRC"] + " &"
         main.log.info( command ) 
         self.execute(cmd=command,prompt="(.*)",timeout=10)
+        self.handle.sendline("")
+        self.handle.expect("\$")
         return main.TRUE
 
     def pingstatus(self,**pingParams):
         '''
         Tails the respective ping output file and check that there is a moving "64 bytes"
         '''
+        self.handle.sendline("")
+        self.handle.expect("\$")
         args = utilities.parse_args(["SRC"],**pingParams)
         self.handle.sendline("tail /tmp/ping." + args["SRC"])
         self.handle.expect("tail")
         self.handle.expect("\$")
         result = self.handle.before + self.handle.after
+        self.handle.sendline("")
+        self.handle.expect("\$")
         if re.search('Unreachable', result ):
             main.log.info("Unreachable found in ping logs...") 
             return main.FALSE
@@ -120,40 +133,53 @@ class RemoteMininetDriver(Emulator):
             main.log.info("No, or faulty ping data...") 
             return main.FALSE
          
-    def pingKill(self):
+    def pingKill(self, testONUser, testONIP):
         '''
         Kills all continuous ping processes.
         Then copies all the ping files to the TestStation.
         '''
         import time
+        self.handle.sendline("")
+        self.handle.expect("\$")
         command = "sudo kill -SIGINT `pgrep ping`" 
         main.log.info( command ) 
         self.execute(cmd=command,prompt="(.*)",timeout=10)
-        main.log.info( "Removing old ping data" )
-        command = "rm /tmp/ping.*"
-        os.popen(command) 
-        time.sleep(2)      
+        #Commenting out in case TestON and MN are on the same machine. scp overrights the file anyways
+        #main.log.info( "Removing old ping data" )
+        #command = "rm /tmp/ping.*"
+        #os.popen(command) 
+        #time.sleep(2)      
         main.log.info( "Transferring ping files to TestStation" )
-        command = "scp /tmp/ping.* admin@10.128.7.7:/tmp/" 
+        command = "scp /tmp/ping.* "+ str(testONUser) + "@" + str(testONIP) + ":/tmp/" 
         self.execute(cmd=command,prompt="100%",timeout=20)
-        print("finished kill")
+        print("finished pingKill")
+        self.handle.sendline("")
+        self.handle.expect("\$")
         return main.TRUE
     
     def pingLongKill(self):
         import time
+        self.handle.sendline("")
+        self.handle.expect("\$")
         command = "sudo kill -SIGING `pgrep ping`"
         main.log.info(command)
         self.execute(cmd=command,prompt="(.*)",timeout=10)
+        self.handle.sendline("")
+        self.handle.expect("\$")
         return main.TRUE
         
     def pingHost(self,**pingParams):
         ''' 
         Pings between two hosts on remote mininet  
         ''' 
+        self.handle.sendline("")
+        self.handle.expect("\$")
         args = utilities.parse_args(["SRC","TARGET"],**pingParams)
         command = "mininet/util/m " + args["SRC"] + " ping "+args ["TARGET"]+" -c 4 -W 1 -i .2"
         main.log.info ( command ) 
         response = self.execute(cmd=command,prompt="rtt",timeout=10 )
+        self.handle.sendline("")
+        self.handle.expect("\$")
         if utilities.assert_matches(expect=',\s0\%\spacket\sloss',actual=response,onpass="No Packet loss",onfail="Host is not reachable"):
             main.log.info("NO PACKET LOSS, HOST IS REACHABLE")
             main.last_result = main.TRUE 
@@ -450,7 +476,11 @@ class RemoteMininetDriver(Emulator):
     def get_flowTable(self,sw):
         self.handle.sendline("cd")
         self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT])
-        command = "sudo ovs-ofctl dump-flows " + sw + " | awk '{OFS=\",\" ; print $1 $6 $7 }' |sort -n -k1"
+        #TODO: Write seperate versions of the function for this, possibly a string that tells it which switch is in use?
+        #For 1.0 version of OVS
+        #command = "sudo ovs-ofctl dump-flows " + sw + " | awk '{OFS=\",\" ; print $1 $6 $7 }' |sort -n -k1"
+        #for 1.3 version of OVS
+        command = "sudo ovs-ofctl dump-flows " + sw + " | awk '{OFS=\",\" ; print $1 $6 $7 $8}' |sort -n -k1"
         self.handle.sendline(command)
         self.handle.expect(["sort -n -k1",pexpect.EOF,pexpect.TIMEOUT])
         self.handle.expect(["NXST_FLOW",pexpect.EOF,pexpect.TIMEOUT])
@@ -462,6 +492,11 @@ class RemoteMininetDriver(Emulator):
         if flow1==flow2:
             return main.TRUE
         else:
+            main.log.info("Flow tables do not match, printing tables:")
+            main.log.info("Flow Table 1:")
+            main.log.info(flow1)
+            main.log.info("Flow Table 2:")
+            main.log.info(flow2)
             return main.FALSE
 
 if __name__ != "__main__":

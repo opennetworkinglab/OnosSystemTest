@@ -152,7 +152,6 @@ class RemoteMininetDriver(Emulator):
         main.log.info( "Transferring ping files to TestStation" )
         command = "scp /tmp/ping.* "+ str(testONUser) + "@" + str(testONIP) + ":/tmp/" 
         self.execute(cmd=command,prompt="100%",timeout=20)
-        print("finished pingKill")
         self.handle.sendline("")
         self.handle.expect("\$")
         return main.TRUE
@@ -480,7 +479,7 @@ class RemoteMininetDriver(Emulator):
         #For 1.0 version of OVS
         #command = "sudo ovs-ofctl dump-flows " + sw + " | awk '{OFS=\",\" ; print $1 $6 $7 }' |sort -n -k1"
         #for 1.3 version of OVS
-        command = "sudo ovs-ofctl dump-flows " + sw + " | awk '{OFS=\",\" ; print $1 $6 $7 $8}' |sort -n -k1"
+        command = "sudo ovs-ofctl dump-flows " + sw + " | awk '{OFS=\",\" ; print $1 $3 $7 $8}' |sort -n -k1"
         self.handle.sendline(command)
         self.handle.expect(["sort -n -k1",pexpect.EOF,pexpect.TIMEOUT])
         self.handle.expect(["NXST_FLOW",pexpect.EOF,pexpect.TIMEOUT])

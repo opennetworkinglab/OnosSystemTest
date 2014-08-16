@@ -26,7 +26,7 @@
         <srcMac2>00:00:00:00:00:01</srcMac2> 
         <dstMac2>00:00:00:00:00:07</dstMac2>
         <numFlows>1000</numFlows>
-        <numIter>10</numIter>
+        <numIter>20</numIter>
         <hostIP>10.128.5.54</hostIP>
         <databaseScript>~/TestON/scripts/./perfdatagraph.py</databaseScript>
     </INTENTS>

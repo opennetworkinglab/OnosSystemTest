@@ -1,5 +1,5 @@
 <PARAMS>
-    <testcases>1,2</testcases>
+    <testcases>1,31,32,4,41,42,5,51,52,6,61,62,7,71,72,8,61,62,9,51,52,10,41,42,11,31,32,101</testcases>
     <tcpdump> 
         <intf>eth0</intf>
         <port>port 6633</port>
@@ -68,11 +68,12 @@
 	<restPort>8080</restPort>
 	<restURL>/wm/onos/topology/hosts</restURL>
     </RESTCALL>
-    <switches_num>50</switches_num>
-    <RATE1>30</RATE1>
-    <RATE2>50</RATE2>
-    <RUN_DUR>600</RUN_DUR>
-    <sleep_t>32</sleep_t>
-    <loop>22</loop>
+    <switches_num>30</switches_num>
+    <RATE1>50</RATE1>
+    <RATE2>100</RATE2>
+    <RUN_DUR>240</RUN_DUR>
+    <sleep_t>30</sleep_t>
+    <loop>6</loop>
     <port>10</port>
+    <sleep_init>60</sleep_init>
 </PARAMS>      

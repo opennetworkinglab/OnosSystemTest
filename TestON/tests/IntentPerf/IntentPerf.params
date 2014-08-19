@@ -7,6 +7,7 @@
     </tcpdump>
     
     <INTENTS>
+        <tableName>onos_perf</tableName>
         <urlAddIntent>http://10.128.5.52:8080/wm/onos/metrics?ids=Intents.AddOperation.BeginOperationTimestamp.EpochMs,Intents.AddOperation.EndOperationTimestamp.EpochMs</urlAddIntent>
         <urlRemIntent>http://10.128.5.52:8080/wm/onos/metrics?ids=Intents.RemoveOperation.BeginOperationTimestamp.EpochMs,Intents.RemoveOperation.EndOperationTimestamp.EpochMs</urlRemIntent>
         <urlAddIntentEnd>http://10.128.5.52:8080/wm/onos/metrics?ids=Intents.AddOperation.EndOperationTimestamp.EpochMs</urlAddIntentEnd>
@@ -26,7 +27,7 @@
         <srcMac2>00:00:00:00:00:01</srcMac2> 
         <dstMac2>00:00:00:00:00:07</dstMac2>
         <numFlows>1000</numFlows>
-        <numIter>20</numIter>
+        <numIter>10</numIter>
         <hostIP>10.128.5.54</hostIP>
         <databaseScript>~/TestON/scripts/./perfdatagraph.py</databaseScript>
     </INTENTS>

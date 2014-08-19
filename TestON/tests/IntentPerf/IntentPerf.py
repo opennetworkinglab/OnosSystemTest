@@ -1,10 +1,21 @@
+#Class IntentPerf
+#Measures latency regarding intent events
+#CASE3: single intent add / rem latency
+#CASE4: single intent reroute  latency
+#CASE5: batch intent add latency
+#CASE6: batch intent reroute latency
+#NOTE:
+# * each case is iterated numIter times. Then min/max/avg is calculated based on results.
+#   If an iteration is omitted, it means unexpected results were found (such as negative
+#   delta of timestamps or delta that is too large) 
+
 
 class IntentPerf:
     def __init__(self) :
         self.default = ''
 #Test startup
     def CASE1(self,main) :  #Check to be sure ZK, Cass, and ONOS are up, then get ONOS version
-        main.case("Initial setup")
+        main.log.report("Initial setup")
         main.step("Stop ONOS")
         import time
         main.ONOS1.stop()
@@ -67,6 +78,8 @@ class IntentPerf:
 #******************************************
     def CASE2(self, main):
         import time
+        main.log.report("Assign switches to controllers")
+        assertion = main.TRUE
         for i in range(1,8):
             if i < 3:
                 main.Mininet1.assign_sw_controller(sw=str(i),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'])
@@ -77,6 +90,12 @@ class IntentPerf:
             elif i < 8 and i > 5:
                 main.Mininet1.assign_sw_controller(sw=str(i),ip1=main.params['CTRL']['ip3'],port1=main.params['CTRL']['port3'])
                 time.sleep(5)
+        for j in range(1,8):
+            result = main.Mininet1.get_sw_controller(sw=str(j))  
+            if result == main.FALSE:
+                assertion = main.FALSE
+                main.log.info("Switch "+str(j)+" not assigned")
+        utilities.assert_equals(expect=main.TRUE,actual=assertion,onpass="Switches assigned successfully",onfail="Switches NOT assigned")
 
 #***************************************** 
 #CASE3
@@ -108,6 +127,7 @@ class IntentPerf:
         host_ip = main.params['INTENTS']['hostIP'] 
         assertion = ""
         db_script = main.params['INTENTS']['databaseScript']
+        table_name = main.params['INTENTS']['tableName']
 
         #We use list to store multiple iterations of latency outputs
         intent_add_lat_list = []
@@ -132,24 +152,27 @@ class IntentPerf:
 
             time.sleep(2)
 
-        if intent_add_lat_list: 
-            min_lat = str(min(intent_add_lat_list))
-            max_lat = str(max(intent_add_lat_list))
-            avg_lat = str(sum(intent_add_lat_list) / len(intent_add_lat_list))
-        
-            main.log.report("Intent add latency Min: "+ min_lat+" ms    Max: "+ max_lat + "ms    Avg: "+avg_lat+ " ms")
-           
-            #NOTE: os.system runs a command on TestON machine. Hence, place the db_script in a TestON location 
-            os.system(db_script + " --name='1 intent add' --minimum='"+min_lat+"' --maximum='"+max_lat+"' --average='"+avg_lat+"' ")
-            
-            if intent_rem_lat_list:
-                min_lat = str(min(intent_rem_lat_list))
-                max_lat = str(max(intent_rem_lat_list))
-                avg_lat = str(sum(intent_rem_lat_list) / len(intent_rem_lat_list))
 
-                main.log.report("Intent rem latency Min: "+min_lat+" ms    Max: "+max_lat+" ms    Avg: "+avg_lat+ " ms")
+        min_lat_add = str(min(intent_add_lat_list))
+        max_lat_add = str(max(intent_add_lat_list))
+        avg_lat_add = str(sum(intent_add_lat_list) / len(intent_add_lat_list))
+
+        min_lat_rem = str(min(intent_rem_lat_list))
+        max_lat_rem = str(max(intent_rem_lat_list))
+        avg_lat_rem = str(sum(intent_rem_lat_list) / len(intent_rem_lat_list))
+
+        if int(avg_lat_add) > 0 and int(avg_lat_rem) > 0:
+            if int(avg_lat_add) < 100000 and int(avg_lat_rem) < 100000:
+                omit_iter_add = int(numIter) - int(len(intent_add_lat_list))
+                omit_iter_rem = int(numIter) - int(len(intent_rem_lat_list))
+                main.log.report("Intent add latency Min: "+ min_lat_add+" ms    Max: "+ max_lat_add + "ms    Avg: "+avg_lat_add+ " ms")
+                main.log.report("Iterations omitted/total: "+str(omit_iter_add)+"/"+str(numIter)) 
+                #NOTE: os.system runs a command on TestON machine. Hence, place the db_script in a TestON location 
+                os.system(db_script + " --name='1 intent add' --minimum='"+min_lat_add+"' --maximum='"+max_lat_add+
+                                  "' --average='"+avg_lat_add+"' "+ "--table='"+table_name+"'")
+                main.log.report("Intent rem latency Min: "+min_lat_rem+" ms    Max: "+max_lat_rem+" ms    Avg: "+avg_lat_rem+ " ms")
+                main.log.report("Iterations omitted/total: "+str(omit_iter_rem)+"/"+str(numIter)) 
                 assertion = main.TRUE
-        
         else:
             assertion = main.FALSE
 
@@ -183,16 +206,17 @@ class IntentPerf:
         dstMac = main.params['INTENTS']['dstMac2']
         db_script = main.params['INTENTS']['databaseScript']
         intent_id2 = "1"+intent_id
-        numiter = main.params['INTENTS']['numIter']
+        numIter = main.params['INTENTS']['numIter']
         tshark_output = "/tmp/tshark_of_port.txt"
         latency = []
+        table_name = main.params['INTENTS']['tableName']
         assertion = ""
 
         main.step("Removing any old intents")
         requests.delete(url)
         time.sleep(5)
 
-        for i in range(0,int(numiter)): 
+        for i in range(0,int(numIter)): 
 
             #Add intents in both directions
             main.ONOS1.add_intent(intent_id = intent_id, src_dpid = srcSwitch, dst_dpid = dstSwitch, src_mac = srcMac, dst_mac = dstMac, intentIP = main.params['INTENTREST']['intentIP'])
@@ -258,9 +282,16 @@ class IntentPerf:
             min_lat = str(min(latency))
             max_lat = str(max(latency))
             avg_lat = str(sum(latency) / len(latency))
-            main.log.report("Single Intent Reroute latency Min: "+min_lat+" ms    Max: "+max_lat+" ms    Avg: "+avg_lat+" ms")
-            os.system(db_script + " --name='1 intent reroute' --minimum='"+min_lat+"' --maximum='"+max_lat+"' --average='"+avg_lat+"' ")
-            assertion = main.TRUE
+            omit_iter = int(numIter) - int(len(latency))
+
+            if int(avg_lat) > 0 and int(avg_lat) < 100000:
+                main.log.report("Single Intent Reroute latency Min: "+min_lat+" ms    Max: "+max_lat+" ms    Avg: "+avg_lat+" ms")
+                main.log.report("Iterations omitted/total: "+str(omit_iter)+"/"+str(numIter))
+                os.system(db_script + " --name='1 intent reroute' --minimum='"+min_lat+"' --maximum='"+max_lat+
+                                  "' --average='"+avg_lat+"' " + "--table='"+table_name+"'")
+                assertion = main.TRUE
+            else:
+                assertion = main.FALSE
         else:
             assertion = main.FALSE
         
@@ -281,16 +312,17 @@ class IntentPerf:
         ip = main.params['INTENTREST']['intentIP']
         intaddr = main.params['INTENTS']['url_new']
         url_add = main.params['INTENTS']['urlAddIntent']
-        numiter = main.params['INTENTS']['numIter']
+        numIter = main.params['INTENTS']['numIter']
         db_script = main.params['INTENTS']['databaseScript']
-        assertion = ""
+        assertion = main.TRUE
+        table_name = main.params['INTENTS']['tableName']
 
         latency = []
 
         #result_remove = main.ONOS1.dynamicIntent(INTADDR = intaddr, OPTION = "REM")
         #utilities.assert_equals(expect=main.TRUE,actual=result_remove,onpass="All intents removed",onfail="Intent removal failed")
 
-        for i in range(0,int(numiter)):
+        for i in range(0,int(numIter)):
             result = main.ONOS1.dynamicIntent(NUMFLOWS = numflows, INTADDR = intaddr, OPTION = "ADD")
 
             time.sleep(5)
@@ -311,22 +343,26 @@ class IntentPerf:
                 latency.append(intent_lat_add)       
             else:
                 main.log.info("Intent Add Batch calculation returned unexpected results")
-                main.log.info("Omitting iteration "+numiter)   
+                main.log.info("Omitting iteration "+numIter)   
     
             result = main.ONOS1.dynamicIntent(INTADDR = intaddr, OPTION = "REM")
             utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Intent removal successful",onfail="Intent removal NOT successful...") 
 
             time.sleep(3) 
-
  
         if(latency): 
             min_lat = str(min(latency))
             max_lat = str(max(latency))
             avg_lat = str(sum(latency) / len(latency))
-            main.log.report("Intent Batch Latency ("+numflows+" intents) Min: "+ min_lat + " ms    Max: "+max_lat+" ms    Avg: "+avg_lat+" ms" )
-            if(assertion == ""):
-                assertion = main.TRUE
-            os.system(db_script + " --name='1000 intents add' --minimum='"+min_lat+"' --maximum='"+max_lat+"' --average='"+avg_lat+"' ")
+            omit_iter = int(numIter) - int(len(latency))
+
+            if int(avg_lat) > 0 and int(avg_lat) < 100000:
+                main.log.report("Intent Batch Latency ("+numflows+" intents) Min: "+ min_lat + " ms    Max: "+max_lat+" ms    Avg: "+avg_lat+" ms" )
+                main.log.report("Iterations omitted/total: "+str(omit_iter)+"/"+str(numIter))
+                os.system(db_script + " --name='1000 intents add' --minimum='"+min_lat+"' --maximum='"+max_lat+
+                                  "' --average='"+avg_lat+"' "+ "--table='"+table_name+"'")
+            else:
+                assertion = main.FALSE
         else:
             assertion = main.FALSE
 
@@ -348,11 +384,12 @@ class IntentPerf:
         numflows = main.params['INTENTS']['numFlows']
         intentIp = main.params['INTENTREST']['intentIP']
         intaddr = main.params['INTENTS']['url_new']
-        numiter = main.params['INTENTS']['numIter']
+        numIter = main.params['INTENTS']['numIter']
         url_add_end = main.params['INTENTS']['urlAddIntentEnd']
         db_script = main.params['INTENTS']['databaseScript']
+        table_name = main.params['INTENTS']['tableName']
         tshark_port_batch = "/tmp/tshark_of_port_batch.txt"
-        assertion = ""
+        assertion = main.TRUE
 
         main.log.report("Calculating batch reroute latency")
 
@@ -363,7 +400,7 @@ class IntentPerf:
         intent_del = requests.delete(intaddr)
         time.sleep(5)
 
-        for i in range(0, int(numiter)):
+        for i in range(0, int(numIter)):
             main.step("Adding "+numflows+" intents")
             result = main.ONOS1.dynamicIntent(NUMFLOWS = numflows, INTADDR = intaddr, OPTION = "ADD")
             utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Batch installation successful",onfail="Batch installation NOT successful...")
@@ -407,8 +444,8 @@ class IntentPerf:
                 main.log.info("Latency of reroute: "+str(delta)+" ms") 
                 latency.append(int(delta))
             else:
-                main.log.report("Unexpected result from latency calculation. Omitting iteration "+str(i))
-                main.log.report("Calculation result: "+str(delta))
+                main.log.info("Unexpected result from latency calculation. Omitting iteration "+str(i))
+                main.log.info("Calculation result: "+str(delta))
  
             time.sleep(5)
             main.step("Removing intents")
@@ -424,11 +461,16 @@ class IntentPerf:
             max_lat = str(max(latency))
             min_lat = str(min(latency))
             avg_lat = str(sum(latency) / len(latency))
-  
-            main.log.report("Intent Batch Reroute Latency ("+numflows+" Intents) Min: "+min_lat+" ms    Max: "+max_lat+" ms    Avg: "+avg_lat+" ms")
-
-            os.system(db_script + " --name='1000 intents reroute' --minimum='"+min_lat+"' --maximum='"+max_lat+"' --average='"+avg_lat+"' ")
-            assertion = main.TRUE
+            omit_iter = int(numIter) - int(len(latency))
+ 
+            if int(avg_lat) > 0 and int(avg_lat) < 100000: 
+                main.log.report("Intent Batch Reroute Latency ("+numflows+" Intents) Min: "+
+                                 min_lat+" ms    Max: "+max_lat+" ms    Avg: "+avg_lat+" ms")
+                main.log.report("Iterations omitted/total: "+str(omit_iter)+"/"+str(numIter))
+                os.system(db_script + " --name='1000 intents reroute' --minimum='"+min_lat+"' --maximum='"+max_lat+
+                                  "' --average='"+avg_lat+"' "+ "--table='"+table_name+"'")
+            else:
+                assertion = main.FALSE
         else:
             assertion = main.FALSE
         utilities.assert_equals(expect=main.TRUE,actual=assertion,onpass="Batch Reroute Latency Calculations Successful",onfail="Batch Reroute Latency Calculations NOT successful")

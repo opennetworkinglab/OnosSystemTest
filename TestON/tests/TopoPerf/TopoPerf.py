@@ -1,3 +1,14 @@
+#Class TopoPerf
+#Measures latency regarding topology events
+#CASE2: add 1 switch latency
+#CASE3: port up / down latency
+#CASE4: link up / down latency
+#CASE5: add 25 switch latency
+#NOTE:
+# * each case is iterated numIter times. Then min/max/avg is calculated based on results.
+#   If an iteration is omitted, it means unexpected results were found (such as negative
+#   delta of timestamps or delta that is too large) 
+#   Each valid iteration is saved to a list 
 
 class TopoPerf:
     def __init__(self) :
@@ -8,7 +19,7 @@ class TopoPerf:
 #**********************
     def CASE1(self,main) :  #Check to be sure ZK, Cass, and ONOS are up, then get ONOS version
         import time
-        main.case("Initial setup")
+        main.log.report("Initial setup")
         main.step("Stop ONOS") 
         main.ONOS1.stop()
         main.ONOS2.stop()
@@ -84,7 +95,7 @@ class TopoPerf:
         assertion = main.TRUE
         topo_lat = []
 
-        main.case("Measure latency of adding one switch")
+        main.log.report("Latency of adding one switch")
 
         for i in range(0, int(numIter)):
             main.step("Starting tshark open flow capture") 
@@ -143,8 +154,9 @@ class TopoPerf:
 
             #NOTE: edit threshold as needed to fail test case
             if delta < 0 or delta > 100000:
-                main.log.report("Delta of switch add timestamp returned unexpected results")
-                main.log.report("Value returned: " + str(delta))
+                main.log.info("Delta of switch add timestamp returned unexpected results")
+                main.log.info("Value returned: " + str(delta))
+                main.log.info("Omiting iteration "+ str(i))
             else:
                 topo_lat.append(delta)
                 main.log.info("One switch add latency iteration "+str(i)+": " + str(delta) + " ms")  
@@ -159,8 +171,12 @@ class TopoPerf:
             os.system(db_script + " --name='1 switch add' --minimum='"+topo_lat_min+
                       "' --maximum='"+topo_lat_max+"' --average='"+topo_lat_avg+"' " + 
                       "--table='"+table_name+"'")
-  
-        main.log.report("One switch add latency: Min: "+topo_lat_min+" ms    Max: "+topo_lat_max+" ms    Avg: "+topo_lat_avg+" ms")
+ 
+            omit_num = int(numIter) - int(len(topo_lat)) 
+            main.log.report("Iterations omitted/total: "+ str(omit_num) +"/"+ str(numIter))
+            main.log.report("One switch add latency: Min: "+topo_lat_min+" ms    Max: "+topo_lat_max+" ms    Avg: "+topo_lat_avg+" ms")
+        else:
+            assertion = main.FALSE
  
         utilities.assert_equals(expect=main.TRUE,actual=assertion,onpass="Switch latency test successful!",onfail="Switch latency test NOT successful")
 #***************************************** 
@@ -188,7 +204,7 @@ class TopoPerf:
         port_up_lat = []
         port_down_lat = []
 
-        main.case("Port enable / disable latency") 
+        main.log.report("Port enable / disable latency") 
 
         main.step("Assign switch to controller")
         main.Mininet1.assign_sw_controller(sw="1",ip1=ctrl_1,port1=port_1) 
@@ -230,8 +246,9 @@ class TopoPerf:
    
             #NOTE: modify threshold as necessary
             if (delta_pt_down < 0) or (delta_pt_down > 100000):
-                main.log.report("Delta port down timestamp returned unexpected results")
-                main.log.report("Value returned: " + str(delta_pt_down))
+                main.log.info("Delta port down timestamp returned unexpected results")
+                main.log.info("Value returned: " + str(delta_pt_down))
+                main.log.info("Omitting iteration "+ str(i))
                 assertion = main.FALSE
             else:
                 port_down_lat.append(delta_pt_down)     
@@ -270,8 +287,9 @@ class TopoPerf:
 
             #NOTE: modify threshold as necessary
             if (delta_pt_up < 0) or (delta_pt_up > 100000):
-                main.log.report("Delta of timestamp returned unexpected results")
-                main.log.report("Value returned: " + str(delta_pt_up))
+                main.log.info("Delta of timestamp returned unexpected results")
+                main.log.info("Value returned: " + str(delta_pt_up))
+                main.log.info("Omitting iteration "+ str(i))
                 assertion = main.FALSE
             else:
                 port_up_lat.append(delta_pt_up)           
@@ -297,6 +315,10 @@ class TopoPerf:
                       "' --maximum='"+port_up_lat_max+"' --average='"+port_up_lat_avg+
                       "' --table='"+table_name+"'")
 
+        omit_num_up = int(numIter) - int(len(port_up_lat))
+        omit_num_down = int(numIter) - int(len(port_down_lat))
+        main.log.report("Iterations omitted/total for Port Up Latency: "+ str(omit_num_up) +"/"+ str(numIter))
+        main.log.report("Iterations omitted/total for Port Down Latency: "+ str(omit_num_down) + "/" + str(numIter))
         main.log.report("Port up latency: Min: "+port_up_lat_min+" ms    Max: "+port_up_lat_max+" ms    Avg: "+port_up_lat_avg+" ms")
         main.log.report("Port down latency: Min: "+port_down_lat_min+" ms    Max: "+port_down_lat_max+" ms Avg: "+port_down_lat_avg+" ms")
  
@@ -330,7 +352,7 @@ class TopoPerf:
         link_down_lat = []
         link_up_lat = []
 
-        main.case("Add / remove link latency between two switches")
+        main.log.report("Add / remove link latency between two switches")
 
         main.step("Assign all switches")
         main.Mininet1.assign_sw_controller(sw="1",ip1=ctrl_1,port1=port_1)
@@ -363,7 +385,7 @@ class TopoPerf:
             main.step("Initial timestamp (system time via time.time()) for link disabled")
             timestamp_link_begin = time.time() * 1000 
             main.Mininet1.handle.sendline("sh tc qdisc add dev s1-eth2 root netem loss 100%")
-            main.Mininet2.handle.sendline("sudo tc qdisc add dev s1-eth2 root netem loss 100")
+            #main.Mininet2.handle.sendline("sudo tc qdisc add dev s1-eth2 root netem loss 100")
             #The above line sends a shell command tc qdisc which is part of the linux kernel's method of
             #traffic control. network emulator (netem) can then be added on to simulate link loss rate
          
@@ -424,6 +446,7 @@ class TopoPerf:
             if delta_timestamp < 0 or delta_timestamp > 100000:
                 main.log.report("Delta of timestamp returned unexpected results")
                 main.log.report("Value returned: " + str(delta_timestamp))
+                main.log.report("Omitting iteration "+ str(i))
                 assertion = main.FALSE
             else:
                 link_down_lat.append(delta_timestamp)
@@ -436,7 +459,7 @@ class TopoPerf:
             timestamp_link_enable_t0 = time.time() * 1000
             #Remove previous 100% packet loss on an interface
             main.Mininet1.handle.sendline("sh tc qdisc del dev s1-eth2 root")
-            main.Mininet2.handle.sendline("sudo tc qdisc del dev s1-eth2 root")
+            #main.Mininet2.handle.sendline("sudo tc qdisc del dev s1-eth2 root")
             main.step("Enabling link on s1")
 
             time.sleep(5)
@@ -477,8 +500,9 @@ class TopoPerf:
             delta_timestamp_enable = int(timestamp_link_enable_t1) - int(timestamp_link_enable_t0)
  
             if delta_timestamp_enable < 0 and delta_timestamp_enable > 100000:
-                main.log.report("Delta of timestamp enable switch returned unexpected results")
-                main.log.report("Value returned: " + str(delta_timestamp_enable))
+                main.log.info("Delta of timestamp enable switch returned unexpected results")
+                main.log.info("Value returned: " + str(delta_timestamp_enable))
+                main.log.info("Omitting iteration " + str(i))
                 assertion = main.FALSE
             else:
                 link_up_lat.append(delta_timestamp_enable)
@@ -504,6 +528,10 @@ class TopoPerf:
         if int(link_up_lat_avg) > 0 and int(link_down_lat_avg) > 0:
             assertion = main.TRUE
 
+        omit_num_down = int(numIter) - int(len(link_down_lat))
+        omit_num_up = int(numIter) - int(len(link_up_lat))
+        main.log.report("Iterations omitted/total of link down event: "+ str(omit_num_down) +"/"+ str(numIter))
+        main.log.report("Iterations omitted/total of link up event: "+ str(omit_num_up) + "/"+ str(numIter))
         main.log.report("Link down discovery latency: Min: "+link_down_lat_min+" ms    Max: "+link_down_lat_max+" ms    Avg: "+link_down_lat_avg+" ms")
         main.log.report("Link up discovery latency: Min: "+link_up_lat_min+" ms    Max: "+link_up_lat_max+" ms    Avg: "+link_up_lat_avg+" ms")
 
@@ -532,8 +560,10 @@ class TopoPerf:
         assertion = main.TRUE
         add_lat = []
    
-        main.case("Measure latency of adding 25 switches")
+        main.log.report("Measure latency of adding 25 switches")
 
+        #We need to delete the switches assigned in the previous test case 
+        #To get an accurate time measurement
         main.step("Deleting previously added switches")
         main.Mininet1.handle.sendline("sh ovs-vsctl del-controller s1")
         main.Mininet1.handle.sendline("sh ovs-vsctl del-controller s2")
@@ -541,7 +571,7 @@ class TopoPerf:
 
         time.sleep(5) 
 
-        for i in range(0,int(numIter)):
+        for x in range(0,int(numIter)):
             main.step("Starting tshark open flow capture") 
 
             #***********************************************************************************
@@ -589,18 +619,19 @@ class TopoPerf:
 
             #NOTE: edit threshold as needed to fail test case
             if delta < 0 or delta > 100000:
-                main.log.report("Delta of switch add timestamp returned unexpected results")
-                main.log.report("Value returned: " + str(delta))
+                main.log.info("Delta of switch add timestamp returned unexpected results")
+                main.log.info("Value returned: " + str(delta))
+                main.log.info("Omitting iteration "+ str(x))
                 assertion = main.FALSE 
             else:
                 add_lat.append(delta) 
-                main.log.info("Add 25 switches latency iteration "+str(i)+": "+str(delta)) 
+                main.log.info("Add 25 switches latency iteration "+str(x)+": "+str(delta)) 
 
             main.step("Remove switches from the controller")
-            for i in range(1,16):
-                main.Mininet1.delete_sw_controller("s"+str(i)) 
-            for i in range(31, 41):
-                main.Mininet1.delete_sw_controller("s"+str(i))
+            for j in range(1,16):
+                main.Mininet1.delete_sw_controller("s"+str(j)) 
+            for k in range(31, 41):
+                main.Mininet1.delete_sw_controller("s"+str(k))
         
             time.sleep(5)
 
@@ -608,13 +639,18 @@ class TopoPerf:
         add_lat_max = str(max(add_lat))
         add_lat_avg = str(sum(add_lat) / len(add_lat))
 
-        if int(add_lat_avg) > 0:
+        if int(add_lat_avg) > 0 and int(add_lat_avg) < 100000:
             assertion = main.TRUE
             os.system(db_script + " --name='25 Switch add' --minimum='"+add_lat_min+
                       "' --maximum='"+add_lat_max+"' --average='"+add_lat_avg+"' " + 
                       "--table='"+table_name+"'")
-  
-        main.log.report("Add 25 switches discovery latency: Min: "+add_lat_min+" ms    Max: "+add_lat_max+" ms    Avg: "+add_lat_avg+" ms")
+   
+            omit_iter = int(numIter) - int(len(add_lat))
+            main.log.report("Iterations omitted/total: "+str(omit_iter)+"/"+str(numIter))
+            main.log.report("Add 25 switches discovery latency: Min: "+add_lat_min+" ms    Max: "+add_lat_max+" ms    Avg: "+add_lat_avg+" ms")
+        else:
+            assertion = main.FALSE
+            main.log.report("add_lat_avg for 25 switches returned unexpected results")
 
         utilities.assert_equals(expect=main.TRUE,actual=assertion,onpass="25 Switch latency test successful!",onfail="25 Switch latency test NOT successful")
 

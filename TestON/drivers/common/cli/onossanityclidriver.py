@@ -1042,9 +1042,10 @@ class onossanityclidriver(CLI):
     def tshark_grep(self, grep, directory):
         '''
         tshark_grep: pass in a string to grep for tshark
-        ex: grep = "OFP" #grep for Open Flow Packet
+        ex: grep = "OFP" grep for Open Flow Packet
         hardcoded to capture on interface eth0 and return epoch timestamp
-        specify directory to save output
+        specify directory and filename to save output
+        ex: directory = "/tmp/tshark_output.txt"
         '''
         self.handle.sendline("")
         self.handle.expect("\$")
@@ -1055,13 +1056,15 @@ class onossanityclidriver(CLI):
         self.handle.sendline("\r")
         self.handle.expect("\$")
 
-    def start_tshark(self,flowtype, numflows):
+    def start_tshark(self, flowtype, numflows, interface="eth0"):
         self.handle.sendline("")
         self.handle.expect("\$")
         self.execute(cmd='''rm /tmp/wireshark*''')
         self.handle.sendline("y")
         self.handle.expect("\$")
-        self.execute(cmd='''tshark -i eth0 -t e | grep --color=auto CSM | grep --color=auto -E 'Flow|Barrier' > /tmp/tdump_'''+flowtype+"_"+str(numflows)+".txt &",prompt="Capturing",timeout=10)
+        self.execute(cmd='''tshark -i '''+interface+
+                ''' -t e | grep --color=auto CSM | grep --color=auto -E 'Flow|Barrier' > /tmp/tdump_'''+
+                flowtype+"_"+str(numflows)+".txt &",prompt="Capturing",timeout=10)
         self.handle.sendline("")
         self.handle.expect("\$")
         main.log.info("TSHARK STARTED!!!")
@@ -1423,4 +1426,5 @@ class onossanityclidriver(CLI):
                             print "NO CHANGES SO FAR\n\n\n"
         return changes
 
-
+    def getCpuUsage(self, instance):
+        print "TODO work on this function" 

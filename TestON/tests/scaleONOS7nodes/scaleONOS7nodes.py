@@ -335,6 +335,9 @@ class scaleONOS7nodes :
         time.sleep(NBsleep_init)
         #time.sleep(60)
         import json
+        nbtpval = 0.0
+        global nbtpavg3n
+        nbtpavg3n = 0.0
         
         open("/home/admin/TestON/tests/scaleONOS7nodes/logs/NBscale3nodesrate1", 'w').close()
         url1 = "http://10.128.10.1:8080/wm/onos/metrics"
@@ -382,11 +385,16 @@ class scaleONOS7nodes :
                     f.write('\n')
                     f.write('\n')
                     f.write('\n')
+                    if j == 3:
+                        nbtpval += float(json_str[j]["meters"][1]['meter']['m1_rate']) 
 
                     f.write("--------------------------------------------------------------------------------- \n") 
                     f.write("--------------------------------------------------------------------------------- \n \n") 
                     time.sleep(NBsleep)
         f.close()
+        print("\n")
+        nbtpavg3n = round(nbtpval)/NBloop
+        print nbtpavg3n
         
         main.ONOS3.handle.expect("\$", timeout=900)
    
@@ -691,6 +699,9 @@ class scaleONOS7nodes :
         NBsleep = int(main.params['NBsleep'])
         NBsleep_init = int(main.params['NBsleep_init'])
         NBloop = int(main.params['NBloop'])
+        nbtpval = 0.0
+        global nbtpavg4n
+        nbtpavg4n = 0.0
 
         main.Mininet4.handle.expect("\$")
         #main.Mininet2.handle.sendline("sudo mn --custom topo-intentTPtest.py --topo mytopo --mac --arp")
@@ -706,7 +717,7 @@ class scaleONOS7nodes :
         main.ONOS3.handle.sendline("cd ~admin/suibin-dev")
         main.ONOS3.handle.expect("\$")
 
-        main.ONOS3.handle.sendline("./loadgen_NB.py -n 3 -u \"10.128.10.1:8080 10.128.10.2:8080 10.128.10.3:8080 10.128.10.4:8080  \" -i " + int_num + " -a " + addrate + " -l " + NBdur + " -p 20")
+        main.ONOS3.handle.sendline("./loadgen_NB.py -n 4 -u \"10.128.10.1:8080 10.128.10.2:8080 10.128.10.3:8080 10.128.10.4:8080  \" -i " + int_num + " -a " + addrate + " -l " + NBdur + " -p 20")
         main.ONOS3.handle.expect("Pause between add and delete:", timeout=900)
 
         
@@ -762,11 +773,16 @@ class scaleONOS7nodes :
                     f.write('\n')
                     f.write('\n')
                     f.write('\n')
+                    if j == 3:
+                        nbtpval += float(json_str[j]["meters"][1]['meter']['m1_rate']) 
 
                     f.write("--------------------------------------------------------------------------------- \n") 
                     f.write("--------------------------------------------------------------------------------- \n \n") 
                     time.sleep(NBsleep)
         f.close()
+        print("\n")
+        nbtpavg4n = round(nbtpval)/NBloop
+        print nbtpavg4n
         
 
         main.ONOS3.handle.expect("\$", timeout=900)
@@ -933,7 +949,7 @@ class scaleONOS7nodes :
 
     def CASE53(self,main):
         
-        main.case("Starting NB Throughput test after scaling up to 4 onos nodes")
+        main.case("Starting NB Throughput test after scaling up to 5 onos nodes")
         ip1 = main.params['CTRL']['ip1']
         ip2 = main.params['CTRL']['ip2']
         ip3 = main.params['CTRL']['ip3']
@@ -947,6 +963,9 @@ class scaleONOS7nodes :
         NBsleep = int(main.params['NBsleep'])
         NBsleep_init = int(main.params['NBsleep_init'])
         NBloop = int(main.params['NBloop'])
+        nbtpval = 0.0
+        global nbtpavg5n
+        nbtpavg5n = 0.0
 
         main.Mininet4.handle.expect("\$")
         #main.Mininet2.handle.sendline("sudo mn --custom topo-intentTPtest.py --topo mytopo --mac --arp")
@@ -962,7 +981,7 @@ class scaleONOS7nodes :
         main.ONOS3.handle.sendline("cd ~admin/suibin-dev")
         main.ONOS3.handle.expect("\$")
 
-        main.ONOS3.handle.sendline("./loadgen_NB.py -n 3 -u \"10.128.10.1:8080 10.128.10.2:8080 10.128.10.3:8080 10.128.10.4:8080 10.128.10.5:8080  \" -i " + int_num + " -a " + addrate + " -l " + NBdur + " -p 20")
+        main.ONOS3.handle.sendline("./loadgen_NB.py -n 5 -u \"10.128.10.1:8080 10.128.10.2:8080 10.128.10.3:8080 10.128.10.4:8080 10.128.10.5:8080  \" -i " + int_num + " -a " + addrate + " -l " + NBdur + " -p 20")
         main.ONOS3.handle.expect("Pause between add and delete:", timeout=900)
 
         
@@ -1021,11 +1040,17 @@ class scaleONOS7nodes :
                     f.write('\n')
                     f.write('\n')
                     f.write('\n')
+                    if j == 3:
+                        nbtpval += float(json_str[j]["meters"][1]['meter']['m1_rate']) 
+
 
                     f.write("--------------------------------------------------------------------------------- \n") 
                     f.write("--------------------------------------------------------------------------------- \n \n") 
                     time.sleep(NBsleep)
         f.close()
+        print("\n")
+        nbtpavg5n = round(nbtpval)/NBloop
+        print nbtpavg5n
         
 
         main.ONOS3.handle.expect("\$", timeout=900)
@@ -1214,6 +1239,9 @@ class scaleONOS7nodes :
         NBsleep = int(main.params['NBsleep'])
         NBsleep_init = int(main.params['NBsleep_init'])
         NBloop = int(main.params['NBloop'])
+        nbtpval = 0.0
+        global nbtpavg6n
+        nbtpavg6n = 0.0
 
         main.Mininet4.handle.expect("\$")
         #main.Mininet2.handle.sendline("sudo mn --custom topo-intentTPtest.py --topo mytopo --mac --arp")
@@ -1229,7 +1257,7 @@ class scaleONOS7nodes :
         main.ONOS3.handle.sendline("cd ~admin/suibin-dev")
         main.ONOS3.handle.expect("\$")
 
-        main.ONOS3.handle.sendline("./loadgen_NB.py -n 3 -u \"10.128.10.1:8080 10.128.10.2:8080 10.128.10.3:8080 10.128.10.4:8080 10.128.10.5:8080 10.128.10.6:8080 \" -i " + int_num + " -a " + addrate + " -l " + NBdur + " -p 20")
+        main.ONOS3.handle.sendline("./loadgen_NB.py -n 6 -u \"10.128.10.1:8080 10.128.10.2:8080 10.128.10.3:8080 10.128.10.4:8080 10.128.10.5:8080 10.128.10.6:8080 \" -i " + int_num + " -a " + addrate + " -l " + NBdur + " -p 20")
         main.ONOS3.handle.expect("Pause between add and delete:", timeout=900)
 
         
@@ -1291,11 +1319,18 @@ class scaleONOS7nodes :
                     f.write('\n')
                     f.write('\n')
                     f.write('\n')
+                    if j == 3:
+                        nbtpval += float(json_str[j]["meters"][1]['meter']['m1_rate']) 
+
 
                     f.write("--------------------------------------------------------------------------------- \n") 
                     f.write("--------------------------------------------------------------------------------- \n \n") 
                     time.sleep(NBsleep)
         f.close()
+        print("\n")
+        nbtpavg6n = round(nbtpval)/NBloop
+        print nbtpavg6n
+        
         
 
         main.ONOS3.handle.expect("\$", timeout=900)
@@ -1494,6 +1529,9 @@ class scaleONOS7nodes :
         NBsleep = int(main.params['NBsleep'])
         NBsleep_init = int(main.params['NBsleep_init'])
         NBloop = int(main.params['NBloop'])
+        nbtpval = 0.0
+        global nbtpavg7n
+        nbtpavg7n = 0.0
 
         main.Mininet4.handle.expect("\$")
         #main.Mininet2.handle.sendline("sudo mn --custom topo-intentTPtest.py --topo mytopo --mac --arp")
@@ -1509,7 +1547,7 @@ class scaleONOS7nodes :
         main.ONOS3.handle.sendline("cd ~admin/suibin-dev")
         main.ONOS3.handle.expect("\$")
 
-        main.ONOS3.handle.sendline("./loadgen_NB.py -n 3 -u \"10.128.10.1:8080 10.128.10.2:8080 10.128.10.3:8080 10.128.10.4:8080 10.128.10.6:8080 10.128.10.5:8080 10.128.10.7:8080  \" -i " + int_num + " -a " + addrate + " -l " + NBdur + " -p 20")
+        main.ONOS3.handle.sendline("./loadgen_NB.py -n 7 -u \"10.128.10.1:8080 10.128.10.2:8080 10.128.10.3:8080 10.128.10.4:8080 10.128.10.6:8080 10.128.10.5:8080 10.128.10.7:8080  \" -i " + int_num + " -a " + addrate + " -l " + NBdur + " -p 20")
         main.ONOS3.handle.expect("Pause between add and delete:", timeout=900)
 
         
@@ -1574,11 +1612,17 @@ class scaleONOS7nodes :
                     f.write('\n')
                     f.write('\n')
                     f.write('\n')
+                    if j == 3:
+                        nbtpval += float(json_str[j]["meters"][1]['meter']['m1_rate']) 
+
 
                     f.write("--------------------------------------------------------------------------------- \n") 
                     f.write("--------------------------------------------------------------------------------- \n \n") 
                     time.sleep(NBsleep)
         f.close()
+        print("\n")
+        nbtpavg7n = round(nbtpval)/NBloop
+        print nbtpavg7n
         
 
         main.ONOS3.handle.expect("\$", timeout=900)
@@ -1712,6 +1756,20 @@ class scaleONOS7nodes :
         db_script = main.params['db_script']
         os.system(db_script + " -n='100SwitchScaleDown" + "' -rate3='" + str(tpavg7n) + "' -rate4='" + str(tpavg6n) + "' -rate5='" + str(tpavg5n) + "' -rate6='" + str(tpavg4n) + "' -rate7='" + str(tpavg3n) + "' -table='onos_scale'")
 
+
+    def CASE105(self,main):
+        import os
+        import time
+        main.case("Posting the results to http://10.128.5.54/scale.html ....")
+        db_script = main.params['db_script']
+        os.system(db_script + " -n='1000IntentsScaleUp" + "' -rate3='" + str(nbtpavg3n) + "' -rate4='" + str(nbtpavg4n) + "' -rate5='" + str(nbtpavg5n) + "' -rate6='" + str(nbtpavg6n) + "' -rate7='" + str(nbtpavg7n) + "' -table='onos_scale'")
+
+    def CASE106(self,main):
+        import os
+        import time
+        main.case("Posting the results to http://10.128.5.54/scale.html ....")
+        db_script = main.params['db_script']
+        os.system(db_script + " -n='1000IntentsScaleDown" + "' -rate3='" + str(nbtpavg7n) + "' -rate4='" + str(nbtpavg6n) + "' -rate5='" + str(nbtpavg5n) + "' -rate6='" + str(nbtpavg4n) + "' -rate7='" + str(nbtpavg3n) + "' -table='onos_scale'")
 
 
 

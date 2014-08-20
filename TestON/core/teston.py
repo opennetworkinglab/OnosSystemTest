@@ -585,7 +585,7 @@ def verifyTestCases(options):
     #Getting Test cases list 
     if options.testcases:
 	testcases_list = options.testcases 
-        sys.exit() 
+        #sys.exit() 
         testcases_list = re.sub("(\[|\])", "", options.testcases)
         main.testcases_list = eval(testcases_list+",")
     else :
@@ -594,13 +594,16 @@ def verifyTestCases(options):
             list1=[]
             if type(temp[0])==list:
 	        for test in temp:
-      	            temp=test
+      	            for testcase in test:
+	                if type(testcase)==int:
+		            testcase=[testcase]
+	                list1.extend(testcase)
 	    else :
 	    	temp=list(temp)
-      	    for testcase in temp:
-	        if type(testcase)==int:
-	            testcase=[testcase]
-	        list1.extend(testcase)
+      	        for testcase in temp:
+	            if type(testcase)==int:
+		        testcase=[testcase]
+	            list1.extend(testcase)
 	    main.testcases_list=list1	                                     
         else :
             print "testcases not specifed in params, please provide in params file or 'testcases' commandline argument"

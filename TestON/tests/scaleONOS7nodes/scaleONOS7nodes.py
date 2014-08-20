@@ -1703,14 +1703,14 @@ class scaleONOS7nodes :
         import time
         main.case("Posting the results to http://10.128.5.54/scale.html ....")
         db_script = main.params['db_script']
-        os.system(db_script + " --name='100SwitchScaleUp" + "' -rate3='" + str(tpavg3n) + "' -rate4='" + str(tpavg4n) + "' -rate5='" + str(tpavg5n) + "' -rate6='" + str(tpavg6n) + "' -rate7='" + str(tpavg7n) + "' -table='onos_scale'")
+        os.system(db_script + " -n='100SwitchScaleUp" + "' -rate3='" + str(tpavg3n) + "' -rate4='" + str(tpavg4n) + "' -rate5='" + str(tpavg5n) + "' -rate6='" + str(tpavg6n) + "' -rate7='" + str(tpavg7n) + "' -table='onos_scale'")
 
     def CASE104(self,main):
         import os
         import time
         main.case("Posting the results to http://10.128.5.54/scale.html ....")
         db_script = main.params['db_script']
-        os.system(db_script + " --name='100SwitchScaleDown" + "' -rate3='" + str(tpavg7n) + "' -rate4='" + str(tpavg6n) + "' -rate5='" + str(tpavg5n) + "' -rate6='" + str(tpavg4n) + "' -rate7='" + str(tpavg3n) + "' -table='onos_scale'")
+        os.system(db_script + " -n='100SwitchScaleDown" + "' -rate3='" + str(tpavg7n) + "' -rate4='" + str(tpavg6n) + "' -rate5='" + str(tpavg5n) + "' -rate6='" + str(tpavg4n) + "' -rate7='" + str(tpavg3n) + "' -table='onos_scale'")
 
 
 

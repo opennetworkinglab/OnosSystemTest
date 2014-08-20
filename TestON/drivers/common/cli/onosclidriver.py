@@ -27,9 +27,12 @@ import json
 import traceback
 import urllib2
 from urllib2 import URLError, HTTPError
+from socket import timeout
 
 sys.path.append("../")
 from drivers.common.clidriver import CLI
+
+URL_TIMEOUT = 10
 
 class OnosCliDriver(CLI):
     
@@ -570,7 +573,7 @@ class OnosCliDriver(CLI):
         url = "http://%s:%s/wm/onos/intent/path/switch/%s/shortest-path/%s"%(ONOSIP,ONOSPort,srcDPID,dstDPID)
         parsed_result = []
         try: 
-            response = urllib2.urlopen(url)
+            response = urllib2.urlopen(url, timeout=URL_TIMEOUT)
             result = response.read()
             response.close()
             if len(result) != 0:
@@ -589,6 +592,12 @@ class OnosCliDriver(CLI):
             print "ERROR:"
             print "  REST GET URL: %s" % url
             print "  URL Error Reason: %s" % exc.reason
+        except timeout as exc:
+            print "ERROR:"
+            print "  REST GET URL: %s" % url
+            print "  URL Error Reason: %s" % exc.message
+            main.log.error("Socket timeout connecting to: %s", url)
+            return main.ERROR
      
         if len(parsed_result)==0:
             return
@@ -618,7 +627,7 @@ class OnosCliDriver(CLI):
         print(url)
         parsed_result = []
         try:
-            response = urllib2.urlopen(url)
+            response = urllib2.urlopen(url, timeout=URL_TIMEOUT)
             result = response.read()
             response.close()
             if len(result) != 0:
@@ -639,6 +648,12 @@ class OnosCliDriver(CLI):
             print "  REST GET URL: %s" % url
             print "  URL Error Reason: %s" % exc.reason
             return str(error_payload['code'])
+        except timeout as exc:
+            print "ERROR:"
+            print "  REST GET URL: %s" % url
+            print "  URL Error Reason: %s" % exc.message
+            main.log.error("Socket timeout connecting to: %s", url)
+            return main.ERROR
         
         if len(parsed_result)==0:
             return
@@ -668,7 +683,7 @@ class OnosCliDriver(CLI):
         try:
             request = urllib2.Request(url)
             request.get_method = lambda: 'DELETE'
-            response = urllib2.urlopen(request)
+            response = urllib2.urlopen(request, timeout=URL_TIMEOUT)
             result = response.read()
             response.close()
             if len(result) != 0:
@@ -690,6 +705,12 @@ class OnosCliDriver(CLI):
             print "ERROR:"
             print "  REST DELETE URL: %s" % url
             print "  URL Error Reason: %s" % exc.reason
+        except timeout as exc:
+            print "ERROR:"
+            print "  REST GET URL: %s" % url
+            print "  URL Error Reason: %s" % exc.message
+            main.log.error("Socket timeout connecting to: %s", url)
+            return main.ERROR
         return main.ERROR
 
 #*********************************************************************
@@ -722,7 +743,7 @@ class OnosCliDriver(CLI):
         try:
             request = urllib2.Request(url,data_json)
             request.add_header("Content-Type", "application/json")
-            response=urllib2.urlopen(request)
+            response=urllib2.urlopen(request, timeout=URL_TIMEOUT)
             result = response.read()
             response.close()
             if len(result) != 0:
@@ -745,6 +766,12 @@ class OnosCliDriver(CLI):
             print "  REST GET URL: %s" % url
             print "  URL Error Reason: %s" % exc.reason
             return "  HTTP Error Reason: %s" % exc.reason
+        except timeout as exc:
+            print "ERROR:"
+            print "  REST GET URL: %s" % url
+            print "  URL Error Reason: %s" % exc.message
+            main.log.error("Socket timeout connecting to: %s", url)
+            return main.ERROR
         return main.ERROR
 
 

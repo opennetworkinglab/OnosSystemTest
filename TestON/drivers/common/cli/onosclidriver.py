@@ -1570,6 +1570,7 @@ class OnosCliDriver(CLI):
             main.cleanup()
             main.exit()
 
+
     def block_peer(self, ip_address):
         '''
         Block traffic to the destination IP address.
@@ -1627,3 +1628,25 @@ class OnosCliDriver(CLI):
             main.log.info(":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
             main.cleanup()
             main.exit()
+
+
+    def unblock_all(self):
+        '''
+        Remove all controller block rules
+        '''
+        try:
+            unblock_cmd = "sudo iptables --flush"
+            response = self.execute(cmd=unblock_cmd,prompt="\$", timeout=10)
+            return main.TRUE
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":     " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name + ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
+            main.log.error( traceback.print_exc() )
+            main.log.info(":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
+            main.cleanup()
+            main.exit()
+        return main.ERROR

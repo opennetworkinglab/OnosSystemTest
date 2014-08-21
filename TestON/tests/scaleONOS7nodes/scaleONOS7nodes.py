@@ -397,16 +397,16 @@ class scaleONOS7nodes :
         print nbtpavg3n
         
         main.ONOS3.handle.expect("\$", timeout=900)
-   
+        time.sleep(180) 
         
     def CASE4(self,main):
         
         main.case("Starting ONOS scale-up to 4 nodes ")
         import time
        # main.RamCloud4.start_serv()
-        main.ONOS5.stop_all()
-        main.ONOS6.stop_all()
-        main.ONOS7.stop_all()
+        main.ONOS5.handle.sendline("./onos.sh core stop")
+        main.ONOS6.handle.sendline("./onos.sh core stop")
+        main.ONOS7.handle.sendline("./onos.sh core stop")
     
             
         main.Zookeeper4.start()
@@ -439,8 +439,8 @@ class scaleONOS7nodes :
         main.case("Starting ONOS scale-up/down to 5 nodes ")
         import time
        # main.RamCloud4.start_serv()
-        main.ONOS6.stop_all()
-        main.ONOS7.stop_all()
+        main.ONOS6.handle.sendline("./onos.sh core stop")
+        main.ONOS7.handle.sendline("./onos.sh core stop")
         #pdata = main.ONOS5.isup()
     
         main.Zookeeper5.start()
@@ -472,7 +472,7 @@ class scaleONOS7nodes :
         main.case("Starting ONOS scale-up/down to 6 nodes ")
         import time
        # main.RamCloud4.start_serv()
-        main.ONOS7.stop_all()
+        main.ONOS7.handle.sendline("./onos.sh core stop")
         #pdata = main.ONOS6.isup()
 
         main.Zookeeper6.start()
@@ -786,7 +786,7 @@ class scaleONOS7nodes :
         
 
         main.ONOS3.handle.expect("\$", timeout=900)
-    
+        time.sleep(120)
     
     def CASE51(self,main):
         main.case("Starting SB test for 5 nodes")
@@ -1054,7 +1054,8 @@ class scaleONOS7nodes :
         
 
         main.ONOS3.handle.expect("\$", timeout=900)
-    
+        time.sleep(120)
+
     def CASE61(self,main):
         main.case("Starting SB test for 5 nodes")
         ip1 = main.params['CTRL']['ip1']
@@ -1626,6 +1627,7 @@ class scaleONOS7nodes :
         
 
         main.ONOS3.handle.expect("\$", timeout=900)
+        time.sleep(120)
 
     def CASE8(self,main):
         import time
@@ -1754,7 +1756,7 @@ class scaleONOS7nodes :
         import time
         main.case("Posting the results to http://10.128.5.54/scale.html ....")
         db_script = main.params['db_script']
-        os.system(db_script + " -n='100SwitchScaleDown" + "' -rate3='" + str(tpavg7n) + "' -rate4='" + str(tpavg6n) + "' -rate5='" + str(tpavg5n) + "' -rate6='" + str(tpavg4n) + "' -rate7='" + str(tpavg3n) + "' -table='onos_scale'")
+        os.system(db_script + " -n='100SwitchScaleDown" + "' -rate3='" + str(tpavg3n) + "' -rate4='" + str(tpavg4n) + "' -rate5='" + str(tpavg5n) + "' -rate6='" + str(tpavg6n) + "' -rate7='" + str(tpavg7n) + "' -table='onos_scale'")
 
 
     def CASE105(self,main):

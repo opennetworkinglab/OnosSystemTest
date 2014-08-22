@@ -748,7 +748,7 @@ class MininetCliDriver(Emulator):
             main.cleanup()
             main.exit()
 
-    def compare_topo(self, onos_list, onos_json):
+    def compare_topo(self, topo, onos_json):
         '''
         compares mn topology with ONOS topology
         onos_list is a list of ONOS controllers, each element of the list should be (handle, name, ip, port)
@@ -777,9 +777,7 @@ class MininetCliDriver(Emulator):
         sys.path.append("~/sts")
         #NOTE: Create this once per Test and pass the TestONTopology object around. It takes too long to create this object.
         #      This will make it easier to use the sts methods for severing links and solve that issue
-        #import sts.entities.base as base
         import json
-        topo = TestONTopology(self, onos_list)
 
         link_results = main.TRUE
         switch_results = main.TRUE

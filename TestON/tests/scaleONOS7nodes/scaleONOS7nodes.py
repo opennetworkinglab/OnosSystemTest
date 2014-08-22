@@ -326,7 +326,7 @@ class scaleONOS7nodes :
         main.Mininet4.handle.sendline("sudo ovs-vsctl set-controller s5 tcp:10.128.10.3:6633")
         main.Mininet4.handle.sendline("sudo ovs-vsctl set-controller s6 tcp:10.128.10.3:6633")
         main.Mininet4.handle.sendline("sudo ovs-vsctl set-controller s7 tcp:10.128.10.3:6633")
-
+        
         main.ONOS3.handle.sendline("cd ~admin/suibin-dev")
         main.ONOS3.handle.expect("\$")
 
@@ -713,7 +713,7 @@ class scaleONOS7nodes :
         main.Mininet4.handle.sendline("sudo ovs-vsctl set-controller s5 tcp:10.128.10.1:6633")
         main.Mininet4.handle.sendline("sudo ovs-vsctl set-controller s6 tcp:10.128.10.2:6633")
         main.Mininet4.handle.sendline("sudo ovs-vsctl set-controller s7 tcp:10.128.10.4:6633")
-
+        
         main.ONOS3.handle.sendline("cd ~admin/suibin-dev")
         main.ONOS3.handle.expect("\$")
 
@@ -786,7 +786,7 @@ class scaleONOS7nodes :
         
 
         main.ONOS3.handle.expect("\$", timeout=900)
-        time.sleep(120)
+        time.sleep(180)
     
     def CASE51(self,main):
         main.case("Starting SB test for 5 nodes")
@@ -977,7 +977,7 @@ class scaleONOS7nodes :
         main.Mininet4.handle.sendline("sudo ovs-vsctl set-controller s5 tcp:10.128.10.5:6633")
         main.Mininet4.handle.sendline("sudo ovs-vsctl set-controller s6 tcp:10.128.10.3:6633")
         main.Mininet4.handle.sendline("sudo ovs-vsctl set-controller s7 tcp:10.128.10.5:6633")
-
+        
         main.ONOS3.handle.sendline("cd ~admin/suibin-dev")
         main.ONOS3.handle.expect("\$")
 
@@ -1054,8 +1054,8 @@ class scaleONOS7nodes :
         
 
         main.ONOS3.handle.expect("\$", timeout=900)
-        time.sleep(120)
-
+        time.sleep(180)
+    
     def CASE61(self,main):
         main.case("Starting SB test for 5 nodes")
         ip1 = main.params['CTRL']['ip1']
@@ -1254,7 +1254,7 @@ class scaleONOS7nodes :
         main.Mininet4.handle.sendline("sudo ovs-vsctl set-controller s5 tcp:10.128.10.5:6633")
         main.Mininet4.handle.sendline("sudo ovs-vsctl set-controller s6 tcp:10.128.10.6:6633")
         main.Mininet4.handle.sendline("sudo ovs-vsctl set-controller s7 tcp:10.128.10.6:6633")
-
+        
         main.ONOS3.handle.sendline("cd ~admin/suibin-dev")
         main.ONOS3.handle.expect("\$")
 
@@ -1335,7 +1335,8 @@ class scaleONOS7nodes :
         
 
         main.ONOS3.handle.expect("\$", timeout=900)
-
+        time.sleep(180)
+    
     def CASE71(self,main):
         main.case("Starting SB test for 7 nodes")
         ip1 = main.params['CTRL']['ip1']
@@ -1544,7 +1545,7 @@ class scaleONOS7nodes :
         main.Mininet4.handle.sendline("sudo ovs-vsctl set-controller s5 tcp:10.128.10.5:6633")
         main.Mininet4.handle.sendline("sudo ovs-vsctl set-controller s6 tcp:10.128.10.6:6633")
         main.Mininet4.handle.sendline("sudo ovs-vsctl set-controller s7 tcp:10.128.10.7:6633")
-
+        
         main.ONOS3.handle.sendline("cd ~admin/suibin-dev")
         main.ONOS3.handle.expect("\$")
 
@@ -1627,8 +1628,8 @@ class scaleONOS7nodes :
         
 
         main.ONOS3.handle.expect("\$", timeout=900)
-        time.sleep(120)
-
+        time.sleep(180)
+    
     def CASE8(self,main):
         import time
         main.case("Scaling ONOS down to 6 ONOS instances")
@@ -1771,7 +1772,7 @@ class scaleONOS7nodes :
         import time
         main.case("Posting the results to http://10.128.5.54/scale.html ....")
         db_script = main.params['db_script']
-        os.system(db_script + " -n='1000IntentsScaleDown" + "' -rate3='" + str(nbtpavg7n) + "' -rate4='" + str(nbtpavg6n) + "' -rate5='" + str(nbtpavg5n) + "' -rate6='" + str(nbtpavg4n) + "' -rate7='" + str(nbtpavg3n) + "' -table='onos_scale'")
+        os.system(db_script + " -n='1000IntentsScaleDown" + "' -rate3='" + str(nbtpavg3n) + "' -rate4='" + str(nbtpavg4n) + "' -rate5='" + str(nbtpavg5n) + "' -rate6='" + str(nbtpavg6n) + "' -rate7='" + str(nbtpavg7n) + "' -table='onos_scale'")
 
 
 

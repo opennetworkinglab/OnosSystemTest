@@ -227,6 +227,7 @@ class scaleONOS7nodes :
         print("\n")
         tpavg3n = round(tpval)/loop
         print tpavg3n
+        main.log.report("Topology Event Throughput for 3-node ONOS cluster = " +str(tpavg3n) + " Events/sec")
         main.Mininet2.handle.expect("\$", timeout=900)
        # main.Mininet2.handle.sendline("sudo mn -c")
         #main.Mininet2.handle.expect("\$")
@@ -398,6 +399,7 @@ class scaleONOS7nodes :
         
         main.ONOS3.handle.expect("\$", timeout=900)
         time.sleep(180) 
+        main.log.report("Intent Throughput for 3-node ONOS cluster = " + str(nbtpavg3n) + " Events/sec")
         
     def CASE4(self,main):
         
@@ -430,7 +432,7 @@ class scaleONOS7nodes :
                 data = main.ONOS1.isup() and main.ONOS2.isup() and main.ONOS3.isup() and main.ONOS4.isup()
             else:
                 break
-        utilities.assert_equals(expect=main.TRUE,actual=data,onpass="ONOS is up and running!",onfail="ONOS didn't start...")
+        utilities.assert_equals(expect=main.TRUE,actual=data,onpass="Scale up successful - 4-node ONOS cluster is up and running!",onfail="ONOS didn't start...")
         
         time.sleep(10)
     
@@ -464,7 +466,7 @@ class scaleONOS7nodes :
                 data = main.ONOS1.isup() and main.ONOS2.isup() and main.ONOS3.isup() and main.ONOS4.isup() and main.ONOS5.isup() 
             else:
                 break
-        utilities.assert_equals(expect=main.TRUE,actual=data,onpass="ONOS is up and running!",onfail="ONOS didn't start...")
+        utilities.assert_equals(expect=main.TRUE,actual=data,onpass="Scale up successful - 5-node ONOS cluster is up and running!",onfail="ONOS didn't start...")
         time.sleep(10)
 
     def CASE6(self,main):
@@ -496,7 +498,7 @@ class scaleONOS7nodes :
                 data = main.ONOS1.isup() and main.ONOS2.isup() and main.ONOS3.isup() and main.ONOS4.isup() and main.ONOS5.isup() and main.ONOS6.isup()
             else:
                 break
-        utilities.assert_equals(expect=main.TRUE,actual=data,onpass="ONOS is up and running!",onfail="ONOS didn't start...")
+        utilities.assert_equals(expect=main.TRUE,actual=data,onpass="Scale up successful - 6-node ONOS cluster is up and running!",onfail="ONOS didn't start...")
         time.sleep(10)
 
     def CASE7(self,main):
@@ -527,7 +529,7 @@ class scaleONOS7nodes :
                 data = main.ONOS1.isup() and main.ONOS2.isup() and main.ONOS3.isup() and main.ONOS4.isup() and main.ONOS5.isup() and main.ONOS6.isup() and main.ONOS7.isup()
             else:
                 break
-        utilities.assert_equals(expect=main.TRUE,actual=data,onpass="ONOS is up and running!",onfail="ONOS didn't start...")
+        utilities.assert_equals(expect=main.TRUE,actual=data,onpass="Scale up successful - 7-node ONOS cluster is up and running!",onfail="ONOS didn't start...")
         time.sleep(10)
 
 
@@ -608,6 +610,7 @@ class scaleONOS7nodes :
         print("\n")
         tpavg4n = round(tpval)/loop
         print tpavg4n
+        main.log.report("Topology Event Throughput for 4-node ONOS cluster = " + str(tpavg4n) + " Events/sec")
         
         #main.Mininet2.handle.expect("\$", timeout=900)
         #main.Mininet2.handle.sendline("sudo mn -c")
@@ -787,6 +790,7 @@ class scaleONOS7nodes :
 
         main.ONOS3.handle.expect("\$", timeout=900)
         time.sleep(180)
+        main.log.report("Intent Throughput for 4-node ONOS cluster = " + str(nbtpavg4n) + " Events/sec")
     
     def CASE51(self,main):
         main.case("Starting SB test for 5 nodes")
@@ -875,6 +879,7 @@ class scaleONOS7nodes :
         time.sleep(5)
         main.Mininet2.handle.expect("\$", timeout=900)
         time.sleep(180)
+        main.log.report("Topology Event Throughput for 5-node ONOS cluster = " + str(tpavg5n) + " Events/sec")
         
 
     def CASE52(self,main):
@@ -1055,6 +1060,7 @@ class scaleONOS7nodes :
 
         main.ONOS3.handle.expect("\$", timeout=900)
         time.sleep(180)
+        main.log.report("Intent Throughput for 5-node ONOS cluster = " + str(nbtpavg5n) + " Events/sec")
     
     def CASE61(self,main):
         main.case("Starting SB test for 5 nodes")
@@ -1148,6 +1154,7 @@ class scaleONOS7nodes :
         time.sleep(5)
         main.Mininet2.handle.expect("\$", timeout=900)
         time.sleep(180)
+        main.log.report("Topology Event Throughput for 6-node ONOS cluster = " + tpavg6n + " Events/sec")
         
 
     def CASE62(self,main):
@@ -1336,6 +1343,7 @@ class scaleONOS7nodes :
 
         main.ONOS3.handle.expect("\$", timeout=900)
         time.sleep(180)
+        main.log.report("Intent Throughput for 6-node ONOS cluster = " + str(nbtpavg6n) + " Events/sec")
     
     def CASE71(self,main):
         main.case("Starting SB test for 7 nodes")
@@ -1433,6 +1441,7 @@ class scaleONOS7nodes :
         time.sleep(5)
         main.Mininet2.handle.expect("\$", timeout=900)
         time.sleep(180)
+        main.log.report("Topology Event Throughput for 7-node ONOS cluster = " + str(tpavg7n) + " Events/sec")
         
 
     def CASE72(self,main):
@@ -1629,6 +1638,7 @@ class scaleONOS7nodes :
 
         main.ONOS3.handle.expect("\$", timeout=900)
         time.sleep(180)
+        main.log.report("Intent Throughput for 7-node ONOS cluster = " + str(nbtpavg7n) + " Events/sec")
     
     def CASE8(self,main):
         import time
@@ -1649,7 +1659,7 @@ class scaleONOS7nodes :
                 data = main.ONOS1.isup() and main.ONOS2.isup() and main.ONOS3.isup() and main.ONOS4.isup() and main.ONOS5.isup() and main.ONOS6.isup()
             else:
                 break
-        utilities.assert_equals(expect=main.TRUE,actual=data,onpass="ONOS is up and running!",onfail="ONOS didn't start...")
+        utilities.assert_equals(expect=main.TRUE,actual=data,onpass="Scale down successfull -6-node ONOS cluster is up and running!",onfail="ONOS didn't start...")
     
     def CASE9(self,main):
 
@@ -1669,7 +1679,7 @@ class scaleONOS7nodes :
                 data = main.ONOS1.isup() and main.ONOS2.isup() and main.ONOS3.isup() and main.ONOS4.isup() and main.ONOS5.isup()
             else:
                 break
-        utilities.assert_equals(expect=main.TRUE,actual=data,onpass="ONOS is up and running!",onfail="ONOS didn't start...")
+        utilities.assert_equals(expect=main.TRUE,actual=data,onpass="Scale down successfull - 5 node ONOS clsuter is up and running!",onfail="ONOS didn't start...")
 
     def CASE10(self,main):
 
@@ -1690,7 +1700,7 @@ class scaleONOS7nodes :
                 data = main.ONOS1.isup() and main.ONOS2.isup() and main.ONOS3.isup() and main.ONOS4.isup()
             else:
                 break
-        utilities.assert_equals(expect=main.TRUE,actual=data,onpass="ONOS is up and running!",onfail="ONOS didn't start...")
+        utilities.assert_equals(expect=main.TRUE,actual=data,onpass="Scale down successful - 4 node ONOS cluster is up and running!",onfail="ONOS didn't start...")
 
     def CASE11(self,main):
 
@@ -1710,7 +1720,7 @@ class scaleONOS7nodes :
                 data = main.ONOS1.isup() and main.ONOS2.isup() and main.ONOS3.isup()
             else:
                 break
-        utilities.assert_equals(expect=main.TRUE,actual=data,onpass="ONOS is up and running!",onfail="ONOS didn't start...")
+        utilities.assert_equals(expect=main.TRUE,actual=data,onpass="Scale down successful - 3 node ONOS cluster is up and running!",onfail="ONOS didn't start...")
 
     def CASE100(self,main):
         import os

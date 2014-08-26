@@ -1039,20 +1039,21 @@ class onossanityclidriver(CLI):
         main.log.info("tshark_of started")
         return main.TRUE
 
-    def tshark_grep(self, grep, directory):
+    def tshark_grep(self, grep, directory, interface='eth0'):
         '''
         tshark_grep: pass in a string to grep for tshark
         ex: grep = "OFP" grep for Open Flow Packet
-        hardcoded to capture on interface eth0 and return epoch timestamp
+        hardcoded to return epoch timestamp
         specify directory and filename to save output
         ex: directory = "/tmp/tshark_output.txt"
+        optionally specify interface. default = eth0
         '''
         self.handle.sendline("")
         self.handle.expect("\$")
         self.handle.sendline("\r")
-        self.handle.sendline("tshark -i eth0 -t e | grep \""+str(grep)+"\" > "+directory+" &")
+        self.handle.sendline("tshark -i "+str(interface)+" -t e | grep \""+str(grep)+"\" > "+directory+" &")
         self.handle.sendline("\r")
-        self.handle.expect("Capturing on eth0")
+        self.handle.expect("Capturing on "+str(interface))
         self.handle.sendline("\r")
         self.handle.expect("\$")
 

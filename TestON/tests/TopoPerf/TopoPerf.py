@@ -9,10 +9,17 @@
 #   If an iteration is omitted, it means unexpected results were found (such as negative
 #   delta of timestamps or delta that is too large) 
 #   Each valid iteration is saved to a list 
+#
+
+#***********
+#Google doc power point for overview:
+#https://docs.google.com/a/onlab.us/presentation/d/1rnSDpAOm0IHv__U3PlwJiJuio3oYFWY7A17ZlWi5oTM/edit?usp=sharing
+#***********
 
 class TopoPerf:
     def __init__(self) :
         self.default = ''
+
 #**********************
 #CASE1
 #Test startup
@@ -30,11 +37,12 @@ class TopoPerf:
         main.Zookeeper1.start()
         main.Zookeeper2.start()
         main.Zookeeper3.start()
-        main.step("Delete RC db")
-        time.sleep(5)
-        main.RamCloud1.del_db()
-        main.RamCloud2.del_db()
-        main.RamCloud3.del_db()
+        #NOTE: I am currently using hazelcast. No need for deldb
+        #main.step("Delete RC db")
+        #time.sleep(5)
+        #main.RamCloud1.del_db()
+        #main.RamCloud2.del_db()
+        #main.RamCloud3.del_db()
         main.step("Start ONOS")
         main.ONOS1.start()
         main.ONOS2.start()
@@ -52,9 +60,11 @@ class TopoPerf:
         main.log.report("Startup check Zookeeper1, RamCloud1, and ONOS1 connections")
         main.step("Testing startup Zookeeper")   
         data =  main.Zookeeper1.isup()
-        utilities.assert_equals(expect=main.TRUE,actual=data,onpass="Zookeeper is up!",onfail="Zookeeper is down...")
+        utilities.assert_equals(expect=main.TRUE,actual=data,
+                onpass="Zookeeper is up!",onfail="Zookeeper is down...")
         main.step("Testing startup RamCloud")   
-        data = main.RamCloud1.status_serv() and main.RamCloud2.status_serv() and main.RamCloud3.status_serv() 
+        data = main.RamCloud1.status_serv() and main.RamCloud2.status_serv() \
+                and main.RamCloud3.status_serv() 
         if data == main.FALSE:
             main.RamCloud1.stop_coor()
             main.RamCloud1.stop_serv()
@@ -67,9 +77,11 @@ class TopoPerf:
             main.RamCloud2.start_serv()
             main.RamCloud3.start_serv()
             time.sleep(10)
-            data = main.RamCloud1.status_serv() and main.RamCloud2.status_serv() and main.RamCloud3.status_serv()
+            data = main.RamCloud1.status_serv() and main.RamCloud2.status_serv()\
+                    and main.RamCloud3.status_serv()
             
-        utilities.assert_equals(expect=main.TRUE,actual=data,onpass="RamCloud is up!",onfail="RamCloud is down...")
+        utilities.assert_equals(expect=main.TRUE,actual=data,
+                onpass="RamCloud is up!",onfail="RamCloud is down...")
 
         time.sleep(20)
 
@@ -111,15 +123,16 @@ class TopoPerf:
             time.sleep(10) 
 
             #NOTE: We need to assign the switch in a specific way for perf measurements
-            main.step("Assign controller s1 and get timestamp")
+            main.step("Assign s1 to controller and get timestamp")
             main.Mininet1.assign_sw_controller(sw="1",ip1=ctrl_1,port1=port_1)        
             time.sleep(10)
             main.ONOS1.stop_tshark()
 
+            #NOTE: tshark output is saved in ONOS. Use subprocess to read file into TestON for parsing
             ssh = subprocess.Popen(['ssh', 'admin@'+ctrl_1, 'cat', tshark_output],stdout=subprocess.PIPE)
             text = ssh.stdout.readline()
             obj = text.split(" ")
-            print text
+            main.log.info("Object read in: "+str(text))
             if len(text) > 0:
                 timestamp = int(float(obj[0])*1000)
                 topo_ms_begin = timestamp
@@ -153,6 +166,7 @@ class TopoPerf:
             time.sleep(5)
 
             #NOTE: edit threshold as needed to fail test case
+            #If outside threshold, delta is not saved to list.
             if delta < 0 or delta > 100000:
                 main.log.info("Delta of switch add timestamp returned unexpected results")
                 main.log.info("Value returned: " + str(delta))
@@ -171,18 +185,26 @@ class TopoPerf:
             os.system(db_script + " --name='1 switch add' --minimum='"+topo_lat_min+
                       "' --maximum='"+topo_lat_max+"' --average='"+topo_lat_avg+"' " + 
                       "--table='"+table_name+"'")
- 
+
+            #Calculate number of iterations that were omitted
             omit_num = int(numIter) - int(len(topo_lat)) 
             main.log.report("Iterations omitted/total: "+ str(omit_num) +"/"+ str(numIter))
-            main.log.report("One switch add latency: Min: "+topo_lat_min+" ms    Max: "+topo_lat_max+" ms    Avg: "+topo_lat_avg+" ms")
+            main.log.report("One switch add latency: Min: "+topo_lat_min+
+                    " ms    Max: "+topo_lat_max+" ms    Avg: "+topo_lat_avg+" ms")
         else:
             assertion = main.FALSE
  
-        utilities.assert_equals(expect=main.TRUE,actual=assertion,onpass="Switch latency test successful!",onfail="Switch latency test NOT successful")
+        utilities.assert_equals(expect=main.TRUE,actual=assertion,
+                onpass="Switch latency test successful!",onfail="Switch latency test NOT successful")
+
 #***************************************** 
 #CASE3
 #latency to enable or disable a port on switch 
-# 
+#NOTE: Port enable / disable is simulated by 
+#      ifconfig eth0 up / down
+#      As of the date of development of this case,
+#      port enable / disable is treated the same as
+#      port add / remove
 #***************************************** 
     def CASE3(self, main):
         import requests
@@ -269,7 +291,9 @@ class TopoPerf:
  
             ssh_up = subprocess.Popen(['ssh', 'admin@'+ctrl_1, 'cat', tshark_output_up], stdout=subprocess.PIPE)
             text1 = ssh_up.stdout.readline()
-            #read second line 
+            #read second line. Port up status will produce two port status packets.
+            #the last port status packet indicates that the port is usable. 
+            #Hence why we take the second line as a timestamp.
             text_up = ssh_up.stdout.readline()
             obj_up = text_up.split(" ")
             obj_up1 = text1.split(" ")
@@ -317,12 +341,17 @@ class TopoPerf:
 
         omit_num_up = int(numIter) - int(len(port_up_lat))
         omit_num_down = int(numIter) - int(len(port_down_lat))
-        main.log.report("Iterations omitted/total for Port Up Latency: "+ str(omit_num_up) +"/"+ str(numIter))
-        main.log.report("Iterations omitted/total for Port Down Latency: "+ str(omit_num_down) + "/" + str(numIter))
-        main.log.report("Port up latency: Min: "+port_up_lat_min+" ms    Max: "+port_up_lat_max+" ms    Avg: "+port_up_lat_avg+" ms")
-        main.log.report("Port down latency: Min: "+port_down_lat_min+" ms    Max: "+port_down_lat_max+" ms Avg: "+port_down_lat_avg+" ms")
+        main.log.report("Iterations omitted/total for Port Up Latency: "+
+                str(omit_num_up) +"/"+ str(numIter))
+        main.log.report("Iterations omitted/total for Port Down Latency: "+
+                str(omit_num_down) + "/" + str(numIter))
+        main.log.report("Port up latency: Min: "+port_up_lat_min+" ms    Max: "+
+                port_up_lat_max+" ms    Avg: "+port_up_lat_avg+" ms")
+        main.log.report("Port down latency: Min: "+port_down_lat_min+" ms    Max: "+
+                port_down_lat_max+" ms Avg: "+port_down_lat_avg+" ms")
  
-        utilities.assert_equals(expect=main.TRUE,actual=assertion,onpass="Port latency test successful!",onfail="Port latency test NOT successful")
+        utilities.assert_equals(expect=main.TRUE,actual=assertion,
+                onpass="Port latency test successful!",onfail="Port latency test NOT successful")
 
 #***************************************
 #CASE4
@@ -385,9 +414,12 @@ class TopoPerf:
             main.step("Initial timestamp (system time via time.time()) for link disabled")
             timestamp_link_begin = time.time() * 1000 
             main.Mininet1.handle.sendline("sh tc qdisc add dev s1-eth2 root netem loss 100%")
-            #main.Mininet2.handle.sendline("sudo tc qdisc add dev s1-eth2 root netem loss 100")
             #The above line sends a shell command tc qdisc which is part of the linux kernel's method of
             #traffic control. network emulator (netem) can then be added on to simulate link loss rate
+            
+            #The below line has the same functionality as the one above so it may be obsolete. 
+            #However, you may want to try it in case the line above does not work as expected. 
+            #main.Mininet2.handle.sendline("sudo tc qdisc add dev s1-eth2 root netem loss 100")
          
             #this step call came after the actual event to reduce latency gap between the 
             #Timestamp and link cut
@@ -427,14 +459,19 @@ class TopoPerf:
                 for j in range(0, list_len):
                     s1 = json_topo[j]['src']['dpid']
                     s3 = json_topo[j]['dst']['dpid']
+                    #As long as there is a dpid match in s1->s3, we have a link
                     if s1 == switch1_mac and s3 == switch3_mac:
                         link_cut_detected = False
                 if timestamp_diff:
+                    #timestamp_diff is not the most significant change to detect, but it is the 
+                    #first category to check that indicates topology has changed (link is cut) 
                     main.log.info("Timestamp difference in REST call detected")
                     if link_cut_detected:
                         main.log.info("Link cut detected between s1 -> s3")
                         break
                 if link_cut_detected:
+                    #Only link cut is detected. Again, not an error, but may indicate some lack of 
+                    #Code sanity in the loop. 
                     main.log.info("Link cut detected between s1 -> s3 but no timestamp diff")
                     main.log.info("This is most likely due to link cut detected before the second REST call")       
                     break               
@@ -457,7 +494,9 @@ class TopoPerf:
             #Enable link and get timestamp
             main.step("Initial timestamp (system time via time.time()) for link enabled")
             timestamp_link_enable_t0 = time.time() * 1000
-            #Remove previous 100% packet loss on an interface
+            #NOTE: Remove previous 100% packet loss on an interface
+            #Note the different method used for tc qdisc. We do not set the loss rate back down to 0.
+            #This will not work as expected. Instead we must remove all rules set by qdisc previously
             main.Mininet1.handle.sendline("sh tc qdisc del dev s1-eth2 root")
             #main.Mininet2.handle.sendline("sudo tc qdisc del dev s1-eth2 root")
             main.step("Enabling link on s1")

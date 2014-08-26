@@ -9,7 +9,7 @@
     <TOPO>
         <url_topo>http://10.128.5.51:8080/wm/onos/metrics?ids=Topology.EventNotification.LastEventTimestamp.EpochMs</url_topo>
         <url_links>http://10.128.5.51:8080/wm/onos/topology/links</url_links>
-        <numIter>10</numIter>
+        <numIter>50</numIter>
         <hostIP>10.128.5.54</hostIP>
         <databaseScript>~/TestON/scripts/./perfdatagraph.py</databaseScript>
         <tableName>onos_perf</tableName>

@@ -1,5 +1,5 @@
 <PARAMS>
-    <testcases>1,31,4,41,5,51,6,61,7,71,103,100,8,61,9,51,10,41,11,31,104,101</testcases>
+    <testcases>1,31,33,4,41,43,5,51,53,6,61,63,7,71,73,103,105,8,61,63,9,51,53,10,41,43,11,31,33,104,106</testcases>
     <tcpdump> 
         <intf>eth0</intf>
         <port>port 6633</port>
@@ -75,11 +75,11 @@
     <loop>10</loop>
     <port>10</port>
     <sleep_init>160</sleep_init>
-    <int_num>1000</int_num>
-    <addrate>1000</addrate>
-    <NBdur>60</NBdur>
-    <NBsleep>10</NBsleep>
-    <NBloop>6</NBloop>
-    <NBsleep_init>10</NBsleep_init>
+    <int_num>300</int_num>
+    <addrate>1</addrate>
+    <NBdur>90</NBdur>
+    <NBsleep>5</NBsleep>
+    <NBloop>7</NBloop>
+    <NBsleep_init>50</NBsleep_init>
     <db_script>/home/admin/TestON/scripts/./scaleoutdatagraph.py</db_script>
 </PARAMS>      

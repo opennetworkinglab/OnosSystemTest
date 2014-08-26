@@ -13,6 +13,7 @@ class scaleONOS7nodes :
 #Tests the startup of Zookeeper1, RamCloud1, and ONOS1 to be certain that all started up successfully
     def CASE1(self,main) :  #Check to be sure ZK, Cass, and ONOS are up, then get ONOS version
         main.case("Initial setup")
+        main.log.report("Starting 3-node ONOS cluster.")
         main.step("Stop ONOS")
         import time
         main.log.info("Stopping all ONOS nodes...")
@@ -153,6 +154,7 @@ class scaleONOS7nodes :
 
 
     def CASE31(self,main):
+        main.log.report("SB Throughput test: loading ONOS cluster with 740 Topo Events/s")
         main.case("Staring SB load with 3 ONOS nodes")
         ip1 = main.params['CTRL']['ip1']
         ip2 = main.params['CTRL']['ip2']
@@ -304,7 +306,6 @@ class scaleONOS7nodes :
 
     def CASE33(self,main):
         
-        main.case("Starting NB Throughput test")
         ip1 = main.params['CTRL']['ip1']
         ip2 = main.params['CTRL']['ip2']
         ip3 = main.params['CTRL']['ip3']
@@ -317,6 +318,7 @@ class scaleONOS7nodes :
         NBsleep_init = int(main.params['NBsleep_init'])
         NBloop = int(main.params['NBloop'])
         
+        main.log.report("Starting NB Throughput test: loading 3-node ONOS cluster with " + int_num + " Intents/s" )
         main.Mininet4.handle.expect("\$")
         #main.Mininet2.handle.sendline("sudo mn --custom topo-intentTPtest.py --topo mytopo --mac --arp")
         #main.Mininet2.handle.expect("mininet>" , timeout=400)
@@ -386,23 +388,23 @@ class scaleONOS7nodes :
                     f.write('\n')
                     f.write('\n')
                     f.write('\n')
-                    if j == 3:
-                        nbtpval += float(json_str[j]["meters"][1]['meter']['m1_rate']) 
+                    nbtpval += float(json_str[j]["meters"][1]['meter']['m1_rate']) 
 
                     f.write("--------------------------------------------------------------------------------- \n") 
                     f.write("--------------------------------------------------------------------------------- \n \n") 
                     time.sleep(NBsleep)
         f.close()
         print("\n")
-        nbtpavg3n = round(nbtpval)/NBloop
+        nbtpavg3n = round(round(nbtpval)/NBloop,2)
         print nbtpavg3n
         
         main.ONOS3.handle.expect("\$", timeout=900)
-        time.sleep(180) 
-        main.log.report("Intent Throughput for 3-node ONOS cluster = " + str(nbtpavg3n) + " Events/sec")
+        #time.sleep(180) 
+        main.log.report("Intent Throughput for 3-node ONOS cluster = " + str(nbtpavg3n) + " Intents/sec")
         
     def CASE4(self,main):
         
+        main.log.report("Scale-up ONOS to 4-nodes ")
         main.case("Starting ONOS scale-up to 4 nodes ")
         import time
        # main.RamCloud4.start_serv()
@@ -437,7 +439,7 @@ class scaleONOS7nodes :
         time.sleep(10)
     
     def CASE5(self,main):
-        
+        main.log.report("Scale-up ONOS to 5-nodes")
         main.case("Starting ONOS scale-up/down to 5 nodes ")
         import time
        # main.RamCloud4.start_serv()
@@ -470,7 +472,7 @@ class scaleONOS7nodes :
         time.sleep(10)
 
     def CASE6(self,main):
-        
+        main.log.report("Scale-up ONOS to 6-nodes")
         main.case("Starting ONOS scale-up/down to 6 nodes ")
         import time
        # main.RamCloud4.start_serv()
@@ -502,7 +504,7 @@ class scaleONOS7nodes :
         time.sleep(10)
 
     def CASE7(self,main):
-        
+        main.log.report("Scale-up ONOS to 7-nodes")
         main.case("Starting ONOS scale-up/down to 7 nodes ")
         import time
        # main.RamCloud4.start_serv()
@@ -536,6 +538,7 @@ class scaleONOS7nodes :
 
     def CASE41(self,main):
         main.case("Starting SB test for 4 nodes")
+        main.log.report("SB Throughput test: loading 4-node ONOS cluster with 740 Topo Events/s")
         ip1 = main.params['CTRL']['ip1']
         ip2 = main.params['CTRL']['ip2']
         ip3 = main.params['CTRL']['ip3']
@@ -703,6 +706,7 @@ class scaleONOS7nodes :
         NBsleep_init = int(main.params['NBsleep_init'])
         NBloop = int(main.params['NBloop'])
         nbtpval = 0.0
+        main.log.report("Starting NB Throughput test: loading 4-node ONOS cluster with " + int_num + " Intents/s" )
         global nbtpavg4n
         nbtpavg4n = 0.0
 
@@ -776,24 +780,25 @@ class scaleONOS7nodes :
                     f.write('\n')
                     f.write('\n')
                     f.write('\n')
-                    if j == 3:
-                        nbtpval += float(json_str[j]["meters"][1]['meter']['m1_rate']) 
+                    
+                    nbtpval += float(json_str[j]["meters"][1]['meter']['m1_rate']) 
 
                     f.write("--------------------------------------------------------------------------------- \n") 
                     f.write("--------------------------------------------------------------------------------- \n \n") 
                     time.sleep(NBsleep)
         f.close()
         print("\n")
-        nbtpavg4n = round(nbtpval)/NBloop
+        nbtpavg4n = round(round(nbtpval)/NBloop,2)
         print nbtpavg4n
         
 
         main.ONOS3.handle.expect("\$", timeout=900)
         time.sleep(180)
-        main.log.report("Intent Throughput for 4-node ONOS cluster = " + str(nbtpavg4n) + " Events/sec")
+        main.log.report("Intent Throughput for 4-node ONOS cluster = " + str(nbtpavg4n) + " Intents/sec")
     
     def CASE51(self,main):
         main.case("Starting SB test for 5 nodes")
+        main.log.report("SB Throughput test: loading 5-node ONOS cluster with 740 Topo Events/s")
         ip1 = main.params['CTRL']['ip1']
         ip2 = main.params['CTRL']['ip2']
         ip3 = main.params['CTRL']['ip3']
@@ -969,6 +974,7 @@ class scaleONOS7nodes :
         NBsleep_init = int(main.params['NBsleep_init'])
         NBloop = int(main.params['NBloop'])
         nbtpval = 0.0
+        main.log.report("Starting NB Throughput test: loading 5-node ONOS cluster with " + int_num + " Intents/s" )
         global nbtpavg5n
         nbtpavg5n = 0.0
 
@@ -1045,8 +1051,8 @@ class scaleONOS7nodes :
                     f.write('\n')
                     f.write('\n')
                     f.write('\n')
-                    if j == 3:
-                        nbtpval += float(json_str[j]["meters"][1]['meter']['m1_rate']) 
+                    
+                    nbtpval += float(json_str[j]["meters"][1]['meter']['m1_rate']) 
 
 
                     f.write("--------------------------------------------------------------------------------- \n") 
@@ -1054,17 +1060,18 @@ class scaleONOS7nodes :
                     time.sleep(NBsleep)
         f.close()
         print("\n")
-        nbtpavg5n = round(nbtpval)/NBloop
+        nbtpavg5n = round(round(nbtpval)/NBloop,2)
         print nbtpavg5n
         
 
         main.ONOS3.handle.expect("\$", timeout=900)
         time.sleep(180)
-        main.log.report("Intent Throughput for 5-node ONOS cluster = " + str(nbtpavg5n) + " Events/sec")
+        main.log.report("Intent Throughput for 5-node ONOS cluster = " + str(nbtpavg5n) + " Intents/sec")
     
     def CASE61(self,main):
         main.case("Starting SB test for 5 nodes")
         ip1 = main.params['CTRL']['ip1']
+        main.log.report("SB Throughput test: loading 6-node ONOS cluster with 740 Topo Events/s")
         ip2 = main.params['CTRL']['ip2']
         ip3 = main.params['CTRL']['ip3']
         ip4 = main.params['CTRL']['ip4']
@@ -1154,7 +1161,7 @@ class scaleONOS7nodes :
         time.sleep(5)
         main.Mininet2.handle.expect("\$", timeout=900)
         time.sleep(180)
-        main.log.report("Topology Event Throughput for 6-node ONOS cluster = " + tpavg6n + " Events/sec")
+        main.log.report("Topology Event Throughput for 6-node ONOS cluster = " + str(tpavg6n) + " Events/sec")
         
 
     def CASE62(self,main):
@@ -1248,6 +1255,7 @@ class scaleONOS7nodes :
         NBsleep_init = int(main.params['NBsleep_init'])
         NBloop = int(main.params['NBloop'])
         nbtpval = 0.0
+        main.log.report("Starting NB Throughput test: loading 6-node ONOS cluster with " + int_num + " Intents/s" )
         global nbtpavg6n
         nbtpavg6n = 0.0
 
@@ -1327,8 +1335,8 @@ class scaleONOS7nodes :
                     f.write('\n')
                     f.write('\n')
                     f.write('\n')
-                    if j == 3:
-                        nbtpval += float(json_str[j]["meters"][1]['meter']['m1_rate']) 
+                    
+                    nbtpval += float(json_str[j]["meters"][1]['meter']['m1_rate']) 
 
 
                     f.write("--------------------------------------------------------------------------------- \n") 
@@ -1336,17 +1344,18 @@ class scaleONOS7nodes :
                     time.sleep(NBsleep)
         f.close()
         print("\n")
-        nbtpavg6n = round(nbtpval)/NBloop
+        nbtpavg6n = round(round(nbtpval)/NBloop,2)
         print nbtpavg6n
         
         
 
         main.ONOS3.handle.expect("\$", timeout=900)
         time.sleep(180)
-        main.log.report("Intent Throughput for 6-node ONOS cluster = " + str(nbtpavg6n) + " Events/sec")
+        main.log.report("Intent Throughput for 6-node ONOS cluster = " + str(nbtpavg6n) + " Intents/sec")
     
     def CASE71(self,main):
         main.case("Starting SB test for 7 nodes")
+        main.log.report("SB Throughput test: loading 7-node ONOS cluster with 740 Topo Events/s")
         ip1 = main.params['CTRL']['ip1']
         ip2 = main.params['CTRL']['ip2']
         ip3 = main.params['CTRL']['ip3']
@@ -1540,6 +1549,7 @@ class scaleONOS7nodes :
         NBsleep = int(main.params['NBsleep'])
         NBsleep_init = int(main.params['NBsleep_init'])
         NBloop = int(main.params['NBloop'])
+        main.log.report("Starting NB Throughput test: loading 7-node ONOS cluster with " + int_num + " Intents/s" )
         nbtpval = 0.0
         global nbtpavg7n
         nbtpavg7n = 0.0
@@ -1623,8 +1633,8 @@ class scaleONOS7nodes :
                     f.write('\n')
                     f.write('\n')
                     f.write('\n')
-                    if j == 3:
-                        nbtpval += float(json_str[j]["meters"][1]['meter']['m1_rate']) 
+                    
+                    nbtpval += float(json_str[j]["meters"][1]['meter']['m1_rate']) 
 
 
                     f.write("--------------------------------------------------------------------------------- \n") 
@@ -1632,17 +1642,17 @@ class scaleONOS7nodes :
                     time.sleep(NBsleep)
         f.close()
         print("\n")
-        nbtpavg7n = round(nbtpval)/NBloop
+        nbtpavg7n = round(round(nbtpval)/NBloop,2)
         print nbtpavg7n
         
 
         main.ONOS3.handle.expect("\$", timeout=900)
         time.sleep(180)
-        main.log.report("Intent Throughput for 7-node ONOS cluster = " + str(nbtpavg7n) + " Events/sec")
+        main.log.report("Intent Throughput for 7-node ONOS cluster = " + str(nbtpavg7n) + " Intents/sec")
     
     def CASE8(self,main):
         import time
-        main.case("Scaling ONOS down to 6 ONOS instances")
+        main.log.report("Scaling ONOS down to 6 ONOS instances")
         main.ONOS7.handle.sendline("./onos.sh core stop")
         time.sleep(8)
         pdata = main.ONOS7.isup()
@@ -1663,7 +1673,7 @@ class scaleONOS7nodes :
     
     def CASE9(self,main):
 
-        main.case("Scaling ONOS down to 5 ONOS instances")
+        main.log.report("Scaling ONOS down to 5 ONOS instances")
         main.ONOS6.handle.sendline("./onos.sh core stop")
         time.sleep(8)
         pdata = main.ONOS6.isup() and main.ONOS7.isup()
@@ -1683,7 +1693,7 @@ class scaleONOS7nodes :
 
     def CASE10(self,main):
 
-        main.case("Scaling ONOS down to 4 ONOS instances")
+        main.log.report("Scaling ONOS down to 4 ONOS instances")
         
         main.ONOS5.handle.sendline("./onos.sh core stop ")
         time.sleep(5)
@@ -1704,7 +1714,7 @@ class scaleONOS7nodes :
 
     def CASE11(self,main):
 
-        main.case("Scaling ONOS down to 3 ONOS instances")
+        main.log.report("Scaling ONOS down to 3 ONOS instances")
         main.ONOS4.handle.sendline("./onos.sh core stop ")
         time.sleep(5)
         pdata = main.ONOS4.isup() and main.ONOS5.isup() and  main.ONOS6.isup() and main.ONOS7.isup()
@@ -1758,31 +1768,36 @@ class scaleONOS7nodes :
     def CASE103(self,main):
         import os
         import time
-        main.case("Posting the results to http://10.128.5.54/scale.html ....")
+        main.log.report("Posting the results to http://10.128.5.54/scale.html")
         db_script = main.params['db_script']
         os.system(db_script + " -n='100SwitchScaleUp" + "' -rate3='" + str(tpavg3n) + "' -rate4='" + str(tpavg4n) + "' -rate5='" + str(tpavg5n) + "' -rate6='" + str(tpavg6n) + "' -rate7='" + str(tpavg7n) + "' -table='onos_scale'")
-
+        main.log.report("The graphical view of the tests can be viewed at http://10.128.5.54/scale.html")
+    
     def CASE104(self,main):
         import os
         import time
-        main.case("Posting the results to http://10.128.5.54/scale.html ....")
+        main.log.report("Posting the results to http://10.128.5.54/scale.html ....")
         db_script = main.params['db_script']
         os.system(db_script + " -n='100SwitchScaleDown" + "' -rate3='" + str(tpavg3n) + "' -rate4='" + str(tpavg4n) + "' -rate5='" + str(tpavg5n) + "' -rate6='" + str(tpavg6n) + "' -rate7='" + str(tpavg7n) + "' -table='onos_scale'")
 
+        main.log.report("The graphical view of the tests can be viewed at http://10.128.5.54/scale.html")
 
     def CASE105(self,main):
         import os
         import time
-        main.case("Posting the results to http://10.128.5.54/scale.html ....")
+        main.log.report("Posting the results to http://10.128.5.54/scale.html ....")
         db_script = main.params['db_script']
         os.system(db_script + " -n='1000IntentsScaleUp" + "' -rate3='" + str(nbtpavg3n) + "' -rate4='" + str(nbtpavg4n) + "' -rate5='" + str(nbtpavg5n) + "' -rate6='" + str(nbtpavg6n) + "' -rate7='" + str(nbtpavg7n) + "' -table='onos_scale'")
+
+        main.log.report("The graphical view of the tests can be viewed at http://10.128.5.54/scale.html")
 
     def CASE106(self,main):
         import os
         import time
-        main.case("Posting the results to http://10.128.5.54/scale.html ....")
+        main.log.report("Posting the results to http://10.128.5.54/scale.html ....")
         db_script = main.params['db_script']
         os.system(db_script + " -n='1000IntentsScaleDown" + "' -rate3='" + str(nbtpavg3n) + "' -rate4='" + str(nbtpavg4n) + "' -rate5='" + str(nbtpavg5n) + "' -rate6='" + str(nbtpavg6n) + "' -rate7='" + str(nbtpavg7n) + "' -table='onos_scale'")
 
+        main.log.report("The graphical view of the tests can be viewed at http://10.128.5.54/scale.html")
 
 

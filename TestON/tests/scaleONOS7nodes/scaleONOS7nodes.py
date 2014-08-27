@@ -333,7 +333,7 @@ class scaleONOS7nodes :
         main.ONOS3.handle.sendline("cd ~admin/suibin-dev")
         main.ONOS3.handle.expect("\$")
 
-        main.ONOS1.handle.sendline("./loadgen_NB.py -n 3 -u \"10.128.10.1:8080 10.128.10.2:8080 10.128.10.3:8080 \" -i " + int_num + " -a " + addrate + " -l " + NBdur + " -p 20")
+        main.ONOS3.handle.sendline("./loadgen_NB.py -n 3 -u \"10.128.10.1:8080 10.128.10.2:8080 10.128.10.3:8080 \" -i " + int_num + " -a " + addrate + " -l " + NBdur + " -p 20")
         main.ONOS3.handle.expect("Pause between add and delete:", timeout=900)
         time.sleep(NBsleep_init)
         #time.sleep(60)

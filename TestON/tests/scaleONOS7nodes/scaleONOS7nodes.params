@@ -1,5 +1,5 @@
 <PARAMS>
-    <testcases>1,2</testcases>
+    <testcases>1,31,33,4,41,43,5,51,53,6,61,63,7,71,73,103,105,8,61,63,9,51,53,10,41,43,11,31,33,104,106</testcases>
     <tcpdump> 
         <intf>eth0</intf>
         <port>port 6633</port>
@@ -68,11 +68,18 @@
 	<restPort>8080</restPort>
 	<restURL>/wm/onos/topology/hosts</restURL>
     </RESTCALL>
-    <switches_num>50</switches_num>
-    <RATE1>30</RATE1>
-    <RATE2>50</RATE2>
-    <RUN_DUR>600</RUN_DUR>
-    <sleep_t>32</sleep_t>
-    <loop>22</loop>
+    <switches_num>30</switches_num>
+    <RATE1>100</RATE1>
+    <RUN_DUR>240</RUN_DUR>
+    <sleep_t>8</sleep_t>
+    <loop>10</loop>
     <port>10</port>
+    <sleep_init>160</sleep_init>
+    <int_num>300</int_num>
+    <addrate>1</addrate>
+    <NBdur>90</NBdur>
+    <NBsleep>5</NBsleep>
+    <NBloop>7</NBloop>
+    <NBsleep_init>50</NBsleep_init>
+    <db_script>/home/admin/TestON/scripts/./scaleoutdatagraph.py</db_script>
 </PARAMS>      

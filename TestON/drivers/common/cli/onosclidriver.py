@@ -323,8 +323,8 @@ class OnosCliDriver(CLI):
             self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT])
             self.handle.sendline("cd "+self.home)
             self.handle.sendline("./onos.sh stop")
-            i=self.handle.expect(["Stop",pexpect.EOF,pexpect.TIMEOUT])
-            self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT], 60)
+            self.handle.expect(["./onos.sh stop",pexpect.EOF,pexpect.TIMEOUT])
+            i=self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT],60)
             result = self.handle.before
             if re.search("Killed", result):
                 main.log.info(self.name + ": ONOS Killed Successfully")
@@ -354,8 +354,8 @@ class OnosCliDriver(CLI):
             self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT])
             self.handle.sendline("cd "+self.home)
             self.handle.sendline("./onos.sh core stop")
-            i=self.handle.expect(["Stop",pexpect.EOF,pexpect.TIMEOUT])
-            self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT], 60)
+            self.handle.expect(["./onos.sh stop",pexpect.EOF,pexpect.TIMEOUT])
+            i=self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT],60)
             result = self.handle.before
             if re.search("Killed", result):
                 main.log.info(self.name + ": ONOS Killed Successfully")

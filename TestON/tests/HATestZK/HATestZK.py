@@ -6,12 +6,6 @@ remaining nodes. In this test, a quorum of the Zookeeper instances must be kept 
 '''
 class HATestZK:
 
-    global topology
-    global masterSwitchList
-    global highIntentList
-    global lowIntentList
-    global flows
-    flows = []
 
     def __init__(self) :
         self.default = ''
@@ -56,7 +50,7 @@ class HATestZK:
         main.ONOS3.start_all()
         main.ONOS4.start_all()
         main.ONOS5.start_all()
-       # main.ONOS1.start_rest()
+        main.ONOS1.start_rest()
         main.step("Testing Startup")
         result1 = main.ONOS1.rest_status()
         vm1 = main.RC1.status_coor and main.RC1.status_serv and \
@@ -198,28 +192,8 @@ class HATestZK:
     def CASE4(self,main) :
         import time
         from subprocess import Popen, PIPE
+        from sts.topology.teston_topology import TestONTopology # assumes that sts is already in you PYTHONPATH
         main.case("Setting up and Gathering data for current state")
-        main.step("Get the current In-Memory Topology on each ONOS Instance")
-
-        '''
-        ctrls = []
-        count = 1
-        while True:
-            temp = ()
-            if ('ip'+str(count)) in main.params['CTRL']:
-                temp = temp+(getattr(main,('ONOS'+str(count))),)
-                temp = temp + ("ONOS"+str(count),)
-                temp = temp + (main.params['CTRL']['ip'+str(count)],)
-                temp = temp + (eval(main.params['CTRL']['port'+str(count)]),)
-                ctrls.append(temp)
-                count+=1
-            else:
-                break
-        topo_result = main.TRUE
-
-        for n in range(1,count):
-            temp_result = main.Mininet1.compare_topo(ctrls,main.ONOS1.get_json(main.params['CTRL']['ip'+str(n)]+":"+main.params['CTRL']['restPort'+str(n)]+main.params['TopoRest']))
-        '''
 
         main.step("Get the Mastership of each switch")
         (stdout,stderr)=Popen(["curl",main.params['CTRL']['ip1']+":"+main.params['CTRL']['restPort1']+main.params['CTRL']['switchURL']],stdout=PIPE).communicate()
@@ -269,10 +243,14 @@ class HATestZK:
                 count = count + 1
             else:
                 break
-        from sts.topology.teston_topology import TestONTopology # assumes that sts is already in you PYTHONPATH
         global MNTopo 
         Topo = TestONTopology(main.Mininet1, ctrls) # can also add Intent API info for intent operations
         MNTopo = Topo
+
+        main.step("Compare ONOS Topology to MN Topology")
+        for n in range(1,5):
+            result = main.Mininet1.compare_topo(MNTopo, main.ONOS1.get_json(main.params['CTRL']['ip'+str(n)]+":"+main.params['CTRL']['restPort'+str(n)]+main.params['TopoRest']))
+            utilities.assert_equals(expect=main.TRUE,actual=result,onpass="ONOS" + str(n) + " Topology matches MN Topology",onfail="ONOS" + str(n) + " Topology does not match MN Topology")
 
 
     def CASE5(self,main) :
@@ -352,20 +330,24 @@ class HATestZK:
         main.case("Running ONOS Constant State Tests")
         main.step("Get the current In-Memory Topology on each ONOS Instance and Compare it to the Topology before component failure")
 
-        main.step("Get the Mastership of each switch and compare to the Mastership before component failure")
-        (stdout,stderr)=Popen(["curl",main.params['CTRL']['ip1']+":"+main.params['CTRL']['restPort1']+main.params['CTRL']['switchURL']],stdout=PIPE).communicate()
-        result = main.TRUE
-        for i in range(1,29):
-            switchDPID = str(main.Mininet1.getSwitchDPID(switch="s"+str(i)))
-            switchDPID = switchDPID[:2]+":"+switchDPID[2:4]+":"+switchDPID[4:6]+":"+switchDPID[6:8]+":"+switchDPID[8:10]+":"+switchDPID[10:12]+":"+switchDPID[12:14]+":"+switchDPID[14:]
-            master1 = main.ZK1.findMaster(switchDPID=switchDPID,switchList=masterSwitchList1)
-            master2 = main.ZK1.findMaster(switchDPID=switchDPID,switchList=stdout)
-            if main.ZK1.findMaster(switchDPID=switchDPID,switchList=masterSwitchList1)==main.ZK1.findMaster(switchDPID=switchDPID,switchList=stdout):
-                result = result and main.TRUE
-            else:
-                result = main.FALSE
-        utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Mastership of Switches was not changed",onfail="MASTERSHIP OF SWITCHES HAS CHANGED!!!")
-        result1 = result
+        #NOTE: Expected behavior for this case is for switchs to change mastership to another 
+        #      controller if the current controller's zk client loses connection with the ZK controller
+        #
+        #main.step("Get the Mastership of each switch and compare to the Mastership before component failure")
+        #(stdout,stderr)=Popen(["curl",main.params['CTRL']['ip1']+":"+main.params['CTRL']['restPort1']+main.params['CTRL']['switchURL']],stdout=PIPE).communicate()
+        #result = main.TRUE
+        #for i in range(1,29):
+        #    switchDPID = str(main.Mininet1.getSwitchDPID(switch="s"+str(i)))
+        #    switchDPID = switchDPID[:2]+":"+switchDPID[2:4]+":"+switchDPID[4:6]+":"+switchDPID[6:8]+":"+switchDPID[8:10]+":"+switchDPID[10:12]+":"+switchDPID[12:14]+":"+switchDPID[14:]
+        #    master1 = main.ZK1.findMaster(switchDPID=switchDPID,switchList=masterSwitchList1)
+        #    master2 = main.ZK1.findMaster(switchDPID=switchDPID,switchList=stdout)
+        #    if master1 == master2:
+        #    #if main.ZK1.findMaster(switchDPID=switchDPID,switchList=masterSwitchList1)==main.ZK1.findMaster(switchDPID=switchDPID,switchList=stdout):
+        #        result = result and main.TRUE
+        #    else:
+        #        result = main.FALSE
+        #utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Mastership of Switches was not changed",onfail="MASTERSHIP OF SWITCHES HAS CHANGED!!!")
+        #result1 = result
 
         main.step("Get the High Level Intents and compare to before component failure")
         (stdout,stderr)=Popen(["curl",main.params['CTRL']['ip1']+":"+main.params['CTRL']['restPort1']+main.params['CTRL']['intentHighURL']],stdout=PIPE).communicate()
@@ -403,7 +385,7 @@ class HATestZK:
         result4 = result
         
         main.step("Check the continuous pings to ensure that no packets were dropped during component failure")
-        main.Mininet2.pingKill()
+        main.Mininet2.pingKill(main.params['TESTONUSER'], main.params['TESTONIP'])
         result = main.FALSE
         for i in range(8,18):
             result = result or main.Mininet2.checkForLoss("/tmp/ping.h"+str(i))
@@ -431,12 +413,13 @@ class HATestZK:
             else:
                 break
 
-
         result6 = main.TRUE
         for n in range(1,5):
             result = main.Mininet1.compare_topo(MNTopo, main.ONOS1.get_json(main.params['CTRL']['ip'+str(n)]+":"+main.params['CTRL']['restPort'+str(n)]+main.params['TopoRest']))
             utilities.assert_equals(expect=main.TRUE,actual=result,onpass="ONOS" + str(n) + " Topology matches MN Topology",onfail="ONOS" + str(n) + " Topology does not match MN Topology")
             result6 = result6 and result
+
+
         result = result1 and result2 and result3 and result4 and result5 and result6
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Constant State Tests Passed!",onfail="CONSTANT STATE TESTS FAILED!!")
 
@@ -457,7 +440,7 @@ class HATestZK:
         main.step("Determine the current number of switches and links")
         (number,active)=main.ONOS1.num_switch(RestIP=main.params['CTRL']['ip1'])
         links = main.ONOS1.num_link(RestIP=main.params['CTRL']['ip1'])
-        main.log.info("Currently there are %s switches, %s are active, and %s links" %(number,active,links))
+        main.log.info("Currently there are %s switches %s of which are active, and %s links" %(number,active,links))
         
         main.step("Kill Link between s3 and s28")
         main.Mininet1.link(END1="s3",END2="s28",OPTION="down")
@@ -467,7 +450,7 @@ class HATestZK:
         result = main.Mininet1.link(END1="s3",END2="s28",OPTION="up")
 
         main.step("Check for loss in pings when Link is brought down")
-        main.Mininet2.pingKill()
+        main.Mininet2.pingKill(main.params['TESTONUSER'], main.params['TESTONIP'])
         result = main.FALSE
         for i in range(8,18):
             result = result or main.Mininet2.checkForLoss("/tmp/ping.h"+str(i))
@@ -478,9 +461,9 @@ class HATestZK:
         else:
             main.log.info("No Loss in the pings!")
         utilities.assert_equals(expect=main.FALSE,actual=result,onpass="No Loss of connectivity!",onfail="LOSS OF CONNECTIVITY")
-        result2 = result
-        result = result1 and not result2
-        utilities.assert_equals(expect=main.FALSE,actual=result,onpass="Link failure is discovered correctly and no traffic is lost!",onfail="Link Discovery failed or traffic was dropped!!!")
+        result2 = not result
+        result = result1 and  result2
+        utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Link failure is discovered correctly and no traffic is lost!",onfail="Link Discovery failed or traffic was dropped!!!")
         
 
     
@@ -502,11 +485,11 @@ class HATestZK:
         main.step("Determine the current number of switches and links")
         (number,active)=main.ONOS1.num_switch(RestIP=main.params['CTRL']['ip1'])
         links = main.ONOS1.num_link(RestIP=main.params['CTRL']['ip1'])
-        main.log.info("Currently there are %s switches, %s are active, and %s links" %(number,active,links))
+        main.log.info("Currently there are %s switches %s of which are active, and %s links" %(number,active,links))
         
         main.step("Kill s28 ")
         main.Mininet2.del_switch("s28")
-        time.sleep(31)
+        time.sleep(45)
         result = main.ONOS1.check_status_report(main.params['CTRL']['ip1'],str(int(active)-1),str(int(links)-4))
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Switch Discovery is Working",onfail="Switch Discovery FAILED TO WORK PROPERLY!")
 
@@ -514,13 +497,13 @@ class HATestZK:
         main.Mininet2.add_switch("s28")
         main.Mininet1.assign_sw_controller(sw="28",ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'])
         main.Mininet1.assign_sw_controller(sw="28",count=5,ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'],ip2=main.params['CTRL']['ip2'],port2=main.params['CTRL']['port2'],ip3=main.params['CTRL']['ip3'],port3=main.params['CTRL']['port3'],ip4=main.params['CTRL']['ip4'],port4=main.params['CTRL']['port4'],ip5=main.params['CTRL']['ip5'],port5=main.params['CTRL']['port5']) 
-        time.sleep(31)
+        time.sleep(45)
         result = main.ONOS1.check_status_report(main.params['CTRL']['ip1'],active,links)
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Switch Discovery is Working",onfail="Switch Discovery FAILED TO WORK PROPERLY!")
         result1=result
 
         main.step("Checking for Traffic Loss")
-        main.Mininet2.pingKill()
+        main.Mininet2.pingKill(main.params['TESTONUSER'], main.params['TESTONIP'])
         result = main.FALSE
         for i in range(8,18):
             result = result or main.Mininet2.checkForLoss("/tmp/ping.h"+str(i))

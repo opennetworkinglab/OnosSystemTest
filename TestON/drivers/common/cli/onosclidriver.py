@@ -1195,7 +1195,7 @@ class OnosCliDriver(CLI):
                 self.handle.sendline("git pull " + comp1)
            
             uptodate = 0
-            i=self.handle.expect(['fatal','Username\sfor\s(.*):\s','\sfile(s*) changed,\s',pexpect.TIMEOUT,'Already up-to-date','Aborting','You\sare\snot\scurrently\son\sa\sbranch'],timeout=1700)
+            i=self.handle.expect(['fatal','Username\sfor\s(.*):\s','\sfile(s*) changed,\s',pexpect.TIMEOUT,'Already up-to-date','Aborting','You\sare\snot\scurrently\son\sa\sbranch', 'You\sasked\sme\sto\spull\swithout\stelling\sme\swhich\sbranch\syou'],timeout=1700)
             #debug
            #main.log.report(self.name +": \n"+"git pull response: " + str(self.handle.before) + str(self.handle.after))
             if i==0:
@@ -1220,6 +1220,9 @@ class OnosCliDriver(CLI):
                 return main.ERROR
             elif i==6:
                 main.log.info(self.name + ": Git Pull - You are not currently on a branch so git pull failed!")
+                return main.ERROR
+            elif i==7:
+                main.log.info(self.name + ": Git Pull - You have not configured an upstream branch to pull from. Git pull failed!")
                 return main.ERROR
             else:
                 main.log.error(self.name + ": Git Pull - Unexpected response, check for pull errors")
@@ -1471,14 +1474,11 @@ class OnosCliDriver(CLI):
                 return (retcode, "Rest API has an error", retport)
             else:
                 for host in enumerate(parsedResult):
-                    print host
                     if (host[1] != []):
                         try:
                             foundHost = host[1]['mac']
                         except:
                             print "Error in detecting MAC address."
-                        print foundHost
-                        print hostMAC
                         if foundHost == hostMAC:
                             for switch in enumerate(host[1]['attachmentPoints']):
                                 retswitch.append(switch[1]['dpid'])

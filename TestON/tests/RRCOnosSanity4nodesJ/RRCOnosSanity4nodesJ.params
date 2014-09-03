@@ -54,4 +54,8 @@
 	<restPort>8080</restPort>
 	<restURL>/wm/onos/topology/hosts</restURL>
     </RESTCALL>
+    <INTENTS>
+        <intentPort>8080</intentPort>
+        <intentURL>wm/onos/intent</intentURL>
+    </INTENTS>
 </PARAMS>      

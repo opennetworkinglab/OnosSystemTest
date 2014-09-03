@@ -9,10 +9,10 @@ class RCOnosCHO4nodes :
 #Tests the startup of Zookeeper1, RamCloud1, and ONOS1 to be certain that all started up successfully
     def CASE1(self,main) :  #Check to be sure ZK, Cass, and ONOS are up, then get ONOS version
         import time
-        main.ONOS1.handle.sendline("cp ~/onos.properties.reactive ~/ONOS/conf/onos.properties")
-        main.ONOS2.handle.sendline("cp ~/onos.properties.reactive ~/ONOS/conf/onos.properties")
-        main.ONOS3.handle.sendline("cp ~/onos.properties.reactive ~/ONOS/conf/onos.properties")
-        main.ONOS4.handle.sendline("cp ~/onos.properties.reactive ~/ONOS/conf/onos.properties")
+        main.ONOS1.handle.sendline("cp ~/onos.properties.proactive ~/ONOS/conf/onos.properties")
+        main.ONOS2.handle.sendline("cp ~/onos.properties.proactive ~/ONOS/conf/onos.properties")
+        main.ONOS3.handle.sendline("cp ~/onos.properties.proactive ~/ONOS/conf/onos.properties")
+        main.ONOS4.handle.sendline("cp ~/onos.properties.proactive ~/ONOS/conf/onos.properties")
 
         main.ONOS1.stop_all()
         main.ONOS2.stop_all()
@@ -187,20 +187,67 @@ class RCOnosCHO4nodes :
                 main.ONOS3.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
                 main.ONOS4.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
                 break
-        utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Topology check pass",onfail="Topology check FAIL")
 
+        ####New Topo Check
+        ctrls = []
+        count = 1
+        while True:
+            temp = ()
+            if ('ip' + str(count)) in main.params['CTRL']:
+                temp = temp + (getattr(main,('ONOS' + str(count))),)
+                temp = temp + ("ONOS"+str(count),)
+                temp = temp + (main.params['CTRL']['ip'+str(count)],)
+                temp = temp + (eval(main.params['CTRL']['port'+str(count)]),)
+                ctrls.append(temp)
+                count = count + 1
+            else:
+                break
+        from sts.topology.teston_topology import TestONTopology # assumes that sts is already in you PYTHONPATH
+        global MNTopo
+        MNTopo = TestONTopology(main.Mininet1, ctrls) # can also add Intent API info for intent operations
+
+
+        topo_result = main.TRUE
+        for n in range(1,5):
+            temp_result = main.Mininet1.compare_topo(MNTopo, main.ONOS1.get_json(main.params['CTRL']['ip'+str(n)]+":"+main.params['CTRL']['restPort'+str(n)]+main.params['TopoRest']))
+            topo_result = topo_result and temp_result
+        print "Topoology check results: " + str(topo_result) 
+        ###End New Topo Check
+        utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Topology check pass",onfail="Topology check FAIL")
+       
         main.case("Taking care of these flows!") 
         main.step("Cleaning out any leftover flows...")
+        intentIP = main.params['CTRL']['ip1']
+        intentPort=main.params['INTENTS']['intentPort']
+        intentURL=main.params['INTENTS']['intentURL']
         #main.ONOS1.delete_flow("all")
-        main.ONOS1.rm_intents()
+        main.ONOS1.del_intent(intentIP=intentIP)
         time.sleep(5)
-        main.ONOS1.purge_intents()
         strtTime = time.time()
-        main.ONOS1.add_intents()
-        main.case("Checking flows with pings")
+        main.step("Adding Intents")
+        count=1
+        for i in range(6,16):
+            srcMac = '00:00:00:00:00:' + str(hex(i)[2:]).zfill(2)
+            dstMac = '00:00:00:00:00:'+str(hex(i+10)[2:])
+            srcDPID = '00:00:00:00:00:00:10:'+str(i).zfill(2)
+            dstDPID= '00:00:00:00:00:00:20:' +str(i+25)
+            main.ONOS1.add_intent(intent_id=str(count),src_dpid=srcDPID,dst_dpid=dstDPID,
+                    src_mac=srcMac,dst_mac=dstMac,intentIP=intentIP,intentPort=intentPort,
+                    intentURL=intentURL)
+            count=count +1
+            dstDPID = '00:00:00:00:00:00:10:'+str(i).zfill(2)
+            srcDPID= '00:00:00:00:00:00:20:' +str(i+25)
+            dstMac = '00:00:00:00:00:' + str(hex(i)[2:]).zfill(2)
+            srcMac = '00:00:00:00:00:'+str(hex(i+10)[2:])
+            main.ONOS1.add_intent(intent_id=str(count),src_dpid=srcDPID,dst_dpid=dstDPID,
+                    src_mac=srcMac,dst_mac=dstMac,intentIP=intentIP,intentPort=intentPort,
+                    intentURL=intentURL)
+            count=count +1
+        main.step("Checking flows with pings")
         
         pingAttempts = main.params['pingAttempts']
         pingSleep = main.params['pingSleep']
+
 
         count = 1
         i = 6
@@ -277,6 +324,31 @@ class RCOnosCHO4nodes :
                 main.ONOS3.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
                 main.ONOS4.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
                 break
+        ####New Topo Check
+        ctrls = []
+        count = 1
+        while True:
+            temp = ()
+            if ('ip' + str(count)) in main.params['CTRL']:
+                temp = temp + (getattr(main,('ONOS' + str(count))),)
+                temp = temp + ("ONOS"+str(count),)
+                temp = temp + (main.params['CTRL']['ip'+str(count)],)
+                temp = temp + (eval(main.params['CTRL']['port'+str(count)]),)
+                ctrls.append(temp)
+                count = count + 1
+            else:
+                break
+        from sts.topology.teston_topology import TestONTopology # assumes that sts is already in you PYTHONPATH
+        global MNTopo
+        MNTopo = TestONTopology(main.Mininet1, ctrls) # can also add Intent API info for intent operations
+
+
+        topo_result = main.TRUE
+        for n in range(1,5):
+            temp_result = main.Mininet1.compare_topo(MNTopo, main.ONOS1.get_json(main.params['CTRL']['ip'+str(n)]+":"+main.params['CTRL']['restPort'+str(n)]+main.params['TopoRest']))
+            topo_result = topo_result and temp_result
+        print "Topoology check results: " + str(topo_result) 
+        ###End New Topo Check
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Topology check pass",onfail="Topology check FAIL")
 
         pingAttempts = main.params['pingAttempts']
@@ -338,6 +410,31 @@ class RCOnosCHO4nodes :
                 main.ONOS3.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
                 main.ONOS4.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
                 break
+        ####New Topo Check
+        ctrls = []
+        count = 1
+        while True:
+            temp = ()
+            if ('ip' + str(count)) in main.params['CTRL']:
+                temp = temp + (getattr(main,('ONOS' + str(count))),)
+                temp = temp + ("ONOS"+str(count),)
+                temp = temp + (main.params['CTRL']['ip'+str(count)],)
+                temp = temp + (eval(main.params['CTRL']['port'+str(count)]),)
+                ctrls.append(temp)
+                count = count + 1
+            else:
+                break
+        from sts.topology.teston_topology import TestONTopology # assumes that sts is already in you PYTHONPATH
+        global MNTopo
+        MNTopo = TestONTopology(main.Mininet1, ctrls) # can also add Intent API info for intent operations
+
+
+        topo_result = main.TRUE
+        for n in range(1,5):
+            temp_result = main.Mininet1.compare_topo(MNTopo, main.ONOS1.get_json(main.params['CTRL']['ip'+str(n)]+":"+main.params['CTRL']['restPort'+str(n)]+main.params['TopoRest']))
+            topo_result = topo_result and temp_result
+        print "Topoology check results: " + str(topo_result) 
+        ###End New Topo Check
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Topology check pass",onfail="Topology check FAIL")
 
         pingAttempts = main.params['pingAttempts']
@@ -395,6 +492,31 @@ class RCOnosCHO4nodes :
                 main.ONOS3.check_status_report(main.params['RestIP'],main.params['NR_Switches'],str(int(main.params['NR_Links'])-2))
                 main.ONOS4.check_status_report(main.params['RestIP'],main.params['NR_Switches'],str(int(main.params['NR_Links'])-2))
                 break
+        ####New Topo Check
+        ctrls = []
+        count = 1
+        while True:
+            temp = ()
+            if ('ip' + str(count)) in main.params['CTRL']:
+                temp = temp + (getattr(main,('ONOS' + str(count))),)
+                temp = temp + ("ONOS"+str(count),)
+                temp = temp + (main.params['CTRL']['ip'+str(count)],)
+                temp = temp + (eval(main.params['CTRL']['port'+str(count)]),)
+                ctrls.append(temp)
+                count = count + 1
+            else:
+                break
+        from sts.topology.teston_topology import TestONTopology # assumes that sts is already in you PYTHONPATH
+        global MNTopo
+        MNTopo = TestONTopology(main.Mininet1, ctrls) # can also add Intent API info for intent operations
+
+
+        topo_result = main.TRUE
+        for n in range(1,5):
+            temp_result = main.Mininet1.compare_topo(MNTopo, main.ONOS1.get_json(main.params['CTRL']['ip'+str(n)]+":"+main.params['CTRL']['restPort'+str(n)]+main.params['TopoRest']))
+            topo_result = topo_result and temp_result
+        print "Topoology check results: " + str(topo_result) 
+        ###End New Topo Check
         utilities.assert_equals(expect=main.TRUE,actual=result1,onpass="Topology check pass",onfail="Topology check FAIL")
 
         pingAttempts = main.params['pingAttempts']
@@ -452,6 +574,31 @@ class RCOnosCHO4nodes :
                 main.ONOS3.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
                 main.ONOS4.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
                 break
+        ####New Topo Check
+        ctrls = []
+        count = 1
+        while True:
+            temp = ()
+            if ('ip' + str(count)) in main.params['CTRL']:
+                temp = temp + (getattr(main,('ONOS' + str(count))),)
+                temp = temp + ("ONOS"+str(count),)
+                temp = temp + (main.params['CTRL']['ip'+str(count)],)
+                temp = temp + (eval(main.params['CTRL']['port'+str(count)]),)
+                ctrls.append(temp)
+                count = count + 1
+            else:
+                break
+        from sts.topology.teston_topology import TestONTopology # assumes that sts is already in you PYTHONPATH
+        global MNTopo
+        MNTopo = TestONTopology(main.Mininet1, ctrls) # can also add Intent API info for intent operations
+
+
+        topo_result = main.TRUE
+        for n in range(1,5):
+            temp_result = main.Mininet1.compare_topo(MNTopo, main.ONOS1.get_json(main.params['CTRL']['ip'+str(n)]+":"+main.params['CTRL']['restPort'+str(n)]+main.params['TopoRest']))
+            topo_result = topo_result and temp_result
+        print "Topoology check results: " + str(topo_result) 
+        ###End New Topo Check
         utilities.assert_equals(expect=main.TRUE,actual=result1,onpass="Topology check pass",onfail="Topology check FAIL")
 
         pingAttempts = main.params['pingAttempts']
@@ -509,6 +656,31 @@ class RCOnosCHO4nodes :
                 main.ONOS3.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
                 main.ONOS4.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
                 break
+        ####New Topo Check
+        ctrls = []
+        count = 1
+        while True:
+            temp = ()
+            if ('ip' + str(count)) in main.params['CTRL']:
+                temp = temp + (getattr(main,('ONOS' + str(count))),)
+                temp = temp + ("ONOS"+str(count),)
+                temp = temp + (main.params['CTRL']['ip'+str(count)],)
+                temp = temp + (eval(main.params['CTRL']['port'+str(count)]),)
+                ctrls.append(temp)
+                count = count + 1
+            else:
+                break
+        from sts.topology.teston_topology import TestONTopology # assumes that sts is already in you PYTHONPATH
+        global MNTopo
+        MNTopo = TestONTopology(main.Mininet1, ctrls) # can also add Intent API info for intent operations
+
+
+        topo_result = main.TRUE
+        for n in range(1,5):
+            temp_result = main.Mininet1.compare_topo(MNTopo, main.ONOS1.get_json(main.params['CTRL']['ip'+str(n)]+":"+main.params['CTRL']['restPort'+str(n)]+main.params['TopoRest']))
+            topo_result = topo_result and temp_result
+        print "Topoology check results: " + str(topo_result) 
+        ###End New Topo Check
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Topology check pass",onfail="Topology check FAIL")
 
         pingAttempts = main.params['pingAttempts']
@@ -573,6 +745,31 @@ class RCOnosCHO4nodes :
                 main.ONOS3.check_status_report(main.params['RestIP'],main.params['NR_Switches'],str(int(main.params['NR_Links'])-2))
                 main.ONOS4.check_status_report(main.params['RestIP'],main.params['NR_Switches'],str(int(main.params['NR_Links'])-2))
                 break
+        ####New Topo Check
+        ctrls = []
+        count = 1
+        while True:
+            temp = ()
+            if ('ip' + str(count)) in main.params['CTRL']:
+                temp = temp + (getattr(main,('ONOS' + str(count))),)
+                temp = temp + ("ONOS"+str(count),)
+                temp = temp + (main.params['CTRL']['ip'+str(count)],)
+                temp = temp + (eval(main.params['CTRL']['port'+str(count)]),)
+                ctrls.append(temp)
+                count = count + 1
+            else:
+                break
+        from sts.topology.teston_topology import TestONTopology # assumes that sts is already in you PYTHONPATH
+        global MNTopo
+        MNTopo = TestONTopology(main.Mininet1, ctrls) # can also add Intent API info for intent operations
+
+
+        topo_result = main.TRUE
+        for n in range(1,5):
+            temp_result = main.Mininet1.compare_topo(MNTopo, main.ONOS1.get_json(main.params['CTRL']['ip'+str(n)]+":"+main.params['CTRL']['restPort'+str(n)]+main.params['TopoRest']))
+            topo_result = topo_result and temp_result
+        print "Topoology check results: " + str(topo_result) 
+        ###End New Topo Check
         utilities.assert_equals(expect=main.TRUE,actual=result1,onpass="Topology check pass",onfail="Topology check FAIL")
 
         pingAttempts = main.params['pingAttempts']
@@ -632,6 +829,31 @@ class RCOnosCHO4nodes :
                 main.ONOS3.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
                 main.ONOS4.check_status_report(main.params['RestIP'],main.params['NR_Switches'],main.params['NR_Links'])
                 break
+        ####New Topo Check
+        ctrls = []
+        count = 1
+        while True:
+            temp = ()
+            if ('ip' + str(count)) in main.params['CTRL']:
+                temp = temp + (getattr(main,('ONOS' + str(count))),)
+                temp = temp + ("ONOS"+str(count),)
+                temp = temp + (main.params['CTRL']['ip'+str(count)],)
+                temp = temp + (eval(main.params['CTRL']['port'+str(count)]),)
+                ctrls.append(temp)
+                count = count + 1
+            else:
+                break
+        from sts.topology.teston_topology import TestONTopology # assumes that sts is already in you PYTHONPATH
+        global MNTopo
+        MNTopo = TestONTopology(main.Mininet1, ctrls) # can also add Intent API info for intent operations
+
+
+        topo_result = main.TRUE
+        for n in range(1,5):
+            temp_result = main.Mininet1.compare_topo(MNTopo, main.ONOS1.get_json(main.params['CTRL']['ip'+str(n)]+":"+main.params['CTRL']['restPort'+str(n)]+main.params['TopoRest']))
+            topo_result = topo_result and temp_result
+        print "Topoology check results: " + str(topo_result) 
+        ###End New Topo Check
         utilities.assert_equals(expect=main.TRUE,actual=result1,onpass="Topology check pass",onfail="Topology check FAIL")
 
         pingAttempts = main.params['pingAttempts']
@@ -753,7 +975,7 @@ class RCOnosCHO4nodes :
         url = main.params['RESTCALL']['restURL']
        
         t_topowait = 5
-        t_restwait = 0
+        t_restwait = 5
         main.log.report( "Wait time from topo change to ping set to " + str(t_topowait))
         main.log.report( "Wait time from ping to rest call set to " + str(t_restwait))
         #print "host=" + host + ";  RestIP=" + RestIP1 + ";  RestPort=" + str(RestPort)

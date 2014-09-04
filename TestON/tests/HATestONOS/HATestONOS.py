@@ -171,18 +171,18 @@ class HATestONOS:
                 main.log.info("Ping FAILED! Making attempt number "+str(count) + "in 2 seconds")
                 time.sleep(2)
             elif ping==main.FALSE:
-                main.log.info("PINGS FAILED! MAX RETRIES REACHED!")
+                main.log.report("PINGS FAILED! MAX RETRIES REACHED!")
                 i=19
                 result = main.FALSE
             elif ping==main.TRUE:
-                main.log.info("Ping passed!")
+                main.log.report("Ping passed!")
                 i+=1
                 result = main.TRUE
             else:
-                main.log.info("ERROR!!")
+                main.log.report("ERROR!!")
                 result = main.ERROR
-        if result==main.FALSE:
-            main.log.info("INTENTS HAVE NOT BEEN INSTALLED CORRECTLY!! EXITING!!!")
+        if result!=main.TRUE:
+            main.log.report("INTENTS HAVE NOT BEEN INSTALLED CORRECTLY!! EXITING!!!")
             main.cleanup()
             main.exit()
         
@@ -190,7 +190,7 @@ class HATestONOS:
     def CASE4(self,main) :
         import time
         from subprocess import Popen, PIPE
-        main.log.report("Setting up and Gathering data for current state")
+        main.case("Setting up and Gathering data for current state")
         main.step("Get the current In-Memory Topology on each ONOS Instance")
 
         '''
@@ -236,7 +236,7 @@ class HATestONOS:
             flows.append(main.Mininet2.get_flowTable("s"+str(i)))
 
         
-        main.step("Start continuous pings")
+        main.log.report("Start continuous pings")
         main.Mininet2.pingLong(src=main.params['PING']['source1'],target=main.params['PING']['target1'],pingTime=500)
         main.Mininet2.pingLong(src=main.params['PING']['source2'],target=main.params['PING']['target2'],pingTime=500)
         main.Mininet2.pingLong(src=main.params['PING']['source3'],target=main.params['PING']['target3'],pingTime=500)
@@ -296,8 +296,8 @@ class HATestONOS:
     def CASE6(self,main) :
         import os
         main.case("Running ONOS Constant State Tests")
-        main.step("Get the current In-Memory Topology on each ONOS Instance and Compare it to the Topology before component failure")
-        main.step("Get the Mastership of each switch and compare to the Mastership before component failure")
+        main.log.report("Get the current In-Memory Topology on each ONOS Instance and Compare it to the Topology before component failure")
+        main.log.report("Get the Mastership of each switch and compare to the Mastership before component failure")
         (stdout,stderr)=Popen(["curl",main.params['CTRL']['ip1']+":"+main.params['CTRL']['restPort1']+main.params['CTRL']['switchURL']],stdout=PIPE).communicate()
         result = main.TRUE
         for i in range(1,29):
@@ -318,7 +318,9 @@ class HATestONOS:
         if not changesInIntents:
             result = main.TRUE
         else:
-            main.log.report("THERE WERE CHANGES TO THE HIGH LEVEL INTENTS! CHANGES WERE: "+str(changesInIntents))
+            main.log.info("THERE WERE CHANGES TO THE HIGH LEVEL INTENTS! CHANGES WERE: "+str(changesInIntents))
+            #NOTE: separate .report for wiki formatting to not print out intent change string 
+            main.log.report("There were changes to the HIGH LEVEL INTENTS")
             result = main.FALSE
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="No changes to High level Intents",onfail="CHANGES WERE MADE TO HIGH LEVEL INTENTS")
         result2 = result
@@ -329,7 +331,8 @@ class HATestONOS:
         if not changesInIntents:
             result = main.TRUE
         else:
-            main.log.report("THERE WERE CHANGES TO THE LOW LEVEL INTENTS! CHANGES WERE: "+str(changesInIntents))
+            main.log.info("THERE WERE CHANGES TO THE LOW LEVEL INTENTS! CHANGES WERE: "+str(changesInIntents))
+            main.log.report("There were changes to the LOW LEVEL INTENTS")
             result = main.FALSE
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="No changes to Low level Intents",onfail="CHANGES WERE MADE TO LOW LEVEL INTENTS")
         result3 = result
@@ -342,9 +345,11 @@ class HATestONOS:
             flows2.append(main.Mininet2.get_flowTable(sw="s"+str(i+1)))
             result = result and main.Mininet2.flow_comp(flow1=flows[i], flow2=main.Mininet2.get_flowTable(sw="s"+str(i+1)))
             if result == main.FALSE:
-                main.log.report("DIFFERENCES IN FLOW TABLES FOR SWITCH "+str(i))
+                main.log.info("DIFFERENCES IN FLOW TABLES FOR SWITCH "+str(i))
                 break
         utilities.assert_equals(expect=main.TRUE,actual=result,onpass="No changes in the flow tables",onfail="CHANGES IN THE FLOW TABLES!!")
+        if result == main.TRUE:
+            main.log.report("There were no changes in the flow tables")
         result4 = result
         
         main.step("Check the continuous pings to ensure that no packets were dropped during component failure")

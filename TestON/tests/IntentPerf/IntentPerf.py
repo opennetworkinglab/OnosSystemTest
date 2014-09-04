@@ -130,7 +130,7 @@ class IntentPerf:
         url_add = main.params['INTENTS']['urlAddIntent'] 
         url_rem = main.params['INTENTS']['urlRemIntent']
         host_ip = main.params['INTENTS']['hostIP'] 
-        assertion = ""
+        assertion = main.TRUE
         db_script = main.params['INTENTS']['databaseScript']
         table_name = main.params['INTENTS']['tableName']
 
@@ -140,23 +140,28 @@ class IntentPerf:
 
         #NOTE: REST call may change in the future
         for i in range(0, int(numIter)):
-            result = main.ONOS1.add_intent(intent_id = intent_id, src_dpid = srcSwitch, dst_dpid = dstSwitch, src_mac = srcMac, dst_mac = dstMac, intentIP = intent_ip)
-            utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Intent Add Successful",onfail="Intent Add NOT successful...") 
+            result = main.ONOS1.add_intent(intent_id = intent_id, 
+                    src_dpid = srcSwitch, dst_dpid = dstSwitch,
+                    src_mac = srcMac, dst_mac = dstMac, intentIP = intent_ip)
+            utilities.assert_equals(expect=main.TRUE,actual=result,
+                    onpass="Intent Add Successful",
+                    onfail="Intent Add NOT successful...") 
             time.sleep(5)
             json_obj = main.ONOS1.get_json(url_add) 
             intent_lat_add = main.ONOS1.get_single_intent_latency(json_obj)
-            main.log.info("Intent Add Latency of Intent ID "+intent_id+": " + str(intent_lat_add) + " ms")
+            main.log.info("Intent Add Latency of Intent ID "+
+                    intent_id+": " + str(intent_lat_add) + " ms")
             intent_add_lat_list.append(intent_lat_add)
 
             intent_del = requests.delete(url+"/"+intent_id)
             time.sleep(5)
             json_obj = main.ONOS1.get_json(url_rem)
             intent_lat_rem = main.ONOS1.get_single_intent_latency(json_obj)
-            main.log.info("Intent Rem Latency of Intent ID "+intent_id+": " + str(intent_lat_rem) + "ms")
+            main.log.info("Intent Rem Latency of Intent ID "+
+                    intent_id+": " + str(intent_lat_rem) + "ms")
             intent_rem_lat_list.append(intent_lat_rem)
 
             time.sleep(2)
-
 
         min_lat_add = str(min(intent_add_lat_list))
         max_lat_add = str(max(intent_add_lat_list))
@@ -170,18 +175,25 @@ class IntentPerf:
             if int(avg_lat_add) < 100000 and int(avg_lat_rem) < 100000:
                 omit_iter_add = int(numIter) - int(len(intent_add_lat_list))
                 omit_iter_rem = int(numIter) - int(len(intent_rem_lat_list))
-                main.log.report("Intent add latency Min: "+ min_lat_add+" ms    Max: "+ max_lat_add + "ms    Avg: "+avg_lat_add+ " ms")
-                main.log.report("Iterations omitted/total: "+str(omit_iter_add)+"/"+str(numIter)) 
+                main.log.report("Intent add latency Min: "+
+                        min_lat_add+" ms    Max: "+ 
+                        max_lat_add + "ms    Avg: "+
+                        avg_lat_add+ " ms")
+                main.log.report("Iterations omitted/total: "+
+                        str(omit_iter_add)+"/"+str(numIter)) 
                 #NOTE: os.system runs a command on TestON machine. Hence, place the db_script in a TestON location 
                 os.system(db_script + " --name='1 intent add' --minimum='"+min_lat_add+"' --maximum='"+max_lat_add+
                                   "' --average='"+avg_lat_add+"' "+ "--table='"+table_name+"'")
                 main.log.report("Intent rem latency Min: "+min_lat_rem+" ms    Max: "+max_lat_rem+" ms    Avg: "+avg_lat_rem+ " ms")
                 main.log.report("Iterations omitted/total: "+str(omit_iter_rem)+"/"+str(numIter)) 
-                assertion = main.TRUE
-        else:
+        #If length of the list is less than 1, which means no successful
+        #calculations of intents have occured, assertion is false. 
+        if len(avg_lat_add) < 1 or len(avg_lat_rem) < 1:
             assertion = main.FALSE
 
-        utilities.assert_equals(expect=main.TRUE,actual=assertion,onpass="Single intent add / rem successful",onfail="Single intent add / rem NOT successful")
+        utilities.assert_equals(expect=main.TRUE,actual=assertion,
+                onpass="Single intent add / rem successful",
+                onfail="Single intent add / rem NOT successful")
 
 #***************************************
 #CASE4
@@ -224,8 +236,14 @@ class IntentPerf:
         for i in range(0,int(numIter)): 
 
             #Add intents in both directions
-            main.ONOS1.add_intent(intent_id = intent_id, src_dpid = srcSwitch, dst_dpid = dstSwitch, src_mac = srcMac, dst_mac = dstMac, intentIP = main.params['INTENTREST']['intentIP'])
-            main.ONOS1.add_intent(intent_id = intent_id2, src_dpid = dstSwitch, dst_dpid = srcSwitch, src_mac = dstMac, dst_mac = srcMac, intentIP = main.params['INTENTREST']['intentIP'])
+            main.ONOS1.add_intent(intent_id = intent_id,
+                    src_dpid = srcSwitch, dst_dpid = dstSwitch,
+                    src_mac = srcMac, dst_mac = dstMac, 
+                    intentIP = main.params['INTENTREST']['intentIP'])
+            main.ONOS1.add_intent(intent_id = intent_id2, 
+                    src_dpid = dstSwitch, dst_dpid = srcSwitch,
+                    src_mac = dstMac, dst_mac = srcMac,
+                    intentIP = main.params['INTENTREST']['intentIP'])
 
             main.step("Checking flow")
             result = main.Mininet1.pingHost(src="h1",target="h7") 
@@ -249,7 +267,8 @@ class IntentPerf:
              
             #Read ONOS tshark_of_port file and get first line
             #TODO: improve accuracy of timestamp by parsing packet data using "tshark -V" option
-            ssh = subprocess.Popen(['ssh', 'admin@'+main.params['CTRL']['ip2'], 'cat', tshark_output],stdout=subprocess.PIPE)
+            ssh = subprocess.Popen(['ssh', 'admin@'+main.params['CTRL']['ip2'],
+                'cat', tshark_output],stdout=subprocess.PIPE)
             text = ssh.stdout.readline()
             obj = text.split(" ")
             if len(text) > 0:

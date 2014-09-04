@@ -97,9 +97,19 @@ class TopoPerf:
         import requests
         import os
  
-        url_topo = main.params['TOPO']['url_topo']
         ctrl_1 = main.params['CTRL']['ip1']
+        ctrl_2 = main.params['CTRL']['ip2']
+        ctrl_3 = main.params['CTRL']['ip3']
         port_1 = main.params['CTRL']['port1']
+        port_2 = main.params['CTRL']['port2']
+        port_3 = main.params['CTRL']['port3']
+        rest_port = main.params['INTENTREST']['intentPort']
+
+        url_suffix = main.params['TOPO']['url_topo']
+        url_topo_1 = "http://"+ctrl_1+":"+rest_port+url_suffix
+        url_topo_2 = "http://"+ctrl_2+":"+rest_port+url_suffix
+        url_topo_3 = "http://"+ctrl_3+":"+rest_port+url_suffix 
+
         numIter = main.params['TOPO']['numIter']
         db_script = main.params['TOPO']['databaseScript']
         table_name = main.params['TOPO']['tableName']
@@ -127,53 +137,87 @@ class TopoPerf:
             main.Mininet1.assign_sw_controller(sw="1",ip1=ctrl_1,port1=port_1)        
             time.sleep(10)
             main.ONOS1.stop_tshark()
+            main.ONOS2.stop_tshark()
+            #main.ONOS3.stop_tshark()
 
             #NOTE: tshark output is saved in ONOS. Use subprocess to read file into TestON for parsing
-            ssh = subprocess.Popen(['ssh', 'admin@'+ctrl_1, 'cat', tshark_output],stdout=subprocess.PIPE)
+            ssh = subprocess.Popen(['ssh', 'admin@'+ctrl_1, 'cat', tshark_output],stdout=subprocess.PIPE) 
             text = ssh.stdout.readline()
             obj = text.split(" ")
-            main.log.info("Object read in: "+str(text))
-            if len(text) > 0:
+            main.log.info("Object read in: "+str(text)) 
+            if len(text) > 0: 
                 timestamp = int(float(obj[0])*1000)
                 topo_ms_begin = timestamp
             else:
                 main.log.error("Tshark output file returned unexpected value")
-                topo_ms_begin = 0
-                assertion = main.FALSE    
- 
+                topo_ms_begin_1 = 0
+                assertion = main.FALSE   
+
             main.step("Verify that switch s1 has been assigned properly") 
-            response = main.Mininet1.get_sw_controller(sw="s1")
-            if response == main.FALSE:
+            s1_response = main.Mininet1.get_sw_controller(sw="s1")
+            
+            if s1_response == main.FALSE:
                 main.log.error("Switch s1 was NOT assigned properly")
                 assertion = main.FALSE
             else:
                 main.log.info("Switch s1 was assigned properly!")
             
-            json_obj = main.ONOS1.get_json(url_topo) 
-        
-            if json_obj: 
-                topo_ms_end = json_obj['gauges'][0]['gauge']['value']
+            json_obj_1 = main.ONOS1.get_json(url_topo_1) 
+            json_obj_2 = main.ONOS2.get_json(url_topo_2)
+            json_obj_3 = main.ONOS3.get_json(url_topo_3)
+
+            #If all 3 json objects exist, calculate end time
+            if json_obj_1 != "" and json_obj_2 != "" and json_obj_3 != "": 
+                topo_ms_end_1 = json_obj_1['gauges'][0]['gauge']['value']
+                topo_ms_end_2 = json_obj_2['gauges'][0]['gauge']['value']
+                topo_ms_end_3 = json_obj_3['gauges'][0]['gauge']['value']
             else:
-                topo_ms_end = 0
+                topo_ms_end_1 = 0
+                topo_ms_end_2 = 0
+                topo_ms_end_3 = 0
+
                 assertion = main.FALSE
 
-            delta = int(topo_ms_end) - int(topo_ms_begin)
+            delta_1 = int(topo_ms_end_1) - int(topo_ms_begin)
+            delta_2 = int(topo_ms_end_2) - int(topo_ms_begin)
+            delta_3 = int(topo_ms_end_3) - int(topo_ms_begin)
+
+            main.log.info("ONOS1 delta: "+str(delta_1))
+            main.log.info("ONOS2 delta: "+str(delta_2))
+            main.log.info("ONOS3 delta: "+str(delta_3))
+
+            #NOTE: Obtain average delta of the three clusters
+            #IMPORTANT: we want to account for all ONOS instance processing time
+            #           therefore we obtain the average of the three deltas across
+            #           the instances. However, you may change it to either max 
+            #           or min of the three deltas depending on future discussions
+            if delta_1 > 0 and delta_1 < 100000:
+                if delta_2 > 0 and delta_2 < 100000:
+                    if delta_3 > 0 and delta_3 < 100000:
+                        delta_avg = (delta_1 + delta_2 + delta_3) / 3
+                    else:
+                        delta_avg = (delta_1 + delta_2) / 2
+                else:
+                    delta_avg = delta_1
+            else:
+                main.log.info("Delta average was not caluclated for iteration "+str(i))
 
             time.sleep(5)
 
             main.step("Remove switch from controller s1")
             main.Mininet1.delete_sw_controller("s1")
+
             time.sleep(5)
 
             #NOTE: edit threshold as needed to fail test case
             #If outside threshold, delta is not saved to list.
-            if delta < 0 or delta > 100000:
+            if delta_avg < 0.00001 or delta_avg > 100000:
                 main.log.info("Delta of switch add timestamp returned unexpected results")
-                main.log.info("Value returned: " + str(delta))
+                main.log.info("Value returned: " + str(delta_avg))
                 main.log.info("Omiting iteration "+ str(i))
             else:
-                topo_lat.append(delta)
-                main.log.info("One switch add latency iteration "+str(i)+": " + str(delta) + " ms")  
+                topo_lat.append(delta_avg)
+                main.log.info("One switch add latency iteration "+str(i)+": " + str(delta_avg) + " ms")  
  
         topo_lat_min = str(min(topo_lat))
         topo_lat_max = str(max(topo_lat))
@@ -216,12 +260,24 @@ class TopoPerf:
         tshark_output_up = "/tmp/tshark_of_port_up.txt"
         tshark_output_down = "/tmp/tshark_of_port_down.txt"
         assertion = main.TRUE
+        
         ctrl_1 = main.params['CTRL']['ip1']
+        ctrl_2 = main.params['CTRL']['ip2']
+        ctrl_3 = main.params['CTRL']['ip3']
+
         port_1 = main.params['CTRL']['port1']
-        url_topo = main.params['TOPO']['url_topo'] 
+        port_2 = main.params['CTRL']['port2']
+        port_3 = main.params['CTRL']['port3']
+
         numIter = main.params['TOPO']['numIter']
         db_script = main.params['TOPO']['databaseScript']
         table_name = main.params['TOPO']['tableName']
+        
+        rest_port = main.params['INTENTREST']['intentPort']
+        url_suffix = main.params['TOPO']['url_topo']
+        url_topo_1= "http://"+ctrl_1+":"+rest_port+url_suffix
+        url_topo_2 = "http://"+ctrl_2+":"+rest_port+url_suffix
+        url_topo_3 = "http://"+ctrl_3+":"+rest_port+url_suffix 
 
         port_up_lat = []
         port_down_lat = []
@@ -244,6 +300,7 @@ class TopoPerf:
             main.ONOS1.tshark_grep("OFP 130 Port Status", tshark_output_down)
             time.sleep(5)
 
+            #Disabling port is emulated by disabling interface on that switch
             main.step("Disable port (interface s1-eth2)")
             main.Mininet2.handle.sendline("sudo ifconfig s1-eth2 down")
             main.Mininet2.handle.expect("\$")
@@ -261,20 +318,45 @@ class TopoPerf:
                 timestamp_begin_pt_down = 0   
 
             main.step("Obtain t1 timestamp by REST call")
-            json_obj = main.ONOS1.get_json(url_topo)
-            timestamp_end_pt_down = json_obj['gauges'][0]['gauge']['value']
 
-            delta_pt_down = int(timestamp_end_pt_down) - int(timestamp_begin_pt_down)
-   
+            #Obtain 3 json objects from each ONOS instance
+            json_obj_1 = main.ONOS1.get_json(url_topo_1)
+            json_obj_2 = main.ONOS2.get_json(url_topo_2)
+            json_obj_3 = main.ONOS3.get_json(url_topo_3)
+
+            timestamp_end_pt_down_1 = json_obj_1['gauges'][0]['gauge']['value']
+            timestamp_end_pt_down_2 = json_obj_2['gauges'][0]['gauge']['value']
+            timestamp_end_pt_down_3 = json_obj_3['gauges'][0]['gauge']['value']
+
+            delta_pt_down_1 = int(timestamp_end_pt_down_1) - int(timestamp_begin_pt_down)
+            delta_pt_down_2 = int(timestamp_end_pt_down_2) - int(timestamp_begin_pt_down)
+            delta_pt_down_3 = int(timestamp_end_pt_down_3) - int(timestamp_begin_pt_down)
+
+            #Check values of delta_pt_down and calculate average
+            if delta_pt_down_1 > 0 and delta_pt_down_1 < 100000:
+                if delta_pt_down_2 > 0 and delta_pt_down_2 < 100000:
+                    if delta_pt_down_3 > 0 and delta_pt_down_3 < 100000:
+                        delta_pt_down_avg = \
+                            (delta_pt_down_1 + delta_pt_down_2 + delta_pt_down_3) / 3
+                    else:
+                        delta_pt_down_avg = \
+                            (delta_pt_down_1 + delta_pt_down_2) / 2
+                else:
+                    delta_pt_down_avg = delta_pt_down_1
+            #NOTE: If first delta calculation is not valid, just set average to 0
+            #      this is more or less a lazy method, so FIXME if needed
+            else:
+                delta_pt_down_avg = 0
+
             #NOTE: modify threshold as necessary
-            if (delta_pt_down < 0) or (delta_pt_down > 100000):
+            if (delta_pt_down_avg < 0.00001) or (delta_pt_down_avg > 100000):
                 main.log.info("Delta port down timestamp returned unexpected results")
-                main.log.info("Value returned: " + str(delta_pt_down))
+                main.log.info("ONOS1 Value returned: " + str(delta_pt_down_avg))
                 main.log.info("Omitting iteration "+ str(i))
                 assertion = main.FALSE
             else:
-                port_down_lat.append(delta_pt_down)     
-                main.log.info("Port down latency iteration "+str(i)+": "+str(delta_pt_down)+" ms")
+                port_down_lat.append(delta_pt_down_avg)     
+                main.log.info("Port down latency iteration "+str(i)+": "+str(delta_pt_down_avg)+" ms")
  
             #Port status up case 
             main.step("Enable port and obtain timestamp via REST") 
@@ -304,20 +386,40 @@ class TopoPerf:
             else:
                 timestamp_begin_pt_up = 0
 
-            json_obj_up = main.ONOS1.get_json(url_topo)
-            timestamp_end_pt_up = json_obj_up['gauges'][0]['gauge']['value']
+            json_obj_up_1 = main.ONOS1.get_json(url_topo_1)
+            json_obj_up_2 = main.ONOS2.get_json(url_topo_2)
+            json_obj_up_3 = main.ONOS3.get_json(url_topo_3)
+
+            timestamp_end_pt_up_1 = json_obj_up_1['gauges'][0]['gauge']['value']
+            timestamp_end_pt_up_2 = json_obj_up_2['gauges'][0]['gauge']['value']
+            timestamp_end_pt_up_3 = json_obj_up_3['gauges'][0]['gauge']['value']
         
-            delta_pt_up = int(timestamp_end_pt_up) - int(timestamp_begin_pt_up)
+            delta_pt_up_1 = int(timestamp_end_pt_up_1) - int(timestamp_begin_pt_up)
+            delta_pt_up_2 = int(timestamp_end_pt_up_2) - int(timestamp_begin_pt_up)
+            delta_pt_up_3 = int(timestamp_end_pt_up_3) - int(timestamp_begin_pt_up)
+
+            if delta_pt_up_1 > 0 and delta_pt_up_1 < 100000:
+                if delta_pt_up_2 > 0 and delta_pt_up_2 < 100000:
+                    if delta_pt_up_3 > 0 and delta_pt_up_3 < 100000:
+                        delta_pt_up_avg = \
+                            (delta_pt_up_1 + delta_pt_up_2 + delta_pt_up_3) / 3
+                    else:
+                        delta_pt_up_avg = \
+                            (delta_pt_up_1 + delta_pt_up_2) / 2
+                else:
+                    delta_pt_up_avg = delta_pt_up_1
+            else:
+                delta_pt_up_avg = 0
 
             #NOTE: modify threshold as necessary
-            if (delta_pt_up < 0) or (delta_pt_up > 100000):
+            if (delta_pt_up_avg < 0.00001) or (delta_pt_up_avg > 100000):
                 main.log.info("Delta of timestamp returned unexpected results")
-                main.log.info("Value returned: " + str(delta_pt_up))
+                main.log.info("Value returned: " + str(delta_pt_up_avg))
                 main.log.info("Omitting iteration "+ str(i))
                 assertion = main.FALSE
             else:
-                port_up_lat.append(delta_pt_up)           
-                main.log.info("Port up latency iteration "+str(i)+": "+str(delta_pt_up)+" ms")
+                port_up_lat.append(delta_pt_up_avg)           
+                main.log.info("Port up latency iteration "+str(i)+": "+str(delta_pt_up_avg)+" ms")
   
             time.sleep(5)
 
@@ -369,15 +471,25 @@ class TopoPerf:
 
         assertion = main.TRUE
         ctrl_1 = main.params['CTRL']['ip1']
+        ctrl_2 = main.params['CTRL']['ip2']
+        ctrl_3 = main.params['CTRL']['ip3']
+
         port_1 = main.params['CTRL']['port1']
-        url_topo = main.params['TOPO']['url_topo']
+        
         url_links = main.params['TOPO']['url_links']
         numIter = main.params['TOPO']['numIter']
         db_script = main.params['TOPO']['databaseScript']
         table_name = main.params['TOPO']['tableName']
+        
         switch1_mac = main.params['TOPO']['switch1']
         switch3_mac = main.params['TOPO']['switch3']
- 
+        
+        rest_port = main.params['INTENTREST']['intentPort']
+        url_suffix = main.params['TOPO']['url_topo']
+        url_topo_1 = "http://"+ctrl_1+":"+rest_port+url_suffix
+        url_topo_2 = "http://"+ctrl_2+":"+rest_port+url_suffix
+        url_topo_3 = "http://"+ctrl_3+":"+rest_port+url_suffix 
+
         link_down_lat = []
         link_up_lat = []
 
@@ -436,20 +548,35 @@ class TopoPerf:
             #   link we cut. Note that method used  is a UNIDIRECTIONAL cut. Which means link between
             #   s3 -> s1 still persists
             counter = 0
-            temp_timestamp = "" 
+            temp_timestamp_1 = "" 
+            temp_timestamp_2 = "" 
+            temp_timestamp_3 = "" 
             timestamp_diff = False
             link_cut_detected = False
          
             main.step("Calling REST to detect link change event... please wait")
             while counter < 60:
-                json_obj_up = main.ONOS1.get_json(url_topo)
-                json_topo = main.ONOS1.get_json(url_links) 
+                json_obj_up_1 = main.ONOS1.get_json(url_topo_1)
+                json_obj_up_2 = main.ONOS2.get_json(url_topo_2)
+                json_obj_up_3 = main.ONOS3.get_json(url_topo_3)
+
+                json_topo = main.ONOS1.get_json(url_links)
          
                 timestamp_diff = True
-                timestamp_link_end = json_obj_up['gauges'][0]['gauge']['value']
-                if temp_timestamp == timestamp_link_end:
-                    timestamp_diff = False
-                temp_timestamp = timestamp_link_end  
+                timestamp_link_end_1 = json_obj_up_1['gauges'][0]['gauge']['value']
+                timestamp_link_end_2 = json_obj_up_2['gauges'][0]['gauge']['value']
+                timestamp_link_end_3 = json_obj_up_3['gauges'][0]['gauge']['value']
+               
+                #If all temporary timestamps match the json object timestamp
+                #     (which means timestamp has stopped changing)  
+                if temp_timestamp_1 == timestamp_link_end_1:
+                    if temp_timestamp_2 == timestamp_link_end_2:
+                        if temp_timestamp_3 == timestamp_link_end_3:
+                            timestamp_diff = False
+
+                temp_timestamp_1 = timestamp_link_end_1 
+                temp_timestamp_2 = timestamp_link_end_2
+                temp_timestamp_3 = timestamp_link_end_3
 
                 link_cut_detected = True
                 #get length of json list to loop a correct amount. Otherwise we will get index out of range
@@ -478,16 +605,32 @@ class TopoPerf:
                 counter = counter+1
                 time.sleep(3)            
 
-            delta_timestamp = int(timestamp_link_end) - int(timestamp_link_begin)
-    
-            if delta_timestamp < 0 or delta_timestamp > 100000:
-                main.log.report("Delta of timestamp returned unexpected results")
-                main.log.report("Value returned: " + str(delta_timestamp))
-                main.log.report("Omitting iteration "+ str(i))
+            delta_timestamp_1 = int(timestamp_link_end_1) - int(timestamp_link_begin)
+            delta_timestamp_2 = int(timestamp_link_end_2) - int(timestamp_link_begin)
+            delta_timestamp_3 = int(timestamp_link_end_3) - int(timestamp_link_begin)
+
+            if delta_timestamp_1 > 0 and delta_timestamp_1 < 100000:
+                if delta_timestamp_2 > 0 and delta_timestamp_2 < 100000:
+                    if delta_timestamp_3 > 0 and delta_timestamp_3 < 100000:
+                        delta_timestamp_avg = \
+                            (delta_timestamp_1 + delta_timestamp_2 + delta_timestamp_3) / 3
+                    else:
+                        delta_timestamp_avg = \
+                            (delta_timestamp_1 + delta_timestamp_2) / 2
+                else:
+                    delta_timestamp_avg = delta_timestamp_1
+            else:
+                delta_timestamp_avg = 0
+
+            if delta_timestamp_avg < 0 or delta_timestamp_avg > 100000:
+                main.log.info("Delta of timestamp returned unexpected results")
+                main.log.info("Value returned: " + str(delta_timestamp_avg))
+                main.log.info("Omitting iteration "+ str(i))
                 assertion = main.FALSE
             else:
-                link_down_lat.append(delta_timestamp)
-                main.log.info("Link down discovery latency iteration "+str(i)+": "+str(delta_timestamp)+" ms")
+                link_down_lat.append(delta_timestamp_avg)
+                main.log.info("Link down discovery latency iteration "+str(i)+": "+
+                        str(delta_timestamp_avg)+" ms")
 
             time.sleep(5)
 
@@ -504,19 +647,33 @@ class TopoPerf:
             time.sleep(5)
  
             counter = 0
-            temp_timestamp = ""
+            temp_timestamp_1 = ""
+            temp_timestamp_2 = ""
+            temp_timestamp_3 = ""
             link_enable_detected = False
             timestamp_diff = False
 
             main.step("Calling REST to detect link change event... please wait")
             while counter < 60:
-                json_obj_up = main.ONOS1.get_json(url_topo)
+                json_obj_up_1 = main.ONOS1.get_json(url_topo_1)
+                json_obj_up_2 = main.ONOS2.get_json(url_topo_2)
+                json_obj_up_3 = main.ONOS3.get_json(url_topo_3)
+                
                 json_topo = main.ONOS1.get_json(url_links)
+                
                 timestamp_diff = True
-                timestamp_link_enable_t1 = json_obj_up['gauges'][0]['gauge']['value']
-                if temp_timestamp == timestamp_link_enable_t1:
-                    timestamp_diff = False
-                temp_timestamp = timestamp_diff
+                timestamp_link_enable_t1 = json_obj_up_1['gauges'][0]['gauge']['value']
+                timestamp_link_enable_t2 = json_obj_up_2['gauges'][0]['gauge']['value']
+                timestamp_link_enable_t3 = json_obj_up_3['gauges'][0]['gauge']['value']
+                
+                if temp_timestamp_1 == timestamp_link_enable_t1:
+                    if temp_timestamp_2 == timestamp_link_enable_t2:
+                        if temp_timestamp_3 == timestamp_link_enable_t3:
+                            timestamp_diff = False
+
+                temp_timestamp_1 = timestamp_link_enable_t1
+                temp_timestamp_2 = timestamp_link_enable_t2
+                temp_timestamp_3 = timestamp_link_enable_t3
 
                 link_enable_detected = False
                 list_len = len(json_topo)
@@ -536,16 +693,31 @@ class TopoPerf:
                 counter = counter+1
                 time.sleep(3)
 
-            delta_timestamp_enable = int(timestamp_link_enable_t1) - int(timestamp_link_enable_t0)
- 
-            if delta_timestamp_enable < 0 and delta_timestamp_enable > 100000:
+            delta_timestamp_enable_1 = int(timestamp_link_enable_t1) - int(timestamp_link_enable_t0)
+            delta_timestamp_enable_2 = int(timestamp_link_enable_t2) - int(timestamp_link_enable_t0)
+            delta_timestamp_enable_3 = int(timestamp_link_enable_t3) - int(timestamp_link_enable_t0)
+
+            if delta_timestamp_enable_1 > 0 and delta_timestamp_enable_1 < 100000:
+                if delta_timestamp_enable_2 > 0 and delta_timestamp_enable_2 < 100000:
+                    if delta_timestamp_enable_3 > 0 and delta_timestamp_enable_3 < 100000:
+                        delta_timestamp_enable_avg = \
+                            (delta_timestamp_enable_1 + delta_timestamp_enable_2 + delta_timestamp_enable_3) / 3
+                    else:
+                        delta_timestamp_enable_avg = \
+                            (delta_timestamp_enable_1 + delta_timestamp_enable_2) / 2
+                else:
+                    delta_timestamp_enable_avg = delta_timestamp_enable_t1
+            else:
+                delta_timestamp_enable_avg = 0
+
+            if delta_timestamp_enable_avg < 0.00001 and delta_timestamp_enable_avg > 100000:
                 main.log.info("Delta of timestamp enable switch returned unexpected results")
-                main.log.info("Value returned: " + str(delta_timestamp_enable))
+                main.log.info("Value returned: " + str(delta_timestamp_enable_avg))
                 main.log.info("Omitting iteration " + str(i))
                 assertion = main.FALSE
             else:
-                link_up_lat.append(delta_timestamp_enable)
-                main.log.info("Link up discovery latency iteration "+str(i)+": "+str(delta_timestamp_enable)+" ms")                
+                link_up_lat.append(delta_timestamp_enable_avg)
+                main.log.info("Link up discovery latency iteration "+str(i)+": "+str(delta_timestamp_enable_avg)+" ms")                
    
         link_down_lat_min = str(min(link_down_lat))
         link_down_lat_max = str(max(link_down_lat))
@@ -589,14 +761,23 @@ class TopoPerf:
         import requests
         import os
 
-        url_topo = main.params['TOPO']['url_topo']
         ctrl_1 = main.params['CTRL']['ip1']
+        ctrl_2 = main.params['CTRL']['ip2']
+        ctrl_3 = main.params['CTRL']['ip3']
+        
         port_1 = main.params['CTRL']['port1']
         tshark_output = "/tmp/tshark_of_topo_25.txt"
         numIter = main.params['TOPO']['numIter']
         db_script = main.params['TOPO']['databaseScript']
         table_name = main.params['TOPO']['tableName']
         assertion = main.TRUE
+        
+        rest_port = main.params['INTENTREST']['intentPort']
+        url_suffix = main.params['TOPO']['url_topo']
+        url_topo_1 = "http://"+ctrl_1+":"+rest_port+url_suffix 
+        url_topo_2 = "http://"+ctrl_2+":"+rest_port+url_suffix 
+        url_topo_3 = "http://"+ctrl_3+":"+rest_port+url_suffix 
+        
         add_lat = []
    
         main.log.report("Measure latency of adding 25 switches")
@@ -625,18 +806,19 @@ class TopoPerf:
         
             main.step("Assign controllers and get timestamp")
             for i in range(1, 16): 
-                main.Mininet1.assign_sw_controller(sw=str(i),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'])
+                main.Mininet1.assign_sw_controller(sw=str(i),ip1=ctrl_1,port1=port_1)
             for i in range(31, 41):       
-                main.Mininet1.assign_sw_controller(sw=str(i),ip1=main.params['CTRL']['ip1'],port1=main.params['CTRL']['port1'])
+                main.Mininet1.assign_sw_controller(sw=str(i),ip1=ctrl_1,port1=port_1)
 
             time.sleep(10)
             main.ONOS1.stop_tshark()
 
-            ssh = subprocess.Popen(['ssh', 'admin@'+ctrl_1, 'cat', tshark_output],stdout=subprocess.PIPE)
+            ssh = subprocess.Popen(['ssh', 'admin@'+ctrl_1, 'cat', tshark_output],
+                    stdout=subprocess.PIPE)
             time.sleep(5)
             text = ssh.stdout.readline()
-            print text
             obj = text.split(" ")
+            
             if len(text) > 0:
                 timestamp = int(float(obj[0])*1000)
                 topo_ms_begin = timestamp
@@ -645,26 +827,50 @@ class TopoPerf:
                 topo_ms_begin = 0
                 assertion = main.FALSE    
             
-            json_obj = main.ONOS1.get_json(url_topo) 
-         
-            if json_obj: 
-                topo_ms_end = json_obj['gauges'][0]['gauge']['value']
-            else:
-                topo_ms_end = 0
+            json_obj_1 = main.ONOS1.get_json(url_topo_1) 
+            json_obj_2 = main.ONOS2.get_json(url_topo_2)
+            json_obj_3 = main.ONOS3.get_json(url_topo_3)
 
-            delta = int(topo_ms_end) - int(topo_ms_begin)
+            #If json object exists, parse timestamp from the object
+            if json_obj_1: 
+                topo_ms_end_1 = json_obj_1['gauges'][0]['gauge']['value']
+            else:
+                topo_ms_end_1 = 0
+            if json_obj_2:
+                topo_ms_end_2 = json_obj_2['gauges'][0]['gauge']['value']
+            else:
+                topo_ms_end_2 = 0
+            if json_obj_3:
+                topo_ms_end_3 = json_obj_3['gauges'][0]['gauge']['value']
+            else:
+                topo_ms_end_3 = 0
+
+            delta_1 = int(topo_ms_end_1) - int(topo_ms_begin)
+            delta_2 = int(topo_ms_end_2) - int(topo_ms_begin)
+            delta_3 = int(topo_ms_end_3) - int(topo_ms_begin)
+
+            if delta_1 > 0 and delta_1 < 100000:
+                if delta_2 > 0 and delta_2 < 100000:
+                    if delta_3 > 0 and delta_3 < 100000:
+                        delta_avg = (delta_1 + delta_2 + delta_3) / 3
+                    else:
+                        delta_avg = (delta_1 + delta_2) / 2
+                else:
+                    delta_avg = delta_1
+            else:
+                delta_avg = 0
 
             time.sleep(5)
 
             #NOTE: edit threshold as needed to fail test case
-            if delta < 0 or delta > 100000:
+            if delta_avg < 0.00001 or delta_avg > 100000:
                 main.log.info("Delta of switch add timestamp returned unexpected results")
-                main.log.info("Value returned: " + str(delta))
+                main.log.info("Value returned: " + str(delta_avg))
                 main.log.info("Omitting iteration "+ str(x))
                 assertion = main.FALSE 
             else:
-                add_lat.append(delta) 
-                main.log.info("Add 25 switches latency iteration "+str(x)+": "+str(delta)) 
+                add_lat.append(delta_avg) 
+                main.log.info("Add 25 switches latency iteration "+str(x)+": "+str(delta_avg)) 
 
             main.step("Remove switches from the controller")
             for j in range(1,16):
@@ -686,12 +892,16 @@ class TopoPerf:
    
             omit_iter = int(numIter) - int(len(add_lat))
             main.log.report("Iterations omitted/total: "+str(omit_iter)+"/"+str(numIter))
-            main.log.report("Add 25 switches discovery latency: Min: "+add_lat_min+" ms    Max: "+add_lat_max+" ms    Avg: "+add_lat_avg+" ms")
+            main.log.report("Add 25 switches discovery latency: Min: "+
+                    add_lat_min+" ms    Max: "+add_lat_max+
+                    " ms    Avg: "+add_lat_avg+" ms")
         else:
             assertion = main.FALSE
             main.log.report("add_lat_avg for 25 switches returned unexpected results")
 
-        utilities.assert_equals(expect=main.TRUE,actual=assertion,onpass="25 Switch latency test successful!",onfail="25 Switch latency test NOT successful")
+        utilities.assert_equals(expect=main.TRUE,actual=assertion,
+                onpass="25 Switch latency test successful!",
+                onfail="25 Switch latency test NOT successful")
 
 
 #**********

@@ -814,10 +814,10 @@ class MininetCliDriver(Emulator):
 
         if mnDPIDs!=onosDPIDs:
             switch_results = main.FALSE
-            main.log.report( "Switches in MN but not in ONOS:")
-            main.log.report( str([switch for switch in mnDPIDs if switch not in onosDPIDs]))
-            main.log.report( "Switches in ONOS but not in MN:")
-            main.log.report(  str([switch for switch in onosDPIDs if switch not in mnDPIDs]))
+            main.log.warn( "Switches in MN but not in ONOS:")
+            main.log.warn( str([switch for switch in mnDPIDs if switch not in onosDPIDs]))
+            main.log.warn( "Switches in ONOS but not in MN:")
+            main.log.warn(  str([switch for switch in onosDPIDs if switch not in mnDPIDs]))
         else:#list of dpid's match in onos and mn
             switch_results = main.TRUE
 
@@ -837,10 +837,10 @@ class MininetCliDriver(Emulator):
                     pass #don't set results to true here as this is just one of many checks and it might override a failure
                 else: #the ports of this switch don't match
                     port_results = main.FALSE
-                    main.log.report("ports in MN switch %s(%s) but not in ONOS:" % (switch['name'],switch['dpid'])) 
-                    main.log.report( str([port for port in mn_ports if port not in onos_ports]))
-                    main.log.report("ports in ONOS switch %s(%s) but not in MN:" % (switch['name'],switch['dpid']))
-                    main.log.report( str([port for port in onos_ports if port not in mn_ports]))
+                    main.log.warn("ports in MN switch %s(%s) but not in ONOS:" % (switch['name'],switch['dpid'])) 
+                    main.log.warn( str([port for port in mn_ports if port not in onos_ports]))
+                    main.log.warn("ports in ONOS switch %s(%s) but not in MN:" % (switch['name'],switch['dpid']))
+                    main.log.warn( str([port for port in onos_ports if port not in mn_ports]))
 
 
         #######Links########
@@ -878,20 +878,20 @@ class MininetCliDriver(Emulator):
                     if onos_link['src']['portNumber'] == port1 and onos_link['dst']['portNumber'] == port2:
                         first_dir = main.TRUE
                     else:
-                        main.log.report('the port numbers do not match for ' +str(link) + ' between ONOS and MN')
+                        main.log.warn('the port numbers do not match for ' +str(link) + ' between ONOS and MN')
                     #print node1, ' to ', node2
                 elif onos_link['src']['dpid'].replace(":",'') == node2 and onos_link['dst']['dpid'].replace(":",'') == node1:
                     if onos_link['src']['portNumber'] == port2 and onos_link['dst']['portNumber'] == port1:
                         second_dir = main.TRUE
                     else:
-                        main.log.report('the port numbers do not match for ' +str(link) + ' between ONOS and MN')
+                        main.log.warn('the port numbers do not match for ' +str(link) + ' between ONOS and MN')
                     #print node2, ' to ', node1
                 else:#this is not the link you're looking for
                     pass
             if not first_dir:
-                main.log.report('ONOS has issues with the link from '+str(link.node1.name) +"(dpid: "+ str(node1)+"):"+str(link.port1)+"(portNumber: "+str(port1)+")"+ ' to ' + str(link.node2.name) +"(dpid: "+ str(node2)+"):"+str(link.port2)+"(portNumber: "+str(port2)+")")
+                main.log.warn('ONOS has issues with the link from '+str(link.node1.name) +"(dpid: "+ str(node1)+"):"+str(link.port1)+"(portNumber: "+str(port1)+")"+ ' to ' + str(link.node2.name) +"(dpid: "+ str(node2)+"):"+str(link.port2)+"(portNumber: "+str(port2)+")")
             if not second_dir:
-                main.log.report('ONOS has issues with the link from '+str(link.node2.name) +"(dpid: "+ str(node2)+"):"+str(link.port2)+"(portNumber: "+str(port2)+")"+ ' to ' + str(link.node1.name) +"(dpid: "+ str(node1)+"):"+str(link.port1)+"(portNumber: "+str(port1)+")")
+                main.log.warn('ONOS has issues with the link from '+str(link.node2.name) +"(dpid: "+ str(node2)+"):"+str(link.port2)+"(portNumber: "+str(port2)+")"+ ' to ' + str(link.node1.name) +"(dpid: "+ str(node1)+"):"+str(link.port1)+"(portNumber: "+str(port1)+")")
             link_results = link_results and first_dir and second_dir
 
         

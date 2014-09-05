@@ -170,7 +170,7 @@ class TestON:
                                               port = self.componentDictionary[component]['port'] if ('port' in self.componentDictionary[component].keys()) else None,
                                               options = driver_options)
         if not connect_result:
-            self.log.error("Exiting form the test execution because the connecting to the "+component+" component failed.")
+            self.log.error("Exiting from the test execution because the connecting to the "+component+" component failed.")
             self.exit() 
             
         vars(self)[component] = driverObject

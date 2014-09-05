@@ -898,17 +898,13 @@ class TopoONOS2 :
                 break
 
 
+        import time
         topo_result = main.TRUE
         for n in range(1,5):
+            start = time.time()
             temp_result = main.Mininet1.compare_topo(ctrls, main.ONOS1.get_json(main.params['CTRL']['ip'+str(n)]+":"+main.params['CTRL']['restPort'+str(n)]+main.params['TopoRest'])) 
-            '''
-            temp_result = main.Mininet1.compare_topo(
-                        [(main.ONOS1, 'ONOS1', main.params['CTRL']['ip1'], main.params['CTRL']['port1']),
-                            (main.ONOS2, 'ONOS2', main.params['CTRL']['ip2'], main.params['CTRL']['port2']),
-                            (main.ONOS3, 'ONOS3', main.params['CTRL']['ip3'], main.params['CTRL']['port3']),
-                            (main.ONOS4, 'ONOS4', main.params['CTRL']['ip4'], main.params['CTRL']['port4'])],
-                        main.ONOS1.get_json(main.params['CTRL']['ip'+str(n)]+":"+main.params['CTRL']['restPort'+str(n)]+main.params['TopoRest']))
-            '''
+            stop = time.time()
+            print stop - start
             topo_result = topo_result and temp_result
         print "Topoology check results: " + str(topo_result)
 

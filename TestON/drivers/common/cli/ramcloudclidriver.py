@@ -185,10 +185,10 @@ RamCloudCliDriver is the basic driver which will handle the RamCloud server func
             main.log.info(self.name+": RAMCloud not running")
             return main.FALSE
         elif re.search("1\sRAMCloud\sserver\srunning",response):
-            main.log.warn(self.name+": RAMCloud Running")
+            main.log.info(self.name+": RAMCloud Running")
             return main.TRUE
         else:
-            main.log.info( self.name+":  WARNING: status recieved unknown response")
+            main.log.error( self.name+":  WARNING: status recieved unknown response")
             return main.FALSE
             
     def status_coor(self):
@@ -206,13 +206,13 @@ RamCloudCliDriver is the basic driver which will handle the RamCloud server func
         #return response
         
         if re.search("0\sRAMCloud\scoordinator\srunning", response) :
-            main.log.warn(self.name+": RAMCloud Coordinator not running")
+            main.log.info(self.name+": RAMCloud Coordinator not running")
             return main.FALSE
         elif re.search("1\sRAMCloud\scoordinator\srunning", response):
             main.log.info(self.name+": RAMCloud Coordinator Running")
             return main.TRUE
         else:
-            main.log.warn( self.name+": coordinator status recieved unknown response")
+            main.log.error( self.name+": coordinator status recieved unknown response")
             return main.FALSE
 
     def stop_serv(self):

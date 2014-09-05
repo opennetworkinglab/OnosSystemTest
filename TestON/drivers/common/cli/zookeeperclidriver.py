@@ -28,6 +28,7 @@ import fcntl
 import os
 import signal
 import re
+import traceback
 import sys
 import core.teston
 import time
@@ -51,7 +52,8 @@ class ZookeeperCliDriver(CLI):
             self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT])
             self.handle.sendline("ps -ef |grep 'zookeeper.log.dir' |wc -l")
             self.handle.expect(["wc -l",pexpect.EOF,pexpect.TIMEOUT])
-            response = self.handle.after
+            self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT])
+            response = self.handle.before
             if re.search("1",response):
                 return "Zookeeper Killed!"
             else:
@@ -77,7 +79,7 @@ class ZookeeperCliDriver(CLI):
             vars(self)[key] = connectargs[key]       
         self.home = "~/ONOS"
         self.zkhome = "~/zookeeper-3.4.6"
-        self.clustername = "sanity-rc-onos"
+        #self.clustername = "sanity-rc-onos"
         #self.home = "~/zookeeper-3.4.5"
         for key in self.options:
             if key == "home":
@@ -136,12 +138,18 @@ class ZookeeperCliDriver(CLI):
         self.execute(cmd="\n",prompt="\$",timeout=10)
         time.sleep(1)
         self.handle.sendline("cd "+self.home)
-        response = self.execute(cmd="./onos.sh zk stop ",prompt="$",timeout=10)
-        if re.search("stopping",response):
+        self.handle.sendline("./onos.sh zk stop")
+        self.handle.expect("zk stop") 
+        self.handle.expect("\$")
+        response = self.handle.before + self.handle.after 
+        if re.search("STOPPED",response):
             main.log.info(self.name + ": Zookeeper Stopped")
             return main.TRUE
-        else:
+        elif re.search("no\szookeeper\sto\sstop",response):
             main.log.warn(self.name + ": No zookeeper to stop")
+            return main.TRUE
+        else:
+            main.log.warn(self.name + ": Unexpected response from ./onos.sh zk stop")
             return main.FALSE
             
     def disconnect(self):

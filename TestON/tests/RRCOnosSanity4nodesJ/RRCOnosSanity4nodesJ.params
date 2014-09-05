@@ -33,24 +33,24 @@
 	<sw1>s1</sw1>
     </PLUG>
     <CTRL>
-        <ip1>10.128.4.151</ip1>
+        <ip1>10.128.11.1</ip1>
         <port1>6633</port1>
-        <ip2>10.128.4.152</ip2>
+        <ip2>10.128.11.2</ip2>
         <port2>6633</port2>
-        <ip3>10.128.4.153</ip3>
+        <ip3>10.128.11.3</ip3>
         <port3>6633</port3>
-        <ip4>10.128.4.154</ip4>
+        <ip4>10.128.11.4</ip4>
         <port4>6633</port4>
     </CTRL>
-    <RestIP>10.128.4.151</RestIP>
-    <RestIP2>10.128.4.152</RestIP2>
-    <RestIP3>10.128.4.153</RestIP3>
-    <RestIP4>10.128.4.154</RestIP4>
+    <RestIP>10.128.11.1</RestIP>
+    <RestIP2>10.128.11.2</RestIP2>
+    <RestIP3>10.128.11.3</RestIP3>
+    <RestIP4>10.128.11.4</RestIP4>
     <NR_Switches>25</NR_Switches>
     <NR_Links>50</NR_Links>
     <RESTCALL>
-	<restIP1>10.128.4.151</restIP1>
-	<restIP2>10.128.4.152</restIP2>
+	<restIP1>10.128.11.1</restIP1>
+	<restIP2>10.128.11.2</restIP2>
 	<restPort>8080</restPort>
 	<restURL>/wm/onos/topology/hosts</restURL>
     </RESTCALL>

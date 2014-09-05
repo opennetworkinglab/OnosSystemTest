@@ -31,6 +31,7 @@ import re
 import sys
 import time
 
+
 sys.path.append("../")
 
 from drivers.common.cli.remotetestbeddriver import RemoteTestBedDriver
@@ -89,6 +90,16 @@ class RemoteVMDriver(RemoteTestBedDriver):
             return main.FALSE
         elif i==3: #timeout
             main.log.error("No route to the Host "+self.user_name+"@"+self.ip_address)
+            ####DEBUGGING###
+            import traceback
+            main.log.error("Possible error in TestON driver(remotevmdriver), plese show this to Jon")
+            main.log.error("handle.before:")
+            main.log.error(self.handle.before)
+            main.log.error("handle.after:")
+            main.log.error(self.handle.after)
+            main.log.error("stack trace:")
+            traceback.print_stack(file=sys.stdout)
+            ####/DEBUGGING###
             return main.FALSE
         elif i==4:
             main.log.error("ssh: connect to host "+self.ip_address+" port 22: Connection refused")

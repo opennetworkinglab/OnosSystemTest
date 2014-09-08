@@ -68,18 +68,25 @@
 	<restPort>8080</restPort>
 	<restURL>/wm/onos/topology/hosts</restURL>
     </RESTCALL>
+    <url1>http://10.128.10.1:8080/wm/onos/metrics</url1>
+    <url2>http://10.128.10.2:8080/wm/onos/metrics</url2>
+    <url3>http://10.128.10.3:8080/wm/onos/metrics</url3>
+    <url4>http://10.128.10.4:8080/wm/onos/metrics</url4>
+    <url5>http://10.128.10.5:8080/wm/onos/metrics</url5>
+    <url6>http://10.128.10.6:8080/wm/onos/metrics</url6>
+    <url7>http://10.128.10.7:8080/wm/onos/metrics</url7>
     <switches_num>30</switches_num>
     <RATE1>100</RATE1>
-    <RUN_DUR>240</RUN_DUR>
-    <sleep_t>8</sleep_t>
+    <RUN_DUR>600</RUN_DUR>
+    <sleep_t>6</sleep_t>
     <loop>10</loop>
     <port>10</port>
-    <sleep_init>160</sleep_init>
-    <int_num>300</int_num>
+    <sleep_init>540</sleep_init>
+    <int_num>40</int_num>
     <addrate>1</addrate>
-    <NBdur>90</NBdur>
+    <NBdur>100</NBdur>
     <NBsleep>5</NBsleep>
     <NBloop>7</NBloop>
-    <NBsleep_init>50</NBsleep_init>
+    <NBsleep_init>60</NBsleep_init>
     <db_script>/home/admin/TestON/scripts/./scaleoutdatagraph.py</db_script>
 </PARAMS>      

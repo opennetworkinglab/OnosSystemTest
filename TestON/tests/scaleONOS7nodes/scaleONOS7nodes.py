@@ -110,7 +110,7 @@ class scaleONOS7nodes :
         if test == main.FALSE:
             main.ONOS1.start_rest()
         main.ONOS1.get_version()
-        main.log.report("Startup check Zookeeper1, and ONOS1 connections")
+        main.log.report("Startup check Zookeeper, and ONOS connections")
         main.step("Testing startup Zookeeper")   
         data =  main.Zookeeper1.isup() and main.Zookeeper2.isup() and main.Zookeeper3.isup()
         utilities.assert_equals(expect=main.TRUE,actual=data,onpass="Zookeeper is up!",onfail="Zookeeper is down...")
@@ -177,9 +177,9 @@ class scaleONOS7nodes :
         import math
         time.sleep(sleep_init)
         open("/home/admin/TestON/tests/scaleONOS7nodes/logs/scale3nodesrate1", 'w').close()
-        url1 = "http://10.128.10.1:8080/wm/onos/metrics"
-        url2 = "http://10.128.10.2:8080/wm/onos/metrics"
-        url3 = "http://10.128.10.3:8080/wm/onos/metrics"
+        url1 = main.params['url1']
+        url2 = main.params['url2']
+        url3 = main.params['url3']
         f = open("/home/admin/TestON/tests/scaleONOS7nodes/logs/scale3nodesrate1", "a")
         #time.sleep(10)
         tpval = 0.0
@@ -249,18 +249,18 @@ class scaleONOS7nodes :
         int_r = 3 * int_num
         main.log.report("Starting NB Throughput test: loading 3-node ONOS cluster with " + str(int_num) + " Intents/s on each node" )
         main.Mininet4.handle.expect("\$")
-        main.Mininet4.handle.sendline("sudo ovs-vsctl set-controller s1 tcp:10.128.10.1:6633")
-        main.Mininet4.handle.sendline("sudo ovs-vsctl set-controller s2 tcp:10.128.10.1:6633")
-        main.Mininet4.handle.sendline("sudo ovs-vsctl set-controller s3 tcp:10.128.10.2:6633")
-        main.Mininet4.handle.sendline("sudo ovs-vsctl set-controller s4 tcp:10.128.10.2:6633")
-        main.Mininet4.handle.sendline("sudo ovs-vsctl set-controller s5 tcp:10.128.10.3:6633")
-        main.Mininet4.handle.sendline("sudo ovs-vsctl set-controller s6 tcp:10.128.10.3:6633")
-        main.Mininet4.handle.sendline("sudo ovs-vsctl set-controller s7 tcp:10.128.10.3:6633")
+        main.Mininet4.handle.sendline("sudo ovs-vsctl set-controller s1 tcp:" + ip1 + ":6633")
+        main.Mininet4.handle.sendline("sudo ovs-vsctl set-controller s2 tcp:" + ip1 + ":6633")
+        main.Mininet4.handle.sendline("sudo ovs-vsctl set-controller s3 tcp:" + ip2 + ":6633")
+        main.Mininet4.handle.sendline("sudo ovs-vsctl set-controller s4 tcp:" + ip2 + ":6633")
+        main.Mininet4.handle.sendline("sudo ovs-vsctl set-controller s5 tcp:" + ip3 + ":6633")
+        main.Mininet4.handle.sendline("sudo ovs-vsctl set-controller s6 tcp:" + ip3 + ":6633")
+        main.Mininet4.handle.sendline("sudo ovs-vsctl set-controller s7 tcp:" + ip3 + ":6633")
         
         main.ONOS3.handle.sendline("cd ~admin/suibin-dev")
         main.ONOS3.handle.expect("\$")
 
-        main.ONOS3.handle.sendline("./loadgen_NB.py -n 3 -u \"10.128.10.1:8080 10.128.10.2:8080 10.128.10.3:8080 \" -i " + str(int_r) + " -a " + addrate + " -l " + NBdur + " -p 20")
+        main.ONOS3.handle.sendline("./loadgen_NB.py -n 3 -u \"" + ip1 + ":8080 " + ip2 + ":8080 " + ip3 + ":8080 \" -i " + str(int_r) + " -a " + addrate + " -l " + NBdur + " -p 20")
         main.ONOS3.handle.expect("Pause between add and delete:", timeout=900)
         time.sleep(NBsleep_init)
         import json
@@ -269,9 +269,9 @@ class scaleONOS7nodes :
         nbtpavg3n = 0.0
         
         open("/home/admin/TestON/tests/scaleONOS7nodes/logs/NBscale3nodesrate1", 'w').close()
-        url1 = "http://10.128.10.1:8080/wm/onos/metrics"
-        url2 = "http://10.128.10.2:8080/wm/onos/metrics"
-        url3 = "http://10.128.10.3:8080/wm/onos/metrics"
+        url1 = main.params['url1']
+        url2 = main.params['url2']
+        url3 = main.params['url3']
         f = open("/home/admin/TestON/tests/scaleONOS7nodes/logs/NBscale3nodesrate1", "a")
         for i in range(NBloop):
             j1 = main.ONOS1.get_json(url1)
@@ -466,10 +466,10 @@ class scaleONOS7nodes :
         import math
         time.sleep(sleep_init)
         open("/home/admin/TestON/tests/scaleONOS7nodes/logs/scale4nodesrate1", 'w').close()
-        url1 = "http://10.128.10.1:8080/wm/onos/metrics"
-        url2 = "http://10.128.10.2:8080/wm/onos/metrics"
-        url3 = "http://10.128.10.3:8080/wm/onos/metrics"
-        url4 = "http://10.128.10.4:8080/wm/onos/metrics"
+        url1 = main.params['url1']
+        url2 = main.params['url2']
+        url3 = main.params['url3']
+        url4 = main.params['url4']
         tpval = 0.0
         global tpavg4n 
         tpavg4n = 0.0
@@ -499,7 +499,7 @@ class scaleONOS7nodes :
                     f.write('\t')
                     f.write(str(json_str[j]["meters"][4]['meter']['mean_rate']))
                     f.write('\n')
-                    if j == 3:
+                    if j == 4:
                         tpval += float(json_str[j]["meters"][4]['meter']['m1_rate']) 
                 
                 f.write('\n')
@@ -540,18 +540,18 @@ class scaleONOS7nodes :
         nbtpavg4n = 0.0
         int_r = 4 * int_num
         main.Mininet4.handle.expect("\$")
-        main.Mininet4.handle.sendline("sudo ovs-vsctl set-controller s1 tcp:10.128.10.1:6633")
-        main.Mininet4.handle.sendline("sudo ovs-vsctl set-controller s2 tcp:10.128.10.2:6633")
-        main.Mininet4.handle.sendline("sudo ovs-vsctl set-controller s3 tcp:10.128.10.3:6633")
-        main.Mininet4.handle.sendline("sudo ovs-vsctl set-controller s4 tcp:10.128.10.4:6633")
-        main.Mininet4.handle.sendline("sudo ovs-vsctl set-controller s5 tcp:10.128.10.1:6633")
-        main.Mininet4.handle.sendline("sudo ovs-vsctl set-controller s6 tcp:10.128.10.2:6633")
-        main.Mininet4.handle.sendline("sudo ovs-vsctl set-controller s7 tcp:10.128.10.4:6633")
+        main.Mininet4.handle.sendline("sudo ovs-vsctl set-controller s1 tcp:" + ip1 + ":6633")
+        main.Mininet4.handle.sendline("sudo ovs-vsctl set-controller s2 tcp:" + ip2 + ":6633")
+        main.Mininet4.handle.sendline("sudo ovs-vsctl set-controller s3 tcp:" + ip3 + ":6633")
+        main.Mininet4.handle.sendline("sudo ovs-vsctl set-controller s4 tcp:" + ip4 + ":6633")
+        main.Mininet4.handle.sendline("sudo ovs-vsctl set-controller s5 tcp:" + ip1 + ":6633")
+        main.Mininet4.handle.sendline("sudo ovs-vsctl set-controller s6 tcp:" + ip2 + ":6633")
+        main.Mininet4.handle.sendline("sudo ovs-vsctl set-controller s7 tcp:" + ip4 + ":6633")
         
         main.ONOS3.handle.sendline("cd ~admin/suibin-dev")
         main.ONOS3.handle.expect("\$")
 
-        main.ONOS3.handle.sendline("./loadgen_NB.py -n 4 -u \"10.128.10.1:8080 10.128.10.2:8080 10.128.10.3:8080 10.128.10.4:8080  \" -i " + str(int_r) + " -a " + addrate + " -l " + NBdur + " -p 20")
+        main.ONOS3.handle.sendline("./loadgen_NB.py -n 4 -u \"" + ip1 + ":8080 " + ip2 + ":8080 " + ip3 + ":8080 " + ip4 + ":8080  \" -i " + str(int_r) + " -a " + addrate + " -l " + NBdur + " -p 20")
         main.ONOS3.handle.expect("Pause between add and delete:", timeout=900)
 
         
@@ -559,10 +559,10 @@ class scaleONOS7nodes :
         import json
         
         open("/home/admin/TestON/tests/scaleONOS7nodes/logs/NBscale4nodesrate1", 'w').close()
-        url1 = "http://10.128.10.1:8080/wm/onos/metrics"
-        url2 = "http://10.128.10.2:8080/wm/onos/metrics"
-        url3 = "http://10.128.10.3:8080/wm/onos/metrics"
-        url4 = "http://10.128.10.4:8080/wm/onos/metrics"
+        url1 = main.params['url1']
+        url2 = main.params['url2']
+        url3 = main.params['url3']
+        url4 = main.params['url4']
         f = open("/home/admin/TestON/tests/scaleONOS7nodes/logs/NBscale4nodesrate1", "a")
         for i in range(NBloop):
             j1 = main.ONOS2.get_json(url1)
@@ -649,12 +649,11 @@ class scaleONOS7nodes :
         time.sleep(sleep_init)
 
         open("/home/admin/TestON/tests/scaleONOS7nodes/logs/scale5nodesrate1", 'w').close()
-        url1 = "http://10.128.10.1:8080/wm/onos/metrics"
-        url2 = "http://10.128.10.2:8080/wm/onos/metrics"
-        url3 = "http://10.128.10.3:8080/wm/onos/metrics"
-        url4 = "http://10.128.10.4:8080/wm/onos/metrics"
-        url5 = "http://10.128.10.5:8080/wm/onos/metrics"
-
+        url1 = main.params['url1']
+        url2 = main.params['url2']
+        url3 = main.params['url3']
+        url4 = main.params['url4']
+        url5 = main.params['url5']
         f = open("/home/admin/TestON/tests/scaleONOS7nodes/logs/scale5nodesrate1", "a")
         for i in range(int (loop)):
             j1 = main.ONOS2.get_json(url1)
@@ -682,7 +681,7 @@ class scaleONOS7nodes :
                     f.write('\t')
                     f.write(str(json_str[j]["meters"][4]['meter']['mean_rate']))
                     f.write('\n')
-                    if j == 3:
+                    if j == 4:
                         tpval += float(json_str[j]["meters"][4]['meter']['m1_rate']) 
                 
                 f.write('\n')
@@ -708,6 +707,7 @@ class scaleONOS7nodes :
         ip2 = main.params['CTRL']['ip2']
         ip3 = main.params['CTRL']['ip3']
         ip4 = main.params['CTRL']['ip4']
+        ip5 = main.params['CTRL']['ip5']
 
         import time
         import json
@@ -723,18 +723,18 @@ class scaleONOS7nodes :
         nbtpavg5n = 0.0
         int_r = 5 * int_num
         main.Mininet4.handle.expect("\$")
-        main.Mininet4.handle.sendline("sudo ovs-vsctl set-controller s1 tcp:10.128.10.1:6633")
-        main.Mininet4.handle.sendline("sudo ovs-vsctl set-controller s2 tcp:10.128.10.2:6633")
-        main.Mininet4.handle.sendline("sudo ovs-vsctl set-controller s3 tcp:10.128.10.3:6633")
-        main.Mininet4.handle.sendline("sudo ovs-vsctl set-controller s4 tcp:10.128.10.4:6633")
-        main.Mininet4.handle.sendline("sudo ovs-vsctl set-controller s5 tcp:10.128.10.5:6633")
-        main.Mininet4.handle.sendline("sudo ovs-vsctl set-controller s6 tcp:10.128.10.3:6633")
-        main.Mininet4.handle.sendline("sudo ovs-vsctl set-controller s7 tcp:10.128.10.5:6633")
+        main.Mininet4.handle.sendline("sudo ovs-vsctl set-controller s1 tcp:" + ip1 + ":6633")
+        main.Mininet4.handle.sendline("sudo ovs-vsctl set-controller s2 tcp:" + ip2 + ":6633")
+        main.Mininet4.handle.sendline("sudo ovs-vsctl set-controller s3 tcp:" + ip3 + ":6633")
+        main.Mininet4.handle.sendline("sudo ovs-vsctl set-controller s4 tcp:" + ip4 + ":6633")
+        main.Mininet4.handle.sendline("sudo ovs-vsctl set-controller s5 tcp:" + ip5 + ":6633")
+        main.Mininet4.handle.sendline("sudo ovs-vsctl set-controller s6 tcp:" + ip3 + ":6633")
+        main.Mininet4.handle.sendline("sudo ovs-vsctl set-controller s7 tcp:" + ip5 + ":6633")
         
         main.ONOS3.handle.sendline("cd ~admin/suibin-dev")
         main.ONOS3.handle.expect("\$")
 
-        main.ONOS3.handle.sendline("./loadgen_NB.py -n 5 -u \"10.128.10.1:8080 10.128.10.2:8080 10.128.10.3:8080 10.128.10.4:8080 10.128.10.5:8080  \" -i " + str(int_r) + " -a " + addrate + " -l " + NBdur + " -p 20")
+        main.ONOS3.handle.sendline("./loadgen_NB.py -n 5 -u \"" + ip1 + ":8080 " + ip2 + ":8080 " + ip3 + ":8080 " + ip4 + ":8080 " + ip5 + ":8080  \" -i " + str(int_r) + " -a " + addrate + " -l " + NBdur + " -p 20")
         main.ONOS3.handle.expect("Pause between add and delete:", timeout=900)
 
         
@@ -742,11 +742,11 @@ class scaleONOS7nodes :
         import json
         
         open("/home/admin/TestON/tests/scaleONOS7nodes/logs/NBscale5nodesrate1", 'w').close()
-        url1 = "http://10.128.10.1:8080/wm/onos/metrics"
-        url2 = "http://10.128.10.2:8080/wm/onos/metrics"
-        url3 = "http://10.128.10.3:8080/wm/onos/metrics"
-        url4 = "http://10.128.10.4:8080/wm/onos/metrics"
-        url5 = "http://10.128.10.5:8080/wm/onos/metrics"
+        url1 = main.params['url1']
+        url2 = main.params['url2']
+        url3 = main.params['url3']
+        url4 = main.params['url4']
+        url5 = main.params['url5']
         f = open("/home/admin/TestON/tests/scaleONOS7nodes/logs/NBscale5nodesrate1", "a")
         for i in range(NBloop):
             j1 = main.ONOS2.get_json(url1)
@@ -837,14 +837,12 @@ class scaleONOS7nodes :
         tpavg6n = 0.0
         time.sleep(sleep_init)
         open("/home/admin/TestON/tests/scaleONOS7nodes/logs/scale6nodesrate1", 'w').close()
-        url1 = "http://10.128.10.1:8080/wm/onos/metrics"
-        url2 = "http://10.128.10.2:8080/wm/onos/metrics"
-        url3 = "http://10.128.10.3:8080/wm/onos/metrics"
-        url4 = "http://10.128.10.4:8080/wm/onos/metrics"
-        url5 = "http://10.128.10.5:8080/wm/onos/metrics"
-        url5 = "http://10.128.10.5:8080/wm/onos/metrics"
-        url6 = "http://10.128.10.6:8080/wm/onos/metrics"
-
+        url1 = main.params['url1']
+        url2 = main.params['url2']
+        url3 = main.params['url3']
+        url4 = main.params['url4']
+        url5 = main.params['url5']
+        url6 = main.params['url6']
         f = open("/home/admin/TestON/tests/scaleONOS7nodes/logs/scale6nodesrate1", "a")
         for i in range(int (loop)):
             j1 = main.ONOS2.get_json(url1)
@@ -874,7 +872,7 @@ class scaleONOS7nodes :
                     f.write('\t')
                     f.write(str(json_str[j]["meters"][4]['meter']['mean_rate']))
                     f.write('\n')
-                    if j == 3:
+                    if j == 4:
                         tpval += float(json_str[j]["meters"][4]['meter']['m1_rate']) 
                 
                 f.write('\n')
@@ -900,6 +898,8 @@ class scaleONOS7nodes :
         ip2 = main.params['CTRL']['ip2']
         ip3 = main.params['CTRL']['ip3']
         ip4 = main.params['CTRL']['ip4']
+        ip5 = main.params['CTRL']['ip5']
+        ip6 = main.params['CTRL']['ip6']
 
         import time
         import json
@@ -915,18 +915,18 @@ class scaleONOS7nodes :
         nbtpavg6n = 0.0
         int_r = 6 * int_num
         main.Mininet4.handle.expect("\$")
-        main.Mininet4.handle.sendline("sudo ovs-vsctl set-controller s1 tcp:10.128.10.1:6633")
-        main.Mininet4.handle.sendline("sudo ovs-vsctl set-controller s2 tcp:10.128.10.2:6633")
-        main.Mininet4.handle.sendline("sudo ovs-vsctl set-controller s3 tcp:10.128.10.3:6633")
-        main.Mininet4.handle.sendline("sudo ovs-vsctl set-controller s4 tcp:10.128.10.4:6633")
-        main.Mininet4.handle.sendline("sudo ovs-vsctl set-controller s5 tcp:10.128.10.5:6633")
-        main.Mininet4.handle.sendline("sudo ovs-vsctl set-controller s6 tcp:10.128.10.6:6633")
-        main.Mininet4.handle.sendline("sudo ovs-vsctl set-controller s7 tcp:10.128.10.6:6633")
+        main.Mininet4.handle.sendline("sudo ovs-vsctl set-controller s1 tcp:" + ip1 + ":6633")
+        main.Mininet4.handle.sendline("sudo ovs-vsctl set-controller s2 tcp:" + ip2 + ":6633")
+        main.Mininet4.handle.sendline("sudo ovs-vsctl set-controller s3 tcp:" + ip3 + ":6633")
+        main.Mininet4.handle.sendline("sudo ovs-vsctl set-controller s4 tcp:" + ip4 + ":6633")
+        main.Mininet4.handle.sendline("sudo ovs-vsctl set-controller s5 tcp:" + ip5 + ":6633")
+        main.Mininet4.handle.sendline("sudo ovs-vsctl set-controller s6 tcp:" + ip6 + ":6633")
+        main.Mininet4.handle.sendline("sudo ovs-vsctl set-controller s7 tcp:" + ip6 + ":6633")
         
         main.ONOS3.handle.sendline("cd ~admin/suibin-dev")
         main.ONOS3.handle.expect("\$")
 
-        main.ONOS3.handle.sendline("./loadgen_NB.py -n 6 -u \"10.128.10.1:8080 10.128.10.2:8080 10.128.10.3:8080 10.128.10.4:8080 10.128.10.5:8080 10.128.10.6:8080 \" -i " + str(int_r) + " -a " + addrate + " -l " + NBdur + " -p 20")
+        main.ONOS3.handle.sendline("./loadgen_NB.py -n 6 -u \"" + ip1 + ":8080 " + ip2 + ":8080 " + ip3 + ":8080 " + ip4 + ":8080 " + ip5 + ":8080 " + ip6 + ":8080 \" -i " + str(int_r) + " -a " + addrate + " -l " + NBdur + " -p 20")
         main.ONOS3.handle.expect("Pause between add and delete:", timeout=900)
 
         
@@ -934,12 +934,12 @@ class scaleONOS7nodes :
         import json
         
         open("/home/admin/TestON/tests/scaleONOS7nodes/logs/NBscale6nodesrate1", 'w').close()
-        url1 = "http://10.128.10.1:8080/wm/onos/metrics"
-        url2 = "http://10.128.10.2:8080/wm/onos/metrics"
-        url3 = "http://10.128.10.3:8080/wm/onos/metrics"
-        url4 = "http://10.128.10.4:8080/wm/onos/metrics"
-        url5 = "http://10.128.10.5:8080/wm/onos/metrics"
-        url6 = "http://10.128.10.6:8080/wm/onos/metrics"
+        url1 = main.params['url1']
+        url2 = main.params['url2']
+        url3 = main.params['url3']
+        url4 = main.params['url4']
+        url5 = main.params['url5']
+        url6 = main.params['url6']
         f = open("/home/admin/TestON/tests/scaleONOS7nodes/logs/NBscale6nodesrate1", "a")
         for i in range(NBloop):
             j1 = main.ONOS2.get_json(url1)
@@ -1034,14 +1034,13 @@ class scaleONOS7nodes :
         time.sleep(sleep_init)
         
         open("/home/admin/TestON/tests/scaleONOS7nodes/logs/scale7nodesrate1", 'w').close()
-        url1 = "http://10.128.10.1:8080/wm/onos/metrics"
-        url2 = "http://10.128.10.2:8080/wm/onos/metrics"
-        url3 = "http://10.128.10.3:8080/wm/onos/metrics"
-        url4 = "http://10.128.10.4:8080/wm/onos/metrics"
-        url5 = "http://10.128.10.5:8080/wm/onos/metrics"
-        url5 = "http://10.128.10.5:8080/wm/onos/metrics"
-        url6 = "http://10.128.10.6:8080/wm/onos/metrics"
-        url7 = "http://10.128.10.7:8080/wm/onos/metrics"
+        url1 = main.params['url1']
+        url2 = main.params['url2']
+        url3 = main.params['url3']
+        url4 = main.params['url4']
+        url5 = main.params['url5']
+        url6 = main.params['url6']
+        url7 = main.params['url7']
 
         f = open("/home/admin/TestON/tests/scaleONOS7nodes/logs/scale7nodesrate1", "a")
         for i in range(int (loop)):
@@ -1074,7 +1073,7 @@ class scaleONOS7nodes :
                     f.write('\t')
                     f.write(str(json_str[j]["meters"][4]['meter']['mean_rate']))
                     f.write('\n')
-                    if j == 3:
+                    if j == 4:
                         tpval += float(json_str[j]["meters"][4]['meter']['m1_rate']) 
                 
                 f.write('\n')
@@ -1100,6 +1099,9 @@ class scaleONOS7nodes :
         ip2 = main.params['CTRL']['ip2']
         ip3 = main.params['CTRL']['ip3']
         ip4 = main.params['CTRL']['ip4']
+        ip5 = main.params['CTRL']['ip5']
+        ip6 = main.params['CTRL']['ip6']
+        ip7 = main.params['CTRL']['ip7']
 
         import time
         import json
@@ -1115,18 +1117,18 @@ class scaleONOS7nodes :
         nbtpavg7n = 0.0
         int_r = 7 * int_num
         main.Mininet4.handle.expect("\$")
-        main.Mininet4.handle.sendline("sudo ovs-vsctl set-controller s1 tcp:10.128.10.1:6633")
-        main.Mininet4.handle.sendline("sudo ovs-vsctl set-controller s2 tcp:10.128.10.2:6633")
-        main.Mininet4.handle.sendline("sudo ovs-vsctl set-controller s3 tcp:10.128.10.3:6633")
-        main.Mininet4.handle.sendline("sudo ovs-vsctl set-controller s4 tcp:10.128.10.4:6633")
-        main.Mininet4.handle.sendline("sudo ovs-vsctl set-controller s5 tcp:10.128.10.5:6633")
-        main.Mininet4.handle.sendline("sudo ovs-vsctl set-controller s6 tcp:10.128.10.6:6633")
-        main.Mininet4.handle.sendline("sudo ovs-vsctl set-controller s7 tcp:10.128.10.7:6633")
+        main.Mininet4.handle.sendline("sudo ovs-vsctl set-controller s1 tcp:" + ip1 + ":6633")
+        main.Mininet4.handle.sendline("sudo ovs-vsctl set-controller s2 tcp:" + ip2 + ":6633")
+        main.Mininet4.handle.sendline("sudo ovs-vsctl set-controller s3 tcp:" + ip3 + ":6633")
+        main.Mininet4.handle.sendline("sudo ovs-vsctl set-controller s4 tcp:" + ip4 + ":6633")
+        main.Mininet4.handle.sendline("sudo ovs-vsctl set-controller s5 tcp:" + ip5 + ":6633")
+        main.Mininet4.handle.sendline("sudo ovs-vsctl set-controller s6 tcp:" + ip6 + ":6633")
+        main.Mininet4.handle.sendline("sudo ovs-vsctl set-controller s7 tcp:" + ip7 + ":6633")
         
         main.ONOS3.handle.sendline("cd ~admin/suibin-dev")
         main.ONOS3.handle.expect("\$")
 
-        main.ONOS3.handle.sendline("./loadgen_NB.py -n 7 -u \"10.128.10.1:8080 10.128.10.2:8080 10.128.10.3:8080 10.128.10.4:8080 10.128.10.6:8080 10.128.10.5:8080 10.128.10.7:8080  \" -i " + str(int_r) + " -a " + addrate + " -l " + NBdur + " -p 20")
+        main.ONOS3.handle.sendline("./loadgen_NB.py -n 7 -u \"" + ip1 + ":8080 " + ip2 + ":8080 " + ip3 + ":8080 " + ip4 + ":8080 " + ip6 + ":8080 " + ip5 + ":8080 " + ip7 + ":8080  \" -i " + str(int_r) + " -a " + addrate + " -l " + NBdur + " -p 20")
         main.ONOS3.handle.expect("Pause between add and delete:", timeout=900)
 
         
@@ -1134,13 +1136,13 @@ class scaleONOS7nodes :
         import json
         
         open("/home/admin/TestON/tests/scaleONOS7nodes/logs/NBscale7nodesrate1", 'w').close()
-        url1 = "http://10.128.10.1:8080/wm/onos/metrics"
-        url2 = "http://10.128.10.2:8080/wm/onos/metrics"
-        url3 = "http://10.128.10.3:8080/wm/onos/metrics"
-        url4 = "http://10.128.10.4:8080/wm/onos/metrics"
-        url5 = "http://10.128.10.5:8080/wm/onos/metrics"
-        url6 = "http://10.128.10.6:8080/wm/onos/metrics"
-        url7 = "http://10.128.10.7:8080/wm/onos/metrics"
+        url1 = main.params['url1']
+        url2 = main.params['url2']
+        url3 = main.params['url3']
+        url4 = main.params['url4']
+        url5 = main.params['url5']
+        url6 = main.params['url6']
+        url7 = main.params['url7']
         f = open("/home/admin/TestON/tests/scaleONOS7nodes/logs/NBscale7nodesrate1", "a")
         for i in range(NBloop):
             j1 = main.ONOS2.get_json(url1)

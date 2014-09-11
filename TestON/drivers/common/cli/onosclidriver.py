@@ -1195,34 +1195,46 @@ class OnosCliDriver(CLI):
                 self.handle.sendline("git pull " + comp1)
            
             uptodate = 0
-            i=self.handle.expect(['fatal','Username\sfor\s(.*):\s','\sfile(s*) changed,\s',pexpect.TIMEOUT,'Already up-to-date','Aborting','You\sare\snot\scurrently\son\sa\sbranch', 'You\sasked\sme\sto\spull\swithout\stelling\sme\swhich\sbranch\syou'],timeout=1700)
+            i=self.handle.expect(['fatal',
+                'Username\sfor\s(.*):\s',
+                '\sfile(s*) changed,\s',
+                'Already up-to-date',
+                'Aborting',
+                'You\sare\snot\scurrently\son\sa\sbranch', 
+                'You\sasked\sme\sto\spull\swithout\stelling\sme\swhich\sbranch\syou',
+                'Pull\sis\snot\spossible\sbecause\syou\shave\sunmerged\sfiles',
+                pexpect.TIMEOUT],
+                timeout=300)
             #debug
            #main.log.report(self.name +": \n"+"git pull response: " + str(self.handle.before) + str(self.handle.after))
             if i==0:
                 main.log.error(self.name + ": Git pull had some issue...")
                 return main.ERROR
             elif i==1:
-                main.log.error(self.name + ": Git Pull Asking for username!!! BADD!")
+                main.log.error(self.name + ": Git Pull Asking for username. ")
                 return main.ERROR
             elif i==2:
                 main.log.info(self.name + ": Git Pull - pulling repository now")
                 self.handle.expect("ONOS\$", 120)
                 return 0
             elif i==3:
-                main.log.error(self.name + ": Git Pull - TIMEOUT")
-                main.log.error(self.name + " Response was: " + str(self.handle.before))
-                return main.ERROR
-            elif i==4:
                 main.log.info(self.name + ": Git Pull - Already up to date")
                 return 1
-            elif i==5:
+            elif i==4:
                 main.log.info(self.name + ": Git Pull - Aborting... Are there conflicting git files?")
                 return main.ERROR
-            elif i==6:
+            elif i==5:
                 main.log.info(self.name + ": Git Pull - You are not currently on a branch so git pull failed!")
                 return main.ERROR
-            elif i==7:
+            elif i==6:
                 main.log.info(self.name + ": Git Pull - You have not configured an upstream branch to pull from. Git pull failed!")
+                return main.ERROR
+            elif i==7:
+                main.log.info(self.name + ": Git Pull - Pull is not possible because you have unmerged files.")
+                return main.ERROR
+            elif i==8:
+                main.log.error(self.name + ": Git Pull - TIMEOUT")
+                main.log.error(self.name + " Response was: " + str(self.handle.before))
                 return main.ERROR
             else:
                 main.log.error(self.name + ": Git Pull - Unexpected response, check for pull errors")

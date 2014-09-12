@@ -908,6 +908,27 @@ class MininetCliDriver(Emulator):
         return results
 
 
+    def links_status(self):
+        """
+        Returns list of links and their status
+        """
+        if self.handle :
+            cmd = "py 'Links: %s' % [item for sublist in [[(y[0].name, y[1].name, y[0].isUp() and y[1].isUp()) for y in x[0].connectionsTo(x[1])] for x in __import__('itertools').permutations(net.nameToNode.values(), 2) if x[0] != x[1] and x[0].connectionsTo(x[1])] for item in sublist]"
+            try:
+                response = self.execute(cmd=cmd,prompt="mininet>",timeout=10)
+                if not response:
+                  return None
+                for line in response.split('\n'):
+                  if line.startswith('Links:'):
+                    return eval(line[len("Links :"):])
+            except pexpect.EOF:
+                main.log.error(self.name + ": EOF exception found")
+                main.log.error(self.name + ":     " + self.handle.before)
+                main.cleanup()
+                main.exit()
+            return response
+        else:
+            main.log.error("Connection failed to the node")
 
 
 

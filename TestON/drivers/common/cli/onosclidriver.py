@@ -1569,3 +1569,84 @@ class OnosCliDriver(CLI):
             main.log.info(":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
             main.cleanup()
             main.exit()
+
+
+    def block_peer(self, ip_address):
+        '''
+        Block traffic to the destination IP address.
+        '''
+        try:
+            for chain in ['INPUT', 'OUTPUT']:
+                check_block_cmd = "sudo iptables -L %s -n | grep \"DROP.*%s\"" % (chain, ip_address)
+                add_block_cmd = "sudo iptables -I %s 1 -s %s -j DROP" % (chain, ip_address)
+                response1 = self.execute(cmd=check_block_cmd,prompt="\$",timeout=10)
+                if ip_address in response1:
+                    main.log.error("Already blocked: %s" % response1)
+                    return main.TRUE
+                response2 = self.execute(cmd=add_block_cmd,prompt="\$",timeout=10)
+                main.log.info("add_block_cmd: %s" % response2)
+                return main.TRUE
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":     " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name + ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
+            main.log.error( traceback.print_exc() )
+            main.log.info(":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
+            main.cleanup()
+            main.exit()
+
+    def unblock_peer(self, ip_address):
+        '''
+        Unblock traffic to the destination IP address.
+        '''
+        try:
+            for chain in ['INPUT', 'OUTPUT']:
+                # To make sure all rules are deleted in case there were multiple
+                # installed in the iptables
+                max_iterations = 10
+                for i in range(max_iterations):
+                    check_block_cmd = "sudo iptables -L %s -n | grep \"DROP.*%s\"" % (chain, ip_address)
+                    remove_block_cmd = "sudo iptables -D %s -s %s -j DROP" % (chain, ip_address)
+                    response1 = self.execute(cmd=check_block_cmd,prompt="\$",timeout=10)
+                    if ip_address not in response1:
+                        main.log.warn("Already unblocked: %s" % response1)
+                        return main.TRUE
+                    response2 = self.execute(cmd=remove_block_cmd,prompt="\$",timeout=10)
+                    main.log.info("remove_block_cmd: %s" % response2)
+                return main.TRUE
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":     " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name + ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
+            main.log.error( traceback.print_exc() )
+            main.log.info(":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
+            main.cleanup()
+            main.exit()
+
+
+    def unblock_all(self):
+        '''
+        Remove all controller block rules
+        '''
+        try:
+            unblock_cmd = "sudo iptables --flush"
+            response = self.execute(cmd=unblock_cmd,prompt="\$", timeout=10)
+            return main.TRUE
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":     " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name + ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
+            main.log.error( traceback.print_exc() )
+            main.log.info(":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
+            main.cleanup()
+            main.exit()
+        return main.ERROR

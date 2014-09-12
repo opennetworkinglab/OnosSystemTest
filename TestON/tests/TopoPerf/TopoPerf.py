@@ -111,8 +111,10 @@ class TopoPerf:
         url_topo_3 = "http://"+ctrl_3+":"+rest_port+url_suffix 
 
         numIter = main.params['TOPO']['numIter']
+        #Location of script that posts results to database
         db_script = main.params['TOPO']['databaseScript']
         table_name = main.params['TOPO']['tableName']
+        #Directory/file to output the tshark results
         tshark_output = "/tmp/tshark_of_topo.txt"
         assertion = main.TRUE
         topo_lat = []
@@ -137,20 +139,24 @@ class TopoPerf:
             main.Mininet1.assign_sw_controller(sw="1",ip1=ctrl_1,port1=port_1)        
             time.sleep(10)
             main.ONOS1.stop_tshark()
-            main.ONOS2.stop_tshark()
-            #main.ONOS3.stop_tshark()
 
             #NOTE: tshark output is saved in ONOS. Use subprocess to read file into TestON for parsing
-            ssh = subprocess.Popen(['ssh', 'admin@'+ctrl_1, 'cat', tshark_output],stdout=subprocess.PIPE) 
+            ssh = subprocess.Popen(['ssh', 'admin@'+ctrl_1, 'cat', tshark_output],
+                    stdout=subprocess.PIPE) 
             text = ssh.stdout.readline()
             obj = text.split(" ")
             main.log.info("Object read in: "+str(text)) 
-            if len(text) > 0: 
-                timestamp = int(float(obj[0])*1000)
+            if len(text) > 0:
+                #NOTE: Important!
+                #      Note that we are reading tshark object of index 1.
+                #      This may differ with the tshark version. For older version of 
+                #      tshark, you may need to get the tshark object of index 0
+                #      to get the timestamp. 
+                timestamp = int(float(obj[1])*1000)
                 topo_ms_begin = timestamp
             else:
                 main.log.error("Tshark output file returned unexpected value")
-                topo_ms_begin_1 = 0
+                topo_ms_begin = 0
                 assertion = main.FALSE   
 
             main.step("Verify that switch s1 has been assigned properly") 
@@ -161,12 +167,16 @@ class TopoPerf:
                 assertion = main.FALSE
             else:
                 main.log.info("Switch s1 was assigned properly!")
-            
+           
+            #Obtain json object from all 3 ONOS instances.
+            #The url distinguishes between different ONOS instance results.
+            #The call to get_json indicated by ONOS1.get_json does not 
+            #actually matter which ONOS instance calls it.
             json_obj_1 = main.ONOS1.get_json(url_topo_1) 
             json_obj_2 = main.ONOS2.get_json(url_topo_2)
             json_obj_3 = main.ONOS3.get_json(url_topo_3)
 
-            #If all 3 json objects exist, calculate end time
+            #If all 3 json objects exist, parse dictionary to get end time
             if json_obj_1 != "" and json_obj_2 != "" and json_obj_3 != "": 
                 topo_ms_end_1 = json_obj_1['gauges'][0]['gauge']['value']
                 topo_ms_end_2 = json_obj_2['gauges'][0]['gauge']['value']
@@ -201,6 +211,7 @@ class TopoPerf:
                     delta_avg = delta_1
             else:
                 main.log.info("Delta average was not caluclated for iteration "+str(i))
+                delta_avg = 0
 
             time.sleep(5)
 
@@ -239,7 +250,8 @@ class TopoPerf:
             assertion = main.FALSE
  
         utilities.assert_equals(expect=main.TRUE,actual=assertion,
-                onpass="Switch latency test successful!",onfail="Switch latency test NOT successful")
+                onpass="Switch latency test successful!",
+                onfail="Switch latency test NOT successful")
 
 #***************************************** 
 #CASE3
@@ -309,17 +321,18 @@ class TopoPerf:
             main.ONOS1.stop_tshark() 
             time.sleep(5)       
  
-            ssh_down = subprocess.Popen(['ssh', 'admin@'+ctrl_1, 'cat', tshark_output_down],stdout=subprocess.PIPE)
+            ssh_down = subprocess.Popen(['ssh', 'admin@'+ctrl_1, 'cat', tshark_output_down],
+                    stdout=subprocess.PIPE)
             text_down = ssh_down.stdout.readline()
             obj_down = text_down.split(" ")
             if len(text_down) > 0:
-                timestamp_begin_pt_down = int(float(obj_down[0])*1000)
+                timestamp_begin_pt_down = int(float(obj_down[1])*1000)
             else:
                 timestamp_begin_pt_down = 0   
 
             main.step("Obtain t1 timestamp by REST call")
 
-            #Obtain 3 json objects from each ONOS instance
+            #Obtain json objects from each ONOS instance
             json_obj_1 = main.ONOS1.get_json(url_topo_1)
             json_obj_2 = main.ONOS2.get_json(url_topo_2)
             json_obj_3 = main.ONOS3.get_json(url_topo_3)
@@ -371,7 +384,8 @@ class TopoPerf:
             main.ONOS1.stop_tshark()
             time.sleep(5)
  
-            ssh_up = subprocess.Popen(['ssh', 'admin@'+ctrl_1, 'cat', tshark_output_up], stdout=subprocess.PIPE)
+            ssh_up = subprocess.Popen(['ssh', 'admin@'+ctrl_1, 'cat', tshark_output_up],
+                    stdout=subprocess.PIPE)
             text1 = ssh_up.stdout.readline()
             #read second line. Port up status will produce two port status packets.
             #the last port status packet indicates that the port is usable. 
@@ -380,9 +394,9 @@ class TopoPerf:
             obj_up = text_up.split(" ")
             obj_up1 = text1.split(" ")
             if len(text_up) > 0:
-                timestamp_begin_pt_up = int(float(obj_up[0])*1000)
+                timestamp_begin_pt_up = int(float(obj_up[1])*1000)
             elif len(text1) > 0: 
-                timestamp_begin_pt_up = int(float(obj_up1[0])*1000)
+                timestamp_begin_pt_up = int(float(obj_up1[1])*1000)
             else:
                 timestamp_begin_pt_up = 0
 
@@ -453,7 +467,8 @@ class TopoPerf:
                 port_down_lat_max+" ms Avg: "+port_down_lat_avg+" ms")
  
         utilities.assert_equals(expect=main.TRUE,actual=assertion,
-                onpass="Port latency test successful!",onfail="Port latency test NOT successful")
+                onpass="Port latency test successful!",
+                onfail="Port latency test NOT successful")
 
 #***************************************
 #CASE4
@@ -540,6 +555,10 @@ class TopoPerf:
             #NOTE: This sleep is critical to ensure that get_json has enough time to detect and fetch 
             #the necessary object. If you find that get_json has trouble returning an object,
             #check the url, since the rest call is subject to change
+            #Furthermore, this sleep should not affect the latency measurement because 
+            #current implementation of link down discovery takes much longer than 5 seconds. 
+            #At the time of writing this code, link down is discovered via
+            #LLDP timeout
             time.sleep(5)
 
             #This segment of code calls REST to check for 2 things:
@@ -603,6 +622,12 @@ class TopoPerf:
                     main.log.info("This is most likely due to link cut detected before the second REST call")       
                     break               
                 counter = counter+1
+                
+                #FIXME: This sleep is detrimental to accuracy of the latency measurement. 
+                #       It was implemented to allow some breathing room in between rest calls
+                #       since we know that link cut detection will take a long time.
+                #Recommended to reduce sleep time as much as possible without affecting 
+                #       the functionality of the test
                 time.sleep(3)            
 
             delta_timestamp_1 = int(timestamp_link_end_1) - int(timestamp_link_begin)
@@ -741,12 +766,20 @@ class TopoPerf:
 
         omit_num_down = int(numIter) - int(len(link_down_lat))
         omit_num_up = int(numIter) - int(len(link_up_lat))
-        main.log.report("Iterations omitted/total of link down event: "+ str(omit_num_down) +"/"+ str(numIter))
-        main.log.report("Iterations omitted/total of link up event: "+ str(omit_num_up) + "/"+ str(numIter))
-        main.log.report("Link down discovery latency: Min: "+link_down_lat_min+" ms    Max: "+link_down_lat_max+" ms    Avg: "+link_down_lat_avg+" ms")
-        main.log.report("Link up discovery latency: Min: "+link_up_lat_min+" ms    Max: "+link_up_lat_max+" ms    Avg: "+link_up_lat_avg+" ms")
+        main.log.report("Iterations omitted/total of link down event: "+
+                str(omit_num_down) +"/"+ str(numIter))
+        main.log.report("Iterations omitted/total of link up event: "+
+                str(omit_num_up) + "/"+ str(numIter))
+        main.log.report("Link down discovery latency: Min: "+
+                link_down_lat_min+" ms    Max: "+link_down_lat_max+
+                " ms    Avg: "+link_down_lat_avg+" ms")
+        main.log.report("Link up discovery latency: Min: "+
+                link_up_lat_min+" ms    Max: "+link_up_lat_max+
+                " ms    Avg: "+link_up_lat_avg+" ms")
 
-        utilities.assert_equals(expect=main.TRUE,actual=assertion,onpass="Link Latency test successful",onfail="Link Latency test NOT successful")
+        utilities.assert_equals(expect=main.TRUE,actual=assertion,
+                onpass="Link Latency test successful",
+                onfail="Link Latency test NOT successful")
 
 
 #******************************************
@@ -820,7 +853,7 @@ class TopoPerf:
             obj = text.split(" ")
             
             if len(text) > 0:
-                timestamp = int(float(obj[0])*1000)
+                timestamp = int(float(obj[1])*1000)
                 topo_ms_begin = timestamp
             else:
                 main.log.error("Tshark output file returned unexpected value")
@@ -904,8 +937,148 @@ class TopoPerf:
                 onfail="25 Switch latency test NOT successful")
 
 
+
+    #CASE6: assign 88 switches
+
+    def CASE6(self, main):
+        import time
+        import subprocess
+        import json
+        import requests
+        import os
+
+        ctrl_1 = main.params['CTRL']['ip1']
+        ctrl_2 = main.params['CTRL']['ip2']
+        ctrl_3 = main.params['CTRL']['ip3']
+        
+        port_1 = main.params['CTRL']['port1']
+        tshark_output = "/tmp/tshark_of_topo_88.txt"
+        numIter = main.params['TOPO']['numIter']
+        db_script = main.params['TOPO']['databaseScript']
+        table_name = main.params['TOPO']['tableName']
+        assertion = main.TRUE
+        
+        rest_port = main.params['INTENTREST']['intentPort']
+        url_suffix = main.params['TOPO']['url_topo']
+        url_topo_1 = "http://"+ctrl_1+":"+rest_port+url_suffix 
+        url_topo_2 = "http://"+ctrl_2+":"+rest_port+url_suffix 
+        url_topo_3 = "http://"+ctrl_3+":"+rest_port+url_suffix 
+        
+        add_lat = []
+   
+        main.log.report("Measure latency of adding 88 switches")
+
+        time.sleep(5) 
+
+        for x in range(0,int(numIter)):
+            main.step("Starting tshark open flow capture") 
+
+            #***********************************************************************************
+            #TODO: Capture packets in pcap format and read in / parse more specific data for
+            #improved accuracy. Grep may not work in the future when we dissect at a lower level
+            #***********************************************************************************
+
+            #NOTE: Get Config Reply is the last message of the OF handshake message.
+            #Hence why we use it as T0 
+            main.ONOS1.tshark_grep("OFP 78 Get Config Reply", tshark_output) 
+            time.sleep(10) 
+
+            main.step("Assign controllers and get timestamp")
+            for i in range(1, 89): 
+                main.Mininet2.handle.sendline("sudo ovs-vsctl set-controller s"+str(i)+" tcp:"+ctrl_1+" ptcp:6633")
+            #    main.Mininet1.assign_sw_controller(sw=str(i),ip1=ctrl_1,port1=port_1) #30% slower 
+            #    cmd = "sudo ovs-vsctl set-controller s"+str(i)+" tcp:"+ctrl_1+" ptcp:6633"
+            #    s = subprocess.Popen(['ssh', 'admin@10.128.5.59', cmd], shell=True)
+
+            time.sleep(10)
+            main.ONOS1.stop_tshark()
+
+            ssh = subprocess.Popen(['ssh', 'admin@'+ctrl_1, 'cat', tshark_output],
+                    stdout=subprocess.PIPE)
+            time.sleep(5)
+            text = ssh.stdout.readline()
+            obj = text.split(" ")
+            
+            if len(text) > 0:
+                timestamp = int(float(obj[1])*1000)
+                topo_ms_begin = timestamp
+            else:
+                main.log.error("Tshark output file returned unexpected value")
+                topo_ms_begin = 0
+                assertion = main.FALSE    
+            
+            json_obj_1 = main.ONOS1.get_json(url_topo_1) 
+            json_obj_2 = main.ONOS2.get_json(url_topo_2)
+            json_obj_3 = main.ONOS3.get_json(url_topo_3)
+
+            #If json object exists, parse timestamp from the object
+            if json_obj_1: 
+                topo_ms_end_1 = json_obj_1['gauges'][0]['gauge']['value']
+            else:
+                topo_ms_end_1 = 0
+            if json_obj_2:
+                topo_ms_end_2 = json_obj_2['gauges'][0]['gauge']['value']
+            else:
+                topo_ms_end_2 = 0
+            if json_obj_3:
+                topo_ms_end_3 = json_obj_3['gauges'][0]['gauge']['value']
+            else:
+                topo_ms_end_3 = 0
+
+            delta_1 = int(topo_ms_end_1) - int(topo_ms_begin)
+            delta_2 = int(topo_ms_end_2) - int(topo_ms_begin)
+            delta_3 = int(topo_ms_end_3) - int(topo_ms_begin)
+
+            if delta_1 > 0 and delta_1 < 100000:
+                if delta_2 > 0 and delta_2 < 100000:
+                    if delta_3 > 0 and delta_3 < 100000:
+                        delta_avg = (delta_1 + delta_2 + delta_3) / 3
+                    else:
+                        delta_avg = (delta_1 + delta_2) / 2
+                else:
+                    delta_avg = delta_1
+            else:
+                delta_avg = 0
+
+            time.sleep(5)
+
+            #NOTE: edit threshold as needed to fail test case
+            if delta_avg < 0.00001 or delta_avg > 100000:
+                main.log.info("Delta of switch add timestamp returned unexpected results")
+                main.log.info("Value returned: " + str(delta_avg))
+                main.log.info("Omitting iteration "+ str(x))
+                assertion = main.FALSE 
+            else:
+                add_lat.append(delta_avg) 
+                main.log.info("Add 88 switches latency iteration "+str(x)+": "+str(delta_avg)) 
+
+            main.step("Remove switches from the controller")
+            for j in range(1,89):
+                main.Mininet1.delete_sw_controller("s"+str(j)) 
+        
+            time.sleep(5)
+
+        add_lat_min = str(min(add_lat))
+        add_lat_max = str(max(add_lat))
+        add_lat_avg = str(sum(add_lat) / len(add_lat))
+
+        if int(add_lat_avg) > 0 and int(add_lat_avg) < 100000:
+            assertion = main.TRUE
+            omit_iter = int(numIter) - int(len(add_lat))
+            main.log.report("Iterations omitted/total: "+str(omit_iter)+"/"+str(numIter))
+            main.log.report("Add 88 switches discovery latency: Min: "+
+                    add_lat_min+" ms    Max: "+add_lat_max+
+                    " ms    Avg: "+add_lat_avg+" ms")
+        else:
+            assertion = main.FALSE
+            main.log.report("add_lat_avg for 88 switches returned unexpected results")
+
+        utilities.assert_equals(expect=main.TRUE,actual=assertion,
+                onpass="88 Switch latency test successful!",
+                onfail="88 Switch latency test NOT successful")
+
+
 #**********
 #END SCRIPT
 #andrew@onlab.us
-#email me for any questions regarding this test
 #**********

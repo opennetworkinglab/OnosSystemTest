@@ -229,11 +229,17 @@ class TopoPerf:
             else:
                 topo_lat.append(delta_avg)
                 main.log.info("One switch add latency iteration "+str(i)+": " + str(delta_avg) + " ms")  
- 
-        topo_lat_min = str(min(topo_lat))
-        topo_lat_max = str(max(topo_lat))
-        topo_lat_avg = str(sum(topo_lat) / len(topo_lat))
-       
+
+        #Omit the first 2 iterations to account for "warm-up" time of ONOS
+        #Except when the list contains less than 2 values
+        if len(topo_lat) > 2:
+            topo_lat = topo_lat[2:]
+            topo_lat_min = str(min(topo_lat))
+            topo_lat_max = str(max(topo_lat))
+            topo_lat_avg = str(sum(topo_lat) / len(topo_lat))
+        else:
+            main.log.report("Could not calculate min, max, avg due to error in results")
+
         #NOTE: configure threshold as needed here: 
         if int(topo_lat_max) > 0 and int(topo_lat_max) < 100000:
             assertion = main.TRUE
@@ -248,7 +254,8 @@ class TopoPerf:
                     " ms    Max: "+topo_lat_max+" ms    Avg: "+topo_lat_avg+" ms")
         else:
             assertion = main.FALSE
- 
+            main.log.report("Switch latency test NOT successful")
+    
         utilities.assert_equals(expect=main.TRUE,actual=assertion,
                 onpass="Switch latency test successful!",
                 onfail="Switch latency test NOT successful")
@@ -437,13 +444,18 @@ class TopoPerf:
   
             time.sleep(5)
 
-        port_up_lat_min = str(min(port_up_lat))
-        port_up_lat_max = str(max(port_up_lat))
-        port_up_lat_avg = str(sum(port_up_lat) / len(port_up_lat))
+        if len(port_up_lat) > 2 and len(port_down_lat) > 2:
+            port_up_lat = port_up_lat[2:]
+            port_up_lat_min = str(min(port_up_lat))
+            port_up_lat_max = str(max(port_up_lat))
+            port_up_lat_avg = str(sum(port_up_lat) / len(port_up_lat))
  
-        port_down_lat_min = str(min(port_down_lat))
-        port_down_lat_max = str(max(port_down_lat))
-        port_down_lat_avg = str(sum(port_down_lat) / len(port_down_lat))
+            port_down_lat = port_down_lat[2:]
+            port_down_lat_min = str(min(port_down_lat))
+            port_down_lat_max = str(max(port_down_lat))
+            port_down_lat_avg = str(sum(port_down_lat) / len(port_down_lat))
+        else:
+            main.log.report("Port event latency could not be calculated due to errors in results")
 
         #NOTE: configure threshold as needed
         if int(port_up_lat_avg) > 0 and int(port_down_lat_avg) > 0:
@@ -744,13 +756,18 @@ class TopoPerf:
                 link_up_lat.append(delta_timestamp_enable_avg)
                 main.log.info("Link up discovery latency iteration "+str(i)+": "+str(delta_timestamp_enable_avg)+" ms")                
    
-        link_down_lat_min = str(min(link_down_lat))
-        link_down_lat_max = str(max(link_down_lat))
-        link_down_lat_avg = str(sum(link_down_lat) / len(link_down_lat))
+        if len(link_down_lat) > 2 and len(link_up_lat) > 2:
+            link_down_lat = link_down_lat[2:]
+            link_down_lat_min = str(min(link_down_lat))
+            link_down_lat_max = str(max(link_down_lat))
+            link_down_lat_avg = str(sum(link_down_lat) / len(link_down_lat))
 
-        link_up_lat_min = str(min(link_up_lat))
-        link_up_lat_max = str(max(link_up_lat))
-        link_up_lat_avg = str(sum(link_up_lat) / len(link_up_lat))
+            link_down_lat = link_down_lat[2:] 
+            link_up_lat_min = str(min(link_up_lat))
+            link_up_lat_max = str(max(link_up_lat))
+            link_up_lat_avg = str(sum(link_up_lat) / len(link_up_lat))
+        else:
+            main.log.report("Link event latency could not be calculatd due to errors in results")
 
         #NOTE: configure threshold as needed
         if int(link_down_lat_avg) > 0:
@@ -913,9 +930,13 @@ class TopoPerf:
         
             time.sleep(5)
 
-        add_lat_min = str(min(add_lat))
-        add_lat_max = str(max(add_lat))
-        add_lat_avg = str(sum(add_lat) / len(add_lat))
+        if len(add_lat) > 2:
+            add_lat = add_lat[2:]
+            add_lat_min = str(min(add_lat))
+            add_lat_max = str(max(add_lat))
+            add_lat_avg = str(sum(add_lat) / len(add_lat))
+        else:
+            main.log.report("Add 25 switch latency could not be calculated due to errors in results")
 
         if int(add_lat_avg) > 0 and int(add_lat_avg) < 100000:
             assertion = main.TRUE
@@ -1058,9 +1079,13 @@ class TopoPerf:
         
             time.sleep(5)
 
-        add_lat_min = str(min(add_lat))
-        add_lat_max = str(max(add_lat))
-        add_lat_avg = str(sum(add_lat) / len(add_lat))
+        if len(add_lat) > 2:
+            add_lat = add_lat[2:]
+            add_lat_min = str(min(add_lat))
+            add_lat_max = str(max(add_lat))
+            add_lat_avg = str(sum(add_lat) / len(add_lat))
+        else:
+            main.log.report("Add 88 switches latency could not be calculated due to errors in results")
 
         if int(add_lat_avg) > 0 and int(add_lat_avg) < 100000:
             assertion = main.TRUE

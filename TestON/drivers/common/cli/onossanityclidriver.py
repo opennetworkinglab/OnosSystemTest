@@ -1053,7 +1053,7 @@ class onossanityclidriver(CLI):
         self.handle.sendline("\r")
         self.handle.sendline("tshark -i "+str(interface)+" -t e | grep \""+str(grep)+"\" > "+directory+" &")
         self.handle.sendline("\r")
-        self.handle.expect("Capturing on "+str(interface))
+        self.handle.expect("Capturing on")
         self.handle.sendline("\r")
         self.handle.expect("\$")
 
@@ -1428,4 +1428,99 @@ class onossanityclidriver(CLI):
         return changes
 
     def getCpuUsage(self, instance):
-        print "TODO work on this function" 
+        print "TODO work on this function"
+
+    def blockHazelcastCh(self, block_ip, hz_port=5701, packet_type='tcp'):
+        '''
+        Description:
+          Block incoming hazelcast communication
+          (default port5701) of a specific IP address
+        Usage: 
+        * optional hazelcast port specification (default 5701) to block
+        * optional packet type to block (default tcp)
+        * specify the ip to block with block_ip
+        WARNING:
+        * This function uses root privilege iptables command which may result in 
+          unwanted network errors. USE WITH CAUTION
+        '''
+        self.handle.sendline("\r")
+        #following line interpretation
+        #   Append to iptables rule where packet=tcp, srcip=block_ip, port=hz_port, action=DROP
+        self.handle.sendline("sudo iptables -A INPUT -p "+packet_type+" -s "+
+                             str(block_ip)+" --dport "+str(hz_port)+" -j DROP")
+        self.handle.expect("\$")
+
+    def flushIpTables(self):
+        '''
+        Description:
+        * All rules in iptables will be flushed
+        Usage: 
+        * Just call the function to flush the table
+        WARNING:
+        * This function will rid of any existing iptables rules
+          which may pose a security risk.
+        '''
+        self.handle.sendline("sudo iptables -F")
+
+    def tailLog(self, log_directory, log_name, grep='', wait_sec=0, tail_length = 100):
+        '''
+        Description:
+        * returns specified tail length of log from the specified directory.
+        Usage:
+        * Trigger this function at any interest points to get the log output
+        * Specify log_directory ex) ~/ONOS/onos-logs/
+                NOTE: Ensure that the last character ends with '/'
+        * Specify log_name ex) onos.SAMPLE.log
+        * Optional: specify string to grep for ex) grep = "Hazelcast"
+        * Optional: specify tail_length ex) 50 #last 50 lines of log
+        # Optional: specify wait_sec ex) wait_sec=10 #seconds to wait before tailing
+        '''
+        if not log_directory or not log_name:
+            main.log.error("Must specify log directory and log name")
+            main.cleanup()
+            main.exit()
+        else:
+            try:
+                #Check for prompt
+                self.handle.sendline("")
+                self.handle.expect("\$")
+                
+                time.sleep(int(wait_sec))
+                tail_length = str(tail_length)
+
+                #If grep exists, use pipe grep to get specific results
+                if grep:
+                    self.handle.sendline("tail -"+tail_length+" "+
+                            log_directory+log_name+" | grep '"+grep+"'")
+                else:
+                    self.handle.sendline("tail -"+tail_length+" "+
+                            log_directory+log_name)
+
+                #The random junk is needed to avoid expecting dollar signs 
+                #which are all over the logs. Don't ask, just use the function
+                self.handle.sendline("echo aw3fq0p2j3eva")
+                i=self.handle.expect(["aw3fq0p2j3eva",
+                     "tail:\scannot\sopen",pexpect.TIMEOUT],timeout=10)
+                
+                tail_result = self.handle.before
+              
+                if i == 0:
+                    return tail_result 
+                elif i == 1:
+                    main.log.error("tail command could not open the specified file")
+                    return main.FALSE 
+                else:
+                    main.log.error("tail - unexpected results")
+                    return main.FALSE
+            except pexpect.EOF:
+                main.log.error(self.name + ": EOF exception found")
+                main.log.error(self.name + ": " + self.handle.before)
+                main.cleanup()
+                main.exit()
+            except:
+                main.log.error( traceback.print_exc() )
+                main.cleanup()
+                main.exit()
+
+
+

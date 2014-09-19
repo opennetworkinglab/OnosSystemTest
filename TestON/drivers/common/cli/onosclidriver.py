@@ -512,7 +512,7 @@ class OnosCliDriver(CLI):
             self.handle.sendline("export TERM=xterm-256color")
             self.handle.expect("xterm-256color")
             self.handle.expect("\$")
-            self.handle.sendline("cd " + self.home + "; git log -1 --pretty=fuller | grep -A 5 \"commit\" --color=never; cd \.\.")
+            self.handle.sendline("cd " + self.home + "; git log -1 --pretty=fuller --decorate=short | grep -A 5 \"commit\" --color=never; cd \.\.")
             self.handle.expect("cd ..")
             self.handle.expect("\$")
             response=(self.name +": \n"+ str(self.handle.before + self.handle.after))
@@ -535,7 +535,7 @@ class OnosCliDriver(CLI):
             self.handle.sendline("export TERM=xterm-256color")
             self.handle.expect("xterm-256color")
             self.handle.expect("\$")
-            self.handle.sendline("cd " + self.home + "; git log -1 --pretty=fuller | grep -A 5 \"commit\" --color=never; cd \.\.")
+            self.handle.sendline("cd " + self.home + "; git log -1 --pretty=fuller --decorate=short | grep -A 5 \"commit\" --color=never; cd \.\.")
             self.handle.expect("cd ..")
             self.handle.expect("\$")
             response=(self.name +": \n"+ str(self.handle.before + self.handle.after))
@@ -1197,34 +1197,46 @@ class OnosCliDriver(CLI):
                 self.handle.sendline("git pull " + comp1)
            
             uptodate = 0
-            i=self.handle.expect(['fatal','Username\sfor\s(.*):\s','\sfile(s*) changed,\s',pexpect.TIMEOUT,'Already up-to-date','Aborting','You\sare\snot\scurrently\son\sa\sbranch', 'You\sasked\sme\sto\spull\swithout\stelling\sme\swhich\sbranch\syou'],timeout=1700)
+            i=self.handle.expect(['fatal',
+                'Username\sfor\s(.*):\s',
+                '\sfile(s*) changed,\s',
+                'Already up-to-date',
+                'Aborting',
+                'You\sare\snot\scurrently\son\sa\sbranch', 
+                'You\sasked\sme\sto\spull\swithout\stelling\sme\swhich\sbranch\syou',
+                'Pull\sis\snot\spossible\sbecause\syou\shave\sunmerged\sfiles',
+                pexpect.TIMEOUT],
+                timeout=300)
             #debug
            #main.log.report(self.name +": \n"+"git pull response: " + str(self.handle.before) + str(self.handle.after))
             if i==0:
                 main.log.error(self.name + ": Git pull had some issue...")
                 return main.ERROR
             elif i==1:
-                main.log.error(self.name + ": Git Pull Asking for username!!! BADD!")
+                main.log.error(self.name + ": Git Pull Asking for username. ")
                 return main.ERROR
             elif i==2:
                 main.log.info(self.name + ": Git Pull - pulling repository now")
                 self.handle.expect("ONOS\$", 120)
                 return 0
             elif i==3:
-                main.log.error(self.name + ": Git Pull - TIMEOUT")
-                main.log.error(self.name + " Response was: " + str(self.handle.before))
-                return main.ERROR
-            elif i==4:
                 main.log.info(self.name + ": Git Pull - Already up to date")
                 return 1
-            elif i==5:
+            elif i==4:
                 main.log.info(self.name + ": Git Pull - Aborting... Are there conflicting git files?")
                 return main.ERROR
-            elif i==6:
+            elif i==5:
                 main.log.info(self.name + ": Git Pull - You are not currently on a branch so git pull failed!")
                 return main.ERROR
-            elif i==7:
+            elif i==6:
                 main.log.info(self.name + ": Git Pull - You have not configured an upstream branch to pull from. Git pull failed!")
+                return main.ERROR
+            elif i==7:
+                main.log.info(self.name + ": Git Pull - Pull is not possible because you have unmerged files.")
+                return main.ERROR
+            elif i==8:
+                main.log.error(self.name + ": Git Pull - TIMEOUT")
+                main.log.error(self.name + " Response was: " + str(self.handle.before))
                 return main.ERROR
             else:
                 main.log.error(self.name + ": Git Pull - Unexpected response, check for pull errors")
@@ -1563,3 +1575,84 @@ class OnosCliDriver(CLI):
             main.log.info(":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
             main.cleanup()
             main.exit()
+
+
+    def block_peer(self, ip_address):
+        '''
+        Block traffic to the destination IP address.
+        '''
+        try:
+            for chain in ['INPUT', 'OUTPUT']:
+                check_block_cmd = "sudo iptables -L %s -n | grep \"DROP.*%s\"" % (chain, ip_address)
+                add_block_cmd = "sudo iptables -I %s 1 -s %s -j DROP" % (chain, ip_address)
+                response1 = self.execute(cmd=check_block_cmd,prompt="\$",timeout=10)
+                if ip_address in response1:
+                    main.log.error("Already blocked: %s" % response1)
+                    return main.TRUE
+                response2 = self.execute(cmd=add_block_cmd,prompt="\$",timeout=10)
+                main.log.info("add_block_cmd: %s" % response2)
+                return main.TRUE
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":     " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name + ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
+            main.log.error( traceback.print_exc() )
+            main.log.info(":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
+            main.cleanup()
+            main.exit()
+
+    def unblock_peer(self, ip_address):
+        '''
+        Unblock traffic to the destination IP address.
+        '''
+        try:
+            for chain in ['INPUT', 'OUTPUT']:
+                # To make sure all rules are deleted in case there were multiple
+                # installed in the iptables
+                max_iterations = 10
+                for i in range(max_iterations):
+                    check_block_cmd = "sudo iptables -L %s -n | grep \"DROP.*%s\"" % (chain, ip_address)
+                    remove_block_cmd = "sudo iptables -D %s -s %s -j DROP" % (chain, ip_address)
+                    response1 = self.execute(cmd=check_block_cmd,prompt="\$",timeout=10)
+                    if ip_address not in response1:
+                        main.log.warn("Already unblocked: %s" % response1)
+                        return main.TRUE
+                    response2 = self.execute(cmd=remove_block_cmd,prompt="\$",timeout=10)
+                    main.log.info("remove_block_cmd: %s" % response2)
+                return main.TRUE
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":     " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name + ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
+            main.log.error( traceback.print_exc() )
+            main.log.info(":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
+            main.cleanup()
+            main.exit()
+
+
+    def unblock_all(self):
+        '''
+        Remove all controller block rules
+        '''
+        try:
+            unblock_cmd = "sudo iptables --flush"
+            response = self.execute(cmd=unblock_cmd,prompt="\$", timeout=10)
+            return main.TRUE
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":     " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name + ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
+            main.log.error( traceback.print_exc() )
+            main.log.info(":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
+            main.cleanup()
+            main.exit()
+        return main.ERROR

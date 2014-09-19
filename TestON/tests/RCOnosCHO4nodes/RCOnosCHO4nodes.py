@@ -203,7 +203,6 @@ class RCOnosCHO4nodes :
             else:
                 break
         from sts.topology.teston_topology import TestONTopology # assumes that sts is already in you PYTHONPATH
-        global MNTopo
         MNTopo = TestONTopology(main.Mininet1, ctrls) # can also add Intent API info for intent operations
 
 
@@ -339,7 +338,6 @@ class RCOnosCHO4nodes :
             else:
                 break
         from sts.topology.teston_topology import TestONTopology # assumes that sts is already in you PYTHONPATH
-        global MNTopo
         MNTopo = TestONTopology(main.Mininet1, ctrls) # can also add Intent API info for intent operations
 
 
@@ -425,7 +423,6 @@ class RCOnosCHO4nodes :
             else:
                 break
         from sts.topology.teston_topology import TestONTopology # assumes that sts is already in you PYTHONPATH
-        global MNTopo
         MNTopo = TestONTopology(main.Mininet1, ctrls) # can also add Intent API info for intent operations
 
 
@@ -507,7 +504,6 @@ class RCOnosCHO4nodes :
             else:
                 break
         from sts.topology.teston_topology import TestONTopology # assumes that sts is already in you PYTHONPATH
-        global MNTopo
         MNTopo = TestONTopology(main.Mininet1, ctrls) # can also add Intent API info for intent operations
 
 
@@ -589,7 +585,6 @@ class RCOnosCHO4nodes :
             else:
                 break
         from sts.topology.teston_topology import TestONTopology # assumes that sts is already in you PYTHONPATH
-        global MNTopo
         MNTopo = TestONTopology(main.Mininet1, ctrls) # can also add Intent API info for intent operations
 
 
@@ -671,7 +666,6 @@ class RCOnosCHO4nodes :
             else:
                 break
         from sts.topology.teston_topology import TestONTopology # assumes that sts is already in you PYTHONPATH
-        global MNTopo
         MNTopo = TestONTopology(main.Mininet1, ctrls) # can also add Intent API info for intent operations
 
 
@@ -760,7 +754,6 @@ class RCOnosCHO4nodes :
             else:
                 break
         from sts.topology.teston_topology import TestONTopology # assumes that sts is already in you PYTHONPATH
-        global MNTopo
         MNTopo = TestONTopology(main.Mininet1, ctrls) # can also add Intent API info for intent operations
 
 
@@ -844,7 +837,6 @@ class RCOnosCHO4nodes :
             else:
                 break
         from sts.topology.teston_topology import TestONTopology # assumes that sts is already in you PYTHONPATH
-        global MNTopo
         MNTopo = TestONTopology(main.Mininet1, ctrls) # can also add Intent API info for intent operations
 
 

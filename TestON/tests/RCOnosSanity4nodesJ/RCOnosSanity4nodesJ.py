@@ -39,6 +39,10 @@ class RCOnosSanity4nodesJ :
         main.RamCloud4.del_db()
         main.log.report("Pulling latest code from github to all nodes")
         for i in range(2):
+            main.ONOS1.git_checkout('master')
+            main.ONOS2.git_checkout('master')
+            main.ONOS3.git_checkout('master')
+            main.ONOS4.git_checkout('master')
             uptodate = main.ONOS1.git_pull()
             main.ONOS2.git_pull()
             main.ONOS3.git_pull()
@@ -163,17 +167,36 @@ class RCOnosSanity4nodesJ :
     def CASE3(self,main) :    #Delete any remnant flows, then add flows, and time how long it takes flow tables to update
         main.log.report("Delete any flows from previous tests, then add flows from FLOWDEF file, then wait for switch flow tables to update")
         import time
+        intentIP = main.params['CTRL']['ip1']
+        intentPort=main.params['INTENTS']['intentPort']
+        intentURL=main.params['INTENTS']['intentURL']
         main.case("Taking care of these flows!") 
         main.step("Cleaning out any leftover flows...")
         #main.ONOS1.delete_flow("all")
         strtTime = time.time()
-        main.ONOS1.rm_intents()
-        print("world")
+        main.ONOS1.del_intent(intentIP=intentIP)
         time.sleep(5)
-        main.ONOS1.add_intents()
-        print("hello")
+        main.step("Adding Intents")
+        count=1
+        for i in range(6,16):
+            srcMac = '00:00:00:00:00:' + str(hex(i)[2:]).zfill(2)
+            dstMac = '00:00:00:00:00:'+str(hex(i+10)[2:])
+            srcDPID = '00:00:00:00:00:00:10:'+str(i).zfill(2)
+            dstDPID= '00:00:00:00:00:00:20:' +str(i+25)
+            main.ONOS1.add_intent(intent_id=str(count),src_dpid=srcDPID,dst_dpid=dstDPID,
+                    src_mac=srcMac,dst_mac=dstMac,intentIP=intentIP,intentPort=intentPort,
+                    intentURL=intentURL)
+            count=count +1
+            dstDPID = '00:00:00:00:00:00:10:'+str(i).zfill(2)
+            srcDPID= '00:00:00:00:00:00:20:' +str(i+25)
+            dstMac = '00:00:00:00:00:' + str(hex(i)[2:]).zfill(2)
+            srcMac = '00:00:00:00:00:'+str(hex(i+10)[2:])
+            main.ONOS1.add_intent(intent_id=str(count),src_dpid=srcDPID,dst_dpid=dstDPID,
+                    src_mac=srcMac,dst_mac=dstMac,intentIP=intentIP,intentPort=intentPort,
+                    intentURL=intentURL)
+            count=count +1
+        main.step("Checking flows with pings")
        # main.ONOS1.add_flow(main.params['FLOWDEF']['testONip'],main.params['FLOWDEF']['user'],main.params['FLOWDEF']['password'],main.params['FLOWDEF']['flowDef'])
-        main.case("Checking flows")
        
         count = 1
         i = 6
@@ -625,13 +648,13 @@ class RCOnosSanity4nodesJ :
         main.log.report("Checking ONOS logs for exceptions")
         count = 0
         check1 = main.ONOS1.check_exceptions()
-        main.log.report("Exceptions in ONOS1 logs: \n" + check1)
+        #main.log.report("Exceptions in ONOS1 logs: \n" + check1)
         check2 = main.ONOS2.check_exceptions()
-        main.log.report("Exceptions in ONOS2 logs: \n" + check2)
+        #main.log.report("Exceptions in ONOS2 logs: \n" + check2)
         check3 = main.ONOS3.check_exceptions()
-        main.log.report("Exceptions in ONOS3 logs: \n" + check3)
+        #main.log.report("Exceptions in ONOS3 logs: \n" + check3)
         check4 = main.ONOS4.check_exceptions()
-        main.log.report("Exceptions in ONOS4 logs: \n" + check4)
+        #main.log.report("Exceptions in ONOS4 logs: \n" + check4)
         result = main.TRUE
         if (check1 or check2 or check3 or check4):
             result = main.FALSE

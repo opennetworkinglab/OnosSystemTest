@@ -684,10 +684,12 @@ class OnosCliDriver(CLI):
             print "  REST Error Description: %s" % (error_payload['formattedDescription'])
             print "  HTTP Error Code: %s" % exc.code
             print "  HTTP Error Reason: %s" % exc.reason
+            return ''
         except URLError as exc:
             print "ERROR:"
             print "  REST DELETE URL: %s" % url
             print "  URL Error Reason: %s" % exc.reason
+            return ''
         return result
 
 #*********************************************************************
@@ -1255,7 +1257,7 @@ class OnosCliDriver(CLI):
 
 
 
-    def git_checkout(self, branch="onos13integration"):
+    def git_checkout(self, branch="master"):
         '''
         Assumes that "git pull" works without login
         
@@ -1275,20 +1277,14 @@ class OnosCliDriver(CLI):
             self.handle.sendline("cd " + self.home)
             self.handle.expect("ONOS\$")
             if branch != 'master':
-                #self.handle.sendline('git stash')
-                #self.handle.expect('ONOS\$')
-                #print "After issuing git stash cmnd: ", self.handle.before
                 cmd = "git checkout "+branch
-                print "checkout cmd = ", cmd
+                #print "checkout cmd = ", cmd
                 self.handle.sendline(cmd)
                 uptodate = 0
-                i=self.handle.expect(['fatal','Username\sfor\s(.*):\s','Already\son\s\'onos13integration\'','Switched\sto\sbranch\s\'onos13integration\'', pexpect.TIMEOUT],timeout=60)
+                i=self.handle.expect(['fatal','Username\sfor\s(.*):\s','Already\son\'','Switched\sto\sbranch\'', pexpect.TIMEOUT],timeout=60)
             else:
-                #self.handle.sendline('git stash apply')
-                #self.handle.expect('ONOS\$')
-                #print "After issuing git stash apply cmnd: ", self.handle.before
                 cmd = "git checkout "+branch
-                print "checkout cmd = ", cmd
+                #print "checkout cmd = ", cmd
                 self.handle.sendline(cmd)
                 uptodate = 0
                 switchedToMaster = 0
@@ -1304,13 +1300,11 @@ class OnosCliDriver(CLI):
             elif i==2:
                 main.log.info(self.name + ": Git Checkout %s : Already on this branch" %branch)
                 self.handle.expect("ONOS\$")
-                print "after checkout cmd = ", self.handle.before
                 switchedToMaster = 1
                 return 1
             elif i==3:
                 main.log.info(self.name + ": Git checkout %s - Switched to this branch" %branch)
                 self.handle.expect("ONOS\$")
-                print "after checkout cmd = ", self.handle.before
                 switchedToMaster = 1
                 return 1
             elif i==4:

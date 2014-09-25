@@ -118,6 +118,7 @@ class MininetCliDriver(Emulator):
         Output is:
             protocols           : ["OpenFlow13"]
         '''
+
         OFVersion = 0.0
         main.log.info(self.name+": Getting what openflow version is supported by switch")
         try:
@@ -139,9 +140,6 @@ class MininetCliDriver(Emulator):
                 OFVersion = 1.0
         return OFVersion
                
-
-
-
     def pingall(self):
         '''
         Verifies the reachability of the hosts using pingall command.

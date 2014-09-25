@@ -101,7 +101,47 @@ class MininetCliDriver(Emulator):
             main.log.error(self.name+": Connection failed to the host "+self.user_name+"@"+self.ip_address) 
             main.log.error(self.name+": Failed to connect to the Mininet")
             return main.FALSE
-                       
+                    
+    def getSwitchVersion(self,name):
+        '''
+        Determine what OpenFlow protocol version, the spawned mininet switch supports
+        Example:
+        If mininet switch with OF1.0, say s1 is started, 
+        On the command:
+            sudo ovs-vsctl list bridge s1 | grep protocols
+        Output is: 
+            protocols           : []                                  ---------which means OpenFlow 1.0 
+
+         Now if mininet switch with OF 1.3, say s1 is spawned,
+        On the command:
+            sudo ovs-vsctl list bridge s1 | grep protocols
+        Output is:
+            protocols           : ["OpenFlow13"]
+        '''
+        OFVersion = 0.0
+        main.log.info(self.name+": Getting what openflow version is supported by switch")
+        try:
+            response = self.execute(cmd = 'sh ovs-vsctl list bridge '+name + '|grep protocols',prompt = 'mininet>',timeout = 10)
+            #print "response = ", response
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":     " + self.handle.before)
+        pattern1 = '\[\"OpenFlow13\"\]'
+        pattern2 = '\[\"OpenFlow10\"\]'
+        pattern1Response = re.search(pattern1, response)
+        if pattern1Response:
+            main.log.info(self.name+ ":Switch supports OF1.3 protocol")
+            OFVersion = 1.3
+        else:
+            pattern2Response = re.search(pattern2, response)
+            if pattern2Response:
+                main.log.info(self.name+ ":Switch supports OF1.0 protocol")
+                OFVersion = 1.0
+        return OFVersion
+               
+
+
+
     def pingall(self):
         '''
         Verifies the reachability of the hosts using pingall command.

@@ -14,8 +14,7 @@ class HATestZKFC1:
     RAMCloud database, and start up ONOS instances. 
     '''
     def CASE1(self,main) :
-        import time
-        main.log.report("Initial cleanup and startup")
+        main.log.report("ONOS instance network failure scenario test initialization")
         main.case("Initial Startup")
         main.step("Stop ONOS")
         main.ONOS1.stop_all()
@@ -28,7 +27,7 @@ class HATestZKFC1:
         main.ONOS3.stop_rest()
         main.ONOS4.stop_rest()
         main.ONOS5.stop_rest()
-
+ 
         main.step("Checking git commit")
         ONOS_commit = []
         ONOS_commit.append(main.ONOS1.get_branch())
@@ -47,23 +46,38 @@ class HATestZKFC1:
             main.log.report("ONOS4 is on branch: "+ ONOS_commit[3])
             main.log.report("ONOS5 is on branch: "+ ONOS_commit[4])
 
+        main.step("Start Packet Captures")
+        main.Mininet2.start_tcpdump(str(main.params['MNtcpdump']['folder'])+str(main.TEST)+"-MN.pcap", 
+                intf = main.params['MNtcpdump']['intf'],
+                port = main.params['MNtcpdump']['port']) 
+        main.ONOS1.tcpdump()
+        main.ONOS2.tcpdump()
+        main.ONOS3.tcpdump()
+        main.ONOS4.tcpdump()
+        main.ONOS5.tcpdump()
+
+        result = main.ONOS1.status() or main.ONOS2.status() \
+                or main.ONOS3.status() or main.ONOS4.status() or main.ONOS5.status()
+        '''
         main.step("Startup Zookeeper")
         main.ZK1.start()
         main.ZK2.start()
         main.ZK3.start()
         main.ZK4.start()
         main.ZK5.start()
-        time.sleep(2)
-        ZK_Status = main.ZK1.isup() and main.ZK2.isup()\
+        result_zk = main.ZK1.isup() and main.ZK2.isup()\
                 and main.ZK3.isup() and main.ZK4.isup() and main.ZK5.isup()
-        utilities.assert_equals(expect=main.TRUE,actual=ZK_Status ,
-                onpass="Zookeeper started successfully",onfail="ZOOKEEPER FAILED TO START")
-        main.step("Cleaning RC Database and Starting All")
+        utilities.assert_equals(expect=main.TRUE,actual=result_zk,
+                onpass="Zookeeper started successfully",
+                onfail="Zookeeper failed to start")
+        main.step("Cleaning RC Database")
         main.RC1.del_db()
         main.RC2.del_db()
         main.RC3.del_db()
         main.RC4.del_db()
         main.RC5.del_db()
+        '''
+        main.step("Starting All")
         main.ONOS1.start_all()
         main.ONOS2.start_all()
         main.ONOS3.start_all()
@@ -71,14 +85,20 @@ class HATestZKFC1:
         main.ONOS5.start_all()
         main.ONOS1.start_rest()
         main.step("Testing Startup")
+        '''
+        result1 = main.ONOS1.rest_status() and result_zk
         vm1 = main.RC1.status_coor and main.RC1.status_serv and \
                 main.ONOS1.isup()
         vm2 = main.RC2.status_coor and main.ONOS2.isup()
         vm3 = main.RC3.status_coor and main.ONOS3.isup()
         vm4 = main.RC4.status_coor and main.ONOS4.isup()
         vm5 = main.RC5.status_coor and main.ONOS5.isup()
-        result = ZK_Status and vm1 and vm2 and vm3 and vm4 and vm5
-        if result == main.TRUE:
+        result = result1 and vm1 and vm2 and vm3 and vm4 and vm5
+        '''
+        result = main.ONOS1.isup() and main.ONOS2.isup() and \
+                main.ONOS3.isup() and main.ONOS4.isup() and \
+                main.ONOS5.isup() 
+        if result == main.TRUE: 
             main.log.report("All components started successfully")
         utilities.assert_equals(expect=main.TRUE,actual=result,
                 onpass="All components started successfully",
@@ -109,20 +129,26 @@ class HATestZKFC1:
 
         main.log.report("Assigning switches to controllers")
         main.case("Assigning Controllers")
-        main.step("Assign Master Controllers")
+        main.step("Assign Mastership to Controllers")
         for i in range(1,29):
             if i ==1:
-                main.Mininet1.assign_sw_controller(sw=str(i),ip1=ONOS1_ip,port1=ONOS1_port)
+                main.Mininet1.assign_sw_controller(sw=str(i),
+                        ip1=ONOS1_ip,port1=ONOS1_port)
             elif i>=2 and i<5:
-                main.Mininet1.assign_sw_controller(sw=str(i),ip1=ONOS2_ip,port1=ONOS2_port)
+                main.Mininet1.assign_sw_controller(sw=str(i),
+                        ip1=ONOS2_ip,port1=ONOS2_port)
             elif i>=5 and i<8:
-                main.Mininet1.assign_sw_controller(sw=str(i),ip1=ONOS3_ip,port1=ONOS3_port)
+                main.Mininet1.assign_sw_controller(sw=str(i),
+                        ip1=ONOS3_ip,port1=ONOS3_port)
             elif i>=8 and i<18:
-                main.Mininet1.assign_sw_controller(sw=str(i),ip1=ONOS4_ip,port1=ONOS4_port)
+                main.Mininet1.assign_sw_controller(sw=str(i),
+                        ip1=ONOS4_ip,port1=ONOS4_port)
             elif i>=18 and i<28:
-                main.Mininet1.assign_sw_controller(sw=str(i),ip1=ONOS5_ip,port1=ONOS5_port)
+                main.Mininet1.assign_sw_controller(sw=str(i),
+                        ip1=ONOS5_ip,port1=ONOS5_port)
             else:
-                main.Mininet1.assign_sw_controller(sw=str(i),ip1=ONOS1_ip,port1=ONOS1_port)
+                main.Mininet1.assign_sw_controller(sw=str(i),
+                        ip1=ONOS1_ip,port1=ONOS1_port)
 
         Switch_Mastership = main.TRUE
         for i in range (1,29):
@@ -170,9 +196,10 @@ class HATestZKFC1:
                     Switch_Mastership = main.FALSE
 
         if Switch_Mastership == main.TRUE:
-            main.log.report("MasterControllers assigned correctly")
+            main.log.report("Switch mastership assigned correctly")
         utilities.assert_equals(expect = main.TRUE,actual=Switch_Mastership,
-                onpass="MasterControllers assigned correctly")
+                onpass="Switch mastership assigned correctly",
+                onfail="Switches not assigned correctly to controllers")
         for i in range (1,29):
             main.Mininet1.assign_sw_controller(sw=str(i),count=5,
                     ip1=ONOS1_ip,port1=ONOS1_port,
@@ -196,16 +223,20 @@ class HATestZKFC1:
             dstMac = '00:00:00:00:00:'+str(hex(i+10)[2:])
             srcDPID = '00:00:00:00:00:00:30:'+str(i).zfill(2)
             dstDPID= '00:00:00:00:00:00:60:' +str(i+10)
-            main.ONOS1.add_intent(intent_id=str(count),src_dpid=srcDPID,dst_dpid=dstDPID,
-                    src_mac=srcMac,dst_mac=dstMac,intentIP=intentIP,intentPort=intentPort,
+            main.ONOS1.add_intent(intent_id=str(count),
+                    src_dpid=srcDPID,dst_dpid=dstDPID,
+                    src_mac=srcMac,dst_mac=dstMac,
+                    intentIP=intentIP,intentPort=intentPort,
                     intentURL=intentURL)
             count+=1
             dstDPID = '00:00:00:00:00:00:30:'+str(i).zfill(2)
             srcDPID= '00:00:00:00:00:00:60:' +str(i+10)
             dstMac = '00:00:00:00:00:' + str(hex(i)[2:]).zfill(2)
             srcMac = '00:00:00:00:00:'+str(hex(i+10)[2:])
-            main.ONOS1.add_intent(intent_id=str(count),src_dpid=srcDPID,dst_dpid=dstDPID,
-                    src_mac=srcMac,dst_mac=dstMac,intentIP=intentIP,intentPort=intentPort,
+            main.ONOS1.add_intent(intent_id=str(count),
+                    src_dpid=srcDPID,dst_dpid=dstDPID,
+                    src_mac=srcMac,dst_mac=dstMac,
+                    intentIP=intentIP,intentPort=intentPort,
                     intentURL=intentURL)
             count+=1
         count = 1
@@ -221,7 +252,7 @@ class HATestZKFC1:
                 main.log.report("Ping between h" + str(i) + " and h" + str(i+10) + " failed. Making attempt number "+str(count) + " in 2 seconds")
                 time.sleep(2)
             elif ping==main.FALSE:
-                main.log.report("All ping attempts have failed")
+                main.log.report("Ping attempts have failed")
                 i=19
                 Ping_Result = main.FALSE
             elif ping==main.TRUE:
@@ -232,7 +263,7 @@ class HATestZKFC1:
                 main.log.info("Unknown error")
                 Ping_Result = main.ERROR
         if Ping_Result==main.FALSE:
-            main.log.report("Intents have not ben installed correctly. Cleaning up")
+            main.log.report("Intents have not been installed correctly. Exiting...")
             main.cleanup()
             main.exit()
         if Ping_Result==main.TRUE:
@@ -251,10 +282,11 @@ class HATestZKFC1:
         intentHighURL = main.params['CTRL']['intentHighURL']
         intentLowURL = main.params['CTRL']['intentLowURL']
 
-        main.log.report("Setting up and Gathering data for current state")
+        main.log.report("Setting up and gathering data for current state")
+        main.case("Setting up and gathering data for current state")
 
         main.step("Get the Mastership of each switch")
-        (stdout,stderr)=Popen(["curl",ONOS1_ip + ":" + ONOS_default_rest_port + switchURL],
+        (stdout,stderr)=Popen(["curl",ONOS1_ip+":" + ONOS_default_rest_port + switchURL],
                 stdout=PIPE).communicate()
         global masterSwitchList1
         masterSwitchList1 = stdout
@@ -423,6 +455,7 @@ class HATestZKFC1:
         description = "Get the current In-Memory Topology on each ONOS "\
                 "Instance and Compare it to the Topology before component "\
                 "failure"
+        main.step(description)
         main.log.report(description)
 
         ONOS1_ip = main.params['CTRL']['ip1']
@@ -431,10 +464,9 @@ class HATestZKFC1:
         intentLowURL = main.params['CTRL']['intentLowURL']
         switchURL = main.params['CTRL']['switchURL']
 
-        #NOTE: Possible behavior for this case is for switches to change mastership to another 
-        #      controller if the current controller's zk client loses connection with the ZK controller
-        #      OR, Mastership shouldn't change. Investigation is needed
-
+        #NOTE: The way curator handles leaderlatch disconnection is to give up mastership when 
+        #      a connection is lost. When it reconnects, the new leaderlatch will be in the 
+        #      end of the queue. Thus the next controller will gain mastership of the switch
         description2 = "Get the Mastership of each switch and compare to the "\
                 " Mastership before component failure"
         main.step(description2)
@@ -456,7 +488,7 @@ class HATestZKFC1:
             else:
                 Switch_Mastership = main.FALSE
         if Switch_Mastership == main.FALSE:
-            main.log.report("Mastership of some switches changed")
+            main.log.report("Mastership of Switches was changed")
         utilities.assert_equals(expect=main.FALSE,actual=Switch_Mastership,
                 onpass="Mastership of some switches changed",
                 onfail="Mastership of Switches was NOT changed")
@@ -467,6 +499,7 @@ class HATestZKFC1:
         changesInIntents = main.ONOS1.comp_intents(preIntents=highIntentList1,postIntents=stdout)
         if not changesInIntents:
             High_Intents = main.TRUE
+            main.log.report("No changes to High level Intents")
         else:
             main.log.info("Changes to high level intents: "+str(changesInIntents))
             High_Intents = main.FALSE
@@ -480,6 +513,7 @@ class HATestZKFC1:
         changesInIntents=main.ONOS1.comp_low(preIntents=lowIntentList1,postIntents=stdout)
         if not changesInIntents:
             Low_Intents = main.TRUE
+            main.log.report("No changes to Low level Intents")
         else:
             main.log.info("Changes made to the low level intents: "+str(changesInIntents))
             Low_Intents = main.FALSE
@@ -490,13 +524,13 @@ class HATestZKFC1:
         main.step("Get the OF Table entries and compare to before component failure")
         Flow_Tables = main.TRUE
         flows2=[]
-        for i in range(27):
+        for i in range(28):
             flows2.append(main.Mininet2.get_flowTable(sw="s"+str(i+1)))
             main.log.info("Checking flow table on s" + str(i+1))
             Flow_Tables = Flow_Tables and main.Mininet2.flow_comp(flow1=flows[i],
                     flow2=main.Mininet2.get_flowTable(sw="s"+str(i+1)))
             if Flow_Tables == main.FALSE:
-                main.log.info("Differences in flow table for switch: "+str(i))
+                main.log.info("Differences in flow table for switch: "+str(i+1))
                 break
         if Flow_Tables == main.TRUE:
             main.log.report("No changes were found in the flow tables")
@@ -507,18 +541,20 @@ class HATestZKFC1:
         main.step("Check the continuous pings to ensure that no packets were dropped during component failure")
         main.Mininet2.pingKill(main.params['TESTONUSER'], main.params['TESTONIP'])
         Loss_In_Pings = main.FALSE
+        #NOTE: checkForLoss returns main.FALSE with 0% packet loss
         for i in range(8,18):
+            main.log.info("Checking for a loss in pings along flow from s" + str(i))
             Loss_In_Pings = Loss_In_Pings or main.Mininet2.checkForLoss("/tmp/ping.h"+str(i))
-        if Loss_In_Pings==main.TRUE:
+        if Loss_In_Pings == main.TRUE:
             main.log.info("Loss in ping detected")
         elif Loss_In_Pings == main.ERROR:
             main.log.info("There are multiple mininet process running")
-        else:
+        elif Loss_In_Pings == main.FALSE:
             main.log.info("No Loss in the pings")
-            main.log.report("No loss of connectivity")
+            main.log.report("No loss of dataplane connectivity")
         utilities.assert_equals(expect=main.FALSE,actual=Loss_In_Pings,
                 onpass="No Loss of connectivity",
-                onfail="Loss of connectivity detected")
+                onfail="Loss of dataplane connectivity detected")
 
         main.step("Check that ONOS Topology is consistent with MN Topology")
         Topo = TestONTopology(main.Mininet1, ctrls) # can also add Intent API info for intent operations
@@ -534,9 +570,10 @@ class HATestZKFC1:
                     onfail="ONOS" + str(n) + " Topology does not match MN Topology")
             Topology_All = Topology_All and Topology_Current
 
-        result = Switch_Mastership and High_Intents and Low_Intents and Flow_Tables and (not Loss_In_Pings)  and Topology_All
+        result = not Switch_Mastership and High_Intents and Low_Intents and Flow_Tables and Topology_All and (not Loss_In_Pings)
+        result = int(result)
         if result == main.TRUE:
-            main.log.report("Constant state tests passed")
+            main.log.report("Constant State Tests Passed")
         utilities.assert_equals(expect=main.TRUE,actual=result,
                 onpass="Constant State Tests Passed", 
                 onfail="Constant state tests failed")
@@ -680,3 +717,40 @@ class HATestZKFC1:
                 onpass="Switch Discovered Correctly",
                 onfail="Switch discovery failed")
 
+
+        main.step("Killing tcpdumps")
+        main.Mininet2.stop_tcpdump()
+        main.ONOS1.kill_tcpdump()
+        main.ONOS2.kill_tcpdump()
+        main.ONOS3.kill_tcpdump()
+        main.ONOS4.kill_tcpdump()
+        main.ONOS5.kill_tcpdump()
+
+        main.step("Copying pcap files to test station")
+        dumpDir = main.params['ONOStcpdump']['dumpDir']
+        scpDir = main.params['ONOStcpdump']['scpDir']
+        testname = main.TEST 
+        teststation_user = main.params['TESTONUSER']
+        teststation_IP = main.params['TESTONIP']
+
+        main.ONOS1.handle.sendline("scp "+dumpDir+"/tcpdump " +
+                teststation_user+ "@" +teststation_IP+ ":" +scpDir + 
+                "/" + testname + "-" +main.ONOS1.name + ".pcap")
+        main.ONOS2.handle.sendline("scp "+dumpDir+"/tcpdump " +
+                teststation_user+ "@" +teststation_IP+ ":" +scpDir + 
+                "/" + testname + "-" +main.ONOS2.name + ".pcap")
+        main.ONOS3.handle.sendline("scp "+dumpDir+"/tcpdump " +
+                teststation_user+ "@" +teststation_IP+ ":" +scpDir + 
+                "/" + testname + "-" +main.ONOS3.name + ".pcap")
+        main.ONOS4.handle.sendline("scp "+dumpDir+"/tcpdump " +
+                teststation_user+ "@" +teststation_IP+ ":" +scpDir + 
+                "/" + testname + "-" +main.ONOS4.name + ".pcap")
+        main.ONOS5.handle.sendline("scp "+dumpDir+"/tcpdump " +
+                teststation_user+ "@" +teststation_IP+ ":" +scpDir + 
+                "/" + testname + "-" +main.ONOS5.name + ".pcap")
+        #sleep so scp can finish
+        time.sleep(10)
+        
+        main.step("Packing and rotating pcap archives")
+        import os
+        os.system("~/TestON/dependencies/rotate.sh "+ str(testname))

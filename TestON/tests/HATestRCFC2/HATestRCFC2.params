@@ -49,4 +49,17 @@
         <target9>10.0.0.26</target9>
         <target10>10.0.0.27</target10>
     </PING>
+    <timers>
+        <LinkDiscovery>5</LinkDiscovery>
+        <SwitchDiscovery>31</SwitchDiscovery>
+    </timers>
+    <MNtcpdump>
+        <intf>eth0</intf>
+        <port> </port>
+        <folder>~/packet_captures/</folder>
+    </MNtcpdump>
+    <ONOStcpdump>
+        <dumpDir> ~/ONOS/onos-logs</dumpDir>
+        <scpDir> ~/packet_captures</scpDir>
+    </ONOStcpdump>
 </PARAMS>

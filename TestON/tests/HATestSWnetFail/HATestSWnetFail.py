@@ -9,8 +9,7 @@ class HATestSWnetFail:
     RAMCloud database, and start up ONOS instances. 
     '''
     def CASE1(self,main) :
-        import time
-        main.log.report("Initial cleanup and startup")
+        main.log.report("ONOS instance network failure scenario test initialization")
         main.case("Initial Startup")
         main.step("Stop ONOS")
         main.ONOS1.stop_all()
@@ -23,7 +22,7 @@ class HATestSWnetFail:
         main.ONOS3.stop_rest()
         main.ONOS4.stop_rest()
         main.ONOS5.stop_rest()
-
+ 
         main.step("Checking git commit")
         ONOS_commit = []
         ONOS_commit.append(main.ONOS1.get_branch())
@@ -42,23 +41,38 @@ class HATestSWnetFail:
             main.log.report("ONOS4 is on branch: "+ ONOS_commit[3])
             main.log.report("ONOS5 is on branch: "+ ONOS_commit[4])
 
+        main.step("Start Packet Captures")
+        main.Mininet2.start_tcpdump(str(main.params['MNtcpdump']['folder'])+str(main.TEST)+"-MN.pcap", 
+                intf = main.params['MNtcpdump']['intf'],
+                port = main.params['MNtcpdump']['port']) 
+        main.ONOS1.tcpdump()
+        main.ONOS2.tcpdump()
+        main.ONOS3.tcpdump()
+        main.ONOS4.tcpdump()
+        main.ONOS5.tcpdump()
+
+        result = main.ONOS1.status() or main.ONOS2.status() \
+                or main.ONOS3.status() or main.ONOS4.status() or main.ONOS5.status()
+        '''
         main.step("Startup Zookeeper")
         main.ZK1.start()
         main.ZK2.start()
         main.ZK3.start()
         main.ZK4.start()
         main.ZK5.start()
-        time.sleep(2)
-        ZK_Status = main.ZK1.isup() and main.ZK2.isup()\
+        result_zk = main.ZK1.isup() and main.ZK2.isup()\
                 and main.ZK3.isup() and main.ZK4.isup() and main.ZK5.isup()
-        utilities.assert_equals(expect=main.TRUE,actual=ZK_Status ,
-                onpass="Zookeeper started successfully",onfail="ZOOKEEPER FAILED TO START")
-        main.step("Cleaning RC Database and Starting All")
+        utilities.assert_equals(expect=main.TRUE,actual=result_zk,
+                onpass="Zookeeper started successfully",
+                onfail="Zookeeper failed to start")
+        main.step("Cleaning RC Database")
         main.RC1.del_db()
         main.RC2.del_db()
         main.RC3.del_db()
         main.RC4.del_db()
         main.RC5.del_db()
+        '''
+        main.step("Starting All")
         main.ONOS1.start_all()
         main.ONOS2.start_all()
         main.ONOS3.start_all()
@@ -66,13 +80,21 @@ class HATestSWnetFail:
         main.ONOS5.start_all()
         main.ONOS1.start_rest()
         main.step("Testing Startup")
+        '''
+        result1 = main.ONOS1.rest_status() and result_zk
         vm1 = main.RC1.status_coor and main.RC1.status_serv and \
                 main.ONOS1.isup()
         vm2 = main.RC2.status_coor and main.ONOS2.isup()
         vm3 = main.RC3.status_coor and main.ONOS3.isup()
         vm4 = main.RC4.status_coor and main.ONOS4.isup()
         vm5 = main.RC5.status_coor and main.ONOS5.isup()
-        result = ZK_Status and vm1 and vm2 and vm3 and vm4 and vm5
+        result = result1 and vm1 and vm2 and vm3 and vm4 and vm5
+        '''
+        result = main.ONOS1.isup() and main.ONOS2.isup() and \
+                main.ONOS3.isup() and main.ONOS4.isup() and \
+                main.ONOS5.isup() 
+        if result == main.TRUE: 
+            main.log.report("All components started successfully")
         utilities.assert_equals(expect=main.TRUE,actual=result,
                 onpass="All components started successfully",
                 onfail="One or more components failed to start")
@@ -102,80 +124,38 @@ class HATestSWnetFail:
 
         main.log.report("Assigning switches to controllers")
         main.case("Assigning Controllers")
-        main.step("Assign Master Controllers")
+        main.step("Assign Mastership to Controllers")
+        main.log.info("Setup all switches connection to CTRL1 as master, then CTRL2 as backup.")
         for i in range(1,29):
-            if i ==1:
-                main.Mininet1.assign_sw_controller(sw=str(i),ip1=ONOS1_ip,port1=ONOS1_port)
-            elif i>=2 and i<5:
-                main.Mininet1.assign_sw_controller(sw=str(i),ip1=ONOS2_ip,port1=ONOS2_port)
-            elif i>=5 and i<8:
-                main.Mininet1.assign_sw_controller(sw=str(i),ip1=ONOS3_ip,port1=ONOS3_port)
-            elif i>=8 and i<18:
-                main.Mininet1.assign_sw_controller(sw=str(i),ip1=ONOS4_ip,port1=ONOS4_port)
-            elif i>=18 and i<28:
-                main.Mininet1.assign_sw_controller(sw=str(i),ip1=ONOS5_ip,port1=ONOS5_port)
-            else:
-                main.Mininet1.assign_sw_controller(sw=str(i),ip1=ONOS1_ip,port1=ONOS1_port)
-
+            main.Mininet1.assign_sw_controller(sw=str(i),ip1=ONOS1_ip,port1=ONOS1_port)
         Switch_Mastership = main.TRUE
         for i in range (1,29):
-            if i==1:
-                response = main.Mininet1.get_sw_controller("s"+str(i))
-                print("Response is " + str(response))
-                if re.search("tcp:"+ONOS1_ip,response):
-                    Switch_Mastership = Switch_Mastership and main.TRUE
-                else:
-                    Switch_Mastership = main.FALSE
-            elif i>=2 and i<5:
-                response = main.Mininet1.get_sw_controller("s"+str(i))
-                print("Response is " + str(response))
-                if re.search("tcp:"+ONOS2_ip,response):
-                    Switch_Mastership = Switch_Mastership and main.TRUE
-                else:
-                    Switch_Mastership = main.FALSE
-            elif i>=5 and i<8:
-                response = main.Mininet1.get_sw_controller("s"+str(i))
-                print("Response is " + str(response))
-                if re.search("tcp:"+ONOS3_ip,response):
-                    Switch_Mastership = Switch_Mastership and main.TRUE
-                else:
-                    Switch_Mastership = main.FALSE
-            elif i>=8 and i<18:
-                response = main.Mininet1.get_sw_controller("s"+str(i))
-                print("Response is " + str(response))
-                if re.search("tcp:"+ONOS4_ip,response):
-                    Switch_Mastership = Switch_Mastership and main.TRUE
-                else:
-                    Switch_Mastership = main.FALSE
-            elif i>=18 and i<28:
-                response = main.Mininet1.get_sw_controller("s"+str(i))
-                print("Response is " + str(response))
-                if re.search("tcp:"+ONOS5_ip,response):
-                    Switch_Mastership = Switch_Mastership and main.TRUE
-                else:
-                    Switch_Mastership = main.FALSE
+            response = main.Mininet1.get_sw_controller("s"+str(i))
+            print("Response is " + str(response))
+            if re.search("tcp:"+ONOS1_ip,response):
+                Switch_Mastership = Switch_Mastership and main.TRUE
             else:
-                response = main.Mininet1.get_sw_controller("s"+str(i))
-                print("Response is" + str(response))
-                if re.search("tcp:" +ONOS1_ip,response):
-                    Switch_Mastership = Switch_Mastership and main.TRUE
-                else:
-                    Switch_Mastership = main.FALSE
-
+                Switch_Mastership = main.FALSE
+            main.Mininet1.assign_sw_controller(sw=str(i),ip1=ONOS1_ip,port1=ONOS1_port, 
+                    ip2=ONOS2_ip,port2=ONOS2_port,COUNT=2)
+        if Switch_Mastership == main.TRUE:
+            main.log.report("Switch Mastership assigned correctly")
         utilities.assert_equals(expect = main.TRUE,actual=Switch_Mastership,
-                onpass="MasterControllers assigned correctly")
-        for i in range (1,29):
-            main.Mininet1.assign_sw_controller(sw=str(i),count=5,
-                    ip1=ONOS1_ip,port1=ONOS1_port,
-                    ip2=ONOS2_ip,port2=ONOS2_port,
-                    ip3=ONOS3_ip,port3=ONOS3_port,
-                    ip4=ONOS4_ip,port4=ONOS4_port,
-                    ip5=ONOS5_ip,port5=ONOS5_port)
+                onpass="Switch Mastership assigned correctly",
+                onfail="Switches not assigned correctly")
+        #for i in range (1,29):
+        #    main.Mininet1.assign_sw_controller(sw=str(i),count=5,
+        #            ip1=ONOS1_ip,port1=ONOS1_port,
+        #            ip2=ONOS2_ip,port2=ONOS2_port,
+        #            ip3=ONOS3_ip,port3=ONOS3_port,
+        #            ip4=ONOS4_ip,port4=ONOS4_port,
+        #            ip5=ONOS5_ip,port5=ONOS5_port)
 
     def CASE3(self,main) :
         import time
         import json
         import re
+        main.log.report("Adding bidirectional intents")
         main.case("Adding Intents")
         intentIP = main.params['CTRL']['ip1']
         intentPort=main.params['INTENTS']['intentPort']
@@ -186,16 +166,20 @@ class HATestSWnetFail:
             dstMac = '00:00:00:00:00:'+str(hex(i+10)[2:])
             srcDPID = '00:00:00:00:00:00:30:'+str(i).zfill(2)
             dstDPID= '00:00:00:00:00:00:60:' +str(i+10)
-            main.ONOS1.add_intent(intent_id=str(count),src_dpid=srcDPID,dst_dpid=dstDPID,
-                    src_mac=srcMac,dst_mac=dstMac,intentIP=intentIP,intentPort=intentPort,
+            main.ONOS1.add_intent(intent_id=str(count),
+                    src_dpid=srcDPID,dst_dpid=dstDPID,
+                    src_mac=srcMac,dst_mac=dstMac,
+                    intentIP=intentIP,intentPort=intentPort,
                     intentURL=intentURL)
             count+=1
             dstDPID = '00:00:00:00:00:00:30:'+str(i).zfill(2)
             srcDPID= '00:00:00:00:00:00:60:' +str(i+10)
             dstMac = '00:00:00:00:00:' + str(hex(i)[2:]).zfill(2)
             srcMac = '00:00:00:00:00:'+str(hex(i+10)[2:])
-            main.ONOS1.add_intent(intent_id=str(count),src_dpid=srcDPID,dst_dpid=dstDPID,
-                    src_mac=srcMac,dst_mac=dstMac,intentIP=intentIP,intentPort=intentPort,
+            main.ONOS1.add_intent(intent_id=str(count),
+                    src_dpid=srcDPID,dst_dpid=dstDPID,
+                    src_mac=srcMac,dst_mac=dstMac,
+                    intentIP=intentIP,intentPort=intentPort,
                     intentURL=intentURL)
             count+=1
         count = 1
@@ -211,7 +195,7 @@ class HATestSWnetFail:
                 main.log.report("Ping between h" + str(i) + " and h" + str(i+10) + " failed. Making attempt number "+str(count) + " in 2 seconds")
                 time.sleep(2)
             elif ping==main.FALSE:
-                main.log.report("All ping attempts have failed")
+                main.log.report("Ping attempts have failed")
                 i=19
                 Ping_Result = main.FALSE
             elif ping==main.TRUE:
@@ -222,7 +206,7 @@ class HATestSWnetFail:
                 main.log.info("Unknown error")
                 Ping_Result = main.ERROR
         if Ping_Result==main.FALSE:
-            main.log.report("Intents have not ben installed correctly. Cleaning up")
+            main.log.report("Intents have not been installed correctly. Exiting...")
             main.cleanup()
             main.exit()
         if Ping_Result==main.TRUE:
@@ -241,10 +225,11 @@ class HATestSWnetFail:
         intentHighURL = main.params['CTRL']['intentHighURL']
         intentLowURL = main.params['CTRL']['intentLowURL']
 
-        main.log.report("Setting up and Gathering data for current state")
+        main.log.report("Setting up and gathering data for current state")
+        main.case("Setting up and gathering data for current state")
 
         main.step("Get the Mastership of each switch")
-        (stdout,stderr)=Popen(["curl",ONOS1_ip + ":" + ONOS_default_rest_port + switchURL],
+        (stdout,stderr)=Popen(["curl",ONOS1_ip+":" + ONOS_default_rest_port + switchURL],
                 stdout=PIPE).communicate()
         global masterSwitchList1
         masterSwitchList1 = stdout
@@ -327,6 +312,7 @@ class HATestSWnetFail:
 
         ONOS1_ip = main.params['CTRL']['ip1']
         ONOS2_ip = main.params['CTRL']['ip2']
+        MN_ip = main.params['MNIP']
 
         ONOS1_port = main.params['CTRL']['port1']
         ONOS2_port = main.params['CTRL']['port2']
@@ -334,18 +320,19 @@ class HATestSWnetFail:
         case_string = "Test HA scenario where switch network connection"+\
                 " to a controller is broken"
         main.case(case_string)
-        main.step("Zookeeper server failure!")
         result = main.TRUE
 
-        main.log.info("Setup all switches connection to CTRL1 as master, then CTRL2 as backup.")
-        for i in range(1,29):
-            main.Mininet1.assign_sw_controller(sw=str(i),ip1=ONOS1_ip,port1=ONOS1_port)
-            main.Mininet1.assign_sw_controller(sw=str(i),ip1=ONOS1_ip,port1=ONOS1_port, \
-                    ip2=ONOS2_ip,port2=ONOS2_port,COUNT=2)
+        #main.log.info("Setup all switches connection to CTRL1 as master, then CTRL2 as backup.")
+        #for i in range(1,29):
+        #    main.Mininet1.assign_sw_controller(sw=str(i),ip1=ONOS1_ip,port1=ONOS1_port)
+        #    main.Mininet1.assign_sw_controller(sw=str(i),ip1=ONOS1_ip,port1=ONOS1_port, \
+        #            ip2=ONOS2_ip,port2=ONOS2_port,COUNT=2)
         wait_time = int(main.params['TOCHK'])
         time.sleep(5)
         main.log.info("Block switch connections to ONOS controller: " + ONOS1_ip + ":"+ ONOS1_port)
-        main.Mininet2.setIpTablesOUTPUT(ONOS1_ip, ONOS1_port, packet_type='tcp', action='add')
+        main.ONOS1.setIpTables(MN_ip, ONOS1_port, action='add')
+        #main.Mininet2.setIpTablesOUTPUT(ONOS1_ip, ONOS1_port, packet_type='tcp', action='add')
+        main.log.info("Waiting " + str(wait_time) + " seconds")
         time.sleep(wait_time)
         
     def CASE6(self,main) :
@@ -516,6 +503,7 @@ class HATestSWnetFail:
         ONOS3_ip = main.params['CTRL']['ip3']
         ONOS4_ip = main.params['CTRL']['ip4']
         ONOS5_ip = main.params['CTRL']['ip5']
+        MN_ip = main.params['MNIP']
 
         ONOS1_port = main.params['CTRL']['port1']
         ONOS2_port = main.params['CTRL']['port2']
@@ -595,3 +583,35 @@ class HATestSWnetFail:
         utilities.assert_equals(expect=main.TRUE,actual=result,
                 onpass="Switch Discovered Correctly",
                 onfail="Switch discovery failed")
+
+
+        main.log.step("Killing tcpdumps")
+        main.Mininet2.stop_tcpdump()
+        main.ONOS1.kill_tcpdump()
+        main.ONOS2.kill_tcpdump()
+        main.ONOS3.kill_tcpdump()
+        main.ONOS4.kill_tcpdump()
+        main.ONOS5.kill_tcpdump()
+
+        main.log.step("Copying pcap files to test station")
+        dumpDir = main.params['ONOStcpdump']['dumpDir']
+        scpDir = main.params['ONOStcpdump']['scpDir']
+        testname = main.TEST 
+        teststation_user = main.params['TESTONUSER']
+        teststation_IP = main.params['TESTONIP']
+
+        main.ONOS1.handle.sendline("scp "+dumpDir+"/tcpdump " +teststation_user+ "@" +teststation_IP+ ":" +scpDir + "/" + testname + "-" +main.ONOS1.name + ".pcap")
+        main.ONOS2.handle.sendline("scp "+dumpDir+"/tcpdump " +teststation_user+ "@" +teststation_IP+ ":" +scpDir + "/" + testname + "-" +main.ONOS2.name + ".pcap")
+        main.ONOS3.handle.sendline("scp "+dumpDir+"/tcpdump " +teststation_user+ "@" +teststation_IP+ ":" +scpDir + "/" + testname + "-" +main.ONOS3.name + ".pcap")
+        main.ONOS4.handle.sendline("scp "+dumpDir+"/tcpdump " +teststation_user+ "@" +teststation_IP+ ":" +scpDir + "/" + testname + "-" +main.ONOS4.name + ".pcap")
+        main.ONOS5.handle.sendline("scp "+dumpDir+"/tcpdump " +teststation_user+ "@" +teststation_IP+ ":" +scpDir + "/" + testname + "-" +main.ONOS5.name + ".pcap")
+        #sleep so scp can finish
+        time.sleep(10)
+        
+        main.log.step("Packing and rotating pcap archives")
+        import os
+        print os.system("~/TestON/dependencies/rotate.sh "+ str(testname))
+
+        #Clean up iptable rules
+        main.ONOS1.setIpTables(MN_ip, ONOS1_port, packet_type='tcp', action='remove')
+        #main.Mininet2.setIpTablesOUTPUT(ONOS1_ip, ONOS1_port, packet_type='tcp', action='remove')

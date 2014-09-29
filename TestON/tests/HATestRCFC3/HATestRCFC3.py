@@ -15,7 +15,7 @@ class HATestRCFC3:
     RAMCloud database, and start up ONOS instances. 
     '''
     def CASE1(self,main) :
-        import time
+        main.log.report("ONOS instance network failure scenario test initialization")
         main.case("Initial Startup")
         main.step("Stop ONOS")
         main.ONOS1.stop_all()
@@ -28,7 +28,7 @@ class HATestRCFC3:
         main.ONOS3.stop_rest()
         main.ONOS4.stop_rest()
         main.ONOS5.stop_rest()
-
+ 
         main.step("Checking git commit")
         ONOS_commit = []
         ONOS_commit.append(main.ONOS1.get_branch())
@@ -47,22 +47,38 @@ class HATestRCFC3:
             main.log.report("ONOS4 is on branch: "+ ONOS_commit[3])
             main.log.report("ONOS5 is on branch: "+ ONOS_commit[4])
 
+        main.step("Start Packet Captures")
+        main.Mininet2.start_tcpdump(str(main.params['MNtcpdump']['folder'])+str(main.TEST)+"-MN.pcap", 
+                intf = main.params['MNtcpdump']['intf'],
+                port = main.params['MNtcpdump']['port']) 
+        main.ONOS1.tcpdump()
+        main.ONOS2.tcpdump()
+        main.ONOS3.tcpdump()
+        main.ONOS4.tcpdump()
+        main.ONOS5.tcpdump()
+
+        result = main.ONOS1.status() or main.ONOS2.status() \
+                or main.ONOS3.status() or main.ONOS4.status() or main.ONOS5.status()
+        '''
         main.step("Startup Zookeeper")
         main.ZK1.start()
         main.ZK2.start()
         main.ZK3.start()
         main.ZK4.start()
         main.ZK5.start()
-        time.sleep(2)
-        result = main.ZK1.isup() and main.ZK2.isup()\
+        result_zk = main.ZK1.isup() and main.ZK2.isup()\
                 and main.ZK3.isup() and main.ZK4.isup() and main.ZK5.isup()
-        utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Zookeeper started successfully",onfail="ZOOKEEPER FAILED TO START")
-        main.step("Cleaning RC Database and Starting All")
+        utilities.assert_equals(expect=main.TRUE,actual=result_zk,
+                onpass="Zookeeper started successfully",
+                onfail="Zookeeper failed to start")
+        main.step("Cleaning RC Database")
         main.RC1.del_db()
         main.RC2.del_db()
         main.RC3.del_db()
         main.RC4.del_db()
         main.RC5.del_db()
+        '''
+        main.step("Starting All")
         main.ONOS1.start_all()
         main.ONOS2.start_all()
         main.ONOS3.start_all()
@@ -70,7 +86,8 @@ class HATestRCFC3:
         main.ONOS5.start_all()
         main.ONOS1.start_rest()
         main.step("Testing Startup")
-        result1 = main.ONOS1.rest_status()
+        '''
+        result1 = main.ONOS1.rest_status() and result_zk
         vm1 = main.RC1.status_coor and main.RC1.status_serv and \
                 main.ONOS1.isup()
         vm2 = main.RC2.status_coor and main.ONOS2.isup()
@@ -78,10 +95,18 @@ class HATestRCFC3:
         vm4 = main.RC4.status_coor and main.ONOS4.isup()
         vm5 = main.RC5.status_coor and main.ONOS5.isup()
         result = result1 and vm1 and vm2 and vm3 and vm4 and vm5
-        utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Everything started successfully",onfail="EVERYTHING FAILED TO START")
-        if result==main.FALSE:
-            main.cleanup()
-            main.exit()
+        '''
+        result = main.ONOS1.isup() and main.ONOS2.isup() and \
+                main.ONOS3.isup() and main.ONOS4.isup() and \
+                main.ONOS5.isup() 
+        if result == main.TRUE: 
+            main.log.report("All components started successfully")
+        utilities.assert_equals(expect=main.TRUE,actual=result,
+                onpass="All components started successfully",
+                onfail="One or more components failed to start")
+        #if result==main.FALSE:
+        #    main.cleanup()
+        #    main.exit()
 
     '''
     CASE2
@@ -467,14 +492,27 @@ class HATestRCFC3:
         #MNTopo = Topo
         #result5 = main.TRUE
         #for n in range(1,6):
-        #    result = main.Mininet1.compare_topo(MNTopo, main.ONOS1.get_json(main.params['CTRL']['ip'+str(n)]+":"+main.params['CTRL']['restPort'+str(n)]+main.params['TopoRest']))
-        #    utilities.assert_equals(expect=main.TRUE,actual=result,onpass="ONOS" + str(n) + " Topology matches MN Topology",onfail="ONOS" + str(n) + " Topology does not match MN Topology")
-        #    result4 = result4 and result
+        #    if n == kill or n == kill2: 
+        #        pass
+        #    else: 
+        #        Topology_Current = main.Mininet1.compare_topo(MNTopo, 
+        #                main.ONOS1.get_json(main.params['CTRL']['ip'+str(n)]+":"+\
+        #                main.params['CTRL']['restPort'+str(n)]+main.params['TopoRest']))
+        #        if Topology_Current == main.TRUE:
+        #            main.log.report("ONOS"+str(n)+" Topolgoy matches MN Topology")
+        #        utilities.assert_equals(expect=main.TRUE,actual=Topology_Current,
+        #                onpass="ONOS" + str(n) + " Topology matches MN Topology",
+        #                onfail="ONOS" + str(n) + " Topology does not match MN Topology")
+        #        Topology_Check2 = Topology_Check2 and Topology_Current
 
-
-        #NOTE: the compare_topo function doesn't currently work when we change the switch dpid since we aren't updating the MN data structures
-        result =result1 and result2 and result3 #and result4 
-        utilities.assert_equals(expect=main.TRUE,actual=result,onpass="Switch Discovered Correctly",onfail="Switch discovery failed")
+        #NOTE: Commenting out this result since currently compare_topo doesn't work when we remove a
+        #      switch since we don't update the MN data structures
+        result = Del_Switch_Discovered and Add_Switch_Discovered #and Topology_Check and Topology_Check2
+        if result == main.TRUE:
+            main.log.report("Switch event discovered correctly")
+        utilities.assert_equals(expect=main.TRUE,actual=result,
+                onpass="Switch Discovered Correctly",
+                onfail="Switch discovery failed")
         main.log.info("Removing existing Iptable rules...") 
         ip2=main.params['CTRL']['ip2']
         ip3=main.params['CTRL']['ip3']
@@ -500,3 +538,31 @@ class HATestRCFC3:
 # When I go out, I lock every other one. I figure no matter how long 
 # somebody stands there picking the locks, they are always locking three"
 
+
+
+        main.log.step("Killing tcpdumps")
+        main.Mininet2.stop_tcpdump()
+        main.ONOS1.kill_tcpdump()
+        main.ONOS2.kill_tcpdump()
+        main.ONOS3.kill_tcpdump()
+        main.ONOS4.kill_tcpdump()
+        main.ONOS5.kill_tcpdump()
+
+        main.log.step("Copying pcap files to test station")
+        dumpDir = main.params['ONOStcpdump']['dumpDir']
+        scpDir = main.params['ONOStcpdump']['scpDir']
+        testname = main.TEST 
+        teststation_user = main.params['TESTONUSER']
+        teststation_IP = main.params['TESTONIP']
+
+        main.ONOS1.handle.sendline("scp "+dumpDir+"/tcpdump " +teststation_user+ "@" +teststation_IP+ ":" +scpDir + "/" + testname + "-" +main.ONOS1.name + ".pcap")
+        main.ONOS2.handle.sendline("scp "+dumpDir+"/tcpdump " +teststation_user+ "@" +teststation_IP+ ":" +scpDir + "/" + testname + "-" +main.ONOS2.name + ".pcap")
+        main.ONOS3.handle.sendline("scp "+dumpDir+"/tcpdump " +teststation_user+ "@" +teststation_IP+ ":" +scpDir + "/" + testname + "-" +main.ONOS3.name + ".pcap")
+        main.ONOS4.handle.sendline("scp "+dumpDir+"/tcpdump " +teststation_user+ "@" +teststation_IP+ ":" +scpDir + "/" + testname + "-" +main.ONOS4.name + ".pcap")
+        main.ONOS5.handle.sendline("scp "+dumpDir+"/tcpdump " +teststation_user+ "@" +teststation_IP+ ":" +scpDir + "/" + testname + "-" +main.ONOS5.name + ".pcap")
+        #sleep so scp can finish
+        time.sleep(10)
+        
+        main.log.step("Packing and rotating pcap archives")
+        import os
+        print os.system("~/TestON/dependencies/rotate.sh "+ str(testname))

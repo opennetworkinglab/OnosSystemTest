@@ -1425,7 +1425,7 @@ class OnosCliDriver(CLI):
             main.cleanup()
             main.exit()
 
-    def tcpdump(self, intf = "eth0"):
+    def tcpdump(self, intf = "eth0", user = "admin"):
         '''
         Runs tpdump on an intferface and saves in onos-logs under the ONOS home directory
         intf can be specified, or the default eth0 is used
@@ -1433,7 +1433,7 @@ class OnosCliDriver(CLI):
         try:
             self.handle.sendline("")
             self.handle.expect("\$")
-            self.handle.sendline("sudo tcpdump -n -i "+ intf + " -s0 -w " + self.home +"/onos-logs/tcpdump &")
+            self.handle.sendline("sudo tcpdump -n -Z " + user + " -i "+ intf + " -s0 -w " + self.home +"/onos-logs/tcpdump &")
             i=self.handle.expect(['No\ssuch\device','listening\son',pexpect.TIMEOUT],timeout=10)
             if i == 0:
                 main.log.error(self.name + ": tcpdump - No such device exists. tcpdump attempted on: " + intf)
@@ -1652,93 +1652,94 @@ class OnosCliDriver(CLI):
             # back, hence why we expect $ for remove type. We want to remove
             # an already existing rule
            
-            if action_type == 'add':
-                #NOTE: "iptables:" expect is a result of return from the command
-                #      iptables -C ...
-                #      Any changes by the iptables command return string 
-                #      will result in failure of the function. (deemed unlikely
-                #      at the time of writing this function)
-                #Check for existing rules on current input
-                self.handle.sendline("")
-                self.handle.expect("\$")
-                self.handle.sendline("sudo iptables -C "+direction+" -p "+str(packet_type)+
-                        " -s "+ str(ip)+" --dport "+str(port)+" -j "+str(rule))
-                self.handle.expect("iptables:")
-            elif action_type == 'remove':
-                #Check for existing rules on current input
-                self.handle.sendline("")
-                self.handle.expect("\$")
-                self.handle.sendline("sudo iptables -C "+direction+" -p "+str(packet_type)+
-                        " -s "+ str(ip)+" --dport "+str(port)+" -j "+str(rule))
-                self.handle.expect("\$")
-           
-            actual_string = self.handle.after
-            expect_string = "iptables:"
+            #NOTE: "iptables:" expect is a result of return from the command
+            #      iptables -C ...
+            #      Any changes by the iptables command return string 
+            #      will result in failure of the function. (deemed unlikely
+            #      at the time of writing this function)
+            #Check for existing rules on current input
 
-            if re.search(expect_string, actual_string):
-                match_result = main.TRUE 
-            else:
-                match_result = main.FALSE
+            ##NOTE/FIXME: REMOVING DUE TO PEXPECT ISSUE##
+            #self.handle.sendline("")
+            #self.handle.expect("\$")
+            #self.handle.sendline("sudo iptables -C "+direction+" -p "+str(packet_type)+
+            #         " -s "+ str(ip)+" --dport "+str(port)+" -j "+str(rule))
+            #i = self.handle.expect(["iptables:", "\$"])
+            #
+            #if i == 0:
+            #    #specified rule does not exist
+            #    match_result = main.TRUE 
+            #elif i == 1:
+            #    #specified rule exists
+            #    match_result = main.FALSE
+            #else:
+            #    main.log.error("iptables EOF or timeout")
+            #    return
+            #########################
+
             #If match_result is main.TRUE, it means there is no matching rule. 
            
             #If tables does not exist and expected prompt is returned, go ahead and
             #add iptables rule
-            if match_result == main.TRUE:
+
+            #if match_result == main.TRUE:
                 #Ensure action type is add
-                if action_type == 'add':
-                    #-A is the 'append' action of iptables
-                    action_add = '-A'
-                    try:
-                        self.handle.sendline("")
-                        self.handle.sendline("sudo iptables "+action_add+" "+direction+
-                            " -p "+str(packet_type)+" -s "+ str(ip)+" --dport "+
-                            str(port)+" -j "+str(rule))
-                       
-                        info_string = "On "+str(self.name)
-                        info_string += " iptable rule added to block IP: "+str(ip)
-                        info_string += " Port: "+str(port)+" Rule: "+str(rule)
-                        info_string += " Direction: "+str(direction)
+            if action_type == 'add':
+                #-A is the 'append' action of iptables
+                action_add = '-A'
+                try:
+                    self.handle.sendline("")
+                    self.handle.sendline("sudo iptables "+action_add+" "+direction+
+                        " -p "+str(packet_type)+" -s "+ str(ip)+" --dport "+
+                        str(port)+" -j "+str(rule))
+                   
+                    info_string = "On "+str(self.name)
+                    info_string += " iptable rule added to block IP: "+str(ip)
+                    info_string += " Destination Port: "+str(port)+" Rule: "+str(rule)
+                    info_string += " Direction: "+str(direction)
 
-                        main.log.info(info_string)
+                    main.log.info(info_string)
 
-                        self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT])
-                    except pexpect.TIMEOUT:
-                        main.log.error(self.name + ": Timeout exception in setIpTables function")
-                    except:
-                        main.log.error( traceback.print_exc())
-                        main.cleanup()
-                        main.exit()
-                else:
-                    main.log.error("Given rule already exists, but attempted to add it")
+                    self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT])
+                except pexpect.TIMEOUT:
+                    main.log.error(self.name + ": Timeout exception in setIpTables function")
+                except:
+                    main.log.error( "Unknown error:")
+                    main.log.error( traceback.print_exc())
+                    main.cleanup()
+                    main.exit()
+            #else:
+            #    main.log.error("Given rule already exists, but attempted to add it")
             #If match_result is 0, it means there IS a matching rule provided
-            elif match_result == main.FALSE:
+            #elif match_result == main.FALSE:
                 #Ensure action type is remove
-                if action_type == 'remove':
-                    #-D is the 'delete' rule of iptables
-                    action_remove = '-D'
-                    try:
-                        self.handle.sendline("")
-                        #Delete a specific rule specified into the function
-                        self.handle.sendline("sudo iptables "+action_remove+" "+direction+
-                            " -p "+str(packet_type)+" -s "+ str(ip)+" --dport "+
-                            str(port)+" -j "+str(rule))
-                        
-                        info_string = "On "+str(self.name)
-                        info_string += " iptables rule removed from blocking IP: "+str(ip)
-                        info_string += " Port: "+str(port)+" Rule: "+str(rule)
-                        info_string += " Direction: "+str(direction)
+            elif action_type == 'remove':
+                #-D is the 'delete' rule of iptables
+                action_remove = '-D'
+                try:
+                    self.handle.sendline("")
+                    #Delete a specific rule specified into the function
+                    self.handle.sendline("sudo iptables "+action_remove+" "+direction+
+                        " -p "+str(packet_type)+" -s "+ str(ip)+" --dport "+
+                        str(port)+" -j "+str(rule))
+                    
+                    info_string = "On "+str(self.name)
+                    info_string += " iptables rule removed from blocking IP: "+str(ip)
+                    info_string += " Port: "+str(port)+" Rule: "+str(rule)
+                    info_string += " Direction: "+str(direction)
 
-                        main.log.info(info_string)
+                    main.log.info(info_string)
 
-                        self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT])
-                    except pexpect.TIMEOUT:
-                        main.log.error(self.name + ": Timeout exception in setIpTables function")
-                    except:
-                        main.log.error( traceback.print_exc())
-                        main.cleanup()
-                        main.exit()
-                else:
-                    main.log.error("Given rule does not exist, but attempted to remove it")
+                    self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT])
+                except pexpect.TIMEOUT:
+                    main.log.error(self.name + ": Timeout exception in setIpTables function")
+                except:
+                    main.log.error( "Unknown error:")
+                    main.log.error( traceback.print_exc())
+                    main.cleanup()
+                    main.exit()
+            #else:
+            #    main.log.error("action is not remove, match_result is false")
             else:
                 #NOTE: If a bad usage of this function occurs, exit the entire test
                 main.log.error("Bad rule given for iptables. Exiting...")

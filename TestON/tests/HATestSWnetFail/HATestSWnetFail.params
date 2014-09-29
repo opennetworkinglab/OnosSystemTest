@@ -27,6 +27,7 @@
     </INTENTS>
     <TESTONUSER>admin</TESTONUSER>
     <TESTONIP>10.128.11.11</TESTONIP>
+    <MNIP>10.128.11.11</MNIP>
     <PING>
         <source1>h8</source1>
         <source2>h9</source2>
@@ -49,5 +50,18 @@
         <target9>10.0.0.26</target9>
         <target10>10.0.0.27</target10>
     </PING>
-    <TOCHK>30</TOCHK>
+    <TOCHK>60</TOCHK>
+    <timers>
+        <LinkDiscovery>5</LinkDiscovery>
+        <SwitchDiscovery>31</SwitchDiscovery>
+    </timers>
+    <MNtcpdump>
+        <intf>eth0</intf>
+        <port> </port>
+        <folder>~/packet_captures/</folder>
+    </MNtcpdump>
+    <ONOStcpdump>
+        <dumpDir> ~/ONOS/onos-logs</dumpDir>
+        <scpDir> ~/packet_captures</scpDir>
+    </ONOStcpdump>
 </PARAMS>

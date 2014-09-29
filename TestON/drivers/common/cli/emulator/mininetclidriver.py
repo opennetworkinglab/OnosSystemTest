@@ -689,7 +689,7 @@ class MininetCliDriver(Emulator):
         else:
             main.log.info(response)
 
-    def start_tcpdump(self, filename, intf = "eth0", port = "port 6633"):
+    def start_tcpdump(self, filename, intf = "eth0", port = "port 6633", user = "admin"):
         '''
         Runs tpdump on an intferface and saves the file
         intf can be specified, or the default eth0 is used
@@ -697,7 +697,7 @@ class MininetCliDriver(Emulator):
         try:
             self.handle.sendline("")
             self.handle.expect("mininet>")
-            self.handle.sendline("sh sudo tcpdump -n -i "+ intf + " " + port + " -w " + filename.strip() + "  &")
+            self.handle.sendline("sh sudo tcpdump -n -Z " + user + " -i "+ intf + " " + port + " -w " + filename.strip() + "  &")
             self.handle.sendline("")
             self.handle.sendline("")
             i=self.handle.expect(['No\ssuch\device','listening\son',pexpect.TIMEOUT,"mininet>"],timeout=10)
@@ -763,15 +763,14 @@ class MininetCliDriver(Emulator):
 
         To install sts:
             $ git clone git://github.com/ucb-sts/sts.git
+            Include sts in your PYTHONPATH. it should looks something like: 
+            PYTHONPATH=/home/admin/TestON:/home/admin/sts
             $ cd sts
+            $ git checkout topology_refactoring2  (This may be merged into master at some point)
             $ git clone -b debugger git://github.com/ucb-sts/pox.git
             $ sudo apt-get install python-dev
             $ ./tools/install_hassel_python.sh
             $ sudo pip install networkx
-
-        Include sts in your PYTHONPATH. it should looks comething like: 
-            PYTHONPATH=/home/admin/TestON:/home/admin/sts
-
         '''
         import sys
         sys.path.append("~/sts")
@@ -804,6 +803,10 @@ class MininetCliDriver(Emulator):
         #print mnDPIDs
         if onos_json == "":#if rest call fails
             main.log.error(self.name + ".compare_topo(): Empty JSON object given from ONOS rest call")
+            return main.FALSE
+        if onos_json.get('switches',"ERROR") == "ERROR":
+            main.log.report(self.name + " Something is funky with the onos JSON object passed to compare_topo()")
+            print onos_json
             return main.FALSE
         onos=onos_json
         onosDPIDs=[]

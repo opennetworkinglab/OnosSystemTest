@@ -90,8 +90,11 @@ class RemoteMininetDriver(Emulator):
         if re.search(" 0% packet loss",outputs):
             return main.FALSE
         elif re.search("found multiple mininet",outputs):
+            print "Error"
+            print outputs
             return main.ERROR
         else:
+            print "OOPS: ping results for "+pingList+":" 
             print outputs
             return main.TRUE
 
@@ -111,6 +114,7 @@ class RemoteMininetDriver(Emulator):
         self.execute(cmd=command,prompt="(.*)",timeout=10)
         self.handle.sendline("")
         self.handle.expect("\$")
+        print "Output from pingLong: " + str(self.handle.before) + str(self.handle.after)
         return main.TRUE
 
     def pingstatus(self,**pingParams):
@@ -236,140 +240,17 @@ class RemoteMininetDriver(Emulator):
         '''
         self.execute(cmd="~/ONOS/scripts/test-ctrl-local.sh ", prompt="\$",timeout=10)
 
- #   def verifySSH(self,**connectargs):
- #       response = self.execute(cmd="h1 /usr/sbin/sshd -D&",prompt="mininet>",timeout=10)
- #       response = self.execute(cmd="h4 /usr/sbin/sshd -D&",prompt="mininet>",timeout=10)
- #       for key in connectargs:
- #           vars(self)[key] = connectargs[key]
- #       response = self.execute(cmd="xterm h1 h4 ",prompt="mininet>",timeout=10)
- #       import time
- #       time.sleep(20)
- #       if self.flag == 0:
- #           self.flag = 1
- #           return main.FALSE
- #       else :
- #           return main.TRUE
- #   
- #   def getMacAddress(self,host):
- #       '''
- #           Verifies the host's ip configured or not.
- #       '''
- #       if self.handle :
- #           response = self.execute(cmd=host+" ifconfig",prompt="mininet>",timeout=10)
-
- #           pattern = "HWaddr\s(((\d|\w)+:)+(\d|\w))"
- #           mac_address_search = re.search(pattern, response)
- #           main.log.info("Mac-Address of Host "+host +" is "+mac_address_search.group(1))
- #           return mac_address_search.group(1)
- #       else :
- #           main.log.error("Connection failed to the host") 
- #   def getIPAddress(self,host):
- #       '''
- #           Verifies the host's ip configured or not.
- #       '''
- #       if self.handle :
- #           response = self.execute(cmd=host+" ifconfig",prompt="mininet>",timeout=10)
-
- #           pattern = "inet\saddr:(\d+\.\d+\.\d+\.\d+)"
- #           ip_address_search = re.search(pattern, response)
- #           main.log.info("IP-Address of Host "+host +" is "+ip_address_search.group(1))
- #           return ip_address_search.group(1)
- #       else :
- #           main.log.error("Connection failed to the host") 
- #       
- #   def dump(self):
- #       main.log.info("Dump node info")
- #       self.execute(cmd = 'dump',prompt = 'mininet>',timeout = 10)
- #       return main.TRUE
- #           
- #   def intfs(self):
- #       main.log.info("List interfaces")
- #       self.execute(cmd = 'intfs',prompt = 'mininet>',timeout = 10)
- #       return main.TRUE
- #   
- #   def net(self):
- #       main.log.info("List network connections")
- #       self.execute(cmd = 'net',prompt = 'mininet>',timeout = 10)
- #       return main.TRUE
- #   
- #   def iperf(self):
- #       main.log.info("Simple iperf TCP test between two (optionally specified) hosts")
- #       self.execute(cmd = 'iperf',prompt = 'mininet>',timeout = 10)
- #       return main.TRUE
- #   
- #   def iperfudp(self):
- #       main.log.info("Simple iperf TCP test between two (optionally specified) hosts")
- #       self.execute(cmd = 'iperfudp',prompt = 'mininet>',timeout = 10)
- #       return main.TRUE
- #   
- #   def nodes(self):
- #       main.log.info("List all nodes.")
- #       self.execute(cmd = 'nodes',prompt = 'mininet>',timeout = 10)    
- #       return main.TRUE
- #   
- #   def pingpair(self):
- #       main.log.infoe("Ping between first two hosts")
- #       self.execute(cmd = 'pingpair',prompt = 'mininet>',timeout = 20)
- #       
- #       if utilities.assert_matches(expect='0% packet loss',actual=response,onpass="No Packet loss",onfail="Hosts not reachable"):
- #           main.log.info("Ping between two hosts SUCCESS")
- #           main.last_result = main.TRUE 
- #           return main.TRUE
- #       else :
- #           main.log.error("PACKET LOST, HOSTS NOT REACHABLE")
- #           main.last_result = main.FALSE
- #           return main.FALSE
- #   
- #   def link(self,**linkargs):
- #       '''
- #       Bring link(s) between two nodes up or down
- #       '''
- #       main.log.info('Bring link(s) between two nodes up or down')
- #       args = utilities.parse_args(["END1","END2","OPTION"],**linkargs)
- #       end1 = args["END1"] if args["END1"] != None else ""
- #       end2 = args["END2"] if args["END2"] != None else ""
- #       option = args["OPTION"] if args["OPTION"] != None else ""
- #       command = "link "+str(end1) + " " + str(end2)+ " " + str(option)
- #       response = self.execute(cmd=command,prompt="mininet>",timeout=10)
- #       return main.TRUE
- #       
-
- #   def dpctl(self,**dpctlargs):
- #       '''
- #        Run dpctl command on all switches.
- #       '''
- #       main.log.info('Run dpctl command on all switches')
- #       args = utilities.parse_args(["CMD","ARGS"],**dpctlargs)
- #       cmd = args["CMD"] if args["CMD"] != None else ""
- #       cmdargs = args["ARGS"] if args["ARGS"] != None else ""
- #       command = "dpctl "+cmd + " " + str(cmdargs)
- #       response = self.execute(cmd=command,prompt="mininet>",timeout=10)
- #       return main.TRUE
- #  
- #       
- #   def get_version(self):
- #       file_input = path+'/lib/Mininet/INSTALL'
- #       version = super(Mininet, self).get_version()
- #       pattern = 'Mininet\s\w\.\w\.\w\w*'
- #       for line in open(file_input,'r').readlines():
- #           result = re.match(pattern, line)
- #           if result:
- #               version = result.group(0)
- #               
- #           
- #       return version    
-    def start_tcpdump(self, filename, intf = "eth0", port = "port 6633"):
+    def start_tcpdump(self, filename, intf = "eth0", port = "port 6633", user = "admin"):
         ''' 
         Runs tpdump on an intferface and saves the file
         intf can be specified, or the default eth0 is used
         '''
         try:
             self.handle.sendline("")
-            self.handle.sendline("sudo tcpdump -n -i "+ intf + " " + port + " -w " + filename.strip() + "  &")
+            self.handle.sendline("sudo tcpdump -Z " + user  + " -n -i "+ intf + " " + port + " -w " + filename.strip() + "  &")
             self.handle.sendline("")
             self.handle.sendline("")
             i=self.handle.expect(['No\ssuch\device','listening\son',pexpect.TIMEOUT,"\$"],timeout=10)
-            main.log.warn(self.handle.before + self.handle.after)
             if i == 0:
                 main.log.error(self.name + ": tcpdump - No such device exists. tcpdump attempted on: " + intf)
                 return main.FALSE
@@ -380,7 +261,6 @@ class RemoteMininetDriver(Emulator):
                 main.log.error(self.name + ": tcpdump command timed out! Check interface name, given interface was: " + intf)
                 return main.FALSE
             elif i ==3: 
-                main.log.info(self.name +": " +  self.handle.before)
                 return main.TRUE
             else:
                 main.log.error(self.name + ": tcpdump - unexpected response")
@@ -560,7 +440,8 @@ class RemoteMininetDriver(Emulator):
                 self.handle.expect("\$")
                 self.handle.sendline("sudo iptables -C OUTPUT -p "+str(packet_type)+
                         " -d "+ str(dst_ip)+" --dport "+str(dst_port)+" -j "+str(rule))
-                self.handle.expect("iptables:")
+                i = self.handle.expect(["iptables:", "\$"])
+
             elif action_type == 'remove':
                 #Check for existing rules on current input
                 self.handle.sendline("")
@@ -568,9 +449,12 @@ class RemoteMininetDriver(Emulator):
                 self.handle.sendline("sudo iptables -C OUTPUT -p "+str(packet_type)+
                         " -d "+ str(dst_ip)+" --dport "+str(dst_port)+" -j "+str(rule))
                 self.handle.expect("\$")
-
+            print "before: "
+            print self.handle.before
             actual_string = self.handle.after
             expect_string = "iptables:"
+            print "Actual String:"
+            print actual_string
 
             if re.search(expect_string, actual_string):
                 match_result = main.TRUE

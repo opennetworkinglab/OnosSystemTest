@@ -27,8 +27,12 @@ import json
 import traceback
 import urllib2
 from urllib2 import URLError, HTTPError
+from socket import timeout
+
 sys.path.append("../")
 from drivers.common.clidriver import CLI
+
+URL_TIMEOUT = 10
 
 class OnosCliDriver(CLI):
     
@@ -198,7 +202,7 @@ class OnosCliDriver(CLI):
             main.log.info(":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
             main.cleanup()
             main.exit()
-    
+
     def status(self):
         '''
         Called onos.sh core status and returns TRUE/FALSE accordingly
@@ -286,7 +290,6 @@ class OnosCliDriver(CLI):
             main.exit()
 
 
-        
     def rest_status(self):
         '''
         Checks if the rest server is running.
@@ -570,7 +573,7 @@ class OnosCliDriver(CLI):
         url = "http://%s:%s/wm/onos/intent/path/switch/%s/shortest-path/%s"%(ONOSIP,ONOSPort,srcDPID,dstDPID)
         parsed_result = []
         try: 
-            response = urllib2.urlopen(url)
+            response = urllib2.urlopen(url, timeout=URL_TIMEOUT)
             result = response.read()
             response.close()
             if len(result) != 0:
@@ -589,6 +592,12 @@ class OnosCliDriver(CLI):
             print "ERROR:"
             print "  REST GET URL: %s" % url
             print "  URL Error Reason: %s" % exc.reason
+        except timeout as exc:
+            print "ERROR:"
+            print "  REST GET URL: %s" % url
+            print "  URL Error Reason: %s" % exc.message
+            main.log.error("Socket timeout connecting to: %s", url)
+            return main.ERROR
      
         if len(parsed_result)==0:
             return
@@ -618,7 +627,7 @@ class OnosCliDriver(CLI):
         print(url)
         parsed_result = []
         try:
-            response = urllib2.urlopen(url)
+            response = urllib2.urlopen(url, timeout=URL_TIMEOUT)
             result = response.read()
             response.close()
             if len(result) != 0:
@@ -639,6 +648,12 @@ class OnosCliDriver(CLI):
             print "  REST GET URL: %s" % url
             print "  URL Error Reason: %s" % exc.reason
             return str(error_payload['code'])
+        except timeout as exc:
+            print "ERROR:"
+            print "  REST GET URL: %s" % url
+            print "  URL Error Reason: %s" % exc.message
+            main.log.error("Socket timeout connecting to: %s", url)
+            return main.ERROR
         
         if len(parsed_result)==0:
             return
@@ -668,12 +683,14 @@ class OnosCliDriver(CLI):
         try:
             request = urllib2.Request(url)
             request.get_method = lambda: 'DELETE'
-            response = urllib2.urlopen(request)
+            response = urllib2.urlopen(request, timeout=URL_TIMEOUT)
             result = response.read()
             response.close()
             if len(result) != 0:
                 parsed_result = json.loads(result)
                 print(parsed_result)
+                return parsed_result
+            return main.TRUE
         except HTTPError as exc:
             print "ERROR:"
             print "  REST DELETE URL: %s" % url
@@ -688,7 +705,13 @@ class OnosCliDriver(CLI):
             print "ERROR:"
             print "  REST DELETE URL: %s" % url
             print "  URL Error Reason: %s" % exc.reason
-        return result
+        except timeout as exc:
+            print "ERROR:"
+            print "  REST GET URL: %s" % url
+            print "  URL Error Reason: %s" % exc.message
+            main.log.error("Socket timeout connecting to: %s", url)
+            return main.ERROR
+        return main.ERROR
 
 #*********************************************************************
 #*********************************************************************
@@ -720,11 +743,13 @@ class OnosCliDriver(CLI):
         try:
             request = urllib2.Request(url,data_json)
             request.add_header("Content-Type", "application/json")
-            response=urllib2.urlopen(request)
+            response=urllib2.urlopen(request, timeout=URL_TIMEOUT)
             result = response.read()
             response.close()
             if len(result) != 0:
                 parsed_result = json.loads(result)
+                return parsed_result
+            return main.TRUE
         except HTTPError as exc:
             print "ERROR:"
             print "  REST GET URL: %s" % url
@@ -741,9 +766,14 @@ class OnosCliDriver(CLI):
             print "  REST GET URL: %s" % url
             print "  URL Error Reason: %s" % exc.reason
             return "  HTTP Error Reason: %s" % exc.reason
-        return result
+        except timeout as exc:
+            print "ERROR:"
+            print "  REST GET URL: %s" % url
+            print "  URL Error Reason: %s" % exc.message
+            main.log.error("Socket timeout connecting to: %s", url)
+            return main.ERROR
+        return main.ERROR
 
-        
 
 
     def add_intents(self):
@@ -1168,7 +1198,59 @@ class OnosCliDriver(CLI):
             main.log.info(":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
             main.cleanup()
             main.exit()
- 
+
+    def detailed_status(self, log_filename):
+        '''
+        Reports RUNNING, STARTING, STOPPED, FROZEN, ERROR (and reason)
+        '''
+        try:
+            process_up = False
+            self.execute(cmd="\n", prompt="\$", timeout=10)
+            self.handle.sendline("cd " + self.home)
+            response = self.execute(cmd="./onos.sh core status ",prompt="\d+\sinstance\sof\sonos\srunning",timeout=10)
+            self.execute(cmd="\n",prompt="\$",timeout=10)
+            if re.search("1\sinstance\sof\sonos\srunning",response):
+                process_up = True
+            elif re.search("0\sinstance\sof\sonos\srunning",response):
+                process_up = False
+                return 'STOPPED'
+            elif re.search("Expected\sPrompt\snot found\s,\sTime Out!!",response):
+                return "ERROR", "Time out on ./onos.sh core status"
+            else :
+                main.log.warn(self.name + " WARNING: status recieved unknown response")
+                main.log.warn(response)
+                return 'Error', "Unknown response: %s" % response
+            '''
+            self.execute(cmd="\n",prompt="\$",timeout=10)
+            tail1 = self.execute(cmd="tail " + self.home + "%s" % log_filename, prompt="\$", timeout=10)
+            time.sleep(10)
+            self.execute(cmd="\n",prompt="\$",timeout=10)
+            tail2 = self.execute(cmd="tail " + self.home + "%s" % log_filename, prompt="\$", timeout=10)
+            '''
+
+            pattern = '(.*)1 instance(.*)'
+            pattern2 = '(.*)Exception: Connection refused(.*)'
+            # if utilities.assert_matches(expect=pattern,actual=response,onpass="ONOS process is running...",onfail="ONOS process not running..."):
+            running = self.execute(cmd="cat " + self.home + " %s | grep 'Sending LLDP out on all ports'" % log_filename,prompt="\$",timeout=10)
+            if re.search(pattern, response):
+                if running == '':
+                  return 'STARTING',
+                else:
+                  return 'RUNNING'
+            else:
+                main.log.error(self.name + ": ONOS process not running...")
+                return 'STOPPED'
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":     " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name + ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
+            main.log.error( traceback.print_exc() )
+            main.log.info(":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
+            main.cleanup()
+            main.exit()
 
     def git_pull(self, comp1=""):
         '''

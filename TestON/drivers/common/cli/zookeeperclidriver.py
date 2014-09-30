@@ -194,12 +194,13 @@ class ZookeeperCliDriver(CLI):
         '''
         self.execute(cmd="\n",prompt="\$",timeout=10)
         response = self.execute(cmd=self.home + "/onos.sh zk status ",prompt="Mode",timeout=10)
-        pattern = '(.*)Mode(.*)'
+        pattern = 'Mode'
         if re.search(pattern, response): 
 	    main.log.info(self.name + ": Zookeeper is up.") 
             return main.TRUE
         else:
 	    main.log.info(self.name + ": Zookeeper is down.") 
+            print response
             return main.FALSE
 
 

@@ -60,12 +60,16 @@ class HATestSWnetFail:
         main.ZK3.start()
         main.ZK4.start()
         main.ZK5.start()
-        result_zk = main.ZK1.isup() and main.ZK2.isup()\
-                and main.ZK3.isup() and main.ZK4.isup() and main.ZK5.isup()
-        utilities.assert_equals(expect=main.TRUE,actual=result_zk,
-                onpass="Zookeeper started successfully",
-                onfail="Zookeeper failed to start")
-        main.step("Cleaning RC Database")
+        for n in range(0,5):
+            ZK_Status = main.ZK1.isup() and main.ZK2.isup()\
+                    and main.ZK3.isup() and main.ZK4.isup() and main.ZK5.isup()
+            if ZK_Status:
+                break
+            else:
+                time.sleep(2)
+        utilities.assert_equals(expect=main.TRUE,actual=ZK_Status ,
+                onpass="Zookeeper started successfully",onfail="ZOOKEEPER FAILED TO START")
+        main.step("Cleaning RC Database and Starting All")
         main.RC1.del_db()
         main.RC2.del_db()
         main.RC3.del_db()
@@ -210,9 +214,9 @@ class HATestSWnetFail:
             main.cleanup()
             main.exit()
         if Ping_Result==main.TRUE:
-            main.log.report("Intents have been instaled correctly")
+            main.log.report("Intents have been installed correctly")
         utilities.assert_equals(expect = main.TRUE,actual=Ping_Result,
-                onpass="Intents have been instaled correctly")
+                onpass="Intents have been installed correctly")
             
     def CASE4(self,main) :
         import time
@@ -379,6 +383,15 @@ class HATestSWnetFail:
         main.step("Get the High Level Intents and compare to before component failure")
         (stdout,stderr)=Popen(["curl",ONOS1_ip+":"+ONOS_default_rest_port+\
             intentHighURL],stdout=PIPE).communicate()
+        ####DEBUG:
+        import json
+        test1 = json.loads(highIntentList1)
+        test2 = json.loads(stdout)
+        print json.dumps(test1, sort_keys=True, indent=4, separators=(',', ': '))
+        print json.dumps(test2, sort_keys=True, indent=4, separators=(',', ': '))
+
+
+        ######3
         changesInIntents = main.ONOS1.comp_intents(preIntents=highIntentList1,postIntents=stdout)
         if not changesInIntents:
             High_Intents = main.TRUE
@@ -446,7 +459,7 @@ class HATestSWnetFail:
                     onfail="ONOS" + str(n) + " Topology does not match MN Topology")
             Topology_All = Topology_All and Topology_Current
 
-        result = Switch_Mastership and High_Intents and Low_Intents and Flow_Tables and (not Loss_In_Pings)  and Topology_All
+        result = (not Switch_Mastership) and High_Intents and Low_Intents and Flow_Tables and (not Loss_In_Pings)  and Topology_All
         utilities.assert_equals(expect=main.TRUE,actual=result,
                 onpass="Constant State Tests Passed", 
                 onfail="Constant state tests failed")
@@ -456,6 +469,8 @@ class HATestSWnetFail:
         ONOS1_ip = main.params['CTRL']['ip1']
         TestON_user = main.params['TESTONUSER']
         TestON_ip = main.params['TESTONIP']
+
+        link_sleep = int(main.params['timers']['LinkDiscovery'])
 
         main.log.report("Killing a link to ensure that link discovery is consistent")
         main.case("Killing a link to Ensure that Link Discovery is Working Properly")
@@ -468,17 +483,29 @@ class HATestSWnetFail:
 
         main.step("Kill Link between s3 and s28")
         main.Mininet1.link(END1="s3",END2="s28",OPTION="down")
-        time.sleep(5)
-        Link_Discovery = main.ONOS1.check_status(ONOS1_ip,active,str(int(links)-2))
-        utilities.assert_equals(expect=main.TRUE,actual=Link_Discovery,
+        time.sleep(link_sleep)
+        Link_Down = main.ONOS1.check_status(ONOS1_ip,active,str(int(links)-2))
+        if Link_Down == main.TRUE:
+            main.log.report("Link Down discovered properly")
+        utilities.assert_equals(expect=main.TRUE,actual=Link_Down,
                 onpass="Link Down discovered properly",
-                onfail="Link down was not discovered")
+                onfail="Link down was not discovered in "+ str(link_sleep) + " seconds")
+        
+        main.step("Bring link between s3 and s28 back up")
         Link_Up = main.Mininet1.link(END1="s3",END2="s28",OPTION="up")
+        time.sleep(link_sleep)
+        Link_Up = main.ONOS1.check_status(ONOS1_ip,active,str(links))
+        if Link_Up == main.TRUE:
+            main.log.report("Link up discovered properly")
+        utilities.assert_equals(expect=main.TRUE,actual=Link_Up,
+                onpass="Link up discovered properly",
+                onfail="Link up was not discovered in "+ str(link_sleep) + " seconds")
+
 
         main.step("Compare ONOS Topology to MN Topology")
         Topo = TestONTopology(main.Mininet1, ctrls) # can also add Intent API info for intent operations
         MNTopo = Topo
-        Topology_Check3 = main.TRUE
+        Topology_Check = main.TRUE
         for n in range(1,6):
             Topology_Current = main.Mininet1.compare_topo(MNTopo, 
                     main.ONOS1.get_json(main.params['CTRL']['ip'+str(n)]+":"+\
@@ -489,7 +516,7 @@ class HATestSWnetFail:
                     onfail="ONOS" + str(n) + " Topology does not match MN Topology")
             Topology_Check = Topology_Check and Topology_Current
 
-        result = Link_Discovery and Topology_Check
+        result = Link_Down and Link_Up and Topology_Check
         utilities.assert_equals(expect=main.TRUE,actual=result,
                 onpass="Link failure is discovered correctly",
                 onfail="Link Discovery failed")
@@ -513,20 +540,30 @@ class HATestSWnetFail:
 
         ONOS_rest_port = main.params['CTRL']['restPort1']
 
+        switch_sleep = int(main.params['timers']['SwitchDiscovery'])
+
         main.log.report("Killing a switch to check switch discovery")
         main.case("Killing a switch to ensure switch discovery is working properly")
         main.step("Determine the current number of switches and links")
         (number,active)=main.ONOS1.num_switch(RestIP=ONOS1_ip)
         links = main.ONOS1.num_link(RestIP=ONOS1_ip)
-        main.log.info("Currently there are %s switches, %s are active, and %s links" %(number,active,links))
+        main.log.report("Currently there are %s switches, %s are active, and %s links" %(number,active,links))
     
         main.step("Kill s28 ")
+        main.log.report("Deleting s28")
         main.Mininet2.del_switch("s28")
-        time.sleep(31)
+        time.sleep(switch_sleep)
+        (number2,active2)=main.ONOS1.num_switch(RestIP=ONOS1_ip)
+        links2 = main.ONOS1.num_link(RestIP=ONOS1_ip)
+        main.log.report("Currently there are %s switches, %s are active, and %s links" %(number2,active2,links2))
         Del_Switch_Discovered = main.ONOS1.check_status(ONOS1_ip,str(int(active)-1),str(int(links)-4))
+        if Del_Switch_Discovered == main.TRUE:
+            main.log.report("Switch Down discovered")
+        else:
+            Del_Switch_Discovered = main.FALSE
         utilities.assert_equals(expect=main.TRUE,actual=Del_Switch_Discovered,
-                onpass="Switch Discovery is Working",
-                onfail="Switch Discovery has failed")
+                onpass="Switch Down discovered",
+                onfail="Switch Down was not discovered within "+ str(switch_sleep) + "  seconds")
 
         #NOTE: Compare Topo does not currently work for this case
         #main.step("Compare ONOS Topology to MN Topology")
@@ -534,16 +571,20 @@ class HATestSWnetFail:
         #MNTopo = Topo
         #Topology_Check = main.TRUE
         #for n in range(1,6):
-        #    Topology_Current = main.Mininet1.compare_topo(MNTopo,
-        #            main.ONOS1.get_json(main.params['CTRL']['ip'+str(n)]+":"+\
-        #            main.params['CTRL']['restPort'+str(n)]+\
-        #            main.params['TopoRest']))
-        #    utilities.assert_equals(expect=main.TRUE,actual=Topology_Current,
-        #            onpass="ONOS" + str(n) + " Topology matches MN Topology",
-        #            onfail="ONOS" + str(n) + " Topology does not match MN Topology")
-        #    Topology_Check = Topology_Check and Topology_Current
+        #    if n == kill or n == kill2: 
+        #        pass
+        #    else: 
+        #        Topology_Current = main.Mininet1.compare_topo(MNTopo,
+        #                main.ONOS1.get_json(main.params['CTRL']['ip'+str(n)]+":"+\
+        #                main.params['CTRL']['restPort'+str(n)]+\
+        #                main.params['TopoRest']))
+        #        utilities.assert_equals(expect=main.TRUE,actual=Topology_Current,
+        #                onpass="ONOS" + str(n) + " Topology matches MN Topology",
+        #                onfail="ONOS" + str(n) + " Topology does not match MN Topology")
+        #        Topology_Check = Topology_Check and Topology_Current
 
         main.step("Add back s28")
+        main.log.report("Adding back s28")
         main.Mininet2.add_switch("s28")
         main.Mininet1.assign_sw_controller(sw="28",ip1=ONOS1_ip,port1=ONOS1_port)
         main.Mininet1.assign_sw_controller(sw="28",count=5,
@@ -552,11 +593,18 @@ class HATestSWnetFail:
                 ip3=ONOS3_ip,port3=ONOS3_port,
                 ip4=ONOS4_ip,port4=ONOS4_port,
                 ip5=ONOS5_ip,port5=ONOS5_port)
-        time.sleep(31)
+        (number3,active3)=main.ONOS1.num_switch(RestIP=ONOS1_ip)
+        links3 = main.ONOS1.num_link(RestIP=ONOS1_ip)
+        main.log.report("Currently there are %s switches, %s are active, and %s links" %(number3,active3,links3))
+        time.sleep(switch_sleep)
         Add_Switch_Discovered = main.ONOS1.check_status(ONOS1_ip,active,links)
+        if Add_Switch_Discovered == main.TRUE:
+            main.log.report("Switch Up discovered")
+        else:
+            Add_Switch_Discovered = main.FALSE
         utilities.assert_equals(expect=main.TRUE,actual=Add_Switch_Discovered,
-                onpass="Switch Discovery is Working",
-                onfail="Switch Discovery FAILED TO WORK PROPERLY!")
+                onpass="Switch Up discovered",
+                onfail="Switch Up was not discovered within "+ str(switch_sleep) + " seconds")
 
         #NOTE: Compare Topo does not currently work for this case
         #main.step("Compare ONOS Topology to MN Topology")
@@ -564,22 +612,24 @@ class HATestSWnetFail:
         #MNTopo = Topo
         #Topology_Check2 = main.TRUE
         #for n in range(1,6):
-        #    Topology_Current = main.Mininet1.compare_topo(MNTopo, 
-        #            main.ONOS1.get_json(main.params['CTRL']['ip'+str(n)]+":"+\
-        #            main.params['CTRL']['restPort'+str(n)]+main.params['TopoRest']))
-        #    utilities.assert_equals(expect=main.TRUE,actual=Topology_Current,
-        #            onpass="ONOS" + str(n) + " Topology matches MN Topology",
-        #            onfail="ONOS" + str(n) + " Topology does not match MN Topology")
-        #    Topology_Check2 = Topology_Check2 and Topology_Current
+        #    if n == kill or n == kill2: 
+        #        pass
+        #    else: 
+        #        Topology_Current = main.Mininet1.compare_topo(MNTopo, 
+        #                main.ONOS1.get_json(main.params['CTRL']['ip'+str(n)]+":"+\
+        #                main.params['CTRL']['restPort'+str(n)]+main.params['TopoRest']))
+        #        if Topology_Current == main.TRUE:
+        #            main.log.report("ONOS"+str(n)+" Topolgoy matches MN Topology")
+        #        utilities.assert_equals(expect=main.TRUE,actual=Topology_Current,
+        #                onpass="ONOS" + str(n) + " Topology matches MN Topology",
+        #                onfail="ONOS" + str(n) + " Topology does not match MN Topology")
+        #        Topology_Check2 = Topology_Check2 and Topology_Current
 
-
-        main.log.info("Removing insstalled iptables rules after test.")
-        ONOS1_ip = main.params['CTRL']['ip1']
-        ONOS1_port = main.params['CTRL']['port1']
-        main.Mininet2.setIpTablesOUTPUT(ONOS1_ip, ONOS1_port, packet_type='tcp', action='remove')
         #NOTE: Commenting out this result since currently compare_topo doesn't work when we remove a
         #      switch since we don't update the MN data structures
         result = Del_Switch_Discovered and Add_Switch_Discovered #and Topology_Check and Topology_Check2
+        if result == main.TRUE:
+            main.log.report("Switch event discovered correctly")
         utilities.assert_equals(expect=main.TRUE,actual=result,
                 onpass="Switch Discovered Correctly",
                 onfail="Switch discovery failed")

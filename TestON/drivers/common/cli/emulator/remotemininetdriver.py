@@ -440,7 +440,7 @@ class RemoteMininetDriver(Emulator):
                 self.handle.expect("\$")
                 self.handle.sendline("sudo iptables -C OUTPUT -p "+str(packet_type)+
                         " -d "+ str(dst_ip)+" --dport "+str(dst_port)+" -j "+str(rule))
-                i = self.handle.expect(["iptables:", "\$"])
+                self.handle.expect("\$")
 
             elif action_type == 'remove':
                 #Check for existing rules on current input
@@ -501,9 +501,9 @@ class RemoteMininetDriver(Emulator):
                         self.handle.sendline("sudo iptables "+action_remove+" OUTPUT -p "+str(packet_type)+
                             " -d "+ str(dst_ip)+" --dport "+str(dst_port)+" -j "+str(rule))
 
-                        info_string = "Rules added to "+str(self.name)
-                        info_string += "iptables rule removed from blocking IP: "+str(dst_ip)
-                        info_string += "Port: "+str(dst_port)+" Rule: "+str(rule)
+                        info_string = "Rules removed from "+str(self.name)
+                        info_string += " iptables rule removed from blocking IP: "+str(dst_ip)
+                        info_string += " Port: "+str(dst_port)+" Rule: "+str(rule)
 
                         main.log.info(info_string)
 

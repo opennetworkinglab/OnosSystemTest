@@ -589,7 +589,7 @@ class HATestONOSFC1:
         main.step("Compare ONOS Topology to MN Topology")
         Topo = TestONTopology(main.Mininet1, ctrls) # can also add Intent API info for intent operations
         MNTopo = Topo
-        Topology_Check3 = main.TRUE
+        Topology_Check = main.TRUE
         for n in range(1,6):
             if n == kill or n == kill2: 
                 pass
@@ -636,11 +636,17 @@ class HATestONOSFC1:
         main.log.report("Currently there are %s switches, %s are active, and %s links" %(number,active,links))
     
         main.step("Kill s28 ")
+        main.log.report("Deleting s28")
         main.Mininet2.del_switch("s28")
         time.sleep(switch_sleep)
+        (number2,active2)=main.ONOS1.num_switch(RestIP=ONOS1_ip)
+        links2 = main.ONOS1.num_link(RestIP=ONOS1_ip)
+        main.log.report("Currently there are %s switches, %s are active, and %s links" %(number2,active2,links2))
         Del_Switch_Discovered = main.ONOS1.check_status(ONOS1_ip,str(int(active)-1),str(int(links)-4))
         if Del_Switch_Discovered == main.TRUE:
             main.log.report("Switch Down discovered")
+        else:
+            Del_Switch_Discovered = main.FALSE
         utilities.assert_equals(expect=main.TRUE,actual=Del_Switch_Discovered,
                 onpass="Switch Down discovered",
                 onfail="Switch Down was not discovered within "+ str(switch_sleep) + "  seconds")
@@ -664,6 +670,7 @@ class HATestONOSFC1:
         #        Topology_Check = Topology_Check and Topology_Current
 
         main.step("Add back s28")
+        main.log.report("Adding back s28")
         main.Mininet2.add_switch("s28")
         main.Mininet1.assign_sw_controller(sw="28",ip1=ONOS1_ip,port1=ONOS1_port)
         main.Mininet1.assign_sw_controller(sw="28",count=5,
@@ -672,13 +679,15 @@ class HATestONOSFC1:
                 ip3=ONOS3_ip,port3=ONOS3_port,
                 ip4=ONOS4_ip,port4=ONOS4_port,
                 ip5=ONOS5_ip,port5=ONOS5_port)
-        (number2,active2)=main.ONOS1.num_switch(RestIP=ONOS1_ip)
-        links2 = main.ONOS1.num_link(RestIP=ONOS1_ip)
-        main.log.report("Currently there are %s switches, %s are active, and %s links" %(number2,active2,links2))
+        (number3,active3)=main.ONOS1.num_switch(RestIP=ONOS1_ip)
+        links3 = main.ONOS1.num_link(RestIP=ONOS1_ip)
+        main.log.report("Currently there are %s switches, %s are active, and %s links" %(number3,active3,links3))
         time.sleep(switch_sleep)
         Add_Switch_Discovered = main.ONOS1.check_status(ONOS1_ip,active,links)
         if Add_Switch_Discovered == main.TRUE:
             main.log.report("Switch Up discovered")
+        else:
+            Add_Switch_Discovered = main.FALSE
         utilities.assert_equals(expect=main.TRUE,actual=Add_Switch_Discovered,
                 onpass="Switch Up discovered",
                 onfail="Switch Up was not discovered within "+ str(switch_sleep) + " seconds")

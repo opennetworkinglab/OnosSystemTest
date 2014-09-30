@@ -468,11 +468,16 @@ class HANetFailONOS:
         num_switch_ONOS4 = main.ONOS4.check_switch(ONOS4_ip, 27)
         num_switch_ONOS5 = main.ONOS5.check_switch(ONOS5_ip, 27)
       
-        main.log.report("ONOS1: "+str(num_switch_ONOS1[0]) + str(num_switch_ONOS1[1]))
-        main.log.report("ONOS2: "+str(num_switch_ONOS2[0]) + str(num_switch_ONOS2[1]))
-        main.log.report("ONOS3: "+str(num_switch_ONOS3[0]) + str(num_switch_ONOS3[1]))
-        main.log.report("ONOS4: "+str(num_switch_ONOS4[0]) + str(num_switch_ONOS4[1]))
-        main.log.report("ONOS5: "+str(num_switch_ONOS5[0]) + str(num_switch_ONOS5[1]))
+        main.log.report("ONOS1: "+
+                str(num_switch_ONOS1[0]) + str(num_switch_ONOS1[1]))
+        main.log.report("ONOS2: "+
+                str(num_switch_ONOS2[0]) + str(num_switch_ONOS2[1]))
+        main.log.report("ONOS3: "+
+                str(num_switch_ONOS3[0]) + str(num_switch_ONOS3[1]))
+        main.log.report("ONOS4: "+
+                str(num_switch_ONOS4[0]) + str(num_switch_ONOS4[1]))
+        main.log.report("ONOS5: "+
+                str(num_switch_ONOS5[0]) + str(num_switch_ONOS5[1]))
 
         time.sleep(5)
         
@@ -486,11 +491,16 @@ class HANetFailONOS:
         num_switch_ONOS4 = main.ONOS4.check_switch(ONOS4_ip, 26)
         num_switch_ONOS5 = main.ONOS5.check_switch(ONOS5_ip, 26)
       
-        main.log.report(str(num_switch_ONOS1[0]) + str(num_switch_ONOS1[1]))
-        main.log.report(str(num_switch_ONOS2[0]) + str(num_switch_ONOS2[1]))
-        main.log.report(str(num_switch_ONOS3[0]) + str(num_switch_ONOS3[1]))
-        main.log.report(str(num_switch_ONOS4[0]) + str(num_switch_ONOS4[1]))
-        main.log.report(str(num_switch_ONOS5[0]) + str(num_switch_ONOS5[1]))
+        main.log.report("ONOS1: "+
+                str(num_switch_ONOS1[0]) + str(num_switch_ONOS1[1]))
+        main.log.report("ONOS2: "+
+                str(num_switch_ONOS2[0]) + str(num_switch_ONOS2[1]))
+        main.log.report("ONOS3: "+
+                str(num_switch_ONOS3[0]) + str(num_switch_ONOS3[1]))
+        main.log.report("ONOS4: "+
+                str(num_switch_ONOS4[0]) + str(num_switch_ONOS4[1]))
+        main.log.report("ONOS5: "+
+                str(num_switch_ONOS5[0]) + str(num_switch_ONOS5[1]))
 
         #***************************
 
@@ -593,12 +603,23 @@ class HANetFailONOS:
         num_switch_ONOS4 = main.ONOS4.check_switch(ONOS4_ip, 26)
         num_switch_ONOS5 = main.ONOS5.check_switch(ONOS5_ip, 26)
 
-        main.log.report(str(num_switch_ONOS1[0]) + str(num_switch_ONOS1[1]))
-        main.log.report(str(num_switch_ONOS2[0]) + str(num_switch_ONOS2[1]))
-        main.log.report(str(num_switch_ONOS3[0]) + str(num_switch_ONOS3[1]))
-        main.log.report(str(num_switch_ONOS4[0]) + str(num_switch_ONOS4[1]))
-        main.log.report(str(num_switch_ONOS5[0]) + str(num_switch_ONOS5[1]))
+        main.log.report("ONOS1: "+
+                str(num_switch_ONOS1[0]) + str(num_switch_ONOS1[1]))
+        main.log.report("ONOS2: "+
+                str(num_switch_ONOS2[0]) + str(num_switch_ONOS2[1]))
+        main.log.report("ONOS3: "+
+                str(num_switch_ONOS3[0]) + str(num_switch_ONOS3[1]))
+        main.log.report("ONOS4: "+
+                str(num_switch_ONOS4[0]) + str(num_switch_ONOS4[1]))
+        main.log.report("ONOS5: "+
+                str(num_switch_ONOS5[0]) + str(num_switch_ONOS5[1]))
         #**********************************************
+
+        #Check switch 28 and 20, which were removed previously
+        s28 = main.Mininet1.get_sw_controller("s28")
+        s20 = main.Mininet1.get_sw_controller("s20")
+        print s28
+        print s20
 
         time.sleep(10) 
         

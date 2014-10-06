@@ -124,7 +124,8 @@ class IntentPerf:
         #Database related variables
         db_script = main.params['INTENTS']['databaseScript']
         table_name = main.params['INTENTS']['tableName']
-       
+        postToDB = main.params['INTENTS']['postToDB']
+        
         #REST call related variables
         url = main.params['INTENTS']['url_new']
         url_add = main.params['INTENTS']['urlAddIntent'] 
@@ -142,6 +143,12 @@ class IntentPerf:
         numIter = main.params['INTENTS']['numIter']
         host_ip = main.params['INTENTS']['hostIP'] 
         assertion = main.TRUE
+
+        #Log related variables
+        intentAddThreshold = main.params['LOG']['threshold']['intent_add1']
+        intentRemThreshold = main.params['LOG']['threshold']['intent_rem1']
+        logName1 = main.params['LOG']['logNameONOS1']
+        logDir = main.params['LOG']['logDir']
 
         #We use list to store multiple iterations of latency outputs
         intent_add_lat_list = []
@@ -196,11 +203,22 @@ class IntentPerf:
         min_lat_rem = str(min(intent_rem_lat_list))
         max_lat_rem = str(max(intent_rem_lat_list))
         avg_lat_rem = str(sum(intent_rem_lat_list) / len(intent_rem_lat_list))
+                
+        #If avg add lat exceeds threshold, trigger onos log copy
+        if avg_lat_add > int(intentAddThreshold):
+            log_result_add = main.ONOS1.tailLog(log_directory = logDir, 
+                    log_name = logName1, tail_length = 50)
+                
+        if avg_lat_rem > int(intentRemThreshold):
+            log_result_rem = main.ONOS1.tailLog(log_directory = logDir,
+                    log_name = logName1, tail_length = 50)
+
 
         if int(avg_lat_add) > 0 and int(avg_lat_rem) > 0:
             if int(avg_lat_add) < 100000 and int(avg_lat_rem) < 100000:
                 omit_iter_add = int(numIter) - int(len(intent_add_lat_list))
                 omit_iter_rem = int(numIter) - int(len(intent_rem_lat_list))
+                
                 main.log.report("Intent add latency Min: "+
                         min_lat_add+" ms    Max: "+ 
                         max_lat_add + "ms    Avg: "+
@@ -209,9 +227,13 @@ class IntentPerf:
                         str(omit_iter_add)+"/"+str(numIter)) 
                 #NOTE: os.system runs a command on current (TestON) machine.
                 #Hence, place the db_script in a TestON location 
-                os.system(db_script + " --name='1 intent add' --minimum='"+
+                if postToDB == 'on':
+                    os.system(db_script + " --name='1 intent add' --minimum='"+
                         min_lat_add+"' --maximum='"+max_lat_add+
                         "' --average='"+avg_lat_add+"' "+ "--table='"+table_name+"'")
+                else:
+                    main.log.report("Results were not posted to the database")
+                
                 main.log.report("Intent rem latency Min: "+min_lat_rem+
                         " ms    Max: "+max_lat_rem+" ms    Avg: "+avg_lat_rem+ " ms")
                 main.log.report("Iterations omitted/total: "+
@@ -260,7 +282,8 @@ class IntentPerf:
 
         #Result posting to database related variables
         db_script = main.params['INTENTS']['databaseScript']
-        
+        postToDB = main.params['INTENTS']['postToDB']
+
         #Other test variables
         ONOS2_ip = main.params['CTRL']['ip2']
         numIter = main.params['INTENTS']['numIter']
@@ -268,6 +291,11 @@ class IntentPerf:
         tshark_output = "/tmp/tshark_of_port.txt"
         assertion = ""
         latency = []
+        
+        #Log related variables
+        intentRerouteThreshold = main.params['LOG']['threshold']['intent_reroute1']
+        logName1 = main.params['LOG']['logNameONOS1']
+        logDir = main.params['LOG']['logDir']
 
         main.step("Removing any old intents")
         requests.delete(url)
@@ -353,6 +381,15 @@ class IntentPerf:
             max_lat = str(max(latency))
             avg_lat = str(sum(latency) / len(latency))
             omit_iter = int(numIter) - int(len(latency))
+            
+            if int(avg_lat) > int(intentRerouteThreshold):
+                main.log.info("Average latency exceeded threshold of "+
+                        str(intentRerouteThreshold))
+                main.log.info("Getting onos-log for further investigation")
+                main.log.info("Log fetched: "+logDir+logName1)
+                log_result_reroute = main.ONOS1.tailLog(log_directory = logDir,
+                        log_name = logName1, tail_length = 50)
+                 
 
             if int(avg_lat) > 0 and int(avg_lat) < 100000:
                 main.log.report("Single Intent Reroute latency Min: "+
@@ -360,9 +397,13 @@ class IntentPerf:
                         " ms    Avg: "+avg_lat+" ms")
                 main.log.report("Iterations omitted/total: "+
                         str(omit_iter)+"/"+str(numIter))
-                os.system(db_script + " --name='1 intent reroute' --minimum='"+
+                if postToDB == 'on':
+                    os.system(db_script + " --name='1 intent reroute' --minimum='"+
                         min_lat+"' --maximum='"+max_lat+"' --average='"+avg_lat+
                         "' " + "--table='"+table_name+"'")
+                else:
+                    main.log.report("Results have not been posted to the database")
+                    
                 assertion = main.TRUE
             else:
                 assertion = main.FALSE
@@ -387,16 +428,27 @@ class IntentPerf:
         import time
         import os
         main.log.report("Adding batch of intents to calculate latency")
-        
+       
+        #Intent related variables
         numflows = main.params['INTENTS']['numFlows']
-        intent_ip = main.params['INTENTREST']['intentIP']
         intaddr = main.params['INTENTS']['url_new']
         url_add = main.params['INTENTS']['urlAddIntent']
         numIter = main.params['INTENTS']['numIter']
+        intent_ip = main.params['INTENTREST']['intentIP']
+        
+        #DB related variables
         db_script = main.params['INTENTS']['databaseScript']
+        postToDB = main.params['INTENTS']['postToDB']
         table_name = main.params['INTENTS']['tableName']
+        
+        #Other variables
         assertion = main.TRUE
         latency = []
+        
+        #Log related variables
+        intentAddThreshold = main.params['LOG']['threshold']['intent_add1']
+        logName1 = main.params['LOG']['logNameONOS1']
+        logDir = main.params['LOG']['logDir']
 
         for i in range(0,int(numIter)):
             result = main.ONOS1.dynamicIntent(NUMFLOWS = numflows,
@@ -442,8 +494,12 @@ class IntentPerf:
                 main.log.report("Intent Batch Latency ("+numflows+" intents) Min: "+
                         min_lat + " ms    Max: "+max_lat+" ms    Avg: "+avg_lat+" ms" )
                 main.log.report("Iterations omitted/total: "+str(omit_iter)+"/"+str(numIter))
-                os.system(db_script + " --name='1000 intents add' --minimum='"+min_lat+
+                
+                if postToDB == 'on':
+                    os.system(db_script + " --name='1000 intents add' --minimum='"+min_lat+
                         "' --maximum='"+max_lat+"' --average='"+avg_lat+"' "+ "--table='"+table_name+"'")
+                else:
+                    main.log.report("Results have not been posted to the database")
             else:
                 assertion = main.FALSE
         else:
@@ -466,15 +522,30 @@ class IntentPerf:
         import json
         import time
         import subprocess
-        
+       
+        ONOS1_ip = main.params['CTRL']['ip1']
         ONOS2_ip = main.params['CTRL']['ip2']
+        ONOS3_ip = main.params['CTRL']['ip3']
+
+        #Intent related variables
         numflows = main.params['INTENTS']['numFlows']
-        intentIp = main.params['INTENTREST']['intentIP']
         intaddr = main.params['INTENTS']['url_new']
         numIter = main.params['INTENTS']['numIter']
         url_add_end = main.params['INTENTS']['urlAddIntentEnd']
+        intentIp = main.params['INTENTREST']['intentIP']
+        
+        #Database related variables
         db_script = main.params['INTENTS']['databaseScript']
+        postToDB = main.params['INTENTS']['postToDB']
         table_name = main.params['INTENTS']['tableName']
+        
+        #Log related variables
+        intentAddThreshold = main.params['LOG']['threshold']['intent_add1']
+        logName1 = main.params['LOG']['logNameONOS1']
+        logName2 = main.params['LOG']['logNameONOS2']
+        logDir = main.params['LOG']['logDir']
+        
+        #Other variables 
         tshark_port_batch = "/tmp/tshark_of_port_batch.txt"
         assertion = main.TRUE
 
@@ -566,8 +637,12 @@ class IntentPerf:
                 main.log.report("Intent Batch Reroute Latency ("+numflows+" Intents) Min: "+
                                  min_lat+" ms    Max: "+max_lat+" ms    Avg: "+avg_lat+" ms")
                 main.log.report("Iterations omitted/total: "+str(omit_iter)+"/"+str(numIter))
-                os.system(db_script + " --name='1000 intents reroute' --minimum='"+min_lat+"' --maximum='"+max_lat+
+               
+                if postToDB == 'on':
+                    os.system(db_script + " --name='1000 intents reroute' --minimum='"+min_lat+"' --maximum='"+max_lat+
                                   "' --average='"+avg_lat+"' "+ "--table='"+table_name+"'")
+                else:
+                    main.log.report("Results have not been posted to the database")
             else:
                 assertion = main.FALSE
         else:

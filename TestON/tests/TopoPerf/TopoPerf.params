@@ -5,45 +5,41 @@
         <port>port 6633</port>
         <filename>~/packet_captures/Sanity.pcap</filename>
     </tcpdump>
+   
+    <LOG>
+        <threshold>            
+            #Exceeding this threhold (ms) triggers onos log capture
+            
+            <switch_add1>100</switch_add1> 
+            <port_up>50</port_up>
+            <port_down>50</port_down>
+            <link_up>6000</link_up>
+            <link_down>35000</link_down>
+            <switch_add25>3000</switch_add25>
+            <switch_add88>10000</switch_add88> 
+        </threshold>
+        
+        <logNameONOS1>onos.andrew-ONOS1.log</logNameONOS1>
+        <logNameONOS2>onos.andrew-ONOS2.log</logNameONOS2>
+        <logNameONOS3>onos.andrew-ONOS3.log</logNameONOS3>
     
+        <logDir>~/ONOS/onos-logs/</logDir>
+    </LOG>
+
     <TOPO>
         <url_topo>/wm/onos/metrics?ids=Topology.EventNotification.LastEventTimestamp.EpochMs</url_topo>
         <url_links>http://10.128.5.51:8080/wm/onos/topology/links</url_links>
-        <numIter>10</numIter>
+        <numIter>20</numIter>
         <hostIP>10.128.5.54</hostIP>
         <databaseScript>~/TestON/scripts/./perfdatagraph.py</databaseScript>
+        
+        #'on' or 'off'
+        <postToDB>on</postToDB>
+        
         <tableName>onos_perf</tableName>
         <switch1>00:00:00:00:00:00:10:00</switch1>
         <switch3>00:00:00:00:00:00:30:00</switch3>
     </TOPO>
-
-    <CASE1>       
-        <destination>h6</destination>
-        <target>h40</target>
-    </CASE1>       
-    <PING>
-        <source1>h7</source1>
-        <target1>h32</target1>
-        <source2>h8</source2>
-        <target2>h33</target2>
-    </PING>
-    <LINK>
-        <begin>s1</begin>
-        <end>s2</end>
-    </LINK>
-    <YANK>
-        <hostname>h1</hostname>
-        <hostip>10.0.0.1</hostip>
-        <hostmac>00:00:00:00:00:01</hostmac>
-	<sw1>s1</sw1>
-        <sw6>s6</sw6>
-        <intf>s1-eth1</intf>
-    </YANK>
-    <PLUG>
-        <intf>s1-eth1</intf>
-	<sw6>s6</sw6>
-	<sw1>s1</sw1>
-    </PLUG>
     <CTRL>
         <ip1>10.128.5.51</ip1>
         <port1>6633</port1>

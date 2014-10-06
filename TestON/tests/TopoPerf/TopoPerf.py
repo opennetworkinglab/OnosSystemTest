@@ -110,53 +110,87 @@ class TopoPerf:
         url_topo_2 = "http://"+ctrl_2+":"+rest_port+url_suffix
         url_topo_3 = "http://"+ctrl_3+":"+rest_port+url_suffix 
 
+        add_sw_threshold = main.params['LOG']['threshold']['switch_add1']
+        logNameONOS1 = main.params['LOG']['logNameONOS1']
+        logNameONOS2 = main.params['LOG']['logNameONOS2']
+        logNameONOS3 = main.params['LOG']['logNameONOS3']
+        logDir = main.params['LOG']['logDir']
+
         numIter = main.params['TOPO']['numIter']
         #Location of script that posts results to database
         db_script = main.params['TOPO']['databaseScript']
         table_name = main.params['TOPO']['tableName']
+        postToDB = main.params['TOPO']['postToDB']
+
         #Directory/file to output the tshark results
         tshark_output = "/tmp/tshark_of_topo.txt"
+        tshark_tcp = "/tmp/tshark_tcp_topo.txt"
+        tshark_string_tcp = "TCP 74 "+port_1
+
         assertion = main.TRUE
         topo_lat = []
+        tcp_lat = []
 
         main.log.report("Latency of adding one switch")
 
         for i in range(0, int(numIter)):
             main.step("Starting tshark open flow capture") 
 
-            #***********************************************************************************
-            #TODO: Capture packets in pcap format and read in / parse more specific data for
-            #improved accuracy. Grep may not work in the future when we dissect at a lower level
-            #***********************************************************************************
-
-            #NOTE: Get Config Reply is the last message of the OF handshake message.
-            #Hence why we use it as T0 
-            main.ONOS1.tshark_grep("OFP 78 Get Config Reply", tshark_output) 
+            #NOTE: 
+            #     * TCP [ACK, SYN] will be used as t0_a, the very first "exchange"
+            #       between ONOS and the switch for end to end measurement
+            #     * OFP [Stats Reply] will be used for t0_b, the very last OFP
+            #       message between ONOS and the switch for ONOS measurement
+            main.ONOS1.tshark_grep(tshark_string_tcp, tshark_tcp)
+            main.ONOS1.tshark_grep("OFP 86 Vendor", tshark_output) 
+            
             time.sleep(10) 
 
             #NOTE: We need to assign the switch in a specific way for perf measurements
             main.step("Assign s1 to controller and get timestamp")
             main.Mininet1.assign_sw_controller(sw="1",ip1=ctrl_1,port1=port_1)        
+           
             time.sleep(10)
             main.ONOS1.stop_tshark()
-
+            
             #NOTE: tshark output is saved in ONOS. Use subprocess to read file into TestON for parsing
-            ssh = subprocess.Popen(['ssh', 'admin@'+ctrl_1, 'cat', tshark_output],
+            #TCP packet capture timestamp calculation
+            ssh_tcp = subprocess.Popen(['ssh', 'admin@'+ctrl_1, 'cat', tshark_tcp],
+                    stdout=subprocess.PIPE)
+            text_tcp = ssh_tcp.stdout.readline()
+            obj_tcp = text_tcp.split(" ")
+            main.log.info("Object read in for TCP capture: "+str(text_tcp))
+            if len(text_tcp) > 0:
+                t0_tcp = int(float(obj_tcp[1])*1000)
+            else:
+                main.log.error("Tshark output file for TCP returned unexpected value")
+                t0_tcp = 0
+                assertion = main.FALSE
+
+            #OFP capture timestamp calculation
+            ssh_ofp = subprocess.Popen(['ssh', 'admin@'+ctrl_1, 'cat', tshark_output],
                     stdout=subprocess.PIPE) 
-            text = ssh.stdout.readline()
-            obj = text.split(" ")
-            main.log.info("Object read in: "+str(text)) 
-            if len(text) > 0:
+            #Read last line of Vendor Message (mastership role reply)
+            while True:
+                line = ssh_ofp.stdout.readline()
+                if line != '':
+                    text_ofp = line
+                else:
+                    break
+
+            obj = text_ofp.split(" ")
+            main.log.info("Object read in for OFP capture: "+str(text_ofp)) 
+            if len(text_ofp) > 0:
                 #NOTE: Important!
                 #      Note that we are reading tshark object of index 1.
                 #      This may differ with the tshark version. For older version of 
                 #      tshark, you may need to get the tshark object of index 0
                 #      to get the timestamp. 
                 timestamp = int(float(obj[1])*1000)
-                topo_ms_begin = timestamp
+                t0_ofp = timestamp
             else:
                 main.log.error("Tshark output file returned unexpected value")
-                topo_ms_begin = 0
+                t0_ofp = 0
                 assertion = main.FALSE   
 
             main.step("Verify that switch s1 has been assigned properly") 
@@ -176,6 +210,8 @@ class TopoPerf:
             json_obj_2 = main.ONOS2.get_json(url_topo_2)
             json_obj_3 = main.ONOS3.get_json(url_topo_3)
 
+            print "JOSN OBJECT: "+ str(json_obj_1)
+
             #If all 3 json objects exist, parse dictionary to get end time
             if json_obj_1 != "" and json_obj_2 != "" and json_obj_3 != "": 
                 topo_ms_end_1 = json_obj_1['gauges'][0]['gauge']['value']
@@ -188,13 +224,34 @@ class TopoPerf:
 
                 assertion = main.FALSE
 
-            delta_1 = int(topo_ms_end_1) - int(topo_ms_begin)
-            delta_2 = int(topo_ms_end_2) - int(topo_ms_begin)
-            delta_3 = int(topo_ms_end_3) - int(topo_ms_begin)
+            #delta without switch negotiation
+            delta_1 = int(topo_ms_end_1) - int(t0_ofp)
+            delta_2 = int(topo_ms_end_2) - int(t0_ofp)
+            delta_3 = int(topo_ms_end_3) - int(t0_ofp)
 
-            main.log.info("ONOS1 delta: "+str(delta_1))
-            main.log.info("ONOS2 delta: "+str(delta_2))
-            main.log.info("ONOS3 delta: "+str(delta_3))
+            #delta with switch negotiation (end-to-end) 
+            delta_tcp1 = int(topo_ms_end_1) - int(t0_tcp)
+            delta_tcp2 = int(topo_ms_end_2) - int(t0_tcp)
+            delta_tcp3 = int(topo_ms_end_3) - int(t0_tcp)
+
+            #If one of the delta exceeds the threshold, investigate onos-log
+            if delta_1 > int(add_sw_threshold) or \
+               delta_2 > int(add_sw_threshold) or \
+               delta_3 > int(add_sw_threshold):
+                log_result = main.ONOS1.tailLog(log_directory = logDir,
+                        log_name = logNameONOS1, tail_length = 50)
+                
+                main.log.info("Latency calculation exceeded threshold of "+add_sw_threshold)
+                main.log.info("Fetching onos-log for investigation: ")
+                main.log.info(log_result)
+
+            main.log.info("ONOS1 delta TCP: "+str(delta_tcp1))
+            main.log.info("ONOS2 delta TCP: "+str(delta_tcp2))
+            main.log.info("ONOS3 delta TCP: "+str(delta_tcp3))
+
+            main.log.info("ONOS1 delta OFP: "+str(delta_1))
+            main.log.info("ONOS2 delta OFP: "+str(delta_2))
+            main.log.info("ONOS3 delta OFP: "+str(delta_3))
 
             #NOTE: Obtain average delta of the three clusters
             #IMPORTANT: we want to account for all ONOS instance processing time
@@ -210,8 +267,20 @@ class TopoPerf:
                 else:
                     delta_avg = delta_1
             else:
-                main.log.info("Delta average was not caluclated for iteration "+str(i))
+                main.log.info("Delta average OFP was not caluclated for iteration "+str(i))
                 delta_avg = 0
+            
+            if delta_tcp1 > 0 and delta_tcp1 < 100000:
+                if delta_tcp2 > 0 and delta_tcp2 < 100000:
+                    if delta_tcp3 > 0 and delta_tcp3 < 100000:
+                        delta_tcp = (delta_tcp1 + delta_tcp2 + delta_tcp3) / 3
+                    else:
+                        delta_tcp = (delta_tcp1 + delta_tcp2) / 2
+                else:
+                    delta_tcp = delta_tcp1
+            else:
+                main.log.info("Delta average TCP was not caluclated for iteration "+str(i))
+                delta_tcp = 0
 
             time.sleep(5)
 
@@ -223,12 +292,22 @@ class TopoPerf:
             #NOTE: edit threshold as needed to fail test case
             #If outside threshold, delta is not saved to list.
             if delta_avg < 0.00001 or delta_avg > 100000:
-                main.log.info("Delta of switch add timestamp returned unexpected results")
+                main.log.info("Delta OFP of switch add timestamp returned unexpected results")
                 main.log.info("Value returned: " + str(delta_avg))
-                main.log.info("Omiting iteration "+ str(i))
+                main.log.info("Omitting iteration "+ str(i))
             else:
                 topo_lat.append(delta_avg)
-                main.log.info("One switch add latency iteration "+str(i)+": " + str(delta_avg) + " ms")  
+                main.log.info("One switch add latency OFP iteration "+
+                        str(i)+": " + str(delta_avg) + " ms")  
+
+            if delta_tcp < 0.00001 or delta_tcp > 100000:
+                main.log.info("Delta TCP of switch add timestamp returned unexpected results")
+                main.log.info("Value returned: " + str(delta_tcp))
+                main.log.info("Omitting iteration "+ str(i))
+            else:
+                tcp_lat.append(delta_tcp)
+                main.log.info("One switch add latency TCP iteration "+
+                        str(i)+": "+str(delta_tcp) + " ms")
 
         #Omit the first 2 iterations to account for "warm-up" time of ONOS
         #Except when the list contains less than 2 values
@@ -238,24 +317,41 @@ class TopoPerf:
             topo_lat_max = str(max(topo_lat))
             topo_lat_avg = str(sum(topo_lat) / len(topo_lat))
         else:
-            main.log.report("Could not calculate min, max, avg due to error in results")
+            topo_lat_max = 0
+            main.log.report("Could not calculate min, max, avg"+
+                " of OFP due to error in results")
+        
+        if len(tcp_lat) > 2:
+            tcp_lat = tcp_lat[2:]
+            tcp_lat_min = str(min(tcp_lat))
+            tcp_lat_max = str(max(tcp_lat))
+            tcp_lat_avg = str(sum(tcp_lat) / len(tcp_lat))
+        else:
+            tcp_lat_max = 0
+            main.log.report("Could not calculate min, max, avg"+ 
+                " of TCP due to error in results")
 
         #NOTE: configure threshold as needed here: 
         if int(topo_lat_max) > 0 and int(topo_lat_max) < 100000:
             assertion = main.TRUE
-            os.system(db_script + " --name='1 switch add' --minimum='"+topo_lat_min+
+            if postToDB == 'on':
+                os.system(db_script + " --name='1 switch add' --minimum='"+topo_lat_min+
                       "' --maximum='"+topo_lat_max+"' --average='"+topo_lat_avg+"' " + 
                       "--table='"+table_name+"'")
-
+            else:
+                main.log.report("Results were not posted to the database")
             #Calculate number of iterations that were omitted
             omit_num = int(numIter) - int(len(topo_lat)) 
             main.log.report("Iterations omitted/total: "+ str(omit_num) +"/"+ str(numIter))
-            main.log.report("One switch add latency: Min: "+topo_lat_min+
+            main.log.report("One switch add latency (ONOS processing only): Min: "+topo_lat_min+
                     " ms    Max: "+topo_lat_max+" ms    Avg: "+topo_lat_avg+" ms")
+            main.log.report("One switch add latency (End to end): Min: "+tcp_lat_min+
+                    " ms    Max: "+tcp_lat_max+" ms    Avg: "+tcp_lat_avg+" ms")
+
         else:
             assertion = main.FALSE
             main.log.report("Switch latency test NOT successful")
-    
+        
         utilities.assert_equals(expect=main.TRUE,actual=assertion,
                 onpass="Switch latency test successful!",
                 onfail="Switch latency test NOT successful")
@@ -291,6 +387,14 @@ class TopoPerf:
         numIter = main.params['TOPO']['numIter']
         db_script = main.params['TOPO']['databaseScript']
         table_name = main.params['TOPO']['tableName']
+        postToDB = main.params['TOPO']['postToDB']
+
+        port_up_threshold = main.params['LOG']['threshold']['port_up']
+        port_down_threshold = main.params['LOG']['threshold']['port_down']
+        logNameONOS1 = main.params['LOG']['logNameONOS1']
+        logNameONOS2 = main.params['LOG']['logNameONOS2']
+        logNameONOS3 = main.params['LOG']['logNameONOS3']
+        logDir = main.params['LOG']['logDir']
         
         rest_port = main.params['INTENTREST']['intentPort']
         url_suffix = main.params['TOPO']['url_topo']
@@ -351,6 +455,17 @@ class TopoPerf:
             delta_pt_down_1 = int(timestamp_end_pt_down_1) - int(timestamp_begin_pt_down)
             delta_pt_down_2 = int(timestamp_end_pt_down_2) - int(timestamp_begin_pt_down)
             delta_pt_down_3 = int(timestamp_end_pt_down_3) - int(timestamp_begin_pt_down)
+            
+            #If one of the delta exceeds the threshold, investigate onos-log
+            if delta_pt_down_1 > int(port_down_threshold) or \
+               delta_pt_down_2 > int(port_down_threshold) or \
+               delta_pt_down_3 > int(port_down_threshold):
+                log_result = main.ONOS1.tailLog(log_directory = logDir,
+                        log_name = logNameONOS1, tail_length = 50)
+                
+                main.log.info("Latency calculation exceeded threshold of "+port_down_threshold)
+                main.log.info("Fetching onos-log for investigation: ")
+                main.log.info(log_result)
 
             #Check values of delta_pt_down and calculate average
             if delta_pt_down_1 > 0 and delta_pt_down_1 < 100000:
@@ -418,6 +533,17 @@ class TopoPerf:
             delta_pt_up_1 = int(timestamp_end_pt_up_1) - int(timestamp_begin_pt_up)
             delta_pt_up_2 = int(timestamp_end_pt_up_2) - int(timestamp_begin_pt_up)
             delta_pt_up_3 = int(timestamp_end_pt_up_3) - int(timestamp_begin_pt_up)
+            
+            #If one of the delta exceeds the threshold, investigate onos-log
+            if delta_pt_up_1 > int(port_up_threshold) or \
+               delta_pt_up_2 > int(port_up_threshold) or \
+               delta_pt_up_3 > int(port_up_threshold):
+                log_result = main.ONOS1.tailLog(log_directory = logDir,
+                        log_name = logNameONOS1, tail_length = 50)
+                
+                main.log.info("Latency calculation exceeded threshold of "+port_up_threshold)
+                main.log.info("Fetching onos-log for investigation: ")
+                main.log.info(log_result)
 
             if delta_pt_up_1 > 0 and delta_pt_up_1 < 100000:
                 if delta_pt_up_2 > 0 and delta_pt_up_2 < 100000:
@@ -460,12 +586,15 @@ class TopoPerf:
         #NOTE: configure threshold as needed
         if int(port_up_lat_avg) > 0 and int(port_down_lat_avg) > 0:
             assertion = main.TRUE
-            os.system(db_script + " --name='Switch Port Down' --minimum='"+port_down_lat_min+
+            if postToDB == 'on':
+                os.system(db_script + " --name='Switch Port Down' --minimum='"+port_down_lat_min+
                       "' --maximum='"+port_down_lat_max+"' --average='"+port_down_lat_avg+
                       "' --table='"+table_name+"'")
-            os.system(db_script + " --name='Switch Port Up' --minimum='"+port_up_lat_min+
+                os.system(db_script + " --name='Switch Port Up' --minimum='"+port_up_lat_min+
                       "' --maximum='"+port_up_lat_max+"' --average='"+port_up_lat_avg+
                       "' --table='"+table_name+"'")
+            else:
+                main.log.report("Results were not posted to the database")
 
         omit_num_up = int(numIter) - int(len(port_up_lat))
         omit_num_down = int(numIter) - int(len(port_down_lat))
@@ -507,9 +636,17 @@ class TopoPerf:
         numIter = main.params['TOPO']['numIter']
         db_script = main.params['TOPO']['databaseScript']
         table_name = main.params['TOPO']['tableName']
-        
+        postToDB = main.params['TOPO']['postToDB']
+
         switch1_mac = main.params['TOPO']['switch1']
         switch3_mac = main.params['TOPO']['switch3']
+        
+        link_up_threshold = main.params['LOG']['threshold']['link_up']
+        link_down_threshold = main.params['LOG']['threshold']['link_down']
+        logNameONOS1 = main.params['LOG']['logNameONOS1']
+        logNameONOS2 = main.params['LOG']['logNameONOS2']
+        logNameONOS3 = main.params['LOG']['logNameONOS3']
+        logDir = main.params['LOG']['logDir']
         
         rest_port = main.params['INTENTREST']['intentPort']
         url_suffix = main.params['TOPO']['url_topo']
@@ -635,17 +772,27 @@ class TopoPerf:
                     break               
                 counter = counter+1
                 
-                #FIXME: This sleep is detrimental to accuracy of the latency measurement. 
-                #       It was implemented to allow some breathing room in between rest calls
-                #       since we know that link cut detection will take a long time.
-                #Recommended to reduce sleep time as much as possible without affecting 
-                #       the functionality of the test
+                #NOTE: This sleep does not deter from the performance measurement. When the correct 
+                #      timestamp is obtained via REST, it has already internally captured the
+                #      ending timestamp t1. Therefore, even if we spend a long time waiting here,
+                #      the t1 will not change. 
                 time.sleep(3)            
 
             delta_timestamp_1 = int(timestamp_link_end_1) - int(timestamp_link_begin)
             delta_timestamp_2 = int(timestamp_link_end_2) - int(timestamp_link_begin)
             delta_timestamp_3 = int(timestamp_link_end_3) - int(timestamp_link_begin)
-
+            
+            #If one of the delta exceeds the threshold, investigate onos-log
+            if delta_timestamp_1 > int(link_down_threshold) or \
+               delta_timestamp_2 > int(link_down_threshold) or \
+               delta_timestamp_3 > int(link_down_threshold):
+                log_result = main.ONOS1.tailLog(log_directory = logDir,
+                        log_name = logNameONOS1, tail_length = 50)
+                
+                main.log.info("Latency calculation exceeded threshold of "+link_down_threshold)
+                main.log.info("Fetching onos-log for investigation: ")
+                main.log.info(log_result)
+            
             if delta_timestamp_1 > 0 and delta_timestamp_1 < 100000:
                 if delta_timestamp_2 > 0 and delta_timestamp_2 < 100000:
                     if delta_timestamp_3 > 0 and delta_timestamp_3 < 100000:
@@ -681,7 +828,7 @@ class TopoPerf:
             #main.Mininet2.handle.sendline("sudo tc qdisc del dev s1-eth2 root")
             main.step("Enabling link on s1")
 
-            time.sleep(5)
+            time.sleep(1)
  
             counter = 0
             temp_timestamp_1 = ""
@@ -733,7 +880,18 @@ class TopoPerf:
             delta_timestamp_enable_1 = int(timestamp_link_enable_t1) - int(timestamp_link_enable_t0)
             delta_timestamp_enable_2 = int(timestamp_link_enable_t2) - int(timestamp_link_enable_t0)
             delta_timestamp_enable_3 = int(timestamp_link_enable_t3) - int(timestamp_link_enable_t0)
-
+            
+            #If one of the delta exceeds the threshold, investigate onos-log
+            if delta_timestamp_enable_1 > int(link_up_threshold) or \
+               delta_timestamp_enable_2 > int(link_up_threshold) or \
+               delta_timestamp_enable_3 > int(link_up_threshold):
+                log_result = main.ONOS1.tailLog(log_directory = logDir,
+                        log_name = logNameONOS1, tail_length = 50)
+                
+                main.log.info("Latency calculation exceeded threshold of "+link_up_threshold)
+                main.log.info("Fetching onos-log for investigation: ")
+                main.log.info(log_result)
+        
             if delta_timestamp_enable_1 > 0 and delta_timestamp_enable_1 < 100000:
                 if delta_timestamp_enable_2 > 0 and delta_timestamp_enable_2 < 100000:
                     if delta_timestamp_enable_3 > 0 and delta_timestamp_enable_3 < 100000:
@@ -771,13 +929,21 @@ class TopoPerf:
 
         #NOTE: configure threshold as needed
         if int(link_down_lat_avg) > 0:
-            os.system(db_script + " --name='Link remove' --minimum='"+link_down_lat_min+
+            if postToDB == 'on': 
+                os.system(db_script + " --name='Link remove' --minimum='"+link_down_lat_min+
                       "' --maximum='"+link_down_lat_max+"' --average='"+link_down_lat_avg+"' "+
                       "--table='"+table_name+"'")
+            else:
+                main.log.report("Results were not posted to the database")
+        
         if int(link_up_lat_avg) > 0:
-            os.system(db_script + " --name='Link add' --minimum='"+link_up_lat_min+
+            if postToDB == 'on': 
+                os.system(db_script + " --name='Link add' --minimum='"+link_up_lat_min+
                       "' --maximum='"+link_up_lat_max+"' --average='"+link_up_lat_avg+"' "+
                       "--table='"+table_name+"'")
+            else:
+                main.log.report("Results were not posted to the database")
+            
         if int(link_up_lat_avg) > 0 and int(link_down_lat_avg) > 0:
             assertion = main.TRUE
 
@@ -820,7 +986,14 @@ class TopoPerf:
         numIter = main.params['TOPO']['numIter']
         db_script = main.params['TOPO']['databaseScript']
         table_name = main.params['TOPO']['tableName']
+        postToDB = main.params['TOPO']['postToDB']
         assertion = main.TRUE
+        
+        add_sw25_threshold = main.params['LOG']['threshold']['switch_add25']
+        logNameONOS1 = main.params['LOG']['logNameONOS1']
+        logNameONOS2 = main.params['LOG']['logNameONOS2']
+        logNameONOS3 = main.params['LOG']['logNameONOS3']
+        logDir = main.params['LOG']['logDir']
         
         rest_port = main.params['INTENTREST']['intentPort']
         url_suffix = main.params['TOPO']['url_topo']
@@ -855,10 +1028,15 @@ class TopoPerf:
             time.sleep(10) 
         
             main.step("Assign controllers and get timestamp")
-            for i in range(1, 16): 
-                main.Mininet1.assign_sw_controller(sw=str(i),ip1=ctrl_1,port1=port_1)
+            
+            for i in range(1, 16):
+                main.Mininet2.handle.sendline("sudo ovs-vsctl set-controller s"+\
+                        str(i)+" tcp:"+ctrl_1+" ptcp:6633 --no-wait --no-syslog &")
+                #main.Mininet1.assign_sw_controller(sw=str(i),ip1=ctrl_1,port1=port_1)
             for i in range(31, 41):       
-                main.Mininet1.assign_sw_controller(sw=str(i),ip1=ctrl_1,port1=port_1)
+                main.Mininet2.handle.sendline("sudo ovs-vsctl set-controller s"+\
+                        str(i)+" tcp:"+ctrl_1+" ptcp:6633 --no-wait --no-syslog &")
+                #main.Mininet1.assign_sw_controller(sw=str(i),ip1=ctrl_1,port1=port_1)
 
             time.sleep(10)
             main.ONOS1.stop_tshark()
@@ -898,6 +1076,17 @@ class TopoPerf:
             delta_1 = int(topo_ms_end_1) - int(topo_ms_begin)
             delta_2 = int(topo_ms_end_2) - int(topo_ms_begin)
             delta_3 = int(topo_ms_end_3) - int(topo_ms_begin)
+            
+            #If one of the delta exceeds the threshold, investigate onos-log
+            if delta_1 > int(add_sw25_threshold) or \
+               delta_2 > int(add_sw25_threshold) or \
+               delta_3 > int(add_sw25_threshold):
+                log_result = main.ONOS1.tailLog(log_directory = logDir,
+                        log_name = logNameONOS1, tail_length = 50)
+                
+                main.log.info("Latency calculation exceeded threshold of "+add_sw25_threshold)
+                main.log.info("Fetching onos-log for investigation: ")
+                main.log.info(log_result)
 
             if delta_1 > 0 and delta_1 < 100000:
                 if delta_2 > 0 and delta_2 < 100000:
@@ -939,11 +1128,15 @@ class TopoPerf:
             main.log.report("Add 25 switch latency could not be calculated due to errors in results")
 
         if int(add_lat_avg) > 0 and int(add_lat_avg) < 100000:
-            assertion = main.TRUE
-            os.system(db_script + " --name='25 Switch add' --minimum='"+add_lat_min+
+            if postToDB == 'on':
+                os.system(db_script + " --name='25 Switch add' --minimum='"+add_lat_min+
                       "' --maximum='"+add_lat_max+"' --average='"+add_lat_avg+"' " + 
                       "--table='"+table_name+"'")
-   
+            else:
+                main.log.report("Results were not posted to the database")
+
+        if int(add_lat_avg) > 0 and int(add_lat_avg) < 100000:
+            assertion = main.TRUE
             omit_iter = int(numIter) - int(len(add_lat))
             main.log.report("Iterations omitted/total: "+str(omit_iter)+"/"+str(numIter))
             main.log.report("Add 25 switches discovery latency: Min: "+
@@ -977,7 +1170,14 @@ class TopoPerf:
         numIter = main.params['TOPO']['numIter']
         db_script = main.params['TOPO']['databaseScript']
         table_name = main.params['TOPO']['tableName']
+        postToDB = main.params['TOPO']['postToDB']
         assertion = main.TRUE
+       
+        add_sw88_threshold = main.params['LOG']['threshold']['switch_add88']
+        logNameONOS1 = main.params['LOG']['logNameONOS1']
+        logNameONOS2 = main.params['LOG']['logNameONOS2']
+        logNameONOS3 = main.params['LOG']['logNameONOS3']
+        logDir = main.params['LOG']['logDir']
         
         rest_port = main.params['INTENTREST']['intentPort']
         url_suffix = main.params['TOPO']['url_topo']
@@ -1049,6 +1249,17 @@ class TopoPerf:
             delta_1 = int(topo_ms_end_1) - int(topo_ms_begin)
             delta_2 = int(topo_ms_end_2) - int(topo_ms_begin)
             delta_3 = int(topo_ms_end_3) - int(topo_ms_begin)
+            
+            #If one of the delta exceeds the threshold, investigate onos-log
+            if delta_1 > int(add_sw88_threshold) or \
+               delta_2 > int(add_sw88_threshold) or \
+               delta_3 > int(add_sw88_threshold):
+                log_result = main.ONOS1.tailLog(log_directory = logDir,
+                        log_name = logNameONOS1, tail_length = 50)
+                
+                main.log.info("Latency calculation exceeded threshold of "+add_sw88_threshold)
+                main.log.info("Fetching onos-log for investigation: ")
+                main.log.info(log_result)
 
             if delta_1 > 0 and delta_1 < 100000:
                 if delta_2 > 0 and delta_2 < 100000:
@@ -1102,6 +1313,184 @@ class TopoPerf:
                 onpass="88 Switch latency test successful!",
                 onfail="88 Switch latency test NOT successful")
 
+
+    def CASE7(self, main):
+        '''
+        CASE7 25 Switch assignment via threading
+        '''
+        import time
+        import subprocess
+        import json
+        import requests
+        import os
+
+        import threading
+
+        ctrl_1 = main.params['CTRL']['ip1']
+        ctrl_2 = main.params['CTRL']['ip2']
+        ctrl_3 = main.params['CTRL']['ip3']
+        
+        port_1 = main.params['CTRL']['port1']
+        tshark_output = "/tmp/tshark_of_topo_25_thread.txt"
+        numIter = main.params['TOPO']['numIter']
+        db_script = main.params['TOPO']['databaseScript']
+        table_name = main.params['TOPO']['tableName']
+        assertion = main.TRUE
+        
+        add_sw_threshold = main.params['LOG']['threshold']['switch_add1']
+        logNameONOS1 = main.params['LOG']['logNameONOS1']
+        logNameONOS2 = main.params['LOG']['logNameONOS2']
+        logNameONOS3 = main.params['LOG']['logNameONOS3']
+        logDir = main.params['LOG']['logDir']
+        
+        rest_port = main.params['INTENTREST']['intentPort']
+        url_suffix = main.params['TOPO']['url_topo']
+        url_topo_1 = "http://"+ctrl_1+":"+rest_port+url_suffix 
+        url_topo_2 = "http://"+ctrl_2+":"+rest_port+url_suffix 
+        url_topo_3 = "http://"+ctrl_3+":"+rest_port+url_suffix 
+        
+        add_lat = []
+        threads = []
+   
+        main.log.report("Measure latency of adding 25 switches using threading")
+
+        time.sleep(5) 
+
+        #This segment uses threads to set controllers concurrently
+        def set_controller(i, ctrl_1, cond):
+            main.log.info("Starting set_controller thread "+str(i))
+            main.Mininet2.handle.sendline("sudo ovs-vsctl set-controller s"+\
+                str(i)+" tcp:"+ctrl_1+" ptcp:"+str(6633+int(i))+" --no-wait --no-syslog & \n")
+            with cond:
+                #Wait for all threads to start before executing set controller on all threads
+                cond.wait()
+        
+        for x in range(0,int(numIter)):
+            main.step("Starting tshark open flow capture") 
+
+            #***********************************************************************************
+            #TODO: Capture packets in pcap format and read in / parse more specific data for
+            #improved accuracy. Grep may not work in the future when we dissect at a lower level
+            #***********************************************************************************
+
+            #NOTE: Get Config Reply is the last message of the OF handshake message.
+            #Hence why we use it as T0 
+            main.ONOS1.tshark_grep("OFP 78 Get Config Reply", tshark_output, interface='eth0') 
+            time.sleep(10) 
+       
+            main.step("Assign controllers and get timestamp")
+            
+            thread_list = []
+            #Threading condition
+            condition = threading.Condition()
+            
+            for i in range(1, 26): 
+                #prepare controller threads
+                t = threading.Thread(target=set_controller, args=(i, ctrl_1, condition))
+                thread_list.append(t)
+                thread_list[i-1].start()
+            
+            time.sleep(25)
+
+            #Join all threads
+            #main_thread = threading.currentThread()
+            #for t in threading.enumerate():
+                #if t is main_thread:
+                    #    continue
+                #else:
+                    #        t.join()
+
+            main.ONOS1.stop_tshark()
+
+            time.sleep(5)
+            ssh = subprocess.Popen(['ssh', 'admin@'+ctrl_1, 'cat', tshark_output],
+                    stdout=subprocess.PIPE)
+            text = ssh.stdout.readline()
+            obj = text.split(" ")
+            
+            time.sleep(5)
+            
+            if len(text) > 0:
+                timestamp = int(float(obj[1])*1000)
+                topo_ms_begin = timestamp
+            else:
+                main.log.error("Tshark output file returned unexpected value")
+                topo_ms_begin = 0
+                assertion = main.FALSE    
+            
+            json_obj_1 = main.ONOS1.get_json(url_topo_1) 
+            json_obj_2 = main.ONOS2.get_json(url_topo_2)
+            json_obj_3 = main.ONOS3.get_json(url_topo_3)
+
+            #If json object exists, parse timestamp from the object
+            if json_obj_1: 
+                topo_ms_end_1 = json_obj_1['gauges'][0]['gauge']['value']
+            else:
+                topo_ms_end_1 = 0
+            if json_obj_2:
+                topo_ms_end_2 = json_obj_2['gauges'][0]['gauge']['value']
+            else:
+                topo_ms_end_2 = 0
+            if json_obj_3:
+                topo_ms_end_3 = json_obj_3['gauges'][0]['gauge']['value']
+            else:
+                topo_ms_end_3 = 0
+
+            delta_1 = int(topo_ms_end_1) - int(topo_ms_begin)
+            delta_2 = int(topo_ms_end_2) - int(topo_ms_begin)
+            delta_3 = int(topo_ms_end_3) - int(topo_ms_begin)
+
+            if delta_1 > 0 and delta_1 < 100000:
+                if delta_2 > 0 and delta_2 < 100000:
+                    if delta_3 > 0 and delta_3 < 100000:
+                        delta_avg = (delta_1 + delta_2 + delta_3) / 3
+                    else:
+                        delta_avg = (delta_1 + delta_2) / 2
+                else:
+                    delta_avg = delta_1
+            else:
+                delta_avg = 0
+
+            time.sleep(5)
+
+            #NOTE: edit threshold as needed to fail test case
+            if delta_avg < 0.00001 or delta_avg > 100000:
+                main.log.info("Delta of switch add timestamp returned unexpected results")
+                main.log.info("Value returned: " + str(delta_avg))
+                main.log.info("Omitting iteration "+ str(x))
+                assertion = main.FALSE 
+            else:
+                add_lat.append(delta_avg) 
+                main.log.info("Add 25 switches latency iteration "+str(x)+": "+str(delta_avg)) 
+
+            main.step("Remove switches from the controller")
+            for j in range(1,26):
+                main.Mininet1.delete_sw_controller("s"+str(j)) 
+        
+            time.sleep(5)
+
+        if len(add_lat) > 2:
+            add_lat = add_lat[2:]
+            add_lat_min = str(min(add_lat))
+            add_lat_max = str(max(add_lat))
+            add_lat_avg = str(sum(add_lat) / len(add_lat))
+        else:
+            main.log.report("Add 25 switch latency calculation failed due to errors in results")
+
+        if int(add_lat_avg) > 0 and int(add_lat_avg) < 100000:
+            assertion = main.TRUE
+            omit_iter = int(numIter) - int(len(add_lat))
+            main.log.report("Iterations omitted/total: "+str(omit_iter)+"/"+str(numIter))
+            main.log.report("Add 25 switches discovery latency: Min: "+
+                    add_lat_min+" ms    Max: "+add_lat_max+
+                    " ms    Avg: "+add_lat_avg+" ms")
+        else:
+            assertion = main.FALSE
+            main.log.report("add_lat_avg for 25 switches returned unexpected results")
+
+        utilities.assert_equals(expect=main.TRUE,actual=assertion,
+                onpass="25 Switch latency test successful!",
+                onfail="25 Switch latency test NOT successful")
 
 #**********
 #END SCRIPT

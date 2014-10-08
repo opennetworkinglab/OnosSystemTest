@@ -24,15 +24,11 @@ Setup
 
 Dependencies
 ------------
-1. Zookeeper
+1. ONOS
 
-2. Cassandra
+2. Mininet
 
-3. ONOS
-
-4. Mininet
-
-5. Install python packages configObj and pexpect. they can be installed as :
+3. Install python packages configObj and pexpect. they can be installed as :
 
      $ sudo pip install configObj
 

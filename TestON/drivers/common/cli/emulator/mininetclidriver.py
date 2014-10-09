@@ -115,7 +115,10 @@ class MininetCliDriver(Emulator):
                 main.log.error(self.name + ":     " + self.handle.before)
                 main.cleanup()
                 main.exit()
-            pattern = 'Results\:\s0\%\sdropped\s\(0\/\d+\slost\)\s*$'
+            pattern = 'Results\:\s0\%\sdropped\s'
+            #Pending Mininet Pull Request #408
+            #pattern = 'Results\:\s0\.00\%\sdropped\s'
+            print response
             #if utilities.assert_matches(expect=pattern,actual=response,onpass="All hosts are reaching",onfail="Unable to reach all the hosts"):
             if re.search(pattern,response):
                 main.log.info(self.name+": All hosts are reachable")

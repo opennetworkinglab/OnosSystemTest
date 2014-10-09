@@ -334,9 +334,13 @@ class OnosDriver(CLI):
                 self.handle.expect("ONOS_CELL="+str(cellname))
                 handle_before = self.handle.before
                 handle_after = self.handle.after
+                #Get the rest of the handle
+                self.handle.sendline("")
+                self.handle.expect("\$")
+                handle_more = self.handle.before
 
                 main.log.info("Cell call returned: "+handle_before+
-                        handle_after)
+                        handle_after + handle_more)
 
                 return main.TRUE
 
@@ -352,6 +356,39 @@ class OnosDriver(CLI):
             main.cleanup()
             main.exit()
 
+    def verify_cell(self):
+        '''
+        Calls 'onos-verify-cell' to check for cell installation
+        '''
+        try:
+            #Clean handle by sending empty and expecting $
+            self.handle.sendline("")
+            self.handle.expect("\$")
+            self.handle.sendline("onos-verify-cell")
+            self.handle.expect("\$")
+            handle_before = self.handle.before
+            handle_after = self.handle.after
+            #Get the rest of the handle
+            self.handle.sendline("")
+            self.handle.expect("\$")
+            handle_more = self.handle.before
+
+            main.log.info("Verify cell returned: "+handle_before+
+                    handle_after + handle_more)
+
+            return main.TRUE
+
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()
 
 
 

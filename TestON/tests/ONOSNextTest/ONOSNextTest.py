@@ -28,9 +28,10 @@ class ONOSNextTest:
         install_result = main.ONOSbench.clean_install()
         package_result = main.ONOSbench.onos_package()
         cell_result = main.ONOSbench.set_cell(cell_name)
+        verify_result = main.ONOSbench.verify_cell()
 
         case1_result = (install_result and package_result and\
-                cell_result)
+                cell_result and verify_result)
         utilities.assert_equals(expect=main.TRUE, actual=case1_result,
                 onpass="Test startup successful",
                 onfail="Test startup NOT successful")

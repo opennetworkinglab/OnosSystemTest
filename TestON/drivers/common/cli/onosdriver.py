@@ -379,6 +379,8 @@ class OnosDriver(CLI):
         '''
         Calls 'onos-verify-cell' to check for cell installation
         '''
+        #TODO: Add meaningful expect value
+
         try:
             #Clean handle by sending empty and expecting $
             self.handle.sendline("")
@@ -408,4 +410,47 @@ class OnosDriver(CLI):
             main.log.info(self.name+" ::::::")
             main.cleanup()
             main.exit()
+
+    def onos_start(self, node_ip):
+        '''
+        Calls onos command: 'onos-service [<node-ip>] start'
+        '''
+
+        try:
+            self.handle.sendline("")
+            self.handle.expect("\$")
+            self.handle.sendline("onos-service "+str(node_ip)+
+                " start")
+            i = self.handle.expect([
+                "Job\sis\salready\srunning",
+                "start/running",
+                "Unknown\sinstance",
+                pexpect.TIMEOUT],timeout=60)
+
+            if i == 0:
+                main.log.info("Service is already running")
+                return main.TRUE
+            elif i == 1:
+                main.log.info("ONOS service started")
+                return main.TRUE
+            else:
+                main.log.error("ONOS service failed to start")
+                main.cleanup()
+                main.exit()
+
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()
+
+
+
+
 

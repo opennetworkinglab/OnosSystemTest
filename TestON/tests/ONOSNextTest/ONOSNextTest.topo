@@ -2,7 +2,7 @@
     <COMPONENT>
 
         <ONOSbench>
-            <host>10.128.30.10</host>
+            <host>10.128.20.10</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>OnosDriver</type>
@@ -11,7 +11,7 @@
         </ONOSbench>
 
         <ONOS1>
-            <host>10.128.30.11</host>
+            <host>10.128.20.11</host>
             <user>sdn</user>
             <password>sdn</password>
             <type>OnosDriver</type>
@@ -20,7 +20,7 @@
         </ONOS1>
 
         <Mininet1>
-            <host>10.128.11.11</host>
+            <host>10.128.10.90</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>MininetCliDriver</type>

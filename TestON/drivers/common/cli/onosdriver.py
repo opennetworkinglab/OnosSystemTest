@@ -398,6 +398,48 @@ class OnosDriver(CLI):
                     handle_after + handle_more)
 
             return main.TRUE
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()
+
+
+    def onos_install(self, options="-f", node = ""):
+        '''
+        Installs ONOS bits on the designated cell machine.
+        If -f option is provided, it also forces an uninstall. 
+        Presently, install also includes onos-push-bits and 
+        onos-config within.
+        The node option allows you to selectively only push the jar 
+        files to certain onos nodes
+
+        Returns: main.TRUE on success and main.FALSE on failure
+        '''
+        try:
+            self.handle.sendline("onos-install " + options + " " + node)
+            self.handle.expect("onos-install ")
+            #NOTE: this timeout may need to change depending on the network and size of ONOS
+            i=self.handle.expect(["Network\sis\sunreachable",
+                "onos\sstart/running,\sprocess",
+                pexpect.TIMEOUT],timeout=60)
+
+
+            if i == 0:
+                main.log.warn("Network is unreachable")
+                return main.FALSE
+            elif i == 1:
+                main.log.info("ONOS was installed on the VM and started")
+                return main.TRUE
+            elif i == 2: 
+                main.log.info("Installation of ONOS on the VM timed out")
+                return main.FALSE
 
         except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
@@ -437,7 +479,6 @@ class OnosDriver(CLI):
                 main.log.error("ONOS service failed to start")
                 main.cleanup()
                 main.exit()
-
         except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
             main.log.error(self.name + ":    " + self.handle.before)
@@ -450,7 +491,34 @@ class OnosDriver(CLI):
             main.cleanup()
             main.exit()
 
+    def isup(self, node = ""):
+        '''
+        Run's onos-wait-for-start which only returns once ONOS is at run level 100(ready for use)
 
-
-
-
+        Returns: main.TRUE if ONOS is running and main.FALSE on timeout
+        '''
+        try:
+            self.handle.sendline("onos-wait-for-start " + node )
+            self.handle.expect("onos-wait-for-start")
+            #NOTE: this timeout is arbitrary"
+            i = self.handle.expect(["\$", pexpect.TIMEOUT], timeout = 120)
+            if i == 0:
+                main.log.info(self.name + ": " + node + " is up")
+                return main.TRUE
+            elif i == 1:
+                #NOTE: since this function won't return until ONOS is ready,
+                #   we will kill it on timeout
+                self.handle.sendline("\003")    #Control-C
+                self.handle.expect("\$")
+                return main.FALSE
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()

@@ -54,7 +54,6 @@ class OnosDriver(CLI):
                     port = self.port, 
                     pwd = self.pwd, 
                     home = self.home)
-
            
             self.handle.sendline("cd "+ self.home)
             self.handle.expect("\$")
@@ -558,6 +557,7 @@ class OnosDriver(CLI):
             self.handle.sendline("onos-uninstall")
             self.handle.expect("\$")
 
+            main.log.info("ONOS cell machine was uninstalled")
             #onos-uninstall command does not return any text
             return main.TRUE
 

@@ -528,6 +528,30 @@ class OnosDriver(CLI):
             main.cleanup()
             main.exit()
 
+    def onos_uninstall(self):
+        '''
+        Calls the command: 'onos-uninstall'
+        '''
+        try:
+            self.handle.sendline("")
+            self.handle.expect("\$")
+            self.handle.sendline("onos-uninstall")
+            self.handle.expect("\$")
+
+            #onos-uninstall command does not return any text
+            return main.TRUE
+
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()
 
     def isup(self, node = ""):
         '''

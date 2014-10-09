@@ -1,7 +1,12 @@
 <PARAMS>
     
     <testcases>1</testcases>
-    
+
+    #Environment variables
+    <ENV>
+        <cellName>driver_test</cellName>
+    </ENV>
+
     <CTRL>
         <ip1>10.128.20.11</ip1>
     </CTRL>

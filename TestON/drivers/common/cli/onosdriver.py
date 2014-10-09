@@ -1,6 +1,22 @@
 #!/usr/bin/env python
+
 '''
+This driver interacts with ONOS bench, the OSGi platform 
+that configures the ONOS nodes. (aka ONOS-next) 
+
+Please follow the coding style demonstrated by existing 
+functions and document properly.
+
+If you are a contributor to the driver, please
+list your email here for future contact:
+
+jhall@onlab.us
+andrew@onlab.us
+
+OCT 9 2014
+
 '''
+
 #TODO: Document
 
 import sys
@@ -456,6 +472,7 @@ class OnosDriver(CLI):
     def onos_start(self, node_ip):
         '''
         Calls onos command: 'onos-service [<node-ip>] start'
+        This command is a remote management of the ONOS upstart daemon
         '''
 
         try:
@@ -494,6 +511,7 @@ class OnosDriver(CLI):
     def onos_stop(self, node_ip):
         '''
         Calls onos command: 'onos-service [<node-ip>] stop'
+        This command is a remote management of the ONOS upstart daemon
         '''
         try:
             self.handle.sendline("")
@@ -531,6 +549,8 @@ class OnosDriver(CLI):
     def onos_uninstall(self):
         '''
         Calls the command: 'onos-uninstall'
+        Uninstalls ONOS from the designated cell machine, stopping 
+        if needed
         '''
         try:
             self.handle.sendline("")
@@ -541,6 +561,49 @@ class OnosDriver(CLI):
             #onos-uninstall command does not return any text
             return main.TRUE
 
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()
+
+    def onos_kill(self, node_ip):
+        '''
+        Calls the command: 'onos-kill [<node-ip>]'
+        "Remotely, and unceremoniously kills the ONOS instance running on
+        the specified cell machine" - Tom V
+        '''
+        
+        try:
+            self.handle.sendline("")
+            self.handle.expect("\$")
+            self.handle.sendline("onos-kill " + str(node_ip))
+            i = self.handle.expect([
+                "\$",
+                "No\sroute\sto\shost",
+                "password:",
+                pexpect.TIMEOUT], timeout=20)
+            
+            if i == 0:
+                main.log.info("ONOS instance "+str(node_ip)+" was killed")
+                return main.TRUE
+            elif i == 1:
+                main.log.info("No route to host")
+                return main.FALSE
+            elif i == 2:
+                main.log.info("Passwordless login for host: "+str(node_ip)+
+                        " not configured")
+                return main.FALSE
+            else:
+                main.log.info("ONOS instasnce was not killed")
+                return main.FALSE
+        
         except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
             main.log.error(self.name + ":    " + self.handle.before)

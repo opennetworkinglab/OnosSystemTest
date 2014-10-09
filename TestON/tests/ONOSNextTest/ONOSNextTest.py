@@ -66,9 +66,12 @@ class ONOSNextTest:
 
         main.case("Cleaning up test environment")
 
+        main.step("Testing ONOS kill function")
+        kill_result = main.ONOSbench.onos_kill(ONOS1_ip)
+
         main.step("Stopping ONOS service")
         stop_result = main.ONOSbench.onos_stop(ONOS1_ip)
 
         main.step("Uninstalling ONOS service") 
-
+        uninstall_result = main.ONOSbench.onos_uninstall()
 

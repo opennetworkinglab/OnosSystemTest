@@ -3,11 +3,12 @@
 TODO: Document
 '''
 
-
+import sys
 import time
 import pexpect
 import re
 import traceback
+import os.path
 sys.path.append("../")
 from drivers.common.clidriver import CLI
 
@@ -31,7 +32,7 @@ class OnosDriver(CLI):
 
 
             self.name = self.options['name']
-            self.handle = super(OnosCliDriver,self).connect(user_name = self.user_name, ip_address = self.ip_address,port = self.port, pwd = self.pwd, home = self.home)
+            self.handle = super(OnosDriver,self).connect(user_name = self.user_name, ip_address = self.ip_address,port = self.port, pwd = self.pwd, home = self.home)
 
             if self.handle:
                 return self.handle
@@ -71,7 +72,6 @@ class OnosDriver(CLI):
         Produce a self-contained tar.gz file that can be deployed
         and executed on any platform with Java 7 JRE. 
         '''
-        import os.path
         
         try:
             self.handle.sendline("onos-package")
@@ -95,7 +95,7 @@ class OnosDriver(CLI):
             else:
                 return main.FALSE
 
-        except:
+        except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
             main.log.error(self.name + ":    " + self.handle.before)
         except:

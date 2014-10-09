@@ -1,0 +1,9 @@
+<PARAMS>
+    
+    <testcases>1</testcases>
+    
+    <CTRL>
+        <ip1>10.128.20.11</ip1>
+    </CTRL>
+
+</PARAMS>

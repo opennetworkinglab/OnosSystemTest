@@ -65,3 +65,42 @@ class OnosDriver(CLI):
             main.log.error(self.name + ": Connection failed to the host")
             response = main.FALSE
         return response
+
+    def onos_package(self):
+        '''
+        Produce a self-contained tar.gz file that can be deployed
+        and executed on any platform with Java 7 JRE. 
+        '''
+        import os.path
+        
+        try:
+            self.handle.sendline("onos-package")
+            self.handle.expect("\$")
+            handle = str(self.handle.before)
+            main.log.info("onos-package command returned: "+
+                    handle)
+          
+            #Create list out of the handle by partitioning 
+            #spaces. 
+            #NOTE: The last element of the list at the time
+            #      of writing this function is the filepath
+            #save this filepath for comparison later on
+            temp_list = handle.split(" ")
+            file_path = handle[-1:]
+           
+            #If last string contains the filepath, return
+            # as success. 
+            if "/tmp" in file_path:
+                return main.TRUE
+            else:
+                return main.FALSE
+
+        except:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+        except:
+            main.log.error("Failed to package ONOS")
+            main.cleanup()
+            main.exit()
+
+

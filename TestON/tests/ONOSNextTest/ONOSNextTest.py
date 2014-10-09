@@ -23,12 +23,15 @@ class ONOSNextTest:
         '''
         
         
-        install_result = main.ONOSbench.clean_install()
+        #install_result = main.ONOSbench.clean_install()
+        install_result = main.TRUE
         package_result = main.ONOSbench.onos_package()
 
-        print install_result
-        print package_result
-        print (install_result and package_result)
-        
+
+
+        case1_result = (install_result and package_result)
+        utilities.assert_equals(expect=main.TRUE, actual=case1_result,
+                onpass="Test startup successful",
+                onfail="Test startup NOT successful")
 
 

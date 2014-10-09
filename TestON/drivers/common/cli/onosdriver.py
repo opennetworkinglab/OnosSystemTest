@@ -75,25 +75,14 @@ class OnosDriver(CLI):
         
         try:
             self.handle.sendline("onos-package")
-            self.handle.expect("\$")
+            self.handle.expect("tar.gz",timeout=10)
             handle = str(self.handle.before)
             main.log.info("onos-package command returned: "+
                     handle)
-          
-            #Create list out of the handle by partitioning 
-            #spaces. 
-            #NOTE: The last element of the list at the time
-            #      of writing this function is the filepath
-            #save this filepath for comparison later on
-            temp_list = handle.split(" ")
-            file_path = handle[-1:]
-           
-            #If last string contains the filepath, return
-            # as success. 
-            if "/tmp" in file_path:
-                return main.TRUE
-            else:
-                return main.FALSE
+            #As long as the sendline does not time out, 
+            #return true. However, be careful to interpret
+            #the results of the onos-package command return
+            return main.TRUE
 
         except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")

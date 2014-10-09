@@ -25,13 +25,16 @@ class ONOSNextTest:
         cell_name = main.params['ENV']['cellName']
         ONOS1_ip = main.params['CTRL']['ip1']
         
-        install_result = main.ONOSbench.clean_install()
+        clean_install_result = main.ONOSbench.clean_install()
         package_result = main.ONOSbench.onos_package()
         cell_result = main.ONOSbench.set_cell(cell_name)
         verify_result = main.ONOSbench.verify_cell()
+        onos_install_result = main.ONOSbench.onos_install()
+        onos1_isup = main.ONOSbench.isup()
 
-        case1_result = (install_result and package_result and\
-                cell_result and verify_result)
+        case1_result = (clean_install_result and package_result and\
+                cell_result and verify_result and onos_install_result\
+                and onos1_isup)
         utilities.assert_equals(expect=main.TRUE, actual=case1_result,
                 onpass="Test startup successful",
                 onfail="Test startup NOT successful")

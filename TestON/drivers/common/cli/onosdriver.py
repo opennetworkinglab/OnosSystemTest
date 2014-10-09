@@ -103,4 +103,60 @@ class OnosDriver(CLI):
             main.cleanup()
             main.exit()
 
+    def clean_install(self):
+        '''
+        Runs mvn clean install in the root of the ONOS directory. 
+        This will clean all ONOS artifacts then compile each module 
 
+        Returns: main.TRUE on success 
+        On Failure, exits the test
+        '''
+        try:
+            self.handle.sendline("mvn clean install")
+            while 1:
+                i=self.handle.expect([
+                    'There\sis\sinsufficient\smemory\sfor\sthe\sJava\s\
+                            Runtime\sEnvironment\sto\scontinue',
+                    'BUILD\sFAILURE',
+                    'BUILD\sSUCCESS',
+                    'ONOS\$',
+                    pexpect.TIMEOUT],timeout=600)
+                if i == 0:
+                    main.log.error(self.name + ":There is insufficient memory \
+                            for the Java Runtime Environment to continue.")
+                    #return main.FALSE
+                    main.cleanup()
+                    main.exit()
+                if i == 1:
+                    main.log.error(self.name + ": Build failure!")
+                    #return main.FALSE
+                    main.cleanup()
+                    main.exit()
+                elif i == 2:
+                    main.log.info(self.name + ": Build success!")
+                elif i == 3:
+                    main.log.info(self.name + ": Build complete")
+                    self.handle.expect("\$", timeout=60)
+                    return main.TRUE
+                elif i == 4:
+                    main.log.error(self.name + ": mvn clean install TIMEOUT!")
+                    #return main.FALSE
+                    main.cleanup()
+                    main.exit()
+                else:
+                    main.log.error(self.name + ": unexpected response from \
+                            mvn clean install")
+                    #return main.FALSE
+                    main.cleanup()
+                    main.exit()
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":     " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name + ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
+            main.log.error( traceback.print_exc() )
+            main.log.info(":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
+            main.cleanup()
+            main.exit()

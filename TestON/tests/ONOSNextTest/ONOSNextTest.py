@@ -24,7 +24,7 @@ class ONOSNextTest:
         
         cell_name = main.params['ENV']['cellName']
         ONOS1_ip = main.params['CTRL']['ip1']
-
+        
         install_result = main.ONOSbench.clean_install()
         package_result = main.ONOSbench.onos_package()
         cell_result = main.ONOSbench.set_cell(cell_name)

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 '''
-TODO: Document
 '''
+#TODO: Document
 
 import sys
 import time
@@ -32,8 +32,16 @@ class OnosDriver(CLI):
 
 
             self.name = self.options['name']
-            self.handle = super(OnosDriver,self).connect(user_name = self.user_name, ip_address = self.ip_address,port = self.port, pwd = self.pwd, home = self.home)
+            self.handle = super(OnosDriver,self).connect(
+                    user_name = self.user_name, 
+                    ip_address = self.ip_address,
+                    port = self.port, 
+                    pwd = self.pwd, 
+                    home = self.home)
 
+           
+            self.handle.sendline("cd "+ self.home)
+            self.handle.expect("\$")
             if self.handle:
                 return self.handle
             else :
@@ -75,6 +83,7 @@ class OnosDriver(CLI):
         
         try:
             self.handle.sendline("onos-package")
+            self.handle.expect("onos-package")
             self.handle.expect("tar.gz",timeout=10)
             handle = str(self.handle.before)
             main.log.info("onos-package command returned: "+
@@ -101,7 +110,15 @@ class OnosDriver(CLI):
         On Failure, exits the test
         '''
         try:
+            main.log.info("Running 'mvn clean install' on " + str(self.name) + 
+                    ". This may take some time.") 
+            self.handle.sendline("cd "+ self.home)
+            self.handle.expect("\$")
+
+            self.handle.sendline("\n")
+            self.handle.expect("\$")
             self.handle.sendline("mvn clean install")
+            self.handle.expect("mvn clean install")
             while 1:
                 i=self.handle.expect([
                     'There\sis\sinsufficient\smemory\sfor\sthe\sJava\s\
@@ -110,6 +127,7 @@ class OnosDriver(CLI):
                     'BUILD\sSUCCESS',
                     'ONOS\$',
                     pexpect.TIMEOUT],timeout=600)
+                #TODO: log the build time
                 if i == 0:
                     main.log.error(self.name + ":There is insufficient memory \
                             for the Java Runtime Environment to continue.")
@@ -125,6 +143,7 @@ class OnosDriver(CLI):
                     main.log.info(self.name + ": Build success!")
                 elif i == 3:
                     main.log.info(self.name + ": Build complete")
+                    self.handle.sendline("\n")
                     self.handle.expect("\$", timeout=60)
                     return main.TRUE
                 elif i == 4:
@@ -389,12 +408,4 @@ class OnosDriver(CLI):
             main.log.info(self.name+" ::::::")
             main.cleanup()
             main.exit()
-
-
-
-
-
-
-
-
 

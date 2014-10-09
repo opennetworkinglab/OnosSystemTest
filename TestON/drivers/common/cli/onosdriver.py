@@ -316,3 +316,48 @@ class OnosDriver(CLI):
             main.log.info(":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
             main.cleanup()
             main.exit()
+
+    def set_cell(self, cellname):
+        '''
+        Calls 'cell <name>' to set the environment variables on ONOSbench
+        '''
+        try:
+            if not cellname:
+                main.log.error("Must define cellname")
+                main.cleanup()
+                main.exit()
+            else:
+                self.handle.sendline("cell "+str(cellname))
+                #Expect the cellname in the ONOS_CELL variable.
+                #Note that this variable name is subject to change
+                #   and that this driver will have to change accordingly
+                self.handle.expect("ONOS_CELL="+str(cellname))
+                handle_before = self.handle.before
+                handle_after = self.handle.after
+
+                main.log.info("Cell call returned: "+handle_before+
+                        handle_after)
+
+                return main.TRUE
+
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()
+
+
+
+
+
+
+
+
+
+

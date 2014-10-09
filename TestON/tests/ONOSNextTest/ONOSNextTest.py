@@ -27,9 +27,10 @@ class ONOSNextTest:
         
         main.case("Setting up test environment")
 
-        main.step("Using mvn clean & compile")
-        clean_install_result = main.ONOSbench.clean_install()
-        
+        main.step("Using mvn clean & install")
+        #clean_install_result = main.ONOSbench.clean_install()
+        clean_install_result = main.TRUE
+
         main.step("Creating ONOS package")
         package_result = main.ONOSbench.onos_package()
 
@@ -45,10 +46,29 @@ class ONOSNextTest:
         start_result = main.ONOSbench.onos_start(ONOS1_ip)
 
         case1_result = (clean_install_result and package_result and\
-                cell_result and verify_result and onos_install_result\
-                and onos1_isup and start_result)
+                cell_result and verify_result and onos_install_result and\
+                onos1_isup and start_result)
         utilities.assert_equals(expect=main.TRUE, actual=case1_result,
                 onpass="Test startup successful",
                 onfail="Test startup NOT successful")
+
+    def CASE2(self, main):
+        '''
+        Cleanup sequence:
+        onos-service <node_ip> stop
+        onos-uninstall
+
+        TODO: Define rest of cleanup
+        
+        '''
+
+        ONOS1_ip = main.params['CTRL']['ip1']
+
+        main.case("Cleaning up test environment")
+
+        main.step("Stopping ONOS service")
+        stop_result = main.ONOSbench.onos_stop(ONOS1_ip)
+
+        main.step("Uninstalling ONOS service") 
 
 

@@ -491,6 +491,44 @@ class OnosDriver(CLI):
             main.cleanup()
             main.exit()
 
+    def onos_stop(self, node_ip):
+        '''
+        Calls onos command: 'onos-service [<node-ip>] stop'
+        '''
+        try:
+            self.handle.sendline("")
+            self.handle.expect("\$")
+            self.handle.sendline("onos-service "+str(node_ip)+
+                " stop")
+            i = self.handle.expect([
+                "stop/waiting",
+                "Unknown\sinstance",
+                pexpect.TIMEOUT],timeout=60)
+
+            if i == 0:
+                main.log.info("ONOS service stopped")
+                return main.TRUE
+            elif i == 1:
+                main.log.info("Unknown ONOS instance specified: "+
+                        str(node_ip))
+                return main.FALSE
+            else:
+                main.log.error("ONOS service failed to stop")
+                return main.FALSE
+
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()
+
+
     def isup(self, node = ""):
         '''
         Run's onos-wait-for-start which only returns once ONOS is at run level 100(ready for use)

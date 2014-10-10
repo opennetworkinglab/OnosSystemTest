@@ -5,6 +5,8 @@
 import time
 import sys
 import os
+import re
+import time
 
 class ONOSNextTest:
     def __init__(self):
@@ -21,8 +23,6 @@ class ONOSNextTest:
         onos-install -f
         onos-wait-for-start
         '''
-        import re
-        import time
         
         cell_name = main.params['ENV']['cellName']
         ONOS1_ip = main.params['CTRL']['ip1']

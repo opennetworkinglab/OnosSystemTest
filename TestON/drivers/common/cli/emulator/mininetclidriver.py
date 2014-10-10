@@ -116,7 +116,7 @@ class MininetCliDriver(Emulator):
                 main.cleanup()
                 main.exit()
             pattern = 'Results\:\s0\%\sdropped\s'
-            #Pending Mininet Pull Request #408
+            #FIXME:Pending Mininet Pull Request #408
             #pattern = 'Results\:\s0\.00\%\sdropped\s'
             print response
             #if utilities.assert_matches(expect=pattern,actual=response,onpass="All hosts are reaching",onfail="Unable to reach all the hosts"):

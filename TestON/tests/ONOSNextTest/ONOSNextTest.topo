@@ -24,11 +24,12 @@
             <user>admin</user>
             <password>onos_test</password>
             <type>MininetCliDriver</type>
-            <connect_order>2</connect_order>
+            <connect_order>3</connect_order>
             <COMPONENTS>
-                <arg1> </arg1>
-                <arg2> </arg2>
-                <controller>remote</controller>
+                #Specify the Option for mininet
+                <arg1> --custom ~/mininet/custom/topo-HA.py </arg1>
+                <arg2> --topo mytopo</arg2>
+                <controller> remote </controller>
             </COMPONENTS>
         </Mininet1>
 

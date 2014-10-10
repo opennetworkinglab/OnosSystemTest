@@ -31,8 +31,8 @@ class ONOSNextTest:
         main.case("Setting up test environment")
         
         main.step("Git checkout and pull master")
-        main.ONOSbench.git_checkout("master")
-        git_pull_result = main.ONOSbench.git_pull()
+        #main.ONOSbench.git_checkout("master")
+        #git_pull_result = main.ONOSbench.git_pull()
 
 
         main.step("Using mvn clean & install")
@@ -41,6 +41,11 @@ class ONOSNextTest:
 
         main.step("Creating ONOS package")
         package_result = main.ONOSbench.onos_package()
+
+        main.step("Creating cell file")
+        cell_file_result = main.ONOSbench.create_cell_file(
+                "10.128.20.10", "temp_cell_2", "10.128.10.90",
+                "10.128.10.11", "10.128.10.12", "10.128.10.13")
 
         main.step("Applying cell variable to environment")
         cell_result = main.ONOSbench.set_cell(cell_name)
@@ -102,8 +107,6 @@ class ONOSNextTest:
         cmd_result2 = main.ONOSbench.onos_cli(ONOS1_ip, cmdstr2)
         main.log.info("onos command returned: "+cmd_result2)
 
-
-
     def CASE4(self, main):
         main.step("Assigning switches to controllers")
         for i in range(1,29):
@@ -131,5 +134,4 @@ class ONOSNextTest:
         utilities.assert_equals(expect=main.TRUE, actual=case4_result,
                 onpass="Test successful",
                 onfail="Test NOT successful")
-
 

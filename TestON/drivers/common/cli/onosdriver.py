@@ -352,6 +352,89 @@ class OnosDriver(CLI):
             main.cleanup()
             main.exit()
 
+    def create_cell_file(self, bench_ip, file_name, mn_ip_addrs, *onos_ip_addrs):
+        '''
+        Creates a cell file based on arguments
+        Required:
+            * Bench IP address (bench_ip)
+                - Needed to copy the cell file over
+            * File name of the cell file (file_name)
+            * Mininet IP address (mn_ip_addrs)
+                - Note that only 1 ip address is 
+                  supported currently
+            * ONOS IP addresses (onos_ip_addrs) 
+                - Must be passed in as last arguments
+        
+        NOTE: Assumes cells are located at:
+            ~/<self.home>/tools/test/cells/
+        '''
+        
+        #Variable initialization
+        cell_directory = self.home + "/tools/test/cells/"
+        #We want to create the cell file in the dependencies directory
+        #of TestON first, then copy over to ONOS bench
+        temp_directory = "/tmp/"
+        #Create the cell file in the directory for writing (w+)
+        cell_file = open(temp_directory+file_name , 'w+')
+        
+        #Feature string is pre-defined environment variable
+        #that is required in the file
+        feature_string = "export ONOS_FEATURES=webconsole,onos-api,"+\
+                         "onos-core-trivial,onos-cli,onos-openflow,"+\
+                         "onos-app-fwd,onos-app-mobility,onos-app-tvue,"+\
+                         "onos-app-proxyarp"
+        mn_string = "export OCN="
+        onos_string = "export OC"
+        temp_count = 1
+   
+        #Create ONOS_NIC ip address prefix
+        temp_onos_ip = onos_ip_addrs[0] 
+        temp_list = []
+        temp_list = temp_onos_ip.split(".")
+        #Omit last element of list
+        temp_list = temp_list[:-1]
+        #Structure the nic string ip
+        nic_addr = ".".join(temp_list) + ".*\n"
+        onos_nic_string = "export ONOS_NIC="+nic_addr
+
+        try:
+            #Start writing to file
+            cell_file.write(feature_string + "\n")
+            cell_file.write(onos_nic_string) 
+            cell_file.write(mn_string +"'"+ mn_ip_addrs +"'"+ "\n") 
+
+            for arg in onos_ip_addrs:
+                #For each argument in onos_ip_addrs, write to file
+                #Output should look like the following:
+                #   export OC1='10.128.20.11'
+                #   export OC2='10.128.20.12'
+                cell_file.write(onos_string + str(temp_count) +
+                        "=" + "'" + arg + "'" + "\n" )
+                temp_count = temp_count + 1
+            
+            cell_file.close()
+
+            #We use os.system to send the command to TestON cluster
+            #to account for the case in which TestON is not located
+            #on the same cluster as the ONOS bench
+            #Note that even if TestON is located on the same cluster
+            #as ONOS bench, you must setup passwordless ssh
+            #in order to automate the test.
+            os.system("scp "+temp_directory+file_name+
+                    " admin@"+bench_ip+":"+cell_directory)
+
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":     " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name + ":::::::::")
+            main.log.error( traceback.print_exc() )
+            main.log.info(":::::::")
+            main.cleanup()
+            main.exit()
+
     def set_cell(self, cellname):
         '''
         Calls 'cell <name>' to set the environment variables on ONOSbench
@@ -431,7 +514,7 @@ class OnosDriver(CLI):
         Uses 'onos' command to send various ONOS CLI arguments.
         Required:
             * ONOS_ip: specify the ip of the cell machine
-            * cmdstr: specify the command string
+            * cmdstr: specify the command string to send
         '''
         try:
             if not ONOS_ip:
@@ -457,8 +540,12 @@ class OnosDriver(CLI):
 
             main.log.info("Command sent successfully")
 
+            #Obtain return handle that consists of result from 
+            #the onos command. The string may need to be 
+            #configured further. 
+            #TODO: This function may need to return another 
+            #      type of variable depending on its use case
             return_string = handle_before + handle_after + handle_more
-
             return return_string
 
         except pexpect.EOF:
@@ -662,6 +749,46 @@ class OnosDriver(CLI):
             main.log.info(self.name+" ::::::")
             main.cleanup()
             main.exit()
+
+    def onos_start_network(self, mntopo):
+        '''
+        Calls the command 'onos-start-network [<mininet-topo>]
+        "remotely starts the specified topology on the cell's 
+        mininet machine against all controllers configured in the
+        cell." 
+        * Specify mininet topology file name for mntopo
+        * Topo files should be placed at:
+          ~/<your-onos-directory>/tools/test/topos
+        
+        NOTE: This function will take you to the mininet prompt
+        '''
+        try:
+            if not mntopo:
+                main.log.error("You must specify a topo file to execute")
+                return main.FALSE
+            
+            mntopo = str(mntopo)
+            self.handle.sendline("")
+            self.handle.expect("\$")
+
+            self.handle.sendline("onos-start-network " + mntopo)
+            self.handle.expect("mininet>")
+            main.log.info("Network started, entered mininet prompt")
+
+            #TODO: Think about whether return is necessary or not
+
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()
+
 
     def isup(self, node = ""):
         '''

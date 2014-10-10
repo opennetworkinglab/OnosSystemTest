@@ -91,7 +91,10 @@ class RemoteMininetDriver(Emulator):
             return main.FALSE
         elif re.search("found multiple mininet",outputs):
             return main.ERROR
-        return main.TRUE
+        else:
+            print outputs
+            return main.TRUE
+
 
 
     def pingLong(self,**pingParams):
@@ -421,6 +424,7 @@ class RemoteMininetDriver(Emulator):
         return main.TRUE
 
     def add_switch(self,sw):
+        #FIXME: Remove hardcoded number of ports
         self.handle.sendline("")
         self.handle.expect("\$")
         self.handle.sendline("sudo ovs-vsctl add-br "+sw)
@@ -472,31 +476,203 @@ class RemoteMininetDriver(Emulator):
             response = main.FALSE
         return response  
 
-    def get_flowTable(self,sw):
+    def get_flowTable(self, protoVersion, sw):
         self.handle.sendline("cd")
-        self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT])
+        #self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT])
+        print "cd expect status: " 
+        print self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT])
         #TODO: Write seperate versions of the function for this, possibly a string that tells it which switch is in use?
         #For 1.0 version of OVS
         #command = "sudo ovs-ofctl dump-flows " + sw + " | awk '{OFS=\",\" ; print $1 $6 $7 }' |sort -n -k1"
         #for 1.3 version of OVS
-        command = "sudo ovs-ofctl dump-flows " + sw + " | awk '{OFS=\",\" ; print $1 $3 $7 $8}' |sort -n -k1"
-        self.handle.sendline(command)
-        self.handle.expect(["sort -n -k1",pexpect.EOF,pexpect.TIMEOUT])
-        self.handle.expect(["NXST_FLOW",pexpect.EOF,pexpect.TIMEOUT])
-        response = self.handle.before
-        return response 
+        #command = "sudo ovs-ofctl dump-flows " + sw + " | awk '{OFS=\",\" ; print $1 $3 $7 $8}' |sort -n -k1"
+        #NOTE: Use format to force consistent flow table output across versions
+        if protoVersion==1.0:
+            command = "sudo ovs-ofctl dump-flows " + sw + " -F OpenFlow10-table_id | awk '{OFS=\",\" ; print $1  $3  $6  $7  $8}' |sort -n -k1"
+            self.handle.sendline(command)
+            self.handle.expect(["sort -n -k1",pexpect.EOF,pexpect.TIMEOUT])
+            self.handle.expect(["OFPST_FLOW",pexpect.EOF,pexpect.TIMEOUT])
+            response = self.handle.before
+            #print "response=", response
+            return response
+        elif protoVersion==1.3:
+            command = "sudo ovs-ofctl dump-flows " + sw + " -O OpenFlow13  | awk '{OFS=\",\" ; print $1  $3  $6  $7}' |sort -n -k1" 
+            self.handle.sendline(command)
+            #print "ovs-vsctl Command sent status."
+            #self.handle.expect(["sort -n -k1",pexpect.EOF,pexpect.TIMEOUT])
+            #print "sort return status: " 
+            #print self.handle.expect(["sort -n -k1",pexpect.EOF,pexpect.TIMEOUT])
+            #print self.handle.before
+            self.handle.expect(["OFPST_FLOW",pexpect.EOF,pexpect.TIMEOUT])
+            #print "OFPST_FLOW expected status: " 
+            #print self.handle.expect(["OFPST_FLOW",pexpect.EOF,pexpect.TIMEOUT])
+            #print self.handle.before
+            response = self.handle.before
+            #print "response=", response
+            return response 
         
 
     def flow_comp(self,flow1,flow2):
+        #print "Inside flow compare function"
+        #print "Flow1 Table:"
+        #for flow in flow1:
+            #print flow1
+        #print "Flow2 Table"
+        #for flow in flow2:
+            #print flow2
+
         if flow1==flow2:
             return main.TRUE
         else:
             main.log.info("Flow tables do not match, printing tables:")
-            main.log.info("Flow Table 1:")
-            main.log.info(flow1)
-            main.log.info("Flow Table 2:")
-            main.log.info(flow2)
+            #main.log.info("Flow Table 1:")
+            #main.log.info(flow1)
+            #main.log.info("Flow Table 2:")
+            #main.log.info(flow2)
             return main.FALSE
+
+    def setIpTablesOUTPUT(self, dst_ip, dst_port, action='add', packet_type='tcp',rule='DROP'):
+        '''
+        Description:
+            add or remove iptables rule to DROP (default)  packets from specific IP and PORT
+        Usage:
+        * specify action ('add' or 'remove')
+          when removing, pass in the same argument as you would add. It will
+          delete that specific rule. 
+        * specify the destination ip to block with dst_ip 
+        * specify destination port to block to dst_port
+        * optional packet type to block (default tcp)
+        * optional iptables rule (default DROP)
+        WARNING:
+        * This function uses root privilege iptables command which may result in
+          unwanted network errors. USE WITH CAUTION
+        '''
+        import re
+        import time
+
+        #NOTE*********
+        #   The strict checking methods of this driver function is intentional
+        #   to discourage any misuse or error of iptables, which can cause
+        #   severe network errors
+        #*************
+
+        #NOTE: Sleep needed to give some time for rule to be added and registered
+        #      to the instance
+        time.sleep(5)
+
+        action_type = action.lower()
+        if action_type != 'add' and action_type !='remove':
+            main.log.error("Invalid action type. 'add' or 'remove' table rule")
+            if rule != 'DROP' and rule != 'ACCEPT' and rule != 'LOG':
+                #NOTE: Currently only supports rules DROP, ACCEPT, and LOG
+                main.log.error("Invalid rule. 'DROP' or 'ACCEPT' or 'LOG' only.")
+                return
+            return
+        else:
+
+            #If there is no existing rule in the iptables, we will see an 
+            #'iptables:'... message. We expect to see this message. 
+            #Otherwise, if there IS an existing rule, we will get the prompt
+            # back, hence why we expect $ for remove type. We want to remove
+            # an already existing rule
+
+            if action_type == 'add':
+                #NOTE: "iptables:" expect is a result of return from the command
+                #      iptables -C ...
+                #      Any changes by the iptables command return string 
+                #      will result in failure of the function. (deemed unlikely
+                #      at the time of writing this function)
+                #Check for existing rules on current input
+                self.handle.sendline("")
+                self.handle.expect("\$")
+                self.handle.sendline("sudo iptables -C OUTPUT -p "+str(packet_type)+
+                        " -d "+ str(dst_ip)+" --dport "+str(dst_port)+" -j "+str(rule))
+                i = self.handle.expect(["iptables:", "\$"])
+                print i
+                print self.handle.before
+                print "after: "
+                print self.handle.after
+
+            elif action_type == 'remove':
+                #Check for existing rules on current input
+                self.handle.sendline("")
+                self.handle.expect("\$")
+                self.handle.sendline("sudo iptables -C OUTPUT -p "+str(packet_type)+
+                        " -d "+ str(dst_ip)+" --dport "+str(dst_port)+" -j "+str(rule))
+                self.handle.expect("\$")
+            print "before: "
+            print self.handle.before
+            actual_string = self.handle.after
+            expect_string = "iptables:"
+            print "Actual String:"
+            print actual_string
+
+            if re.search(expect_string, actual_string):
+                match_result = main.TRUE
+            else:
+                match_result = main.FALSE
+            #If match_result is main.TRUE, it means there is no matching rule. 
+
+            #If tables does not exist and expected prompt is returned, go ahead and
+            #add iptables rule
+            if match_result == main.TRUE:
+                #Ensure action type is add
+                if action_type == 'add':
+                    #-A is the 'append' action of iptables
+                    action_add = '-A'
+                    try:
+                        self.handle.sendline("")
+                        self.handle.sendline("sudo iptables "+action_add+" OUTPUT -p "+str(packet_type)+
+                            " -d "+ str(dst_ip)+" --dport "+str(dst_port)+" -j "+str(rule))
+
+                        info_string = "Rules added to "+str(self.name)
+                        info_string += "iptable rule added to block IP: "+str(dst_ip)
+                        info_string += "Port: "+str(dst_port)+" Rule: "+str(rule)
+
+                        main.log.info(info_string)
+
+                        self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT])
+                    except pexpect.TIMEOUT:
+                        main.log.error(self.name + ": Timeout exception in setIpTables function")
+                    except:
+                        main.log.error( traceback.print_exc())
+                        main.cleanup()
+                        main.exit()
+                else:
+                    main.log.error("Given rule already exists, but attempted to add it")
+            #If match_result is 0, it means there IS a matching rule provided
+            elif match_result == main.FALSE:
+                #Ensure action type is remove
+                if action_type == 'remove':
+                    #-D is the 'delete' rule of iptables
+                    action_remove = '-D'
+                    try:
+                        self.handle.sendline("")
+                        #Delete a specific rule specified into the function
+                        self.handle.sendline("sudo iptables "+action_remove+" OUTPUT -p "+str(packet_type)+
+                            " -d "+ str(dst_ip)+" --dport "+str(dst_port)+" -j "+str(rule))
+
+                        info_string = "Rules removed from "+str(self.name)
+                        info_string += " iptables rule removed from blocking IP: "+str(dst_ip)
+                        info_string += " Port: "+str(dst_port)+" Rule: "+str(rule)
+
+                        main.log.info(info_string)
+
+                        self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT])
+                    except pexpect.TIMEOUT:
+                        main.log.error(self.name + ": Timeout exception in setIpTables function")
+                    except:
+                        main.log.error( traceback.print_exc())
+                        main.cleanup()
+                        main.exit()
+                else:
+                    main.log.error("Given rule does not exist, but attempted to remove it")
+            else:
+                #NOTE: If a bad usage of this function occurs, exit the entire test
+                main.log.error("Bad rule given for iptables. Exiting...")
+                main.cleanup()
+                main.exit()
+
 
 if __name__ != "__main__":
     import sys

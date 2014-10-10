@@ -52,7 +52,7 @@ class ONOSNextTest:
                 onpass="Test startup successful",
                 onfail="Test startup NOT successful")
 
-    def CASE2(self, main):
+    def CASE11(self, main):
         '''
         Cleanup sequence:
         onos-service <node_ip> stop
@@ -75,3 +75,16 @@ class ONOSNextTest:
         main.step("Uninstalling ONOS service") 
         uninstall_result = main.ONOSbench.onos_uninstall()
 
+    def CASE3(self, main):
+        '''
+        Test 'onos' command and its functionality in driver
+        '''
+        
+        ONOS1_ip = main.params['CTRL']['ip1']
+        cmdstr = "system:name"
+
+        main.case("Testing 'onos' command")
+
+        main.step("Sending command 'onos -w <onos-ip> system:name")
+        cmd_result = main.ONOSbench.onos_cli(ONOS1_ip, cmdstr) 
+        print cmd_result

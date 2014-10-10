@@ -17,8 +17,6 @@ OCT 9 2014
 
 '''
 
-#TODO: Document
-
 import sys
 import time
 import pexpect
@@ -425,6 +423,52 @@ class OnosDriver(CLI):
             main.cleanup()
             main.exit()
 
+    def onos_cli(self, ONOS_ip, cmdstr):
+        '''
+        Uses 'onos' command to send various ONOS CLI arguments.
+        Required:
+            * ONOS_ip: specify the ip of the cell machine
+            * cmdstr: specify the command string
+        '''
+        try:
+            if not ONOS_ip:
+                main.log.error("You must specify the IP address")
+                return main.FALSE
+            if not cmdstr:
+                main.log.error("You must specify the command string")
+                return main.FALSE
+
+            cmdstr = str(cmdstr)
+            self.handle.sendline("")
+            self.handle.expect("\$")
+
+            self.handle.sendline("onos -w " + ONOS_ip + " " + cmdstr)
+            self.handle.expect("\$")
+
+            handle_before = str(self.handle.before)
+            handle_after = str(self.handle.after)
+            
+            self.handle.sendline("")
+            self.handle.expect("\$")
+            handle_more = str(self.handle.before)
+
+            main.log.info("Command sent successfully")
+
+            return_string = handle_before + handle_after + handle_more
+
+            return return_string
+
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()
 
     def onos_install(self, options="-f", node = ""):
         '''
@@ -647,3 +691,5 @@ class OnosDriver(CLI):
             main.log.info(self.name+" ::::::")
             main.cleanup()
             main.exit()
+
+

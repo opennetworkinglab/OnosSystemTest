@@ -119,4 +119,4 @@ class ONOSNextTest:
 
         main.step("Sending command 'onos -w <onos-ip> system:name")
         cmd_result = main.ONOSbench.onos_cli(ONOS1_ip, cmdstr) 
-        print cmd_result
+        main.log.info("onos command returned: "+cmd_result)

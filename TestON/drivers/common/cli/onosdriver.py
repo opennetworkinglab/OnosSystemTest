@@ -23,12 +23,16 @@ import pexpect
 import re
 import traceback
 import os.path
+import pydoc
 sys.path.append("../")
 from drivers.common.clidriver import CLI
 
 class OnosDriver(CLI):
 
     def __init__(self):
+        '''
+        Initialize client 
+        '''
         super(CLI, self).__init__()
 
     def connect(self,**connectargs):
@@ -515,6 +519,15 @@ class OnosDriver(CLI):
         Required:
             * ONOS_ip: specify the ip of the cell machine
             * cmdstr: specify the command string to send
+        
+        This function is intended to expose the entire karaf 
+        CLI commands for ONOS. Try to use this function first
+        before attempting to write a ONOS CLI specific driver
+        function. 
+        You can see a list of available 'cmdstr' arguments 
+        by starting onos, and typing in 'onos' to enter the
+        onos> CLI. Then, type 'help' to see the list of
+        available commands. 
         '''
         try:
             if not ONOS_ip:

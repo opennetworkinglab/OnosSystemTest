@@ -21,15 +21,23 @@ class ONOSNextTest:
         onos-install -f
         onos-wait-for-start
         '''
+        import re
+        import time
         
         cell_name = main.params['ENV']['cellName']
         ONOS1_ip = main.params['CTRL']['ip1']
+        ONOS1_port = main.params['CTRL']['port1']
         
         main.case("Setting up test environment")
+        
+        main.step("Git checkout and pull master")
+        main.ONOSbench.git_checkout("master")
+        git_pull_result = main.ONOSbench.git_pull()
+
 
         main.step("Using mvn clean & install")
-        #clean_install_result = main.ONOSbench.clean_install()
-        clean_install_result = main.TRUE
+        clean_install_result = main.ONOSbench.clean_install()
+        #clean_install_result = main.TRUE
 
         main.step("Creating ONOS package")
         package_result = main.ONOSbench.onos_package()
@@ -45,9 +53,33 @@ class ONOSNextTest:
         main.step("Starting ONOS service")
         start_result = main.ONOSbench.onos_start(ONOS1_ip)
 
+        main.step("Assigning switches to controllers")
+        for i in range(1,29):
+            main.Mininet1.assign_sw_controller(sw=str(i), 
+                    ip1=ONOS1_ip, port1=ONOS1_port)
+        switch_mastership = main.TRUE
+        for i in range (1,29):
+            response = main.Mininet1.get_sw_controller("s"+str(i))
+            print("Response is " + str(response))
+            if re.search("tcp:"+ONOS1_ip,response):
+                switch_mastership = switch_mastership and main.TRUE
+            else:
+                switch_mastership = main.FALSE
+
+        #REACTIVE FWD test
+        main.step("Pingall")
+        ping_result = main.FALSE
+        while ping_result == main.FALSE:
+            time1 = time.time()
+            ping_result = main.Mininet1.pingall()
+            time2 = time.time()
+            print "Time for pingall: %2f seconds" % (time2 - time1)
+        
+
         case1_result = (clean_install_result and package_result and\
                 cell_result and verify_result and onos_install_result and\
-                onos1_isup and start_result)
+                onos1_isup and start_result and ping_result and\
+                switch_mastership)
         utilities.assert_equals(expect=main.TRUE, actual=case1_result,
                 onpass="Test startup successful",
                 onfail="Test startup NOT successful")

@@ -140,7 +140,6 @@ class OnosDriver(CLI):
                     'BUILD\sSUCCESS',
                     'ONOS\$',
                     pexpect.TIMEOUT],timeout=600)
-                #TODO: log the build time
                 if i == 0:
                     main.log.error(self.name + ":There is insufficient memory \
                             for the Java Runtime Environment to continue.")
@@ -156,6 +155,10 @@ class OnosDriver(CLI):
                     main.log.info(self.name + ": Build success!")
                 elif i == 3:
                     main.log.info(self.name + ": Build complete")
+                    #Print the build time
+                    for line in self.handle.before.splitlines():
+                        if "Total time:" in line:
+                            main.log.info(line)
                     self.handle.sendline("\n")
                     self.handle.expect("\$", timeout=60)
                     return main.TRUE

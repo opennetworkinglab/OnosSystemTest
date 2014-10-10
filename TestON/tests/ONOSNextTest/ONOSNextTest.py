@@ -43,6 +43,7 @@ class ONOSNextTest:
         package_result = main.ONOSbench.onos_package()
 
         main.step("Creating cell file")
+        #params: (bench ip, cell name, mininet ip, *onos ips)
         cell_file_result = main.ONOSbench.create_cell_file(
                 "10.128.20.10", "temp_cell_2", "10.128.10.90",
                 "10.128.10.11", "10.128.10.12", "10.128.10.13")
@@ -106,6 +107,11 @@ class ONOSNextTest:
         cmdstr2 = "onos:topology"
         cmd_result2 = main.ONOSbench.onos_cli(ONOS1_ip, cmdstr2)
         main.log.info("onos command returned: "+cmd_result2)
+
+        main.step("Sending command 'onos -w <onos-ip> bundle:list'")
+        cmdstr3 = "bundle:list"
+        cmd_result3 = main.ONOSbench.onos_cli(ONOS1_ip, cmdstr3)
+        main.log.info("onos command returned: "+cmd_result3)
 
     def CASE4(self, main):
         main.step("Assigning switches to controllers")

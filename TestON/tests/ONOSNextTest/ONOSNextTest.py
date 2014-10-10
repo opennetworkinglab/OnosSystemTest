@@ -36,8 +36,8 @@ class ONOSNextTest:
 
 
         main.step("Using mvn clean & install")
-        clean_install_result = main.ONOSbench.clean_install()
-        #clean_install_result = main.TRUE
+        #clean_install_result = main.ONOSbench.clean_install()
+        clean_install_result = main.TRUE
 
         main.step("Creating ONOS package")
         package_result = main.ONOSbench.onos_package()
@@ -53,33 +53,9 @@ class ONOSNextTest:
         main.step("Starting ONOS service")
         start_result = main.ONOSbench.onos_start(ONOS1_ip)
 
-        main.step("Assigning switches to controllers")
-        for i in range(1,29):
-            main.Mininet1.assign_sw_controller(sw=str(i), 
-                    ip1=ONOS1_ip, port1=ONOS1_port)
-        switch_mastership = main.TRUE
-        for i in range (1,29):
-            response = main.Mininet1.get_sw_controller("s"+str(i))
-            print("Response is " + str(response))
-            if re.search("tcp:"+ONOS1_ip,response):
-                switch_mastership = switch_mastership and main.TRUE
-            else:
-                switch_mastership = main.FALSE
-
-        #REACTIVE FWD test
-        main.step("Pingall")
-        ping_result = main.FALSE
-        while ping_result == main.FALSE:
-            time1 = time.time()
-            ping_result = main.Mininet1.pingall()
-            time2 = time.time()
-            print "Time for pingall: %2f seconds" % (time2 - time1)
-        
-
         case1_result = (clean_install_result and package_result and\
                 cell_result and verify_result and onos_install_result and\
-                onos1_isup and start_result and ping_result and\
-                switch_mastership)
+                onos1_isup and start_result )
         utilities.assert_equals(expect=main.TRUE, actual=case1_result,
                 onpass="Test startup successful",
                 onfail="Test startup NOT successful")
@@ -113,10 +89,47 @@ class ONOSNextTest:
         '''
         
         ONOS1_ip = main.params['CTRL']['ip1']
-        cmdstr = "system:name"
 
         main.case("Testing 'onos' command")
 
-        main.step("Sending command 'onos -w <onos-ip> system:name")
-        cmd_result = main.ONOSbench.onos_cli(ONOS1_ip, cmdstr) 
-        main.log.info("onos command returned: "+cmd_result)
+        main.step("Sending command 'onos -w <onos-ip> system:name'")
+        cmdstr1 = "system:name"
+        cmd_result1 = main.ONOSbench.onos_cli(ONOS1_ip, cmdstr1) 
+        main.log.info("onos command returned: "+cmd_result1)
+
+        main.step("Sending command 'onos -w <onos-ip> onos:topology'")
+        cmdstr2 = "onos:topology"
+        cmd_result2 = main.ONOSbench.onos_cli(ONOS1_ip, cmdstr2)
+        main.log.info("onos command returned: "+cmd_result2)
+
+
+
+    def CASE4(self, main):
+        main.step("Assigning switches to controllers")
+        for i in range(1,29):
+            main.Mininet1.assign_sw_controller(sw=str(i), 
+                    ip1=ONOS1_ip, port1=ONOS1_port)
+        switch_mastership = main.TRUE
+        for i in range (1,29):
+            response = main.Mininet1.get_sw_controller("s"+str(i))
+            print("Response is " + str(response))
+            if re.search("tcp:"+ONOS1_ip,response):
+                switch_mastership = switch_mastership and main.TRUE
+            else:
+                switch_mastership = main.FALSE
+
+        #REACTIVE FWD test
+        main.step("Pingall")
+        ping_result = main.FALSE
+        while ping_result == main.FALSE:
+            time1 = time.time()
+            ping_result = main.Mininet1.pingall()
+            time2 = time.time()
+            print "Time for pingall: %2f seconds" % (time2 - time1)
+      
+        case4_result = switch_mastership and ping_result
+        utilities.assert_equals(expect=main.TRUE, actual=case4_result,
+                onpass="Test successful",
+                onfail="Test NOT successful")
+
+

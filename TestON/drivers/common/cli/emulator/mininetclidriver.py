@@ -73,9 +73,9 @@ class MininetCliDriver(Emulator):
  
             main.log.info(self.name+": building fresh mininet") 
             #### for reactive/PARP enabled tests
-            cmdString = "sudo mn " + self.options['arg1'] + " " + self.options['arg2'] +  " --mac --controller " + self.options['controller']
+            cmdString = "sudo mn " + self.options['arg1'] + " " + self.options['arg2'] +  " --mac --controller " + self.options['controller'] + " " + self.options['arg3']
             #### for proactive flow with static ARP entries
-            #cmdString = "sudo mn " + self.options['arg1'] + " " + self.options['arg2'] +  " --mac --arp --controller " + self.options['controller']
+            #cmdString = "sudo mn " + self.options['arg1'] + " " + self.options['arg2'] +  " --mac --arp --controller " + self.options['controller'] + " " + self.options['arg3']
             self.handle.sendline(cmdString)
             self.handle.expect(["sudo mn",pexpect.EOF,pexpect.TIMEOUT])
             while 1: 
@@ -839,15 +839,36 @@ class MininetCliDriver(Emulator):
                             onos_ports.append(port['portNumber']) 
                 mn_ports.sort()
                 onos_ports.sort()
-                if mn_ports == onos_ports:
+                #print "mn_ports[] = ", mn_ports
+                #print "onos_ports90 = ", onos_ports
+                
+                #if mn_ports == onos_ports:
+                    #pass #don't set results to true here as this is just one of many checks and it might override a failure
+
+                #For OF1.3, the OFP_local port number is 0xfffffffe or 4294967294 instead of 0xfffe or 65534 in OF1.0, ONOS topology
+                #sees the correct port number, however MN topolofy as read from line 151 of https://github.com/ucb-sts/sts/blob/
+                #topology_refactoring2/sts/entities/teston_entities.py is 0xfffe which doesn't work correctly with OF1.3 switches.
+                #So a short term fix is to ignore the case when mn_port == 65534 and onos_port ==4294967294.
+                for mn_port,onos_port in zip(mn_ports,onos_ports):
+                    if mn_port == onos_port or (mn_port == 65534 and onos_port ==4294967294):
+                        continue
+                    else:
+                        port_results = main.FALSE
+                        break
                     pass #don't set results to true here as this is just one of many checks and it might override a failure
+                '''
                 else: #the ports of this switch don't match
                     port_results = main.FALSE
                     main.log.report("ports in MN switch %s(%s) but not in ONOS:" % (switch['name'],switch['dpid'])) 
                     main.log.report( str([port for port in mn_ports if port not in onos_ports]))
                     main.log.report("ports in ONOS switch %s(%s) but not in MN:" % (switch['name'],switch['dpid']))
                     main.log.report( str([port for port in onos_ports if port not in mn_ports]))
-
+                '''
+                if port_results == main.FALSE:
+                    main.log.report("ports in MN switch %s(%s) but not in ONOS:" % (switch['name'],switch['dpid'])) 
+                    main.log.report( str([port for port in mn_ports if port not in onos_ports]))
+                    main.log.report("ports in ONOS switch %s(%s) but not in MN:" % (switch['name'],switch['dpid']))
+                    main.log.report( str([port for port in onos_ports if port not in mn_ports]))
 
         #######Links########
         # iterate through MN links and check if and ONOS link exists in both directions
@@ -911,27 +932,6 @@ class MininetCliDriver(Emulator):
         return results
 
 
-    def links_status(self):
-        """
-        Returns list of links and their status
-        """
-        if self.handle :
-            cmd = "py 'Links: %s' % [item for sublist in [[(y[0].name, y[1].name, y[0].isUp() and y[1].isUp()) for y in x[0].connectionsTo(x[1])] for x in __import__('itertools').permutations(net.nameToNode.values(), 2) if x[0] != x[1] and x[0].connectionsTo(x[1])] for item in sublist]"
-            try:
-                response = self.execute(cmd=cmd,prompt="mininet>",timeout=10)
-                if not response:
-                  return None
-                for line in response.split('\n'):
-                  if line.startswith('Links:'):
-                    return eval(line[len("Links :"):])
-            except pexpect.EOF:
-                main.log.error(self.name + ": EOF exception found")
-                main.log.error(self.name + ":     " + self.handle.before)
-                main.cleanup()
-                main.exit()
-            return response
-        else:
-            main.log.error("Connection failed to the node")
 
 
 

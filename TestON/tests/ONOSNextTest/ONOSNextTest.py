@@ -29,10 +29,15 @@ class ONOSNextTest:
         ONOS1_port = main.params['CTRL']['port1']
         
         main.case("Setting up test environment")
+        
+        main.step("Git checkout and pull master")
+        main.ONOSbench.git_checkout("master")
+        git_pull_result = main.ONOSbench.git_pull()
+
 
         main.step("Using mvn clean & install")
-        #clean_install_result = main.ONOSbench.clean_install()
-        clean_install_result = main.TRUE
+        clean_install_result = main.ONOSbench.clean_install()
+        #clean_install_result = main.TRUE
 
         main.step("Creating ONOS package")
         package_result = main.ONOSbench.onos_package()

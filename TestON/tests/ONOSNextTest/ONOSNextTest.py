@@ -108,6 +108,9 @@ class ONOSNextTest:
         main.log.info("onos command returned: "+cmd_result2)
 
     def CASE4(self, main):
+        import re
+        import time
+        main.case("Pingall Test")
         main.step("Assigning switches to controllers")
         for i in range(1,29):
             main.Mininet1.assign_sw_controller(sw=str(i), 
@@ -132,6 +135,6 @@ class ONOSNextTest:
       
         case4_result = switch_mastership and ping_result
         utilities.assert_equals(expect=main.TRUE, actual=case4_result,
-                onpass="Test successful",
-                onfail="Test NOT successful")
+                onpass="Pingall Test successful",
+                onfail="Pingall Test NOT successful")
 

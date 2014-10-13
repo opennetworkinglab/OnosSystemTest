@@ -157,6 +157,8 @@ class ONOSNextTest:
         '''
         Test the ONOS-cli functionality
         '''
+        import time
+        
         cell_name = main.params['ENV']['cellName']
         ONOS1_ip = main.params['CTRL']['ip1']
         
@@ -166,8 +168,31 @@ class ONOSNextTest:
         main.ONOScli.set_cell(cell_name)
 
         main.step("Start ONOS-cli")
-        main.ONOScli.start_onos_cli()
+        main.ONOScli.start_onos_cli(ONOS1_ip)
 
         main.step("issue command: onos:topology")
-        main.ONOScli.onos_topology()
+        topology_obj = main.ONOScli.onos_topology()
+
+        main.step("issue various feature:install <str> commands")
+        main.ONOScli.feature_install("onos-app-fwd")
+        main.ONOScli.feature_install("onos-rest")
+
+        main.step("Add a bad node")
+        node_result = main.ONOScli.add_node("111", "10.128.20.")
+        if node_result == main.TRUE:
+            main.log.info("Node successfully added")
+
+        main.step("Add a correct node")
+        node_result = main.ONOScli.add_node("111", "10.128.20.12")
+
+        main.step("List devices")
+        for i in range(1,8):
+            main.Mininet2.handle.sendline("sudo ovs-vsctl set-controller s"+str(i)+
+                    " tcp:10.128.20.11")
+            main.Mininet2.handle.expect("\$")
+        #Need to sleep to allow switch add processing
+        time.sleep(10)
+        list_result = main.ONOScli.devices()
+        main.log.info(list_result)
+
 

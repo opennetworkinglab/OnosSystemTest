@@ -211,6 +211,33 @@ class OnosCliDriver(CLI):
             main.cleanup()
             main.exit()
 
+    def remove_node(self, node_id):
+        '''
+        Removes a cluster by ID
+        Issues command: 'remove-node [<node-id>]'
+        Required:
+            * node_id
+        '''
+        try:
+            self.handle.sendline("")
+            self.handle.expect("onos>")
+
+            self.handle.sendline("remove-node "+str(node_id))
+            self.handle.expect("onos>")
+
+            return main.TRUE
+        
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()
 
     def onos_topology(self):
         '''
@@ -294,4 +321,44 @@ class OnosCliDriver(CLI):
             main.cleanup()
             main.exit()
         
+    def devices(self, grep_str=""):
+        '''
+        Lists all infrastructure devices
+        Optional argument:
+            * grep_str - pass in a string to grep
+        '''
+        try:
+            self.handle.sendline("")
+            self.handle.expect("onos>")
+
+            if not grep_str:
+                self.handle.sendline("devices")
+                self.handle.expect("onos>")
+            else:
+                self.handle.sendline("devices | grep '"+
+                        str(grep_str)+"'")
+                self.handle.expect("onos>")
+           
+            handle = self.handle.before
+            handle += self.handle.after
+
+            self.handle.sendline("")
+            self.handle.expect("onos>")
+
+            handle += self.handle.before
+            handle += self.handle.after
+
+            return handle
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()
+
 

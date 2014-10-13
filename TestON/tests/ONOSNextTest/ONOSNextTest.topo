@@ -44,10 +44,10 @@
         </Mininet1>
 
         <Mininet2>
-            <host>10.128.10.90</host>
+            <host>10.128.10.91</host>
             <user>admin</user>
             <password>onos_test</password>
-            <type>RemoteMininetDriver</type>
+            <type>MininetCliDriver</type>
             <connect_order>5</connect_order>
             <COMPONENTS> 
                 <arg1> --custom topo-intentTPtest.py </arg1>

@@ -187,9 +187,9 @@ class ONOSNextTest:
 
         main.step("List devices")
         for i in range(1,8):
-            main.Mininet2.handle.sendline("sudo ovs-vsctl set-controller s"+str(i)+
+            main.Mininet2.handle.sendline("sh ovs-vsctl set-controller s"+str(i)+
                     " tcp:10.128.20.11")
-            main.Mininet2.handle.expect("\$")
+            main.Mininet2.handle.expect("mininet>")
         #Need to sleep to allow switch add processing
         time.sleep(10)
         list_result = main.ONOScli.devices()

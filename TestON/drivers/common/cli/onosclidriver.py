@@ -81,8 +81,11 @@ class OnosCliDriver(CLI):
         '''
         response = ''
         try:
-            self.handle.sendline("exit")
-            self.handle.expect("closed")
+            self.handle.sendline("system:shutdown")
+            self.handle.expect("Confirm")
+            self.handle.sendline("Yes")
+            self.handle.expect("\$")
+
         except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
             main.log.error(self.name + ":     " + self.handle.before)
@@ -132,13 +135,13 @@ class OnosCliDriver(CLI):
             main.cleanup()
             main.exit()
         
-    def start_onos_cli(self):
+    def start_onos_cli(self, ONOS_ip):
         try:
             self.handle.sendline("")
             self.handle.expect("\$")
 
             #Wait for onos start (-w) and enter onos cli
-            self.handle.sendline("onos -w")
+            self.handle.sendline("onos -w "+str(ONOS_ip))
             self.handle.expect("onos>")
 
         except pexpect.EOF:
@@ -159,8 +162,61 @@ class OnosCliDriver(CLI):
     #Ex) onos:topology > onos_topology
     #    onos:links    > onos_links
     #    feature:list  > feature_list
-    
-    def onos_topology(self): 
+   
+    def add_node(self, node_id, ONOS_ip, tcp_port=""):
+        '''
+        Adds a new cluster node by ID and address information.
+        Required:
+            * node_id
+            * ONOS_ip
+        Optional:
+            * tcp_port
+        '''
+        try:
+            self.handle.sendline("")
+            self.handle.expect("onos>")
+
+            self.handle.sendline("add-node "+
+                    str(node_id)+" "+
+                    str(ONOS_ip)+" "+
+                    str(tcp_port))
+            
+            i = self.handle.expect([
+                "Error",
+                "onos>" ])
+            
+            #Clear handle to get previous output
+            self.handle.sendline("")
+            self.handle.expect("onos>")
+
+            handle = self.handle.before
+
+            if i == 0:
+                main.log.error("Error in adding node")
+                main.log.error(handle)
+                return main.FALSE 
+            else:
+                main.log.info("Node "+str(ONOS_ip)+" added")
+                return main.TRUE
+
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()
+
+
+    def onos_topology(self):
+        '''
+        Shows the current state of the topology
+        by issusing command: 'onos> onos:topology'
+        '''
         try:
             self.handle.sendline("")
             self.handle.expect("onos>")
@@ -185,4 +241,57 @@ class OnosCliDriver(CLI):
             main.log.info(self.name+" ::::::")
             main.cleanup()
             main.exit()
+       
+    def feature_install(self, feature_str):
+        '''
+        Installs a specified feature 
+        by issuing command: 'onos> feature:install <feature_str>'
+        '''
+        try:
+            self.handle.sendline("")
+            self.handle.expect("onos>")
+
+            self.handle.sendline("feature:install "+str(feature_str))
+            self.handle.expect("onos>")
+
+            return main.TRUE
+
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()
+       
+    def feature_uninstall(self, feature_str):
+        '''
+        Uninstalls a specified feature
+        by issuing command: 'onos> feature:uninstall <feature_str>'
+        '''
+        try:
+            self.handle.sendline("")
+            self.handle.expect("onos>")
+
+            self.handle.sendline("feature:uninstall "+str(feature_str))
+            self.handle.expect("onos>")
+
+            return main.TRUE
+
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()
         
+

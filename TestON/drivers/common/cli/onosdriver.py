@@ -584,8 +584,6 @@ class OnosDriver(CLI):
             #Obtain return handle that consists of result from 
             #the onos command. The string may need to be 
             #configured further. 
-            #TODO: This function may need to return another 
-            #      type of variable depending on its use case
             return_string = handle_before + handle_after + handle_more
             return return_string
 

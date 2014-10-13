@@ -156,6 +156,45 @@ class OnosCliDriver(CLI):
             main.cleanup()
             main.exit()
 
+    def sendline(self, cmd_str):
+        '''
+        Send a completely user specified string to 
+        the onos> prompt. Use this function if you have 
+        a very specific command to send.
+        
+        Warning: There are no sanity checking to commands
+        sent using this method.
+        '''
+        try:
+            self.handle.sendline("")
+            self.handle.expect("onos>")
+
+            self.handle.sendline(cmd_str)
+            self.handle.expect("onos>")
+
+            handle = self.handle.before
+            
+            self.handle.sendline("")
+            self.handle.expect("onos>")
+            
+            handle += self.handle.before
+            handle += self.handle.after
+
+            main.log.info("Command sent.")
+
+            return handle
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()
+
     #IMPORTANT NOTE:
     #For all cli commands, naming convention should match
     #the cli command replacing ':' with '_'.

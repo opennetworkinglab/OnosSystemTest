@@ -10,12 +10,21 @@
             <COMPONENTS> </COMPONENTS>
         </ONOSbench>
 
+        <ONOScli>
+            <host>10.128.20.10</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>OnosCliDriver</type>
+            <connect_order>2</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </ONOScli>
+
         <ONOS1>
             <host>10.128.20.11</host>
             <user>sdn</user>
             <password>sdn</password>
             <type>OnosDriver</type>
-            <connect_order>2</connect_order>
+            <connect_order>3</connect_order>
             <COMPONENTS> </COMPONENTS>
         </ONOS1>
 
@@ -24,7 +33,7 @@
             <user>admin</user>
             <password>onos_test</password>
             <type>MininetCliDriver</type>
-            <connect_order>3</connect_order>
+            <connect_order>4</connect_order>
             <COMPONENTS>
                 #Specify the Option for mininet
                 <arg1> --topo tree,2,3</arg1>

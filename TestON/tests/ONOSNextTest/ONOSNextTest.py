@@ -144,3 +144,21 @@ class ONOSNextTest:
                 onpass="Pingall Test successful",
                 onfail="Pingall Test NOT successful")
 
+    def CASE5(self, main):
+        '''
+        Test the ONOS-cli functionality
+        '''
+        cell_name = main.params['ENV']['cellName']
+        ONOS1_ip = main.params['CTRL']['ip1']
+        
+        main.case("Testing the ONOS-cli")
+        
+        main.step("Set cell for ONOS-cli environment")
+        main.ONOScli.set_cell(cell_name)
+
+        main.step("Start ONOS-cli")
+        main.ONOScli.start_onos_cli()
+
+        main.step("issue command: onos:topology")
+        main.ONOScli.onos_topology()
+

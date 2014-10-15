@@ -156,6 +156,9 @@ class ONOSNextTest:
     def CASE5(self, main):
         '''
         Test the ONOS-cli functionality
+        
+        Below are demonstrations of what the driver functions can be 
+        used for.
         '''
         import time
         
@@ -185,14 +188,22 @@ class ONOSNextTest:
         main.step("Add a correct node")
         node_result = main.ONOScli.add_node("111", "10.128.20.12")
 
-        main.step("List devices")
+        main.step("Assign switches and list devices")
         for i in range(1,8):
             main.Mininet2.handle.sendline("sh ovs-vsctl set-controller s"+str(i)+
                     " tcp:10.128.20.11")
             main.Mininet2.handle.expect("mininet>")
         #Need to sleep to allow switch add processing
-        time.sleep(10)
+        time.sleep(5)
         list_result = main.ONOScli.devices()
         main.log.info(list_result)
 
+        main.step("Get all devices id")
+        devices_id_list = main.ONOScli.get_all_devices_id()
+        main.log.info(devices_id_list)
 
+
+######
+#jhall@onlab.us
+#andrew@onlab.us
+######

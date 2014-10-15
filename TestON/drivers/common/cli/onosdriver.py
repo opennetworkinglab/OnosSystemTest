@@ -409,8 +409,10 @@ class OnosDriver(CLI):
         #Create the cell file in the directory for writing (w+)
         cell_file = open(temp_directory+file_name , 'w+')
         
-        #Feature string is pre-defined environment variable
-        #that is required in the file
+        #Feature string is hardcoded environment variables
+        #That you may wish to use by default on startup.
+        #Note that you  may not want certain features listed
+        #on here.
         feature_string = "export ONOS_FEATURES=webconsole,onos-api,"+\
                          "onos-core-trivial,onos-cli,onos-openflow,"+\
                          "onos-app-fwd,onos-app-mobility,onos-app-tvue,"+\
@@ -423,7 +425,7 @@ class OnosDriver(CLI):
         temp_onos_ip = onos_ip_addrs[0] 
         temp_list = []
         temp_list = temp_onos_ip.split(".")
-        #Omit last element of list
+        #Omit last element of list to format for NIC
         temp_list = temp_list[:-1]
         #Structure the nic string ip
         nic_addr = ".".join(temp_list) + ".*\n"
@@ -451,7 +453,7 @@ class OnosDriver(CLI):
             #on the same cluster as the ONOS bench
             #Note that even if TestON is located on the same cluster
             #as ONOS bench, you must setup passwordless ssh
-            #in order to automate the test.
+            #between TestON and ONOS bench in order to automate the test.
             os.system("scp "+temp_directory+file_name+
                     " admin@"+bench_ip+":"+cell_directory)
 

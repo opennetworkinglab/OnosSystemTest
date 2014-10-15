@@ -400,4 +400,53 @@ class OnosCliDriver(CLI):
             main.cleanup()
             main.exit()
 
+    #Wrapper function for devices*******
+    #Wrapper functions use existing driver
+    #functions and extends their use case.
+    #For example, we may use the output of
+    #a normal driver function, and parse it
+    #using a wrapper function
 
+    def get_all_devices_id(self):
+        '''
+        Use 'devices' function to obtain list of all devices
+        and parse the result to obtain a list of all device
+        id's. Returns this list. Returns empty list if no
+        devices exist
+        List is ordered sequentially 
+        '''
+        try:
+            #Call devices and store result string
+            devices_str = self.devices()
+            id_list = []
+            
+            if not devices_str:
+                main.log.info("There are no devices to get id from")
+                return id_list
+           
+            #Split the string into list by comma
+            device_list = devices_str.split(",")
+            #Get temporary list of all arguments with string 'id='
+            temp_list = [dev for dev in device_list if "id=" in dev]
+            #Split list further into arguments before and after string
+            # 'id='. Get the latter portion (the actual device id) and
+            # append to id_list
+            for arg in temp_list:
+                id_list.append(arg.split("id=")[1])
+            
+            return id_list
+
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()
+
+
+    #***********************************

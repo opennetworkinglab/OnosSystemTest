@@ -400,7 +400,49 @@ class OnosCliDriver(CLI):
             main.cleanup()
             main.exit()
 
-    #Wrapper function for devices*******
+    def paths(self, src_id, dst_id):
+        '''
+        Returns string of paths, and the cost.
+        Issues command: onos:paths <src> <dst>
+        '''
+        try:
+            self.handle.sendline("")
+            self.handle.expect("onos>")
+
+            self.handle.sendline("onos:paths "+
+                    str(src_id) + " " + str(dst_id))
+            i = self.handle.expect([
+                "Error",
+                "onos>"])
+            
+            self.handle.sendline("")
+            self.handle.expect("onos>")
+
+            handle = self.handle.before
+
+            if i == 0:
+                main.log.error("Error in getting paths")
+                return handle
+            else:
+                path = handle.split(";")[0]
+                cost = handle.split(";")[1]
+                return (path, cost)
+        
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()
+
+
+
+    #Wrapper functions ****************
     #Wrapper functions use existing driver
     #functions and extends their use case.
     #For example, we may use the output of
@@ -414,6 +456,11 @@ class OnosCliDriver(CLI):
         id's. Returns this list. Returns empty list if no
         devices exist
         List is ordered sequentially 
+        
+        This function may be useful if you are not sure of the
+        device id, and wish to execute other commands using 
+        the ids. By obtaining the list of device ids on the fly,
+        you can iterate through the list to get mastership, etc.
         '''
         try:
             #Call devices and store result string

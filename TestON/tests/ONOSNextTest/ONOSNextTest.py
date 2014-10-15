@@ -157,8 +157,8 @@ class ONOSNextTest:
         '''
         Test the ONOS-cli functionality
         
-        Below are demonstrations of what the driver functions can be 
-        used for.
+        Below are demonstrations of what the 
+        ONOS cli driver functions can be used for.
         '''
         import time
         
@@ -202,7 +202,11 @@ class ONOSNextTest:
         devices_id_list = main.ONOScli.get_all_devices_id()
         main.log.info(devices_id_list)
 
-
+        main.step("Get path and cost between device 1 and 7")
+        (path, cost) = main.ONOScli.paths(devices_id_list[0], devices_id_list[6])
+        main.log.info("Path: "+str(path))
+        main.log.info("Cost: "+str(cost))
+    
 ######
 #jhall@onlab.us
 #andrew@onlab.us

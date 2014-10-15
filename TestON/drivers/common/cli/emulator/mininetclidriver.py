@@ -31,6 +31,7 @@ import re
 import sys
 import core.teston
 sys.path.append("../")
+from math import pow
 from drivers.common.cli.emulatordriver import Emulator
 from drivers.common.clidriver import CLI
 
@@ -74,7 +75,14 @@ class MininetCliDriver(Emulator):
             main.log.info(self.name+": building fresh mininet") 
             #### for reactive/PARP enabled tests
             cmdString = "sudo mn " + self.options['arg1'] + " " + self.options['arg2'] +  " --mac --controller " + self.options['controller'] + " " + self.options['arg3']
-            #### for proactive flow with static ARP entries
+            
+            argList = self.options['arg1'].split(",")
+            global topoArgList
+            topoArgList = argList[0].split(" ")
+            argList = map(int, argList[1:])
+            topoArgList = topoArgList[1:] + argList
+            
+          #### for proactive flow with static ARP entries
             #cmdString = "sudo mn " + self.options['arg1'] + " " + self.options['arg2'] +  " --mac --arp --controller " + self.options['controller'] + " " + self.options['arg3']
             self.handle.sendline(cmdString)
             self.handle.expect(["sudo mn",pexpect.EOF,pexpect.TIMEOUT])
@@ -101,7 +109,43 @@ class MininetCliDriver(Emulator):
             main.log.error(self.name+": Connection failed to the host "+self.user_name+"@"+self.ip_address) 
             main.log.error(self.name+": Failed to connect to the Mininet")
             return main.FALSE
-                       
+                    
+    def num_switches_n_links(self,topoType,depth,fanout):
+        if topoType == 'tree':
+            if fanout is None:     #In tree topology, if fanout arg is not given, by default it is 2
+                fanout = 2
+            k = 0
+            sum = 0
+            while(k <= depth-1): 
+                sum = sum + pow(fanout,k)
+                k = k+1
+                num_switches = sum
+            while(k <= depth-2): 
+                '''depth-2 gives you only core links and not considering edge links as seen by ONOS
+                    If all the links including edge links are required, do depth-1
+                '''
+                sum = sum + pow(fanout,k)
+                k = k+1
+            num_links = sum * fanout
+            #print "num_switches for %s(%d,%d) = %d and links=%d" %(topoType,depth,fanout,num_switches,num_links)
+        
+        elif topoType =='linear':
+            if fanout is None:     #In linear topology, if fanout or num_hosts_per_sw is not given, by default it is 1
+                fanout = 1
+            num_switches = depth
+            num_hosts_per_sw = fanout
+            total_num_hosts = num_switches * num_hosts_per_sw
+            num_links = total_num_hosts + (num_switches - 1)
+            print "num_switches for %s(%d,%d) = %d and links=%d" %(topoType,depth,fanout,num_switches,num_links) 
+        topoDict = {}
+        topoDict = {"num_switches":int(num_switches), "num_corelinks":int(num_links)}
+        return topoDict
+
+
+    def calculate_sw_and_links(self):
+        topoDict = self.num_switches_n_links(*topoArgList)
+        return topoDict
+
     def pingall(self):
         '''
         Verifies the reachability of the hosts using pingall command.

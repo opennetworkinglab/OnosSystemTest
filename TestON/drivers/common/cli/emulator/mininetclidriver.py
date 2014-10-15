@@ -154,6 +154,7 @@ class MininetCliDriver(Emulator):
             main.log.info(self.name+": Checking reachabilty to the hosts using pingall")
             try:
                 response = self.execute(cmd="pingall",prompt="mininet>",timeout=120)
+                print "response: " + str(response)
             except pexpect.EOF:  
                 main.log.error(self.name + ": EOF exception found")
                 main.log.error(self.name + ":     " + self.handle.before)

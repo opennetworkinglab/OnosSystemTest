@@ -235,10 +235,10 @@ class OnosDriver(CLI):
             elif i==2:
                 main.log.info(self.name + ": Git Pull - pulling repository now")
                 self.handle.expect("ONOS\$", 120)
-                return 0
+                return main.TRUE
             elif i==3:
                 main.log.info(self.name + ": Git Pull - Already up to date")
-                return 1
+                return main.TRUE
             elif i==4:
                 main.log.info(self.name + ": Git Pull - Aborting... Are there conflicting git files?")
                 return main.ERROR
@@ -409,8 +409,10 @@ class OnosDriver(CLI):
         #Create the cell file in the directory for writing (w+)
         cell_file = open(temp_directory+file_name , 'w+')
         
-        #Feature string is pre-defined environment variable
-        #that is required in the file
+        #Feature string is hardcoded environment variables
+        #That you may wish to use by default on startup.
+        #Note that you  may not want certain features listed
+        #on here.
         feature_string = "export ONOS_FEATURES=webconsole,onos-api,"+\
                          "onos-core-trivial,onos-cli,onos-openflow,"+\
                          "onos-app-fwd,onos-app-mobility,onos-app-tvue,"+\
@@ -423,7 +425,7 @@ class OnosDriver(CLI):
         temp_onos_ip = onos_ip_addrs[0] 
         temp_list = []
         temp_list = temp_onos_ip.split(".")
-        #Omit last element of list
+        #Omit last element of list to format for NIC
         temp_list = temp_list[:-1]
         #Structure the nic string ip
         nic_addr = ".".join(temp_list) + ".*\n"
@@ -451,7 +453,7 @@ class OnosDriver(CLI):
             #on the same cluster as the ONOS bench
             #Note that even if TestON is located on the same cluster
             #as ONOS bench, you must setup passwordless ssh
-            #in order to automate the test.
+            #between TestON and ONOS bench in order to automate the test.
             os.system("scp "+temp_directory+file_name+
                     " admin@"+bench_ip+":"+cell_directory)
 
@@ -584,8 +586,6 @@ class OnosDriver(CLI):
             #Obtain return handle that consists of result from 
             #the onos command. The string may need to be 
             #configured further. 
-            #TODO: This function may need to return another 
-            #      type of variable depending on its use case
             return_string = handle_before + handle_after + handle_more
             return return_string
 
@@ -833,7 +833,8 @@ class OnosDriver(CLI):
 
     def isup(self, node = ""):
         '''
-        Run's onos-wait-for-start which only returns once ONOS is at run level 100(ready for use)
+        Run's onos-wait-for-start which only returns once ONOS is at run 
+        level 100(ready for use)
 
         Returns: main.TRUE if ONOS is running and main.FALSE on timeout
         '''
@@ -864,3 +865,113 @@ class OnosDriver(CLI):
             main.exit()
 
 
+    def get_topology(self, ip):
+        '''
+        parses the onos:topology output
+        Returns: a topology dict populated by the key values found in 
+                 the cli command.
+        '''
+
+        try:
+            #call the cli to get the topology summary
+            cmdstr = "onos:topology"
+            cli_result = self.onos_cli(ip, cmdstr)
+
+
+            #Parse the output
+            topology = {}
+            #for line in cli_result.split("\n"):
+            for line in cli_result.splitlines():
+                if not line.startswith("time="):
+                    continue
+                #else
+                print line
+                for var in line.split(","):
+                    print "'"+var+"'"
+                    print "'"+var.strip()+"'"
+                    key, value = var.strip().split("=")
+                    topology[key] = value
+            print topology
+            devices = topology.get('devices', False)
+            print devices
+            links = topology.get('links', False)
+            print links
+            clusters = topology.get('clusters', False)
+            print clusters
+            paths = topology.get('paths', False)
+            print paths
+
+            return topology
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()
+
+    def check_status(self, ip, numoswitch, numolink, log_level="info"):
+        '''
+        Checks the number of swithes & links that ONOS sees against the 
+        supplied values. By default this will report to main.log, but the 
+        log level can be specifid.
+        
+        Params: ip = ip used for the onos cli
+                numoswitch = expected number of switches
+                numlink = expected number of links
+                log_level = level to log to. Currently accepts 'info', 'warn' and 'report'
+
+
+        log_level can
+
+        Returns: main.TRUE if the number of switchs and links are correct, 
+                 main.FALSE if the numer of switches and links is incorrect,
+                 and main.ERROR otherwise
+        '''
+
+        try:
+            topology = self.get_topology(ip)
+            if topology == {}:
+                return main.ERROR
+            output = ""
+            #Is the number of switches is what we expected
+            devices = topology.get('devices',False)
+            links = topology.get('links',False)
+            if devices == False or links == False:
+                return main.ERROR
+            switch_check = ( int(devices) == int(numoswitch) )
+            #Is the number of links is what we expected
+            link_check = ( int(links) == int(numolink) )
+            if (switch_check and link_check):
+                #We expected the correct numbers
+                output = output + "The number of links and switches match "\
+                        + "what was expected"
+                result = main.TRUE
+            else:
+                output = output + \
+                        "The number of links and switches does not match what was expected"
+                result = main.FALSE
+            output = output + "\n ONOS sees %i devices (%i expected) and %i links (%i expected)"\
+                    % ( int(devices), int(numoswitch), int(links), int(numolink) )
+            if log_level == "report":
+                main.log.report(output)
+            elif log_level == "warn":
+                main.log.warn(output)
+            else:
+                main.log.info(output)
+            return result 
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()

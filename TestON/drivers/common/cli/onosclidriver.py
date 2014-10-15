@@ -278,6 +278,38 @@ class OnosCliDriver(CLI):
             main.cleanup()
             main.exit()
 
+    def nodes(self):
+        '''
+        List the nodes currently visible
+        Issues command: 'nodes'
+        Returns: entire handle of list of nodes
+        '''
+        try:
+            self.handle.sendline("")
+            self.handle.expect("onos>")
+
+            self.handle.sendline("nodes")
+            self.handle.expect("onos>")
+
+            self.handle.sendline("")
+            self.handle.expect("onos>")
+
+            handle = self.handle.before
+
+            return handle
+
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()
+
     def topology(self):
         '''
         Shows the current state of the topology
@@ -389,6 +421,53 @@ class OnosCliDriver(CLI):
             handle += self.handle.after
 
             return handle
+        
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()
+
+    def device_role(self, device_id, node_id, role):
+        '''
+        Set device role for specified device and node with role
+        Required: 
+            * device_id : may be obtained by function get_all_devices_id
+            * node_id : may be obtained by function get_all_nodes_id
+            * role: specify one of the following roles:
+                - master
+                - standby
+                - none
+        '''
+        try:
+            self.handle.sendline("")
+            self.handle.expect("onos>")
+
+            self.handle.sendline("device-role "+
+                    str(device_id) + " " +
+                    str(node_id) + " " +
+                    str(role))
+            i = self.handle.expect([
+                "Error",
+                "onos>"])
+            
+            self.handle.sendline("")
+            self.handle.expect("onos>")
+    
+            handle = self.handle.before
+
+            if i == 0:
+                main.log.error("device-role command returned error")
+                return handle
+            else:
+                return main.TRUE 
+
         except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
             main.log.error(self.name + ":    " + self.handle.before)
@@ -423,7 +502,7 @@ class OnosCliDriver(CLI):
 
             if i == 0:
                 main.log.error("Error in getting paths")
-                return handle
+                return (handle, "Error")
             else:
                 path = handle.split(";")[0]
                 cost = handle.split(";")[1]
@@ -496,5 +575,43 @@ class OnosCliDriver(CLI):
             main.cleanup()
             main.exit()
 
+    def get_all_nodes_id(self):
+        '''
+        Uses 'nodes' function to obtain list of all nodes
+        and parse the result of nodes to obtain just the
+        node id's. 
+        Returns:
+            list of node id's
+        '''
+        try:
+            nodes_str = self.nodes()
+            id_list = []
+
+            if not nodes_str:
+                main.log.info("There are no nodes to get id from")
+                return id_list
+
+            #Sample nodes_str output
+            #id=local, address=127.0.0.1:9876, state=ACTIVE *
+
+            #Split the string into list by comma
+            nodes_list = nodes_str.split(",")
+            temp_list = [node for node in nodes_list if "id=" in node]
+            for arg in temp_list:
+                id_list.append(arg.split("id=")[1])
+
+            return id_list
+        
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()
 
     #***********************************

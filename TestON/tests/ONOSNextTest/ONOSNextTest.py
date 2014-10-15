@@ -174,7 +174,7 @@ class ONOSNextTest:
         main.ONOScli.start_onos_cli(ONOS1_ip)
 
         main.step("issue command: onos:topology")
-        topology_obj = main.ONOScli.onos_topology()
+        topology_obj = main.ONOScli.topology()
 
         main.step("issue various feature:install <str> commands")
         main.ONOScli.feature_install("onos-app-fwd")
@@ -206,7 +206,25 @@ class ONOSNextTest:
         (path, cost) = main.ONOScli.paths(devices_id_list[0], devices_id_list[6])
         main.log.info("Path: "+str(path))
         main.log.info("Cost: "+str(cost))
-    
+
+        main.step("Get nodes currently visible")
+        nodes_str = main.ONOScli.nodes()
+        main.log.info(nodes_str)
+
+        main.step("Get all nodes id's")
+        node_id_list = main.ONOScli.get_all_nodes_id()
+        main.log.info(node_id_list)
+
+        main.step("Set device "+str(devices_id_list[0])+" to role: standby")
+        device_role_result = main.ONOScli.device_role(
+                devices_id_list[0], node_id_list[0], "standby")
+        if device_role_result == main.TRUE:
+            main.log.report("Device role successfully set")
+
+        main.step("Check devices / role again")
+        dev_result = main.ONOScli.devices()
+        main.log.info(dev_result)
+
 ######
 #jhall@onlab.us
 #andrew@onlab.us

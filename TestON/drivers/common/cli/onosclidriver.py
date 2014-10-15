@@ -278,7 +278,7 @@ class OnosCliDriver(CLI):
             main.cleanup()
             main.exit()
 
-    def onos_topology(self):
+    def topology(self):
         '''
         Shows the current state of the topology
         by issusing command: 'onos> onos:topology'
@@ -286,6 +286,7 @@ class OnosCliDriver(CLI):
         try:
             self.handle.sendline("")
             self.handle.expect("onos>")
+            #either onos:topology or 'topology' will work in CLI
             self.handle.sendline("onos:topology")
             self.handle.expect("onos>")
 

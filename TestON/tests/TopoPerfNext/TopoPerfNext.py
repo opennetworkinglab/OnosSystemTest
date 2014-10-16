@@ -23,6 +23,8 @@ class TopoPerfNext:
         checkout_branch = main.params['GIT']['checkout']
 
         ONOS1_ip = main.params['CTRL']['ip1']
+        ONOS2_ip = main.params['CTRL']['ip2']
+        ONOS3_ip = main.params['CTRL']['ip3']
         MN1_ip = main.params['MN']['ip1']
         BENCH_ip = main.params['BENCH']['ip']
 
@@ -30,7 +32,8 @@ class TopoPerfNext:
 
         main.step("Creating cell file")
         cell_file_result = main.ONOSbench.create_cell_file(
-                BENCH_ip, cell_name, MN1_ip, ONOS1_ip)
+                BENCH_ip, cell_name, MN1_ip,
+                ONOS1_ip, ONOS2_ip, ONOS3_ip)
 
         main.step("Applying cell file to environment")
         cell_apply_result = main.ONOSbench.set_cell(cell_name)
@@ -47,11 +50,7 @@ class TopoPerfNext:
             main.log.info("Skipped git checkout and pull")
 
         main.step("Using mvn clean & install")
-        if git_pull == 'on':
-            mvn_result = main.ONOSbench.clean_install()
-        else:
-            mvn_result = main.TRUE
-            main.log.info("Skipped mvn clean compile")
+        mvn_result = main.ONOSbench.clean_install()
 
         main.step("Creating ONOS package")
         package_result = main.ONOSbench.onos_package()
@@ -69,5 +68,69 @@ class TopoPerfNext:
                         install_result and start_result,
                 onpass="Cell file created successfully",
                 onfail="Failed to create cell file")
+
+    def CASE2(self, main):
+        '''
+        Assign s1 to ONOS1 and measure latency
+        '''
+        import time
+
+        ONOS1_ip = main.params['CTRL']['ip1']
+        ONOS2_ip = main.params['CTRL']['ip2']
+        ONOS3_ip = main.params['CTRL']['ip3']
+        default_sw_port = main.params['CTRL']['port1']
+       
+        #Number of iterations of case
+        num_iter = main.params['TEST']['numIter']
+       
+        #Directory/file to store tshark results
+        tshark_of_output = "/tmp/tshark_of_topo.txt"
+        tshark_tcp_output = "/tmp/tshark_tcp_topo.txt"
+
+        #String to grep in tshark output
+        tshark_tcp_string = "TCP 74 "+default_sw_port
+        tshark_of_string = "OFP 86 Vendor"
+       
+        main.log.report("Latency of adding one switch")
+
+        for i in range(0, int(num_iter)):
+            main.log.info("Starting tshark capture")
+
+            #* TCP [ACK, SYN] is used as t0_a, the
+            #  very first "exchange" between ONOS and 
+            #  the switch for end-to-end measurement
+            #* OFP [Stats Reply] is used for t0_b
+            #  the very last OFP message between ONOS
+            #  and the switch for ONOS measurement
+            main.ONOS1.tshark_grep(tshark_tcp_string,
+                    tshark_tcp_output)
+            main.ONOS1.tshark_grep(tshark_of_string,
+                    tshark_of_output)
+
+            #Wait and ensure tshark is started and 
+            #capturing
+            time.sleep(10)
+
+            main.log.info("Assigning s1 to controller")
+
+            main.Mininet1.assign_sw_controller(sw="1",
+                    ip1=ONOS1_ip, port1=default_sw_port)
+
+            #Wait and ensure switch is assigned
+            #before stopping tshark
+            time.sleep(10)
+    
+            main.ONOS1.stop_tshark()
+
+
+
+
+
+
+
+
+
+
+
 
 

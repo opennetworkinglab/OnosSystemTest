@@ -384,7 +384,8 @@ class OnosDriver(CLI):
             main.cleanup()
             main.exit()
 
-    def create_cell_file(self, bench_ip, file_name, mn_ip_addrs, *onos_ip_addrs):
+    def create_cell_file(self, bench_ip, file_name, mn_ip_addrs,
+            extra_feature_string="onos-core-trivial", *onos_ip_addrs):
         '''
         Creates a cell file based on arguments
         Required:
@@ -413,10 +414,9 @@ class OnosDriver(CLI):
         #That you may wish to use by default on startup.
         #Note that you  may not want certain features listed
         #on here.
-        feature_string = "export ONOS_FEATURES=webconsole,onos-api,"+\
-                         "onos-core-trivial,onos-cli,onos-openflow,"+\
-                         "onos-app-fwd,onos-app-mobility,onos-app-tvue,"+\
-                         "onos-app-proxyarp"
+        core_feature_string = "export ONOS_FEATURES=webconsole,onos-api,"+\
+                "onos-cli,onos-openflow,onos-app-mobility,onos-app-tvue,"+\
+                "onos-app-proxyarp,"+extra_feature_string
         mn_string = "export OCN="
         onos_string = "export OC"
         temp_count = 1
@@ -977,3 +977,47 @@ class OnosDriver(CLI):
             main.log.info(self.name+" ::::::")
             main.cleanup()
             main.exit()
+
+    def tshark_grep(self, grep, directory, interface='eth0'):
+        '''
+        Required:
+            * grep string 
+            * directory to store results
+        Optional:
+            * interface - default: eth0
+        Description:
+            Uses tshark command to grep specific group of packets
+            and stores the results to specified directory.
+            The timestamp is hardcoded to be in epoch 
+        '''
+        self.handle.sendline("")
+        self.handle.expect("\$")
+        self.handle.sendline("\r")
+        self.handle.sendline("tshark -i "+str(interface)+
+                " -t e | grep \""+str(grep)+"\" > "+directory+" &")
+        self.handle.sendline("\r")
+        self.handle.expect("Capturing on")
+        self.handle.sendline("\r")
+        self.handle.expect("\$")
+
+    def tshark_stop(self):
+        '''
+        Removes wireshark files from /tmp and kills all tshark processes
+        '''
+        self.execute(cmd="rm /tmp/wireshark*")
+        self.handle.sendline("")
+        self.handle.sendline("sudo kill -9 `ps -ef | grep \"tshark -i\" |"+
+                " grep -v grep | awk '{print $2}'`")
+        self.handle.sendline("")
+        main.log.info("Tshark stopped")
+
+
+
+
+
+
+
+
+
+
+

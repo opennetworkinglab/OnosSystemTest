@@ -433,7 +433,7 @@ class OnosDriver(CLI):
 
         try:
             #Start writing to file
-            cell_file.write(feature_string + "\n")
+            cell_file.write(core_feature_string + "\n")
             cell_file.write(onos_nic_string) 
             cell_file.write(mn_string +"'"+ mn_ip_addrs +"'"+ "\n") 
 

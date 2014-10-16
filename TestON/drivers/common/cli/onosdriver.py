@@ -457,6 +457,8 @@ class OnosDriver(CLI):
             os.system("scp "+temp_directory+file_name+
                     " admin@"+bench_ip+":"+cell_directory)
 
+            return main.TRUE
+
         except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
             main.log.error(self.name + ":     " + self.handle.before)

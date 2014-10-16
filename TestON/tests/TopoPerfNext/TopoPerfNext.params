@@ -1,0 +1,27 @@
+<PARAMS>
+    <testcases>1</testcases>
+
+    <ENV>
+        <cellName>topo_perf_test</cellName>
+    </ENV>
+
+    <GIT>
+        #autoPull 'on' or 'off'
+        <autoPull>off</autoPull>
+        <checkout>master</checkout>
+    </GIT>
+
+    <CTRL>
+        <ip1>10.128.20.11</ip1>
+        <port1>6633</port1>
+    </CTRL>
+
+    <MN>
+        <ip1>10.128.10.90</ip1>
+        <ip2>10.128.10.91</ip2>
+    </MN>
+
+    <BENCH>
+        <ip>10.128.20.10</ip>
+    </BENCH>
+</PARAMS>

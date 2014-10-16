@@ -81,9 +81,11 @@ class OnosCliDriver(CLI):
         '''
         response = ''
         try:
+            self.handle.sendline("")
+            self.handle.expect("onos>")
             self.handle.sendline("system:shutdown")
             self.handle.expect("Confirm")
-            self.handle.sendline("Yes")
+            self.handle.sendline("yes")
             self.handle.expect("\$")
 
         except pexpect.EOF:
@@ -479,7 +481,7 @@ class OnosCliDriver(CLI):
             main.log.info(self.name+" ::::::")
             main.cleanup()
             main.exit()
-
+    
     def paths(self, src_id, dst_id):
         '''
         Returns string of paths, and the cost.
@@ -519,8 +521,6 @@ class OnosCliDriver(CLI):
             main.log.info(self.name+" ::::::")
             main.cleanup()
             main.exit()
-
-
 
     #Wrapper functions ****************
     #Wrapper functions use existing driver

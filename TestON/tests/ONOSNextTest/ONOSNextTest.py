@@ -6,7 +6,6 @@ import time
 import sys
 import os
 import re
-import time
 
 class ONOSNextTest:
     def __init__(self):

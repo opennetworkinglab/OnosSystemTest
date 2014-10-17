@@ -32,7 +32,7 @@ class TopoPerfNext:
 
         main.step("Creating cell file")
         cell_file_result = main.ONOSbench.create_cell_file(
-                BENCH_ip, cell_name, MN1_ip,
+                BENCH_ip, cell_name, MN1_ip, "onos-core",
                 ONOS1_ip, ONOS2_ip, ONOS3_ip)
 
         main.step("Applying cell file to environment")
@@ -74,10 +74,16 @@ class TopoPerfNext:
         Assign s1 to ONOS1 and measure latency
         '''
         import time
+        import subprocess
+        import json
+        import requests
+        import os
 
         ONOS1_ip = main.params['CTRL']['ip1']
         ONOS2_ip = main.params['CTRL']['ip2']
         ONOS3_ip = main.params['CTRL']['ip3']
+        ONOS_user = main.params['CTRL']['user']
+
         default_sw_port = main.params['CTRL']['port1']
        
         #Number of iterations of case
@@ -90,7 +96,10 @@ class TopoPerfNext:
         #String to grep in tshark output
         tshark_tcp_string = "TCP 74 "+default_sw_port
         tshark_of_string = "OFP 86 Vendor"
-       
+     
+        #Initialize assertion to TRUE
+        assertion = main.TRUE
+        
         main.log.report("Latency of adding one switch")
 
         for i in range(0, int(num_iter)):
@@ -122,14 +131,83 @@ class TopoPerfNext:
     
             main.ONOS1.stop_tshark()
 
+            #tshark output is saved in ONOS. Use subprocess
+            #to copy over files to TestON for parsing
+            main.log.info("Copying over tshark files")
+            
+            #TCP CAPTURE ****
+            ssh_tcp_file = subprocess.Popen(['ssh',
+                ONOS_user+"@"+ONOS1_ip, 'cat', 
+                tshark_tcp_output], stdout=subprocess.PIPE)
+            temp_text = ssh_tcp_file.stdout.readline()
+            temp_text = temp_text.split(" ")
 
+            main.log.info("Object read in from TCP capture: "+
+                    str(temp_text))
+            if len(temp_text) > 0:
+                t0_tcp = int(float(temp_text[1])*1000)
+            else:
+                main.log.error("Tshark output file for TCP"+
+                        " returned unexpected results")
+                t0_tcp = 0
+                assertion = main.FALSE
+            #****************
 
+            #OF CAPTURE ****
+            ssh_of_file = subprocess.Popen(['ssh',
+                ONOS_user+"@"+ONOS1_ip, 'cat',
+                tshark_of_output], stdout=subprocess.PIPE)
 
+            while True:
+                temp_text = ssh_of_file.stdout.readline()
+                if line !='':
+                    line_ofp = temp_text
+                else:
+                    break 
+            obj = line_ofp.split(" ")
+            
+            main.log.info("Object read in from OFP capture: "+
+                    str(line_ofp))
+    
+            if len(line_ofp) > 0:
+                t0_ofp = int(float(obj[1])*1000)
+            else:
+                main.log.error("Tshark output file for OFP"+
+                        " returned unexpected results")
+                t0_ofp = 0
+                assertion = main.FALSE
+            #****************
+           
+            #TODO: 
+            #Get json object from all 3 ONOS instances
+            
+            #TODO:
+            #Parse json object for timestamp
+            topo_timestamp_1 = 0
+            topo_timestamp_2 = 0
+            topo_timestamp_3 = 0
 
+            #ONOS processing latency
+            delta_of_1 = int(topo_timestamp_1) - int(t0_ofp)
+            delta_of_2 = int(topo_timestamp_2) - int(t0_ofp)
+            delta_of_3 = int(topo_timestamp_3) - int(t0_ofp)
+    
+            #End-to-end processing latency
+            delta_tcp_1 = int(topo_timestamp_1) - int(t0_tcp)
+            delta_tcp_2 = int(topo_timestamp_2) - int(t0_tcp)
+            delta_tcp_3 = int(topo_timestamp_3) - int(t0_tcp)
 
+            #TODO:
+            #Fetch logs upon threshold excess
 
+            main.log.info("ONOS1 delta OFP: "+str(delta_of_1))
+            main.log.info("ONOS2 delta OFP: "+str(delta_of_2))
+            main.log.info("ONOS3 delta OFP: "+str(delta_of_3))
 
-
+            main.log.info("ONOS1 delta TCP: "+str(delta_tcp_1))
+            main.log.info("ONOS2 delta TCP: "+str(delta_tcp_2))
+            main.log.info("ONOS3 delta TCP: "+str(delta_tcp_3))
+            
 
 
 

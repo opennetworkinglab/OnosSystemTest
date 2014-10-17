@@ -12,6 +12,7 @@
     </GIT>
 
     <CTRL>
+        <user>sdn</user>
         <ip1>10.128.20.11</ip1>
         <port1>6633</port1>
         <ip2>10.128.20.12</ip2>

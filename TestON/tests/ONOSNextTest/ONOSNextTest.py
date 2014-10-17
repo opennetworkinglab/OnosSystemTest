@@ -22,7 +22,8 @@ class ONOSNextTest:
         onos-install -f
         onos-wait-for-start
         '''
-        
+        import time
+
         cell_name = main.params['ENV']['cellName']
         ONOS1_ip = main.params['CTRL']['ip1']
         ONOS1_port = main.params['CTRL']['port1']
@@ -33,20 +34,21 @@ class ONOSNextTest:
         #params: (bench ip, cell name, mininet ip, *onos ips)
         cell_file_result = main.ONOSbench.create_cell_file(
                 "10.128.20.10", "temp_cell_2", "10.128.10.90",
-                "10.128.10.11", "10.128.10.12", "10.128.10.13")
+                "onos-core-trivial,onos-app-fwd",
+                "10.128.20.11")
 
         main.step("Applying cell variable to environment")
         cell_result = main.ONOSbench.set_cell(cell_name)
+        #cell_result = main.ONOSbench.set_cell("temp_cell_2")
         verify_result = main.ONOSbench.verify_cell()
         
         main.step("Git checkout and pull master")
-        main.ONOSbench.git_checkout("master")
-        git_pull_result = main.ONOSbench.git_pull()
-
-
+        #main.ONOSbench.git_checkout("master")
+        #git_pull_result = main.ONOSbench.git_pull()
+        
         main.step("Using mvn clean & install")
-        clean_install_result = main.ONOSbench.clean_install()
-        #clean_install_result = main.TRUE
+        #clean_install_result = main.ONOSbench.clean_install()
+        clean_install_result = main.TRUE
 
         main.step("Creating ONOS package")
         package_result = main.ONOSbench.onos_package()
@@ -64,6 +66,8 @@ class ONOSNextTest:
         utilities.assert_equals(expect=main.TRUE, actual=case1_result,
                 onpass="Test startup successful",
                 onfail="Test startup NOT successful")
+
+        time.sleep(10)
 
     def CASE11(self, main):
         '''
@@ -160,7 +164,8 @@ class ONOSNextTest:
         ONOS cli driver functions can be used for.
         '''
         import time
-        
+        import json
+
         cell_name = main.params['ENV']['cellName']
         ONOS1_ip = main.params['CTRL']['ip1']
         
@@ -176,8 +181,8 @@ class ONOSNextTest:
         topology_obj = main.ONOScli.topology()
 
         main.step("issue various feature:install <str> commands")
-        main.ONOScli.feature_install("onos-app-fwd")
-        main.ONOScli.feature_install("onos-rest")
+        #main.ONOScli.feature_install("onos-app-fwd")
+        #main.ONOScli.feature_install("onos-rest")
 
         main.step("Add a bad node")
         node_result = main.ONOScli.add_node("111", "10.128.20.")
@@ -194,7 +199,7 @@ class ONOSNextTest:
             main.Mininet2.handle.expect("mininet>")
         #Need to sleep to allow switch add processing
         time.sleep(5)
-        list_result = main.ONOScli.devices()
+        list_result = main.ONOScli.devices(json_format=False)
         main.log.info(list_result)
 
         main.step("Get all devices id")
@@ -220,9 +225,87 @@ class ONOSNextTest:
         if device_role_result == main.TRUE:
             main.log.report("Device role successfully set")
 
+        main.step("Revert device role to master")
+        device_role = main.ONOScli.device_role(
+                devices_id_list[0], node_id_list[0], "master")
+
         main.step("Check devices / role again")
-        dev_result = main.ONOScli.devices()
+        dev_result = main.ONOScli.devices(json_format=False)
         main.log.info(dev_result)
+       
+        #Sample steps to push intents ***********
+        # * Obtain host id in ONOS format 
+        # * Push intents
+        main.step("Get list of hosts from Mininet")
+        host_list = main.Mininet2.get_hosts()
+        main.log.info(host_list)
+
+        main.step("Get host list in ONOS format")
+        host_onos_list = main.ONOScli.get_hosts_id(host_list)
+        main.log.info(host_onos_list)
+
+        time.sleep(5)
+
+        #We must use ping from hosts we want to add intents from 
+        #to make the hosts talk
+        #main.Mininet2.handle.sendline("\r")
+        #main.Mininet2.handle.sendline("h4 ping 10.1.1.1 -c 1 -W 1")
+        #time.sleep(3)
+        #main.Mininet2.handle.sendline("h5 ping 10.1.1.1 -c 1 -W 1")
+        #time.sleep(5)
+
+        main.ONOScli.feature_install("onos-app-fwd")
+        
+        main.Mininet2.pingall()
+
+        time.sleep(5)
+
+        main.step("Get hosts")
+        main.ONOScli.handle.sendline("hosts")
+        main.ONOScli.handle.expect("onos>")
+        hosts = main.ONOScli.handle.before
+        main.log.info(hosts)
+
+        main.step("Install host-to-host-intents")
+        intent_install1 = main.ONOScli.add_host_intent(
+                host_onos_list[0], host_onos_list[1])
+        intent_install2 = main.ONOScli.add_host_intent(
+                host_onos_list[2], host_onos_list[3])
+        intent_install3 = main.ONOScli.add_host_intent(
+                host_onos_list[4], host_onos_list[5])
+
+        main.log.info(intent_install1)
+        main.log.info(intent_install2)
+        main.log.info(intent_install3)
+
+        main.step("Get intents installed on ONOS")
+        get_intent_result = main.ONOScli.intents()
+        main.log.info(get_intent_result)
+        #****************************************
+
+        #Sample steps to delete intents ********
+        main.step("Get all intent id's")
+        intent_id = main.ONOScli.get_all_intents_id()
+        main.log.info(intent_id)
+
+        main.step("Remove specified intent id: "+str(intent_id[0]))
+        intent_result = main.ONOScli.remove_intent(intent_id[0])
+        main.log.info(intent_result)
+
+        main.step("Check installed intents again")
+        get_intent_result = main.ONOScli.intents()
+        main.log.info(get_intent_result)
+        #***************************************
+
+        #Sample steps to add point-to-point intents*
+        main.step("Add point-to-point intents")
+        ptp_intent_result = main.ONOScli.add_point_intent(
+                devices_id_list[0], 1, devices_id_list[1], 2)
+        if ptp_intent_result == main.TRUE:
+            get_intent_result = main.ONOScli.intents()
+            main.log.info("Point to point intent install successful")
+            main.log.info(get_intent_result)
+        #*******************************************
 
 ######
 #jhall@onlab.us

@@ -426,16 +426,25 @@ class OnosCliDriver(CLI):
             else:
                 if not grep_str:
                     self.handle.sendline("devices")
-                    self.handle.expect("devices")
+                    self.handle.expect("onos>")
+                    self.handle.sendline("")
                     self.handle.expect("onos>")
                 else:
                     self.handle.sendline("devices | grep '"+
                         str(grep_str)+"'")
-                    self.handle.expect("devices | grep '"+str(grep_str)+"'")
                     self.handle.expect("onos>")
+                    self.handle.sendline("")
+                    self.handle.expect("onos>")
+<<<<<<< HEAD
                     handle = self.handle.before
                     print "handle =",handle
                     return handle
+=======
+           
+            handle = self.handle.before
+            
+            return handle
+>>>>>>> d1192e144d179c68864828aa6a339764d69d1216
         except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
             main.log.error(self.name + ":    " + self.handle.before)
@@ -447,7 +456,6 @@ class OnosCliDriver(CLI):
             main.log.info(self.name+" ::::::")
             main.cleanup()
             main.exit()
-
 
     def links(self, json_format=True, grep_str=""):
         '''
@@ -478,17 +486,25 @@ class OnosCliDriver(CLI):
             else:
                 if not grep_str:
                     self.handle.sendline("links")
-                    self.handle.expect("links")
+                    self.handle.expect("onos>")
+                    self.handle.sendline("")
                     self.handle.expect("onos>")
                 else:
                     self.handle.sendline("links | grep '"+
                         str(grep_str)+"'")
-                    self.handle.expect("links | grep '"+str(grep_str)+"'")
+                    self.handle.expect("onos>")
+                    self.handle.sendline("")
                     self.handle.expect("onos>")
            
+<<<<<<< HEAD
                 handle = self.handle.before
                 print "handle =",handle
                 return handle
+=======
+            handle = self.handle.before
+            
+            return handle
+>>>>>>> d1192e144d179c68864828aa6a339764d69d1216
         except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
             main.log.error(self.name + ":    " + self.handle.before)
@@ -531,16 +547,25 @@ class OnosCliDriver(CLI):
             else:
                 if not grep_str:
                     self.handle.sendline("ports")
-                    self.handle.expect("ports")
+                    self.handle.expect("onos>")
+                    self.handle.sendline("")
                     self.handle.expect("onos>")
                 else:
                     self.handle.sendline("ports | grep '"+
                         str(grep_str)+"'")
-                    self.handle.expect("ports | grep '"+str(grep_str)+"'")
                     self.handle.expect("onos>")
+                    self.handle.sendline("")
+                    self.handle.expect("onos>")
+<<<<<<< HEAD
                 handle = self.handle.before
                 print "handle =",handle
                 return handle
+=======
+           
+            handle = self.handle.before
+            
+            return handle
+>>>>>>> d1192e144d179c68864828aa6a339764d69d1216
         except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
             main.log.error(self.name + ":    " + self.handle.before)
@@ -688,12 +713,207 @@ class OnosCliDriver(CLI):
             main.cleanup()
             main.exit()
 
+    def add_host_intent(self, host_id_one, host_id_two):
+        '''
+        Required:
+            * host_id_one: ONOS host id for host1
+            * host_id_two: ONOS host id for host2
+        Description:
+            Adds a host-to-host intent (bidrectional) by
+            specifying the two hosts. 
+        '''
+        try:
+            self.handle.sendline("")
+            self.handle.expect("onos>")
+            
+            self.handle.sendline("add-host-intent "+
+                    str(host_id_one) + " " + str(host_id_two))
+            self.handle.expect("onos>")
+
+            self.handle.sendline("")
+            self.handle.expect("onos>")
+
+            handle = self.handle.before
+
+            main.log.info("Intent installed between "+
+                    str(host_id_one) + " and " + str(host_id_two))
+
+            return handle
+        
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()
+
+    def add_point_intent(self, ingress_device, port_ingress,
+            egress_device, port_egress):
+        '''
+        Required:
+            * ingress_device: device id of ingress device
+            * egress_device: device id of egress device
+        Description:
+            Adds a point-to-point intent (uni-directional) by
+            specifying device id's 
+        
+        NOTE: This function may change depending on the 
+              options developers provide for point-to-point
+              intent via cli
+        '''
+        try:
+            self.handle.sendline("")
+            self.handle.expect("onos>")
+
+            self.handle.sendline("add-point-intent "+
+                    str(ingress_device) + "/" + str(port_ingress) + " " +
+                    str(egress_device) + "/" + str(port_egress))
+            i = self.handle.expect([
+                "Error",
+                "onos>"])
+            
+            self.handle.sendline("")
+            self.handle.expect("onos>")
+
+            handle = self.handle.before
+
+            if i == 0:
+                main.log.error("Error in adding point-to-point intent")
+                return handle
+            else:
+                return main.TRUE
+        
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()
+
+    def remove_intent(self, intent_id):
+        '''
+        Remove intent for specified intent id
+        '''
+        try:
+            self.handle.sendline("")
+            self.handle.expect("onos>")
+
+            self.handle.sendline("remove-intent "+str(intent_id))
+            i = self.handle.expect([
+                "Error",
+                "onos>"])
+           
+            handle = self.handle.before
+
+            if i == 0:
+                main.log.error("Error in removing intent")
+                return handle
+            else:
+                return handle 
+        
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()
+
+    def intents(self):
+        '''
+        Description:
+            Obtain intents currently installed 
+        '''
+        try:
+            self.handle.sendline("")
+            self.handle.expect("onos>")
+
+            self.handle.sendline("intents")
+            self.handle.expect("onos>")
+
+            self.handle.sendline("")
+            self.handle.expect("onos>")
+
+            handle = self.handle.before
+
+            return handle
+
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()
+
     #Wrapper functions ****************
     #Wrapper functions use existing driver
     #functions and extends their use case.
     #For example, we may use the output of
     #a normal driver function, and parse it
     #using a wrapper function
+
+    def get_all_intents_id(self):
+        '''
+        Description:
+            Obtain all intent id's in a list
+        '''
+        try:
+            #Obtain output of intents function
+            intents_str = self.intents()
+            all_intent_list = []
+            intent_id_list = []
+
+            #Parse the intents output for ID's
+            intents_list = [s.strip() for s in intents_str.splitlines()]
+            for intents in intents_list:
+                if "onos>" in intents:
+                    continue
+                elif "intents" in intents:
+                    continue
+                else:
+                    line_list = intents.split(" ")
+                    all_intent_list.append(line_list[0])
+            
+            all_intent_list = all_intent_list[1:-2]
+
+            for intents in all_intent_list:
+                if not intents:
+                    continue
+                else:
+                    intent_id_list.append(intents) 
+
+            return intent_id_list
+
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()
 
     def get_all_devices_id(self):
         '''
@@ -710,7 +930,7 @@ class OnosCliDriver(CLI):
         '''
         try:
             #Call devices and store result string
-            devices_str = self.devices()
+            devices_str = self.devices(json_format=False)
             id_list = []
             
             if not devices_str:

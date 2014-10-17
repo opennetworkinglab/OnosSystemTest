@@ -146,7 +146,7 @@ class OnosCliDriver(CLI):
 
             #Wait for onos start (-w) and enter onos cli
             self.handle.sendline("onos -w "+str(ONOS_ip))
-            self.handle.expect("onos>")
+            self.handle.expect("onos>", timeout = 60)
 
         except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
@@ -418,10 +418,18 @@ class OnosCliDriver(CLI):
                     self.handle.expect("devices -j | grep '"+str(grep_str)+"'")
                     self.handle.expect("onos>")
                 handle = self.handle.before
-                print "repr(handle) =", repr(handle)
+                '''
+                handle variable here contains some ANSI escape color code sequences at the end which are invisible in the print command output
+                To make that escape sequence visible, use repr() function. The repr(handle) output when printed shows the ANSI escape sequences.
+                In json.loads(somestring), this somestring variable is a actually repr(somestring) and json.loads would fail with the escape sequence.
+                So we take off that escape sequence using 
+                ansi_escape = re.compile(r'\r\r\n\x1b[^m]*m')
+                handle1 = ansi_escape.sub('', handle) 
+                '''
+                #print "repr(handle) =", repr(handle)
                 ansi_escape = re.compile(r'\r\r\n\x1b[^m]*m')
                 handle1 = ansi_escape.sub('', handle)
-                print "repr(handle1) = ", repr(handle1)
+                #print "repr(handle1) = ", repr(handle1)
                 return handle1
             else:
                 if not grep_str:
@@ -471,10 +479,18 @@ class OnosCliDriver(CLI):
                     self.handle.expect("links -j | grep '"+str(grep_str)+"'")
                     self.handle.expect("onos>")
                 handle = self.handle.before
-                print "repr(handle) =", repr(handle)
+                '''
+                handle variable here contains some ANSI escape color code sequences at the end which are invisible in the print command output
+                To make that escape sequence visible, use repr() function. The repr(handle) output when printed shows the ANSI escape sequences.
+                In json.loads(somestring), this somestring variable is a actually repr(somestring) and json.loads would fail with the escape sequence.
+                So we take off that escape sequence using 
+                ansi_escape = re.compile(r'\r\r\n\x1b[^m]*m')
+                handle1 = ansi_escape.sub('', handle) 
+                '''
+                #print "repr(handle) =", repr(handle)
                 ansi_escape = re.compile(r'\r\r\n\x1b[^m]*m')
                 handle1 = ansi_escape.sub('', handle)
-                print "repr(handle1) = ", repr(handle1)
+                #print "repr(handle1) = ", repr(handle1)
                 return handle1
             else:
                 if not grep_str:
@@ -525,10 +541,18 @@ class OnosCliDriver(CLI):
                     self.handle.expect("ports -j | grep '"+str(grep_str)+"'")
                     self.handle.expect("onos>")
                 handle = self.handle.before
-                print "repr(handle) =", repr(handle)
+                '''
+                handle variable here contains some ANSI escape color code sequences at the end which are invisible in the print command output
+                To make that escape sequence visible, use repr() function. The repr(handle) output when printed shows the ANSI escape sequences.
+                In json.loads(somestring), this somestring variable is a actually repr(somestring) and json.loads would fail with the escape sequence.
+                So we take off that escape sequence using 
+                ansi_escape = re.compile(r'\r\r\n\x1b[^m]*m')
+                handle1 = ansi_escape.sub('', handle) 
+                '''
+                #print "repr(handle) =", repr(handle)
                 ansi_escape = re.compile(r'\r\r\n\x1b[^m]*m')
                 handle1 = ansi_escape.sub('', handle)
-                print "repr(handle1) = ", repr(handle1)
+                #print "repr(handle1) = ", repr(handle1)
                 return handle1
 
             else:

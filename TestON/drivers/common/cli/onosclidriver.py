@@ -419,16 +419,18 @@ class OnosCliDriver(CLI):
             else:
                 if not grep_str:
                     self.handle.sendline("devices")
-                    self.handle.expect("devices")
+                    self.handle.expect("onos>")
+                    self.handle.sendline("")
                     self.handle.expect("onos>")
                 else:
                     self.handle.sendline("devices | grep '"+
                         str(grep_str)+"'")
-                    self.handle.expect("devices | grep '"+str(grep_str)+"'")
+                    self.handle.expect("onos>")
+                    self.handle.sendline("")
                     self.handle.expect("onos>")
            
             handle = self.handle.before
-            print "handle =",handle
+            
             return handle
         except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
@@ -441,7 +443,6 @@ class OnosCliDriver(CLI):
             main.log.info(self.name+" ::::::")
             main.cleanup()
             main.exit()
-
 
     def links(self, json_format=True, grep_str=""):
         '''
@@ -466,16 +467,18 @@ class OnosCliDriver(CLI):
             else:
                 if not grep_str:
                     self.handle.sendline("links")
-                    self.handle.expect("links")
+                    self.handle.expect("onos>")
+                    self.handle.sendline("")
                     self.handle.expect("onos>")
                 else:
                     self.handle.sendline("links | grep '"+
                         str(grep_str)+"'")
-                    self.handle.expect("links | grep '"+str(grep_str)+"'")
+                    self.handle.expect("onos>")
+                    self.handle.sendline("")
                     self.handle.expect("onos>")
            
             handle = self.handle.before
-            print "handle =",handle
+            
             return handle
         except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
@@ -513,16 +516,18 @@ class OnosCliDriver(CLI):
             else:
                 if not grep_str:
                     self.handle.sendline("ports")
-                    self.handle.expect("ports")
+                    self.handle.expect("onos>")
+                    self.handle.sendline("")
                     self.handle.expect("onos>")
                 else:
                     self.handle.sendline("ports | grep '"+
                         str(grep_str)+"'")
-                    self.handle.expect("ports | grep '"+str(grep_str)+"'")
+                    self.handle.expect("onos>")
+                    self.handle.sendline("")
                     self.handle.expect("onos>")
            
             handle = self.handle.before
-            print "handle =",handle
+            
             return handle
         except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
@@ -710,6 +715,39 @@ class OnosCliDriver(CLI):
             main.cleanup()
             main.exit()
 
+    def remove_intent(self, intent_id):
+        '''
+        Remove intent for specified intent id
+        '''
+        try:
+            self.handle.sendline("")
+            self.handle.expect("onos>")
+
+            self.handle.sendline("remove-intent "+str(intent_id))
+            i = self.handle.expect([
+                "Error",
+                "onos>"])
+           
+            handle = self.handle.before
+
+            if i == 0:
+                main.log.error("Error in removing intent")
+                return handle
+            else:
+                return handle 
+        
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()
+
     def intents(self):
         '''
         Description:
@@ -748,6 +786,50 @@ class OnosCliDriver(CLI):
     #a normal driver function, and parse it
     #using a wrapper function
 
+    def get_all_intents_id(self):
+        '''
+        Description:
+            Obtain all intent id's in a list
+        '''
+        try:
+            #Obtain output of intents function
+            intents_str = self.intents()
+            all_intent_list = []
+            intent_id_list = []
+
+            #Parse the intents output for ID's
+            intents_list = [s.strip() for s in intents_str.splitlines()]
+            for intents in intents_list:
+                if "onos>" in intents:
+                    continue
+                elif "intents" in intents:
+                    continue
+                else:
+                    line_list = intents.split(" ")
+                    all_intent_list.append(line_list[0])
+            
+            all_intent_list = all_intent_list[1:-2]
+
+            for intents in all_intent_list:
+                if not intents:
+                    continue
+                else:
+                    intent_id_list.append(intents) 
+
+            return intent_id_list
+
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()
+
     def get_all_devices_id(self):
         '''
         Use 'devices' function to obtain list of all devices
@@ -763,7 +845,7 @@ class OnosCliDriver(CLI):
         '''
         try:
             #Call devices and store result string
-            devices_str = self.devices()
+            devices_str = self.devices(json_format=False)
             id_list = []
             
             if not devices_str:

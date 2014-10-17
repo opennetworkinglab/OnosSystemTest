@@ -199,7 +199,7 @@ class ONOSNextTest:
             main.Mininet2.handle.expect("mininet>")
         #Need to sleep to allow switch add processing
         time.sleep(5)
-        list_result = main.ONOScli.devices()
+        list_result = main.ONOScli.devices(json_format=False)
         main.log.info(list_result)
 
         main.step("Get all devices id")
@@ -230,7 +230,7 @@ class ONOSNextTest:
                 devices_id_list[0], node_id_list[0], "master")
 
         main.step("Check devices / role again")
-        dev_result = main.ONOScli.devices()
+        dev_result = main.ONOScli.devices(json_format=False)
         main.log.info(dev_result)
        
         #Sample steps to push intents ***********
@@ -244,13 +244,19 @@ class ONOSNextTest:
         host_onos_list = main.ONOScli.get_hosts_id(host_list)
         main.log.info(host_onos_list)
 
-        main.step("Ensure that reactive forwarding is installed")
-        feature_result = main.ONOScli.feature_install("onos-app-fwd")
-
         time.sleep(5)
 
-        main.Mininet2.handle.sendline("\r")
-        main.Mininet2.handle.sendline("h4 ping h5 -c 1")
+        #We must use ping from hosts we want to add intents from 
+        #to make the hosts talk
+        #main.Mininet2.handle.sendline("\r")
+        #main.Mininet2.handle.sendline("h4 ping 10.1.1.1 -c 1 -W 1")
+        #time.sleep(3)
+        #main.Mininet2.handle.sendline("h5 ping 10.1.1.1 -c 1 -W 1")
+        #time.sleep(5)
+
+        main.ONOScli.feature_install("onos-app-fwd")
+        
+        main.Mininet2.pingall()
 
         time.sleep(5)
 
@@ -260,18 +266,36 @@ class ONOSNextTest:
         hosts = main.ONOScli.handle.before
         main.log.info(hosts)
 
-        main.step("Install host-to-host-intents between h4 and h5")
-        intent_install = main.ONOScli.add_host_intent(
-                host_onos_list[3], host_onos_list[4])
-        main.log.info(intent_install)
+        main.step("Install host-to-host-intents")
+        intent_install1 = main.ONOScli.add_host_intent(
+                host_onos_list[0], host_onos_list[1])
+        intent_install2 = main.ONOScli.add_host_intent(
+                host_onos_list[2], host_onos_list[3])
+        intent_install3 = main.ONOScli.add_host_intent(
+                host_onos_list[4], host_onos_list[5])
 
-        main.step("Uninstall reactive forwarding to test host-to-host intent")
-        main.ONOScli.feature_uninstall("onos-app-fwd")
+        main.log.info(intent_install1)
+        main.log.info(intent_install2)
+        main.log.info(intent_install3)
 
         main.step("Get intents installed on ONOS")
         get_intent_result = main.ONOScli.intents()
         main.log.info(get_intent_result)
         #****************************************
+
+        #Sample steps to delete intents ********
+        main.step("Get all intent id's")
+        intent_id = main.ONOScli.get_all_intents_id()
+        main.log.info(intent_id)
+
+        main.step("Remove specified intent id: "+str(intent_id[0]))
+        intent_result = main.ONOScli.remove_intent(intent_id[0])
+        main.log.info(intent_result)
+
+        main.step("Check installed intents again")
+        get_intent_result = main.ONOScli.intents()
+        main.log.info(get_intent_result)
+        #***************************************
 
 
 ######

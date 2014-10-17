@@ -11,6 +11,7 @@ list your email here for future contact:
 
 jhall@onlab.us
 andrew@onlab.us
+shreya@onlab.us
 
 OCT 13 2014
 
@@ -395,7 +396,7 @@ class OnosCliDriver(CLI):
             main.cleanup()
             main.exit()
         
-    def devices(self, grep_str=""):
+    def devices(self, json_format=True, grep_str=""):
         '''
         Lists all infrastructure devices
         Optional argument:
@@ -404,26 +405,31 @@ class OnosCliDriver(CLI):
         try:
             self.handle.sendline("")
             self.handle.expect("onos>")
-
-            if not grep_str:
-                self.handle.sendline("devices")
-                self.handle.expect("onos>")
-            else:
-                self.handle.sendline("devices | grep '"+
+            
+            if json_format:
+                if not grep_str:
+                    self.handle.sendline("devices -j")
+                    self.handle.expect("devices -j")
+                    self.handle.expect("onos>")
+                else:
+                    self.handle.sendline("devices -j | grep '"+
                         str(grep_str)+"'")
-                self.handle.expect("onos>")
+                    self.handle.expect("devices -j | grep '"+str(grep_str)+"'")
+                    self.handle.expect("onos>")
+            else:
+                if not grep_str:
+                    self.handle.sendline("devices")
+                    self.handle.expect("devices")
+                    self.handle.expect("onos>")
+                else:
+                    self.handle.sendline("devices | grep '"+
+                        str(grep_str)+"'")
+                    self.handle.expect("devices | grep '"+str(grep_str)+"'")
+                    self.handle.expect("onos>")
            
             handle = self.handle.before
-            handle += self.handle.after
-
-            self.handle.sendline("")
-            self.handle.expect("onos>")
-
-            handle += self.handle.before
-            handle += self.handle.after
-
+            print "handle =",handle
             return handle
-        
         except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
             main.log.error(self.name + ":    " + self.handle.before)
@@ -435,6 +441,101 @@ class OnosCliDriver(CLI):
             main.log.info(self.name+" ::::::")
             main.cleanup()
             main.exit()
+
+
+    def links(self, json_format=True, grep_str=""):
+        '''
+        Lists all core links
+        Optional argument:
+            * grep_str - pass in a string to grep
+        '''
+        try:
+            self.handle.sendline("")
+            self.handle.expect("onos>")
+            
+            if json_format:
+                if not grep_str:
+                    self.handle.sendline("links -j")
+                    self.handle.expect("links -j")
+                    self.handle.expect("onos>")
+                else:
+                    self.handle.sendline("links -j | grep '"+
+                        str(grep_str)+"'")
+                    self.handle.expect("links -j | grep '"+str(grep_str)+"'")
+                    self.handle.expect("onos>")
+            else:
+                if not grep_str:
+                    self.handle.sendline("links")
+                    self.handle.expect("links")
+                    self.handle.expect("onos>")
+                else:
+                    self.handle.sendline("links | grep '"+
+                        str(grep_str)+"'")
+                    self.handle.expect("links | grep '"+str(grep_str)+"'")
+                    self.handle.expect("onos>")
+           
+            handle = self.handle.before
+            print "handle =",handle
+            return handle
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()
+
+
+    def ports(self, json_format=True, grep_str=""):
+        '''
+        Lists all ports
+        Optional argument:
+            * grep_str - pass in a string to grep
+        '''
+        try:
+            self.handle.sendline("")
+            self.handle.expect("onos>")
+            
+            if json_format:
+                if not grep_str:
+                    self.handle.sendline("ports -j")
+                    self.handle.expect("ports -j")
+                    self.handle.expect("onos>")
+                else:
+                    self.handle.sendline("ports -j | grep '"+
+                        str(grep_str)+"'")
+                    self.handle.expect("ports -j | grep '"+str(grep_str)+"'")
+                    self.handle.expect("onos>")
+            else:
+                if not grep_str:
+                    self.handle.sendline("ports")
+                    self.handle.expect("ports")
+                    self.handle.expect("onos>")
+                else:
+                    self.handle.sendline("ports | grep '"+
+                        str(grep_str)+"'")
+                    self.handle.expect("ports | grep '"+str(grep_str)+"'")
+                    self.handle.expect("onos>")
+           
+            handle = self.handle.before
+            print "handle =",handle
+            return handle
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()
+
 
     def device_role(self, device_id, node_id, role):
         '''

@@ -715,6 +715,54 @@ class OnosCliDriver(CLI):
             main.cleanup()
             main.exit()
 
+    def add_point_intent(self, ingress_device, port_ingress,
+            egress_device, port_egress):
+        '''
+        Required:
+            * ingress_device: device id of ingress device
+            * egress_device: device id of egress device
+        Description:
+            Adds a point-to-point intent (uni-directional) by
+            specifying device id's 
+        
+        NOTE: This function may change depending on the 
+              options developers provide for point-to-point
+              intent via cli
+        '''
+        try:
+            self.handle.sendline("")
+            self.handle.expect("onos>")
+
+            self.handle.sendline("add-point-intent "+
+                    str(ingress_device) + "/" + str(port_ingress) + " " +
+                    str(egress_device) + "/" + str(port_egress))
+            i = self.handle.expect([
+                "Error",
+                "onos>"])
+            
+            self.handle.sendline("")
+            self.handle.expect("onos>")
+
+            handle = self.handle.before
+
+            if i == 0:
+                main.log.error("Error in adding point-to-point intent")
+                return handle
+            else:
+                return main.TRUE
+        
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()
+
     def remove_intent(self, intent_id):
         '''
         Remove intent for specified intent id

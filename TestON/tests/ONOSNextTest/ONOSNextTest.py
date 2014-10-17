@@ -38,8 +38,8 @@ class ONOSNextTest:
                 "10.128.20.11")
 
         main.step("Applying cell variable to environment")
-        #cell_result = main.ONOSbench.set_cell(cell_name)
-        cell_result = main.ONOSbench.set_cell("temp_cell_2")
+        cell_result = main.ONOSbench.set_cell(cell_name)
+        #cell_result = main.ONOSbench.set_cell("temp_cell_2")
         verify_result = main.ONOSbench.verify_cell()
         
         main.step("Git checkout and pull master")
@@ -297,6 +297,15 @@ class ONOSNextTest:
         main.log.info(get_intent_result)
         #***************************************
 
+        #Sample steps to add point-to-point intents*
+        main.step("Add point-to-point intents")
+        ptp_intent_result = main.ONOScli.add_point_intent(
+                devices_id_list[0], 1, devices_id_list[1], 2)
+        if ptp_intent_result == main.TRUE:
+            get_intent_result = main.ONOScli.intents()
+            main.log.info("Point to point intent install successful")
+            main.log.info(get_intent_result)
+        #*******************************************
 
 ######
 #jhall@onlab.us

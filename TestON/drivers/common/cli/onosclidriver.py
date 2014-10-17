@@ -24,6 +24,7 @@ import re
 import traceback
 import os.path
 import pydoc
+import re
 sys.path.append("../")
 from drivers.common.clidriver import CLI
 
@@ -416,6 +417,12 @@ class OnosCliDriver(CLI):
                         str(grep_str)+"'")
                     self.handle.expect("devices -j | grep '"+str(grep_str)+"'")
                     self.handle.expect("onos>")
+                handle = self.handle.before
+                print "repr(handle) =", repr(handle)
+                ansi_escape = re.compile(r'\r\r\n\x1b[^m]*m')
+                handle1 = ansi_escape.sub('', handle)
+                print "repr(handle1) = ", repr(handle1)
+                return handle1
             else:
                 if not grep_str:
                     self.handle.sendline("devices")
@@ -426,10 +433,9 @@ class OnosCliDriver(CLI):
                         str(grep_str)+"'")
                     self.handle.expect("devices | grep '"+str(grep_str)+"'")
                     self.handle.expect("onos>")
-           
-            handle = self.handle.before
-            print "handle =",handle
-            return handle
+                    handle = self.handle.before
+                    print "handle =",handle
+                    return handle
         except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
             main.log.error(self.name + ":    " + self.handle.before)
@@ -463,6 +469,12 @@ class OnosCliDriver(CLI):
                         str(grep_str)+"'")
                     self.handle.expect("links -j | grep '"+str(grep_str)+"'")
                     self.handle.expect("onos>")
+                    handle = self.handle.before
+                print "repr(handle) =", repr(handle)
+                ansi_escape = re.compile(r'\r\r\n\x1b[^m]*m')
+                handle1 = ansi_escape.sub('', handle)
+                print "repr(handle1) = ", repr(handle1)
+                return handle1
             else:
                 if not grep_str:
                     self.handle.sendline("links")
@@ -474,9 +486,9 @@ class OnosCliDriver(CLI):
                     self.handle.expect("links | grep '"+str(grep_str)+"'")
                     self.handle.expect("onos>")
            
-            handle = self.handle.before
-            print "handle =",handle
-            return handle
+                handle = self.handle.before
+                print "handle =",handle
+                return handle
         except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
             main.log.error(self.name + ":    " + self.handle.before)
@@ -510,6 +522,12 @@ class OnosCliDriver(CLI):
                         str(grep_str)+"'")
                     self.handle.expect("ports -j | grep '"+str(grep_str)+"'")
                     self.handle.expect("onos>")
+                print "repr(handle) =", repr(handle)
+                ansi_escape = re.compile(r'\r\r\n\x1b[^m]*m')
+                handle1 = ansi_escape.sub('', handle)
+                print "repr(handle1) = ", repr(handle1)
+                return handle1
+
             else:
                 if not grep_str:
                     self.handle.sendline("ports")
@@ -520,10 +538,9 @@ class OnosCliDriver(CLI):
                         str(grep_str)+"'")
                     self.handle.expect("ports | grep '"+str(grep_str)+"'")
                     self.handle.expect("onos>")
-           
-            handle = self.handle.before
-            print "handle =",handle
-            return handle
+                handle = self.handle.before
+                print "handle =",handle
+                return handle
         except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
             main.log.error(self.name + ":    " + self.handle.before)

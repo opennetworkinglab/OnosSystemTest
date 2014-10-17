@@ -22,7 +22,8 @@ class ONOSNextTest:
         onos-install -f
         onos-wait-for-start
         '''
-        
+        import time
+
         cell_name = main.params['ENV']['cellName']
         ONOS1_ip = main.params['CTRL']['ip1']
         ONOS1_port = main.params['CTRL']['port1']
@@ -33,20 +34,21 @@ class ONOSNextTest:
         #params: (bench ip, cell name, mininet ip, *onos ips)
         cell_file_result = main.ONOSbench.create_cell_file(
                 "10.128.20.10", "temp_cell_2", "10.128.10.90",
-                "10.128.10.11", "10.128.10.12", "10.128.10.13")
+                "onos-core-trivial,onos-app-fwd",
+                "10.128.20.11")
 
         main.step("Applying cell variable to environment")
-        cell_result = main.ONOSbench.set_cell(cell_name)
+        #cell_result = main.ONOSbench.set_cell(cell_name)
+        cell_result = main.ONOSbench.set_cell("temp_cell_2")
         verify_result = main.ONOSbench.verify_cell()
         
         main.step("Git checkout and pull master")
-        main.ONOSbench.git_checkout("master")
-        git_pull_result = main.ONOSbench.git_pull()
-
-
+        #main.ONOSbench.git_checkout("master")
+        #git_pull_result = main.ONOSbench.git_pull()
+        
         main.step("Using mvn clean & install")
-        clean_install_result = main.ONOSbench.clean_install()
-        #clean_install_result = main.TRUE
+        #clean_install_result = main.ONOSbench.clean_install()
+        clean_install_result = main.TRUE
 
         main.step("Creating ONOS package")
         package_result = main.ONOSbench.onos_package()
@@ -64,6 +66,8 @@ class ONOSNextTest:
         utilities.assert_equals(expect=main.TRUE, actual=case1_result,
                 onpass="Test startup successful",
                 onfail="Test startup NOT successful")
+
+        time.sleep(10)
 
     def CASE11(self, main):
         '''
@@ -160,7 +164,8 @@ class ONOSNextTest:
         ONOS cli driver functions can be used for.
         '''
         import time
-        
+        import json
+
         cell_name = main.params['ENV']['cellName']
         ONOS1_ip = main.params['CTRL']['ip1']
         
@@ -176,8 +181,8 @@ class ONOSNextTest:
         topology_obj = main.ONOScli.topology()
 
         main.step("issue various feature:install <str> commands")
-        main.ONOScli.feature_install("onos-app-fwd")
-        main.ONOScli.feature_install("onos-rest")
+        #main.ONOScli.feature_install("onos-app-fwd")
+        #main.ONOScli.feature_install("onos-rest")
 
         main.step("Add a bad node")
         node_result = main.ONOScli.add_node("111", "10.128.20.")
@@ -220,9 +225,54 @@ class ONOSNextTest:
         if device_role_result == main.TRUE:
             main.log.report("Device role successfully set")
 
+        main.step("Revert device role to master")
+        device_role = main.ONOScli.device_role(
+                devices_id_list[0], node_id_list[0], "master")
+
         main.step("Check devices / role again")
         dev_result = main.ONOScli.devices()
         main.log.info(dev_result)
+       
+        #Sample steps to push intents ***********
+        # * Obtain host id in ONOS format 
+        # * Push intents
+        main.step("Get list of hosts from Mininet")
+        host_list = main.Mininet2.get_hosts()
+        main.log.info(host_list)
+
+        main.step("Get host list in ONOS format")
+        host_onos_list = main.ONOScli.get_hosts_id(host_list)
+        main.log.info(host_onos_list)
+
+        main.step("Ensure that reactive forwarding is installed")
+        feature_result = main.ONOScli.feature_install("onos-app-fwd")
+
+        time.sleep(5)
+
+        main.Mininet2.handle.sendline("\r")
+        main.Mininet2.handle.sendline("h4 ping h5 -c 1")
+
+        time.sleep(5)
+
+        main.step("Get hosts")
+        main.ONOScli.handle.sendline("hosts")
+        main.ONOScli.handle.expect("onos>")
+        hosts = main.ONOScli.handle.before
+        main.log.info(hosts)
+
+        main.step("Install host-to-host-intents between h4 and h5")
+        intent_install = main.ONOScli.add_host_intent(
+                host_onos_list[3], host_onos_list[4])
+        main.log.info(intent_install)
+
+        main.step("Uninstall reactive forwarding to test host-to-host intent")
+        main.ONOScli.feature_uninstall("onos-app-fwd")
+
+        main.step("Get intents installed on ONOS")
+        get_intent_result = main.ONOScli.intents()
+        main.log.info(get_intent_result)
+        #****************************************
+
 
 ######
 #jhall@onlab.us

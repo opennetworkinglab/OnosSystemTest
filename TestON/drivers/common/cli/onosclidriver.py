@@ -570,6 +570,76 @@ class OnosCliDriver(CLI):
             main.cleanup()
             main.exit()
 
+    def add_host_intent(self, host_id_one, host_id_two):
+        '''
+        Required:
+            * host_id_one: ONOS host id for host1
+            * host_id_two: ONOS host id for host2
+        Description:
+            Adds a host-to-host intent (bidrectional) by
+            specifying the two hosts. 
+        '''
+        try:
+            self.handle.sendline("")
+            self.handle.expect("onos>")
+            
+            self.handle.sendline("add-host-intent "+
+                    str(host_id_one) + " " + str(host_id_two))
+            self.handle.expect("onos>")
+
+            self.handle.sendline("")
+            self.handle.expect("onos>")
+
+            handle = self.handle.before
+
+            main.log.info("Intent installed between "+
+                    str(host_id_one) + " and " + str(host_id_two))
+
+            return handle
+        
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()
+
+    def intents(self):
+        '''
+        Description:
+            Obtain intents currently installed 
+        '''
+        try:
+            self.handle.sendline("")
+            self.handle.expect("onos>")
+
+            self.handle.sendline("intents")
+            self.handle.expect("onos>")
+
+            self.handle.sendline("")
+            self.handle.expect("onos>")
+
+            handle = self.handle.before
+
+            return handle
+
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()
+
     #Wrapper functions ****************
     #Wrapper functions use existing driver
     #functions and extends their use case.

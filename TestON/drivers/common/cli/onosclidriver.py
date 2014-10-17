@@ -435,16 +435,9 @@ class OnosCliDriver(CLI):
                     self.handle.expect("onos>")
                     self.handle.sendline("")
                     self.handle.expect("onos>")
-<<<<<<< HEAD
-                    handle = self.handle.before
-                    print "handle =",handle
-                    return handle
-=======
-           
-            handle = self.handle.before
-            
-            return handle
->>>>>>> d1192e144d179c68864828aa6a339764d69d1216
+                handle = self.handle.before
+                print "handle =",handle
+                return handle
         except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
             main.log.error(self.name + ":    " + self.handle.before)
@@ -477,7 +470,7 @@ class OnosCliDriver(CLI):
                         str(grep_str)+"'")
                     self.handle.expect("links -j | grep '"+str(grep_str)+"'")
                     self.handle.expect("onos>")
-                    handle = self.handle.before
+                handle = self.handle.before
                 print "repr(handle) =", repr(handle)
                 ansi_escape = re.compile(r'\r\r\n\x1b[^m]*m')
                 handle1 = ansi_escape.sub('', handle)
@@ -495,16 +488,9 @@ class OnosCliDriver(CLI):
                     self.handle.expect("onos>")
                     self.handle.sendline("")
                     self.handle.expect("onos>")
-           
-<<<<<<< HEAD
                 handle = self.handle.before
                 print "handle =",handle
                 return handle
-=======
-            handle = self.handle.before
-            
-            return handle
->>>>>>> d1192e144d179c68864828aa6a339764d69d1216
         except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
             main.log.error(self.name + ":    " + self.handle.before)
@@ -538,6 +524,7 @@ class OnosCliDriver(CLI):
                         str(grep_str)+"'")
                     self.handle.expect("ports -j | grep '"+str(grep_str)+"'")
                     self.handle.expect("onos>")
+                handle = self.handle.before
                 print "repr(handle) =", repr(handle)
                 ansi_escape = re.compile(r'\r\r\n\x1b[^m]*m')
                 handle1 = ansi_escape.sub('', handle)
@@ -556,16 +543,9 @@ class OnosCliDriver(CLI):
                     self.handle.expect("onos>")
                     self.handle.sendline("")
                     self.handle.expect("onos>")
-<<<<<<< HEAD
                 handle = self.handle.before
                 print "handle =",handle
-                return handle
-=======
-           
-            handle = self.handle.before
-            
-            return handle
->>>>>>> d1192e144d179c68864828aa6a339764d69d1216
+                return handle  
         except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
             main.log.error(self.name + ":    " + self.handle.before)

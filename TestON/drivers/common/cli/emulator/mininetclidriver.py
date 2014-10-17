@@ -976,9 +976,30 @@ class MininetCliDriver(Emulator):
 #            main.log.error(str(json.dumps(onos, sort_keys=True,indent=4,separators=(',', ': '))))
         return results
 
+    def get_hosts(self):
+        '''
+        Returns a list of all hosts
+        Don't ask questions just use it
+        '''
+        self.handle.sendline("")
+        self.handle.expect("mininet>")
+        
+        self.handle.sendline("py [ host.name for host in net.hosts ]")
+        self.handle.expect("mininet>")
 
+        handle_py = self.handle.before
+        handle_py = handle_py.split("]\r\n",1)[1]
+        handle_py = handle_py.rstrip()
 
+        self.handle.sendline("")
+        self.handle.expect("mininet>")
 
+        host_str = handle_py.replace("]", "")
+        host_str = host_str.replace("'", "")
+        host_str = host_str.replace("[", "")
+        host_list = host_str.split(",")
+
+        return host_list 
 
 if __name__ != "__main__":
     import sys

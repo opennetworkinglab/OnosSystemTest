@@ -521,6 +521,54 @@ class OnosCliDriver(CLI):
             main.log.info(self.name+" ::::::")
             main.cleanup()
             main.exit()
+    
+    #TODO:
+    #def hosts(self):
+
+    def get_hosts_id(self, host_list):
+        '''
+        Obtain list of hosts 
+        Issues command: 'onos> hosts'
+        
+        Required:
+            * host_list: List of hosts obtained by Mininet
+        IMPORTANT:
+            This function assumes that you started your
+            topology with the option '--mac'. 
+            Furthermore, it assumes that value of VLAN is '-1'
+        Description:
+            Converts mininet hosts (h1, h2, h3...) into 
+            ONOS format (00:00:00:00:00:01/-1 , ...)
+        '''
+        
+        try:
+            self.handle.sendline("")
+            self.handle.expect("onos>")
+
+            onos_host_list = []
+
+            for host in host_list:
+                host = host.replace("h", "")
+                host_hex = hex(int(host)).zfill(12)
+                host_hex = str(host_hex).replace('x','0')
+                i = iter(str(host_hex))
+                host_hex = ":".join(a+b for a,b in zip(i,i))
+                host_hex = host_hex + "/-1"
+                onos_host_list.append(host_hex) 
+
+            return onos_host_list 
+
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()
 
     #Wrapper functions ****************
     #Wrapper functions use existing driver

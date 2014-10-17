@@ -385,7 +385,7 @@ class OnosDriver(CLI):
             main.exit()
 
     def create_cell_file(self, bench_ip, file_name, mn_ip_addrs,
-            extra_feature_string="onos-core-trivial", *onos_ip_addrs):
+            extra_feature_string, *onos_ip_addrs):
         '''
         Creates a cell file based on arguments
         Required:

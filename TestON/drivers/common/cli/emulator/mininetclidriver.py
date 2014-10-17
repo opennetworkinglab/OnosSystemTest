@@ -163,7 +163,6 @@ class MininetCliDriver(Emulator):
             pattern = 'Results\:\s0\%\sdropped\s'
             #FIXME:Pending Mininet Pull Request #408
             #pattern = 'Results\:\s0\.00\%\sdropped\s'
-            print response
             #if utilities.assert_matches(expect=pattern,actual=response,onpass="All hosts are reaching",onfail="Unable to reach all the hosts"):
             if re.search(pattern,response):
                 main.log.info(self.name+": All hosts are reachable")
@@ -798,6 +797,62 @@ class MininetCliDriver(Emulator):
             main.log.info(":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
             main.cleanup()
             main.exit()
+
+    def compare_switches(self, topo, switches_json):
+        '''
+        Compare mn and onos switches
+        topo: sts TestONTopology object
+        switches_json: parsed json object from the onos devices api
+
+        This uses the sts TestONTopology object
+
+        '''
+        import json
+        results = main.TRUE
+        output = {"switches":[]}
+        for switch in topo.graph.switches: #iterate through the MN topology and pull out switches and and port info
+            #print vars(switch)
+            ports = []
+            for port in switch.ports.values():
+                #print port.hw_addr.toStr(separator = '')
+                ports.append({'of_port': port.port_no, 'mac': str(port.hw_addr).replace('\'',''), 'name': port.name})
+            output['switches'].append({"name": switch.name, "dpid": str(switch.dpid).zfill(16), "ports": ports })
+        #print output
+
+        #print json.dumps(output, sort_keys=True,indent=4,separators=(',', ': '))
+
+
+        # created sorted list of dpid's in MN and ONOS for comparison
+        mnDPIDs=[]
+        for switch in output['switches']:
+            mnDPIDs.append(switch['dpid'])
+        mnDPIDs.sort()
+        #print mnDPIDs
+        if switches_json == "":#if rest call fails
+            main.log.error(self.name + ".compare_topo(): Empty JSON object given from ONOS")
+            return main.FALSE
+        onos=switches_json
+        onosDPIDs=[]
+        for switch in onos:
+            onosDPIDs.append(switch['id'].replace(":",'').replace("of",''))
+            #print switch
+        onosDPIDs.sort()
+        #print onosDPIDs
+
+        if mnDPIDs!=onosDPIDs:
+            switch_results = main.FALSE
+            main.log.report( "Switches in MN but not in ONOS:")
+            main.log.report( str([switch for switch in mnDPIDs if switch not in onosDPIDs]))
+            main.log.report( "Switches in ONOS but not in MN:")
+            main.log.report(  str([switch for switch in onosDPIDs if switch not in mnDPIDs]))
+        else:#list of dpid's match in onos and mn
+            #main.log.report("DEBUG: The dpid's of the switches in Mininet and ONOS match")
+            switch_results = main.TRUE
+        return switch_results
+
+
+
+
 
     def compare_topo(self, topo, onos_json):
         '''

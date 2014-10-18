@@ -12,4 +12,9 @@
         <port1>6633</port1>
     </CTRL>
 
+    <GIT>
+        <autoPull>off</autoPull>
+        <checkout>master</checkout>
+    </GIT>
+
 </PARAMS>

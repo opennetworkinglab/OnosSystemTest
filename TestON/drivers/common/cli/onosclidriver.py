@@ -399,7 +399,7 @@ class OnosCliDriver(CLI):
         
     def devices(self, json_format=True, grep_str=""):
         '''
-        Lists all infrastructure devices
+        Lists all infrastructure devices or switches
         Optional argument:
             * grep_str - pass in a string to grep
         '''

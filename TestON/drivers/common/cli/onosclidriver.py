@@ -689,8 +689,8 @@ class OnosCliDriver(CLI):
         '''
         
         try:
-            self.handle.sendline("")
-            self.handle.expect("onos>")
+            #self.handle.sendline("")
+            #self.handle.expect("onos>")
 
             onos_host_list = []
 

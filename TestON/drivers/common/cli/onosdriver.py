@@ -992,9 +992,9 @@ class OnosDriver(CLI):
         '''
         self.handle.sendline("")
         self.handle.expect("\$")
-        self.handle.sendline("\r")
+        self.handle.sendline("")
         self.handle.sendline("tshark -i "+str(interface)+
-                " -t e | grep \""+str(grep)+"\" > "+directory+" &")
+                " -t e | grep --line-buffered \""+str(grep)+"\" > "+directory+" &")
         self.handle.sendline("\r")
         self.handle.expect("Capturing on")
         self.handle.sendline("\r")

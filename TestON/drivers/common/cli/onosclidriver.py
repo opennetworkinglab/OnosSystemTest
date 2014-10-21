@@ -837,22 +837,32 @@ class OnosCliDriver(CLI):
             main.cleanup()
             main.exit()
 
-    def intents(self):
+    def intents(self, json_format = False):
         '''
+        Optional:
+            * json_format: enable output formatting in json
         Description:
             Obtain intents currently installed 
         '''
         try:
-            self.handle.sendline("")
-            self.handle.expect("onos>")
+            if json_format:
+                self.handle.sendline("intents -j")
+                self.handle.expect("intents -j")
+                self.handle.expect("onos>")
 
-            self.handle.sendline("intents")
-            self.handle.expect("onos>")
+                handle = self.handle.before
 
-            self.handle.sendline("")
-            self.handle.expect("onos>")
+            else:
+                self.handle.sendline("")
+                self.handle.expect("onos>")
 
-            handle = self.handle.before
+                self.handle.sendline("intents")
+                self.handle.expect("onos>")
+
+                self.handle.sendline("")
+                self.handle.expect("onos>")
+
+                handle = self.handle.before
 
             return handle
 

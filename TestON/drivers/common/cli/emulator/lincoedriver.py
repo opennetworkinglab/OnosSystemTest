@@ -100,6 +100,29 @@ class LincOEDriver(Emulator):
             main.exit()
 
 
+    def disconnect(self):
+        '''
+        Send disconnect prompt to Linc-OE CLI
+        (CTRL+C)
+        '''
+        try:
+            #Send CTRL+C twice to exit CLI
+            self.handle.sendline("\x03")
+            self.handle.sendline("\x03")
+            self.handle.expect("\$")
+
+        except pexpect.EOF:
+            main.log.error(self.name+ ": EOF exception")
+            main.log.error(self.name+ ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" :::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" :::::::")
+            main.cleanup()
+            main.exit()
+
 if __name__ != "__main__":
     import sys
     sys.modules[__name__] = LincOEDriver()

@@ -56,6 +56,9 @@ class LincOEDriver(Emulator):
         self.ssh_handle = self.handle
         
         if self.handle :
+            self.home = "~/linc-oe"
+            self.handle.sendline("cd "+self.home)
+
             main.log.info(self.name+": Starting Linc-OE CLI")
             cmdStr = "sudo ./rel/linc/bin/linc console"
             
@@ -72,6 +75,27 @@ class LincOEDriver(Emulator):
             main.log.error(self.name+
                     ": Failed to connect to Linc-OE")
             return main.FALSE
+
+    def build(self):
+        '''
+        Build Linc-OE with the specified settings
+        '''
+        try:
+            self.handle.sendline("make rel")
+            
+            return main.TRUE
+
+        except pexpect.EOF:
+            main.log.error(self.name+ ": EOF exception")
+            main.log.error(self.name+ ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" :::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" :::::::")
+            main.cleanup()
+            main.exit()
 
     def set_interface_up(self, intfs):
         '''
@@ -99,6 +123,140 @@ class LincOEDriver(Emulator):
             main.cleanup()
             main.exit()
 
+    def start_switch(self, sw_id):
+        '''
+        Start a logical switch using switch id
+        '''
+        try:
+            self.handle.sendline("linc:start_switch("+str(sw_id)+").")
+            self.handle.expect("linc@")
+
+            handle = self.handle.before
+
+        except pexpect.EOF:
+            main.log.error(self.name+ ": EOF exception")
+            main.log.error(self.name+ ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" :::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" :::::::")
+            main.cleanup()
+            main.exit()
+
+    def stop_switch(self, sw_id):
+        '''
+        Stop a logical switch using switch id
+        '''
+        try:
+            self.handle.sendline("linc:stop_switch("+str(sw_id)+").")
+            self.handle.expect("linc@")
+
+            handle = self.handle.before
+
+        except pexpect.EOF:
+            main.log.error(self.name+ ": EOF exception")
+            main.log.error(self.name+ ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" :::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" :::::::")
+            main.cleanup()
+            main.exit()
+     
+    def get_datapath_id(self, sw_id):
+        '''
+        Get datapath id of a specific switch by switch id
+        '''
+        try:
+            self.handle.sendline("linc_logic:get_datapath_id("+
+                    str(sw_id)+").")
+            self.handle.expect("linc@")
+
+            handle = self.handle.before
+        
+        except pexpect.EOF:
+            main.log.error(self.name+ ": EOF exception")
+            main.log.error(self.name+ ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" :::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" :::::::")
+            main.cleanup()
+            main.exit()
+
+    def list_ports(self, sw_id):
+        '''
+        List all ports of a switch by switch id
+        '''
+        try:
+            self.handle.sendline("linc:ports("+str(sw_id)+").")
+            self.handle.expect("linc@")
+
+            handle = self.handle.before
+
+        except pexpect.EOF:
+            main.log.error(self.name+ ": EOF exception")
+            main.log.error(self.name+ ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" :::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" :::::::")
+            main.cleanup()
+            main.exit()
+
+    def port_up(self, sw_id, pt_id):
+        '''
+        Bring port up using switch id and port id
+        '''
+        try:
+            self.handle.sendline("linc:port_up("+
+                    str(sw_id)+", "+str(pt_id)+").")
+            self.handle.expect("linc@")
+
+            handle = self.handle.before
+
+        except pexpect.EOF:
+            main.log.error(self.name+ ": EOF exception")
+            main.log.error(self.name+ ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" :::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" :::::::")
+            main.cleanup()
+            main.exit()
+    
+    def port_down(self, sw_id, pt_id):
+        '''
+        Bring port down using switch id and port id
+        '''
+        try:
+            self.handle.sendline("linc:port_down("+
+                    str(sw_id)+", "+str(pt_id)+").")
+            self.handle.expect("linc@")
+
+            handle = self.handle.before
+
+        except pexpect.EOF:
+            main.log.error(self.name+ ": EOF exception")
+            main.log.error(self.name+ ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" :::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" :::::::")
+            main.cleanup()
+            main.exit()
 
     def disconnect(self):
         '''

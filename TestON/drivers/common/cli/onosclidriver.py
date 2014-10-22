@@ -790,15 +790,17 @@ class OnosCliDriver(CLI):
                         str(egress_device) + "/" + str(port_egress)
        
             else:
-                cmd = "add-point-intent "+\
-                        str(ingress_device) + "/" + str(port_ingress) + " " +\
-                        str(egress_device) + "/" + str(port_egress) 
+                cmd = "add-point-intent "
+                
                 if ethType:
                     cmd += " --ethType " + str(ethType)
                 if ethSrc:
                     cmd += " --ethSrc " + str(ethSrc) 
                 if ethDst:    
                     cmd += " --ethDst " + str(ethDst) 
+                        
+                cmd += " "+str(ingress_device) + "/" + str(port_ingress) + " " +\
+                str(egress_device) + "/" + str(port_egress) 
 
             self.handle.sendline("")
             self.handle.expect("onos>")

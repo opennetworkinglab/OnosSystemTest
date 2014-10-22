@@ -82,8 +82,22 @@ class LincOEDriver(Emulator):
         '''
         try:
             self.handle.sendline("make rel")
-            
-            return main.TRUE
+            i = self.handle.expect([
+                "ERROR",
+                "\$"])
+
+            if i == 0:
+                #If error, try to resolve the most common error
+                #(epmd running and cannot compile)
+                self.handle.sendline("sudo pkill -9 epmd")
+                self.handle.sendline("make rel")
+                self.handle.expect("\$")
+                    
+                handle = self.handle.before
+                return handle
+
+            else:
+                return main.TRUE
 
         except pexpect.EOF:
             main.log.error(self.name+ ": EOF exception")

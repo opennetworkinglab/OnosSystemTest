@@ -1016,7 +1016,7 @@ class MininetCliDriver(Emulator):
             if not second_dir:
                 main.log.report('ONOS does not have the link %s/%s -> %s/%s' % (node2, port2, node1, port1))
             link_results = link_results and first_dir and second_dir
-            return link_results
+        return link_results
 
 
 

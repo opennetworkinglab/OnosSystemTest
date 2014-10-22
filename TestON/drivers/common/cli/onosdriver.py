@@ -82,6 +82,8 @@ class OnosDriver(CLI):
         '''
         response = ''
         try:
+            self.handle.sendline("\n")
+            self.handle.expect("\$")
             self.handle.sendline("exit")
             self.handle.expect("closed")
         except pexpect.EOF:
@@ -1010,13 +1012,6 @@ class OnosDriver(CLI):
                 " grep -v grep | awk '{print $2}'`")
         self.handle.sendline("")
         main.log.info("Tshark stopped")
-
-
-
-
-
-
-
 
 
 

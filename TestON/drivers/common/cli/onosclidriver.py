@@ -793,7 +793,7 @@ class OnosCliDriver(CLI):
                 cmd = "add-point-intent "+\
                         str(ingress_device) + "/" + str(port_ingress) + " " +\
                         str(egress_device) + "/" + str(port_egress) 
-                if etherType:
+                if ethType:
                     cmd += " --ethType " + str(ethType)
                 if ethSrc:
                     cmd += " --ethSrc " + str(ethSrc) 

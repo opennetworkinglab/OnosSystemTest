@@ -1041,4 +1041,35 @@ class OnosCliDriver(CLI):
             main.cleanup()
             main.exit()
 
+    def get_device(self, dpid=None):
+        '''
+        Return the first device from the devices api whose 'id' contains 'dpid'
+        Return None if there is no match
+        '''
+        import json
+        try:
+            if dpid == None:
+                return None
+            else:
+                dpid = dpid.replace(':', '')
+                raw_devices = self.devices()
+                devices_json = json.loads(raw_devices)
+                #search json for the device with dpid then return the device
+                for device in devices_json:
+                    #print "%s in  %s?" % (dpid, device['id'])
+                    if dpid in device['id']:
+                        return device
+            return None
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()
+
     #***********************************

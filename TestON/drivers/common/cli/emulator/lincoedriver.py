@@ -42,6 +42,8 @@ class LincOEDriver(Emulator):
         '''
         Create ssh handle for Linc-OE cli
         '''
+        import time
+
         for key in connectargs:
             vars(self)[key] = connectargs[key]       
         
@@ -63,21 +65,22 @@ class LincOEDriver(Emulator):
 
             main.log.info("Building Linc-OE")
             self.handle.sendline("make rel")
-            i = self.handle.expect(["ERROR","\$"])
+            i = self.handle.expect(["ERROR","linc-oe\$"],timeout=60)
             if i == 0:
                 self.handle.sendline("sudo pkill -9 epmd")
                 self.handle.expect("\$")
                 self.handle.sendline("make rel")
-                x = self.handle.expect(["\$",pespect.EOF,pexpect.TIMEOUT])
+                x = self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT])
                 main.log.info("make rel returned: "+ str(x))
-        
-            main.log.info(self.name+": Starting Linc-OE CLI")
-            cmdStr = "sudo ./rel/linc/bin/linc console"
-            
-            self.handle.sendline(cmdStr)
-            self.handle.expect([">",pexpect.EOF,pexpect.TIMEOUT])
-            
-            return main.TRUE
+            else: 
+                main.log.info(self.name+": Starting Linc-OE CLI.. This may take a while")
+                time.sleep(30)
+                self.handle.sendline("sudo ./rel/linc/bin/linc console")
+                j = self.handle.expect(["linc@",pexpect.EOF,pexpect.TIMEOUT])
+          
+            if j == 0:
+                main.log.info("Linc-OE CLI started")
+                return main.TRUE
 
         else:
             main.log.error(self.name+

@@ -71,6 +71,12 @@ class LincOETest:
         main.step("Starting ONOS service")
         start_result = main.ONOSbench.onos_start(ONOS1_ip)
 
+        main.step("Setting cell for ONOScli")
+        main.ONOScli.set_cell(cell_name)
+
+        main.step("Starting ONOScli")
+        main.ONOScli.start_onos_cli(ONOS1_ip)
+
         case1_result = (clean_install_result and package_result and\
                 cell_result and verify_result and onos_install_result and\
                 onos1_isup and start_result )
@@ -79,5 +85,30 @@ class LincOETest:
                 onfail="Test startup NOT successful")
 
         time.sleep(10)
+
+    def CASE2(self, main):
+        '''
+        Configure topology
+        '''
+        import time
+
+        ONOS1_ip = main.params['CTRL']['ip1']
+        default_sw_port = main.params['CTRL']['port1'] 
+
+        #Assign packet level switches to controller 
+        main.Mininet1.assign_sw_controller(sw="1",
+                ip1=ONOS1_ip, port1=default_sw_port)
+        main.Mininet1.assign_sw_controller(sw="2",
+                ip1=ONOS1_ip, port1=default_sw_port)
+
+        #Check devices in controller
+        #This should include Linc-OE devices as well
+        devices = main.ONOScli.devices()
+        main.log.info(devices)
+
+    def CASE3(self, main):
+        '''
+        Install multi-layer intents
+        '''
 
 

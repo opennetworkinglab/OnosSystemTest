@@ -60,6 +60,9 @@ class LincOEDriver(Emulator):
             cmdStr = "sudo ./rel/linc/bin/linc console"
             
             self.handle.sendline(cmdStr)
+            #Sending blank lines "shows" the CLI
+            self.handle.sendline("")
+            self.handle.sendline("")
             self.handle.expect(["linc@",pexpect.EOF,pexpect.TIMEOUT])
 
         else:
@@ -70,6 +73,31 @@ class LincOEDriver(Emulator):
                     ": Failed to connect to Linc-OE")
             return main.FALSE
 
+    def set_interface_up(self, intfs):
+        '''
+        Specify interface to bring up.
+        When Linc-OE is started, tap interfaces should
+        be created. They must be brought up manually
+        '''
+        try:
+            self.handle.sendline("ifconfig "+str(intf)+" up")
+            self.handle.expect("linc@")
+   
+            handle = self.handle.before
+
+            return handle
+
+        except pexpect.EOF:
+            main.log.error(self.name+ ": EOF exception")
+            main.log.error(self.name+ ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" :::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" :::::::")
+            main.cleanup()
+            main.exit()
 
 
 if __name__ != "__main__":

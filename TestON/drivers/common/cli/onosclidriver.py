@@ -757,30 +757,52 @@ class OnosCliDriver(CLI):
             main.exit()
 
     def add_point_intent(self, ingress_device, port_ingress,
-            egress_device, port_egress):
+            egress_device, port_egress, ethType="", ethSrc="",
+            ethDst=""):
         '''
         Required:
             * ingress_device: device id of ingress device
             * egress_device: device id of egress device
+        Optional:
+            * ethType: specify ethType
+            * ethSrc: specify ethSrc (i.e. src mac addr)
+            * ethDst: specify ethDst (i.e. dst mac addr)
         Description:
             Adds a point-to-point intent (uni-directional) by
-            specifying device id's 
-        
+            specifying device id's and optional fields
+
         NOTE: This function may change depending on the 
               options developers provide for point-to-point
               intent via cli
         '''
         try:
+            cmd = ""
+
+            #If there are no optional arguments
+            if not ethType and not ethSrc and not ethDst:
+                cmd = "add-point-intent "+\
+                        str(ingress_device) + "/" + str(port_ingress) + " " +\
+                        str(egress_device) + "/" + str(port_egress)
+       
+            else:
+                cmd = "add-point-intent "+\
+                        str(ingress_device) + "/" + str(port_ingress) + " " +\
+                        str(egress_device) + "/" + str(port_egress) 
+                if etherType:
+                    cmd += " --ethType " + str(ethType)
+                if ethSrc:
+                    cmd += " --ethSrc " + str(ethSrc) 
+                if ethDst:    
+                    cmd += " --ethDst " + str(ethDst) 
+
             self.handle.sendline("")
             self.handle.expect("onos>")
 
-            self.handle.sendline("add-point-intent "+
-                    str(ingress_device) + "/" + str(port_ingress) + " " +
-                    str(egress_device) + "/" + str(port_egress))
+            self.handle.sendline(cmd)
             i = self.handle.expect([
                 "Error",
                 "onos>"])
-            
+          
             self.handle.sendline("")
             self.handle.expect("onos>")
 
@@ -791,7 +813,7 @@ class OnosCliDriver(CLI):
                 return handle
             else:
                 return main.TRUE
-        
+
         except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
             main.log.error(self.name + ":    " + self.handle.before)

@@ -56,17 +56,28 @@ class LincOEDriver(Emulator):
         self.ssh_handle = self.handle
         
         if self.handle :
+            main.log.info("Handle successfully created")
             self.home = "~/linc-oe"
             self.handle.sendline("cd "+self.home)
+            self.handle.expect("oe$")
 
+            main.log.info("Building Linc-OE")
+            self.handle.sendline("make rel")
+            i = self.handle.expect(["ERROR","\$"])
+            if i == 0:
+                self.handle.sendline("sudo pkill -9 epmd")
+                self.handle.expect("\$")
+                self.handle.sendline("make rel")
+                x = self.handle.expect(["\$",pespect.EOF,pexpect.TIMEOUT])
+                main.log.info("make rel returned: "+ str(x))
+        
             main.log.info(self.name+": Starting Linc-OE CLI")
             cmdStr = "sudo ./rel/linc/bin/linc console"
             
             self.handle.sendline(cmdStr)
-            #Sending blank lines "shows" the CLI
-            self.handle.sendline("")
-            self.handle.sendline("")
-            self.handle.expect(["linc@",pexpect.EOF,pexpect.TIMEOUT])
+            self.handle.expect([">",pexpect.EOF,pexpect.TIMEOUT])
+            
+            return main.TRUE
 
         else:
             main.log.error(self.name+

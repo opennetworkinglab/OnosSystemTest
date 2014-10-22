@@ -84,11 +84,16 @@ class OnosCliDriver(CLI):
         response = ''
         try:
             self.handle.sendline("")
-            self.handle.expect("onos>")
-            self.handle.sendline("system:shutdown")
-            self.handle.expect("Confirm")
-            self.handle.sendline("yes")
+            i = self.handle.expect(["onos>","\$"])
+            if i == 0:
+                self.handle.sendline("system:shutdown")
+                self.handle.expect("Confirm")
+                self.handle.sendline("yes")
+                self.handle.expect("\$")
+            self.handle.sendline("\n")
             self.handle.expect("\$")
+            self.handle.sendline("exit")
+            self.handle.expect("closed")
 
         except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")

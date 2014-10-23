@@ -62,6 +62,21 @@ class TopoPerfNext:
         main.step("Starting ONOS service")
         start_result = main.ONOSbench.onos_start(ONOS1_ip)
 
+        main.step("Set cell for ONOS cli env")
+        main.ONOS1cli.set_cell(cell_name)
+        main.ONOS2cli.set_cell(cell_name)
+        main.ONOS3cli.set_cell(cell_name)
+
+        main.step("Start onos cli")
+        main.ONOS1cli.start_onos_cli(ONOS1_ip)
+        main.ONOS2cli.start_onos_cli(ONOS2_ip)
+        main.ONOS3cli.start_onos_cli(ONOS3_ip)
+
+        main.step("Enable metrics feature")
+        main.ONOS1cli.feature_install("onos-app-metrics-topology")
+        main.ONOS2cli.feature_install("onos-app-metrics-topology")
+        main.ONOS3cli.feature_install("onos-app-metrics-topology")
+
         utilities.assert_equals(expect=main.TRUE,
                 actual= cell_file_result and cell_apply_result and\
                         verify_cell_result and checkout_result and\
@@ -128,7 +143,7 @@ class TopoPerfNext:
 
             #Wait and ensure switch is assigned
             #before stopping tshark
-            time.sleep(20)
+            time.sleep(30)
     
             main.ONOS1.stop_tshark()
 
@@ -147,7 +162,7 @@ class TopoPerfNext:
 
             main.log.info("Object read in from TCP capture: "+
                     str(temp_text))
-            if len(temp_text) > 0:
+            if len(temp_text) > 1:
                 t0_tcp = int(float(temp_text[1])*1000)
             else:
                 main.log.error("Tshark output file for TCP"+
@@ -175,7 +190,7 @@ class TopoPerfNext:
             main.log.info("Object read in from OFP capture: "+
                     str(line_ofp))
     
-            if len(line_ofp) > 0:
+            if len(line_ofp) > 1:
                 t0_ofp = int(float(obj[1])*1000)
             else:
                 main.log.error("Tshark output file for OFP"+
@@ -188,7 +203,23 @@ class TopoPerfNext:
            
             #TODO: 
             #Get json object from all 3 ONOS instances
-            
+            json_str_1 = main.ONOS1cli.topology_events_metrics()
+            json_str_2 = main.ONOS2cli.topology_events_metrics()
+            json_str_3 = main.ONOS3cli.topology_events_metrics()
+    
+            #TESTING:
+            main.log.info(json_str_1)
+            main.log.info(json_str_2)
+            main.log.info(json_str_3)
+
+            json_obj_1 = json.loads(json_str_1)
+            json_obj_2 = json.loads(json_str_2)
+            json_obj_3 = json.loads(json_str_3)
+
+            main.log.info(json_obj_1)
+            main.log.info(json_obj_2)
+            main.log.info(json_obj_3)
+
             #TODO:
             #Parse json object for timestamp
             topo_timestamp_1 = 0

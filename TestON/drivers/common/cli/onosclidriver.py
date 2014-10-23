@@ -907,6 +907,45 @@ class OnosCliDriver(CLI):
             main.cleanup()
             main.exit()
 
+    def topology_events_metrics(self, json_format=True):
+        '''
+        Description:Returns topology metrics 
+        Optional:
+            * json_format: enable json formatting of output
+        '''
+        try:
+            if json_format:
+                self.handle.sendline("topology-events-metrics -j")
+                self.handle.expect("topology-events-metrics -j")
+                self.handle.expect("onos>")
+                
+                handle = self.handle.before
+              
+                #Some color thing that we want to escape
+                ansi_escape = re.compile(r'\r\r\n\x1b[^m]*m')
+                handle = ansi_escape.sub('', handle)
+            
+            else:
+                self.handle.sendline("topology-events-metrics")
+                self.handle.expect("topology-events-metrics")
+                self.handle.expect("onos>")
+                
+                handle = self.handle.before
+
+            return handle
+        
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()
+
     #Wrapper functions ****************
     #Wrapper functions use existing driver
     #functions and extends their use case.

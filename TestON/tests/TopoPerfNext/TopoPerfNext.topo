@@ -10,17 +10,35 @@
             <COMPONENTS> </COMPONENTS>
         </ONOSbench>
 
-        <ONOScli>
+        <ONOS1cli>
             <host>10.128.20.10</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>OnosCliDriver</type>
             <connect_order>2</connect_order>
             <COMPONENTS> </COMPONENTS>
-        </ONOScli>
+        </ONOS1cli>
+
+        <ONOS2cli>
+            <host>10.128.20.10</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>OnosCliDriver</type>
+            <connect_order>2</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </ONOS2cli>
+        
+        <ONOS3cli>
+            <host>10.128.20.10</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>OnosCliDriver</type>
+            <connect_order>2</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </ONOS3cli>
 
         <ONOS1>
-            <host>10.128.20.11</host>
+            <host>10.128.174.1</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>OnosDriver</type>

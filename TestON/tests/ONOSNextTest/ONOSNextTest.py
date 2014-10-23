@@ -25,9 +25,13 @@ class ONOSNextTest:
         import time
 
         cell_name = main.params['ENV']['cellName']
+
         ONOS1_ip = main.params['CTRL']['ip1']
         ONOS1_port = main.params['CTRL']['port1']
         
+        git_pull_trigger = main.params['GIT']['autoPull']
+        git_checkout_branch = main.params['GIT']['branch']
+
         main.case("Setting up test environment")
         
         main.step("Creating cell file")
@@ -38,14 +42,18 @@ class ONOSNextTest:
                 "10.128.20.11")
 
         main.step("Applying cell variable to environment")
-        cell_result = main.ONOSbench.set_cell(cell_name)
-        #cell_result = main.ONOSbench.set_cell("temp_cell_2")
+        #cell_result = main.ONOSbench.set_cell(cell_name)
+        cell_result = main.ONOSbench.set_cell("temp_cell_2")
         verify_result = main.ONOSbench.verify_cell()
-        
-        main.step("Git checkout and pull master")
-        #main.ONOSbench.git_checkout("master")
-        #git_pull_result = main.ONOSbench.git_pull()
-        
+       
+        if git_pull_trigger == 'on':
+            main.step("Git checkout and pull master")
+            main.ONOSbench.git_checkout(git_checkout_branch)
+            git_pull_result = main.ONOSbench.git_pull()
+        else:
+            main.log.info("Git checkout and pull skipped by config")
+            git_pull_result = main.TRUE
+
         main.step("Using mvn clean & install")
         #clean_install_result = main.ONOSbench.clean_install()
         clean_install_result = main.TRUE

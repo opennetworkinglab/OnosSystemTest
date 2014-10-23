@@ -808,7 +808,6 @@ class MininetCliDriver(Emulator):
 
         '''
         import json
-        results = main.TRUE
         output = {"switches":[]}
         for switch in topo.graph.switches: #iterate through the MN topology and pull out switches and and port info
             #print vars(switch)
@@ -850,6 +849,174 @@ class MininetCliDriver(Emulator):
             switch_results = main.TRUE
         return switch_results
 
+
+
+    def compare_ports(self, topo, ports_json):
+        '''
+        Compare mn and onos ports
+        topo: sts TestONTopology object
+        ports_json: parsed json object from the onos ports api
+
+        Dependencies: 
+            1. This uses the sts TestONTopology object
+            2. numpy - "sudo pip install numpy"
+
+        '''
+        import json
+        from numpy import uint64
+        port_results = main.TRUE
+        output = {"switches":[]}
+        for switch in topo.graph.switches: #iterate through the MN topology and pull out switches and and port info
+            #print vars(switch)
+            ports = []
+            for port in switch.ports.values():
+                #print port.hw_addr.toStr(separator = '')
+                ports.append({'of_port': port.port_no, 'mac': str(port.hw_addr).replace('\'',''), 'name': port.name})
+            output['switches'].append({"name": switch.name, "dpid": str(switch.dpid).zfill(16), "ports": ports })
+        #print "compare_ports 'output' variable:"
+        #print output
+
+
+        ################ports#############
+        for switch in output['switches']:
+            mn_ports = []
+            onos_ports = []
+            for port in switch['ports']:
+                mn_ports.append(port['of_port'])
+            for onos_switch in ports_json:
+                if onos_switch['device'].replace(':','').replace("of", '') == switch['dpid']:
+                    for port in onos_switch['ports']:
+                        onos_ports.append(int(port['port'])) 
+            mn_ports.sort(key=float)
+            onos_ports.sort(key=float)
+            #print "\nPorts for Switch %s:" % (switch['name'])
+            #print "\tmn_ports[] = ", mn_ports
+            #print "\tonos_ports[] = ", onos_ports
+            
+            #if mn_ports == onos_ports:
+                #pass #don't set results to true here as this is just one of many checks and it might override a failure
+
+            #For OF1.3, the OFP_local port number is 0xfffffffe or 4294967294 instead of 0xfffe or 65534 in OF1.0, ONOS topology
+            #sees the correct port number, however MN topology as read from line 151 of https://github.com/ucb-sts/sts/blob/
+            #topology_refactoring2/sts/entities/teston_entities.py is 0xfffe which doesn't work correctly with OF1.3 switches.
+            #So a short term fix is to ignore the case when mn_port == 65534 and onos_port ==4294967294.
+            
+            #ONOS-Next is abstracting port numbers to 64bit unsigned number. So we will be converting the OF reserved ports to these numbers
+            #TODO: handle other reserved port numbers besides LOCAL
+            for mn_port,onos_port in zip(mn_ports,onos_ports):
+                if mn_port == onos_port or (mn_port == 65534 and onos_port ==int(uint64(-2))):
+                    continue
+                    #don't set results to true here as this is just one of many checks and it might override a failure
+                else:  #the ports of this switch don't match
+                    port_results = main.FALSE
+                    break
+            if port_results == main.FALSE:
+                main.log.report("The list of ports for switch %s(%s) does not match:" % (switch['name'], switch['dpid']) )
+                main.log.report("mn_ports[] = " +  str(mn_ports))
+                main.log.report("onos_ports[] = " + str(onos_ports))
+        return port_results
+
+
+
+
+    def compare_links(self, topo, links_json):
+        '''
+        Compare mn and onos links
+        topo: sts TestONTopology object
+        links_json: parsed json object from the onos links api
+
+        This uses the sts TestONTopology object
+
+        '''
+        import json
+        link_results = main.TRUE
+        output = {"switches":[]}
+        onos = links_json
+        for switch in topo.graph.switches: #iterate through the MN topology and pull out switches and and port info
+            #print vars(switch)
+            ports = []
+            for port in switch.ports.values():
+                #print port.hw_addr.toStr(separator = '')
+                ports.append({'of_port': port.port_no, 'mac': str(port.hw_addr).replace('\'',''), 'name': port.name})
+            output['switches'].append({"name": switch.name, "dpid": str(switch.dpid).zfill(16), "ports": ports })
+        #######Links########
+
+        if 2*len(topo.patch_panel.network_links) == len(onos):
+            link_results = main.TRUE
+        else:
+            link_results = main.FALSE
+            main.log.report("Mininet has %i bidirectional links and ONOS has %i unidirectional links" % (len(topo.patch_panel.network_links), len(onos) ))
+
+
+        # iterate through MN links and check if an ONOS link exists in both directions
+        # NOTE: Will currently only show mn links as down if they are cut through STS. 
+        #       We can either do everything through STS or wait for up_network_links 
+        #       and down_network_links to be fully implemented.
+        for link in topo.patch_panel.network_links: 
+            #print "\n"
+            #print "Link: %s" % link
+            #TODO: Find a more efficient search method
+            node1 = None
+            port1 = None
+            node2 = None
+            port2 = None
+            first_dir = main.FALSE
+            second_dir = main.FALSE
+            for switch in output['switches']:
+                #print "Switch: %s" % switch['name']
+                if switch['name'] == link.node1.name:
+                    node1 = switch['dpid']
+                    for port in switch['ports']:
+                        if str(port['name']) == str(link.port1):
+                            port1 = port['of_port'] 
+                    if node1 is not None and node2 is not None:
+                        break
+                if switch['name'] == link.node2.name:
+                    node2 = switch['dpid']
+                    for port in switch['ports']: 
+                        if str(port['name']) == str(link.port2):
+                            port2 = port['of_port'] 
+                    if node1 is not None and node2 is not None:
+                        break
+
+
+            for onos_link in onos:
+                onos_node1 = onos_link['src']['device'].replace(":",'').replace("of", '')
+                onos_node2 = onos_link['dst']['device'].replace(":",'').replace("of", '')
+                onos_port1 = onos_link['src']['port']
+                onos_port2 = onos_link['dst']['port']
+
+                #print "Checking ONOS for link %s/%s -> %s/%s and" % (node1, port1, node2, port2)
+                #print "Checking ONOS for link %s/%s -> %s/%s" % (node2, port2, node1, port1)
+                # check onos link from node1 to node2
+                if str(onos_node1) == str(node1) and str(onos_node2) == str(node2):
+                    if int(onos_port1) == int(port1) and int(onos_port2) == int(port2):
+                        first_dir = main.TRUE
+                    else:
+                        main.log.report('The port numbers do not match for ' +str(link) +\
+                                ' between ONOS and MN. When cheking ONOS for link '+\
+                                '%s/%s -> %s/%s' % (node1, port1, node2, port2)+\
+                                ' ONOS has the values %s/%s -> %s/%s' %\
+                                (onos_node1, onos_port1, onos_node2, onos_port2))
+
+                # check onos link from node2 to node1
+                elif ( str(onos_node1) == str(node2) and str(onos_node2) == str(node1) ):
+                    if ( int(onos_port1) == int(port2) and int(onos_port2) == int(port1) ):
+                        second_dir = main.TRUE
+                    else:
+                        main.log.report('The port numbers do not match for ' +str(link) +\
+                                ' between ONOS and MN. When cheking ONOS for link '+\
+                                '%s/%s -> %s/%s' % (node2, port2, node1, port1)+\
+                                ' ONOS has the values %s/%s -> %s/%s' %\
+                                (onos_node2, onos_port2, onos_node1, onos_port1))
+                else:#this is not the link you're looking for
+                    pass
+            if not first_dir:
+                main.log.report('ONOS does not have the link %s/%s -> %s/%s' % (node1, port1, node2, port2))
+            if not second_dir:
+                main.log.report('ONOS does not have the link %s/%s -> %s/%s' % (node2, port2, node1, port1))
+            link_results = link_results and first_dir and second_dir
+        return link_results
 
 
 
@@ -946,7 +1113,7 @@ class MininetCliDriver(Emulator):
                     #pass #don't set results to true here as this is just one of many checks and it might override a failure
 
                 #For OF1.3, the OFP_local port number is 0xfffffffe or 4294967294 instead of 0xfffe or 65534 in OF1.0, ONOS topology
-                #sees the correct port number, however MN topolofy as read from line 151 of https://github.com/ucb-sts/sts/blob/
+                #sees the correct port number, however MN topology as read from line 151 of https://github.com/ucb-sts/sts/blob/
                 #topology_refactoring2/sts/entities/teston_entities.py is 0xfffe which doesn't work correctly with OF1.3 switches.
                 #So a short term fix is to ignore the case when mn_port == 65534 and onos_port ==4294967294.
                 for mn_port,onos_port in zip(mn_ports,onos_ports):
@@ -955,7 +1122,6 @@ class MininetCliDriver(Emulator):
                     else:
                         port_results = main.FALSE
                         break
-                    pass #don't set results to true here as this is just one of many checks and it might override a failure
                 '''
                 else: #the ports of this switch don't match
                     port_results = main.FALSE

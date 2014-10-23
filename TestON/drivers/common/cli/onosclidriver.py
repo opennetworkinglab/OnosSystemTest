@@ -84,11 +84,16 @@ class OnosCliDriver(CLI):
         response = ''
         try:
             self.handle.sendline("")
-            self.handle.expect("onos>")
-            self.handle.sendline("system:shutdown")
-            self.handle.expect("Confirm")
-            self.handle.sendline("yes")
+            i = self.handle.expect(["onos>","\$"])
+            if i == 0:
+                self.handle.sendline("system:shutdown")
+                self.handle.expect("Confirm")
+                self.handle.sendline("yes")
+                self.handle.expect("\$")
+            self.handle.sendline("\n")
             self.handle.expect("\$")
+            self.handle.sendline("exit")
+            self.handle.expect("closed")
 
         except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
@@ -753,30 +758,54 @@ class OnosCliDriver(CLI):
             main.exit()
 
     def add_point_intent(self, ingress_device, port_ingress,
-            egress_device, port_egress):
+            egress_device, port_egress, ethType="", ethSrc="",
+            ethDst=""):
         '''
         Required:
             * ingress_device: device id of ingress device
             * egress_device: device id of egress device
+        Optional:
+            * ethType: specify ethType
+            * ethSrc: specify ethSrc (i.e. src mac addr)
+            * ethDst: specify ethDst (i.e. dst mac addr)
         Description:
             Adds a point-to-point intent (uni-directional) by
-            specifying device id's 
-        
+            specifying device id's and optional fields
+
         NOTE: This function may change depending on the 
               options developers provide for point-to-point
               intent via cli
         '''
         try:
+            cmd = ""
+
+            #If there are no optional arguments
+            if not ethType and not ethSrc and not ethDst:
+                cmd = "add-point-intent "+\
+                        str(ingress_device) + "/" + str(port_ingress) + " " +\
+                        str(egress_device) + "/" + str(port_egress)
+       
+            else:
+                cmd = "add-point-intent "
+                
+                if ethType:
+                    cmd += " --ethType " + str(ethType)
+                if ethSrc:
+                    cmd += " --ethSrc " + str(ethSrc) 
+                if ethDst:    
+                    cmd += " --ethDst " + str(ethDst) 
+                        
+                cmd += " "+str(ingress_device) + "/" + str(port_ingress) + " " +\
+                str(egress_device) + "/" + str(port_egress) 
+
             self.handle.sendline("")
             self.handle.expect("onos>")
 
-            self.handle.sendline("add-point-intent "+
-                    str(ingress_device) + "/" + str(port_ingress) + " " +
-                    str(egress_device) + "/" + str(port_egress))
+            self.handle.sendline(cmd)
             i = self.handle.expect([
                 "Error",
                 "onos>"])
-            
+          
             self.handle.sendline("")
             self.handle.expect("onos>")
 
@@ -787,7 +816,7 @@ class OnosCliDriver(CLI):
                 return handle
             else:
                 return main.TRUE
-        
+
         except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
             main.log.error(self.name + ":    " + self.handle.before)
@@ -833,25 +862,74 @@ class OnosCliDriver(CLI):
             main.cleanup()
             main.exit()
 
-    def intents(self):
+    def intents(self, json_format = False):
         '''
+        Optional:
+            * json_format: enable output formatting in json
         Description:
             Obtain intents currently installed 
         '''
         try:
-            self.handle.sendline("")
-            self.handle.expect("onos>")
+            if json_format:
+                self.handle.sendline("intents -j")
+                self.handle.expect("intents -j")
+                self.handle.expect("onos>")
 
-            self.handle.sendline("intents")
-            self.handle.expect("onos>")
+                handle = self.handle.before
 
-            self.handle.sendline("")
-            self.handle.expect("onos>")
+            else:
+                self.handle.sendline("")
+                self.handle.expect("onos>")
 
-            handle = self.handle.before
+                self.handle.sendline("intents")
+                self.handle.expect("onos>")
+
+                self.handle.sendline("")
+                self.handle.expect("onos>")
+
+                handle = self.handle.before
 
             return handle
 
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()
+
+    def topology_events_metrics(self, json_format=True):
+        '''
+        Description:Returns topology metrics 
+        Optional:
+            * json_format: enable json formatting of output
+        '''
+        try:
+            if json_format:
+                self.handle.sendline("topology-events-metrics -j")
+                self.handle.expect("topology-events-metrics -j")
+                self.handle.expect("onos>")
+                
+                handle = self.handle.before
+              
+                #Some color thing that we want to escape
+                ansi_escape = re.compile(r'\r\r\n\x1b[^m]*m')
+                handle = ansi_escape.sub('', handle)
+            
+            else:
+                self.handle.sendline("topology-events-metrics")
+                self.handle.expect("topology-events-metrics")
+                self.handle.expect("onos>")
+                
+                handle = self.handle.before
+
+            return handle
+        
         except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
             main.log.error(self.name + ":    " + self.handle.before)
@@ -987,6 +1065,37 @@ class OnosCliDriver(CLI):
 
             return id_list
         
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()
+
+    def get_device(self, dpid=None):
+        '''
+        Return the first device from the devices api whose 'id' contains 'dpid'
+        Return None if there is no match
+        '''
+        import json
+        try:
+            if dpid == None:
+                return None
+            else:
+                dpid = dpid.replace(':', '')
+                raw_devices = self.devices()
+                devices_json = json.loads(raw_devices)
+                #search json for the device with dpid then return the device
+                for device in devices_json:
+                    #print "%s in  %s?" % (dpid, device['id'])
+                    if dpid in device['id']:
+                        return device
+            return None
         except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
             main.log.error(self.name + ":    " + self.handle.before)

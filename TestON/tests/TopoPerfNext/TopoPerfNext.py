@@ -279,8 +279,8 @@ class TopoPerfNext:
             if avg_delta_device > 0.0 and avg_delta_device < 10000:
                 latency_t0_to_device_list.append(avg_delta_device)
             else:
-                main.log.info("Results ignored due to excess in "+\
-                        "threshold")
+                main.log.info("Results for t0-to-device ignored"+\
+                        "due to excess in threshold")
 
             #t0 to graph processing latency (end-to-end)
             delta_graph_1 = int(graph_timestamp_1) - int(t0_tcp)
@@ -293,14 +293,12 @@ class TopoPerfNext:
                      int(delta_graph_2)+\
                      int(delta_graph_3)) / 3
 
-            latency_end_to_end_list.append(avg_delta_graph)
-            
             #Ensure avg delta meets the threshold before appending
             if avg_delta_graph > 0.0 and avg_delta_graph < 10000:
-                latency_t0_to_device_list.append(avg_delta_graph)
+                latency_end_to_end_list.append(avg_delta_graph)
             else:
-                main.log.info("Results ignored due to excess in "+\
-                        "threshold")
+                main.log.info("Results for end-to-end ignored"+\
+                        "due to excess in threshold")
 
             #ofp to graph processing latency (ONOS processing)
             delta_ofp_graph_1 = int(graph_timestamp_1) - int(t0_ofp)
@@ -315,8 +313,8 @@ class TopoPerfNext:
             if avg_delta_ofp_graph > 0.0 and avg_delta_ofp_graph < 10000:
                 latency_ofp_to_graph_list.append(avg_delta_ofp_graph)
             else:
-                main.log.info("Results ignored due to excess in "+\
-                        "threshold")
+                main.log.info("Results for ofp-to-graph "+\
+                        "ignored due to excess in threshold")
 
             #ofp to device processing latency (ONOS processing)
             delta_ofp_device_1 = float(device_timestamp_1) - float(t0_ofp)
@@ -339,39 +337,39 @@ class TopoPerfNext:
 
             
             main.log.info("ONOS1 delta end-to-end: "+
-                    str(delta_graph_1))
+                    str(delta_graph_1) + " ms")
             main.log.info("ONOS2 delta end-to-end: "+
-                    str(delta_graph_2))
-            main.log.info("ONSO3 delta end-to-end: "+
-                    str(delta_graph_3))
+                    str(delta_graph_2) + " ms")
+            main.log.info("ONOS3 delta end-to-end: "+
+                    str(delta_graph_3) + " ms")
 
             main.log.info("ONOS1 delta OFP - graph: "+
-                    str(delta_ofp_graph_1))
+                    str(delta_ofp_graph_1) + " ms")
             main.log.info("ONOS2 delta OFP - graph: "+
-                    str(delta_ofp_graph_2))
+                    str(delta_ofp_graph_2) + " ms")
             main.log.info("ONOS3 delta OFP - graph: "+
-                    str(delta_ofp_graph_3))
+                    str(delta_ofp_graph_3) + " ms")
             
             main.log.info("ONOS1 delta device - t0: "+
-                    str(delta_device_1))
+                    str(delta_device_1) + " ms")
             main.log.info("ONOS2 delta device - t0: "+
-                    str(delta_device_2))
+                    str(delta_device_2) + " ms")
             main.log.info("ONOS3 delta device - t0: "+
-                    str(delta_device_3))
+                    str(delta_device_3) + " ms")
           
             main.log.info("ONOS1 delta OFP - device: "+
-                    str(delta_ofp_device_1))
+                    str(delta_ofp_device_1) + " ms")
             main.log.info("ONOS2 delta OFP - device: "+
-                    str(delta_ofp_device_2))
+                    str(delta_ofp_device_2) + " ms")
             main.log.info("ONOS3 delta OFP - device: "+
-                    str(delta_ofp_device_3))
+                    str(delta_ofp_device_3) + " ms")
 
             main.step("Remove switch from controller")
             main.Mininet1.delete_sw_controller("s1")
 
             time.sleep(5)
 
-        #END for loop for iteration
+        #END of for loop iteration
 
         #If there is at least 1 element in each list,
         #pass the test case

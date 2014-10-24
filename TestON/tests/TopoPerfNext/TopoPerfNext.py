@@ -377,7 +377,7 @@ class TopoPerfNext:
         latency_end_to_end_min = \
                 int(min(latency_end_to_end_list))
         latency_end_to_end_avg = \
-                (int(sum(latency_end_to_end_list) / \
+                (int(sum(latency_end_to_end_list)) / \
                  len(latency_end_to_end_list))
    
         latency_ofp_to_graph_max = \

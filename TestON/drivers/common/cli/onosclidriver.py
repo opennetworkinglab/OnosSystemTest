@@ -160,6 +160,7 @@ class OnosCliDriver(CLI):
                 return main.TRUE
             else:
                 #If failed, send ctrl+c to process and try again
+                main.log.info("Starting CLI failed. Retrying...")
                 self.handle.sendline("\x03")
                 self.handle.sendline("onos -w "+str(ONOS_ip))
                 i = self.handle.expect(["onos>",pexpect.TIMEOUT],

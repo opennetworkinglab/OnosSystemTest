@@ -151,7 +151,17 @@ class OnosCliDriver(CLI):
 
             #Wait for onos start (-w) and enter onos cli
             self.handle.sendline("onos -w "+str(ONOS_ip))
-            self.handle.expect("onos>", timeout = 60)
+            i = self.handle.expect([
+                    "onos>",
+                    pexpect.TIMEOUT],timeout=60)
+
+            if i == 0:
+                main.log.info(str(ONOS_ip)+" CLI Started successfully")
+                return main.TRUE
+            else:
+                main.log.error("Connection to CLI "+\
+                        str(ONOS_ip)+" timeout")
+                return main.FALSE
 
         except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")

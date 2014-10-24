@@ -17,6 +17,8 @@ class TopoPerfNext:
         '''
         ONOS startup sequence
         '''
+        import time
+    
         cell_name = main.params['ENV']['cellName']
 
         git_pull = main.params['GIT']['autoPull']
@@ -57,20 +59,31 @@ class TopoPerfNext:
         package_result = main.ONOSbench.onos_package()
 
         main.step("Installing ONOS package")
-        install_result = main.ONOSbench.onos_install()
+        install1_result = main.ONOSbench.onos_install(node=ONOS1_ip)
+        install2_result = main.ONOSbench.onos_install(node=ONOS2_ip)
+        install3_result = main.ONOSbench.onos_install(node=ONOS3_ip)
 
-        main.step("Starting ONOS service")
-        start_result = main.ONOSbench.onos_start(ONOS1_ip)
+        #NOTE: This step may be unnecessary
+        #main.step("Starting ONOS service")
+        #start_result = main.ONOSbench.onos_start(ONOS1_ip)
 
         main.step("Set cell for ONOS cli env")
         main.ONOS1cli.set_cell(cell_name)
         main.ONOS2cli.set_cell(cell_name)
         main.ONOS3cli.set_cell(cell_name)
 
+        time.sleep(10)
+
         main.step("Start onos cli")
-        main.ONOS1cli.start_onos_cli(ONOS1_ip)
-        main.ONOS2cli.start_onos_cli(ONOS2_ip)
-        main.ONOS3cli.start_onos_cli(ONOS3_ip)
+        cli1 = main.ONOS1cli.start_onos_cli(ONOS1_ip)
+        cli2 = main.ONOS2cli.start_onos_cli(ONOS2_ip)
+        cli3 = main.ONOS3cli.start_onos_cli(ONOS3_ip)
+
+        if not (cli1 and cli2 and cli3):
+            main.log.info("Attempting to start cli again")
+            cli1 = main.ONOS1cli.start_onos_cli(ONOS1_ip)
+            cli2 = main.ONOS2cli.start_onos_cli(ONOS2_ip)
+            cli3 = main.ONOS3cli.start_onos_cli(ONOS3_ip)
 
         main.step("Enable metrics feature")
         main.ONOS1cli.feature_install("onos-app-metrics-topology")
@@ -81,7 +94,8 @@ class TopoPerfNext:
                 actual= cell_file_result and cell_apply_result and\
                         verify_cell_result and checkout_result and\
                         pull_result and mvn_result and\
-                        install_result and start_result,
+                        install1_result and install2_result and\
+                        install3_result,
                 onpass="ONOS started successfully",
                 onfail="Failed to start ONOS")
 
@@ -206,11 +220,6 @@ class TopoPerfNext:
             json_str_1 = main.ONOS1cli.topology_events_metrics()
             json_str_2 = main.ONOS2cli.topology_events_metrics()
             json_str_3 = main.ONOS3cli.topology_events_metrics()
-    
-            #TESTING:
-            main.log.info(json_str_1)
-            main.log.info(json_str_2)
-            main.log.info(json_str_3)
 
             json_obj_1 = json.loads(json_str_1)
             json_obj_2 = json.loads(json_str_2)
@@ -222,9 +231,16 @@ class TopoPerfNext:
 
             #TODO:
             #Parse json object for timestamp
-            topo_timestamp_1 = 0
-            topo_timestamp_2 = 0
-            topo_timestamp_3 = 0
+            topo_timestamp_1 = \
+                    json_obj_1['lastTopologyEventTimestamp']['value'] 
+            topo_timestamp_2 = \
+                    json_obj_2['lastTopologyEventTimestamp']['value'] 
+            topo_timestamp_3 = \
+                    json_obj_3['lastTopologyEventTimestamp']['value'] 
+
+            main.log.info(topo_timestamp_1)
+            main.log.info(topo_timestamp_2)
+            main.log.info(topo_timestamp_3)
 
             #ONOS processing latency
             delta_of_1 = int(topo_timestamp_1) - int(t0_ofp)

@@ -271,7 +271,10 @@ class TopoPerfNext:
             #Ensure avg delta meets the threshold before appending
             if avg_delta_device > 0.0 and avg_delta_device < 10000:
                 latency_t0_to_device_list.append(avg_delta_device)
-           
+            else:
+                main.log.info("Results ignored due to excess in "+\
+                        "threshold")
+
             #t0 to graph processing latency (end-to-end)
             delta_graph_1 = int(graph_timestamp_1) - int(t0_tcp)
             delta_graph_2 = int(graph_timestamp_2) - int(t0_tcp)
@@ -288,6 +291,9 @@ class TopoPerfNext:
             #Ensure avg delta meets the threshold before appending
             if avg_delta_graph > 0.0 and avg_delta_graph < 10000:
                 latency_t0_to_device_list.append(avg_delta_graph)
+            else:
+                main.log.info("Results ignored due to excess in "+\
+                        "threshold")
 
             #ofp to graph processing latency (ONOS processing)
             delta_ofp_graph_1 = int(graph_timestamp_1) - int(t0_ofp)
@@ -301,19 +307,25 @@ class TopoPerfNext:
             
             if avg_delta_ofp_graph > 0.0 and avg_delta_ofp_graph < 10000:
                 latency_ofp_to_graph_list.append(avg_delta_ofp_graph)
-            
+            else:
+                main.log.info("Results ignored due to excess in "+\
+                        "threshold")
+
             #ofp to device processing latency (ONOS processing)
-            delta_ofp_device_1 = int(device_timestamp_1) - int(t0_ofp)
-            delta_ofp_device_2 = int(device_timestamp_2) - int(t0_ofp)
-            delta_ofp_device_3 = int(device_timestamp_3) - int(t0_ofp)
+            delta_ofp_device_1 = float(device_timestamp_1) - float(t0_ofp)
+            delta_ofp_device_2 = float(device_timestamp_2) - float(t0_ofp)
+            delta_ofp_device_3 = float(device_timestamp_3) - float(t0_ofp)
             
             avg_delta_ofp_device = \
-                    (int(delta_ofp_device_1)+\
-                     int(delta_ofp_device_2)+\
-                     int(delta_ofp_device_3)) / 3
+                    (float(delta_ofp_device_1)+\
+                     float(delta_ofp_device_2)+\
+                     float(delta_ofp_device_3)) / 3.0
             
             if avg_delta_ofp_device > 0.0 and avg_delta_ofp_device < 10000:
                 latency_ofp_to_device_list.append(avg_delta_ofp_device)
+            else:
+                main.log.info("Results ignored due to excess in "+\
+                        "threshold")
 
             #TODO:
             #Fetch logs upon threshold excess
@@ -351,7 +363,7 @@ class TopoPerfNext:
 
             time.sleep(5)
 
-        #If there are at least 1 element in each list,
+        #If there is at least 1 element in each list,
         #pass the test case
         if len(latency_end_to_end_list) > 0 and\
            len(latency_ofp_to_graph_list) > 0 and\
@@ -361,35 +373,35 @@ class TopoPerfNext:
 
         #Calculate min, max, avg of latency lists
         latency_end_to_end_max = \
-                max(float(latency_end_to_end_list))
+                int(max(latency_end_to_end_list))
         latency_end_to_end_min = \
-                min(float(latency_end_to_end_list))
+                int(min(latency_end_to_end_list))
         latency_end_to_end_avg = \
-                (sum(float(latency_end_to_end_list)) / \
+                (int(sum(latency_end_to_end_list) / \
                  len(latency_end_to_end_list))
    
         latency_ofp_to_graph_max = \
-                max(float(latency_ofp_to_graph_list))
+                int(max(latency_ofp_to_graph_list))
         latency_ofp_to_graph_min = \
-                min(float(latency_ofp_to_graph_list))
+                int(min(latency_ofp_to_graph_list))
         latency_ofp_to_graph_avg = \
-                (sum(float(latency_ofp_to_graph_list)) / \
+                (int(sum(latency_ofp_to_graph_list)) / \
                  len(latency_ofp_to_graph_list))
 
         latency_ofp_to_device_max = \
-                max(float(latency_ofp_to_device_list))
+                int(max(latency_ofp_to_device_list))
         latency_ofp_to_device_min = \
-                min(float(latency_ofp_to_device_list))
+                int(min(latency_ofp_to_device_list))
         latency_ofp_to_device_avg = \
-                (sum(float(latency_ofp_to_device_list)) / \
+                (int(sum(latency_ofp_to_device_list)) / \
                  len(latency_ofp_to_device_list))
 
         latency_t0_to_device_max = \
-                max(float(latency_t0_to_device_list))
+                float(max(latency_t0_to_device_list))
         latency_t0_to_device_min = \
-                min(float(latency_t0_to_device_list))
+                float(min(latency_t0_to_device_list))
         latency_t0_to_device_avg = \
-                (sum(float(latency_t0_to_device_list)) / \
+                (float(sum(latency_t0_to_device_list)) / \
                  len(latency_ofp_to_device_list))
 
         main.log.report("Switch add - End-to-end latency: \n"+\

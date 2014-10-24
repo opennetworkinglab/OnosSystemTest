@@ -1008,7 +1008,8 @@ class OnosDriver(CLI):
         '''
         Removes wireshark files from /tmp and kills all tshark processes
         '''
-        self.execute(cmd="rm /tmp/wireshark*")
+        #Remove all pcap from previous captures
+        self.execute(cmd="sudo rm /tmp/wireshark*")
         self.handle.sendline("")
         self.handle.sendline("sudo kill -9 `ps -ef | grep \"tshark -i\" |"+
                 " grep -v grep | awk '{print $2}'`")

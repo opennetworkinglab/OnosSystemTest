@@ -119,6 +119,18 @@ class TopoPerfNext:
         #Number of iterations of case
         num_iter = main.params['TEST']['numIter']
        
+        #Timestamp 'keys' for json metrics output.
+        #These are subject to change, hence moved into params
+        deviceTimestamp = main.params['JSON']['deviceTimestamp']
+        graphTimestamp = main.params['JSON']['graphTimestamp']
+
+        #List of switch add latency collected from
+        #all iterations
+        latency_end_to_end_list = []
+        latency_ofp_to_graph_list = []
+        latency_ofp_to_device_list = []
+        latency_t0_to_device_list = []
+
         #Directory/file to store tshark results
         tshark_of_output = "/tmp/tshark_of_topo.txt"
         tshark_tcp_output = "/tmp/tshark_tcp_topo.txt"
@@ -158,7 +170,8 @@ class TopoPerfNext:
             #Wait and ensure switch is assigned
             #before stopping tshark
             time.sleep(30)
-    
+   
+            main.log.info("Stopping all Tshark processes")
             main.ONOS1.stop_tshark()
 
             #tshark output is saved in ONOS. Use subprocess
@@ -193,6 +206,7 @@ class TopoPerfNext:
             of_file = open(tshark_of_output, 'r')
            
             line_ofp = ""
+            #Read until last line of file
             while True:
                 temp_text = of_file.readline()
                 if temp_text !='':
@@ -225,53 +239,126 @@ class TopoPerfNext:
             json_obj_2 = json.loads(json_str_2)
             json_obj_3 = json.loads(json_str_3)
 
-            main.log.info(json_obj_1)
-            main.log.info(json_obj_2)
-            main.log.info(json_obj_3)
+            #Obtain graph timestamp. This timestsamp captures
+            #the epoch time at which the topology graph was updated.
+            graph_timestamp_1 = \
+                    json_obj_1[graphTimestamp]['value']
+            graph_timestamp_2 = \
+                    json_obj_2[graphTimestamp]['value']
+            graph_timestamp_3 = \
+                    json_obj_3[graphTimestamp]['value']
 
-            #TODO:
-            #Parse json object for timestamp
-            topo_timestamp_1 = \
-                    json_obj_1['lastTopologyEventTimestamp']['value'] 
-            topo_timestamp_2 = \
-                    json_obj_2['lastTopologyEventTimestamp']['value'] 
-            topo_timestamp_3 = \
-                    json_obj_3['lastTopologyEventTimestamp']['value'] 
+            #Obtain device timestamp. This timestamp captures
+            #the epoch time at which the device event happened
+            device_timestamp_1 = \
+                    json_obj_1[deviceTimestamp]['value'] 
+            device_timestamp_2 = \
+                    json_obj_2[deviceTimestamp]['value'] 
+            device_timestamp_3 = \
+                    json_obj_3[deviceTimestamp]['value'] 
 
-            main.log.info(topo_timestamp_1)
-            main.log.info(topo_timestamp_2)
-            main.log.info(topo_timestamp_3)
+            #t0 to device processing latency 
+            delta_device_1 = int(device_timestamp_1) - int(t0_tcp)
+            delta_device_2 = int(device_timestamp_2) - int(t0_tcp)
+            delta_device_3 = int(device_timestamp_3) - int(t0_tcp)
+        
+            #Get average of delta from all instances
+            avg_delta_device = \
+                    (int(delta_device_1)+\
+                     int(delta_device_2)+\
+                     int(delta_device_3)) / 3
 
-            #ONOS processing latency
-            delta_of_1 = int(topo_timestamp_1) - int(t0_ofp)
-            delta_of_2 = int(topo_timestamp_2) - int(t0_ofp)
-            delta_of_3 = int(topo_timestamp_3) - int(t0_ofp)
-    
-            #End-to-end processing latency
-            delta_tcp_1 = int(topo_timestamp_1) - int(t0_tcp)
-            delta_tcp_2 = int(topo_timestamp_2) - int(t0_tcp)
-            delta_tcp_3 = int(topo_timestamp_3) - int(t0_tcp)
+            #Ensure avg delta meets the threshold before appending
+            if avg_delta_device > 0.0 and avg_delta_device < 10000:
+                latency_t0_to_device_list.append(avg_delta_device)
+           
+            #t0 to graph processing latency (end-to-end)
+            delta_graph_1 = int(graph_timestamp_1) - int(t0_tcp)
+            delta_graph_2 = int(graph_timestamp_2) - int(t0_tcp)
+            delta_graph_3 = int(graph_timestamp_3) - int(t0_tcp)
+        
+            #Get average of delta from all instances
+            avg_delta_graph = \
+                    (int(delta_graph_1)+\
+                     int(delta_graph_2)+\
+                     int(delta_graph_3)) / 3
+
+            latency_end_to_end_list.append(avg_delta_graph)
+            
+            #Ensure avg delta meets the threshold before appending
+            if avg_delta_graph > 0.0 and avg_delta_graph < 10000:
+                latency_t0_to_device_list.append(avg_delta_graph)
+
+            #ofp to graph processing latency (ONOS processing)
+            delta_ofp_graph_1 = int(graph_timestamp_1) - int(t0_ofp)
+            delta_ofp_graph_2 = int(graph_timestamp_2) - int(t0_ofp)
+            delta_ofp_graph_3 = int(graph_timestamp_3) - int(t0_ofp)
+            
+            avg_delta_ofp_graph = \
+                    (int(delta_ofp_graph_1)+\
+                     int(delta_ofp_graph_2)+\
+                     int(delta_ofp_graph_3)) / 3
+            
+            if avg_delta_ofp_graph > 0.0 and avg_delta_ofp_graph < 10000:
+                latency_ofp_to_graph_list.append(avg_delta_ofp_graph)
+            
+            #ofp to device processing latency (ONOS processing)
+            delta_ofp_device_1 = int(device_timestamp_1) - int(t0_ofp)
+            delta_ofp_device_2 = int(device_timestamp_2) - int(t0_ofp)
+            delta_ofp_device_3 = int(device_timestamp_3) - int(t0_ofp)
+            
+            avg_delta_ofp_device = \
+                    (int(delta_ofp_device_1)+\
+                     int(delta_ofp_device_2)+\
+                     int(delta_ofp_device_3)) / 3
+            
+            if avg_delta_ofp_device > 0.0 and avg_delta_ofp_device < 10000:
+                latency_ofp_to_device_list.append(avg_delta_ofp_device)
 
             #TODO:
             #Fetch logs upon threshold excess
 
-            main.log.info("ONOS1 delta OFP: "+str(delta_of_1))
-            main.log.info("ONOS2 delta OFP: "+str(delta_of_2))
-            main.log.info("ONOS3 delta OFP: "+str(delta_of_3))
+            main.log.info("ONOS1 delta end-to-end: "+
+                    str(delta_graph_1))
+            main.log.info("ONOS2 delta end-to-end: "+
+                    str(delta_graph_2))
+            main.log.info("ONSO3 delta end-to-end: "+
+                    str(delta_graph_3))
 
-            main.log.info("ONOS1 delta TCP: "+str(delta_tcp_1))
-            main.log.info("ONOS2 delta TCP: "+str(delta_tcp_2))
-            main.log.info("ONOS3 delta TCP: "+str(delta_tcp_3))
+            main.log.info("ONOS1 delta OFP - graph: "+
+                    str(delta_ofp_graph_1))
+            main.log.info("ONOS2 delta OFP - graph: "+
+                    str(delta_ofp_graph_2))
+            main.log.info("ONOS3 delta OFP - graph: "+
+                    str(delta_ofp_graph_3))
             
+            main.log.info("ONOS1 delta device - t0: "+
+                    str(delta_device_1))
+            main.log.info("ONOS2 delta device - t0: "+
+                    str(delta_device_2))
+            main.log.info("ONOS3 delta device - t0: "+
+                    str(delta_device_3))
+          
+            main.log.info("ONOS1 delta OFP - device: "+
+                    str(delta_ofp_device_1))
+            main.log.info("ONOS2 delta OFP - device: "+
+                    str(delta_ofp_device_2))
+            main.log.info("ONOS3 delta OFP - device: "+
+                    str(delta_ofp_device_3))
+
             main.step("Remove switch from controller")
             main.Mininet1.delete_sw_controller("s1")
 
             time.sleep(5)
 
+        main.log.report(latency_end_to_end_list)
+        main.log.report(latency_ofp_to_graph_list)
+        main.log.report(latency_ofp_to_device_list)
+        main.log.report(latency_t0_to_device_list)
+
         utilities.assert_equals(expect=main.TRUE, actual=assertion,
                 onpass="Switch latency test successful",
                 onfail="Switch latency test failed")
-        
 
     def CASE3(self, main):
         '''

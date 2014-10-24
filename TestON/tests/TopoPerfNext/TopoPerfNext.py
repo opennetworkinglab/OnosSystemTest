@@ -79,12 +79,6 @@ class TopoPerfNext:
         cli2 = main.ONOS2cli.start_onos_cli(ONOS2_ip)
         cli3 = main.ONOS3cli.start_onos_cli(ONOS3_ip)
 
-        if not (cli1 and cli2 and cli3):
-            main.log.info("Attempting to start cli again")
-            cli1 = main.ONOS1cli.start_onos_cli(ONOS1_ip)
-            cli2 = main.ONOS2cli.start_onos_cli(ONOS2_ip)
-            cli3 = main.ONOS3cli.start_onos_cli(ONOS3_ip)
-
         main.step("Enable metrics feature")
         main.ONOS1cli.feature_install("onos-app-metrics-topology")
         main.ONOS2cli.feature_install("onos-app-metrics-topology")
@@ -102,6 +96,19 @@ class TopoPerfNext:
     def CASE2(self, main):
         '''
         Assign s1 to ONOS1 and measure latency
+        
+        There are 4 levels of latency measurements to this test:
+        1) End-to-end measurement: Complete end-to-end measurement
+           from TCP (SYN/ACK) handshake to Graph change
+        2) OFP-to-graph measurement: 'ONOS processing' snippet of
+           measurement from OFP Vendor message to Graph change
+        3) OFP-to-device measurement: 'ONOS processing without 
+           graph change' snippet of measurement from OFP vendor
+           message to Device change timestamp
+        4) T0-to-device measurement: Measurement that includes
+           the switch handshake to devices timestamp without 
+           the graph view change. (TCP handshake -> Device 
+           change)
         '''
         import time
         import subprocess
@@ -190,7 +197,7 @@ class TopoPerfNext:
             main.log.info("Object read in from TCP capture: "+
                     str(temp_text))
             if len(temp_text) > 1:
-                t0_tcp = int(float(temp_text[1])*1000)
+                t0_tcp = float(temp_text[1])*1000.0
             else:
                 main.log.error("Tshark output file for TCP"+
                         " returned unexpected results")
@@ -219,7 +226,7 @@ class TopoPerfNext:
                     str(line_ofp))
     
             if len(line_ofp) > 1:
-                t0_ofp = int(float(obj[1])*1000)
+                t0_ofp = float(obj[1])*1000.0
             else:
                 main.log.error("Tshark output file for OFP"+
                         " returned unexpected results")
@@ -321,11 +328,8 @@ class TopoPerfNext:
                      float(delta_ofp_device_2)+\
                      float(delta_ofp_device_3)) / 3.0
             
-            if avg_delta_ofp_device > 0.0 and avg_delta_ofp_device < 10000:
-                latency_ofp_to_device_list.append(avg_delta_ofp_device)
-            else:
-                main.log.info("Results ignored due to excess in "+\
-                        "threshold")
+            #NOTE: ofp - delta measurements are occasionally negative.
+            #      consider changing or purging the measurement
 
             #TODO:
             #Fetch logs upon threshold excess

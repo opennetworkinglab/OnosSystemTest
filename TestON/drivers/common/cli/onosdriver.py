@@ -366,10 +366,14 @@ class OnosDriver(CLI):
             self.handle.sendline("export TERM=xterm-256color")
             self.handle.expect("xterm-256color")
             self.handle.expect("\$")
-            self.handle.sendline("cd " + self.home + "; git log -1 --pretty=fuller --decorate=short | grep -A 5 \"commit\" --color=never; cd \.\.")
-            self.handle.expect("cd ..")
+            self.handle.sendline("\n")
+            self.handle.expect("\$")
+            self.handle.sendline("cd " + self.home + "; git log -1 --pretty=fuller --decorate=short | grep -A 6 \"commit\" --color=never")
+            self.handle.expect("--color=never")
             self.handle.expect("\$")
             response=(self.name +": \n"+ str(self.handle.before + self.handle.after))
+            self.handle.sendline("cd " + self.home)
+            self.handle.expect("\$")
             lines=response.splitlines()
             for line in lines:
                 print line
@@ -631,10 +635,10 @@ class OnosDriver(CLI):
                 main.log.warn("Network is unreachable")
                 return main.FALSE
             elif i == 1:
-                main.log.info("ONOS was installed on the VM and started")
+                main.log.info("ONOS was installed on " + node + " and started")
                 return main.TRUE
             elif i == 2: 
-                main.log.info("Installation of ONOS on the VM timed out")
+                main.log.info("Installation of ONOS on " + node + " timed out")
                 return main.FALSE
 
         except pexpect.EOF:

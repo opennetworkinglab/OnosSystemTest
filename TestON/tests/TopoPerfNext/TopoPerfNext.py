@@ -351,10 +351,63 @@ class TopoPerfNext:
 
             time.sleep(5)
 
-        main.log.report(latency_end_to_end_list)
-        main.log.report(latency_ofp_to_graph_list)
-        main.log.report(latency_ofp_to_device_list)
-        main.log.report(latency_t0_to_device_list)
+        #If there are at least 1 element in each list,
+        #pass the test case
+        if len(latency_end_to_end_list) > 0 and\
+           len(latency_ofp_to_graph_list) > 0 and\
+           len(latency_ofp_to_device_list) > 0 and\
+           len(latency_t0_to_device_list) > 0:
+            assertion = main.TRUE
+
+        #Calculate min, max, avg of latency lists
+        latency_end_to_end_max = \
+                max(float(latency_end_to_end_list))
+        latency_end_to_end_min = \
+                min(float(latency_end_to_end_list))
+        latency_end_to_end_avg = \
+                (sum(float(latency_end_to_end_list)) / \
+                 len(latency_end_to_end_list))
+   
+        latency_ofp_to_graph_max = \
+                max(float(latency_ofp_to_graph_list))
+        latency_ofp_to_graph_min = \
+                min(float(latency_ofp_to_graph_list))
+        latency_ofp_to_graph_avg = \
+                (sum(float(latency_ofp_to_graph_list)) / \
+                 len(latency_ofp_to_graph_list))
+
+        latency_ofp_to_device_max = \
+                max(float(latency_ofp_to_device_list))
+        latency_ofp_to_device_min = \
+                min(float(latency_ofp_to_device_list))
+        latency_ofp_to_device_avg = \
+                (sum(float(latency_ofp_to_device_list)) / \
+                 len(latency_ofp_to_device_list))
+
+        latency_t0_to_device_max = \
+                max(float(latency_t0_to_device_list))
+        latency_t0_to_device_min = \
+                min(float(latency_t0_to_device_list))
+        latency_t0_to_device_avg = \
+                (sum(float(latency_t0_to_device_list)) / \
+                 len(latency_ofp_to_device_list))
+
+        main.log.report("Switch add - End-to-end latency: \n"+\
+                "Min: "+str(latency_end_to_end_min)+"\n"+\
+                "Max: "+str(latency_end_to_end_max)+"\n"+\
+                "Avg: "+str(latency_end_to_end_avg))
+        main.log.report("Switch add - OFP-to-Graph latency: \n"+\
+                "Min: "+str(latency_ofp_to_graph_min)+"\n"+\
+                "Max: "+str(latency_ofp_to_graph_max)+"\n"+\
+                "Avg: "+str(latency_ofp_to_graph_avg))
+        main.log.report("Switch add - OFP-to-Device latency: \n"+\
+                "Min: "+str(latency_ofp_to_device_min)+"\n"+\
+                "Max: "+str(latency_ofp_to_device_max)+"\n"+\
+                "Avg: "+str(latency_ofp_to_device_avg))
+        main.log.report("Switch add - t0-to-Device latency: \n"+\
+                "Min: "+str(latency_t0_to_device_min)+"\n"+\
+                "Max: "+str(latency_t0_to_device_max)+"\n"+\
+                "Avg: "+str(latency_t0_to_device_avg))
 
         utilities.assert_equals(expect=main.TRUE, actual=assertion,
                 onpass="Switch latency test successful",

@@ -450,13 +450,9 @@ class OnosCliDriver(CLI):
                 if not grep_str:
                     self.handle.sendline("devices")
                     self.handle.expect("onos>")
-                    self.handle.sendline("")
-                    self.handle.expect("onos>")
                 else:
                     self.handle.sendline("devices | grep '"+
                         str(grep_str)+"'")
-                    self.handle.expect("onos>")
-                    self.handle.sendline("")
                     self.handle.expect("onos>")
                 handle = self.handle.before
                 print "handle =",handle
@@ -1038,7 +1034,6 @@ class OnosCliDriver(CLI):
             # append to id_list
             for arg in temp_list:
                 id_list.append(arg.split("id=")[1])
-            
             return id_list
 
         except pexpect.EOF:

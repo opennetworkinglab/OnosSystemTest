@@ -664,7 +664,7 @@ class OnosDriver(CLI):
                 "Job\sis\salready\srunning",
                 "start/running",
                 "Unknown\sinstance",
-                pexpect.TIMEOUT],timeout=60)
+                pexpect.TIMEOUT],timeout=120)
 
             if i == 0:
                 main.log.info("Service is already running")

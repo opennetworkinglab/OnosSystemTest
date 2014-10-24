@@ -767,6 +767,42 @@ class OnosCliDriver(CLI):
             main.cleanup()
             main.exit()
 
+    def add_optical_intent(self, ingress_device, egress_device):
+        '''
+        Required:
+            * ingress_device: device id of ingress device
+            * egress_device: device id of egress device
+        Optional:
+            TODO: Still needs to be implemented via dev side
+        ''' 
+        try:
+            self.handle.sendline("add-optical-intent "+
+                    str(ingress_device) + " " + str(egress_device))
+            self.handle.expect("add-optical-intent")
+            i = self.handle.expect([
+                "Error",
+                "onos>"])
+
+            handle = self.handle.before
+
+            #If error, return error message
+            if i == 0:
+                return handle
+            else:
+                return main.TRUE
+        
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()
+
     def add_point_intent(self, ingress_device, port_ingress,
             egress_device, port_egress, ethType="", ethSrc="",
             ethDst=""):

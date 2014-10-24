@@ -328,12 +328,16 @@ class TopoPerfNext:
                      float(delta_ofp_device_2)+\
                      float(delta_ofp_device_3)) / 3.0
             
-            #NOTE: ofp - delta measurements are occasionally negative.
-            #      consider changing or purging the measurement
+            #NOTE: ofp - delta measurements are occasionally negative
+            #      due to system time misalignment.
+            #TODO: Implement ptp across all clusters
+            #Just add the calculation to list for now
+            latency_ofp_to_device_list.append(avg_delta_ofp_device)
 
             #TODO:
             #Fetch logs upon threshold excess
 
+            
             main.log.info("ONOS1 delta end-to-end: "+
                     str(delta_graph_1))
             main.log.info("ONOS2 delta end-to-end: "+
@@ -367,6 +371,8 @@ class TopoPerfNext:
 
             time.sleep(5)
 
+        #END for loop for iteration
+
         #If there is at least 1 element in each list,
         #pass the test case
         if len(latency_end_to_end_list) > 0 and\
@@ -374,6 +380,21 @@ class TopoPerfNext:
            len(latency_ofp_to_device_list) > 0 and\
            len(latency_t0_to_device_list) > 0:
             assertion = main.TRUE
+        elif len(latency_end_to_end_list) == 0:
+            #The appending of 0 here is to prevent 
+            #the min,max,sum functions from failing 
+            #below
+            latency_end_to_end_list.append(0)
+            assertion = main.FALSE
+        elif len(latency_ofp_to_graph_list) == 0:
+            latency_ofp_to_graph_list.append(0)
+            assertion = main.FALSE
+        elif len(latency_ofp_to_device_list) == 0:
+            latency_ofp_to_device_list.append(0)
+            assertion = main.FALSE
+        elif len(latency_t0_to_device_list) == 0:
+            latency_t0_to_device_list.append(0)
+            assertion = main.FALSE
 
         #Calculate min, max, avg of latency lists
         latency_end_to_end_max = \

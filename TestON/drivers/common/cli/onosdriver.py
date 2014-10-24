@@ -411,7 +411,9 @@ class OnosDriver(CLI):
         temp_directory = "/tmp/"
         #Create the cell file in the directory for writing (w+)
         cell_file = open(temp_directory+file_name , 'w+')
-        
+       
+        comment = ""
+        comment_string = "#"+ comment
         #Feature string is hardcoded environment variables
         #That you may wish to use by default on startup.
         #Note that you  may not want certain features listed
@@ -430,24 +432,24 @@ class OnosDriver(CLI):
         #Omit last element of list to format for NIC
         temp_list = temp_list[:-1]
         #Structure the nic string ip
-        nic_addr = ".".join(temp_list) + ".*\n"
+        nic_addr = ".".join(temp_list) + ".*"
         onos_nic_string = "export ONOS_NIC="+nic_addr
 
         try:
             #Start writing to file
-            cell_file.write(core_feature_string + "\n")
-            cell_file.write(onos_nic_string) 
-            cell_file.write(mn_string +"'"+ mn_ip_addrs +"'"+ "\n") 
+            cell_file.write(onos_nic_string + "\n") 
 
             for arg in onos_ip_addrs:
                 #For each argument in onos_ip_addrs, write to file
                 #Output should look like the following:
-                #   export OC1='10.128.20.11'
-                #   export OC2='10.128.20.12'
+                #   export OC1="10.128.20.11"
+                #   export OC2="10.128.20.12"
                 cell_file.write(onos_string + str(temp_count) +
-                        "=" + "'" + arg + "'" + "\n" )
+                        "=" + "\"" + arg + "\"" + "\n" )
                 temp_count = temp_count + 1
             
+            cell_file.write(mn_string +"\""+ mn_ip_addrs +"\""+ "\n") 
+            cell_file.write(core_feature_string + "\n")
             cell_file.close()
 
             #We use os.system to send the command to TestON cluster
@@ -996,7 +998,7 @@ class OnosDriver(CLI):
         self.handle.expect("\$")
         self.handle.sendline("")
         self.handle.sendline("tshark -i "+str(interface)+
-                " -t e | grep --line-buffered \""+str(grep)+"\" > "+directory+" &")
+                " -t e | grep --line-buffered \""+str(grep)+"\" >"+directory+" &")
         self.handle.sendline("\r")
         self.handle.expect("Capturing on")
         self.handle.sendline("\r")

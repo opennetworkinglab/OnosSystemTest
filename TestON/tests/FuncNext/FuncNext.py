@@ -250,7 +250,7 @@ class FuncNext:
  
         
         print "_____________________________________________________________________________________"
-        '''
+        
         main.step("Add point-to-point intents for mininet hosts h8 and h18 or ONOS hosts h8 and h12")
         ptp_intent_result = main.ONOS2.add_point_intent("of:0000000000003008", 1, "of:0000000000006018", 1)
         if ptp_intent_result == main.TRUE:
@@ -382,7 +382,7 @@ class FuncNext:
             main.log.info(get_intent_result)
 
         print("_______________________________________________________________________________________")
-       ''' 
+        
         #Unistall onos-app-fwd app to disable reactive forwarding
         appUninstall_result = main.ONOS2.feature_uninstall("onos-app-fwd")
         main.log.info("onos-app-fwd uninstalled")
@@ -420,8 +420,8 @@ class FuncNext:
                 Ping_Result = main.ERROR
         if Ping_Result==main.FALSE:
             main.log.report("Intents have not ben installed correctly. Cleaning up")
-            main.cleanup()
-            main.exit()
+            #main.cleanup()
+            #main.exit()
         if Ping_Result==main.TRUE:
             main.log.report("Intents have been installed correctly")
             

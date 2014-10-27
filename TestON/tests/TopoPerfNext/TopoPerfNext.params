@@ -27,7 +27,7 @@
     </MN>
 
     <BENCH>
-        <ip>10.128.20.10</ip>
+        <ip>10.128.174.10</ip>
     </BENCH>
 
     <TEST>
@@ -35,4 +35,11 @@
         <numIter>10</numIter>
          
     </TEST>
+
+    <JSON>
+        <deviceTimestamp>topologyDeviceEventTimestamp</deviceTimestamp>
+        <hostTimestamp>topologyHostEventTimestamp</hostTimestamp>
+        <linkTimestamp>topologyLinkEventTimestamp</linkTimestamp>
+        <graphTimestamp>topologyGraphEventTimestamp</graphTimestamp>
+    </JSON>
 </PARAMS>

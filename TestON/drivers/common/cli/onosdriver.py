@@ -366,10 +366,14 @@ class OnosDriver(CLI):
             self.handle.sendline("export TERM=xterm-256color")
             self.handle.expect("xterm-256color")
             self.handle.expect("\$")
-            self.handle.sendline("cd " + self.home + "; git log -1 --pretty=fuller --decorate=short | grep -A 5 \"commit\" --color=never; cd \.\.")
-            self.handle.expect("cd ..")
+            self.handle.sendline("\n")
+            self.handle.expect("\$")
+            self.handle.sendline("cd " + self.home + "; git log -1 --pretty=fuller --decorate=short | grep -A 6 \"commit\" --color=never")
+            self.handle.expect("--color=never")
             self.handle.expect("\$")
             response=(self.name +": \n"+ str(self.handle.before + self.handle.after))
+            self.handle.sendline("cd " + self.home)
+            self.handle.expect("\$")
             lines=response.splitlines()
             for line in lines:
                 print line
@@ -411,7 +415,9 @@ class OnosDriver(CLI):
         temp_directory = "/tmp/"
         #Create the cell file in the directory for writing (w+)
         cell_file = open(temp_directory+file_name , 'w+')
-        
+       
+        comment = ""
+        comment_string = "#"+ comment
         #Feature string is hardcoded environment variables
         #That you may wish to use by default on startup.
         #Note that you  may not want certain features listed
@@ -430,24 +436,24 @@ class OnosDriver(CLI):
         #Omit last element of list to format for NIC
         temp_list = temp_list[:-1]
         #Structure the nic string ip
-        nic_addr = ".".join(temp_list) + ".*\n"
+        nic_addr = ".".join(temp_list) + ".*"
         onos_nic_string = "export ONOS_NIC="+nic_addr
 
         try:
             #Start writing to file
-            cell_file.write(core_feature_string + "\n")
-            cell_file.write(onos_nic_string) 
-            cell_file.write(mn_string +"'"+ mn_ip_addrs +"'"+ "\n") 
+            cell_file.write(onos_nic_string + "\n") 
 
             for arg in onos_ip_addrs:
                 #For each argument in onos_ip_addrs, write to file
                 #Output should look like the following:
-                #   export OC1='10.128.20.11'
-                #   export OC2='10.128.20.12'
+                #   export OC1="10.128.20.11"
+                #   export OC2="10.128.20.12"
                 cell_file.write(onos_string + str(temp_count) +
-                        "=" + "'" + arg + "'" + "\n" )
+                        "=" + "\"" + arg + "\"" + "\n" )
                 temp_count = temp_count + 1
             
+            cell_file.write(mn_string +"\""+ mn_ip_addrs +"\""+ "\n") 
+            cell_file.write(core_feature_string + "\n")
             cell_file.close()
 
             #We use os.system to send the command to TestON cluster
@@ -629,10 +635,10 @@ class OnosDriver(CLI):
                 main.log.warn("Network is unreachable")
                 return main.FALSE
             elif i == 1:
-                main.log.info("ONOS was installed on the VM and started")
+                main.log.info("ONOS was installed on " + node + " and started")
                 return main.TRUE
             elif i == 2: 
-                main.log.info("Installation of ONOS on the VM timed out")
+                main.log.info("Installation of ONOS on " + node + " timed out")
                 return main.FALSE
 
         except pexpect.EOF:
@@ -996,7 +1002,7 @@ class OnosDriver(CLI):
         self.handle.expect("\$")
         self.handle.sendline("")
         self.handle.sendline("tshark -i "+str(interface)+
-                " -t e | grep --line-buffered \""+str(grep)+"\" > "+directory+" &")
+                " -t e | grep --line-buffered \""+str(grep)+"\" >"+directory+" &")
         self.handle.sendline("\r")
         self.handle.expect("Capturing on")
         self.handle.sendline("\r")
@@ -1006,7 +1012,8 @@ class OnosDriver(CLI):
         '''
         Removes wireshark files from /tmp and kills all tshark processes
         '''
-        self.execute(cmd="rm /tmp/wireshark*")
+        #Remove all pcap from previous captures
+        self.execute(cmd="sudo rm /tmp/wireshark*")
         self.handle.sendline("")
         self.handle.sendline("sudo kill -9 `ps -ef | grep \"tshark -i\" |"+
                 " grep -v grep | awk '{print $2}'`")

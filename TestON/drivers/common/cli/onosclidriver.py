@@ -798,18 +798,24 @@ class OnosCliDriver(CLI):
                 cmd += " "+str(ingress_device) + "/" + str(port_ingress) + " " +\
                 str(egress_device) + "/" + str(port_egress) 
 
-            self.handle.sendline("")
-            self.handle.expect("onos>")
+            print "cmd = ", cmd
+            #self.handle.sendline("")
+            #self.handle.expect("onos>")
 
             self.handle.sendline(cmd)
             i = self.handle.expect([
                 "Error",
                 "onos>"])
           
-            self.handle.sendline("")
+            self.handle.sendline("intents")
             self.handle.expect("onos>")
+            Intenthandle = self.handle.before
+            #print "Intenthandle = ", Intenthandle
 
-            handle = self.handle.before
+            #self.handle.sendline("flows")
+            #self.handle.expect("onos>")
+            #Flowhandle = self.handle.before
+            #print "Flowhandle = ", Flowhandle
 
             if i == 0:
                 main.log.error("Error in adding point-to-point intent")
@@ -874,7 +880,6 @@ class OnosCliDriver(CLI):
                 self.handle.sendline("intents -j")
                 self.handle.expect("intents -j")
                 self.handle.expect("onos>")
-
                 handle = self.handle.before
 
             else:
@@ -883,10 +888,6 @@ class OnosCliDriver(CLI):
 
                 self.handle.sendline("intents")
                 self.handle.expect("onos>")
-
-                self.handle.sendline("")
-                self.handle.expect("onos>")
-
                 handle = self.handle.before
 
             return handle
@@ -902,6 +903,43 @@ class OnosCliDriver(CLI):
             main.log.info(self.name+" ::::::")
             main.cleanup()
             main.exit()
+
+    def flows(self, json_format = False):
+        '''
+        Optional:
+            * json_format: enable output formatting in json
+        Description:
+            Obtain flows currently installed 
+        '''
+        try:
+            if json_format:
+                self.handle.sendline("flows -j")
+                self.handle.expect("flows -j")
+                self.handle.expect("onos>")
+                handle = self.handle.before
+
+            else:
+                self.handle.sendline("")
+                self.handle.expect("onos>")
+                self.handle.sendline("flows")
+                self.handle.expect("onos>")
+                handle = self.handle.before
+
+            return handle
+
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()
+
+
 
     def topology_events_metrics(self, json_format=True):
         '''

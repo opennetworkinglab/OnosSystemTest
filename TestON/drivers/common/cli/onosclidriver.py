@@ -1348,4 +1348,45 @@ class OnosCliDriver(CLI):
             main.log.info(self.name+" ::::::")
             main.cleanup()
             main.exit()
+
+    def device_role(self, device_id, onos_node, role="master"):
+        '''
+        Calls the device-role cli command.
+        device_id must be the id of a device as seen in the onos devices command
+        onos_node is the ip of one of the onos nodes in the cluster
+        role must be either master, standby, or none
+
+        Returns main.TRUE or main.FALSE based argument varification. 
+            When device-role supports errors this should be extended to 
+            support that output
+        '''
+        #TODO: handle error messages from device-role
+        try:
+            print "beginning device_role... \n\tdevice_id:" + device_id
+            print "\tonos_node: " + onos_node
+            print "\trole: "+ role
+            if role.lower() == "master" or \
+                    role.lower() == "standby" or \
+                    role.lower() == "none":
+                        self.handle.sendline("")
+                        self.handle.expect("onos>")
+                        self.handle.sendline("device-role " + device_id + " " + onos_node +  " " + role)
+                        self.handle.expect("onos>")
+                        return main.TRUE
+            else:
+                return main.FALSE
+
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()
+
+
     #***********************************

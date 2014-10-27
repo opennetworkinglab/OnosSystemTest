@@ -366,10 +366,14 @@ class OnosDriver(CLI):
             self.handle.sendline("export TERM=xterm-256color")
             self.handle.expect("xterm-256color")
             self.handle.expect("\$")
-            self.handle.sendline("cd " + self.home + "; git log -1 --pretty=fuller --decorate=short | grep -A 5 \"commit\" --color=never; cd \.\.")
-            self.handle.expect("cd ..")
+            self.handle.sendline("\n")
+            self.handle.expect("\$")
+            self.handle.sendline("cd " + self.home + "; git log -1 --pretty=fuller --decorate=short | grep -A 6 \"commit\" --color=never")
+            self.handle.expect("--color=never")
             self.handle.expect("\$")
             response=(self.name +": \n"+ str(self.handle.before + self.handle.after))
+            self.handle.sendline("cd " + self.home)
+            self.handle.expect("\$")
             lines=response.splitlines()
             for line in lines:
                 print line
@@ -580,19 +584,22 @@ class OnosDriver(CLI):
             self.handle.sendline("onos -w " + ONOS_ip + " " + cmdstr)
             self.handle.expect("\$")
 
-            handle_before = str(self.handle.before)
+            handle_before = self.handle.before
+            print "handle_before = ", self.handle.before
             handle_after = str(self.handle.after)
             
-            self.handle.sendline("")
-            self.handle.expect("\$")
-            handle_more = str(self.handle.before)
+            #self.handle.sendline("")
+            #self.handle.expect("\$")
+            #handle_more = str(self.handle.before)
 
             main.log.info("Command sent successfully")
 
             #Obtain return handle that consists of result from 
             #the onos command. The string may need to be 
             #configured further. 
-            return_string = handle_before + handle_after + handle_more
+            #return_string = handle_before + handle_after
+            return_string = handle_before
+            print "return_string = ", return_string
             return return_string
 
         except pexpect.EOF:
@@ -630,10 +637,10 @@ class OnosDriver(CLI):
                 main.log.warn("Network is unreachable")
                 return main.FALSE
             elif i == 1:
-                main.log.info("ONOS was installed on the VM and started")
+                main.log.info("ONOS was installed on " + node + " and started")
                 return main.TRUE
             elif i == 2: 
-                main.log.info("Installation of ONOS on the VM timed out")
+                main.log.info("Installation of ONOS on " + node + " timed out")
                 return main.FALSE
 
         except pexpect.EOF:
@@ -870,7 +877,7 @@ class OnosDriver(CLI):
             main.exit()
 
 
-    def get_topology(self, ip):
+    def get_topology(self,topology_output):
         '''
         parses the onos:topology output
         Returns: a topology dict populated by the key values found in 
@@ -879,32 +886,32 @@ class OnosDriver(CLI):
 
         try:
             #call the cli to get the topology summary
-            cmdstr = "onos:topology"
-            cli_result = self.onos_cli(ip, cmdstr)
-
+            #cmdstr = "onos:topology"
+            #cli_result = self.onos_cli(ip, cmdstr)
+            #print "cli_result = ", cli_result
 
             #Parse the output
             topology = {}
             #for line in cli_result.split("\n"):
-            for line in cli_result.splitlines():
+            for line in topology_output.splitlines():
                 if not line.startswith("time="):
                     continue
                 #else
                 print line
                 for var in line.split(","):
-                    print "'"+var+"'"
-                    print "'"+var.strip()+"'"
+                    #print "'"+var+"'"
+                    #print "'"+var.strip()+"'"
                     key, value = var.strip().split("=")
                     topology[key] = value
-            print topology
+            print "topology = ", topology
             devices = topology.get('devices', False)
-            print devices
+            print "devices = ", devices
             links = topology.get('links', False)
-            print links
+            print "links = ", links
             clusters = topology.get('clusters', False)
-            print clusters
+            print "clusters = ", clusters
             paths = topology.get('paths', False)
-            print paths
+            print "paths = ", paths
 
             return topology
         except pexpect.EOF:
@@ -918,8 +925,10 @@ class OnosDriver(CLI):
             main.log.info(self.name+" ::::::")
             main.cleanup()
             main.exit()
+    
+   
 
-    def check_status(self, ip, numoswitch, numolink, log_level="info"):
+    def check_status(self, topology_result, numoswitch, numolink, log_level="info"):
         '''
         Checks the number of swithes & links that ONOS sees against the 
         supplied values. By default this will report to main.log, but the 
@@ -939,7 +948,7 @@ class OnosDriver(CLI):
         '''
 
         try:
-            topology = self.get_topology(ip)
+            topology = self.get_topology(topology_result)
             if topology == {}:
                 return main.ERROR
             output = ""
@@ -980,6 +989,7 @@ class OnosDriver(CLI):
             main.log.info(self.name+" ::::::")
             main.cleanup()
             main.exit()
+
 
     def tshark_grep(self, grep, directory, interface='eth0'):
         '''

@@ -209,6 +209,8 @@ class OnosCliDriver(CLI):
             handle += self.handle.after
 
             main.log.info("Command sent.")
+            ansi_escape = re.compile(r'\x1b[^m]*m')
+            handle = ansi_escape.sub('', handle)
 
             return handle
         except pexpect.EOF:
@@ -689,8 +691,95 @@ class OnosCliDriver(CLI):
             main.cleanup()
             main.exit()
     
-    #TODO:
-    #def hosts(self):
+    def hosts(self, json_format=True, grep_str=""):
+        '''
+        Lists all discovered hosts 
+        Optional argument:
+            * grep_str - pass in a string to grep
+        '''
+        try:
+            self.handle.sendline("")
+            self.handle.expect("onos>")
+            
+            if json_format:
+                if not grep_str:
+                    self.handle.sendline("hosts -j")
+                    self.handle.expect("hosts -j")
+                    self.handle.expect("onos>")
+                else:
+                    self.handle.sendline("hosts -j | grep '"+
+                        str(grep_str)+"'")
+                    self.handle.expect("hosts -j | grep '"+str(grep_str)+"'")
+                    self.handle.expect("onos>")
+                handle = self.handle.before
+                '''
+                handle variable here contains some ANSI escape color code sequences at the end which are invisible in the print command output
+                To make that escape sequence visible, use repr() function. The repr(handle) output when printed shows the ANSI escape sequences.
+                In json.loads(somestring), this somestring variable is actually repr(somestring) and json.loads would fail with the escape sequence.
+                So we take off that escape sequence using 
+                ansi_escape = re.compile(r'\r\r\n\x1b[^m]*m')
+                handle1 = ansi_escape.sub('', handle) 
+                '''
+                #print "repr(handle) =", repr(handle)
+                ansi_escape = re.compile(r'\r\r\n\x1b[^m]*m')
+                handle1 = ansi_escape.sub('', handle)
+                #print "repr(handle1) = ", repr(handle1)
+                return handle1
+            else:
+                if not grep_str:
+                    self.handle.sendline("hosts")
+                    self.handle.expect("onos>")
+                else:
+                    self.handle.sendline("hosts | grep '"+
+                        str(grep_str)+"'")
+                    self.handle.expect("onos>")
+                handle = self.handle.before
+                print "handle =",handle
+                return handle
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()
+
+    def get_host(self, mac):
+        '''
+        Return the first host from the hosts api whose 'id' contains 'mac'
+        Note: mac must be a colon seperated mac address, but could be a partial mac address
+        Return None if there is no match
+        '''
+        import json
+        try:
+            if mac == None:
+                return None
+            else:
+                mac = mac
+                raw_hosts = self.hosts()
+                hosts_json = json.loads(raw_hosts)
+                #search json for the host with mac then return the device
+                for host in hosts_json:
+                    print "%s in  %s?" % (mac, host['id'])
+                    if mac in host['id']:
+                        return host
+            return None
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()
+
 
     def get_hosts_id(self, host_list):
         '''
@@ -850,18 +939,24 @@ class OnosCliDriver(CLI):
                 cmd += " "+str(ingress_device) + "/" + str(port_ingress) + " " +\
                 str(egress_device) + "/" + str(port_egress) 
 
-            self.handle.sendline("")
-            self.handle.expect("onos>")
+            print "cmd = ", cmd
+            #self.handle.sendline("")
+            #self.handle.expect("onos>")
 
             self.handle.sendline(cmd)
             i = self.handle.expect([
                 "Error",
                 "onos>"])
           
-            self.handle.sendline("")
+            self.handle.sendline("intents")
             self.handle.expect("onos>")
+            Intenthandle = self.handle.before
+            #print "Intenthandle = ", Intenthandle
 
-            handle = self.handle.before
+            #self.handle.sendline("flows")
+            #self.handle.expect("onos>")
+            #Flowhandle = self.handle.before
+            #print "Flowhandle = ", Flowhandle
 
             if i == 0:
                 main.log.error("Error in adding point-to-point intent")
@@ -926,7 +1021,6 @@ class OnosCliDriver(CLI):
                 self.handle.sendline("intents -j")
                 self.handle.expect("intents -j")
                 self.handle.expect("onos>")
-
                 handle = self.handle.before
 
             else:
@@ -935,10 +1029,6 @@ class OnosCliDriver(CLI):
 
                 self.handle.sendline("intents")
                 self.handle.expect("onos>")
-
-                self.handle.sendline("")
-                self.handle.expect("onos>")
-
                 handle = self.handle.before
 
             return handle
@@ -954,6 +1044,43 @@ class OnosCliDriver(CLI):
             main.log.info(self.name+" ::::::")
             main.cleanup()
             main.exit()
+
+    def flows(self, json_format = False):
+        '''
+        Optional:
+            * json_format: enable output formatting in json
+        Description:
+            Obtain flows currently installed 
+        '''
+        try:
+            if json_format:
+                self.handle.sendline("flows -j")
+                self.handle.expect("flows -j")
+                self.handle.expect("onos>")
+                handle = self.handle.before
+
+            else:
+                self.handle.sendline("")
+                self.handle.expect("onos>")
+                self.handle.sendline("flows")
+                self.handle.expect("onos>")
+                handle = self.handle.before
+
+            return handle
+
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()
+
+
 
     def topology_events_metrics(self, json_format=True):
         '''
@@ -1160,4 +1287,65 @@ class OnosCliDriver(CLI):
             main.cleanup()
             main.exit()
 
+    def check_status(self, ip, numoswitch, numolink, log_level="info"):
+        '''
+        Checks the number of swithes & links that ONOS sees against the 
+        supplied values. By default this will report to main.log, but the 
+        log level can be specifid.
+        
+        Params: ip = ip used for the onos cli
+                numoswitch = expected number of switches
+                numlink = expected number of links
+                log_level = level to log to. Currently accepts 'info', 'warn' and 'report'
+
+
+        log_level can
+
+        Returns: main.TRUE if the number of switchs and links are correct, 
+                 main.FALSE if the numer of switches and links is incorrect,
+                 and main.ERROR otherwise
+        '''
+
+        try:
+            topology = self.get_topology(ip)
+            if topology == {}:
+                return main.ERROR
+            output = ""
+            #Is the number of switches is what we expected
+            devices = topology.get('devices',False)
+            links = topology.get('links',False)
+            if devices == False or links == False:
+                return main.ERROR
+            switch_check = ( int(devices) == int(numoswitch) )
+            #Is the number of links is what we expected
+            link_check = ( int(links) == int(numolink) )
+            if (switch_check and link_check):
+                #We expected the correct numbers
+                output = output + "The number of links and switches match "\
+                        + "what was expected"
+                result = main.TRUE
+            else:
+                output = output + \
+                        "The number of links and switches does not match what was expected"
+                result = main.FALSE
+            output = output + "\n ONOS sees %i devices (%i expected) and %i links (%i expected)"\
+                    % ( int(devices), int(numoswitch), int(links), int(numolink) )
+            if log_level == "report":
+                main.log.report(output)
+            elif log_level == "warn":
+                main.log.warn(output)
+            else:
+                main.log.info(output)
+            return result 
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()
     #***********************************

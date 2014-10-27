@@ -1,0 +1,65 @@
+<TOPOLOGY>
+    <COMPONENT>
+
+        <ONOSbench>
+            <host>10.128.30.10</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>OnosDriver</type>
+            <connect_order>1</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </ONOSbench>
+
+        <ONOScli1>
+            <host>10.128.30.10</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>OnosCliDriver</type>
+            <connect_order>2</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </ONOScli1>
+
+        <ONOScli2>
+            <host>10.128.30.10</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>OnosCliDriver</type>
+            <connect_order>2</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </ONOScli2>
+
+        <ONOS1>
+            <host>10.128.30.11</host>
+            <user>sdn</user>
+            <password>rocks</password>
+            <type>OnosDriver</type>
+            <connect_order>3</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </ONOS1>
+
+        <ONOS2>
+            <host>10.128.30.12</host>
+            <user>sdn</user>
+            <password>rocks</password>
+            <type>OnosDriver</type>
+            <connect_order>3</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </ONOS2>
+
+        <Mininet1>
+            <host>10.128.11.11</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>MininetCliDriver</type>
+            <connect_order>4</connect_order>
+            <COMPONENTS>
+                #Specify the Option for mininet
+                <arg1> --topo tree,2,3</arg1>
+                <arg2> </arg2>
+                <arg3> </arg3>
+                <controller> remote </controller>
+            </COMPONENTS>
+        </Mininet1>
+
+    </COMPONENT>
+</TOPOLOGY>

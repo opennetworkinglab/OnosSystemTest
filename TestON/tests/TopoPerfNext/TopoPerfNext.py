@@ -236,8 +236,6 @@ class TopoPerfNext:
             of_file.close()
             #****************
            
-            #TODO: 
-            #Get json object from all 3 ONOS instances
             json_str_1 = main.ONOS1cli.topology_events_metrics()
             json_str_2 = main.ONOS2cli.topology_events_metrics()
             json_str_3 = main.ONOS3cli.topology_events_metrics()
@@ -452,6 +450,10 @@ class TopoPerfNext:
         '''
         Bring port up / down and measure latency.
         Port enable / disable is simulated by ifconfig up / down
+        
+        In ONOS-next, we must ensure that the port we are 
+        manipulating is connected to another switch with a valid
+        connection. Otherwise, graph view will not be updated.
         '''
         import time
         import subprocess
@@ -460,28 +462,50 @@ class TopoPerfNext:
         import json
 
         ONOS1_ip = main.params['CTRL']['ip1']
-        default_sw_port = main.params['CTRL']['port1']
+        ONOS2_ip = main.params['CTRL']['ip2']
+        ONOS3_ip = main.params['CTRL']['ip3']
         ONOS_user = main.params['CTRL']['user']
-        num_iter = main.params['TEST']['numIter']
 
+        default_sw_port = main.params['CTRL']['port1']
+       
+        #Number of iterations of case
+        num_iter = main.params['TEST']['numIter']
+       
+        #Timestamp 'keys' for json metrics output.
+        #These are subject to change, hence moved into params
+        deviceTimestamp = main.params['JSON']['deviceTimestamp']
+        graphTimestamp = main.params['JSON']['graphTimestamp']
+
+        #NOTE: Some hardcoded variables you may need to configure
+        #      besides the params
+            
         tshark_port_status = "OFP 130 Port Status"
 
         tshark_port_up = "/tmp/tshark_port_up.txt"
         tshark_port_down = "/tmp/tshark_port_down.txt"
+        interface_config = "s1-eth1"
 
         main.log.report("Port enable / disable latency")
 
-        main.step("Assign switch to controller")
+        main.step("Assign switches s1 and s2 to controller 1")
         main.Mininet1.assign_sw_controller(sw="1",ip1=ONOS1_ip,
+                port1=default_sw_port)
+        main.Mininet1.assign_sw_controller(sw="2",ip1=ONOS1_ip,
                 port1=default_sw_port)
 
         main.step("Verify switch is assigned correctly")
         result_s1 = main.Mininet1.get_sw_controller(sw="s1")
-        if result_s1 == main.FALSE:
+        result_s2 = main.Mininet1.get_sw_controller(sw="s2")
+        if result_s1 == main.FALSE or result_s2 == main.FALSE:
             main.log.info("Switch s1 was not assigned correctly")
             assertion = main.FALSE
         else:
             main.log.info("Switch s1 was assigned correctly")
+
+        port_up_device_to_ofp_list = []
+        port_up_graph_to_ofp_list = []
+        port_down_device_to_ofp_list = []
+        port_down_graph_to_ofp_list = []
 
         for i in range(0, int(num_iter)):
             main.step("Starting wireshark capture for port status down")
@@ -490,8 +514,10 @@ class TopoPerfNext:
             
             time.sleep(10)
 
-            main.step("Disable port (interface s1-eth2)")
-            main.Mininet2.handle.sendline("sudo ifconfig s1-eth2 down")
+            #Disable interface that is connected to switch 2
+            main.step("Disable port: "+interface_config)
+            main.Mininet2.handle.sendline("sudo ifconfig "+
+                    interface_config+" down")
             main.Mininet2.handle.expect("\$")
             time.sleep(20)
 
@@ -504,33 +530,105 @@ class TopoPerfNext:
                     tshark_port_down+" /tmp/")
 
             f_port_down = open(tshark_port_down, 'r')
+            #Get first line of port down event from tshark
             f_line = f_port_down.readline()
             obj_down = f_line.split(" ")
             if len(f_line) > 0:
-                timestamp_begin_pt_down = int(float(obj_down[1])*1000)
+                timestamp_begin_pt_down = int(float(obj_down[1]))*1000
+                main.log.info("Port down begin timestamp: "+
+                        str(timestamp_begin_pt_down))
             else:
                 main.log.info("Tshark output file returned unexpected"+
-                        " results")
+                        " results: "+str(obj_down))
                 timestamp_begin_pt_down = 0
+            
+            f_port_down.close()
 
             main.step("Obtain t1 by REST call")
-            #TODO: Implement json object parsing here
+            json_str_1 = main.ONOS1cli.topology_events_metrics()
+            json_str_2 = main.ONOS2cli.topology_events_metrics()
+            json_str_3 = main.ONOS3cli.topology_events_metrics()
 
-            timestamp_end_pt_down_1 = 0
-            timestamp_end_pt_down_2 = 0
-            timestamp_end_pt_down_3 = 0
-
-            delta_pt_down_1 = int(timestamp_end_pt_down_1) - \
-                    int(timestamp_begin_pt_down)
-            delta_pt_down_2 = int(timestamp_end_pt_down_2) - \
-                    int(timestamp_begin_pt_down)
-            delta_pt_down_3 = int(timestamp_end_pt_down_3) - \
-                    int(timestamp_begin_pt_down)
+            json_obj_1 = json.loads(json_str_1)
+            json_obj_2 = json.loads(json_str_2)
+            json_obj_3 = json.loads(json_str_3)
            
+            time.sleep(5)
+
+            #Obtain graph timestamp. This timestsamp captures
+            #the epoch time at which the topology graph was updated.
+            graph_timestamp_1 = \
+                    json_obj_1[graphTimestamp]['value']
+            graph_timestamp_2 = \
+                    json_obj_2[graphTimestamp]['value']
+            graph_timestamp_3 = \
+                    json_obj_3[graphTimestamp]['value']
+
+            #TODO: Test purposes, remove later
+            main.log.info("json_timestamp graph: "+str(graph_timestamp_1))
+            main.log.info("json_timestamp graph: "+str(graph_timestamp_2))
+            main.log.info("json_timestamp graph: "+str(graph_timestamp_3))
+
+            #Obtain device timestamp. This timestamp captures
+            #the epoch time at which the device event happened
+            device_timestamp_1 = \
+                    json_obj_1[deviceTimestamp]['value'] 
+            device_timestamp_2 = \
+                    json_obj_2[deviceTimestamp]['value'] 
+            device_timestamp_3 = \
+                    json_obj_3[deviceTimestamp]['value'] 
+            
+            #TODO: Test purposes, remove later
+            main.log.info("json_timestamp device: "+str(device_timestamp_1))
+            main.log.info("json_timestamp device: "+str(device_timestamp_2))
+            main.log.info("json_timestamp device: "+str(device_timestamp_3))
+
+            #Get delta between graph event and OFP 
+            pt_down_graph_to_ofp_1 = int(graph_timestamp_1) -\
+                    int(timestamp_begin_pt_down)
+            pt_down_graph_to_ofp_2 = int(graph_timestamp_2) -\
+                    int(timestamp_begin_pt_down)
+            pt_down_graph_to_ofp_3 = int(graph_timestamp_3) -\
+                    int(timestamp_begin_pt_down)
+
+            #Get delta between device event and OFP
+            pt_down_device_to_ofp_1 = int(device_timestamp_1) -\
+                    int(timestamp_begin_pt_down)
+            pt_down_device_to_ofp_2 = int(device_timestamp_2) -\
+                    int(timestamp_begin_pt_down)
+            pt_down_device_to_ofp_3 = int(device_timestamp_3) -\
+                    int(timestamp_begin_pt_down)
+       
+            #Caluclate average across clusters
+            pt_down_graph_to_ofp_avg =\
+                    (int(pt_down_graph_to_ofp_1) +
+                     int(pt_down_graph_to_ofp_2) + 
+                     int(pt_down_graph_to_ofp_3)) / 3
+            pt_down_device_to_ofp_avg = \
+                    (int(pt_down_device_to_ofp_1) + 
+                     int(pt_down_device_to_ofp_2) +
+                     int(pt_down_device_to_ofp_3)) / 3
+
+            if pt_down_graph_to_ofp_avg > 0 and \
+                    pt_down_graph_to_ofp_avg < 1000:
+                port_down_graph_to_ofp_list.append(
+                        pt_down_graph_to_ofp_avg)
+            else:
+                main.log.info("Average port down graph-to-ofp result" +
+                        " exceeded the threshold: "+
+                        str(pt_down_graph_to_ofp_avg))
+
             #TODO: Remove these logs. For test purposes only
-            main.log.info("Delta1: "+str(delta_pt_down_1))
-            main.log.info("Delta2: "+str(delta_pt_down_2)) 
-            main.log.info("Delta3: "+str(delta_pt_down_3)) 
+            main.log.info("Delta1 down graph: "+str(pt_down_graph_to_ofp_1))
+            main.log.info("Delta2 down graph: "+str(pt_down_graph_to_ofp_2))
+            main.log.info("Delta3 down graph: "+str(pt_down_graph_to_ofp_3))
+            
+            main.log.info("Delta1 down device: "+
+                    str(pt_down_device_to_ofp_1))
+            main.log.info("Delta2 down device: "+
+                    str(pt_down_device_to_ofp_2))
+            main.log.info("Delta3 down device: "+
+                    str(pt_down_device_to_ofp_3))
         
             #Port up events 
             main.step("Enable port and obtain timestamp")
@@ -538,7 +636,8 @@ class TopoPerfNext:
             main.ONOS1.tshark_grep("OFP 130 Port Status", tshark_port_up)
             time.sleep(10)
 
-            main.Mininet2.handle.sendline("sudo ifconfig s1-eth2 up")
+            main.Mininet2.handle.sendline("sudo ifconfig "+
+                    interface_config+" up")
             main.Mininet2.handle.expect("\$")
             time.sleep(20)
 
@@ -546,34 +645,74 @@ class TopoPerfNext:
                     tshark_port_up+" /tmp/")
 
             f_port_up = open(tshark_port_up, 'r')
-            f_line = f_port_down.readline()
+            f_line = f_port_up.readline()
             obj_up = f_line.split(" ")
             if len(f_line) > 0:
-                timestamp_begin_pt_up = int(float(obj_up[1])*1000)
+                timestamp_begin_pt_up = int(float(obj_up[1]))*1000
+                main.log.info("Port up begin timestamp: "+
+                        str(timestamp_begin_pt_up))
             else:
                 main.log.info("Tshark output file returned unexpected"+
                         " results.")
                 timestamp_begin_pt_up = 0
             
+            f_port_up.close()
+
             main.step("Obtain t1 by REST call")
             #TODO: Implement json object parsing here
+            json_str_1 = main.ONOS1cli.topology_events_metrics()
+            json_str_2 = main.ONOS2cli.topology_events_metrics()
+            json_str_3 = main.ONOS3cli.topology_events_metrics()
 
-            timestamp_end_pt_up_1 = 0
-            timestamp_end_pt_up_2 = 0
-            timestamp_end_pt_up_3 = 0
+            json_obj_1 = json.loads(json_str_1)
+            json_obj_2 = json.loads(json_str_2)
+            json_obj_3 = json.loads(json_str_3)
 
-            delta_pt_up_1 = int(timestamp_end_pt_up_1) - \
+            #Obtain graph timestamp. This timestsamp captures
+            #the epoch time at which the topology graph was updated.
+            graph_timestamp_1 = \
+                    json_obj_1[graphTimestamp]['value']
+            graph_timestamp_2 = \
+                    json_obj_2[graphTimestamp]['value']
+            graph_timestamp_3 = \
+                    json_obj_3[graphTimestamp]['value']
+
+            #Obtain device timestamp. This timestamp captures
+            #the epoch time at which the device event happened
+            device_timestamp_1 = \
+                    json_obj_1[deviceTimestamp]['value'] 
+            device_timestamp_2 = \
+                    json_obj_2[deviceTimestamp]['value'] 
+            device_timestamp_3 = \
+                    json_obj_3[deviceTimestamp]['value'] 
+
+            #Get delta between graph event and OFP 
+            pt_up_graph_to_ofp_1 = int(graph_timestamp_1) -\
                     int(timestamp_begin_pt_up)
-            delta_pt_up_2 = int(timestamp_end_pt_up_2) - \
+            pt_up_graph_to_ofp_2 = int(graph_timestamp_2) -\
                     int(timestamp_begin_pt_up)
-            delta_pt_up_3 = int(timestamp_end_pt_up_3) - \
+            pt_up_graph_to_ofp_3 = int(graph_timestamp_3) -\
+                    int(timestamp_begin_pt_up)
+
+            #Get delta between device event and OFP
+            pt_up_device_to_ofp_1 = int(device_timestamp_1) -\
+                    int(timestamp_begin_pt_up)
+            pt_up_device_to_ofp_2 = int(device_timestamp_2) -\
+                    int(timestamp_begin_pt_up)
+            pt_up_device_to_ofp_3 = int(device_timestamp_3) -\
                     int(timestamp_begin_pt_up)
            
             #TODO: Remove these logs. For test purposes only
-            main.log.info("Delta1: "+str(delta_pt_up_1))
-            main.log.info("Delta2: "+str(delta_pt_up_2)) 
-            main.log.info("Delta3: "+str(delta_pt_up_3)) 
+            main.log.info("Delta1 up graph: "+str(pt_up_graph_to_ofp_1))
+            main.log.info("Delta2 up graph: "+str(pt_up_graph_to_ofp_2))
+            main.log.info("Delta3 up graph: "+str(pt_up_graph_to_ofp_3))
              
+            main.log.info("Delta1 down device: "+
+                    str(pt_up_device_to_ofp_1))
+            main.log.info("Delta2 down device: "+
+                    str(pt_up_device_to_ofp_2))
+            main.log.info("Delta3 down device: "+
+                    str(pt_up_device_to_ofp_3))
             
             
             

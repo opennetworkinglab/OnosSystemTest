@@ -201,8 +201,8 @@ class OnosDriver(CLI):
 
         Otherwise, this function will perform a git pull in the 
         ONOS repository. If it has any problems, it will return main.ERROR
-        If it successfully does a git_pull, it will return a 1.
-        If it has no updates, it will return a 0.
+        If it successfully does a git_pull, it will return a 1 (main.TRUE)
+        If it has no updates, it will return 3.
 
         '''
         try:
@@ -237,10 +237,10 @@ class OnosDriver(CLI):
             elif i==2:
                 main.log.info(self.name + ": Git Pull - pulling repository now")
                 self.handle.expect("ONOS\$", 120)
-                return i # So that only when git pull is done, we do mvn clean compile
+                return main.TRUE # So that only when git pull is done, we do mvn clean compile
             elif i==3:
                 main.log.info(self.name + ": Git Pull - Already up to date")
-                return main.TRUE
+                return i
             elif i==4:
                 main.log.info(self.name + ": Git Pull - Aborting... Are there conflicting git files?")
                 return main.ERROR

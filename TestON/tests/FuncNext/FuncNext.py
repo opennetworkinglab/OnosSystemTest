@@ -38,9 +38,10 @@ class FuncNext:
         print "git_pull_result = ", git_pull_result
         version_result = main.ONOSbench.get_version()
 
-        main.step("Using mvn clean & install")
-        #clean_install_result = main.ONOSbench.clean_install()
-        #clean_install_result = main.TRUE
+        if git_pull_result == 2:
+            main.step("Using mvn clean & install")
+            clean_install_result = main.ONOSbench.clean_install()
+            #clean_install_result = main.TRUE
 
         main.step("Applying cell variable to environment")
         cell_result1 = main.ONOSbench.set_cell(cell_name)
@@ -250,7 +251,7 @@ class FuncNext:
  
         
         print "_____________________________________________________________________________________"
-        
+        ''' 
         main.step("Add point-to-point intents for mininet hosts h8 and h18 or ONOS hosts h8 and h12")
         ptp_intent_result = main.ONOS2.add_point_intent("of:0000000000003008", 1, "of:0000000000006018", 1)
         if ptp_intent_result == main.TRUE:
@@ -382,7 +383,8 @@ class FuncNext:
             main.log.info(get_intent_result)
 
         print("_______________________________________________________________________________________")
-        
+        '''
+
         #Unistall onos-app-fwd app to disable reactive forwarding
         appUninstall_result = main.ONOS2.feature_uninstall("onos-app-fwd")
         main.log.info("onos-app-fwd uninstalled")

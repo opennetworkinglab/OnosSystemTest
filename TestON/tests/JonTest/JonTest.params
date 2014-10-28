@@ -1,6 +1,6 @@
 <PARAMS>
     
-    <testcases>1,4,3,7</testcases>
+    <testcases>1,4,3,7,8,9,7,8</testcases>
     
     <Git>True</Git>
     #Environment variables

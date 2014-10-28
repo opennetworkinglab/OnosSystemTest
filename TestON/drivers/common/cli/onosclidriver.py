@@ -686,7 +686,7 @@ class OnosCliDriver(CLI):
                 roles_json = json.loads(raw_roles)
                 #search json for the device with id then return the device
                 for device in roles_json:
-                    print device
+                    #print device
                     if str(device_id) in device['id']:
                         return device
             return None

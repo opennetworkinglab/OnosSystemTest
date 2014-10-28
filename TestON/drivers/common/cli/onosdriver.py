@@ -633,7 +633,6 @@ class OnosDriver(CLI):
                 "onos\sstart/running,\sprocess",
                 pexpect.TIMEOUT],timeout=60)
 
-
             if i == 0:
                 main.log.warn("Network is unreachable")
                 return main.FALSE

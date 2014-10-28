@@ -237,7 +237,7 @@ class OnosDriver(CLI):
             elif i==2:
                 main.log.info(self.name + ": Git Pull - pulling repository now")
                 self.handle.expect("ONOS\$", 120)
-                return main.TRUE
+                return i # So that only when git pull is done, we do mvn clean compile
             elif i==3:
                 main.log.info(self.name + ": Git Pull - Already up to date")
                 return main.TRUE

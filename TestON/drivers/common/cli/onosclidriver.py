@@ -448,9 +448,9 @@ class OnosCliDriver(CLI):
                 handle variable here contains some ANSI escape color code sequences at the end which are invisible in the print command output
                 To make that escape sequence visible, use repr() function. The repr(handle) output when printed shows the ANSI escape sequences.
                 In json.loads(somestring), this somestring variable is actually repr(somestring) and json.loads would fail with the escape sequence.
-                So we take off that escape sequence using 
+                So we take off that escape sequence using
                 ansi_escape = re.compile(r'\r\r\n\x1b[^m]*m')
-                handle1 = ansi_escape.sub('', handle) 
+                handle1 = ansi_escape.sub('', handle)
                 '''
                 #print "repr(handle) =", repr(handle)
                 ansi_escape = re.compile(r'\r\r\n\x1b[^m]*m')
@@ -466,7 +466,7 @@ class OnosCliDriver(CLI):
                         str(grep_str)+"'")
                     self.handle.expect("onos>")
                 handle = self.handle.before
-                print "handle =",handle
+                #print "handle =",handle
                 return handle
         except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
@@ -527,7 +527,7 @@ class OnosCliDriver(CLI):
                     self.handle.sendline("")
                     self.handle.expect("onos>")
                 handle = self.handle.before
-                print "handle =",handle
+                #print "handle =",handle
                 return handle
         except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
@@ -590,7 +590,7 @@ class OnosCliDriver(CLI):
                     self.handle.sendline("")
                     self.handle.expect("onos>")
                 handle = self.handle.before
-                print "handle =",handle
+                #print "handle =",handle
                 return handle  
         except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
@@ -605,39 +605,91 @@ class OnosCliDriver(CLI):
             main.exit()
 
 
-    def device_role(self, device_id, node_id, role):
+    def roles(self, json_format=True, grep_str=""):
         '''
-        Set device role for specified device and node with role
-        Required: 
-            * device_id : may be obtained by function get_all_devices_id
-            * node_id : may be obtained by function get_all_nodes_id
-            * role: specify one of the following roles:
-                - master
-                - standby
-                - none
+        Lists all devices and the controllers with roles assigned to them
+        Optional argument:
+            * grep_str - pass in a string to grep
         '''
         try:
             self.handle.sendline("")
             self.handle.expect("onos>")
-
-            self.handle.sendline("device-role "+
-                    str(device_id) + " " +
-                    str(node_id) + " " +
-                    str(role))
-            i = self.handle.expect([
-                "Error",
-                "onos>"])
             
-            self.handle.sendline("")
-            self.handle.expect("onos>")
-    
-            handle = self.handle.before
+            if json_format:
+                if not grep_str:
+                    self.handle.sendline("roles -j")
+                    self.handle.expect("roles -j")
+                    self.handle.expect("onos>")
+                else:
+                    self.handle.sendline("roles -j | grep '"+
+                        str(grep_str)+"'")
+                    self.handle.expect("roles -j | grep '"+str(grep_str)+"'")
+                    self.handle.expect("onos>")
+                handle = self.handle.before
+                '''
+                handle variable here contains some ANSI escape color code sequences at the end which are invisible in the print command output
+                To make that escape sequence visible, use repr() function. The repr(handle) output when printed shows the ANSI escape sequences.
+                In json.loads(somestring), this somestring variable is actually repr(somestring) and json.loads would fail with the escape sequence.
+                So we take off that escape sequence using the following commads: 
+                ansi_escape = re.compile(r'\r\r\n\x1b[^m]*m')
+                handle1 = ansi_escape.sub('', handle) 
+                '''
+                #print "repr(handle) =", repr(handle)
+                ansi_escape = re.compile(r'\r\r\n\x1b[^m]*m')
+                handle1 = ansi_escape.sub('', handle)
+                #print "repr(handle1) = ", repr(handle1)
+                return handle1
 
-            if i == 0:
-                main.log.error("device-role command returned error")
-                return handle
             else:
-                return main.TRUE 
+                if not grep_str:
+                    self.handle.sendline("roles")
+                    self.handle.expect("onos>")
+                    self.handle.sendline("")
+                    self.handle.expect("onos>")
+                else:
+                    self.handle.sendline("roles | grep '"+
+                        str(grep_str)+"'")
+                    self.handle.expect("onos>")
+                    self.handle.sendline("")
+                    self.handle.expect("onos>")
+                handle = self.handle.before
+                #print "handle =",handle
+                return handle  
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()
+
+    def get_role(self, device_id):
+        '''
+        Given the a string containing the json representation of the "roles" cli command and a 
+        partial or whole device id, returns a json object containing the
+        roles output for the first device whose id contains "device_id"
+
+        Returns:
+        Dict of the role assignments for the given device or
+        None if not match
+        '''
+        try:
+            import json
+            if device_id == None:
+                return None
+            else:
+                raw_roles = self.roles()
+                roles_json = json.loads(raw_roles)
+                #search json for the device with id then return the device
+                for device in roles_json:
+                    print device
+                    if str(device_id) in device['id']:
+                        return device
+            return None
 
         except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
@@ -734,7 +786,7 @@ class OnosCliDriver(CLI):
                         str(grep_str)+"'")
                     self.handle.expect("onos>")
                 handle = self.handle.before
-                print "handle =",handle
+                #print "handle =",handle
                 return handle
         except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
@@ -764,7 +816,7 @@ class OnosCliDriver(CLI):
                 hosts_json = json.loads(raw_hosts)
                 #search json for the host with mac then return the device
                 for host in hosts_json:
-                    print "%s in  %s?" % (mac, host['id'])
+                    #print "%s in  %s?" % (mac, host['id'])
                     if mac in host['id']:
                         return host
             return None
@@ -939,7 +991,7 @@ class OnosCliDriver(CLI):
                 cmd += " "+str(ingress_device) + "/" + str(port_ingress) + " " +\
                 str(egress_device) + "/" + str(port_egress) 
 
-            print "cmd = ", cmd
+            #print "cmd = ", cmd
             #self.handle.sendline("")
             #self.handle.expect("onos>")
 
@@ -1356,21 +1408,32 @@ class OnosCliDriver(CLI):
         onos_node is the ip of one of the onos nodes in the cluster
         role must be either master, standby, or none
 
-        Returns main.TRUE or main.FALSE based argument varification. 
-            When device-role supports errors this should be extended to 
+        Returns main.TRUE or main.FALSE based argument varification.
+            When device-role supports errors this should be extended to
             support that output
         '''
-        #TODO: handle error messages from device-role
         try:
-            print "beginning device_role... \n\tdevice_id:" + device_id
-            print "\tonos_node: " + onos_node
-            print "\trole: "+ role
+            #print "beginning device_role... \n\tdevice_id:" + device_id
+            #print "\tonos_node: " + onos_node
+            #print "\trole: "+ role
             if role.lower() == "master" or \
                     role.lower() == "standby" or \
                     role.lower() == "none":
                         self.handle.sendline("")
                         self.handle.expect("onos>")
-                        self.handle.sendline("device-role " + device_id + " " + onos_node +  " " + role)
+                        self.handle.sendline("device-role " +
+                                str(device_id) + " " +
+                                str(onos_node) +  " " +
+                                str(role))
+                        i= self.handle.expect(["Error","onos>"])
+                        if i == 0:
+                            output = str(self.handle.before)
+                            self.handle.expect("onos>")
+                            output = output + str(self.handle.before)
+                            main.log.error(self.name + ": " +
+                                    output + '\033[0m')#end color output to escape any colours from the cli
+                            return main.ERROR
+                        self.handle.sendline("")
                         self.handle.expect("onos>")
                         return main.TRUE
             else:

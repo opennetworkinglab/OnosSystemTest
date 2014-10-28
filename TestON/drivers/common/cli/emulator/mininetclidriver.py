@@ -866,6 +866,7 @@ class MininetCliDriver(Emulator):
             2. numpy - "sudo pip install numpy"
 
         '''
+        #FIXME: this does not look for extra ports in ONOS, only checks that ONOS has what is in MN
         import json
         from numpy import uint64
         port_results = main.TRUE
@@ -932,6 +933,7 @@ class MininetCliDriver(Emulator):
         This uses the sts TestONTopology object
 
         '''
+        #FIXME: this does not look for extra links in ONOS, only checks that ONOS has what is in MN
         import json
         link_results = main.TRUE
         output = {"switches":[]}

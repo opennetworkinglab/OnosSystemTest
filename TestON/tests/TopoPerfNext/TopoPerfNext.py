@@ -618,6 +618,15 @@ class TopoPerfNext:
                         " exceeded the threshold: "+
                         str(pt_down_graph_to_ofp_avg))
 
+            if pt_down_device_to_ofp_avg > 0 and \
+                    pt_down_device_to_ofp_avg < 1000:
+                port_down_device_to_ofp_list.append(
+                        pt_down_device_to_ofp_avg)
+            else:
+                main.log.info("Average port down device-to-ofp result" +
+                        " exceeded the threshold: "+
+                        str(pt_down_device_to_ofp_avg))
+
             #TODO: Remove these logs. For test purposes only
             main.log.info("Delta1 down graph: "+str(pt_down_graph_to_ofp_1))
             main.log.info("Delta2 down graph: "+str(pt_down_graph_to_ofp_2))
@@ -701,7 +710,35 @@ class TopoPerfNext:
                     int(timestamp_begin_pt_up)
             pt_up_device_to_ofp_3 = int(device_timestamp_3) -\
                     int(timestamp_begin_pt_up)
-           
+
+            pt_up_graph_to_ofp_avg = \
+                    (float(pt_up_graph_to_ofp_1) + 
+                     float(pt_up_graph_to_ofp_2) +
+                     float(pt_up_graph_to_ofp_3)) / 3
+
+            pt_up_device_to_ofp_avg = \
+                    (float(pt_up_device_to_ofp_1) + 
+                     float(pt_up_device_to_ofp_2) +
+                     float(pt_up_device_to_ofp_3)) / 3
+
+            if pt_up_graph_to_ofp_avg > 0 and \
+                    pt_up_graph_to_ofp_avg < 1000:
+                port_up_graph_to_ofp_list.append(
+                        pt_up_graph_to_ofp_avg)
+            else:
+                main.log.info("Average port up graph-to-ofp result"+
+                        " exceeded the threshold: "+
+                        str(pt_up_graph_to_ofp_avg))
+            
+            if pt_up_device_to_ofp_avg > 0 and \
+                    pt_up_device_to_ofp_avg < 1000:
+                port_up_device_to_ofp_list.append(
+                        pt_up_device_to_ofp_avg)
+            else:
+                main.log.info("Average port up graph-to-ofp result"+
+                        " exceeded the threshold: "+
+                        str(pt_up_device_to_ofp_avg))
+
             #TODO: Remove these logs. For test purposes only
             main.log.info("Delta1 up graph: "+str(pt_up_graph_to_ofp_1))
             main.log.info("Delta2 up graph: "+str(pt_up_graph_to_ofp_2))
@@ -714,16 +751,87 @@ class TopoPerfNext:
             main.log.info("Delta3 down device: "+
                     str(pt_up_device_to_ofp_3))
             
+            #END ITERATION FOR LOOP
+        
+        port_down_graph_to_ofp_min = min(port_down_graph_to_ofp_list)
+        port_down_graph_to_ofp_max = max(port_down_graph_to_ofp_list)
+        port_down_graph_to_ofp_avg = \
+                (sum(port_down_graph_to_ofp_list) / 
+                 len(port_down_graph_to_ofp_list))
+        
+        main.log.report("Port up graph-to-ofp Min: ")
+        main.log.report("Port up graph-to-ofp Max: ")
+        main.log.report("Port up graph-to-ofp Avg: ")
             
+    def CASE4(self, main):
+        '''
+        Link down event using loss rate 100%
+        '''
+        import time
+        import subprocess
+        import os
+        import requests
+        import json
+
+        ONOS1_ip = main.params['CTRL']['ip1']
+        ONOS2_ip = main.params['CTRL']['ip2']
+        ONOS3_ip = main.params['CTRL']['ip3']
+        ONOS_user = main.params['CTRL']['user']
+
+        default_sw_port = main.params['CTRL']['port1']
+       
+        #Number of iterations of case
+        num_iter = main.params['TEST']['numIter']
+       
+        #Timestamp 'keys' for json metrics output.
+        #These are subject to change, hence moved into params
+        deviceTimestamp = main.params['JSON']['deviceTimestamp']
+        linkTimestamp = main.params['JSON']['linkTimestamp'] 
+           
+        assertion = main.TRUE
+        #Link event timestamp to system time list
+        link_down_link_to_system_list = []
+        link_up_link_to_system_list = []
+        #Graph event timestamp to system time list
+        link_down_graph_to_system_list = []
+        link_up_graph_to_system_list = [] 
+
+        main.log.report("Add / remove link latency between "+
+                "two switches")
+
+        main.step("Assign all switches")
+        main.Mininet1.assign_sw_controller(sw="1",
+                ip1=ONOS1_ip, port1=default_sw_port)
+        main.Mininet1.assign_sw_controller(sw="2",
+                ip1=ONOS1_ip, port1=default_sw_port)
+
+        main.step("Verifying switch assignment")
+        result_s1 = main.Mininet1.get_sw_controller(sw="s1")
+        result_s2 = main.Mininet1.get_sw_controller(sw="s2")
+
+        if result_s1 == main.TRUE and result_s2 == main.TRUE:
+            main.log.report("Switches s1, s2 assigned successfully")
+        else:
+            main.log.error("Error assigning switches s1 and s2")
+            assertion = main.FALSE
+          
+        #Allow time for events to finish before taking measurements
+        time.sleep(10)
+
+        #Start iteration of link event test
+        for i in range(0, int(num_iter)):
+            main.step("Getting initial system time as t0")
             
-            
-            
-            
-            
-            
-            
-            
-            
+            timestamp_link_down_t0 = time.time() * 1000
+            #Link down is simulated by 100% loss rate using traffic 
+            #control command
+            main.Mininet1.handle.sendline(
+                    "sh tc qdisc add dev s1-eth1 root netem loss 100%")
+
+            #TODO: Iterate through topology count to detect 
+            #      link down discovery. Take timestamp and
+            #      gather list for num_iter
+         
             
             
             

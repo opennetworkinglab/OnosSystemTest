@@ -840,10 +840,8 @@ class OnosCliDriver(CLI):
                     str(host_id_one) + " " + str(host_id_two))
             self.handle.expect("onos>")
 
-            self.handle.sendline("")
-            self.handle.expect("onos>")
-
             handle = self.handle.before
+            print "handle =", handle
 
             main.log.info("Intent installed between "+
                     str(host_id_one) + " and " + str(host_id_two))

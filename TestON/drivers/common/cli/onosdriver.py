@@ -1025,6 +1025,44 @@ class OnosDriver(CLI):
         self.handle.sendline("")
         main.log.info("Tshark stopped")
 
+    def ptpd(self, args):
+        '''
+        Initiate ptp with user-specified args.
+        Required:
+            * args: specify string of args after command
+              'sudo ptpd'
+        '''
+        try:
+            self.handle.sendline("sudo ptpd "+str(args))
+            i = self.handle.expect([
+                "Multiple",
+                "Error",
+                "\$"])
+            self.handle.expect("\$")
 
+            if i == 0:
+                handle = self.handle.before
+                main.log.info("ptpd returned an error: "+
+                    str(handle))
+                return handle
+            elif i == 1:
+                handle = self.handle.before
+                main.log.error("ptpd returned an error: "+
+                    str(handle))
+                return handle
+            else:
+                return main.TRUE
+        
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()
 
 

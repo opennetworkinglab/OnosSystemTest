@@ -832,6 +832,77 @@ class TopoPerfNext:
             #      link down discovery. Take timestamp and
             #      gather list for num_iter
          
+    def CASE5(self, main):
+        '''
+        100 Switch discovery latency
+
+        Important:
+            If a simple topology was used in previous cases,
+            you will need to change the topology file in the
+            params for this case to proceed
+        '''
+        import time
+        import subprocess
+        import os
+        import requests
+        import json
+
+        ONOS1_ip = main.params['CTRL']['ip1']
+        ONOS2_ip = main.params['CTRL']['ip2']
+        ONOS3_ip = main.params['CTRL']['ip3']
+        MN1_ip = main.params['MN']['ip1']
+        ONOS_user = main.params['CTRL']['user']
+
+        default_sw_port = main.params['CTRL']['port1']
+       
+        #Number of iterations of case
+        num_iter = main.params['TEST']['numIter']
+       
+        #Timestamp 'keys' for json metrics output.
+        #These are subject to change, hence moved into params
+        deviceTimestamp = main.params['JSON']['deviceTimestamp']
+
+        main.case("100 Switch discovery latency")
+        main.step("Assigning all switches to ONOS1")
+        #Assumes that topology consists of 100 switches
+        for i in range(1, 101):
+            main.Mininet1.assign_sw_controller(
+                    sw=str(i),
+                    ip1=ONOS1_ip,
+                    port1=default_sw_port)
+        #Ensure that nodes are configured with ptpd
+        #ONOS1 ptpd is master without NTP
+        ONOS1_ptpd = main.ONOS1.ptpd("-W")
+        ONOS2_ptpd = main.ONOS2.ptpd("-g")
+        ONOS3_ptpd = main.ONOS3.ptpd("-g")
+        os.system("sudo ptpd -g")
+
+        if ONOS1_ptpd == main.TRUE and\
+            ONOS2_ptpd == main.TRUE and\
+            ONOS3_ptpd == main.TRUE:
+            main.log.info("ptpd started on all ONOS instances")
+        else:
+            main.log.info("Check ptpd configuration to ensure"+\
+                    " All nodes' system times are in sync")
+
+        for i in range(0, int(num_iter)):
             
-            
-            
+            main.step("Set iptables rule to block incoming sw connections")
+            #Set iptables rule to block incoming switch connections
+            main.ONOS1.handle.sendline(
+                    "sudo iptables -A INPUT -p tcp -s "+MN_ip+
+                    " --dport "+default_sw_port+" -j DROP")
+            main.ONOS1.handle.expect("\$") 
+            #Give time to allow rule to take effect
+            time.sleep(10)
+
+            #TODO: Implement iptables to block all switch communication     
+            #      sudo iptables -A INPUT -p packet_type -s ip_to_block
+            #           --dport port_to_block -j rule<DROP>
+            #TODO: Remove all iptables rule quickly (flush)
+            #      Before removal, obtain TestON timestamp at which 
+            #     removal took place (ensuring nodes are configured via ptp)
+            #      sudo iptables -F
+
+        
+

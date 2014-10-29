@@ -49,10 +49,10 @@ class JonTest:
 
             main.step("Using mvn clean & install")
             clean_install_result = main.FALSE
-            if git_pull_result:
+            if git_pull_result == main.TRUE:
                 clean_install_result = main.ONOSbench.clean_install()
             else:
-                main.log.report("git pull failed so skipping mvn clean install")
+                main.log.report("did not pull new code so skipping mvn clean install")
 
         main.step("Creating ONOS package")
         package_result = main.ONOSbench.onos_package()
@@ -66,6 +66,9 @@ class JonTest:
         main.step("Starting ONOS service")
         start_result = main.TRUE
         #start_result = main.ONOSbench.onos_start(ONOS1_ip)
+
+        main.ONOScli1.start_onos_cli(ONOS1_ip)
+        main.ONOScli2.start_onos_cli(ONOS2_ip)
 
         case1_result = (clean_install_result and package_result and\
                 cell_result and verify_result and onos1_install_result and\
@@ -119,7 +122,8 @@ class JonTest:
         
         main.step("Testing check_status")
         check_status_results = main.FALSE
-        check_status_results =  main.ONOSbench.check_status(ONOS1_ip, 4, 6)
+        topology_result = main.ONOScli1.topology()
+        check_status_results =  main.ONOSbench.check_status(topology_result, 4, 6)
         main.log.info("Results of check_status " + str(check_status_results))
 
         main.step("Sending command 'onos -w <onos-ip> bundle:list'")
@@ -311,8 +315,6 @@ class JonTest:
         ONOS1_ip = main.params['CTRL']['ip1']
         ONOS2_ip = main.params['CTRL']['ip2']
 
-        main.ONOScli1.start_onos_cli(ONOS1_ip)
-        main.ONOScli2.start_onos_cli(ONOS2_ip)
     
         main.step("Collecting topology information from ONOS")
         devices1 = main.ONOScli1.devices()
@@ -321,9 +323,9 @@ class JonTest:
         hosts1 = main.ONOScli1.hosts()
         hosts2 = main.ONOScli2.hosts()
         host1 = main.ONOScli1.get_host("00:00:00:00:00:01")
-        print json.dumps(json.loads(hosts1), sort_keys=True,indent=4,separators=(',', ': '))
-        print json.dumps(json.loads(hosts2), sort_keys=True,indent=4,separators=(',', ': '))
-        print json.dumps(host1, sort_keys=True,indent=4,separators=(',', ': '))
+        #print json.dumps(json.loads(hosts1), sort_keys=True,indent=4,separators=(',', ': '))
+        #print json.dumps(json.loads(hosts2), sort_keys=True,indent=4,separators=(',', ': '))
+        #print json.dumps(host1, sort_keys=True,indent=4,separators=(',', ': '))
         ports1 = main.ONOScli1.ports()
         ports2 = main.ONOScli2.ports()
         links1 = main.ONOScli1.links()
@@ -369,6 +371,59 @@ class JonTest:
         utilities.assert_equals(expect=main.TRUE, actual=topo_result,
                 onpass="Topology Check Test successful",
                 onfail="Topology Check Test NOT successful")
+
+    def CASE8(self, main):
+        '''
+        try doing some role assignments
+        '''
+        import time
+        print main.ONOScli1.devices()
+        print main.ONOScli1.device_role("of:0000000000000001", "    ", "none")
+        time.sleep(1)
+        roles = main.ONOScli1.roles()
+        roles2 = main.ONOScli2.roles()
+        print roles
+        print roles2
+        print main.ONOScli1.get_role("00001")
+
+        print main.ONOScli1.devices()
+        print main.ONOScli1.device_role("of:0000000000000001", "10.128.30.11", "master")
+        time.sleep(1)
+        roles = main.ONOScli1.roles()
+        roles2 = main.ONOScli2.roles()
+        print roles
+        print roles2
+        print main.ONOScli1.get_role("00001")
+
+        print main.ONOScli1.devices()
+        print main.ONOScli1.device_role("of:0000000000000001", "10.128.30.11", "standby")
+        time.sleep(1)
+        roles = main.ONOScli1.roles()
+        roles2 = main.ONOScli2.roles()
+        print roles
+        print roles2
+        print main.ONOScli1.get_role("00001")
+
+        print main.ONOScli1.devices()
+        print main.ONOScli1.device_role("of:0000000000000001", "10.128.30.11", "MASTER")
+        time.sleep(1)
+        roles = main.ONOScli1.roles()
+        roles2 = main.ONOScli2.roles()
+        print roles
+        print roles2
+        print main.ONOScli1.get_role("00001")
+        print main.ONOScli1.devices()
+
+    def CASE9(self, main):
+        '''
+        Bring Links down
+        '''
+        main.Mininet1.link(END1="s1", END2="s2", OPTION="down")
+        main.Mininet1.link(END1="s1", END2="s3", OPTION="down")
+        main.Mininet1.link(END1="s1", END2="s4", OPTION="down")
+
+
+
 
 ######
 #jhall@onlab.us

@@ -1034,7 +1034,7 @@ class OnosDriver(CLI):
         '''
         try:
             self.handle.sendline("sudo ptpd "+str(args))
-            self.handle.expect([
+            i = self.handle.expect([
                 "Multiple",
                 "Error",
                 "\$"])

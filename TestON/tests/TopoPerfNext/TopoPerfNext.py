@@ -840,6 +840,11 @@ class TopoPerfNext:
             If a simple topology was used in previous cases,
             you will need to change the topology file in the
             params for this case to proceed
+        
+            This test case can be potentially dangerous if 
+            your machine has previously set iptables rules.
+            One of the steps of the test case will flush
+            all existing iptables rules.
         '''
         import time
         import subprocess
@@ -857,52 +862,155 @@ class TopoPerfNext:
        
         #Number of iterations of case
         num_iter = main.params['TEST']['numIter']
-       
+        num_sw = main.params['TEST']['numSwitch']
+
         #Timestamp 'keys' for json metrics output.
         #These are subject to change, hence moved into params
         deviceTimestamp = main.params['JSON']['deviceTimestamp']
+        graphTimestamp = main.params['JSON']['graphTimestamp']
+   
+        tshark_ofp_output = "/tmp/tshark_ofp_100sw.txt"
 
-        main.case("100 Switch discovery latency")
+        main.case(num_sw+" Switch discovery latency")
         main.step("Assigning all switches to ONOS1")
-        #Assumes that topology consists of 100 switches
-        for i in range(1, 101):
+        for i in range(1, int(num_sw)+1):
             main.Mininet1.assign_sw_controller(
                     sw=str(i),
                     ip1=ONOS1_ip,
                     port1=default_sw_port)
+        
         #Ensure that nodes are configured with ptpd
-        #ONOS1 ptpd is master without NTP
-        ONOS1_ptpd = main.ONOS1.ptpd("-W")
-        ONOS2_ptpd = main.ONOS2.ptpd("-g")
-        ONOS3_ptpd = main.ONOS3.ptpd("-g")
-        os.system("sudo ptpd -g")
-
-        if ONOS1_ptpd == main.TRUE and\
-            ONOS2_ptpd == main.TRUE and\
-            ONOS3_ptpd == main.TRUE:
-            main.log.info("ptpd started on all ONOS instances")
-        else:
-            main.log.info("Check ptpd configuration to ensure"+\
-                    " All nodes' system times are in sync")
+        #Just a warning message
+        main.log.info("Please check ptpd configuration to ensure"+\
+                " All nodes' system times are in sync")
+        time.sleep(5)
 
         for i in range(0, int(num_iter)):
             
             main.step("Set iptables rule to block incoming sw connections")
             #Set iptables rule to block incoming switch connections
             main.ONOS1.handle.sendline(
-                    "sudo iptables -A INPUT -p tcp -s "+MN_ip+
+                    "sudo iptables -A INPUT -p tcp -s "+MN1_ip+
                     " --dport "+default_sw_port+" -j DROP")
             main.ONOS1.handle.expect("\$") 
             #Give time to allow rule to take effect
-            time.sleep(10)
+            main.log.info("Please wait for switch connection to "+
+                    "time out")
+            time.sleep(60)
+            
+            #Gather vendor OFP with tshark
+            main.ONOS1.tshark_grep("OFP 86 Vendor", 
+                    tshark_ofp_output)
 
-            #TODO: Implement iptables to block all switch communication     
-            #      sudo iptables -A INPUT -p packet_type -s ip_to_block
-            #           --dport port_to_block -j rule<DROP>
-            #TODO: Remove all iptables rule quickly (flush)
+            #NOTE: Remove all iptables rule quickly (flush)
             #      Before removal, obtain TestON timestamp at which 
-            #     removal took place (ensuring nodes are configured via ptp)
+            #      removal took place
+            #      (ensuring nodes are configured via ptp)
             #      sudo iptables -F
+            
+            t0_system = time.time() * 1000
+            main.ONOS1.handle.sendline(
+                    "sudo iptables -F")
 
-        
+            #Counter to track loop count
+            counter_loop = 0
+            counter_avail1 = 0
+            counter_avail2 = 0
+            counter_avail3 = 0
+            onos1_dev = False
+            onos2_dev = False
+            onos3_dev = False
+            while counter_loop < 60:
+                #Continue to check devices for all device 
+                #availability. When all devices in all 3
+                #ONOS instances indicate that devices are available
+                #obtain graph event timestamp for t1.
+                device_str_obj1 = main.ONOS1cli.devices()
+                device_str_obj2 = main.ONOS2cli.devices()
+                device_str_obj3 = main.ONOS3cli.devices()
+
+                device_json1 = json.loads(device_str_obj1)                
+                device_json2 = json.loads(device_str_obj2)                
+                device_json3 = json.loads(device_str_obj3)           
+                
+                for device1 in device_json1:
+                    if device1['available'] == True:
+                        counter_avail1 += 1
+                        if counter_avail1 == int(num_sw):
+                            onos1_dev = True
+                            main.log.info("All devices have been "+
+                                    "discovered on ONOS1")
+                    else:
+                        counter_avail1 = 0
+                for device2 in device_json2:
+                    if device2['available'] == True:
+                        counter_avail2 += 1
+                        if counter_avail2 == int(num_sw):
+                            onos2_dev = True
+                            main.log.info("All devices have been "+
+                                    "discovered on ONOS2")
+                    else:
+                        counter_avail2 = 0
+                for device3 in device_json3:
+                    if device3['available'] == True:
+                        counter_avail3 += 1
+                        if counter_avail3 == int(num_sw):
+                            onos3_dev = True
+                            main.log.info("All devices have been "+
+                                    "discovered on ONOS3")
+                    else:
+                        counter_avail3 = 0
+
+                if onos1_dev and onos2_dev and onos3_dev:
+                    main.log.info("All devices have been discovered "+
+                            "on all ONOS instances")
+                    json_str_topology_metrics_1 =\
+                        main.ONOS1cli.topology_events_metrics()
+                    json_str_topology_metrics_2 =\
+                        main.ONOS2cli.topology_events_metrics()
+                    json_str_topology_metrics_3 =\
+                        main.ONOS3cli.topology_events_metrics()
+                    
+                    break 
+                
+                counter_loop += 1
+                #Give some time in between CLI calls
+                #(will not affect measurement)
+                time.sleep(3)
+
+            main.ONOS1.tshark_stop()
+            
+            os.system("scp "+ONOS_user+"@"+ONOS1_ip+":"+
+                    tshark_ofp_output+" /tmp/") 
+            ofp_file = open(tshark_ofp_output, 'r')
+
+            #The following is for information purpose only.
+            #TODO: Automate OFP output analysis
+            main.log.info("Tshark OFP Vendor output: ")
+            for line in ofp_file:
+                main.log.info(line)
+
+            json_obj_1 = json.loads(json_str_topology_metrics_1)
+            json_obj_2 = json.loads(json_str_topology_metrics_2)
+            json_obj_3 = json.loads(json_str_topology_metrics_3)
+
+            graph_timestamp_1 = \
+                    json_obj_1[graphTimestamp]['value']
+            graph_timestamp_2 = \
+                    json_obj_2[graphTimestamp]['value']
+            graph_timestamp_3 = \
+                    json_obj_3[graphTimestamp]['value']
+
+            main.log.info(
+                    int(graph_timestamp_1) - int(t0_system))
+            main.log.info(
+                    int(graph_timestamp_2) - int(t0_system))
+            main.log.info(
+                    int(graph_timestamp_3) - int(t0_system))
+
+
+
+
+
+
 

@@ -579,9 +579,12 @@ class TopoPerfNext:
                     json_obj_3[deviceTimestamp]['value'] 
             
             #TODO: Test purposes, remove later
-            main.log.info("json_timestamp device: "+str(device_timestamp_1))
-            main.log.info("json_timestamp device: "+str(device_timestamp_2))
-            main.log.info("json_timestamp device: "+str(device_timestamp_3))
+            main.log.info("json_timestamp device: "+
+                    str(device_timestamp_1))
+            main.log.info("json_timestamp device: "+
+                    str(device_timestamp_2))
+            main.log.info("json_timestamp device: "+
+                    str(device_timestamp_3))
 
             #Get delta between graph event and OFP 
             pt_down_graph_to_ofp_1 = int(graph_timestamp_1) -\
@@ -766,6 +769,11 @@ class TopoPerfNext:
     def CASE4(self, main):
         '''
         Link down event using loss rate 100%
+        
+        Important:
+            Use a simple 2 switch topology with 1 link between
+            the two switches. Ensure that mac addresses of the 
+            switches are 1 / 2 respectively
         '''
         import time
         import subprocess
@@ -787,7 +795,8 @@ class TopoPerfNext:
         #These are subject to change, hence moved into params
         deviceTimestamp = main.params['JSON']['deviceTimestamp']
         linkTimestamp = main.params['JSON']['linkTimestamp'] 
-           
+        graphTimestamp = main.params['JSON']['graphTimestamp']
+
         assertion = main.TRUE
         #Link event timestamp to system time list
         link_down_link_to_system_list = []
@@ -808,16 +817,11 @@ class TopoPerfNext:
         main.step("Verifying switch assignment")
         result_s1 = main.Mininet1.get_sw_controller(sw="s1")
         result_s2 = main.Mininet1.get_sw_controller(sw="s2")
-
-        if result_s1 == main.TRUE and result_s2 == main.TRUE:
-            main.log.report("Switches s1, s2 assigned successfully")
-        else:
-            main.log.error("Error assigning switches s1 and s2")
-            assertion = main.FALSE
           
         #Allow time for events to finish before taking measurements
         time.sleep(10)
 
+        link_down = False
         #Start iteration of link event test
         for i in range(0, int(num_iter)):
             main.step("Getting initial system time as t0")
@@ -828,10 +832,106 @@ class TopoPerfNext:
             main.Mininet1.handle.sendline(
                     "sh tc qdisc add dev s1-eth1 root netem loss 100%")
 
-            #TODO: Iterate through topology count to detect 
-            #      link down discovery. Take timestamp and
-            #      gather list for num_iter
-         
+            #TODO: Iterate through 'links' command to verify that
+            #      link s1 -> s2 went down (timeout 30 seconds)
+            main.log.info("Checking ONOS for link update")
+            loop_count = 0
+            while( not link_down and loop_count < 30 ):
+                json_str = main.ONOS1cli.links()
+                if not json_str:
+                    break
+                else:
+                    json_obj = json.loads(json_str)
+                for obj in json_obj:
+                    if '01' not in obj['src']['device']:
+                        link_down = True
+                        main.log.report("Link down from "+
+                                "s1 -> s2 detected")
+                loop_count += 1
+                time.sleep(1)
+    
+            #Give time for metrics measurement to catch up
+            time.sleep(10)
+            #If we exited the while loop and link down is still 
+            #false, then ONOS has failed to discover link down event
+            if not link_down:
+                main.log.info("Link down discovery failed")
+                
+                link_down_lat_graph1 = 0
+                link_down_lat_graph2 = 0
+                link_down_lat_graph3 = 0
+                link_down_lat_device1 = 0
+                link_down_lat_device2 = 0
+                link_down_lat_device3 = 0
+                
+                assertion = main.FALSE
+            else:
+                json_topo_metrics_1 =\
+                        main.ONOS1cli.topology_events_metrics()
+                json_topo_metrics_2 =\
+                        main.ONOS2cli.topology_events_metrics()
+                json_topo_metrics_3 =\
+                        main.ONOS3cli.topology_events_metrics()
+                json_topo_metrics_1 = json.loads(json_topo_metrics_1)
+                json_topo_metrics_2 = json.loads(json_topo_metrics_2)
+                json_topo_metrics_3 = json.loads(json_topo_metrics_3)
+
+                main.log.info("Obtaining graph and device timestamp")
+                graph_timestamp_1 = \
+                    json_topo_metrics_1[graphTimestamp]['value']
+                graph_timestamp_2 = \
+                    json_topo_metrics_2[graphTimestamp]['value']
+                graph_timestamp_3 = \
+                    json_topo_metrics_3[graphTimestamp]['value']
+
+                link_timestamp_1 = \
+                    json_topo_metrics_1[linkTimestamp]['value']
+                link_timestamp_2 = \
+                    json_topo_metrics_2[linkTimestamp]['value']
+                link_timestamp_3 = \
+                    json_topo_metrics_3[linkTimestamp]['value']
+
+                if graph_timestamp_1 and graph_timestamp_2 and\
+                        graph_timestamp_3 and link_timestamp_1 and\
+                        link_timestamp_2 and link_timestamp_3:
+                    link_down_lat_graph1 = int(graph_timestamp_1) -\
+                            timestamp_link_down_t0
+                    link_down_lat_graph2 = int(graph_timestamp_2) -\
+                            timestamp_link_down_t0
+                    link_down_lat_graph3 = int(graph_timestamp_3) -\
+                            timestamp_link_down_t0
+                
+                    link_down_lat_link1 = int(link_timestamp_1) -\
+                            timestamp_link_down_t0
+                    link_down_lat_link2 = int(link_timestamp_2) -\
+                            timestamp_link_down_t0
+                    link_down_lat_link3 = int(link_timestamp_3) -\
+                            timestamp_link_down_t0
+                else:
+                    main.log.error("There was an error calculating"+
+                        " the delta for link down event")
+                    link_down_lat_graph1 = 0
+                    link_down_lat_graph2 = 0
+                    link_down_lat_graph3 = 0
+                    
+                    link_down_lat_device1 = 0
+                    link_down_lat_device2 = 0
+                    link_down_lat_device3 = 0
+        
+            main.log.info(link_down_lat_graph1)
+            main.log.info(link_down_lat_graph2)
+            main.log.info(link_down_lat_graph3)
+
+            main.log.info(link_down_lat_link1)
+            main.log.info(link_down_lat_link2)
+            main.log.info(link_down_lat_link3)
+
+            #NOTE: To remove loss rate and measure latency:
+            #       'sh tc qdisc del dev s1-eth1 root'
+            main.Mininet1.handle.sendline("sh tc qdisc del dev "+
+                    "s1-eth1 root")
+            main.Mininet1.handle.expect("mininet>")
+
     def CASE5(self, main):
         '''
         100 Switch discovery latency
@@ -869,7 +969,11 @@ class TopoPerfNext:
         deviceTimestamp = main.params['JSON']['deviceTimestamp']
         graphTimestamp = main.params['JSON']['graphTimestamp']
    
-        tshark_ofp_output = "/tmp/tshark_ofp_100sw.txt"
+        tshark_ofp_output = "/tmp/tshark_ofp_"+num_sw+"sw.txt"
+        tshark_tcp_output = "/tmp/tshark_tcp_"+num_sw+"sw.txt"
+
+        tshark_ofp_result_list = []
+        tshark_tcp_result_list = []
 
         main.case(num_sw+" Switch discovery latency")
         main.step("Assigning all switches to ONOS1")
@@ -889,10 +993,25 @@ class TopoPerfNext:
             
             main.step("Set iptables rule to block incoming sw connections")
             #Set iptables rule to block incoming switch connections
+            #The rule description is as follows:
+            #   Append to INPUT rule,
+            #   behavior DROP that matches following:
+            #       * packet type: tcp
+            #       * source IP: MN1_ip
+            #       * destination PORT: 6633
             main.ONOS1.handle.sendline(
                     "sudo iptables -A INPUT -p tcp -s "+MN1_ip+
                     " --dport "+default_sw_port+" -j DROP")
             main.ONOS1.handle.expect("\$") 
+            #   Append to OUTPUT rule, 
+            #   behavior DROP that matches following:
+            #       * packet type: tcp
+            #       * source IP: MN1_ip
+            #       * destination PORT: 6633
+            main.ONOS1.handle.sendline(
+                    "sudo iptables -A OUTPUT -p tcp -s "+MN1_ip+
+                    " --dport "+default_sw_port+" -j DROP")
+            main.ONOS1.handle.expect("\$")
             #Give time to allow rule to take effect
             main.log.info("Please wait for switch connection to "+
                     "time out")
@@ -901,6 +1020,8 @@ class TopoPerfNext:
             #Gather vendor OFP with tshark
             main.ONOS1.tshark_grep("OFP 86 Vendor", 
                     tshark_ofp_output)
+            main.ONOS1.tshark_grep("TCP 74 ",
+                    tshark_tcp_output)
 
             #NOTE: Remove all iptables rule quickly (flush)
             #      Before removal, obtain TestON timestamp at which 
@@ -970,7 +1091,8 @@ class TopoPerfNext:
                         main.ONOS2cli.topology_events_metrics()
                     json_str_topology_metrics_3 =\
                         main.ONOS3cli.topology_events_metrics()
-                    
+                   
+                    #Exit while loop if all devices discovered
                     break 
                 
                 counter_loop += 1
@@ -982,13 +1104,26 @@ class TopoPerfNext:
             
             os.system("scp "+ONOS_user+"@"+ONOS1_ip+":"+
                     tshark_ofp_output+" /tmp/") 
+            os.system("scp "+ONOS_user+"@"+ONOS1_ip+":"+
+                    tshark_tcp_output+" /tmp/")
             ofp_file = open(tshark_ofp_output, 'r')
 
             #The following is for information purpose only.
             #TODO: Automate OFP output analysis
             main.log.info("Tshark OFP Vendor output: ")
             for line in ofp_file:
+                tshark_ofp_result_list.append(line)
                 main.log.info(line)
+
+            ofp_file.close()
+
+            tcp_file = open(tshark_tcp_output, 'r')
+            main.log.info("Tshark TCP 74 output: ")
+            for line in tcp_file:
+                tshark_tcp_result_list.append(line)
+                main.log.info(line)
+
+            tcp_file.close()
 
             json_obj_1 = json.loads(json_str_topology_metrics_1)
             json_obj_2 = json.loads(json_str_topology_metrics_2)

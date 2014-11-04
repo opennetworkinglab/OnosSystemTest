@@ -606,7 +606,9 @@ class TopoPerfNext:
             if pt_down_graph_to_ofp_avg > 0.0 and \
                     pt_down_graph_to_ofp_avg < 1000:
                 port_down_graph_to_ofp_list.append(
-                        pt_down_graph_to_ofp_avg)
+                    pt_down_graph_to_ofp_avg)
+                main.log.info("Port down: graph to ofp avg: "+
+                    str(pt_down_graph_to_ofp_avg) + " ms")
             else:
                 main.log.info("Average port down graph-to-ofp result" +
                         " exceeded the threshold: "+
@@ -615,17 +617,14 @@ class TopoPerfNext:
             if pt_down_device_to_ofp_avg > 0 and \
                     pt_down_device_to_ofp_avg < 1000:
                 port_down_device_to_ofp_list.append(
-                        pt_down_device_to_ofp_avg)
+                    pt_down_device_to_ofp_avg)
+                main.log.info("Port down: device to ofp avg: "+
+                    str(pt_down_device_to_ofp_avg) + " ms")
             else:
                 main.log.info("Average port down device-to-ofp result" +
                         " exceeded the threshold: "+
                         str(pt_down_device_to_ofp_avg))
 
-            main.log.info("Port down: graph to ofp avg: "+
-                    str(pt_down_graph_to_ofp_avg) + " ms")
-            main.log.info("Port down: device to ofp avg: "+
-                    str(pt_down_device_to_ofp_avg) + " ms")
-            
             #Port up events 
             main.step("Enable port and obtain timestamp")
             main.step("Starting wireshark capture for port status up")
@@ -711,6 +710,8 @@ class TopoPerfNext:
                     pt_up_graph_to_ofp_avg < 1000:
                 port_up_graph_to_ofp_list.append(
                         pt_up_graph_to_ofp_avg)
+                main.log.info("Port down: graph to ofp avg: "+
+                    str(pt_up_graph_to_ofp_avg) + " ms")
             else:
                 main.log.info("Average port up graph-to-ofp result"+
                         " exceeded the threshold: "+
@@ -720,23 +721,49 @@ class TopoPerfNext:
                     pt_up_device_to_ofp_avg < 1000:
                 port_up_device_to_ofp_list.append(
                         pt_up_device_to_ofp_avg)
+                main.log.info("Port up: device to ofp avg: "+
+                    str(pt_up_device_to_ofp_avg) + " ms")
             else:
-                main.log.info("Average port up graph-to-ofp result"+
+                main.log.info("Average port up device-to-ofp result"+
                         " exceeded the threshold: "+
                         str(pt_up_device_to_ofp_avg))
             
             #END ITERATION FOR LOOP
-        
+       
+        #Calculate and report latency measurements
         port_down_graph_to_ofp_min = min(port_down_graph_to_ofp_list)
         port_down_graph_to_ofp_max = max(port_down_graph_to_ofp_list)
         port_down_graph_to_ofp_avg = \
                 (sum(port_down_graph_to_ofp_list) / 
                  len(port_down_graph_to_ofp_list))
         
-        main.log.report("Port up graph-to-ofp Min: ")
-        main.log.report("Port up graph-to-ofp Max: ")
-        main.log.report("Port up graph-to-ofp Avg: ")
-            
+        main.log.report("Port down graph-to-ofp Min: "+
+                str(port_down_graph_to_ofp_min))
+        main.log.report("Port down graph-to-ofp Max: "+
+                str(port_down_graph_to_ofp_max))
+        main.log.report("Port down graph-to-ofp Avg: "+
+                str(port_down_graph_to_ofp_avg))
+        
+        port_down_device_to_ofp_min = min(port_down_device_to_ofp_list)
+        port_down_device_to_ofp_max = max(port_down_device_to_ofp_list)
+        port_down_device_to_ofp_avg = \
+                (sum(port_down_device_to_ofp_list) /\
+                 len(port_down_device_to_ofp_list))
+        
+        main.log.report("Port down device-to-ofp Min: "+
+                str(port_down_device_to_ofp_min))
+        main.log.report("Port down device-to-ofp Max: "+
+                str(port_down_device_to_ofp_max))
+        main.log.report("Port down device-to-ofp Avg: "+
+                str(port_down_device_to_ofp_avg))
+        
+        port_up_graph_to_ofp_min = min(port_up_graph_to_ofp_list)
+        port_up_graph_to_ofp_max = max(port_up_graph_to_ofp_list)
+        port_up_graph_to_ofp_avg = \
+                (sum(port_up_graph_to_ofp_list) /\
+                 len(port_up_graph_to_ofp_list))
+           
+
     def CASE4(self, main):
         '''
         Link down event using loss rate 100%
@@ -792,7 +819,9 @@ class TopoPerfNext:
         #Allow time for events to finish before taking measurements
         time.sleep(10)
 
-        link_down = False
+        link_down1 = False
+        link_down2 = False
+        link_down3 = False
         #Start iteration of link event test
         for i in range(0, int(num_iter)):
             main.step("Getting initial system time as t0")
@@ -804,28 +833,51 @@ class TopoPerfNext:
                     "sh tc qdisc add dev s1-eth1 root netem loss 100%")
 
             #TODO: Iterate through 'links' command to verify that
-            #      link s1 -> s2 went down (timeout 30 seconds)
+            #      link s1 -> s2 went down (loop timeout 30 seconds) 
+            #      on all 3 ONOS instances
             main.log.info("Checking ONOS for link update")
             loop_count = 0
-            while( not link_down and loop_count < 30 ):
-                json_str = main.ONOS1cli.links()
-                if not json_str:
+            while( not (link_down1 and link_down2 and link_down3)\
+                    and loop_count < 30 ):
+                json_str1 = main.ONOS1cli.links()
+                json_str2 = main.ONOS2cli.links()
+                json_str3 = main.ONOS3cli.links()
+                
+                if not (json_str1 and json_str2 and json_str3):
+                    main.log.error("CLI command returned error ")
                     break
                 else:
-                    json_obj = json.loads(json_str)
-                for obj in json_obj:
-                    if '01' not in obj['src']['device']:
-                        link_down = True
+                    json_obj1 = json.loads(json_str1)
+                    json_obj2 = json.loads(json_str2)
+                    json_obj3 = json.loads(json_str3)
+                for obj1 in json_obj1:
+                    if '01' not in obj1['src']['device']:
+                        link_down1 = True
                         main.log.report("Link down from "+
-                                "s1 -> s2 detected")
+                                "s1 -> s2 on ONOS1 detected")
+                for obj2 in json_obj2:
+                    if '01' not in obj2['src']['device']:
+                        link_down2 = True
+                        main.log.report("Link down from "+
+                                "s1 -> s2 on ONOS2 detected")
+                for obj3 in json_obj3:
+                    if '01' not in obj3['src']['device']:
+                        link_down3 = True
+                        main.log.report("Link down from "+
+                                "s1 -> s2 on ONOS3 detected")
+                
                 loop_count += 1
+                #If CLI doesn't like the continuous requests
+                #and exits in this loop, increase the sleep here.
+                #Consequently, while loop timeout will increase
                 time.sleep(1)
     
             #Give time for metrics measurement to catch up
+            #NOTE: May need to be configured more accurately
             time.sleep(10)
-            #If we exited the while loop and link down is still 
+            #If we exited the while loop and link down 1,2,3 are still 
             #false, then ONOS has failed to discover link down event
-            if not link_down:
+            if not (link_down1 and link_down2 and link_down3):
                 main.log.info("Link down discovery failed")
                 
                 link_down_lat_graph1 = 0
@@ -891,33 +943,33 @@ class TopoPerfNext:
         
             main.log.report("Link down latency ONOS1 iteration "+
                     str(i)+" (end-to-end): "+
-                    str(link_down_lat_graph1))
+                    str(link_down_lat_graph1)+" ms")
             main.log.report("Link down latency ONOS2 iteration "+
                     str(i)+" (end-to-end): "+
-                    str(link_down_lat_graph2))
+                    str(link_down_lat_graph2)+" ms")
             main.log.report("Link down latency ONOS3 iteration "+
                     str(i)+" (end-to-end): "+
-                    str(link_down_lat_graph3))
+                    str(link_down_lat_graph3)+" ms")
             
             main.log.report("Link down latency ONOS1 iteration "+
                     str(i)+" (link-event-to-system-timestamp): "+
-                    str(link_down_lat_link1))
+                    str(link_down_lat_link1)+" ms")
             main.log.report("Link down latency ONOS2 iteration "+
                     str(i)+" (link-event-to-system-timestamp): "+
-                    str(link_down_lat_link2))
+                    str(link_down_lat_link2)+" ms")
             main.log.report("Link down latency ONOS3 iteration "+
                     str(i)+" (link-event-to-system-timestamp): "+
                     str(link_down_lat_link3))
       
             #Calculate avg of node calculations
             link_down_lat_graph_avg =\
-                    (link_down_lat_graph_1 +
-                     link_down_lat_graph_2 +
-                     link_down_lat_graph_3) / 3.0
+                    (link_down_lat_graph1 +
+                     link_down_lat_graph2 +
+                     link_down_lat_graph3) / 3.0
             link_down_lat_link_avg =\
-                    (link_down_lat_link_1 +
-                     link_down_lat_link_2 +
-                     link_down_lat_link_3) / 3.0
+                    (link_down_lat_link1 +
+                     link_down_lat_link2 +
+                     link_down_lat_link3) / 3.0
 
             #Set threshold and append latency to list
             if link_down_lat_graph_avg > 0.0 and\
@@ -931,15 +983,171 @@ class TopoPerfNext:
 
             #NOTE: To remove loss rate and measure latency:
             #       'sh tc qdisc del dev s1-eth1 root'
+            timestamp_link_up_t0 = time.time() * 1000
             main.Mininet1.handle.sendline("sh tc qdisc del dev "+
                     "s1-eth1 root")
             main.Mininet1.handle.expect("mininet>")
+            
+            main.log.info("Checking ONOS for link update")
+            
+            link_down1 = True
+            link_down2 = True
+            link_down3 = True
+            loop_count = 0
+            while( (link_down1 and link_down2 and link_down3)\
+                    and loop_count < 30 ):
+                json_str1 = main.ONOS1cli.links()
+                json_str2 = main.ONOS2cli.links()
+                json_str3 = main.ONOS3cli.links()
+                if not (json_str1 and json_str2 and json_str3):
+                    main.log.error("CLI command returned error ")
+                    break
+                else:
+                    json_obj1 = json.loads(json_str1)
+                    json_obj2 = json.loads(json_str2)
+                    json_obj3 = json.loads(json_str3)
+                
+                for obj1 in json_obj1:
+                    if '01' in obj1['src']['device']:
+                        link_down1 = False 
+                        main.log.report("Link up from "+
+                            "s1 -> s2 on ONOS1 detected")
+                for obj2 in json_obj2:
+                    if '01' in obj2['src']['device']:
+                        link_down2 = False 
+                        main.log.report("Link up from "+
+                            "s1 -> s2 on ONOS2 detected")
+                for obj3 in json_obj3:
+                    if '01' in obj3['src']['device']:
+                        link_down3 = False 
+                        main.log.report("Link up from "+
+                            "s1 -> s2 on ONOS3 detected")
+                
+                loop_count += 1
+                time.sleep(1)
+            
+            if (link_down1 and link_down2 and link_down3):
+                main.log.info("Link up discovery failed")
+                
+                link_up_lat_graph1 = 0
+                link_up_lat_graph2 = 0
+                link_up_lat_graph3 = 0
+                link_up_lat_device1 = 0
+                link_up_lat_device2 = 0
+                link_up_lat_device3 = 0
+                
+                assertion = main.FALSE
+            else:
+                json_topo_metrics_1 =\
+                        main.ONOS1cli.topology_events_metrics()
+                json_topo_metrics_2 =\
+                        main.ONOS2cli.topology_events_metrics()
+                json_topo_metrics_3 =\
+                        main.ONOS3cli.topology_events_metrics()
+                json_topo_metrics_1 = json.loads(json_topo_metrics_1)
+                json_topo_metrics_2 = json.loads(json_topo_metrics_2)
+                json_topo_metrics_3 = json.loads(json_topo_metrics_3)
+
+                main.log.info("Obtaining graph and device timestamp")
+                graph_timestamp_1 = \
+                    json_topo_metrics_1[graphTimestamp]['value']
+                graph_timestamp_2 = \
+                    json_topo_metrics_2[graphTimestamp]['value']
+                graph_timestamp_3 = \
+                    json_topo_metrics_3[graphTimestamp]['value']
+
+                link_timestamp_1 = \
+                    json_topo_metrics_1[linkTimestamp]['value']
+                link_timestamp_2 = \
+                    json_topo_metrics_2[linkTimestamp]['value']
+                link_timestamp_3 = \
+                    json_topo_metrics_3[linkTimestamp]['value']
+
+                if graph_timestamp_1 and graph_timestamp_2 and\
+                        graph_timestamp_3 and link_timestamp_1 and\
+                        link_timestamp_2 and link_timestamp_3:
+                    link_up_lat_graph1 = int(graph_timestamp_1) -\
+                            timestamp_link_up_t0
+                    link_up_lat_graph2 = int(graph_timestamp_2) -\
+                            timestamp_link_up_t0
+                    link_up_lat_graph3 = int(graph_timestamp_3) -\
+                            timestamp_link_up_t0
+                
+                    link_up_lat_link1 = int(link_timestamp_1) -\
+                            timestamp_link_up_t0
+                    link_up_lat_link2 = int(link_timestamp_2) -\
+                            timestamp_link_up_t0
+                    link_up_lat_link3 = int(link_timestamp_3) -\
+                            timestamp_link_up_t0
+                else:
+                    main.log.error("There was an error calculating"+
+                        " the delta for link down event")
+                    link_up_lat_graph1 = 0
+                    link_up_lat_graph2 = 0
+                    link_up_lat_graph3 = 0
+                    
+                    link_up_lat_device1 = 0
+                    link_up_lat_device2 = 0
+                    link_up_lat_device3 = 0
+        
+            main.log.info("Link up latency ONOS1 iteration "+
+                    str(i)+" (end-to-end): "+
+                    str(link_up_lat_graph1)+" ms")
+            main.log.info("Link up latency ONOS2 iteration "+
+                    str(i)+" (end-to-end): "+
+                    str(link_up_lat_graph2)+" ms")
+            main.log.info("Link up latency ONOS3 iteration "+
+                    str(i)+" (end-to-end): "+
+                    str(link_up_lat_graph3)+" ms")
+            
+            main.log.info("Link up latency ONOS1 iteration "+
+                    str(i)+" (link-event-to-system-timestamp): "+
+                    str(link_up_lat_link1)+" ms")
+            main.log.info("Link up latency ONOS2 iteration "+
+                    str(i)+" (link-event-to-system-timestamp): "+
+                    str(link_up_lat_link2)+" ms")
+            main.log.info("Link up latency ONOS3 iteration "+
+                    str(i)+" (link-event-to-system-timestamp): "+
+                    str(link_up_lat_link3))
+      
+            #Calculate avg of node calculations
+            link_up_lat_graph_avg =\
+                    (link_up_lat_graph1 +
+                     link_up_lat_graph2 +
+                     link_up_lat_graph3) / 3.0
+            link_up_lat_link_avg =\
+                    (link_up_lat_link1 +
+                     link_up_lat_link2 +
+                     link_up_lat_link3) / 3.0
+
+            #Set threshold and append latency to list
+            if link_up_lat_graph_avg > 0.0 and\
+               link_up_lat_graph_avg < 30000:
+                link_up_graph_to_system_list.append(
+                        link_up_lat_graph_avg)
+            if link_up_lat_link_avg > 0.0 and\
+               link_up_lat_link_avg < 30000:
+                link_up_link_to_system_list.append(
+                        link_up_lat_link_avg)
 
         #Calculate min, max, avg of list and report
         link_down_min = min(link_down_graph_to_system_list)
         link_down_max = max(link_down_graph_to_system_list)
         link_down_avg = sum(link_down_graph_to_system_list) / \
                         len(link_down_graph_to_system_list)
+        link_up_min = min(link_up_graph_to_system_list)
+        link_up_max = max(link_up_graph_to_system_list)
+        link_up_avg = sum(link_up_graph_to_system_list) / \
+                        len(link_up_graph_to_system_list)
+
+        main.log.report("Link down latency - Min: "+
+                str(link_down_min)+"ms  Max: "+
+                str(link_down_max)+"ms  Avg: "+
+                str(link_down_avg)+"ms")
+        main.log.report("Link up latency - Min: "+
+                str(link_up_min)+"ms  Max: "+
+                str(link_up_max)+"ms  Avg: "+
+                str(link_up_avg)+"ms")
 
     def CASE5(self, main):
         '''

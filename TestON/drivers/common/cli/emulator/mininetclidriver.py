@@ -876,29 +876,33 @@ class MininetCliDriver(Emulator):
             ports = []
             for port in switch.ports.values():
                 #print port.hw_addr.toStr(separator = '')
-                ports.append({
-                    'of_port': port.port_no,
-                    'mac': str(port.hw_addr).replace('\'',''),
-                    'name': port.name, 
-                    'enabled':port.enabled })
-            output['switches'].append({
-                "name": switch.name,
-                "dpid": str(switch.dpid).zfill(16),
-                "ports": ports })
+                tmp_port = {}
+                tmp_port['of_port'] = port.port_no
+                tmp_port['mac'] = str(port.hw_addr).replace('\'','')
+                tmp_port['name'] = port.name
+                tmp_port['enabled'] = port.enabled
+
+                ports.append(tmp_port)
+            tmp_switch = {}
+            tmp_switch['name'] = switch.name
+            tmp_switch['dpid'] = str(switch.dpid).zfill(16)
+            tmp_switch['ports'] = ports
+
+            output['switches'].append(tmp_switch)
 
 
         ################ports#############
-        for switch in output['switches']:
+        for mn_switch in output['switches']:
             mn_ports = []
             onos_ports = []
-            for port in switch['ports']:
+            for port in mn_switch['ports']:
                 if port['enabled'] == True:
                     mn_ports.append(port['of_port'])
             for onos_switch in ports_json:
                 #print "Iterating through a new switch as seen by ONOS"
                 #print onos_switch
                 if onos_switch['device']['available'] == True:
-                    if onos_switch['device']['id'].replace(':','').replace("of", '') == switch['dpid']:
+                    if onos_switch['device']['id'].replace(':','').replace("of", '') == mn_switch['dpid']:
                         for port in onos_switch['ports']:
                             if port['isEnabled']:
                                 #print "Iterating through available ports on the switch"
@@ -930,7 +934,7 @@ class MininetCliDriver(Emulator):
                     port_results = main.FALSE
                     break
             if port_results == main.FALSE:
-                main.log.report("The list of ports for switch %s(%s) does not match:" % (switch['name'], switch['dpid']) )
+                main.log.report("The list of ports for switch %s(%s) does not match:" % (mn_switch['name'], mn_switch['dpid']) )
                 main.log.report("mn_ports[] = " +  str(mn_ports))
                 main.log.report("onos_ports[] = " + str(onos_ports))
         return port_results

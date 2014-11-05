@@ -227,7 +227,7 @@ class OnosDriver(CLI):
                 pexpect.TIMEOUT],
                 timeout=300)
             #debug
-           #main.log.report(self.name +": \n"+"git pull response: " + str(self.handle.before) + str(self.handle.after))
+           #main.log.report(self.name +": DEBUG:  \n"+"git pull response: " + str(self.handle.before) + str(self.handle.after))
             if i==0:
                 main.log.error(self.name + ": Git pull had some issue...")
                 return main.ERROR
@@ -287,63 +287,59 @@ class OnosDriver(CLI):
 
         '''
         try:
-            # main.log.info(self.name + ": Stopping ONOS")
-            #self.stop()
             self.handle.sendline("cd " + self.home)
             self.handle.expect("ONOS\$")
-            if branch != 'master':
-                #self.handle.sendline('git stash')
-                #self.handle.expect('ONOS\$')
-                #print "After issuing git stash cmnd: ", self.handle.before
-                cmd = "git checkout "+branch
-                print "checkout cmd = ", cmd
-                self.handle.sendline(cmd)
-                uptodate = 0
-                i=self.handle.expect(['fatal',
-                    'Username\sfor\s(.*):\s',
-                    'Already\son\s\'',
-                    'Switched\sto\sbranch\s\'', 
-                    pexpect.TIMEOUT],timeout=60)
-            else:
-                #self.handle.sendline('git stash apply')
-                #self.handle.expect('ONOS\$')
-                #print "After issuing git stash apply cmnd: ", self.handle.before
-                cmd = "git checkout "+branch
-                print "checkout cmd = ", cmd
-                self.handle.sendline(cmd)
-                uptodate = 0
-                switchedToMaster = 0
-                i=self.handle.expect(['fatal',
-                    'Username\sfor\s(.*):\s',
-                    'Already\son\s\'master\'',
-                    'Switched\sto\sbranch\s\'master\'', 
-                    pexpect.TIMEOUT],timeout=60)
- 
+            main.log.info(self.name + ": Checking out git branch: " + branch + "...")
+            cmd = "git checkout "+branch
+            self.handle.sendline(cmd)
+            self.handle.expect(cmd)
+            i=self.handle.expect(['fatal',
+                'Username\sfor\s(.*):\s',
+                'Already\son\s\'',
+                'Switched\sto\sbranch\s\'' + str(branch), 
+                pexpect.TIMEOUT,
+                'error: Your local changes to the following files would be overwritten by checkout:',
+                'error: you need to resolve your current index first'],timeout=60)
 
             if i==0:
                 main.log.error(self.name + ": Git checkout had some issue...")
+                main.log.error(self.name + ":     " + self.handle.before)
                 return main.ERROR
             elif i==1:
-                main.log.error(self.name + ": Git checkout Asking for username!!! Bad!")
+                main.log.error(self.name + ": Git checkout asking for username."\
+                        +" Please configure your local git repository to be able "\
+                        +"to access your remote repository passwordlessly")
                 return main.ERROR
             elif i==2:
                 main.log.info(self.name + ": Git Checkout %s : Already on this branch" %branch)
                 self.handle.expect("ONOS\$")
-                print "after checkout cmd = ", self.handle.before
-                switchedToMaster = 1
+                #main.log.info("DEBUG: after checkout cmd = "+ self.handle.before)
                 return main.TRUE
             elif i==3:
                 main.log.info(self.name + ": Git checkout %s - Switched to this branch" %branch)
                 self.handle.expect("ONOS\$")
-                print "after checkout cmd = ", self.handle.before
-                switchedToMaster = 1
+                #main.log.info("DEBUG: after checkout cmd = "+ self.handle.before)
                 return main.TRUE
             elif i==4:
                 main.log.error(self.name + ": Git Checkout- TIMEOUT")
                 main.log.error(self.name + " Response was: " + str(self.handle.before))
                 return main.ERROR
+            elif i==5:
+                self.handle.expect("Aborting")
+                main.log.error(self.name + ": Git checkout error: \n" + \
+                        "Your local changes to the following files would be overwritten by checkout:" + \
+                        str(self.handle.before))
+                self.handle.expect("ONOS\$")
+                return main.ERROR
+            elif i==6:
+                main.log.error(self.name + ": Git checkout error: \n" + \
+                        "You need to resolve your current index first:" + \
+                        str(self.handle.before))
+                self.handle.expect("ONOS\$")
+                return main.ERROR
             else:
                 main.log.error(self.name + ": Git Checkout - Unexpected response, check for pull errors")
+                main.log.error(self.name + ":     " + self.handle.before)
                 return main.ERROR
 
         except pexpect.EOF:

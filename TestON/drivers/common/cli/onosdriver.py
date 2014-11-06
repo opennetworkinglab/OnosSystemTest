@@ -376,8 +376,9 @@ class OnosDriver(CLI):
             self.handle.expect("\$")
             lines=response.splitlines()
             for line in lines:
-                print line
-            return lines[2]
+                print "line = ",line
+            returnValue = lines[2]+lines[4]
+            return returnValue
         except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
             main.log.error(self.name + ":     " + self.handle.before)

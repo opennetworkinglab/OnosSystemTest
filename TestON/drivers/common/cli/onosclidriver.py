@@ -950,7 +950,7 @@ class OnosCliDriver(CLI):
 
     def add_point_intent(self, ingress_device, port_ingress,
             egress_device, port_egress, ethType="", ethSrc="",
-            ethDst="", bandwidth="", lambda_alloc=""):
+            ethDst="", bandwidth="", lambda_alloc=False):
         '''
         Required:
             * ingress_device: device id of ingress device
@@ -960,7 +960,8 @@ class OnosCliDriver(CLI):
             * ethSrc: specify ethSrc (i.e. src mac addr)
             * ethDst: specify ethDst (i.e. dst mac addr)
             * bandwidth: specify bandwidth capacity of link
-            * lambda_alloc: spcify lambda allocation
+            * lambda_alloc: if True, intent will allocate lambda 
+              for the specified intent
         Description:
             Adds a point-to-point intent (uni-directional) by
             specifying device id's and optional fields
@@ -991,7 +992,7 @@ class OnosCliDriver(CLI):
                 if bandwidth:
                     cmd += " --bandwidth " + str(bandwidth)
                 if lambda_alloc:
-                    cmd += " --lambda " + str(lambda_alloc)
+                    cmd += " --lambda " 
 
                 cmd += " "+str(ingress_device) +\
                     "/" + str(port_ingress) + " " +\

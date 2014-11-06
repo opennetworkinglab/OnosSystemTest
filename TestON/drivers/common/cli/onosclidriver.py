@@ -974,7 +974,7 @@ class OnosCliDriver(CLI):
 
             #If there are no optional arguments
             if not ethType and not ethSrc and not ethDst\
-                    and not bandwidth and not lambda:
+                    and not bandwidth and not lambda_alloc:
                 cmd = "add-point-intent "+\
                         str(ingress_device) + "/" + str(port_ingress) + " " +\
                         str(egress_device) + "/" + str(port_egress)

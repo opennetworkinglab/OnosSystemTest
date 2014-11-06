@@ -131,6 +131,12 @@ class TopoPerfNext:
         deviceTimestamp = main.params['JSON']['deviceTimestamp']
         graphTimestamp = main.params['JSON']['graphTimestamp']
 
+        #Threshold for the test
+        threshold_str = main.params['TEST']['singleSwThreshold']
+        threshold_obj = threshold_str.split(",")
+        threshold_min = int(threshold_obj[0])
+        threshold_max = int(threshold_obj[1])
+
         #List of switch add latency collected from
         #all iterations
         latency_end_to_end_list = []
@@ -308,7 +314,8 @@ class TopoPerfNext:
                      int(delta_ofp_graph_2)+\
                      int(delta_ofp_graph_3)) / 3
             
-            if avg_delta_ofp_graph > 0.0 and avg_delta_ofp_graph < 10000:
+            if avg_delta_ofp_graph > threshold_min \
+                    and avg_delta_ofp_graph < threshold_max:
                 latency_ofp_to_graph_list.append(avg_delta_ofp_graph)
             else:
                 main.log.info("Results for ofp-to-graph "+\
@@ -469,6 +476,18 @@ class TopoPerfNext:
         #These are subject to change, hence moved into params
         deviceTimestamp = main.params['JSON']['deviceTimestamp']
         graphTimestamp = main.params['JSON']['graphTimestamp']
+
+        #Threshold for this test case
+        up_threshold_str = main.params['TEST']['portUpThreshold']
+        down_threshold_str = main.params['TEST']['portDownThreshold']
+        up_threshold_obj = up_threshold_str.split(",")
+        down_threshold_obj = down_threshold_str.split(",")
+
+        up_threshold_min = int(up_threshold_obj[0])
+        up_threshold_max = int(up_threshold_obj[1])
+
+        down_threshold_min = int(down_threshold_obj[0])
+        down_threshold_max = int(down_threshold_obj[1])
 
         #NOTE: Some hardcoded variables you may need to configure
         #      besides the params
@@ -707,8 +726,8 @@ class TopoPerfNext:
                      float(pt_up_device_to_ofp_2) +
                      float(pt_up_device_to_ofp_3)) / 3
 
-            if pt_up_graph_to_ofp_avg > 0 and \
-                    pt_up_graph_to_ofp_avg < 1000:
+            if pt_up_graph_to_ofp_avg > up_threshold_min and \
+                    pt_up_graph_to_ofp_avg < up_threshold_max: 
                 port_up_graph_to_ofp_list.append(
                         pt_up_graph_to_ofp_avg)
                 main.log.info("Port down: graph to ofp avg: "+
@@ -718,8 +737,8 @@ class TopoPerfNext:
                         " exceeded the threshold: "+
                         str(pt_up_graph_to_ofp_avg))
             
-            if pt_up_device_to_ofp_avg > 0 and \
-                    pt_up_device_to_ofp_avg < 1000:
+            if pt_up_device_to_ofp_avg > up_threshold_min and \
+                    pt_up_device_to_ofp_avg < up_threshold_max:
                 port_up_device_to_ofp_list.append(
                         pt_up_device_to_ofp_avg)
                 main.log.info("Port up: device to ofp avg: "+
@@ -815,6 +834,19 @@ class TopoPerfNext:
         deviceTimestamp = main.params['JSON']['deviceTimestamp']
         linkTimestamp = main.params['JSON']['linkTimestamp'] 
         graphTimestamp = main.params['JSON']['graphTimestamp']
+
+        #Threshold for this test case
+        up_threshold_str = main.params['TEST']['linkUpThreshold']
+        down_threshold_str = main.params['TEST']['linkDownThreshold']
+
+        up_threshold_obj = up_threshold_str.split(",")
+        down_threshold_obj = down_threshold_str.split(",")
+
+        up_threshold_min = int(up_threshold_obj[0])
+        up_threshold_max = int(up_threshold_obj[1])
+
+        down_threshold_min = int(down_threshold_obj[0])
+        down_threshold_max = int(down_threshold_obj[1])
 
         assertion = main.TRUE
         #Link event timestamp to system time list
@@ -993,16 +1025,16 @@ class TopoPerfNext:
                      link_down_lat_link3) / 3.0
 
             #Set threshold and append latency to list
-            if link_down_lat_graph_avg > 0.0 and\
-               link_down_lat_graph_avg < 30000:
+            if link_down_lat_graph_avg > down_threshold_min and\
+               link_down_lat_graph_avg < down_threshold_max:
                 link_down_graph_to_system_list.append(
                         link_down_lat_graph_avg)
             else:
                 main.log.info("Link down latency exceeded threshold")
                 main.log.info("Results for iteration "+str(i)+
                         "have been omitted")
-            if link_down_lat_link_avg > 0.0 and\
-               link_down_lat_link_avg < 30000:
+            if link_down_lat_link_avg > down_threshold_min and\
+               link_down_lat_link_avg < down_threshold_max:
                 link_down_link_to_system_list.append(
                         link_down_lat_link_avg)
             else:
@@ -1150,16 +1182,16 @@ class TopoPerfNext:
                      link_up_lat_link3) / 3.0
 
             #Set threshold and append latency to list
-            if link_up_lat_graph_avg > 0.0 and\
-               link_up_lat_graph_avg < 30000:
+            if link_up_lat_graph_avg > up_threshold_min and\
+               link_up_lat_graph_avg < up_threshold_max:
                 link_up_graph_to_system_list.append(
                         link_up_lat_graph_avg)
             else:
                 main.log.info("Link up latency exceeded threshold")
                 main.log.info("Results for iteration "+str(i)+
                         "have been omitted")
-            if link_up_lat_link_avg > 0.0 and\
-               link_up_lat_link_avg < 30000:
+            if link_up_lat_link_avg > up_threshold_min and\
+               link_up_lat_link_avg < up_threshold_max:
                 link_up_link_to_system_list.append(
                         link_up_lat_link_avg)
             else:
@@ -1227,12 +1259,22 @@ class TopoPerfNext:
         #These are subject to change, hence moved into params
         deviceTimestamp = main.params['JSON']['deviceTimestamp']
         graphTimestamp = main.params['JSON']['graphTimestamp']
-   
+ 
+        #Threshold for this test case
+        sw_disc_threshold_str = main.params['TEST']['swDisc100Threshold']
+        sw_disc_threshold_obj = sw_disc_threshold_str.split(",")
+        sw_disc_threshold_min = int(sw_disc_threshold_obj[0])
+        sw_disc_threshold_max = int(sw_disc_threshold_obj[1])
+
+        print_packet_info = main.params['TEST']['printPacketInfo']
+
         tshark_ofp_output = "/tmp/tshark_ofp_"+num_sw+"sw.txt"
         tshark_tcp_output = "/tmp/tshark_tcp_"+num_sw+"sw.txt"
 
         tshark_ofp_result_list = []
         tshark_tcp_result_list = []
+
+        sw_discovery_lat_list = []
 
         main.case(num_sw+" Switch discovery latency")
         main.step("Assigning all switches to ONOS1")
@@ -1374,7 +1416,8 @@ class TopoPerfNext:
             main.log.info("Tshark OFP Vendor output: ")
             for line in ofp_file:
                 tshark_ofp_result_list.append(line)
-                main.log.info(line)
+                if print_packet_info=='True':
+                    main.log.info(line)
 
             ofp_file.close()
 
@@ -1382,7 +1425,8 @@ class TopoPerfNext:
             main.log.info("Tshark TCP 74 output: ")
             for line in tcp_file:
                 tshark_tcp_result_list.append(line)
-                main.log.info(line)
+                if print_packet_info=='True': 
+                    main.log.info(line)
 
             tcp_file.close()
 
@@ -1397,16 +1441,33 @@ class TopoPerfNext:
             graph_timestamp_3 = \
                     json_obj_3[graphTimestamp]['value']
 
-            main.log.info(
-                    int(graph_timestamp_1) - int(t0_system))
-            main.log.info(
-                    int(graph_timestamp_2) - int(t0_system))
-            main.log.info(
-                    int(graph_timestamp_3) - int(t0_system))
+            graph_lat_1 = int(graph_timestamp_1) - int(t0_system)
+            graph_lat_2 = int(graph_timestamp_2) - int(t0_system)
+            graph_lat_3 = int(graph_timestamp_3) - int(t0_system)
 
+            avg_graph_lat = \
+                    (int(graph_lat_1) +\
+                     int(graph_lat_2) +\
+                     int(graph_lat_3)) / 3
+    
+            if avg_graph_lat > sw_disc_threshold_min \
+                    and avg_graph_lat < sw_disc_threshold_max:
+                sw_discovery_lat_list.append(
+                        avg_graph_lat)
+            else:
+                main.log.info("100 Switch discovery latency "+
+                        "exceeded the threshold.")
+            
+            #END ITERATION FOR LOOP
 
+        sw_lat_min = min(sw_discovery_lat_list)
+        sw_lat_max = max(sw_discovery_lat_list)
+        sw_lat_avg = sum(sw_discovery_lat_list) /\
+                     len(sw_discovery_lat_list)
 
-
-
+        main.log.report("100 Switch discovery lat - \n"+\
+                "Min: "+str(sw_lat_min)+" ms\n"+\
+                "Max: "+str(sw_lat_max)+" ms\n"+\
+                "Avg: "+str(sw_lat_avg)+" ms\n")
 
 

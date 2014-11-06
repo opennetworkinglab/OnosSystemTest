@@ -1,5 +1,5 @@
 <PARAMS>
-    <testcases>1,2,3,4</testcases>
+    <testcases>1,2,3,4,5</testcases>
 
     <ENV>
         <cellName>topo_perf_test</cellName>
@@ -32,8 +32,16 @@
 
     <TEST>
         #Number of times to iterate each case
-        <numIter>10</numIter>
+        <numIter>5</numIter>
         <numSwitch>100</numSwitch>         
+        <printPacketInfo>False</printPacketInfo>
+    
+        <singleSwThreshold>0,1000</singleSwThreshold>
+        <portUpThreshold>0,1000</portUpThreshold>
+        <portDownThreshold>0,1000</portDownThreshold>
+        <linkUpThreshold>0,10000</linkUpThreshold>
+        <linkDownThreshold>0,10000</linkDownThreshold>
+        <swDisc100Threshold>0,10000</swDisc100Threshold>
     </TEST>
 
     <JSON>

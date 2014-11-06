@@ -326,14 +326,11 @@ class TopoPerfNext:
             
             #NOTE: ofp - delta measurements are occasionally negative
             #      due to system time misalignment.
-            #TODO: Implement ptp across all clusters
-            #Just add the calculation to list for now
             latency_ofp_to_device_list.append(avg_delta_ofp_device)
 
             #TODO:
             #Fetch logs upon threshold excess
 
-            
             main.log.info("ONOS1 delta end-to-end: "+
                     str(delta_graph_1) + " ms")
             main.log.info("ONOS2 delta end-to-end: "+
@@ -355,12 +352,12 @@ class TopoPerfNext:
             main.log.info("ONOS3 delta device - t0: "+
                     str(delta_device_3) + " ms")
           
-            main.log.info("ONOS1 delta OFP - device: "+
-                    str(delta_ofp_device_1) + " ms")
-            main.log.info("ONOS2 delta OFP - device: "+
-                    str(delta_ofp_device_2) + " ms")
-            main.log.info("ONOS3 delta OFP - device: "+
-                    str(delta_ofp_device_3) + " ms")
+            #main.log.info("ONOS1 delta OFP - device: "+
+            #        str(delta_ofp_device_1) + " ms")
+            #main.log.info("ONOS2 delta OFP - device: "+
+            #        str(delta_ofp_device_2) + " ms")
+            #main.log.info("ONOS3 delta OFP - device: "+
+            #        str(delta_ofp_device_3) + " ms")
 
             main.step("Remove switch from controller")
             main.Mininet1.delete_sw_controller("s1")
@@ -433,10 +430,6 @@ class TopoPerfNext:
                 "Min: "+str(latency_ofp_to_graph_min)+"\n"+\
                 "Max: "+str(latency_ofp_to_graph_max)+"\n"+\
                 "Avg: "+str(latency_ofp_to_graph_avg))
-        main.log.report("Switch add - OFP-to-Device latency: \n"+\
-                "Min: "+str(latency_ofp_to_device_min)+"\n"+\
-                "Max: "+str(latency_ofp_to_device_max)+"\n"+\
-                "Avg: "+str(latency_ofp_to_device_avg))
         main.log.report("Switch add - t0-to-Device latency: \n"+\
                 "Min: "+str(latency_t0_to_device_min)+"\n"+\
                 "Max: "+str(latency_t0_to_device_max)+"\n"+\
@@ -467,7 +460,8 @@ class TopoPerfNext:
         ONOS_user = main.params['CTRL']['user']
 
         default_sw_port = main.params['CTRL']['port1']
-       
+      
+        assertion = main.TRUE
         #Number of iterations of case
         num_iter = main.params['TEST']['numIter']
        
@@ -492,6 +486,11 @@ class TopoPerfNext:
                 port1=default_sw_port)
         main.Mininet1.assign_sw_controller(sw="2",ip1=ONOS1_ip,
                 port1=default_sw_port)
+
+        #Give enough time for metrics to propagate the 
+        #assign controller event. Otherwise, these events may
+        #carry over to our measurements
+        time.sleep(10)
 
         main.step("Verify switch is assigned correctly")
         result_s1 = main.Mininet1.get_sw_controller(sw="s1")
@@ -519,7 +518,7 @@ class TopoPerfNext:
             main.Mininet2.handle.sendline("sudo ifconfig "+
                     interface_config+" down")
             main.Mininet2.handle.expect("\$")
-            time.sleep(20)
+            time.sleep(10)
 
             main.ONOS1.tshark_stop()
             time.sleep(5)
@@ -597,11 +596,11 @@ class TopoPerfNext:
             pt_down_graph_to_ofp_avg =\
                     (int(pt_down_graph_to_ofp_1) +
                      int(pt_down_graph_to_ofp_2) + 
-                     int(pt_down_graph_to_ofp_3)) / 3
+                     int(pt_down_graph_to_ofp_3)) / 3.0
             pt_down_device_to_ofp_avg = \
                     (int(pt_down_device_to_ofp_1) + 
                      int(pt_down_device_to_ofp_2) +
-                     int(pt_down_device_to_ofp_3)) / 3
+                     int(pt_down_device_to_ofp_3)) / 3.0
 
             if pt_down_graph_to_ofp_avg > 0.0 and \
                     pt_down_graph_to_ofp_avg < 1000:
@@ -629,12 +628,14 @@ class TopoPerfNext:
             main.step("Enable port and obtain timestamp")
             main.step("Starting wireshark capture for port status up")
             main.ONOS1.tshark_grep("OFP 130 Port Status", tshark_port_up)
-            time.sleep(10)
+            time.sleep(5)
 
             main.Mininet2.handle.sendline("sudo ifconfig "+
                     interface_config+" up")
             main.Mininet2.handle.expect("\$")
-            time.sleep(20)
+            time.sleep(10)
+            
+            main.ONOS1.tshark_stop()
 
             os.system("scp "+ONOS_user+"@"+ONOS1_ip+":"+
                     tshark_port_up+" /tmp/")
@@ -729,7 +730,12 @@ class TopoPerfNext:
                         str(pt_up_device_to_ofp_avg))
             
             #END ITERATION FOR LOOP
-       
+        
+        #Check all list for latency existence and set assertion
+        if (port_down_graph_to_ofp_list and port_down_device_to_ofp_list\
+           and port_up_graph_to_ofp_list and port_up_device_to_ofp_list):
+            assertion = main.TRUE
+
         #Calculate and report latency measurements
         port_down_graph_to_ofp_min = min(port_down_graph_to_ofp_list)
         port_down_graph_to_ofp_max = max(port_down_graph_to_ofp_list)
@@ -738,10 +744,8 @@ class TopoPerfNext:
                  len(port_down_graph_to_ofp_list))
         
         main.log.report("Port down graph-to-ofp Min: "+
-                str(port_down_graph_to_ofp_min))
-        main.log.report("Port down graph-to-ofp Max: "+
-                str(port_down_graph_to_ofp_max))
-        main.log.report("Port down graph-to-ofp Avg: "+
+                str(port_down_graph_to_ofp_min)+" ms  Max: "+
+                str(port_down_graph_to_ofp_max)+" ms  Avg: "+
                 str(port_down_graph_to_ofp_avg))
         
         port_down_device_to_ofp_min = min(port_down_device_to_ofp_list)
@@ -751,10 +755,8 @@ class TopoPerfNext:
                  len(port_down_device_to_ofp_list))
         
         main.log.report("Port down device-to-ofp Min: "+
-                str(port_down_device_to_ofp_min))
-        main.log.report("Port down device-to-ofp Max: "+
-                str(port_down_device_to_ofp_max))
-        main.log.report("Port down device-to-ofp Avg: "+
+                str(port_down_device_to_ofp_min)+" ms  Max: "+
+                str(port_down_device_to_ofp_max)+" ms  Avg: "+
                 str(port_down_device_to_ofp_avg))
         
         port_up_graph_to_ofp_min = min(port_up_graph_to_ofp_list)
@@ -762,7 +764,26 @@ class TopoPerfNext:
         port_up_graph_to_ofp_avg = \
                 (sum(port_up_graph_to_ofp_list) /\
                  len(port_up_graph_to_ofp_list))
-           
+        
+        main.log.report("Port up graph-to-ofp Min: "+
+                str(port_up_graph_to_ofp_min)+" ms  Max: "+
+                str(port_up_graph_to_ofp_max)+" ms  Avg: "+
+                str(port_up_graph_to_ofp_avg))
+          
+        port_up_device_to_ofp_min = min(port_up_device_to_ofp_list)
+        port_up_device_to_ofp_max = max(port_up_device_to_ofp_list)
+        port_up_device_to_ofp_avg = \
+                (sum(port_up_device_to_ofp_list) /\
+                 len(port_up_device_to_ofp_list))
+        
+        main.log.report("Port up device-to-ofp Min: "+
+                str(port_up_device_to_ofp_min)+" ms  Max: "+
+                str(port_up_device_to_ofp_max)+" ms  Avg: "+
+                str(port_up_device_to_ofp_avg))
+
+        utilities.assert_equals(expect=main.TRUE, actual=assertion,
+                onpass="Port discovery latency calculation successful",
+                onfail="Port discovery test failed")
 
     def CASE4(self, main):
         '''
@@ -976,10 +997,18 @@ class TopoPerfNext:
                link_down_lat_graph_avg < 30000:
                 link_down_graph_to_system_list.append(
                         link_down_lat_graph_avg)
+            else:
+                main.log.info("Link down latency exceeded threshold")
+                main.log.info("Results for iteration "+str(i)+
+                        "have been omitted")
             if link_down_lat_link_avg > 0.0 and\
                link_down_lat_link_avg < 30000:
                 link_down_link_to_system_list.append(
                         link_down_lat_link_avg)
+            else:
+                main.log.info("Link down latency exceeded threshold")
+                main.log.info("Results for iteration "+str(i)+
+                        "have been omitted")
 
             #NOTE: To remove loss rate and measure latency:
             #       'sh tc qdisc del dev s1-eth1 root'
@@ -1125,10 +1154,18 @@ class TopoPerfNext:
                link_up_lat_graph_avg < 30000:
                 link_up_graph_to_system_list.append(
                         link_up_lat_graph_avg)
+            else:
+                main.log.info("Link up latency exceeded threshold")
+                main.log.info("Results for iteration "+str(i)+
+                        "have been omitted")
             if link_up_lat_link_avg > 0.0 and\
                link_up_lat_link_avg < 30000:
                 link_up_link_to_system_list.append(
                         link_up_lat_link_avg)
+            else:
+                main.log.info("Link up latency exceeded threshold")
+                main.log.info("Results for iteration "+str(i)+
+                        "have been omitted")
 
         #Calculate min, max, avg of list and report
         link_down_min = min(link_down_graph_to_system_list)
@@ -1149,19 +1186,24 @@ class TopoPerfNext:
                 str(link_up_max)+"ms  Avg: "+
                 str(link_up_avg)+"ms")
 
+        utilities.assert_equals(expect=main.TRUE, actual=assertion,
+                onpass="Link discovery latency calculation successful",
+                onfail="Link discovery latency case failed")
+
     def CASE5(self, main):
         '''
         100 Switch discovery latency
 
         Important:
-            If a simple topology was used in previous cases,
-            you will need to change the topology file in the
-            params for this case to proceed
-        
             This test case can be potentially dangerous if 
             your machine has previously set iptables rules.
             One of the steps of the test case will flush
             all existing iptables rules.
+        Note:
+            You can specify the number of switches in the 
+            params file to adjust the switch discovery size
+            (and specify the corresponding topology in Mininet1 
+            .topo file)
         '''
         import time
         import subprocess
@@ -1230,6 +1272,8 @@ class TopoPerfNext:
                     " --dport "+default_sw_port+" -j DROP")
             main.ONOS1.handle.expect("\$")
             #Give time to allow rule to take effect
+            #NOTE: Sleep period may need to be configured 
+            #      based on the number of switches in the topology
             main.log.info("Please wait for switch connection to "+
                     "time out")
             time.sleep(60)

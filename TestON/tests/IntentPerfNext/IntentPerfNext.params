@@ -1,5 +1,5 @@
 <PARAMS>
-    <testcases>1,3</testcases>
+    <testcases>1,2</testcases>
 
     <ENV>
         <cellName>intent_perf_test</cellName>

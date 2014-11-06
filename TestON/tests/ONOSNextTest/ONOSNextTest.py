@@ -30,7 +30,7 @@ class ONOSNextTest:
         ONOS1_port = main.params['CTRL']['port1']
         
         git_pull_trigger = main.params['GIT']['autoPull']
-        git_checkout_branch = main.params['GIT']['branch']
+        git_checkout_branch = main.params['GIT']['checkout']
 
         main.case("Setting up test environment")
         
@@ -39,7 +39,7 @@ class ONOSNextTest:
         cell_file_result = main.ONOSbench.create_cell_file(
                 "10.128.20.10", "temp_cell_2", "10.128.10.90",
                 "onos-core-trivial,onos-app-fwd",
-                "10.128.20.11")
+                "10.128.174.1")
 
         main.step("Applying cell variable to environment")
         #cell_result = main.ONOSbench.set_cell(cell_name)
@@ -180,7 +180,8 @@ class ONOSNextTest:
         main.case("Testing the ONOS-cli")
         
         main.step("Set cell for ONOS-cli environment")
-        main.ONOScli.set_cell(cell_name)
+        #main.ONOScli.set_cell(cell_name)
+        main.ONOScli.set_cell("temp_cell_2")
 
         main.step("Start ONOS-cli")
         main.ONOScli.start_onos_cli(ONOS1_ip)
@@ -198,12 +199,12 @@ class ONOSNextTest:
             main.log.info("Node successfully added")
 
         main.step("Add a correct node")
-        node_result = main.ONOScli.add_node("111", "10.128.20.12")
+        node_result = main.ONOScli.add_node("111", "10.128.174.2")
 
         main.step("Assign switches and list devices")
         for i in range(1,8):
             main.Mininet2.handle.sendline("sh ovs-vsctl set-controller s"+str(i)+
-                    " tcp:10.128.20.11")
+                    " tcp:10.128.174.1")
             main.Mininet2.handle.expect("mininet>")
         #Need to sleep to allow switch add processing
         time.sleep(5)
@@ -315,6 +316,19 @@ class ONOSNextTest:
             main.log.info(get_intent_result)
         #*******************************************
 
+        main.step("Print intents in json format")
+        intents = main.ONOScli.intents(json_format = True)
+        main.log.info(intents)
+
+        main.step("Add eth options in point-to-point intent")
+        ptp_eth = main.ONOScli.add_point_intent(
+                devices_id_list[2], 1, devices_id_list[3], 2,
+                ethSrc = "00:02", ethDst = "00:03")
+        main.log.info(ptp_eth)
+
+        main.step("Print intents with eth options")
+        intents = main.ONOScli.intents()
+        main.log.info(intents)
 ######
 #jhall@onlab.us
 #andrew@onlab.us

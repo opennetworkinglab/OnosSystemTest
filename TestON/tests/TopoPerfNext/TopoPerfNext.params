@@ -1,5 +1,5 @@
 <PARAMS>
-    <testcases>1,4</testcases>
+    <testcases>1,2,3,4</testcases>
 
     <ENV>
         <cellName>topo_perf_test</cellName>
@@ -32,7 +32,7 @@
 
     <TEST>
         #Number of times to iterate each case
-        <numIter>2</numIter>
+        <numIter>10</numIter>
         <numSwitch>100</numSwitch>         
     </TEST>
 

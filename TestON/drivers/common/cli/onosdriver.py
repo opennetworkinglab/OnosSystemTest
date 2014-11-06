@@ -120,6 +120,36 @@ class OnosDriver(CLI):
             main.cleanup()
             main.exit()
 
+    def onos_build(self):
+        '''
+        Use the pre defined script to build onos via mvn
+        '''
+        
+        try:
+            self.handle.sendline("onos-build")
+            self.handle.expect("onos-build")
+            i = self.handle.expect([
+                "BUILD SUCCESS",
+                "ERROR",
+                "BUILD FAILED"], timeout=120)
+            handle = str(self.handle.before)
+
+            main.log.info("onos-build command returned: "+
+                    handle)
+
+            if i == 0:
+                return main.TRUE
+            else:
+                return handle
+
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+        except:
+            main.log.error("Failed to build ONOS")
+            main.cleanup()
+            main.exit()
+
     def clean_install(self):
         '''
         Runs mvn clean install in the root of the ONOS directory. 

@@ -20,7 +20,7 @@
         </ONOScli>
 
         <ONOS1>
-            <host>10.128.20.11</host>
+            <host>10.128.174.1</host>
             <user>sdn</user>
             <password>rocks</password>
             <type>OnosDriver</type>

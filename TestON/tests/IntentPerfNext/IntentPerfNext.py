@@ -1,6 +1,8 @@
 #Intent Performance Test for ONOS-next
 #
 #andrew@onlab.us
+#
+#November 5, 2014
 
 class IntentPerfNext:
     def __init__(self):
@@ -111,25 +113,106 @@ class IntentPerfNext:
         wdRequest_time = main.params['JSON']['wdRequestTime']
         withdrawn_time = main.params['JSON']['withdrawnTime']
 
-        devices_json_str = main.ONOScli.devices()
+        devices_json_str = main.ONOS1cli.devices()
         devices_json_obj = json.loads(devices_json_str)
 
         device_id_list = []
 
+        #Obtain device id list in ONOS format.
+        #They should already be in order (1,2,3,10,11,12,13, etc)
         for device in devices_json_obj:
             device_id_list.append(device['id'])
 
-        #TODO: Add point intent 
-        #add_point_intent(ingr_device, ingr_port, 
-        #                 egr_device, egr_port)
+        intent_add_lat_list = []
 
-        #TODO: Obtain metrics 
+        for i in range(0, int(num_iter)):
+            #add_point_intent(ingr_device, ingr_port, 
+            #                 egr_device, egr_port)
+            main.ONOS1cli.add_point_intent(
+                device_id_list[0], 2,
+                device_id_list[2], 1)
+        
+            #Allow some time for intents to propagate
+            time.sleep(5)
 
-        #TODO: Calculate average, append to latency list
-        #TODO: Iterate through iterations specified
-        #TODO: Report min, max average of latency list
+            #Obtain metrics from ONOS 1, 2, 3
+            intents_json_str_1 = main.ONOS1cli.intents_events_metrics()
+            intents_json_str_2 = main.ONOS2cli.intents_events_metrics()
+            intents_json_str_3 = main.ONOS3cli.intents_events_metrics()
+
+            intents_json_obj_1 = json.loads(intents_json_str_1)
+            intents_json_obj_2 = json.loads(intents_json_str_2)
+            intents_json_obj_3 = json.loads(intents_json_str_3)
+
+            #Parse values from the json object
+            intent_submit_1 = \
+                    intents_json_obj_1[submit_time]['value']
+            intent_submit_2 = \
+                    intents_json_obj_2[submit_time]['value']
+            intent_submit_3 = \
+                    intents_json_obj_3[submit_time]['value']
+
+            intent_install_1 = \
+                    intents_json_obj_1[install_time]['value']
+            intent_install_2 = \
+                    intents_json_obj_2[install_time]['value']
+            intent_install_3 = \
+                    intents_json_obj_3[install_time]['value']
+
+            intent_install_lat_1 = \
+                    int(intent_install_1) - int(intent_submit_1)
+            intent_install_lat_2 = \
+                    int(intent_install_2) - int(intent_submit_2)
+            intent_install_lat_3 = \
+                    int(intent_install_3) - int(intent_submit_3)
+            
+            intent_install_lat_avg = \
+                    (intent_install_lat_1 + 
+                     intent_install_lat_2 +
+                     intent_install_lat_3 ) / 3
+
+            main.log.info("Intent add latency avg for iteration "+str(i)+
+                    ": "+str(intent_install_lat_avg))
+
+            if intent_install_lat_avg > 0.0 and \
+               intent_install_lat_avg < 1000:
+                intent_add_lat_list.append(intent_install_lat_avg)
+            else:
+                main.log.info("Intent add latency exceeded "+
+                        "threshold. Skipping iteration "+str(i))
+
+            time.sleep(3)
+            
+            #TODO: Possibly put this in the driver function
+            main.log.info("Removing intents for next iteration")
+            json_temp = \
+                    main.ONOS1cli.intents(json_format=True)
+            json_obj_intents = json.loads(json_temp)
+            if json_obj_intents:
+                for intents in json_obj_intents:
+                    temp_id = intents['id']
+                    main.ONOS1cli.remove_intent(temp_id)
+                    main.log.info("Removing intent id: "+
+                        str(temp_id))
+                    main.ONOS1cli.remove_intent(temp_id)
+            else:
+                main.log.info("Intents were not installed correctly")
+
+            time.sleep(5)
+
+        intent_add_lat_min = min(intent_add_lat_list)
+        intent_add_lat_max = max(intent_add_lat_list)
+        intent_add_lat_avg = sum(intent_add_lat_list) /\
+                             len(intent_add_lat_list)
+        #END ITERATION FOR LOOP
+        main.log.report("Single intent add latency - \n"+
+                "Min: "+str(intent_add_lat_min)+" ms\n"+
+                "Max: "+str(intent_add_lat_max)+" ms\n"+
+                "Avg: "+str(intent_add_lat_avg)+" ms\n")
 
 
-
-
+    def CASE3(self, main):
+        '''
+        CASE3 coming soon
+        '''
 

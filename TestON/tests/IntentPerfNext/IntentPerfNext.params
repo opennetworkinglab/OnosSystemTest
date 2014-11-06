@@ -1,8 +1,8 @@
 <PARAMS>
-    <testcases>1,2,3,4</testcases>
+    <testcases>1,2</testcases>
 
     <ENV>
-        <cellName>topo_perf_test</cellName>
+        <cellName>intent_perf_test</cellName>
     </ENV>
 
     <GIT>
@@ -32,14 +32,13 @@
 
     <TEST>
         #Number of times to iterate each case
-        <numIter>10</numIter>
-        <numSwitch>100</numSwitch>         
+        <numIter>5</numIter>
     </TEST>
 
     <JSON>
-        <deviceTimestamp>topologyDeviceEventTimestamp</deviceTimestamp>
-        <hostTimestamp>topologyHostEventTimestamp</hostTimestamp>
-        <linkTimestamp>topologyLinkEventTimestamp</linkTimestamp>
-        <graphTimestamp>topologyGraphEventTimestamp</graphTimestamp>
+        <submittedTime>intentSubmittedTimestamp</submittedTime>
+        <installedTime>intentInstalledTimestamp</installedTime>
+        <wdRequestTime>intentWithdrawRequestedTimestamp</wdRequestTime>
+        <withdrawnTime>intentWithdrawnTimestamp</withdrawnTime>
     </JSON>
 </PARAMS>

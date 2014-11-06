@@ -1,8 +1,8 @@
 <TOPOLOGY>
     <COMPONENT>
-
+        
         <ONOSbench>
-            <host>10.128.20.10</host>
+            <host>10.128.174.10</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>OnosDriver</type>
@@ -10,19 +10,37 @@
             <COMPONENTS> </COMPONENTS>
         </ONOSbench>
 
-        <ONOScli>
-            <host>10.128.20.10</host>
+        <ONOS1cli>
+            <host>10.128.174.10</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>OnosCliDriver</type>
             <connect_order>2</connect_order>
             <COMPONENTS> </COMPONENTS>
-        </ONOScli>
+        </ONOS1cli>
+
+        <ONOS2cli>
+            <host>10.128.174.10</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>OnosCliDriver</type>
+            <connect_order>2</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </ONOS2cli>
+        
+        <ONOS3cli>
+            <host>10.128.174.10</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>OnosCliDriver</type>
+            <connect_order>2</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </ONOS3cli>
 
         <ONOS1>
             <host>10.128.174.1</host>
-            <user>sdn</user>
-            <password>rocks</password>
+            <user>admin</user>
+            <password>onos_test</password>
             <type>OnosDriver</type>
             <connect_order>3</connect_order>
             <COMPONENTS> </COMPONENTS>
@@ -35,26 +53,20 @@
             <type>MininetCliDriver</type>
             <connect_order>4</connect_order>
             <COMPONENTS>
-                #Specify the Option for mininet
-                <arg1> --topo tree,2,3</arg1>
-                <arg2> </arg2>
+                <arg1> --custom topo-intentFlower.py </arg1>
+                <arg2> --arp --mac --topo mytopo</arg2>
                 <arg3> </arg3>
-                <controller> remote </controller>
+                <controller> remote,ip=10.128.174.1 </controller>
             </COMPONENTS>
         </Mininet1>
 
         <Mininet2>
-            <host>10.128.10.91</host>
+            <host>10.128.10.90</host>
             <user>admin</user>
             <password>onos_test</password>
-            <type>MininetCliDriver</type>
+            <type>RemoteMininetDriver</type>
             <connect_order>5</connect_order>
-            <COMPONENTS> 
-                <arg1> --custom topo-intentTPtest.py </arg1>
-                <arg2> --arp --mac</arg2>
-                <arg3> --topo mytopo</arg3>
-                <controller> remote </controller>
-            </COMPONENTS>
+            <COMPONENTS> </COMPONENTS>
         </Mininet2>
 
     </COMPONENT>

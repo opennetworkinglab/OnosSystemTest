@@ -950,7 +950,7 @@ class OnosCliDriver(CLI):
 
     def add_point_intent(self, ingress_device, port_ingress,
             egress_device, port_egress, ethType="", ethSrc="",
-            ethDst=""):
+            ethDst="", bandwidth="", lambda_alloc=False):
         '''
         Required:
             * ingress_device: device id of ingress device
@@ -959,6 +959,9 @@ class OnosCliDriver(CLI):
             * ethType: specify ethType
             * ethSrc: specify ethSrc (i.e. src mac addr)
             * ethDst: specify ethDst (i.e. dst mac addr)
+            * bandwidth: specify bandwidth capacity of link
+            * lambda_alloc: if True, intent will allocate lambda 
+              for the specified intent
         Description:
             Adds a point-to-point intent (uni-directional) by
             specifying device id's and optional fields
@@ -971,7 +974,8 @@ class OnosCliDriver(CLI):
             cmd = ""
 
             #If there are no optional arguments
-            if not ethType and not ethSrc and not ethDst:
+            if not ethType and not ethSrc and not ethDst\
+                    and not bandwidth and not lambda_alloc:
                 cmd = "add-point-intent "+\
                         str(ingress_device) + "/" + str(port_ingress) + " " +\
                         str(egress_device) + "/" + str(port_egress)
@@ -985,13 +989,14 @@ class OnosCliDriver(CLI):
                     cmd += " --ethSrc " + str(ethSrc) 
                 if ethDst:    
                     cmd += " --ethDst " + str(ethDst) 
-                        
-                cmd += " "+str(ingress_device) + "/" + str(port_ingress) + " " +\
-                str(egress_device) + "/" + str(port_egress) 
+                if bandwidth:
+                    cmd += " --bandwidth " + str(bandwidth)
+                if lambda_alloc:
+                    cmd += " --lambda " 
 
-            #print "cmd = ", cmd
-            #self.handle.sendline("")
-            #self.handle.expect("onos>")
+                cmd += " "+str(ingress_device) +\
+                    "/" + str(port_ingress) + " " +\
+                    str(egress_device) + "/" + str(port_egress) 
 
             self.handle.sendline(cmd)
             i = self.handle.expect([
@@ -1001,12 +1006,6 @@ class OnosCliDriver(CLI):
             self.handle.sendline("intents")
             self.handle.expect("onos>")
             Intenthandle = self.handle.before
-            #print "Intenthandle = ", Intenthandle
-
-            #self.handle.sendline("flows")
-            #self.handle.expect("onos>")
-            #Flowhandle = self.handle.before
-            #print "Flowhandle = ", Flowhandle
 
             if i == 0:
                 main.log.error("Error in adding point-to-point intent")
@@ -1072,7 +1071,9 @@ class OnosCliDriver(CLI):
                 self.handle.expect("intents -j")
                 self.handle.expect("onos>")
                 handle = self.handle.before
-
+                
+                ansi_escape = re.compile(r'\r\r\n\x1b[^m]*m')
+                handle = ansi_escape.sub('', handle)
             else:
                 self.handle.sendline("")
                 self.handle.expect("onos>")
@@ -1130,7 +1131,44 @@ class OnosCliDriver(CLI):
             main.cleanup()
             main.exit()
 
+    def intents_events_metrics(self, json_format=True):
+        '''
+        Description:Returns topology metrics 
+        Optional:
+            * json_format: enable json formatting of output
+        '''
+        try:
+            if json_format:
+                self.handle.sendline("intents-events-metrics -j")
+                self.handle.expect("intents-events-metrics -j")
+                self.handle.expect("onos>")
+                
+                handle = self.handle.before
+              
+                #Some color thing that we want to escape
+                ansi_escape = re.compile(r'\r\r\n\x1b[^m]*m')
+                handle = ansi_escape.sub('', handle)
+            
+            else:
+                self.handle.sendline("intents-events-metrics")
+                self.handle.expect("intents-events-metrics")
+                self.handle.expect("onos>")
+                
+                handle = self.handle.before
 
+            return handle
+        
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()
 
     def topology_events_metrics(self, json_format=True):
         '''

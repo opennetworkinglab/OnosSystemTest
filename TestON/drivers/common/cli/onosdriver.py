@@ -407,7 +407,7 @@ class OnosDriver(CLI):
             lines=response.splitlines()
             for line in lines:
                 print "line = ",line
-            returnValue = lines[2]+lines[4]
+            returnValue = lines[2]+lines[3]+line[4]
             return returnValue
         except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
@@ -885,7 +885,7 @@ class OnosDriver(CLI):
             self.handle.sendline("onos-wait-for-start " + node )
             self.handle.expect("onos-wait-for-start")
             #NOTE: this timeout is arbitrary"
-            i = self.handle.expect(["\$", pexpect.TIMEOUT], timeout = 120)
+            i = self.handle.expect(["\$", pexpect.TIMEOUT], timeout = 300)
             if i == 0:
                 main.log.info(self.name + ": " + node + " is up")
                 return main.TRUE
@@ -1020,6 +1020,22 @@ class OnosDriver(CLI):
             main.log.info(self.name+" ::::::")
             main.cleanup()
             main.exit()
+
+
+
+    def run_onos_topo_cfg(self):
+        '''
+         On ONOS bench, run this command: ./~/ONOS/tools/test/bin/onos-topo-cfg
+            which starts the rest and copies the json file to the onos instance
+        '''
+        self.handle.sendline("")
+        self.handle.expect("\$")
+        self.handle.sendline("cd ~/ONOS/tools/test/bin")
+        self.handle.expect("/bin$")
+        self.handle.sendline("./onos-topo-cfg")
+        self.handle.expect("{}admin@onosTestBench")
+        self.handle.sendline("cd ~")
+        self.handle.expect("\$")
 
 
     def tshark_grep(self, grep, directory, interface='eth0'):

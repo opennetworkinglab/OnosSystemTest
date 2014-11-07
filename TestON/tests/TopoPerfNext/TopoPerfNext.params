@@ -31,10 +31,15 @@
     </BENCH>
 
     <TEST>
+        #'on' or 'off' debug mode.
+        #If on, logging will be more verbose and
+        #tshark pcap will be enabled
+        #pcap file located at /tmp/'capture_name'
+        <debugMode>on</debugMode>
+
         #Number of times to iterate each case
         <numIter>5</numIter>
         <numSwitch>100</numSwitch>         
-        <printPacketInfo>False</printPacketInfo>
     
         <singleSwThreshold>0,1000</singleSwThreshold>
         <portUpThreshold>0,1000</portUpThreshold>

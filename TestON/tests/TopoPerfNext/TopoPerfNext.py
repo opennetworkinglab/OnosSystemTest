@@ -131,6 +131,8 @@ class TopoPerfNext:
         deviceTimestamp = main.params['JSON']['deviceTimestamp']
         graphTimestamp = main.params['JSON']['graphTimestamp']
 
+        debug_mode = main.params['TEST']['debugMode']
+
         #Threshold for the test
         threshold_str = main.params['TEST']['singleSwThreshold']
         threshold_obj = threshold_str.split(",")
@@ -154,7 +156,12 @@ class TopoPerfNext:
      
         #Initialize assertion to TRUE
         assertion = main.TRUE
-        
+      
+        local_time = time.strftime('%x %X')
+        if debug_mode == 'on':
+            main.ONOS1.tshark_pcap("eth0",
+                    "/tmp/single_sw_lat_pcap"+local_time) 
+
         main.log.report("Latency of adding one switch")
 
         for i in range(0, int(num_iter)):
@@ -430,17 +437,17 @@ class TopoPerfNext:
                  len(latency_ofp_to_device_list))
 
         main.log.report("Switch add - End-to-end latency: \n"+\
-                "Min: "+str(latency_end_to_end_min)+"\n"+\
-                "Max: "+str(latency_end_to_end_max)+"\n"+\
-                "Avg: "+str(latency_end_to_end_avg))
+                "Min: "+str(latency_end_to_end_min)+" mx\n"+\
+                "Max: "+str(latency_end_to_end_max)+" ms\n"+\
+                "Avg: "+str(latency_end_to_end_avg)+" ms")
         main.log.report("Switch add - OFP-to-Graph latency: \n"+\
-                "Min: "+str(latency_ofp_to_graph_min)+"\n"+\
-                "Max: "+str(latency_ofp_to_graph_max)+"\n"+\
-                "Avg: "+str(latency_ofp_to_graph_avg))
+                "Min: "+str(latency_ofp_to_graph_min)+" ms \n"+\
+                "Max: "+str(latency_ofp_to_graph_max)+" ms\n"+\
+                "Avg: "+str(latency_ofp_to_graph_avg)+" ms")
         main.log.report("Switch add - t0-to-Device latency: \n"+\
-                "Min: "+str(latency_t0_to_device_min)+"\n"+\
-                "Max: "+str(latency_t0_to_device_max)+"\n"+\
-                "Avg: "+str(latency_t0_to_device_avg))
+                "Min: "+str(latency_t0_to_device_min)+" ms\n"+\
+                "Max: "+str(latency_t0_to_device_max)+" ms\n"+\
+                "Avg: "+str(latency_t0_to_device_avg)+" ms")
 
         utilities.assert_equals(expect=main.TRUE, actual=assertion,
                 onpass="Switch latency test successful",
@@ -476,6 +483,13 @@ class TopoPerfNext:
         #These are subject to change, hence moved into params
         deviceTimestamp = main.params['JSON']['deviceTimestamp']
         graphTimestamp = main.params['JSON']['graphTimestamp']
+        
+        debug_mode = main.params['TEST']['debugMode']
+
+        local_time = time.strftime('%x %X')
+        if debug_mode == 'on':
+            main.ONOS1.tshark_pcap("eth0",
+                    "/tmp/port_lat_pcap"+local_time) 
 
         #Threshold for this test case
         up_threshold_str = main.params['TEST']['portUpThreshold']
@@ -762,10 +776,10 @@ class TopoPerfNext:
                 (sum(port_down_graph_to_ofp_list) / 
                  len(port_down_graph_to_ofp_list))
         
-        main.log.report("Port down graph-to-ofp Min: "+
-                str(port_down_graph_to_ofp_min)+" ms  Max: "+
-                str(port_down_graph_to_ofp_max)+" ms  Avg: "+
-                str(port_down_graph_to_ofp_avg))
+        main.log.report("Port down graph-to-ofp \nMin: "+
+                str(port_down_graph_to_ofp_min)+" ms  \nMax: "+
+                str(port_down_graph_to_ofp_max)+" ms  \nAvg: "+
+                str(port_down_graph_to_ofp_avg)+" ms")
         
         port_down_device_to_ofp_min = min(port_down_device_to_ofp_list)
         port_down_device_to_ofp_max = max(port_down_device_to_ofp_list)
@@ -773,10 +787,10 @@ class TopoPerfNext:
                 (sum(port_down_device_to_ofp_list) /\
                  len(port_down_device_to_ofp_list))
         
-        main.log.report("Port down device-to-ofp Min: "+
-                str(port_down_device_to_ofp_min)+" ms  Max: "+
-                str(port_down_device_to_ofp_max)+" ms  Avg: "+
-                str(port_down_device_to_ofp_avg))
+        main.log.report("Port down device-to-ofp \nMin: "+
+                str(port_down_device_to_ofp_min)+" ms  \nMax: "+
+                str(port_down_device_to_ofp_max)+" ms  \nAvg: "+
+                str(port_down_device_to_ofp_avg)+" ms")
         
         port_up_graph_to_ofp_min = min(port_up_graph_to_ofp_list)
         port_up_graph_to_ofp_max = max(port_up_graph_to_ofp_list)
@@ -784,10 +798,10 @@ class TopoPerfNext:
                 (sum(port_up_graph_to_ofp_list) /\
                  len(port_up_graph_to_ofp_list))
         
-        main.log.report("Port up graph-to-ofp Min: "+
-                str(port_up_graph_to_ofp_min)+" ms  Max: "+
-                str(port_up_graph_to_ofp_max)+" ms  Avg: "+
-                str(port_up_graph_to_ofp_avg))
+        main.log.report("Port up graph-to-ofp \nMin: "+
+                str(port_up_graph_to_ofp_min)+" ms  \nMax: "+
+                str(port_up_graph_to_ofp_max)+" ms  \nAvg: "+
+                str(port_up_graph_to_ofp_avg)+" ms")
           
         port_up_device_to_ofp_min = min(port_up_device_to_ofp_list)
         port_up_device_to_ofp_max = max(port_up_device_to_ofp_list)
@@ -795,10 +809,10 @@ class TopoPerfNext:
                 (sum(port_up_device_to_ofp_list) /\
                  len(port_up_device_to_ofp_list))
         
-        main.log.report("Port up device-to-ofp Min: "+
-                str(port_up_device_to_ofp_min)+" ms  Max: "+
-                str(port_up_device_to_ofp_max)+" ms  Avg: "+
-                str(port_up_device_to_ofp_avg))
+        main.log.report("Port up device-to-ofp \nMin: "+
+                str(port_up_device_to_ofp_min)+" ms  \nMax: "+
+                str(port_up_device_to_ofp_max)+" ms  \nAvg: "+
+                str(port_up_device_to_ofp_avg)+" ms")
 
         utilities.assert_equals(expect=main.TRUE, actual=assertion,
                 onpass="Port discovery latency calculation successful",
@@ -834,6 +848,13 @@ class TopoPerfNext:
         deviceTimestamp = main.params['JSON']['deviceTimestamp']
         linkTimestamp = main.params['JSON']['linkTimestamp'] 
         graphTimestamp = main.params['JSON']['graphTimestamp']
+        
+        debug_mode = main.params['TEST']['debugMode']
+
+        local_time = time.strftime('%x %X')
+        if debug_mode == 'on':
+            main.ONOS1.tshark_pcap("eth0",
+                    "/tmp/link_lat_pcap"+local_time) 
 
         #Threshold for this test case
         up_threshold_str = main.params['TEST']['linkUpThreshold']
@@ -1150,24 +1171,25 @@ class TopoPerfNext:
                     link_up_lat_device1 = 0
                     link_up_lat_device2 = 0
                     link_up_lat_device3 = 0
-        
-            main.log.info("Link up latency ONOS1 iteration "+
+       
+            if debug_mode == 'on':
+                main.log.info("Link up latency ONOS1 iteration "+
                     str(i)+" (end-to-end): "+
                     str(link_up_lat_graph1)+" ms")
-            main.log.info("Link up latency ONOS2 iteration "+
+                main.log.info("Link up latency ONOS2 iteration "+
                     str(i)+" (end-to-end): "+
                     str(link_up_lat_graph2)+" ms")
-            main.log.info("Link up latency ONOS3 iteration "+
+                main.log.info("Link up latency ONOS3 iteration "+
                     str(i)+" (end-to-end): "+
                     str(link_up_lat_graph3)+" ms")
             
-            main.log.info("Link up latency ONOS1 iteration "+
+                main.log.info("Link up latency ONOS1 iteration "+
                     str(i)+" (link-event-to-system-timestamp): "+
                     str(link_up_lat_link1)+" ms")
-            main.log.info("Link up latency ONOS2 iteration "+
+                main.log.info("Link up latency ONOS2 iteration "+
                     str(i)+" (link-event-to-system-timestamp): "+
                     str(link_up_lat_link2)+" ms")
-            main.log.info("Link up latency ONOS3 iteration "+
+                main.log.info("Link up latency ONOS3 iteration "+
                     str(i)+" (link-event-to-system-timestamp): "+
                     str(link_up_lat_link3))
       
@@ -1209,14 +1231,14 @@ class TopoPerfNext:
         link_up_avg = sum(link_up_graph_to_system_list) / \
                         len(link_up_graph_to_system_list)
 
-        main.log.report("Link down latency - Min: "+
-                str(link_down_min)+"ms  Max: "+
-                str(link_down_max)+"ms  Avg: "+
-                str(link_down_avg)+"ms")
-        main.log.report("Link up latency - Min: "+
-                str(link_up_min)+"ms  Max: "+
-                str(link_up_max)+"ms  Avg: "+
-                str(link_up_avg)+"ms")
+        main.log.report("Link down latency - \nMin: "+
+                str(link_down_min)+" ms  \nMax: "+
+                str(link_down_max)+" ms  \nAvg: "+
+                str(link_down_avg)+" ms")
+        main.log.report("Link up latency - \nMin: "+
+                str(link_up_min)+" ms  \nMax: "+
+                str(link_up_max)+" ms  \nAvg: "+
+                str(link_up_avg)+" ms")
 
         utilities.assert_equals(expect=main.TRUE, actual=assertion,
                 onpass="Link discovery latency calculation successful",
@@ -1259,14 +1281,19 @@ class TopoPerfNext:
         #These are subject to change, hence moved into params
         deviceTimestamp = main.params['JSON']['deviceTimestamp']
         graphTimestamp = main.params['JSON']['graphTimestamp']
+        
+        debug_mode = main.params['TEST']['debugMode']
+
+        local_time = time.strftime('%x %X')
+        if debug_mode == 'on':
+            main.ONOS1.tshark_pcap("eth0",
+                    "/tmp/100_sw_lat_pcap"+local_time) 
  
         #Threshold for this test case
         sw_disc_threshold_str = main.params['TEST']['swDisc100Threshold']
         sw_disc_threshold_obj = sw_disc_threshold_str.split(",")
         sw_disc_threshold_min = int(sw_disc_threshold_obj[0])
         sw_disc_threshold_max = int(sw_disc_threshold_obj[1])
-
-        print_packet_info = main.params['TEST']['printPacketInfo']
 
         tshark_ofp_output = "/tmp/tshark_ofp_"+num_sw+"sw.txt"
         tshark_tcp_output = "/tmp/tshark_tcp_"+num_sw+"sw.txt"
@@ -1409,26 +1436,23 @@ class TopoPerfNext:
                     tshark_ofp_output+" /tmp/") 
             os.system("scp "+ONOS_user+"@"+ONOS1_ip+":"+
                     tshark_tcp_output+" /tmp/")
-            ofp_file = open(tshark_ofp_output, 'r')
 
-            #The following is for information purpose only.
             #TODO: Automate OFP output analysis
-            main.log.info("Tshark OFP Vendor output: ")
-            for line in ofp_file:
-                tshark_ofp_result_list.append(line)
-                if print_packet_info=='True':
+            #Debug mode - print out packets captured at runtime     
+            if debug_mode == 'on': 
+                ofp_file = open(tshark_ofp_output, 'r')
+                main.log.info("Tshark OFP Vendor output: ")
+                for line in ofp_file:
+                    tshark_ofp_result_list.append(line)
                     main.log.info(line)
+                ofp_file.close()
 
-            ofp_file.close()
-
-            tcp_file = open(tshark_tcp_output, 'r')
-            main.log.info("Tshark TCP 74 output: ")
-            for line in tcp_file:
-                tshark_tcp_result_list.append(line)
-                if print_packet_info=='True': 
+                tcp_file = open(tshark_tcp_output, 'r')
+                main.log.info("Tshark TCP 74 output: ")
+                for line in tcp_file:
+                    tshark_tcp_result_list.append(line)
                     main.log.info(line)
-
-            tcp_file.close()
+                tcp_file.close()
 
             json_obj_1 = json.loads(json_str_topology_metrics_1)
             json_obj_2 = json.loads(json_str_topology_metrics_2)

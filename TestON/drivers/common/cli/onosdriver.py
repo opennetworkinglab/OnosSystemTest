@@ -1021,6 +1021,25 @@ class OnosDriver(CLI):
             main.cleanup()
             main.exit()
 
+    def tshark_pcap(self, interface, dir_file):
+        '''
+        Capture all packet activity and store in specified
+        directory/file
+
+        Required:
+            * interface: interface to capture
+            * dir: directory/filename to store pcap
+        '''
+        self.handle.sendline("")
+        self.handle.expect("\$")
+
+        self.handle.sendline("tshark -i "+str(interface)+
+                " -t e -w "+str(dir_file))
+        self.handle.expect("Capturing on")
+
+        main.log.info("Tshark started capturing files on "+
+                str(interface)+ " and saving to directory: "+
+                str(dir_File))
 
     def tshark_grep(self, grep, directory, interface='eth0'):
         '''

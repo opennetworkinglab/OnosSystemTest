@@ -388,7 +388,7 @@ class OnosDriver(CLI):
             main.cleanup()
             main.exit()
 
-    def get_version(self):
+    def get_version(self, report=False):
         '''
         Writes the COMMIT number to the report to be parsed by Jenkins data collecter.
         '''
@@ -406,9 +406,11 @@ class OnosDriver(CLI):
             self.handle.expect("\$")
             lines=response.splitlines()
             for line in lines:
-                print "line = ",line
-            returnValue = lines[2]+lines[3]+line[4]
-            return returnValue
+                print line
+            if report:
+                for line in lines[2:-1]:
+                    main.log.report(line)
+            return lines[2]
         except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
             main.log.error(self.name + ":     " + self.handle.before)

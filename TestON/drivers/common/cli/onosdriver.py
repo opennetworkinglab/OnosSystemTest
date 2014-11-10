@@ -1034,12 +1034,15 @@ class OnosDriver(CLI):
         self.handle.expect("\$")
 
         self.handle.sendline("tshark -i "+str(interface)+
-                " -t e -w "+str(dir_file))
+                " -t e -w "+str(dir_file)+ " &")
+        self.handle.sendline("\r")
         self.handle.expect("Capturing on")
+        self.handle.sendline("\r")
+        self.handle.expect("\$")
 
         main.log.info("Tshark started capturing files on "+
                 str(interface)+ " and saving to directory: "+
-                str(dir_File))
+                str(dir_file))
 
     def tshark_grep(self, grep, directory, interface='eth0'):
         '''
@@ -1114,5 +1117,62 @@ class OnosDriver(CLI):
             main.log.info(self.name+" ::::::")
             main.cleanup()
             main.exit()
+
+    def cp_logs_to_dir(self, log_to_copy, 
+            dest_dir, copy_file_name=""):
+        '''
+        Copies logs to a desired directory. 
+        Current implementation of ONOS deletes its karaf
+        logs on every iteration. For debugging purposes,
+        you may want to use this function to capture 
+        certain karaf logs. (or any other logs if needed)
+        Localtime will be attached to the filename
+
+        Required:
+            * log_to_copy: specify directory and log name to
+              copy.
+              ex) /opt/onos/log/karaf.log.1
+              For copying multiple files, leave copy_file_name
+              empty and only specify dest_dir - 
+              ex) /opt/onos/log/karaf*
+            * dest_dir: specify directory to copy to.
+              ex) /tmp/
+        Optional:   
+            * copy_file_name: If you want to rename the log
+              file, specify copy_file_name. This will not work
+              with multiple file copying
+        '''
+        try:
+            localtime = time.strftime('%x %X')
+            localtime = localtime.replace("/","")
+            localtime = localtime.replace(" ","_")
+            localtime = localtime.replace(":","")
+            if dest_dir[-1:] != "/":
+                dest_dir += "/"
+
+            if copy_file_name:
+                self.handle.sendline("cp "+str(log_to_copy)+
+                        " "+str(dest_dir)+str(copy_file_name)+
+                        localtime)
+                self.handle.expect("cp")
+                self.handle.expect("\$")
+            else:
+                self.handle.sendline("cp "+str(log_to_copy)+
+                        " "+str(dest_dir))
+                self.handle.expect("cp")
+                self.handle.expect("\$")
+                
+            return self.handle.before
+        
+        except pexpect.EOF:
+            main.log.error("Copying files failed")
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+        except:
+            main.log.error("Copying files failed")
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+
 
 

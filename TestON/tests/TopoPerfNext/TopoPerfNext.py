@@ -122,7 +122,9 @@ class TopoPerfNext:
        
         #Number of iterations of case
         num_iter = main.params['TEST']['numIter']
-       
+        #Number of first 'x' iterations to ignore:
+        iter_ignore = int(main.params['TEST']['iterIgnore'])
+
         #Timestamp 'keys' for json metrics output.
         #These are subject to change, hence moved into params
         deviceTimestamp = main.params['JSON']['deviceTimestamp']
@@ -165,7 +167,10 @@ class TopoPerfNext:
 
             main.log.info("TEST")
 
-        main.log.report("Latency of adding one switch")
+        main.log.report("Latency of adding one switch to controller")
+        main.log.report("First "+str(iter_ignore)+" iterations ignored"+
+                " for jvm warmup time")
+        main.log.report("Total iterations of test: "+str(num_iter))
 
         for i in range(0, int(num_iter)):
             main.log.info("Starting tshark capture")
@@ -290,11 +295,12 @@ class TopoPerfNext:
                      int(delta_device_3)) / 3
 
             #Ensure avg delta meets the threshold before appending
-            if avg_delta_device > 0.0 and avg_delta_device < 10000:
+            if avg_delta_device > 0.0 and avg_delta_device < 10000\
+                    and int(num_iter) > iter_ignore:
                 latency_t0_to_device_list.append(avg_delta_device)
             else:
                 main.log.info("Results for t0-to-device ignored"+\
-                        "due to excess in threshold")
+                        "due to excess in threshold / warmup iteration.")
 
             #t0 to graph processing latency (end-to-end)
             delta_graph_1 = int(graph_timestamp_1) - int(t0_tcp)
@@ -308,7 +314,8 @@ class TopoPerfNext:
                      int(delta_graph_3)) / 3
 
             #Ensure avg delta meets the threshold before appending
-            if avg_delta_graph > 0.0 and avg_delta_graph < 10000:
+            if avg_delta_graph > 0.0 and avg_delta_graph < 10000\
+                    and int(num_iter) > iter_ignore:
                 latency_end_to_end_list.append(avg_delta_graph)
             else:
                 main.log.info("Results for end-to-end ignored"+\
@@ -325,7 +332,8 @@ class TopoPerfNext:
                      int(delta_ofp_graph_3)) / 3
             
             if avg_delta_ofp_graph > threshold_min \
-                    and avg_delta_ofp_graph < threshold_max:
+                    and avg_delta_ofp_graph < threshold_max\
+                    and int(num_iter) > iter_ignore:
                 latency_ofp_to_graph_list.append(avg_delta_ofp_graph)
             else:
                 main.log.info("Results for ofp-to-graph "+\
@@ -339,7 +347,7 @@ class TopoPerfNext:
             avg_delta_ofp_device = \
                     (float(delta_ofp_device_1)+\
                      float(delta_ofp_device_2)+\
-                     float(delta_ofp_device_3)) / 3.0
+                     float(delta_ofp_device_3)) / 3
             
             #NOTE: ofp - delta measurements are occasionally negative
             #      due to system time misalignment.
@@ -432,15 +440,15 @@ class TopoPerfNext:
                  len(latency_ofp_to_device_list))
 
         latency_t0_to_device_max = \
-                float(max(latency_t0_to_device_list))
+                int(max(latency_t0_to_device_list))
         latency_t0_to_device_min = \
-                float(min(latency_t0_to_device_list))
+                int(min(latency_t0_to_device_list))
         latency_t0_to_device_avg = \
-                (float(sum(latency_t0_to_device_list)) / \
+                (int(sum(latency_t0_to_device_list)) / \
                  len(latency_ofp_to_device_list))
 
         main.log.report("Switch add - End-to-end latency: "+\
-                "Min: "+str(latency_end_to_end_min)+" mx "+\
+                "Min: "+str(latency_end_to_end_min)+" ms "+\
                 "Max: "+str(latency_end_to_end_max)+" ms "+\
                 "Avg: "+str(latency_end_to_end_avg)+" ms")
         main.log.report("Switch add - OFP-to-Graph latency: "+\
@@ -524,6 +532,8 @@ class TopoPerfNext:
         interface_config = "s1-eth1"
 
         main.log.report("Port enable / disable latency")
+        main.log.report("Simulated by ifconfig up / down")
+        main.log.report("Total iterations of test: "+str(num_iter))
 
         main.step("Assign switches s1 and s2 to controller 1")
         main.Mininet1.assign_sw_controller(sw="1",ip1=ONOS1_ip,
@@ -892,8 +902,11 @@ class TopoPerfNext:
         link_down_graph_to_system_list = []
         link_up_graph_to_system_list = [] 
 
-        main.log.report("Add / remove link latency between "+
+        main.log.report("Link up / down discovery latency between "+
                 "two switches")
+        main.log.report("Simulated by setting loss-rate 100%")
+        main.log.report("'tc qdisc add dev <intfs> root netem loss 100%'") 
+        main.log.report("Total iterations of test: "+str(num_iter))
 
         main.step("Assign all switches")
         main.Mininet1.assign_sw_controller(sw="1",

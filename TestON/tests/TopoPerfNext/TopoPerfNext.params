@@ -40,8 +40,10 @@
 
         #Number of times to iterate each case
         <numIter>9</numIter>
-        <numSwitch>100</numSwitch>         
-    
+        <numSwitch>100</numSwitch>
+        #Number of iterations to ignore initially
+        <iterIgnore>2</iterIgnore>
+
         <singleSwThreshold>0,1000</singleSwThreshold>
         <portUpThreshold>0,1000</portUpThreshold>
         <portDownThreshold>0,1000</portDownThreshold>

@@ -1,0 +1,18 @@
+<PARAMS>
+    
+    <testcases>1,4,3,7,8,9,7,8</testcases>
+    
+    <Git>True</Git>
+    #Environment variables
+    <ENV>
+        <cellName>multi</cellName>
+    </ENV>
+
+    <CTRL>
+        <ip1>10.128.30.11</ip1>
+        <port1>6633</port1>
+        <ip2>10.128.30.12</ip2>
+        <port2>6633</port2>
+    </CTRL>
+
+</PARAMS>

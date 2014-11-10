@@ -31,6 +31,7 @@ import re
 import sys
 import core.teston
 sys.path.append("../")
+from math import pow
 from drivers.common.cli.emulatordriver import Emulator
 from drivers.common.clidriver import CLI
 
@@ -73,9 +74,16 @@ class MininetCliDriver(Emulator):
  
             main.log.info(self.name+": building fresh mininet") 
             #### for reactive/PARP enabled tests
-            cmdString = "sudo mn " + self.options['arg1'] + " " + self.options['arg2'] +  " --mac --controller " + self.options['controller']
-            #### for proactive flow with static ARP entries
-            #cmdString = "sudo mn " + self.options['arg1'] + " " + self.options['arg2'] +  " --mac --arp --controller " + self.options['controller']
+            cmdString = "sudo mn " + self.options['arg1'] + " " + self.options['arg2'] +  " --mac --controller " + self.options['controller'] + " " + self.options['arg3']
+            
+            argList = self.options['arg1'].split(",")
+            global topoArgList
+            topoArgList = argList[0].split(" ")
+            argList = map(int, argList[1:])
+            topoArgList = topoArgList[1:] + argList
+            
+          #### for proactive flow with static ARP entries
+            #cmdString = "sudo mn " + self.options['arg1'] + " " + self.options['arg2'] +  " --mac --arp --controller " + self.options['controller'] + " " + self.options['arg3']
             self.handle.sendline(cmdString)
             self.handle.expect(["sudo mn",pexpect.EOF,pexpect.TIMEOUT])
             while 1: 
@@ -101,7 +109,43 @@ class MininetCliDriver(Emulator):
             main.log.error(self.name+": Connection failed to the host "+self.user_name+"@"+self.ip_address) 
             main.log.error(self.name+": Failed to connect to the Mininet")
             return main.FALSE
-                       
+                    
+    def num_switches_n_links(self,topoType,depth,fanout):
+        if topoType == 'tree':
+            if fanout is None:     #In tree topology, if fanout arg is not given, by default it is 2
+                fanout = 2
+            k = 0
+            count = 0
+            while(k <= depth-1): 
+                count = count + pow(fanout,k)
+                k = k+1
+                num_switches = count
+            while(k <= depth-2): 
+                '''depth-2 gives you only core links and not considering edge links as seen by ONOS
+                    If all the links including edge links are required, do depth-1
+                '''
+                count = count + pow(fanout,k)
+                k = k+1
+            num_links = count * fanout
+            #print "num_switches for %s(%d,%d) = %d and links=%d" %(topoType,depth,fanout,num_switches,num_links)
+        
+        elif topoType =='linear':
+            if fanout is None:     #In linear topology, if fanout or num_hosts_per_sw is not given, by default it is 1
+                fanout = 1
+            num_switches = depth
+            num_hosts_per_sw = fanout
+            total_num_hosts = num_switches * num_hosts_per_sw
+            num_links = total_num_hosts + (num_switches - 1)
+            print "num_switches for %s(%d,%d) = %d and links=%d" %(topoType,depth,fanout,num_switches,num_links) 
+        topoDict = {}
+        topoDict = {"num_switches":int(num_switches), "num_corelinks":int(num_links)}
+        return topoDict
+
+
+    def calculate_sw_and_links(self):
+        topoDict = self.num_switches_n_links(*topoArgList)
+        return topoDict
+
     def pingall(self):
         '''
         Verifies the reachability of the hosts using pingall command.
@@ -110,12 +154,15 @@ class MininetCliDriver(Emulator):
             main.log.info(self.name+": Checking reachabilty to the hosts using pingall")
             try:
                 response = self.execute(cmd="pingall",prompt="mininet>",timeout=120)
+                print "response: " + str(response)
             except pexpect.EOF:  
                 main.log.error(self.name + ": EOF exception found")
                 main.log.error(self.name + ":     " + self.handle.before)
                 main.cleanup()
                 main.exit()
-            pattern = 'Results\:\s0\%\sdropped\s\(0\/\d+\slost\)\s*$'
+            pattern = 'Results\:\s0\%\sdropped\s'
+            #FIXME:Pending Mininet Pull Request #408
+            #pattern = 'Results\:\s0\.00\%\sdropped\s'
             #if utilities.assert_matches(expect=pattern,actual=response,onpass="All hosts are reaching",onfail="Unable to reach all the hosts"):
             if re.search(pattern,response):
                 main.log.info(self.name+": All hosts are reachable")
@@ -340,7 +387,7 @@ class MininetCliDriver(Emulator):
             return information dict about interfaces connected to the node
         '''
         if self.handle :
-            cmd = 'py "\\n".join(["name=%s,mac=%s,ip=%s,isUp=%s" % (i.name, i.MAC(), i.IP(), i.isUp())'
+            cmd = 'py "\\n".join(["name=%s,mac=%s,ip=%s,enabled=%s" % (i.name, i.MAC(), i.IP(), i.isUp())'
             cmd += ' for i in %s.intfs.values()])' % node
             try:
                 response = self.execute(cmd=cmd,prompt="mininet>",timeout=10)
@@ -443,11 +490,11 @@ class MininetCliDriver(Emulator):
         '''
         Bring link(s) between two nodes up or down
         '''
-        main.log.info('Bring link(s) between two nodes up or down')
         args = utilities.parse_args(["END1","END2","OPTION"],**linkargs)
         end1 = args["END1"] if args["END1"] != None else ""
         end2 = args["END2"] if args["END2"] != None else ""
         option = args["OPTION"] if args["OPTION"] != None else ""
+        main.log.info("Bring link between '"+ end1 +"' and '" + end2 + "' '" + option + "'")
         command = "link "+str(end1) + " " + str(end2)+ " " + str(option)
         try:
             #response = self.execute(cmd=command,prompt="mininet>",timeout=10)
@@ -669,7 +716,6 @@ class MininetCliDriver(Emulator):
             pattern = "flow_count=(\d+)"
             result = re.search(pattern, response, re.MULTILINE)
             if result is None:
-                print "no flow on switch print test"
                 main.log.info("Couldn't find flows on switch '', found: %s" % (switch, response))
                 return main.FALSE
             return result.group(1)
@@ -751,52 +797,28 @@ class MininetCliDriver(Emulator):
             main.cleanup()
             main.exit()
 
-    def compare_topo(self, topo, onos_json):
+    def compare_switches(self, topo, switches_json):
         '''
-        compares mn topology with ONOS topology
-        onos_list is a list of ONOS controllers, each element of the list should be (handle, name, ip, port)
-        onos_json is the output of the onos get_json function calling the /wm/onos/topology REST API
-        Returns: True if MN and ONOS topology match and False if the differ. 
-        Differences between ONOS and MN topology will be printed to the log.
+        Compare mn and onos switches
+        topo: sts TestONTopology object
+        switches_json: parsed json object from the onos devices api
 
-        Dependency: Requires STS to be installed on the TestON machine. STS can be pulled 
-        from https://github.com/ucb-sts/sts.git . Currently the required functions from STS are located in the 
-        topology_refactoring2 branch, but may be merged into the master branch soon. You may need to install some
-        python modules such as networkx to use the STS functions.
-
-        To install sts:
-            $ git clone git://github.com/ucb-sts/sts.git
-            $ cd sts
-            $ git clone -b debugger git://github.com/ucb-sts/pox.git
-            $ sudo apt-get install python-dev
-            $ ./tools/install_hassel_python.sh
-            $ sudo pip install networkx
-
-        Include sts in your PYTHONPATH. it should looks comething like: 
-            PYTHONPATH=/home/admin/TestON:/home/admin/sts
+        This uses the sts TestONTopology object
 
         '''
-        import sys
-        sys.path.append("~/sts")
-        #NOTE: Create this once per Test and pass the TestONTopology object around. It takes too long to create this object.
-        #      This will make it easier to use the sts methods for severing links and solve that issue
         import json
-
-        link_results = main.TRUE
-        switch_results = main.TRUE
-        port_results = main.TRUE
-
-        ########Switches#######
+        #main.log.debug("Switches_json string: ", switches_json)
         output = {"switches":[]}
         for switch in topo.graph.switches: #iterate through the MN topology and pull out switches and and port info
             ports = []
             for port in switch.ports.values():
-                #print port.hw_addr.toStr(separator = '')
                 ports.append({'of_port': port.port_no, 'mac': str(port.hw_addr).replace('\'',''), 'name': port.name})
             output['switches'].append({"name": switch.name, "dpid": str(switch.dpid).zfill(16), "ports": ports })
-        #print output
 
+        #print "mn"
         #print json.dumps(output, sort_keys=True,indent=4,separators=(',', ': '))
+        #print "onos"
+        #print json.dumps(switches_json, sort_keys=True,indent=4,separators=(',', ': '))
 
 
         # created sorted list of dpid's in MN and ONOS for comparison
@@ -804,15 +826,21 @@ class MininetCliDriver(Emulator):
         for switch in output['switches']:
             mnDPIDs.append(switch['dpid'])
         mnDPIDs.sort()
+        #print "List of Mininet switch DPID's"
         #print mnDPIDs
-        if onos_json == "":#if rest call fails
-            main.log.error(self.name + ".compare_topo(): Empty JSON object given from ONOS rest call")
+        if switches_json == "":#if rest call fails
+            main.log.error(self.name + ".compare_switches(): Empty JSON object given from ONOS")
             return main.FALSE
-        onos=onos_json
+        onos=switches_json
         onosDPIDs=[]
-        for switch in onos['switches']:
-            onosDPIDs.append(switch['dpid'].replace(":",''))
+        for switch in onos:
+            if switch['available'] == True:
+                onosDPIDs.append(switch['id'].replace(":",'').replace("of",''))
+            #else:
+                #print "Switch is unavailable:"
+                #print switch
         onosDPIDs.sort()
+        #print "List of ONOS switch DPID's"
         #print onosDPIDs
 
         if mnDPIDs!=onosDPIDs:
@@ -822,36 +850,137 @@ class MininetCliDriver(Emulator):
             main.log.report( "Switches in ONOS but not in MN:")
             main.log.report(  str([switch for switch in onosDPIDs if switch not in mnDPIDs]))
         else:#list of dpid's match in onos and mn
+            #main.log.report("DEBUG: The dpid's of the switches in Mininet and ONOS match")
             switch_results = main.TRUE
+        return switch_results
+
+
+
+    def compare_ports(self, topo, ports_json):
+        '''
+        Compare mn and onos ports
+        topo: sts TestONTopology object
+        ports_json: parsed json object from the onos ports api
+
+        Dependencies: 
+            1. This uses the sts TestONTopology object
+            2. numpy - "sudo pip install numpy"
+
+        '''
+        #FIXME: this does not look for extra ports in ONOS, only checks that ONOS has what is in MN
+        import json
+        from numpy import uint64
+        port_results = main.TRUE
+        output = {"switches":[]}
+        for switch in topo.graph.switches: #iterate through the MN topology and pull out switches and and port info
+            ports = []
+            for port in switch.ports.values():
+                #print port.hw_addr.toStr(separator = '')
+                tmp_port = {}
+                tmp_port['of_port'] = port.port_no
+                tmp_port['mac'] = str(port.hw_addr).replace('\'','')
+                tmp_port['name'] = port.name
+                tmp_port['enabled'] = port.enabled
+
+                ports.append(tmp_port)
+            tmp_switch = {}
+            tmp_switch['name'] = switch.name
+            tmp_switch['dpid'] = str(switch.dpid).zfill(16)
+            tmp_switch['ports'] = ports
+
+            output['switches'].append(tmp_switch)
+
 
         ################ports#############
-            for switch in output['switches']:
-                mn_ports = []
-                onos_ports = []
-                for port in switch['ports']:
+        for mn_switch in output['switches']:
+            mn_ports = []
+            onos_ports = []
+            for port in mn_switch['ports']:
+                if port['enabled'] == True:
                     mn_ports.append(port['of_port'])
-                for onos_switch in onos['switches']:
-                    if onos_switch['dpid'].replace(':','') == switch['dpid']:
+            for onos_switch in ports_json:
+                #print "Iterating through a new switch as seen by ONOS"
+                #print onos_switch
+                if onos_switch['device']['available'] == True:
+                    if onos_switch['device']['id'].replace(':','').replace("of", '') == mn_switch['dpid']:
                         for port in onos_switch['ports']:
-                            onos_ports.append(port['portNumber']) 
-                mn_ports.sort()
-                onos_ports.sort()
-                if mn_ports == onos_ports:
-                    pass #don't set results to true here as this is just one of many checks and it might override a failure
-                else: #the ports of this switch don't match
+                            if port['isEnabled']:
+                                #print "Iterating through available ports on the switch"
+                                #print port
+                                onos_ports.append(int(port['port'])) 
+            mn_ports.sort(key=float)
+            onos_ports.sort(key=float)
+            #print "\nPorts for Switch %s:" % (switch['name'])
+            #print "\tmn_ports[] = ", mn_ports
+            #print "\tonos_ports[] = ", onos_ports
+            
+            #NOTE:For OF1.3, the OFP_local port number is 0xfffffffe or 4294967294 instead of 0xfffe or 65534 in OF1.0,
+            #   ONOS topology sees the correct port number, however MN topology as read from line 151 of
+            #   https://github.com/ucb-sts/sts/blob/topology_refactoring2/sts/entities/teston_entities.py 
+            #   is 0xfffe which doesn't work correctly with OF1.3 switches.
+            
+            #NOTE: ONOS is abstracting port numbers to 64bit unsigned number(long). So we will be converting the 
+            #   OF reserved ports to these numbers
+
+
+            #TODO: handle other reserved port numbers besides LOCAL
+            for mn_port,onos_port in zip(mn_ports,onos_ports):
+                #print "mn == onos port?"
+                #print mn_port, onos_port
+                if mn_port == onos_port or (mn_port == 65534 and onos_port == long(uint64(-2))):
+                    continue
+                    #don't set results to true here as this is just one of many checks and it might override a failure
+                else:  #the ports of this switch don't match
                     port_results = main.FALSE
-                    main.log.report("ports in MN switch %s(%s) but not in ONOS:" % (switch['name'],switch['dpid'])) 
-                    main.log.report( str([port for port in mn_ports if port not in onos_ports]))
-                    main.log.report("ports in ONOS switch %s(%s) but not in MN:" % (switch['name'],switch['dpid']))
-                    main.log.report( str([port for port in onos_ports if port not in mn_ports]))
+                    break
+            if port_results == main.FALSE:
+                main.log.report("The list of ports for switch %s(%s) does not match:" % (mn_switch['name'], mn_switch['dpid']) )
+                main.log.report("mn_ports[] = " +  str(mn_ports))
+                main.log.report("onos_ports[] = " + str(onos_ports))
+        return port_results
 
 
+
+
+    def compare_links(self, topo, links_json):
+        '''
+        Compare mn and onos links
+        topo: sts TestONTopology object
+        links_json: parsed json object from the onos links api
+
+        This uses the sts TestONTopology object
+
+        '''
+        #FIXME: this does not look for extra links in ONOS, only checks that ONOS has what is in MN
+        import json
+        link_results = main.TRUE
+        output = {"switches":[]}
+        onos = links_json
+        for switch in topo.graph.switches: #iterate through the MN topology and pull out switches and and port info
+            # print "Iterating though switches as seen by Mininet"
+            # print switch
+            ports = []
+            for port in switch.ports.values():
+                #print port.hw_addr.toStr(separator = '')
+                ports.append({'of_port': port.port_no, 'mac': str(port.hw_addr).replace('\'',''), 'name': port.name})
+            output['switches'].append({"name": switch.name, "dpid": str(switch.dpid).zfill(16), "ports": ports })
         #######Links########
-        # iterate through MN links and check if and ONOS link exists in both directions
+
+        mn_links = [link for link in topo.patch_panel.network_links if (link.port1.enabled and link.port2.enabled)]
+        #print "mn_links:"
+        #print mn_links
+        if 2*len(mn_links) == len(onos):
+            link_results = main.TRUE
+        else:
+            link_results = main.FALSE
+            main.log.report("Mininet has %i bidirectional links and ONOS has %i unidirectional links" % (len(mn_links), len(onos) ))
+
+
+        # iterate through MN links and check if an ONOS link exists in both directions
         # NOTE: Will currently only show mn links as down if they are cut through STS. 
         #       We can either do everything through STS or wait for up_network_links 
         #       and down_network_links to be fully implemented.
-        for link in topo.patch_panel.network_links: 
+        for link in mn_links: 
             #print "Link: %s" % link
             #TODO: Find a more efficient search method
             node1 = None
@@ -861,6 +990,7 @@ class MininetCliDriver(Emulator):
             first_dir = main.FALSE
             second_dir = main.FALSE
             for switch in output['switches']:
+                #print "Switch: %s" % switch['name']
                 if switch['name'] == link.node1.name:
                     node1 = switch['dpid']
                     for port in switch['ports']:
@@ -875,62 +1005,91 @@ class MininetCliDriver(Emulator):
                             port2 = port['of_port'] 
                     if node1 is not None and node2 is not None:
                         break
-            # check onos link from node1 to node2
-            for onos_link in onos['links']:
-                if onos_link['src']['dpid'].replace(":",'') == node1 and onos_link['dst']['dpid'].replace(":",'') == node2:
-                    if onos_link['src']['portNumber'] == port1 and onos_link['dst']['portNumber'] == port2:
+
+
+            for onos_link in onos:
+                onos_node1 = onos_link['src']['device'].replace(":",'').replace("of", '')
+                onos_node2 = onos_link['dst']['device'].replace(":",'').replace("of", '')
+                onos_port1 = onos_link['src']['port']
+                onos_port2 = onos_link['dst']['port']
+
+                #print "Checking ONOS for link %s/%s -> %s/%s and" % (node1, port1, node2, port2)
+                #print "Checking ONOS for link %s/%s -> %s/%s" % (node2, port2, node1, port1)
+                # check onos link from node1 to node2
+                if str(onos_node1) == str(node1) and str(onos_node2) == str(node2):
+                    if int(onos_port1) == int(port1) and int(onos_port2) == int(port2):
                         first_dir = main.TRUE
                     else:
-                        main.log.report('the port numbers do not match for ' +str(link) + ' between ONOS and MN')
-                    #print node1, ' to ', node2
-                elif onos_link['src']['dpid'].replace(":",'') == node2 and onos_link['dst']['dpid'].replace(":",'') == node1:
-                    if onos_link['src']['portNumber'] == port2 and onos_link['dst']['portNumber'] == port1:
+                        main.log.report('The port numbers do not match for ' +str(link) +\
+                                ' between ONOS and MN. When cheking ONOS for link '+\
+                                '%s/%s -> %s/%s' % (node1, port1, node2, port2)+\
+                                ' ONOS has the values %s/%s -> %s/%s' %\
+                                (onos_node1, onos_port1, onos_node2, onos_port2))
+
+                # check onos link from node2 to node1
+                elif ( str(onos_node1) == str(node2) and str(onos_node2) == str(node1) ):
+                    if ( int(onos_port1) == int(port2) and int(onos_port2) == int(port1) ):
                         second_dir = main.TRUE
                     else:
-                        main.log.report('the port numbers do not match for ' +str(link) + ' between ONOS and MN')
-                    #print node2, ' to ', node1
+                        main.log.report('The port numbers do not match for ' +str(link) +\
+                                ' between ONOS and MN. When cheking ONOS for link '+\
+                                '%s/%s -> %s/%s' % (node2, port2, node1, port1)+\
+                                ' ONOS has the values %s/%s -> %s/%s' %\
+                                (onos_node2, onos_port2, onos_node1, onos_port1))
                 else:#this is not the link you're looking for
                     pass
             if not first_dir:
-                main.log.report('ONOS has issues with the link from '+str(link.node1.name) +"(dpid: "+ str(node1)+"):"+str(link.port1)+"(portNumber: "+str(port1)+")"+ ' to ' + str(link.node2.name) +"(dpid: "+ str(node2)+"):"+str(link.port2)+"(portNumber: "+str(port2)+")")
+                main.log.report('ONOS does not have the link %s/%s -> %s/%s' % (node1, port1, node2, port2))
             if not second_dir:
-                main.log.report('ONOS has issues with the link from '+str(link.node2.name) +"(dpid: "+ str(node2)+"):"+str(link.port2)+"(portNumber: "+str(port2)+")"+ ' to ' + str(link.node1.name) +"(dpid: "+ str(node1)+"):"+str(link.port1)+"(portNumber: "+str(port1)+")")
+                main.log.report('ONOS does not have the link %s/%s -> %s/%s' % (node2, port2, node1, port1))
             link_results = link_results and first_dir and second_dir
+        return link_results
+
+
+    def get_hosts(self):
+        '''
+        Returns a list of all hosts
+        Don't ask questions just use it
+        '''
+        self.handle.sendline("")
+        self.handle.expect("mininet>")
+        
+        self.handle.sendline("py [ host.name for host in net.hosts ]")
+        self.handle.expect("mininet>")
+
+        handle_py = self.handle.before
+        handle_py = handle_py.split("]\r\n",1)[1]
+        handle_py = handle_py.rstrip()
+
+        self.handle.sendline("")
+        self.handle.expect("mininet>")
+
+        host_str = handle_py.replace("]", "")
+        host_str = host_str.replace("'", "")
+        host_str = host_str.replace("[", "")
+        host_list = host_str.split(",")
+
+        return host_list 
+
+
+    def update(self):
+        '''
+        updates the port address and status information for each port in mn
+        '''
+        #TODO: Add error checking. currently the mininet command has no output
+        main.log.info("Updateing MN port information")
+        self.handle.sendline("")
+        self.handle.expect("mininet>")
+        
+        self.handle.sendline("update")
+        self.handle.expect("mininet>")
+
+        self.handle.sendline("")
+        self.handle.expect("mininet>")
+
+        return main.TRUE 
 
         
-        results =  switch_results and port_results and link_results
-#        if not results: #To print out both topologies
-#            main.log.error("Topology comparison failed, printing json objects, MN then ONOS")
-#            main.log.error(str(json.dumps(output, sort_keys=True,indent=4,separators=(',', ': '))))
-#            main.log.error('MN Links:')
-#            for link in topo.patch_panel.network_links: main.log.error(str("\tLink: %s" % link))
-#            main.log.error(str(json.dumps(onos, sort_keys=True,indent=4,separators=(',', ': '))))
-        return results
-
-
-    def links_status(self):
-        """
-        Returns list of links and their status
-        """
-        if self.handle :
-            cmd = "py 'Links: %s' % [item for sublist in [[(y[0].name, y[1].name, y[0].isUp() and y[1].isUp()) for y in x[0].connectionsTo(x[1])] for x in __import__('itertools').permutations(net.nameToNode.values(), 2) if x[0] != x[1] and x[0].connectionsTo(x[1])] for item in sublist]"
-            try:
-                response = self.execute(cmd=cmd,prompt="mininet>",timeout=10)
-                if not response:
-                  return None
-                for line in response.split('\n'):
-                  if line.startswith('Links:'):
-                    return eval(line[len("Links :"):])
-            except pexpect.EOF:
-                main.log.error(self.name + ": EOF exception found")
-                main.log.error(self.name + ":     " + self.handle.before)
-                main.cleanup()
-                main.exit()
-            return response
-        else:
-            main.log.error("Connection failed to the node")
-
-
 
 if __name__ != "__main__":
     import sys

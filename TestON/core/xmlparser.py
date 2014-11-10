@@ -60,7 +60,8 @@ class xmlparser :
         '''
         topologyPath = re.sub("\.","/",topologyPath)
         topologyPath = re.sub("tests|examples","",topologyPath)
-        topology = self.parse(main.tests_path+"/"+topologyPath+".topo")
+        #topology = self.parse(main.tests_path+"/"+topologyPath+".topo")
+        topology = self.parse(main.tests_path+topologyPath+".topo")
         topoAsString = str(topology)
         return eval(topoAsString)
                                                                   

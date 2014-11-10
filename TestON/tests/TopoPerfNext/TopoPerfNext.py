@@ -145,6 +145,7 @@ class TopoPerfNext:
         latency_ofp_to_graph_list = []
         latency_ofp_to_device_list = []
         latency_t0_to_device_list = []
+        latency_tcp_to_ofp_list = []
 
         #Directory/file to store tshark results
         tshark_of_output = "/tmp/tshark_of_topo.txt"
@@ -296,7 +297,7 @@ class TopoPerfNext:
 
             #Ensure avg delta meets the threshold before appending
             if avg_delta_device > 0.0 and avg_delta_device < 10000\
-                    and int(num_iter) > iter_ignore:
+                    and int(i) > iter_ignore:
                 latency_t0_to_device_list.append(avg_delta_device)
             else:
                 main.log.info("Results for t0-to-device ignored"+\
@@ -315,7 +316,7 @@ class TopoPerfNext:
 
             #Ensure avg delta meets the threshold before appending
             if avg_delta_graph > 0.0 and avg_delta_graph < 10000\
-                    and int(num_iter) > iter_ignore:
+                    and int(i) > iter_ignore:
                 latency_end_to_end_list.append(avg_delta_graph)
             else:
                 main.log.info("Results for end-to-end ignored"+\
@@ -333,7 +334,7 @@ class TopoPerfNext:
             
             if avg_delta_ofp_graph > threshold_min \
                     and avg_delta_ofp_graph < threshold_max\
-                    and int(num_iter) > iter_ignore:
+                    and int(i) > iter_ignore:
                 latency_ofp_to_graph_list.append(avg_delta_ofp_graph)
             else:
                 main.log.info("Results for ofp-to-graph "+\
@@ -352,6 +353,15 @@ class TopoPerfNext:
             #NOTE: ofp - delta measurements are occasionally negative
             #      due to system time misalignment.
             latency_ofp_to_device_list.append(avg_delta_ofp_device)
+
+            delta_ofp_tcp = int(t0_ofp) - int(t0_tcp)
+            if delta_ofp_tcp > threshold_min \
+                    and delta_ofp_tcp < threshold_max and\
+                    int(i) > iter_ignore:
+                latency_tcp_to_ofp_list.append(delta_ofp_tcp)
+            else:
+                main.log.info("Results fo tcp-to-ofp "+\
+                        "ignored due to excess in threshold")
 
             #TODO:
             #Fetch logs upon threshold excess
@@ -376,7 +386,9 @@ class TopoPerfNext:
                     str(delta_device_2) + " ms")
             main.log.info("ONOS3 delta device - t0: "+
                     str(delta_device_3) + " ms")
-          
+         
+            main.log.info("TCP to OFP delta: "+
+                    str(delta_ofp_tcp) + " ms")
             #main.log.info("ONOS1 delta OFP - device: "+
             #        str(delta_ofp_device_1) + " ms")
             #main.log.info("ONOS2 delta OFP - device: "+
@@ -396,7 +408,8 @@ class TopoPerfNext:
         if len(latency_end_to_end_list) > 0 and\
            len(latency_ofp_to_graph_list) > 0 and\
            len(latency_ofp_to_device_list) > 0 and\
-           len(latency_t0_to_device_list) > 0:
+           len(latency_t0_to_device_list) > 0 and\
+           len(latency_tcp_to_ofp_list) > 0:
             assertion = main.TRUE
         elif len(latency_end_to_end_list) == 0:
             #The appending of 0 here is to prevent 
@@ -412,6 +425,9 @@ class TopoPerfNext:
             assertion = main.FALSE
         elif len(latency_t0_to_device_list) == 0:
             latency_t0_to_device_list.append(0)
+            assertion = main.FALSE
+        elif len(latency_tcp_to_ofp_list) == 0:
+            latency_tcp_to_ofp_list.append(0)
             assertion = main.FALSE
 
         #Calculate min, max, avg of latency lists
@@ -447,18 +463,26 @@ class TopoPerfNext:
                 (int(sum(latency_t0_to_device_list)) / \
                  len(latency_ofp_to_device_list))
 
+        latency_tcp_to_ofp_max = \
+                int(max(latency_tcp_to_ofp_list))
+        latency_tcp_to_ofp_min = \
+                int(min(latency_tcp_to_ofp_list))
+        latency_tcp_to_ofp_avg = \
+                (int(sum(latency_tcp_to_ofp_list)) / \
+                 len(latency_tcp_to_ofp_list))
+
         main.log.report("Switch add - End-to-end latency: "+\
                 "Min: "+str(latency_end_to_end_min)+" ms "+\
                 "Max: "+str(latency_end_to_end_max)+" ms "+\
-                "Avg: "+str(latency_end_to_end_avg)+" ms")
+                "Avg: "+str(latency_end_to_end_avg)+" ms ")
         main.log.report("Switch add - OFP-to-Graph latency: "+\
                 "Min: "+str(latency_ofp_to_graph_min)+" ms "+\
                 "Max: "+str(latency_ofp_to_graph_max)+" ms "+\
-                "Avg: "+str(latency_ofp_to_graph_avg)+" ms")
-        main.log.report("Switch add - t0-to-Device latency: "+\
-                "Min: "+str(latency_t0_to_device_min)+" ms"+\
-                "Max: "+str(latency_t0_to_device_max)+" ms"+\
-                "Avg: "+str(latency_t0_to_device_avg)+" ms")
+                "Avg: "+str(latency_ofp_to_graph_avg)+" ms ")
+        main.log.report("Switch add - TCP-to-OFP latency: "+\
+                "Min: "+str(latency_tcp_to_ofp_min)+" ms "+\
+                "Max: "+str(latency_tcp_to_ofp_max)+" ms "+\
+                "Avg: "+str(latency_tcp_to_ofp_avg)+" ms ")
 
         if debug_mode == 'on':
             main.ONOS1.cp_logs_to_dir("/opt/onos/log/karaf.log",
@@ -1067,11 +1091,11 @@ class TopoPerfNext:
             link_down_lat_graph_avg =\
                     (link_down_lat_graph1 +
                      link_down_lat_graph2 +
-                     link_down_lat_graph3) / 3.0
+                     link_down_lat_graph3) / 3
             link_down_lat_link_avg =\
                     (link_down_lat_link1 +
                      link_down_lat_link2 +
-                     link_down_lat_link3) / 3.0
+                     link_down_lat_link3) / 3
 
             #Set threshold and append latency to list
             if link_down_lat_graph_avg > down_threshold_min and\

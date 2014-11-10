@@ -416,6 +416,15 @@ class RemoteMininetDriver(Emulator):
             main.cleanup()
             main.exit()
 
+    def run_optical_mn_script(self):
+        self.handle.sendline("")
+        self.handle.expect("\$")
+        self.handle.sendline("cd ~")
+        self.handle.expect("\$")
+        self.handle.sendline("sudo python optical.py")
+        self.handle.expect("\$")
+
+
     def del_switch(self,sw):
         self.handle.sendline("")
         self.handle.expect("\$")

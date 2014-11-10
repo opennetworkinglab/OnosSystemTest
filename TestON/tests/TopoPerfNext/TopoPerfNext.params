@@ -1,5 +1,5 @@
 <PARAMS>
-    <testcases>1,2,3,4,5</testcases>
+    <testcases>1,3</testcases>
 
     <ENV>
         <cellName>topo_perf_test</cellName>
@@ -35,7 +35,8 @@
         #If on, logging will be more verbose and
         #tshark pcap will be enabled
         #pcap file located at /tmp/'capture_name'
-        <debugMode>on</debugMode>
+        <debugMode>off</debugMode>
+        <onosLogFile>/opt/onos/log/karaf*</onosLogFile>
 
         #Number of times to iterate each case
         <numIter>5</numIter>

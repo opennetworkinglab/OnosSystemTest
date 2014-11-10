@@ -55,6 +55,11 @@ class TopoPerfNext:
         #mvn_result = main.ONOSbench.clean_install()
         mvn_result = main.TRUE
 
+        main.step("Set cell for ONOS cli env")
+        main.ONOS1cli.set_cell(cell_name)
+        main.ONOS2cli.set_cell(cell_name)
+        main.ONOS3cli.set_cell(cell_name)
+
         main.step("Creating ONOS package")
         package_result = main.ONOSbench.onos_package()
 
@@ -62,15 +67,6 @@ class TopoPerfNext:
         install1_result = main.ONOSbench.onos_install(node=ONOS1_ip)
         install2_result = main.ONOSbench.onos_install(node=ONOS2_ip)
         install3_result = main.ONOSbench.onos_install(node=ONOS3_ip)
-
-        #NOTE: This step may be unnecessary
-        #main.step("Starting ONOS service")
-        #start_result = main.ONOSbench.onos_start(ONOS1_ip)
-
-        main.step("Set cell for ONOS cli env")
-        main.ONOS1cli.set_cell(cell_name)
-        main.ONOS2cli.set_cell(cell_name)
-        main.ONOS3cli.set_cell(cell_name)
 
         time.sleep(10)
 
@@ -80,9 +76,9 @@ class TopoPerfNext:
         cli3 = main.ONOS3cli.start_onos_cli(ONOS3_ip)
 
         main.step("Enable metrics feature")
-        main.ONOS1cli.feature_install("onos-app-metrics-topology")
-        main.ONOS2cli.feature_install("onos-app-metrics-topology")
-        main.ONOS3cli.feature_install("onos-app-metrics-topology")
+        main.ONOS1cli.feature_install("onos-app-metrics")
+        main.ONOS2cli.feature_install("onos-app-metrics")
+        main.ONOS3cli.feature_install("onos-app-metrics")
 
         utilities.assert_equals(expect=main.TRUE,
                 actual= cell_file_result and cell_apply_result and\
@@ -132,6 +128,7 @@ class TopoPerfNext:
         graphTimestamp = main.params['JSON']['graphTimestamp']
 
         debug_mode = main.params['TEST']['debugMode']
+        onos_log = main.params['TEST']['onosLogFile']
 
         #Threshold for the test
         threshold_str = main.params['TEST']['singleSwThreshold']
@@ -158,9 +155,14 @@ class TopoPerfNext:
         assertion = main.TRUE
       
         local_time = time.strftime('%x %X')
+        local_time = local_time.replace("/","")
+        local_time = local_time.replace(" ","_")
+        local_time = local_time.replace(":","")
         if debug_mode == 'on':
             main.ONOS1.tshark_pcap("eth0",
-                    "/tmp/single_sw_lat_pcap"+local_time) 
+                    "/tmp/single_sw_lat_pcap_"+local_time) 
+
+            main.log.info("TEST")
 
         main.log.report("Latency of adding one switch")
 
@@ -449,6 +451,10 @@ class TopoPerfNext:
                 "Max: "+str(latency_t0_to_device_max)+" ms\n"+\
                 "Avg: "+str(latency_t0_to_device_avg)+" ms")
 
+        if debug_mode == 'on':
+            main.ONOS1.cp_logs_to_dir("/opt/onos/log/karaf.log",
+                    "/tmp/", copy_file_name="sw_lat_karaf")
+
         utilities.assert_equals(expect=main.TRUE, actual=assertion,
                 onpass="Switch latency test successful",
                 onfail="Switch latency test failed")
@@ -487,13 +493,17 @@ class TopoPerfNext:
         debug_mode = main.params['TEST']['debugMode']
 
         local_time = time.strftime('%x %X')
+        local_time = local_time.replace("/","")
+        local_time = local_time.replace(" ","_")
+        local_time = local_time.replace(":","")
         if debug_mode == 'on':
             main.ONOS1.tshark_pcap("eth0",
-                    "/tmp/port_lat_pcap"+local_time) 
+                    "/tmp/port_lat_pcap_"+local_time) 
 
         #Threshold for this test case
         up_threshold_str = main.params['TEST']['portUpThreshold']
         down_threshold_str = main.params['TEST']['portDownThreshold']
+        
         up_threshold_obj = up_threshold_str.split(",")
         down_threshold_obj = down_threshold_str.split(",")
 
@@ -523,16 +533,7 @@ class TopoPerfNext:
         #Give enough time for metrics to propagate the 
         #assign controller event. Otherwise, these events may
         #carry over to our measurements
-        time.sleep(10)
-
-        main.step("Verify switch is assigned correctly")
-        result_s1 = main.Mininet1.get_sw_controller(sw="s1")
-        result_s2 = main.Mininet1.get_sw_controller(sw="s2")
-        if result_s1 == main.FALSE or result_s2 == main.FALSE:
-            main.log.info("Switch s1 was not assigned correctly")
-            assertion = main.FALSE
-        else:
-            main.log.info("Switch s1 was assigned correctly")
+        time.sleep(15)
 
         port_up_device_to_ofp_list = []
         port_up_graph_to_ofp_list = []
@@ -544,17 +545,25 @@ class TopoPerfNext:
             main.ONOS1.tshark_grep(tshark_port_status,
                     tshark_port_down)
             
-            time.sleep(10)
+            time.sleep(5)
 
             #Disable interface that is connected to switch 2
             main.step("Disable port: "+interface_config)
-            main.Mininet2.handle.sendline("sudo ifconfig "+
+            main.Mininet1.handle.sendline("sh ifconfig "+
                     interface_config+" down")
-            main.Mininet2.handle.expect("\$")
-            time.sleep(10)
+            main.Mininet1.handle.expect("mininet>")
 
+            time.sleep(3)
             main.ONOS1.tshark_stop()
-            time.sleep(5)
+            
+            main.step("Obtain t1 by metrics call")
+            json_str_up_1 = main.ONOS1cli.topology_events_metrics()
+            json_str_up_2 = main.ONOS2cli.topology_events_metrics()
+            json_str_up_3 = main.ONOS3cli.topology_events_metrics()
+
+            json_obj_1 = json.loads(json_str_up_1)
+            json_obj_2 = json.loads(json_str_up_2)
+            json_obj_3 = json.loads(json_str_up_3)
             
             #Copy tshark output file from ONOS to TestON instance
             #/tmp directory
@@ -566,7 +575,7 @@ class TopoPerfNext:
             f_line = f_port_down.readline()
             obj_down = f_line.split(" ")
             if len(f_line) > 0:
-                timestamp_begin_pt_down = int(float(obj_down[1]))*1000
+                timestamp_begin_pt_down = int(float(obj_down[1])*1000)
                 main.log.info("Port down begin timestamp: "+
                         str(timestamp_begin_pt_down))
             else:
@@ -578,18 +587,7 @@ class TopoPerfNext:
 
             main.log.info("TEST tshark obj: "+str(obj_down))
 
-            main.step("Obtain t1 by REST call")
-            json_str_1 = main.ONOS1cli.topology_events_metrics()
-            json_str_2 = main.ONOS2cli.topology_events_metrics()
-            json_str_3 = main.ONOS3cli.topology_events_metrics()
-
-            main.log.info("TEST json_str 1: "+str(json_str_1))
-
-            json_obj_1 = json.loads(json_str_1)
-            json_obj_2 = json.loads(json_str_2)
-            json_obj_3 = json.loads(json_str_3)
-           
-            time.sleep(5)
+            time.sleep(3)
 
             #Obtain graph timestamp. This timestsamp captures
             #the epoch time at which the topology graph was updated.
@@ -599,6 +597,9 @@ class TopoPerfNext:
                     json_obj_2[graphTimestamp]['value']
             graph_timestamp_3 = \
                     json_obj_3[graphTimestamp]['value']
+
+            main.log.info("TEST graph timestamp ONOS1: "+
+                    str(graph_timestamp_1))
 
             #Obtain device timestamp. This timestamp captures
             #the epoch time at which the device event happened
@@ -635,8 +636,8 @@ class TopoPerfNext:
                      int(pt_down_device_to_ofp_2) +
                      int(pt_down_device_to_ofp_3)) / 3.0
 
-            if pt_down_graph_to_ofp_avg > 0.0 and \
-                    pt_down_graph_to_ofp_avg < 1000:
+            if pt_down_graph_to_ofp_avg > down_threshold_min and \
+                    pt_down_graph_to_ofp_avg < down_threshold_max:
                 port_down_graph_to_ofp_list.append(
                     pt_down_graph_to_ofp_avg)
                 main.log.info("Port down: graph to ofp avg: "+
@@ -660,15 +661,28 @@ class TopoPerfNext:
             #Port up events 
             main.step("Enable port and obtain timestamp")
             main.step("Starting wireshark capture for port status up")
-            main.ONOS1.tshark_grep("OFP 130 Port Status", tshark_port_up)
+            main.ONOS1.tshark_grep(tshark_port_status, tshark_port_up)
             time.sleep(5)
 
-            main.Mininet2.handle.sendline("sudo ifconfig "+
+            main.Mininet1.handle.sendline("sh ifconfig "+
                     interface_config+" up")
-            main.Mininet2.handle.expect("\$")
-            time.sleep(10)
+            main.Mininet1.handle.expect("mininet>")
             
+            #Allow time for tshark to capture event
+            time.sleep(3)
             main.ONOS1.tshark_stop()
+
+            #Obtain metrics shortly afterwards
+            #This timestsamp captures
+            #the epoch time at which the topology graph was updated.
+            main.step("Obtain t1 by REST call")
+            json_str_up_1 = main.ONOS1cli.topology_events_metrics()
+            json_str_up_2 = main.ONOS2cli.topology_events_metrics()
+            json_str_up_3 = main.ONOS3cli.topology_events_metrics()
+            
+            json_obj_1 = json.loads(json_str_up_1)
+            json_obj_2 = json.loads(json_str_up_2)
+            json_obj_3 = json.loads(json_str_up_3)
 
             os.system("scp "+ONOS_user+"@"+ONOS1_ip+":"+
                     tshark_port_up+" /tmp/")
@@ -677,7 +691,7 @@ class TopoPerfNext:
             f_line = f_port_up.readline()
             obj_up = f_line.split(" ")
             if len(f_line) > 0:
-                timestamp_begin_pt_up = int(float(obj_up[1]))*1000
+                timestamp_begin_pt_up = int(float(obj_up[1])*1000)
                 main.log.info("Port up begin timestamp: "+
                         str(timestamp_begin_pt_up))
             else:
@@ -687,17 +701,6 @@ class TopoPerfNext:
             
             f_port_up.close()
 
-            main.step("Obtain t1 by REST call")
-            json_str_1 = main.ONOS1cli.topology_events_metrics()
-            json_str_2 = main.ONOS2cli.topology_events_metrics()
-            json_str_3 = main.ONOS3cli.topology_events_metrics()
-
-            json_obj_1 = json.loads(json_str_1)
-            json_obj_2 = json.loads(json_str_2)
-            json_obj_3 = json.loads(json_str_3)
-
-            #Obtain graph timestamp. This timestsamp captures
-            #the epoch time at which the topology graph was updated.
             graph_timestamp_1 = \
                     json_obj_1[graphTimestamp]['value']
             graph_timestamp_2 = \
@@ -729,6 +732,14 @@ class TopoPerfNext:
                     int(timestamp_begin_pt_up)
             pt_up_device_to_ofp_3 = int(device_timestamp_3) -\
                     int(timestamp_begin_pt_up)
+
+            main.log.info("ONOS1 delta G2O: "+str(pt_up_graph_to_ofp_1))
+            main.log.info("ONOS2 delta G2O: "+str(pt_up_graph_to_ofp_2))
+            main.log.info("ONOS3 delta G2O: "+str(pt_up_graph_to_ofp_3))
+
+            main.log.info("ONOS1 delta D2O: "+str(pt_up_device_to_ofp_1))
+            main.log.info("ONOS2 delta D2O: "+str(pt_up_device_to_ofp_2)) 
+            main.log.info("ONOS3 delta D2O: "+str(pt_up_device_to_ofp_3)) 
 
             pt_up_graph_to_ofp_avg = \
                     (float(pt_up_graph_to_ofp_1) + 
@@ -852,9 +863,12 @@ class TopoPerfNext:
         debug_mode = main.params['TEST']['debugMode']
 
         local_time = time.strftime('%x %X')
+        local_time = local_time.replace("/","")
+        local_time = local_time.replace(" ","_")
+        local_time = local_time.replace(":","")
         if debug_mode == 'on':
             main.ONOS1.tshark_pcap("eth0",
-                    "/tmp/link_lat_pcap"+local_time) 
+                    "/tmp/link_lat_pcap_"+local_time) 
 
         #Threshold for this test case
         up_threshold_str = main.params['TEST']['linkUpThreshold']
@@ -1284,10 +1298,13 @@ class TopoPerfNext:
         
         debug_mode = main.params['TEST']['debugMode']
 
-        local_time = time.strftime('%x %X')
+        local_time = time.strftime('%X')
+        local_time = local_time.replace("/","")
+        local_time = local_time.replace(" ","_")
+        local_time = local_time.replace(":","")
         if debug_mode == 'on':
             main.ONOS1.tshark_pcap("eth0",
-                    "/tmp/100_sw_lat_pcap"+local_time) 
+                    "/tmp/100_sw_lat_pcap_"+local_time) 
  
         #Threshold for this test case
         sw_disc_threshold_str = main.params['TEST']['swDisc100Threshold']

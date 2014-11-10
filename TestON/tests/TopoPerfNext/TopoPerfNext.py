@@ -31,6 +31,7 @@ class TopoPerfNext:
         BENCH_ip = main.params['BENCH']['ip']
 
         main.case("Setting up test environment")
+        main.log.report("Setting up test environment")
 
         main.step("Creating cell file")
         cell_file_result = main.ONOSbench.create_cell_file(
@@ -86,8 +87,8 @@ class TopoPerfNext:
                         pull_result and mvn_result and\
                         install1_result and install2_result and\
                         install3_result,
-                onpass="ONOS started successfully",
-                onfail="Failed to start ONOS")
+                onpass="Test Environment setup successful",
+                onfail="Failed to setup test environment")
 
     def CASE2(self, main):
         '''
@@ -438,17 +439,17 @@ class TopoPerfNext:
                 (float(sum(latency_t0_to_device_list)) / \
                  len(latency_ofp_to_device_list))
 
-        main.log.report("Switch add - End-to-end latency: \n"+\
-                "Min: "+str(latency_end_to_end_min)+" mx\n"+\
-                "Max: "+str(latency_end_to_end_max)+" ms\n"+\
+        main.log.report("Switch add - End-to-end latency: "+\
+                "Min: "+str(latency_end_to_end_min)+" mx "+\
+                "Max: "+str(latency_end_to_end_max)+" ms "+\
                 "Avg: "+str(latency_end_to_end_avg)+" ms")
-        main.log.report("Switch add - OFP-to-Graph latency: \n"+\
-                "Min: "+str(latency_ofp_to_graph_min)+" ms \n"+\
-                "Max: "+str(latency_ofp_to_graph_max)+" ms\n"+\
+        main.log.report("Switch add - OFP-to-Graph latency: "+\
+                "Min: "+str(latency_ofp_to_graph_min)+" ms "+\
+                "Max: "+str(latency_ofp_to_graph_max)+" ms "+\
                 "Avg: "+str(latency_ofp_to_graph_avg)+" ms")
-        main.log.report("Switch add - t0-to-Device latency: \n"+\
-                "Min: "+str(latency_t0_to_device_min)+" ms\n"+\
-                "Max: "+str(latency_t0_to_device_max)+" ms\n"+\
+        main.log.report("Switch add - t0-to-Device latency: "+\
+                "Min: "+str(latency_t0_to_device_min)+" ms"+\
+                "Max: "+str(latency_t0_to_device_max)+" ms"+\
                 "Avg: "+str(latency_t0_to_device_avg)+" ms")
 
         if debug_mode == 'on':
@@ -630,11 +631,11 @@ class TopoPerfNext:
             pt_down_graph_to_ofp_avg =\
                     (int(pt_down_graph_to_ofp_1) +
                      int(pt_down_graph_to_ofp_2) + 
-                     int(pt_down_graph_to_ofp_3)) / 3.0
+                     int(pt_down_graph_to_ofp_3)) / 3
             pt_down_device_to_ofp_avg = \
                     (int(pt_down_device_to_ofp_1) + 
                      int(pt_down_device_to_ofp_2) +
-                     int(pt_down_device_to_ofp_3)) / 3.0
+                     int(pt_down_device_to_ofp_3)) / 3
 
             if pt_down_graph_to_ofp_avg > down_threshold_min and \
                     pt_down_graph_to_ofp_avg < down_threshold_max:
@@ -742,14 +743,14 @@ class TopoPerfNext:
             main.log.info("ONOS3 delta D2O: "+str(pt_up_device_to_ofp_3)) 
 
             pt_up_graph_to_ofp_avg = \
-                    (float(pt_up_graph_to_ofp_1) + 
-                     float(pt_up_graph_to_ofp_2) +
-                     float(pt_up_graph_to_ofp_3)) / 3
+                    (int(pt_up_graph_to_ofp_1) + 
+                     int(pt_up_graph_to_ofp_2) +
+                     int(pt_up_graph_to_ofp_3)) / 3
 
             pt_up_device_to_ofp_avg = \
-                    (float(pt_up_device_to_ofp_1) + 
-                     float(pt_up_device_to_ofp_2) +
-                     float(pt_up_device_to_ofp_3)) / 3
+                    (int(pt_up_device_to_ofp_1) + 
+                     int(pt_up_device_to_ofp_2) +
+                     int(pt_up_device_to_ofp_3)) / 3
 
             if pt_up_graph_to_ofp_avg > up_threshold_min and \
                     pt_up_graph_to_ofp_avg < up_threshold_max: 
@@ -787,9 +788,9 @@ class TopoPerfNext:
                 (sum(port_down_graph_to_ofp_list) / 
                  len(port_down_graph_to_ofp_list))
         
-        main.log.report("Port down graph-to-ofp \nMin: "+
-                str(port_down_graph_to_ofp_min)+" ms  \nMax: "+
-                str(port_down_graph_to_ofp_max)+" ms  \nAvg: "+
+        main.log.report("Port down graph-to-ofp Min: "+
+                str(port_down_graph_to_ofp_min)+" ms  Max: "+
+                str(port_down_graph_to_ofp_max)+" ms  Avg: "+
                 str(port_down_graph_to_ofp_avg)+" ms")
         
         port_down_device_to_ofp_min = min(port_down_device_to_ofp_list)
@@ -798,9 +799,9 @@ class TopoPerfNext:
                 (sum(port_down_device_to_ofp_list) /\
                  len(port_down_device_to_ofp_list))
         
-        main.log.report("Port down device-to-ofp \nMin: "+
-                str(port_down_device_to_ofp_min)+" ms  \nMax: "+
-                str(port_down_device_to_ofp_max)+" ms  \nAvg: "+
+        main.log.report("Port down device-to-ofp Min: "+
+                str(port_down_device_to_ofp_min)+" ms  Max: "+
+                str(port_down_device_to_ofp_max)+" ms  Avg: "+
                 str(port_down_device_to_ofp_avg)+" ms")
         
         port_up_graph_to_ofp_min = min(port_up_graph_to_ofp_list)
@@ -809,9 +810,9 @@ class TopoPerfNext:
                 (sum(port_up_graph_to_ofp_list) /\
                  len(port_up_graph_to_ofp_list))
         
-        main.log.report("Port up graph-to-ofp \nMin: "+
-                str(port_up_graph_to_ofp_min)+" ms  \nMax: "+
-                str(port_up_graph_to_ofp_max)+" ms  \nAvg: "+
+        main.log.report("Port up graph-to-ofp Min: "+
+                str(port_up_graph_to_ofp_min)+" ms  Max: "+
+                str(port_up_graph_to_ofp_max)+" ms  Avg: "+
                 str(port_up_graph_to_ofp_avg)+" ms")
           
         port_up_device_to_ofp_min = min(port_up_device_to_ofp_list)
@@ -820,9 +821,9 @@ class TopoPerfNext:
                 (sum(port_up_device_to_ofp_list) /\
                  len(port_up_device_to_ofp_list))
         
-        main.log.report("Port up device-to-ofp \nMin: "+
-                str(port_up_device_to_ofp_min)+" ms  \nMax: "+
-                str(port_up_device_to_ofp_max)+" ms  \nAvg: "+
+        main.log.report("Port up device-to-ofp Min: "+
+                str(port_up_device_to_ofp_min)+" ms  Max: "+
+                str(port_up_device_to_ofp_max)+" ms  Avg: "+
                 str(port_up_device_to_ofp_avg)+" ms")
 
         utilities.assert_equals(expect=main.TRUE, actual=assertion,
@@ -941,17 +942,17 @@ class TopoPerfNext:
                 for obj1 in json_obj1:
                     if '01' not in obj1['src']['device']:
                         link_down1 = True
-                        main.log.report("Link down from "+
+                        main.log.info("Link down from "+
                                 "s1 -> s2 on ONOS1 detected")
                 for obj2 in json_obj2:
                     if '01' not in obj2['src']['device']:
                         link_down2 = True
-                        main.log.report("Link down from "+
+                        main.log.info("Link down from "+
                                 "s1 -> s2 on ONOS2 detected")
                 for obj3 in json_obj3:
                     if '01' not in obj3['src']['device']:
                         link_down3 = True
-                        main.log.report("Link down from "+
+                        main.log.info("Link down from "+
                                 "s1 -> s2 on ONOS3 detected")
                 
                 loop_count += 1
@@ -1029,23 +1030,23 @@ class TopoPerfNext:
                     link_down_lat_device2 = 0
                     link_down_lat_device3 = 0
         
-            main.log.report("Link down latency ONOS1 iteration "+
+            main.log.info("Link down latency ONOS1 iteration "+
                     str(i)+" (end-to-end): "+
                     str(link_down_lat_graph1)+" ms")
-            main.log.report("Link down latency ONOS2 iteration "+
+            main.log.info("Link down latency ONOS2 iteration "+
                     str(i)+" (end-to-end): "+
                     str(link_down_lat_graph2)+" ms")
-            main.log.report("Link down latency ONOS3 iteration "+
+            main.log.info("Link down latency ONOS3 iteration "+
                     str(i)+" (end-to-end): "+
                     str(link_down_lat_graph3)+" ms")
             
-            main.log.report("Link down latency ONOS1 iteration "+
+            main.log.info("Link down latency ONOS1 iteration "+
                     str(i)+" (link-event-to-system-timestamp): "+
                     str(link_down_lat_link1)+" ms")
-            main.log.report("Link down latency ONOS2 iteration "+
+            main.log.info("Link down latency ONOS2 iteration "+
                     str(i)+" (link-event-to-system-timestamp): "+
                     str(link_down_lat_link2)+" ms")
-            main.log.report("Link down latency ONOS3 iteration "+
+            main.log.info("Link down latency ONOS3 iteration "+
                     str(i)+" (link-event-to-system-timestamp): "+
                     str(link_down_lat_link3))
       
@@ -1106,17 +1107,17 @@ class TopoPerfNext:
                 for obj1 in json_obj1:
                     if '01' in obj1['src']['device']:
                         link_down1 = False 
-                        main.log.report("Link up from "+
+                        main.log.info("Link up from "+
                             "s1 -> s2 on ONOS1 detected")
                 for obj2 in json_obj2:
                     if '01' in obj2['src']['device']:
                         link_down2 = False 
-                        main.log.report("Link up from "+
+                        main.log.info("Link up from "+
                             "s1 -> s2 on ONOS2 detected")
                 for obj3 in json_obj3:
                     if '01' in obj3['src']['device']:
                         link_down3 = False 
-                        main.log.report("Link up from "+
+                        main.log.info("Link up from "+
                             "s1 -> s2 on ONOS3 detected")
                 
                 loop_count += 1
@@ -1211,11 +1212,11 @@ class TopoPerfNext:
             link_up_lat_graph_avg =\
                     (link_up_lat_graph1 +
                      link_up_lat_graph2 +
-                     link_up_lat_graph3) / 3.0
+                     link_up_lat_graph3) / 3
             link_up_lat_link_avg =\
                     (link_up_lat_link1 +
                      link_up_lat_link2 +
-                     link_up_lat_link3) / 3.0
+                     link_up_lat_link3) / 3
 
             #Set threshold and append latency to list
             if link_up_lat_graph_avg > up_threshold_min and\
@@ -1245,13 +1246,13 @@ class TopoPerfNext:
         link_up_avg = sum(link_up_graph_to_system_list) / \
                         len(link_up_graph_to_system_list)
 
-        main.log.report("Link down latency - \nMin: "+
-                str(link_down_min)+" ms  \nMax: "+
-                str(link_down_max)+" ms  \nAvg: "+
+        main.log.report("Link down latency - Min: "+
+                str(link_down_min)+" ms  Max: "+
+                str(link_down_max)+" ms  Avg: "+
                 str(link_down_avg)+" ms")
-        main.log.report("Link up latency - \nMin: "+
-                str(link_up_min)+" ms  \nMax: "+
-                str(link_up_max)+" ms  \nAvg: "+
+        main.log.report("Link up latency - Min: "+
+                str(link_up_min)+" ms  Max: "+
+                str(link_up_max)+" ms  Avg: "+
                 str(link_up_avg)+" ms")
 
         utilities.assert_equals(expect=main.TRUE, actual=assertion,
@@ -1506,9 +1507,9 @@ class TopoPerfNext:
         sw_lat_avg = sum(sw_discovery_lat_list) /\
                      len(sw_discovery_lat_list)
 
-        main.log.report("100 Switch discovery lat - \n"+\
-                "Min: "+str(sw_lat_min)+" ms\n"+\
-                "Max: "+str(sw_lat_max)+" ms\n"+\
-                "Avg: "+str(sw_lat_avg)+" ms\n")
+        main.log.report("100 Switch discovery lat "+\
+                "Min: "+str(sw_lat_min)+" ms"+\
+                "Max: "+str(sw_lat_max)+" ms"+\
+                "Avg: "+str(sw_lat_avg)+" ms")
 
 

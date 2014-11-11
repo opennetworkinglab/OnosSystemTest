@@ -963,6 +963,11 @@ class OnosCliDriver(CLI):
             * bandwidth: specify bandwidth capacity of link
             * lambda_alloc: if True, intent will allocate lambda 
               for the specified intent
+            * ipProto: specify ip protocol 
+            * ipSrc: specify ip source address
+            * ipDst: specify ip destination address
+            * tcpSrc: specify tcp source port
+            * tcpDst: specify tcp destination port
         Description:
             Adds a point-to-point intent (uni-directional) by
             specifying device id's and optional fields

@@ -443,7 +443,9 @@ class TopoPerfNext:
         latency_end_to_end_avg = \
                 (int(sum(latency_end_to_end_list)) / \
                  len(latency_end_to_end_list))
-   
+        latency_end_to_end_std_dev = \
+                str(round(numpy.std(latency_end_to_end_list),1))
+
         latency_ofp_to_graph_max = \
                 int(max(latency_ofp_to_graph_list))
         latency_ofp_to_graph_min = \
@@ -451,6 +453,8 @@ class TopoPerfNext:
         latency_ofp_to_graph_avg = \
                 (int(sum(latency_ofp_to_graph_list)) / \
                  len(latency_ofp_to_graph_list))
+        latency_ofp_to_graph_std_dev = \
+                str(round(numpy.std(latency_ofp_to_graph_list),1))
 
         latency_ofp_to_device_max = \
                 int(max(latency_ofp_to_device_list))
@@ -459,6 +463,8 @@ class TopoPerfNext:
         latency_ofp_to_device_avg = \
                 (int(sum(latency_ofp_to_device_list)) / \
                  len(latency_ofp_to_device_list))
+        latency_ofp_to_device_std_dev = \
+                str(round(numpy.std(latency_ofp_to_device_list),1))
 
         latency_t0_to_device_max = \
                 int(max(latency_t0_to_device_list))
@@ -466,7 +472,9 @@ class TopoPerfNext:
                 int(min(latency_t0_to_device_list))
         latency_t0_to_device_avg = \
                 (int(sum(latency_t0_to_device_list)) / \
-                 len(latency_ofp_to_device_list))
+                 len(latency_t0_to_device_list))
+        latency_ofp_to_device_std_dev = \
+                str(round(numpy.std(latency_t0_to_device_list),1))
 
         latency_tcp_to_ofp_max = \
                 int(max(latency_tcp_to_ofp_list))
@@ -475,19 +483,18 @@ class TopoPerfNext:
         latency_tcp_to_ofp_avg = \
                 (int(sum(latency_tcp_to_ofp_list)) / \
                  len(latency_tcp_to_ofp_list))
+        latency_tcp_to_ofp_std_dev = \
+                str(round(numpy.std(latency_tcp_to_ofp_list),1))
 
         main.log.report("Switch add - End-to-end latency: "+\
                 "Avg: "+str(latency_end_to_end_avg)+" ms "+
-                "Std Deviation: "+
-                str(numpy.std(latency_end_to_end_list)))
+                "Std Deviation: "+latency_end_to_end_std_dev+" ms")
         main.log.report("Switch add - OFP-to-Graph latency: "+\
                 "Avg: "+str(latency_ofp_to_graph_avg)+" ms "+
-                "Std Deviation: "+
-                str(numpy.std(latency_ofp_to_graph_list)))
+                "Std Deviation: "+latency_ofp_to_graph_std_dev+" ms")
         main.log.report("Switch add - TCP-to-OFP latency: "+\
                 "Avg: "+str(latency_tcp_to_ofp_avg)+" ms "+
-                "Std Deviation: "+
-                str(numpy.std(latency_tcp_to_ofp_list)))
+                "Std Deviation: "+latency_tcp_to_ofp_std_dev+" ms")
 
         if debug_mode == 'on':
             main.ONOS1.cp_logs_to_dir("/opt/onos/log/karaf.log",
@@ -827,44 +834,48 @@ class TopoPerfNext:
         port_down_graph_to_ofp_avg = \
                 (sum(port_down_graph_to_ofp_list) / 
                  len(port_down_graph_to_ofp_list))
+        port_down_graph_to_ofp_std_dev = \
+                str(round(numpy.std(port_down_graph_to_ofp_list),1))
         
         main.log.report("Port down graph-to-ofp "+
                 "Avg: "+str(port_down_graph_to_ofp_avg)+" ms "+
-                "Std Deviation: "+
-                str(numpy.std(port_down_graph_to_ofp_list)))
+                "Std Deviation: "+port_down_graph_to_ofp_std_dev+" ms")
         
         port_down_device_to_ofp_min = min(port_down_device_to_ofp_list)
         port_down_device_to_ofp_max = max(port_down_device_to_ofp_list)
         port_down_device_to_ofp_avg = \
                 (sum(port_down_device_to_ofp_list) /\
                  len(port_down_device_to_ofp_list))
+        port_down_device_to_ofp_std_dev = \
+                str(round(numpy.std(port_down_device_to_ofp_list),1))
         
         main.log.report("Port down device-to-ofp "+
                 "Avg: "+str(port_down_device_to_ofp_avg)+" ms "+
-                "Std Deviation: "+
-                str(numpy.std(port_down_device_to_ofp_list)))
+                "Std Deviation: "+port_down_device_to_ofp_std_dev+" ms")
         
         port_up_graph_to_ofp_min = min(port_up_graph_to_ofp_list)
         port_up_graph_to_ofp_max = max(port_up_graph_to_ofp_list)
         port_up_graph_to_ofp_avg = \
                 (sum(port_up_graph_to_ofp_list) /\
                  len(port_up_graph_to_ofp_list))
+        port_up_graph_to_ofp_std_dev = \
+                str(round(numpy.std(port_up_graph_to_ofp_list),1))
         
         main.log.report("Port up graph-to-ofp "+
                 "Avg: "+str(port_up_graph_to_ofp_avg)+" ms "+
-                "Std Deviation: "+
-                str(numpy.std(port_up_graph_to_ofp_list)))
+                "Std Deviation: "+port_up_graph_to_ofp_std_dev+" ms")
           
         port_up_device_to_ofp_min = min(port_up_device_to_ofp_list)
         port_up_device_to_ofp_max = max(port_up_device_to_ofp_list)
         port_up_device_to_ofp_avg = \
                 (sum(port_up_device_to_ofp_list) /\
                  len(port_up_device_to_ofp_list))
+        port_up_device_to_ofp_std_dev = \
+                str(round(numpy.std(port_up_device_to_ofp_list),1))
         
         main.log.report("Port up device-to-ofp "+
                 "Avg: "+str(port_up_device_to_ofp_avg)+" ms "+
-                "Std Deviation: "+
-                str(numpy.std(port_up_device_to_ofp_list)))
+                "Std Deviation: "+port_up_device_to_ofp_std_dev+" ms")
 
         utilities.assert_equals(expect=main.TRUE, actual=assertion,
                 onpass="Port discovery latency calculation successful",
@@ -1289,15 +1300,17 @@ class TopoPerfNext:
         link_up_max = max(link_up_graph_to_system_list)
         link_up_avg = sum(link_up_graph_to_system_list) / \
                         len(link_up_graph_to_system_list)
-        link_down_std_dev = str(numpy.std(link_down_graph_to_system_list))
-        link_up_std_dev = str(numpy.std(link_up_graph_to_system_list))
+        link_down_std_dev = \
+                str(round(numpy.std(link_down_graph_to_system_list),1))
+        link_up_std_dev = \
+                str(round(numpy.std(link_up_graph_to_system_list),1))
 
         main.log.report("Link down latency " +
                 "Avg: "+str(link_down_avg)+" ms "+
-                "Std Deviation: "+link_down_std_dev)
+                "Std Deviation: "+link_down_std_dev+" ms")
         main.log.report("Link up latency "+
                 "Avg: "+str(link_up_avg)+" ms "+
-                "Std Deviation: "+link_up_std_dev)
+                "Std Deviation: "+link_up_std_dev+" ms")
 
         utilities.assert_equals(expect=main.TRUE, actual=assertion,
                 onpass="Link discovery latency calculation successful",

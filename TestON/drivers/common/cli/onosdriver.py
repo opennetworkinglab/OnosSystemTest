@@ -1053,7 +1053,7 @@ class OnosDriver(CLI):
         self.handle.sendline("cd ~/ONOS/tools/test/bin")
         self.handle.expect("/bin$")
         self.handle.sendline("./onos-topo-cfg")
-        self.handle.expect("{}admin@onosTestBench")
+        self.handle.expect("{}")
         self.handle.sendline("cd ~")
         self.handle.expect("\$")
 

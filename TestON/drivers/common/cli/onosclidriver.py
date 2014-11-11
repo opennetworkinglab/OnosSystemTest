@@ -518,13 +518,9 @@ class OnosCliDriver(CLI):
                 if not grep_str:
                     self.handle.sendline("links")
                     self.handle.expect("onos>")
-                    self.handle.sendline("")
-                    self.handle.expect("onos>")
                 else:
                     self.handle.sendline("links | grep '"+
                         str(grep_str)+"'")
-                    self.handle.expect("onos>")
-                    self.handle.sendline("")
                     self.handle.expect("onos>")
                 handle = self.handle.before
                 #print "handle =",handle

@@ -3,6 +3,10 @@
 #Topology Performance test for ONOS-next
 #
 #andrew@onlab.us
+#
+#If your machine does not come with numpy
+#run the following command:
+#sudo apt-get install python-numpy python-scipy 
 
 import time
 import sys
@@ -112,6 +116,7 @@ class TopoPerfNext:
         import json
         import requests
         import os
+        import numpy
 
         ONOS1_ip = main.params['CTRL']['ip1']
         ONOS2_ip = main.params['CTRL']['ip2']
@@ -472,17 +477,17 @@ class TopoPerfNext:
                  len(latency_tcp_to_ofp_list))
 
         main.log.report("Switch add - End-to-end latency: "+\
-                "Min: "+str(latency_end_to_end_min)+" ms "+\
-                "Max: "+str(latency_end_to_end_max)+" ms "+\
-                "Avg: "+str(latency_end_to_end_avg)+" ms ")
+                "Avg: "+str(latency_end_to_end_avg)+" ms "+
+                "Std Deviation: "+
+                str(numpy.std(latency_end_to_end_list)))
         main.log.report("Switch add - OFP-to-Graph latency: "+\
-                "Min: "+str(latency_ofp_to_graph_min)+" ms "+\
-                "Max: "+str(latency_ofp_to_graph_max)+" ms "+\
-                "Avg: "+str(latency_ofp_to_graph_avg)+" ms ")
+                "Avg: "+str(latency_ofp_to_graph_avg)+" ms "+
+                "Std Deviation: "+
+                str(numpy.std(latency_ofp_to_graph_list)))
         main.log.report("Switch add - TCP-to-OFP latency: "+\
-                "Min: "+str(latency_tcp_to_ofp_min)+" ms "+\
-                "Max: "+str(latency_tcp_to_ofp_max)+" ms "+\
-                "Avg: "+str(latency_tcp_to_ofp_avg)+" ms ")
+                "Avg: "+str(latency_tcp_to_ofp_avg)+" ms "+
+                "Std Deviation: "+
+                str(numpy.std(latency_tcp_to_ofp_list)))
 
         if debug_mode == 'on':
             main.ONOS1.cp_logs_to_dir("/opt/onos/log/karaf.log",
@@ -506,6 +511,7 @@ class TopoPerfNext:
         import os
         import requests
         import json
+        import numpy
 
         ONOS1_ip = main.params['CTRL']['ip1']
         ONOS2_ip = main.params['CTRL']['ip2']
@@ -822,10 +828,10 @@ class TopoPerfNext:
                 (sum(port_down_graph_to_ofp_list) / 
                  len(port_down_graph_to_ofp_list))
         
-        main.log.report("Port down graph-to-ofp Min: "+
-                str(port_down_graph_to_ofp_min)+" ms  Max: "+
-                str(port_down_graph_to_ofp_max)+" ms  Avg: "+
-                str(port_down_graph_to_ofp_avg)+" ms")
+        main.log.report("Port down graph-to-ofp "+
+                "Avg: "+str(port_down_graph_to_ofp_avg)+" ms "+
+                "Std Deviation: "+
+                str(numpy.std(port_down_graph_to_ofp_list)))
         
         port_down_device_to_ofp_min = min(port_down_device_to_ofp_list)
         port_down_device_to_ofp_max = max(port_down_device_to_ofp_list)
@@ -833,10 +839,10 @@ class TopoPerfNext:
                 (sum(port_down_device_to_ofp_list) /\
                  len(port_down_device_to_ofp_list))
         
-        main.log.report("Port down device-to-ofp Min: "+
-                str(port_down_device_to_ofp_min)+" ms  Max: "+
-                str(port_down_device_to_ofp_max)+" ms  Avg: "+
-                str(port_down_device_to_ofp_avg)+" ms")
+        main.log.report("Port down device-to-ofp "+
+                "Avg: "+str(port_down_device_to_ofp_avg)+" ms "+
+                "Std Deviation: "+
+                str(numpy.std(port_down_device_to_ofp_list)))
         
         port_up_graph_to_ofp_min = min(port_up_graph_to_ofp_list)
         port_up_graph_to_ofp_max = max(port_up_graph_to_ofp_list)
@@ -844,10 +850,10 @@ class TopoPerfNext:
                 (sum(port_up_graph_to_ofp_list) /\
                  len(port_up_graph_to_ofp_list))
         
-        main.log.report("Port up graph-to-ofp Min: "+
-                str(port_up_graph_to_ofp_min)+" ms  Max: "+
-                str(port_up_graph_to_ofp_max)+" ms  Avg: "+
-                str(port_up_graph_to_ofp_avg)+" ms")
+        main.log.report("Port up graph-to-ofp "+
+                "Avg: "+str(port_up_graph_to_ofp_avg)+" ms "+
+                "Std Deviation: "+
+                str(numpy.std(port_up_graph_to_ofp_list)))
           
         port_up_device_to_ofp_min = min(port_up_device_to_ofp_list)
         port_up_device_to_ofp_max = max(port_up_device_to_ofp_list)
@@ -855,10 +861,10 @@ class TopoPerfNext:
                 (sum(port_up_device_to_ofp_list) /\
                  len(port_up_device_to_ofp_list))
         
-        main.log.report("Port up device-to-ofp Min: "+
-                str(port_up_device_to_ofp_min)+" ms  Max: "+
-                str(port_up_device_to_ofp_max)+" ms  Avg: "+
-                str(port_up_device_to_ofp_avg)+" ms")
+        main.log.report("Port up device-to-ofp "+
+                "Avg: "+str(port_up_device_to_ofp_avg)+" ms "+
+                "Std Deviation: "+
+                str(numpy.std(port_up_device_to_ofp_list)))
 
         utilities.assert_equals(expect=main.TRUE, actual=assertion,
                 onpass="Port discovery latency calculation successful",
@@ -878,7 +884,8 @@ class TopoPerfNext:
         import os
         import requests
         import json
-
+        import numpy 
+    
         ONOS1_ip = main.params['CTRL']['ip1']
         ONOS2_ip = main.params['CTRL']['ip2']
         ONOS3_ip = main.params['CTRL']['ip3']
@@ -1044,18 +1051,18 @@ class TopoPerfNext:
                         graph_timestamp_3 and link_timestamp_1 and\
                         link_timestamp_2 and link_timestamp_3:
                     link_down_lat_graph1 = int(graph_timestamp_1) -\
-                            timestamp_link_down_t0
+                            int(timestamp_link_down_t0)
                     link_down_lat_graph2 = int(graph_timestamp_2) -\
-                            timestamp_link_down_t0
+                            int(timestamp_link_down_t0)
                     link_down_lat_graph3 = int(graph_timestamp_3) -\
-                            timestamp_link_down_t0
+                            int(timestamp_link_down_t0)
                 
                     link_down_lat_link1 = int(link_timestamp_1) -\
-                            timestamp_link_down_t0
+                            int(timestamp_link_down_t0)
                     link_down_lat_link2 = int(link_timestamp_2) -\
-                            timestamp_link_down_t0
+                            int(timestamp_link_down_t0)
                     link_down_lat_link3 = int(link_timestamp_3) -\
-                            timestamp_link_down_t0
+                            int(timestamp_link_down_t0)
                 else:
                     main.log.error("There was an error calculating"+
                         " the delta for link down event")
@@ -1201,18 +1208,18 @@ class TopoPerfNext:
                         graph_timestamp_3 and link_timestamp_1 and\
                         link_timestamp_2 and link_timestamp_3:
                     link_up_lat_graph1 = int(graph_timestamp_1) -\
-                            timestamp_link_up_t0
+                            int(timestamp_link_up_t0)
                     link_up_lat_graph2 = int(graph_timestamp_2) -\
-                            timestamp_link_up_t0
+                            int(timestamp_link_up_t0)
                     link_up_lat_graph3 = int(graph_timestamp_3) -\
-                            timestamp_link_up_t0
+                            int(timestamp_link_up_t0)
                 
                     link_up_lat_link1 = int(link_timestamp_1) -\
-                            timestamp_link_up_t0
+                            int(timestamp_link_up_t0)
                     link_up_lat_link2 = int(link_timestamp_2) -\
-                            timestamp_link_up_t0
+                            int(timestamp_link_up_t0)
                     link_up_lat_link3 = int(link_timestamp_3) -\
-                            timestamp_link_up_t0
+                            int(timestamp_link_up_t0)
                 else:
                     main.log.error("There was an error calculating"+
                         " the delta for link down event")
@@ -1282,15 +1289,15 @@ class TopoPerfNext:
         link_up_max = max(link_up_graph_to_system_list)
         link_up_avg = sum(link_up_graph_to_system_list) / \
                         len(link_up_graph_to_system_list)
+        link_down_std_dev = str(numpy.std(link_down_graph_to_system_list))
+        link_up_std_dev = str(numpy.std(link_up_graph_to_system_list))
 
-        main.log.report("Link down latency - Min: "+
-                str(link_down_min)+" ms  Max: "+
-                str(link_down_max)+" ms  Avg: "+
-                str(link_down_avg)+" ms")
-        main.log.report("Link up latency - Min: "+
-                str(link_up_min)+" ms  Max: "+
-                str(link_up_max)+" ms  Avg: "+
-                str(link_up_avg)+" ms")
+        main.log.report("Link down latency " +
+                "Avg: "+str(link_down_avg)+" ms "+
+                "Std Deviation: "+link_down_std_dev)
+        main.log.report("Link up latency "+
+                "Avg: "+str(link_up_avg)+" ms "+
+                "Std Deviation: "+link_up_std_dev)
 
         utilities.assert_equals(expect=main.TRUE, actual=assertion,
                 onpass="Link discovery latency calculation successful",

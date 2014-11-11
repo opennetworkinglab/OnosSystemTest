@@ -39,8 +39,8 @@
         <onosLogFile>/opt/onos/log/karaf*</onosLogFile>
 
         #Number of times to iterate each case
-        <numIter>10</numIter>
-        <numSwitch>100</numSwitch>
+        <numIter>20</numIter>
+        <numSwitch>2</numSwitch>
         #Number of iterations to ignore initially
         <iterIgnore>2</iterIgnore>
 

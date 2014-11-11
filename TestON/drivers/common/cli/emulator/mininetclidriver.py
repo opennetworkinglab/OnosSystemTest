@@ -573,14 +573,20 @@ class MininetCliDriver(Emulator):
             result = re.match(pattern, line)
             if result:
                 version = result.group(0)
-        return version 
+        return version
 
-    def get_sw_controller_sanity(self, sw):
+    def get_sw_controller(self, sw):
+        '''
+        Parameters:
+            sw: The name of an OVS switch. Example "s1"
+        Return:
+            The output of the command from the mininet cli or main.FALSE on timeout
+        '''
         command = "sh ovs-vsctl get-controller "+str(sw)
         try:
-            response = self.execute(cmd=command,prompt="mininet>",timeout=10)
+            response = self.execute(cmd=command, prompt="mininet>", timeout=10)
             if response:
-                return main.TRUE
+                return response
             else:
                 return main.FALSE
         except pexpect.EOF:
@@ -588,26 +594,6 @@ class MininetCliDriver(Emulator):
             main.log.error(self.name + ":     " + self.handle.before)
             main.cleanup()
             main.exit()
-        else:
-            main.log.info(response)
-
-    def get_sw_controller(self,sw):
-        command = "sh ovs-vsctl get-controller "+str(sw)
-        try:
-            response = self.execute(cmd=command,prompt="mininet>",timeout=10)
-            print(response)
-            if response:
-                print("**********************")
-                return response
-            else:
-                return main.FALSE
-        except pexpect.EOF:  
-            main.log.error(self.name + ": EOF exception found")
-            main.log.error(self.name + ":     " + self.handle.before)
-            main.cleanup()
-            main.exit()
-        else:
-            main.log.info(response)
 
     def assign_sw_controller(self,**kwargs):
         '''

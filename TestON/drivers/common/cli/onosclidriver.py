@@ -524,8 +524,6 @@ class OnosCliDriver(CLI):
                     self.handle.sendline("links | grep '"+
                         str(grep_str)+"'")
                     self.handle.expect("onos>")
-                    self.handle.sendline("")
-                    self.handle.expect("onos>")
                 handle = self.handle.before
                 #print "handle =",handle
                 return handle

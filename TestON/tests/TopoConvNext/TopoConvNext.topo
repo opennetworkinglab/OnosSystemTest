@@ -99,13 +99,49 @@
             <connect_order>11</connect_order>
             <COMPONENTS> </COMPONENTS>
         </ONOS3>
+        
+        <ONOS4>
+            <host>10.128.174.4</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>OnosDriver</type>
+            <connect_order>12</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </ONOS4>
+
+        <ONOS5>
+            <host>10.128.174.5</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>OnosDriver</type>
+            <connect_order>13</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </ONOS5>
+    
+        <ONOS6>
+            <host>10.128.174.6</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>OnosDriver</type>
+            <connect_order>14</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </ONOS6>
+        
+        <ONOS7>
+            <host>10.128.174.7</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>OnosDriver</type>
+            <connect_order>15</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </ONOS7>
 
         <Mininet1>
             <host>10.128.10.90</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>MininetCliDriver</type>
-            <connect_order>12</connect_order>
+            <connect_order>16</connect_order>
             <COMPONENTS>
                 <arg1> --custom topo-700sw.py </arg1>
                 <arg2> --arp --mac --topo mytopo</arg2>
@@ -119,7 +155,7 @@
             <user>admin</user>
             <password>onos_test</password>
             <type>RemoteMininetDriver</type>
-            <connect_order>13</connect_order>
+            <connect_order>17</connect_order>
             <COMPONENTS> </COMPONENTS>
         </Mininet2>
 

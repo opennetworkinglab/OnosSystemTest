@@ -1,5 +1,5 @@
 <PARAMS>
-    <testcases>1,2,3</testcases>
+    <testcases>1,2</testcases>
 
     <ENV>
         <cellName>topo_conv_test</cellName>

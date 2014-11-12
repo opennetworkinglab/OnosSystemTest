@@ -388,11 +388,15 @@ class OnosCliDriver(CLI):
         except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
             main.log.error(self.name + ":    " + self.handle.before)
+            main.log.report("Failed to install feature")
+            main.log.report("Exiting test")
             main.cleanup()
             main.exit()
         except:
             main.log.info(self.name+" ::::::")
             main.log.error( traceback.print_exc())
+            main.log.report("Failed to install feature")
+            main.log.report("Exiting test")
             main.log.info(self.name+" ::::::")
             main.cleanup()
             main.exit()

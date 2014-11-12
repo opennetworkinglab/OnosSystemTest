@@ -1,6 +1,7 @@
 #TopoPerfNext
 #
-#Topology Performance test for ONOS-next
+#Topology Convergence scale-out test for ONOS-next
+#NOTE: This test supports up to 7 nodes scale-out scenario
 #
 #andrew@onlab.us
 
@@ -22,9 +23,8 @@ class TopoConvNext:
         #******
         #Global cluster count for scale-out purposes
         global cluster_count 
-        cluster_count = 1
+        cluster_count = 1 
         #******
-    
         cell_name = main.params['ENV']['cellName']
 
         git_pull = main.params['GIT']['autoPull']
@@ -119,8 +119,10 @@ class TopoConvNext:
         import os
         import requests
         import json
+        import numpy
 
         ONOS_ip_list = []
+        ONOS_ip_list.append('0')
         ONOS_ip_list.append(main.params['CTRL']['ip1'])
         ONOS_ip_list.append(main.params['CTRL']['ip2'])
         ONOS_ip_list.append(main.params['CTRL']['ip3'])
@@ -148,27 +150,21 @@ class TopoConvNext:
         sw_disc_threshold_min = int(sw_disc_threshold_obj[0])
         sw_disc_threshold_max = int(sw_disc_threshold_obj[1])
 
-        tshark_ofp_output = \
-                "/tmp/tshark_ofp_"+num_sw+"sw_"+cluster_count+".txt"
-        tshark_tcp_output = \
-                "/tmp/tshark_tcp_"+num_sw+"sw_"+cluster_count+".txt"
-
-        tshark_ofp_result_list = []
-        tshark_tcp_result_list = []
-
+        assertion = main.TRUE
         sw_discovery_lat_list = []
 
-        main.case(num_sw+" Switch discovery latency")
+        main.case(str(num_sw)+" switch per "+str(cluster_count)+
+                " nodes convergence latency")
        
         main.log.report("Currently active ONOS node(s): ")
         report_str = "Node "
-        for node in range(0, cluster_count):
-            report_str += (str(node+1) + " ") 
+        for node in range(1, cluster_count+1):
+            report_str += (str(node) + " ") 
         main.log.report(report_str)
         
         main.step("Assigning "+num_sw+" switches to each ONOS")
         index = 1 
-        for node in range(0, cluster_count):
+        for node in range(1, cluster_count+1):
             for i in range(index, int(num_sw)+index):
                 main.Mininet1.assign_sw_controller(
                         sw=str(i),
@@ -178,37 +174,554 @@ class TopoConvNext:
 
         main.log.info("Please check ptpd configuration to ensure "+\
                 "all nodes' system times are in sync")
-        main.log.info("Checking system time across nodes")
-        os.system("echo TestON system time:  $(($(date +%s%N)/1000000))")
-        main.ONOS1.handle.sendline("echo $(($(date +%s%N)/1000000))")
-        main.ONOS2.handle.sendline("echo $(($(date +%s%N)/1000000))")
-        main.ONOS3.handle.sendline("echo $(($(date +%s%N)/1000000))")
-        main.ONOS4.handle.sendline("echo $(($(date +%s%N)/1000000))")
-        main.ONOS5.handle.sendline("echo $(($(date +%s%N)/1000000))")
-        main.ONOS6.handle.sendline("echo $(($(date +%s%N)/1000000))")
-        main.ONOS7.handle.sendline("echo $(($(date +%s%N)/1000000))")
 
-        main.ONOS1.handle.expect("0))")
-        main.log.info("ONOS1 time: "+main.ONOS1.handle.after)
-        main.ONOS2.handle.expect("0))")
-        main.log.info("ONOS2 time: "+main.ONOS2.handle.after)
-        main.ONOS3.handle.expect("0))")
-        main.log.info("ONOS3 time: "+main.ONOS3.handle.after)
-        main.ONOS4.handle.expect("0))")
-        main.log.info("ONOS4 time: "+main.ONOS4.handle.after)
-        main.ONOS5.handle.expect("0))")
-        main.log.info("ONOS5 time: "+main.ONOS5.handle.after)
-        main.ONOS6.handle.expect("0))")
-        main.log.info("ONOS6 time: "+main.ONOS6.handle.after)
-        main.ONOS7.handle.expect("0))")
-        main.log.info("ONOS7 time: "+main.ONOS7.handle.after)
-        
         time.sleep(10)
 
+        for i in range(0, int(num_iter)):
+            main.step("Set iptables rule to block sw connections")
+               
+            #INPUT rules
+            main.ONOS1.handle.sendline(
+                    "sudo iptables -A INPUT -p tcp -s "+
+                    MN1_ip+" --dport "+default_sw_port+" -j DROP")
+            main.ONOS2.handle.sendline(
+                    "sudo iptables -A INPUT -p tcp -s "+
+                    MN1_ip+" --dport "+default_sw_port+" -j DROP")
+            main.ONOS3.handle.sendline(
+                    "sudo iptables -A INPUT -p tcp -s "+
+                    MN1_ip+" --dport "+default_sw_port+" -j DROP")
+            main.ONOS4.handle.sendline(
+                    "sudo iptables -A INPUT -p tcp -s "+
+                    MN1_ip+" --dport "+default_sw_port+" -j DROP")
+            main.ONOS5.handle.sendline(
+                    "sudo iptables -A INPUT -p tcp -s "+
+                    MN1_ip+" --dport "+default_sw_port+" -j DROP")
+            main.ONOS6.handle.sendline(
+                    "sudo iptables -A INPUT -p tcp -s "+
+                    MN1_ip+" --dport "+default_sw_port+" -j DROP")
+            main.ONOS7.handle.sendline(
+                    "sudo iptables -A INPUT -p tcp -s "+
+                    MN1_ip+" --dport "+default_sw_port+" -j DROP")
+               
+                #OUTPUT rules
+            main.ONOS1.handle.sendline(
+                    "sudo iptables -A OUTPUT -p tcp -s "+
+                    MN1_ip+" --dport "+default_sw_port+" -j DROP")
+            main.ONOS2.handle.sendline(
+                    "sudo iptables -A OUTPUT -p tcp -s "+
+                    MN1_ip+" --dport "+default_sw_port+" -j DROP")
+            main.ONOS3.handle.sendline(
+                    "sudo iptables -A OUTPUT -p tcp -s "+
+                    MN1_ip+" --dport "+default_sw_port+" -j DROP")
+            main.ONOS4.handle.sendline(
+                    "sudo iptables -A OUTPUT -p tcp -s "+
+                    MN1_ip+" --dport "+default_sw_port+" -j DROP")
+            main.ONOS5.handle.sendline(
+                    "sudo iptables -A OUTPUT -p tcp -s "+
+                    MN1_ip+" --dport "+default_sw_port+" -j DROP")
+            main.ONOS6.handle.sendline(
+                    "sudo iptables -A OUTPUT -p tcp -s "+
+                    MN1_ip+" --dport "+default_sw_port+" -j DROP")
+            main.ONOS7.handle.sendline(
+                    "sudo iptables -A OUTPUT -p tcp -s "+
+                    MN1_ip+" --dport "+default_sw_port+" -j DROP")
 
-        #TODO: Implement modular switch discovery measurements
-        #for scale-out scenario
+            main.log.info("Please wait for switch connection to timeout")
+            time.sleep(60)
 
+            main.step("Flushing iptables and obtaining t0")
+            t0_system = time.time()*1000
+            main.ONOS1.handle.sendline("sudo iptables -F")
+            main.ONOS2.handle.sendline("sudo iptables -F")
+            main.ONOS3.handle.sendline("sudo iptables -F")
+            main.ONOS4.handle.sendline("sudo iptables -F")
+            main.ONOS5.handle.sendline("sudo iptables -F")
+            main.ONOS6.handle.sendline("sudo iptables -F")
+            main.ONOS7.handle.sendline("sudo iptables -F")
+
+            counter_loop = 0
+            counter_avail1 = 0
+            counter_avail2 = 0
+            counter_avail3 = 0
+            counter_avail4 = 0
+            counter_avail5 = 0
+            counter_avail6 = 0
+            counter_avail7 = 0
+            onos1_dev = False
+            onos2_dev = False
+            onos3_dev = False
+            onos4_dev = False
+            onos5_dev = False
+            onos6_dev = False
+            onos7_dev = False
+
+            #TODO: Think of a more elegant way to check all 
+            #      switches across all nodes
+            #Goodluck debugging this loop
+            while counter_loop < 60:
+                for node in range(1, cluster_count+1):
+                    if node == 1 and not onos1_dev:
+                        device_str_obj1 = main.ONOS1cli.devices()
+                        print device_str_obj1
+                        device_json1 = json.loads(device_str_obj1)
+                        for device1 in device_json1:
+                            if device1['available'] == True:
+                                counter_avail1 += 1
+                                if counter_avail1 == int(num_sw):
+                                    onos1_dev = True
+                                    main.log.info("All devices have been"+
+                                            " discovered on ONOS1")
+                                else:
+                                    counter_avail1 = 0
+                    if node == 2 and not onos2_dev:
+                        device_str_obj2 = main.ONOS2cli.devices()
+                        device_json2 = json.loads(device_str_obj2)
+                        for device2 in device_json2:
+                            if device2['available'] == True:
+                                counter_avail2 += 1
+                                if counter_avail2 == int(num_sw):
+                                    onos2_dev = True
+                                    main.log.info("All devices have been"+
+                                            " discovered on ONOS2")
+                                else:
+                                    counter_avail2 = 0
+                    if node == 3 and not onos3_dev:
+                        device_str_obj3 = main.ONOS3cli.devices()
+                        device_json3 = json.loads(device_str_obj3)
+                        for device3 in device_json3:
+                            if device3['available'] == True:
+                                counter_avail3 += 1
+                                if counter_avail3 == int(num_sw):
+                                    onos3_dev = True
+                                    main.log.info("All devices have been"+
+                                            " discovered on ONOS3")
+                                else:
+                                    counter_avail3 = 0
+                    if node == 4 and not onos4_dev:
+                        device_str_obj4 = main.ONOS4cli.devices()
+                        device_json4 = json.loads(device_str_obj4)
+                        for device4 in device_json4:
+                            if device4['available'] == True:
+                                counter_avail4 += 1
+                                if counter_avail4 == int(num_sw):
+                                    onos4_dev = True
+                                    main.log.info("All devices have been"+
+                                            " discovered on ONOS4")
+                                else:
+                                    counter_avail4 = 0
+                    if node == 5 and not onos5_dev:
+                        device_str_obj5 = main.ONOS5cli.devices()
+                        device_json5 = json.loads(device_str_obj5)
+                        for device5 in device_json5:
+                            if device5['available'] == True:
+                                counter_avail5 += 1
+                                if counter_avail5 == int(num_sw):
+                                    onos5_dev = True
+                                    main.log.info("All devices have been"+
+                                            " discovered on ONOS5")
+                                else:
+                                    counter_avail5 = 0
+                    if node == 6 and not onos6_dev:
+                        device_str_obj6 = main.ONOS6cli.devices()
+                        device_json6 = json.loads(device_str_obj6)
+                        for device6 in device_json6:
+                            if device6['available'] == True:
+                                counter_avail6 += 1
+                                if counter_avail6 == int(num_sw):
+                                    onos6_dev = True
+                                    main.log.info("All devices have been"+
+                                            " discovered on ONOS6")
+                                else:
+                                    counter_avail6 = 0
+                    if node == 7 and not onos7_dev:
+                        device_str_obj7 = main.ONOS7cli.devices()
+                        device_json7 = json.loads(device_str_obj7)
+                        for device7 in device_json7:
+                            if device7['available'] == True:
+                                counter_avail7 += 1
+                                if counter_avail7 == int(num_sw):
+                                    onos7_dev = True
+                                    main.log.info("All devices have been"+
+                                            " discovered on ONOS7")
+                                else:
+                                    counter_avail7 = 0
+                    #END node loop
+              
+                #TODO: clean up this mess of an if statements if possible
+                #Treat each if as a separate test case with the given
+                #     cluster count. Hence when the cluster count changes
+                #     the desired calculations will be made
+                if cluster_count == 1:
+                    if onos1_dev:
+                        main.log.info("All devices have been discovered"+
+                            " on all ONOS instances")
+                        json_str_metrics_1 =\
+                            main.ONOS1cli.topology_events_metrics()
+                        json_obj_1 = json.loads(json_str_metrics_1)
+                        graph_timestamp_1 =\
+                            json_obj_1[graphTimestamp]['value']
+                        
+                        graph_lat_1 = \
+                            int(graph_timestamp_1) - int(t0_system)
+                        
+                        if graph_lat_1 > sw_disc_threshold_min\
+                            and graph_lat_1 < sw_disc_threshold_max:
+                            sw_discovery_lat_list.append(
+                                    graph_lat_1)
+                        else:
+                            main.log.info("Switch discovery latency "+
+                                "exceeded the threshold.")
+
+                        #Break while loop 
+                        break
+                if cluster_count == 2:
+                    if onos1_dev and onos2_dev:
+                        main.log.info("All devices have been discovered"+
+                            " on all ONOS instances")
+                        json_str_metrics_1 =\
+                            main.ONOS1cli.topology_events_metrics()
+                        json_str_metrics_2 =\
+                            main.ONOS2cli.topology_events_metrics()
+                        json_obj_1 = json.loads(json_str_metrics_1)
+                        json_obj_2 = json.loads(json_str_metrics_2)
+                        graph_timestamp_1 =\
+                            json_obj_1[graphTimestamp]['value']
+                        graph_timestamp_2 =\
+                            json_obj_2[graphTimestamp]['value']
+                        
+                        graph_lat_1 = \
+                            int(graph_timestamp_1) - int(t0_system)
+                        graph_lat_2 = \
+                            int(graph_timestamp_2) - int(t0_system)
+
+                        avg_graph_lat = \
+                            (int(graph_lat_1) +\
+                             int(graph_lat_2)) / 2
+
+                        if avg_graph_lat > sw_disc_threshold_min\
+                            and avg_graph_lat < sw_disc_threshold_max:
+                            sw_discovery_lat_list.append(
+                                    avg_graph_lat)
+                        else:
+                            main.log.info("Switch discovery latency "+
+                                "exceeded the threshold.")
+
+                        break
+                if cluster_count == 3:
+                    if onos1_dev and onos2_dev and onos3_dev:
+                        main.log.info("All devices have been discovered"+
+                            " on all ONOS instances")
+                        json_str_metrics_1 =\
+                            main.ONOS1cli.topology_events_metrics()
+                        json_str_metrics_2 =\
+                            main.ONOS2cli.topology_events_metrics()
+                        json_str_metrics_3 =\
+                            main.ONOS3cli.topology_events_metrics()
+                        json_obj_1 = json.loads(json_str_metrics_1)
+                        json_obj_2 = json.loads(json_str_metrics_2)
+                        json_obj_3 = json.loads(json_str_metrics_3)
+                        graph_timestamp_1 =\
+                            json_obj_1[graphTimestamp]['value']
+                        graph_timestamp_2 =\
+                            json_obj_2[graphTimestamp]['value']
+                        graph_timestamp_3 =\
+                            json_obj_3[graphTimestamp]['value']
+                        
+                        graph_lat_1 = \
+                            int(graph_timestamp_1) - int(t0_system)
+                        graph_lat_2 = \
+                            int(graph_timestamp_2) - int(t0_system)
+                        graph_lat_3 = \
+                            int(graph_timestamp_3) - int(t0_system)
+
+                        avg_graph_lat = \
+                            (int(graph_lat_1) +\
+                             int(graph_lat_2) +\
+                             int(graph_lat_3)) / 3 
+                        
+                        if avg_graph_lat > sw_disc_threshold_min\
+                            and avg_graph_lat < sw_disc_threshold_max:
+                            sw_discovery_lat_list.append(
+                                    avg_graph_lat)
+                        else:
+                            main.log.info("Switch discovery latency "+
+                                "exceeded the threshold.")
+                        
+                        break
+                if cluster_count == 4:
+                    if onos1_dev and onos2_dev and onos3_dev and\
+                       onos4_dev:
+                        main.log.info("All devices have been discovered"+
+                            " on all ONOS instances")
+                        json_str_metrics_1 =\
+                            main.ONOS1cli.topology_events_metrics()
+                        json_str_metrics_2 =\
+                            main.ONOS2cli.topology_events_metrics()
+                        json_str_metrics_3 =\
+                            main.ONOS3cli.topology_events_metrics()
+                        json_str_metrics_4 =\
+                            main.ONOS4cli.topology_events_metrics()
+                        json_obj_1 = json.loads(json_str_metrics_1)
+                        json_obj_2 = json.loads(json_str_metrics_2)
+                        json_obj_3 = json.loads(json_str_metrics_3)
+                        json_obj_4 = json.loads(json_str_metrics_4)
+                        graph_timestamp_1 =\
+                            json_obj_1[graphTimestamp]['value']
+                        graph_timestamp_2 =\
+                            json_obj_2[graphTimestamp]['value']
+                        graph_timestamp_3 =\
+                            json_obj_3[graphTimestamp]['value']
+                        graph_timestamp_4 =\
+                            json_obj_4[graphTimestamp]['value']
+                        
+                        graph_lat_1 = \
+                            int(graph_timestamp_1) - int(t0_system)
+                        graph_lat_2 = \
+                            int(graph_timestamp_2) - int(t0_system)
+                        graph_lat_3 = \
+                            int(graph_timestamp_3) - int(t0_system)
+                        graph_lat_4 = \
+                            int(graph_timestamp_4) - int(t0_system)
+
+                        avg_graph_lat = \
+                            (int(graph_lat_1) +\
+                             int(graph_lat_2) +\
+                             int(graph_lat_3) +\
+                             int(graph_lat_4)) / 4 
+                        
+                        if avg_graph_lat > sw_disc_threshold_min\
+                            and avg_graph_lat < sw_disc_threshold_max:
+                            sw_discovery_lat_list.append(
+                                    avg_graph_lat)
+                        else:
+                            main.log.info("Switch discovery latency "+
+                                "exceeded the threshold.")
+                
+                        break
+                if cluster_count == 5:
+                    if onos1_dev and onos2_dev and onos3_dev and\
+                       onos4_dev and onos5_dev:
+                        main.log.info("All devices have been discovered"+
+                            " on all ONOS instances")
+                        json_str_metrics_1 =\
+                            main.ONOS1cli.topology_events_metrics()
+                        json_str_metrics_2 =\
+                            main.ONOS2cli.topology_events_metrics()
+                        json_str_metrics_3 =\
+                            main.ONOS3cli.topology_events_metrics()
+                        json_str_metrics_4 =\
+                            main.ONOS4cli.topology_events_metrics()
+                        json_str_metrics_5 =\
+                            main.ONOS5cli.topology_events_metrics()
+                        json_obj_1 = json.loads(json_str_metrics_1)
+                        json_obj_2 = json.loads(json_str_metrics_2)
+                        json_obj_3 = json.loads(json_str_metrics_3)
+                        json_obj_4 = json.loads(json_str_metrics_4)
+                        json_obj_5 = json.loads(json_str_metrics_5)
+                        graph_timestamp_1 =\
+                            json_obj_1[graphTimestamp]['value']
+                        graph_timestamp_2 =\
+                            json_obj_2[graphTimestamp]['value']
+                        graph_timestamp_3 =\
+                            json_obj_3[graphTimestamp]['value']
+                        graph_timestamp_4 =\
+                            json_obj_4[graphTimestamp]['value']
+                        graph_timestamp_5 =\
+                            json_obj_5[graphTimestamp]['value']
+                        
+                        graph_lat_1 = \
+                            int(graph_timestamp_1) - int(t0_system)
+                        graph_lat_2 = \
+                            int(graph_timestamp_2) - int(t0_system)
+                        graph_lat_3 = \
+                            int(graph_timestamp_3) - int(t0_system)
+                        graph_lat_4 = \
+                            int(graph_timestamp_4) - int(t0_system)
+                        graph_lat_5 = \
+                            int(graph_timestamp_5) - int(t0_system)
+
+                        avg_graph_lat = \
+                            (int(graph_lat_1) +\
+                             int(graph_lat_2) +\
+                             int(graph_lat_3) +\
+                             int(graph_lat_4) +\
+                             int(graph_lat_5)) / 5 
+                        
+                        if avg_graph_lat > sw_disc_threshold_min\
+                            and avg_graph_lat < sw_disc_threshold_max:
+                            sw_discovery_lat_list.append(
+                                    avg_graph_lat)
+                        else:
+                            main.log.info("Switch discovery latency "+
+                                "exceeded the threshold.")
+                
+                        break
+                if cluster_count == 6:
+                    if onos1_dev and onos2_dev and onos3_dev and\
+                       onos4_dev and onos5_dev and onos6_dev:
+                        main.log.info("All devices have been discovered"+
+                            " on all ONOS instances")
+                        json_str_metrics_1 =\
+                            main.ONOS1cli.topology_events_metrics()
+                        json_str_metrics_2 =\
+                            main.ONOS2cli.topology_events_metrics()
+                        json_str_metrics_3 =\
+                            main.ONOS3cli.topology_events_metrics()
+                        json_str_metrics_4 =\
+                            main.ONOS4cli.topology_events_metrics()
+                        json_str_metrics_5 =\
+                            main.ONOS5cli.topology_events_metrics()
+                        json_str_metrics_6 =\
+                            main.ONOS6cli.topology_events_metrics()
+                        json_obj_1 = json.loads(json_str_metrics_1)
+                        json_obj_2 = json.loads(json_str_metrics_2)
+                        json_obj_3 = json.loads(json_str_metrics_3)
+                        json_obj_4 = json.loads(json_str_metrics_4)
+                        json_obj_5 = json.loads(json_str_metrics_5)
+                        json_obj_6 = json.loads(json_str_metrics_6)
+                        graph_timestamp_1 =\
+                            json_obj_1[graphTimestamp]['value']
+                        graph_timestamp_2 =\
+                            json_obj_2[graphTimestamp]['value']
+                        graph_timestamp_3 =\
+                            json_obj_3[graphTimestamp]['value']
+                        graph_timestamp_4 =\
+                            json_obj_4[graphTimestamp]['value']
+                        graph_timestamp_5 =\
+                            json_obj_5[graphTimestamp]['value']
+                        graph_timestamp_6 =\
+                            json_obj_6[graphTimestamp]['value']
+                        
+                        graph_lat_1 = \
+                            int(graph_timestamp_1) - int(t0_system)
+                        graph_lat_2 = \
+                            int(graph_timestamp_2) - int(t0_system)
+                        graph_lat_3 = \
+                            int(graph_timestamp_3) - int(t0_system)
+                        graph_lat_4 = \
+                            int(graph_timestamp_4) - int(t0_system)
+                        graph_lat_5 = \
+                            int(graph_timestamp_5) - int(t0_system)
+                        graph_lat_6 = \
+                            int(graph_timestamp_6) - int(t0_system)
+
+                        avg_graph_lat = \
+                            (int(graph_lat_1) +\
+                             int(graph_lat_2) +\
+                             int(graph_lat_3) +\
+                             int(graph_lat_4) +\
+                             int(graph_lat_5) +\
+                             int(graph_lat_6)) / 6 
+                        
+                        if avg_graph_lat > sw_disc_threshold_min\
+                            and avg_graph_lat < sw_disc_threshold_max:
+                            sw_discovery_lat_list.append(
+                                    avg_graph_lat)
+                        else:
+                            main.log.info("Switch discovery latency "+
+                                "exceeded the threshold.")
+                        
+                        break
+                if cluster_count == 7:
+                    if onos1_dev and onos2_dev and onos3_dev and\
+                       onos4_dev and onos5_dev and onos6_dev and\
+                       onos7_dev:
+                        main.log.info("All devices have been discovered"+
+                            " on all ONOS instances")
+                        json_str_metrics_1 =\
+                            main.ONOS1cli.topology_events_metrics()
+                        json_str_metrics_2 =\
+                            main.ONOS2cli.topology_events_metrics()
+                        json_str_metrics_3 =\
+                            main.ONOS3cli.topology_events_metrics()
+                        json_str_metrics_4 =\
+                            main.ONOS4cli.topology_events_metrics()
+                        json_str_metrics_5 =\
+                            main.ONOS5cli.topology_events_metrics()
+                        json_str_metrics_6 =\
+                            main.ONOS6cli.topology_events_metrics()
+                        json_str_metrics_7 =\
+                            main.ONOS7cli.topology_events_metrics()
+                        json_obj_1 = json.loads(json_str_metrics_1)
+                        json_obj_2 = json.loads(json_str_metrics_2)
+                        json_obj_3 = json.loads(json_str_metrics_3)
+                        json_obj_4 = json.loads(json_str_metrics_4)
+                        json_obj_5 = json.loads(json_str_metrics_5)
+                        json_obj_6 = json.loads(json_str_metrics_6)
+                        json_obj_7 = json.loads(json_str_metrics_7)
+                        graph_timestamp_1 =\
+                            json_obj_1[graphTimestamp]['value']
+                        graph_timestamp_2 =\
+                            json_obj_2[graphTimestamp]['value']
+                        graph_timestamp_3 =\
+                            json_obj_3[graphTimestamp]['value']
+                        graph_timestamp_4 =\
+                            json_obj_4[graphTimestamp]['value']
+                        graph_timestamp_5 =\
+                            json_obj_5[graphTimestamp]['value']
+                        graph_timestamp_6 =\
+                            json_obj_6[graphTimestamp]['value']
+                        graph_timestamp_7 =\
+                            json_obj_7[graphTimestamp]['value']
+                        
+                        graph_lat_1 = \
+                            int(graph_timestamp_1) - int(t0_system)
+                        graph_lat_2 = \
+                            int(graph_timestamp_2) - int(t0_system)
+                        graph_lat_3 = \
+                            int(graph_timestamp_3) - int(t0_system)
+                        graph_lat_4 = \
+                            int(graph_timestamp_4) - int(t0_system)
+                        graph_lat_5 = \
+                            int(graph_timestamp_5) - int(t0_system)
+                        graph_lat_6 = \
+                            int(graph_timestamp_6) - int(t0_system)
+                        graph_lat_7 = \
+                            int(graph_timestamp_7) - int(t0_system)
+
+                        avg_graph_lat = \
+                            (int(graph_lat_1) +\
+                             int(graph_lat_2) +\
+                             int(graph_lat_3) +\
+                             int(graph_lat_4) +\
+                             int(graph_lat_5) +\
+                             int(graph_lat_6) +\
+                             int(graph_lat_7)) / 7 
+                        
+                        if avg_graph_lat > sw_disc_threshold_min\
+                            and avg_graph_lat < sw_disc_threshold_max:
+                            sw_discovery_lat_list.append(
+                                    avg_graph_lat)
+                        else:
+                            main.log.info("Switch discovery latency "+
+                                "exceeded the threshold.")
+                        
+                        break
+                
+                counter_loop += 1
+                time.sleep(3)
+                #END WHILE LOOP            
+            #END ITERATION LOOP
+        #REPORT HERE 
+
+        if len(sw_discovery_lat_list) > 0:
+            sw_lat_avg = sum(sw_discovery_lat_list) / \
+                     len(sw_discovery_lat_list)
+            sw_lat_dev = numpy.dev(sw_discovery_lat_list)
+        else: 
+            assertion = main.FALSE
+
+        main.log.report("Switch discovery lat for "+\
+            str(cluster_count)+" instances, 100 sw each: ")
+        main.log.report("Avg: "+str(sw_lat_avg)+" ms")
+        main.log.report("Std Deviation: "+str(sw_lat_dev)+" ms")
+
+        utilities.assert_equals(expect=main.TRUE, actual=assertion,
+                onpass="Switch discovery convergence latency" +\
+                        " test successful",
+                onfail="Switch discovery convergence latency" +\
+                        " test failed")
+        
 
     def CASE3(self, main):
         '''
@@ -221,6 +734,7 @@ class TopoConvNext:
         import json
        
         ONOS_ip_list = []
+        ONOS_ip_list.append('0') #Append 0 for index 0
         ONOS_ip_list.append(main.params['CTRL']['ip1'])
         ONOS_ip_list.append(main.params['CTRL']['ip2'])
         ONOS_ip_list.append(main.params['CTRL']['ip3'])
@@ -242,20 +756,8 @@ class TopoConvNext:
         cluster_count += 2 
        
         #Supports up to 7 node configuration
-        for node in range(0, cluster_count):
-            main.log.info("Installing ONOS instance: "+
-                    ONOS_ip_list[node])
-            main.ONOSbench.onos_install(ONOS_ip_list[node]) 
-            time.sleep(5) 
-            if node == 0:
-                main.log.info("Starting CLI for instance "+
-                        ONOS_ip_list[node])
-                main.ONOS1cli.start_onos_cli(ONOS_ip_list[node])
-            elif node == 1:
-                main.log.info("Starting CLI for instance "+
-                        ONOS_ip_list[node])
-                main.ONOS2cli.start_onos_cli(ONOS_ip_list[node])
-            elif node == 2:
+        for node in range(1, cluster_count+1):
+            if node == 2:
                 main.log.info("Starting CLI for instance "+
                         ONOS_ip_list[node])
                 main.ONOS3cli.start_onos_cli(ONOS_ip_list[node])

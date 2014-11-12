@@ -107,7 +107,13 @@ class TopoConvNext:
         import json
 
         ONOS_ip_list = []
-        ONOS_ip_list[0] = main.params['CTRL']['ip1']
+        ONOS_ip_list.append(main.params['ONOS']['ip1'])
+        ONOS_ip_list.append(main.params['ONOS']['ip2'])
+        ONOS_ip_list.append(main.params['ONOS']['ip3'])
+        ONOS_ip_list.append(main.params['ONOS']['ip4'])
+        ONOS_ip_list.append(main.params['ONOS']['ip5'])
+        ONOS_ip_list.append(main.params['ONOS']['ip6'])
+        ONOS_ip_list.append(main.params['ONOS']['ip7'])
         MN1_ip = main.params['MN']['ip1']
         ONOS_user = main.params['CTRL']['user']
 
@@ -122,16 +128,6 @@ class TopoConvNext:
         deviceTimestamp = main.params['JSON']['deviceTimestamp']
         graphTimestamp = main.params['JSON']['graphTimestamp']
         
-        debug_mode = main.params['TEST']['debugMode']
-
-        local_time = time.strftime('%X')
-        local_time = local_time.replace("/","")
-        local_time = local_time.replace(" ","_")
-        local_time = local_time.replace(":","")
-        if debug_mode == 'on':
-            main.ONOS1.tshark_pcap("eth0",
-                    "/tmp/100_sw_lat_pcap_"+local_time) 
- 
         #Threshold for this test case
         sw_disc_threshold_str = main.params['TEST']['swDisc100Threshold']
         sw_disc_threshold_obj = sw_disc_threshold_str.split(",")
@@ -147,7 +143,23 @@ class TopoConvNext:
         sw_discovery_lat_list = []
 
         main.case(num_sw+" Switch discovery latency")
+       
+        main.log.report("Currently active ONOS node(s): ")
+        report_str = "Node "
+        for node in cluster_count:
+            report_str += (str(node+1) + " ") 
+        main.log.report(report_str)
         
+        main.step("Assigning "+num_sw+" switches to each ONOS")
+        index = 1 
+        for node in cluster_count:
+            for i in range(index, int(num_sw)+index):
+                main.Mininet1.assign_sw_controller(
+                        sw=str(i),
+                        ip1=ONOS_ip_list[node],
+                        port1=default_sw_port)
+            index = i 
+
         #TODO: Implement modular switch discovery measurements
         #for scale-out scenario
 

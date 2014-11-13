@@ -761,7 +761,7 @@ class OnosDriver(CLI):
             main.cleanup()
             main.exit()
 
-    def onos_uninstall(self):
+    def onos_uninstall(self, node_ip = ""):
         '''
         Calls the command: 'onos-uninstall'
         Uninstalls ONOS from the designated cell machine, stopping 
@@ -770,7 +770,7 @@ class OnosDriver(CLI):
         try:
             self.handle.sendline("")
             self.handle.expect("\$")
-            self.handle.sendline("onos-uninstall")
+            self.handle.sendline("onos-uninstall "+str(node_ip))
             self.handle.expect("\$")
 
             main.log.info("ONOS cell machine was uninstalled")

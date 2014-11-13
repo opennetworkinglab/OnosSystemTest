@@ -103,6 +103,28 @@ class OnosCliDriver(CLI):
             response = main.FALSE
         return response
 
+    def logout(self):
+        '''
+        Sends 'logout' command to ONOS cli
+        '''
+        try:
+            self.handle.sendline("")
+            self.handle.expect("onos>")
+            self.handle.sendline("logout")
+            self.handle.expect("\$")
+
+        except pexpect.EOF:
+            main.log.error(self.name + ": eof exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()
+
     def set_cell(self, cellname):
         '''
         Calls 'cell <name>' to set the environment variables on ONOSbench
@@ -133,7 +155,7 @@ class OnosCliDriver(CLI):
                 return main.TRUE
 
         except pexpect.EOF:
-            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ": eof exception found")
             main.log.error(self.name + ":    " + self.handle.before)
             main.cleanup()
             main.exit()

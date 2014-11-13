@@ -262,7 +262,6 @@ class TopoConvNext:
                 for node in range(1, cluster_count+1):
                     if node == 1 and not onos1_dev:
                         device_str_obj1 = main.ONOS1cli.devices()
-                        print device_str_obj1
                         device_json1 = json.loads(device_str_obj1)
                         for device1 in device_json1:
                             if device1['available'] == True:
@@ -271,8 +270,8 @@ class TopoConvNext:
                                     onos1_dev = True
                                     main.log.info("All devices have been"+
                                             " discovered on ONOS1")
-                                else:
-                                    counter_avail1 = 0
+                            else:
+                                counter_avail1 = 0
                     if node == 2 and not onos2_dev:
                         device_str_obj2 = main.ONOS2cli.devices()
                         device_json2 = json.loads(device_str_obj2)
@@ -283,8 +282,8 @@ class TopoConvNext:
                                     onos2_dev = True
                                     main.log.info("All devices have been"+
                                             " discovered on ONOS2")
-                                else:
-                                    counter_avail2 = 0
+                            else:
+                                counter_avail2 = 0
                     if node == 3 and not onos3_dev:
                         device_str_obj3 = main.ONOS3cli.devices()
                         device_json3 = json.loads(device_str_obj3)
@@ -295,8 +294,8 @@ class TopoConvNext:
                                     onos3_dev = True
                                     main.log.info("All devices have been"+
                                             " discovered on ONOS3")
-                                else:
-                                    counter_avail3 = 0
+                            else:
+                                counter_avail3 = 0
                     if node == 4 and not onos4_dev:
                         device_str_obj4 = main.ONOS4cli.devices()
                         device_json4 = json.loads(device_str_obj4)
@@ -307,8 +306,8 @@ class TopoConvNext:
                                     onos4_dev = True
                                     main.log.info("All devices have been"+
                                             " discovered on ONOS4")
-                                else:
-                                    counter_avail4 = 0
+                            else:
+                                counter_avail4 = 0
                     if node == 5 and not onos5_dev:
                         device_str_obj5 = main.ONOS5cli.devices()
                         device_json5 = json.loads(device_str_obj5)
@@ -319,8 +318,8 @@ class TopoConvNext:
                                     onos5_dev = True
                                     main.log.info("All devices have been"+
                                             " discovered on ONOS5")
-                                else:
-                                    counter_avail5 = 0
+                            else:
+                                counter_avail5 = 0
                     if node == 6 and not onos6_dev:
                         device_str_obj6 = main.ONOS6cli.devices()
                         device_json6 = json.loads(device_str_obj6)
@@ -331,8 +330,8 @@ class TopoConvNext:
                                     onos6_dev = True
                                     main.log.info("All devices have been"+
                                             " discovered on ONOS6")
-                                else:
-                                    counter_avail6 = 0
+                            else:
+                                counter_avail6 = 0
                     if node == 7 and not onos7_dev:
                         device_str_obj7 = main.ONOS7cli.devices()
                         device_json7 = json.loads(device_str_obj7)
@@ -343,8 +342,8 @@ class TopoConvNext:
                                     onos7_dev = True
                                     main.log.info("All devices have been"+
                                             " discovered on ONOS7")
-                                else:
-                                    counter_avail7 = 0
+                            else:
+                                counter_avail7 = 0
                     #END node loop
               
                 #TODO: clean up this mess of an if statements if possible
@@ -368,6 +367,9 @@ class TopoConvNext:
                             and graph_lat_1 < sw_disc_threshold_max:
                             sw_discovery_lat_list.append(
                                     graph_lat_1)
+                            main.log.info("Sw discovery latency of "+
+                                str(cluster_count)+" node(s): "+
+                                str(graph_lat_1)+" ms")
                         else:
                             main.log.info("Switch discovery latency "+
                                 "exceeded the threshold.")
@@ -402,6 +404,9 @@ class TopoConvNext:
                             and avg_graph_lat < sw_disc_threshold_max:
                             sw_discovery_lat_list.append(
                                     avg_graph_lat)
+                            main.log.info("Sw discovery latency of "+
+                                str(cluster_count)+" node(s): "+
+                                str(avg_graph_lat)+" ms")
                         else:
                             main.log.info("Switch discovery latency "+
                                 "exceeded the threshold.")
@@ -443,6 +448,9 @@ class TopoConvNext:
                             and avg_graph_lat < sw_disc_threshold_max:
                             sw_discovery_lat_list.append(
                                     avg_graph_lat)
+                            main.log.info("Sw discovery latency of "+
+                                str(cluster_count)+" node(s): "+
+                                str(avg_graph_lat)+" ms")
                         else:
                             main.log.info("Switch discovery latency "+
                                 "exceeded the threshold.")
@@ -493,6 +501,9 @@ class TopoConvNext:
                             and avg_graph_lat < sw_disc_threshold_max:
                             sw_discovery_lat_list.append(
                                     avg_graph_lat)
+                            main.log.info("Sw discovery latency of "+
+                                str(cluster_count)+" node(s): "+
+                                str(avg_graph_lat)+" ms")
                         else:
                             main.log.info("Switch discovery latency "+
                                 "exceeded the threshold.")
@@ -551,6 +562,9 @@ class TopoConvNext:
                             and avg_graph_lat < sw_disc_threshold_max:
                             sw_discovery_lat_list.append(
                                     avg_graph_lat)
+                            main.log.info("Sw discovery latency of "+
+                                str(cluster_count)+" node(s): "+
+                                str(avg_graph_lat)+" ms")
                         else:
                             main.log.info("Switch discovery latency "+
                                 "exceeded the threshold.")
@@ -617,6 +631,9 @@ class TopoConvNext:
                             and avg_graph_lat < sw_disc_threshold_max:
                             sw_discovery_lat_list.append(
                                     avg_graph_lat)
+                            main.log.info("Sw discovery latency of "+
+                                str(cluster_count)+" node(s): "+
+                                str(avg_graph_lat)+" ms")
                         else:
                             main.log.info("Switch discovery latency "+
                                 "exceeded the threshold.")
@@ -692,6 +709,9 @@ class TopoConvNext:
                             and avg_graph_lat < sw_disc_threshold_max:
                             sw_discovery_lat_list.append(
                                     avg_graph_lat)
+                            main.log.info("Sw discovery latency of "+
+                                str(cluster_count)+" node(s): "+
+                                str(avg_graph_lat)+" ms")
                         else:
                             main.log.info("Switch discovery latency "+
                                 "exceeded the threshold.")
@@ -707,7 +727,7 @@ class TopoConvNext:
         if len(sw_discovery_lat_list) > 0:
             sw_lat_avg = sum(sw_discovery_lat_list) / \
                      len(sw_discovery_lat_list)
-            sw_lat_dev = numpy.dev(sw_discovery_lat_list)
+            sw_lat_dev = numpy.std(sw_discovery_lat_list)
         else: 
             assertion = main.FALSE
 
@@ -718,7 +738,7 @@ class TopoConvNext:
 
         utilities.assert_equals(expect=main.TRUE, actual=assertion,
                 onpass="Switch discovery convergence latency" +\
-                        " test successful",
+                        " for "+str(cluster_count)+" nodes successful",
                 onfail="Switch discovery convergence latency" +\
                         " test failed")
         
@@ -760,27 +780,39 @@ class TopoConvNext:
             if node == 2:
                 main.log.info("Starting CLI for instance "+
                         ONOS_ip_list[node])
-                main.ONOS3cli.start_onos_cli(ONOS_ip_list[node])
+                main.ONOS2cli.start_onos_cli(ONOS_ip_list[node])
+                main.log.info("Installing metrics feature")
+                main.ONOS2cli.feature_install("onos-app-metrics")
             elif node == 3:
                 main.log.info("Starting CLI for instance "+
                         ONOS_ip_list[node])
                 main.ONOS3cli.start_onos_cli(ONOS_ip_list[node])
+                main.log.info("Installing metrics feature")
+                main.ONOS3cli.feature_install("onos-app-metrics")
             elif node == 4:
                 main.log.info("Starting CLI for instance "+
                         ONOS_ip_list[node])
                 main.ONOS4cli.start_onos_cli(ONOS_ip_list[node])
+                main.log.info("Installing metrics feature")
+                main.ONOS4cli.feature_install("onos-app-metrics")
             elif node == 5:
                 main.log.info("Starting CLI for instance "+
                         ONOS_ip_list[node])
                 main.ONOS5cli.start_onos_cli(ONOS_ip_list[node])
+                main.log.info("Installing metrics feature")
+                main.ONOS5cli.feature_install("onos-app-metrics")
             elif node == 6:
                 main.log.info("Starting CLI for instance "+
                         ONOS_ip_list[node])
                 main.ONOS6cli.start_onos_cli(ONOS_ip_list[node])
+                main.log.info("Installing metrics feature")
+                main.ONOS6cli.feature_install("onos-app-metrics")
             elif node == 7:
                 main.log.info("Starting CLI for instance "+
                         ONOS_ip_list[node])
                 main.ONOS7cli.start_onos_cli(ONOS_ip_list[node]) 
+                main.log.info("Installing metrics feature")
+                main.ONOS7cli.feature_install("onos-app-metrics")
             time.sleep(5)
 
 

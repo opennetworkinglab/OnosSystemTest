@@ -972,7 +972,8 @@ class OnosCliDriver(CLI):
 
     def add_point_intent(self, ingress_device, port_ingress,
             egress_device, port_egress, ethType="", ethSrc="",
-            ethDst="", bandwidth="", lambda_alloc=False):
+            ethDst="", bandwidth="", lambda_alloc=False, 
+            ipProto="", ipSrc="", ipDst="", tcpSrc="", tcpDst=""):
         '''
         Required:
             * ingress_device: device id of ingress device
@@ -984,6 +985,11 @@ class OnosCliDriver(CLI):
             * bandwidth: specify bandwidth capacity of link
             * lambda_alloc: if True, intent will allocate lambda 
               for the specified intent
+            * ipProto: specify ip protocol 
+            * ipSrc: specify ip source address
+            * ipDst: specify ip destination address
+            * tcpSrc: specify tcp source port
+            * tcpDst: specify tcp destination port
         Description:
             Adds a point-to-point intent (uni-directional) by
             specifying device id's and optional fields
@@ -997,7 +1003,9 @@ class OnosCliDriver(CLI):
 
             #If there are no optional arguments
             if not ethType and not ethSrc and not ethDst\
-                    and not bandwidth and not lambda_alloc:
+                    and not bandwidth and not lambda_alloc \
+                    and not ipProto and not ipSrc and not ipDst \
+                    and not tcpSrc and not tcpDst:
                 cmd = "add-point-intent "+\
                         str(ingress_device) + "/" + str(port_ingress) + " " +\
                         str(egress_device) + "/" + str(port_egress)
@@ -1014,7 +1022,17 @@ class OnosCliDriver(CLI):
                 if bandwidth:
                     cmd += " --bandwidth " + str(bandwidth)
                 if lambda_alloc:
-                    cmd += " --lambda " 
+                    cmd += " --lambda "
+                if ipProto:
+                    cmd += " --ipProto " + str(ipProto)
+                if ipSrc:
+                    cmd += " --ipSrc " + str(ipSrc)
+                if ipDst:
+                    cmd += " --ipDst " + str(ipDst)
+                if tcpSrc:
+                    cmd += " --tcpSrc " + str(tcpSrc)
+                if tcpDst:
+                    cmd += " --tcpDst " + str(tcpDst)
 
                 cmd += " "+str(ingress_device) +\
                     "/" + str(port_ingress) + " " +\

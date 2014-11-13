@@ -760,8 +760,8 @@ class OnosDriver(CLI):
             main.log.info(self.name+" ::::::")
             main.cleanup()
             main.exit()
-
-    def onos_uninstall(self, node_ip = ""):
+    
+    def onos_uninstall(self, node_ip=""):
         '''
         Calls the command: 'onos-uninstall'
         Uninstalls ONOS from the designated cell machine, stopping 

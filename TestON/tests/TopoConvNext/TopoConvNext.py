@@ -45,8 +45,8 @@ class TopoConvNext:
 
         main.step("Creating cell file")
         cell_file_result = main.ONOSbench.create_cell_file(
-                BENCH_ip, cell_name, MN1_ip, "onos-core",
-                ONOS1_ip)
+                BENCH_ip, cell_name, MN1_ip, 
+                "onos-core,onos-app-metrics", ONOS1_ip)
 
         main.step("Applying cell file to environment")
         cell_apply_result = main.ONOSbench.set_cell(cell_name)
@@ -88,7 +88,7 @@ class TopoConvNext:
         cli1 = main.ONOS1cli.start_onos_cli(ONOS1_ip)
 
         main.step("Enable metrics feature")
-        main.ONOS1cli.feature_install("onos-app-metrics")
+        #main.ONOS1cli.feature_install("onos-app-metrics")
 
         utilities.assert_equals(expect=main.TRUE,
                 actual= cell_file_result and cell_apply_result and\
@@ -816,143 +816,221 @@ class TopoConvNext:
         cluster_count += 2 
        
         #Supports up to 7 node configuration
-        for node in range(1, cluster_count+1):
-            if node == 2:
-                main.log.info("Closing previous ONOS connections")
-                main.ONOS1cli.logout()
-                main.log.info("Creating new cell file with "+
-                        str(node)+" nodes")
-                main.ONOSbench.create_cell_file(BENCH_ip, cell_name,
-                    MN1_ip, "onos-core", ONOS1_ip, ONOS2_ip)
-                main.log.info("Applying cell file to environment")
-                main.ONOSbench.set_cell(cell_name)
-                main.ONOS1cli.set_cell(cell_name)
-                main.ONOS2cli.set_cell(cell_name)
-                main.log.info("Packaging new ONOS")
-                main.ONOSbench.onos_package()
-                main.log.info("Installing ONOS on node: "+str(node))
-                install_result = \
-                    main.ONOSbench.onos_install(node=ONOS_ip_list[node])
-                main.log.info("Starting CLI for instance "+
-                        ONOS_ip_list[node])
-                main.ONOS2cli.start_onos_cli(ONOS_ip_list[node])
-                main.log.info("Installing metrics feature")
-                main.ONOS2cli.feature_install("onos-app-metrics")
-            elif node == 3:
-                main.log.info("Creating new cell file with "+
-                        str(node)+" nodes")
-                main.ONOSbench.create_cell_file(BENCH_ip, cell_name,
-                    MN1_ip, "onos-core", ONOS1_ip, ONOS2_ip, ONOS3_ip)
-                main.log.info("Applying cell file to environment")
-                main.ONOSbench.set_cell(cell_name)
-                main.ONOS1cli.set_cell(cell_name)
-                main.ONOS2cli.set_cell(cell_name)
-                main.ONOS3cli.set_cell(cell_name)
-                main.log.info("Packaging new ONOS")
-                main.ONOSbench.onos_package()
-                main.log.info("Installing ONOS on node: "+str(node))
-                install_result = \
-                    main.ONOSbench.onos_install(node=ONOS_ip_list[node])
-                main.log.info("Starting CLI for instance "+
-                        ONOS_ip_list[node])
-                main.ONOS3cli.start_onos_cli(ONOS_ip_list[node])
-                main.log.info("Installing metrics feature")
-                main.ONOS3cli.feature_install("onos-app-metrics")
-            elif node == 4:
-                main.log.info("Creating new cell file with "+
-                        str(node)+" nodes")
-                main.ONOSbench.create_cell_file(BENCH_ip, cell_name,
-                    MN1_ip, "onos-core", ONOS1_ip, ONOS2_ip, ONOS3_ip,
-                    ONOS4_ip)
-                main.log.info("Applying cell file to environment")
-                main.ONOSbench.set_cell(cell_name)
-                main.ONOS1cli.set_cell(cell_name)
-                main.ONOS2cli.set_cell(cell_name)
-                main.ONOS3cli.set_cell(cell_name)
-                main.ONOS4cli.set_cell(cell_name)
-                main.log.info("Packaging new ONOS")
-                main.ONOSbench.onos_package()
-                main.log.info("Installing ONOS on node: "+str(node))
-                install_result = \
-                    main.ONOSbench.onos_install(node=ONOS_ip_list[node])
-                main.log.info("Starting CLI for instance "+
-                        ONOS_ip_list[node])
-                main.ONOS4cli.start_onos_cli(ONOS_ip_list[node])
-                main.log.info("Installing metrics feature")
-                main.ONOS4cli.feature_install("onos-app-metrics")
-            elif node == 5:
-                main.log.info("Creating new cell file with "+
-                        str(node)+" nodes")
-                main.ONOSbench.create_cell_file(BENCH_ip, cell_name,
-                    MN1_ip, "onos-core", ONOS1_ip, ONOS2_ip, ONOS3_ip,
-                    ONOS4_ip, ONOS5_ip)
-                main.log.info("Applying cell file to environment")
-                main.ONOSbench.set_cell(cell_name)
-                main.ONOS1cli.set_cell(cell_name)
-                main.ONOS2cli.set_cell(cell_name)
-                main.ONOS3cli.set_cell(cell_name)
-                main.ONOS4cli.set_cell(cell_name)
-                main.ONOS5cli.set_cell(cell_name)
-                main.log.info("Packaging new ONOS")
-                main.ONOSbench.onos_package()
-                main.log.info("Installing ONOS on node: "+str(node))
-                install_result = \
-                    main.ONOSbench.onos_install(node=ONOS_ip_list[node])
-                main.log.info("Starting CLI for instance "+
-                        ONOS_ip_list[node])
-                main.ONOS5cli.start_onos_cli(ONOS_ip_list[node])
-                main.log.info("Installing metrics feature")
-                main.ONOS5cli.feature_install("onos-app-metrics")
-            elif node == 6:
-                main.log.info("Creating new cell file with "+
-                        str(node)+" nodes")
-                main.ONOSbench.create_cell_file(BENCH_ip, cell_name,
-                    MN1_ip, "onos-core", ONOS1_ip, ONOS2_ip, ONOS3_ip,
-                    ONOS4_ip, ONOS5_ip, ONOS6_ip)
-                main.log.info("Applying cell file to environment")
-                main.ONOSbench.set_cell(cell_name)
-                main.ONOS1cli.set_cell(cell_name)
-                main.ONOS2cli.set_cell(cell_name)
-                main.ONOS3cli.set_cell(cell_name)
-                main.ONOS4cli.set_cell(cell_name)
-                main.ONOS5cli.set_cell(cell_name)
-                main.ONOS6cli.set_cell(cell_name)
-                main.log.info("Packaging new ONOS")
-                main.ONOSbench.onos_package()
-                main.log.info("Installing ONOS on node: "+str(node))
-                install_result = \
-                    main.ONOSbench.onos_install(node=ONOS_ip_list[node])
-                main.log.info("Starting CLI for instance "+
-                        ONOS_ip_list[node])
-                main.ONOS6cli.start_onos_cli(ONOS_ip_list[node])
-                main.log.info("Installing metrics feature")
-                main.ONOS6cli.feature_install("onos-app-metrics")
-            elif node == 7:
-                main.log.info("Creating new cell file with "+
-                        str(node)+" nodes")
-                main.ONOSbench.create_cell_file(BENCH_ip, cell_name,
-                    MN1_ip, "onos-core", ONOS1_ip, ONOS2_ip, ONOS3_ip,
-                    ONOS4_ip, ONOS5_ip, ONOS6_ip, ONOS7_ip)
-                main.log.info("Applying cell file to environment")
-                main.ONOSbench.set_cell(cell_name)
-                main.ONOS1cli.set_cell(cell_name)
-                main.ONOS2cli.set_cell(cell_name)
-                main.ONOS3cli.set_cell(cell_name)
-                main.ONOS4cli.set_cell(cell_name)
-                main.ONOS5cli.set_cell(cell_name)
-                main.ONOS6cli.set_cell(cell_name)
-                main.ONOS7cli.set_cell(cell_name)
-                main.log.info("Packaging new ONOS")
-                main.ONOSbench.onos_package()
-                main.log.info("Installing ONOS on node: "+str(node))
-                install_result = \
-                    main.ONOSbench.onos_install(node=ONOS_ip_list[node])
-                main.log.info("Starting CLI for instance "+
-                        ONOS_ip_list[node])
-                main.ONOS7cli.start_onos_cli(ONOS_ip_list[node]) 
-                main.log.info("Installing metrics feature")
-                main.ONOS7cli.feature_install("onos-app-metrics")
-            time.sleep(5)
+        #TODO: Cleanup this ridiculous repetitive code 
+        if cluster_count == 2:
+            main.log.info("Closing previous ONOS connections")
+            main.ONOS1cli.logout()
+            main.log.info("Creating new cell file with "+
+                     str(node)+" nodes")
+            main.ONOSbench.create_cell_file(BENCH_ip, cell_name,
+                MN1_ip, "onos-core", ONOS1_ip, ONOS2_ip)
+            main.log.info("Applying cell file to environment")
+            main.ONOSbench.set_cell(cell_name)
+            main.ONOS1cli.set_cell(cell_name)
+            main.ONOS2cli.set_cell(cell_name)
+            main.log.info("Packaging new ONOS")
+            main.ONOSbench.onos_package()
+            main.log.info("Installing ONOS")
+            main.ONOSbench.onos_install(node=ONOS1_ip)
+            main.ONOSbench.onos_install(node=ONOS2_ip)
+            main.log.info("Starting CLI")
+            main.ONOS1cli.start_onos_cli(ONOS1_ip)
+            main.ONOS2cli.start_onos_cli(ONOS2_ip)
+            main.log.info("Installing metrics feature")
+            main.ONOS1cli.feature_install("onos-app-metrics")
+            main.ONOS2cli.feature_install("onos-app-metrics")
+        elif cluster_count == 3:
+            main.log.info("Closing previous ONOS connections")
+            main.ONOS1cli.logout()
+            main.ONOS2cli.logout()
+            main.log.info("Creating new cell file with "+
+                    str(node)+" nodes")
+            main.ONOSbench.create_cell_file(BENCH_ip, cell_name,
+                MN1_ip, "onos-core", ONOS1_ip, ONOS2_ip, ONOS3_ip)
+            main.log.info("Applying cell file to environment")
+            main.ONOSbench.set_cell(cell_name)
+            main.ONOS1cli.set_cell(cell_name)
+            main.ONOS2cli.set_cell(cell_name)
+            main.ONOS3cli.set_cell(cell_name)
+            main.log.info("Packaging new ONOS")
+            main.ONOSbench.onos_package()
+            main.log.info("Installing ONOS")
+            main.ONOSbench.onos_install(node=ONOS1_ip)
+            main.ONOSbench.onos_install(node=ONOS2_ip)
+            main.ONOSbench.onos_install(node=ONOS3_ip)
+            main.log.info("Starting CLI")
+            main.ONOS1cli.start_onos_cli(ONOS1_ip)
+            main.ONOS2cli.start_onos_cli(ONOS2_ip)
+            main.ONOS3cli.start_onos_cli(ONOS3_ip)
+            main.log.info("Installing metrics feature")
+            main.ONOS1cli.feature_install("onos-app-metrics")
+            main.ONOS2cli.feature_install("onos-app-metrics")
+            main.ONOS3cli.feature_install("onos-app-metrics")
+        elif cluster_count == 4:
+            main.log.info("Closing previous ONOS connections")
+            main.ONOS1cli.logout()
+            main.ONOS2cli.logout()
+            main.ONOS3cli.logout()
+            main.log.info("Creating new cell file with "+
+                    str(node)+" nodes")
+            main.ONOSbench.create_cell_file(BENCH_ip, cell_name,
+                MN1_ip, "onos-core", ONOS1_ip, ONOS2_ip, ONOS3_ip,
+                ONOS4_ip)
+            main.log.info("Applying cell file to environment")
+            main.ONOSbench.set_cell(cell_name)
+            main.ONOS1cli.set_cell(cell_name)
+            main.ONOS2cli.set_cell(cell_name)
+            main.ONOS3cli.set_cell(cell_name)
+            main.ONOS4cli.set_cell(cell_name)
+            main.log.info("Packaging new ONOS")
+            main.ONOSbench.onos_package()
+            main.log.info("Installing ONOS")
+            main.ONOSbench.onos_install(node=ONOS1_ip)
+            main.ONOSbench.onos_install(node=ONOS2_ip)
+            main.ONOSbench.onos_install(node=ONOS3_ip)
+            main.ONOSbench.onos_install(node=ONOS4_ip)
+            main.log.info("Starting CLI")
+            main.ONOS1cli.start_onos_cli(ONOS1_ip)
+            main.ONOS2cli.start_onos_cli(ONOS2_ip)
+            main.ONOS3cli.start_onos_cli(ONOS3_ip)
+            main.ONOS4cli.start_onos_cli(ONOS4_ip)
+            main.log.info("Installing metrics feature")
+            main.ONOS1cli.feature_install("onos-app-metrics")
+            main.ONOS2cli.feature_install("onos-app-metrics")
+            main.ONOS3cli.feature_install("onos-app-metrics")
+            main.ONOS4cli.feature_install("onos-app-metrics")
+        elif cluster_count == 5:
+            main.log.info("Closing previous ONOS connections")
+            main.ONOS1cli.logout()
+            main.ONOS2cli.logout()
+            main.ONOS3cli.logout()
+            main.ONOS4cli.logout()
+            main.log.info("Creating new cell file with "+
+                    str(node)+" nodes")
+            main.ONOSbench.create_cell_file(BENCH_ip, cell_name,
+                MN1_ip, "onos-core", ONOS1_ip, ONOS2_ip, ONOS3_ip,
+                ONOS4_ip, ONOS5_ip)
+            main.log.info("Applying cell file to environment")
+            main.ONOSbench.set_cell(cell_name)
+            main.ONOS1cli.set_cell(cell_name)
+            main.ONOS2cli.set_cell(cell_name)
+            main.ONOS3cli.set_cell(cell_name)
+            main.ONOS4cli.set_cell(cell_name)
+            main.ONOS5cli.set_cell(cell_name)
+            main.log.info("Packaging new ONOS")
+            main.ONOSbench.onos_package()
+            main.log.info("Installing ONOS")
+            main.ONOSbench.onos_install(node=ONOS1_ip)
+            main.ONOSbench.onos_install(node=ONOS2_ip)
+            main.ONOSbench.onos_install(node=ONOS3_ip)
+            main.ONOSbench.onos_install(node=ONOS4_ip)
+            main.ONOSbench.onos_install(node=ONOS5_ip)
+            main.log.info("Starting CLI")
+            main.ONOS1cli.start_onos_cli(ONOS1_ip)
+            main.ONOS2cli.start_onos_cli(ONOS2_ip)
+            main.ONOS3cli.start_onos_cli(ONOS3_ip)
+            main.ONOS4cli.start_onos_cli(ONOS4_ip)
+            main.ONOS5cli.start_onos_cli(ONOS5_ip)
+            main.log.info("Installing metrics feature")
+            main.ONOS1cli.feature_install("onos-app-metrics")
+            main.ONOS2cli.feature_install("onos-app-metrics")
+            main.ONOS3cli.feature_install("onos-app-metrics")
+            main.ONOS4cli.feature_install("onos-app-metrics")
+            main.ONOS5cli.feature_install("onos-app-metrics")
+        elif cluster_count == 6:
+            main.log.info("Closing previous ONOS connections")
+            main.ONOS1cli.logout()
+            main.ONOS2cli.logout()
+            main.ONOS3cli.logout()
+            main.ONOS4cli.logout()
+            main.ONOS5cli.logout()
+            main.log.info("Creating new cell file with "+
+                    str(node)+" nodes")
+            main.ONOSbench.create_cell_file(BENCH_ip, cell_name,
+                MN1_ip, "onos-core", ONOS1_ip, ONOS2_ip, ONOS3_ip,
+                ONOS4_ip, ONOS5_ip, ONOS6_ip)
+            main.log.info("Applying cell file to environment")
+            main.ONOSbench.set_cell(cell_name)
+            main.ONOS1cli.set_cell(cell_name)
+            main.ONOS2cli.set_cell(cell_name)
+            main.ONOS3cli.set_cell(cell_name)
+            main.ONOS4cli.set_cell(cell_name)
+            main.ONOS5cli.set_cell(cell_name)
+            main.ONOS6cli.set_cell(cell_name)
+            main.log.info("Packaging new ONOS")
+            main.ONOSbench.onos_package()
+            main.log.info("Installing ONOS")
+            main.ONOSbench.onos_install(node=ONOS1_ip)
+            main.ONOSbench.onos_install(node=ONOS2_ip)
+            main.ONOSbench.onos_install(node=ONOS3_ip)
+            main.ONOSbench.onos_install(node=ONOS4_ip)
+            main.ONOSbench.onos_install(node=ONOS5_ip)
+            main.ONOSbench.onos_install(node=ONOS6_ip)
+            main.log.info("Starting CLI")
+            main.ONOS1cli.start_onos_cli(ONOS1_ip)
+            main.ONOS2cli.start_onos_cli(ONOS2_ip)
+            main.ONOS3cli.start_onos_cli(ONOS3_ip)
+            main.ONOS4cli.start_onos_cli(ONOS4_ip)
+            main.ONOS5cli.start_onos_cli(ONOS5_ip)
+            main.ONOS6cli.start_onos_cli(ONOS6_ip)
+            main.log.info("Installing metrics feature")
+            main.ONOS1cli.feature_install("onos-app-metrics")
+            main.ONOS2cli.feature_install("onos-app-metrics")
+            main.ONOS3cli.feature_install("onos-app-metrics")
+            main.ONOS4cli.feature_install("onos-app-metrics")
+            main.ONOS5cli.feature_install("onos-app-metrics")
+            main.ONOS6cli.feature_install("onos-app-metrics")
+        elif cluster_count == 7:
+            main.log.info("Closing previous ONOS connections")
+            main.ONOS1cli.logout()
+            main.ONOS2cli.logout()
+            main.ONOS3cli.logout()
+            main.ONOS4cli.logout()
+            main.ONOS5cli.logout()
+            main.log.info("Creating new cell file with "+
+                    str(node)+" nodes")
+            main.ONOSbench.create_cell_file(BENCH_ip, cell_name,
+                MN1_ip, "onos-core", ONOS1_ip, ONOS2_ip, ONOS3_ip,
+                ONOS4_ip, ONOS5_ip, ONOS6_ip, ONOS7_ip)
+            main.log.info("Applying cell file to environment")
+            main.ONOSbench.set_cell(cell_name)
+            main.ONOS1cli.set_cell(cell_name)
+            main.ONOS2cli.set_cell(cell_name)
+            main.ONOS3cli.set_cell(cell_name)
+            main.ONOS4cli.set_cell(cell_name)
+            main.ONOS5cli.set_cell(cell_name)
+            main.ONOS6cli.set_cell(cell_name)
+            main.ONOS7cli.set_cell(cell_name)
+            main.log.info("Packaging new ONOS")
+            main.ONOSbench.onos_package()
+            main.log.info("Installing ONOS")
+            main.ONOSbench.onos_install(node=ONOS1_ip)
+            main.ONOSbench.onos_install(node=ONOS2_ip)
+            main.ONOSbench.onos_install(node=ONOS3_ip)
+            main.ONOSbench.onos_install(node=ONOS4_ip)
+            main.ONOSbench.onos_install(node=ONOS5_ip)
+            main.ONOSbench.onos_install(node=ONOS6_ip)
+            main.ONOSbench.onos_install(node=ONOS7_ip)
+            main.log.info("Starting CLI")
+            main.ONOS1cli.start_onos_cli(ONOS1_ip)
+            main.ONOS2cli.start_onos_cli(ONOS2_ip)
+            main.ONOS3cli.start_onos_cli(ONOS3_ip)
+            main.ONOS4cli.start_onos_cli(ONOS4_ip)
+            main.ONOS5cli.start_onos_cli(ONOS5_ip)
+            main.ONOS6cli.start_onos_cli(ONOS6_ip)
+            main.ONOS7cli.start_onos_cli(ONOS7_ip) 
+            main.log.info("Installing metrics feature")
+            main.ONOS1cli.feature_install("onos-app-metrics")
+            main.ONOS2cli.feature_install("onos-app-metrics")
+            main.ONOS3cli.feature_install("onos-app-metrics")
+            main.ONOS4cli.feature_install("onos-app-metrics")
+            main.ONOS5cli.feature_install("onos-app-metrics")
+            main.ONOS6cli.feature_install("onos-app-metrics")
+            main.ONOS7cli.feature_install("onos-app-metrics")
+
+        install_result = main.TRUE
+
+        time.sleep(5)
 
         if install_result == main.TRUE:
             assertion = main.TRUE
@@ -964,6 +1042,3 @@ class TopoConvNext:
                        " nodes successful",
                 onfail="Scale out to "+str(cluster_count)+\
                        " nodes failed")
-
-
-

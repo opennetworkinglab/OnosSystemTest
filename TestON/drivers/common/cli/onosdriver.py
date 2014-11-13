@@ -773,7 +773,8 @@ class OnosDriver(CLI):
             self.handle.sendline("onos-uninstall "+str(node_ip))
             self.handle.expect("\$")
 
-            main.log.info("ONOS cell machine was uninstalled")
+            main.log.info("ONOS "+node_ip+" was uninstalled")
+
             #onos-uninstall command does not return any text
             return main.TRUE
 

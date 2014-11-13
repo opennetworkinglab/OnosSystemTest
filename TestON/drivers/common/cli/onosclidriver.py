@@ -108,8 +108,6 @@ class OnosCliDriver(CLI):
         Sends 'logout' command to ONOS cli
         '''
         try:
-            self.handle.sendline("")
-            self.handle.expect("onos>")
             self.handle.sendline("logout")
             self.handle.expect("\$")
 

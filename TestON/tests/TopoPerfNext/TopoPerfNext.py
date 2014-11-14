@@ -51,13 +51,6 @@ class TopoPerfNext:
         main.ONOSbench.onos_uninstall(node_ip=ONOS6_ip)
         main.ONOSbench.onos_uninstall(node_ip=ONOS7_ip)
 
-        #NOTE: This step may be removed after proper 
-        #      copy cat log functionality
-        main.step("Removing copy-cat files from ONOS nodes")
-        main.ONOS1.handle.sendline("sudo rm /tmp/onos-copy-cat*")
-        main.ONOS2.handle.sendline("sudo rm /tmp/onos-copy-cat*")
-        main.ONOS3.handle.sendline("sudo rm /tmp/onos-copy-cat*")
-
         main.step("Creating cell file")
         cell_file_result = main.ONOSbench.create_cell_file(
                 BENCH_ip, cell_name, MN1_ip, "onos-core",
@@ -66,6 +59,11 @@ class TopoPerfNext:
         main.step("Applying cell file to environment")
         cell_apply_result = main.ONOSbench.set_cell(cell_name)
         verify_cell_result = main.ONOSbench.verify_cell()
+        
+        #NOTE: This step may be removed after proper 
+        #      copy cat log functionality
+        main.step("Removing raft/copy-cat logs from ONOS nodes")
+        main.ONOSbench.onos_remove_raft_logs()
         
         main.step("Git checkout and pull "+checkout_branch)
         if git_pull == 'on':

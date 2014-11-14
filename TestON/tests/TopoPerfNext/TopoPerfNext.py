@@ -31,11 +31,32 @@ class TopoPerfNext:
         ONOS1_ip = main.params['CTRL']['ip1']
         ONOS2_ip = main.params['CTRL']['ip2']
         ONOS3_ip = main.params['CTRL']['ip3']
+        
+        #### Hardcoded ONOS nodes particular to my env ####
+        ONOS4_ip = "10.128.174.4"
+        ONOS5_ip = "10.128.174.5"
+        ONOS6_ip = "10.128.174.6"
+        ONOS7_ip = "10.128.174.7"
+        #### ####
+
         MN1_ip = main.params['MN']['ip1']
         BENCH_ip = main.params['BENCH']['ip']
 
         main.case("Setting up test environment")
         main.log.report("Setting up test environment")
+
+        main.step("Cleaning previously installed ONOS if any")
+        main.ONOSbench.onos_uninstall(node_ip=ONOS4_ip)
+        main.ONOSbench.onos_uninstall(node_ip=ONOS5_ip)
+        main.ONOSbench.onos_uninstall(node_ip=ONOS6_ip)
+        main.ONOSbench.onos_uninstall(node_ip=ONOS7_ip)
+
+        #NOTE: This step may be removed after proper 
+        #      copy cat log functionality
+        main.step("Removing copy-cat files from ONOS nodes")
+        main.ONOS1.handle.sendline("sudo rm /tmp/onos-copy-cat*")
+        main.ONOS2.handle.sendline("sudo rm /tmp/onos-copy-cat*")
+        main.ONOS3.handle.sendline("sudo rm /tmp/onos-copy-cat*")
 
         main.step("Creating cell file")
         cell_file_result = main.ONOSbench.create_cell_file(

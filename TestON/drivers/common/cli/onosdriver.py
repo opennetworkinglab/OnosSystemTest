@@ -663,6 +663,7 @@ class OnosDriver(CLI):
             #NOTE: this timeout may need to change depending on the network and size of ONOS
             i=self.handle.expect(["Network\sis\sunreachable",
                 "onos\sstart/running,\sprocess",
+                "ONOS\sis\salready\sinstalled",
                 pexpect.TIMEOUT],timeout=60)
 
             if i == 0:
@@ -671,10 +672,14 @@ class OnosDriver(CLI):
             elif i == 1:
                 main.log.info("ONOS was installed on " + node + " and started")
                 return main.TRUE
-            elif i == 2: 
+            elif i == 2:
+                main.log.info("ONOS is already installed on "+node)
+                return main.TRUE
+            elif i == 3: 
                 main.log.info("Installation of ONOS on " + node + " timed out")
                 return main.FALSE
 
+    
         except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
             main.log.error(self.name + ":    " + self.handle.before)

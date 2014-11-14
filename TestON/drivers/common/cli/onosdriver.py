@@ -655,7 +655,10 @@ class OnosDriver(CLI):
         Returns: main.TRUE on success and main.FALSE on failure
         '''
         try:
-            self.handle.sendline("onos-install " + options + " " + node)
+            if options:
+                self.handle.sendline("onos-install " + options + " " + node)
+            else:
+                self.handle.sendline("onos-install "+node)
             self.handle.expect("onos-install ")
             #NOTE: this timeout may need to change depending on the network and size of ONOS
             i=self.handle.expect(["Network\sis\sunreachable",

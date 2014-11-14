@@ -71,9 +71,9 @@ class OnosCliDriver(CLI):
             main.cleanup()
             main.exit()
         except:
-            main.log.info(self.name + ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
+            main.log.info(self.name + ":::::::::::::::::::::::")
             main.log.error( traceback.print_exc() )
-            main.log.info(":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
+            main.log.info(":::::::::::::::::::::::")
             main.cleanup()
             main.exit()
 
@@ -108,12 +108,20 @@ class OnosCliDriver(CLI):
         Sends 'logout' command to ONOS cli
         '''
         try:
-            self.handle.sendline("logout")
-            self.handle.expect("\$")
-
+            self.handle.sendline("")
+            i = self.handle.expect([
+                "onos>",
+                "\$"], timeout=10)
+            if i == 0:
+                self.handle.sendline("logout")
+                self.handle.expect("\$")
+            elif i == 1:
+                return main.TRUE
+                    
         except pexpect.EOF:
             main.log.error(self.name + ": eof exception found")
-            main.log.error(self.name + ":    " + self.handle.before)
+            main.log.error(self.name + ":    " +
+                    self.handle.before)
             main.cleanup()
             main.exit()
         except:

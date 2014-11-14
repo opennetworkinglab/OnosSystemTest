@@ -836,6 +836,35 @@ class OnosDriver(CLI):
             main.cleanup()
             main.exit()
 
+    def onos_remove_raft_logs(self):
+        '''
+        Removes Raft / Copy cat files from ONOS to ensure
+        a cleaner environment. 
+       
+        Description:
+            Stops all ONOS defined in the cell, 
+            wipes the raft / copycat log files
+        '''
+        try:
+            self.handle.sendline("")
+            self.handle.expect("\$")
+            self.handle.sendline("onos-remove-raft-logs")
+            self.handle.expect("\$")
+
+            return main.TRUE
+
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()
+    
     def onos_start_network(self, mntopo):
         '''
         Calls the command 'onos-start-network [<mininet-topo>]

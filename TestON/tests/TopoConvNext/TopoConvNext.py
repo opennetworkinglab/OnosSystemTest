@@ -903,7 +903,7 @@ class TopoConvNext:
             assertion = main.FALSE
         
         main.log.report("Switch connection attempt time avg "+
-            "(last sw - first sw) "+
+            "(last sw SYN/ACK time - first sw SYN/ACK time) "+
             str(sum(syn_ack_delta_list)/len(syn_ack_delta_list)) +
             " ms")
         main.log.report("Switch discovery lat for "+\

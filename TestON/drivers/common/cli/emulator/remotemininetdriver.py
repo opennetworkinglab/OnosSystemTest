@@ -169,7 +169,74 @@ class RemoteMininetDriver(Emulator):
         self.handle.sendline("")
         self.handle.expect("\$")
         return main.TRUE
-        
+       
+    def pingHostOptical(self,**pingParams):
+        '''
+        This function is only for Packey Optical related ping
+        Use the next pingHost() function for all normal scenarios)
+        Ping from one mininet host to another
+        Currently the only supported Params: SRC and TARGET
+        '''
+        args = utilities.parse_args(["SRC","TARGET"],**pingParams)
+        #command = args["SRC"] + " ping -" + args["CONTROLLER"] + " " +args ["TARGET"]
+        command = args["SRC"] + " ping "+args ["TARGET"]+" -c 1 -i 1 -W 8"
+        try:
+            main.log.warn("Sending: " + command)
+            #response = self.execute(cmd=command,prompt="mininet",timeout=10 )
+            self.handle.sendline(command)
+            i = self.handle.expect([command,pexpect.TIMEOUT])
+            if i == 1:
+                main.log.error(self.name + ": timeout when waiting for response from mininet")
+                main.log.error("response: " + str(self.handle.before))
+            i = self.handle.expect(["mininet>",pexpect.TIMEOUT])
+            if i == 1:
+                main.log.error(self.name + ": timeout when waiting for response from mininet")
+                main.log.error("response: " + str(self.handle.before))
+            response = self.handle.before
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":     " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        main.log.info(self.name+": Ping Response: "+ response )
+        #if utilities.assert_matches(expect=',\s0\%\spacket\sloss',actual=response,onpass="No Packet loss",onfail="Host is not reachable"):
+        if re.search(',\s0\%\spacket\sloss',response):
+            main.log.info(self.name+": no packets lost, host is reachable")
+            main.last_result = main.TRUE
+            return main.TRUE
+        else :
+            main.log.error(self.name+": PACKET LOST, HOST IS NOT REACHABLE")
+            main.last_result = main.FALSE
+            return main.FALSE
+
+
+    def pingall(self):
+        '''
+        Verifies the reachability of the hosts using pingall command.
+        This function is required by Packey Optical test
+        '''
+        if self.handle :
+            main.log.info(self.name+": Checking reachabilty to the hosts using pingall")
+            try:
+                response = self.execute(cmd="pingall",prompt="mininet>",timeout=120)
+                print "response: " + str(response)
+            except pexpect.EOF:
+                main.log.error(self.name + ": EOF exception found")
+                main.log.error(self.name + ":     " + self.handle.before)
+            pattern = 'Results\:\s0\%\sdropped\s'
+            if re.search(pattern,response):
+                main.log.info(self.name+": All hosts are reachable")
+                return main.TRUE
+            else:
+                main.log.error(self.name+": Unable to reach all the hosts")
+                return main.FALSE
+        else :
+            main.log.error(self.name+": Connection failed to the host")
+            return main.FALSE
+
+
+
+ 
     def pingHost(self,**pingParams):
         ''' 
         Pings between two hosts on remote mininet  
@@ -177,11 +244,12 @@ class RemoteMininetDriver(Emulator):
         self.handle.sendline("")
         self.handle.expect("\$")
         args = utilities.parse_args(["SRC","TARGET"],**pingParams)
+        #command = "mininet/util/m " + args["SRC"] + " ping "+args ["TARGET"]+" -c 4 -W 1 -i .2"
         command = "mininet/util/m " + args["SRC"] + " ping "+args ["TARGET"]+" -c 4 -W 1 -i .2"
         main.log.info ( command ) 
         response = self.execute(cmd=command,prompt="rtt",timeout=10 )
-        self.handle.sendline("")
-        self.handle.expect("\$")
+        #self.handle.sendline("")
+        #self.handle.expect("\$")
         if utilities.assert_matches(expect=',\s0\%\spacket\sloss',actual=response,onpass="No Packet loss",onfail="Host is not reachable"):
             main.log.info("NO PACKET LOSS, HOST IS REACHABLE")
             main.last_result = main.TRUE 
@@ -417,14 +485,24 @@ class RemoteMininetDriver(Emulator):
             main.exit()
 
     def run_optical_mn_script(self):
-        self.handle.sendline("")
-        self.handle.expect("\$")
-        self.handle.sendline("cd ~")
-        self.handle.expect("\$")
-        self.handle.sendline("sudo python optical.py")
-        self.handle.expect("\$")
-
-
+        '''
+            This function is only meant for Packet Optical. 
+            It runs the python script "optical.py" to create the packet layer(mn)
+            topology
+        '''
+        try:
+            self.handle.sendline("")
+            self.handle.expect("\$")
+            self.handle.sendline("cd ~")
+            self.handle.expect("\$")
+            self.handle.sendline("sudo python optical.py")
+            self.handle.expect(">")
+            return main.TRUE
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":     " + self.handle.before)
+            return main.FALSE
+    
     def del_switch(self,sw):
         self.handle.sendline("")
         self.handle.expect("\$")

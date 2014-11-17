@@ -158,8 +158,8 @@ class MininetCliDriver(Emulator):
             except pexpect.EOF:  
                 main.log.error(self.name + ": EOF exception found")
                 main.log.error(self.name + ":     " + self.handle.before)
-                main.cleanup()
-                main.exit()
+                #main.cleanup()
+                #main.exit()
             pattern = 'Results\:\s0\%\sdropped\s'
             #FIXME:Pending Mininet Pull Request #408
             #pattern = 'Results\:\s0\.00\%\sdropped\s'
@@ -658,6 +658,7 @@ class MininetCliDriver(Emulator):
                 response = self.execute(cmd="exit",prompt="(.*)",timeout=120)
                 response = self.execute(cmd="exit",prompt="(.*)",timeout=120)
                 self.handle.sendline("sudo mn -c")
+                response = main.TRUE
             except pexpect.EOF:  
                 main.log.error(self.name + ": EOF exception found")
                 main.log.error(self.name + ":     " + self.handle.before)

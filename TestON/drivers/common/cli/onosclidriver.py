@@ -175,7 +175,12 @@ class OnosCliDriver(CLI):
     def start_onos_cli(self, ONOS_ip):
         try:
             self.handle.sendline("")
-            self.handle.expect("\$")
+            x = self.handle.expect([
+                "\$", "onos>"], timeout=10)
+
+            if x == 1:
+                main.log.info("ONOS cli is already running")
+                return main.TRUE
 
             #Wait for onos start (-w) and enter onos cli
             self.handle.sendline("onos -w "+str(ONOS_ip))

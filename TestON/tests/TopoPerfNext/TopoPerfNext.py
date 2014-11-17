@@ -31,11 +31,25 @@ class TopoPerfNext:
         ONOS1_ip = main.params['CTRL']['ip1']
         ONOS2_ip = main.params['CTRL']['ip2']
         ONOS3_ip = main.params['CTRL']['ip3']
+        
+        #### Hardcoded ONOS nodes particular to my env ####
+        ONOS4_ip = "10.128.174.4"
+        ONOS5_ip = "10.128.174.5"
+        ONOS6_ip = "10.128.174.6"
+        ONOS7_ip = "10.128.174.7"
+        #### ####
+
         MN1_ip = main.params['MN']['ip1']
         BENCH_ip = main.params['BENCH']['ip']
 
         main.case("Setting up test environment")
         main.log.report("Setting up test environment")
+
+        main.step("Cleaning previously installed ONOS if any")
+        main.ONOSbench.onos_uninstall(node_ip=ONOS4_ip)
+        main.ONOSbench.onos_uninstall(node_ip=ONOS5_ip)
+        main.ONOSbench.onos_uninstall(node_ip=ONOS6_ip)
+        main.ONOSbench.onos_uninstall(node_ip=ONOS7_ip)
 
         main.step("Creating cell file")
         cell_file_result = main.ONOSbench.create_cell_file(
@@ -45,6 +59,11 @@ class TopoPerfNext:
         main.step("Applying cell file to environment")
         cell_apply_result = main.ONOSbench.set_cell(cell_name)
         verify_cell_result = main.ONOSbench.verify_cell()
+        
+        #NOTE: This step may be removed after proper 
+        #      copy cat log functionality
+        main.step("Removing raft/copy-cat logs from ONOS nodes")
+        main.ONOSbench.onos_remove_raft_logs()
         
         main.step("Git checkout and pull "+checkout_branch)
         if git_pull == 'on':

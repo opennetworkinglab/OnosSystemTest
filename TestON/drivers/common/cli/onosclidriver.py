@@ -71,9 +71,9 @@ class OnosCliDriver(CLI):
             main.cleanup()
             main.exit()
         except:
-            main.log.info(self.name + ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
+            main.log.info(self.name + ":::::::::::::::::::::::")
             main.log.error( traceback.print_exc() )
-            main.log.info(":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::")
+            main.log.info(":::::::::::::::::::::::")
             main.cleanup()
             main.exit()
 
@@ -102,6 +102,34 @@ class OnosCliDriver(CLI):
             main.log.error(self.name + ": Connection failed to the host")
             response = main.FALSE
         return response
+
+    def logout(self):
+        '''
+        Sends 'logout' command to ONOS cli
+        '''
+        try:
+            self.handle.sendline("")
+            i = self.handle.expect([
+                "onos>",
+                "\$"], timeout=10)
+            if i == 0:
+                self.handle.sendline("logout")
+                self.handle.expect("\$")
+            elif i == 1:
+                return main.TRUE
+                    
+        except pexpect.EOF:
+            main.log.error(self.name + ": eof exception found")
+            main.log.error(self.name + ":    " +
+                    self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()
 
     def set_cell(self, cellname):
         '''
@@ -133,7 +161,7 @@ class OnosCliDriver(CLI):
                 return main.TRUE
 
         except pexpect.EOF:
-            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ": eof exception found")
             main.log.error(self.name + ":    " + self.handle.before)
             main.cleanup()
             main.exit()
@@ -388,11 +416,15 @@ class OnosCliDriver(CLI):
         except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
             main.log.error(self.name + ":    " + self.handle.before)
+            main.log.report("Failed to install feature")
+            main.log.report("Exiting test")
             main.cleanup()
             main.exit()
         except:
             main.log.info(self.name+" ::::::")
             main.log.error( traceback.print_exc())
+            main.log.report("Failed to install feature")
+            main.log.report("Exiting test")
             main.log.info(self.name+" ::::::")
             main.cleanup()
             main.exit()
@@ -946,7 +978,8 @@ class OnosCliDriver(CLI):
 
     def add_point_intent(self, ingress_device, port_ingress,
             egress_device, port_egress, ethType="", ethSrc="",
-            ethDst="", bandwidth="", lambda_alloc=False):
+            ethDst="", bandwidth="", lambda_alloc=False, 
+            ipProto="", ipSrc="", ipDst="", tcpSrc="", tcpDst=""):
         '''
         Required:
             * ingress_device: device id of ingress device
@@ -958,6 +991,11 @@ class OnosCliDriver(CLI):
             * bandwidth: specify bandwidth capacity of link
             * lambda_alloc: if True, intent will allocate lambda 
               for the specified intent
+            * ipProto: specify ip protocol 
+            * ipSrc: specify ip source address
+            * ipDst: specify ip destination address
+            * tcpSrc: specify tcp source port
+            * tcpDst: specify tcp destination port
         Description:
             Adds a point-to-point intent (uni-directional) by
             specifying device id's and optional fields
@@ -971,7 +1009,9 @@ class OnosCliDriver(CLI):
 
             #If there are no optional arguments
             if not ethType and not ethSrc and not ethDst\
-                    and not bandwidth and not lambda_alloc:
+                    and not bandwidth and not lambda_alloc \
+                    and not ipProto and not ipSrc and not ipDst \
+                    and not tcpSrc and not tcpDst:
                 cmd = "add-point-intent "+\
                         str(ingress_device) + "/" + str(port_ingress) + " " +\
                         str(egress_device) + "/" + str(port_egress)
@@ -988,7 +1028,17 @@ class OnosCliDriver(CLI):
                 if bandwidth:
                     cmd += " --bandwidth " + str(bandwidth)
                 if lambda_alloc:
-                    cmd += " --lambda " 
+                    cmd += " --lambda "
+                if ipProto:
+                    cmd += " --ipProto " + str(ipProto)
+                if ipSrc:
+                    cmd += " --ipSrc " + str(ipSrc)
+                if ipDst:
+                    cmd += " --ipDst " + str(ipDst)
+                if tcpSrc:
+                    cmd += " --tcpSrc " + str(tcpSrc)
+                if tcpDst:
+                    cmd += " --tcpDst " + str(tcpDst)
 
                 cmd += " "+str(ingress_device) +\
                     "/" + str(port_ingress) + " " +\

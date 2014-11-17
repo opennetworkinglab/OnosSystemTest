@@ -655,11 +655,15 @@ class OnosDriver(CLI):
         Returns: main.TRUE on success and main.FALSE on failure
         '''
         try:
-            self.handle.sendline("onos-install " + options + " " + node)
+            if options:
+                self.handle.sendline("onos-install " + options + " " + node)
+            else:
+                self.handle.sendline("onos-install "+node)
             self.handle.expect("onos-install ")
             #NOTE: this timeout may need to change depending on the network and size of ONOS
             i=self.handle.expect(["Network\sis\sunreachable",
                 "onos\sstart/running,\sprocess",
+                "ONOS\sis\salready\sinstalled",
                 pexpect.TIMEOUT],timeout=60)
 
             if i == 0:
@@ -668,10 +672,14 @@ class OnosDriver(CLI):
             elif i == 1:
                 main.log.info("ONOS was installed on " + node + " and started")
                 return main.TRUE
-            elif i == 2: 
+            elif i == 2:
+                main.log.info("ONOS is already installed on "+node)
+                return main.TRUE
+            elif i == 3: 
                 main.log.info("Installation of ONOS on " + node + " timed out")
                 return main.FALSE
 
+    
         except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
             main.log.error(self.name + ":    " + self.handle.before)
@@ -760,8 +768,8 @@ class OnosDriver(CLI):
             main.log.info(self.name+" ::::::")
             main.cleanup()
             main.exit()
-
-    def onos_uninstall(self):
+    
+    def onos_uninstall(self, node_ip=""):
         '''
         Calls the command: 'onos-uninstall'
         Uninstalls ONOS from the designated cell machine, stopping 
@@ -770,10 +778,11 @@ class OnosDriver(CLI):
         try:
             self.handle.sendline("")
             self.handle.expect("\$")
-            self.handle.sendline("onos-uninstall")
+            self.handle.sendline("onos-uninstall "+str(node_ip))
             self.handle.expect("\$")
 
-            main.log.info("ONOS cell machine was uninstalled")
+            main.log.info("ONOS "+node_ip+" was uninstalled")
+
             #onos-uninstall command does not return any text
             return main.TRUE
 
@@ -832,6 +841,35 @@ class OnosDriver(CLI):
             main.cleanup()
             main.exit()
 
+    def onos_remove_raft_logs(self):
+        '''
+        Removes Raft / Copy cat files from ONOS to ensure
+        a cleaner environment. 
+       
+        Description:
+            Stops all ONOS defined in the cell, 
+            wipes the raft / copycat log files
+        '''
+        try:
+            self.handle.sendline("")
+            self.handle.expect("\$")
+            self.handle.sendline("onos-remove-raft-logs")
+            self.handle.expect("\$")
+
+            return main.TRUE
+
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()
+    
     def onos_start_network(self, mntopo):
         '''
         Calls the command 'onos-start-network [<mininet-topo>]

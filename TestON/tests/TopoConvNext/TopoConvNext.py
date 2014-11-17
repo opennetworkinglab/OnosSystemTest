@@ -169,7 +169,7 @@ class TopoConvNext:
 
         assertion = main.TRUE
         sw_discovery_lat_list = []
-        syn_ack_timestamp_list = []
+        syn_ack_delta_list = []
 
         main.case(str(num_sw)+" switch per "+str(cluster_count)+
                 " nodes convergence latency")
@@ -807,66 +807,76 @@ class TopoConvNext:
                 #END WHILE LOOP            
             
             main.ONOS1.tshark_stop()
+            syn_ack_timestamp_list = []
 
             if cluster_count >= 3:
                 main.ONOS2.tshark_stop() 
                 main.ONOS3.tshark_stop()
+                time.sleep(5)
                 os.system("scp "+ONOS_user+"@"+ONOS1_ip+":"+
-                    "/tmp/syn_ack_onos1_iter"+str(i)+".txt")
+                    "/tmp/syn_ack_onos1_iter"+str(i)+".txt /tmp/")
                 os.system("scp "+ONOS_user+"@"+ONOS2_ip+":"+
-                    "/tmp/syn_ack_onos2_iter"+str(i)+".txt")
+                    "/tmp/syn_ack_onos2_iter"+str(i)+".txt /tmp/")
                 os.system("scp "+ONOS_user+"@"+ONOS3_ip+":"+
-                    "/tmp/syn_ack_onos3_iter"+str(i)+".txt")
-           
+                    "/tmp/syn_ack_onos3_iter"+str(i)+".txt /tmp/")
+                time.sleep(5)
                 #Read each of the files and append all
                 #SYN / ACK timestamps to the list
-                with open("/tmp/syn_ack_onos1_iter"+str(i)) as\
+                with open("/tmp/syn_ack_onos1_iter"+str(i)+".txt") as\
                      f_onos1:
                     for line in f_onos1:
                         line = line.split(" ")
                         syn_ack_timestamp_list.append(line[1])
-                with open("/tmp/syn_ack_onos2_iter"+str(i)) as\
+                with open("/tmp/syn_ack_onos2_iter"+str(i)+".txt") as\
                      f_onos2:
                     for line in f_onos2:
                         line = line.split(" ")
                         syn_ack_timestamp_list.append(line[1])
-                with open("/tmp/syn_ack_onos3_iter"+str(i)) as\
+                with open("/tmp/syn_ack_onos3_iter"+str(i)+".txt") as\
                      f_onos3:
                     for line in f_onos3:
                         line = line.split(" ")
                         syn_ack_timestamp_list.append(line[1])
             if cluster_count >= 4:
                 main.ONOS4.tshark_stop() 
+                time.sleep(5)
                 os.system("scp "+ONOS_user+"@"+ONOS4_ip+":"+
-                    "/tmp/syn_ack_onos4_iter"+str(i)+".txt")
-                with open("/tmp/syn_ack_onos4_iter"+str(i)) as\
+                    "/tmp/syn_ack_onos4_iter"+str(i)+".txt /tmp/")
+                time.sleep(5)
+                with open("/tmp/syn_ack_onos4_iter"+str(i)+".txt") as\
                      f_onos4:
                     for line in f_onos4:
                         line = line.split(" ")
                         syn_ack_timestamp_list.append(line[1])
             if cluster_count >= 5:
                 main.ONOS5.tshark_stop()
+                time.sleep(5)
                 os.system("scp "+ONOS_user+"@"+ONOS5_ip+":"+
-                    "/tmp/syn_ack_onos5_iter"+str(i)+".txt")
-                with open("/tmp/syn_ack_onos5_iter"+str(i)) as\
+                    "/tmp/syn_ack_onos5_iter"+str(i)+".txt /tmp/")
+                time.sleep(5)
+                with open("/tmp/syn_ack_onos5_iter"+str(i)+".txt") as\
                      f_onos5:
                     for line in f_onos5:
                         line = line.split(" ")
                         syn_ack_timestamp_list.append(line[1])
             if cluster_count >= 6:
                 main.ONOS6.tshark_stop()
+                time.sleep(5)
                 os.system("scp "+ONOS_user+"@"+ONOS6_ip+":"+
-                    "/tmp/syn_ack_onos6_iter"+str(i)+".txt")
-                with open("/tmp/syn_ack_onos6_iter"+str(i)) as\
+                    "/tmp/syn_ack_onos6_iter"+str(i)+".txt /tmp/")
+                time.sleep(5)
+                with open("/tmp/syn_ack_onos6_iter"+str(i)+".txt") as\
                      f_onos6:
                     for line in f_onos6:
                         line = line.split(" ")
                         syn_ack_timestamp_list.append(line[1])
             if cluster_count == 7:
                 main.ONOS7.tshark_stop()
+                time.sleep(5)
                 os.system("scp "+ONOS_user+"@"+ONOS7_ip+":"+
-                    "/tmp/syn_ack_onos7_iter"+str(i)+".txt")
-                with open("/tmp/syn_ack_onos7_iter"+str(i)) as\
+                    "/tmp/syn_ack_onos7_iter"+str(i)+".txt /tmp/")
+                time.sleep(5)
+                with open("/tmp/syn_ack_onos7_iter"+str(i)+".txt") as\
                      f_onos7:
                     for line in f_onos7:
                         line = line.split(" ")
@@ -874,7 +884,14 @@ class TopoConvNext:
           
             #Sort the list by timestamp
             syn_ack_timestamp_list = sorted(syn_ack_timestamp_list)
+            
+            syn_ack_delta =\
+                    int(float(syn_ack_timestamp_list[-1])*1000) -\
+                    int(float(syn_ack_timestamp_list[0])*1000) 
 
+            main.log.info("Switch connection attempt delta iteration "+
+                    str(i)+": "+str(syn_ack_delta))
+            syn_ack_delta_list.append(syn_ack_delta)
             #END ITERATION LOOP
         #REPORT HERE 
 
@@ -884,7 +901,11 @@ class TopoConvNext:
             sw_lat_dev = numpy.std(sw_discovery_lat_list)
         else: 
             assertion = main.FALSE
-
+        
+        main.log.report("Switch connection attempt time avg "+
+            "(last sw - first sw) "+
+            str(sum(syn_ack_delta_list)/len(syn_ack_delta_list)) +
+            " ms")
         main.log.report("Switch discovery lat for "+\
             str(cluster_count)+" instance(s), 100 sw each: ")
         main.log.report("Avg: "+str(sw_lat_avg)+" ms")

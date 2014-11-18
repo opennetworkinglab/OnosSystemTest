@@ -981,8 +981,8 @@ class OnosCliDriver(CLI):
             main.cleanup()
             main.exit()
 
-    def add_point_intent(self, ingress_device, port_ingress,
-            egress_device, port_egress, ethType="", ethSrc="",
+    def add_point_intent(self, ingress_device, egress_device,
+            port_ingress="", port_egress="", ethType="", ethSrc="",
             ethDst="", bandwidth="", lambda_alloc=False, 
             ipProto="", ipSrc="", ipDst="", tcpSrc="", tcpDst=""):
         '''
@@ -1017,12 +1017,11 @@ class OnosCliDriver(CLI):
                     and not bandwidth and not lambda_alloc \
                     and not ipProto and not ipSrc and not ipDst \
                     and not tcpSrc and not tcpDst:
-                cmd = "add-point-intent "+\
-                        str(ingress_device) + "/" + str(port_ingress) + " " +\
-                        str(egress_device) + "/" + str(port_egress)
-       
+                cmd = "add-point-intent"
+      
+
             else:
-                cmd = "add-point-intent "
+                cmd = "add-point-intent"
                 
                 if ethType:
                     cmd += " --ethType " + str(ethType)
@@ -1045,11 +1044,36 @@ class OnosCliDriver(CLI):
                 if tcpDst:
                     cmd += " --tcpDst " + str(tcpDst)
 
-                cmd += " "+str(ingress_device) +\
-                    "/" + str(port_ingress) + " " +\
-                    str(egress_device) + "/" + str(port_egress) 
+            #Check whether the user appended the port 
+            #or provided it as an input
+            if "/" in ingress_device:
+                cmd += " "+str(ingress_device) 
+            else:
+                if not port_ingress:
+                    main.log.error("You must specify "+
+                        "the ingress port")
+                    #TODO: perhaps more meaningful return
+                    return main.FALSE
+
+                cmd += " "+ \
+                    str(ingress_device) + "/" +\
+                    str(port_ingress) + " " 
+
+            if "/" in egress_device:
+                cmd += " "+str(egress_device)
+            else:
+                if not port_egress:
+                    main.log.error("You must specify "+
+                        "the egress port")
+                    return main.FALSE
+                
+                cmd += " "+\
+                    str(egress_device) + "/" +\
+                    str(port_egress)  
 
             self.handle.sendline(cmd)
+            
+            main.log.info(cmd + " sent")
             i = self.handle.expect([
                 "Error",
                 "onos>"])

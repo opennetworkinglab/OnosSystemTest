@@ -92,7 +92,7 @@ class MininetCliDriver(Emulator):
                     main.log.info(self.name+": mininet built") 
                     return main.TRUE
                 if i==1:
-                    self.handle.expect(["",pexpect.EOF,pexpect.TIMEOUT])
+                    self.handle.expect(["\n",pexpect.EOF,pexpect.TIMEOUT])
                     main.log.info(self.handle.before)
                 elif i==2:
                     main.log.error(self.name+": Launching mininet failed...")
@@ -146,14 +146,18 @@ class MininetCliDriver(Emulator):
         topoDict = self.num_switches_n_links(*topoArgList)
         return topoDict
 
-    def pingall(self):
+    def pingall(self, timeout=300):
         '''
         Verifies the reachability of the hosts using pingall command.
+        Optional parameter timeout allows you to specify how long to wait for pingall to complete
+        Returns:
+                main.TRUE if pingall completes with no pings dropped
+                otherwise main.FALSE
         '''
         if self.handle :
             main.log.info(self.name+": Checking reachabilty to the hosts using pingall")
             try:
-                response = self.execute(cmd="pingall",prompt="mininet>",timeout=3)
+                response = self.execute(cmd="pingall",prompt="mininet>",timeout=int(timeout))
             except pexpect.EOF:
                 main.log.error(self.name + ": EOF exception found")
                 main.log.error(self.name + ":     " + self.handle.before)
@@ -1095,8 +1099,8 @@ class MininetCliDriver(Emulator):
                                 else: #This is likely a new reserved port implemented
                                     main.log.error("unkown port '" + str(port['port']) )
                                     '''
-                            else: #DEBUG
-                                main.log.warn("Port %s on switch %s is down" % ( str(port['port']) , str(onos_switch['device']['id'])) )
+                           #else: #DEBUG
+                           #    main.log.warn("Port %s on switch %s is down" % ( str(port['port']) , str(onos_switch['device']['id'])) )
                         break
             mn_ports.sort(key=float)
             onos_ports.sort(key=float)
@@ -1292,31 +1296,6 @@ class MininetCliDriver(Emulator):
             main.log.error(self.name + ":     " + self.handle.before)
             main.cleanup()
             main.exit()
-
-    def cli_sanity(self):
-        '''
-        Sends control c to cli and expexts the output
-        Test to make sure the session is working correctly
-        Returns main.TRUE on success
-        '''
-        import re
-        #NOTE: Send ctrl-c to make sure pingall is done
-        print '*'*10 + "Pexpect session sanity check" + '*'*10
-        self.handle.send("\x03")
-        #self.handle.sendline("l")
-        response = ''
-        while self.handle.expect([pexpect.TIMEOUT, "mininet>"],timeout=1):
-            print repr(self.handle.before)
-            if not response:
-                response = self.handle.before
-            print repr(self.handle.after)
-        if re.search("Interrupt", response):
-            print "MN pexpect session Looks good to me"
-            return main.TRUE
-        else:
-            print "Something isn't right with MN pexpect session"
-            return main.FALSE
-
 
 if __name__ != "__main__":
     import sys

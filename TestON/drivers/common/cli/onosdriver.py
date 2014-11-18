@@ -405,6 +405,11 @@ class OnosDriver(CLI):
                 print line
             if report:
                 for line in lines[2:-1]:
+                    #Bracket replacement is for Wiki-compliant
+                    #formatting. '<' or '>' are interpreted 
+                    #as xml specific tags that cause errors
+                    line = line.replace("<","[")
+                    line = line.replace(">","]")
                     main.log.report(line)
             return lines[2]
         except pexpect.EOF:

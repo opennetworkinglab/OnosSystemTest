@@ -14,12 +14,15 @@ class QuaggaCliDriver(CLI):
     def __init__(self):
         super(CLI, self).__init__()
 
+    #TODO: simplify this method
     def connect(self, **connectargs):
         for key in connectargs:
             vars(self)[key] = connectargs[key]
         
         self.name = self.options['name']
-        self.handle = super(QuaggaCliDriver,self).connect(user_name = self.user_name, ip_address = self.ip_address,port = self.port, pwd = self.pwd)
+        #self.handle = super(QuaggaCliDriver,self).connect(user_name = self.user_name, ip_address = self.ip_address,port = self.port, pwd = self.pwd)
+        self.handle = super(QuaggaCliDriver, self).connect(user_name=self.user_name, ip_address="1.1.1.1", port=self.port, pwd=self.pwd)
+        main.log.info("connect parameters:" + str(self.user_name) + ";" + str(self.ip_address) + ";" + str(self.port) + ";" + str(self.pwd))
 
         if self.handle: 
             self.handle.expect("")
@@ -35,7 +38,33 @@ class QuaggaCliDriver(CLI):
             main.log.info("NO HANDLE")
             return main.FALSE
 
+    def loginQuagga(self, ip_address):
+
+        self.name = self.options['name']
+        self.handle = super(QuaggaCliDriver, self).connect(
+            user_name=self.user_name, ip_address=ip_address,
+            port=self.port, pwd=self.pwd)
+        main.log.info("connect parameters:" + str(self.user_name) + ";"
+        + str(self.ip_address) + ";" + str(self.port) + ";" + str(self.pwd))
+
+        if self.handle:
+            self.handle.expect("")
+            self.handle.expect("\$")
+            self.handle.sendline("telnet localhost 2605")
+            self.handle.expect("Password:", timeout=5)
+            self.handle.sendline("hello")
+            self.handle.expect("bgpd", timeout=5)
+            self.handle.sendline("enable")
+            self.handle.expect("bgpd#", timeout=5)
+            main.log.info("I am inside BGP peer Quagga!")
+
+            return self.handle
+        else:
+            main.log.info("NO HANDLE")
+            return main.FALSE
+
     def enter_config(self, asn):
+        main.log.info("I am in enter_config method!")
         try:
             self.handle.sendline("")
             self.handle.expect("bgpd#")
@@ -52,6 +81,63 @@ class QuaggaCliDriver(CLI):
             return main.TRUE
         except:
             return main.FALSE
+
+    def generate_routes(self, net, numRoutes):
+        main.log.info("I am in generate_routes method!")
+        
+        # a IP prefix will be composed by "net" + "." + m + "." + n + "." + x 
+        # the length of each IP prefix is 24
+        routes = []
+        routes_gen = 0
+        m = numRoutes / 256
+        n = numRoutes % 256
+
+        for i in range(0, m):
+            for j in range(0, 256):
+                network = str(net) + "." + str(i) + "." + str(j) + ".0/24"
+                routes.append(network)
+                routes_gen = routes_gen + 1
+
+        for j in range(0, n):
+            network = str(net) + "." + str(m) + "." + str(j) + ".0/24"
+            routes.append(network)
+            routes_gen = routes_gen + 1
+
+        if routes_gen == numRoutes:
+            main.log.info("Successfully generated " + str(numRoutes)
+            + " routes!")
+            return routes
+        return main.FALSE
+    
+    def add_routes(self, routes, routeRate):
+        main.log.info("I am in add_routes method!")
+        
+        routes_added = 0
+        try:
+            self.handle.sendline("")
+            #self.handle.expect("config-router")
+            self.handle.expect("config-router", timeout=5)
+        except:
+            main.log.warn("Probably not in config-router mode!")
+            self.disconnect()
+        main.log.info("Start to add routes")
+
+        for i in range(0, len(routes)):
+            routeCmd = "network " + routes[i]
+            try:
+                self.handle.sendline(routeCmd)
+                self.handle.expect("bgpd", timeout=5)
+            except:
+                main.log.warn("Failed to add route")
+                self.disconnect()
+            waitTimer = 1.00 / routeRate
+            time.sleep(waitTimer)
+        if routes_added == len(routes):
+            main.log.info("Finished adding routes")
+            return main.TRUE
+        return main.FALSE
+    
+    # please use the generate_routes plus add_routes instead of this one
     def add_route(self, net, numRoutes, routeRate):
         try:
             self.handle.sendline("")

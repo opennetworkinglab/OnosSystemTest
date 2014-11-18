@@ -1,0 +1,25 @@
+<PARAMS>
+    
+    <testcases>1</testcases>
+
+    #Environment variables
+    <ENV>
+        <cellName>driver_test</cellName>
+    </ENV>
+
+    <CTRL>
+        <ip1>127.0.0.1</ip1>
+        <port1>6633</port1>
+    </CTRL>
+
+    <GIT>
+        <autoPull>off</autoPull>
+        <checkout>master</checkout>
+    </GIT>
+
+    <JSON>
+        <prefix>prefix</prefix>
+        <nextHop>nextHop</nextHop>
+    </JSON>
+
+</PARAMS>

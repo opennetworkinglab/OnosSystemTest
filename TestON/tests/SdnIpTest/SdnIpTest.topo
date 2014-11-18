@@ -1,0 +1,41 @@
+<TOPOLOGY>
+    <COMPONENT>
+
+        <ONOSbench>
+            <host>127.0.0.1</host>
+            <user>sdn</user>
+            <password>rocks</password>
+            <type>OnosDriver</type>
+            <connect_order>1</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </ONOSbench>
+
+        <ONOScli>
+            <host>127.0.0.1</host>
+            <user>sdn</user>
+            <password>rocks</password>
+            <type>OnosCliDriver</type>
+            <connect_order>2</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </ONOScli>
+
+        <ONOS1>
+            <host>127.0.0.1</host>
+            <user>sdn</user>
+            <password>rocks</password>
+            <type>OnosDriver</type>
+            <connect_order>3</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </ONOS1>
+
+      	<Quaggacli>
+            <host>127.0.0.1</host>
+            <user>linpp</user>
+            <password>666666</password>
+            <type>QuaggaCliDriver</type>
+            <connect_order>5</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </Quaggacli>
+
+    </COMPONENT>
+</TOPOLOGY>

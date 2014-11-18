@@ -74,11 +74,9 @@ class SdnIpTest:
         main.log.info(sorted(allRoutes))
         main.log.info("Routes get from ONOS CLI:")
         main.log.info(sorted(routes_list))
-
-        if eq(sorted(allRoutes), sorted(routes_list)): 
-            main.log.report("***Routes in SDN-IP are correct!***")
-        else:
-            main.log.report("***Routes in SDN-IP are wrong!***")
+        utilities.assert_equals(expect=sorted(allRoutes), actual=sorted(routes_list),
+                onpass="***Routes in SDN-IP are correct!***",
+                onfail="***Routes in SDN-IP are wrong!***")
         
         time.sleep(2)
         main.step("Get intents installed on ONOS")

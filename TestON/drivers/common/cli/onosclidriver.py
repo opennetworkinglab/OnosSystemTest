@@ -1109,6 +1109,7 @@ class OnosCliDriver(CLI):
             main.cleanup()
             main.exit()
 
+    # This method should be used after installing application: onos-app-sdnip
     def routes(self, json_format=False):
         '''
         Optional:

@@ -410,7 +410,7 @@ class OnosDriver(CLI):
                     #as xml specific tags that cause errors
                     line = line.replace("<","[")
                     line = line.replace(">","]")
-                    main.log.report(line)
+                    main.log.report("\t" + line)
             return lines[2]
         except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")

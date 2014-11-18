@@ -92,7 +92,7 @@ class MininetCliDriver(Emulator):
                     main.log.info(self.name+": mininet built") 
                     return main.TRUE
                 if i==1:
-                    self.handle.expect(["\n",pexpect.EOF,pexpect.TIMEOUT])
+                    self.handle.expect(["",pexpect.EOF,pexpect.TIMEOUT])
                     main.log.info(self.handle.before)
                 elif i==2:
                     main.log.error(self.name+": Launching mininet failed...")
@@ -153,26 +153,33 @@ class MininetCliDriver(Emulator):
         if self.handle :
             main.log.info(self.name+": Checking reachabilty to the hosts using pingall")
             try:
-                response = self.execute(cmd="pingall",prompt="mininet>",timeout=120)
-                print "response: " + str(response)
-            except pexpect.EOF:  
+                response = self.execute(cmd="pingall",prompt="mininet>",timeout=3)
+            except pexpect.EOF:
                 main.log.error(self.name + ": EOF exception found")
                 main.log.error(self.name + ":     " + self.handle.before)
-                #main.cleanup()
-                #main.exit()
-            pattern = 'Results\:\s0\%\sdropped\s'
-            #FIXME:Pending Mininet Pull Request #408
-            #pattern = 'Results\:\s0\.00\%\sdropped\s'
-            #if utilities.assert_matches(expect=pattern,actual=response,onpass="All hosts are reaching",onfail="Unable to reach all the hosts"):
+                main.cleanup()
+                main.exit()
+            except pexpect.TIMEOUT:
+                #We may not want to kill the test if pexpect times out
+                main.log.error(self.name + ": TIMEOUT exception found")
+                main.log.error(self.name + ":     " + str(self.handle.before) )
+            #NOTE: mininet's pingall rounds, so we will check the number of passed and number of failed
+            pattern = "Results\:\s0\%\sdropped\s\((?P<passed>[\d]+)/(?P=passed)"
             if re.search(pattern,response):
                 main.log.info(self.name+": All hosts are reachable")
                 return main.TRUE
             else:
                 main.log.error(self.name+": Unable to reach all the hosts")
+                main.log.info("Pingall ouput: " + str(response))
+                #NOTE: Send ctrl-c to make sure pingall is done
+                self.handle.send("\x03")
+                self.handle.expect("Interrupt")
+                self.handle.expect("mininet>")
                 return main.FALSE
         else :
             main.log.error(self.name+": Connection failed to the host") 
-            return main.FALSE
+            main.cleanup()
+            main.exit()
 
     def fpingHost(self,**pingParams):
         ''' 
@@ -649,6 +656,187 @@ class MininetCliDriver(Emulator):
         else:
             main.log.info(response)
 
+    def add_switch( self, sw, **kwargs ):
+        '''
+        adds a switch to the mininet topology
+        NOTE: this uses a custom mn function
+        NOTE: cannot currently specify what type of switch
+        required params:
+            switchname = name of the new switch as a string
+        optional keyvalues:
+            dpid = "dpid"
+        returns: main.FASLE on an error, else main.TRUE
+        '''
+        dpid = kwargs.get('dpid', '')
+        command = "addswitch " + sw + " " + str(dpid)
+        try:
+            response = self.execute(cmd=command,prompt="mininet>",timeout=10)
+            if re.search("already exists!", response):
+                main.log.warn(response)
+                return main.FALSE
+            elif re.search("Error", response):
+                main.log.warn(response)
+                return main.FALSE
+            elif re.search("usage:", response):
+                main.log.warn(response)
+                return main.FALSE
+            else:
+                return main.TRUE
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":     " + self.handle.before)
+            main.cleanup()
+            main.exit()
+
+    def del_switch( self, sw ):
+        '''
+        delete a switch from the mininet topology
+        NOTE: this uses a custom mn function
+        required params:
+            switchname = name of the switch as a string
+        returns: main.FASLE on an error, else main.TRUE
+        '''
+        command = "delswitch " + sw
+        try:
+            response = self.execute(cmd=command,prompt="mininet>",timeout=10)
+            if re.search("no switch named", response):
+                main.log.warn(response)
+                return main.FALSE
+            elif re.search("Error", response):
+                main.log.warn(response)
+                return main.FALSE
+            elif re.search("usage:", response):
+                main.log.warn(response)
+                return main.FALSE
+            else:
+                return main.TRUE
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":     " + self.handle.before)
+            main.cleanup()
+            main.exit()
+
+    def add_link( self, node1, node2 ):
+        '''
+        add a link to the mininet topology
+        NOTE: this uses a custom mn function
+        NOTE: cannot currently specify what type of link
+        required params:
+            node1 = the string node name of the first endpoint of the link
+            node2 = the string node name of the second endpoint of the link
+        returns: main.FASLE on an error, else main.TRUE
+        '''
+        command = "addlink " + node1 + " " + node2
+        try:
+            response = self.execute(cmd=command,prompt="mininet>",timeout=10)
+            if re.search("doesnt exist!", response):
+                main.log.warn(response)
+                return main.FALSE
+            elif re.search("Error", response):
+                main.log.warn(response)
+                return main.FALSE
+            elif re.search("usage:", response):
+                main.log.warn(response)
+                return main.FALSE
+            else:
+                return main.TRUE
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":     " + self.handle.before)
+            main.cleanup()
+            main.exit()
+
+    def del_link( self, node1, node2 ):
+        '''
+        delete a link from the mininet topology
+        NOTE: this uses a custom mn function
+        required params:
+            node1 = the string node name of the first endpoint of the link
+            node2 = the string node name of the second endpoint of the link
+        returns: main.FASLE on an error, else main.TRUE
+        '''
+        command = "dellink " + node1 + " " + node2
+        try:
+            response = self.execute(cmd=command,prompt="mininet>",timeout=10)
+            if re.search("no node named", response):
+                main.log.warn(response)
+                return main.FALSE
+            elif re.search("Error", response):
+                main.log.warn(response)
+                return main.FALSE
+            elif re.search("usage:", response):
+                main.log.warn(response)
+                return main.FALSE
+            else:
+                return main.TRUE
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":     " + self.handle.before)
+            main.cleanup()
+            main.exit()
+
+    def add_host( self, hostname, **kwargs ):
+        '''
+        Add a host to the mininet topology
+        NOTE: this uses a custom mn function
+        NOTE: cannot currently specify what type of host
+        required params:
+            hostname = the string hostname
+        optional key-value params
+            switch = "switch name"
+            returns: main.FASLE on an error, else main.TRUE
+        '''
+        switch = kwargs.get('switch', '')
+        command = "addhost " + hostname + " " + switch
+        try:
+            response = self.execute(cmd=command,prompt="mininet>",timeout=10)
+            if re.search("already exists!", response):
+                main.log.warn(response)
+                return main.FALSE
+            elif re.search("doesnt exists!", response):
+                main.log.warn(response)
+                return main.FALSE
+            elif re.search("Error", response):
+                main.log.warn(response)
+                return main.FALSE
+            elif re.search("usage:", response):
+                main.log.warn(response)
+                return main.FALSE
+            else:
+                return main.TRUE
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":     " + self.handle.before)
+            main.cleanup()
+            main.exit()
+
+    def del_host( self, hostname ):
+        '''
+        delete a host from the mininet topology
+        NOTE: this uses a custom mn function
+        required params:
+            hostname = the string hostname
+            returns: main.FASLE on an error, else main.TRUE
+        '''
+        command = "delhost " + hostname
+        try:
+            response = self.execute(cmd=command,prompt="mininet>",timeout=10)
+            if re.search("no host named", response):
+                main.log.warn(response)
+                return main.FALSE
+            elif re.search("Error", response):
+                main.log.warn(response)
+                return main.FALSE
+            elif re.search("usage:", response):
+                main.log.warn(response)
+                return main.FALSE
+            else:
+                return main.TRUE
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":     " + self.handle.before)
+            main.cleanup()
+            main.exit()
 
     def disconnect(self):
         main.log.info(self.name+": Disconnecting mininet...")
@@ -735,9 +923,10 @@ class MininetCliDriver(Emulator):
             self.handle.expect("mininet>")
             self.handle.sendline("sh sudo tcpdump -n -i "+ intf + " " + port + " -w " + filename.strip() + "  &")
             self.handle.sendline("")
-            self.handle.sendline("")
             i=self.handle.expect(['No\ssuch\device','listening\son',pexpect.TIMEOUT,"mininet>"],timeout=10)
             main.log.warn(self.handle.before + self.handle.after)
+            self.handle.sendline("")
+            self.handle.expect("mininet>")
             if i == 0:
                 main.log.error(self.name + ": tcpdump - No such device exists. tcpdump attempted on: " + intf)
                 return main.FALSE
@@ -769,7 +958,7 @@ class MininetCliDriver(Emulator):
         "pkills tcpdump"
         try:
             self.handle.sendline("sh sudo pkill tcpdump")
-            self.handle.sendline("")
+            self.handle.expect("mininet>")
             self.handle.sendline("")
             self.handle.expect("mininet>")
         except pexpect.EOF:
@@ -857,7 +1046,7 @@ class MininetCliDriver(Emulator):
         #FIXME: this does not look for extra ports in ONOS, only checks that ONOS has what is in MN
         import json
         from numpy import uint64
-        port_results = main.TRUE
+        ports_results = main.TRUE
         output = {"switches":[]}
         for switch in topo.graph.switches: #iterate through the MN topology and pull out switches and and port info
             ports = []
@@ -882,9 +1071,12 @@ class MininetCliDriver(Emulator):
         for mn_switch in output['switches']:
             mn_ports = []
             onos_ports = []
+            switch_result = main.TRUE
             for port in mn_switch['ports']:
                 if port['enabled'] == True:
                     mn_ports.append(port['of_port'])
+                #else: #DEBUG only 
+                #    main.log.warn("Port %s on switch %s is down" % ( str(port['of_port']) , str(mn_switch['name'])) )
             for onos_switch in ports_json:
                 #print "Iterating through a new switch as seen by ONOS"
                 #print onos_switch
@@ -894,37 +1086,55 @@ class MininetCliDriver(Emulator):
                             if port['isEnabled']:
                                 #print "Iterating through available ports on the switch"
                                 #print port
-                                onos_ports.append(int(port['port'])) 
+                                if port['port'] == 'local':
+                                    #onos_ports.append('local')
+                                    onos_ports.append(long(uint64(-2)))
+                                else:
+                                    onos_ports.append(int(port['port']))
+                                    '''
+                                else: #This is likely a new reserved port implemented
+                                    main.log.error("unkown port '" + str(port['port']) )
+                                    '''
+                            else: #DEBUG
+                                main.log.warn("Port %s on switch %s is down" % ( str(port['port']) , str(onos_switch['device']['id'])) )
+                        break
             mn_ports.sort(key=float)
             onos_ports.sort(key=float)
             #print "\nPorts for Switch %s:" % (switch['name'])
             #print "\tmn_ports[] = ", mn_ports
             #print "\tonos_ports[] = ", onos_ports
-            
-            #NOTE:For OF1.3, the OFP_local port number is 0xfffffffe or 4294967294 instead of 0xfffe or 65534 in OF1.0,
-            #   ONOS topology sees the correct port number, however MN topology as read from line 151 of
-            #   https://github.com/ucb-sts/sts/blob/topology_refactoring2/sts/entities/teston_entities.py 
-            #   is 0xfffe which doesn't work correctly with OF1.3 switches.
-            
-            #NOTE: ONOS is abstracting port numbers to 64bit unsigned number(long). So we will be converting the 
-            #   OF reserved ports to these numbers
-
+            mn_ports_log = mn_ports
+            onos_ports_log = onos_ports
+            mn_ports = [x for x in mn_ports]
+            onos_ports = [x for x in onos_ports]
 
             #TODO: handle other reserved port numbers besides LOCAL
-            for mn_port,onos_port in zip(mn_ports,onos_ports):
-                #print "mn == onos port?"
-                #print mn_port, onos_port
-                if mn_port == onos_port or (mn_port == 65534 and onos_port == long(uint64(-2))):
-                    continue
+            #NOTE: Reserved ports
+            #   Local port: -2 in Openflow, ONOS shows 'local', we store as long(uint64(-2))
+            for mn_port in mn_ports_log:
+                if mn_port in onos_ports:
                     #don't set results to true here as this is just one of many checks and it might override a failure
-                else:  #the ports of this switch don't match
-                    port_results = main.FALSE
-                    break
-            if port_results == main.FALSE:
+                    mn_ports.remove(mn_port)
+                    onos_ports.remove(mn_port)
+                #NOTE: OVS reports this as down since there is no link
+                #      So ignoring these for now
+                #TODO: Come up with a better way of handling these
+                if 65534 in mn_ports:
+                    mn_ports.remove(65534)
+                if long(uint64(-2)) in onos_ports:
+                    onos_ports.remove( long(uint64(-2))  )
+            if len(mn_ports):  #the ports of this switch don't match
+                switch_result = main.FALSE
+                main.log.warn("Ports in MN but not ONOS: " + str(mn_ports) )
+            if len(onos_ports):  #the ports of this switch don't match
+                switch_result = main.FALSE
+                main.log.warn("Ports in ONOS but not MN: " + str(onos_ports) )
+            if switch_result == main.FALSE:
                 main.log.report("The list of ports for switch %s(%s) does not match:" % (mn_switch['name'], mn_switch['dpid']) )
-                main.log.report("mn_ports[] = " +  str(mn_ports))
-                main.log.report("onos_ports[] = " + str(onos_ports))
-        return port_results
+                main.log.warn("mn_ports[]  =  " + str(mn_ports_log))
+                main.log.warn("onos_ports[] = " + str(onos_ports_log))
+            ports_results = ports_results and switch_result
+        return ports_results
 
 
 
@@ -1007,7 +1217,7 @@ class MininetCliDriver(Emulator):
                     if int(onos_port1) == int(port1) and int(onos_port2) == int(port2):
                         first_dir = main.TRUE
                     else:
-                        main.log.report('The port numbers do not match for ' +str(link) +\
+                        main.log.warn('The port numbers do not match for ' +str(link) +\
                                 ' between ONOS and MN. When cheking ONOS for link '+\
                                 '%s/%s -> %s/%s' % (node1, port1, node2, port2)+\
                                 ' ONOS has the values %s/%s -> %s/%s' %\
@@ -1018,7 +1228,7 @@ class MininetCliDriver(Emulator):
                     if ( int(onos_port1) == int(port2) and int(onos_port2) == int(port1) ):
                         second_dir = main.TRUE
                     else:
-                        main.log.report('The port numbers do not match for ' +str(link) +\
+                        main.log.warn('The port numbers do not match for ' +str(link) +\
                                 ' between ONOS and MN. When cheking ONOS for link '+\
                                 '%s/%s -> %s/%s' % (node2, port2, node1, port1)+\
                                 ' ONOS has the values %s/%s -> %s/%s' %\
@@ -1065,18 +1275,48 @@ class MininetCliDriver(Emulator):
         '''
         #TODO: Add error checking. currently the mininet command has no output
         main.log.info("Updateing MN port information")
-        self.handle.sendline("")
-        self.handle.expect("mininet>")
-        
-        self.handle.sendline("update")
-        self.handle.expect("mininet>")
+        try:
+            self.handle.sendline("")
+            self.handle.expect("mininet>")
 
-        self.handle.sendline("")
-        self.handle.expect("mininet>")
+            self.handle.sendline("update")
+            self.handle.expect("update")
+            self.handle.expect("mininet>")
 
-        return main.TRUE 
+            self.handle.sendline("")
+            self.handle.expect("mininet>")
 
-        
+            return main.TRUE
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":     " + self.handle.before)
+            main.cleanup()
+            main.exit()
+
+    def cli_sanity(self):
+        '''
+        Sends control c to cli and expexts the output
+        Test to make sure the session is working correctly
+        Returns main.TRUE on success
+        '''
+        import re
+        #NOTE: Send ctrl-c to make sure pingall is done
+        print '*'*10 + "Pexpect session sanity check" + '*'*10
+        self.handle.send("\x03")
+        #self.handle.sendline("l")
+        response = ''
+        while self.handle.expect([pexpect.TIMEOUT, "mininet>"],timeout=1):
+            print repr(self.handle.before)
+            if not response:
+                response = self.handle.before
+            print repr(self.handle.after)
+        if re.search("Interrupt", response):
+            print "MN pexpect session Looks good to me"
+            return main.TRUE
+        else:
+            print "Something isn't right with MN pexpect session"
+            return main.FALSE
+
 
 if __name__ != "__main__":
     import sys

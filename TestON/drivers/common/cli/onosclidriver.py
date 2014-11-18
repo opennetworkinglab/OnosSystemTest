@@ -647,25 +647,23 @@ class OnosCliDriver(CLI):
         try:
             self.handle.sendline("")
             self.handle.expect("onos>")
-            
+
             if json_format:
-                if not grep_str:
-                    self.handle.sendline("roles -j")
-                    self.handle.expect("roles -j")
-                    self.handle.expect("onos>")
-                else:
-                    self.handle.sendline("roles -j | grep '"+
-                        str(grep_str)+"'")
-                    self.handle.expect("roles -j | grep '"+str(grep_str)+"'")
-                    self.handle.expect("onos>")
+                self.handle.sendline("roles -j")
+                self.handle.expect("roles -j")
+                self.handle.expect("onos>")
                 handle = self.handle.before
                 '''
-                handle variable here contains some ANSI escape color code sequences at the end which are invisible in the print command output
-                To make that escape sequence visible, use repr() function. The repr(handle) output when printed shows the ANSI escape sequences.
-                In json.loads(somestring), this somestring variable is actually repr(somestring) and json.loads would fail with the escape sequence.
-                So we take off that escape sequence using the following commads: 
+                handle variable here contains some ANSI escape color code sequences at the
+                end which are invisible in the print command output. To make that escape
+                sequence visible, use repr() function. The repr(handle) output when printed
+                shows the ANSI escape sequences. In json.loads(somestring), this somestring
+                variable is actually repr(somestring) and json.loads would fail with the escape
+                sequence.
+
+                So we take off that escape sequence using the following commads:
                 ansi_escape = re.compile(r'\r\r\n\x1b[^m]*m')
-                handle1 = ansi_escape.sub('', handle) 
+                handle1 = ansi_escape.sub('', handle)
                 '''
                 #print "repr(handle) =", repr(handle)
                 ansi_escape = re.compile(r'\r\r\n\x1b[^m]*m')
@@ -674,17 +672,10 @@ class OnosCliDriver(CLI):
                 return handle1
 
             else:
-                if not grep_str:
-                    self.handle.sendline("roles")
-                    self.handle.expect("onos>")
-                    self.handle.sendline("")
-                    self.handle.expect("onos>")
-                else:
-                    self.handle.sendline("roles | grep '"+
-                        str(grep_str)+"'")
-                    self.handle.expect("onos>")
-                    self.handle.sendline("")
-                    self.handle.expect("onos>")
+                self.handle.sendline("roles")
+                self.handle.expect("onos>")
+                self.handle.sendline("")
+                self.handle.expect("onos>")
                 handle = self.handle.before
                 #print "handle =",handle
                 return handle  
@@ -915,12 +906,12 @@ class OnosCliDriver(CLI):
             * host_id_two: ONOS host id for host2
         Description:
             Adds a host-to-host intent (bidrectional) by
-            specifying the two hosts. 
+            specifying the two hosts.
         '''
         try:
             self.handle.sendline("")
             self.handle.expect("onos>")
-            
+
             self.handle.sendline("add-host-intent "+
                     str(host_id_one) + " " + str(host_id_two))
             self.handle.expect("onos>")
@@ -932,7 +923,7 @@ class OnosCliDriver(CLI):
                     str(host_id_one) + " and " + str(host_id_two))
 
             return handle
-        
+
         except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
             main.log.error(self.name + ":    " + self.handle.before)
@@ -1160,6 +1151,8 @@ class OnosCliDriver(CLI):
                 self.handle.expect("flows -j")
                 self.handle.expect("onos>")
                 handle = self.handle.before
+                ansi_escape = re.compile(r'\r\r\n\x1b[^m]*m')
+                handle = ansi_escape.sub('', handle)
 
             else:
                 self.handle.sendline("")
@@ -1167,6 +1160,8 @@ class OnosCliDriver(CLI):
                 self.handle.sendline("flows")
                 self.handle.expect("onos>")
                 handle = self.handle.before
+            if re.search("Error\sexecuting\scommand:", handle):
+                main.log.error(self.name + ".flows() response: " + str(handle))
 
             return handle
 

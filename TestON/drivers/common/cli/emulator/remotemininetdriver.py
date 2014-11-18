@@ -92,7 +92,8 @@ class RemoteMininetDriver(Emulator):
         elif re.search("found multiple mininet",outputs):
             return main.ERROR
         else:
-            print outputs
+            main.log.error("Error, unexpected output in the ping file")
+            main.log.warn( outputs )
             return main.TRUE
 
 
@@ -155,6 +156,11 @@ class RemoteMininetDriver(Emulator):
         main.log.info( "Transferring ping files to TestStation" )
         command = "scp /tmp/ping.* "+ str(testONUser) + "@" + str(testONIP) + ":/tmp/" 
         self.execute(cmd=command,prompt="100%",timeout=20)
+        #Make sure the output is cleared
+        self.handle.sendline("")
+        self.handle.expect("\$")
+        self.handle.sendline("")
+        self.handle.expect("\$")
         self.handle.sendline("")
         self.handle.expect("\$")
         return main.TRUE
@@ -553,7 +559,7 @@ class RemoteMininetDriver(Emulator):
         response = ''
         #print "Disconnecting Mininet"
         if self.handle:
-            self.handle.sendline("exit") 
+            self.handle.sendline("exit")
             self.handle.expect("exit")
             self.handle.expect("(.*)")
             response = self.handle.before
@@ -561,13 +567,15 @@ class RemoteMininetDriver(Emulator):
         else :
             main.log.error("Connection failed to the host")
             response = main.FALSE
-        return response  
+        return response
 
     def get_flowTable(self, protoVersion, sw):
+        #TODO document usage
+        #FIXME: clean up print statements and such
         self.handle.sendline("cd")
-        #self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT])
-        print "cd expect status: " 
-        print self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT])
+        self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT])
+        #print "cd expect status: "
+        #print self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT])
         #TODO: Write seperate versions of the function for this, possibly a string that tells it which switch is in use?
         #For 1.0 version of OVS
         #command = "sudo ovs-ofctl dump-flows " + sw + " | awk '{OFS=\",\" ; print $1 $6 $7 }' |sort -n -k1"

@@ -223,9 +223,9 @@ class MultiProd13:
         devices1 = main.ONOScli1.devices()
         devices2 = main.ONOScli2.devices()
         devices3 = main.ONOScli3.devices()
-        print "devices1 = ", devices1
-        print "devices2 = ", devices2
-        print "devices3 = ", devices3
+        #print "devices1 = ", devices1
+        #print "devices2 = ", devices2
+        #print "devices3 = ", devices3
         hosts1 = main.ONOScli1.hosts()
         hosts2 = main.ONOScli2.hosts()
         hosts3 = main.ONOScli3.hosts()
@@ -363,16 +363,16 @@ class MultiProd13:
         main.log.report("__________________________________")
         main.case("Uninstalling reactive forwarding app")
         #Unistall onos-app-fwd app to disable reactive forwarding
-        appUninstall_result = main.ONOScli1.feature_uninstall("onos-app-fwd")
-        appUninstall_result = main.ONOScli2.feature_uninstall("onos-app-fwd")
-        appUninstall_result = main.ONOScli3.feature_uninstall("onos-app-fwd")
+        appUninstall_result1 = main.ONOScli1.feature_uninstall("onos-app-fwd")
+        appUninstall_result2 = main.ONOScli2.feature_uninstall("onos-app-fwd")
+        appUninstall_result3 = main.ONOScli3.feature_uninstall("onos-app-fwd")
         main.log.info("onos-app-fwd uninstalled")
 
         #After reactive forwarding is disabled, the reactive flows on switches timeout in 10-15s
         #So sleep for 15s
         time.sleep(15)
 
-        case10_result = appUninstall_result
+        case10_result = appUninstall_result1 and appUninstall_result2 and appUninstall_result3
         utilities.assert_equals(expect=main.TRUE, actual=case10_result,onpass="Reactive forwarding app uninstallation successful",onfail="Reactive forwarding app uninstallation failed")
 
 
@@ -381,9 +381,7 @@ class MultiProd13:
         main.log.report("__________________________________")        
         main.case("Obtaining hostsfor adding host intents")
         main.step("Get hosts")
-        main.ONOScli1.handle.sendline("hosts")
-        main.ONOScli1.handle.expect("onos>")
-        hosts = main.ONOScli1.handle.before
+        hosts = main.ONOScli1.hosts()
         main.log.info(hosts)
 
         main.step("Get all devices id")
@@ -657,7 +655,7 @@ class MultiProd13:
 
     def CASE8(self):
         '''
-        Host intents removal
+        Intent removal
         ''' 
         main.log.report("This testcase removes host intents before adding the point intents")
         main.log.report("__________________________________")        
@@ -705,12 +703,36 @@ class MultiProd13:
             else:    
                 case8_result = case8_result and main.FALSE
 
-        if case8_result == main.TRUE:
+        i = 8
+        Ping_Result = main.TRUE
+        while i <18 :
+            main.log.info("\n\nh"+str(i)+" is Pinging h" + str(i+10))
+            ping = main.Mininet1.pingHost(src="h"+str(i),target="h"+str(i+10))
+            if ping==main.TRUE:
+                Ping_Result = main.TRUE
+            elif ping==main.FALSE:
+                i+=1
+                Ping_Result = main.FALSE
+            else:
+                main.log.info("Unknown error")
+                Ping_Result = main.ERROR
+        
+        #Note: If the ping result failed, that means the intents have been withdrawn correctly.
+        if Ping_Result==main.TRUE:
+            main.log.report("Host intents have not been withdrawn correctly")
+            #main.cleanup()
+            #main.exit()
+        if Ping_Result==main.FALSE:
+            main.log.report("Host intents have been withdrawn correctly")
+
+        case8_result = case8_result and Ping_Result
+
+        if case8_result == main.FALSE:
             main.log.report("Intent removal successful")
         else:
             main.log.report("Intent removal failed")
                         
-        utilities.assert_equals(expect=main.TRUE, actual=case8_result,
+        utilities.assert_equals(expect=main.FALSE, actual=case8_result,
                 onpass="Intent removal test successful",
                 onfail="Intent removal test failed")
              
@@ -915,14 +937,15 @@ class MultiProd13:
             host2_id = main.ONOScli1.get_host(host2)['id']
             for host in hosts_json:
                 if host['id'] == host1_id:
-                    ip1 = str(host['ips'])
+                    ip1 = host['ips']+"/"+"32"
                     device1 = str(host['location']['device'])
                     port1 = 1
                     print "ip1 = ", ip1
                     print "device1 = ", device1
                 elif host['id'] == host2_id:
-                    ip2 = host['ips']
-                    device2 = host['location']["device"]
+                    ip2 = str(host['ips'])+"/"+"32"
+                    device2 = str(host['location']["device"])
                     port2 = 1
                     print "ip2 = ", ip2
                     print "device2 = ", device2
+           

@@ -1077,10 +1077,6 @@ class OnosCliDriver(CLI):
             i = self.handle.expect([
                 "Error",
                 "onos>"])
-          
-            self.handle.sendline("intents")
-            self.handle.expect("onos>")
-            Intenthandle = self.handle.before
 
             if i == 0:
                 main.log.error("Error in adding point-to-point intent")

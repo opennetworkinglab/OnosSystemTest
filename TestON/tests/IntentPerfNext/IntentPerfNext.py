@@ -31,7 +31,8 @@ class IntentPerfNext:
 
         main.step("Creating cell file")
         cell_file_result = main.ONOSbench.create_cell_file(
-                BENCH_ip, cell_name, MN1_ip, "onos-core",
+                BENCH_ip, cell_name, MN1_ip,
+                "onos-core,onos-app-metrics,onos-gui",
                 ONOS1_ip, ONOS2_ip, ONOS3_ip)
 
         main.step("Applying cell file to environment")
@@ -53,6 +54,9 @@ class IntentPerfNext:
             build_result = main.TRUE
             main.log.info("Git pull skipped by configuration")
 
+        main.log.report("Commit information - ")
+        main.ONOSbench.get_version(report=True)
+
         main.step("Creating ONOS package")
         package_result = main.ONOSbench.onos_package()
 
@@ -72,11 +76,6 @@ class IntentPerfNext:
         cli1 = main.ONOS1cli.start_onos_cli(ONOS1_ip)
         cli2 = main.ONOS2cli.start_onos_cli(ONOS2_ip)
         cli3 = main.ONOS3cli.start_onos_cli(ONOS3_ip)
-
-        main.step("Enable metrics feature")
-        main.ONOS1cli.feature_install("onos-app-metrics")
-        main.ONOS2cli.feature_install("onos-app-metrics")
-        main.ONOS3cli.feature_install("onos-app-metrics")
 
         utilities.assert_equals(expect=main.TRUE,
                 actual = cell_file_result and cell_apply_result and\
@@ -125,12 +124,19 @@ class IntentPerfNext:
 
         intent_add_lat_list = []
 
+        #Assign 'linear' switch format for basic intent testing
+        main.Mininet1.assign_sw_controller(
+                sw="1", ip=ONOS1_ip,port1=default_sw_port)
+        main.Mininet1.assign_sw_controller(
+                sw="3", ip=ONOS2_ip,port1=default_sw_port)
+        main.Mininet1.assign_sw_controller(
+                sw="5", ip=ONOS3_ip,port1=default_sw_port)
+
         for i in range(0, int(num_iter)):
-            #add_point_intent(ingr_device, ingr_port, 
-            #                 egr_device, egr_port)
+            #add_point_intent(ingr_device,  egr_device,
+            #                 ingr_port,    egr_port)
             main.ONOS1cli.add_point_intent(
-                device_id_list[0], 2,
-                device_id_list[2], 1)
+                device_id_list[0]+"/2", device_id_list[2]+"/1")
         
             #Allow some time for intents to propagate
             time.sleep(5)
@@ -213,6 +219,104 @@ class IntentPerfNext:
 
     def CASE3(self, main):
         '''
-        CASE3 coming soon
+        Intent Reroute latency
         '''
+        import time
+        import json
+        import requests
+        import os
+
+        ONOS1_ip = main.params['CTRL']['ip1']
+        ONOS2_ip = main.params['CTRL']['ip2']
+        ONOS3_ip = main.params['CTRL']['ip3']
+        ONOS_user = main.params['CTRL']['user']
+
+        default_sw_port = main.params['CTRL']['port1']
+
+        #number of iterations of case
+        num_iter = main.params['TEST']['numIter']
+
+        #Timestamp keys for json metrics output
+        submit_time = main.params['JSON']['submittedTime']
+        install_time = main.params['JSON']['installedTime']
+        wdRequest_time = main.params['JSON']['wdRequestTime']
+        withdrawn_time = main.params['JSON']['withdrawnTime']
+        devices_json_str = main.ONOS1cli.devices()
+        devices_json_obj = json.loads(devices_json_str)
+
+        device_id_list = []
+
+        #Obtain device id list in ONOS format.
+        #They should already be in order (1,2,3,10,11,12,13, etc)
+        for device in devices_json_obj:
+            device_id_list.append(device['id'])
+
+        #Completes the re-route path by assigning 
+        #additional switches to the topology assigned in case1
+        main.Mininet1.assign_sw_controller(
+                sw="s2",ip1=ONOS2_ip,port1=default_sw_port)
+        main.Mininet1.assign_sw_controller(
+                sw="s4",ip1=ONOS2_ip,port1=default_sw_port)
+
+        intent_reroute_lat_list = []
+
+        for i in range(0, int(num_iter)):
+            #add_point_intent(ingr_device, ingr_port, 
+            #                 egr_device, egr_port)
+            main.ONOS1cli.add_point_intent(
+                device_id_list[0]+"/2", device_id_list[2]+"/1")
+       
+            #TODO: check for correct intent installation
+            time.sleep(5)
+
+            #NOTE: this interface is specific to
+            #      topo-intentFlower.py topology
+            #      reroute case.
+            main.Mininet1.handle.sendline(
+                    "sh ifconfig s2-eth3 down")
+            t0_system = time.time()*1000
+                    
+            #TODO: Check for correct intent reroute
+            time.sleep(5)
+
+            #Obtain metrics from ONOS 1, 2, 3
+            intents_json_str_1 = main.ONOS1cli.intents_events_metrics()
+            intents_json_str_2 = main.ONOS2cli.intents_events_metrics()
+            intents_json_str_3 = main.ONOS3cli.intents_events_metrics()
+
+            intents_json_obj_1 = json.loads(intents_json_str_1)
+            intents_json_obj_2 = json.loads(intents_json_str_2)
+            intents_json_obj_3 = json.loads(intents_json_str_3)
+
+            #Parse values from the json object
+            intent_install_1 = \
+                    intents_json_obj_1[install_time]['value']
+            intent_install_2 = \
+                    intents_json_obj_2[install_time]['value']
+            intent_install_3 = \
+                    intents_json_obj_3[install_time]['value']
+
+            intent_reroute_lat_1 = \
+                    int(intent_install_1) - int(t0_system)
+            intent_reroute_lat_2 = \
+                    int(intent_install_2) - int(t0_system)
+            intent_reroute_lat_3 = \
+                    int(intent_install_3) - int(t0_system)
+            
+            intent_reroute_lat_avg = \
+                    (intent_reroute_lat_1 + 
+                     intent_reroute_lat_2 +
+                     intent_reroute_lat_3 ) / 3
+    
+            main.log.info("Intent reroute latency avg for iteration "+
+                    str(i)+": "+str(intent_reroute_lat_avg))
+
+            if intent_reroute_lat_avg > 0.0 and \
+               intent_reroute_lat_avg < 1000:
+                intent_reroute_lat_list.append(intent_reroute_lat_avg)
+            else:
+                main.log.info("Intent reroute latency exceeded "+
+                        "threshold. Skipping iteration "+str(i))
+
+
 

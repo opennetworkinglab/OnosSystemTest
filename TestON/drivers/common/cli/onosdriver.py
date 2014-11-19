@@ -395,7 +395,7 @@ class OnosDriver(CLI):
             self.handle.sendline("\n")
             self.handle.expect("\$")
             self.handle.sendline("cd " + self.home + "; git log -1 --pretty=fuller --decorate=short | grep -A 6 \"commit\" --color=never")
-            self.handle.expect("--color=never")
+            #self.handle.expect("--color=never")
             self.handle.expect("\$")
             response=(self.name +": \n"+ str(self.handle.before + self.handle.after))
             self.handle.sendline("cd " + self.home)
@@ -414,6 +414,11 @@ class OnosDriver(CLI):
             return lines[2]
         except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":     " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except pexpect.TIMEOUT:
+            main.log.error(self.name + ": TIMEOUT exception found")
             main.log.error(self.name + ":     " + self.handle.before)
             main.cleanup()
             main.exit()
@@ -1230,6 +1235,4 @@ class OnosDriver(CLI):
             main.log.info(self.name+" ::::::")
             main.log.error( traceback.print_exc())
             main.log.info(self.name+" ::::::")
-
-
 

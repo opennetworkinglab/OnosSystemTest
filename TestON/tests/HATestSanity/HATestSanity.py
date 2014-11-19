@@ -10,7 +10,7 @@ CASE3: Assign intents
 CASE4: Ping across added host intents
 CASE5: Reading state of ONOS
 CASE6: The Failure case. Since this is the Sanity test, we do nothing.
-CASE7: Check state after failure
+CASE7: Check state after control plane failure
 CASE8: Compare topo
 CASE9: Link s3-s28 down
 CASE10: Link s3-s28 up
@@ -38,7 +38,7 @@ class HATestSanity:
         onos-wait-for-start
         '''
         import time
-        main.log.report("ONOS HA Sanity test initialization")
+        main.log.report("ONOS HA Sanity test - initialization")
         main.case("Setting up test environment")
 
         # load some vairables from the params file
@@ -82,6 +82,14 @@ class HATestSanity:
         main.step("Applying cell variable to environment")
         cell_result = main.ONOSbench.set_cell(cell_name)
         verify_result = main.ONOSbench.verify_cell()
+
+        main.ONOSbench.onos_stop(ONOS1_ip)
+        main.ONOSbench.onos_stop(ONOS2_ip)
+        main.ONOSbench.onos_stop(ONOS3_ip)
+        main.ONOSbench.onos_stop(ONOS4_ip)
+        main.ONOSbench.onos_stop(ONOS5_ip)
+        main.ONOSbench.onos_stop(ONOS6_ip)
+        main.ONOSbench.onos_stop(ONOS7_ip)
         #FIXME:this is short term fix 
         main.ONOSbench.onos_remove_raft_logs()
 
@@ -99,7 +107,7 @@ class HATestSanity:
             if git_pull_result == main.TRUE:
                 clean_install_result = main.ONOSbench.clean_install()
             else:
-                main.log.report("Did not pull new code so skipping mvn "+ \
+                main.log.warn("Did not pull new code so skipping mvn "+ \
                         "clean install")
         main.ONOSbench.get_version(report=True)
 
@@ -148,12 +156,11 @@ class HATestSanity:
         main.ONOScli6.start_onos_cli(ONOS6_ip)
         main.ONOScli7.start_onos_cli(ONOS7_ip)
 
-        #TODO: Enable once test is ready
-        #main.step("Start Packet Capture MN")
-        #main.Mininet2.start_tcpdump(
-        #        str(main.params['MNtcpdump']['folder'])+str(main.TEST)+"-MN.pcap",
-        #        intf = main.params['MNtcpdump']['intf'],
-        #        port = main.params['MNtcpdump']['port'])
+        main.step("Start Packet Capture MN")
+        main.Mininet2.start_tcpdump(
+                str(main.params['MNtcpdump']['folder'])+str(main.TEST)+"-MN.pcap",
+                intf = main.params['MNtcpdump']['intf'],
+                port = main.params['MNtcpdump']['port'])
 
 
         case1_result = (clean_install_result and package_result and
@@ -289,6 +296,9 @@ class HATestSanity:
         """
         Ping across added host intents
         """
+        description = " Ping across added host intents"
+        main.log.report(description)
+        main.case(description)
         Ping_Result = main.TRUE
         for i in range(8,18):
             ping = main.Mininet1.pingHost(src="h"+str(i),target="h"+str(i+10))
@@ -301,9 +311,10 @@ class HATestSanity:
         if Ping_Result==main.FALSE:
             main.log.report("Intents have not been installed correctly, pings failed.")
         if Ping_Result==main.TRUE:
-            main.log.report("Intents have been installed correctly, and verified by pings")
+            main.log.report("Intents have been installed correctly and verified by pings")
         utilities.assert_equals(expect = main.TRUE,actual=Ping_Result,
-                onpass="Intents have been installed correctly and pings work")
+                onpass="Intents have been installed correctly and pings work",
+                onfail ="Intents have not been installed correctly, pings failed." )
 
     def CASE5(self,main) :
         '''
@@ -592,10 +603,15 @@ class HATestSanity:
         '''
         The Failure case. Since this is the Sanity test, we do nothing.
         '''
+        import time
+        time.sleep(60)
+        utilities.assert_equals(expect=main.TRUE, actual=main.TRUE,
+                onpass="Sleeping 60 seconds",
+                onfail="Something is terribly wrong with my math")
 
     def CASE7(self,main) :
         '''
-        Check state after failure
+        Check state after ONOS failure
         '''
         import os
         import json
@@ -642,8 +658,6 @@ class HATestSanity:
 
         description2 = "Compare switch roles from before failure"
         main.step(description2)
-
-
 
         current_json = json.loads(ONOS1_mastership)
         old_json = json.loads(mastership_state)
@@ -982,6 +996,9 @@ class HATestSanity:
         '''
         Clean up
         '''
+        description = "Test Cleanup"
+        main.log.report(description)
+        main.case(description)
         main.step("Killing tcpdumps")
         main.Mininet2.stop_tcpdump()
 
@@ -1017,3 +1034,8 @@ class HATestSanity:
         main.ONOSbench.onos_stop(ONOS5_ip)
         main.ONOSbench.onos_stop(ONOS6_ip)
         main.ONOSbench.onos_stop(ONOS7_ip)
+
+        #TODO: actually check something here
+        utilities.assert_equals(expect=main.TRUE, actual=main.TRUE,
+                onpass="Test cleanup successful",
+                onfail="Test cleanup NOT successful")

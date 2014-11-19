@@ -1129,6 +1129,46 @@ class OnosCliDriver(CLI):
             main.cleanup()
             main.exit()
 
+    # This method should be used after installing application: onos-app-sdnip
+    def routes(self, json_format=False):
+        '''
+        Optional:
+            * json_format: enable output formatting in json
+        Description:
+            Obtain all routes in the system
+        '''
+        try:
+            if json_format:
+                self.handle.sendline("routes -j")
+                self.handle.expect("routes -j")
+                self.handle.expect("onos>")
+                handle_tmp = self.handle.before
+                
+                ansi_escape = re.compile(r'\r\r\n\x1b[^m]*m')
+                handle = ansi_escape.sub('', handle_tmp)
+
+            else:
+                self.handle.sendline("")
+                self.handle.expect("onos>")
+
+                self.handle.sendline("routes")
+                self.handle.expect("onos>")
+                handle = self.handle.before
+
+            return handle
+
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name + " ::::::")
+            main.log.error(traceback.print_exc())
+            main.log.info(self.name + " ::::::")
+            main.cleanup()
+            main.exit()
+
     def intents(self, json_format = False):
         '''
         Optional:

@@ -75,6 +75,10 @@ class TopoPerfNext:
             pull_result = main.TRUE
             main.log.info("Skipped git checkout and pull")
 
+        #TODO: Uncomment when wiki posting works
+        #main.log.report("Commit information - ")
+        #main.ONOSbench.get_version(report=True)
+
         main.step("Using mvn clean & install")
         #mvn_result = main.ONOSbench.clean_install()
         mvn_result = main.TRUE
@@ -360,6 +364,17 @@ class TopoPerfNext:
                     and avg_delta_ofp_graph < threshold_max\
                     and int(i) > iter_ignore:
                 latency_ofp_to_graph_list.append(avg_delta_ofp_graph)
+            elif avg_delta_ofp_graph > (-10) and \
+                    avg_delta_ofp_graph < 0.0 and\
+                    int(i) > iter_ignore:
+                main.log.info("Sub-millisecond result likely; "+
+                    "negative result was rounded to 0")
+                #NOTE: Current metrics framework does not 
+                #support sub-millisecond accuracy. Therefore,
+                #if the result is negative, we can reasonably
+                #conclude sub-millisecond results and just 
+                #append the best rounded effort - 0 ms. 
+                latency_ofp_to_graph_list.append(0)
             else:
                 main.log.info("Results for ofp-to-graph "+\
                         "ignored due to excess in threshold")
@@ -509,7 +524,9 @@ class TopoPerfNext:
                 "Avg: "+str(latency_end_to_end_avg)+" ms "+
                 "Std Deviation: "+latency_end_to_end_std_dev+" ms")
         main.log.report("Switch add - OFP-to-Graph latency: "+\
-                "Avg: "+str(latency_ofp_to_graph_avg)+" ms "+
+                "Note: results are not accurate to sub-millisecond. "+
+                "Any sub-millisecond results are rounded to 0 ms. ")
+        main.log.report("Avg: "+str(latency_ofp_to_graph_avg)+" ms "+
                 "Std Deviation: "+latency_ofp_to_graph_std_dev+" ms")
         main.log.report("Switch add - TCP-to-OFP latency: "+\
                 "Avg: "+str(latency_tcp_to_ofp_avg)+" ms "+

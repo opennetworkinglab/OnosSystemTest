@@ -3,6 +3,10 @@
 #Topology Convergence scale-out test for ONOS-next
 #NOTE: This test supports up to 7 nodes scale-out scenario
 #
+#NOTE: Ensure that you have 'tablet.json' file 
+#      in the onos/tools/package/config directory
+#NOTE: You must start this test initially with 3 nodes
+#
 #andrew@onlab.us
 
 import time
@@ -23,7 +27,7 @@ class TopoConvNext:
         #******
         #Global cluster count for scale-out purposes
         global cluster_count 
-        cluster_count = 1 
+        cluster_count = 3 
         #******
         cell_name = main.params['ENV']['cellName']
 
@@ -41,12 +45,25 @@ class TopoConvNext:
         BENCH_ip = main.params['BENCH']['ip']
 
         main.case("Setting up test environment")
+        main.log.info("Uninstalling previous instances")
+        main.ONOSbench.onos_uninstall(node_ip = ONOS1_ip)
+        main.ONOSbench.onos_uninstall(node_ip = ONOS2_ip)
+        main.ONOSbench.onos_uninstall(node_ip = ONOS3_ip)
+        main.ONOSbench.onos_uninstall(node_ip = ONOS4_ip)
+        main.ONOSbench.onos_uninstall(node_ip = ONOS5_ip)
+        main.ONOSbench.onos_uninstall(node_ip = ONOS6_ip)
+        main.ONOSbench.onos_uninstall(node_ip = ONOS7_ip)
+      
+        main.case("Removing raft logs")
+        main.ONOSbench.onos_remove_raft_logs()
+
         main.log.report("Setting up test environment")
 
         main.step("Creating cell file")
         cell_file_result = main.ONOSbench.create_cell_file(
                 BENCH_ip, cell_name, MN1_ip, 
-                "onos-core,onos-app-metrics", ONOS1_ip)
+                "onos-core,onos-app-metrics", 
+                ONOS1_ip, ONOS2_ip, ONOS3_ip)
 
         main.step("Applying cell file to environment")
         cell_apply_result = main.ONOSbench.set_cell(cell_name)
@@ -70,10 +87,6 @@ class TopoConvNext:
         main.ONOS1cli.set_cell(cell_name)
         main.ONOS2cli.set_cell(cell_name)
         main.ONOS3cli.set_cell(cell_name)
-        main.ONOS4cli.set_cell(cell_name)
-        main.ONOS5cli.set_cell(cell_name)
-        main.ONOS6cli.set_cell(cell_name)
-        main.ONOS7cli.set_cell(cell_name)
     
         main.step("Creating ONOS package")
         package_result = main.ONOSbench.onos_package()
@@ -81,11 +94,15 @@ class TopoConvNext:
         #Start test with single node only
         main.step("Installing ONOS package")
         install1_result = main.ONOSbench.onos_install(node=ONOS1_ip)
+        install2_result = main.ONOSbench.onos_install(node=ONOS2_ip)
+        install3_result = main.ONOSbench.onos_install(node=ONOS3_ip)
 
         time.sleep(10)
 
         main.step("Start onos cli")
         cli1 = main.ONOS1cli.start_onos_cli(ONOS1_ip)
+        cli2 = main.ONOS2cli.start_onos_cli(ONOS2_ip)
+        cli3 = main.ONOS3cli.start_onos_cli(ONOS3_ip)
 
         main.step("Enable metrics feature")
         #main.ONOS1cli.feature_install("onos-app-metrics")
@@ -94,7 +111,8 @@ class TopoConvNext:
                 actual= cell_file_result and cell_apply_result and\
                         verify_cell_result and checkout_result and\
                         pull_result and mvn_result and\
-                        install1_result,
+                        install1_result and install2_result and\
+                        install3_result,
                 onpass="Test Environment setup successful",
                 onfail="Failed to setup test environment")
     
@@ -151,6 +169,7 @@ class TopoConvNext:
 
         assertion = main.TRUE
         sw_discovery_lat_list = []
+        syn_ack_delta_list = []
 
         main.case(str(num_sw)+" switch per "+str(cluster_count)+
                 " nodes convergence latency")
@@ -228,6 +247,32 @@ class TopoConvNext:
 
             main.log.info("Please wait for switch connection to timeout")
             time.sleep(60)
+            if cluster_count >= 3:
+                time.sleep(60)
+            if cluster_count >= 5:
+                time.sleep(30)
+            if cluster_count >= 6:
+                time.sleep(30)
+
+            if cluster_count >= 3:
+                main.ONOS1.tshark_grep("SYN, ACK",
+                        "/tmp/syn_ack_onos1_iter"+str(i)+".txt")
+                main.ONOS2.tshark_grep("SYN, ACK",
+                        "/tmp/syn_ack_onos2_iter"+str(i)+".txt")
+                main.ONOS3.tshark_grep("SYN, ACK",
+                        "/tmp/syn_ack_onos3_iter"+str(i)+".txt")
+            if cluster_count >= 4:
+                main.ONOS4.tshark_grep("SYN, ACK",
+                        "/tmp/syn_ack_onos4_iter"+str(i)+".txt")
+            if cluster_count >= 5:
+                main.ONOS5.tshark_grep("SYN, ACK",
+                        "/tmp/syn_ack_onos5_iter"+str(i)+".txt")
+            if cluster_count >= 6:
+                main.ONOS6.tshark_grep("SYN, ACK",
+                        "/tmp/syn_ack_onos6_iter"+str(i)+".txt")
+            if cluster_count == 7:
+                main.ONOS7.tshark_grep("SYN, ACK",
+                        "/tmp/syn_ack_onos7_iter"+str(i)+".txt")
 
             main.step("Flushing iptables and obtaining t0")
             t0_system = time.time()*1000
@@ -393,7 +438,8 @@ class TopoConvNext:
                 if cluster_count == 2:
                     if onos1_dev and onos2_dev:
                         main.log.info("All devices have been discovered"+
-                            " on all ONOS instances")
+                            " on all "+str(cluster_count)+
+                            " ONOS instances")
                         json_str_metrics_1 =\
                             main.ONOS1cli.topology_events_metrics()
                         json_str_metrics_2 =\
@@ -429,7 +475,14 @@ class TopoConvNext:
                 if cluster_count == 3:
                     if onos1_dev and onos2_dev and onos3_dev:
                         main.log.info("All devices have been discovered"+
-                            " on all ONOS instances")
+                            " on all "+str(cluster_count)+
+                            " ONOS instances")
+                        
+                        #TODO: Investigate this sleep
+                        #      added to 'pad' the results with 
+                        #      plenty of time to 'catch up'
+                        time.sleep(20)
+
                         json_str_metrics_1 =\
                             main.ONOS1cli.topology_events_metrics()
                         json_str_metrics_2 =\
@@ -530,6 +583,12 @@ class TopoConvNext:
                        onos4_dev and onos5_dev:
                         main.log.info("All devices have been discovered"+
                             " on all ONOS instances")
+                        
+                        #TODO: Investigate this sleep
+                        #      added to 'pad' the results with 
+                        #      plenty of time to 'catch up'
+                        time.sleep(20)
+                        
                         json_str_metrics_1 =\
                             main.ONOS1cli.topology_events_metrics()
                         json_str_metrics_2 =\
@@ -663,6 +722,12 @@ class TopoConvNext:
                        onos7_dev:
                         main.log.info("All devices have been discovered"+
                             " on all ONOS instances")
+                        
+                        #TODO: Investigate this sleep
+                        #      added to 'pad' the results with 
+                        #      plenty of time to 'catch up'
+                        time.sleep(20)
+                        
                         json_str_metrics_1 =\
                             main.ONOS1cli.topology_events_metrics()
                         json_str_metrics_2 =\
@@ -740,6 +805,93 @@ class TopoConvNext:
                 counter_loop += 1
                 time.sleep(3)
                 #END WHILE LOOP            
+            
+            main.ONOS1.tshark_stop()
+            syn_ack_timestamp_list = []
+
+            if cluster_count >= 3:
+                main.ONOS2.tshark_stop() 
+                main.ONOS3.tshark_stop()
+                time.sleep(5)
+                os.system("scp "+ONOS_user+"@"+ONOS1_ip+":"+
+                    "/tmp/syn_ack_onos1_iter"+str(i)+".txt /tmp/")
+                os.system("scp "+ONOS_user+"@"+ONOS2_ip+":"+
+                    "/tmp/syn_ack_onos2_iter"+str(i)+".txt /tmp/")
+                os.system("scp "+ONOS_user+"@"+ONOS3_ip+":"+
+                    "/tmp/syn_ack_onos3_iter"+str(i)+".txt /tmp/")
+                time.sleep(5)
+                #Read each of the files and append all
+                #SYN / ACK timestamps to the list
+                with open("/tmp/syn_ack_onos1_iter"+str(i)+".txt") as\
+                     f_onos1:
+                    for line in f_onos1:
+                        line = line.split(" ")
+                        syn_ack_timestamp_list.append(line[1])
+                with open("/tmp/syn_ack_onos2_iter"+str(i)+".txt") as\
+                     f_onos2:
+                    for line in f_onos2:
+                        line = line.split(" ")
+                        syn_ack_timestamp_list.append(line[1])
+                with open("/tmp/syn_ack_onos3_iter"+str(i)+".txt") as\
+                     f_onos3:
+                    for line in f_onos3:
+                        line = line.split(" ")
+                        syn_ack_timestamp_list.append(line[1])
+            if cluster_count >= 4:
+                main.ONOS4.tshark_stop() 
+                time.sleep(5)
+                os.system("scp "+ONOS_user+"@"+ONOS4_ip+":"+
+                    "/tmp/syn_ack_onos4_iter"+str(i)+".txt /tmp/")
+                time.sleep(5)
+                with open("/tmp/syn_ack_onos4_iter"+str(i)+".txt") as\
+                     f_onos4:
+                    for line in f_onos4:
+                        line = line.split(" ")
+                        syn_ack_timestamp_list.append(line[1])
+            if cluster_count >= 5:
+                main.ONOS5.tshark_stop()
+                time.sleep(5)
+                os.system("scp "+ONOS_user+"@"+ONOS5_ip+":"+
+                    "/tmp/syn_ack_onos5_iter"+str(i)+".txt /tmp/")
+                time.sleep(5)
+                with open("/tmp/syn_ack_onos5_iter"+str(i)+".txt") as\
+                     f_onos5:
+                    for line in f_onos5:
+                        line = line.split(" ")
+                        syn_ack_timestamp_list.append(line[1])
+            if cluster_count >= 6:
+                main.ONOS6.tshark_stop()
+                time.sleep(5)
+                os.system("scp "+ONOS_user+"@"+ONOS6_ip+":"+
+                    "/tmp/syn_ack_onos6_iter"+str(i)+".txt /tmp/")
+                time.sleep(5)
+                with open("/tmp/syn_ack_onos6_iter"+str(i)+".txt") as\
+                     f_onos6:
+                    for line in f_onos6:
+                        line = line.split(" ")
+                        syn_ack_timestamp_list.append(line[1])
+            if cluster_count == 7:
+                main.ONOS7.tshark_stop()
+                time.sleep(5)
+                os.system("scp "+ONOS_user+"@"+ONOS7_ip+":"+
+                    "/tmp/syn_ack_onos7_iter"+str(i)+".txt /tmp/")
+                time.sleep(5)
+                with open("/tmp/syn_ack_onos7_iter"+str(i)+".txt") as\
+                     f_onos7:
+                    for line in f_onos7:
+                        line = line.split(" ")
+                        syn_ack_timestamp_list.append(line[1])
+          
+            #Sort the list by timestamp
+            syn_ack_timestamp_list = sorted(syn_ack_timestamp_list)
+            
+            syn_ack_delta =\
+                    int(float(syn_ack_timestamp_list[-1])*1000) -\
+                    int(float(syn_ack_timestamp_list[0])*1000) 
+
+            main.log.info("Switch connection attempt delta iteration "+
+                    str(i)+": "+str(syn_ack_delta))
+            syn_ack_delta_list.append(syn_ack_delta)
             #END ITERATION LOOP
         #REPORT HERE 
 
@@ -749,7 +901,11 @@ class TopoConvNext:
             sw_lat_dev = numpy.std(sw_discovery_lat_list)
         else: 
             assertion = main.FALSE
-
+        
+        main.log.report("Switch connection attempt time avg "+
+            "(last sw SYN/ACK time - first sw SYN/ACK time) "+
+            str(sum(syn_ack_delta_list)/len(syn_ack_delta_list)) +
+            " ms")
         main.log.report("Switch discovery lat for "+\
             str(cluster_count)+" instance(s), 100 sw each: ")
         main.log.report("Avg: "+str(sw_lat_avg)+" ms")
@@ -772,16 +928,6 @@ class TopoConvNext:
         import requests
         import json
        
-        ONOS_ip_list = []
-        ONOS_ip_list.append('0') #Append 0 for index 0
-        ONOS_ip_list.append(main.params['CTRL']['ip1'])
-        ONOS_ip_list.append(main.params['CTRL']['ip2'])
-        ONOS_ip_list.append(main.params['CTRL']['ip3'])
-        ONOS_ip_list.append(main.params['CTRL']['ip4'])
-        ONOS_ip_list.append(main.params['CTRL']['ip5'])
-        ONOS_ip_list.append(main.params['CTRL']['ip6'])
-        ONOS_ip_list.append(main.params['CTRL']['ip7'])
-        
         ONOS1_ip = main.params['CTRL']['ip1']
         ONOS2_ip = main.params['CTRL']['ip2']
         ONOS3_ip = main.params['CTRL']['ip3']
@@ -795,240 +941,79 @@ class TopoConvNext:
         MN1_ip = main.params['MN']['ip1']
         BENCH_ip = main.params['BENCH']['ip']
 
-        main.step("Creating cell file")
-        cell_file_result = main.ONOSbench.create_cell_file(
-                BENCH_ip, cell_name, MN1_ip, "onos-core",
-                ONOS1_ip, ONOS2_ip, ONOS3_ip, ONOS4_ip,
-                ONOS5_ip, ONOS6_ip, ONOS7_ip)
-
-        main.step("Applying cell file to environment")
-        cell_apply_result = main.ONOSbench.set_cell(cell_name)
-        verify_cell_result = main.ONOSbench.verify_cell()
-
-
-        #NOTE:We start with cluster_count at 1. The first 
+        #NOTE:We start with cluster_count at 3. The first 
         #case already initialized ONOS1. Increase the
-        #cluster count and start from 2.
+        #cluster count and start from 3.
         #You can optionally change the increment to
-        #test steps of node sizes, such as 1,3,5,7
+        #test steps of node sizes, such as 3,5,7
         
         global cluster_count
         cluster_count += 2 
-       
+      
+        install_result = main.FALSE
         #Supports up to 7 node configuration
         #TODO: Cleanup this ridiculous repetitive code 
-        if cluster_count == 2:
-            main.log.info("Closing previous ONOS connections")
-            main.ONOS1cli.logout()
-            main.log.info("Creating new cell file with "+
-                     str(node)+" nodes")
-            main.ONOSbench.create_cell_file(BENCH_ip, cell_name,
-                MN1_ip, "onos-core", ONOS1_ip, ONOS2_ip)
-            main.log.info("Applying cell file to environment")
-            main.ONOSbench.set_cell(cell_name)
-            main.ONOS1cli.set_cell(cell_name)
-            main.ONOS2cli.set_cell(cell_name)
-            main.log.info("Packaging new ONOS")
-            main.ONOSbench.onos_package()
-            main.log.info("Installing ONOS")
-            main.ONOSbench.onos_install(node=ONOS1_ip)
-            main.ONOSbench.onos_install(node=ONOS2_ip)
+        if cluster_count == 4:
+            main.log.info("Installing ONOS on node 4")
+            install_result = \
+                main.ONOSbench.onos_install(node=ONOS4_ip)
             main.log.info("Starting CLI")
-            main.ONOS1cli.start_onos_cli(ONOS1_ip)
-            main.ONOS2cli.start_onos_cli(ONOS2_ip)
-            main.log.info("Installing metrics feature")
-            main.ONOS1cli.feature_install("onos-app-metrics")
-            main.ONOS2cli.feature_install("onos-app-metrics")
-        elif cluster_count == 3:
-            main.log.info("Closing previous ONOS connections")
-            main.ONOS1cli.logout()
-            main.ONOS2cli.logout()
-            main.log.info("Creating new cell file with "+
-                    str(node)+" nodes")
-            main.ONOSbench.create_cell_file(BENCH_ip, cell_name,
-                MN1_ip, "onos-core", ONOS1_ip, ONOS2_ip, ONOS3_ip)
-            main.log.info("Applying cell file to environment")
-            main.ONOSbench.set_cell(cell_name)
-            main.ONOS1cli.set_cell(cell_name)
-            main.ONOS2cli.set_cell(cell_name)
-            main.ONOS3cli.set_cell(cell_name)
-            main.log.info("Packaging new ONOS")
-            main.ONOSbench.onos_package()
-            main.log.info("Installing ONOS")
-            main.ONOSbench.onos_install(node=ONOS1_ip)
-            main.ONOSbench.onos_install(node=ONOS2_ip)
-            main.ONOSbench.onos_install(node=ONOS3_ip)
-            main.log.info("Starting CLI")
-            main.ONOS1cli.start_onos_cli(ONOS1_ip)
-            main.ONOS2cli.start_onos_cli(ONOS2_ip)
-            main.ONOS3cli.start_onos_cli(ONOS3_ip)
-            main.log.info("Installing metrics feature")
-            main.ONOS1cli.feature_install("onos-app-metrics")
-            main.ONOS2cli.feature_install("onos-app-metrics")
-            main.ONOS3cli.feature_install("onos-app-metrics")
-        elif cluster_count == 4:
-            main.log.info("Closing previous ONOS connections")
-            main.ONOS1cli.logout()
-            main.ONOS2cli.logout()
-            main.ONOS3cli.logout()
-            main.log.info("Creating new cell file with "+
-                    str(node)+" nodes")
-            main.ONOSbench.create_cell_file(BENCH_ip, cell_name,
-                MN1_ip, "onos-core", ONOS1_ip, ONOS2_ip, ONOS3_ip,
-                ONOS4_ip)
-            main.log.info("Applying cell file to environment")
-            main.ONOSbench.set_cell(cell_name)
-            main.ONOS1cli.set_cell(cell_name)
-            main.ONOS2cli.set_cell(cell_name)
-            main.ONOS3cli.set_cell(cell_name)
-            main.ONOS4cli.set_cell(cell_name)
-            main.log.info("Packaging new ONOS")
-            main.ONOSbench.onos_package()
-            main.log.info("Installing ONOS")
-            main.ONOSbench.onos_install(node=ONOS1_ip)
-            main.ONOSbench.onos_install(node=ONOS2_ip)
-            main.ONOSbench.onos_install(node=ONOS3_ip)
-            main.ONOSbench.onos_install(node=ONOS4_ip)
-            main.log.info("Starting CLI")
-            main.ONOS1cli.start_onos_cli(ONOS1_ip)
-            main.ONOS2cli.start_onos_cli(ONOS2_ip)
-            main.ONOS3cli.start_onos_cli(ONOS3_ip)
             main.ONOS4cli.start_onos_cli(ONOS4_ip)
-            main.log.info("Installing metrics feature")
-            main.ONOS1cli.feature_install("onos-app-metrics")
-            main.ONOS2cli.feature_install("onos-app-metrics")
-            main.ONOS3cli.feature_install("onos-app-metrics")
-            main.ONOS4cli.feature_install("onos-app-metrics")
+            main.ONOS1cli.add_node(ONOS4_ip, ONOS4_ip)
+        
         elif cluster_count == 5:
-            main.log.info("Closing previous ONOS connections")
-            main.ONOS1cli.logout()
-            main.ONOS2cli.logout()
-            main.ONOS3cli.logout()
-            main.ONOS4cli.logout()
-            main.log.info("Creating new cell file with "+
-                    str(node)+" nodes")
-            main.ONOSbench.create_cell_file(BENCH_ip, cell_name,
-                MN1_ip, "onos-core", ONOS1_ip, ONOS2_ip, ONOS3_ip,
-                ONOS4_ip, ONOS5_ip)
-            main.log.info("Applying cell file to environment")
-            main.ONOSbench.set_cell(cell_name)
-            main.ONOS1cli.set_cell(cell_name)
-            main.ONOS2cli.set_cell(cell_name)
-            main.ONOS3cli.set_cell(cell_name)
-            main.ONOS4cli.set_cell(cell_name)
-            main.ONOS5cli.set_cell(cell_name)
-            main.log.info("Packaging new ONOS")
-            main.ONOSbench.onos_package()
-            main.log.info("Installing ONOS")
-            main.ONOSbench.onos_install(node=ONOS1_ip)
-            main.ONOSbench.onos_install(node=ONOS2_ip)
-            main.ONOSbench.onos_install(node=ONOS3_ip)
-            main.ONOSbench.onos_install(node=ONOS4_ip)
-            main.ONOSbench.onos_install(node=ONOS5_ip)
+            main.log.info("Installing ONOS on node 5")
+            install_result1 = \
+                main.ONOSbench.onos_install(options="",node=ONOS4_ip)
+            install_result2 = \
+                main.ONOSbench.onos_install(node=ONOS5_ip)
             main.log.info("Starting CLI")
-            main.ONOS1cli.start_onos_cli(ONOS1_ip)
-            main.ONOS2cli.start_onos_cli(ONOS2_ip)
-            main.ONOS3cli.start_onos_cli(ONOS3_ip)
             main.ONOS4cli.start_onos_cli(ONOS4_ip)
             main.ONOS5cli.start_onos_cli(ONOS5_ip)
-            main.log.info("Installing metrics feature")
-            main.ONOS1cli.feature_install("onos-app-metrics")
-            main.ONOS2cli.feature_install("onos-app-metrics")
-            main.ONOS3cli.feature_install("onos-app-metrics")
-            main.ONOS4cli.feature_install("onos-app-metrics")
-            main.ONOS5cli.feature_install("onos-app-metrics")
+            main.ONOS1cli.add_node(ONOS4_ip, ONOS4_ip)
+            main.ONOS1cli.add_node(ONOS5_ip, ONOS5_ip)
+            install_result = install_result1 and install_result2
+
         elif cluster_count == 6:
-            main.log.info("Closing previous ONOS connections")
-            main.ONOS1cli.logout()
-            main.ONOS2cli.logout()
-            main.ONOS3cli.logout()
-            main.ONOS4cli.logout()
-            main.ONOS5cli.logout()
-            main.log.info("Creating new cell file with "+
-                    str(node)+" nodes")
-            main.ONOSbench.create_cell_file(BENCH_ip, cell_name,
-                MN1_ip, "onos-core", ONOS1_ip, ONOS2_ip, ONOS3_ip,
-                ONOS4_ip, ONOS5_ip, ONOS6_ip)
-            main.log.info("Applying cell file to environment")
-            main.ONOSbench.set_cell(cell_name)
-            main.ONOS1cli.set_cell(cell_name)
-            main.ONOS2cli.set_cell(cell_name)
-            main.ONOS3cli.set_cell(cell_name)
-            main.ONOS4cli.set_cell(cell_name)
-            main.ONOS5cli.set_cell(cell_name)
-            main.ONOS6cli.set_cell(cell_name)
-            main.log.info("Packaging new ONOS")
-            main.ONOSbench.onos_package()
-            main.log.info("Installing ONOS")
-            main.ONOSbench.onos_install(node=ONOS1_ip)
-            main.ONOSbench.onos_install(node=ONOS2_ip)
-            main.ONOSbench.onos_install(node=ONOS3_ip)
-            main.ONOSbench.onos_install(node=ONOS4_ip)
-            main.ONOSbench.onos_install(node=ONOS5_ip)
-            main.ONOSbench.onos_install(node=ONOS6_ip)
+            main.log.info("Installing ONOS on node 6")
+            install_result1 = \
+                main.ONOSbench.onos_install(options="",node=ONOS4_ip)
+            install_result2 = \
+                main.ONOSbench.onos_install(options="",node=ONOS5_ip)
+            install_result3 = \
+                main.ONOSbench.onos_install(node=ONOS6_ip)
             main.log.info("Starting CLI")
-            main.ONOS1cli.start_onos_cli(ONOS1_ip)
-            main.ONOS2cli.start_onos_cli(ONOS2_ip)
-            main.ONOS3cli.start_onos_cli(ONOS3_ip)
             main.ONOS4cli.start_onos_cli(ONOS4_ip)
             main.ONOS5cli.start_onos_cli(ONOS5_ip)
             main.ONOS6cli.start_onos_cli(ONOS6_ip)
-            main.log.info("Installing metrics feature")
-            main.ONOS1cli.feature_install("onos-app-metrics")
-            main.ONOS2cli.feature_install("onos-app-metrics")
-            main.ONOS3cli.feature_install("onos-app-metrics")
-            main.ONOS4cli.feature_install("onos-app-metrics")
-            main.ONOS5cli.feature_install("onos-app-metrics")
-            main.ONOS6cli.feature_install("onos-app-metrics")
+            main.ONOS1cli.add_node(ONOS4_ip, ONOS4_ip)
+            main.ONOS1cli.add_node(ONOS5_ip, ONOS5_ip)
+            main.ONOS1cli.add_node(ONOS6_ip, ONOS6_ip)
+            install_result = install_result1 and install_result2 and\
+                    install_result3
+
         elif cluster_count == 7:
-            main.log.info("Closing previous ONOS connections")
-            main.ONOS1cli.logout()
-            main.ONOS2cli.logout()
-            main.ONOS3cli.logout()
-            main.ONOS4cli.logout()
-            main.ONOS5cli.logout()
-            main.log.info("Creating new cell file with "+
-                    str(node)+" nodes")
-            main.ONOSbench.create_cell_file(BENCH_ip, cell_name,
-                MN1_ip, "onos-core", ONOS1_ip, ONOS2_ip, ONOS3_ip,
-                ONOS4_ip, ONOS5_ip, ONOS6_ip, ONOS7_ip)
-            main.log.info("Applying cell file to environment")
-            main.ONOSbench.set_cell(cell_name)
-            main.ONOS1cli.set_cell(cell_name)
-            main.ONOS2cli.set_cell(cell_name)
-            main.ONOS3cli.set_cell(cell_name)
-            main.ONOS4cli.set_cell(cell_name)
-            main.ONOS5cli.set_cell(cell_name)
-            main.ONOS6cli.set_cell(cell_name)
-            main.ONOS7cli.set_cell(cell_name)
-            main.log.info("Packaging new ONOS")
-            main.ONOSbench.onos_package()
-            main.log.info("Installing ONOS")
-            main.ONOSbench.onos_install(node=ONOS1_ip)
-            main.ONOSbench.onos_install(node=ONOS2_ip)
-            main.ONOSbench.onos_install(node=ONOS3_ip)
-            main.ONOSbench.onos_install(node=ONOS4_ip)
-            main.ONOSbench.onos_install(node=ONOS5_ip)
-            main.ONOSbench.onos_install(node=ONOS6_ip)
-            main.ONOSbench.onos_install(node=ONOS7_ip)
+            main.log.info("Installing ONOS on node 7")
+            install_result1 = \
+                main.ONOSbench.onos_install(options="",node=ONOS4_ip)
+            install_result2 = \
+                main.ONOSbench.onos_install(options="",node=ONOS5_ip)
+            install_result3 = \
+                main.ONOSbench.onos_install(options="",node=ONOS6_ip)
+            install_result4 = \
+                main.ONOSbench.onos_install(node=ONOS7_ip)
             main.log.info("Starting CLI")
-            main.ONOS1cli.start_onos_cli(ONOS1_ip)
-            main.ONOS2cli.start_onos_cli(ONOS2_ip)
-            main.ONOS3cli.start_onos_cli(ONOS3_ip)
             main.ONOS4cli.start_onos_cli(ONOS4_ip)
             main.ONOS5cli.start_onos_cli(ONOS5_ip)
             main.ONOS6cli.start_onos_cli(ONOS6_ip)
             main.ONOS7cli.start_onos_cli(ONOS7_ip) 
-            main.log.info("Installing metrics feature")
-            main.ONOS1cli.feature_install("onos-app-metrics")
-            main.ONOS2cli.feature_install("onos-app-metrics")
-            main.ONOS3cli.feature_install("onos-app-metrics")
-            main.ONOS4cli.feature_install("onos-app-metrics")
-            main.ONOS5cli.feature_install("onos-app-metrics")
-            main.ONOS6cli.feature_install("onos-app-metrics")
-            main.ONOS7cli.feature_install("onos-app-metrics")
+            main.ONOS1cli.add_node(ONOS4_ip, ONOS4_ip)
+            main.ONOS1cli.add_node(ONOS5_ip, ONOS5_ip)
+            main.ONOS1cli.add_node(ONOS6_ip, ONOS6_ip)
+            main.ONOS1cli.add_node(ONOS7_ip, ONOS7_ip)
 
-        install_result = main.TRUE
+            install_result = install_result1 and install_result2 and\
+                    install_result3 and install_result4
 
         time.sleep(5)
 

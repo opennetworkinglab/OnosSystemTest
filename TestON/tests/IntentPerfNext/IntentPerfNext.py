@@ -111,10 +111,25 @@ class IntentPerfNext:
         install_time = main.params['JSON']['installedTime']
         wdRequest_time = main.params['JSON']['wdRequestTime']
         withdrawn_time = main.params['JSON']['withdrawnTime']
+        
+        intent_add_lat_list = []
+
+        #Assign 'linear' switch format for basic intent testing
+        main.Mininet1.assign_sw_controller(
+                sw="1", ip1=ONOS1_ip,port1=default_sw_port)
+        main.Mininet1.assign_sw_controller(
+                sw="2", ip1=ONOS2_ip,port1=default_sw_port)
+        main.Mininet1.assign_sw_controller(
+                sw="3", ip1=ONOS2_ip,port1=default_sw_port)
+        main.Mininet1.assign_sw_controller(
+                sw="4", ip1=ONOS2_ip,port1=default_sw_port)
+        main.Mininet1.assign_sw_controller(
+                sw="5", ip1=ONOS3_ip,port1=default_sw_port)
+
+        time.sleep(10)
 
         devices_json_str = main.ONOS1cli.devices()
         devices_json_obj = json.loads(devices_json_str)
-
         device_id_list = []
 
         #Obtain device id list in ONOS format.
@@ -122,21 +137,11 @@ class IntentPerfNext:
         for device in devices_json_obj:
             device_id_list.append(device['id'])
 
-        intent_add_lat_list = []
-
-        #Assign 'linear' switch format for basic intent testing
-        main.Mininet1.assign_sw_controller(
-                sw="1", ip=ONOS1_ip,port1=default_sw_port)
-        main.Mininet1.assign_sw_controller(
-                sw="3", ip=ONOS2_ip,port1=default_sw_port)
-        main.Mininet1.assign_sw_controller(
-                sw="5", ip=ONOS3_ip,port1=default_sw_port)
-
         for i in range(0, int(num_iter)):
             #add_point_intent(ingr_device,  egr_device,
             #                 ingr_port,    egr_port)
             main.ONOS1cli.add_point_intent(
-                device_id_list[0]+"/2", device_id_list[2]+"/1")
+                device_id_list[0]+"/1", device_id_list[4]+"/1")
         
             #Allow some time for intents to propagate
             time.sleep(5)
@@ -241,6 +246,7 @@ class IntentPerfNext:
         install_time = main.params['JSON']['installedTime']
         wdRequest_time = main.params['JSON']['wdRequestTime']
         withdrawn_time = main.params['JSON']['withdrawnTime']
+
         devices_json_str = main.ONOS1cli.devices()
         devices_json_obj = json.loads(devices_json_str)
 
@@ -251,27 +257,33 @@ class IntentPerfNext:
         for device in devices_json_obj:
             device_id_list.append(device['id'])
 
-        #Completes the re-route path by assigning 
-        #additional switches to the topology assigned in case1
-        main.Mininet1.assign_sw_controller(
-                sw="s2",ip1=ONOS2_ip,port1=default_sw_port)
-        main.Mininet1.assign_sw_controller(
-                sw="s4",ip1=ONOS2_ip,port1=default_sw_port)
-
         intent_reroute_lat_list = []
+
+        print device_id_list
 
         for i in range(0, int(num_iter)):
             #add_point_intent(ingr_device, ingr_port, 
             #                 egr_device, egr_port)
             main.ONOS1cli.add_point_intent(
-                device_id_list[0]+"/2", device_id_list[2]+"/1")
+                device_id_list[0]+"/2", device_id_list[4]+"/1")
        
-            #TODO: check for correct intent installation
             time.sleep(5)
+
+            intents_str = main.ONOS1cli.intents(json_format=True)
+            intents_obj = json.loads(intents_str)
+            for intent in intents_obj:
+                if intent['state'] == "INSTALLED":
+                    main.log.info("Intent installed successfully")
+                    intent_id = intent['id']
+                else:
+                    #TODO: Add error handling
+                    main.log.info("Intent installation failed")
+                    intent_id = ""
 
             #NOTE: this interface is specific to
             #      topo-intentFlower.py topology
             #      reroute case.
+            main.log.info("Disabling interface s2-eth3 <--> s4")
             main.Mininet1.handle.sendline(
                     "sh ifconfig s2-eth3 down")
             t0_system = time.time()*1000
@@ -317,6 +329,70 @@ class IntentPerfNext:
             else:
                 main.log.info("Intent reroute latency exceeded "+
                         "threshold. Skipping iteration "+str(i))
+
+            #TODO: Possibly put this in the driver function
+            main.log.info("Removing intents for next iteration")
+            
+            #NOTE: TODO: Currently, the remove intent will
+            #            not trigger the intent request 
+            #            timestamp. Thus we cannot use the same
+            #            intent to get the latency over iterations.
+            #            we can 1) install different intents every
+            #            time, or 2) look into state machine and 
+            #            determine what timestsamp to get
+            main.ONOS1cli.remove_intent(intent_id)
+            
+        #TODO: Report framework
+        print intent_reroute_lat_list
+
+
+    def CASE4(self, main):
+        import time
+        import json
+        import requests
+        import os
+
+        ONOS1_ip = main.params['CTRL']['ip1']
+        ONOS2_ip = main.params['CTRL']['ip2']
+        ONOS3_ip = main.params['CTRL']['ip3']
+        ONOS_user = main.params['CTRL']['user']
+
+        default_sw_port = main.params['CTRL']['port1']
+    
+        batch_intent_size = main.params['TEST']['batchIntentSize']
+
+        #number of iterations of case
+        num_iter = main.params['TEST']['numIter']
+        
+        main.Mininet1.assign_sw_controller(
+                sw="1", ip1=ONOS1_ip,port1=default_sw_port)
+        main.Mininet1.assign_sw_controller(
+                sw="2", ip1=ONOS2_ip,port1=default_sw_port)
+        main.Mininet1.assign_sw_controller(
+                sw="3", ip1=ONOS2_ip,port1=default_sw_port)
+        main.Mininet1.assign_sw_controller(
+                sw="4", ip1=ONOS2_ip,port1=default_sw_port)
+        main.Mininet1.assign_sw_controller(
+                sw="5", ip1=ONOS3_ip,port1=default_sw_port)
+
+        main.log.report("Batch intent installation test of "+
+                str(batch_intent_size) +" intents")
+
+        main.log.info("Getting list of available devices")
+        device_id_list = []
+        json_str = main.ONOS1cli.devices()
+        json_obj = json.loads(json_str)
+        for device in json_obj:
+            device_id_list.append(device['id'])
+
+        for i in range(0, int(num_iter)):
+            main.log.info("Pushing "+batch_intent_size+" intents")
+            
+            batch_result = main.ONOS1cli.push_test_intents(
+                "of:0000000000000001/1", "of:0000000000000005/2", 
+                batch_intent_size)
+
+            time.sleep(5)
 
 
 

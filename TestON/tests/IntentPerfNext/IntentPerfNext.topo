@@ -56,7 +56,7 @@
                 <arg1> --custom topo-intentFlower.py </arg1>
                 <arg2> --arp --mac --topo mytopo</arg2>
                 <arg3> </arg3>
-                <controller> remote,ip=10.128.174.1 </controller>
+                <controller> remote </controller>
             </COMPONENTS>
         </Mininet1>
 

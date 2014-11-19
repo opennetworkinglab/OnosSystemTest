@@ -1202,6 +1202,51 @@ class OnosCliDriver(CLI):
             main.cleanup()
             main.exit()
 
+    def push_test_intents(self, dpid_src, dpid_dst, num_intents,
+            report=True):
+        '''
+        Description:
+            Push a number of intents in a batch format to 
+            a specific point-to-point intent definition
+        Required:
+            * dpid_src: specify source dpid
+            * dpid_dst: specify destination dpid
+            * num_intents: specify number of intents to push
+        Optional:
+            * report: default True, returns latency information
+        '''
+        try:
+            cmd = "push-test-intents "+\
+                  str(dpid_src)+" "+str(dpid_dst)+" "+\
+                  str(num_intents)
+            self.handle.sendline(cmd)
+            self.handle.expect(cmd)
+            self.handle.expect("onos>")
+                
+            handle = self.handle.before
+              
+            #Some color thing that we want to escape
+            ansi_escape = re.compile(r'\r\r\n\x1b[^m]*m')
+            handle = ansi_escape.sub('', handle)
+    
+            if report:
+                main.log.info(handle)
+                return handle
+            else:
+                return main.TRUE
+
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()
+
     def intents_events_metrics(self, json_format=True):
         '''
         Description:Returns topology metrics 

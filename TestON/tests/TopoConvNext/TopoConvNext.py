@@ -54,9 +54,6 @@ class TopoConvNext:
         main.ONOSbench.onos_uninstall(node_ip = ONOS6_ip)
         main.ONOSbench.onos_uninstall(node_ip = ONOS7_ip)
       
-        main.case("Removing raft logs")
-        main.ONOSbench.onos_remove_raft_logs()
-
         main.log.report("Setting up test environment")
 
         main.step("Creating cell file")
@@ -69,6 +66,9 @@ class TopoConvNext:
         cell_apply_result = main.ONOSbench.set_cell(cell_name)
         verify_cell_result = main.ONOSbench.verify_cell()
         
+        main.case("Removing raft logs")
+        main.ONOSbench.onos_remove_raft_logs()
+        
         main.step("Git checkout and pull "+checkout_branch)
         if git_pull == 'on':
             checkout_result = \
@@ -78,6 +78,9 @@ class TopoConvNext:
             checkout_result = main.TRUE
             pull_result = main.TRUE
             main.log.info("Skipped git checkout and pull")
+
+        main.log.report("Commit information - ")
+        main.ONOSbench.get_version()
 
         main.step("Using mvn clean & install")
         #mvn_result = main.ONOSbench.clean_install()
@@ -181,10 +184,10 @@ class TopoConvNext:
             report_str += (str(node) + " ") 
         main.log.report(report_str)
         
-        main.step("Assigning "+num_sw+" switches to each ONOS")
+        main.step("Distributing "+num_sw+" switches to each ONOS")
         index = 1 
         for node in range(1, cluster_count+1):
-            for i in range(index, int(num_sw)+index):
+            for i in range(index, (int(num_sw)/cluster_count)+index):
                 main.Mininet1.assign_sw_controller(
                         sw=str(i),
                         ip1=ONOS_ip_list[node],
@@ -246,9 +249,11 @@ class TopoConvNext:
                     MN1_ip+" --dport "+default_sw_port+" -j DROP")
 
             main.log.info("Please wait for switch connection to timeout")
-            time.sleep(60)
-            if cluster_count >= 3:
-                time.sleep(60)
+           
+
+            #time.sleep(60)
+            #if cluster_count >= 3:
+            #    time.sleep(60)
             if cluster_count >= 5:
                 time.sleep(30)
             if cluster_count >= 6:
@@ -273,16 +278,35 @@ class TopoConvNext:
             if cluster_count == 7:
                 main.ONOS7.tshark_grep("SYN, ACK",
                         "/tmp/syn_ack_onos7_iter"+str(i)+".txt")
+           
+            loop_count = 0
+            device_count = 0
+            while loop_count < 60: 
+                main.log.info("Checking devices for device down")
+                device_str = main.ONOS1cli.devices()
+                device_json = json.loads(device_str)
+                for device in device_json:
+                    if device['available'] == False:
+                        print device_count
+                        device_count += 1
+                    else:
+                        device_count = 0
+                if device_count >= int(num_sw)*int(cluster_count):
+                    main.step("Flushing iptables and obtaining t0")
+                    t0_system = time.time()*1000
+                    main.ONOS1.handle.sendline("sudo iptables -F")
+                    main.ONOS2.handle.sendline("sudo iptables -F")
+                    main.ONOS3.handle.sendline("sudo iptables -F")
+                    main.ONOS4.handle.sendline("sudo iptables -F")
+                    main.ONOS5.handle.sendline("sudo iptables -F")
+                    main.ONOS6.handle.sendline("sudo iptables -F")
+                    main.ONOS7.handle.sendline("sudo iptables -F")
+                    
+                    break
+                
+                time.sleep(1)
 
-            main.step("Flushing iptables and obtaining t0")
-            t0_system = time.time()*1000
-            main.ONOS1.handle.sendline("sudo iptables -F")
-            main.ONOS2.handle.sendline("sudo iptables -F")
-            main.ONOS3.handle.sendline("sudo iptables -F")
-            main.ONOS4.handle.sendline("sudo iptables -F")
-            main.ONOS5.handle.sendline("sudo iptables -F")
-            main.ONOS6.handle.sendline("sudo iptables -F")
-            main.ONOS7.handle.sendline("sudo iptables -F")
+            main.log.info("System time t0: "+str(t0_system))
 
             counter_loop = 0
             counter_avail1 = 0
@@ -481,7 +505,7 @@ class TopoConvNext:
                         #TODO: Investigate this sleep
                         #      added to 'pad' the results with 
                         #      plenty of time to 'catch up'
-                        time.sleep(20)
+                        time.sleep(5)
 
                         json_str_metrics_1 =\
                             main.ONOS1cli.topology_events_metrics()
@@ -505,6 +529,9 @@ class TopoConvNext:
                             int(graph_timestamp_2) - int(t0_system)
                         graph_lat_3 = \
                             int(graph_timestamp_3) - int(t0_system)
+
+                        main.log.info("DEBUG: graph_timestamp_1: "+
+                                str(graph_timestamp_1))
 
                         avg_graph_lat = \
                             (int(graph_lat_1) +\
@@ -587,7 +614,7 @@ class TopoConvNext:
                         #TODO: Investigate this sleep
                         #      added to 'pad' the results with 
                         #      plenty of time to 'catch up'
-                        time.sleep(20)
+                        time.sleep(5)
                         
                         json_str_metrics_1 =\
                             main.ONOS1cli.topology_events_metrics()
@@ -726,7 +753,7 @@ class TopoConvNext:
                         #TODO: Investigate this sleep
                         #      added to 'pad' the results with 
                         #      plenty of time to 'catch up'
-                        time.sleep(20)
+                        time.sleep(5)
                         
                         json_str_metrics_1 =\
                             main.ONOS1cli.topology_events_metrics()

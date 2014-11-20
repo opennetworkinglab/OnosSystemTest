@@ -199,6 +199,8 @@ class OnosCliDriver(CLI):
                 i = self.handle.expect(["onos>",pexpect.TIMEOUT],
                         timeout=30)
                 if i == 0:
+                    main.log.info(str(ONOS_ip)+" CLI Started "+
+                        "successfully after retry attempt")
                     return main.TRUE
                 else:
                     main.log.error("Connection to CLI "+\

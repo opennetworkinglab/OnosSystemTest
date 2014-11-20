@@ -27,6 +27,8 @@ class TopoConvNext:
         #******
         #Global cluster count for scale-out purposes
         global cluster_count 
+        global topo_iteration
+        topo_iteration = 1
         cluster_count = 3 
         #******
         cell_name = main.params['ENV']['cellName']
@@ -46,9 +48,9 @@ class TopoConvNext:
 
         main.case("Setting up test environment")
         main.log.info("Uninstalling previous instances")
-        main.ONOSbench.onos_uninstall(node_ip = ONOS1_ip)
-        main.ONOSbench.onos_uninstall(node_ip = ONOS2_ip)
-        main.ONOSbench.onos_uninstall(node_ip = ONOS3_ip)
+        #main.ONOSbench.onos_uninstall(node_ip = ONOS1_ip)
+        #main.ONOSbench.onos_uninstall(node_ip = ONOS2_ip)
+        #main.ONOSbench.onos_uninstall(node_ip = ONOS3_ip)
         main.ONOSbench.onos_uninstall(node_ip = ONOS4_ip)
         main.ONOSbench.onos_uninstall(node_ip = ONOS5_ip)
         main.ONOSbench.onos_uninstall(node_ip = ONOS6_ip)
@@ -66,7 +68,7 @@ class TopoConvNext:
         cell_apply_result = main.ONOSbench.set_cell(cell_name)
         verify_cell_result = main.ONOSbench.verify_cell()
         
-        main.case("Removing raft logs")
+        main.step("Removing raft logs")
         main.ONOSbench.onos_remove_raft_logs()
         
         main.step("Git checkout and pull "+checkout_branch)
@@ -157,7 +159,19 @@ class TopoConvNext:
        
         #Number of iterations of case
         num_iter = main.params['TEST']['numIter']
-        num_sw = main.params['TEST']['numSwitch']
+        
+        #***********
+        #Global number of switches that change 
+        #throughout the test
+        global num_sw
+        global topo_iteration    
+        if topo_iteration == 1:
+            num_sw = main.params['TEST']['numSwitch1']
+        elif topo_iteration == 2:
+            num_sw = main.params['TEST']['numSwitch2']
+        elif topo_iteration == 3:
+            num_sw = main.params['TEST']['numSwitch3']
+        #***********
 
         #Timestamp 'keys' for json metrics output.
         #These are subject to change, hence moved into params
@@ -174,8 +188,8 @@ class TopoConvNext:
         sw_discovery_lat_list = []
         syn_ack_delta_list = []
 
-        main.case(str(num_sw)+" switch per "+str(cluster_count)+
-                " nodes convergence latency")
+        main.case(str(num_sw)+" switches distributed across "+
+                str(cluster_count)+" nodes convergence latency")
        
         main.log.report("Large topology convergence and scale-out test")
         main.log.report("Currently active ONOS node(s): ")
@@ -254,10 +268,10 @@ class TopoConvNext:
             #time.sleep(60)
             #if cluster_count >= 3:
             #    time.sleep(60)
-            if cluster_count >= 5:
-                time.sleep(30)
-            if cluster_count >= 6:
-                time.sleep(30)
+            #if cluster_count >= 5:
+            #    time.sleep(30)
+            #if cluster_count >= 6:
+            #    time.sleep(30)
 
             if cluster_count >= 3:
                 main.ONOS1.tshark_grep("SYN, ACK",
@@ -287,7 +301,7 @@ class TopoConvNext:
                 device_json = json.loads(device_str)
                 for device in device_json:
                     if device['available'] == False:
-                        print device_count
+                        #print device_count
                         device_count += 1
                     else:
                         device_count = 0
@@ -976,7 +990,7 @@ class TopoConvNext:
         
         global cluster_count
         cluster_count += 2 
-      
+
         install_result = main.FALSE
         #Supports up to 7 node configuration
         #TODO: Cleanup this ridiculous repetitive code 
@@ -984,16 +998,18 @@ class TopoConvNext:
             main.log.info("Installing ONOS on node 4")
             install_result = \
                 main.ONOSbench.onos_install(node=ONOS4_ip)
+            time.sleep(5)
             main.log.info("Starting CLI")
             main.ONOS4cli.start_onos_cli(ONOS4_ip)
             main.ONOS1cli.add_node(ONOS4_ip, ONOS4_ip)
         
         elif cluster_count == 5:
-            main.log.info("Installing ONOS on node 5")
+            main.log.info("Installing ONOS on nodes 4 and 5")
             install_result1 = \
-                main.ONOSbench.onos_install(options="",node=ONOS4_ip)
+                main.ONOSbench.onos_install(node=ONOS4_ip)
             install_result2 = \
                 main.ONOSbench.onos_install(node=ONOS5_ip)
+            time.sleep(5)
             main.log.info("Starting CLI")
             main.ONOS4cli.start_onos_cli(ONOS4_ip)
             main.ONOS5cli.start_onos_cli(ONOS5_ip)
@@ -1002,13 +1018,14 @@ class TopoConvNext:
             install_result = install_result1 and install_result2
 
         elif cluster_count == 6:
-            main.log.info("Installing ONOS on node 6")
+            main.log.info("Installing ONOS on nodes 4, 5,and 6")
             install_result1 = \
                 main.ONOSbench.onos_install(options="",node=ONOS4_ip)
             install_result2 = \
                 main.ONOSbench.onos_install(options="",node=ONOS5_ip)
             install_result3 = \
                 main.ONOSbench.onos_install(node=ONOS6_ip)
+            time.sleep(5)
             main.log.info("Starting CLI")
             main.ONOS4cli.start_onos_cli(ONOS4_ip)
             main.ONOS5cli.start_onos_cli(ONOS5_ip)
@@ -1020,7 +1037,7 @@ class TopoConvNext:
                     install_result3
 
         elif cluster_count == 7:
-            main.log.info("Installing ONOS on node 7")
+            main.log.info("Installing ONOS on nodes 4, 5, 6,and 7")
             install_result1 = \
                 main.ONOSbench.onos_install(options="",node=ONOS4_ip)
             install_result2 = \
@@ -1054,3 +1071,32 @@ class TopoConvNext:
                        " nodes successful",
                 onfail="Scale out to "+str(cluster_count)+\
                        " nodes failed")
+
+
+    def CASE4(self, main):
+        '''
+        Cleanup ONOS nodes and Increase topology size
+        '''
+
+        ONOS1_ip = main.params['CTRL']['ip1']
+        ONOS2_ip = main.params['CTRL']['ip2']
+        ONOS3_ip = main.params['CTRL']['ip3']
+        ONOS4_ip = main.params['CTRL']['ip4']
+        ONOS5_ip = main.params['CTRL']['ip5']
+        ONOS6_ip = main.params['CTRL']['ip6']
+        ONOS7_ip = main.params['CTRL']['ip7']
+        MN1_ip = main.params['MN']['ip1']
+        BENCH_ip = main.params['BENCH']['ip']
+
+        main.log.info("Uninstalling previous instances")
+        main.ONOSbench.onos_uninstall(node_ip = ONOS4_ip)
+        main.ONOSbench.onos_uninstall(node_ip = ONOS5_ip)
+        main.ONOSbench.onos_uninstall(node_ip = ONOS6_ip)
+        main.ONOSbench.onos_uninstall(node_ip = ONOS7_ip)
+        
+        global topo_iteration
+        global cluster_count
+        cluster_count = 3 
+        topo_iteration += 1
+
+

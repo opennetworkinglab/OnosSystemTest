@@ -195,6 +195,12 @@ class OnosCliDriver(CLI):
                 #If failed, send ctrl+c to process and try again
                 main.log.info("Starting CLI failed. Retrying...")
                 self.handle.sendline("\x03")
+                i = self.handle.expect(["onos>",pexpect.TIMEOUT],
+                        timeout=30)
+                #Send ctrl+d to exit the onos> prompt that was
+                #not successful
+                self.handle.sendline("\x04")
+                self.handle.expect("\$")
                 self.handle.sendline("onos -w "+str(ONOS_ip))
                 i = self.handle.expect(["onos>",pexpect.TIMEOUT],
                         timeout=30)

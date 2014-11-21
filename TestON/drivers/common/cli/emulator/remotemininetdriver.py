@@ -80,7 +80,14 @@ class RemoteMininetDriver(Emulator):
         Returns main.ERROR if "found multiple mininet" is found and
         Returns main.TRUE else
         '''
+        #TODO: maybe we want to return the % loss instead? This way we can set an acceptible loss %.
+        #EX: 393 packets transmitted, 380 received, 3% packet loss, time 78519ms
+        # we may need to return a float to get around rounding errors
+
         import os
+        self.handle.sendline("")
+        self.handle.expect("\$")
+        #Clear any output waiting in the bg from killing pings
         self.handle.sendline("")
         self.handle.expect("\$")
         self.handle.sendline("cat " + pingList)
@@ -162,8 +169,13 @@ class RemoteMininetDriver(Emulator):
         self.handle.sendline("")
         self.handle.expect("\$")
         self.handle.sendline("")
-        self.handle.expect("\$")
-        return main.TRUE
+        i=self.handle.expect(["password","\$"])
+        if i == 0:
+            main.log.error("Error, sudo asking for password")
+            main.log.error(self.handle.before)
+            return main.FALSE
+        else:
+            return main.TRUE
     
     def pingLongKill(self):
         import time
@@ -215,34 +227,6 @@ class RemoteMininetDriver(Emulator):
             main.last_result = main.FALSE
             return main.FALSE
 
-
-    def pingall(self):
-        '''
-        Verifies the reachability of the hosts using pingall command.
-        This function is required by Packey Optical test
-        '''
-        if self.handle :
-            main.log.info(self.name+": Checking reachabilty to the hosts using pingall")
-            try:
-                response = self.execute(cmd="pingall",prompt="mininet>",timeout=120)
-                print "response: " + str(response)
-            except pexpect.EOF:
-                main.log.error(self.name + ": EOF exception found")
-                main.log.error(self.name + ":     " + self.handle.before)
-            pattern = 'Results\:\s0\%\sdropped\s'
-            if re.search(pattern,response):
-                main.log.info(self.name+": All hosts are reachable")
-                return main.TRUE
-            else:
-                main.log.error(self.name+": Unable to reach all the hosts")
-                return main.FALSE
-        else :
-            main.log.error(self.name+": Connection failed to the host")
-            return main.FALSE
-
-
-
- 
     def pingHost(self,**pingParams):
         ''' 
         Pings between two hosts on remote mininet  
@@ -292,154 +276,14 @@ class RemoteMininetDriver(Emulator):
         else :
             main.log.error("Connection failed to the host") 
 
-    def ctrl_none(self):
-        '''
-        Sets all the switches to no controllers. 
-        '''
-        self.execute(cmd="~/ONOS/scripts/test-ctrl-none.sh", prompt="\$",timeout=10)
-
-    def ctrl_one(self, ip):
-        '''
-        Sets all the switches to point to the supplied IP
-        '''
-        self.execute(cmd="~/ONOS/scripts/test-ctrl-one.sh "+ip, prompt="\$",timeout=10)
- 
-    def ctrl_local(self):
-        '''
-        Sets all the switches to point to the Controller on the same machine that they are running on. 
-        '''
-        self.execute(cmd="~/ONOS/scripts/test-ctrl-local.sh ", prompt="\$",timeout=10)
-
- #   def verifySSH(self,**connectargs):
- #       response = self.execute(cmd="h1 /usr/sbin/sshd -D&",prompt="mininet>",timeout=10)
- #       response = self.execute(cmd="h4 /usr/sbin/sshd -D&",prompt="mininet>",timeout=10)
- #       for key in connectargs:
- #           vars(self)[key] = connectargs[key]
- #       response = self.execute(cmd="xterm h1 h4 ",prompt="mininet>",timeout=10)
- #       import time
- #       time.sleep(20)
- #       if self.flag == 0:
- #           self.flag = 1
- #           return main.FALSE
- #       else :
- #           return main.TRUE
- #   
- #   def getMacAddress(self,host):
- #       '''
- #           Verifies the host's ip configured or not.
- #       '''
- #       if self.handle :
- #           response = self.execute(cmd=host+" ifconfig",prompt="mininet>",timeout=10)
-
- #           pattern = "HWaddr\s(((\d|\w)+:)+(\d|\w))"
- #           mac_address_search = re.search(pattern, response)
- #           main.log.info("Mac-Address of Host "+host +" is "+mac_address_search.group(1))
- #           return mac_address_search.group(1)
- #       else :
- #           main.log.error("Connection failed to the host") 
- #   def getIPAddress(self,host):
- #       '''
- #           Verifies the host's ip configured or not.
- #       '''
- #       if self.handle :
- #           response = self.execute(cmd=host+" ifconfig",prompt="mininet>",timeout=10)
-
- #           pattern = "inet\saddr:(\d+\.\d+\.\d+\.\d+)"
- #           ip_address_search = re.search(pattern, response)
- #           main.log.info("IP-Address of Host "+host +" is "+ip_address_search.group(1))
- #           return ip_address_search.group(1)
- #       else :
- #           main.log.error("Connection failed to the host") 
- #       
- #   def dump(self):
- #       main.log.info("Dump node info")
- #       self.execute(cmd = 'dump',prompt = 'mininet>',timeout = 10)
- #       return main.TRUE
- #           
- #   def intfs(self):
- #       main.log.info("List interfaces")
- #       self.execute(cmd = 'intfs',prompt = 'mininet>',timeout = 10)
- #       return main.TRUE
- #   
- #   def net(self):
- #       main.log.info("List network connections")
- #       self.execute(cmd = 'net',prompt = 'mininet>',timeout = 10)
- #       return main.TRUE
- #   
- #   def iperf(self):
- #       main.log.info("Simple iperf TCP test between two (optionally specified) hosts")
- #       self.execute(cmd = 'iperf',prompt = 'mininet>',timeout = 10)
- #       return main.TRUE
- #   
- #   def iperfudp(self):
- #       main.log.info("Simple iperf TCP test between two (optionally specified) hosts")
- #       self.execute(cmd = 'iperfudp',prompt = 'mininet>',timeout = 10)
- #       return main.TRUE
- #   
- #   def nodes(self):
- #       main.log.info("List all nodes.")
- #       self.execute(cmd = 'nodes',prompt = 'mininet>',timeout = 10)    
- #       return main.TRUE
- #   
- #   def pingpair(self):
- #       main.log.infoe("Ping between first two hosts")
- #       self.execute(cmd = 'pingpair',prompt = 'mininet>',timeout = 20)
- #       
- #       if utilities.assert_matches(expect='0% packet loss',actual=response,onpass="No Packet loss",onfail="Hosts not reachable"):
- #           main.log.info("Ping between two hosts SUCCESS")
- #           main.last_result = main.TRUE 
- #           return main.TRUE
- #       else :
- #           main.log.error("PACKET LOST, HOSTS NOT REACHABLE")
- #           main.last_result = main.FALSE
- #           return main.FALSE
- #   
- #   def link(self,**linkargs):
- #       '''
- #       Bring link(s) between two nodes up or down
- #       '''
- #       main.log.info('Bring link(s) between two nodes up or down')
- #       args = utilities.parse_args(["END1","END2","OPTION"],**linkargs)
- #       end1 = args["END1"] if args["END1"] != None else ""
- #       end2 = args["END2"] if args["END2"] != None else ""
- #       option = args["OPTION"] if args["OPTION"] != None else ""
- #       command = "link "+str(end1) + " " + str(end2)+ " " + str(option)
- #       response = self.execute(cmd=command,prompt="mininet>",timeout=10)
- #       return main.TRUE
- #       
-
- #   def dpctl(self,**dpctlargs):
- #       '''
- #        Run dpctl command on all switches.
- #       '''
- #       main.log.info('Run dpctl command on all switches')
- #       args = utilities.parse_args(["CMD","ARGS"],**dpctlargs)
- #       cmd = args["CMD"] if args["CMD"] != None else ""
- #       cmdargs = args["ARGS"] if args["ARGS"] != None else ""
- #       command = "dpctl "+cmd + " " + str(cmdargs)
- #       response = self.execute(cmd=command,prompt="mininet>",timeout=10)
- #       return main.TRUE
- #  
- #       
- #   def get_version(self):
- #       file_input = path+'/lib/Mininet/INSTALL'
- #       version = super(Mininet, self).get_version()
- #       pattern = 'Mininet\s\w\.\w\.\w\w*'
- #       for line in open(file_input,'r').readlines():
- #           result = re.match(pattern, line)
- #           if result:
- #               version = result.group(0)
- #               
- #           
- #       return version    
-    def start_tcpdump(self, filename, intf = "eth0", port = "port 6633"):
+    def start_tcpdump(self, filename, intf = "eth0", port = "port 6633", user="admin"):
         ''' 
         Runs tpdump on an intferface and saves the file
         intf can be specified, or the default eth0 is used
         '''
         try:
             self.handle.sendline("")
-            self.handle.sendline("sudo tcpdump -n -i "+ intf + " " + port + " -w " + filename.strip() + "  &")
+            self.handle.sendline("sudo tcpdump -n -i "+ intf + " " + port + " -w " + filename.strip() + " -Z " + user + "  &")
             self.handle.sendline("")
             self.handle.sendline("")
             i=self.handle.expect(['No\ssuch\device','listening\son',pexpect.TIMEOUT,"\$"],timeout=10)
@@ -508,49 +352,6 @@ class RemoteMininetDriver(Emulator):
             main.log.error(self.name + ": EOF exception found")
             main.log.error(self.name + ":     " + self.handle.before)
             return main.FALSE
-    
-    def del_switch(self,sw):
-        self.handle.sendline("")
-        self.handle.expect("\$")
-        self.handle.sendline("sudo ovs-vsctl del-br "+sw)
-        self.handle.expect("\$")
-        return main.TRUE
-
-    def add_switch(self,sw):
-        #FIXME: Remove hardcoded number of ports
-        self.handle.sendline("")
-        self.handle.expect("\$")
-        self.handle.sendline("sudo ovs-vsctl add-br "+sw)
-        self.handle.expect("\$")
-        self.handle.sendline("sudo ovs-vsctl add-port "+sw+" " + sw + "-eth1")
-        self.handle.expect("\$")
-        self.handle.sendline("sudo ovs-vsctl add-port "+sw+" " + sw + "-eth2")
-        self.handle.expect("\$")
-        self.handle.sendline("sudo ovs-vsctl add-port "+sw+" " + sw + "-eth3")
-        self.handle.expect("\$")
-        self.handle.sendline("sudo ovs-vsctl add-port "+sw+" " + sw + "-eth4")
-        self.handle.expect("\$")
-        self.handle.sendline("sudo ovs-vsctl add-port "+sw+" " + sw + "-eth5")
-        self.handle.expect("\$")
-        self.handle.sendline("sudo ovs-vsctl add-port "+sw+" " + sw + "-eth6")
-        self.handle.expect("\$")
-        self.handle.sendline("sudo ovs-vsctl add-port "+sw+" " + sw + "-eth7")
-        self.handle.expect("\$")
-        self.handle.sendline("sudo ovs-vsctl add-port "+sw+" " + sw + "-eth8")
-        self.handle.expect("\$")
-        self.handle.sendline("sudo ovs-vsctl add-port "+sw+" " + sw + "-eth9")
-        self.handle.expect("\$")
-        self.handle.sendline("sudo ovs-vsctl add-port "+sw+" " + sw + "-eth10")
-        self.handle.expect("\$")
-        self.handle.sendline("sudo ovs-vsctl add-port "+sw+" " + sw + "-eth11")
-        self.handle.expect("\$")
-        self.handle.sendline("sudo ovs-vsctl add-port "+sw+" " + sw + "-eth12")
-        self.handle.expect("\$")
-        self.handle.sendline("sudo ovs-vsctl add-port "+sw+" " + sw + "-eth13")
-        self.handle.expect("\$")
-        self.handle.sendline("sudo ovs-vsctl add-port "+sw+" " + sw + "-eth14")
-        self.handle.expect("\$")
-
 
     def disconnect(self):
         '''    
@@ -574,8 +375,6 @@ class RemoteMininetDriver(Emulator):
         #FIXME: clean up print statements and such
         self.handle.sendline("cd")
         self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT])
-        #print "cd expect status: "
-        #print self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT])
         #TODO: Write seperate versions of the function for this, possibly a string that tells it which switch is in use?
         #For 1.0 version of OVS
         #command = "sudo ovs-ofctl dump-flows " + sw + " | awk '{OFS=\",\" ; print $1 $6 $7 }' |sort -n -k1"

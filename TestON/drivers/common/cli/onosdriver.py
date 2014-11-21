@@ -395,7 +395,8 @@ class OnosDriver(CLI):
             self.handle.sendline("\n")
             self.handle.expect("\$")
             self.handle.sendline("cd " + self.home + "; git log -1 --pretty=fuller --decorate=short | grep -A 6 \"commit\" --color=never")
-            self.handle.expect("--color=never")
+            #NOTE: for some reason there are backspaces inserted in this phrase when run from Jenkins on some tests
+            #self.handle.expect("--color=never")
             self.handle.expect("\$")
             response=(self.name +": \n"+ str(self.handle.before + self.handle.after))
             self.handle.sendline("cd " + self.home)
@@ -410,10 +411,15 @@ class OnosDriver(CLI):
                     #as xml specific tags that cause errors
                     line = line.replace("<","[")
                     line = line.replace(">","]")
-                    main.log.report(line)
+                    main.log.report("\t" + line)
             return lines[2]
         except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":     " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except pexpect.TIMEOUT:
+            main.log.error(self.name + ": TIMEOUT exception found")
             main.log.error(self.name + ":     " + self.handle.before)
             main.cleanup()
             main.exit()
@@ -783,7 +789,8 @@ class OnosDriver(CLI):
         try:
             self.handle.sendline("")
             self.handle.expect("\$")
-            self.handle.sendline("onos-uninstall "+str(node_ip))
+            self.handle.sendline( "onos-uninstall "+str(node_ip) )
+            self.handle.expect( "onos-uninstall "+str(node_ip) )
             self.handle.expect("\$")
 
             main.log.info("ONOS "+node_ip+" was uninstalled")
@@ -926,14 +933,15 @@ class OnosDriver(CLI):
             self.handle.sendline("onos-wait-for-start " + node )
             self.handle.expect("onos-wait-for-start")
             #NOTE: this timeout is arbitrary"
-            i = self.handle.expect(["\$", pexpect.TIMEOUT], timeout = 300)
+            i = self.handle.expect(["\$", pexpect.TIMEOUT], timeout = 120)
             if i == 0:
                 main.log.info(self.name + ": " + node + " is up")
                 return main.TRUE
             elif i == 1:
                 #NOTE: since this function won't return until ONOS is ready,
                 #   we will kill it on timeout
-                self.handle.sendline("\003")    #Control-C
+                main.log.error("ONOS has not started yet")
+                self.handle.send("\x03")    #Control-C
                 self.handle.expect("\$")
                 return main.FALSE
         except pexpect.EOF:
@@ -1230,6 +1238,4 @@ class OnosDriver(CLI):
             main.log.info(self.name+" ::::::")
             main.log.error( traceback.print_exc())
             main.log.info(self.name+" ::::::")
-
-
 

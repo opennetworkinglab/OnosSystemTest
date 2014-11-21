@@ -42,7 +42,18 @@ class TopoPerfNext:
         MN1_ip = main.params['MN']['ip1']
         BENCH_ip = main.params['BENCH']['ip']
 
+        topo_cfg_file = main.params['TEST']['topo_config_file']
+        topo_cfg_name = main.params['TEST']['topo_config_name']
+        
         main.case("Setting up test environment")
+        main.step("Copying topology event accumulator config file to "+
+            "ONOS /package/etc")
+        main.ONOSbench.handle.sendline("cp ~/"+
+            topo_cfg_file+
+            "~/ONOS/tools/package/etc/"+
+            topo_cfg_name)
+        main.ONOSbench.handle.expect("\$")
+
         main.log.report("Setting up test environment")
 
         main.step("Cleaning previously installed ONOS if any")

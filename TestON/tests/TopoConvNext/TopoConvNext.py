@@ -47,6 +47,16 @@ class TopoConvNext:
         BENCH_ip = main.params['BENCH']['ip']
 
         main.case("Setting up test environment")
+        main.step("copying topology event accumulator config file"+
+                " to ONOS package/etc/ directory")
+        topo_config_name = main.params['TEST']['topo_config_name']
+        topo_config =\
+                main.params['TEST']['topo_accumulator_config']
+        main.ONOSbench.handle.sendline("cp ~/"+topo_config+
+            " ~/ONOS/tools/package/etc/"+
+            topo_config_name)
+        main.ONOSbench.handle.expect("\$")
+
         main.log.info("Uninstalling previous instances")
         #main.ONOSbench.onos_uninstall(node_ip = ONOS1_ip)
         #main.ONOSbench.onos_uninstall(node_ip = ONOS2_ip)
@@ -159,7 +169,8 @@ class TopoConvNext:
        
         #Number of iterations of case
         num_iter = main.params['TEST']['numIter']
-        
+        iter_ignore = int(main.params['TEST']['iterIgnore'])
+
         #***********
         #Global number of switches that change 
         #throughout the test
@@ -197,7 +208,8 @@ class TopoConvNext:
         for node in range(1, cluster_count+1):
             report_str += (str(node) + " ") 
         main.log.report(report_str)
-        
+        main.log.report("Topology size: "+str(num_sw)+" switches")
+
         main.step("Distributing "+num_sw+" switches to each ONOS")
         index = 1 
         for node in range(1, cluster_count+1):
@@ -461,7 +473,8 @@ class TopoConvNext:
                             int(graph_timestamp_1) - int(t0_system)
                         
                         if graph_lat_1 > sw_disc_threshold_min\
-                            and graph_lat_1 < sw_disc_threshold_max:
+                            and graph_lat_1 < sw_disc_threshold_max\
+                            and int(i) > iter_ignore:
                             sw_discovery_lat_list.append(
                                     graph_lat_1)
                             main.log.info("Sw discovery latency of "+
@@ -499,7 +512,8 @@ class TopoConvNext:
                              int(graph_lat_2)) / 2
 
                         if avg_graph_lat > sw_disc_threshold_min\
-                            and avg_graph_lat < sw_disc_threshold_max:
+                            and avg_graph_lat < sw_disc_threshold_max\
+                            and int(i) > iter_ignore:
                             sw_discovery_lat_list.append(
                                     avg_graph_lat)
                             main.log.info("Sw discovery latency of "+
@@ -553,7 +567,8 @@ class TopoConvNext:
                              int(graph_lat_3)) / 3 
                         
                         if avg_graph_lat > sw_disc_threshold_min\
-                            and avg_graph_lat < sw_disc_threshold_max:
+                            and avg_graph_lat < sw_disc_threshold_max\
+                            and int(i) > iter_ignore:
                             sw_discovery_lat_list.append(
                                     avg_graph_lat)
                             main.log.info("Sw discovery latency of "+
@@ -607,7 +622,8 @@ class TopoConvNext:
                              int(graph_lat_4)) / 4 
                         
                         if avg_graph_lat > sw_disc_threshold_min\
-                            and avg_graph_lat < sw_disc_threshold_max:
+                            and avg_graph_lat < sw_disc_threshold_max\
+                            and int(i) > iter_ignore:
                             sw_discovery_lat_list.append(
                                     avg_graph_lat)
                             main.log.info("Sw discovery latency of "+
@@ -675,7 +691,8 @@ class TopoConvNext:
                              int(graph_lat_5)) / 5 
                         
                         if avg_graph_lat > sw_disc_threshold_min\
-                            and avg_graph_lat < sw_disc_threshold_max:
+                            and avg_graph_lat < sw_disc_threshold_max\
+                            and int(i) > iter_ignore:
                             sw_discovery_lat_list.append(
                                     avg_graph_lat)
                             main.log.info("Sw discovery latency of "+
@@ -745,7 +762,8 @@ class TopoConvNext:
                              int(graph_lat_6)) / 6 
                         
                         if avg_graph_lat > sw_disc_threshold_min\
-                            and avg_graph_lat < sw_disc_threshold_max:
+                            and avg_graph_lat < sw_disc_threshold_max\
+                            and int(i) > iter_ignore:
                             sw_discovery_lat_list.append(
                                     avg_graph_lat)
                             main.log.info("Sw discovery latency of "+
@@ -830,7 +848,8 @@ class TopoConvNext:
                              int(graph_lat_7)) / 7 
                         
                         if avg_graph_lat > sw_disc_threshold_min\
-                            and avg_graph_lat < sw_disc_threshold_max:
+                            and avg_graph_lat < sw_disc_threshold_max\
+                            and int(i) > iter_ignore:
                             sw_discovery_lat_list.append(
                                     avg_graph_lat)
                             main.log.info("Sw discovery latency of "+
@@ -947,11 +966,10 @@ class TopoConvNext:
             "(last sw SYN/ACK time - first sw SYN/ACK time) "+
             str(sum(syn_ack_delta_list)/len(syn_ack_delta_list)) +
             " ms")
-        main.log.report("Switch discovery lat for "+\
-            str(cluster_count)+" instance(s), 100 sw each: ")
-        main.log.report("Avg: "+str(sw_lat_avg)+" ms")
-        main.log.report("Std Deviation: "+
-                str(round(sw_lat_dev,1))+" ms")
+        main.log.report(str(num_sw)+" Switch discovery lat for "+\
+            str(cluster_count)+" instance(s): ")
+        main.log.report("Avg: "+str(sw_lat_avg)+" ms  "+
+            "Std Deviation: "+str(round(sw_lat_dev,1))+" ms")
 
         utilities.assert_equals(expect=main.TRUE, actual=assertion,
                 onpass="Switch discovery convergence latency" +\
@@ -987,9 +1005,11 @@ class TopoConvNext:
         #cluster count and start from 3.
         #You can optionally change the increment to
         #test steps of node sizes, such as 3,5,7
-        
+       
         global cluster_count
         cluster_count += 2 
+        main.log.report("Increasing cluster size to "+
+            str(cluster_count))
 
         install_result = main.FALSE
         #Supports up to 7 node configuration
@@ -1077,6 +1097,8 @@ class TopoConvNext:
         '''
         Cleanup ONOS nodes and Increase topology size
         '''
+        #TODO: use meaningful assertion
+        assertion=main.TRUE
 
         ONOS1_ip = main.params['CTRL']['ip1']
         ONOS2_ip = main.params['CTRL']['ip2']
@@ -1099,4 +1121,7 @@ class TopoConvNext:
         cluster_count = 3 
         topo_iteration += 1
 
-
+        main.log.report("Increasing topology size")
+        utilities.assert_equals(expect=main.TRUE, actual=assertion,
+            onpass="Topology size increased successfully",
+            onfail="Topology size was not increased")

@@ -1,5 +1,5 @@
 <PARAMS>
-    <testcases>1,2,3,4</testcases>
+    <testcases>1,2,3</testcases>
 
     <ENV>
         <cellName>topo_perf_test</cellName>
@@ -37,6 +37,13 @@
         #pcap file located at /tmp/'capture_name'
         <debugMode>off</debugMode>
         <onosLogFile>/opt/onos/log/karaf*</onosLogFile>
+
+        <topo_config_file>
+        single_topo_event_accumulator.cfg
+        </topo_config_file>
+        <topo_config_name>
+        org.onlab.onos.net.topology.impl.DefaultTopologyProvider.cfg
+        </topo_config_name>
 
         #Number of times to iterate each case
         <numIter>20</numIter>

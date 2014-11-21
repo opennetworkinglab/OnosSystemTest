@@ -82,7 +82,7 @@ class OnosDriver(CLI):
         '''
         response = ''
         try:
-            self.handle.sendline("\n")
+            self.handle.sendline("")
             self.handle.expect("\$")
             self.handle.sendline("exit")
             self.handle.expect("closed")
@@ -164,7 +164,7 @@ class OnosDriver(CLI):
             self.handle.sendline("cd "+ self.home)
             self.handle.expect("\$")
 
-            self.handle.sendline("\n")
+            self.handle.sendline("")
             self.handle.expect("\$")
             self.handle.sendline("mvn clean install")
             self.handle.expect("mvn clean install")
@@ -195,7 +195,7 @@ class OnosDriver(CLI):
                     for line in self.handle.before.splitlines():
                         if "Total time:" in line:
                             main.log.info(line)
-                    self.handle.sendline("\n")
+                    self.handle.sendline("")
                     self.handle.expect("\$", timeout=60)
                     return main.TRUE
                 elif i == 4:
@@ -392,11 +392,11 @@ class OnosDriver(CLI):
             self.handle.sendline("export TERM=xterm-256color")
             self.handle.expect("xterm-256color")
             self.handle.expect("\$")
-            self.handle.sendline("\n")
+            self.handle.sendline("")
             self.handle.expect("\$")
             self.handle.sendline("cd " + self.home + "; git log -1 --pretty=fuller --decorate=short | grep -A 6 \"commit\" --color=never")
             #NOTE: for some reason there are backspaces inserted in this phrase when run from Jenkins on some tests
-            #self.handle.expect("--color=never")
+            self.handle.expect("never")
             self.handle.expect("\$")
             response=(self.name +": \n"+ str(self.handle.before + self.handle.after))
             self.handle.sendline("cd " + self.home)
@@ -790,7 +790,6 @@ class OnosDriver(CLI):
             self.handle.sendline("")
             self.handle.expect("\$")
             self.handle.sendline( "onos-uninstall "+str(node_ip) )
-            self.handle.expect( "onos-uninstall "+str(node_ip) )
             self.handle.expect("\$")
 
             main.log.info("ONOS "+node_ip+" was uninstalled")

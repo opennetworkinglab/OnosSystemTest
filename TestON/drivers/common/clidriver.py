@@ -76,7 +76,7 @@ class CLI(Component):
 	    elif i==6:
 	        main.log.info("Password not required logged in")
 
-        self.handle.sendline("\n")
+        self.handle.sendline("")
         self.handle.expect('>|#|\$')
         return self.handle
 

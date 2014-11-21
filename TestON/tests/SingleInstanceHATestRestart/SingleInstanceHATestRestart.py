@@ -172,7 +172,10 @@ class SingleInstanceHATestRestart:
         mastership_check = main.TRUE
         for i in range (1,29):
             response = main.Mininet1.get_sw_controller("s"+str(i))
-            main.log.info(repr(response))
+            try:
+                main.log.info(str(response))
+            except:
+                main.log.info(repr(response))
             if re.search("tcp:"+ONOS1_ip,response):
                 mastership_check = mastership_check and main.TRUE
             else:
@@ -422,24 +425,32 @@ class SingleInstanceHATestRestart:
 
     def CASE6(self,main) :
         '''
-        The Failure case. Since this is the Sanity test, we do nothing.
+        The Failure case.
         '''
+        import time
 
         main.log.report("Restart ONOS node")
         main.log.case("Restart ONOS node")
         main.ONOSbench.onos_kill(ONOS1_ip)
+        start = time.time()
 
         main.step("Checking if ONOS is up yet")
-        onos1_isup = main.ONOSbench.isup(ONOS1_ip)
-        # TODO: if it becomes an issue, we can retry this step  a few times
+        count = 0
+        while count < 10
+            onos1_isup = main.ONOSbench.isup(ONOS1_ip)
+            if onos1_isup == main.TRUE:
+                elapsed = time.time() - start
+                break
+            else:
+                count = count + 1
 
+        cli_result = main.ONOScli1.start_onos_cli(ONOS1_ip)
 
-        cli_result1 = main.ONOScli1.start_onos_cli(ONOS1_ip)
-
-        case_results = main.TRUE and onosi1_isup and cli_result1
+        case_results = main.TRUE and onosi1_isup and cli_result
         utilities.assert_equals(expect=main.TRUE, actual=case_results,
                 onpass="ONOS restart successful",
                 onfail="ONOS restart NOT successful")
+        main.log.info("ONOS took %s seconds to restart" % str(elapsed) )
 
     def CASE7(self,main) :
         '''
@@ -451,9 +462,10 @@ class SingleInstanceHATestRestart:
 
         main.step("Check if switch roles are consistent across all nodes")
         ONOS1_mastership = main.ONOScli1.roles()
+        #FIXME: Refactor this whole case for single instance
         #print json.dumps(json.loads(ONOS1_mastership), sort_keys=True, indent=4, separators=(',', ': '))
         if "Error" in ONOS1_mastership or not ONOS1_mastership:
-            main.log.error("Error in getting ONOS mastership")
+            main.log.report("Error in getting ONOS mastership")
             main.log.warn("ONOS1 mastership response: " + repr(ONOS1_mastership))
             consistent_mastership = main.FALSE
         else:
@@ -589,18 +601,6 @@ class SingleInstanceHATestRestart:
         ctrls.append(temp)
         MNTopo = TestONTopology(main.Mininet1, ctrls) # can also add Intent API info for intent operations
 
-        main.step("Collecting topology information from ONOS")
-        devices = []
-        devices.append( main.ONOScli1.devices() )
-        '''
-        hosts = []
-        hosts.append( main.ONOScli1.hosts() )
-        '''
-        ports = []
-        ports.append( main.ONOScli1.ports() )
-        links = []
-        links.append( main.ONOScli1.links() )
-
         main.step("Comparing ONOS topology to MN")
         devices_results = main.TRUE
         ports_results = main.TRUE
@@ -608,8 +608,21 @@ class SingleInstanceHATestRestart:
         topo_result = main.FALSE
         start_time = time.time()
         elapsed = 0
+        count = 0
         while topo_result == main.FALSE and elapsed < 120:
+            count = count + 1
             try:
+                main.step("Collecting topology information from ONOS")
+                devices = []
+                devices.append( main.ONOScli1.devices() )
+                '''
+                hosts = []
+                hosts.append( main.ONOScli1.hosts() )
+                '''
+                ports = []
+                ports.append( main.ONOScli1.ports() )
+                links = []
+                links.append( main.ONOScli1.links() )
                 for controller in range(1): #TODO parameterize the number of controllers
                     if devices[controller] or not "Error" in devices[controller]:
                         current_devices_result =  main.Mininet1.compare_switches(MNTopo, json.loads(devices[controller]))
@@ -643,10 +656,12 @@ class SingleInstanceHATestRestart:
             devices_results = devices_results and current_devices_result
             ports_results = ports_results and current_ports_result
             links_results = links_results and current_links_result
-            topo_result = devices_results and ports_results and links_results
-            elapsed = time.time()-start_time()
+            elapsed = time.time() - start_time
+        time_threshold = elapsed < 1
+        topo_result = devices_results and ports_results and links_results and time_threshold
         #TODO make sure this step is non-blocking. IE add a timeout
-        main.log.report("Very crass estimate for topology discovery/convergence: " + str(elapsed) + " seconds")
+        main.log.report("Very crass estimate for topology discovery/convergence: " +\
+                str(elapsed) + " seconds, " + str(count) +" tries" )
         utilities.assert_equals(expect=main.TRUE, actual=topo_result,
                 onpass="Topology Check Test successful",
                 onfail="Topology Check Test NOT successful")

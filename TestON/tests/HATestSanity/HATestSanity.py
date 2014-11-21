@@ -40,6 +40,7 @@ class HATestSanity:
         import time
         main.log.report("ONOS HA Sanity test - initialization")
         main.case("Setting up test environment")
+        #TODO: save all the timers and output them for plotting
 
         # load some vairables from the params file
         PULL_CODE = False
@@ -83,7 +84,7 @@ class HATestSanity:
         cell_result = main.ONOSbench.set_cell(cell_name)
         verify_result = main.ONOSbench.verify_cell()
 
-        #FIXME:this is short term fix 
+        #FIXME:this is short term fix
         main.log.report("Removing raft logs")
         main.ONOSbench.onos_remove_raft_logs()
         main.log.report("Uninstalling ONOS")
@@ -146,29 +147,32 @@ class HATestSanity:
         main.step("Checking if ONOS is up yet")
         #TODO: Refactor
         # check bundle:list?
-        onos1_isup = main.ONOSbench.isup(ONOS1_ip)
-        if not onos1_isup:
-            main.log.report("ONOS1 didn't start!")
-        onos2_isup = main.ONOSbench.isup(ONOS2_ip)
-        if not onos2_isup:
-            main.log.report("ONOS2 didn't start!")
-        onos3_isup = main.ONOSbench.isup(ONOS3_ip)
-        if not onos3_isup:
-            main.log.report("ONOS3 didn't start!")
-        onos4_isup = main.ONOSbench.isup(ONOS4_ip)
-        if not onos4_isup:
-            main.log.report("ONOS4 didn't start!")
-        onos5_isup = main.ONOSbench.isup(ONOS5_ip)
-        if not onos5_isup:
-            main.log.report("ONOS5 didn't start!")
-        onos6_isup = main.ONOSbench.isup(ONOS6_ip)
-        if not onos6_isup:
-            main.log.report("ONOS6 didn't start!")
-        onos7_isup = main.ONOSbench.isup(ONOS7_ip)
-        if not onos7_isup:
-            main.log.report("ONOS7 didn't start!")
-        onos_isup_result = onos1_isup and onos2_isup and onos3_isup\
-                and onos4_isup and onos5_isup and onos6_isup and onos7_isup
+        for i in range(2):
+            onos1_isup = main.ONOSbench.isup(ONOS1_ip)
+            if not onos1_isup:
+                main.log.report("ONOS1 didn't start!")
+            onos2_isup = main.ONOSbench.isup(ONOS2_ip)
+            if not onos2_isup:
+                main.log.report("ONOS2 didn't start!")
+            onos3_isup = main.ONOSbench.isup(ONOS3_ip)
+            if not onos3_isup:
+                main.log.report("ONOS3 didn't start!")
+            onos4_isup = main.ONOSbench.isup(ONOS4_ip)
+            if not onos4_isup:
+                main.log.report("ONOS4 didn't start!")
+            onos5_isup = main.ONOSbench.isup(ONOS5_ip)
+            if not onos5_isup:
+                main.log.report("ONOS5 didn't start!")
+            onos6_isup = main.ONOSbench.isup(ONOS6_ip)
+            if not onos6_isup:
+                main.log.report("ONOS6 didn't start!")
+            onos7_isup = main.ONOSbench.isup(ONOS7_ip)
+            if not onos7_isup:
+                main.log.report("ONOS7 didn't start!")
+            onos_isup_result = onos1_isup and onos2_isup and onos3_isup\
+                    and onos4_isup and onos5_isup and onos6_isup and onos7_isup
+            if onos_isup_result == main.TRUE:
+                break
         # TODO: if it becomes an issue, we can retry this step  a few times
 
 
@@ -198,9 +202,9 @@ class HATestSanity:
                 onfail="Test startup NOT successful")
 
 
-        #if case1_result==main.FALSE:
-        #    main.cleanup()
-        #    main.exit()
+        if case1_result==main.FALSE:
+            main.cleanup()
+            main.exit()
 
     def CASE2(self,main) :
         '''
@@ -246,7 +250,10 @@ class HATestSanity:
         mastership_check = main.TRUE
         for i in range (1,29):
             response = main.Mininet1.get_sw_controller("s"+str(i))
-            main.log.info(repr(response))
+            try:
+                main.log.info(str(response))
+            except:
+                main.log.info(repr(response))
             if re.search("tcp:"+ONOS1_ip,response)\
                     and re.search("tcp:"+ONOS2_ip,response)\
                     and re.search("tcp:"+ONOS3_ip,response)\
@@ -891,43 +898,6 @@ class HATestSanity:
                 break
         MNTopo = TestONTopology(main.Mininet1, ctrls) # can also add Intent API info for intent operations
 
-        main.step("Collecting topology information from ONOS")
-        devices = []
-        devices.append( main.ONOScli1.devices() )
-        devices.append( main.ONOScli2.devices() )
-        devices.append( main.ONOScli3.devices() )
-        devices.append( main.ONOScli4.devices() )
-        devices.append( main.ONOScli5.devices() )
-        devices.append( main.ONOScli6.devices() )
-        devices.append( main.ONOScli7.devices() )
-        '''
-        hosts = []
-        hosts.append( main.ONOScli1.hosts() )
-        hosts.append( main.ONOScli2.hosts() )
-        hosts.append( main.ONOScli3.hosts() )
-        hosts.append( main.ONOScli4.hosts() )
-        hosts.append( main.ONOScli5.hosts() )
-        hosts.append( main.ONOScli6.hosts() )
-        hosts.append( main.ONOScli7.hosts() )
-        '''
-        ports = []
-        ports.append( main.ONOScli1.ports() )
-        ports.append( main.ONOScli2.ports() )
-        ports.append( main.ONOScli3.ports() )
-        ports.append( main.ONOScli4.ports() )
-        ports.append( main.ONOScli5.ports() )
-        ports.append( main.ONOScli6.ports() )
-        ports.append( main.ONOScli7.ports() )
-        links = []
-        links.append( main.ONOScli1.links() )
-        links.append( main.ONOScli2.links() )
-        links.append( main.ONOScli3.links() )
-        links.append( main.ONOScli4.links() )
-        links.append( main.ONOScli5.links() )
-        links.append( main.ONOScli6.links() )
-        links.append( main.ONOScli7.links() )
-
-
         main.step("Comparing ONOS topology to MN")
         devices_results = main.TRUE
         ports_results = main.TRUE
@@ -935,8 +905,48 @@ class HATestSanity:
         topo_result = main.FALSE
         start_time = time.time()
         elapsed = 0
+        count = 0
         while topo_result == main.FALSE and elapsed < 120:
+            print "cond 1:" + str(topo_result == main.FALSE)
+            print "cond 2:" + str(elapsed < 120)
+            count = count + 1
             try:
+                main.step("Collecting topology information from ONOS")
+                devices = []
+                devices.append( main.ONOScli1.devices() )
+                devices.append( main.ONOScli2.devices() )
+                devices.append( main.ONOScli3.devices() )
+                devices.append( main.ONOScli4.devices() )
+                devices.append( main.ONOScli5.devices() )
+                devices.append( main.ONOScli6.devices() )
+                devices.append( main.ONOScli7.devices() )
+                '''
+                hosts = []
+                hosts.append( main.ONOScli1.hosts() )
+                hosts.append( main.ONOScli2.hosts() )
+                hosts.append( main.ONOScli3.hosts() )
+                hosts.append( main.ONOScli4.hosts() )
+                hosts.append( main.ONOScli5.hosts() )
+                hosts.append( main.ONOScli6.hosts() )
+                hosts.append( main.ONOScli7.hosts() )
+                '''
+                ports = []
+                ports.append( main.ONOScli1.ports() )
+                ports.append( main.ONOScli2.ports() )
+                ports.append( main.ONOScli3.ports() )
+                ports.append( main.ONOScli4.ports() )
+                ports.append( main.ONOScli5.ports() )
+                ports.append( main.ONOScli6.ports() )
+                ports.append( main.ONOScli7.ports() )
+                links = []
+                links.append( main.ONOScli1.links() )
+                links.append( main.ONOScli2.links() )
+                links.append( main.ONOScli3.links() )
+                links.append( main.ONOScli4.links() )
+                links.append( main.ONOScli5.links() )
+                links.append( main.ONOScli6.links() )
+                links.append( main.ONOScli7.links() )
+
                 for controller in range(7): #TODO parameterize the number of controllers
                     if devices[controller] or not "Error" in devices[controller]:
                         current_devices_result =  main.Mininet1.compare_switches(MNTopo, json.loads(devices[controller]))
@@ -970,11 +980,13 @@ class HATestSanity:
             devices_results = devices_results and current_devices_result
             ports_results = ports_results and current_ports_result
             links_results = links_results and current_links_result
-            elapsed = time.time()-start_time()
+            topo_result = devices_results and ports_results and links_results
+            elapsed = time.time() - start_time
         time_threshold = elapsed < 1
-        topo_result = devices_results and ports_results and links_results and time_threshold
+        topo_result = topo_result and time_threshold
         #TODO make sure this step is non-blocking. IE add a timeout
-        main.log.report("Very crass estimate for topology discovery/convergence: " + str(elapsed) + " seconds")
+        main.log.report("Very crass estimate for topology discovery/convergence: " +\
+                str(elapsed) + " seconds, " + str(count) +" tries" )
         utilities.assert_equals(expect=main.TRUE, actual=topo_result,
                 onpass="Topology Check Test successful",
                 onfail="Topology Check Test NOT successful")

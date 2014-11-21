@@ -245,7 +245,10 @@ class HATestClusterRestart:
         mastership_check = main.TRUE
         for i in range (1,29):
             response = main.Mininet1.get_sw_controller("s"+str(i))
-            main.log.info(repr(response))
+            try:
+                main.log.info(str(response))
+            except:
+                main.log.info(repr(response))
             if re.search("tcp:"+ONOS1_ip,response)\
                     and re.search("tcp:"+ONOS2_ip,response)\
                     and re.search("tcp:"+ONOS3_ip,response)\
@@ -664,15 +667,19 @@ class HATestClusterRestart:
         main.ONOSbench.onos_kill(ONOS7_ip)
 
         main.step("Checking if ONOS is up yet")
-        onos1_isup = main.ONOSbench.isup(ONOS1_ip)
-        onos2_isup = main.ONOSbench.isup(ONOS2_ip)
-        onos3_isup = main.ONOSbench.isup(ONOS3_ip)
-        onos4_isup = main.ONOSbench.isup(ONOS4_ip)
-        onos5_isup = main.ONOSbench.isup(ONOS5_ip)
-        onos6_isup = main.ONOSbench.isup(ONOS6_ip)
-        onos7_isup = main.ONOSbench.isup(ONOS7_ip)
-        onos_isup_result = onos1_isup and onos2_isup and onos3_isup\
-                and onos4_isup and onos5_isup and onos6_isup and onos7_isup
+        count = 0
+        onos_isup_result = main.FALSE
+        while onos_isup_result == main.FALSE and count < 10:
+            onos1_isup = main.ONOSbench.isup(ONOS1_ip)
+            onos2_isup = main.ONOSbench.isup(ONOS2_ip)
+            onos3_isup = main.ONOSbench.isup(ONOS3_ip)
+            onos4_isup = main.ONOSbench.isup(ONOS4_ip)
+            onos5_isup = main.ONOSbench.isup(ONOS5_ip)
+            onos6_isup = main.ONOSbench.isup(ONOS6_ip)
+            onos7_isup = main.ONOSbench.isup(ONOS7_ip)
+            onos_isup_result = onos1_isup and onos2_isup and onos3_isup\
+                    and onos4_isup and onos5_isup and onos6_isup and onos7_isup
+            count = count + 1
         # TODO: if it becomes an issue, we can retry this step  a few times
 
 
@@ -924,43 +931,6 @@ class HATestClusterRestart:
                 break
         MNTopo = TestONTopology(main.Mininet1, ctrls) # can also add Intent API info for intent operations
 
-        main.step("Collecting topology information from ONOS")
-        devices = []
-        devices.append( main.ONOScli1.devices() )
-        devices.append( main.ONOScli2.devices() )
-        devices.append( main.ONOScli3.devices() )
-        devices.append( main.ONOScli4.devices() )
-        devices.append( main.ONOScli5.devices() )
-        devices.append( main.ONOScli6.devices() )
-        devices.append( main.ONOScli7.devices() )
-        '''
-        hosts = []
-        hosts.append( main.ONOScli1.hosts() )
-        hosts.append( main.ONOScli2.hosts() )
-        hosts.append( main.ONOScli3.hosts() )
-        hosts.append( main.ONOScli4.hosts() )
-        hosts.append( main.ONOScli5.hosts() )
-        hosts.append( main.ONOScli6.hosts() )
-        hosts.append( main.ONOScli7.hosts() )
-        '''
-        ports = []
-        ports.append( main.ONOScli1.ports() )
-        ports.append( main.ONOScli2.ports() )
-        ports.append( main.ONOScli3.ports() )
-        ports.append( main.ONOScli4.ports() )
-        ports.append( main.ONOScli5.ports() )
-        ports.append( main.ONOScli6.ports() )
-        ports.append( main.ONOScli7.ports() )
-        links = []
-        links.append( main.ONOScli1.links() )
-        links.append( main.ONOScli2.links() )
-        links.append( main.ONOScli3.links() )
-        links.append( main.ONOScli4.links() )
-        links.append( main.ONOScli5.links() )
-        links.append( main.ONOScli6.links() )
-        links.append( main.ONOScli7.links() )
-
-
         main.step("Comparing ONOS topology to MN")
         devices_results = main.TRUE
         ports_results = main.TRUE
@@ -968,8 +938,46 @@ class HATestClusterRestart:
         topo_result = main.FALSE
         start_time = time.time()
         elapsed = 0
+        count = 0
         while topo_result == main.FALSE and elapsed < 120:
+            count = count + 1
             try:
+                main.step("Collecting topology information from ONOS")
+                devices = []
+                devices.append( main.ONOScli1.devices() )
+                devices.append( main.ONOScli2.devices() )
+                devices.append( main.ONOScli3.devices() )
+                devices.append( main.ONOScli4.devices() )
+                devices.append( main.ONOScli5.devices() )
+                devices.append( main.ONOScli6.devices() )
+                devices.append( main.ONOScli7.devices() )
+                '''
+                hosts = []
+                hosts.append( main.ONOScli1.hosts() )
+                hosts.append( main.ONOScli2.hosts() )
+                hosts.append( main.ONOScli3.hosts() )
+                hosts.append( main.ONOScli4.hosts() )
+                hosts.append( main.ONOScli5.hosts() )
+                hosts.append( main.ONOScli6.hosts() )
+                hosts.append( main.ONOScli7.hosts() )
+                '''
+                ports = []
+                ports.append( main.ONOScli1.ports() )
+                ports.append( main.ONOScli2.ports() )
+                ports.append( main.ONOScli3.ports() )
+                ports.append( main.ONOScli4.ports() )
+                ports.append( main.ONOScli5.ports() )
+                ports.append( main.ONOScli6.ports() )
+                ports.append( main.ONOScli7.ports() )
+                links = []
+                links.append( main.ONOScli1.links() )
+                links.append( main.ONOScli2.links() )
+                links.append( main.ONOScli3.links() )
+                links.append( main.ONOScli4.links() )
+                links.append( main.ONOScli5.links() )
+                links.append( main.ONOScli6.links() )
+                links.append( main.ONOScli7.links() )
+
                 for controller in range(7): #TODO parameterize the number of controllers
                     if devices[controller] or not "Error" in devices[controller]:
                         current_devices_result =  main.Mininet1.compare_switches(MNTopo, json.loads(devices[controller]))
@@ -1003,11 +1011,13 @@ class HATestClusterRestart:
             devices_results = devices_results and current_devices_result
             ports_results = ports_results and current_ports_result
             links_results = links_results and current_links_result
-            elapsed = time.time()-start_time()
+            topo_result = devices_results and ports_results and links_results
+            elapsed = time.time() - start_time
         time_threshold = elapsed < 1
-        topo_result = devices_results and ports_results and links_results and time_threshold
+        topo_result = topo_result and time_threshold
         #TODO make sure this step is non-blocking. IE add a timeout
-        main.log.report("Very crass estimate for topology discovery/convergence: " + str(elapsed) + " seconds")
+        main.log.report("Very crass estimate for topology discovery/convergence: " +\
+                str(elapsed) + " seconds, " + str(count) +" tries" )
         utilities.assert_equals(expect=main.TRUE, actual=topo_result,
                 onpass="Topology Check Test successful",
                 onfail="Topology Check Test NOT successful")

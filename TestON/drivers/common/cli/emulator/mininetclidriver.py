@@ -672,7 +672,7 @@ class MininetCliDriver(Emulator):
         returns: main.FASLE on an error, else main.TRUE
         '''
         dpid = kwargs.get('dpid', '')
-        command = "addswitch " + sw + " " + str(dpid)
+        command = "addswitch " + str( sw ) + " " + str( dpid )
         try:
             response = self.execute(cmd=command,prompt="mininet>",timeout=10)
             if re.search("already exists!", response):
@@ -700,7 +700,7 @@ class MininetCliDriver(Emulator):
             switchname = name of the switch as a string
         returns: main.FASLE on an error, else main.TRUE
         '''
-        command = "delswitch " + sw
+        command = "delswitch " + str( sw )
         try:
             response = self.execute(cmd=command,prompt="mininet>",timeout=10)
             if re.search("no switch named", response):
@@ -730,7 +730,7 @@ class MininetCliDriver(Emulator):
             node2 = the string node name of the second endpoint of the link
         returns: main.FASLE on an error, else main.TRUE
         '''
-        command = "addlink " + node1 + " " + node2
+        command = "addlink " + str( node1 ) + " " + str( node2 )
         try:
             response = self.execute(cmd=command,prompt="mininet>",timeout=10)
             if re.search("doesnt exist!", response):
@@ -759,7 +759,7 @@ class MininetCliDriver(Emulator):
             node2 = the string node name of the second endpoint of the link
         returns: main.FASLE on an error, else main.TRUE
         '''
-        command = "dellink " + node1 + " " + node2
+        command = "dellink " + str( node1 ) + " " + str( node2 )
         try:
             response = self.execute(cmd=command,prompt="mininet>",timeout=10)
             if re.search("no node named", response):
@@ -791,7 +791,7 @@ class MininetCliDriver(Emulator):
             returns: main.FASLE on an error, else main.TRUE
         '''
         switch = kwargs.get('switch', '')
-        command = "addhost " + hostname + " " + switch
+        command = "addhost " + str( hostname ) + " " + str( switch )
         try:
             response = self.execute(cmd=command,prompt="mininet>",timeout=10)
             if re.search("already exists!", response):
@@ -822,7 +822,7 @@ class MininetCliDriver(Emulator):
             hostname = the string hostname
             returns: main.FASLE on an error, else main.TRUE
         '''
-        command = "delhost " + hostname
+        command = "delhost " + str( hostname )
         try:
             response = self.execute(cmd=command,prompt="mininet>",timeout=10)
             if re.search("no host named", response):

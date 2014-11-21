@@ -1533,5 +1533,52 @@ class OnosCliDriver(CLI):
             main.cleanup()
             main.exit()
 
+    def clusters(self, json_format=True):
+        '''
+        Lists all clusters
+        '''
+        try:
+            self.handle.sendline("")
+            self.handle.expect("onos>")
+
+            if json_format:
+                self.handle.sendline("clusters -j")
+                self.handle.expect("clusters -j")
+                self.handle.expect("onos>")
+                handle = self.handle.before
+                '''
+                handle variable here contains some ANSI escape color code
+                sequences at the end which are invisible in the print command
+                output. To make that escape sequence visible, use repr() function.
+                The repr(handle) output when printed shows the ANSI escape sequences.
+                In json.loads(somestring), this somestring variable is actually
+                repr(somestring) and json.loads would fail with the escape sequence.
+                So we take off that escape sequence using
+                ansi_escape = re.compile(r'\r\r\n\x1b[^m]*m')
+                handle1 = ansi_escape.sub('', handle)
+                '''
+                #print "repr(handle) =", repr(handle)
+                ansi_escape = re.compile(r'\r\r\n\x1b[^m]*m')
+                handle1 = ansi_escape.sub('', handle)
+                #print "repr(handle1) = ", repr(handle1)
+                return handle1
+            else:
+                self.handle.sendline("links")
+                self.handle.expect("onos>")
+                handle = self.handle.before
+                #print "handle =",handle
+                return handle
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()
+
 
     #***********************************

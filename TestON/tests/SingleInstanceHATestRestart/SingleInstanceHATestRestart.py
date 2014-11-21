@@ -1,7 +1,6 @@
 '''
-Description: This test is to determine if the HA test setup is
-    working correctly. There are no failures so this test should
-    have a 100% pass rate
+Description: This test is to determine if a single
+    instance ONOS 'cluster' can handle a restart
 
 List of test cases:
 CASE1: Compile ONOS and push it to the test machines
@@ -18,7 +17,7 @@ CASE11: Switch down
 CASE12: Switch up
 CASE13: Clean up
 '''
-class HATestSanity:
+class SingleInstanceHATestRestart:
 
     def __init__(self) :
         self.default = ''
@@ -38,7 +37,7 @@ class HATestSanity:
         onos-wait-for-start
         '''
         import time
-        main.log.report("ONOS HA Sanity test - initialization")
+        main.log.report("ONOS Single node cluster restart HA test - initialization")
         main.case("Setting up test environment")
 
         # load some vairables from the params file
@@ -83,7 +82,7 @@ class HATestSanity:
         cell_result = main.ONOSbench.set_cell(cell_name)
         verify_result = main.ONOSbench.verify_cell()
 
-        #FIXME:this is short term fix 
+        #FIXME:this is short term fix
         main.log.report("Removing raft logs")
         main.ONOSbench.onos_remove_raft_logs()
         main.log.report("Uninstalling ONOS")
@@ -119,68 +118,20 @@ class HATestSanity:
         main.step("Installing ONOS package")
         onos1_install_result = main.ONOSbench.onos_install(options="-f",
                 node=ONOS1_ip)
-        onos2_install_result = main.ONOSbench.onos_install(options="-f",
-                node=ONOS2_ip)
-        onos3_install_result = main.ONOSbench.onos_install(options="-f",
-                node=ONOS3_ip)
-        onos4_install_result = main.ONOSbench.onos_install(options="-f",
-                node=ONOS4_ip)
-        onos5_install_result = main.ONOSbench.onos_install(options="-f",
-                node=ONOS5_ip)
-        onos6_install_result = main.ONOSbench.onos_install(options="-f",
-                node=ONOS6_ip)
-        onos7_install_result = main.ONOSbench.onos_install(options="-f",
-                node=ONOS7_ip)
-        onos_install_result = onos1_install_result and onos2_install_result\
-                and onos3_install_result and onos4_install_result\
-                and onos5_install_result and onos6_install_result\
-                and onos7_install_result
-        '''
-        #FIXME: work around until onos is less fragile
-        main.ONOSbench.handle.sendline("onos-cluster-install")
-        print main.ONOSbench.handle.expect("\$")
-        onos_install_result = main.TRUE
-        '''
 
 
         main.step("Checking if ONOS is up yet")
         #TODO: Refactor
         # check bundle:list?
+        #this should be enough for ONOS to start
+        time.sleep(60)
         onos1_isup = main.ONOSbench.isup(ONOS1_ip)
         if not onos1_isup:
             main.log.report("ONOS1 didn't start!")
-        onos2_isup = main.ONOSbench.isup(ONOS2_ip)
-        if not onos2_isup:
-            main.log.report("ONOS2 didn't start!")
-        onos3_isup = main.ONOSbench.isup(ONOS3_ip)
-        if not onos3_isup:
-            main.log.report("ONOS3 didn't start!")
-        onos4_isup = main.ONOSbench.isup(ONOS4_ip)
-        if not onos4_isup:
-            main.log.report("ONOS4 didn't start!")
-        onos5_isup = main.ONOSbench.isup(ONOS5_ip)
-        if not onos5_isup:
-            main.log.report("ONOS5 didn't start!")
-        onos6_isup = main.ONOSbench.isup(ONOS6_ip)
-        if not onos6_isup:
-            main.log.report("ONOS6 didn't start!")
-        onos7_isup = main.ONOSbench.isup(ONOS7_ip)
-        if not onos7_isup:
-            main.log.report("ONOS7 didn't start!")
-        onos_isup_result = onos1_isup and onos2_isup and onos3_isup\
-                and onos4_isup and onos5_isup and onos6_isup and onos7_isup
         # TODO: if it becomes an issue, we can retry this step  a few times
 
 
         cli_result1 = main.ONOScli1.start_onos_cli(ONOS1_ip)
-        cli_result2 = main.ONOScli2.start_onos_cli(ONOS2_ip)
-        cli_result3 = main.ONOScli3.start_onos_cli(ONOS3_ip)
-        cli_result4 = main.ONOScli4.start_onos_cli(ONOS4_ip)
-        cli_result5 = main.ONOScli5.start_onos_cli(ONOS5_ip)
-        cli_result6 = main.ONOScli6.start_onos_cli(ONOS6_ip)
-        cli_result7 = main.ONOScli7.start_onos_cli(ONOS7_ip)
-        cli_results = cli_result1 and cli_result2 and cli_result3 and\
-                cli_result4 and cli_result5 and cli_result6 and cli_result7
 
         main.step("Start Packet Capture MN")
         main.Mininet2.start_tcpdump(
@@ -190,17 +141,17 @@ class HATestSanity:
 
 
         case1_result = (clean_install_result and package_result and
-                cell_result and verify_result and onos_install_result and
-                onos_isup_result and cli_results)
+                cell_result and verify_result and onos1_install_result and
+                onos1_isup and cli1_results)
 
         utilities.assert_equals(expect=main.TRUE, actual=case1_result,
                 onpass="Test startup successful",
                 onfail="Test startup NOT successful")
 
 
-        #if case1_result==main.FALSE:
-        #    main.cleanup()
-        #    main.exit()
+        if case1_result==main.FALSE:
+            main.cleanup()
+            main.exit()
 
     def CASE2(self,main) :
         '''
@@ -210,50 +161,19 @@ class HATestSanity:
         import json
         import re
 
-
-        '''
-        ONOS1_ip = main.params['CTRL']['ip1']
-        ONOS1_port = main.params['CTRL']['port1']
-        ONOS2_ip = main.params['CTRL']['ip2']
-        ONOS2_port = main.params['CTRL']['port2']
-        ONOS3_ip = main.params['CTRL']['ip3']
-        ONOS3_port = main.params['CTRL']['port3']
-        ONOS4_ip = main.params['CTRL']['ip4']
-        ONOS4_port = main.params['CTRL']['port4']
-        ONOS5_ip = main.params['CTRL']['ip5']
-        ONOS5_port = main.params['CTRL']['port5']
-        ONOS6_ip = main.params['CTRL']['ip6']
-        ONOS6_port = main.params['CTRL']['port6']
-        ONOS7_ip = main.params['CTRL']['ip7']
-        ONOS7_port = main.params['CTRL']['port7']
-        '''
-
-
         main.log.report("Assigning switches to controllers")
         main.case("Assigning Controllers")
         main.step("Assign switches to controllers")
 
         for i in range (1,29):
-           main.Mininet1.assign_sw_controller(sw=str(i),count=7,
-                    ip1=ONOS1_ip,port1=ONOS1_port,
-                    ip2=ONOS2_ip,port2=ONOS2_port,
-                    ip3=ONOS3_ip,port3=ONOS3_port,
-                    ip4=ONOS4_ip,port4=ONOS4_port,
-                    ip5=ONOS5_ip,port5=ONOS5_port,
-                    ip6=ONOS6_ip,port6=ONOS6_port,
-                    ip7=ONOS7_ip,port7=ONOS7_port)
+           main.Mininet1.assign_sw_controller(sw=str(i),
+                    ip1=ONOS1_ip,port1=ONOS1_port)
 
         mastership_check = main.TRUE
         for i in range (1,29):
             response = main.Mininet1.get_sw_controller("s"+str(i))
             main.log.info(repr(response))
-            if re.search("tcp:"+ONOS1_ip,response)\
-                    and re.search("tcp:"+ONOS2_ip,response)\
-                    and re.search("tcp:"+ONOS3_ip,response)\
-                    and re.search("tcp:"+ONOS4_ip,response)\
-                    and re.search("tcp:"+ONOS5_ip,response)\
-                    and re.search("tcp:"+ONOS6_ip,response)\
-                    and re.search("tcp:"+ONOS7_ip,response):
+            if re.search("tcp:"+ONOS1_ip,response):
                 mastership_check = mastership_check and main.TRUE
             else:
                 mastership_check = main.FALSE
@@ -291,12 +211,6 @@ class HATestSanity:
         #uninstall onos-app-fwd
         main.log.info("Uninstall reactive forwarding app")
         main.ONOScli1.feature_uninstall("onos-app-fwd")
-        main.ONOScli2.feature_uninstall("onos-app-fwd")
-        main.ONOScli3.feature_uninstall("onos-app-fwd")
-        main.ONOScli4.feature_uninstall("onos-app-fwd")
-        main.ONOScli5.feature_uninstall("onos-app-fwd")
-        main.ONOScli6.feature_uninstall("onos-app-fwd")
-        main.ONOScli7.feature_uninstall("onos-app-fwd")
 
         main.step("Add  host intents")
         #TODO:  move the host numbers to params
@@ -359,54 +273,16 @@ class HATestSanity:
         main.step("Get the Mastership of each switch from each controller")
         global mastership_state
         ONOS1_mastership = main.ONOScli1.roles()
-        ONOS2_mastership = main.ONOScli2.roles()
-        ONOS3_mastership = main.ONOScli3.roles()
-        ONOS4_mastership = main.ONOScli4.roles()
-        ONOS5_mastership = main.ONOScli5.roles()
-        ONOS6_mastership = main.ONOScli6.roles()
-        ONOS7_mastership = main.ONOScli7.roles()
         #print json.dumps(json.loads(ONOS1_mastership), sort_keys=True, indent=4, separators=(',', ': '))
-        if "Error" in ONOS1_mastership or not ONOS1_mastership\
-                or "Error" in ONOS2_mastership or not ONOS2_mastership\
-                or "Error" in ONOS3_mastership or not ONOS3_mastership\
-                or "Error" in ONOS4_mastership or not ONOS4_mastership\
-                or "Error" in ONOS5_mastership or not ONOS5_mastership\
-                or "Error" in ONOS6_mastership or not ONOS6_mastership\
-                or "Error" in ONOS7_mastership or not ONOS7_mastership:
-                    main.log.report("Error in getting ONOS roles")
-                    main.log.warn("ONOS1 mastership response: " + repr(ONOS1_mastership))
-                    main.log.warn("ONOS2 mastership response: " + repr(ONOS2_mastership))
-                    main.log.warn("ONOS3 mastership response: " + repr(ONOS3_mastership))
-                    main.log.warn("ONOS4 mastership response: " + repr(ONOS4_mastership))
-                    main.log.warn("ONOS5 mastership response: " + repr(ONOS5_mastership))
-                    main.log.warn("ONOS6 mastership response: " + repr(ONOS6_mastership))
-                    main.log.warn("ONOS7 mastership response: " + repr(ONOS7_mastership))
-                    consistent_mastership = main.FALSE
-        elif ONOS1_mastership == ONOS2_mastership\
-                and ONOS1_mastership == ONOS3_mastership\
-                and ONOS1_mastership == ONOS4_mastership\
-                and ONOS1_mastership == ONOS5_mastership\
-                and ONOS1_mastership == ONOS6_mastership\
-                and ONOS1_mastership == ONOS7_mastership:
-                    mastership_state = ONOS1_mastership
-                    consistent_mastership = main.TRUE
-                    main.log.report("Switch roles are consistent across all ONOS nodes")
-        else:
-            main.log.warn("ONOS1 roles: ", json.dumps(json.loads(ONOS1_mastership),
-                sort_keys=True, indent=4, separators=(',', ': ')))
-            main.log.warn("ONOS2 roles: ", json.dumps(json.loads(ONOS2_mastership),
-                sort_keys=True, indent=4, separators=(',', ': ')))
-            main.log.warn("ONOS3 roles: ", json.dumps(json.loads(ONOS3_mastership),
-                sort_keys=True, indent=4, separators=(',', ': ')))
-            main.log.warn("ONOS4 roles: ", json.dumps(json.loads(ONOS4_mastership),
-                sort_keys=True, indent=4, separators=(',', ': ')))
-            main.log.warn("ONOS5 roles: ", json.dumps(json.loads(ONOS5_mastership),
-                sort_keys=True, indent=4, separators=(',', ': ')))
-            main.log.warn("ONOS6 roles: ", json.dumps(json.loads(ONOS6_mastership),
-                sort_keys=True, indent=4, separators=(',', ': ')))
-            main.log.warn("ONOS7 roles: ", json.dumps(json.loads(ONOS7_mastership),
-                sort_keys=True, indent=4, separators=(',', ': ')))
+        #TODO: Make this a meaningful check
+        if "Error" in ONOS1_mastership or not ONOS1_mastership:
+            main.log.report("Error in getting ONOS roles")
+            main.log.warn("ONOS1 mastership response: " + repr(ONOS1_mastership))
             consistent_mastership = main.FALSE
+        else:
+            mastership_state = ONOS1_mastership
+            consistent_mastership = main.TRUE
+            main.log.report("Switch roles are consistent across all ONOS nodes")
         utilities.assert_equals(expect = main.TRUE,actual=consistent_mastership,
                 onpass="Switch roles are consistent across all ONOS nodes",
                 onfail="ONOS nodes have different views of switch roles")
@@ -415,52 +291,13 @@ class HATestSanity:
         main.step("Get the intents from each controller")
         global intent_state
         ONOS1_intents = main.ONOScli1.intents( json_format=True )
-        ONOS2_intents = main.ONOScli2.intents( json_format=True )
-        ONOS3_intents = main.ONOScli3.intents( json_format=True )
-        ONOS4_intents = main.ONOScli4.intents( json_format=True )
-        ONOS5_intents = main.ONOScli5.intents( json_format=True )
-        ONOS6_intents = main.ONOScli6.intents( json_format=True )
-        ONOS7_intents = main.ONOScli7.intents( json_format=True )
         intent_check = main.FALSE
-        if "Error" in ONOS1_intents or not ONOS1_intents\
-                or "Error" in ONOS2_intents or not ONOS2_intents\
-                or "Error" in ONOS3_intents or not ONOS3_intents\
-                or "Error" in ONOS4_intents or not ONOS4_intents\
-                or "Error" in ONOS5_intents or not ONOS5_intents\
-                or "Error" in ONOS6_intents or not ONOS6_intents\
-                or "Error" in ONOS7_intents or not ONOS7_intents:
-                    main.log.report("Error in getting ONOS intents")
-                    main.log.warn("ONOS1 intents response: " + repr(ONOS1_intents))
-                    main.log.warn("ONOS2 intents response: " + repr(ONOS2_intents))
-                    main.log.warn("ONOS3 intents response: " + repr(ONOS3_intents))
-                    main.log.warn("ONOS4 intents response: " + repr(ONOS4_intents))
-                    main.log.warn("ONOS5 intents response: " + repr(ONOS5_intents))
-                    main.log.warn("ONOS6 intents response: " + repr(ONOS6_intents))
-                    main.log.warn("ONOS7 intents response: " + repr(ONOS7_intents))
-        elif ONOS1_intents == ONOS2_intents\
-                and ONOS1_intents == ONOS3_intents\
-                and ONOS1_intents == ONOS4_intents\
-                and ONOS1_intents == ONOS5_intents\
-                and ONOS1_intents == ONOS6_intents\
-                and ONOS1_intents == ONOS7_intents:
-                    intent_state = ONOS1_intents
-                    intent_check = main.TRUE
-                    main.log.report("Intents are consistent across all ONOS nodes")
+        if "Error" in ONOS1_intents or not ONOS1_intents:
+            main.log.report("Error in getting ONOS intents")
+            main.log.warn("ONOS1 intents response: " + repr(ONOS1_intents))
         else:
-            main.log.warn("ONOS1 intents: ", json.dumps(json.loads(ONOS1_intents),
-                sort_keys=True, indent=4, separators=(',', ': ')))
-            main.log.warn("ONOS2 intents: ", json.dumps(json.loads(ONOS2_intents),
-                sort_keys=True, indent=4, separators=(',', ': ')))
-            main.log.warn("ONOS3 intents: ", json.dumps(json.loads(ONOS3_intents),
-                sort_keys=True, indent=4, separators=(',', ': ')))
-            main.log.warn("ONOS4 intents: ", json.dumps(json.loads(ONOS4_intents),
-                sort_keys=True, indent=4, separators=(',', ': ')))
-            main.log.warn("ONOS5 intents: ", json.dumps(json.loads(ONOS5_intents),
-                sort_keys=True, indent=4, separators=(',', ': ')))
-            main.log.warn("ONOS6 intents: ", json.dumps(json.loads(ONOS6_intents),
-                sort_keys=True, indent=4, separators=(',', ': ')))
-            main.log.warn("ONOS7 intents: ", json.dumps(json.loads(ONOS7_intents),
-                sort_keys=True, indent=4, separators=(',', ': ')))
+            intent_check = main.TRUE
+            main.log.report("Intents are consistent across all ONOS nodes")
         utilities.assert_equals(expect = main.TRUE,actual=intent_check,
                 onpass="Intents are consistent across all ONOS nodes",
                 onfail="ONOS nodes have different views of intents")
@@ -469,53 +306,15 @@ class HATestSanity:
         main.step("Get the flows from each controller")
         global flow_state
         ONOS1_flows = main.ONOScli1.flows( json_format=True )
-        ONOS2_flows = main.ONOScli2.flows( json_format=True )
-        ONOS3_flows = main.ONOScli3.flows( json_format=True )
-        ONOS4_flows = main.ONOScli4.flows( json_format=True )
-        ONOS5_flows = main.ONOScli5.flows( json_format=True )
-        ONOS6_flows = main.ONOScli6.flows( json_format=True )
-        ONOS7_flows = main.ONOScli7.flows( json_format=True )
         flow_check = main.FALSE
-        if "Error" in ONOS1_flows or not ONOS1_flows\
-                or "Error" in ONOS2_flows or not ONOS2_flows\
-                or "Error" in ONOS3_flows or not ONOS3_flows\
-                or "Error" in ONOS4_flows or not ONOS4_flows\
-                or "Error" in ONOS5_flows or not ONOS5_flows\
-                or "Error" in ONOS6_flows or not ONOS6_flows\
-                or "Error" in ONOS7_flows or not ONOS7_flows:
-                    main.log.report("Error in getting ONOS intents")
-                    main.log.warn("ONOS1 flows repsponse: "+ ONOS1_flows)
-                    main.log.warn("ONOS2 flows repsponse: "+ ONOS2_flows)
-                    main.log.warn("ONOS3 flows repsponse: "+ ONOS3_flows)
-                    main.log.warn("ONOS4 flows repsponse: "+ ONOS4_flows)
-                    main.log.warn("ONOS5 flows repsponse: "+ ONOS5_flows)
-                    main.log.warn("ONOS6 flows repsponse: "+ ONOS6_flows)
-                    main.log.warn("ONOS7 flows repsponse: "+ ONOS7_flows)
-        elif len(json.loads(ONOS1_flows)) == len(json.loads(ONOS2_flows))\
-                and len(json.loads(ONOS1_flows)) == len(json.loads(ONOS3_flows))\
-                and len(json.loads(ONOS1_flows)) == len(json.loads(ONOS4_flows))\
-                and len(json.loads(ONOS1_flows)) == len(json.loads(ONOS5_flows))\
-                and len(json.loads(ONOS1_flows)) == len(json.loads(ONOS6_flows))\
-                and len(json.loads(ONOS1_flows)) == len(json.loads(ONOS7_flows)):
-                #TODO: Do a better check, maybe compare flows on switches?
-                    flow_state = ONOS1_flows
-                    flow_check = main.TRUE
-                    main.log.report("Flow count is consistent across all ONOS nodes")
+        if "Error" in ONOS1_flows or not ONOS1_flows:
+            main.log.report("Error in getting ONOS intents")
+            main.log.warn("ONOS1 flows repsponse: "+ ONOS1_flows)
         else:
-            main.log.warn("ONOS1 flows: "+ json.dumps(json.loads(ONOS1_flows),
-                sort_keys=True, indent=4, separators=(',', ': ')))
-            main.log.warn("ONOS2 flows: "+ json.dumps(json.loads(ONOS2_flows),
-                sort_keys=True, indent=4, separators=(',', ': ')))
-            main.log.warn("ONOS3 flows: "+ json.dumps(json.loads(ONOS3_flows),
-                sort_keys=True, indent=4, separators=(',', ': ')))
-            main.log.warn("ONOS4 flows: "+ json.dumps(json.loads(ONOS4_flows),
-                sort_keys=True, indent=4, separators=(',', ': ')))
-            main.log.warn("ONOS5 flows: "+ json.dumps(json.loads(ONOS5_flows),
-                sort_keys=True, indent=4, separators=(',', ': ')))
-            main.log.warn("ONOS6 flows: "+ json.dumps(json.loads(ONOS6_flows),
-                sort_keys=True, indent=4, separators=(',', ': ')))
-            main.log.warn("ONOS7 flows: "+ json.dumps(json.loads(ONOS7_flows),
-                sort_keys=True, indent=4, separators=(',', ': ')))
+            #TODO: Do a better check, maybe compare flows on switches?
+            flow_state = ONOS1_flows
+            flow_check = main.TRUE
+            main.log.report("Flow count is consistent across all ONOS nodes")
         utilities.assert_equals(expect = main.TRUE,actual=flow_check,
                 onpass="The flow count is consistent across all ONOS nodes",
                 onfail="ONOS nodes have different flow counts")
@@ -554,61 +353,32 @@ class HATestSanity:
         main.step("Create TestONTopology object")
         ctrls = []
         count = 1
-        while True:
-            temp = ()
-            if ('ip' + str(count)) in main.params['CTRL']:
-                temp = temp + (getattr(main,('ONOS' + str(count))),)
-                temp = temp + ("ONOS"+str(count),)
-                temp = temp + (main.params['CTRL']['ip'+str(count)],)
-                temp = temp + (eval(main.params['CTRL']['port'+str(count)]),)
-                ctrls.append(temp)
-                count = count + 1
-            else:
-                break
+        temp = ()
+        temp = temp + (getattr(main,('ONOS' + str(count))),)
+        temp = temp + ("ONOS"+str(count),)
+        temp = temp + (main.params['CTRL']['ip'+str(count)],)
+        temp = temp + (eval(main.params['CTRL']['port'+str(count)]),)
+        ctrls.append(temp)
         MNTopo = TestONTopology(main.Mininet1, ctrls) # can also add Intent API info for intent operations
 
         main.step("Collecting topology information from ONOS")
         devices = []
         devices.append( main.ONOScli1.devices() )
-        devices.append( main.ONOScli2.devices() )
-        devices.append( main.ONOScli3.devices() )
-        devices.append( main.ONOScli4.devices() )
-        devices.append( main.ONOScli5.devices() )
-        devices.append( main.ONOScli6.devices() )
-        devices.append( main.ONOScli7.devices() )
         '''
         hosts = []
         hosts.append( main.ONOScli1.hosts() )
-        hosts.append( main.ONOScli2.hosts() )
-        hosts.append( main.ONOScli3.hosts() )
-        hosts.append( main.ONOScli4.hosts() )
-        hosts.append( main.ONOScli5.hosts() )
-        hosts.append( main.ONOScli6.hosts() )
-        hosts.append( main.ONOScli7.hosts() )
         '''
         ports = []
         ports.append( main.ONOScli1.ports() )
-        ports.append( main.ONOScli2.ports() )
-        ports.append( main.ONOScli3.ports() )
-        ports.append( main.ONOScli4.ports() )
-        ports.append( main.ONOScli5.ports() )
-        ports.append( main.ONOScli6.ports() )
-        ports.append( main.ONOScli7.ports() )
         links = []
         links.append( main.ONOScli1.links() )
-        links.append( main.ONOScli2.links() )
-        links.append( main.ONOScli3.links() )
-        links.append( main.ONOScli4.links() )
-        links.append( main.ONOScli5.links() )
-        links.append( main.ONOScli6.links() )
-        links.append( main.ONOScli7.links() )
 
 
         main.step("Comparing ONOS topology to MN")
         devices_results = main.TRUE
         ports_results = main.TRUE
         links_results = main.TRUE
-        for controller in range(7): #TODO parameterize the number of controllers
+        for controller in range(1): #TODO parameterize the number of controllers
             if devices[controller] or not "Error" in devices[controller]:
                 current_devices_result =  main.Mininet1.compare_switches(MNTopo, json.loads(devices[controller]))
             else:
@@ -654,12 +424,22 @@ class HATestSanity:
         '''
         The Failure case. Since this is the Sanity test, we do nothing.
         '''
-        import time
-        main.log.report("Wait 60 seconds instead of inducing a failure")
-        time.sleep(60)
-        utilities.assert_equals(expect=main.TRUE, actual=main.TRUE,
-                onpass="Sleeping 60 seconds",
-                onfail="Something is terribly wrong with my math")
+
+        main.log.report("Restart ONOS node")
+        main.log.case("Restart ONOS node")
+        main.ONOSbench.onos_kill(ONOS1_ip)
+
+        main.step("Checking if ONOS is up yet")
+        onos1_isup = main.ONOSbench.isup(ONOS1_ip)
+        # TODO: if it becomes an issue, we can retry this step  a few times
+
+
+        cli_result1 = main.ONOScli1.start_onos_cli(ONOS1_ip)
+
+        case_results = main.TRUE and onosi1_isup and cli_result1
+        utilities.assert_equals(expect=main.TRUE, actual=case_results,
+                onpass="ONOS restart successful",
+                onfail="ONOS restart NOT successful")
 
     def CASE7(self,main) :
         '''
@@ -671,54 +451,14 @@ class HATestSanity:
 
         main.step("Check if switch roles are consistent across all nodes")
         ONOS1_mastership = main.ONOScli1.roles()
-        ONOS2_mastership = main.ONOScli2.roles()
-        ONOS3_mastership = main.ONOScli3.roles()
-        ONOS4_mastership = main.ONOScli4.roles()
-        ONOS5_mastership = main.ONOScli5.roles()
-        ONOS6_mastership = main.ONOScli6.roles()
-        ONOS7_mastership = main.ONOScli7.roles()
         #print json.dumps(json.loads(ONOS1_mastership), sort_keys=True, indent=4, separators=(',', ': '))
-        if "Error" in ONOS1_mastership or not ONOS1_mastership\
-                or "Error" in ONOS2_mastership or not ONOS2_mastership\
-                or "Error" in ONOS3_mastership or not ONOS3_mastership\
-                or "Error" in ONOS4_mastership or not ONOS4_mastership\
-                or "Error" in ONOS5_mastership or not ONOS5_mastership\
-                or "Error" in ONOS6_mastership or not ONOS6_mastership\
-                or "Error" in ONOS7_mastership or not ONOS7_mastership:
-                    main.log.error("Error in getting ONOS mastership")
-                    main.log.warn("ONOS1 mastership response: " + repr(ONOS1_mastership))
-                    main.log.warn("ONOS2 mastership response: " + repr(ONOS2_mastership))
-                    main.log.warn("ONOS3 mastership response: " + repr(ONOS3_mastership))
-                    main.log.warn("ONOS4 mastership response: " + repr(ONOS4_mastership))
-                    main.log.warn("ONOS5 mastership response: " + repr(ONOS5_mastership))
-                    main.log.warn("ONOS6 mastership response: " + repr(ONOS6_mastership))
-                    main.log.warn("ONOS7 mastership response: " + repr(ONOS7_mastership))
-                    consistent_mastership = main.FALSE
-        elif ONOS1_mastership == ONOS2_mastership\
-                and ONOS1_mastership == ONOS3_mastership\
-                and ONOS1_mastership == ONOS4_mastership\
-                and ONOS1_mastership == ONOS5_mastership\
-                and ONOS1_mastership == ONOS6_mastership\
-                and ONOS1_mastership == ONOS7_mastership:
-                    #mastership_state = ONOS1_mastership
-                    consistent_mastership = main.TRUE
-                    main.log.report("Switch roles are consistent across all ONOS nodes")
-        else:
-            main.log.warn("ONOS1 roles: ", json.dumps(json.loads(ONOS1_mastership),
-                sort_keys=True, indent=4, separators=(',', ': ')))
-            main.log.warn("ONOS2 roles: ", json.dumps(json.loads(ONOS2_mastership),
-                sort_keys=True, indent=4, separators=(',', ': ')))
-            main.log.warn("ONOS3 roles: ", json.dumps(json.loads(ONOS3_mastership),
-                sort_keys=True, indent=4, separators=(',', ': ')))
-            main.log.warn("ONOS4 roles: ", json.dumps(json.loads(ONOS4_mastership),
-                sort_keys=True, indent=4, separators=(',', ': ')))
-            main.log.warn("ONOS5 roles: ", json.dumps(json.loads(ONOS5_mastership),
-                sort_keys=True, indent=4, separators=(',', ': ')))
-            main.log.warn("ONOS6 roles: ", json.dumps(json.loads(ONOS6_mastership),
-                sort_keys=True, indent=4, separators=(',', ': ')))
-            main.log.warn("ONOS7 roles: ", json.dumps(json.loads(ONOS7_mastership),
-                sort_keys=True, indent=4, separators=(',', ': ')))
+        if "Error" in ONOS1_mastership or not ONOS1_mastership:
+            main.log.error("Error in getting ONOS mastership")
+            main.log.warn("ONOS1 mastership response: " + repr(ONOS1_mastership))
             consistent_mastership = main.FALSE
+        else:
+            consistent_mastership = main.TRUE
+            main.log.report("Switch roles are consistent across all ONOS nodes")
         utilities.assert_equals(expect = main.TRUE,actual=consistent_mastership,
                 onpass="Switch roles are consistent across all ONOS nodes",
                 onfail="ONOS nodes have different views of switch roles")
@@ -751,51 +491,14 @@ class HATestSanity:
 
         main.step("Get the intents and compare across all nodes")
         ONOS1_intents = main.ONOScli1.intents( json_format=True )
-        ONOS2_intents = main.ONOScli2.intents( json_format=True )
-        ONOS3_intents = main.ONOScli3.intents( json_format=True )
-        ONOS4_intents = main.ONOScli4.intents( json_format=True )
-        ONOS5_intents = main.ONOScli5.intents( json_format=True )
-        ONOS6_intents = main.ONOScli6.intents( json_format=True )
-        ONOS7_intents = main.ONOScli7.intents( json_format=True )
         intent_check = main.FALSE
-        if "Error" in ONOS1_intents or not ONOS1_intents\
-                or "Error" in ONOS2_intents or not ONOS2_intents\
-                or "Error" in ONOS3_intents or not ONOS3_intents\
-                or "Error" in ONOS4_intents or not ONOS4_intents\
-                or "Error" in ONOS5_intents or not ONOS5_intents\
-                or "Error" in ONOS6_intents or not ONOS6_intents\
-                or "Error" in ONOS7_intents or not ONOS7_intents:
-                    main.log.report("Error in getting ONOS intents")
-                    main.log.warn("ONOS1 intents response: " + repr(ONOS1_intents))
-                    main.log.warn("ONOS2 intents response: " + repr(ONOS2_intents))
-                    main.log.warn("ONOS3 intents response: " + repr(ONOS3_intents))
-                    main.log.warn("ONOS4 intents response: " + repr(ONOS4_intents))
-                    main.log.warn("ONOS5 intents response: " + repr(ONOS5_intents))
-                    main.log.warn("ONOS6 intents response: " + repr(ONOS6_intents))
-                    main.log.warn("ONOS7 intents response: " + repr(ONOS7_intents))
-        elif ONOS1_intents == ONOS2_intents\
-                and ONOS1_intents == ONOS3_intents\
-                and ONOS1_intents == ONOS4_intents\
-                and ONOS1_intents == ONOS5_intents\
-                and ONOS1_intents == ONOS6_intents\
-                and ONOS1_intents == ONOS7_intents:
-                    intent_check = main.TRUE
-                    main.log.report("Intents are consistent across all ONOS nodes")
+        if "Error" in ONOS1_intents or not ONOS1_intents:
+            main.log.report("Error in getting ONOS intents")
+            main.log.warn("ONOS1 intents response: " + repr(ONOS1_intents))
         else:
-            main.log.warn("ONOS1 intents: ", json.dumps(json.loads(ONOS1_intents),
-                sort_keys=True, indent=4, separators=(',', ': ')))
-            main.log.warn("ONOS2 intents: ", json.dumps(json.loads(ONOS2_intents),
-                sort_keys=True, indent=4, separators=(',', ': ')))
-            main.log.warn("ONOS3 intents: ", json.dumps(json.loads(ONOS3_intents),
-                sort_keys=True, indent=4, separators=(',', ': ')))
-            main.log.warn("ONOS4 intents: ", json.dumps(json.loads(ONOS4_intents),
-                sort_keys=True, indent=4, separators=(',', ': ')))
-            main.log.warn("ONOS5 intents: ", json.dumps(json.loads(ONOS5_intents),
-                sort_keys=True, indent=4, separators=(',', ': ')))
-            main.log.warn("ONOS6 intents: ", json.dumps(json.loads(ONOS6_intents),
-                sort_keys=True, indent=4, separators=(',', ': ')))
-            main.log.warn("ONOS7 intents: ", json.dumps(json.loads(ONOS7_intents),
-                sort_keys=True, indent=4, separators=(',', ': ')))
+            intent_state = ONOS1_intents
+            intent_check = main.TRUE
+            main.log.report("Intents are consistent across all ONOS nodes")
         utilities.assert_equals(expect = main.TRUE,actual=intent_check,
                 onpass="Intents are consistent across all ONOS nodes",
                 onfail="ONOS nodes have different views of intents")
@@ -878,55 +581,25 @@ class HATestSanity:
         main.step("Create TestONTopology object")
         ctrls = []
         count = 1
-        while True:
-            temp = ()
-            if ('ip' + str(count)) in main.params['CTRL']:
-                temp = temp + (getattr(main,('ONOS' + str(count))),)
-                temp = temp + ("ONOS"+str(count),)
-                temp = temp + (main.params['CTRL']['ip'+str(count)],)
-                temp = temp + (eval(main.params['CTRL']['port'+str(count)]),)
-                ctrls.append(temp)
-                count = count + 1
-            else:
-                break
+        temp = ()
+        temp = temp + (getattr(main,('ONOS' + str(count))),)
+        temp = temp + ("ONOS"+str(count),)
+        temp = temp + (main.params['CTRL']['ip'+str(count)],)
+        temp = temp + (eval(main.params['CTRL']['port'+str(count)]),)
+        ctrls.append(temp)
         MNTopo = TestONTopology(main.Mininet1, ctrls) # can also add Intent API info for intent operations
 
         main.step("Collecting topology information from ONOS")
         devices = []
         devices.append( main.ONOScli1.devices() )
-        devices.append( main.ONOScli2.devices() )
-        devices.append( main.ONOScli3.devices() )
-        devices.append( main.ONOScli4.devices() )
-        devices.append( main.ONOScli5.devices() )
-        devices.append( main.ONOScli6.devices() )
-        devices.append( main.ONOScli7.devices() )
         '''
         hosts = []
         hosts.append( main.ONOScli1.hosts() )
-        hosts.append( main.ONOScli2.hosts() )
-        hosts.append( main.ONOScli3.hosts() )
-        hosts.append( main.ONOScli4.hosts() )
-        hosts.append( main.ONOScli5.hosts() )
-        hosts.append( main.ONOScli6.hosts() )
-        hosts.append( main.ONOScli7.hosts() )
         '''
         ports = []
         ports.append( main.ONOScli1.ports() )
-        ports.append( main.ONOScli2.ports() )
-        ports.append( main.ONOScli3.ports() )
-        ports.append( main.ONOScli4.ports() )
-        ports.append( main.ONOScli5.ports() )
-        ports.append( main.ONOScli6.ports() )
-        ports.append( main.ONOScli7.ports() )
         links = []
         links.append( main.ONOScli1.links() )
-        links.append( main.ONOScli2.links() )
-        links.append( main.ONOScli3.links() )
-        links.append( main.ONOScli4.links() )
-        links.append( main.ONOScli5.links() )
-        links.append( main.ONOScli6.links() )
-        links.append( main.ONOScli7.links() )
-
 
         main.step("Comparing ONOS topology to MN")
         devices_results = main.TRUE
@@ -937,7 +610,7 @@ class HATestSanity:
         elapsed = 0
         while topo_result == main.FALSE and elapsed < 120:
             try:
-                for controller in range(7): #TODO parameterize the number of controllers
+                for controller in range(1): #TODO parameterize the number of controllers
                     if devices[controller] or not "Error" in devices[controller]:
                         current_devices_result =  main.Mininet1.compare_switches(MNTopo, json.loads(devices[controller]))
                     else:
@@ -970,9 +643,8 @@ class HATestSanity:
             devices_results = devices_results and current_devices_result
             ports_results = ports_results and current_ports_result
             links_results = links_results and current_links_result
+            topo_result = devices_results and ports_results and links_results
             elapsed = time.time()-start_time()
-        time_threshold = elapsed < 1
-        topo_result = devices_results and ports_results and links_results and time_threshold
         #TODO make sure this step is non-blocking. IE add a timeout
         main.log.report("Very crass estimate for topology discovery/convergence: " + str(elapsed) + " seconds")
         utilities.assert_equals(expect=main.TRUE, actual=topo_result,
@@ -1068,14 +740,8 @@ class HATestSanity:
         main.Mininet1.add_link('s28', 's3')
         main.Mininet1.add_link('s28', 's6')
         main.Mininet1.add_link('s28', 'h28')
-        main.Mininet1.assign_sw_controller(sw="28",count=7,
-                ip1=ONOS1_ip,port1=ONOS1_port,
-                ip2=ONOS2_ip,port2=ONOS2_port,
-                ip3=ONOS3_ip,port3=ONOS3_port,
-                ip4=ONOS4_ip,port4=ONOS4_port,
-                ip5=ONOS5_ip,port5=ONOS5_port,
-                ip6=ONOS6_ip,port6=ONOS6_port,
-                ip7=ONOS7_ip,port7=ONOS7_port)
+        main.Mininet1.assign_sw_controller(sw="28",
+                ip1=ONOS1_ip,port1=ONOS1_port)
         main.log.info("Waiting " + str(switch_sleep) + " seconds for switch up to be discovered")
         time.sleep(switch_sleep)
         #Peek at the added switch
@@ -1109,18 +775,6 @@ class HATestSanity:
         for f in log_files:
             main.ONOSbench.secureCopy( "sdn", ONOS1_ip,log_folder+f,"rocks",\
                     dst_dir + str(testname) + "-ONOS1-"+f )
-            main.ONOSbench.secureCopy( "sdn", ONOS2_ip,log_folder+f,"rocks",\
-                    dst_dir + str(testname) + "-ONOS2-"+f )
-            main.ONOSbench.secureCopy( "sdn", ONOS3_ip,log_folder+f,"rocks",\
-                    dst_dir + str(testname) + "-ONOS3-"+f )
-            main.ONOSbench.secureCopy( "sdn", ONOS4_ip,log_folder+f,"rocks",\
-                    dst_dir + str(testname) + "-ONOS4-"+f )
-            main.ONOSbench.secureCopy( "sdn", ONOS5_ip,log_folder+f,"rocks",\
-                    dst_dir + str(testname) + "-ONOS5-"+f )
-            main.ONOSbench.secureCopy( "sdn", ONOS6_ip,log_folder+f,"rocks",\
-                    dst_dir + str(testname) + "-ONOS6-"+f )
-            main.ONOSbench.secureCopy( "sdn", ONOS7_ip,log_folder+f,"rocks",\
-                    dst_dir + str(testname) + "-ONOS7-"+f )
 
         #std*.log's
         #NOTE: must end in /
@@ -1131,20 +785,6 @@ class HATestSanity:
         for f in log_files:
             main.ONOSbench.secureCopy( "sdn", ONOS1_ip,log_folder+f,"rocks",\
                     dst_dir + str(testname) + "-ONOS1-"+f )
-            main.ONOSbench.secureCopy( "sdn", ONOS2_ip,log_folder+f,"rocks",\
-                    dst_dir + str(testname) + "-ONOS2-"+f )
-            main.ONOSbench.secureCopy( "sdn", ONOS3_ip,log_folder+f,"rocks",\
-                    dst_dir + str(testname) + "-ONOS3-"+f )
-            main.ONOSbench.secureCopy( "sdn", ONOS4_ip,log_folder+f,"rocks",\
-                    dst_dir + str(testname) + "-ONOS4-"+f )
-            main.ONOSbench.secureCopy( "sdn", ONOS5_ip,log_folder+f,"rocks",\
-                    dst_dir + str(testname) + "-ONOS5-"+f )
-            main.ONOSbench.secureCopy( "sdn", ONOS6_ip,log_folder+f,"rocks",\
-                    dst_dir + str(testname) + "-ONOS6-"+f )
-            main.ONOSbench.secureCopy( "sdn", ONOS7_ip,log_folder+f,"rocks",\
-                    dst_dir + str(testname) + "-ONOS7-"+f )
-
-
 
 
         #sleep so scp can finish

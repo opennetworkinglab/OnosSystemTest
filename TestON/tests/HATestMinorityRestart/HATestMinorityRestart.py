@@ -1,7 +1,6 @@
 '''
-Description: This test is to determine if the HA test setup is
-    working correctly. There are no failures so this test should
-    have a 100% pass rate
+Description: This test is to determine if ONOS can handle
+    a minority of it's nodes restarting
 
 List of test cases:
 CASE1: Compile ONOS and push it to the test machines
@@ -9,7 +8,7 @@ CASE2: Assign mastership to controllers
 CASE3: Assign intents
 CASE4: Ping across added host intents
 CASE5: Reading state of ONOS
-CASE6: The Failure case. Since this is the Sanity test, we do nothing.
+CASE6: The Failure case.
 CASE7: Check state after control plane failure
 CASE8: Compare topo
 CASE9: Link s3-s28 down
@@ -18,7 +17,7 @@ CASE11: Switch down
 CASE12: Switch up
 CASE13: Clean up
 '''
-class HATestSanity:
+class HATestMinorityRestart:
 
     def __init__(self) :
         self.default = ''
@@ -38,7 +37,7 @@ class HATestSanity:
         onos-wait-for-start
         '''
         import time
-        main.log.report("ONOS HA Sanity test - initialization")
+        main.log.report("ONOS HA test: Restart minority of ONOS nodes - initialization")
         main.case("Setting up test environment")
 
         # load some vairables from the params file
@@ -652,14 +651,33 @@ class HATestSanity:
 
     def CASE6(self,main) :
         '''
-        The Failure case. Since this is the Sanity test, we do nothing.
+        The Failure case.
         '''
-        import time
-        main.log.report("Wait 60 seconds instead of inducing a failure")
-        time.sleep(60)
-        utilities.assert_equals(expect=main.TRUE, actual=main.TRUE,
-                onpass="Sleeping 60 seconds",
-                onfail="Something is terribly wrong with my math")
+        main.log.report("Killing 3 ONOS nodes")
+        main.log.case("Restart minority of ONOS nodes")
+        #TODO: Randomize these nodes
+        main.ONOSbench.onos_kill(ONOS1_ip)
+        main.ONOSbench.onos_kill(ONOS2_ip)
+        main.ONOSbench.onos_kill(ONOS3_ip)
+
+        main.step("Checking if ONOS is up yet")
+        onos1_isup = main.ONOSbench.isup(ONOS1_ip)
+        onos2_isup = main.ONOSbench.isup(ONOS2_ip)
+        onos3_isup = main.ONOSbench.isup(ONOS3_ip)
+        onos_isup_result = onos1_isup and onos2_isup and onos3_isup
+        # TODO: if it becomes an issue, we can retry this step  a few times
+
+
+        cli_result1 = main.ONOScli1.start_onos_cli(ONOS1_ip)
+        cli_result2 = main.ONOScli2.start_onos_cli(ONOS2_ip)
+        cli_result3 = main.ONOScli3.start_onos_cli(ONOS3_ip)
+        cli_results = cli_result1 and cli_result2 and cli_result3
+
+        case_results = main.TRUE and onos_isup_result and cli_results
+        utilities.assert_equals(expect=main.TRUE, actual=case_results,
+                onpass="ONOS restart successful",
+                onfail="ONOS restart NOT successful")
+
 
     def CASE7(self,main) :
         '''
@@ -677,6 +695,20 @@ class HATestSanity:
         ONOS5_mastership = main.ONOScli5.roles()
         ONOS6_mastership = main.ONOScli6.roles()
         ONOS7_mastership = main.ONOScli7.roles()
+        print type(ONOS1_mastership)
+        print ONOS1_mastership
+        print type(ONOS2_mastership)
+        print ONOS2_mastership
+        print type(ONOS3_mastership)
+        print ONOS3_mastership
+        print type(ONOS4_mastership)
+        print ONOS4_mastership
+        print type(ONOS5_mastership)
+        print ONOS5_mastership
+        print type(ONOS6_mastership)
+        print ONOS6_mastership
+        print type(ONOS7_mastership)
+        print ONOS7_mastership
         #print json.dumps(json.loads(ONOS1_mastership), sort_keys=True, indent=4, separators=(',', ': '))
         if "Error" in ONOS1_mastership or not ONOS1_mastership\
                 or "Error" in ONOS2_mastership or not ONOS2_mastership\
@@ -745,7 +777,8 @@ class HATestSanity:
         utilities.assert_equals(expect=main.TRUE,actual=mastership_check,
                 onpass="Mastership of Switches was not changed",
                 onfail="Mastership of some switches changed")
-        mastership_check = mastership_check and consistent_mastership
+        #NOTE: we expect mastership to change on controller failure
+        mastership_check = mastership_check #and consistent_mastership
 
 
 

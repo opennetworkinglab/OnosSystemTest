@@ -270,14 +270,14 @@ class RemoteMininetDriver(Emulator):
         else :
             main.log.error("Connection failed to the host") 
 
-    def start_tcpdump(self, filename, intf = "eth0", port = "port 6633"):
+    def start_tcpdump(self, filename, intf = "eth0", port = "port 6633", user="admin"):
         ''' 
         Runs tpdump on an intferface and saves the file
         intf can be specified, or the default eth0 is used
         '''
         try:
             self.handle.sendline("")
-            self.handle.sendline("sudo tcpdump -n -i "+ intf + " " + port + " -w " + filename.strip() + "  &")
+            self.handle.sendline("sudo tcpdump -n -i "+ intf + " " + port + " -w " + filename.strip() + " -Z " + user + "  &")
             self.handle.sendline("")
             self.handle.sendline("")
             i=self.handle.expect(['No\ssuch\device','listening\son',pexpect.TIMEOUT,"\$"],timeout=10)

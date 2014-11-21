@@ -46,11 +46,11 @@ class TopoPerfNext:
         topo_cfg_name = main.params['TEST']['topo_config_name']
         
         main.case("Setting up test environment")
-        main.step("Copying topology event accumulator config file to "+
-            "ONOS /package/etc")
-        main.ONOSbench.handle.sendline("cp ~/"+
-            topo_cfg_file+
-            "~/ONOS/tools/package/etc/"+
+        main.log.info("Copying topology event accumulator config"+\
+            " to ONOS /ppackage/etc")
+        main.ONOSbench.handle.sendline("cp ~/"+\
+            topo_cfg_file+\
+            "~/ONOS/tools/package/etc/"+\
             topo_cfg_name)
         main.ONOSbench.handle.expect("\$")
 

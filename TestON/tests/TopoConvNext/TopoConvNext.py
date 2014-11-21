@@ -47,13 +47,13 @@ class TopoConvNext:
         BENCH_ip = main.params['BENCH']['ip']
 
         main.case("Setting up test environment")
-        main.step("copying topology event accumulator config file"+
+        main.log.info("copying topology event accumulator config file"+\
                 " to ONOS package/etc/ directory")
         topo_config_name = main.params['TEST']['topo_config_name']
         topo_config =\
                 main.params['TEST']['topo_accumulator_config']
-        main.ONOSbench.handle.sendline("cp ~/"+topo_config+
-            " ~/ONOS/tools/package/etc/"+
+        main.ONOSbench.handle.sendline("cp ~/"+topo_config+\
+            " ~/ONOS/tools/package/etc/"+\
             topo_config_name)
         main.ONOSbench.handle.expect("\$")
 

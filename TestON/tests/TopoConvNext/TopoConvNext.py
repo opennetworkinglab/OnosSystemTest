@@ -72,8 +72,9 @@ class TopoConvNext:
         cell_file_result = main.ONOSbench.create_cell_file(
                 BENCH_ip, cell_name, MN1_ip, 
                 "onos-core,onos-app-metrics", 
-                ONOS1_ip, ONOS2_ip, ONOS3_ip)
-
+                        ONOS1_ip, ONOS2_ip, ONOS3_ip)
+                #ONOS1_ip)
+                    
         main.step("Applying cell file to environment")
         cell_apply_result = main.ONOSbench.set_cell(cell_name)
         verify_cell_result = main.ONOSbench.verify_cell()
@@ -306,18 +307,44 @@ class TopoConvNext:
                         "/tmp/syn_ack_onos7_iter"+str(i)+".txt")
            
             loop_count = 0
-            device_count = 0
+            device_count1 = 0
+            device_count2 = 0
+            device_count3 = 0
             while loop_count < 60: 
                 main.log.info("Checking devices for device down")
-                device_str = main.ONOS1cli.devices()
-                device_json = json.loads(device_str)
-                for device in device_json:
-                    if device['available'] == False:
-                        #print device_count
-                        device_count += 1
+                device_str1 = main.ONOS1cli.devices(
+                        node_ip=ONOS_ip_list[1])
+                device_json1 = json.loads(device_str1)
+                
+                #TODO: Modular check of all nodes for 
+                #      device down discovery
+
+                #device_str2 = main.ONOS2cli.devices(
+                        #        node_ip=ONOS_ip_list[2])
+                #device_json2 = json.loads(device_str2)
+                #device_str3 = main.ONOS3cli.devices(
+                #        node_ip=ONOS_ip_list[3])
+                #device_json3 = json.loads(device_str3)
+                for device1 in device_json1:
+                    if device1['available'] == False:
+                        device_count1 += 1
                     else:
-                        device_count = 0
-                if device_count >= int(num_sw)*int(cluster_count):
+                        device_count1 = 0
+                #for device2 in device_json2:
+                #    if device2['available'] == False:
+                #        print device_count2
+                #        device_count2 += 1
+                #    else:
+                #        device_count2 = 0
+                #for device3 in device_json3:
+                #    if device3['available'] == False:
+                #        print device_count3
+                #        device_count3 += 1
+                #    else:
+                #        device_count3 = 0
+                
+                if device_count1\
+                        >= int(num_sw)*int(cluster_count):
                     main.step("Flushing iptables and obtaining t0")
                     t0_system = time.time()*1000
                     main.ONOS1.handle.sendline("sudo iptables -F")
@@ -358,7 +385,8 @@ class TopoConvNext:
                     if node == 1 and not onos1_dev:
                         main.log.info("Checking node 1 for device "+
                             "discovery")
-                        device_str_obj1 = main.ONOS1cli.devices()
+                        device_str_obj1 = main.ONOS1cli.devices(
+                            node_ip=ONOS_ip_list[1])
                         device_json1 = json.loads(device_str_obj1)
                         for device1 in device_json1:
                             if device1['available'] == True:
@@ -372,7 +400,8 @@ class TopoConvNext:
                     if node == 2 and not onos2_dev:
                         main.log.info("Checking node 2 for device "+
                             "discovery")
-                        device_str_obj2 = main.ONOS2cli.devices()
+                        device_str_obj2 = main.ONOS2cli.devices(
+                            node_ip=ONOS_ip_list[2])
                         device_json2 = json.loads(device_str_obj2)
                         for device2 in device_json2:
                             if device2['available'] == True:
@@ -386,7 +415,8 @@ class TopoConvNext:
                     if node == 3 and not onos3_dev:
                         main.log.info("Checking node 3 for device "+
                             "discovery")
-                        device_str_obj3 = main.ONOS3cli.devices()
+                        device_str_obj3 = main.ONOS3cli.devices(
+                            node_ip=ONOS_ip_list[3])
                         device_json3 = json.loads(device_str_obj3)
                         for device3 in device_json3:
                             if device3['available'] == True:
@@ -400,7 +430,8 @@ class TopoConvNext:
                     if node == 4 and not onos4_dev:
                         main.log.info("Checking node 4 for device "+
                             "discovery")
-                        device_str_obj4 = main.ONOS4cli.devices()
+                        device_str_obj4 = main.ONOS4cli.devices(
+                            node_ip=ONOS_ip_list[4])
                         device_json4 = json.loads(device_str_obj4)
                         for device4 in device_json4:
                             if device4['available'] == True:
@@ -414,7 +445,8 @@ class TopoConvNext:
                     if node == 5 and not onos5_dev:
                         main.log.info("Checking node 5 for device "+
                             "discovery")
-                        device_str_obj5 = main.ONOS5cli.devices()
+                        device_str_obj5 = main.ONOS5cli.devices(
+                            node_ip=ONOS_ip_list[5])
                         device_json5 = json.loads(device_str_obj5)
                         for device5 in device_json5:
                             if device5['available'] == True:
@@ -428,7 +460,8 @@ class TopoConvNext:
                     if node == 6 and not onos6_dev:
                         main.log.info("Checking node 6 for device "+
                             "discovery")
-                        device_str_obj6 = main.ONOS6cli.devices()
+                        device_str_obj6 = main.ONOS6cli.devices(
+                            node_ip=ONOS_ip_list[6])
                         device_json6 = json.loads(device_str_obj6)
                         for device6 in device_json6:
                             if device6['available'] == True:
@@ -442,7 +475,8 @@ class TopoConvNext:
                     if node == 7 and not onos7_dev:
                         main.log.info("Checking node 7 for device "+
                             "discovery")
-                        device_str_obj7 = main.ONOS7cli.devices()
+                        device_str_obj7 = main.ONOS7cli.devices(
+                            node_ip=ONOS_ip_list[7])
                         device_json7 = json.loads(device_str_obj7)
                         for device7 in device_json7:
                             if device7['available'] == True:
@@ -463,6 +497,7 @@ class TopoConvNext:
                     if onos1_dev:
                         main.log.info("All devices have been discovered"+
                             " on all ONOS instances")
+                        time.sleep(5)
                         json_str_metrics_1 =\
                             main.ONOS1cli.topology_events_metrics()
                         json_obj_1 = json.loads(json_str_metrics_1)
@@ -491,6 +526,8 @@ class TopoConvNext:
                         main.log.info("All devices have been discovered"+
                             " on all "+str(cluster_count)+
                             " ONOS instances")
+                        time.sleep(5)
+
                         json_str_metrics_1 =\
                             main.ONOS1cli.topology_events_metrics()
                         json_str_metrics_2 =\
@@ -1014,6 +1051,14 @@ class TopoConvNext:
         install_result = main.FALSE
         #Supports up to 7 node configuration
         #TODO: Cleanup this ridiculous repetitive code 
+        if cluster_count == 3:
+            install_result = \
+                main.ONOSbench.onos_install(node=ONOS3_ip)
+            time.sleep(5)
+            main.log.info("Starting CLI")
+            main.ONOS3cli.start_onos_cli(ONOS3_ip)
+            main.ONOS1cli.add_node(ONOS3_ip, ONOS3_ip)
+            
         if cluster_count == 4:
             main.log.info("Installing ONOS on node 4")
             install_result = \
@@ -1026,13 +1071,17 @@ class TopoConvNext:
         elif cluster_count == 5:
             main.log.info("Installing ONOS on nodes 4 and 5")
             install_result1 = \
-                main.ONOSbench.onos_install(node=ONOS4_ip)
+                main.ONOSbench.onos_install(node=ONOS3_ip)
             install_result2 = \
+                main.ONOSbench.onos_install(node=ONOS4_ip)
+            install_result3 = \
                 main.ONOSbench.onos_install(node=ONOS5_ip)
             time.sleep(5)
             main.log.info("Starting CLI")
+            main.ONOS3cli.start_onos_cli(ONOS3_ip)
             main.ONOS4cli.start_onos_cli(ONOS4_ip)
             main.ONOS5cli.start_onos_cli(ONOS5_ip)
+            main.ONOS1cli.add_node(ONOS3_ip, ONOS3_ip)
             main.ONOS1cli.add_node(ONOS4_ip, ONOS4_ip)
             main.ONOS1cli.add_node(ONOS5_ip, ONOS5_ip)
             install_result = install_result1 and install_result2
@@ -1111,6 +1160,8 @@ class TopoConvNext:
         BENCH_ip = main.params['BENCH']['ip']
 
         main.log.info("Uninstalling previous instances")
+        main.ONOSbench.onos_uninstall(node_ip = ONOS2_ip)
+        main.ONOSbench.onos_uninstall(node_ip = ONOS3_ip)
         main.ONOSbench.onos_uninstall(node_ip = ONOS4_ip)
         main.ONOSbench.onos_uninstall(node_ip = ONOS5_ip)
         main.ONOSbench.onos_uninstall(node_ip = ONOS6_ip)
@@ -1119,6 +1170,7 @@ class TopoConvNext:
         global topo_iteration
         global cluster_count
         cluster_count = 3 
+        #cluster_count = 1
         topo_iteration += 1
 
         main.log.report("Increasing topology size")

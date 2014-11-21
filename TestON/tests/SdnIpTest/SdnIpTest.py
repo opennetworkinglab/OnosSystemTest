@@ -20,6 +20,7 @@ class SdnIpTest:
         import json
         from operator import eq
         
+        main.case("The test case is to help to setup the TestON environment and test new drivers")
         SDNIP_JSON_FILE_PATH = "../tests/SdnIpTest/sdnip.json"
         # all expected routes for all BGP peers
         allRoutes_expected = []
@@ -112,11 +113,15 @@ class SdnIpTest:
         bgpIntents_expected = main.Quaggacli.generate_expected_bgpIntents(SDNIP_JSON_FILE_PATH)
         # get BGP intents from ONOS CLI
         bgpIntents_actual = main.Quaggacli.extract_actual_bgpIntents(get_intents_result)
+
+        bgpIntents_str_expected = str(bgpIntents_expected).replace('u',"")
+        bgpIntents_str_actual = str(bgpIntents_actual)
         main.log.info("PointToPointIntent intents expected:")
-        main.log.info(str(bgpIntents_expected).replace('u',""))
+        main.log.info(bgpIntents_str_expected)
         main.log.info("PointToPointIntent intents get from ONOS CLI:")
-        main.log.info(bgpIntents_actual)
-        utilities.assert_equals(expect=True, actual=eq(str(bgpIntents_expected).replace('u',""), str(bgpIntents_actual)),
+        main.log.info(bgpIntents_str_actual)
+
+        utilities.assert_equals(expect=True, actual=eq(bgpIntents_str_expected, bgpIntents_str_actual),
                                 onpass="***PointToPointIntent Intents in SDN-IP are correct!***",
                                 onfail="***PointToPointIntent Intents in SDN-IP are wrong!***")
 

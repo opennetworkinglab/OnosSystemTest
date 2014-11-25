@@ -82,10 +82,10 @@ class QuaggaCliDriver(CLI):
         except:
             return main.FALSE
 
-    def generate_routes(self, net, numRoutes):
-        main.log.info("I am in generate_routes method!")
-        
-        # a IP prefix will be composed by "net" + "." + m + "." + n + "." + x 
+    def generate_prefixes(self, net, numRoutes):
+        main.log.info("I am in generate_prefixes method!")
+
+        # each IP prefix will be composed by "net" + "." + m + "." + n + "." + x
         # the length of each IP prefix is 24
         routes = []
         routes_gen = 0
@@ -105,9 +105,138 @@ class QuaggaCliDriver(CLI):
 
         if routes_gen == numRoutes:
             main.log.info("Successfully generated " + str(numRoutes)
-            + " routes!")
+            + " prefixes!")
             return routes
         return main.FALSE
+
+    # This method generates a multiple to single point intent(MultiPointToSinglePointIntent) for a given route
+    def generate_expected_singleRouteIntent(self, prefix, nextHop, nextHopMac, sdnip_data):
+
+        ingress = []
+        egress = ""
+        for peer in sdnip_data['bgpPeers']:
+            if peer['ipAddress'] == nextHop:
+                egress = "of:" + str(peer['attachmentDpid']).replace(":", "") + ":" + str(peer['attachmentPort'])
+            else:
+                ingress.append("of:" + str(peer['attachmentDpid']).replace(":", "") + ":" + str(peer['attachmentPort']) )
+
+        selector = "[IPV4_DST{ip=" + prefix + "}, ETH_TYPE{ethType=800}]"
+        treatment = "[ETH_DST{mac=" + str(nextHopMac) + "}]"
+
+        intent = egress + "/" + str(sorted(ingress)) + "/" + selector + "/" + treatment
+        return intent
+
+    def generate_expected_onePeerRouteIntents(self, prefixes, nextHop, nextHopMac, sdnip_json_file_path):
+        intents = []
+        sdnip_json_file=open(sdnip_json_file_path).read()
+
+        sdnip_data = json.loads(sdnip_json_file)
+
+        for prefix in prefixes:
+            intents.append(self.generate_expected_singleRouteIntent(prefix, nextHop, nextHopMac, sdnip_data))
+        return sorted(intents)
+
+    # TODO
+    # This method generates all expected route intents for all BGP peers
+    def generate_expected_routeIntents(self):
+        intents = []
+        return intents
+
+    # This method extracts all actual routes from ONOS CLI
+    def extract_actual_routes(self, get_routes_result):
+        routes_json_obj = json.loads(get_routes_result)
+
+        allRoutes_actual = []
+        for route in routes_json_obj:
+            if route['prefix'] == '172.16.10.0/24':
+                continue
+            allRoutes_actual.append(route['prefix'] + "/" + route['nextHop'])
+
+        return sorted(allRoutes_actual)
+
+    # This method extracts all actual route intents from ONOS CLI
+    def extract_actual_routeIntents(self, get_intents_result):
+        intents = []
+        # TODO: delete the line below when change to Mininet demo script
+        get_intents_result=open("../tests/SdnIpTest/intents.json").read()
+        intents_json_obj = json.loads(get_intents_result)
+
+        for intent in intents_json_obj:
+            if intent['appId'] != "org.onlab.onos.sdnip" :
+                continue
+            if intent['type'] == "MultiPointToSinglePointIntent":
+                egress = str(intent['egress']['device'])+ ":" + str(intent['egress']['port'])
+                ingress = []
+                for attachmentPoint in intent['ingress']:
+                    ingress.append(str(attachmentPoint['device']) + ":" + str(attachmentPoint['port']))
+                intent = egress + "/" + str(sorted(ingress)) + "/" + intent['selector'] + "/" + intent['treatment']
+                intents.append(intent)
+        return sorted(intents)
+
+    # This method extracts all actual BGP intents from ONOS CLI
+    def extract_actual_bgpIntents(self, get_intents_result):
+        intents = []
+        # TODO: delete the line below when change to Mininet demo script
+        get_intents_result=open("../tests/SdnIpTest/intents.json").read()
+        intents_json_obj = json.loads(get_intents_result)
+
+        for intent in intents_json_obj:
+            if intent['appId'] != "org.onlab.onos.sdnip":
+                continue
+            if intent['type'] == "PointToPointIntent" and "protocol=6" in str(intent['selector']):
+                ingress = str(intent['ingress']['device']) + ":" + str(intent['ingress']['port'])
+                egress = str(intent['egress']['device']) + ":" + str(intent['egress']['port'])
+                selector = str(intent['selector']).replace(" ", "").replace("[", "").replace("]", "").split(",")
+                intent = ingress + "/" + egress + "/" + str(sorted(selector))
+                intents.append(intent)
+
+        return sorted(intents)
+
+    # This method generates a single point to single point intent(PointToPointIntent) for BGP path
+    def generate_expected_bgpIntents(self, sdnip_json_file_path):
+        from operator import eq
+
+        sdnip_json_file=open(sdnip_json_file_path).read()
+        sdnip_data = json.loads(sdnip_json_file)
+
+        intents = []
+        bgpPeerAttachmentPoint=""
+        bgpSpeakerAttachmentPoint = "of:" + str(sdnip_data['bgpSpeakers'][0]['attachmentDpid']).replace(":", "") + ":" + str(sdnip_data['bgpSpeakers'][0]['attachmentPort'])
+        for peer in sdnip_data['bgpPeers']:
+            bgpPeerAttachmentPoint = "of:" + str(peer['attachmentDpid']).replace(":", "") + ":" + str(peer['attachmentPort'])
+            # find out the BGP speaker IP address for this BGP peer
+            bgpSpeakerIpAddress=""
+            for interfaceAddress in sdnip_data['bgpSpeakers'][0]['interfaceAddresses']:
+                #if eq(interfaceAddress['interfaceDpid'],sdnip_data['bgpSpeakers'][0]['attachmentDpid']) and eq(interfaceAddress['interfacePort'], sdnip_data['bgpSpeakers'][0]['attachmentPort']):
+                if eq(interfaceAddress['interfaceDpid'],peer['attachmentDpid']) and eq(interfaceAddress['interfacePort'], peer['attachmentPort']):
+                    bgpSpeakerIpAddress =  interfaceAddress['ipAddress']
+                    break
+                else:
+                    continue
+
+            # from bgpSpeakerAttachmentPoint to bgpPeerAttachmentPoint direction
+            selector_str = "IPV4_SRC{ip=" + bgpSpeakerIpAddress + "/32}," + "IPV4_DST{ip=" + peer['ipAddress']+ "/32}," + "IP_PROTO{protocol=6}, ETH_TYPE{ethType=800}, TCP_DST{tcpPort=179}"            
+            selector = selector_str.replace(" ", "").replace("[", "").replace("]", "").split(",")
+            intent = bgpSpeakerAttachmentPoint + "/" + bgpPeerAttachmentPoint + "/" + str(sorted(selector))
+            intents.append(intent)
+
+            selector_str = "IPV4_SRC{ip=" + bgpSpeakerIpAddress + "/32}," + "IPV4_DST{ip=" + peer['ipAddress']+ "/32}," + "IP_PROTO{protocol=6}, ETH_TYPE{ethType=800}, TCP_SRC{tcpPort=179}"
+            selector = selector_str.replace(" ", "").replace("[", "").replace("]", "").split(",")
+            intent = bgpSpeakerAttachmentPoint + "/" + bgpPeerAttachmentPoint + "/" + str(sorted(selector))
+            intents.append(intent)
+
+            # from bgpPeerAttachmentPoint to bgpSpeakerAttachmentPoint direction
+            selector_str = "IPV4_SRC{ip=" + peer['ipAddress'] + "/32}," + "IPV4_DST{ip=" + bgpSpeakerIpAddress + "/32}," + "IP_PROTO{protocol=6}, ETH_TYPE{ethType=800}, TCP_DST{tcpPort=179}"            
+            selector = selector_str.replace(" ", "").replace("[", "").replace("]", "").split(",")
+            intent = bgpPeerAttachmentPoint + "/" + bgpSpeakerAttachmentPoint + "/" + str(sorted(selector))
+            intents.append(intent)
+
+            selector_str = "IPV4_SRC{ip=" + peer['ipAddress'] + "/32}," + "IPV4_DST{ip=" + bgpSpeakerIpAddress + "/32}," + "IP_PROTO{protocol=6}, ETH_TYPE{ethType=800}, TCP_SRC{tcpPort=179}"
+            selector = selector_str.replace(" ", "").replace("[", "").replace("]", "").split(",")
+            intent = bgpPeerAttachmentPoint + "/" + bgpSpeakerAttachmentPoint + "/" + str(sorted(selector))
+            intents.append(intent)
+
+        return sorted(intents)
     
     def add_routes(self, routes, routeRate):
         main.log.info("I am in add_routes method!")
@@ -137,7 +266,7 @@ class QuaggaCliDriver(CLI):
             return main.TRUE
         return main.FALSE
     
-    # please use the generate_routes plus add_routes instead of this one
+    # Please use the generate_routes plus add_routes instead of this one
     def add_route(self, net, numRoutes, routeRate):
         try:
             self.handle.sendline("")
@@ -184,6 +313,7 @@ class QuaggaCliDriver(CLI):
         if routes_added == numRoutes:
             return main.TRUE
         return main.FALSE
+
     def del_route(self, net, numRoutes, routeRate):
         try:
             self.handle.sendline("")

@@ -293,8 +293,8 @@ class LincOEDriver(Emulator):
         '''
         try:
             #Send CTRL+C twice to exit CLI
-            self.handle.sendline("\x03")
-            self.handle.sendline("\x03")
+            self.handle.send("\x03")
+            self.handle.send("\x03")
             self.handle.expect("\$")
 
         except pexpect.EOF:

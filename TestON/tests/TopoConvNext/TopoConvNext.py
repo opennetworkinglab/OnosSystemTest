@@ -29,7 +29,7 @@ class TopoConvNext:
         global cluster_count 
         global topo_iteration
         topo_iteration = 1
-        cluster_count = 3 
+        cluster_count = 1 
         #******
         cell_name = main.params['ENV']['cellName']
 
@@ -59,8 +59,8 @@ class TopoConvNext:
 
         main.log.info("Uninstalling previous instances")
         #main.ONOSbench.onos_uninstall(node_ip = ONOS1_ip)
-        #main.ONOSbench.onos_uninstall(node_ip = ONOS2_ip)
-        #main.ONOSbench.onos_uninstall(node_ip = ONOS3_ip)
+        main.ONOSbench.onos_uninstall(node_ip = ONOS2_ip)
+        main.ONOSbench.onos_uninstall(node_ip = ONOS3_ip)
         main.ONOSbench.onos_uninstall(node_ip = ONOS4_ip)
         main.ONOSbench.onos_uninstall(node_ip = ONOS5_ip)
         main.ONOSbench.onos_uninstall(node_ip = ONOS6_ip)
@@ -72,8 +72,8 @@ class TopoConvNext:
         cell_file_result = main.ONOSbench.create_cell_file(
                 BENCH_ip, cell_name, MN1_ip, 
                 "onos-core,onos-app-metrics", 
-                ONOS1_ip, ONOS2_ip, ONOS3_ip)
-        #ONOS1_ip)
+                #ONOS1_ip, ONOS2_ip, ONOS3_ip)
+                ONOS1_ip)
                     
         main.step("Applying cell file to environment")
         cell_apply_result = main.ONOSbench.set_cell(cell_name)
@@ -102,8 +102,8 @@ class TopoConvNext:
 
         main.step("Set cell for ONOS cli env")
         main.ONOS1cli.set_cell(cell_name)
-        main.ONOS2cli.set_cell(cell_name)
-        main.ONOS3cli.set_cell(cell_name)
+        #main.ONOS2cli.set_cell(cell_name)
+        #main.ONOS3cli.set_cell(cell_name)
     
         main.step("Creating ONOS package")
         package_result = main.ONOSbench.onos_package()
@@ -111,15 +111,15 @@ class TopoConvNext:
         #Start test with single node only
         main.step("Installing ONOS package")
         install1_result = main.ONOSbench.onos_install(node=ONOS1_ip)
-        install2_result = main.ONOSbench.onos_install(node=ONOS2_ip)
-        install3_result = main.ONOSbench.onos_install(node=ONOS3_ip)
+        #install2_result = main.ONOSbench.onos_install(node=ONOS2_ip)
+        #install3_result = main.ONOSbench.onos_install(node=ONOS3_ip)
 
         time.sleep(10)
 
         main.step("Start onos cli")
         cli1 = main.ONOS1cli.start_onos_cli(ONOS1_ip)
-        cli2 = main.ONOS2cli.start_onos_cli(ONOS2_ip)
-        cli3 = main.ONOS3cli.start_onos_cli(ONOS3_ip)
+        #cli2 = main.ONOS2cli.start_onos_cli(ONOS2_ip)
+        #cli3 = main.ONOS3cli.start_onos_cli(ONOS3_ip)
 
         main.step("Enable metrics feature")
         #main.ONOS1cli.feature_install("onos-app-metrics")
@@ -319,21 +319,49 @@ class TopoConvNext:
                 main.ONOS7.handle.sendline("tshark -i eth0 -t e | "+
                     "grep 'SYN, ACK' | grep '6633' >"+
                     "/tmp/syn_ack_onos6_iter"+str(i)+".txt &")
-            
+         
+            #NOTE:
+            #       Delay before checking devices to 
+            #       help prevent timing out from CLI
+            #       due to multiple command drop
+            time.sleep(20)
+
+            loop = True
             loop_count = 0
             device_count = 0
-            while loop_count < 60: 
+            while loop_count < 60 and loop: 
                 main.log.info("Checking devices for device down")
                 
+                temp_len = 0
                 device_str1 = main.ONOS1cli.devices(
                     node_ip=ONOS_ip_list[1])
                 device_json1 = json.loads(device_str1)
-                for device1 in device_json1:
-                    if device1['available'] == False:
-                        device_count += 1
-                    else:
-                        device_count = 0
+                json_len = len(device_json1) 
                 
+                for device1 in device_json1: 
+                    temp_len = temp_len + 1
+                    if device1['available'] == True:
+                        loop = True
+                        break
+                    #if I'm on the last json object and I still haven't
+                    #broken out of the loop, it means there were
+                    #no available devices
+                    elif temp_len == json_len-1:
+                        main.log.info("Temp length: "+str(temp_len))
+                        main.step("Flushing iptables and obtaining t0")
+                        t0_system = time.time()*1000
+                        
+                        main.ONOS1.handle.sendline("sudo iptables -F")
+                        main.ONOS2.handle.sendline("sudo iptables -F")
+                        main.ONOS3.handle.sendline("sudo iptables -F")
+                        main.ONOS4.handle.sendline("sudo iptables -F")
+                        main.ONOS5.handle.sendline("sudo iptables -F")
+                        main.ONOS6.handle.sendline("sudo iptables -F")
+                        main.ONOS7.handle.sendline("sudo iptables -F")
+                    
+                        loop = False
+                        break
+
                 #if cluster_count == 1:
                 #    device_str1 = main.ONOS1cli.devices(
                 #        node_ip=ONOS_ip_list[1])
@@ -392,21 +420,13 @@ class TopoConvNext:
                 #If device count is greater than the 
                 #number of switches discovered by all nodes
                 #then remove iptables and measure t0 system time
-                if device_count\
-                        >= int(num_sw):
-                    main.step("Flushing iptables and obtaining t0")
-                    t0_system = time.time()*1000
-                    main.ONOS1.handle.sendline("sudo iptables -F")
-                    main.ONOS2.handle.sendline("sudo iptables -F")
-                    main.ONOS3.handle.sendline("sudo iptables -F")
-                    main.ONOS4.handle.sendline("sudo iptables -F")
-                    main.ONOS5.handle.sendline("sudo iptables -F")
-                    main.ONOS6.handle.sendline("sudo iptables -F")
-                    main.ONOS7.handle.sendline("sudo iptables -F")
                     
-                    break
                 
+                loop_count += 1
                 time.sleep(1)
+
+            if device_count < int(num_sw):
+                main.log.info("Devices down did not ")
 
             main.log.info("System time t0: "+str(t0_system))
 
@@ -1005,7 +1025,9 @@ class TopoConvNext:
                 counter_loop += 1
                 time.sleep(3)
                 #END WHILE LOOP            
-            
+          
+            #Below is used for reporting SYN / ACK timing
+            #of all switches 
             main.ONOS1.tshark_stop()
             syn_ack_timestamp_list = []
             if cluster_count < 3:
@@ -1029,17 +1051,29 @@ class TopoConvNext:
                      f_onos1:
                     for line in f_onos1:
                         line = line.split(" ")
-                        syn_ack_timestamp_list.append(line[1])
+                        try:
+                            float(line[1])
+                            syn_ack_timestamp_list.append(line[1])
+                        except ValueError:
+                            main.log.info("String cannot be converted")
                 with open("/tmp/syn_ack_onos2_iter"+str(i)+".txt") as\
                      f_onos2:
                     for line in f_onos2:
                         line = line.split(" ")
-                        syn_ack_timestamp_list.append(line[1])
+                        try:
+                            float(line[1])
+                            syn_ack_timestamp_list.append(line[1])
+                        except ValueError:
+                            main.log.info("String cannot be converted")
                 with open("/tmp/syn_ack_onos3_iter"+str(i)+".txt") as\
                      f_onos3:
                     for line in f_onos3:
                         line = line.split(" ")
-                        syn_ack_timestamp_list.append(line[1])
+                        try:
+                            float(line[1])
+                            syn_ack_timestamp_list.append(line[1])
+                        except ValueError:
+                            main.log.info("String cannot be converted")
             if cluster_count >= 4:
                 main.ONOS4.tshark_stop() 
                 time.sleep(5)
@@ -1050,7 +1084,11 @@ class TopoConvNext:
                      f_onos4:
                     for line in f_onos4:
                         line = line.split(" ")
-                        syn_ack_timestamp_list.append(line[1])
+                        try:
+                            float(line[1])
+                            syn_ack_timestamp_list.append(line[1])
+                        except ValueError:
+                            main.log.info("String cannot be converted")
             if cluster_count >= 5:
                 main.ONOS5.tshark_stop()
                 time.sleep(5)
@@ -1061,7 +1099,11 @@ class TopoConvNext:
                      f_onos5:
                     for line in f_onos5:
                         line = line.split(" ")
-                        syn_ack_timestamp_list.append(line[1])
+                        try:
+                            float(line[1])
+                            syn_ack_timestamp_list.append(line[1])
+                        except ValueError:
+                            main.log.info("String cannot be converted")
             if cluster_count >= 6:
                 main.ONOS6.tshark_stop()
                 time.sleep(5)
@@ -1072,7 +1114,11 @@ class TopoConvNext:
                      f_onos6:
                     for line in f_onos6:
                         line = line.split(" ")
-                        syn_ack_timestamp_list.append(line[1])
+                        try:
+                            float(line[1])
+                            syn_ack_timestamp_list.append(line[1])
+                        except ValueError:
+                            main.log.info("String cannot be converted")
             if cluster_count == 7:
                 main.ONOS7.tshark_stop()
                 time.sleep(5)
@@ -1083,7 +1129,11 @@ class TopoConvNext:
                      f_onos7:
                     for line in f_onos7:
                         line = line.split(" ")
-                        syn_ack_timestamp_list.append(line[1])
+                        try:
+                            float(line[1])
+                            syn_ack_timestamp_list.append(line[1])
+                        except ValueError:
+                            main.log.info("String cannot be converted")
           
             #Sort the list by timestamp
             syn_ack_timestamp_list = sorted(syn_ack_timestamp_list)
@@ -1272,8 +1322,7 @@ class TopoConvNext:
         
         global topo_iteration
         global cluster_count
-        cluster_count = 3  
-        #cluster_count = 1
+        cluster_count = 1  
         topo_iteration += 1
 
         main.log.report("Increasing topology size")

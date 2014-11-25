@@ -103,7 +103,7 @@ class OnosDriver(CLI):
         try:
             self.handle.sendline("onos-package")
             self.handle.expect("onos-package")
-            self.handle.expect("tar.gz",timeout=10)
+            self.handle.expect("tar.gz",timeout=30)
             handle = str(self.handle.before)
             main.log.info("onos-package command returned: "+
                     handle)
@@ -395,7 +395,8 @@ class OnosDriver(CLI):
             self.handle.sendline("\n")
             self.handle.expect("\$")
             self.handle.sendline("cd " + self.home + "; git log -1 --pretty=fuller --decorate=short | grep -A 6 \"commit\" --color=never")
-            self.handle.expect("--color=never")
+            #self.handle.expect("--color=never")
+            #self.handle.sendline("")
             self.handle.expect("\$")
             response=(self.name +": \n"+ str(self.handle.before + self.handle.after))
             self.handle.sendline("cd " + self.home)
@@ -858,7 +859,8 @@ class OnosDriver(CLI):
         try:
             self.handle.sendline("")
             self.handle.expect("\$")
-            self.handle.sendline("onos-remove-raft-logs")
+            self.handle.sendline("onos-remove-raft-logs "+
+                "1>/dev/null 2>/dev/null &")
             self.handle.expect("\$")
 
             return main.TRUE

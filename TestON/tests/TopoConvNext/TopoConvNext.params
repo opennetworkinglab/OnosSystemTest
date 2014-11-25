@@ -1,5 +1,5 @@
 <PARAMS>
-    <testcases>1,2,3,2,3,2,4,2,3,2,3,2,4,2,3,2,3,2</testcases>
+    <testcases>1,2,3,2,3,2,3,4,2,3,2,3,2,4,2,3,2,3,2</testcases>
 
     <ENV>
         <cellName>topo_conv_test</cellName>
@@ -42,13 +42,12 @@
         <onosLogFile>/opt/onos/log/karaf*</onosLogFile>
 
         #Number of times to iterate each case
-        <numIter>10</numIter>
-        <numSwitch1>100</numSwitch1>
-        <numSwitch2>200</numSwitch2>
+        <numIter>5</numIter>
+        <numSwitch1>200</numSwitch1>
+        <numSwitch2>400</numSwitch2>
         <numSwitch3>500</numSwitch3>
         #Number of iterations to ignore initially
-        <iterIgnore>2</iterIgnore>
-cp single_topo_event_accumulator.cfg ~/ONOS/tools/package/etc/org.onlab.onos.net.topology.impl.DefaultTopologyProvider.cfg
+        <iterIgnore>1</iterIgnore>
 
         <topo_accumulator_config>
         large_topo_event_accumulator.cfg
@@ -56,7 +55,6 @@ cp single_topo_event_accumulator.cfg ~/ONOS/tools/package/etc/org.onlab.onos.net
         <topo_config_name>
         org.onlab.onos.net.topology.impl.DefaultTopologyProvider.cfg
         </topo_config_name>
-
 
         <swDisc100Threshold>0,100000</swDisc100Threshold>
     </TEST>

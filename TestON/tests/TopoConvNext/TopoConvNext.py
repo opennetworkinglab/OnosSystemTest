@@ -72,8 +72,8 @@ class TopoConvNext:
         cell_file_result = main.ONOSbench.create_cell_file(
                 BENCH_ip, cell_name, MN1_ip, 
                 "onos-core,onos-app-metrics", 
-                        ONOS1_ip, ONOS2_ip, ONOS3_ip)
-                #ONOS1_ip)
+                ONOS1_ip, ONOS2_ip, ONOS3_ip)
+        #ONOS1_ip)
                     
         main.step("Applying cell file to environment")
         cell_apply_result = main.ONOSbench.set_cell(cell_name)
@@ -81,7 +81,8 @@ class TopoConvNext:
         
         main.step("Removing raft logs")
         main.ONOSbench.onos_remove_raft_logs()
-        
+        time.sleep(10)
+
         main.step("Git checkout and pull "+checkout_branch)
         if git_pull == 'on':
             checkout_result = \
@@ -127,8 +128,8 @@ class TopoConvNext:
                 actual= cell_file_result and cell_apply_result and\
                         verify_cell_result and checkout_result and\
                         pull_result and mvn_result and\
-                        install1_result and install2_result and\
-                        install3_result,
+                        install1_result, #and install2_result and\
+                        #install3_result,
                 onpass="Test Environment setup successful",
                 onfail="Failed to setup test environment")
     
@@ -177,6 +178,7 @@ class TopoConvNext:
         #throughout the test
         global num_sw
         global topo_iteration    
+        global cluster_count
         if topo_iteration == 1:
             num_sw = main.params['TEST']['numSwitch1']
         elif topo_iteration == 2:
@@ -220,6 +222,11 @@ class TopoConvNext:
                         ip1=ONOS_ip_list[node],
                         port1=default_sw_port)
             index = i+1 
+        #for i in range(1, int(num_sw)+1):
+            #main.Mininet1.assign_sw_controller(
+                    #sw=str(i),
+                    #ip1="10.128.174.1",
+                    #            port1="6633")
 
         main.log.info("Please check ptpd configuration to ensure "+\
                 "all nodes' system times are in sync")
@@ -287,64 +294,106 @@ class TopoConvNext:
             #    time.sleep(30)
 
             if cluster_count >= 3:
-                main.ONOS1.tshark_grep("SYN, ACK",
-                        "/tmp/syn_ack_onos1_iter"+str(i)+".txt")
-                main.ONOS2.tshark_grep("SYN, ACK",
-                        "/tmp/syn_ack_onos2_iter"+str(i)+".txt")
-                main.ONOS3.tshark_grep("SYN, ACK",
-                        "/tmp/syn_ack_onos3_iter"+str(i)+".txt")
+                main.ONOS1.handle.sendline("tshark -i eth0 -t e | "+
+                    "grep 'SYN, ACK' | grep '6633' >"+
+                    "/tmp/syn_ack_onos1_iter"+str(i)+".txt &")
+                main.ONOS2.handle.sendline("tshark -i eth0 -t e | "+
+                    "grep 'SYN, ACK' | grep '6633' >"+
+                    "/tmp/syn_ack_onos2_iter"+str(i)+".txt &")
+                main.ONOS3.handle.sendline("tshark -i eth0 -t e | "+
+                    "grep 'SYN, ACK' | grep '6633' >"+
+                    "/tmp/syn_ack_onos3_iter"+str(i)+".txt &")
             if cluster_count >= 4:
-                main.ONOS4.tshark_grep("SYN, ACK",
-                        "/tmp/syn_ack_onos4_iter"+str(i)+".txt")
+                main.ONOS4.handle.sendline("tshark -i eth0 -t e | "+
+                    "grep 'SYN, ACK' | grep '6633' >"+
+                    "/tmp/syn_ack_onos4_iter"+str(i)+".txt &")
             if cluster_count >= 5:
-                main.ONOS5.tshark_grep("SYN, ACK",
-                        "/tmp/syn_ack_onos5_iter"+str(i)+".txt")
+                main.ONOS5.handle.sendline("tshark -i eth0 -t e | "+
+                    "grep 'SYN, ACK' | grep '6633' >"+
+                    "/tmp/syn_ack_onos5_iter"+str(i)+".txt &")
             if cluster_count >= 6:
-                main.ONOS6.tshark_grep("SYN, ACK",
-                        "/tmp/syn_ack_onos6_iter"+str(i)+".txt")
+                main.ONOS6.handle.sendline("tshark -i eth0 -t e | "+
+                    "grep 'SYN, ACK' | grep '6633' >"+
+                    "/tmp/syn_ack_onos6_iter"+str(i)+".txt &")
             if cluster_count == 7:
-                main.ONOS7.tshark_grep("SYN, ACK",
-                        "/tmp/syn_ack_onos7_iter"+str(i)+".txt")
-           
+                main.ONOS7.handle.sendline("tshark -i eth0 -t e | "+
+                    "grep 'SYN, ACK' | grep '6633' >"+
+                    "/tmp/syn_ack_onos6_iter"+str(i)+".txt &")
+            
             loop_count = 0
-            device_count1 = 0
-            device_count2 = 0
-            device_count3 = 0
+            device_count = 0
             while loop_count < 60: 
                 main.log.info("Checking devices for device down")
-                device_str1 = main.ONOS1cli.devices(
-                        node_ip=ONOS_ip_list[1])
-                device_json1 = json.loads(device_str1)
                 
-                #TODO: Modular check of all nodes for 
-                #      device down discovery
-
-                #device_str2 = main.ONOS2cli.devices(
-                        #        node_ip=ONOS_ip_list[2])
-                #device_json2 = json.loads(device_str2)
-                #device_str3 = main.ONOS3cli.devices(
-                #        node_ip=ONOS_ip_list[3])
-                #device_json3 = json.loads(device_str3)
+                device_str1 = main.ONOS1cli.devices(
+                    node_ip=ONOS_ip_list[1])
+                device_json1 = json.loads(device_str1)
                 for device1 in device_json1:
                     if device1['available'] == False:
-                        device_count1 += 1
+                        device_count += 1
                     else:
-                        device_count1 = 0
-                #for device2 in device_json2:
-                #    if device2['available'] == False:
-                #        print device_count2
-                #        device_count2 += 1
-                #    else:
-                #        device_count2 = 0
-                #for device3 in device_json3:
-                #    if device3['available'] == False:
-                #        print device_count3
-                #        device_count3 += 1
-                #    else:
-                #        device_count3 = 0
+                        device_count = 0
                 
-                if device_count1\
-                        >= int(num_sw)*int(cluster_count):
+                #if cluster_count == 1:
+                #    device_str1 = main.ONOS1cli.devices(
+                #        node_ip=ONOS_ip_list[1])
+                #    device_json1 = json.loads(device_str1)
+                #    for device1 in device_json1:
+                #        if device1['available'] == False:
+                #            device_count += 1
+                #        else:
+                #            device_count = 0
+                #if cluster_count == 2:
+                #    device_str2 = main.ONOS2cli.devices(
+                #        node_ip=ONOS_ip_list[2])
+                #    device_json2 = json.loads(device_str2)
+                #    for device2 in device_json2:
+                #        if device2['available'] == False:
+                #            device_count += 1
+                #        else:
+                #            device_count = 0
+                #if cluster_count == 3:
+                #    device_str3 = main.ONOS3cli.devices(
+                #        node_ip=ONOS_ip_list[3])
+                #    device_json3 = json.loads(device_str3)
+                #    for device3 in device_json3:
+                #        if device3['available'] == False:
+                #            device_count += 1
+                #        else:
+                #            device_count = 0
+                #if cluster_count == 4:
+                #    device_str4 = main.ONOS4cli.devices(
+                #        node_ip=ONOS_ip_list[4])
+                #    device_json4 = json.loads(device_str4)
+                #    for device4 in device_json4:
+                #        if device4['available'] == False:
+                #            device_count += 1
+                #        else:
+                #            device_count = 0
+                #if cluster_count == 5:
+                #    device_str5 = main.ONOS5cli.devices(
+                #        node_ip=ONOS_ip_list[5])
+                #    device_json5 = json.loads(device_str5)
+                #    for device5 in device_json5:
+                #        if device5['available'] == False:
+                #            device_count += 1
+                #        else:
+                #            device_count = 0
+                #if cluster_count == 7:
+                #    device_str7 = main.ONOS7cli.devices(
+                #        node_ip=ONOS_ip_list[7])
+                #    device_json7 = json.loads(device_str7)
+                #    for device7 in device_json7:
+                #        if device7['available'] == False:
+                #            device_count += 1
+                #        else:
+                #            device_count = 0
+   
+                #If device count is greater than the 
+                #number of switches discovered by all nodes
+                #then remove iptables and measure t0 system time
+                if device_count\
+                        >= int(num_sw):
                     main.step("Flushing iptables and obtaining t0")
                     t0_system = time.time()*1000
                     main.ONOS1.handle.sendline("sudo iptables -F")
@@ -506,7 +555,10 @@ class TopoConvNext:
                         
                         graph_lat_1 = \
                             int(graph_timestamp_1) - int(t0_system)
-                        
+                       
+                        main.log.info("Graph Timestamp ONOS1: "+
+                            str(graph_timestamp_1))
+
                         if graph_lat_1 > sw_disc_threshold_min\
                             and graph_lat_1 < sw_disc_threshold_max\
                             and int(i) > iter_ignore:
@@ -543,23 +595,27 @@ class TopoConvNext:
                             int(graph_timestamp_1) - int(t0_system)
                         graph_lat_2 = \
                             int(graph_timestamp_2) - int(t0_system)
+                        
+                        main.log.info("Graph Timestamp ONOS1: "+
+                            str(graph_timestamp_1))
+                        main.log.info("Graph Timestamp ONOS2: "+
+                            str(graph_timestamp_2))
 
-                        avg_graph_lat = \
-                            (int(graph_lat_1) +\
-                             int(graph_lat_2)) / 2
+                        max_graph_lat = max(graph_lat_1, 
+                            graph_lat_2, graph_lat_3)
 
-                        if avg_graph_lat > sw_disc_threshold_min\
-                            and avg_graph_lat < sw_disc_threshold_max\
+                        if max_graph_lat > sw_disc_threshold_min\
+                            and max_graph_lat < sw_disc_threshold_max\
                             and int(i) > iter_ignore:
                             sw_discovery_lat_list.append(
-                                    avg_graph_lat)
+                                    max_graph_lat)
                             main.log.info("Sw discovery latency of "+
                                 str(cluster_count)+" node(s): "+
-                                str(avg_graph_lat)+" ms")
+                                str(max_graph_lat)+" ms")
                         else:
                             main.log.info("Switch discovery latency "+
                                 "exceeded the threshold.")
-                            main.log.info(avg_graph_lat)
+                            main.log.info(max_graph_lat)
                         break
                 if cluster_count == 3:
                     if onos1_dev and onos2_dev and onos3_dev:
@@ -595,26 +651,29 @@ class TopoConvNext:
                         graph_lat_3 = \
                             int(graph_timestamp_3) - int(t0_system)
 
-                        main.log.info("DEBUG: graph_timestamp_1: "+
-                                str(graph_timestamp_1))
+                        main.log.info("Graph Timestamp ONOS1: "+
+                            str(graph_timestamp_1))
+                        main.log.info("Graph Timestamp ONOS2: "+
+                            str(graph_timestamp_2))
+                        main.log.info("Graph Timestamp ONOS3: "+
+                            str(graph_timestamp_3))
 
-                        avg_graph_lat = \
-                            (int(graph_lat_1) +\
-                             int(graph_lat_2) +\
-                             int(graph_lat_3)) / 3 
-                        
-                        if avg_graph_lat > sw_disc_threshold_min\
-                            and avg_graph_lat < sw_disc_threshold_max\
+                        max_graph_lat = max(graph_lat_1, 
+                                graph_lat_2,
+                                graph_lat_3)
+
+                        if max_graph_lat > sw_disc_threshold_min\
+                            and max_graph_lat < sw_disc_threshold_max\
                             and int(i) > iter_ignore:
                             sw_discovery_lat_list.append(
-                                    avg_graph_lat)
+                                    max_graph_lat)
                             main.log.info("Sw discovery latency of "+
                                 str(cluster_count)+" node(s): "+
-                                str(avg_graph_lat)+" ms")
+                                str(max_graph_lat)+" ms")
                         else:
                             main.log.info("Switch discovery latency "+
                                 "exceeded the threshold.")
-                            main.log.info(avg_graph_lat)
+                            main.log.info(max_graph_lat)
                         
                         break
                 if cluster_count == 4:
@@ -651,25 +710,33 @@ class TopoConvNext:
                             int(graph_timestamp_3) - int(t0_system)
                         graph_lat_4 = \
                             int(graph_timestamp_4) - int(t0_system)
-
-                        avg_graph_lat = \
-                            (int(graph_lat_1) +\
-                             int(graph_lat_2) +\
-                             int(graph_lat_3) +\
-                             int(graph_lat_4)) / 4 
                         
-                        if avg_graph_lat > sw_disc_threshold_min\
-                            and avg_graph_lat < sw_disc_threshold_max\
+                        main.log.info("Graph Timestamp ONOS1: "+
+                            str(graph_timestamp_1))
+                        main.log.info("Graph Timestamp ONOS2: "+
+                            str(graph_timestamp_2))
+                        main.log.info("Graph Timestamp ONOS3: "+
+                            str(graph_timestamp_3))
+                        main.log.info("Graph Timestamp ONOS4: "+
+                            str(graph_timestamp_4))
+
+                        max_graph_lat = max(graph_lat_1,
+                                graph_lat_2,
+                                graph_lat_3,
+                                graph_lat_4)
+                        
+                        if max_graph_lat > sw_disc_threshold_min\
+                            and max_graph_lat < sw_disc_threshold_max\
                             and int(i) > iter_ignore:
                             sw_discovery_lat_list.append(
-                                    avg_graph_lat)
+                                    max_graph_lat)
                             main.log.info("Sw discovery latency of "+
                                 str(cluster_count)+" node(s): "+
-                                str(avg_graph_lat)+" ms")
+                                str(max_graph_lat)+" ms")
                         else:
                             main.log.info("Switch discovery latency "+
                                 "exceeded the threshold.")
-                            main.log.info(avg_graph_lat)
+                            main.log.info(max_graph_lat)
                 
                         break
                 if cluster_count == 5:
@@ -719,26 +786,36 @@ class TopoConvNext:
                             int(graph_timestamp_4) - int(t0_system)
                         graph_lat_5 = \
                             int(graph_timestamp_5) - int(t0_system)
-
-                        avg_graph_lat = \
-                            (int(graph_lat_1) +\
-                             int(graph_lat_2) +\
-                             int(graph_lat_3) +\
-                             int(graph_lat_4) +\
-                             int(graph_lat_5)) / 5 
                         
-                        if avg_graph_lat > sw_disc_threshold_min\
-                            and avg_graph_lat < sw_disc_threshold_max\
+                        main.log.info("Graph Timestamp ONOS1: "+
+                            str(graph_timestamp_1))
+                        main.log.info("Graph Timestamp ONOS2: "+
+                            str(graph_timestamp_2))
+                        main.log.info("Graph Timestamp ONOS3: "+
+                            str(graph_timestamp_3))
+                        main.log.info("Graph Timestamp ONOS4: "+
+                            str(graph_timestamp_4))
+                        main.log.info("Graph Timestamp ONOS5: "+
+                            str(graph_timestamp_5))
+
+                        max_graph_lat = max(graph_lat_1,
+                                graph_lat_2,
+                                graph_lat_3,
+                                graph_lat_4,
+                                graph_lat_5)
+                        
+                        if max_graph_lat > sw_disc_threshold_min\
+                            and max_graph_lat < sw_disc_threshold_max\
                             and int(i) > iter_ignore:
                             sw_discovery_lat_list.append(
-                                    avg_graph_lat)
+                                    max_graph_lat)
                             main.log.info("Sw discovery latency of "+
                                 str(cluster_count)+" node(s): "+
-                                str(avg_graph_lat)+" ms")
+                                str(max_graph_lat)+" ms")
                         else:
                             main.log.info("Switch discovery latency "+
                                 "exceeded the threshold.")
-                            main.log.info(avg_graph_lat)
+                            main.log.info(max_graph_lat)
                 
                         break
                 if cluster_count == 6:
@@ -789,27 +866,39 @@ class TopoConvNext:
                             int(graph_timestamp_5) - int(t0_system)
                         graph_lat_6 = \
                             int(graph_timestamp_6) - int(t0_system)
-
-                        avg_graph_lat = \
-                            (int(graph_lat_1) +\
-                             int(graph_lat_2) +\
-                             int(graph_lat_3) +\
-                             int(graph_lat_4) +\
-                             int(graph_lat_5) +\
-                             int(graph_lat_6)) / 6 
                         
-                        if avg_graph_lat > sw_disc_threshold_min\
-                            and avg_graph_lat < sw_disc_threshold_max\
+                        main.log.info("Graph Timestamp ONOS1: "+
+                            str(graph_timestamp_1))
+                        main.log.info("Graph Timestamp ONOS2: "+
+                            str(graph_timestamp_2))
+                        main.log.info("Graph Timestamp ONOS3: "+
+                            str(graph_timestamp_3))
+                        main.log.info("Graph Timestamp ONOS4: "+
+                            str(graph_timestamp_4))
+                        main.log.info("Graph Timestamp ONOS5: "+
+                            str(graph_timestamp_5))
+                        main.log.info("Graph Timestamp ONOS6: "+
+                            str(graph_timestamp_6))
+
+                        max_graph_lat = max(graph_lat_1,
+                                graph_lat_2,
+                                graph_lat_3,
+                                graph_lat_4,
+                                graph_lat_5,
+                                graph_lat_6)
+                        
+                        if max_graph_lat > sw_disc_threshold_min\
+                            and max_graph_lat < sw_disc_threshold_max\
                             and int(i) > iter_ignore:
                             sw_discovery_lat_list.append(
-                                    avg_graph_lat)
+                                    max_graph_lat)
                             main.log.info("Sw discovery latency of "+
                                 str(cluster_count)+" node(s): "+
-                                str(avg_graph_lat)+" ms")
+                                str(max_graph_lat)+" ms")
                         else:
                             main.log.info("Switch discovery latency "+
                                 "exceeded the threshold.")
-                            main.log.info(avg_graph_lat)
+                            main.log.info(max_graph_lat)
                         
                         break
                 if cluster_count == 7:
@@ -875,27 +964,41 @@ class TopoConvNext:
                         graph_lat_7 = \
                             int(graph_timestamp_7) - int(t0_system)
 
-                        avg_graph_lat = \
-                            (int(graph_lat_1) +\
-                             int(graph_lat_2) +\
-                             int(graph_lat_3) +\
-                             int(graph_lat_4) +\
-                             int(graph_lat_5) +\
-                             int(graph_lat_6) +\
-                             int(graph_lat_7)) / 7 
+                        main.log.info("Graph Timestamp ONOS1: "+
+                            str(graph_timestamp_1))
+                        main.log.info("Graph Timestamp ONOS2: "+
+                            str(graph_timestamp_2))
+                        main.log.info("Graph Timestamp ONOS3: "+
+                            str(graph_timestamp_3))
+                        main.log.info("Graph Timestamp ONOS4: "+
+                            str(graph_timestamp_4))
+                        main.log.info("Graph Timestamp ONOS5: "+
+                            str(graph_timestamp_5))
+                        main.log.info("Graph Timestamp ONOS6: "+
+                            str(graph_timestamp_6))
+                        main.log.info("Graph Timestamp ONOS7: "+
+                            str(graph_timestamp_7))
+
+                        max_graph_lat = max(graph_lat_1,
+                                graph_lat_2,
+                                graph_lat_3,
+                                graph_lat_4,
+                                graph_lat_5,
+                                graph_lat_6,
+                                graph_lat_7)
                         
-                        if avg_graph_lat > sw_disc_threshold_min\
-                            and avg_graph_lat < sw_disc_threshold_max\
+                        if max_graph_lat > sw_disc_threshold_min\
+                            and max_graph_lat < sw_disc_threshold_max\
                             and int(i) > iter_ignore:
                             sw_discovery_lat_list.append(
-                                    avg_graph_lat)
+                                    max_graph_lat)
                             main.log.info("Sw discovery latency of "+
                                 str(cluster_count)+" node(s): "+
-                                str(avg_graph_lat)+" ms")
+                                str(max_graph_lat)+" ms")
                         else:
                             main.log.info("Switch discovery latency "+
                                 "exceeded the threshold.")
-                            main.log.info(avg_graph_lat)
+                            main.log.info(max_graph_lat)
                         
                         break
                 
@@ -905,6 +1008,9 @@ class TopoConvNext:
             
             main.ONOS1.tshark_stop()
             syn_ack_timestamp_list = []
+            if cluster_count < 3:
+                #TODO: capture synack on nodes less than 3
+                syn_ack_timestamp_list.append(0)
 
             if cluster_count >= 3:
                 main.ONOS2.tshark_stop() 
@@ -981,7 +1087,8 @@ class TopoConvNext:
           
             #Sort the list by timestamp
             syn_ack_timestamp_list = sorted(syn_ack_timestamp_list)
-            
+            print "syn_ack_-1  " + str(syn_ack_timestamp_list)
+
             syn_ack_delta =\
                     int(float(syn_ack_timestamp_list[-1])*1000) -\
                     int(float(syn_ack_timestamp_list[0])*1000) 
@@ -1053,10 +1160,14 @@ class TopoConvNext:
         #TODO: Cleanup this ridiculous repetitive code 
         if cluster_count == 3:
             install_result = \
+                main.ONOSbench.onos_install(node=ONOS2_ip)
+            install_result = \
                 main.ONOSbench.onos_install(node=ONOS3_ip)
             time.sleep(5)
             main.log.info("Starting CLI")
+            main.ONOS2cli.start_onos_cli(ONOS2_ip)
             main.ONOS3cli.start_onos_cli(ONOS3_ip)
+            main.ONOS1cli.add_node(ONOS2_ip, ONOS2_ip)
             main.ONOS1cli.add_node(ONOS3_ip, ONOS3_ip)
             
         if cluster_count == 4:
@@ -1070,21 +1181,17 @@ class TopoConvNext:
         
         elif cluster_count == 5:
             main.log.info("Installing ONOS on nodes 4 and 5")
-            install_result1 = \
-                main.ONOSbench.onos_install(node=ONOS3_ip)
             install_result2 = \
-                main.ONOSbench.onos_install(node=ONOS4_ip)
+                main.ONOSbench.onos_install(options="",node=ONOS4_ip)
             install_result3 = \
-                main.ONOSbench.onos_install(node=ONOS5_ip)
+                main.ONOSbench.onos_install(options="",node=ONOS5_ip)
             time.sleep(5)
             main.log.info("Starting CLI")
-            main.ONOS3cli.start_onos_cli(ONOS3_ip)
             main.ONOS4cli.start_onos_cli(ONOS4_ip)
             main.ONOS5cli.start_onos_cli(ONOS5_ip)
-            main.ONOS1cli.add_node(ONOS3_ip, ONOS3_ip)
             main.ONOS1cli.add_node(ONOS4_ip, ONOS4_ip)
             main.ONOS1cli.add_node(ONOS5_ip, ONOS5_ip)
-            install_result = install_result1 and install_result2
+            install_result = install_result2 and install_result3
 
         elif cluster_count == 6:
             main.log.info("Installing ONOS on nodes 4, 5,and 6")
@@ -1107,12 +1214,8 @@ class TopoConvNext:
 
         elif cluster_count == 7:
             main.log.info("Installing ONOS on nodes 4, 5, 6,and 7")
-            install_result1 = \
-                main.ONOSbench.onos_install(options="",node=ONOS4_ip)
-            install_result2 = \
-                main.ONOSbench.onos_install(options="",node=ONOS5_ip)
             install_result3 = \
-                main.ONOSbench.onos_install(options="",node=ONOS6_ip)
+                main.ONOSbench.onos_install(node=ONOS6_ip)
             install_result4 = \
                 main.ONOSbench.onos_install(node=ONOS7_ip)
             main.log.info("Starting CLI")
@@ -1125,7 +1228,7 @@ class TopoConvNext:
             main.ONOS1cli.add_node(ONOS6_ip, ONOS6_ip)
             main.ONOS1cli.add_node(ONOS7_ip, ONOS7_ip)
 
-            install_result = install_result1 and install_result2 and\
+            install_result = \
                     install_result3 and install_result4
 
         time.sleep(5)
@@ -1169,7 +1272,7 @@ class TopoConvNext:
         
         global topo_iteration
         global cluster_count
-        cluster_count = 3 
+        cluster_count = 3  
         #cluster_count = 1
         topo_iteration += 1
 

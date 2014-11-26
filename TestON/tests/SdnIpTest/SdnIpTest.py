@@ -1,3 +1,4 @@
+from cupshelpers.config import prefix
 
 #Testing the basic functionality of SDN-IP
 
@@ -24,38 +25,51 @@ class SdnIpTest:
         SDNIP_JSON_FILE_PATH = "../tests/SdnIpTest/sdnip.json"
         # all expected routes for all BGP peers
         allRoutes_expected = []
-        main.step("Start to generate routes for BGP peer on host1")
-        prefixes = main.Quaggacli.generate_prefixes(1, 3)
-        main.log.info(prefixes)
+        main.step("Start to generate routes for all BGP peers")
+        #bgpPeerHosts = []
+        #for i in range(3, 5):
+        #    bgpPeerHosts.append("host" + str(i))
+        #main.log.info("BGP Peer Hosts are:" + bgpPeerHosts)
 
-        # TODO: delete the static prefix below after integration with Demo Mininet script
-        prefixes = []
-        prefixes.append("172.16.30.0/24")
-        prefixes.append("1.0.0.0/24")
-        prefixes.append("2.0.0.0/24")
-        prefixes.append("3.0.0.0/24")
+        #for i in range(3, 5):
+         #   QuaggaCliHost = "QuaggaCliHost" + str(i)
+          #  prefixes = main.QuaggaCliHost.generate_prefixes(3, 10)
 
+           # main.log.info(prefixes)
+            #allRoutes_expected.append(prefixes)
+        main.log.info("Generate prefixes for host3")
+        prefixes_host3 = main.QuaggaCliHost3.generate_prefixes(3, 10)
+        main.log.info(prefixes_host3)
+        # generate route with next hop
+        for prefix in prefixes_host3:
+            allRoutes_expected.append(prefix + "/" + "192.168.20.1")
+        routeIntents_expected_host3 = main.QuaggaCliHost3.generate_expected_onePeerRouteIntents(prefixes_host3, "192.168.20.1", "00:00:00:00:02:02", SDNIP_JSON_FILE_PATH)
 
-        for prefix in prefixes:
-            # generate route with next hop
-            allRoutes_expected.append(prefix + "/" + "1.1.1.1")
+        main.log.info("Generate prefixes for host4")
+        prefixes_host4 = main.QuaggaCliHost4.generate_prefixes(4, 10)
+        main.log.info(prefixes_host4)
+        # generate route with next hop
+        for prefix in prefixes_host4:
+            allRoutes_expected.append(prefix + "/" + "192.168.30.1")
+        routeIntents_expected_host4 = main.QuaggaCliHost4.generate_expected_onePeerRouteIntents(prefixes_host4, "192.168.30.1", "00:00:00:00:03:01", SDNIP_JSON_FILE_PATH)
 
-        routeIntents_expected = main.Quaggacli.generate_expected_onePeerRouteIntents(prefixes, "192.168.30.1", "00:00:00:00:03:01", SDNIP_JSON_FILE_PATH)
+        routeIntents_expected = routeIntents_expected_host3 + routeIntents_expected_host4
 
-        # start to insert routes into the bgp peer
-        main.step("Start Quagga-cli on host1")
-        main.Quaggacli.loginQuagga("1.1.1.1")
+        main.step("Login all BGP peers and add routes into peers")
+        main.log.info("Login Quagga CLI on host3")
+        main.QuaggaCliHost3.loginQuagga("1.168.30.2")
+        main.log.info("Enter configuration model of Quagga CLI on host3")
+        main.QuaggaCliHost3.enter_config(64514)
+        main.log.info("Add routes to Quagga on host3")
+        main.QuaggaCliHost3.add_routes(prefixes_host3, 1)
 
-        main.step("Start to configure Quagga on host1")
-        main.Quaggacli.enter_config(64513)
-    
-        main.step("Start to generate and add routes for BGP peer on host1")
-        routes = main.Quaggacli.generate_prefixes(8, 3)
-        main.Quaggacli.add_routes(routes, 1)
-             
-        # add generates routes to allRoutes
-        for route in routes:
-            allRoutes_expected.append(route + "/" + "1.1.1.1")
+        main.log.info("Login Quagga CLI on host4")
+        main.QuaggaCliHost4.loginQuagga("1.168.30.3")
+        main.log.info("Enter configuration model of Quagga CLI on host4")
+        main.QuaggaCliHost4.enter_config(64516)
+        main.log.info("Add routes to Quagga on host4")
+        main.QuaggaCliHost4.add_routes(prefixes_host4, 1)
+
 
         cell_name = main.params['ENV']['cellName']
         ONOS1_ip = main.params['CTRL']['ip1']
@@ -77,42 +91,46 @@ class SdnIpTest:
         main.log.info(list_result)
 
         #get all routes inside SDN-IP
-        get_routes_result = main.ONOScli.routes(json_format=True)  
+        get_routes_result = main.ONOScli.routes(json_format=True)
                      
         # parse routes from ONOS CLI
-        allRoutes_actual = main.Quaggacli.extract_actual_routes(get_routes_result)
+        allRoutes_actual = main.QuaggaCliHost3.extract_actual_routes(get_routes_result)
       
+        allRoutes_str_expected = str(sorted(allRoutes_expected))
+        allRoutes_str_actual = str(allRoutes_actual).replace('u',"")
         main.step("Check routes installed")
         main.log.info("Routes expected:")
-        main.log.info(sorted(allRoutes_expected))
+        main.log.info(allRoutes_str_expected)
         main.log.info("Routes get from ONOS CLI:")
-        main.log.info(allRoutes_actual)
-        utilities.assert_equals(expect=sorted(allRoutes_expected), actual=allRoutes_actual,
+        main.log.info(allRoutes_str_actual)
+        utilities.assert_equals(expect=allRoutes_str_expected, actual=allRoutes_str_actual,
                                 onpass="***Routes in SDN-IP are correct!***",
                                 onfail="***Routes in SDN-IP are wrong!***")
 
-        time.sleep(2)
+        time.sleep(20)
         get_intents_result = main.ONOScli.intents(json_format=True)
 
 
         main.step("Check MultiPointToSinglePointIntent intents installed")
         # route_intents_expected are generated when generating routes
         # get rpoute intents from ONOS CLI
-        routeIntents_actual  = main.Quaggacli.extract_actual_routeIntents(get_intents_result)
+        routeIntents_actual  = main.QuaggaCliHost3.extract_actual_routeIntents(get_intents_result)
+        routeIntents_str_expected = str(sorted(routeIntents_expected))
+        routeIntents_str_actual = str(routeIntents_actual).replace('u',"")
         main.log.info("MultiPointToSinglePoint intents expected:")
-        main.log.info(routeIntents_expected)
+        main.log.info(routeIntents_str_expected)
         main.log.info("MultiPointToSinglePoint intents get from ONOS CLI:")
-        main.log.info(routeIntents_actual)
-        utilities.assert_equals(expect=True, actual=eq(routeIntents_expected, routeIntents_actual),
+        main.log.info(routeIntents_str_actual)
+        utilities.assert_equals(expect=True, actual=eq(routeIntents_str_expected, routeIntents_str_actual),
                                 onpass="***MultiPointToSinglePoint Intents in SDN-IP are correct!***",
                                 onfail="***MultiPointToSinglePoint Intents in SDN-IP are wrong!***")
 
 
         main.step("Check BGP PointToPointIntent intents installed")
         # bgp intents expected
-        bgpIntents_expected = main.Quaggacli.generate_expected_bgpIntents(SDNIP_JSON_FILE_PATH)
+        bgpIntents_expected = main.QuaggaCliHost3.generate_expected_bgpIntents(SDNIP_JSON_FILE_PATH)
         # get BGP intents from ONOS CLI
-        bgpIntents_actual = main.Quaggacli.extract_actual_bgpIntents(get_intents_result)
+        bgpIntents_actual = main.QuaggaCliHost3.extract_actual_bgpIntents(get_intents_result)
 
         bgpIntents_str_expected = str(bgpIntents_expected).replace('u',"")
         bgpIntents_str_actual = str(bgpIntents_actual)

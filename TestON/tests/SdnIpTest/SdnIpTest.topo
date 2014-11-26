@@ -28,14 +28,30 @@
             <COMPONENTS> </COMPONENTS>
         </ONOS1>
 
-      	<Quaggacli>
+        <QuaggaCliHost3>
             <host>127.0.0.1</host>
             <user>username</user>
             <password>password</password>
             <type>QuaggaCliDriver</type>
             <connect_order>5</connect_order>
             <COMPONENTS> </COMPONENTS>
-        </Quaggacli>
+        </QuaggaCliHost3>
+        <QuaggaCliHost4>
+            <host>127.0.0.1</host>
+            <user>username</user>
+            <password>password</password>
+            <type>QuaggaCliDriver</type>
+            <connect_order>5</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </QuaggaCliHost4>
+        <QuaggaCliHost5>
+            <host>127.0.0.1</host>
+            <user>username</user>
+            <password>password</password>
+            <type>QuaggaCliDriver</type>
+            <connect_order>5</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </QuaggaCliHost5>
 
     </COMPONENT>
 </TOPOLOGY>

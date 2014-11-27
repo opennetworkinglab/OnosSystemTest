@@ -28,12 +28,22 @@
             <COMPONENTS> </COMPONENTS>
         </ONOS2>
 
+         <ONOS3>
+            <host>10.128.10.11</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>OnosCliDriver</type>
+            <connect_order>4</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </ONOS3>
+       
+
         <Mininet1>
             <host>10.128.10.11</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>MininetCliDriver</type>
-            <connect_order>4</connect_order>
+            <connect_order>5</connect_order>
             <COMPONENTS>
                 #Specify the Option for mininet
                 <arg1> --custom ~/mininet/custom/topo-HA.py </arg1>
@@ -48,7 +58,7 @@
             <user>admin</user>
             <password>onos_test</password>
             <type>RemoteMininetDriver</type>
-            <connect_order>5</connect_order>
+            <connect_order>6</connect_order>
             <COMPONENTS>
                 #Specify the Option for mininet
                 <arg1> --custom ~/mininet/custom/topo-HA.py </arg1>
@@ -57,5 +67,37 @@
                 <controller> remote </controller>
             </COMPONENTS>
         </Mininet2>
+
+        <LincOE1>
+            <host>10.128.20.30</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>LincOEDriver</type>
+            <connect_order>7</connect_order>
+            <COMPONENTS>
+                <arg1> </arg1>
+            </COMPONENTS>
+        </LincOE1>
+
+        <LincOE2>
+            <host>10.128.20.30</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>RemoteMininetDriver</type>
+            <connect_order>8</connect_order>
+            <COMPONENTS>
+                <arg1> sudo python /home/admin/optical.py </arg1>
+                <arg2> </arg2>
+            </COMPONENTS>
+        </LincOE2>
+
+        <LincOE3>
+            <host>10.128.20.30</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>LincOEDriver</type>
+            <connect_order>9</connect_order>
+        </LincOE3>
+ 
     </COMPONENT>
 </TOPOLOGY>

@@ -873,6 +873,8 @@ class OnosDriver(CLI):
                         timeout=120)
                 if i == 1:
                     return main.FALSE
+            self.handle.sendline("")
+            self.handle.expect("\$")
             return main.TRUE
 
         except pexpect.EOF:
@@ -1099,21 +1101,26 @@ class OnosDriver(CLI):
                 str(dir_file))
 
 
-    def run_onos_topo_cfg(self):
+    def run_onos_topo_cfg(self, instance_name, json_file):
         '''
-         On ONOS bench, run this command: ./~/ONOS/tools/test/bin/onos-topo-cfg
+         On ONOS bench, run this command: ./~/ONOS/tools/test/bin/onos-topo-cfg $OC1 filename
             which starts the rest and copies the json file to the onos instance
         '''
-        self.handle.sendline("")
-        self.handle.expect("\$")
-        self.handle.sendline("cd ~/ONOS/tools/test/bin")
-        self.handle.expect("/bin$")
-        self.handle.sendline("./onos-topo-cfg")
-        self.handle.expect("{}")
-        self.handle.sendline("cd ~")
-        self.handle.expect("\$")
-
-
+        try:
+            self.handle.sendline("")
+            self.handle.expect("\$")
+            self.handle.sendline("cd ~/ONOS/tools/test/bin")
+            self.handle.expect("/bin$")
+            cmd = "./onos-topo-cfg " +instance_name +" " +json_file
+            print "cmd = ", cmd
+            self.handle.sendline(cmd)
+            self.handle.expect("$")
+            self.handle.sendline("cd ~")
+            self.handle.expect("\$")
+            return main.TRUE
+        except:
+            return main.FALSE
+            
     def tshark_grep(self, grep, directory, interface='eth0'):
         '''
         Required:

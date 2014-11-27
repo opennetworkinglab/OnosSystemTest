@@ -17,11 +17,12 @@ class MultiProd13:
     def CASE1(self, main):
         '''
         Startup sequence:
+        cell <name>
+        onos-verify-cell
+        onos-remove-raft-logs        
         git pull
         mvn clean install
         onos-package
-        cell <name>
-        onos-verify-cell
         onos-install -f
         onos-wait-for-start
         '''
@@ -32,11 +33,23 @@ class MultiProd13:
         ONOS3_ip = main.params['CTRL']['ip3']
         ONOS1_port = main.params['CTRL']['port1']
         ONOS2_port = main.params['CTRL']['port2']
-        ONOS3_port = main.params['CTRL']['port3']
-        
+        ONOS3_port = main.params['CTRL']['port3']   
+       
         main.case("Setting up test environment")
         main.log.report("This testcase is testing setting up test environment") 
         main.log.report("__________________________________")
+ 
+        main.step("Applying cell variable to environment")
+        cell_result1 = main.ONOSbench.set_cell(cell_name)
+        #cell_result2 = main.ONOScli1.set_cell(cell_name)
+        #cell_result3 = main.ONOScli2.set_cell(cell_name)
+        #cell_result4 = main.ONOScli3.set_cell(cell_name)
+        verify_result = main.ONOSbench.verify_cell() 
+        cell_result = cell_result1
+
+        main.step("Removing raft logs before a clen installation of ONOS")
+        remove_log_Result = main.ONOSbench.onos_remove_raft_logs()        
+
         main.step("Git checkout and pull master and get version")
         main.ONOSbench.git_checkout("master")
         git_pull_result = main.ONOSbench.git_pull()
@@ -47,14 +60,6 @@ class MultiProd13:
             main.step("Using mvn clean & install")
             clean_install_result = main.ONOSbench.clean_install()
             #clean_install_result = main.TRUE 
-
-        main.step("Applying cell variable to environment")
-        cell_result1 = main.ONOSbench.set_cell(cell_name)
-        #cell_result2 = main.ONOScli1.set_cell(cell_name)
-        #cell_result3 = main.ONOScli2.set_cell(cell_name)
-        #cell_result4 = main.ONOScli3.set_cell(cell_name)
-        verify_result = main.ONOSbench.verify_cell() 
-        cell_result = cell_result1
 
         main.step("Creating ONOS package")
         package_result = main.ONOSbench.onos_package()
@@ -371,7 +376,10 @@ class MultiProd13:
         #After reactive forwarding is disabled, the reactive flows on switches timeout in 10-15s
         #So sleep for 15s
         time.sleep(15)
-
+        
+        hosts = main.ONOScli1.hosts()
+        main.log.info(hosts)
+        
         case10_result = appUninstall_result1 and appUninstall_result2 and appUninstall_result3
         utilities.assert_equals(expect=main.TRUE, actual=case10_result,onpass="Reactive forwarding app uninstallation successful",onfail="Reactive forwarding app uninstallation failed")
 
@@ -709,6 +717,7 @@ class MultiProd13:
             main.log.info("\n\nh"+str(i)+" is Pinging h" + str(i+10))
             ping = main.Mininet1.pingHost(src="h"+str(i),target="h"+str(i+10))
             if ping==main.TRUE:
+                i = 19
                 Ping_Result = main.TRUE
             elif ping==main.FALSE:
                 i+=1
@@ -733,8 +742,8 @@ class MultiProd13:
             main.log.report("Intent removal failed")
                         
         utilities.assert_equals(expect=main.FALSE, actual=case8_result,
-                onpass="Intent removal test successful",
-                onfail="Intent removal test failed")
+                onpass="Intent removal test failed",
+                onfail="Intent removal test successful")
              
 
     def CASE9(self):
@@ -747,117 +756,117 @@ class MultiProd13:
         main.log.info("Adding point intents")
         main.case("Adding bidirectional point for mn hosts(h8-h18,h9-h19,h10-h20,h11-h21,h12-h22,h13-h23,h14-h24,h15-h25,h16-h26,h17-h27)") 
         main.step("Add point-to-point intents for mininet hosts h8 and h18 or ONOS hosts h8 and h12")
-        ptp_intent_result = main.ONOScli1.add_point_intent("of:0000000000003008", 1, "of:0000000000006018", 1)
+        ptp_intent_result = main.ONOScli1.add_point_intent("of:0000000000003008/1", "of:0000000000006018/1")
         if ptp_intent_result == main.TRUE:
             get_intent_result = main.ONOScli1.intents()
             main.log.info("Point to point intent install successful")
             #main.log.info(get_intent_result)
        
-        ptp_intent_result = main.ONOScli1.add_point_intent("of:0000000000006018", 1, "of:0000000000003008", 1)
+        ptp_intent_result = main.ONOScli1.add_point_intent("of:0000000000006018/1", "of:0000000000003008/1")
         if ptp_intent_result == main.TRUE:
             get_intent_result = main.ONOScli1.intents()
             main.log.info("Point to point intent install successful")
             #main.log.info(get_intent_result)
        
         main.step("Add point-to-point intents for mininet hosts h9 and h19 or ONOS hosts h9 and h13")
-        ptp_intent_result = main.ONOScli1.add_point_intent("of:0000000000003009", 1, "of:0000000000006019", 1)
+        ptp_intent_result = main.ONOScli1.add_point_intent("of:0000000000003009/1", "of:0000000000006019/1")
         if ptp_intent_result == main.TRUE:
             get_intent_result = main.ONOScli1.intents()
             main.log.info("Point to point intent install successful")
             #main.log.info(get_intent_result)
        
-        ptp_intent_result = main.ONOScli1.add_point_intent("of:0000000000006019", 1, "of:0000000000003009", 1)
+        ptp_intent_result = main.ONOScli1.add_point_intent("of:0000000000006019/1", "of:0000000000003009/1")
         if ptp_intent_result == main.TRUE:
             get_intent_result = main.ONOScli1.intents()
             main.log.info("Point to point intent install successful")
             #main.log.info(get_intent_result)
         
         main.step("Add point-to-point intents for mininet hosts h10 and h20 or ONOS hosts hA and h14")
-        ptp_intent_result = main.ONOScli1.add_point_intent("of:0000000000003010", 1, "of:0000000000006020", 1)
+        ptp_intent_result = main.ONOScli1.add_point_intent("of:0000000000003010/1", "of:0000000000006020/1")
         if ptp_intent_result == main.TRUE:
             get_intent_result = main.ONOScli1.intents()
             main.log.info("Point to point intent install successful")
             #main.log.info(get_intent_result)
        
-        ptp_intent_result = main.ONOScli1.add_point_intent("of:0000000000006020", 1, "of:0000000000003010", 1)
+        ptp_intent_result = main.ONOScli1.add_point_intent("of:0000000000006020/1", "of:0000000000003010/1")
         if ptp_intent_result == main.TRUE:
             get_intent_result = main.ONOScli1.intents()
             main.log.info("Point to point intent install successful")
             #main.log.info(get_intent_result)
 
         main.step("Add point-to-point intents for mininet hosts h11 and h21 or ONOS hosts hB and h15")
-        ptp_intent_result = main.ONOScli1.add_point_intent("of:0000000000003011", 1, "of:0000000000006021", 1)
+        ptp_intent_result = main.ONOScli1.add_point_intent("of:0000000000003011/1", "of:0000000000006021/1")
         if ptp_intent_result == main.TRUE:
             get_intent_result = main.ONOScli1.intents()
             main.log.info("Point to point intent install successful")
             #main.log.info(get_intent_result)
        
-        ptp_intent_result = main.ONOScli1.add_point_intent("of:0000000000006021", 1, "of:0000000000003011", 1)
+        ptp_intent_result = main.ONOScli1.add_point_intent("of:0000000000006021/1", "of:0000000000003011/1")
         if ptp_intent_result == main.TRUE:
             get_intent_result = main.ONOScli1.intents()
             main.log.info("Point to point intent install successful")
             #main.log.info(get_intent_result)
             
         main.step("Add point-to-point intents for mininet hosts h12 and h22 or ONOS hosts hC and h16")
-        ptp_intent_result = main.ONOScli1.add_point_intent("of:0000000000003012", 1, "of:0000000000006022", 1)
+        ptp_intent_result = main.ONOScli1.add_point_intent("of:0000000000003012/1", "of:0000000000006022/1")
         if ptp_intent_result == main.TRUE:
             get_intent_result = main.ONOScli1.intents()
             main.log.info("Point to point intent install successful")
             #main.log.info(get_intent_result)
        
-        ptp_intent_result = main.ONOScli1.add_point_intent("of:0000000000006022", 1, "of:0000000000003012", 1)
+        ptp_intent_result = main.ONOScli1.add_point_intent("of:0000000000006022/1", "of:0000000000003012/1")
         if ptp_intent_result == main.TRUE:
             get_intent_result = main.ONOScli1.intents()
             main.log.info("Point to point intent install successful")
             #main.log.info(get_intent_result)
             
         main.step("Add point-to-point intents for mininet hosts h13 and h23 or ONOS hosts hD and h17")
-        ptp_intent_result = main.ONOScli1.add_point_intent("of:0000000000003013", 1, "of:0000000000006023", 1)
+        ptp_intent_result = main.ONOScli1.add_point_intent("of:0000000000003013/1", "of:0000000000006023/1")
         if ptp_intent_result == main.TRUE:
             get_intent_result = main.ONOScli1.intents()
             main.log.info("Point to point intent install successful")
             #main.log.info(get_intent_result)
        
-        ptp_intent_result = main.ONOScli1.add_point_intent("of:0000000000006023", 1, "of:0000000000003013", 1)
+        ptp_intent_result = main.ONOScli1.add_point_intent("of:0000000000006023/1", "of:0000000000003013/1")
         if ptp_intent_result == main.TRUE:
             get_intent_result = main.ONOScli1.intents()
             main.log.info("Point to point intent install successful")
             #main.log.info(get_intent_result)
 
         main.step("Add point-to-point intents for mininet hosts h14 and h24 or ONOS hosts hE and h18")
-        ptp_intent_result = main.ONOScli1.add_point_intent("of:0000000000003014", 1, "of:0000000000006024", 1)
+        ptp_intent_result = main.ONOScli1.add_point_intent("of:0000000000003014/1", "of:0000000000006024/1")
         if ptp_intent_result == main.TRUE:
             get_intent_result = main.ONOScli1.intents()
             main.log.info("Point to point intent install successful")
             #main.log.info(get_intent_result)
        
-        ptp_intent_result = main.ONOScli1.add_point_intent("of:0000000000006024", 1, "of:0000000000003014", 1)
+        ptp_intent_result = main.ONOScli1.add_point_intent("of:0000000000006024/1", "of:0000000000003014/1")
         if ptp_intent_result == main.TRUE:
             get_intent_result = main.ONOScli1.intents()
             main.log.info("Point to point intent install successful")
             #main.log.info(get_intent_result)
             
         main.step("Add point-to-point intents for mininet hosts h15 and h25 or ONOS hosts hF and h19")
-        ptp_intent_result = main.ONOScli1.add_point_intent("of:0000000000003015", 1, "of:0000000000006025", 1)
+        ptp_intent_result = main.ONOScli1.add_point_intent("of:0000000000003015/1", "of:0000000000006025/1")
         if ptp_intent_result == main.TRUE:
             get_intent_result = main.ONOScli1.intents()
             main.log.info("Point to point intent install successful")
             #main.log.info(get_intent_result)
        
-        ptp_intent_result = main.ONOScli1.add_point_intent("of:0000000000006025", 1, "of:0000000000003015", 1)
+        ptp_intent_result = main.ONOScli1.add_point_intent("of:0000000000006025/1", "of:0000000000003015/1")
         if ptp_intent_result == main.TRUE:
             get_intent_result = main.ONOScli1.intents()
             main.log.info("Point to point intent install successful")
             #main.log.info(get_intent_result)
             
         main.step("Add point-to-point intents for mininet hosts h16 and h26 or ONOS hosts h10 and h1A")
-        ptp_intent_result = main.ONOScli1.add_point_intent("of:0000000000003016", 1, "of:0000000000006026", 1)
+        ptp_intent_result = main.ONOScli1.add_point_intent("of:0000000000003016/1", "of:0000000000006026/1")
         if ptp_intent_result == main.TRUE:
             get_intent_result = main.ONOScli1.intents()
             main.log.info("Point to point intent install successful")
             #main.log.info(get_intent_result)
        
-        ptp_intent_result = main.ONOScli1.add_point_intent("of:0000000000006026", 1, "of:0000000000003016", 1)
+        ptp_intent_result = main.ONOScli1.add_point_intent("of:0000000000006026/1", "of:0000000000003016/1")
         if ptp_intent_result == main.TRUE:
             get_intent_result = main.ONOScli1.intents()
             main.log.info("Point to point intent install successful")
@@ -865,13 +874,13 @@ class MultiProd13:
 
 
         main.step("Add point-to-point intents for mininet hosts h17 and h27 or ONOS hosts h11 and h1B")
-        ptp_intent_result = main.ONOScli1.add_point_intent("of:0000000000003017", 1, "of:0000000000006027", 1)
+        ptp_intent_result = main.ONOScli1.add_point_intent("of:0000000000003017/1", "of:0000000000006027/1")
         if ptp_intent_result == main.TRUE:
             get_intent_result = main.ONOScli1.intents()
             main.log.info("Point to point intent install successful")
             #main.log.info(get_intent_result)
        
-        ptp_intent_result = main.ONOScli1.add_point_intent("of:0000000000006027", 1, "of:0000000000003017", 1)
+        ptp_intent_result = main.ONOScli1.add_point_intent("of:0000000000006027/1", "of:0000000000003017/1")
         if ptp_intent_result == main.TRUE:
             get_intent_result = main.ONOScli1.intents()
             main.log.info("Point to point intent install successful")
@@ -925,6 +934,7 @@ class MultiProd13:
         import json
 
         main.log.report("This test case adds point intent related to SDN-IP matching on ICMP")
+        main.case("Adding bidirectional point intent related to SDN-IP matching on ICMP")
         main.step("Adding bidirectional point intent")
         #add-point-intent --ipSrc=10.0.0.8/32 --ipDst=10.0.0.18/32 --ethType=IPV4 --ipProto=1  of:0000000000003008/1 of:0000000000006018/1
         
@@ -937,15 +947,143 @@ class MultiProd13:
             host2_id = main.ONOScli1.get_host(host2)['id']
             for host in hosts_json:
                 if host['id'] == host1_id:
-                    ip1 = host['ips']+"/"+"32"
-                    device1 = str(host['location']['device'])
-                    port1 = 1
+                    ip1 = host['ips'][0]
+                    ip1 = str(ip1+"/32")
                     print "ip1 = ", ip1
+                    device1 = host['location']['device']
+                    device1 = str(device1+"/1")
                     print "device1 = ", device1
                 elif host['id'] == host2_id:
-                    ip2 = str(host['ips'])+"/"+"32"
-                    device2 = str(host['location']["device"])
-                    port2 = 1
+                    ip2 = str(host['ips'][0])+"/32"
                     print "ip2 = ", ip2
+                    device2 = host['location']["device"]
+                    device2 = str(device2+"/1")
                     print "device2 = ", device2
-           
+                
+            p_intent_result1 = main.ONOScli1.add_point_intent(ingress_device=device1, egress_device=device2, ipSrc=ip1, ipDst=ip2,
+                                  ethType=main.params['SDNIP']['ethType'], ipProto=main.params['SDNIP']['icmpProto'])
+            
+            get_intent_result = main.ONOScli1.intents()
+            main.log.info(get_intent_result)
+ 
+            p_intent_result2 = main.ONOScli1.add_point_intent(ingress_device=device2, egress_device=device1, ipSrc=ip2, ipDst=ip1, 
+                                  ethType=main.params['SDNIP']['ethType'], ipProto=main.params['SDNIP']['icmpProto']) 
+            
+            get_intent_result = main.ONOScli1.intents()
+            main.log.info(get_intent_result)
+            if (p_intent_result1 and p_intent_result2) == main.TRUE:
+                #get_intent_result = main.ONOScli1.intents()
+                #main.log.info(get_intent_result)
+                main.log.info("Point intent related to SDN-IP matching on ICMP install successful")
+       
+        time.sleep(15) 
+        get_intent_result = main.ONOScli1.intents()
+        main.log.info("intents = "+ get_intent_result)
+        get_flows_result = main.ONOScli1.flows()
+        main.log.info("flows = " + get_flows_result)
+        
+        count = 1
+        i = 8
+        Ping_Result = main.TRUE
+        while i <11 :
+            main.log.info("\n\nh"+str(i)+" is Pinging h" + str(i+10))
+            ping = main.Mininet1.pingHost(src="h"+str(i),target="h"+str(i+10))
+            if ping == main.FALSE and count <3:
+                count+=1
+                #i = 8
+                Ping_Result = main.FALSE
+                main.log.report("Ping between h" + str(i) + " and h" + str(i+10) + " failed. Making attempt number "+str(count) + " in 2 seconds")
+                time.sleep(2)
+            elif ping==main.FALSE:
+                main.log.report("All ping attempts between h" + str(i) + " and h" + str(i+10) +"have failed")
+                i=19
+                Ping_Result = main.FALSE
+            elif ping==main.TRUE:
+                main.log.info("Ping test between h" + str(i) + " and h" + str(i+10) + "passed!")
+                i+=1
+                Ping_Result = main.TRUE
+            else:
+                main.log.info("Unknown error")
+                Ping_Result = main.ERROR
+        if Ping_Result==main.FALSE:
+            main.log.report("Ping test after Point intents related to SDN-IP matching on ICMP failed.")
+            #main.cleanup()
+            #main.exit()
+        if Ping_Result==main.TRUE:
+            main.log.report("Ping all test after Point intents related to SDN-IP matching on ICMP successful")
+                   
+        case31_result = Ping_Result and p_intent_result1 and p_intent_result2
+        utilities.assert_equals(expect=main.TRUE, actual=case31_result,
+                onpass="Point intent related to SDN-IP matching on ICMP and ping test successful",
+                onfail="Point intent related to SDN-IP matching on ICMP and ping test failed")
+   
+    def CASE32(self):
+        ''' 
+            This test case adds point intent related to SDN-IP matching on TCP (ethertype=IPV4, ipProto=6, DefaultPort for iperf=5001)
+            Note: Although BGP port is 179, we are using 5001 because iperf is used for verifying and iperf's default port is 5001
+        '''
+        import json
+
+        main.log.report("This test case adds point intent related to SDN-IP matching on TCP")
+        main.case("Adding bidirectional point intent related to SDN-IP matching on TCP")
+        main.step("Adding bidirectional point intent")
+        """
+        add-point-intent --ipSrc=10.0.0.8/32 --ipDst=10.0.0.18/32 --ethType=IPV4 --ipProto=6 --tcpDst=5001  of:0000000000003008/1 of:0000000000006018/1
+
+        add-point-intent --ipSrc=10.0.0.18/32 --ipDst=10.0.0.8/32 --ethType=IPV4 --ipProto=6 --tcpDst=5001  of:0000000000006018/1 of:0000000000003008/1
+    
+        add-point-intent --ipSrc=10.0.0.8/32 --ipDst=10.0.0.18/32 --ethType=IPV4 --ipProto=6 --tcpSrc=5001  of:0000000000003008/1 of:0000000000006018/1
+
+        add-point-intent --ipSrc=10.0.0.18/32 --ipDst=10.0.0.8/32 --ethType=IPV4 --ipProto=6 --tcpSrc=5001  of:0000000000006018/1 of:0000000000003008/1
+
+        """           
+    
+        hosts_json = json.loads(main.ONOScli1.hosts())
+        for  i in range(8,9):
+            main.log.info("Adding point intent between h"+str(i)+" and h"+str(i+10))
+            host1 =  "00:00:00:00:00:" + str(hex(i)[2:]).zfill(2).upper()
+            host2 =  "00:00:00:00:00:" + str(hex(i+10)[2:]).zfill(2).upper()
+            host1_id = main.ONOScli1.get_host(host1)['id']
+            host2_id = main.ONOScli1.get_host(host2)['id']
+            for host in hosts_json:
+                if host['id'] == host1_id:
+                    ip1 = host['ips'][0]
+                    ip1 = str(ip1+"/32")
+                    print "ip1 = ", ip1
+                    device1 = host['location']['device']
+                    device1 = str(device1+"/1")
+                    print "device1 = ", device1
+                elif host['id'] == host2_id:
+                    ip2 = str(host['ips'][0])+"/32"
+                    print "ip2 = ", ip2
+                    device2 = host['location']["device"]
+                    device2 = str(device2+"/1")
+                    print "device2 = ", device2
+                
+            p_intent_result1 = main.ONOScli1.add_point_intent(ingress_device=device1, egress_device=device2, ipSrc=ip1, ipDst=ip2,
+                                  ethType=main.params['SDNIP']['ethType'], ipProto=main.params['SDNIP']['tcpProto'], tcpDst=main.params['SDNIP']['dstPort']) 
+            p_intent_result2 = main.ONOScli1.add_point_intent(ingress_device=device2, egress_device=device1, ipSrc=ip2, ipDst=ip1, 
+                                  ethType=main.params['SDNIP']['ethType'], ipProto=main.params['SDNIP']['tcpProto'], tcpDst=main.params['SDNIP']['dstPort'])
+
+            p_intent_result3 = main.ONOScli1.add_point_intent(ingress_device=device1, egress_device=device2, ipSrc=ip1, ipDst=ip2,
+                                  ethType=main.params['SDNIP']['ethType'], ipProto=main.params['SDNIP']['tcpProto'], tcpSrc=main.params['SDNIP']['srcPort'])
+            p_intent_result4 = main.ONOScli1.add_point_intent(ingress_device=device2, egress_device=device1, ipSrc=ip2, ipDst=ip1,
+                                  ethType=main.params['SDNIP']['ethType'], ipProto=main.params['SDNIP']['tcpProto'], tcpSrc=main.params['SDNIP']['srcPort']) 
+
+            p_intent_result = p_intent_result1 and p_intent_result2 and p_intent_result3 and p_intent_result4
+            if p_intent_result ==main.TRUE:
+                get_intent_result = main.ONOScli1.intents()
+                main.log.info(get_intent_result)
+                main.log.info("Point intent related to SDN-IP matching on TCP install successful")
+        
+        iperf_result = main.Mininet1.iperf('h8', 'h18') 
+        if iperf_result == main.TRUE:
+            main.log.report("iperf test successful")
+        else:
+            main.log.report("iperf test failed")
+
+
+        case32_result = p_intent_result and iperf_result
+        utilities.assert_equals(expect=main.TRUE, actual=case32_result,
+                onpass="Ping all test after Point intents addition related to SDN-IP on TCP match successful",
+                onfail="Ping all test after Point intents addition related to SDN-IP on TCP match failed") 

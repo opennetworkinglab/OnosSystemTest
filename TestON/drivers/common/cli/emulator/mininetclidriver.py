@@ -287,7 +287,47 @@ class MininetCliDriver(Emulator):
             return main.FALSE
         else :
             return main.TRUE
+
     
+
+
+    def changeIP(self,host,intf,newIP,newNetmask):
+        '''
+        Changes the ip address of a host on the fly
+        Ex: h2 ifconfig h2-eth0 10.0.1.2 netmask 255.255.255.0
+        '''
+        if self.handle:
+            try:
+                cmd = host+" ifconfig "+intf+" "+newIP+" "+newNetMask
+                self.handle.sendline(cmd)
+                self.handle.expect("mininet>")
+                response = self.handle.before
+                main.log.info("Ip of host "+host+" changed to new IP "+newIP)
+                return main.TRUE
+            except pexpect.EOF:
+                main.log.error(self.name + ": EOF exception found")
+                main.log.error(self.name + ":     " + self.handle.before)
+                return main.FALSE
+
+    def changeDefaultGateway(self,host,newGW):
+        '''
+        Changes the default gateway of a host
+        Ex: h1 route add default gw 10.0.1.2
+        '''
+        if self.handle:
+            try:
+                cmd = host+" route add default gw "+newGW 
+                self.handle.sendline(cmd)
+                self.handle.expect("mininet>")
+                response = self.handle.before
+                main.log.info("Default gateway of host "+host+" changed to "+newGW)
+                return main.TRUE
+            except pexpect.EOF:
+                main.log.error(self.name + ": EOF exception found")
+                main.log.error(self.name + ":     " + self.handle.before)
+                return main.FALSE
+   
+
     def getMacAddress(self,host):
         '''
         Verifies the host's ip configured or not.
@@ -443,17 +483,40 @@ class MininetCliDriver(Emulator):
             main.cleanup()
             main.exit()
         return response
-    
-    def iperf(self):
+    '''
+    def iperf(self,host1,host2):
         main.log.info(self.name+": Simple iperf TCP test between two (optionally specified) hosts")
         try:
-            response = self.execute(cmd = 'iperf',prompt = 'mininet>',timeout = 10)
+            if not host1 and not host2:
+                response = self.execute(cmd = 'iperf',prompt = 'mininet>',timeout = 10)
+            else:
+                cmd1 = 'iperf '+ host1 + " " + host2
+                response = self.execute(cmd = cmd1, prompt = '>',timeout = 20)
         except pexpect.EOF:  
             main.log.error(self.name + ": EOF exception found")
             main.log.error(self.name + ":     " + self.handle.before)
             main.cleanup()
             main.exit()
         return response
+     '''
+    def iperf(self,host1,host2):
+        main.log.info(self.name+": Simple iperf TCP test between two hosts")
+        try:
+            cmd1 = 'iperf '+ host1 + " " + host2
+            self.handle.sendline(cmd1)
+            self.handle.expect("mininet>") 
+            response = self.handle.before
+            if re.search('Results:',response):
+                main.log.info(self.name+": iperf test succssful")
+                return main.TRUE
+            else:
+                main.log.error(self.name+": iperf test failed")
+                return main.FALSE 
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":     " + self.handle.before)
+            main.cleanup()
+            main.exit()
     
     def iperfudp(self):
         main.log.info(self.name+": Simple iperf TCP test between two (optionally specified) hosts")

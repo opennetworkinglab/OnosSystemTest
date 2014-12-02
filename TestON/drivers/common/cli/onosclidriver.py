@@ -468,11 +468,12 @@ class OnosCliDriver(CLI):
             main.cleanup()
             main.exit()
         
-    def devices(self, json_format=True, grep_str=""):
+    def devices(self, json_format=True, grep_str="",node_ip=""):
         '''
         Lists all infrastructure devices or switches
         Optional argument:
-            * grep_str - pass in a string to grep
+            * grep_str : pass in a string to grep
+            * node_ip : used to reattempt CLI connection
         '''
         try:
             self.handle.sendline("")
@@ -482,12 +483,36 @@ class OnosCliDriver(CLI):
                 if not grep_str:
                     self.handle.sendline("devices -j")
                     self.handle.expect("devices -j")
-                    self.handle.expect("onos>")
+                    i = self.handle.expect([
+                        "onos>", "\$", pexpect.TIMEOUT])
+                    if (i == 1 or i == 2) and node_ip:
+                        self.handle.sendline("onos -w "+node_ip)
+                        self.handle.expect("onos>")
+                        self.handle.sendline("devices -j")
+                        self.handle.expect("devices -j")
+                    elif not node_ip and i == 2: 
+                        main.log.info("ONOS CLI exited. Please "+
+                            "provide node_ip in the function to "+
+                            "attempt to reconnect")
                 else:
                     self.handle.sendline("devices -j | grep '"+
                         str(grep_str)+"'")
                     self.handle.expect("devices -j | grep '"+str(grep_str)+"'")
-                    self.handle.expect("onos>")
+                    i = self.handle.expect([
+                        "onos>","\$", pexpect.TIMEOUT])
+
+                    if (i == 1 or i == 2) and node_ip:
+                        main.log.info("CLI dropped. Logging back into"+
+                            " ONOS")
+                        self.handle.sendline("onos -w "+node_ip)
+                        self.handle.expect("onos>")
+                        self.handle.sendline("devices -j")
+                        self.handle.expect("devices -j")
+                    elif not node_ip and i == 2:
+                        main.log.info("ONOS CLI exited. Please "+
+                            "provide node_ip in the function to "+
+                            "attempt to reconnect")
+                
                 handle = self.handle.before
                 '''
                 handle variable here contains some ANSI escape color code sequences at the end which are invisible in the print command output
@@ -1250,8 +1275,8 @@ class OnosCliDriver(CLI):
             main.cleanup()
             main.exit()
 
-    def push_test_intents(self, dpid_src, dpid_dst, num_intents,
-            report=True):
+    def push_test_intents(self, dpid_src, dpid_dst, num_intents, 
+            num_mult="", app_id="", report=True):
         '''
         Description:
             Push a number of intents in a batch format to 
@@ -1261,12 +1286,22 @@ class OnosCliDriver(CLI):
             * dpid_dst: specify destination dpid
             * num_intents: specify number of intents to push
         Optional:
+            * num_mult: number multiplier for multiplying
+              the number of intents specified
+            * app_id: specify the application id init to further
+              modularize the intents
             * report: default True, returns latency information
         '''
         try:
             cmd = "push-test-intents "+\
                   str(dpid_src)+" "+str(dpid_dst)+" "+\
                   str(num_intents)
+            
+            if num_mult:
+                cmd += " " + str(num_mult)
+                if app_id:
+                    cmd += " " + str(app_id)
+            
             self.handle.sendline(cmd)
             self.handle.expect(cmd)
             self.handle.expect("onos>")
@@ -1278,8 +1313,20 @@ class OnosCliDriver(CLI):
             handle = ansi_escape.sub('', handle)
     
             if report:
+                lat_result = []
                 main.log.info(handle)
-                return handle
+                #Split result by newline
+                newline = handle.split("\r\r\n")
+                #Ignore the first object of list, which is empty
+                newline = newline[1:]
+                #Some sloppy parsing method to get the latency
+                for result in newline:
+                    result = result.split(": ")
+                    #Append the first result of second parse
+                    lat_result.append(result[1].split(" ")[0])
+
+                print lat_result 
+                return lat_result 
             else:
                 return main.TRUE
 

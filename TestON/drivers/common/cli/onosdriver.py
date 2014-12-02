@@ -955,6 +955,52 @@ class OnosDriver(CLI):
             main.cleanup()
             main.exit()
 
+    def push_test_intents_shell(self, dpid_src, dpid_dst, num_intents,
+            dir_file, onos_ip, num_mult="", app_id="", report=True):    
+        '''  
+        Description:
+            Use the linux prompt to push test intents to 
+            better parallelize the results than the CLI
+        Required:
+            * dpid_src: specify source dpid
+            * dpid_dst: specify destination dpid
+            * num_intents: specify number of intents to push
+            * dir_file: specify directory and file name to save
+              results
+            * onos_ip: specify the IP of ONOS to install on
+        NOTE: 
+            You must invoke this command at linux shell prompt
+        '''
+        try: 
+            #Create the string to sendline 
+            base_cmd = "onos "+str(onos_ip)+" push-test-intents "
+            add_dpid = base_cmd + str(dpid_src) + " " + str(dpid_dst)  
+            if not num_mult:
+                add_intents = add_dpid + " " + str(num_intents)
+            elif num_mult:
+                add_intents = add_dpid + " " + str(num_intents) + " " +\
+                              str(num_mult)
+                if app_id:
+                    add_app = add_intents + " " + str(app_id) 
+                else:
+                    add_app = add_intents
+
+            send_cmd = add_app + " > " + str(dir_file) + " &" 
+            main.log.info("Send cmd: "+send_cmd)
+
+            self.handle.sendline(send_cmd)
+
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit() 
 
     def get_topology(self,topology_output):
         '''

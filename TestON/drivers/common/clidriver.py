@@ -50,7 +50,7 @@ class CLI(Component):
         if self.port:
             self.handle =pexpect.spawn('ssh -p '+self.port+' '+self.user_name+'@'+self.ip_address,maxread=50000)
         else :
-            self.handle =pexpect.spawn('ssh -X '+self.user_name+'@'+self.ip_address,maxread=50000)
+            self.handle =pexpect.spawn('ssh -X '+self.user_name+'@'+self.ip_address,maxread=1000000,timeout=60)
 
         self.handle.logfile = self.logfile_handler
 	i = 5

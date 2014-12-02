@@ -300,8 +300,7 @@ class QuaggaCliDriver(CLI):
         return main.FALSE
 
     def ping_test(self, ip_address, ping_test_file, ping_test_result_file):
-        main.log.info("I am in ping_test method!")
-
+        main.log.info("Start the ping test on host:" + str(ip_address))
 
         self.name = self.options['name']
         self.handle = super(QuaggaCliDriver, self).connect(

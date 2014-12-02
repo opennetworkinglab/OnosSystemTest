@@ -90,7 +90,7 @@ class OnosCliDriver(CLI):
                 self.handle.expect("Confirm")
                 self.handle.sendline("yes")
                 self.handle.expect("\$")
-            self.handle.sendline("\n")
+            self.handle.sendline("")
             self.handle.expect("\$")
             self.handle.sendline("exit")
             self.handle.expect("closed")
@@ -194,13 +194,7 @@ class OnosCliDriver(CLI):
             else:
                 #If failed, send ctrl+c to process and try again
                 main.log.info("Starting CLI failed. Retrying...")
-                self.handle.sendline("\x03")
-                i = self.handle.expect(["onos>",pexpect.TIMEOUT],
-                        timeout=30)
-                #Send ctrl+d to exit the onos> prompt that was
-                #not successful
-                self.handle.sendline("\x04")
-                self.handle.expect("\$")
+                self.handle.send("\x03")
                 self.handle.sendline("onos -w "+str(ONOS_ip))
                 i = self.handle.expect(["onos>",pexpect.TIMEOUT],
                         timeout=30)
@@ -467,52 +461,21 @@ class OnosCliDriver(CLI):
             main.log.info(self.name+" ::::::")
             main.cleanup()
             main.exit()
-        
-    def devices(self, json_format=True, grep_str="",node_ip=""):
+
+    def devices(self, json_format=True):
         '''
         Lists all infrastructure devices or switches
         Optional argument:
-            * grep_str : pass in a string to grep
-            * node_ip : used to reattempt CLI connection
+            * json_format - boolean indicating if you want output in json
         '''
         try:
             self.handle.sendline("")
             self.handle.expect("onos>")
-            
-            if json_format:
-                if not grep_str:
-                    self.handle.sendline("devices -j")
-                    self.handle.expect("devices -j")
-                    i = self.handle.expect([
-                        "onos>", "\$", pexpect.TIMEOUT])
-                    if (i == 1 or i == 2) and node_ip:
-                        self.handle.sendline("onos -w "+node_ip)
-                        self.handle.expect("onos>")
-                        self.handle.sendline("devices -j")
-                        self.handle.expect("devices -j")
-                    elif not node_ip and i == 2: 
-                        main.log.info("ONOS CLI exited. Please "+
-                            "provide node_ip in the function to "+
-                            "attempt to reconnect")
-                else:
-                    self.handle.sendline("devices -j | grep '"+
-                        str(grep_str)+"'")
-                    self.handle.expect("devices -j | grep '"+str(grep_str)+"'")
-                    i = self.handle.expect([
-                        "onos>","\$", pexpect.TIMEOUT])
 
-                    if (i == 1 or i == 2) and node_ip:
-                        main.log.info("CLI dropped. Logging back into"+
-                            " ONOS")
-                        self.handle.sendline("onos -w "+node_ip)
-                        self.handle.expect("onos>")
-                        self.handle.sendline("devices -j")
-                        self.handle.expect("devices -j")
-                    elif not node_ip and i == 2:
-                        main.log.info("ONOS CLI exited. Please "+
-                            "provide node_ip in the function to "+
-                            "attempt to reconnect")
-                
+            if json_format:
+                self.handle.sendline("devices -j")
+                self.handle.expect("devices -j")
+                self.handle.expect("onos>")
                 handle = self.handle.before
                 '''
                 handle variable here contains some ANSI escape color code sequences at the end which are invisible in the print command output
@@ -528,13 +491,8 @@ class OnosCliDriver(CLI):
                 #print "repr(handle1) = ", repr(handle1)
                 return handle1
             else:
-                if not grep_str:
-                    self.handle.sendline("devices")
-                    self.handle.expect("onos>")
-                else:
-                    self.handle.sendline("devices | grep '"+
-                        str(grep_str)+"'")
-                    self.handle.expect("onos>")
+                self.handle.sendline("devices")
+                self.handle.expect("onos>")
                 handle = self.handle.before
                 #print "handle =",handle
                 return handle
@@ -550,34 +508,28 @@ class OnosCliDriver(CLI):
             main.cleanup()
             main.exit()
 
-    def links(self, json_format=True, grep_str=""):
+    def links(self, json_format=True):
         '''
         Lists all core links
         Optional argument:
-            * grep_str - pass in a string to grep
+            * json_format - boolean indicating if you want output in json
         '''
         try:
             self.handle.sendline("")
             self.handle.expect("onos>")
-            
+
             if json_format:
-                if not grep_str:
-                    self.handle.sendline("links -j")
-                    self.handle.expect("links -j")
-                    self.handle.expect("onos>")
-                else:
-                    self.handle.sendline("links -j | grep '"+
-                        str(grep_str)+"'")
-                    self.handle.expect("links -j | grep '"+str(grep_str)+"'")
-                    self.handle.expect("onos>")
+                self.handle.sendline("links -j")
+                self.handle.expect("links -j")
+                self.handle.expect("onos>")
                 handle = self.handle.before
                 '''
                 handle variable here contains some ANSI escape color code sequences at the end which are invisible in the print command output
                 To make that escape sequence visible, use repr() function. The repr(handle) output when printed shows the ANSI escape sequences.
                 In json.loads(somestring), this somestring variable is actually repr(somestring) and json.loads would fail with the escape sequence.
-                So we take off that escape sequence using 
+                So we take off that escape sequence using
                 ansi_escape = re.compile(r'\r\r\n\x1b[^m]*m')
-                handle1 = ansi_escape.sub('', handle) 
+                handle1 = ansi_escape.sub('', handle)
                 '''
                 #print "repr(handle) =", repr(handle)
                 ansi_escape = re.compile(r'\r\r\n\x1b[^m]*m')
@@ -585,13 +537,8 @@ class OnosCliDriver(CLI):
                 #print "repr(handle1) = ", repr(handle1)
                 return handle1
             else:
-                if not grep_str:
-                    self.handle.sendline("links")
-                    self.handle.expect("onos>")
-                else:
-                    self.handle.sendline("links | grep '"+
-                        str(grep_str)+"'")
-                    self.handle.expect("onos>")
+                self.handle.sendline("links")
+                self.handle.expect("onos>")
                 handle = self.handle.before
                 #print "handle =",handle
                 return handle
@@ -608,34 +555,28 @@ class OnosCliDriver(CLI):
             main.exit()
 
 
-    def ports(self, json_format=True, grep_str=""):
+    def ports(self, json_format=True):
         '''
         Lists all ports
         Optional argument:
-            * grep_str - pass in a string to grep
+            * json_format - boolean indicating if you want output in json
         '''
         try:
             self.handle.sendline("")
             self.handle.expect("onos>")
-            
+
             if json_format:
-                if not grep_str:
-                    self.handle.sendline("ports -j")
-                    self.handle.expect("ports -j")
-                    self.handle.expect("onos>")
-                else:
-                    self.handle.sendline("ports -j | grep '"+
-                        str(grep_str)+"'")
-                    self.handle.expect("ports -j | grep '"+str(grep_str)+"'")
-                    self.handle.expect("onos>")
+                self.handle.sendline("ports -j")
+                self.handle.expect("ports -j")
+                self.handle.expect("onos>")
                 handle = self.handle.before
                 '''
                 handle variable here contains some ANSI escape color code sequences at the end which are invisible in the print command output
                 To make that escape sequence visible, use repr() function. The repr(handle) output when printed shows the ANSI escape sequences.
                 In json.loads(somestring), this somestring variable is actually repr(somestring) and json.loads would fail with the escape sequence.
-                So we take off that escape sequence using the following commads: 
+                So we take off that escape sequence using the following commads:
                 ansi_escape = re.compile(r'\r\r\n\x1b[^m]*m')
-                handle1 = ansi_escape.sub('', handle) 
+                handle1 = ansi_escape.sub('', handle)
                 '''
                 #print "repr(handle) =", repr(handle)
                 ansi_escape = re.compile(r'\r\r\n\x1b[^m]*m')
@@ -644,20 +585,13 @@ class OnosCliDriver(CLI):
                 return handle1
 
             else:
-                if not grep_str:
-                    self.handle.sendline("ports")
-                    self.handle.expect("onos>")
-                    self.handle.sendline("")
-                    self.handle.expect("onos>")
-                else:
-                    self.handle.sendline("ports | grep '"+
-                        str(grep_str)+"'")
-                    self.handle.expect("onos>")
-                    self.handle.sendline("")
-                    self.handle.expect("onos>")
+                self.handle.sendline("ports")
+                self.handle.expect("onos>")
+                self.handle.sendline("")
+                self.handle.expect("onos>")
                 handle = self.handle.before
                 #print "handle =",handle
-                return handle  
+                return handle
         except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
             main.log.error(self.name + ":    " + self.handle.before)
@@ -671,34 +605,32 @@ class OnosCliDriver(CLI):
             main.exit()
 
 
-    def roles(self, json_format=True, grep_str=""):
+    def roles(self, json_format=True):
         '''
         Lists all devices and the controllers with roles assigned to them
         Optional argument:
-            * grep_str - pass in a string to grep
+            * json_format - boolean indicating if you want output in json
         '''
         try:
             self.handle.sendline("")
             self.handle.expect("onos>")
-            
+
             if json_format:
-                if not grep_str:
-                    self.handle.sendline("roles -j")
-                    self.handle.expect("roles -j")
-                    self.handle.expect("onos>")
-                else:
-                    self.handle.sendline("roles -j | grep '"+
-                        str(grep_str)+"'")
-                    self.handle.expect("roles -j | grep '"+str(grep_str)+"'")
-                    self.handle.expect("onos>")
+                self.handle.sendline("roles -j")
+                self.handle.expect("roles -j")
+                self.handle.expect("onos>")
                 handle = self.handle.before
                 '''
-                handle variable here contains some ANSI escape color code sequences at the end which are invisible in the print command output
-                To make that escape sequence visible, use repr() function. The repr(handle) output when printed shows the ANSI escape sequences.
-                In json.loads(somestring), this somestring variable is actually repr(somestring) and json.loads would fail with the escape sequence.
-                So we take off that escape sequence using the following commads: 
+                handle variable here contains some ANSI escape color code sequences at the
+                end which are invisible in the print command output. To make that escape
+                sequence visible, use repr() function. The repr(handle) output when printed
+                shows the ANSI escape sequences. In json.loads(somestring), this somestring
+                variable is actually repr(somestring) and json.loads would fail with the escape
+                sequence.
+
+                So we take off that escape sequence using the following commads:
                 ansi_escape = re.compile(r'\r\r\n\x1b[^m]*m')
-                handle1 = ansi_escape.sub('', handle) 
+                handle1 = ansi_escape.sub('', handle)
                 '''
                 #print "repr(handle) =", repr(handle)
                 ansi_escape = re.compile(r'\r\r\n\x1b[^m]*m')
@@ -707,20 +639,13 @@ class OnosCliDriver(CLI):
                 return handle1
 
             else:
-                if not grep_str:
-                    self.handle.sendline("roles")
-                    self.handle.expect("onos>")
-                    self.handle.sendline("")
-                    self.handle.expect("onos>")
-                else:
-                    self.handle.sendline("roles | grep '"+
-                        str(grep_str)+"'")
-                    self.handle.expect("onos>")
-                    self.handle.sendline("")
-                    self.handle.expect("onos>")
+                self.handle.sendline("roles")
+                self.handle.expect("onos>")
+                self.handle.sendline("")
+                self.handle.expect("onos>")
                 handle = self.handle.before
                 #print "handle =",handle
-                return handle  
+                return handle
         except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
             main.log.error(self.name + ":    " + self.handle.before)
@@ -808,35 +733,29 @@ class OnosCliDriver(CLI):
             main.log.info(self.name+" ::::::")
             main.cleanup()
             main.exit()
-    
-    def hosts(self, json_format=True, grep_str=""):
+
+    def hosts(self, json_format=True):
         '''
-        Lists all discovered hosts 
+        Lists all discovered hosts
         Optional argument:
-            * grep_str - pass in a string to grep
+            * json_format - boolean indicating if you want output in json
         '''
         try:
             self.handle.sendline("")
             self.handle.expect("onos>")
-            
+
             if json_format:
-                if not grep_str:
-                    self.handle.sendline("hosts -j")
-                    self.handle.expect("hosts -j")
-                    self.handle.expect("onos>")
-                else:
-                    self.handle.sendline("hosts -j | grep '"+
-                        str(grep_str)+"'")
-                    self.handle.expect("hosts -j | grep '"+str(grep_str)+"'")
-                    self.handle.expect("onos>")
+                self.handle.sendline("hosts -j")
+                self.handle.expect("hosts -j")
+                self.handle.expect("onos>")
                 handle = self.handle.before
                 '''
                 handle variable here contains some ANSI escape color code sequences at the end which are invisible in the print command output
                 To make that escape sequence visible, use repr() function. The repr(handle) output when printed shows the ANSI escape sequences.
                 In json.loads(somestring), this somestring variable is actually repr(somestring) and json.loads would fail with the escape sequence.
-                So we take off that escape sequence using 
+                So we take off that escape sequence using
                 ansi_escape = re.compile(r'\r\r\n\x1b[^m]*m')
-                handle1 = ansi_escape.sub('', handle) 
+                handle1 = ansi_escape.sub('', handle)
                 '''
                 #print "repr(handle) =", repr(handle)
                 ansi_escape = re.compile(r'\r\r\n\x1b[^m]*m')
@@ -844,13 +763,8 @@ class OnosCliDriver(CLI):
                 #print "repr(handle1) = ", repr(handle1)
                 return handle1
             else:
-                if not grep_str:
-                    self.handle.sendline("hosts")
-                    self.handle.expect("onos>")
-                else:
-                    self.handle.sendline("hosts | grep '"+
-                        str(grep_str)+"'")
-                    self.handle.expect("onos>")
+                self.handle.sendline("hosts")
+                self.handle.expect("onos>")
                 handle = self.handle.before
                 #print "handle =",handle
                 return handle
@@ -948,24 +862,24 @@ class OnosCliDriver(CLI):
             * host_id_two: ONOS host id for host2
         Description:
             Adds a host-to-host intent (bidrectional) by
-            specifying the two hosts. 
+            specifying the two hosts.
         '''
         try:
             self.handle.sendline("")
             self.handle.expect("onos>")
-            
+
             self.handle.sendline("add-host-intent "+
                     str(host_id_one) + " " + str(host_id_two))
             self.handle.expect("onos>")
 
             handle = self.handle.before
-            print "handle =", handle
+            #print "handle =", handle
 
             main.log.info("Intent installed between "+
                     str(host_id_one) + " and " + str(host_id_two))
 
             return handle
-        
+
         except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
             main.log.error(self.name + ":    " + self.handle.before)
@@ -1202,7 +1116,7 @@ class OnosCliDriver(CLI):
             main.cleanup()
             main.exit()
 
-    def intents(self, json_format = False):
+    def intents(self, json_format = True):
         '''
         Optional:
             * json_format: enable output formatting in json
@@ -1240,7 +1154,7 @@ class OnosCliDriver(CLI):
             main.cleanup()
             main.exit()
 
-    def flows(self, json_format = False):
+    def flows(self, json_format = True):
         '''
         Optional:
             * json_format: enable output formatting in json
@@ -1253,6 +1167,8 @@ class OnosCliDriver(CLI):
                 self.handle.expect("flows -j")
                 self.handle.expect("onos>")
                 handle = self.handle.before
+                ansi_escape = re.compile(r'\r\r\n\x1b[^m]*m')
+                handle = ansi_escape.sub('', handle)
 
             else:
                 self.handle.sendline("")
@@ -1260,6 +1176,8 @@ class OnosCliDriver(CLI):
                 self.handle.sendline("flows")
                 self.handle.expect("onos>")
                 handle = self.handle.before
+            if re.search("Error\sexecuting\scommand:", handle):
+                main.log.error(self.name + ".flows() response: " + str(handle))
 
             return handle
 
@@ -1686,6 +1604,55 @@ class OnosCliDriver(CLI):
             else:
                 return main.FALSE
 
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()
+
+    def clusters(self, json_format=True):
+        '''
+        Lists all clusters
+        Optional argument:
+            * json_format - boolean indicating if you want output in json
+        '''
+        try:
+            self.handle.sendline("")
+            self.handle.expect("onos>")
+
+            if json_format:
+                self.handle.sendline("clusters -j")
+                self.handle.expect("clusters -j")
+                self.handle.expect("onos>")
+                handle = self.handle.before
+                '''
+                handle variable here contains some ANSI escape color code
+                sequences at the end which are invisible in the print command
+                output. To make that escape sequence visible, use repr() function.
+                The repr(handle) output when printed shows the ANSI escape sequences.
+                In json.loads(somestring), this somestring variable is actually
+                repr(somestring) and json.loads would fail with the escape sequence.
+                So we take off that escape sequence using
+                ansi_escape = re.compile(r'\r\r\n\x1b[^m]*m')
+                handle1 = ansi_escape.sub('', handle)
+                '''
+                #print "repr(handle) =", repr(handle)
+                ansi_escape = re.compile(r'\r\r\n\x1b[^m]*m')
+                handle1 = ansi_escape.sub('', handle)
+                #print "repr(handle1) = ", repr(handle1)
+                return handle1
+            else:
+                self.handle.sendline("clusters")
+                self.handle.expect("onos>")
+                handle = self.handle.before
+                #print "handle =",handle
+                return handle
         except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
             main.log.error(self.name + ":    " + self.handle.before)

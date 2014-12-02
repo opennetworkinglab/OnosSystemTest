@@ -39,7 +39,6 @@ class QuaggaCliDriver(CLI):
             return main.FALSE
 
     def loginQuagga(self, ip_address):
-
         self.name = self.options['name']
         self.handle = super(QuaggaCliDriver, self).connect(
             user_name=self.user_name, ip_address=ip_address,
@@ -56,7 +55,7 @@ class QuaggaCliDriver(CLI):
             self.handle.expect("bgpd", timeout=5)
             self.handle.sendline("enable")
             self.handle.expect("bgpd#", timeout=5)
-            main.log.info("I am inside BGP peer Quagga!")
+            main.log.info("I in quagga on host " + str(ip_address))
 
             return self.handle
         else:
@@ -120,7 +119,7 @@ class QuaggaCliDriver(CLI):
             else:
                 ingress.append("of:" + str(peer['attachmentDpid']).replace(":", "") + ":" + str(peer['attachmentPort']) )
 
-        selector = "[IPV4_DST{ip=" + prefix + "}, ETH_TYPE{ethType=800}]"
+        selector = "[ETH_TYPE{ethType=800}, IPV4_DST{ip=" + prefix + "}]"
         treatment = "[ETH_DST{mac=" + str(nextHopMac) + "}]"
 
         intent = egress + "/" + str(sorted(ingress)) + "/" + selector + "/" + treatment
@@ -158,7 +157,7 @@ class QuaggaCliDriver(CLI):
     def extract_actual_routeIntents(self, get_intents_result):
         intents = []
         # TODO: delete the line below when change to Mininet demo script
-        get_intents_result=open("../tests/SdnIpTest/intents.json").read()
+        # get_intents_result=open("../tests/SdnIpTest/intents.json").read()
         intents_json_obj = json.loads(get_intents_result)
 
         for intent in intents_json_obj:
@@ -177,7 +176,7 @@ class QuaggaCliDriver(CLI):
     def extract_actual_bgpIntents(self, get_intents_result):
         intents = []
         # TODO: delete the line below when change to Mininet demo script
-        get_intents_result=open("../tests/SdnIpTest/intents.json").read()
+        # get_intents_result=open("../tests/SdnIpTest/intents.json").read()
         intents_json_obj = json.loads(get_intents_result)
 
         for intent in intents_json_obj:
@@ -274,7 +273,7 @@ class QuaggaCliDriver(CLI):
         except:
             main.log.warn("Probably not in config-router mode!")
             self.disconnect()
-        main.log.report("Adding Routes")
+        main.log.info("Adding Routes")
         j=0
         k=0
         while numRoutes > 255:
@@ -321,7 +320,7 @@ class QuaggaCliDriver(CLI):
         except:
             main.log.warn("Probably not in config-router mode!")
             self.disconnect()
-        main.log.report("Deleting Routes")
+        main.log.info("Deleting Routes")
         j=0
         k=0
         while numRoutes > 255:

@@ -76,7 +76,7 @@ class CLI(Component):
 	    elif i==6:
 	        main.log.info("Password not required logged in")
 
-        self.handle.sendline("\n")
+        self.handle.sendline("")
         self.handle.expect('>|#|\$')
         return self.handle
 
@@ -142,7 +142,7 @@ class CLI(Component):
             main.log.info("Found More screen to go , Sending a key to proceed")
             indexMore = self.handle.expect(["^:$", expectPrompt], timeout = timeoutVar)
             while indexMore == 0:
-                main.log.info("Found anoother More screen to go , Sending a key to proceed")
+                main.log.info("Found another More screen to go , Sending a key to proceed")
                 self.handle.sendcontrol("D")
                 indexMore = self.handle.expect(["^:$", expectPrompt], timeout = timeoutVar)
                 self.LASTRSP = self.LASTRSP + self.handle.before

@@ -146,14 +146,18 @@ class MininetCliDriver(Emulator):
         topoDict = self.num_switches_n_links(*topoArgList)
         return topoDict
 
-    def pingall(self):
+    def pingall(self, timeout=300):
         '''
         Verifies the reachability of the hosts using pingall command.
+        Optional parameter timeout allows you to specify how long to wait for pingall to complete
+        Returns:
+                main.TRUE if pingall completes with no pings dropped
+                otherwise main.FALSE
         '''
         if self.handle :
             main.log.info(self.name+": Checking reachabilty to the hosts using pingall")
             try:
-                response = self.execute(cmd="pingall",prompt="mininet>",timeout=300)
+                response = self.execute(cmd="pingall",prompt="mininet>",timeout=int(timeout))
             except pexpect.EOF:
                 main.log.error(self.name + ": EOF exception found")
                 main.log.error(self.name + ":     " + self.handle.before)
@@ -283,7 +287,47 @@ class MininetCliDriver(Emulator):
             return main.FALSE
         else :
             return main.TRUE
+
     
+
+
+    def changeIP(self,host,intf,newIP,newNetmask):
+        '''
+        Changes the ip address of a host on the fly
+        Ex: h2 ifconfig h2-eth0 10.0.1.2 netmask 255.255.255.0
+        '''
+        if self.handle:
+            try:
+                cmd = host+" ifconfig "+intf+" "+newIP+" "+newNetMask
+                self.handle.sendline(cmd)
+                self.handle.expect("mininet>")
+                response = self.handle.before
+                main.log.info("Ip of host "+host+" changed to new IP "+newIP)
+                return main.TRUE
+            except pexpect.EOF:
+                main.log.error(self.name + ": EOF exception found")
+                main.log.error(self.name + ":     " + self.handle.before)
+                return main.FALSE
+
+    def changeDefaultGateway(self,host,newGW):
+        '''
+        Changes the default gateway of a host
+        Ex: h1 route add default gw 10.0.1.2
+        '''
+        if self.handle:
+            try:
+                cmd = host+" route add default gw "+newGW 
+                self.handle.sendline(cmd)
+                self.handle.expect("mininet>")
+                response = self.handle.before
+                main.log.info("Default gateway of host "+host+" changed to "+newGW)
+                return main.TRUE
+            except pexpect.EOF:
+                main.log.error(self.name + ": EOF exception found")
+                main.log.error(self.name + ":     " + self.handle.before)
+                return main.FALSE
+   
+
     def getMacAddress(self,host):
         '''
         Verifies the host's ip configured or not.
@@ -439,17 +483,40 @@ class MininetCliDriver(Emulator):
             main.cleanup()
             main.exit()
         return response
-    
-    def iperf(self):
+    '''
+    def iperf(self,host1,host2):
         main.log.info(self.name+": Simple iperf TCP test between two (optionally specified) hosts")
         try:
-            response = self.execute(cmd = 'iperf',prompt = 'mininet>',timeout = 10)
+            if not host1 and not host2:
+                response = self.execute(cmd = 'iperf',prompt = 'mininet>',timeout = 10)
+            else:
+                cmd1 = 'iperf '+ host1 + " " + host2
+                response = self.execute(cmd = cmd1, prompt = '>',timeout = 20)
         except pexpect.EOF:  
             main.log.error(self.name + ": EOF exception found")
             main.log.error(self.name + ":     " + self.handle.before)
             main.cleanup()
             main.exit()
         return response
+     '''
+    def iperf(self,host1,host2):
+        main.log.info(self.name+": Simple iperf TCP test between two hosts")
+        try:
+            cmd1 = 'iperf '+ host1 + " " + host2
+            self.handle.sendline(cmd1)
+            self.handle.expect("mininet>") 
+            response = self.handle.before
+            if re.search('Results:',response):
+                main.log.info(self.name+": iperf test succssful")
+                return main.TRUE
+            else:
+                main.log.error(self.name+": iperf test failed")
+                return main.FALSE 
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":     " + self.handle.before)
+            main.cleanup()
+            main.exit()
     
     def iperfudp(self):
         main.log.info(self.name+": Simple iperf TCP test between two (optionally specified) hosts")
@@ -656,6 +723,187 @@ class MininetCliDriver(Emulator):
         else:
             main.log.info(response)
 
+    def add_switch( self, sw, **kwargs ):
+        '''
+        adds a switch to the mininet topology
+        NOTE: this uses a custom mn function
+        NOTE: cannot currently specify what type of switch
+        required params:
+            switchname = name of the new switch as a string
+        optional keyvalues:
+            dpid = "dpid"
+        returns: main.FASLE on an error, else main.TRUE
+        '''
+        dpid = kwargs.get('dpid', '')
+        command = "addswitch " + str( sw ) + " " + str( dpid )
+        try:
+            response = self.execute(cmd=command,prompt="mininet>",timeout=10)
+            if re.search("already exists!", response):
+                main.log.warn(response)
+                return main.FALSE
+            elif re.search("Error", response):
+                main.log.warn(response)
+                return main.FALSE
+            elif re.search("usage:", response):
+                main.log.warn(response)
+                return main.FALSE
+            else:
+                return main.TRUE
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":     " + self.handle.before)
+            main.cleanup()
+            main.exit()
+
+    def del_switch( self, sw ):
+        '''
+        delete a switch from the mininet topology
+        NOTE: this uses a custom mn function
+        required params:
+            switchname = name of the switch as a string
+        returns: main.FASLE on an error, else main.TRUE
+        '''
+        command = "delswitch " + str( sw )
+        try:
+            response = self.execute(cmd=command,prompt="mininet>",timeout=10)
+            if re.search("no switch named", response):
+                main.log.warn(response)
+                return main.FALSE
+            elif re.search("Error", response):
+                main.log.warn(response)
+                return main.FALSE
+            elif re.search("usage:", response):
+                main.log.warn(response)
+                return main.FALSE
+            else:
+                return main.TRUE
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":     " + self.handle.before)
+            main.cleanup()
+            main.exit()
+
+    def add_link( self, node1, node2 ):
+        '''
+        add a link to the mininet topology
+        NOTE: this uses a custom mn function
+        NOTE: cannot currently specify what type of link
+        required params:
+            node1 = the string node name of the first endpoint of the link
+            node2 = the string node name of the second endpoint of the link
+        returns: main.FASLE on an error, else main.TRUE
+        '''
+        command = "addlink " + str( node1 ) + " " + str( node2 )
+        try:
+            response = self.execute(cmd=command,prompt="mininet>",timeout=10)
+            if re.search("doesnt exist!", response):
+                main.log.warn(response)
+                return main.FALSE
+            elif re.search("Error", response):
+                main.log.warn(response)
+                return main.FALSE
+            elif re.search("usage:", response):
+                main.log.warn(response)
+                return main.FALSE
+            else:
+                return main.TRUE
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":     " + self.handle.before)
+            main.cleanup()
+            main.exit()
+
+    def del_link( self, node1, node2 ):
+        '''
+        delete a link from the mininet topology
+        NOTE: this uses a custom mn function
+        required params:
+            node1 = the string node name of the first endpoint of the link
+            node2 = the string node name of the second endpoint of the link
+        returns: main.FASLE on an error, else main.TRUE
+        '''
+        command = "dellink " + str( node1 ) + " " + str( node2 )
+        try:
+            response = self.execute(cmd=command,prompt="mininet>",timeout=10)
+            if re.search("no node named", response):
+                main.log.warn(response)
+                return main.FALSE
+            elif re.search("Error", response):
+                main.log.warn(response)
+                return main.FALSE
+            elif re.search("usage:", response):
+                main.log.warn(response)
+                return main.FALSE
+            else:
+                return main.TRUE
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":     " + self.handle.before)
+            main.cleanup()
+            main.exit()
+
+    def add_host( self, hostname, **kwargs ):
+        '''
+        Add a host to the mininet topology
+        NOTE: this uses a custom mn function
+        NOTE: cannot currently specify what type of host
+        required params:
+            hostname = the string hostname
+        optional key-value params
+            switch = "switch name"
+            returns: main.FASLE on an error, else main.TRUE
+        '''
+        switch = kwargs.get('switch', '')
+        command = "addhost " + str( hostname ) + " " + str( switch )
+        try:
+            response = self.execute(cmd=command,prompt="mininet>",timeout=10)
+            if re.search("already exists!", response):
+                main.log.warn(response)
+                return main.FALSE
+            elif re.search("doesnt exists!", response):
+                main.log.warn(response)
+                return main.FALSE
+            elif re.search("Error", response):
+                main.log.warn(response)
+                return main.FALSE
+            elif re.search("usage:", response):
+                main.log.warn(response)
+                return main.FALSE
+            else:
+                return main.TRUE
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":     " + self.handle.before)
+            main.cleanup()
+            main.exit()
+
+    def del_host( self, hostname ):
+        '''
+        delete a host from the mininet topology
+        NOTE: this uses a custom mn function
+        required params:
+            hostname = the string hostname
+            returns: main.FASLE on an error, else main.TRUE
+        '''
+        command = "delhost " + str( hostname )
+        try:
+            response = self.execute(cmd=command,prompt="mininet>",timeout=10)
+            if re.search("no host named", response):
+                main.log.warn(response)
+                return main.FALSE
+            elif re.search("Error", response):
+                main.log.warn(response)
+                return main.FALSE
+            elif re.search("usage:", response):
+                main.log.warn(response)
+                return main.FALSE
+            else:
+                return main.TRUE
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":     " + self.handle.before)
+            main.cleanup()
+            main.exit()
 
     def disconnect(self):
         main.log.info(self.name+": Disconnecting mininet...")
@@ -928,10 +1176,8 @@ class MininetCliDriver(Emulator):
             onos_ports = [x for x in onos_ports]
 
             #TODO: handle other reserved port numbers besides LOCAL
-            #NOTE: List of Reserved Ports
-            #   Local port: -2 in unsigned int in Openflow, the size depends on
-            #       openflow version( 1.0 is 16 bit, 1.3 is 32 bit), ONOS shows
-            #       'local', we store as long(uint64(-2))
+            #NOTE: Reserved ports
+            #   Local port: -2 in Openflow, ONOS shows 'local', we store as long(uint64(-2))
             for mn_port in mn_ports_log:
                 if mn_port in onos_ports:
                     #don't set results to true here as this is just one of many checks and it might override a failure
@@ -951,7 +1197,7 @@ class MininetCliDriver(Emulator):
                 switch_result = main.FALSE
                 main.log.warn("Ports in ONOS but not MN: " + str(onos_ports) )
             if switch_result == main.FALSE:
-                main.log.report("The list of active ports for switch %s(%s) does not match:" % (mn_switch['name'], mn_switch['dpid']) )
+                main.log.report("The list of ports for switch %s(%s) does not match:" % (mn_switch['name'], mn_switch['dpid']) )
                 main.log.warn("mn_ports[]  =  " + str(mn_ports_log))
                 main.log.warn("onos_ports[] = " + str(onos_ports_log))
             ports_results = ports_results and switch_result

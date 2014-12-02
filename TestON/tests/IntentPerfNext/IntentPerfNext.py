@@ -495,6 +495,7 @@ class IntentPerfNext:
             time.sleep(120 / int(cluster_count))
             for node in range(1, cluster_count+1):
                 with open(save_dir) as f_onos:
+                    line_count = 0
                     for line in f_onos:
                         line = line[1:]
                         line = line.split(": ")

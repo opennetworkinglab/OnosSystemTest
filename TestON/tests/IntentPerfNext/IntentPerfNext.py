@@ -14,6 +14,8 @@ class IntentPerfNext:
         '''
 
         import time
+        global cluster_count
+        cluster_count = 1 
 
         cell_name = main.params['ENV']['cellName']
 
@@ -23,7 +25,19 @@ class IntentPerfNext:
         ONOS1_ip = main.params['CTRL']['ip1']
         ONOS2_ip = main.params['CTRL']['ip2']
         ONOS3_ip = main.params['CTRL']['ip3']
-        
+        ONOS4_ip = main.params['CTRL']['ip4']
+        ONOS5_ip = main.params['CTRL']['ip5']
+        ONOS6_ip = main.params['CTRL']['ip6']
+        ONOS7_ip = main.params['CTRL']['ip7']
+
+        main.ONOSbench.onos_uninstall(node_ip=ONOS1_ip)
+        main.ONOSbench.onos_uninstall(node_ip=ONOS2_ip)
+        main.ONOSbench.onos_uninstall(node_ip=ONOS3_ip)
+        main.ONOSbench.onos_uninstall(node_ip=ONOS4_ip)
+        main.ONOSbench.onos_uninstall(node_ip=ONOS5_ip)
+        main.ONOSbench.onos_uninstall(node_ip=ONOS6_ip)
+        main.ONOSbench.onos_uninstall(node_ip=ONOS7_ip)
+
         MN1_ip = main.params['MN']['ip1']
         BENCH_ip = main.params['BENCH']['ip']
     
@@ -33,11 +47,15 @@ class IntentPerfNext:
         cell_file_result = main.ONOSbench.create_cell_file(
                 BENCH_ip, cell_name, MN1_ip,
                 "onos-core,onos-app-metrics,onos-gui",
-                ONOS1_ip, ONOS2_ip, ONOS3_ip)
+                #ONOS1_ip, ONOS2_ip, ONOS3_ip)
+                ONOS1_ip)
 
         main.step("Applying cell file to environment")
         cell_apply_result = main.ONOSbench.set_cell(cell_name)
         verify_cell_result = main.ONOSbench.verify_cell()
+
+        main.step("Removing raft logs")
+        main.ONOSbench.onos_remove_raft_logs()
 
         main.step("Git checkout and pull "+checkout_branch)
         if git_pull == 'on':
@@ -62,27 +80,27 @@ class IntentPerfNext:
 
         main.step("Installing ONOS package")
         install1_result = main.ONOSbench.onos_install(node=ONOS1_ip)
-        install2_result = main.ONOSbench.onos_install(node=ONOS2_ip)
-        install3_result = main.ONOSbench.onos_install(node=ONOS3_ip)
+        #install2_result = main.ONOSbench.onos_install(node=ONOS2_ip)
+        #install3_result = main.ONOSbench.onos_install(node=ONOS3_ip)
 
         main.step("Set cell for ONOScli env")
         main.ONOS1cli.set_cell(cell_name)
-        main.ONOS2cli.set_cell(cell_name)
-        main.ONOS3cli.set_cell(cell_name)
+        #main.ONOS2cli.set_cell(cell_name)
+        #main.ONOS3cli.set_cell(cell_name)
 
         time.sleep(5)
 
         main.step("Start onos cli")
         cli1 = main.ONOS1cli.start_onos_cli(ONOS1_ip)
-        cli2 = main.ONOS2cli.start_onos_cli(ONOS2_ip)
-        cli3 = main.ONOS3cli.start_onos_cli(ONOS3_ip)
+        #cli2 = main.ONOS2cli.start_onos_cli(ONOS2_ip)
+        #cli3 = main.ONOS3cli.start_onos_cli(ONOS3_ip)
 
         utilities.assert_equals(expect=main.TRUE,
                 actual = cell_file_result and cell_apply_result and\
                          verify_cell_result and checkout_result and\
                          pull_result and build_result and\
-                         install1_result and install2_result and\
-                         install3_result,
+                         install1_result, #and install2_result and\
+                         #install3_result,
                 onpass="ONOS started successfully",
                 onfail="Failed to start ONOS")
 
@@ -355,28 +373,99 @@ class IntentPerfNext:
         ONOS1_ip = main.params['CTRL']['ip1']
         ONOS2_ip = main.params['CTRL']['ip2']
         ONOS3_ip = main.params['CTRL']['ip3']
+        ONOS4_ip = main.params['CTRL']['ip4']
+        ONOS5_ip = main.params['CTRL']['ip5']
+        ONOS6_ip = main.params['CTRL']['ip6']
+        ONOS7_ip = main.params['CTRL']['ip7']
+       
+        ONOS_ip_list = []
+        for i in range(1, 8):
+            ONOS_ip_list.append(main.params['CTRL']['ip'+str(i)])
+
         ONOS_user = main.params['CTRL']['user']
 
         default_sw_port = main.params['CTRL']['port1']
     
         batch_intent_size = main.params['TEST']['batchIntentSize']
+        batch_thresh_min = int(main.params['TEST']['batchThresholdMin'])
+        batch_thresh_max = int(main.params['TEST']['batchThresholdMax'])
 
         #number of iterations of case
         num_iter = main.params['TEST']['numIter']
+        num_switch = int(main.params['TEST']['numSwitch'])
+        n_thread = main.params['TEST']['numMult']
+
+        #*****
+        global cluster_count
+        #*****
+       
+        #Switch assignment NOTE: hardcoded 
+        if cluster_count == 1:
+            for i in range(1, num_switch+1):
+                main.Mininet1.assign_sw_controller(
+                    sw=str(i), 
+                    ip1=ONOS1_ip,
+                    port1=default_sw_port)
+        if cluster_count == 3:
+            for i in range(1, 3):
+                main.Mininet1.assign_sw_controller(
+                    sw=str(i),
+                    ip1=ONOS1_ip,
+                    port1=default_sw_port)
+            for i in range(3, 6):
+                main.Mininet1.assign_sw_controller(
+                    sw=str(i),
+                    ip1=ONOS2_ip,
+                    port1=default_sw_port)
+            for i in range(6, 9):
+                main.Mininet1.assign_sw_controller(
+                    sw=str(i),
+                    ip1=ONOS3_ip,
+                    port1=default_sw_port)
+        if cluster_count == 5:
+            main.Mininet1.assign_sw_controller(
+                    sw="1",
+                    ip1=ONOS1_ip,
+                    port1=default_sw_port)
+            main.Mininet1.assign_sw_controller(
+                    sw="2",
+                    ip1=ONOS2_ip,
+                    port1=default_sw_port)
+            for i in range(3, 6):
+                main.Mininet1.assign_sw_controller(
+                    sw=str(i),
+                    ip1=ONOS3_ip,
+                    port1=default_sw_port)
+            main.Mininet1.assign_sw_controller(
+                    sw="6",
+                    ip1=ONOS4_ip,
+                    port1=default_sw_port)
+            main.Mininet1.assign_sw_controller(
+                    sw="7",
+                    ip1=ONOS5_ip,
+                    port1=default_sw_port)
+            main.Mininet1.assign_sw_controller(
+                    sw="8",
+                    ip1=ONOS5_ip,
+                    port1=default_sw_port)
         
-        main.Mininet1.assign_sw_controller(
-                sw="1", ip1=ONOS1_ip,port1=default_sw_port)
-        main.Mininet1.assign_sw_controller(
-                sw="2", ip1=ONOS2_ip,port1=default_sw_port)
-        main.Mininet1.assign_sw_controller(
-                sw="3", ip1=ONOS2_ip,port1=default_sw_port)
-        main.Mininet1.assign_sw_controller(
-                sw="4", ip1=ONOS2_ip,port1=default_sw_port)
-        main.Mininet1.assign_sw_controller(
-                sw="5", ip1=ONOS3_ip,port1=default_sw_port)
+        if cluster_count == 7:
+            for i in range(1,9):
+                if i < 7:
+                    main.Mininet1.assign_sw_controller(
+                        sw=str(i),
+                        ip1=ONOS_ip_list[i-1],
+                        port1=default_sw_port)
+                elif i >= 8: 
+                    main.Mininet1.assign_sw_controller(
+                        sw=str(i),
+                        ip1=ONOS_ip_list[6],
+                        port1=default_sw_port)
 
         main.log.report("Batch intent installation test of "+
-                str(batch_intent_size) +" intents")
+               batch_intent_size +" intents")
+
+        batch_result_list = []
 
         main.log.info("Getting list of available devices")
         device_id_list = []
@@ -385,14 +474,120 @@ class IntentPerfNext:
         for device in json_obj:
             device_id_list.append(device['id'])
 
-        for i in range(0, int(num_iter)):
-            main.log.info("Pushing "+batch_intent_size+" intents")
-            
-            batch_result = main.ONOS1cli.push_test_intents(
-                "of:0000000000000001/1", "of:0000000000000005/2", 
-                batch_intent_size)
+        batch_install_lat = []
+        batch_withdraw_lat = []
+        
+        base_dir = "/tmp/"
 
+        for i in range(0, int(num_iter)):
+            main.log.info("Pushing "+
+                    str(int(batch_intent_size)*int(n_thread))+
+                    " intents. Iteration "+str(i))
+                
+            for node in range(1, cluster_count+1):
+                save_dir = base_dir + "batch_intent_"+str(node)+".txt" 
+                main.ONOSbench.push_test_intents_shell(
+                "of:0000000000000001/"+str(node),
+                "of:0000000000000008/"+str(node),
+                batch_intent_size, save_dir, ONOS_ip_list[node-1],
+                num_mult=n_thread, app_id=node)
+            
+            time.sleep(120 / int(cluster_count))
+            for node in range(1, cluster_count+1):
+                with open(save_dir) as f_onos:
+                    for line in f_onos:
+                        line = line[1:]
+                        line = line.split(": ")
+                        result = line[1].split(" ")[0]
+                        #TODO: add parameters before appending latency
+                        if line_count == 0:
+                            batch_install_lat.append(result)
+                        elif line_count == 1:
+                            batch_withdraw_lat.append(result)
+                        line_count += 1
+                main.log.info("Batch install latency for ONOS"+
+                    str(node)+" with "+\
+                    str(batch_intent_size) + "intents: "+\
+                    str(batch_install_lat))
             time.sleep(5)
+
+        main.log.report("Max of batch installation latency "+
+            "for ONOS" + str(node)+ ": "+
+            str(max(batch_install_lat)))
+            
+    def CASE5(self,main):
+        '''
+        Increase number of nodes and initiate CLI
+        '''
+        import time
+        import json
+
+        ONOS1_ip = main.params['CTRL']['ip1']
+        ONOS2_ip = main.params['CTRL']['ip2']
+        ONOS3_ip = main.params['CTRL']['ip3']
+        ONOS4_ip = main.params['CTRL']['ip4']
+        ONOS5_ip = main.params['CTRL']['ip5']
+        ONOS6_ip = main.params['CTRL']['ip6']
+        ONOS7_ip = main.params['CTRL']['ip7']
+
+        global cluster_count
+        cluster_count += 2
+        main.log.info("Increasing cluster size to "+
+                str(cluster_count))
+
+        install_result = main.FALSE
+
+        if cluster_count == 3:
+            install_result1 = \
+                main.ONOSbench.onos_install(node=ONOS2_ip)
+            install_result2 = \
+                main.ONOSbench.onos_install(node=ONOS3_ip)
+            time.sleep(5)
+
+            main.log.info("Starting ONOS CLI")
+            main.ONOS2cli.start_onos_cli(ONOS2_ip)
+            main.ONOS3cli.start_onos_cli(ONOS3_ip)
+
+            install_result = install_result1 and install_result2
+
+        if cluster_count == 5:
+            main.log.info("Installing ONOS on node 4 and 5")
+            install_result1 = \
+                main.ONOSbench.onos_install(node=ONOS4_ip)
+            install_result2 = \
+                main.ONOSbench.onos_install(node=ONOS5_ip)
+
+            main.log.info("Starting ONOS CLI")
+            main.ONOS4cli.start_onos_cli(ONOS4_ip)
+            main.ONOS5cli.start_onos_cli(ONOS5_ip)
+
+            install_result = install_result1 and install_result2
+
+        if cluster_count == 7:
+            main.log.info("Installing ONOS on node 6 and 7")
+            install_result1 = \
+                main.ONOSbench.onos_install(node=ONOS6_ip)
+            install_result2 = \
+                main.ONOSbench.onos_install(node=ONOS7_ip)
+
+            main.log.info("Starting ONOS CLI")
+            main.ONOS6cli.start_onos_cli(ONOS6_ip)
+            main.ONOS7cli.start_onos_cli(ONOS7_ip)
+
+            install_result = install_result1 and install_result2
+
+        time.sleep(5)
+
+        if install_result == main.TRUE:
+            assertion = main.TRUE
+        else:
+            assertion = main.FALSE
+
+        utilities.assert_equals(expect=main.TRUE, actual=assertion,
+            onpass="Scale out to "+str(cluster_count)+\
+                   " nodes successful",
+            onfail="Scale out to "+str(cluster_count)+\
+                   " nodes failed")
 
 
 

@@ -36,6 +36,42 @@
             <connect_order>2</connect_order>
             <COMPONENTS> </COMPONENTS>
         </ONOS3cli>
+        
+        <ONOS4cli>
+            <host>10.128.174.10</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>OnosCliDriver</type>
+            <connect_order>2</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </ONOS4cli>
+        
+        <ONOS5cli>
+            <host>10.128.174.10</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>OnosCliDriver</type>
+            <connect_order>2</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </ONOS5cli>
+        
+        <ONOS6cli>
+            <host>10.128.174.10</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>OnosCliDriver</type>
+            <connect_order>2</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </ONOS6cli>
+        
+        <ONOS7cli>
+            <host>10.128.174.10</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>OnosCliDriver</type>
+            <connect_order>2</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </ONOS7cli>
 
         <ONOS1>
             <host>10.128.174.1</host>
@@ -53,8 +89,8 @@
             <type>MininetCliDriver</type>
             <connect_order>4</connect_order>
             <COMPONENTS>
-                <arg1> --custom topo-intentFlower.py </arg1>
-                <arg2> --arp --mac --topo mytopo</arg2>
+                <arg1> --custom topo-linear-scaleout.py </arg1>
+                <arg2> --arp --mac --topo mytopo </arg2>
                 <arg3> </arg3>
                 <controller> remote </controller>
             </COMPONENTS>

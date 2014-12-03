@@ -628,7 +628,7 @@ def verifyTestScript(options):
     try :
         testModule = __import__(main.classPath, globals(), locals(), [main.TEST], -1)
     except(ImportError):
-        print "There is no test like "+main.TEST
+        print "There was an import error, it might mean that there is no test like "+main.TEST
         main.exit()       
 
     testClass = getattr(testModule, main.TEST)

@@ -44,14 +44,14 @@
             <connect_order>5</connect_order>
             <COMPONENTS> </COMPONENTS>
         </QuaggaCliHost4>
-        <QuaggaCliHost5>
+        <QuaggaCliHost>
             <host>127.0.0.1</host>
             <user>username</user>
             <password>password</password>
             <type>QuaggaCliDriver</type>
             <connect_order>5</connect_order>
             <COMPONENTS> </COMPONENTS>
-        </QuaggaCliHost5>
+        </QuaggaCliHost>
 
     </COMPONENT>
 </TOPOLOGY>

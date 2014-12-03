@@ -71,18 +71,30 @@ class SdnIpTest:
         main.QuaggaCliHost4.enter_config(64516)
         main.log.info("Add routes to Quagga on host4")
         main.QuaggaCliHost4.add_routes(prefixes_host4, 1)
-        time.sleep(30)
-
 
         cell_name = main.params['ENV']['cellName']
         ONOS1_ip = main.params['CTRL']['ip1']
+        main.step("Set cell for ONOS-cli environment")
+        main.ONOScli.set_cell(cell_name)
+        verify_result = main.ONOSbench.verify_cell()
+        main.log.report("Removing raft logs")
+        main.ONOSbench.onos_remove_raft_logs()
+        main.log.report("Uninstalling ONOS")
+        main.ONOSbench.onos_uninstall(ONOS1_ip)
+        main.step("Creating ONOS package")
+        package_result = main.ONOSbench.onos_package()
 
         main.step("Starting ONOS service")
         # TODO: start ONOS from Mininet Script
-        # start_result = main.ONOSbench.onos_start("127.0.0.1")
-
-        main.step("Set cell for ONOS-cli environment")
-        main.ONOScli.set_cell(cell_name)
+        #start_result = main.ONOSbench.onos_start("127.0.0.1")
+        main.step("Installing ONOS package")
+        onos1_install_result = main.ONOSbench.onos_install(options="-f", node=ONOS1_ip)
+        
+        main.step("Checking if ONOS is up yet")
+        time.sleep(60)
+        onos1_isup = main.ONOSbench.isup(ONOS1_ip)
+        if not onos1_isup:
+            main.log.report("ONOS1 didn't start!")
 
         main.step("Start ONOS-cli")
         # TODO: change the hardcode in start_onos_cli method in ONOS CLI driver
@@ -92,6 +104,10 @@ class SdnIpTest:
         main.step("Get devices in the network")
         list_result = main.ONOScli.devices(json_format=False)
         main.log.info(list_result)
+        time.sleep(10)
+        main.log.info("Installing sdn-ip feature")
+        main.ONOScli.feature_install("onos-app-sdnip")
+        time.sleep(30)
 
         # get all routes inside SDN-IP
         get_routes_result = main.ONOScli.routes(json_format=True)
@@ -188,7 +204,7 @@ class SdnIpTest:
         ping_test_results_file = "~/SDNIP/SdnIpIntentDemo/CASE1-ping-results-after-delete-routes-" + strftime("%Y-%m-%d_%H:%M:%S", localtime()) + ".txt"
         ping_test_results = main.QuaggaCliHost.ping_test("1.168.30.100", ping_test_script, ping_test_results_file)
         main.log.info(ping_test_results)
-	time.sleep(30)
+        time.sleep(30)
 
         # main.step("Test whether Mininet is started")
         # main.Mininet2.handle.sendline("xterm host1")

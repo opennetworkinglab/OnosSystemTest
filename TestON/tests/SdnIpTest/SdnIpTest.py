@@ -1,4 +1,4 @@
-from cupshelpers.config import prefix
+#from cupshelpers.config import prefix
 
 # Testing the basic functionality of SDN-IP
 
@@ -21,7 +21,7 @@ class SdnIpTest:
         import json
         from operator import eq
         # from datetime import datetime
-        from time import gmtime, strftime
+        from time import localtime, strftime
 
         main.case("The test case is to help to setup the TestON environment and test new drivers")
         SDNIP_JSON_FILE_PATH = "../tests/SdnIpTest/sdnip.json"
@@ -150,7 +150,7 @@ class SdnIpTest:
         # wait until all MultiPointToSinglePoint
         time.sleep(20)
         ping_test_script = "~/SDNIP/SdnIpIntentDemo/CASE1-ping-as2host.sh"
-        ping_test_results_file = "~/SDNIP/SdnIpIntentDemo/CASE1-ping-results-before-delete-routes-" + strftime("%Y-%m-%d-%H:%M:%S", gmtime()) + ".txt"
+        ping_test_results_file = "~/SDNIP/SdnIpIntentDemo/CASE1-ping-results-before-delete-routes-" + strftime("%Y-%m-%d_%H:%M:%S", localtime()) + ".txt"
         ping_test_results = main.QuaggaCliHost.ping_test("1.168.30.100", ping_test_script, ping_test_results_file)
         main.log.info(ping_test_results)
 
@@ -185,9 +185,10 @@ class SdnIpTest:
 
         time.sleep(20)
         ping_test_script = "~/SDNIP/SdnIpIntentDemo/CASE1-ping-as2host.sh"
-        ping_test_results_file = "~/SDNIP/SdnIpIntentDemo/CASE1-ping-results-after-delete-routes-" + strftime("%Y-%m-%d-%H:%M:%S", gmtime()) + ".txt"
+        ping_test_results_file = "~/SDNIP/SdnIpIntentDemo/CASE1-ping-results-after-delete-routes-" + strftime("%Y-%m-%d_%H:%M:%S", localtime()) + ".txt"
         ping_test_results = main.QuaggaCliHost.ping_test("1.168.30.100", ping_test_script, ping_test_results_file)
         main.log.info(ping_test_results)
+	time.sleep(30)
 
         # main.step("Test whether Mininet is started")
         # main.Mininet2.handle.sendline("xterm host1")

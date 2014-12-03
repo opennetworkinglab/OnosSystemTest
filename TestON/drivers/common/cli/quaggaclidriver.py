@@ -313,7 +313,8 @@ class QuaggaCliDriver(CLI):
             self.handle.expect("")
             self.handle.expect("\$")
             main.log.info("I in host " + str(ip_address))
-            self.handle.sendline(ping_test_file + ">" + ping_test_result_file + "&")
+            main.log.info(ping_test_file + " > " + ping_test_result_file + " &")
+            self.handle.sendline(ping_test_file + " > " + ping_test_result_file + " &")
             self.handle.expect("\$", timeout=60)
             handle = self.handle.before
 

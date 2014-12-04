@@ -57,20 +57,20 @@ class SdnIpTest:
 
         routeIntents_expected = routeIntents_expected_host3 + routeIntents_expected_host4
 
-        main.step("Login all BGP peers and add routes into peers")
-        main.log.info("Login Quagga CLI on host3")
-        main.QuaggaCliHost3.loginQuagga("1.168.30.2")
-        main.log.info("Enter configuration model of Quagga CLI on host3")
-        main.QuaggaCliHost3.enter_config(64514)
-        main.log.info("Add routes to Quagga on host3")
-        main.QuaggaCliHost3.add_routes(prefixes_host3, 1)
+       # main.step("Login all BGP peers and add routes into peers")
+       # main.log.info("Login Quagga CLI on host3")
+       # main.QuaggaCliHost3.loginQuagga("1.168.30.2")
+       # main.log.info("Enter configuration model of Quagga CLI on host3")
+       # main.QuaggaCliHost3.enter_config(64514)
+       # main.log.info("Add routes to Quagga on host3")
+       # main.QuaggaCliHost3.add_routes(prefixes_host3, 1)
 
-        main.log.info("Login Quagga CLI on host4")
-        main.QuaggaCliHost4.loginQuagga("1.168.30.3")
-        main.log.info("Enter configuration model of Quagga CLI on host4")
-        main.QuaggaCliHost4.enter_config(64516)
-        main.log.info("Add routes to Quagga on host4")
-        main.QuaggaCliHost4.add_routes(prefixes_host4, 1)
+        #main.log.info("Login Quagga CLI on host4")
+        #main.QuaggaCliHost4.loginQuagga("1.168.30.3")
+        #main.log.info("Enter configuration model of Quagga CLI on host4")
+        #main.QuaggaCliHost4.enter_config(64516)
+        #main.log.info("Add routes to Quagga on host4")
+        #main.QuaggaCliHost4.add_routes(prefixes_host4, 1)
 
         cell_name = main.params['ENV']['cellName']
         ONOS1_ip = main.params['CTRL']['ip1']
@@ -107,7 +107,22 @@ class SdnIpTest:
         time.sleep(10)
         main.log.info("Installing sdn-ip feature")
         main.ONOScli.feature_install("onos-app-sdnip")
-        time.sleep(30)
+        time.sleep(10)
+        main.step("Login all BGP peers and add routes into peers")
+        main.log.info("Login Quagga CLI on host3")
+        main.QuaggaCliHost3.loginQuagga("1.168.30.2")
+        main.log.info("Enter configuration model of Quagga CLI on host3")
+        main.QuaggaCliHost3.enter_config(64514)
+        main.log.info("Add routes to Quagga on host3")
+        main.QuaggaCliHost3.add_routes(prefixes_host3, 1)
+
+        main.log.info("Login Quagga CLI on host4")
+        main.QuaggaCliHost4.loginQuagga("1.168.30.3")
+        main.log.info("Enter configuration model of Quagga CLI on host4")
+        main.QuaggaCliHost4.enter_config(64516)
+        main.log.info("Add routes to Quagga on host4")
+        main.QuaggaCliHost4.add_routes(prefixes_host4, 1)
+        time.sleep(60)
 
         # get all routes inside SDN-IP
         get_routes_result = main.ONOScli.routes(json_format=True)
@@ -166,7 +181,7 @@ class SdnIpTest:
         # wait until all MultiPointToSinglePoint
         time.sleep(20)
         ping_test_script = "~/SDNIP/SdnIpIntentDemo/CASE1-ping-as2host.sh"
-        ping_test_results_file = "~/SDNIP/SdnIpIntentDemo/CASE1-ping-results-before-delete-routes-" + strftime("%Y-%m-%d_%H:%M:%S", localtime()) + ".txt"
+        ping_test_results_file = "~/SDNIP/SdnIpIntentDemo/log/CASE1-ping-results-before-delete-routes-" + strftime("%Y-%m-%d_%H:%M:%S", localtime()) + ".txt"
         ping_test_results = main.QuaggaCliHost.ping_test("1.168.30.100", ping_test_script, ping_test_results_file)
         main.log.info(ping_test_results)
 
@@ -201,7 +216,7 @@ class SdnIpTest:
 
         time.sleep(20)
         ping_test_script = "~/SDNIP/SdnIpIntentDemo/CASE1-ping-as2host.sh"
-        ping_test_results_file = "~/SDNIP/SdnIpIntentDemo/CASE1-ping-results-after-delete-routes-" + strftime("%Y-%m-%d_%H:%M:%S", localtime()) + ".txt"
+        ping_test_results_file = "~/SDNIP/SdnIpIntentDemo/log/CASE1-ping-results-after-delete-routes-" + strftime("%Y-%m-%d_%H:%M:%S", localtime()) + ".txt"
         ping_test_results = main.QuaggaCliHost.ping_test("1.168.30.100", ping_test_script, ping_test_results_file)
         main.log.info(ping_test_results)
         time.sleep(30)

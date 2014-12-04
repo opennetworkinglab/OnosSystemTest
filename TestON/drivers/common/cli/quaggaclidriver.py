@@ -22,17 +22,27 @@ class QuaggaCliDriver(CLI):
         self.name = self.options['name']
         # self.handle = super(QuaggaCliDriver,self).connect(user_name = self.user_name, ip_address = self.ip_address,port = self.port, pwd = self.pwd)
         self.handle = super(QuaggaCliDriver, self).connect(user_name=self.user_name, ip_address="1.1.1.1", port=self.port, pwd=self.pwd)
+        main.log.info("quagga handle" + str(self.handle) )
+        main.log.info("where is this timeout from?")
         main.log.info("connect parameters:" + str(self.user_name) + ";" + str(self.ip_address) + ";" + str(self.port) + ";" + str(self.pwd))
 
         if self.handle:
-            self.handle.expect("")
-            self.handle.expect("\$")
+            #self.handle.expect("",timeout=10)
+            #self.handle.expect("\$",timeout=10)
+            #main.log.info(self.handle.before)
+            #main.log.info(self.handle.after)
             self.handle.sendline("telnet localhost 2605")
-            self.handle.expect("Password:", timeout=5)
+            #self.handle.expect("Password:", timeout=5)
+            self.handle.expect("Password:")
+            main.log.info("TEST1")
             self.handle.sendline("hello")
-            self.handle.expect("bgpd", timeout=5)
+            #self.handle.expect("bgpd", timeout=5)
+            self.handle.expect("bgpd")
+            main.log.info("TEST2")
             self.handle.sendline("enable")
-            self.handle.expect("bgpd#", timeout=5)
+            #self.handle.expect("bgpd#", timeout=5)
+            self.handle.expect("bgpd#")
+            main.log.info("TEST3")
             return self.handle
         else :
             main.log.info("NO HANDLE")
@@ -47,8 +57,8 @@ class QuaggaCliDriver(CLI):
         + str(self.ip_address) + ";" + str(self.port) + ";" + str(self.pwd))
 
         if self.handle:
-            self.handle.expect("")
-            self.handle.expect("\$")
+            #self.handle.expect("")
+            #self.handle.expect("\$")
             self.handle.sendline("telnet localhost 2605")
             self.handle.expect("Password:", timeout=5)
             self.handle.sendline("hello")

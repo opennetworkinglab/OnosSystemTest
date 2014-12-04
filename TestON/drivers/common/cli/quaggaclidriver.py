@@ -34,15 +34,12 @@ class QuaggaCliDriver(CLI):
             self.handle.sendline("telnet localhost 2605")
             #self.handle.expect("Password:", timeout=5)
             self.handle.expect("Password:")
-            main.log.info("TEST1")
             self.handle.sendline("hello")
             #self.handle.expect("bgpd", timeout=5)
             self.handle.expect("bgpd")
-            main.log.info("TEST2")
             self.handle.sendline("enable")
             #self.handle.expect("bgpd#", timeout=5)
             self.handle.expect("bgpd#")
-            main.log.info("TEST3")
             return self.handle
         else :
             main.log.info("NO HANDLE")
@@ -60,11 +57,14 @@ class QuaggaCliDriver(CLI):
             #self.handle.expect("")
             #self.handle.expect("\$")
             self.handle.sendline("telnet localhost 2605")
-            self.handle.expect("Password:", timeout=5)
+            #self.handle.expect("Password:", timeout=5)
+            self.handle.expect("Password:")
             self.handle.sendline("hello")
-            self.handle.expect("bgpd", timeout=5)
+            #self.handle.expect("bgpd", timeout=5)
+            self.handle.expect("bgpd")
             self.handle.sendline("enable")
-            self.handle.expect("bgpd#", timeout=5)
+            #self.handle.expect("bgpd#", timeout=5)
+            self.handle.expect("bgpd#")
             main.log.info("I in quagga on host " + str(ip_address))
 
             return self.handle
@@ -320,8 +320,8 @@ class QuaggaCliDriver(CLI):
         + str(self.ip_address) + ";" + str(self.port) + ";" + str(self.pwd))
 
         if self.handle:
-            self.handle.expect("")
-            self.handle.expect("\$")
+            #self.handle.expect("")
+            #self.handle.expect("\$")
             main.log.info("I in host " + str(ip_address))
             main.log.info(ping_test_file + " > " + ping_test_result_file + " &")
             self.handle.sendline(ping_test_file + " > " + ping_test_result_file + " &")

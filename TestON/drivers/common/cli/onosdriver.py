@@ -1160,7 +1160,7 @@ class OnosDriver(CLI):
             cmd = "./onos-topo-cfg " +instance_name +" " +json_file
             print "cmd = ", cmd
             self.handle.sendline(cmd)
-            self.handle.expect("$")
+            self.handle.expect("\$")
             self.handle.sendline("cd ~")
             self.handle.expect("\$")
             return main.TRUE

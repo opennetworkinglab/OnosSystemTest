@@ -167,7 +167,7 @@ class QuaggaCliDriver(CLI):
         intents_json_obj = json.loads(get_intents_result)
 
         for intent in intents_json_obj:
-            if intent['appId'] != "org.onlab.onos.sdnip" :
+            if intent['appId'] != "org.onosproject.sdnip" :
                 continue
             if intent['type'] == "MultiPointToSinglePointIntent" and intent['state'] == 'INSTALLED':
                 egress = str(intent['egress']['device']) + ":" + str(intent['egress']['port'])
@@ -192,7 +192,7 @@ class QuaggaCliDriver(CLI):
         intents_json_obj = json.loads(get_intents_result)
 
         for intent in intents_json_obj:
-            if intent['appId'] != "org.onlab.onos.sdnip":
+            if intent['appId'] != "org.onosproject.sdnip":
                 continue
             if intent['type'] == "PointToPointIntent" and "protocol=6" in str(intent['selector']):
                 ingress = str(intent['ingress']['device']) + ":" + str(intent['ingress']['port'])

@@ -35,11 +35,8 @@ class ProdFunc:
         main.log.report("__________________________________") 
 
         main.step("Applying cell variable to environment")
-        cell_result1 = main.ONOSbench.set_cell(cell_name)
+        cell_result = main.ONOSbench.set_cell(cell_name)
         verify_result = main.ONOSbench.verify_cell()
-        cell_result2 = main.ONOS2.set_cell(cell_name)
-        verify_result = main.ONOS2.verify_cell()
-        cell_result = cell_result1 and cell_result2
         
         main.step("Removing raft logs before a clen installation of ONOS")
         main.ONOSbench.onos_remove_raft_logs()
@@ -132,18 +129,22 @@ class ProdFunc:
             Exit from mininet cli
             reinstall ONOS
         '''
+        cell_name = main.params['ENV']['cellName']
+        ONOS1_ip = main.params['CTRL']['ip1']
+        ONOS1_port = main.params['CTRL']['port1']
+        
         main.log.report("This testcase exits the mininet cli and reinstalls ONOS to switch over to Packet Optical topology")
         main.log.report("_____________________________________________")
-        main.step("Disconnecting mininet and restarting ONOS")
+        main.case("Disconnecting mininet and restarting ONOS")
         main.step("Disconnecting mininet and restarting ONOS")
         mininet_disconnect = main.Mininet1.disconnect()
 
+        main.step("Removing raft logs before a clen installation of ONOS")
+        main.ONOSbench.onos_remove_raft_logs()
+
         main.step("Applying cell variable to environment")
-        cell_result1 = main.ONOSbench.set_cell(cell_name)
+        cell_result = main.ONOSbench.set_cell(cell_name)
         verify_result = main.ONOSbench.verify_cell()
-        cell_result2 = main.ONOS2.set_cell(cell_name)
-        verify_result = main.ONOS2.verify_cell()
-        cell_result = cell_result1 and cell_result2
 
         onos_install_result = main.ONOSbench.onos_install()
         if onos_install_result == main.TRUE:
@@ -159,7 +160,8 @@ class ProdFunc:
 
         main.step("Starting ONOS service")
         start_result = main.ONOSbench.onos_start(ONOS1_ip)
-       
+      
+        main.ONOS2.start_onos_cli(ONOS_ip=main.params['CTRL']['ip1']) 
         print "mininet_disconnect =", mininet_disconnect
         print "onos_install_result =", onos_install_result
         print "onos1_isup =", onos1_isup
@@ -286,17 +288,14 @@ class ProdFunc:
         if ptp_intent_result == main.TRUE:
             get_intent_result = main.ONOS3.intents()
             main.log.info("Point to point intent install successful")
-            main.log.info(get_intent_result)
 
         ptp_intent_result = main.ONOS3.add_point_intent("of:0000ffffffff0002/1", "of:0000ffffffff0001/1")
         if ptp_intent_result == main.TRUE:
             get_intent_result = main.ONOS3.intents()
             main.log.info("Point to point intent install successful")
-            main.log.info(get_intent_result)
 
         time.sleep(10)
         flowHandle = main.ONOS3.flows()
-        #print "flowHandle = ", flowHandle
         main.log.info("flows :" + flowHandle)
 
         # Sleep for 30 seconds to provide time for the intent state to change
@@ -338,7 +337,68 @@ class ProdFunc:
 
 
 
+    def CASE24(self, main):
+        import time
+        import json
+        '''
+            Test Rerouting of Packet Optical by bringing a port down (port 22) of a switch(switchID=1), so that link (between switch1 port22 - switch4-port30) is inactive
+            and do a ping test. If rerouting is successful, ping should pass. also check the flows
+        '''
+        main.log.report("This testcase tests rerouting and pings mininet hosts")
+        main.step("Test rerouting and pings mininet hosts")
+        main.case("Bring a port down and verify the link state")
+        main.LincOE1.port_down(sw_id="1", pt_id="22") 
+        links = main.ONOS3.links()
+        main.log.info(main.ONOS3.links)
 
+        links_result = json.loads(links)
+        links_state_result = main.FALSE
+        for item in links_result:
+            if item['src'] == "of:0000ffffffffff01/22" and item['dst'] == "of:0000ffffffffff04/30":
+                links_state = item['state']
+                if links_state == "INACTIVE":
+                    main.log.info("Links state is inactive as expected due to one of the ports being down")
+                    main.log.report("Links state is inactive as expected due to one of the ports being down")
+                    links_state_result = main.TRUE
+                    break
+                else:
+                    main.log.info("Links state is not inactive as expected")
+                    main.log.report("Links state is not inactive as expected")
+                    links_state_result = main.FALSE
+
+        print "links_state_result = ", links_state_result
+        main.case("Verify Rerouting by a ping test")
+        Ping_Result = main.TRUE
+        count = 1
+        main.log.info("\n\nh1 is Pinging h2")
+        ping = main.LincOE2.pingHostOptical(src="h1", target="h2")
+        #ping = main.LincOE2.pinghost()
+        if ping == main.FALSE and count<5:
+            count+=1
+            Ping_Result = main.FALSE
+            main.log.info("Ping between h1 and h2  failed. Making attempt number "+str(count) + " in 2 seconds")
+            time.sleep(2)
+            ping = main.LincOE2.pingHostOptical(src="h1", target="h2")
+            #ping = main.LincOE2.pinghost()
+        elif ping==main.FALSE:
+            main.log.info("All ping attempts between h1 and h2 have failed")
+            Ping_Result = main.FALSE
+        elif ping==main.TRUE:
+            main.log.info("Ping test between h1 and h2 passed!")
+            Ping_Result = main.TRUE
+        else:
+            main.log.info("Unknown error")
+            Ping_Result = main.ERROR
+
+        if Ping_Result==main.FALSE:
+            main.log.report("Ping test successful ")
+        if Ping_Result==main.TRUE:
+            main.log.report("Ping test failed")
+
+        case24_result = Ping_Result and links_state_result
+        utilities.assert_equals(expect=main.TRUE, actual=case24_result,
+                onpass="Packet optical rerouting successful",
+                onfail="Packet optical rerouting failed")
 
     def CASE4(self, main):
         import re
@@ -476,11 +536,11 @@ class ProdFunc:
         main.case("Obtaining host id's")
         main.step("Get hosts")
         hosts = main.ONOS2.hosts()
-        main.log.info(hosts)
+        #main.log.info(hosts)
 
         main.step("Get all devices id")
         devices_id_list = main.ONOS2.get_all_devices_id()
-        main.log.info(devices_id_list)
+        #main.log.info(devices_id_list)
         
         #ONOS displays the hosts in hex format unlike mininet which does in decimal format
         #So take care while adding intents
@@ -510,7 +570,7 @@ class ProdFunc:
             tmp_result = main.ONOS2.add_host_intent(host1_id, host2_id )        
 
         time.sleep(10)
-        h_intents = main.ONOS2.intents()
+        h_intents = main.ONOS2.intents(json_format = False)
         main.log.info("intents:" +h_intents)
         flowHandle = main.ONOS2.flows()
         #main.log.info("flow:" +flowHandle)
@@ -749,9 +809,9 @@ class ProdFunc:
         main.log.info("Host intents removal")
         main.case("Removing host intents")
         main.step("Obtain the intent id's")
-        intent_result = main.ONOS2.intents()
-        #print "intent_result = ",intent_result
-        
+        intent_result = main.ONOS2.intents(json_format = False)
+        main.log.info("intent_result = " +intent_result)        
+ 
         intent_linewise = intent_result.split("\n")
         intentList = []
         for line in intent_linewise:
@@ -768,28 +828,10 @@ class ProdFunc:
         for id in intentids:
             main.ONOS2.remove_intent(intent_id = id)
         
-        intent_result = main.ONOS2.intents()
-        intent_linewise = intent_result.split("\n")
-        list_afterRemoval = []
-        for line in intent_linewise:
-            if line.startswith("id="):
-                list_afterRemoval.append(line)
+        intent_result = main.ONOS2.intents(json_format = False)
+        main.log.info("intent_result = " +intent_result)        
 
-        intentState = {}
-        for id, line in zip(intentids, list_afterRemoval):
-            #print "line after removing intent = ", line
-            x = line.split(",")
-            state = x[1].split("=")[1]
-            intentState[id] = state
-            
         case8_result = main.TRUE
-        for key,value in intentState.iteritems():
-            print "key,value = ", key, value
-            if value == "WITHDRAWN": 
-                case8_result = case8_result and main.TRUE
-            else:    
-                case8_result = case8_result and main.FALSE
-
         if case8_result == main.TRUE:
             main.log.report("Intent removal successful")
         else:

@@ -1043,6 +1043,146 @@ class OnosCliDriver(CLI):
             main.cleanup()
             main.exit()
 
+
+    def add_multipoint_to_singlepoint_intent(self, ingress_device1, ingress_device2,egress_device,
+            port_ingress="", port_egress="", ethType="", ethSrc="",
+            ethDst="", bandwidth="", lambda_alloc=False, 
+            ipProto="", ipSrc="", ipDst="", tcpSrc="", tcpDst="", setEthSrc="", setEthDst=""):
+        '''
+        Note:
+            This function assumes that there would be 2 ingress devices and one egress device
+            For more number of ingress devices, this function needs to be modified
+        Required:
+            * ingress_device1: device id of ingress device1
+            * ingress_device2: device id of ingress device2
+            * egress_device: device id of egress device
+        Optional:
+            * ethType: specify ethType
+            * ethSrc: specify ethSrc (i.e. src mac addr)
+            * ethDst: specify ethDst (i.e. dst mac addr)
+            * bandwidth: specify bandwidth capacity of link
+            * lambda_alloc: if True, intent will allocate lambda 
+              for the specified intent
+            * ipProto: specify ip protocol 
+            * ipSrc: specify ip source address
+            * ipDst: specify ip destination address
+            * tcpSrc: specify tcp source port
+            * tcpDst: specify tcp destination port
+            * setEthSrc: action to Rewrite Source MAC Address
+            * setEthDst: action to Rewrite Destination MAC Address
+        Description:
+            Adds a multipoint-to-singlepoint intent (uni-directional) by
+            specifying device id's and optional fields
+
+        NOTE: This function may change depending on the 
+              options developers provide for multipointpoint-to-singlepoint
+              intent via cli
+        '''
+        try:
+            cmd = ""
+
+            #If there are no optional arguments
+            if not ethType and not ethSrc and not ethDst\
+                    and not bandwidth and not lambda_alloc \
+                    and not ipProto and not ipSrc and not ipDst \
+                    and not tcpSrc and not tcpDst and not setEthSrc and not setEthDst:
+                cmd = "add-multi-to-single-intent"
+      
+
+            else:
+                cmd = "add-multi-to-single-intent"
+                
+                if ethType:
+                    cmd += " --ethType " + str(ethType)
+                if ethSrc:
+                    cmd += " --ethSrc " + str(ethSrc) 
+                if ethDst:    
+                    cmd += " --ethDst " + str(ethDst) 
+                if bandwidth:
+                    cmd += " --bandwidth " + str(bandwidth)
+                if lambda_alloc:
+                    cmd += " --lambda "
+                if ipProto:
+                    cmd += " --ipProto " + str(ipProto)
+                if ipSrc:
+                    cmd += " --ipSrc " + str(ipSrc)
+                if ipDst:
+                    cmd += " --ipDst " + str(ipDst)
+                if tcpSrc:
+                    cmd += " --tcpSrc " + str(tcpSrc)
+                if tcpDst:
+                    cmd += " --tcpDst " + str(tcpDst)
+                if setEthSrc:
+                    cmd += " --setEthSrc "+ str(setEthSrc)
+                if setEthDst:
+                    cmd += " --setEthDst "+ str(setEthDst)
+
+            #Check whether the user appended the port 
+            #or provided it as an input
+            if "/" in ingress_device1:
+                cmd += " "+str(ingress_device1) 
+            else:
+                if not port_ingress1:
+                    main.log.error("You must specify "+
+                        "the ingress port1")
+                    #TODO: perhaps more meaningful return
+                    return main.FALSE
+
+                cmd += " "+ \
+                    str(ingress_device1) + "/" +\
+                    str(port_ingress1) + " " 
+
+            if "/" in ingress_device2:
+                cmd += " "+str(ingress_device2)
+            else:
+                if not port_ingress2:
+                    main.log.error("You must specify "+
+                        "the ingress port2")
+                    #TODO: perhaps more meaningful return
+                    return main.FALSE
+
+                cmd += " "+ \
+                    str(ingress_device2) + "/" +\
+                    str(port_ingress2) + " "
+
+            if "/" in egress_device:
+                cmd += " "+str(egress_device)
+            else:
+                if not port_egress:
+                    main.log.error("You must specify "+
+                        "the egress port")
+                    return main.FALSE
+                
+                cmd += " "+\
+                    str(egress_device) + "/" +\
+                    str(port_egress)  
+            print "cmd= ",cmd
+            self.handle.sendline(cmd)
+            
+            main.log.info(cmd + " sent")
+            i = self.handle.expect([
+                "Error",
+                "onos>"])
+
+            if i == 0:
+                main.log.error("Error in adding point-to-point intent")
+                return self.handle
+            else:
+                return main.TRUE
+
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()
+
+
     def remove_intent(self, intent_id):
         '''
         Remove intent for specified intent id

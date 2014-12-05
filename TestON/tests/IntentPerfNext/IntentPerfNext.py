@@ -113,6 +113,7 @@ class IntentPerfNext:
         import json
         import requests
         import os
+        import numpy
 
         ONOS1_ip = main.params['CTRL']['ip1']
         ONOS2_ip = main.params['CTRL']['ip2']
@@ -123,6 +124,7 @@ class IntentPerfNext:
 
         #number of iterations of case
         num_iter = main.params['TEST']['numIter']
+        num_ignore = int(main.params['TEST']['numIgnore'])
 
         #Timestamp keys for json metrics output
         submit_time = main.params['JSON']['submittedTime']
@@ -145,6 +147,8 @@ class IntentPerfNext:
                 sw="5", ip1=ONOS3_ip,port1=default_sw_port)
 
         time.sleep(10)
+
+        main.log.report("Single intent add latency test")
 
         devices_json_str = main.ONOS1cli.devices()
         devices_json_obj = json.loads(devices_json_str)
@@ -201,10 +205,10 @@ class IntentPerfNext:
                      intent_install_lat_3 ) / 3
 
             main.log.info("Intent add latency avg for iteration "+str(i)+
-                    ": "+str(intent_install_lat_avg))
+                    ": "+str(intent_install_lat_avg)+" ms")
 
             if intent_install_lat_avg > 0.0 and \
-               intent_install_lat_avg < 1000:
+               intent_install_lat_avg < 1000 and i > num_ignore:
                 intent_add_lat_list.append(intent_install_lat_avg)
             else:
                 main.log.info("Intent add latency exceeded "+
@@ -229,16 +233,14 @@ class IntentPerfNext:
 
             time.sleep(5)
 
-        intent_add_lat_min = min(intent_add_lat_list)
-        intent_add_lat_max = max(intent_add_lat_list)
         intent_add_lat_avg = sum(intent_add_lat_list) /\
                              len(intent_add_lat_list)
+        intent_add_lat_std = \
+            round(numpy.std(intent_add_lat_list),1)
         #END ITERATION FOR LOOP
         main.log.report("Single intent add latency - \n"+
-                "Min: "+str(intent_add_lat_min)+" ms\n"+
-                "Max: "+str(intent_add_lat_max)+" ms\n"+
-                "Avg: "+str(intent_add_lat_avg)+" ms\n")
-
+                "Avg: "+str(intent_add_lat_avg)+" ms\n"+
+                "Std Deviation: "+str(intent_add_lat_std)+" ms")
 
     def CASE3(self, main):
         '''
@@ -248,6 +250,7 @@ class IntentPerfNext:
         import json
         import requests
         import os
+        import numpy
 
         ONOS1_ip = main.params['CTRL']['ip1']
         ONOS2_ip = main.params['CTRL']['ip2']
@@ -258,6 +261,7 @@ class IntentPerfNext:
 
         #number of iterations of case
         num_iter = main.params['TEST']['numIter']
+        num_ignore = int(main.params['TEST']['numIgnore'])
 
         #Timestamp keys for json metrics output
         submit_time = main.params['JSON']['submittedTime']
@@ -282,9 +286,12 @@ class IntentPerfNext:
         for i in range(0, int(num_iter)):
             #add_point_intent(ingr_device, ingr_port, 
             #                 egr_device, egr_port)
-            main.ONOS1cli.add_point_intent(
-                device_id_list[0]+"/2", device_id_list[4]+"/1")
-       
+            if len(device_id_list) > 0:
+                main.ONOS1cli.add_point_intent(
+                    device_id_list[0]+"/2", device_id_list[4]+"/1")
+            else:
+                main.log.info("Failed to fetch devices from ONOS")
+
             time.sleep(5)
 
             intents_str = main.ONOS1cli.intents(json_format=True)
@@ -342,7 +349,7 @@ class IntentPerfNext:
                     str(i)+": "+str(intent_reroute_lat_avg))
 
             if intent_reroute_lat_avg > 0.0 and \
-               intent_reroute_lat_avg < 1000:
+               intent_reroute_lat_avg < 1000 and i > num_ignore:
                 intent_reroute_lat_list.append(intent_reroute_lat_avg)
             else:
                 main.log.info("Intent reroute latency exceeded "+
@@ -360,15 +367,26 @@ class IntentPerfNext:
             #            determine what timestsamp to get
             main.ONOS1cli.remove_intent(intent_id)
             
-        #TODO: Report framework
-        print intent_reroute_lat_list
-
-
+            main.log.info("Bringing Mininet interface up for next "+
+                "iteration")
+            main.Mininet1.handle.sendline(
+                    "sh ifconfig s2-eth3 up")
+        
+        intent_reroute_lat_avg = sum(intent_reroute_lat_list) /\
+                             len(intent_reroute_lat_list)
+        intent_reroute_lat_std = \
+            round(numpy.std(intent_reroute_lat_list),1)
+        #END ITERATION FOR LOOP
+        main.log.report("Single intent reroute latency - \n"+
+                "Avg: "+str(intent_reroute_lat_avg)+" ms\n"+
+                "Std Deviation: "+str(intent_reroute_lat_std)+" ms")
+            
     def CASE4(self, main):
         import time
         import json
         import requests
         import os
+        import numpy
 
         ONOS1_ip = main.params['CTRL']['ip1']
         ONOS2_ip = main.params['CTRL']['ip2']
@@ -392,8 +410,10 @@ class IntentPerfNext:
 
         #number of iterations of case
         num_iter = main.params['TEST']['numIter']
+        num_ignore = int(main.params['TEST']['numIgnore'])
         num_switch = int(main.params['TEST']['numSwitch'])
         n_thread = main.params['TEST']['numMult']
+        #n_thread = 105
 
         #*****
         global cluster_count
@@ -451,7 +471,7 @@ class IntentPerfNext:
         
         if cluster_count == 7:
             for i in range(1,9):
-                if i < 7:
+                if i < 8:
                     main.Mininet1.assign_sw_controller(
                         sw=str(i),
                         ip1=ONOS_ip_list[i-1],
@@ -461,6 +481,8 @@ class IntentPerfNext:
                         sw=str(i),
                         ip1=ONOS_ip_list[6],
                         port1=default_sw_port)
+
+        time.sleep(30)
 
         main.log.report("Batch intent installation test of "+
                batch_intent_size +" intents")
@@ -476,24 +498,52 @@ class IntentPerfNext:
 
         batch_install_lat = []
         batch_withdraw_lat = []
+        sleep_time = 10
         
         base_dir = "/tmp/"
+        max_install_lat = []
 
         for i in range(0, int(num_iter)):
             main.log.info("Pushing "+
                     str(int(batch_intent_size)*int(n_thread))+
                     " intents. Iteration "+str(i))
-                
+               
             for node in range(1, cluster_count+1):
                 save_dir = base_dir + "batch_intent_"+str(node)+".txt" 
                 main.ONOSbench.push_test_intents_shell(
                 "of:0000000000000001/"+str(node),
                 "of:0000000000000008/"+str(node),
-                batch_intent_size, save_dir, ONOS_ip_list[node-1],
+                int(batch_intent_size),
+                save_dir, ONOS_ip_list[node-1],
                 num_mult=n_thread, app_id=node)
-            
-            time.sleep(120 / int(cluster_count))
+         
+            #Wait sufficient time for intents to start
+            #installing
+           
+            time.sleep(sleep_time)
+            print sleep_time 
+
+            intent = ""
+            counter = 300
+            while len(intent) > 0 and counter > 0:
+                main.ONOS1cli.handle.sendline(
+                    "intents | wc -l")
+                main.ONOS1cli.handle.expect(
+                    "intents | wc -l")
+                main.ONOS1cli.handle.expect(
+                    "onos>")
+                intent_temp = main.ONOS1cli.handle.before()
+                print intent_temp
+
+                intent = main.ONOS1cli.intents()
+                intent = json.loads(intent)
+                counter = counter-1
+                time.sleep(1)
+
+            time.sleep(5)
+
             for node in range(1, cluster_count+1):
+                save_dir = base_dir + "batch_intent_"+str(node)+".txt"
                 with open(save_dir) as f_onos:
                     line_count = 0
                     for line in f_onos:
@@ -502,20 +552,33 @@ class IntentPerfNext:
                         result = line[1].split(" ")[0]
                         #TODO: add parameters before appending latency
                         if line_count == 0:
-                            batch_install_lat.append(result)
+                            batch_install_lat.append(int(result))
                         elif line_count == 1:
-                            batch_withdraw_lat.append(result)
+                            batch_withdraw_lat.append(int(result))
                         line_count += 1
                 main.log.info("Batch install latency for ONOS"+
                     str(node)+" with "+\
                     str(batch_intent_size) + "intents: "+\
                     str(batch_install_lat))
+            
+            if len(batch_install_lat) > 0 and int(i) > num_ignore:
+                max_install_lat.append(max(batch_install_lat))
+            elif len(batch_install_lat) == 0:
+                #If I failed to read anything from the file,
+                #increase the wait time before checking intents
+                sleep_time += 30
+            batch_install_lat = []
+
+            #Sleep in between iterations
             time.sleep(5)
 
-        main.log.report("Max of batch installation latency "+
-            "for ONOS" + str(node)+ ": "+
-            str(max(batch_install_lat)))
-            
+        main.log.report("Avg of batch installation latency "+
+            ": "+
+            str(sum(max_install_lat) / len(max_install_lat)))
+        main.log.report("Std Deviation of batch installation latency "+
+            ": "+
+            str(numpy.std(max_install_lat)))
+
     def CASE5(self,main):
         '''
         Increase number of nodes and initiate CLI
@@ -590,5 +653,66 @@ class IntentPerfNext:
             onfail="Scale out to "+str(cluster_count)+\
                    " nodes failed")
 
+    def CASE9(self, main):
+        count = 0
+        sw_num1 = 1 
+        sw_num2 = 1
+        appid = 0
+        port_num1 = 1
+        port_num2 = 1
+       
+        time.sleep(30)
 
+        while True:
+            #main.ONOS1cli.push_test_intents(
+                    #"of:0000000000001001/1",
+                #"of:0000000000002001/1",
+                #    100, num_mult="10", app_id="1")
+            #main.ONOS2cli.push_test_intents(
+            #    "of:0000000000001002/1",
+            #    "of:0000000000002002/1",
+            #    100, num_mult="10", app_id="2")
+            #main.ONOS2cli.push_test_intents(
+            #    "of:0000000000001003/1",
+            #    "of:0000000000002003/1",
+            #    100, num_mult="10", app_id="3")
+            count += 1
+           
+            if count >= 100:
+                main.ONOSbench.handle.sendline(
+                    "onos 10.128.174.1 intents-events-metrics >>"+\
+                    " /tmp/metrics_intents_temp.txt &")
+                count = 0
+
+            arg1 = "of:000000000000100"+str(sw_num1)+"/"+str(port_num1)
+            arg2 = "of:000000000000200"+str(sw_num2)+"/"+str(port_num2)
+            
+            sw_num1 += 1
+
+            if sw_num1 > 7:
+                sw_num1 = 1
+                sw_num2 += 1
+                if sw_num2 > 7:
+                    appid += 1
+
+            if sw_num2 > 7:
+                sw_num2 = 1
+            
+            main.ONOSbench.push_test_intents_shell(
+                arg1,
+                arg2, 
+                150, "/tmp/temp.txt", "10.128.174.1",
+                num_mult="10", app_id=appid,report=False)
+            #main.ONOSbench.push_test_intents_shell(
+            #    "of:0000000000001002/1",
+            #    "of:0000000000002002/1",
+            #    133, "/tmp/temp2.txt", "10.128.174.2",
+            #    num_mult="6", app_id="2",report=False)
+            #main.ONOSbench.push_test_intents_shell(
+            #    "of:0000000000001003/1",
+            #    "of:0000000000002003/1",
+            #    133, "/tmp/temp3.txt", "10.128.174.3",
+            #    num_mult="6", app_id="3",report=False)
+   
+            time.sleep(0.1)
 

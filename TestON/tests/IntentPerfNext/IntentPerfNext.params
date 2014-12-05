@@ -1,5 +1,5 @@
 <PARAMS>
-    <testcases>1,4,5,4,5,4,5,4</testcases>
+    <testcases>1,5,2,3</testcases>
 
     <ENV>
         <cellName>intent_perf_test</cellName>
@@ -36,11 +36,12 @@
 
     <TEST>
         #Number of times to iterate each case
-        <numIter>10</numIter>
+        <numIter>15</numIter>
+        <numIgnore>3</numIgnore>
         <numSwitch>9</numSwitch>
         <batchThresholdMin>0</batchThresholdMin>
         <batchThresholdMax>1000</batchThresholdMax>
-        <batchIntentSize>1500</batchIntentSize>
+        <batchIntentSize>200</batchIntentSize>
         <numMult>1</numMult>
     </TEST>
 

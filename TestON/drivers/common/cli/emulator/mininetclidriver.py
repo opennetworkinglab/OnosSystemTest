@@ -298,10 +298,11 @@ class MininetCliDriver(Emulator):
         '''
         if self.handle:
             try:
-                cmd = host+" ifconfig "+intf+" "+newIP+" "+newNetMask
+                cmd = host+" ifconfig "+intf+" "+newIP+" "+'netmask'+" "+newNetmask
                 self.handle.sendline(cmd)
                 self.handle.expect("mininet>")
                 response = self.handle.before
+                main.log.info("response = "+response)
                 main.log.info("Ip of host "+host+" changed to new IP "+newIP)
                 return main.TRUE
             except pexpect.EOF:
@@ -320,13 +321,52 @@ class MininetCliDriver(Emulator):
                 self.handle.sendline(cmd)
                 self.handle.expect("mininet>")
                 response = self.handle.before
+                main.log.info("response = "+response)
                 main.log.info("Default gateway of host "+host+" changed to "+newGW)
                 return main.TRUE
             except pexpect.EOF:
                 main.log.error(self.name + ": EOF exception found")
                 main.log.error(self.name + ":     " + self.handle.before)
                 return main.FALSE
-   
+  
+    def addStaticMACAddress(self,host,GW,macaddr):
+        '''
+        Changes the mac address of a geateway host
+        '''
+        if self.handle:
+            try:
+                #h1  arp -s 10.0.1.254 00:00:00:00:11:11 
+                cmd = host+" arp -s "+GW+" "+macaddr
+                self.handle.sendline(cmd)
+                self.handle.expect("mininet>")
+                response = self.handle.before
+                main.log.info("response = "+response)
+                main.log.info("Mac adrress of gateway "+GW+" changed to "+macaddr)
+                return main.TRUE
+            except pexpect.EOF:
+                main.log.error(self.name + ": EOF exception found")
+                main.log.error(self.name + ":     " + self.handle.before)
+                return main.FALSE
+
+    def verifyStaticGWandMAC(self,host):
+        '''
+        Verify if the static gateway and mac address assignment 
+        '''
+        if self.handle:
+            try:
+                #h1  arp -an
+                cmd = host+" arp -an "
+                self.handle.sendline(cmd)
+                self.handle.expect("mininet>")
+                response = self.handle.before
+                main.log.info(host+" arp -an = "+response)
+                return main.TRUE
+            except pexpect.EOF:
+                main.log.error(self.name + ": EOF exception found")
+                main.log.error(self.name + ":     " + self.handle.before)
+                return main.FALSE
+
+
 
     def getMacAddress(self,host):
         '''

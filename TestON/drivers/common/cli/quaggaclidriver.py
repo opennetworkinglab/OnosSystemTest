@@ -25,14 +25,17 @@ class QuaggaCliDriver(CLI):
         main.log.info("connect parameters:" + str(self.user_name) + ";" + str(self.ip_address) + ";" + str(self.port) + ";" + str(self.pwd))
 
         if self.handle:
-            self.handle.expect("")
-            self.handle.expect("\$")
+            #self.handle.expect("",timeout=10)
+            #self.handle.expect("\$",timeout=10)
             self.handle.sendline("telnet localhost 2605")
-            self.handle.expect("Password:", timeout=5)
+            #self.handle.expect("Password:", timeout=5)
+            self.handle.expect("Password:")
             self.handle.sendline("hello")
-            self.handle.expect("bgpd", timeout=5)
+            #self.handle.expect("bgpd", timeout=5)
+            self.handle.expect("bgpd")
             self.handle.sendline("enable")
-            self.handle.expect("bgpd#", timeout=5)
+            #self.handle.expect("bgpd#", timeout=5)
+            self.handle.expect("bgpd#")
             return self.handle
         else :
             main.log.info("NO HANDLE")
@@ -47,14 +50,17 @@ class QuaggaCliDriver(CLI):
         + str(self.ip_address) + ";" + str(self.port) + ";" + str(self.pwd))
 
         if self.handle:
-            self.handle.expect("")
-            self.handle.expect("\$")
+            #self.handle.expect("")
+            #self.handle.expect("\$")
             self.handle.sendline("telnet localhost 2605")
-            self.handle.expect("Password:", timeout=5)
+            #self.handle.expect("Password:", timeout=5)
+            self.handle.expect("Password:")
             self.handle.sendline("hello")
-            self.handle.expect("bgpd", timeout=5)
+            #self.handle.expect("bgpd", timeout=5)
+            self.handle.expect("bgpd")
             self.handle.sendline("enable")
-            self.handle.expect("bgpd#", timeout=5)
+            #self.handle.expect("bgpd#", timeout=5)
+            self.handle.expect("bgpd#")
             main.log.info("I in quagga on host " + str(ip_address))
 
             return self.handle
@@ -161,7 +167,7 @@ class QuaggaCliDriver(CLI):
         intents_json_obj = json.loads(get_intents_result)
 
         for intent in intents_json_obj:
-            if intent['appId'] != "org.onlab.onos.sdnip" :
+            if intent['appId'] != "org.onosproject.sdnip" :
                 continue
             if intent['type'] == "MultiPointToSinglePointIntent" and intent['state'] == 'INSTALLED':
                 egress = str(intent['egress']['device']) + ":" + str(intent['egress']['port'])
@@ -186,7 +192,7 @@ class QuaggaCliDriver(CLI):
         intents_json_obj = json.loads(get_intents_result)
 
         for intent in intents_json_obj:
-            if intent['appId'] != "org.onlab.onos.sdnip":
+            if intent['appId'] != "org.onosproject.sdnip":
                 continue
             if intent['type'] == "PointToPointIntent" and "protocol=6" in str(intent['selector']):
                 ingress = str(intent['ingress']['device']) + ":" + str(intent['ingress']['port'])
@@ -310,8 +316,8 @@ class QuaggaCliDriver(CLI):
         + str(self.ip_address) + ";" + str(self.port) + ";" + str(self.pwd))
 
         if self.handle:
-            self.handle.expect("")
-            self.handle.expect("\$")
+            #self.handle.expect("")
+            #self.handle.expect("\$")
             main.log.info("I in host " + str(ip_address))
             main.log.info(ping_test_file + " > " + ping_test_result_file + " &")
             self.handle.sendline(ping_test_file + " > " + ping_test_result_file + " &")

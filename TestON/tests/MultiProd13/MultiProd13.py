@@ -665,13 +665,12 @@ class MultiProd13:
         '''
         Intent removal
         ''' 
-        main.log.report("This testcase removes host intents before adding the point intents")
+        main.log.report("This testcase removes host any previously added intents")
         main.log.report("__________________________________")        
-        main.log.info("Host intents removal")
-        main.case("Removing host intents")
+        main.log.info("Removing any previously installed intents")
+        main.case("Removing intents")
         main.step("Obtain the intent id's")
-        intent_result = main.ONOScli1.intents()
-        #print "intent_result = ",intent_result
+        intent_result = main.ONOScli1.intents(json_format = False)
         
         intent_linewise = intent_result.split("\n")
         intentList = []
@@ -683,34 +682,16 @@ class MultiProd13:
         for line in intentList:
             intentids.append(line.split(",")[0].split("=")[1])
         for id in intentids:
-            print "id = ", id
+            main.log.info("id = " +id)
 
         main.step("Iterate through the intentids list and remove each intent")
         for id in intentids:
             main.ONOScli1.remove_intent(intent_id = id)
 
-        intent_result = main.ONOScli1.intents()
-        intent_linewise = intent_result.split("\n")
-        list_afterRemoval = []
-        for line in intent_linewise:
-            if line.startswith("id="):
-                list_afterRemoval.append(line)
-
-        intentState = {}
-        for id, line in zip(intentids, list_afterRemoval):
-            #print "line after removing intent = ", line
-            x = line.split(",")
-            state = x[1].split("=")[1]
-            intentState[id] = state
-
+        intent_result = main.ONOScli1.intents(json_format = False)
+        main.log.info("intent_result = " +intent_result)
         case8_result = main.TRUE
-        for key,value in intentState.iteritems():
-            print "key,value = ", key, value
-            if value == "WITHDRAWN": 
-                case8_result = case8_result and main.TRUE
-            else:    
-                case8_result = case8_result and main.FALSE
-
+        
         i = 8
         Ping_Result = main.TRUE
         while i <18 :
@@ -949,27 +930,23 @@ class MultiProd13:
                 if host['id'] == host1_id:
                     ip1 = host['ips'][0]
                     ip1 = str(ip1+"/32")
-                    print "ip1 = ", ip1
                     device1 = host['location']['device']
                     device1 = str(device1+"/1")
-                    print "device1 = ", device1
                 elif host['id'] == host2_id:
                     ip2 = str(host['ips'][0])+"/32"
-                    print "ip2 = ", ip2
                     device2 = host['location']["device"]
                     device2 = str(device2+"/1")
-                    print "device2 = ", device2
                 
             p_intent_result1 = main.ONOScli1.add_point_intent(ingress_device=device1, egress_device=device2, ipSrc=ip1, ipDst=ip2,
                                   ethType=main.params['SDNIP']['ethType'], ipProto=main.params['SDNIP']['icmpProto'])
             
-            get_intent_result = main.ONOScli1.intents()
+            get_intent_result = main.ONOScli1.intents(json_format = False)
             main.log.info(get_intent_result)
  
             p_intent_result2 = main.ONOScli1.add_point_intent(ingress_device=device2, egress_device=device1, ipSrc=ip2, ipDst=ip1, 
                                   ethType=main.params['SDNIP']['ethType'], ipProto=main.params['SDNIP']['icmpProto']) 
             
-            get_intent_result = main.ONOScli1.intents()
+            get_intent_result = main.ONOScli1.intents(json_format = False)
             main.log.info(get_intent_result)
             if (p_intent_result1 and p_intent_result2) == main.TRUE:
                 #get_intent_result = main.ONOScli1.intents()
@@ -977,7 +954,7 @@ class MultiProd13:
                 main.log.info("Point intent related to SDN-IP matching on ICMP install successful")
        
         time.sleep(15) 
-        get_intent_result = main.ONOScli1.intents()
+        get_intent_result = main.ONOScli1.intents(json_format = False)
         main.log.info("intents = "+ get_intent_result)
         get_flows_result = main.ONOScli1.flows()
         main.log.info("flows = " + get_flows_result)
@@ -1049,16 +1026,12 @@ class MultiProd13:
                 if host['id'] == host1_id:
                     ip1 = host['ips'][0]
                     ip1 = str(ip1+"/32")
-                    print "ip1 = ", ip1
                     device1 = host['location']['device']
                     device1 = str(device1+"/1")
-                    print "device1 = ", device1
                 elif host['id'] == host2_id:
                     ip2 = str(host['ips'][0])+"/32"
-                    print "ip2 = ", ip2
                     device2 = host['location']["device"]
                     device2 = str(device2+"/1")
-                    print "device2 = ", device2
                 
             p_intent_result1 = main.ONOScli1.add_point_intent(ingress_device=device1, egress_device=device2, ipSrc=ip1, ipDst=ip2,
                                   ethType=main.params['SDNIP']['ethType'], ipProto=main.params['SDNIP']['tcpProto'], tcpDst=main.params['SDNIP']['dstPort']) 
@@ -1072,7 +1045,7 @@ class MultiProd13:
 
             p_intent_result = p_intent_result1 and p_intent_result2 and p_intent_result3 and p_intent_result4
             if p_intent_result ==main.TRUE:
-                get_intent_result = main.ONOScli1.intents()
+                get_intent_result = main.ONOScli1.intents(json_format = False)
                 main.log.info(get_intent_result)
                 main.log.info("Point intent related to SDN-IP matching on TCP install successful")
         
@@ -1086,4 +1059,105 @@ class MultiProd13:
         case32_result = p_intent_result and iperf_result
         utilities.assert_equals(expect=main.TRUE, actual=case32_result,
                 onpass="Ping all test after Point intents addition related to SDN-IP on TCP match successful",
-                onfail="Ping all test after Point intents addition related to SDN-IP on TCP match failed") 
+                onfail="Ping all test after Point intents addition related to SDN-IP on TCP match failed")
+
+
+    def CASE33(self):
+        ''' 
+            This test case adds multipoint to singlepoint  intent related to SDN-IP matching on destination ip and the action is to rewrite the mac address 
+            Here the mac address to be rewritten is the mac address of the egress device
+        '''
+        import json
+        import time
+
+        main.log.report("This test case adds multipoint to singlepoint intent related to SDN-IP matching on destination ip and rewrite mac address action")
+        main.case("Adding multipoint to singlepoint intent related to SDN-IP matching on destination ip")
+        main.step("Adding bidirectional multipoint to singlepoint intent")
+        """
+        add-multi-to-single-intent --ipDst=10.0.3.0/24 --setEthDst=00:00:00:00:00:12 of:0000000000003008/1 0000000000003009/1 of:0000000000006018/1
+        
+        add-multi-to-single-intent --ipDst=10.0.1.0/24 --setEthDst=00:00:00:00:00:08 of:0000000000006018/1 0000000000003009/1 of:0000000000003008/1 
+        """    
+        
+        main.case("Installing multipoint to single point intent with rewrite mac address")
+        main.step("Uninstalling proxy arp app")
+        #Unistall onos-app-proxyarp app to disable reactive forwarding
+        appUninstall_result1 = main.ONOScli1.feature_uninstall("onos-app-proxyarp")
+        appUninstall_result2 = main.ONOScli2.feature_uninstall("onos-app-proxyarp")
+        appUninstall_result3 = main.ONOScli3.feature_uninstall("onos-app-proxyarp")
+        main.log.info("onos-app-proxyarp uninstalled") 
+
+        main.step("Changing ipaddress of hosts h8,h9 and h18")
+        main.Mininet1.changeIP(host='h8', intf='h8-eth0', newIP='10.0.1.1', newNetmask='255.255.255.0') 
+        main.Mininet1.changeIP(host='h9', intf='h9-eth0', newIP='10.0.2.1', newNetmask='255.255.255.0')
+        main.Mininet1.changeIP(host='h10', intf='h10-eth0', newIP='10.0.3.1', newNetmask='255.255.255.0')
+
+        main.step("Changing default gateway of hosts h8,h9 and h18")
+        main.Mininet1.changeDefaultGateway(host='h8', newGW='10.0.1.254')
+        main.Mininet1.changeDefaultGateway(host='h9', newGW='10.0.2.254')
+        main.Mininet1.changeDefaultGateway(host='h10', newGW='10.0.3.254')
+
+        main.step("Assigning random mac address to the default gateways since proxyarp app is uninstalled")
+        main.Mininet1.addStaticMACAddress(host='h8', GW='10.0.1.254', macaddr='00:00:00:00:11:11')
+        main.Mininet1.addStaticMACAddress(host='h9', GW='10.0.2.254', macaddr='00:00:00:00:22:22')
+        main.Mininet1.addStaticMACAddress(host='h10', GW='10.0.3.254', macaddr='00:00:00:00:33:33')
+         
+        main.step("Verify static gateway and MAC address assignment")
+        main.Mininet1.verifyStaticGWandMAC(host='h8')
+        main.Mininet1.verifyStaticGWandMAC(host='h9')
+        main.Mininet1.verifyStaticGWandMAC(host='h10')
+        
+        main.step("Adding multipoint to singlepoint intent")               
+        p_intent_result1 = main.ONOScli1.add_multipoint_to_singlepoint_intent(ingress_device1=main.params['MULTIPOINT_INTENT']['device1'], ingress_device2=main.params['MULTIPOINT_INTENT']['device2'],
+                                 egress_device=main.params['MULTIPOINT_INTENT']['device3'], ipDst=main.params['MULTIPOINT_INTENT']['ip1'], setEthDst=main.params['MULTIPOINT_INTENT']['mac1']) 
+        
+        p_intent_result2 = main.ONOScli1.add_multipoint_to_singlepoint_intent(ingress_device1=main.params['MULTIPOINT_INTENT']['device3'], ingress_device2=main.params['MULTIPOINT_INTENT']['device2'],                            
+                                egress_device=main.params['MULTIPOINT_INTENT']['device1'], ipDst=main.params['MULTIPOINT_INTENT']['ip2'], setEthDst=main.params['MULTIPOINT_INTENT']['mac2'])    
+
+
+        get_intent_result = main.ONOScli1.intents(json_format = False)
+        main.log.info("intents = "+ get_intent_result)
+        
+        time.sleep(10)
+        get_flows_result = main.ONOScli1.flows(json_format = False)
+        main.log.info("flows = " + get_flows_result) 
+
+        count = 1
+        i = 8
+        Ping_Result = main.TRUE
+       
+        main.log.info("\n\nh"+str(i)+" is Pinging h" + str(i+2))
+        ping = main.Mininet1.pingHost(src="h"+str(i),target="h"+str(i+2))
+        if ping == main.FALSE and count <3:
+            count+=1
+            Ping_Result = main.FALSE
+            main.log.report("Ping between h" + str(i) + " and h" + str(i+2) + " failed. Making attempt number "+str(count) + " in 2 seconds")
+            time.sleep(2)
+        elif ping==main.FALSE:
+            main.log.report("All ping attempts between h" + str(i) + " and h" + str(i+10) +"have failed")
+            Ping_Result = main.FALSE
+        elif ping==main.TRUE:
+            main.log.info("Ping test between h" + str(i) + " and h" + str(i+2) + "passed!")
+            Ping_Result = main.TRUE
+        else:
+            main.log.info("Unknown error")
+            Ping_Result = main.ERROR
+        
+        if Ping_Result==main.FALSE:
+            main.log.report("Ping test failed.")
+            #main.cleanup()
+            #main.exit()
+        if Ping_Result==main.TRUE:
+            main.log.report("Ping all successful")
+
+
+        p_intent_result = p_intent_result1 and p_intent_result2
+        if p_intent_result ==main.TRUE:
+            main.log.info("Multi point intent with rewrite mac address installation successful")
+        else:
+            main.log.info("Multi point intent with rewrite mac address installation failed")
+      
+        case33_result = p_intent_result and Ping_Result
+        utilities.assert_equals(expect=main.TRUE, actual=case33_result,
+                onpass="Ping all test after multipoint to single point intent addition with rewrite mac address successful",
+                onfail="Ping all test after multipoint to single point intent addition with rewrite mac address failed")  

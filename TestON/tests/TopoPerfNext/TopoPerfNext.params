@@ -57,7 +57,9 @@
         <linkUpThreshold>0,10000</linkUpThreshold>
         <linkDownThreshold>0,10000</linkDownThreshold>
         <swDisc100Threshold>0,10000</swDisc100Threshold>
-    </TEST>
+    
+        <tabletFile>tablets_3node.json</tabletFile>
+   </TEST>
 
     <JSON>
         <deviceTimestamp>topologyDeviceEventTimestamp</deviceTimestamp>

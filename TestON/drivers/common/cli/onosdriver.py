@@ -463,8 +463,7 @@ class OnosDriver(CLI):
         #Note that you  may not want certain features listed
         #on here.
         core_feature_string = "export ONOS_FEATURES=webconsole,onos-api,"+\
-                "onos-cli,onos-openflow,onos-app-mobility,onos-app-tvue,"+\
-                "onos-app-proxyarp,"+extra_feature_string
+                "onos-cli,onos-openflow,"+extra_feature_string
         mn_string = "export OCN="
         onos_string = "export OC"
         temp_count = 1
@@ -809,6 +808,40 @@ class OnosDriver(CLI):
             main.cleanup()
             main.exit()
 
+    def onos_die(self, node_ip):
+        '''
+        Issues the command 'onos-die <node-ip>'
+        This command calls onos-kill and also stops the node
+        '''
+        try:
+            self.handle.sendline("")
+            self.handle.expect("\$")
+            cmd_str = "onos-kill "+str(node_ip)
+            self.handle.sendline(cmd_str)
+            i = self.handle.expect([
+                "Killing\sONOS",
+                "ONOS\sprocess\sis\snot\srunning",
+                pexpect.TIMEOUT], timeout=20)
+            if i == 0:
+                main.log.info("ONOS instance "+str(node_ip)+
+                    " was killed and stopped")
+                return main.TRUE
+            elif i == 1:
+                main.log.info("ONOS process was not running")
+                return main.FALSE
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()
+
+
     def onos_kill(self, node_ip):
         '''
         Calls the command: 'onos-kill [<node-ip>]'
@@ -873,6 +906,8 @@ class OnosDriver(CLI):
                         timeout=120)
                 if i == 1:
                     return main.FALSE
+            self.handle.sendline("")
+            self.handle.expect("\$")
             return main.TRUE
 
         except pexpect.EOF:
@@ -961,6 +996,61 @@ class OnosDriver(CLI):
             main.cleanup()
             main.exit()
 
+    def push_test_intents_shell(self, dpid_src, dpid_dst, num_intents,
+            dir_file, onos_ip, num_mult="", app_id="", report=True,
+            options=""):    
+        '''  
+        Description:
+            Use the linux prompt to push test intents to 
+            better parallelize the results than the CLI
+        Required:
+            * dpid_src: specify source dpid
+            * dpid_dst: specify destination dpid
+            * num_intents: specify number of intents to push
+            * dir_file: specify directory and file name to save
+              results
+            * onos_ip: specify the IP of ONOS to install on
+        NOTE: 
+            You must invoke this command at linux shell prompt
+        '''
+        try: 
+            #Create the string to sendline 
+            if options:
+                base_cmd = "onos "+str(onos_ip)+" push-test-intents "+\
+                options+" "
+            else:
+                base_cmd = "onos "+str(onos_ip)+" push-test-intents "
+            
+            add_dpid = base_cmd + str(dpid_src) + " " + str(dpid_dst)  
+            if not num_mult:
+                add_intents = add_dpid + " " + str(num_intents)
+            elif num_mult:
+                add_intents = add_dpid + " " + str(num_intents) + " " +\
+                              str(num_mult)
+                if app_id:
+                    add_app = add_intents + " " + str(app_id) 
+                else:
+                    add_app = add_intents
+
+            if report:
+                send_cmd = add_app + " > " + str(dir_file) + " &" 
+            else:
+                send_cmd = add_app + " &"
+            main.log.info("Send cmd: "+send_cmd)
+
+            self.handle.sendline(send_cmd)
+
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit() 
 
     def get_topology(self,topology_output):
         '''
@@ -982,21 +1072,21 @@ class OnosDriver(CLI):
                 if not line.startswith("time="):
                     continue
                 #else
-                print line
+                #print line
                 for var in line.split(","):
                     #print "'"+var+"'"
                     #print "'"+var.strip()+"'"
                     key, value = var.strip().split("=")
                     topology[key] = value
-            print "topology = ", topology
+            #print "topology = ", topology
             devices = topology.get('devices', False)
-            print "devices = ", devices
+            #print "devices = ", devices
             links = topology.get('links', False)
-            print "links = ", links
-            clusters = topology.get('clusters', False)
-            print "clusters = ", clusters
+            #print "links = ", links
+            SCCs = topology.get('SCC(s)', False)
+            #print "SCCs = ", SCCs
             paths = topology.get('paths', False)
-            print "paths = ", paths
+            #print "paths = ", paths
 
             return topology
         except pexpect.EOF:
@@ -1099,21 +1189,26 @@ class OnosDriver(CLI):
                 str(dir_file))
 
 
-    def run_onos_topo_cfg(self):
+    def run_onos_topo_cfg(self, instance_name, json_file):
         '''
-         On ONOS bench, run this command: ./~/ONOS/tools/test/bin/onos-topo-cfg
+         On ONOS bench, run this command: ./~/ONOS/tools/test/bin/onos-topo-cfg $OC1 filename
             which starts the rest and copies the json file to the onos instance
         '''
-        self.handle.sendline("")
-        self.handle.expect("\$")
-        self.handle.sendline("cd ~/ONOS/tools/test/bin")
-        self.handle.expect("/bin$")
-        self.handle.sendline("./onos-topo-cfg")
-        self.handle.expect("{}")
-        self.handle.sendline("cd ~")
-        self.handle.expect("\$")
-
-
+        try:
+            self.handle.sendline("")
+            self.handle.expect("\$")
+            self.handle.sendline("cd ~/ONOS/tools/test/bin")
+            self.handle.expect("/bin$")
+            cmd = "./onos-topo-cfg " +instance_name +" " +json_file
+            print "cmd = ", cmd
+            self.handle.sendline(cmd)
+            self.handle.expect("\$")
+            self.handle.sendline("cd ~")
+            self.handle.expect("\$")
+            return main.TRUE
+        except:
+            return main.FALSE
+            
     def tshark_grep(self, grep, directory, interface='eth0'):
         '''
         Required:
@@ -1243,4 +1338,27 @@ class OnosDriver(CLI):
             main.log.info(self.name+" ::::::")
             main.log.error( traceback.print_exc())
             main.log.info(self.name+" ::::::")
+
+    def check_logs(self, onos_ip):
+        '''
+        runs onos-check-logs on the given onos node
+        returns the response
+        '''
+        try:
+            cmd = "onos-check-logs " + str(onos_ip)
+            self.handle.sendline(cmd)
+            self.handle.expect(cmd)
+            self.handle.expect("\$")
+            response = self.handle.before
+            return response
+        except pexpect.EOF:
+            main.log.error("Lost ssh connection")
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+        except:
+            main.log.error("Some error in check_logs:")
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+
 

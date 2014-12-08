@@ -111,7 +111,7 @@ class Logger:
         main.LogFileName = main.logdir + "/" + main.TEST + "_" +str(currentTime) + ".log"
         main.ReportFileName = main.logdir + "/" + main.TEST + "_" + str(currentTime) + ".rpt"
         main.JenkinsCSV = main.logdir + "/" + main.TEST + ".csv"
-                
+ 
         #### Add log-level - Report
         logging.addLevelName(9, "REPORT")
         logging.addLevelName(7, "EXACT")
@@ -234,7 +234,7 @@ class Logger:
         #NOTE: the elements were orded based on the colors assigned to the data
         logfile = open(main.JenkinsCSV ,"w")
         logfile.write(",".join( ['Tests Failed', 'Tests Passed', 'Tests Planned'] ) + "\n")
-        logfile.write(",".join( [str(main.TOTAL_TC_FAIL), str(main.TOTAL_TC_PASS), str(main.TOTAL_TC_PLANNED)] ))
+        logfile.write(",".join( [str(int(main.TOTAL_TC_FAIL)), str(int(main.TOTAL_TC_PASS)), str(int(main.TOTAL_TC_PLANNED))] ))
         logfile.close()
 
 

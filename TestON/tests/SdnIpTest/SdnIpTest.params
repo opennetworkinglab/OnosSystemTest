@@ -1,14 +1,14 @@
 <PARAMS>
     
-    <testcases>1</testcases>
+    <testcases>1,2</testcases>
 
     #Environment variables
     <ENV>
-        <cellName>driver_test</cellName>
+        <cellName>sdnip_single_instance</cellName>
     </ENV>
 
     <CTRL>
-        <ip1>127.0.0.1</ip1>
+        <ip1>10.128.4.52</ip1>
         <port1>6633</port1>
     </CTRL>
 

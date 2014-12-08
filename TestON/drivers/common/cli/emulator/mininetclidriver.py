@@ -287,7 +287,87 @@ class MininetCliDriver(Emulator):
             return main.FALSE
         else :
             return main.TRUE
+
     
+
+
+    def changeIP(self,host,intf,newIP,newNetmask):
+        '''
+        Changes the ip address of a host on the fly
+        Ex: h2 ifconfig h2-eth0 10.0.1.2 netmask 255.255.255.0
+        '''
+        if self.handle:
+            try:
+                cmd = host+" ifconfig "+intf+" "+newIP+" "+'netmask'+" "+newNetmask
+                self.handle.sendline(cmd)
+                self.handle.expect("mininet>")
+                response = self.handle.before
+                main.log.info("response = "+response)
+                main.log.info("Ip of host "+host+" changed to new IP "+newIP)
+                return main.TRUE
+            except pexpect.EOF:
+                main.log.error(self.name + ": EOF exception found")
+                main.log.error(self.name + ":     " + self.handle.before)
+                return main.FALSE
+
+    def changeDefaultGateway(self,host,newGW):
+        '''
+        Changes the default gateway of a host
+        Ex: h1 route add default gw 10.0.1.2
+        '''
+        if self.handle:
+            try:
+                cmd = host+" route add default gw "+newGW 
+                self.handle.sendline(cmd)
+                self.handle.expect("mininet>")
+                response = self.handle.before
+                main.log.info("response = "+response)
+                main.log.info("Default gateway of host "+host+" changed to "+newGW)
+                return main.TRUE
+            except pexpect.EOF:
+                main.log.error(self.name + ": EOF exception found")
+                main.log.error(self.name + ":     " + self.handle.before)
+                return main.FALSE
+  
+    def addStaticMACAddress(self,host,GW,macaddr):
+        '''
+        Changes the mac address of a geateway host
+        '''
+        if self.handle:
+            try:
+                #h1  arp -s 10.0.1.254 00:00:00:00:11:11 
+                cmd = host+" arp -s "+GW+" "+macaddr
+                self.handle.sendline(cmd)
+                self.handle.expect("mininet>")
+                response = self.handle.before
+                main.log.info("response = "+response)
+                main.log.info("Mac adrress of gateway "+GW+" changed to "+macaddr)
+                return main.TRUE
+            except pexpect.EOF:
+                main.log.error(self.name + ": EOF exception found")
+                main.log.error(self.name + ":     " + self.handle.before)
+                return main.FALSE
+
+    def verifyStaticGWandMAC(self,host):
+        '''
+        Verify if the static gateway and mac address assignment 
+        '''
+        if self.handle:
+            try:
+                #h1  arp -an
+                cmd = host+" arp -an "
+                self.handle.sendline(cmd)
+                self.handle.expect("mininet>")
+                response = self.handle.before
+                main.log.info(host+" arp -an = "+response)
+                return main.TRUE
+            except pexpect.EOF:
+                main.log.error(self.name + ": EOF exception found")
+                main.log.error(self.name + ":     " + self.handle.before)
+                return main.FALSE
+
+
+
     def getMacAddress(self,host):
         '''
         Verifies the host's ip configured or not.
@@ -443,17 +523,40 @@ class MininetCliDriver(Emulator):
             main.cleanup()
             main.exit()
         return response
-    
-    def iperf(self):
+    '''
+    def iperf(self,host1,host2):
         main.log.info(self.name+": Simple iperf TCP test between two (optionally specified) hosts")
         try:
-            response = self.execute(cmd = 'iperf',prompt = 'mininet>',timeout = 10)
+            if not host1 and not host2:
+                response = self.execute(cmd = 'iperf',prompt = 'mininet>',timeout = 10)
+            else:
+                cmd1 = 'iperf '+ host1 + " " + host2
+                response = self.execute(cmd = cmd1, prompt = '>',timeout = 20)
         except pexpect.EOF:  
             main.log.error(self.name + ": EOF exception found")
             main.log.error(self.name + ":     " + self.handle.before)
             main.cleanup()
             main.exit()
         return response
+     '''
+    def iperf(self,host1,host2):
+        main.log.info(self.name+": Simple iperf TCP test between two hosts")
+        try:
+            cmd1 = 'iperf '+ host1 + " " + host2
+            self.handle.sendline(cmd1)
+            self.handle.expect("mininet>") 
+            response = self.handle.before
+            if re.search('Results:',response):
+                main.log.info(self.name+": iperf test succssful")
+                return main.TRUE
+            else:
+                main.log.error(self.name+": iperf test failed")
+                return main.FALSE 
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":     " + self.handle.before)
+            main.cleanup()
+            main.exit()
     
     def iperfudp(self):
         main.log.info(self.name+": Simple iperf TCP test between two (optionally specified) hosts")
@@ -1104,7 +1207,7 @@ class MininetCliDriver(Emulator):
                         break
             mn_ports.sort(key=float)
             onos_ports.sort(key=float)
-            #print "\nPorts for Switch %s:" % (switch['name'])
+            #print "\nPorts for Switch %s:" % (mn_switch['name'])
             #print "\tmn_ports[] = ", mn_ports
             #print "\tonos_ports[] = ", onos_ports
             mn_ports_log = mn_ports

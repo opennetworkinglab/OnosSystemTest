@@ -1,5 +1,5 @@
 <PARAMS>
-    <testcases>1,2,3,2,3,2,3,4,2,3,2,3,2,4,2,3,2,3,2</testcases>
+    <testcases>1,2,3,2,3,2,3,2,4,2,3,2,3,2,3,2</testcases>
 
     <ENV>
         <cellName>topo_conv_test</cellName>
@@ -42,10 +42,11 @@
         <onosLogFile>/opt/onos/log/karaf*</onosLogFile>
 
         #Number of times to iterate each case
-        <numIter>5</numIter>
-        <numSwitch1>200</numSwitch1>
+        <numIter>3</numIter>
+        <numSwitch1>500</numSwitch1>
         <numSwitch2>400</numSwitch2>
-        <numSwitch3>500</numSwitch3>
+        <numSwitch3>200</numSwitch3>
+        <numSwitch4>300</numSwitch4>
         #Number of iterations to ignore initially
         <iterIgnore>1</iterIgnore>
 

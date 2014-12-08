@@ -693,7 +693,38 @@ class OnosCliDriver(CLI):
             main.log.info(self.name+" ::::::")
             main.cleanup()
             main.exit()
-    
+
+    def roles_not_null(self):
+        '''
+        Iterates through each device and checks if there is a master assigned
+        Returns: main.TRUE if each device has a master
+                 main.FALSE any device has no master
+        '''
+        try:
+            import json
+            raw_roles = self.roles()
+            roles_json = json.loads(raw_roles)
+            #search json for the device with id then return the device
+            for device in roles_json:
+                #print device
+                if device['master'] == "none":
+                    main.log.warn("Device has no master: " + str(device) )
+                    return main.FALSE
+            return main.TRUE
+
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()
+
+
     def paths(self, src_id, dst_id):
         '''
         Returns string of paths, and the cost.
@@ -1043,6 +1074,146 @@ class OnosCliDriver(CLI):
             main.cleanup()
             main.exit()
 
+
+    def add_multipoint_to_singlepoint_intent(self, ingress_device1, ingress_device2,egress_device,
+            port_ingress="", port_egress="", ethType="", ethSrc="",
+            ethDst="", bandwidth="", lambda_alloc=False, 
+            ipProto="", ipSrc="", ipDst="", tcpSrc="", tcpDst="", setEthSrc="", setEthDst=""):
+        '''
+        Note:
+            This function assumes that there would be 2 ingress devices and one egress device
+            For more number of ingress devices, this function needs to be modified
+        Required:
+            * ingress_device1: device id of ingress device1
+            * ingress_device2: device id of ingress device2
+            * egress_device: device id of egress device
+        Optional:
+            * ethType: specify ethType
+            * ethSrc: specify ethSrc (i.e. src mac addr)
+            * ethDst: specify ethDst (i.e. dst mac addr)
+            * bandwidth: specify bandwidth capacity of link
+            * lambda_alloc: if True, intent will allocate lambda 
+              for the specified intent
+            * ipProto: specify ip protocol 
+            * ipSrc: specify ip source address
+            * ipDst: specify ip destination address
+            * tcpSrc: specify tcp source port
+            * tcpDst: specify tcp destination port
+            * setEthSrc: action to Rewrite Source MAC Address
+            * setEthDst: action to Rewrite Destination MAC Address
+        Description:
+            Adds a multipoint-to-singlepoint intent (uni-directional) by
+            specifying device id's and optional fields
+
+        NOTE: This function may change depending on the 
+              options developers provide for multipointpoint-to-singlepoint
+              intent via cli
+        '''
+        try:
+            cmd = ""
+
+            #If there are no optional arguments
+            if not ethType and not ethSrc and not ethDst\
+                    and not bandwidth and not lambda_alloc \
+                    and not ipProto and not ipSrc and not ipDst \
+                    and not tcpSrc and not tcpDst and not setEthSrc and not setEthDst:
+                cmd = "add-multi-to-single-intent"
+      
+
+            else:
+                cmd = "add-multi-to-single-intent"
+                
+                if ethType:
+                    cmd += " --ethType " + str(ethType)
+                if ethSrc:
+                    cmd += " --ethSrc " + str(ethSrc) 
+                if ethDst:    
+                    cmd += " --ethDst " + str(ethDst) 
+                if bandwidth:
+                    cmd += " --bandwidth " + str(bandwidth)
+                if lambda_alloc:
+                    cmd += " --lambda "
+                if ipProto:
+                    cmd += " --ipProto " + str(ipProto)
+                if ipSrc:
+                    cmd += " --ipSrc " + str(ipSrc)
+                if ipDst:
+                    cmd += " --ipDst " + str(ipDst)
+                if tcpSrc:
+                    cmd += " --tcpSrc " + str(tcpSrc)
+                if tcpDst:
+                    cmd += " --tcpDst " + str(tcpDst)
+                if setEthSrc:
+                    cmd += " --setEthSrc "+ str(setEthSrc)
+                if setEthDst:
+                    cmd += " --setEthDst "+ str(setEthDst)
+
+            #Check whether the user appended the port 
+            #or provided it as an input
+            if "/" in ingress_device1:
+                cmd += " "+str(ingress_device1) 
+            else:
+                if not port_ingress1:
+                    main.log.error("You must specify "+
+                        "the ingress port1")
+                    #TODO: perhaps more meaningful return
+                    return main.FALSE
+
+                cmd += " "+ \
+                    str(ingress_device1) + "/" +\
+                    str(port_ingress1) + " " 
+
+            if "/" in ingress_device2:
+                cmd += " "+str(ingress_device2)
+            else:
+                if not port_ingress2:
+                    main.log.error("You must specify "+
+                        "the ingress port2")
+                    #TODO: perhaps more meaningful return
+                    return main.FALSE
+
+                cmd += " "+ \
+                    str(ingress_device2) + "/" +\
+                    str(port_ingress2) + " "
+
+            if "/" in egress_device:
+                cmd += " "+str(egress_device)
+            else:
+                if not port_egress:
+                    main.log.error("You must specify "+
+                        "the egress port")
+                    return main.FALSE
+                
+                cmd += " "+\
+                    str(egress_device) + "/" +\
+                    str(port_egress)  
+            print "cmd= ",cmd
+            self.handle.sendline(cmd)
+            
+            main.log.info(cmd + " sent")
+            i = self.handle.expect([
+                "Error",
+                "onos>"])
+
+            if i == 0:
+                main.log.error("Error in adding point-to-point intent")
+                return self.handle
+            else:
+                return main.TRUE
+
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()
+
+
     def remove_intent(self, intent_id):
         '''
         Remove intent for specified intent id
@@ -1193,8 +1364,8 @@ class OnosCliDriver(CLI):
             main.cleanup()
             main.exit()
 
-    def push_test_intents(self, dpid_src, dpid_dst, num_intents,
-            report=True):
+    def push_test_intents(self, dpid_src, dpid_dst, num_intents, 
+            num_mult="", app_id="", report=True):
         '''
         Description:
             Push a number of intents in a batch format to 
@@ -1204,12 +1375,22 @@ class OnosCliDriver(CLI):
             * dpid_dst: specify destination dpid
             * num_intents: specify number of intents to push
         Optional:
+            * num_mult: number multiplier for multiplying
+              the number of intents specified
+            * app_id: specify the application id init to further
+              modularize the intents
             * report: default True, returns latency information
         '''
         try:
             cmd = "push-test-intents "+\
                   str(dpid_src)+" "+str(dpid_dst)+" "+\
                   str(num_intents)
+            
+            if num_mult:
+                cmd += " " + str(num_mult)
+                if app_id:
+                    cmd += " " + str(app_id)
+            
             self.handle.sendline(cmd)
             self.handle.expect(cmd)
             self.handle.expect("onos>")
@@ -1221,8 +1402,20 @@ class OnosCliDriver(CLI):
             handle = ansi_escape.sub('', handle)
     
             if report:
+                lat_result = []
                 main.log.info(handle)
-                return handle
+                #Split result by newline
+                newline = handle.split("\r\r\n")
+                #Ignore the first object of list, which is empty
+                newline = newline[1:]
+                #Some sloppy parsing method to get the latency
+                for result in newline:
+                    result = result.split(": ")
+                    #Append the first result of second parse
+                    lat_result.append(result[1].split(" ")[0])
+
+                print lat_result 
+                return lat_result 
             else:
                 return main.TRUE
 
@@ -1551,7 +1744,7 @@ class OnosCliDriver(CLI):
         onos_node is the ip of one of the onos nodes in the cluster
         role must be either master, standby, or none
 
-        Returns main.TRUE or main.FALSE based argument varification.
+        Returns main.TRUE or main.FALSE based on argument verification.
             When device-role supports errors this should be extended to
             support that output
         '''
@@ -1643,5 +1836,115 @@ class OnosCliDriver(CLI):
             main.cleanup()
             main.exit()
 
+    def election_test_leader(self):
+        '''
+         * CLI command to get the current leader for the Election test application.
+         #NOTE: Requires installation of the onos-app-election feature
+         Returns: Node IP of the leader if one exists
+                  None if none exists
+                  Main.FALSE on error
+        '''
+        try:
+            self.handle.sendline("election-test-leader")
+            self.handle.expect("election-test-leader")
+            self.handle.expect("onos>")
+            response = self.handle.before
+            #Leader
+            node_search = re.search("The\scurrent\sleader\sfor\sthe\sElection\sapp\sis\s(?P<node>.+)\.", response)
+            if node_search:
+                node = node_search.group('node')
+                main.log.info("Election-test-leader found " + node + " as the leader")
+                return node
+            #no leader
+            null_search = re.search("There\sis\scurrently\sno\sleader\selected\sfor\sthe\sElection\sapp", response)
+            if null_search:
+                main.log.info("Election-test-leader found no leader")
+                return None
+            #error
+            main.log.error("Error in election_test_leader: unexpected response")
+            main.log.error( repr(response) )
+            return main.FALSE
+
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()
+
+    def election_test_run(self):
+        '''
+         * CLI command to run for leadership of the Election test application.
+         #NOTE: Requires installation of the onos-app-election feature
+         Returns: Main.TRUE on success
+                  Main.FALSE on error
+        '''
+        try:
+            self.handle.sendline("election-test-run")
+            self.handle.expect("election-test-run")
+            self.handle.expect("onos>")
+            response = self.handle.before
+            #success
+            search = re.search("Entering\sleadership\selections\sfor\sthe\sElection\sapp.", response)
+            if search:
+                main.log.info("Entering leadership elections for the Election app.")
+                return main.TRUE
+            #error
+            main.log.error("Error in election_test_run: unexpected response")
+            main.log.error( repr(response) )
+            return main.FALSE
+
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()
+
+    def election_test_withdraw(self):
+        '''
+         * CLI command to withdraw the local node from leadership election for
+         * the Election test application.
+         #NOTE: Requires installation of the onos-app-election feature
+         Returns: Main.TRUE on success
+                  Main.FALSE on error
+        '''
+        try:
+            self.handle.sendline("election-test-withdraw")
+            self.handle.expect("election-test-withdraw")
+            self.handle.expect("onos>")
+            response = self.handle.before
+            #success
+            search = re.search("Withdrawing\sfrom\sleadership\selections\sfor\sthe\sElection\sapp.", response)
+            if search:
+                main.log.info("Withdrawing from leadership elections for the Election app.")
+                return main.TRUE
+            #error
+            main.log.error("Error in election_test_withdraw: unexpected response")
+            main.log.error( repr(response) )
+            return main.FALSE
+
+
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()
 
     #***********************************

@@ -114,7 +114,7 @@ class RemoteMininetDriver(Emulator):
         args = utilities.parse_args(["SRC","TARGET","PINGTIME"],**pingParams)
         precmd = "sudo rm /tmp/ping." + args["SRC"]
         self.execute(cmd=precmd,prompt="(.*)",timeout=10)
-        command = "sudo mininet/util/m " + args["SRC"] + " ping "+args ["TARGET"]+" -i .2 -w " + str(args['PINGTIME']) + " > /tmp/ping." + args["SRC"] + " &"
+        command = "sudo mininet/util/m " + args["SRC"] + " ping "+args ["TARGET"]+" -i .2 -w " + str(args['PINGTIME']) + " -D > /tmp/ping." + args["SRC"] + " &"
         main.log.info( command ) 
         self.execute(cmd=command,prompt="(.*)",timeout=10)
         self.handle.sendline("")
@@ -372,57 +372,40 @@ class RemoteMininetDriver(Emulator):
 
     def get_flowTable(self, protoVersion, sw):
         #TODO document usage
-        #FIXME: clean up print statements and such
+        #TODO add option to look at cookies. ignoreing them for now
         self.handle.sendline("cd")
         self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT])
-        #TODO: Write seperate versions of the function for this, possibly a string that tells it which switch is in use?
-        #For 1.0 version of OVS
-        #command = "sudo ovs-ofctl dump-flows " + sw + " | awk '{OFS=\",\" ; print $1 $6 $7 }' |sort -n -k1"
-        #for 1.3 version of OVS
-        #command = "sudo ovs-ofctl dump-flows " + sw + " | awk '{OFS=\",\" ; print $1 $3 $7 $8}' |sort -n -k1"
+        #print "get_flowTable(" + str(protoVersion) +" " + str(sw) +")"
         #NOTE: Use format to force consistent flow table output across versions
         if protoVersion==1.0:
-            command = "sudo ovs-ofctl dump-flows " + sw + " -F OpenFlow10-table_id | awk '{OFS=\",\" ; print $1  $3  $6  $7  $8}' |sort -n -k1"
+            command = "sudo ovs-ofctl dump-flows " + sw + " -F OpenFlow10-table_id | awk '{OFS=\",\" ; print $1  $3  $6  $7  $8}' | cut -d ',' -f 2- | sort -n -k1 -r"
             self.handle.sendline(command)
-            self.handle.expect(["sort -n -k1",pexpect.EOF,pexpect.TIMEOUT])
+            self.handle.expect(["k1 -r",pexpect.EOF,pexpect.TIMEOUT])
             self.handle.expect(["OFPST_FLOW",pexpect.EOF,pexpect.TIMEOUT])
             response = self.handle.before
             #print "response=", response
             return response
         elif protoVersion==1.3:
-            command = "sudo ovs-ofctl dump-flows " + sw + " -O OpenFlow13  | awk '{OFS=\",\" ; print $1  $3  $6  $7}' |sort -n -k1" 
+            command = "sudo ovs-ofctl dump-flows " + sw + " -O OpenFlow13  | awk '{OFS=\",\" ; print $1  $3  $6  $7}' | cut -d ',' -f 2- | sort -n -k1 -r"
             self.handle.sendline(command)
-            #print "ovs-vsctl Command sent status."
-            #self.handle.expect(["sort -n -k1",pexpect.EOF,pexpect.TIMEOUT])
-            #print "sort return status: " 
-            #print self.handle.expect(["sort -n -k1",pexpect.EOF,pexpect.TIMEOUT])
-            #print self.handle.before
+            self.handle.expect(["k1 -r",pexpect.EOF,pexpect.TIMEOUT])
             self.handle.expect(["OFPST_FLOW",pexpect.EOF,pexpect.TIMEOUT])
-            #print "OFPST_FLOW expected status: " 
-            #print self.handle.expect(["OFPST_FLOW",pexpect.EOF,pexpect.TIMEOUT])
-            #print self.handle.before
             response = self.handle.before
             #print "response=", response
-            return response 
-        
+            return response
+        else:
+            main.log.error("Unknown  protoVersion in get_flowTable(). given: ("+str(type(protoVersion))+") '"+str(protoVersion)+"'")
+
 
     def flow_comp(self,flow1,flow2):
-        #print "Inside flow compare function"
-        #print "Flow1 Table:"
-        #for flow in flow1:
-            #print flow1
-        #print "Flow2 Table"
-        #for flow in flow2:
-            #print flow2
-
         if flow1==flow2:
             return main.TRUE
         else:
             main.log.info("Flow tables do not match, printing tables:")
-            #main.log.info("Flow Table 1:")
-            #main.log.info(flow1)
-            #main.log.info("Flow Table 2:")
-            #main.log.info(flow2)
+            main.log.info("Flow Table 1:")
+            main.log.info(flow1)
+            main.log.info("Flow Table 2:")
+            main.log.info(flow2)
             return main.FALSE
 
     def setIpTablesOUTPUT(self, dst_ip, dst_port, action='add', packet_type='tcp',rule='DROP'):

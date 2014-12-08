@@ -47,10 +47,10 @@ class TopoPerfNext:
         
         main.case("Setting up test environment")
         main.log.info("Copying topology event accumulator config"+\
-            " to ONOS /ppackage/etc")
+            " to ONOS /package/etc")
         main.ONOSbench.handle.sendline("cp ~/"+\
             topo_cfg_file+\
-            "~/ONOS/tools/package/etc/"+\
+            " ~/ONOS/tools/package/etc/"+\
             topo_cfg_name)
         main.ONOSbench.handle.expect("\$")
 
@@ -64,7 +64,7 @@ class TopoPerfNext:
 
         main.step("Creating cell file")
         cell_file_result = main.ONOSbench.create_cell_file(
-                BENCH_ip, cell_name, MN1_ip, "onos-core",
+                BENCH_ip, cell_name, MN1_ip, "onos-core,onos-app-metrics",
                 ONOS1_ip, ONOS2_ip, ONOS3_ip)
 
         main.step("Applying cell file to environment")
@@ -75,7 +75,8 @@ class TopoPerfNext:
         #      copy cat log functionality
         main.step("Removing raft/copy-cat logs from ONOS nodes")
         main.ONOSbench.onos_remove_raft_logs()
-        
+        time.sleep(30)
+
         main.step("Git checkout and pull "+checkout_branch)
         if git_pull == 'on':
             checkout_result = \
@@ -113,11 +114,6 @@ class TopoPerfNext:
         cli1 = main.ONOS1cli.start_onos_cli(ONOS1_ip)
         cli2 = main.ONOS2cli.start_onos_cli(ONOS2_ip)
         cli3 = main.ONOS3cli.start_onos_cli(ONOS3_ip)
-
-        main.step("Enable metrics feature")
-        main.ONOS1cli.feature_install("onos-app-metrics")
-        main.ONOS2cli.feature_install("onos-app-metrics")
-        main.ONOS3cli.feature_install("onos-app-metrics")
 
         utilities.assert_equals(expect=main.TRUE,
                 actual= cell_file_result and cell_apply_result and\

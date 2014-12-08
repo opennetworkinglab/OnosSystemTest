@@ -185,6 +185,8 @@ class TopoConvNext:
             num_sw = main.params['TEST']['numSwitch2']
         elif topo_iteration == 3:
             num_sw = main.params['TEST']['numSwitch3']
+        elif topo_iteration == 4:
+            num_sw = main.params['TEST']['numSwitch4']
         #***********
 
         #Timestamp 'keys' for json metrics output.
@@ -323,7 +325,7 @@ class TopoConvNext:
             #NOTE:
             #       Delay before checking devices to 
             #       help prevent timing out from CLI
-            #       due to multiple command drop
+            #       due to multiple command issuing 
             time.sleep(20)
 
             loop = True
@@ -338,6 +340,9 @@ class TopoConvNext:
                 device_json1 = json.loads(device_str1)
                 json_len = len(device_json1) 
                 
+                #NOTE: May want to check the rest of 
+                #      the ONOS instances for device down as well
+
                 for device1 in device_json1: 
                     temp_len = temp_len + 1
                     if device1['available'] == True:
@@ -361,72 +366,9 @@ class TopoConvNext:
                     
                         loop = False
                         break
-
-                #if cluster_count == 1:
-                #    device_str1 = main.ONOS1cli.devices(
-                #        node_ip=ONOS_ip_list[1])
-                #    device_json1 = json.loads(device_str1)
-                #    for device1 in device_json1:
-                #        if device1['available'] == False:
-                #            device_count += 1
-                #        else:
-                #            device_count = 0
-                #if cluster_count == 2:
-                #    device_str2 = main.ONOS2cli.devices(
-                #        node_ip=ONOS_ip_list[2])
-                #    device_json2 = json.loads(device_str2)
-                #    for device2 in device_json2:
-                #        if device2['available'] == False:
-                #            device_count += 1
-                #        else:
-                #            device_count = 0
-                #if cluster_count == 3:
-                #    device_str3 = main.ONOS3cli.devices(
-                #        node_ip=ONOS_ip_list[3])
-                #    device_json3 = json.loads(device_str3)
-                #    for device3 in device_json3:
-                #        if device3['available'] == False:
-                #            device_count += 1
-                #        else:
-                #            device_count = 0
-                #if cluster_count == 4:
-                #    device_str4 = main.ONOS4cli.devices(
-                #        node_ip=ONOS_ip_list[4])
-                #    device_json4 = json.loads(device_str4)
-                #    for device4 in device_json4:
-                #        if device4['available'] == False:
-                #            device_count += 1
-                #        else:
-                #            device_count = 0
-                #if cluster_count == 5:
-                #    device_str5 = main.ONOS5cli.devices(
-                #        node_ip=ONOS_ip_list[5])
-                #    device_json5 = json.loads(device_str5)
-                #    for device5 in device_json5:
-                #        if device5['available'] == False:
-                #            device_count += 1
-                #        else:
-                #            device_count = 0
-                #if cluster_count == 7:
-                #    device_str7 = main.ONOS7cli.devices(
-                #        node_ip=ONOS_ip_list[7])
-                #    device_json7 = json.loads(device_str7)
-                #    for device7 in device_json7:
-                #        if device7['available'] == False:
-                #            device_count += 1
-                #        else:
-                #            device_count = 0
-   
-                #If device count is greater than the 
-                #number of switches discovered by all nodes
-                #then remove iptables and measure t0 system time
-                    
                 
                 loop_count += 1
                 time.sleep(1)
-
-            if device_count < int(num_sw):
-                main.log.info("Devices down did not ")
 
             main.log.info("System time t0: "+str(t0_system))
 
@@ -590,7 +532,7 @@ class TopoConvNext:
                         else:
                             main.log.info("Switch discovery latency "+
                                 "exceeded the threshold.")
-                            main.log.info(graph_lat_1)
+                            main.log.info(str(graph_lat_1)+" ms")
                         #Break while loop 
                         break
                 if cluster_count == 2:
@@ -635,7 +577,7 @@ class TopoConvNext:
                         else:
                             main.log.info("Switch discovery latency "+
                                 "exceeded the threshold.")
-                            main.log.info(max_graph_lat)
+                            main.log.info(str(max_graph_lat)+" ms")
                         break
                 if cluster_count == 3:
                     if onos1_dev and onos2_dev and onos3_dev:
@@ -693,7 +635,7 @@ class TopoConvNext:
                         else:
                             main.log.info("Switch discovery latency "+
                                 "exceeded the threshold.")
-                            main.log.info(max_graph_lat)
+                            main.log.info(str(max_graph_lat)+" ms")
                         
                         break
                 if cluster_count == 4:
@@ -756,7 +698,7 @@ class TopoConvNext:
                         else:
                             main.log.info("Switch discovery latency "+
                                 "exceeded the threshold.")
-                            main.log.info(max_graph_lat)
+                            main.log.info(str(max_graph_lat)+" ms")
                 
                         break
                 if cluster_count == 5:
@@ -835,7 +777,7 @@ class TopoConvNext:
                         else:
                             main.log.info("Switch discovery latency "+
                                 "exceeded the threshold.")
-                            main.log.info(max_graph_lat)
+                            main.log.info(str(max_graph_lat)+" ms")
                 
                         break
                 if cluster_count == 6:
@@ -918,7 +860,7 @@ class TopoConvNext:
                         else:
                             main.log.info("Switch discovery latency "+
                                 "exceeded the threshold.")
-                            main.log.info(max_graph_lat)
+                            main.log.info(str(max_graph_lat)+" ms")
                         
                         break
                 if cluster_count == 7:
@@ -1018,7 +960,7 @@ class TopoConvNext:
                         else:
                             main.log.info("Switch discovery latency "+
                                 "exceeded the threshold.")
-                            main.log.info(max_graph_lat)
+                            main.log.info(str(max_graph_lat)+" ms")
                         
                         break
                 
@@ -1153,7 +1095,9 @@ class TopoConvNext:
             sw_lat_avg = sum(sw_discovery_lat_list) / \
                      len(sw_discovery_lat_list)
             sw_lat_dev = numpy.std(sw_discovery_lat_list)
-        else: 
+        else:
+            sw_lat_avg = 0
+            sw_lat_dev = 0
             assertion = main.FALSE
         
         main.log.report("Switch connection attempt time avg "+
@@ -1329,3 +1273,6 @@ class TopoConvNext:
         utilities.assert_equals(expect=main.TRUE, actual=assertion,
             onpass="Topology size increased successfully",
             onfail="Topology size was not increased")
+
+
+

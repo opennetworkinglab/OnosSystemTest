@@ -1207,7 +1207,7 @@ class MininetCliDriver(Emulator):
                         break
             mn_ports.sort(key=float)
             onos_ports.sort(key=float)
-            #print "\nPorts for Switch %s:" % (switch['name'])
+            #print "\nPorts for Switch %s:" % (mn_switch['name'])
             #print "\tmn_ports[] = ", mn_ports
             #print "\tonos_ports[] = ", onos_ports
             mn_ports_log = mn_ports

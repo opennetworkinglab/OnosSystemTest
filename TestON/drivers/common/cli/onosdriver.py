@@ -1072,21 +1072,21 @@ class OnosDriver(CLI):
                 if not line.startswith("time="):
                     continue
                 #else
-                print line
+                #print line
                 for var in line.split(","):
                     #print "'"+var+"'"
                     #print "'"+var.strip()+"'"
                     key, value = var.strip().split("=")
                     topology[key] = value
-            print "topology = ", topology
+            #print "topology = ", topology
             devices = topology.get('devices', False)
-            print "devices = ", devices
+            #print "devices = ", devices
             links = topology.get('links', False)
-            print "links = ", links
-            clusters = topology.get('clusters', False)
-            print "clusters = ", clusters
+            #print "links = ", links
+            SCCs = topology.get('SCC(s)', False)
+            #print "SCCs = ", SCCs
             paths = topology.get('paths', False)
-            print "paths = ", paths
+            #print "paths = ", paths
 
             return topology
         except pexpect.EOF:
@@ -1338,4 +1338,27 @@ class OnosDriver(CLI):
             main.log.info(self.name+" ::::::")
             main.log.error( traceback.print_exc())
             main.log.info(self.name+" ::::::")
+
+    def check_logs(self, onos_ip):
+        '''
+        runs onos-check-logs on the given onos node
+        returns the response
+        '''
+        try:
+            cmd = "onos-check-logs " + str(onos_ip)
+            self.handle.sendline(cmd)
+            self.handle.expect(cmd)
+            self.handle.expect("\$")
+            response = self.handle.before
+            return response
+        except pexpect.EOF:
+            main.log.error("Lost ssh connection")
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+        except:
+            main.log.error("Some error in check_logs:")
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+
 

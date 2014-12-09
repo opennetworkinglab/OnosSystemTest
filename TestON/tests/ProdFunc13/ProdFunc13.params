@@ -1,6 +1,6 @@
 <PARAMS>
     
-    <testcases>1,4,10,5,6,7,8,9,20,21,22,10,23,24</testcases>
+    <testcases>1,4,10,5,6,7,8,9,2,20,21,22,10,23,24</testcases>
 
     #Environment variables
     <ENV>
@@ -37,7 +37,7 @@
 
     <timers>
         <LinkDiscovery>5</LinkDiscovery>
-        <SwitchDiscovery>31</SwitchDiscovery>
+        <SwitchDiscovery>15</SwitchDiscovery>
     </timers>
 
     <OPTICAL>

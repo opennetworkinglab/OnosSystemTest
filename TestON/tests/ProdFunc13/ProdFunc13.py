@@ -44,13 +44,17 @@ class ProdFunc13:
         main.step("Git checkout and pull master and get version")
         main.ONOSbench.git_checkout("master")
         git_pull_result = main.ONOSbench.git_pull()
-        print "git_pull_result = ", git_pull_result
+        main.log.info("git_pull_result = " +git_pull_result)
         version_result = main.ONOSbench.get_version(report=True)
     
         if git_pull_result == 1:
             main.step("Using mvn clean & install")
             clean_install_result = main.ONOSbench.clean_install()
             #clean_install_result = main.TRUE
+        elif git_pull_result == 0:
+            main.log.report("Git Pull Failed, look into logs for detailed reason")
+            main.cleanup()
+            main.exit() 
          
         main.step("Creating ONOS package")
         package_result = main.ONOSbench.onos_package()
@@ -80,6 +84,42 @@ class ProdFunc13:
         utilities.assert_equals(expect=main.TRUE, actual=case1_result,
                 onpass="Test startup successful",
                 onfail="Test startup NOT successful")
+
+    def CASE2(self, main) :
+        '''  
+        Switch Down
+        '''
+        #NOTE: You should probably run a topology check after this
+        import time 
+        import json
+ 
+        main.case("Switch down discovery")
+        main.log.report("This testcase is testing a switch down discovery")
+        main.log.report("__________________________________")
+
+        switch_sleep = int(main.params['timers']['SwitchDiscovery'])
+
+        description = "Killing a switch to ensure it is discovered correctly"
+        main.log.report(description)
+        main.case(description)
+
+        #TODO: Make this switch parameterizable
+        main.step("Kill s28 ")
+        main.log.report("Deleting s28")
+        #FIXME: use new dynamic topo functions
+        main.Mininet1.del_switch("s28")
+        main.log.info("Waiting " + str(switch_sleep) + " seconds for switch down to be discovered")
+        time.sleep(switch_sleep)
+        #Peek at the deleted switch
+        device = main.ONOS2.get_device(dpid="0028")
+        print "device = ", device
+        if device[u'available'] == 'False':
+            case2_result = main.FALSE
+        else:
+            case2_result = main.TRUE
+        utilities.assert_equals(expect=main.TRUE, actual=case2_result,
+                onpass="Switch down discovery successful",
+                onfail="Switch down discovery failed")
 
     def CASE11(self, main):
         '''
@@ -315,8 +355,6 @@ class ProdFunc13:
             Ping_Result = main.FALSE
             main.log.info("Ping between h1 and h2  failed. Making attempt number "+str(count) + " in 2 seconds")
             time.sleep(2)
-            ping = main.LincOE2.pingHostOptical(src="h1", target="h2")
-            #ping = main.LincOE2.pinghost()
         elif ping==main.FALSE:
             main.log.info("All ping attempts between h1 and h2 have failed")
             Ping_Result = main.FALSE
@@ -388,8 +426,6 @@ class ProdFunc13:
             Ping_Result = main.FALSE
             main.log.info("Ping between h1 and h2  failed. Making attempt number "+str(count) + " in 2 seconds")
             time.sleep(2)
-            ping = main.LincOE2.pingHostOptical(src="h1", target="h2")
-            #ping = main.LincOE2.pinghost()
         elif ping==main.FALSE:
             main.log.info("All ping attempts between h1 and h2 have failed")
             Ping_Result = main.FALSE

@@ -44,13 +44,17 @@ class ProdFunc:
         main.step("Git checkout and pull master and get version")
         main.ONOSbench.git_checkout("master")
         git_pull_result = main.ONOSbench.git_pull()
-        print "git_pull_result = ", git_pull_result
+        main.log.info("git_pull_result = " +git_pull_result)
         version_result = main.ONOSbench.get_version(report=True)
     
         if git_pull_result == 1:
             main.step("Using mvn clean & install")
             clean_install_result = main.ONOSbench.clean_install()
             #clean_install_result = main.TRUE
+        elif git_pull_result == 0:
+            main.log.report("Git Pull Failed, look into logs for detailed reason")
+            main.cleanup()
+            main.exit() 
          
         main.step("Creating ONOS package")
         package_result = main.ONOSbench.onos_package()
@@ -80,6 +84,42 @@ class ProdFunc:
         utilities.assert_equals(expect=main.TRUE, actual=case1_result,
                 onpass="Test startup successful",
                 onfail="Test startup NOT successful")
+
+    def CASE2(self, main) :
+        '''  
+        Switch Down
+        '''
+        #NOTE: You should probably run a topology check after this
+        import time 
+        import json
+ 
+        main.case("Switch down discovery")
+        main.log.report("This testcase is testing a switch down discovery")
+        main.log.report("__________________________________")
+
+        switch_sleep = int(main.params['timers']['SwitchDiscovery'])
+
+        description = "Killing a switch to ensure it is discovered correctly"
+        main.log.report(description)
+        main.case(description)
+
+        #TODO: Make this switch parameterizable
+        main.step("Kill s28 ")
+        main.log.report("Deleting s28")
+        #FIXME: use new dynamic topo functions
+        main.Mininet1.del_switch("s28")
+        main.log.info("Waiting " + str(switch_sleep) + " seconds for switch down to be discovered")
+        time.sleep(switch_sleep)
+        #Peek at the deleted switch
+        device = main.ONOS2.get_device(dpid="0028")
+        print "device = ", device
+        if device[u'available'] == 'False':
+            case2_result = main.FALSE
+        else:
+            case2_result = main.TRUE
+        utilities.assert_equals(expect=main.TRUE, actual=case2_result,
+                onpass="Switch down discovery successful",
+                onfail="Switch down discovery failed")
 
     def CASE11(self, main):
         '''
@@ -247,8 +287,9 @@ class ProdFunc:
         print "links_result = ", links_result
         print "_________________________________"
         
-
-
+        #NOTE:Since only point intents are added, there is no requirement to discover the hosts
+                #Therfore, the below portion of the code is commented.
+        '''
         #Discover hosts using pingall
         pingall_result = main.LincOE2.pingall()    
     
@@ -269,8 +310,9 @@ class ProdFunc:
             print "Number of hosts = %d and is wrong" %hostCount
             main.log.info("Number of hosts = " + str(hostCount) +" and is wrong")
             hostDiscovery = main.FALSE
-        
-        case22_result = opticalSW_result and packetSW_result and hostDiscovery
+        '''
+
+        case22_result = opticalSW_result and packetSW_result
         utilities.assert_equals(expect=main.TRUE, actual=case22_result,
                 onpass="Packet optical topology discovery successful",
                 onfail="Packet optical topology discovery failed")
@@ -286,12 +328,12 @@ class ProdFunc:
         main.step("Adding point intents")
         ptp_intent_result = main.ONOS3.add_point_intent("of:0000ffffffff0001/1", "of:0000ffffffff0002/1")
         if ptp_intent_result == main.TRUE:
-            get_intent_result = main.ONOS3.intents()
+            get_intent_result = main.ONOS3.intents(json_format = False)
             main.log.info("Point to point intent install successful")
 
         ptp_intent_result = main.ONOS3.add_point_intent("of:0000ffffffff0002/1", "of:0000ffffffff0001/1")
         if ptp_intent_result == main.TRUE:
-            get_intent_result = main.ONOS3.intents()
+            get_intent_result = main.ONOS3.intents(json_format = False)
             main.log.info("Point to point intent install successful")
 
         time.sleep(10)
@@ -300,7 +342,7 @@ class ProdFunc:
 
         # Sleep for 30 seconds to provide time for the intent state to change
         time.sleep(30)
-        intentHandle = main.ONOS3.intents()        
+        intentHandle = main.ONOS3.intents(json_format = False)        
         main.log.info("intents :" + intentHandle)        
  
         Ping_Result = main.TRUE
@@ -313,8 +355,6 @@ class ProdFunc:
             Ping_Result = main.FALSE
             main.log.info("Ping between h1 and h2  failed. Making attempt number "+str(count) + " in 2 seconds")
             time.sleep(2)
-            ping = main.LincOE2.pingHostOptical(src="h1", target="h2")
-            #ping = main.LincOE2.pinghost()
         elif ping==main.FALSE:
             main.log.info("All ping attempts between h1 and h2 have failed")
             Ping_Result = main.FALSE
@@ -345,31 +385,39 @@ class ProdFunc:
             and do a ping test. If rerouting is successful, ping should pass. also check the flows
         '''
         main.log.report("This testcase tests rerouting and pings mininet hosts")
-        main.step("Test rerouting and pings mininet hosts")
-        main.case("Bring a port down and verify the link state")
+        main.case("Test rerouting and pings mininet hosts")
+        main.step("Bring a port down and verify the link state")
         main.LincOE1.port_down(sw_id="1", pt_id="22") 
-        links = main.ONOS3.links()
-        main.log.info(main.ONOS3.links)
+        links_nonjson = main.ONOS3.links(json_format = False)
+        main.log.info("links = " +links_nonjson)
 
+        links = main.ONOS3.links()
+        main.log.info("links = " +links)
+        
         links_result = json.loads(links)
         links_state_result = main.FALSE
         for item in links_result:
-            if item['src'] == "of:0000ffffffffff01/22" and item['dst'] == "of:0000ffffffffff04/30":
-                links_state = item['state']
-                if links_state == "INACTIVE":
-                    main.log.info("Links state is inactive as expected due to one of the ports being down")
-                    main.log.report("Links state is inactive as expected due to one of the ports being down")
-                    links_state_result = main.TRUE
-                    break
-                else:
-                    main.log.info("Links state is not inactive as expected")
-                    main.log.report("Links state is not inactive as expected")
-                    links_state_result = main.FALSE
+            if item['src']['device'] == "of:0000ffffffffff01" and item['src']['port'] == "22":
+                if item['dst']['device'] == "of:0000ffffffffff04" and item['dst']['port'] == "30":
+                    links_state = item['state']
+                    if links_state == "INACTIVE":
+                        main.log.info("Links state is inactive as expected due to one of the ports being down")
+                        main.log.report("Links state is inactive as expected due to one of the ports being down")
+                        links_state_result = main.TRUE
+                        break
+                    else:
+                        main.log.info("Links state is not inactive as expected")
+                        main.log.report("Links state is not inactive as expected")
+                        links_state_result = main.FALSE
 
         print "links_state_result = ", links_state_result
-        main.case("Verify Rerouting by a ping test")
+        time.sleep(10)
+        flowHandle = main.ONOS3.flows()
+        main.log.info("flows :" + flowHandle)
+
+        main.step("Verify Rerouting by a ping test")
         Ping_Result = main.TRUE
-        count = 1
+        count = 1        
         main.log.info("\n\nh1 is Pinging h2")
         ping = main.LincOE2.pingHostOptical(src="h1", target="h2")
         #ping = main.LincOE2.pinghost()
@@ -378,8 +426,6 @@ class ProdFunc:
             Ping_Result = main.FALSE
             main.log.info("Ping between h1 and h2  failed. Making attempt number "+str(count) + " in 2 seconds")
             time.sleep(2)
-            ping = main.LincOE2.pingHostOptical(src="h1", target="h2")
-            #ping = main.LincOE2.pinghost()
         elif ping==main.FALSE:
             main.log.info("All ping attempts between h1 and h2 have failed")
             Ping_Result = main.FALSE
@@ -390,9 +436,9 @@ class ProdFunc:
             main.log.info("Unknown error")
             Ping_Result = main.ERROR
 
-        if Ping_Result==main.FALSE:
-            main.log.report("Ping test successful ")
         if Ping_Result==main.TRUE:
+            main.log.report("Ping test successful ")
+        if Ping_Result==main.FALSE:
             main.log.report("Ping test failed")
 
         case24_result = Ping_Result and links_state_result

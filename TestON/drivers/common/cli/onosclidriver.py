@@ -1357,6 +1357,9 @@ class OnosCliDriver(CLI):
             
             if num_mult:
                 cmd += " " + str(num_mult)
+                #If app id is specified, then num_mult 
+                #must exist because of the way this command
+                #takes in arguments
                 if app_id:
                     cmd += " " + str(app_id)
             
@@ -1383,7 +1386,7 @@ class OnosCliDriver(CLI):
                     #Append the first result of second parse
                     lat_result.append(result[1].split(" ")[0])
 
-                print lat_result 
+                main.log.info(lat_result) 
                 return lat_result 
             else:
                 return main.TRUE

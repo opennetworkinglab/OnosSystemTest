@@ -59,7 +59,7 @@ class CLI(Component):
 	    if i==0:
 	        main.log.info("ssh key confirmation received, send yes")
 	        self.handle.sendline('yes')
-	        i=self.handle.expect([ssh_newkey,'password:',pexpect.EOF])
+	        i=self.handle.expect([ssh_newkey,'password:|\$',pexpect.EOF])
 	    if i==1:
 	        main.log.info("ssh connection asked for password, gave password")
 	        self.handle.sendline(self.pwd)

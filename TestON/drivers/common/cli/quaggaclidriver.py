@@ -61,7 +61,7 @@ class QuaggaCliDriver(CLI):
             self.handle.sendline("enable")
             #self.handle.expect("bgpd#", timeout=5)
             self.handle.expect("bgpd#")
-            main.log.info("I in quagga on host " + str(ip_address))
+            main.log.info("I am in quagga on host " + str(ip_address))
 
             return self.handle
         else:
@@ -116,19 +116,23 @@ class QuaggaCliDriver(CLI):
 
     # This method generates a multiple to single point intent(MultiPointToSinglePointIntent) for a given route
     def generate_expected_singleRouteIntent(self, prefix, nextHop, nextHopMac, sdnip_data):
-
-        ingress = []
+        
+        ingresses = []
         egress = ""
         for peer in sdnip_data['bgpPeers']:
             if peer['ipAddress'] == nextHop:
                 egress = "of:" + str(peer['attachmentDpid']).replace(":", "") + ":" + str(peer['attachmentPort'])
-            else:
-                ingress.append("of:" + str(peer['attachmentDpid']).replace(":", "") + ":" + str(peer['attachmentPort']))
+        for peer in sdnip_data['bgpPeers']:
+            if not peer['ipAddress'] == nextHop:
+                ingress = "of:" + str(peer['attachmentDpid']).replace(":", "") + ":" + str(peer['attachmentPort'])
+                if not ingress == egress and ingress not in ingresses:
+                    ingresses.append(ingress)
+                    #ingresses.append("of:" + str(peer['attachmentDpid']).replace(":", "") + ":" + str(peer['attachmentPort']))
 
         selector = "ETH_TYPE{ethType=800},IPV4_DST{ip=" + prefix + "}"
         treatment = "[ETH_DST{mac=" + str(nextHopMac) + "}]"
 
-        intent = egress + "/" + str(sorted(ingress)) + "/" + selector + "/" + treatment
+        intent = egress + "/" + str(sorted(ingresses)) + "/" + selector + "/" + treatment
         return intent
 
     def generate_expected_onePeerRouteIntents(self, prefixes, nextHop, nextHopMac, sdnip_json_file_path):
@@ -270,8 +274,8 @@ class QuaggaCliDriver(CLI):
             except:
                 main.log.warn("Failed to add route")
                 self.disconnect()
-            waitTimer = 1.00 / routeRate
-            time.sleep(waitTimer)
+            #waitTimer = 1.00 / routeRate
+            #time.sleep(waitTimer)
         if routes_added == len(routes):
             main.log.info("Finished adding routes")
             return main.TRUE
@@ -298,8 +302,8 @@ class QuaggaCliDriver(CLI):
             except:
                 main.log.warn("Failed to add route")
                 self.disconnect()
-            waitTimer = 1.00 / routeRate
-            time.sleep(waitTimer)
+            #waitTimer = 1.00 / routeRate
+            #time.sleep(waitTimer)
         if routes_added == len(routes):
             main.log.info("Finished deleting routes")
             return main.TRUE

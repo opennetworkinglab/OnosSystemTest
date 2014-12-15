@@ -37,17 +37,6 @@ class SdnIpTest:
         # all expected routes for all BGP peers
         allRoutes_expected = []
         main.step("Start to generate routes for all BGP peers")
-        # bgpPeerHosts = []
-        # for i in range(3, 5):
-        #    bgpPeerHosts.append("host" + str(i))
-        # main.log.info("BGP Peer Hosts are:" + bgpPeerHosts)
-
-        # for i in range(3, 5):
-         #   QuaggaCliHost = "QuaggaCliHost" + str(i)
-          #  prefixes = main.QuaggaCliHost.generate_prefixes(3, 10)
-
-           # main.log.info(prefixes)
-            # allRoutes_expected.append(prefixes)
         main.log.info("Generate prefixes for host3")
         prefixes_host3 = main.QuaggaCliHost3.generate_prefixes(3, 10)
         main.log.info(prefixes_host3)
@@ -124,9 +113,6 @@ class SdnIpTest:
         main.log.info("Add routes to Quagga on host4")
         main.QuaggaCliHost4.add_routes(prefixes_host4, 1)
 
-
-
-	#
         for i in range(101, 201):
             prefixes_hostX=main.QuaggaCliHost.generate_prefixes(str(i),10)
             main.log.info(prefixes_hostX)
@@ -136,11 +122,6 @@ class SdnIpTest:
             routeIntents_expected_hostX = main.QuaggaCliHost.generate_expected_onePeerRouteIntents(prefixes_hostX, "192.168.40."+str(i-100), "00:00:%02d:00:00:90" %(i-101), SDNIP_JSON_FILE_PATH)
             routeIntents_expected = routeIntents_expected + routeIntents_expected_hostX
 
-
-
-
-
-            #
             main.log.info("Login Quagga CLI on host" + str(i))
             QuaggaCliHostX = getattr(main, ('QuaggaCliHost' + str(i)))
             QuaggaCliHostX.loginQuagga("1.168.30." + str(i))
@@ -149,8 +130,6 @@ class SdnIpTest:
             main.log.info("Add routes to Quagga on host" + str(i))
             QuaggaCliHostX.add_routes(prefixes_hostX, 1)
  
-        #
-        
         time.sleep(60)
 
         # get routes inside SDN-IP

@@ -204,7 +204,7 @@ class SdnIpTest:
         #============================= Ping Test ========================
         # wait until all MultiPointToSinglePoint
         time.sleep(20)
-        ping_test_script = "~/SDNIP/SdnIpIntentDemo/CASE3-ping-as2host.sh"
+        ping_test_script = "~/SDNIP/test-tools/CASE3-ping-as2host.sh"
         ping_test_results_file = "~/SDNIP/SdnIpIntentDemo/log/CASE3-ping-results-before-delete-routes-" + strftime("%Y-%m-%d_%H:%M:%S", localtime()) + ".txt"
         ping_test_results = main.QuaggaCliHost.ping_test("1.168.30.100", ping_test_script, ping_test_results_file)
         main.log.info(ping_test_results)
@@ -252,11 +252,11 @@ class SdnIpTest:
             main.log.report("***MultiPointToSinglePoint Intents after deleting routes wrong!***")
 
         time.sleep(20)
-        ping_test_script = "~/SDNIP/SdnIpIntentDemo/CASE1-ping-as2host.sh"
-        ping_test_results_file = "~/SDNIP/SdnIpIntentDemo/log/CASE1-ping-results-after-delete-routes-" + strftime("%Y-%m-%d_%H:%M:%S", localtime()) + ".txt"
+        ping_test_script = "~/SDNIP/test-tools/CASE3-ping-as2host.sh"
+        ping_test_results_file = "~/SDNIP/SdnIpIntentDemo/log/CASE3-ping-results-after-delete-routes-" + strftime("%Y-%m-%d_%H:%M:%S", localtime()) + ".txt"
         ping_test_results = main.QuaggaCliHost.ping_test("1.168.30.100", ping_test_script, ping_test_results_file)
         main.log.info(ping_test_results)
-        time.sleep(30)
+        time.sleep(100)
 
         # main.step("Test whether Mininet is started")
         # main.Mininet2.handle.sendline("xterm host1")

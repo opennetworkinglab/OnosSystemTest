@@ -1,9 +1,10 @@
 <PARAMS>
-    <testcases>1,2,8,3,4,5,[6],8,3,7,4,9,8,4,10,8,4,11,8,4,12,8,4,13</testcases>
+    <testcases>1,2,8,3,4,5,14,[6],8,3,7,4,15,9,8,4,10,8,4,11,8,4,12,8,4,13</testcases>
     <ENV>
     <cellName>HA</cellName>
     </ENV>
     <Git>False</Git>
+    <num_controllers> 1 </num_controllers>
 
     <CTRL>
         <ip1>10.128.30.11</ip1>
@@ -52,8 +53,8 @@
         <target10>10.0.0.27</target10>
     </PING>
     <timers>
-        <LinkDiscovery>2</LinkDiscovery>
-        <SwitchDiscovery>2</SwitchDiscovery>
+        <LinkDiscovery>.2</LinkDiscovery>
+        <SwitchDiscovery>.2</SwitchDiscovery>
     </timers>
     <MNtcpdump>
         <intf>eth0</intf>

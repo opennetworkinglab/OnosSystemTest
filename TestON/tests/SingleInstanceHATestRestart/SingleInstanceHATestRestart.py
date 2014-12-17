@@ -16,6 +16,8 @@ CASE10: Link s3-s28 up
 CASE11: Switch down
 CASE12: Switch up
 CASE13: Clean up
+CASE14: start election app on all onos nodes
+CASE15: Check that Leadership Election is still functional
 '''
 class SingleInstanceHATestRestart:
 
@@ -61,6 +63,7 @@ class SingleInstanceHATestRestart:
         global ONOS6_port
         global ONOS7_ip
         global ONOS7_port
+        global num_controllers
 
         ONOS1_ip = main.params['CTRL']['ip1']
         ONOS1_port = main.params['CTRL']['port1']
@@ -76,6 +79,7 @@ class SingleInstanceHATestRestart:
         ONOS6_port = main.params['CTRL']['port6']
         ONOS7_ip = main.params['CTRL']['ip7']
         ONOS7_port = main.params['CTRL']['port7']
+        num_controllers = int(main.params['num_controllers'])
 
 
         main.step("Applying cell variable to environment")
@@ -123,8 +127,7 @@ class SingleInstanceHATestRestart:
 
 
         main.step("Checking if ONOS is up yet")
-        #TODO: Refactor
-        # check bundle:list?
+        #TODO check bundle:list?
         for i in range(2):
             onos1_isup = main.ONOSbench.isup(ONOS1_ip)
             if onos1_isup:
@@ -197,7 +200,7 @@ class SingleInstanceHATestRestart:
         Assign intents
 
         """
-        #FIXME: Only call this once when using a persistent datastore!!!!
+        #FIXME: we must reinstall intents until we have a persistant datastore!
         import time
         import json
         import re
@@ -221,6 +224,8 @@ class SingleInstanceHATestRestart:
         #uninstall onos-app-fwd
         main.log.info("Uninstall reactive forwarding app")
         main.ONOScli1.feature_uninstall("onos-app-fwd")
+        #timeout for fwd flows
+        time.sleep(10)
 
         main.step("Add  host intents")
         #TODO:  move the host numbers to params
@@ -231,11 +236,14 @@ class SingleInstanceHATestRestart:
             main.log.info("Adding host intent between h"+str(i)+" and h"+str(i+10))
             host1 =  "00:00:00:00:00:" + str(hex(i)[2:]).zfill(2).upper()
             host2 =  "00:00:00:00:00:" + str(hex(i+10)[2:]).zfill(2).upper()
-            #NOTE: get host can return None
-            #TODO: handle this
             host1_id = main.ONOScli1.get_host(host1)['id']
             host2_id = main.ONOScli1.get_host(host2)['id']
-            tmp_result = main.ONOScli1.add_host_intent(host1_id, host2_id )
+            #NOTE: get host can return None
+            if host1_id and host2_id:
+                tmp_result = main.ONOScli1.add_host_intent(host1_id, host2_id )
+            else:
+                main.log.error("Error, get_host() failed")
+                tmp_result = main.FALSE
             intent_add_result = bool(intent_add_result and tmp_result)
         utilities.assert_equals(expect=True, actual=intent_add_result,
                 onpass="Switch mastership correctly assigned",
@@ -368,7 +376,7 @@ class SingleInstanceHATestRestart:
         devices_results = main.TRUE
         ports_results = main.TRUE
         links_results = main.TRUE
-        for controller in range(1): #TODO parameterize the number of controllers
+        for controller in range(num_controllers):
             if devices[controller] or not "Error" in devices[controller]:
                 current_devices_result =  main.Mininet1.compare_switches(MNTopo, json.loads(devices[controller]))
             else:
@@ -544,8 +552,36 @@ class SingleInstanceHATestRestart:
                 onpass="No changes were found in the flow tables",
                 onfail="Changes were found in the flow tables")
 
-        #TODO:add topology to this or leave as a seperate case?
-        result = mastership_check and intent_check and Flow_Tables and roles_not_null 
+
+        #Test of LeadershipElection
+
+        leader = ONOS1_ip
+        leader_result = main.TRUE
+        for controller in range(1,num_controllers+1):
+            node = getattr( main, ( 'ONOScli' + str( controller ) ) )#loop through ONOScli handlers
+            leaderN = node.election_test_leader()
+            #verify leader is ONOS1
+            #NOTE even though we restarted ONOS, it is the only one so onos 1 must be leader
+            if leaderN == leader:
+                #all is well
+                pass
+            elif leaderN == main.FALSE:
+                #error in  response
+                main.log.report("Something is wrong with election_test_leader function, check the error logs")
+                leader_result = main.FALSE
+            elif leader != leaderN:
+                leader_result = main.FALSE
+                main.log.report("ONOS" + str(controller) + " sees "+str(leaderN) +
+                        " as the leader of the election app. Leader should be "+str(leader) )
+        if leader_result:
+            main.log.report("Leadership election tests passed(consistent view of leader across listeners and a new leader was re-elected if applicable)")
+        utilities.assert_equals(expect=main.TRUE, actual=leader_result,
+                onpass="Leadership election passed",
+                onfail="Something went wrong with Leadership election")
+
+
+        result = mastership_check and intent_check and Flow_Tables and roles_not_null\
+                and leader_result
         result = int(result)
         if result == main.TRUE:
             main.log.report("Constant State Tests Passed")
@@ -604,7 +640,7 @@ class SingleInstanceHATestRestart:
             elapsed = time.time() - start_time
             print "CLI time: " + str(time.time() - cli_start)
 
-            for controller in range(1): #TODO parameterize the number of controllers
+            for controller in range(num_controllers):
                 if devices[controller] or not "Error" in devices[controller]:
                     current_devices_result =  main.Mininet1.compare_switches(MNTopo, json.loads(devices[controller]))
                 else:
@@ -651,7 +687,7 @@ class SingleInstanceHATestRestart:
         '''
         #NOTE: You should probably run a topology check after this
 
-        link_sleep = int(main.params['timers']['LinkDiscovery'])
+        link_sleep = float(main.params['timers']['LinkDiscovery'])
 
         description = "Turn off a link to ensure that Link Discovery is working properly"
         main.log.report(description)
@@ -673,7 +709,7 @@ class SingleInstanceHATestRestart:
         '''
         #NOTE: You should probably run a topology check after this
 
-        link_sleep = int(main.params['timers']['LinkDiscovery'])
+        link_sleep = float(main.params['timers']['LinkDiscovery'])
 
         description = "Restore a link to ensure that Link Discovery is working properly"
         main.log.report(description)
@@ -696,7 +732,7 @@ class SingleInstanceHATestRestart:
         #NOTE: You should probably run a topology check after this
         import time
 
-        switch_sleep = int(main.params['timers']['SwitchDiscovery'])
+        switch_sleep = float(main.params['timers']['SwitchDiscovery'])
 
         description = "Killing a switch to ensure it is discovered correctly"
         main.log.report(description)
@@ -724,6 +760,8 @@ class SingleInstanceHATestRestart:
         '''
         #NOTE: You should probably run a topology check after this
         import time
+
+        switch_sleep = float(main.params['timers']['SwitchDiscovery'])
         description = "Adding a switch to ensure it is discovered correctly"
         main.log.report(description)
         main.case(description)
@@ -755,6 +793,15 @@ class SingleInstanceHATestRestart:
         '''
         import os
         import time
+        #printing colors to terminal
+        colors = {}
+        colors['cyan']   = '\033[96m'
+        colors['purple'] = '\033[95m'
+        colors['blue']   = '\033[94m'
+        colors['green']  = '\033[92m'
+        colors['yellow'] = '\033[93m'
+        colors['red']    = '\033[91m'
+        colors['end']    = '\033[0m'
         description = "Test Cleanup"
         main.log.report(description)
         main.case(description)
@@ -762,7 +809,7 @@ class SingleInstanceHATestRestart:
         main.Mininet2.stop_tcpdump()
 
         main.step("Checking ONOS Logs for errors")
-        print "Checking logs for errors on ONOS1:"
+        print colors['purple'] + "Checking logs for errors on ONOS1:" + colors['end']
         print main.ONOSbench.check_logs(ONOS1_ip)
         main.step("Copying MN pcap and ONOS log files to test station")
         testname = main.TEST
@@ -807,3 +854,117 @@ class SingleInstanceHATestRestart:
         utilities.assert_equals(expect=main.TRUE, actual=main.TRUE,
                 onpass="Test cleanup successful",
                 onfail="Test cleanup NOT successful")
+
+    def CASE14 ( self, main ) :
+        '''
+        start election app on all onos nodes
+        '''
+        leader_result = main.TRUE
+        #install app on onos 1
+        main.log.info("Install leadership election app")
+        main.ONOScli1.feature_install("onos-app-election")
+        #wait for election
+        #check for leader
+        leader = main.ONOScli1.election_test_leader()
+        #verify leader is ONOS1
+        if leader == ONOS1_ip:
+            #all is well
+            pass
+        elif leader == None:
+            #No leader elected
+            main.log.report("No leader was elected")
+            leader_result = main.FALSE
+        elif leader == main.FALSE:
+            #error in  response
+            #TODO: add check for "Command not found:" in the driver, this means the app isn't loaded
+            main.log.report("Something is wrong with election_test_leader function, check the error logs")
+            leader_result = main.FALSE
+        else:
+            #error in  response
+            main.log.report("Unexpected response from election_test_leader function:'"+str(leader)+"'")
+            leader_result = main.FALSE
+
+
+
+
+        #install on other nodes and check for leader.
+        #Should be onos1 and each app should show the same leader
+        for controller in range(2,num_controllers+1):
+            node = getattr( main, ( 'ONOScli' + str( controller ) ) )#loop through ONOScli handlers
+            node.feature_install("onos-app-election")
+            leaderN = node.election_test_leader()
+            #verify leader is ONOS1
+            if leaderN == ONOS1_ip:
+                #all is well
+                pass
+            elif leaderN == main.FALSE:
+                #error in  response
+                #TODO: add check for "Command not found:" in the driver, this means the app isn't loaded
+                main.log.report("Something is wrong with election_test_leader function, check the error logs")
+                leader_result = main.FALSE
+            elif leader != leaderN:
+                leader_result = main.FALSE
+                main.log.report("ONOS" + str(controller) + " sees "+str(leaderN) +
+                        " as the leader of the election app. Leader should be "+str(leader) )
+        if leader_result:
+            main.log.report("Leadership election tests passed(consistent view of leader across listeners and a leader was elected)")
+        utilities.assert_equals(expect=main.TRUE, actual=leader_result,
+                onpass="Leadership election passed",
+                onfail="Something went wrong with Leadership election")
+
+    def CASE15 ( self, main ) :
+        '''
+        Check that Leadership Election is still functional
+        '''
+        leader_result = main.TRUE
+        description = "Check that Leadership Election is still functional"
+        main.log.report(description)
+        main.case(description)
+        main.step("Find current leader and withdraw")
+        leader = main.ONOScli1.election_test_leader()
+        #TODO: do some sanity checking on leader before using it
+        withdraw_result = main.FALSE
+        if leader == ONOS1_ip:
+            old_leader = getattr( main, "ONOScli1" )
+        elif leader == None or leader == main.FALSE:
+            main.log.report("Leader for the election app should be an ONOS node,"\
+                    +"instead got '"+str(leader)+"'")
+            leader_result = main.FALSE
+        withdraw_result = old_leader.election_test_withdraw()
+
+
+        main.step("Make sure new leader is elected")
+        leader_list = []
+        leaderN =  main.ONOScli1.election_test_leader() 
+        if leaderN == leader:
+            main.log.report("ONOS"+str(controller)+" still sees " + str(leader) +\
+                    " as leader after they withdrew")
+            leader_result = main.FALSE
+        elif leaderN == main.FALSE:
+            #error in  response
+            #TODO: add check for "Command not found:" in the driver, this means the app isn't loaded
+            main.log.report("Something is wrong with election_test_leader function, check the error logs")
+            leader_result = main.FALSE
+        elif leaderN == None:
+            main.log.info("There is no leader after the app withdrew from election")
+        if leader_result:
+            main.log.report("Leadership election tests passed(There is no leader after the old leader resigned)")
+        utilities.assert_equals(expect=main.TRUE, actual=leader_result,
+                onpass="Leadership election passed",
+                onfail="Something went wrong with Leadership election")
+
+
+        main.step("Run for election on old leader(just so everyone is in the hat)")
+        run_result = old_leader.election_test_run()
+        leader = main.ONOScli1.election_test_leader()
+        #verify leader is ONOS1
+        if leader == ONOS1_ip:
+            leader_result = main.TRUE
+        else:
+            leader_result = main.FALSE
+        #TODO: assert on  run and withdraw results?
+
+        utilities.assert_equals(expect=main.TRUE, actual=leader_result,
+                onpass="Leadership election passed",
+                onfail="ONOS1's election app was not leader after it re-ran for election")
+

@@ -1853,17 +1853,21 @@ class OnosCliDriver(CLI):
             node_search = re.search("The\scurrent\sleader\sfor\sthe\sElection\sapp\sis\s(?P<node>.+)\.", response)
             if node_search:
                 node = node_search.group('node')
-                main.log.info("Election-test-leader found " + node + " as the leader")
+                main.log.info("Election-test-leader on "+str(self.name)+" found " + node + " as the leader")
                 return node
             #no leader
             null_search = re.search("There\sis\scurrently\sno\sleader\selected\sfor\sthe\sElection\sapp", response)
             if null_search:
-                main.log.info("Election-test-leader found no leader")
+                main.log.info("Election-test-leader found no leader on " + self.name )
                 return None
             #error
-            main.log.error("Error in election_test_leader: unexpected response")
-            main.log.error( repr(response) )
-            return main.FALSE
+            if re.search("Command\snot\sfound", response):
+                main.log.error("Election app is not loaded on " + self.name)
+                return main.FALSE
+            else:
+                main.log.error("Error in election_test_leader: unexpected response")
+                main.log.error( repr(response) )
+                return main.FALSE
 
         except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
@@ -1892,12 +1896,16 @@ class OnosCliDriver(CLI):
             #success
             search = re.search("Entering\sleadership\selections\sfor\sthe\sElection\sapp.", response)
             if search:
-                main.log.info("Entering leadership elections for the Election app.")
+                main.log.info(self.name + " entering leadership elections for the Election app.")
                 return main.TRUE
             #error
-            main.log.error("Error in election_test_run: unexpected response")
-            main.log.error( repr(response) )
-            return main.FALSE
+            if re.search("Command\snot\sfound", response):
+                main.log.error("Election app is not loaded on " + self.name)
+                return main.FALSE
+            else:
+                main.log.error("Error in election_test_run: unexpected response")
+                main.log.error( repr(response) )
+                return main.FALSE
 
         except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
@@ -1927,12 +1935,16 @@ class OnosCliDriver(CLI):
             #success
             search = re.search("Withdrawing\sfrom\sleadership\selections\sfor\sthe\sElection\sapp.", response)
             if search:
-                main.log.info("Withdrawing from leadership elections for the Election app.")
+                main.log.info(self.name + " withdrawing from leadership elections for the Election app.")
                 return main.TRUE
             #error
-            main.log.error("Error in election_test_withdraw: unexpected response")
-            main.log.error( repr(response) )
-            return main.FALSE
+            if re.search("Command\snot\sfound", response):
+                main.log.error("Election app is not loaded on " + self.name)
+                return main.FALSE
+            else:
+                main.log.error("Error in election_test_withdraw: unexpected response")
+                main.log.error( repr(response) )
+                return main.FALSE
 
 
         except pexpect.EOF:

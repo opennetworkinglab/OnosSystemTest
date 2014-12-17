@@ -17,6 +17,8 @@ CASE10: Link s3-s28 up
 CASE11: Switch down
 CASE12: Switch up
 CASE13: Clean up
+CASE14: start election app on all onos nodes
+CASE15: Check that Leadership Election is still functional
 '''
 class HATestSanity:
 
@@ -63,6 +65,7 @@ class HATestSanity:
         global ONOS6_port
         global ONOS7_ip
         global ONOS7_port
+        global num_controllers
 
         ONOS1_ip = main.params['CTRL']['ip1']
         ONOS1_port = main.params['CTRL']['port1']
@@ -78,6 +81,7 @@ class HATestSanity:
         ONOS6_port = main.params['CTRL']['port6']
         ONOS7_ip = main.params['CTRL']['ip7']
         ONOS7_port = main.params['CTRL']['port7']
+        num_controllers = int(main.params['num_controllers'])
 
 
         main.step("Applying cell variable to environment")
@@ -145,8 +149,7 @@ class HATestSanity:
 
 
         main.step("Checking if ONOS is up yet")
-        #TODO: Refactor
-        # check bundle:list?
+        #TODO check bundle:list?
         for i in range(2):
             onos1_isup = main.ONOSbench.isup(ONOS1_ip)
             if not onos1_isup:
@@ -173,7 +176,6 @@ class HATestSanity:
                     and onos4_isup and onos5_isup and onos6_isup and onos7_isup
             if onos_isup_result == main.TRUE:
                 break
-        # TODO: if it becomes an issue, we can retry this step  a few times
 
 
         cli_result1 = main.ONOScli1.start_onos_cli(ONOS1_ip)
@@ -219,7 +221,7 @@ class HATestSanity:
         main.step("Assign switches to controllers")
 
         for i in range (1,29):
-           main.Mininet1.assign_sw_controller(sw=str(i),count=7,
+           main.Mininet1.assign_sw_controller(sw=str(i),count=num_controllers,
                     ip1=ONOS1_ip,port1=ONOS1_port,
                     ip2=ONOS2_ip,port2=ONOS2_port,
                     ip3=ONOS3_ip,port3=ONOS3_port,
@@ -504,6 +506,8 @@ class HATestSanity:
         main.ONOScli5.feature_uninstall("onos-app-fwd")
         main.ONOScli6.feature_uninstall("onos-app-fwd")
         main.ONOScli7.feature_uninstall("onos-app-fwd")
+        #timeout for fwd flows
+        time.sleep(10)
 
         main.step("Add  host intents")
         #TODO:  move the host numbers to params
@@ -514,11 +518,14 @@ class HATestSanity:
             main.log.info("Adding host intent between h"+str(i)+" and h"+str(i+10))
             host1 =  "00:00:00:00:00:" + str(hex(i)[2:]).zfill(2).upper()
             host2 =  "00:00:00:00:00:" + str(hex(i+10)[2:]).zfill(2).upper()
-            #NOTE: get host can return None
-            #TODO: handle this
             host1_id = main.ONOScli1.get_host(host1)['id']
             host2_id = main.ONOScli1.get_host(host2)['id']
-            tmp_result = main.ONOScli1.add_host_intent(host1_id, host2_id )
+            #NOTE: get host can return None
+            if host1_id and host2_id:
+                tmp_result = main.ONOScli1.add_host_intent(host1_id, host2_id )
+            else:
+                main.log.error("Error, get_host() failed")
+                tmp_result = main.FALSE
             intent_add_result = bool(intent_add_result and tmp_result)
         utilities.assert_equals(expect=True, actual=intent_add_result,
                 onpass="Switch mastership correctly assigned",
@@ -922,7 +929,7 @@ class HATestSanity:
         devices_results = main.TRUE
         ports_results = main.TRUE
         links_results = main.TRUE
-        for controller in range(7): #TODO parameterize the number of controllers
+        for controller in range(num_controllers):
             if devices[controller] or not "Error" in devices[controller]:
                 current_devices_result =  main.Mininet1.compare_switches(MNTopo, json.loads(devices[controller]))
             else:
@@ -1195,9 +1202,35 @@ class HATestSanity:
                 onpass="No Loss of connectivity",
                 onfail="Loss of dataplane connectivity detected")
 
+        #Test of LeadershipElection
+        #NOTE: this only works for the sanity test. In case of failures, leader will likely change
+        leader = ONOS1_ip
+        leader_result = main.TRUE
+        for controller in range(1,num_controllers+1):
+            node = getattr( main, ( 'ONOScli' + str( controller ) ) )#loop through ONOScli handlers
+            leaderN = node.election_test_leader()
+            #verify leader is ONOS1
+            if leaderN == leader:
+                #all is well
+                #NOTE: In failure scenario, this could be a new node, maybe check != ONOS1
+                pass
+            elif leaderN == main.FALSE:
+                #error in  response
+                main.log.report("Something is wrong with election_test_leader function, check the error logs")
+                leader_result = main.FALSE
+            elif leader != leaderN:
+                leader_result = main.FALSE
+                main.log.report("ONOS" + str(controller) + " sees "+str(leaderN) +
+                        " as the leader of the election app. Leader should be "+str(leader) )
+        if leader_result:
+            main.log.report("Leadership election tests passed(consistent view of leader across listeners and a new leader was re-elected if applicable)")
+        utilities.assert_equals(expect=main.TRUE, actual=leader_result,
+                onpass="Leadership election passed",
+                onfail="Something went wrong with Leadership election")
 
-        #TODO:add topology to this or leave as a seperate case?
-        result = mastership_check and intent_check and Flow_Tables and (not Loss_In_Pings) and roles_not_null 
+
+        result = mastership_check and intent_check and Flow_Tables and (not Loss_In_Pings) and roles_not_null\
+                and leader_result
         result = int(result)
         if result == main.TRUE:
             main.log.report("Constant State Tests Passed")
@@ -1309,7 +1342,7 @@ class HATestSanity:
             cli_time = time.time() - cli_start
             print "CLI time: " + str(cli_time)
 
-            for controller in range(7): #TODO parameterize the number of controllers
+            for controller in range(num_controllers):
                 if devices[controller] or not "Error" in devices[controller]:
                     current_devices_result =  main.Mininet1.compare_switches(MNTopo, json.loads(devices[controller]))
                 else:
@@ -1420,7 +1453,7 @@ class HATestSanity:
         '''
         #NOTE: You should probably run a topology check after this
 
-        link_sleep = int(main.params['timers']['LinkDiscovery'])
+        link_sleep = float(main.params['timers']['LinkDiscovery'])
 
         description = "Turn off a link to ensure that Link Discovery is working properly"
         main.log.report(description)
@@ -1442,7 +1475,7 @@ class HATestSanity:
         '''
         #NOTE: You should probably run a topology check after this
 
-        link_sleep = int(main.params['timers']['LinkDiscovery'])
+        link_sleep = float(main.params['timers']['LinkDiscovery'])
 
         description = "Restore a link to ensure that Link Discovery is working properly"
         main.log.report(description)
@@ -1465,7 +1498,7 @@ class HATestSanity:
         #NOTE: You should probably run a topology check after this
         import time
 
-        switch_sleep = int(main.params['timers']['SwitchDiscovery'])
+        switch_sleep = float(main.params['timers']['SwitchDiscovery'])
 
         description = "Killing a switch to ensure it is discovered correctly"
         main.log.report(description)
@@ -1493,6 +1526,8 @@ class HATestSanity:
         '''
         #NOTE: You should probably run a topology check after this
         import time
+
+        switch_sleep = float(main.params['timers']['SwitchDiscovery'])
         description = "Adding a switch to ensure it is discovered correctly"
         main.log.report(description)
         main.case(description)
@@ -1504,7 +1539,7 @@ class HATestSanity:
         main.Mininet1.add_link('s28', 's3')
         main.Mininet1.add_link('s28', 's6')
         main.Mininet1.add_link('s28', 'h28')
-        main.Mininet1.assign_sw_controller(sw="28",count=7,
+        main.Mininet1.assign_sw_controller(sw="28",count=num_controllers,
                 ip1=ONOS1_ip,port1=ONOS1_port,
                 ip2=ONOS2_ip,port2=ONOS2_port,
                 ip3=ONOS3_ip,port3=ONOS3_port,
@@ -1530,6 +1565,15 @@ class HATestSanity:
         '''
         import os
         import time
+        #printing colors to terminal
+        colors = {}
+        colors['cyan']   = '\033[96m'
+        colors['purple'] = '\033[95m'
+        colors['blue']   = '\033[94m'
+        colors['green']  = '\033[92m'
+        colors['yellow'] = '\033[93m'
+        colors['red']    = '\033[91m'
+        colors['end']    = '\033[0m'
         description = "Test Cleanup"
         main.log.report(description)
         main.case(description)
@@ -1537,19 +1581,19 @@ class HATestSanity:
         main.Mininet2.stop_tcpdump()
 
         main.step("Checking ONOS Logs for errors")
-        print "Checking logs for errors on ONOS1:"
+        print colors['purple'] + "Checking logs for errors on ONOS1:" + colors['end']
         print main.ONOSbench.check_logs(ONOS1_ip)
-        print "Checking logs for errors on ONOS2:"
+        print colors['purple'] + "Checking logs for errors on ONOS2:" + colors['end']
         print main.ONOSbench.check_logs(ONOS2_ip)
-        print "Checking logs for errors on ONOS3:"
+        print colors['purple'] + "Checking logs for errors on ONOS3:" + colors['end']
         print main.ONOSbench.check_logs(ONOS3_ip)
-        print "Checking logs for errors on ONOS4:"
+        print colors['purple'] + "Checking logs for errors on ONOS4:" + colors['end']
         print main.ONOSbench.check_logs(ONOS4_ip)
-        print "Checking logs for errors on ONOS5:"
+        print colors['purple'] + "Checking logs for errors on ONOS5:" + colors['end']
         print main.ONOSbench.check_logs(ONOS5_ip)
-        print "Checking logs for errors on ONOS6:"
+        print colors['purple'] + "Checking logs for errors on ONOS6:" + colors['end']
         print main.ONOSbench.check_logs(ONOS6_ip)
-        print "Checking logs for errors on ONOS7:"
+        print colors['purple'] + "Checking logs for errors on ONOS7:" + colors['end']
         print main.ONOSbench.check_logs(ONOS7_ip)
 
         main.step("Copying MN pcap and ONOS log files to test station")
@@ -1629,22 +1673,139 @@ class HATestSanity:
         utilities.assert_equals(expect=main.TRUE, actual=main.TRUE,
                 onpass="Test cleanup successful",
                 onfail="Test cleanup NOT successful")
+
     def CASE14 ( self, main ) :
         '''
         start election app on all onos nodes
         '''
+        leader_result = main.TRUE
         #install app on onos 1
+        main.log.info("Install leadership election app")
+        main.ONOScli1.feature_install("onos-app-election")
         #wait for election
         #check for leader
-        #install on other nodes
-        #check for leader. Should be onos1 and each app shows same leader
-        #
+        leader = main.ONOScli1.election_test_leader()
+        #verify leader is ONOS1
+        if leader == ONOS1_ip:
+            #all is well
+            pass
+        elif leader == None:
+            #No leader elected
+            main.log.report("No leader was elected")
+            leader_result = main.FALSE
+        elif leader == main.FALSE:
+            #error in  response
+            #TODO: add check for "Command not found:" in the driver, this means the app isn't loaded
+            main.log.report("Something is wrong with election_test_leader function, check the error logs")
+            leader_result = main.FALSE
+        else:
+            #error in  response
+            main.log.report("Unexpected response from election_test_leader function:'"+str(leader)+"'")
+            leader_result = main.FALSE
 
 
 
 
+        #install on other nodes and check for leader.
+        #Should be onos1 and each app should show the same leader
+        for controller in range(2,num_controllers+1):
+            node = getattr( main, ( 'ONOScli' + str( controller ) ) )#loop through ONOScli handlers
+            node.feature_install("onos-app-election")
+            leaderN = node.election_test_leader()
+            #verify leader is ONOS1
+            if leaderN == ONOS1_ip:
+                #all is well
+                pass
+            elif leaderN == main.FALSE:
+                #error in  response
+                #TODO: add check for "Command not found:" in the driver, this means the app isn't loaded
+                main.log.report("Something is wrong with election_test_leader function, check the error logs")
+                leader_result = main.FALSE
+            elif leader != leaderN:
+                leader_result = main.FALSE
+                main.log.report("ONOS" + str(controller) + " sees "+str(leaderN) +
+                        " as the leader of the election app. Leader should be "+str(leader) )
+        if leader_result:
+            main.log.report("Leadership election tests passed(consistent view of leader across listeners and a leader was elected)")
+        utilities.assert_equals(expect=main.TRUE, actual=leader_result,
+                onpass="Leadership election passed",
+                onfail="Something went wrong with Leadership election")
 
-        #Next Case
-        #add to reboot case?
-        #check for conistent leader
-        #new leader should have been elected
+    def CASE15 ( self, main ) :
+        '''
+        Check that Leadership Election is still functional
+        '''
+        leader_result = main.TRUE
+        description = "Check that Leadership Election is still functional"
+        main.log.report(description)
+        main.case(description)
+        main.step("Find current leader and withdraw")
+        leader = main.ONOScli1.election_test_leader()
+        #TODO: do some sanity checking on leader before using it
+        withdraw_result = main.FALSE
+        if leader == ONOS1_ip:
+            old_leader = getattr( main, "ONOScli1" )
+        elif leader == ONOS2_ip:
+            old_leader = getattr( main, "ONOScli2" )
+        elif leader == ONOS3_ip:
+            old_leader = getattr( main, "ONOScli3" )
+        elif leader == ONOS4_ip:
+            old_leader = getattr( main, "ONOScli4" )
+        elif leader == ONOS5_ip:
+            old_leader = getattr( main, "ONOScli5" )
+        elif leader == ONOS6_ip:
+            old_leader = getattr( main, "ONOScli6" )
+        elif leader == ONOS7_ip:
+            old_leader = getattr( main, "ONOScli7" )
+        elif leader == None or leader == main.FALSE:
+            main.log.report("Leader for the election app should be an ONOS node,"\
+                    +"instead got '"+str(leader)+"'")
+            leader_result = main.FALSE
+        withdraw_result = old_leader.election_test_withdraw()
+
+
+        main.step("Make sure new leader is elected")
+        leader_list = []
+        for controller in range(1,num_controllers+1):
+            node = getattr( main, ( 'ONOScli' + str( controller ) ) )#loop through ONOScli handlers
+            leader_list.append( node.election_test_leader() )
+        for leaderN in leader_list:
+            if leaderN == leader:
+                main.log.report("ONOS"+str(controller)+" still sees " + str(leader) +\
+                        " as leader after they withdrew")
+                leader_result = main.FALSE
+            elif leaderN == main.FALSE:
+                #error in  response
+                #TODO: add check for "Command not found:" in the driver, this means the app isn't loaded
+                main.log.report("Something is wrong with election_test_leader function, check the error logs")
+                leader_result = main.FALSE
+        consistent_leader = main.FALSE
+        if len( set( leader_list ) ) == 1:
+            main.log.info("Each Election-app sees '"+str(leader_list[0])+"' as the leader")
+            consistent_leader = main.TRUE
+        else:
+            main.log.report("Inconsistent responses for leader of Election-app:")
+            for n in range(len(leader_list)):
+                main.log.report("ONOS" + str(n+1) + " response: " + str(leader_list[n]) )
+        if leader_result:
+            main.log.report("Leadership election tests passed(consistent view of leader across listeners and a new leader was elected when the old leader resigned)")
+        utilities.assert_equals(expect=main.TRUE, actual=leader_result,
+                onpass="Leadership election passed",
+                onfail="Something went wrong with Leadership election")
+
+
+        main.step("Run for election on old leader(just so everyone is in the hat)")
+        run_result = old_leader.election_test_run()
+        if consistent_leader == main.TRUE:
+            after_run = main.ONOScli1.election_test_leader()
+            #verify leader didn't just change
+            if after_run == leader_list[0]:
+                leader_result = main.TRUE
+            else:
+                leader_result = main.FALSE
+        #TODO: assert on  run and withdraw results?
+
+        utilities.assert_equals(expect=main.TRUE, actual=leader_result,
+                onpass="Leadership election passed",
+                onfail="Something went wrong with Leadership election after the old leader re-ran for election")
+

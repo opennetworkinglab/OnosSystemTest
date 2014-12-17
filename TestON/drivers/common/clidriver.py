@@ -48,7 +48,7 @@ class CLI(Component):
         ssh_newkey = 'Are you sure you want to continue connecting'
         refused = "ssh: connect to host "+self.ip_address+" port 22: Connection refused"
         if self.port:
-            self.handle =pexpect.spawn('ssh -p '+self.port+' '+self.user_name+'@'+self.ip_address,maxread=50000)
+            self.handle =pexpect.spawn('ssh -p '+self.port+' '+self.user_name+'@'+self.ip_address, env = {"TERM": "vt100"} , maxread=50000)
         else :
             self.handle =pexpect.spawn('ssh -X '+self.user_name+'@'+self.ip_address,maxread=1000000,timeout=60)
 
@@ -190,7 +190,9 @@ class CLI(Component):
         '''
         ssh_newkey = 'Are you sure you want to continue connecting'
         refused = "ssh: connect to host "+ip_address+" port 22: Connection refused"
-        self.handle =pexpect.spawn('scp '+user_name+'@'+ip_address+':'+filepath+' '+dst_path)
+        cmd = 'scp '+str(user_name)+'@'+str(ip_address)+':'+str(filepath)+' '+str(dst_path)
+        main.log.info("Sending: " + cmd )
+        self.handle =pexpect.spawn( cmd )
         i=self.handle.expect([ssh_newkey,'password:',pexpect.EOF,pexpect.TIMEOUT,refused],120)
         
         if i==0:    
@@ -212,7 +214,9 @@ class CLI(Component):
             main.log.error("ssh: connect to host "+ip_address+" port 22: Connection refused")
             return main.FALSE
 
-        self.handle.sendline("\r")
+        self.handle.sendline("")
+        self.handle.expect("$")
+        print self.handle.before
         
         return self.handle
     

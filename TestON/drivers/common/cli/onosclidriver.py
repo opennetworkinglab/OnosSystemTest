@@ -693,7 +693,38 @@ class OnosCliDriver(CLI):
             main.log.info(self.name+" ::::::")
             main.cleanup()
             main.exit()
-    
+
+    def roles_not_null(self):
+        '''
+        Iterates through each device and checks if there is a master assigned
+        Returns: main.TRUE if each device has a master
+                 main.FALSE any device has no master
+        '''
+        try:
+            import json
+            raw_roles = self.roles()
+            roles_json = json.loads(raw_roles)
+            #search json for the device with id then return the device
+            for device in roles_json:
+                #print device
+                if device['master'] == "none":
+                    main.log.warn("Device has no master: " + str(device) )
+                    return main.FALSE
+            return main.TRUE
+
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()
+
+
     def paths(self, src_id, dst_id):
         '''
         Returns string of paths, and the cost.
@@ -1716,7 +1747,7 @@ class OnosCliDriver(CLI):
         onos_node is the ip of one of the onos nodes in the cluster
         role must be either master, standby, or none
 
-        Returns main.TRUE or main.FALSE based argument varification.
+        Returns main.TRUE or main.FALSE based on argument verification.
             When device-role supports errors this should be extended to
             support that output
         '''
@@ -1808,5 +1839,127 @@ class OnosCliDriver(CLI):
             main.cleanup()
             main.exit()
 
+    def election_test_leader(self):
+        '''
+         * CLI command to get the current leader for the Election test application.
+         #NOTE: Requires installation of the onos-app-election feature
+         Returns: Node IP of the leader if one exists
+                  None if none exists
+                  Main.FALSE on error
+        '''
+        try:
+            self.handle.sendline("election-test-leader")
+            self.handle.expect("election-test-leader")
+            self.handle.expect("onos>")
+            response = self.handle.before
+            #Leader
+            node_search = re.search("The\scurrent\sleader\sfor\sthe\sElection\sapp\sis\s(?P<node>.+)\.", response)
+            if node_search:
+                node = node_search.group('node')
+                main.log.info("Election-test-leader on "+str(self.name)+" found " + node + " as the leader")
+                return node
+            #no leader
+            null_search = re.search("There\sis\scurrently\sno\sleader\selected\sfor\sthe\sElection\sapp", response)
+            if null_search:
+                main.log.info("Election-test-leader found no leader on " + self.name )
+                return None
+            #error
+            if re.search("Command\snot\sfound", response):
+                main.log.error("Election app is not loaded on " + self.name)
+                return main.FALSE
+            else:
+                main.log.error("Error in election_test_leader: unexpected response")
+                main.log.error( repr(response) )
+                return main.FALSE
+
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()
+
+    def election_test_run(self):
+        '''
+         * CLI command to run for leadership of the Election test application.
+         #NOTE: Requires installation of the onos-app-election feature
+         Returns: Main.TRUE on success
+                  Main.FALSE on error
+        '''
+        try:
+            self.handle.sendline("election-test-run")
+            self.handle.expect("election-test-run")
+            self.handle.expect("onos>")
+            response = self.handle.before
+            #success
+            search = re.search("Entering\sleadership\selections\sfor\sthe\sElection\sapp.", response)
+            if search:
+                main.log.info(self.name + " entering leadership elections for the Election app.")
+                return main.TRUE
+            #error
+            if re.search("Command\snot\sfound", response):
+                main.log.error("Election app is not loaded on " + self.name)
+                return main.FALSE
+            else:
+                main.log.error("Error in election_test_run: unexpected response")
+                main.log.error( repr(response) )
+                return main.FALSE
+
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()
+
+    def election_test_withdraw(self):
+        '''
+         * CLI command to withdraw the local node from leadership election for
+         * the Election test application.
+         #NOTE: Requires installation of the onos-app-election feature
+         Returns: Main.TRUE on success
+                  Main.FALSE on error
+        '''
+        try:
+            self.handle.sendline("election-test-withdraw")
+            self.handle.expect("election-test-withdraw")
+            self.handle.expect("onos>")
+            response = self.handle.before
+            #success
+            search = re.search("Withdrawing\sfrom\sleadership\selections\sfor\sthe\sElection\sapp.", response)
+            if search:
+                main.log.info(self.name + " withdrawing from leadership elections for the Election app.")
+                return main.TRUE
+            #error
+            if re.search("Command\snot\sfound", response):
+                main.log.error("Election app is not loaded on " + self.name)
+                return main.FALSE
+            else:
+                main.log.error("Error in election_test_withdraw: unexpected response")
+                main.log.error( repr(response) )
+                return main.FALSE
+
+
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()
 
     #***********************************

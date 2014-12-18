@@ -33,7 +33,7 @@
             <user>admin</user>
             <password>onos_test</password>
             <type>QuaggaCliDriver</type>
-            <connect_order>5</connect_order>
+            <connect_order>4</connect_order>
             <COMPONENTS> </COMPONENTS>
         </QuaggaCliHost3>
         <QuaggaCliHost4>
@@ -44,12 +44,21 @@
             <connect_order>5</connect_order>
             <COMPONENTS> </COMPONENTS>
         </QuaggaCliHost4>
+        <QuaggaCliHost5>
+            <host>127.0.0.1</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>QuaggaCliDriver</type>
+            <connect_order>6</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </QuaggaCliHost5>
+
         <QuaggaCliHost>
             <host>127.0.0.1</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>QuaggaCliDriver</type>
-            <connect_order>5</connect_order>
+            <connect_order>7</connect_order>
             <COMPONENTS> </COMPONENTS>
         </QuaggaCliHost>
 

@@ -79,6 +79,34 @@ class OnosCliDriver(CLI):
 
     def disconnect(self):
         '''
+        Sends 'logout' command to ONOS cli
+        '''
+        try:
+            self.handle.sendline("")
+            i = self.handle.expect([
+                "onos>",
+                "\$"], timeout=10)
+            if i == 0:
+                self.handle.sendline("\x04")
+                self.handle.expect("\$")
+            elif i == 1:
+                return main.TRUE
+                    
+        except pexpect.EOF:
+            main.log.error(self.name + ": eof exception found")
+            main.log.error(self.name + ":    " +
+                    self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()
+
+    def logout(self):
+        '''
         Called when Test is complete to disconnect the ONOS handle.
         '''
         response = ''
@@ -102,34 +130,6 @@ class OnosCliDriver(CLI):
             main.log.error(self.name + ": Connection failed to the host")
             response = main.FALSE
         return response
-
-    def logout(self):
-        '''
-        Sends 'logout' command to ONOS cli
-        '''
-        try:
-            self.handle.sendline("")
-            i = self.handle.expect([
-                "onos>",
-                "\$"], timeout=10)
-            if i == 0:
-                self.handle.sendline("logout")
-                self.handle.expect("\$")
-            elif i == 1:
-                return main.TRUE
-                    
-        except pexpect.EOF:
-            main.log.error(self.name + ": eof exception found")
-            main.log.error(self.name + ":    " +
-                    self.handle.before)
-            main.cleanup()
-            main.exit()
-        except:
-            main.log.info(self.name+" ::::::")
-            main.log.error( traceback.print_exc())
-            main.log.info(self.name+" ::::::")
-            main.cleanup()
-            main.exit()
 
     def set_cell(self, cellname):
         '''
@@ -517,6 +517,33 @@ class OnosCliDriver(CLI):
             main.cleanup()
             main.exit()
 
+       
+    def balance_masters(self):
+        '''
+        This balances the devices across all controllers
+        by issuing command: 'onos> onos:balance-masters'
+        If required this could be extended to return devices balanced output.
+        '''
+        try:
+            self.handle.sendline("")
+            self.handle.expect("onos>")
+
+            self.handle.sendline("onos:balance-masters")
+            self.handle.expect("onos>")
+            return main.TRUE
+
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()
+
     def links(self, json_format=True, grep_str=""):
         '''
         Lists all core links
@@ -637,6 +664,147 @@ class OnosCliDriver(CLI):
             main.cleanup()
             main.exit()
 
+    def getDevicePortsEnabledCount(self,dpid):
+        '''
+        Get the count of all enabled ports on a particular device/switch
+        '''
+        try:
+            self.handle.sendline("")
+            self.handle.expect("onos>")
+
+            self.handle.sendline("onos:ports -e "+dpid+" | wc -l")
+            i = self.handle.expect([
+                "No such device",
+                "onos>"])
+            
+            #self.handle.sendline("")
+            #self.handle.expect("onos>")
+
+            output = self.handle.before
+
+            if i == 0:
+                main.log.error("Error in getting ports")
+                return (ouput, "Error")
+            else:
+                result = output
+                return result
+        
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()
+
+    def getDeviceLinksActiveCount(self,dpid):
+        '''
+        Get the count of all enabled ports on a particular device/switch
+        '''
+        try:
+            self.handle.sendline("")
+            self.handle.expect("onos>")
+
+            self.handle.sendline("onos:links "+dpid+" | grep ACTIVE | wc -l")
+            i = self.handle.expect([
+                "No such device",
+                "onos>"])
+
+            output = self.handle.before
+
+            if i == 0:
+                main.log.error("Error in getting ports")
+                return (ouput, "Error")
+            else:
+                result = output
+                return result
+        
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()
+
+    def getAllIntentIds(self):
+        '''
+        Return a list of all Intent IDs
+        '''
+        try:
+            self.handle.sendline("")
+            self.handle.expect("onos>")
+
+            self.handle.sendline("onos:intents | grep id=")
+            i = self.handle.expect([
+                "Error",
+                "onos>"])
+
+            output = self.handle.before
+
+            if i == 0:
+                main.log.error("Error in getting ports")
+                return (ouput, "Error")
+            else:
+                result = output
+                return result
+        
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()
+
+    def onos_links(self):
+        '''
+        Return all device links on ONOS. This will be extended later to take DPID, link state as options
+        '''
+        try:
+            self.handle.sendline("")
+            self.handle.expect("onos>")
+
+            self.handle.sendline("links")
+            i = self.handle.expect([
+                "No such device",
+                "onos>"])
+            
+            #self.handle.sendline("")
+            #self.handle.expect("onos>")
+
+            output = self.handle.before
+
+            if i == 0:
+                main.log.error("Error in getting ports")
+                return (ouput, "Error")
+            else:
+                result = output
+                return result
+        
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()
 
     def roles(self, json_format=True, grep_str=""):
         '''
@@ -647,25 +815,23 @@ class OnosCliDriver(CLI):
         try:
             self.handle.sendline("")
             self.handle.expect("onos>")
-            
+
             if json_format:
-                if not grep_str:
-                    self.handle.sendline("roles -j")
-                    self.handle.expect("roles -j")
-                    self.handle.expect("onos>")
-                else:
-                    self.handle.sendline("roles -j | grep '"+
-                        str(grep_str)+"'")
-                    self.handle.expect("roles -j | grep '"+str(grep_str)+"'")
-                    self.handle.expect("onos>")
+                self.handle.sendline("roles -j")
+                self.handle.expect("roles -j")
+                self.handle.expect("onos>")
                 handle = self.handle.before
                 '''
-                handle variable here contains some ANSI escape color code sequences at the end which are invisible in the print command output
-                To make that escape sequence visible, use repr() function. The repr(handle) output when printed shows the ANSI escape sequences.
-                In json.loads(somestring), this somestring variable is actually repr(somestring) and json.loads would fail with the escape sequence.
-                So we take off that escape sequence using the following commads: 
+                handle variable here contains some ANSI escape color code sequences at the
+                end which are invisible in the print command output. To make that escape
+                sequence visible, use repr() function. The repr(handle) output when printed
+                shows the ANSI escape sequences. In json.loads(somestring), this somestring
+                variable is actually repr(somestring) and json.loads would fail with the escape
+                sequence.
+
+                So we take off that escape sequence using the following commads:
                 ansi_escape = re.compile(r'\r\r\n\x1b[^m]*m')
-                handle1 = ansi_escape.sub('', handle) 
+                handle1 = ansi_escape.sub('', handle)
                 '''
                 #print "repr(handle) =", repr(handle)
                 ansi_escape = re.compile(r'\r\r\n\x1b[^m]*m')
@@ -674,17 +840,10 @@ class OnosCliDriver(CLI):
                 return handle1
 
             else:
-                if not grep_str:
-                    self.handle.sendline("roles")
-                    self.handle.expect("onos>")
-                    self.handle.sendline("")
-                    self.handle.expect("onos>")
-                else:
-                    self.handle.sendline("roles | grep '"+
-                        str(grep_str)+"'")
-                    self.handle.expect("onos>")
-                    self.handle.sendline("")
-                    self.handle.expect("onos>")
+                self.handle.sendline("roles")
+                self.handle.expect("onos>")
+                self.handle.sendline("")
+                self.handle.expect("onos>")
                 handle = self.handle.before
                 #print "handle =",handle
                 return handle  
@@ -915,24 +1074,24 @@ class OnosCliDriver(CLI):
             * host_id_two: ONOS host id for host2
         Description:
             Adds a host-to-host intent (bidrectional) by
-            specifying the two hosts. 
+            specifying the two hosts.
         '''
         try:
             self.handle.sendline("")
             self.handle.expect("onos>")
-            
+
             self.handle.sendline("add-host-intent "+
                     str(host_id_one) + " " + str(host_id_two))
             self.handle.expect("onos>")
 
             handle = self.handle.before
-            print "handle =", handle
+            main.log.info("handle = "+handle)
 
-            main.log.info("Intent installed between "+
+            main.log.info("Host Intent installed between "+
                     str(host_id_one) + " and " + str(host_id_two))
 
-            return handle
-        
+            return main.TRUE
+
         except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
             main.log.error(self.name + ":    " + self.handle.before)
@@ -981,8 +1140,8 @@ class OnosCliDriver(CLI):
             main.cleanup()
             main.exit()
 
-    def add_point_intent(self, ingress_device, egress_device,
-            port_ingress="", port_egress="", ethType="", ethSrc="",
+    def add_point_intent(self, ingress_device, port_ingress,
+            egress_device, port_egress, ethType="", ethSrc="",
             ethDst="", bandwidth="", lambda_alloc=False, 
             ipProto="", ipSrc="", ipDst="", tcpSrc="", tcpDst=""):
         '''
@@ -1017,11 +1176,12 @@ class OnosCliDriver(CLI):
                     and not bandwidth and not lambda_alloc \
                     and not ipProto and not ipSrc and not ipDst \
                     and not tcpSrc and not tcpDst:
-                cmd = "add-point-intent"
-      
-
+                cmd = "add-point-intent "+\
+                        str(ingress_device) + "/" + str(port_ingress) + " " +\
+                        str(egress_device) + "/" + str(port_egress)
+       
             else:
-                cmd = "add-point-intent"
+                cmd = "add-point-intent "
                 
                 if ethType:
                     cmd += " --ethType " + str(ethType)
@@ -1044,39 +1204,18 @@ class OnosCliDriver(CLI):
                 if tcpDst:
                     cmd += " --tcpDst " + str(tcpDst)
 
-            #Check whether the user appended the port 
-            #or provided it as an input
-            if "/" in ingress_device:
-                cmd += " "+str(ingress_device) 
-            else:
-                if not port_ingress:
-                    main.log.error("You must specify "+
-                        "the ingress port")
-                    #TODO: perhaps more meaningful return
-                    return main.FALSE
-
-                cmd += " "+ \
-                    str(ingress_device) + "/" +\
-                    str(port_ingress) + " " 
-
-            if "/" in egress_device:
-                cmd += " "+str(egress_device)
-            else:
-                if not port_egress:
-                    main.log.error("You must specify "+
-                        "the egress port")
-                    return main.FALSE
-                
-                cmd += " "+\
-                    str(egress_device) + "/" +\
-                    str(port_egress)  
+                cmd += " "+str(ingress_device) +\
+                    "/" + str(port_ingress) + " " +\
+                    str(egress_device) + "/" + str(port_egress) 
 
             self.handle.sendline(cmd)
-            
-            main.log.info(cmd + " sent")
             i = self.handle.expect([
                 "Error",
                 "onos>"])
+          
+            self.handle.sendline("intents")
+            self.handle.expect("onos>")
+            Intenthandle = self.handle.before
 
             if i == 0:
                 main.log.error("Error in adding point-to-point intent")
@@ -1126,46 +1265,6 @@ class OnosCliDriver(CLI):
             main.log.info(self.name+" ::::::")
             main.log.error( traceback.print_exc())
             main.log.info(self.name+" ::::::")
-            main.cleanup()
-            main.exit()
-
-    # This method should be used after installing application: onos-app-sdnip
-    def routes(self, json_format=False):
-        '''
-        Optional:
-            * json_format: enable output formatting in json
-        Description:
-            Obtain all routes in the system
-        '''
-        try:
-            if json_format:
-                self.handle.sendline("routes -j")
-                self.handle.expect("routes -j")
-                self.handle.expect("onos>")
-                handle_tmp = self.handle.before
-                
-                ansi_escape = re.compile(r'\r\r\n\x1b[^m]*m')
-                handle = ansi_escape.sub('', handle_tmp)
-
-            else:
-                self.handle.sendline("")
-                self.handle.expect("onos>")
-
-                self.handle.sendline("routes")
-                self.handle.expect("onos>")
-                handle = self.handle.before
-
-            return handle
-
-        except pexpect.EOF:
-            main.log.error(self.name + ": EOF exception found")
-            main.log.error(self.name + ":    " + self.handle.before)
-            main.cleanup()
-            main.exit()
-        except:
-            main.log.info(self.name + " ::::::")
-            main.log.error(traceback.print_exc())
-            main.log.info(self.name + " ::::::")
             main.cleanup()
             main.exit()
 
@@ -1220,6 +1319,8 @@ class OnosCliDriver(CLI):
                 self.handle.expect("flows -j")
                 self.handle.expect("onos>")
                 handle = self.handle.before
+                ansi_escape = re.compile(r'\r\r\n\x1b[^m]*m')
+                handle = ansi_escape.sub('', handle)
 
             else:
                 self.handle.sendline("")
@@ -1227,53 +1328,10 @@ class OnosCliDriver(CLI):
                 self.handle.sendline("flows")
                 self.handle.expect("onos>")
                 handle = self.handle.before
+            if re.search("Error\sexecuting\scommand:", handle):
+                main.log.error(self.name + ".flows() response: " + str(handle))
 
             return handle
-
-        except pexpect.EOF:
-            main.log.error(self.name + ": EOF exception found")
-            main.log.error(self.name + ":    " + self.handle.before)
-            main.cleanup()
-            main.exit()
-        except:
-            main.log.info(self.name+" ::::::")
-            main.log.error( traceback.print_exc())
-            main.log.info(self.name+" ::::::")
-            main.cleanup()
-            main.exit()
-
-    def push_test_intents(self, dpid_src, dpid_dst, num_intents,
-            report=True):
-        '''
-        Description:
-            Push a number of intents in a batch format to 
-            a specific point-to-point intent definition
-        Required:
-            * dpid_src: specify source dpid
-            * dpid_dst: specify destination dpid
-            * num_intents: specify number of intents to push
-        Optional:
-            * report: default True, returns latency information
-        '''
-        try:
-            cmd = "push-test-intents "+\
-                  str(dpid_src)+" "+str(dpid_dst)+" "+\
-                  str(num_intents)
-            self.handle.sendline(cmd)
-            self.handle.expect(cmd)
-            self.handle.expect("onos>")
-                
-            handle = self.handle.before
-              
-            #Some color thing that we want to escape
-            ansi_escape = re.compile(r'\r\r\n\x1b[^m]*m')
-            handle = ansi_escape.sub('', handle)
-    
-            if report:
-                main.log.info(handle)
-                return handle
-            else:
-                return main.TRUE
 
         except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")

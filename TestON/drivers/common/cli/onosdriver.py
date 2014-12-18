@@ -270,7 +270,7 @@ class OnosDriver(CLI):
                 return main.TRUE # So that only when git pull is done, we do mvn clean compile
             elif i==3:
                 main.log.info(self.name + ": Git Pull - Already up to date")
-                return i
+                return main.TRUE
             elif i==4:
                 main.log.info(self.name + ": Git Pull - Aborting... Are there conflicting git files?")
                 return main.ERROR
@@ -392,10 +392,11 @@ class OnosDriver(CLI):
             self.handle.sendline("export TERM=xterm-256color")
             self.handle.expect("xterm-256color")
             self.handle.expect("\$")
-            self.handle.sendline("\n")
+            self.handle.sendline("")
             self.handle.expect("\$")
             self.handle.sendline("cd " + self.home + "; git log -1 --pretty=fuller --decorate=short | grep -A 6 \"commit\" --color=never")
-            self.handle.expect("--color=never")
+            #NOTE: for some reason there are backspaces inserted in this phrase when run from Jenkins on some tests
+            self.handle.expect("never")
             self.handle.expect("\$")
             response=(self.name +": \n"+ str(self.handle.before + self.handle.after))
             self.handle.sendline("cd " + self.home)
@@ -410,10 +411,15 @@ class OnosDriver(CLI):
                     #as xml specific tags that cause errors
                     line = line.replace("<","[")
                     line = line.replace(">","]")
-                    main.log.report(line)
+                    main.log.report("\t" + line)
             return lines[2]
         except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":     " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except pexpect.TIMEOUT:
+            main.log.error(self.name + ": TIMEOUT exception found")
             main.log.error(self.name + ":     " + self.handle.before)
             main.cleanup()
             main.exit()
@@ -648,7 +654,7 @@ class OnosDriver(CLI):
             main.cleanup()
             main.exit()
 
-    def onos_install(self, options="-f", node = ""):
+    def onos_install(self, node = ""):
         '''
         Installs ONOS bits on the designated cell machine.
         If -f option is provided, it also forces an uninstall. 
@@ -660,10 +666,10 @@ class OnosDriver(CLI):
         Returns: main.TRUE on success and main.FALSE on failure
         '''
         try:
-            if options:
-                self.handle.sendline("onos-install " + options + " " + node)
-            else:
-                self.handle.sendline("onos-install "+node)
+            #if options:
+            #    self.handle.sendline("onos-install " + options + " " + node)
+            #else:
+            self.handle.sendline("onos-install "+node)
             self.handle.expect("onos-install ")
             #NOTE: this timeout may need to change depending on the network and size of ONOS
             i=self.handle.expect(["Network\sis\sunreachable",
@@ -773,8 +779,45 @@ class OnosDriver(CLI):
             main.log.info(self.name+" ::::::")
             main.cleanup()
             main.exit()
-    
-    def onos_uninstall(self, node_ip=""):
+
+    def onos_status(self, node=""):
+        '''
+        Calls onos command: 'onos-service [<node-ip>] status'
+        '''
+
+        try:
+            self.handle.sendline("")
+            self.handle.expect("\$")
+            self.handle.sendline("onos-service "+str(node)+
+                " status")
+            i = self.handle.expect([
+                "start/running",
+                "stop/waiting",
+                pexpect.TIMEOUT],timeout=120)
+
+            if i == 0:
+                main.log.info("ONOS is running")
+                return main.TRUE
+            elif i == 1:
+                main.log.info("ONOS is stopped")
+                return main.FALSE
+            else:
+                main.log.error("ONOS service failed to check the status")
+                main.cleanup()
+                main.exit()
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()
+
+    def onos_uninstall(self, node=""):
         '''
         Calls the command: 'onos-uninstall'
         Uninstalls ONOS from the designated cell machine, stopping 
@@ -783,10 +826,10 @@ class OnosDriver(CLI):
         try:
             self.handle.sendline("")
             self.handle.expect("\$")
-            self.handle.sendline("onos-uninstall "+str(node_ip))
+            self.handle.sendline("onos-uninstall "+str(node))
             self.handle.expect("\$")
 
-            main.log.info("ONOS "+node_ip+" was uninstalled")
+            main.log.info("ONOS "+node+" was uninstalled")
 
             #onos-uninstall command does not return any text
             return main.TRUE
@@ -1230,6 +1273,4 @@ class OnosDriver(CLI):
             main.log.info(self.name+" ::::::")
             main.log.error( traceback.print_exc())
             main.log.info(self.name+" ::::::")
-
-
 

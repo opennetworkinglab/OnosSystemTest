@@ -508,7 +508,34 @@ class OnosCliDriver(CLI):
             main.cleanup()
             main.exit()
 
-    def links(self, json_format=True):
+       
+    def balance_masters(self):
+        '''
+        This balances the devices across all controllers
+        by issuing command: 'onos> onos:balance-masters'
+        If required this could be extended to return devices balanced output.
+        '''
+        try:
+            self.handle.sendline("")
+            self.handle.expect("onos>")
+
+            self.handle.sendline("onos:balance-masters")
+            self.handle.expect("onos>")
+            return main.TRUE
+
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()
+
+    def links(self, json_format=True, grep_str=""):
         '''
         Lists all core links
         Optional argument:
@@ -906,7 +933,7 @@ class OnosCliDriver(CLI):
             handle = self.handle.before
             #print "handle =", handle
 
-            main.log.info("Intent installed between "+
+            main.log.info("Host intent installed between "+
                     str(host_id_one) + " and " + str(host_id_two))
 
             return handle
@@ -1963,3 +1990,107 @@ class OnosCliDriver(CLI):
             main.exit()
 
     #***********************************
+    def getDevicePortsEnabledCount(self,dpid):
+        '''
+        Get the count of all enabled ports on a particular device/switch
+        '''
+        try:
+            self.handle.sendline("")
+            self.handle.expect("onos>")
+
+            self.handle.sendline("onos:ports -e "+dpid+" | wc -l")
+            i = self.handle.expect([
+                "No such device",
+                "onos>"])
+            
+            #self.handle.sendline("")
+            #self.handle.expect("onos>")
+
+            output = self.handle.before
+
+            if i == 0:
+                main.log.error("Error in getting ports")
+                return (ouput, "Error")
+            else:
+                result = output
+                return result
+        
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()
+
+    def getDeviceLinksActiveCount(self,dpid):
+        '''
+        Get the count of all enabled ports on a particular device/switch
+        '''
+        try:
+            self.handle.sendline("")
+            self.handle.expect("onos>")
+
+            self.handle.sendline("onos:links "+dpid+" | grep ACTIVE | wc -l")
+            i = self.handle.expect([
+                "No such device",
+                "onos>"])
+
+            output = self.handle.before
+
+            if i == 0:
+                main.log.error("Error in getting ports")
+                return (ouput, "Error")
+            else:
+                result = output
+                return result
+        
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()
+
+    def getAllIntentIds(self):
+        '''
+        Return a list of all Intent IDs
+        '''
+        try:
+            self.handle.sendline("")
+            self.handle.expect("onos>")
+
+            self.handle.sendline("onos:intents | grep id=")
+            i = self.handle.expect([
+                "Error",
+                "onos>"])
+
+            output = self.handle.before
+
+            if i == 0:
+                main.log.error("Error in getting ports")
+                return (ouput, "Error")
+            else:
+                result = output
+                return result
+        
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()

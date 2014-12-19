@@ -447,12 +447,12 @@ class MininetCliDriver(Emulator):
                 main.log.error(self.name + ":     " + self.handle.before)
                 main.cleanup()
                 main.exit()
-            pattern = r'^(?P<dpid>\d)+'
+            pattern = r'^(?P<dpid>\w)+'
             result = re.search(pattern, response, re.MULTILINE)
             if result is None:
                 main.log.info("Couldn't find DPID for switch '', found: %s" % (switch, response))
                 return main.FALSE
-            return str(result.group(0))
+            return str(result.group(0)).lower()
         else:
             main.log.error("Connection failed to the host")
 
@@ -1107,7 +1107,7 @@ class MininetCliDriver(Emulator):
         # created sorted list of dpid's in MN and ONOS for comparison
         mnDPIDs=[]
         for switch in output['switches']:
-            mnDPIDs.append(switch['dpid'])
+            mnDPIDs.append(switch['dpid'].lower())
         mnDPIDs.sort()
         #print "List of Mininet switch DPID's"
         #print mnDPIDs
@@ -1118,7 +1118,7 @@ class MininetCliDriver(Emulator):
         onosDPIDs=[]
         for switch in onos:
             if switch['available'] == True:
-                onosDPIDs.append(switch['id'].replace(":",'').replace("of",''))
+                onosDPIDs.append(switch['id'].replace(":",'').replace("of",'').lower())
             #else:
                 #print "Switch is unavailable:"
                 #print switch

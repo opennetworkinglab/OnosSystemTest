@@ -270,7 +270,7 @@ class OnosDriver(CLI):
                 return main.TRUE # So that only when git pull is done, we do mvn clean compile
             elif i==3:
                 main.log.info(self.name + ": Git Pull - Already up to date")
-                return main.TRUE
+                return i 
             elif i==4:
                 main.log.info(self.name + ": Git Pull - Aborting... Are there conflicting git files?")
                 return main.ERROR

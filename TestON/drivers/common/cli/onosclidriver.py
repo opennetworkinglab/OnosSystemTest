@@ -1990,7 +1990,7 @@ class OnosCliDriver(CLI):
             main.exit()
 
     #***********************************
-    def getDevicePortsEnabledCount(self,str(dpid)):
+    def getDevicePortsEnabledCount(self,dpid):
         '''
         Get the count of all enabled ports on a particular device/switch
         '''

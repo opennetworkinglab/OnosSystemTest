@@ -535,7 +535,7 @@ class OnosCliDriver(CLI):
             main.cleanup()
             main.exit()
 
-    def links(self, json_format=True, grep_str=""):
+    def links(self, json_format=True):
         '''
         Lists all core links
         Optional argument:
@@ -1990,11 +1990,12 @@ class OnosCliDriver(CLI):
             main.exit()
 
     #***********************************
-    def getDevicePortsEnabledCount(self,dpid):
+    def getDevicePortsEnabledCount(self,str(dpid)):
         '''
         Get the count of all enabled ports on a particular device/switch
         '''
         try:
+            dpid = str(dpid)
             self.handle.sendline("")
             self.handle.expect("onos>")
 
@@ -2032,6 +2033,7 @@ class OnosCliDriver(CLI):
         Get the count of all enabled ports on a particular device/switch
         '''
         try:
+            dpid = str(dpid)
             self.handle.sendline("")
             self.handle.expect("onos>")
 

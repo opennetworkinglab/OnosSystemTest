@@ -172,7 +172,7 @@ class OnosCliDriver(CLI):
             main.cleanup()
             main.exit()
         
-    def start_onos_cli(self, ONOS_ip):
+    def start_onos_cli(self, ONOS_ip, karafTimeout=""):
         try:
             self.handle.sendline("")
             x = self.handle.expect([
@@ -190,6 +190,11 @@ class OnosCliDriver(CLI):
 
             if i == 0:
                 main.log.info(str(ONOS_ip)+" CLI Started successfully")
+                if karafTimeout:
+                    self.handle.sendline("config:property-set -p org.apache.karaf.shell sshIdleTimeout "+karafTimeout)
+                    self.handle.expect("\$")
+                    self.handle.sendline("onos -w "+str(ONOS_ip))
+                    self.handle.expect("onos>")
                 return main.TRUE
             else:
                 #If failed, send ctrl+c to process and try again
@@ -201,6 +206,11 @@ class OnosCliDriver(CLI):
                 if i == 0:
                     main.log.info(str(ONOS_ip)+" CLI Started "+
                         "successfully after retry attempt")
+                    if karafTimeout:
+                        self.handle.sendline("config:property-set -p org.apache.karaf.shell sshIdleTimeout "+karafTimeout)
+                        self.handle.expect("\$")
+                        self.handle.sendline("onos -w "+str(ONOS_ip))
+			self.handle.expect("onos>")
                     return main.TRUE
                 else:
                     main.log.error("Connection to CLI "+\

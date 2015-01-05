@@ -270,7 +270,7 @@ class OnosDriver(CLI):
                 return main.TRUE # So that only when git pull is done, we do mvn clean compile
             elif i==3:
                 main.log.info(self.name + ": Git Pull - Already up to date")
-                return i
+                return i 
             elif i==4:
                 main.log.info(self.name + ": Git Pull - Aborting... Are there conflicting git files?")
                 return main.ERROR
@@ -1361,4 +1361,39 @@ class OnosDriver(CLI):
             main.log.error( traceback.print_exc())
             main.log.info(self.name+" ::::::")
 
+    def onos_status(self, node=""):
+        '''
+        Calls onos command: 'onos-service [<node-ip>] status'
+        '''
 
+        try:
+            self.handle.sendline("")
+            self.handle.expect("\$")
+            self.handle.sendline("onos-service "+str(node)+
+                " status")
+            i = self.handle.expect([
+                "start/running",
+                "stop/waiting",
+                pexpect.TIMEOUT],timeout=120)
+
+            if i == 0:
+                main.log.info("ONOS is running")
+                return main.TRUE
+            elif i == 1:
+                main.log.info("ONOS is stopped")
+                return main.FALSE
+            else:
+                main.log.error("ONOS service failed to check the status")
+                main.cleanup()
+                main.exit()
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()

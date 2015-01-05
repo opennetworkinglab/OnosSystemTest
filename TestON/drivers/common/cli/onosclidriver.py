@@ -177,6 +177,12 @@ class OnosCliDriver(CLI):
         karafTimeout is an optional arugument. karafTimeout value passed by user would be used to set the 
         current karaf shell idle timeout. Note that when ever this property is modified the shell will exit and
         the subsequent login would reflect new idle timeout.
+        Below is an example to start a session with 60 seconds idle timeout (input value is in milliseconds):
+          
+        tValue = "60000"
+        main.ONOScli1.start_onos_cli(ONOS_ip, karafTimeout=tValue)
+        
+        Note: karafTimeout is left as str so that this could be read and passed to start_onos_cli from PARAMS file as str.
         '''
         try:
             self.handle.sendline("")

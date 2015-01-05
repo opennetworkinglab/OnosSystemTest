@@ -173,11 +173,11 @@ class OnosCliDriver(CLI):
             main.exit()
         
     def start_onos_cli(self, ONOS_ip, karafTimeout=""):
-    '''
-    karafTimeout is an optional arugument. karafTimeout value passed by user would be used to set the 
-    current karaf shell idle timeout. Note that when ever this property is modified the shell will exit and
-    the subsequent login would reflect new idle timeout.
-    '''
+        '''
+        karafTimeout is an optional arugument. karafTimeout value passed by user would be used to set the 
+        current karaf shell idle timeout. Note that when ever this property is modified the shell will exit and
+        the subsequent login would reflect new idle timeout.
+        '''
         try:
             self.handle.sendline("")
             x = self.handle.expect([

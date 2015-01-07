@@ -2029,7 +2029,7 @@ class OnosCliDriver(CLI):
 
             if i == 0:
                 main.log.error("Error in getting ports")
-                return (ouput, "Error")
+                return (output, "Error")
             else:
                 result = output
                 return result
@@ -2064,7 +2064,7 @@ class OnosCliDriver(CLI):
 
             if i == 0:
                 main.log.error("Error in getting ports")
-                return (ouput, "Error")
+                return (output, "Error")
             else:
                 result = output
                 return result
@@ -2098,7 +2098,7 @@ class OnosCliDriver(CLI):
 
             if i == 0:
                 main.log.error("Error in getting ports")
-                return (ouput, "Error")
+                return (output, "Error")
             else:
                 result = output
                 return result

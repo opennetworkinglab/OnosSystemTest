@@ -16,24 +16,18 @@ Created on 26-Oct-2012
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with TestON.  If not, see <http://www.gnu.org/licenses/>.		
+    along with TestON.  If not, see <http://www.gnu.org/licenses/>.
 
 
 MininetCliDriver is the basic driver which will handle the Mininet functions
 '''
 import traceback
 import pexpect
-import struct
-import fcntl
-import os
-import signal
 import re
 import sys
-import core.teston
 sys.path.append("../")
 from math import pow
 from drivers.common.cli.emulatordriver import Emulator
-from drivers.common.clidriver import CLI
 
 class MininetCliDriver(Emulator):
     '''
@@ -50,13 +44,13 @@ class MininetCliDriver(Emulator):
         Here the main is the TestON instance after creating all the log handles.
         '''
         for key in connectargs:
-            vars(self)[key] = connectargs[key]       
-        
+            vars(self)[key] = connectargs[key]
+
         self.name = self.options['name']
         self.handle = super(MininetCliDriver, self).connect(user_name = self.user_name, ip_address = self.ip_address,port = None, pwd = self.pwd)
-        
+
         self.ssh_handle = self.handle
-        
+
         if self.handle :
             main.log.info(self.name+": Clearing any residual state or processes")
             self.handle.sendline("sudo mn -c")
@@ -64,32 +58,32 @@ class MininetCliDriver(Emulator):
             if i==0:
                 main.log.info(self.name+": Sending sudo password")
                 self.handle.sendline(self.pwd)
-                i=self.handle.expect(['%s:'%(self.user),'\$',pexpect.EOF,pexpect.TIMEOUT],120) 
+                i=self.handle.expect(['%s:'%(self.user),'\$',pexpect.EOF,pexpect.TIMEOUT],120)
             if i==1:
                 main.log.info(self.name+": Clean")
             elif i==2:
                 main.log.error(self.name+": Connection terminated")
             elif i==3: #timeout
                 main.log.error(self.name+": Something while cleaning MN took too long... " )
- 
-            main.log.info(self.name+": building fresh mininet") 
+
+            main.log.info(self.name+": building fresh mininet")
             #### for reactive/PARP enabled tests
             cmdString = "sudo mn " + self.options['arg1'] + " " + self.options['arg2'] +  " --mac --controller " + self.options['controller'] + " " + self.options['arg3']
-            
+
             argList = self.options['arg1'].split(",")
             global topoArgList
             topoArgList = argList[0].split(" ")
             argList = map(int, argList[1:])
             topoArgList = topoArgList[1:] + argList
-            
+
           #### for proactive flow with static ARP entries
             #cmdString = "sudo mn " + self.options['arg1'] + " " + self.options['arg2'] +  " --mac --arp --controller " + self.options['controller'] + " " + self.options['arg3']
             self.handle.sendline(cmdString)
             self.handle.expect(["sudo mn",pexpect.EOF,pexpect.TIMEOUT])
-            while 1: 
+            while 1:
                 i=self.handle.expect(['mininet>','\*\*\*','Exception',pexpect.EOF,pexpect.TIMEOUT],300)
                 if i==0:
-                    main.log.info(self.name+": mininet built") 
+                    main.log.info(self.name+": mininet built")
                     return main.TRUE
                 if i==1:
                     self.handle.expect(["\n",pexpect.EOF,pexpect.TIMEOUT])
@@ -106,21 +100,21 @@ class MininetCliDriver(Emulator):
             #if utilities.assert_matches(expect=patterns,actual=resultCommand,onpass="Network is being launched",onfail="Network launching is being failed "):
             return main.TRUE
         else:#if no handle
-            main.log.error(self.name+": Connection failed to the host "+self.user_name+"@"+self.ip_address) 
+            main.log.error(self.name+": Connection failed to the host "+self.user_name+"@"+self.ip_address)
             main.log.error(self.name+": Failed to connect to the Mininet")
             return main.FALSE
-                    
+
     def num_switches_n_links(self,topoType,depth,fanout):
         if topoType == 'tree':
             if fanout is None:     #In tree topology, if fanout arg is not given, by default it is 2
                 fanout = 2
             k = 0
             count = 0
-            while(k <= depth-1): 
+            while(k <= depth-1):
                 count = count + pow(fanout,k)
                 k = k+1
                 num_switches = count
-            while(k <= depth-2): 
+            while(k <= depth-2):
                 '''depth-2 gives you only core links and not considering edge links as seen by ONOS
                     If all the links including edge links are required, do depth-1
                 '''
@@ -128,7 +122,7 @@ class MininetCliDriver(Emulator):
                 k = k+1
             num_links = count * fanout
             #print "num_switches for %s(%d,%d) = %d and links=%d" %(topoType,depth,fanout,num_switches,num_links)
-        
+
         elif topoType =='linear':
             if fanout is None:     #In linear topology, if fanout or num_hosts_per_sw is not given, by default it is 1
                 fanout = 1
@@ -136,7 +130,7 @@ class MininetCliDriver(Emulator):
             num_hosts_per_sw = fanout
             total_num_hosts = num_switches * num_hosts_per_sw
             num_links = total_num_hosts + (num_switches - 1)
-            print "num_switches for %s(%d,%d) = %d and links=%d" %(topoType,depth,fanout,num_switches,num_links) 
+            print "num_switches for %s(%d,%d) = %d and links=%d" %(topoType,depth,fanout,num_switches,num_links)
         topoDict = {}
         topoDict = {"num_switches":int(num_switches), "num_corelinks":int(num_links)}
         return topoDict
@@ -181,31 +175,31 @@ class MininetCliDriver(Emulator):
                 self.handle.expect("mininet>")
                 return main.FALSE
         else :
-            main.log.error(self.name+": Connection failed to the host") 
+            main.log.error(self.name+": Connection failed to the host")
             main.cleanup()
             main.exit()
 
     def fpingHost(self,**pingParams):
-        ''' 
+        '''
         Uses the fping package for faster pinging...
-        *requires fping to be installed on machine running mininet 
-        ''' 
+        *requires fping to be installed on machine running mininet
+        '''
         args = utilities.parse_args(["SRC","TARGET"],**pingParams)
         command = args["SRC"] + " fping -i 100 -t 20 -C 1 -q "+args["TARGET"]
-        self.handle.sendline(command) 
-        self.handle.expect([args["TARGET"],pexpect.EOF,pexpect.TIMEOUT]) 
+        self.handle.sendline(command)
+        self.handle.expect([args["TARGET"],pexpect.EOF,pexpect.TIMEOUT])
         self.handle.expect(["mininet",pexpect.EOF,pexpect.TIMEOUT])
         response = self.handle.before 
         if re.search(":\s-" ,response):
-            main.log.info(self.name+": Ping fail") 
+            main.log.info(self.name+": Ping fail")
             return main.FALSE
         elif re.search(":\s\d{1,2}\.\d\d", response):
             main.log.info(self.name+": Ping good!")
             return main.TRUE
-        main.log.info(self.name+": Install fping on mininet machine... ") 
+        main.log.info(self.name+": Install fping on mininet machine... ")
         main.log.info(self.name+": \n---\n"+response)
         return main.FALSE
-        
+
     def pingHost(self,**pingParams):
         '''
         Ping from one mininet host to another
@@ -227,7 +221,7 @@ class MininetCliDriver(Emulator):
                 main.log.error(self.name + ": timeout when waiting for response from mininet")
                 main.log.error("response: " + str(self.handle.before))
             response = self.handle.before
-        except pexpect.EOF:  
+        except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
             main.log.error(self.name + ":     " + self.handle.before)
             main.cleanup()
@@ -236,13 +230,13 @@ class MininetCliDriver(Emulator):
         #if utilities.assert_matches(expect=',\s0\%\spacket\sloss',actual=response,onpass="No Packet loss",onfail="Host is not reachable"):
         if re.search(',\s0\%\spacket\sloss',response):
             main.log.info(self.name+": no packets lost, host is reachable")
-            main.last_result = main.TRUE 
+            main.last_result = main.TRUE
             return main.TRUE
         else :
             main.log.error(self.name+": PACKET LOST, HOST IS NOT REACHABLE")
             main.last_result = main.FALSE
             return main.FALSE
-    
+
     def checkIP(self,host):
         '''
         Verifies the host's ip configured or not.
@@ -250,14 +244,14 @@ class MininetCliDriver(Emulator):
         if self.handle :
             try:
                 response = self.execute(cmd=host+" ifconfig",prompt="mininet>",timeout=10)
-            except pexpect.EOF:  
+            except pexpect.EOF:
                 main.log.error(self.name + ": EOF exception found")
                 main.log.error(self.name + ":     " + self.handle.before)
                 main.cleanup()
                 main.exit()
 
             pattern = "inet\s(addr|Mask):([0-1]{1}[0-9]{1,2}|2[0-4][0-9]|25[0-5]|[0-9]{1,2}).([0-1]{1}[0-9]{1,2}|2[0-4][0-9]|25[0-5]|[0-9]{1,2}).([0-1]{1}[0-9]{1,2}|2[0-4][0-9]|25[0-5]|[0-9]{1,2}).([0-1]{1}[0-9]{1,2}|2[0-4][0-9]|25[0-5]|[0-9]{1,2})"
-            #pattern = "inet addr:10.0.0.6"  
+            #pattern = "inet addr:10.0.0.6"
             #if utilities.assert_matches(expect=pattern,actual=response,onpass="Host Ip configured properly",onfail="Host IP not found") :
             if re.search(pattern,response):
                 main.log.info(self.name+": Host Ip configured properly")
@@ -266,8 +260,8 @@ class MininetCliDriver(Emulator):
                 main.log.error(self.name+": Host IP not found")
                 return main.FALSE
         else :
-            main.log.error(self.name+": Connection failed to the host") 
-            
+            main.log.error(self.name+": Connection failed to the host")
+
     def verifySSH(self,**connectargs):
         try:
             response = self.execute(cmd="h1 /usr/sbin/sshd -D&",prompt="mininet>",timeout=10)
@@ -275,7 +269,7 @@ class MininetCliDriver(Emulator):
             for key in connectargs:
                 vars(self)[key] = connectargs[key]
             response = self.execute(cmd="xterm h1 h4 ",prompt="mininet>",timeout=10)
-        except pexpect.EOF:  
+        except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
             main.log.error(self.name + ":     " + self.handle.before)
             main.cleanup()
@@ -287,8 +281,6 @@ class MininetCliDriver(Emulator):
             return main.FALSE
         else :
             return main.TRUE
-
-    
 
 
     def changeIP(self,host,intf,newIP,newNetmask):
@@ -317,7 +309,7 @@ class MininetCliDriver(Emulator):
         '''
         if self.handle:
             try:
-                cmd = host+" route add default gw "+newGW 
+                cmd = host+" route add default gw "+newGW
                 self.handle.sendline(cmd)
                 self.handle.expect("mininet>")
                 response = self.handle.before
@@ -328,14 +320,14 @@ class MininetCliDriver(Emulator):
                 main.log.error(self.name + ": EOF exception found")
                 main.log.error(self.name + ":     " + self.handle.before)
                 return main.FALSE
-  
+
     def addStaticMACAddress(self,host,GW,macaddr):
         '''
         Changes the mac address of a geateway host
         '''
         if self.handle:
             try:
-                #h1  arp -s 10.0.1.254 00:00:00:00:11:11 
+                #h1  arp -s 10.0.1.254 00:00:00:00:11:11
                 cmd = host+" arp -s "+GW+" "+macaddr
                 self.handle.sendline(cmd)
                 self.handle.expect("mininet>")
@@ -350,7 +342,7 @@ class MininetCliDriver(Emulator):
 
     def verifyStaticGWandMAC(self,host):
         '''
-        Verify if the static gateway and mac address assignment 
+        Verify if the static gateway and mac address assignment
         '''
         if self.handle:
             try:
@@ -375,7 +367,7 @@ class MininetCliDriver(Emulator):
         if self.handle :
             try:
                 response = self.execute(cmd=host+" ifconfig",prompt="mininet>",timeout=10)
-            except pexpect.EOF:  
+            except pexpect.EOF:
                 main.log.error(self.name + ": EOF exception found")
                 main.log.error(self.name + ":     " + self.handle.before)
                 main.cleanup()
@@ -387,7 +379,7 @@ class MininetCliDriver(Emulator):
             main.log.info(self.name+": Mac-Address of Host "+ host + " is " + mac_address)
             return mac_address
         else :
-            main.log.error(self.name+": Connection failed to the host") 
+            main.log.error(self.name+": Connection failed to the host")
 
     def getInterfaceMACAddress(self,host, interface):
         '''
@@ -397,7 +389,7 @@ class MininetCliDriver(Emulator):
             try:
                 response = self.execute(cmd=host+" ifconfig " + interface,
                                     prompt="mininet>",timeout=10)
-            except pexpect.EOF:  
+            except pexpect.EOF:
                 main.log.error(self.name + ": EOF exception found")
                 main.log.error(self.name + ":     " + self.handle.before)
                 main.cleanup()
@@ -421,7 +413,7 @@ class MininetCliDriver(Emulator):
         if self.handle :
             try:
                 response = self.execute(cmd=host+" ifconfig",prompt="mininet>",timeout=10)
-            except pexpect.EOF:  
+            except pexpect.EOF:
                 main.log.error(self.name + ": EOF exception found")
                 main.log.error(self.name + ":     " + self.handle.before)
                 main.cleanup()
@@ -432,8 +424,8 @@ class MininetCliDriver(Emulator):
             main.log.info(self.name+": IP-Address of Host "+host +" is "+ip_address_search.group(1))
             return ip_address_search.group(1)
         else :
-            main.log.error(self.name+": Connection failed to the host") 
-        
+            main.log.error(self.name+": Connection failed to the host")
+
     def getSwitchDPID(self,switch):
         '''
             return the datapath ID of the switch
@@ -442,7 +434,7 @@ class MininetCliDriver(Emulator):
             cmd = "py %s.dpid" % switch
             try:
                 response = self.execute(cmd=cmd,prompt="mininet>",timeout=10)
-            except pexpect.EOF:  
+            except pexpect.EOF:
                 main.log.error(self.name + ": EOF exception found")
                 main.log.error(self.name + ":     " + self.handle.before)
                 main.cleanup()
@@ -482,7 +474,7 @@ class MininetCliDriver(Emulator):
             cmd += ' for i in %s.intfs.values()])' % node
             try:
                 response = self.execute(cmd=cmd,prompt="mininet>",timeout=10)
-            except pexpect.EOF:  
+            except pexpect.EOF:
                 main.log.error(self.name + ": EOF exception found")
                 main.log.error(self.name + ":     " + self.handle.before)
                 main.cleanup()
@@ -495,29 +487,29 @@ class MininetCliDriver(Emulator):
         main.log.info(self.name+": Dump node info")
         try:
             response = self.execute(cmd = 'dump',prompt = 'mininet>',timeout = 10)
-        except pexpect.EOF:  
+        except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
             main.log.error(self.name + ":     " + self.handle.before)
             main.cleanup()
             main.exit()
         return response
-            
+
     def intfs(self):
         main.log.info(self.name+": List interfaces")
         try:
             response = self.execute(cmd = 'intfs',prompt = 'mininet>',timeout = 10)
-        except pexpect.EOF:  
+        except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
             main.log.error(self.name + ":     " + self.handle.before)
             main.cleanup()
             main.exit()
         return response
-    
+
     def net(self):
         main.log.info(self.name+": List network connections")
         try:
             response = self.execute(cmd = 'net',prompt = 'mininet>',timeout = 10)
-        except pexpect.EOF:  
+        except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
             main.log.error(self.name + ":     " + self.handle.before)
             main.cleanup()
@@ -532,7 +524,7 @@ class MininetCliDriver(Emulator):
             else:
                 cmd1 = 'iperf '+ host1 + " " + host2
                 response = self.execute(cmd = cmd1, prompt = '>',timeout = 20)
-        except pexpect.EOF:  
+        except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
             main.log.error(self.name + ":     " + self.handle.before)
             main.cleanup()
@@ -544,7 +536,7 @@ class MininetCliDriver(Emulator):
         try:
             cmd1 = 'iperf '+ host1 + " " + host2
             self.handle.sendline(cmd1)
-            self.handle.expect("mininet>") 
+            self.handle.expect("mininet>")
             response = self.handle.before
             if re.search('Results:',response):
                 main.log.info(self.name+": iperf test succssful")
@@ -557,49 +549,49 @@ class MininetCliDriver(Emulator):
             main.log.error(self.name + ":     " + self.handle.before)
             main.cleanup()
             main.exit()
-    
+
     def iperfudp(self):
         main.log.info(self.name+": Simple iperf TCP test between two (optionally specified) hosts")
         try:
             response = self.execute(cmd = 'iperfudp',prompt = 'mininet>',timeout = 10)
-        except pexpect.EOF:  
+        except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
             main.log.error(self.name + ":     " + self.handle.before)
             main.cleanup()
             main.exit()
         return response
-    
+
     def nodes(self):
         main.log.info(self.name+": List all nodes.")
         try:
-            response = self.execute(cmd = 'nodes',prompt = 'mininet>',timeout = 10)    
-        except pexpect.EOF:  
+            response = self.execute(cmd = 'nodes',prompt = 'mininet>',timeout = 10)
+        except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
             main.log.error(self.name + ":     " + self.handle.before)
             main.cleanup()
             main.exit()
         return response
-    
+
     def pingpair(self):
         main.log.info(self.name+": Ping between first two hosts")
         try:
             response = self.execute(cmd = 'pingpair',prompt = 'mininet>',timeout = 20)
-        except pexpect.EOF:  
+        except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
             main.log.error(self.name + ":     " + self.handle.before)
             main.cleanup()
             main.exit()
-        
+
         #if utilities.assert_matches(expect='0% packet loss',actual=response,onpass="No Packet loss",onfail="Hosts not reachable"):
         if re.search(',\s0\%\spacket\sloss',response):
             main.log.info(self.name+": Ping between two hosts SUCCESSFUL")
-            main.last_result = main.TRUE 
+            main.last_result = main.TRUE
             return main.TRUE
         else :
             main.log.error(self.name+": PACKET LOST, HOSTS NOT REACHABLE")
             main.last_result = main.FALSE
             return main.FALSE
-    
+
     def link(self,**linkargs):
         '''
         Bring link(s) between two nodes up or down
@@ -613,14 +605,14 @@ class MininetCliDriver(Emulator):
         try:
             #response = self.execute(cmd=command,prompt="mininet>",timeout=10)
             self.handle.sendline(command)
-            self.handle.expect("mininet>")    
-        except pexpect.EOF:  
+            self.handle.expect("mininet>")
+        except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
             main.log.error(self.name + ":     " + self.handle.before)
             main.cleanup()
             main.exit()
         return main.TRUE
-        
+
 
     def yank(self,**yankargs):
 	'''
@@ -633,7 +625,7 @@ class MininetCliDriver(Emulator):
 	command = "py "+ str(sw) + '.detach("' + str(intf) + '")'
         try:
             response = self.execute(cmd=command,prompt="mininet>",timeout=10)
-        except pexpect.EOF:  
+        except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
             main.log.error(self.name + ":     " + self.handle.before)
             main.cleanup()
@@ -651,7 +643,7 @@ class MininetCliDriver(Emulator):
         command = "py "+ str(sw) + '.attach("' + str(intf) + '")'
         try:
             response = self.execute(cmd=command,prompt="mininet>",timeout=10)
-        except pexpect.EOF:  
+        except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
             main.log.error(self.name + ":     " + self.handle.before)
             main.cleanup()
@@ -671,14 +663,14 @@ class MininetCliDriver(Emulator):
         command = "dpctl "+cmd + " " + str(cmdargs)
         try:
             response = self.execute(cmd=command,prompt="mininet>",timeout=10)
-        except pexpect.EOF:  
+        except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
             main.log.error(self.name + ":     " + self.handle.before)
             main.cleanup()
             main.exit()
         return main.TRUE
-   
-        
+
+
     def get_version(self):
         file_input = path+'/lib/Mininet/INSTALL'
         version = super(Mininet, self).get_version()
@@ -724,7 +716,7 @@ class MininetCliDriver(Emulator):
         sw = args["SW"] if args["SW"] != None else ""
         ptcpA = int(args["PORT1"])+int(sw) if args["PORT1"] != None else ""
         ptcpB = "ptcp:"+str(ptcpA) if ptcpA != "" else ""
-        
+
         command = "sh ovs-vsctl set-controller s" + str(sw) + " " + ptcpB + " "
         for j in range(count):
             i=j+1
@@ -755,7 +747,7 @@ class MininetCliDriver(Emulator):
         command = "sh ovs-vsctl del-controller "+str(sw)
         try:
             response = self.execute(cmd=command,prompt="mininet>",timeout=10)
-        except pexpect.EOF:  
+        except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
             main.log.error(self.name + ":     " + self.handle.before)
             main.cleanup()
@@ -954,7 +946,7 @@ class MininetCliDriver(Emulator):
                 response = self.execute(cmd="exit",prompt="(.*)",timeout=120)
                 self.handle.sendline("sudo mn -c")
                 response = main.TRUE
-            except pexpect.EOF:  
+            except pexpect.EOF:
                 main.log.error(self.name + ": EOF exception found")
                 main.log.error(self.name + ":     " + self.handle.before)
                 main.cleanup()
@@ -962,8 +954,8 @@ class MininetCliDriver(Emulator):
         else :
             main.log.error(self.name+": Connection failed to the host")
             response = main.FALSE
-        return response  
-  
+        return response
+
     def arping(self, src, dest, destmac):
         self.handle.sendline('')
         self.handle.expect(["mininet",pexpect.EOF,pexpect.TIMEOUT])
@@ -981,7 +973,7 @@ class MininetCliDriver(Emulator):
 
     def decToHex(num):
         return hex(num).split('x')[1]
-    
+
     def getSwitchFlowCount(self, switch):
         '''
         return the Flow Count of the switch
@@ -1003,7 +995,7 @@ class MininetCliDriver(Emulator):
             return result.group(1)
         else:
             main.log.error("Connection failed to the Mininet host")
-    
+
     def check_flows(self, sw, dump_format=None):
         if dump_format:
           command = "sh ovs-ofctl -F " + dump_format + " dump-flows " + str(sw)
@@ -1043,7 +1035,7 @@ class MininetCliDriver(Emulator):
             elif i == 2:
                 main.log.error(self.name + ": tcpdump command timed out! Check interface name, given interface was: " + intf)
                 return main.FALSE
-            elif i ==3: 
+            elif i ==3:
                 main.log.info(self.name +": " +  self.handle.before)
                 return main.TRUE
             else:
@@ -1145,7 +1137,7 @@ class MininetCliDriver(Emulator):
         topo: sts TestONTopology object
         ports_json: parsed json object from the onos ports api
 
-        Dependencies: 
+        Dependencies:
             1. This uses the sts TestONTopology object
             2. numpy - "sudo pip install numpy"
 
@@ -1182,7 +1174,7 @@ class MininetCliDriver(Emulator):
             for port in mn_switch['ports']:
                 if port['enabled'] == True:
                     mn_ports.append(port['of_port'])
-                #else: #DEBUG only 
+                #else: #DEBUG only
                 #    main.log.warn("Port %s on switch %s is down" % ( str(port['of_port']) , str(mn_switch['name'])) )
             for onos_switch in ports_json:
                 #print "Iterating through a new switch as seen by ONOS"
@@ -1281,10 +1273,10 @@ class MininetCliDriver(Emulator):
 
 
         # iterate through MN links and check if an ONOS link exists in both directions
-        # NOTE: Will currently only show mn links as down if they are cut through STS. 
-        #       We can either do everything through STS or wait for up_network_links 
+        # NOTE: Will currently only show mn links as down if they are cut through STS.
+        #       We can either do everything through STS or wait for up_network_links
         #       and down_network_links to be fully implemented.
-        for link in mn_links: 
+        for link in mn_links:
             #print "Link: %s" % link
             #TODO: Find a more efficient search method
             node1 = None
@@ -1299,7 +1291,7 @@ class MininetCliDriver(Emulator):
                     node1 = switch['dpid']
                     for port in switch['ports']:
                         if str(port['name']) == str(link.port1):
-                            port1 = port['of_port'] 
+                            port1 = port['of_port']
                     if node1 is not None and node2 is not None:
                         break
                 if switch['name'] == link.node2.name:
@@ -1357,7 +1349,7 @@ class MininetCliDriver(Emulator):
         '''
         self.handle.sendline("")
         self.handle.expect("mininet>")
-        
+
         self.handle.sendline("py [ host.name for host in net.hosts ]")
         self.handle.expect("mininet>")
 
@@ -1373,7 +1365,7 @@ class MininetCliDriver(Emulator):
         host_str = host_str.replace("[", "")
         host_list = host_str.split(",")
 
-        return host_list 
+        return host_list
 
 
     def update(self):

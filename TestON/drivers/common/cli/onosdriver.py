@@ -20,10 +20,8 @@ OCT 9 2014
 import sys
 import time
 import pexpect
-import re
 import traceback
 import os.path
-import pydoc
 sys.path.append("../")
 from drivers.common.clidriver import CLI
 
@@ -224,12 +222,12 @@ class OnosDriver(CLI):
     def git_pull(self, comp1=""):
         '''
         Assumes that "git pull" works without login
-        
+
         This function will perform a git pull on the ONOS instance.
         If used as git_pull("NODE") it will do git pull + NODE. This is
         for the purpose of pulling from other nodes if necessary.
 
-        Otherwise, this function will perform a git pull in the 
+        Otherwise, this function will perform a git pull in the
         ONOS repository. If it has any problems, it will return main.ERROR
         If it successfully does a git_pull, it will return a 1 (main.TRUE)
         If it has no updates, it will return 3.
@@ -244,14 +242,13 @@ class OnosDriver(CLI):
                 self.handle.sendline("git pull")
             else:
                 self.handle.sendline("git pull " + comp1)
-           
-            uptodate = 0
+
             i=self.handle.expect(['fatal',
                 'Username\sfor\s(.*):\s',
                 '\sfile(s*) changed,\s',
                 'Already up-to-date',
                 'Aborting',
-                'You\sare\snot\scurrently\son\sa\sbranch', 
+                'You\sare\snot\scurrently\son\sa\sbranch',
                 'You\sasked\sme\sto\spull\swithout\stelling\sme\swhich\sbranch\syou',
                 'Pull\sis\snot\spossible\sbecause\syou\shave\sunmerged\sfiles',
                 pexpect.TIMEOUT],
@@ -270,7 +267,7 @@ class OnosDriver(CLI):
                 return main.TRUE # So that only when git pull is done, we do mvn clean compile
             elif i==3:
                 main.log.info(self.name + ": Git Pull - Already up to date")
-                return i 
+                return i
             elif i==4:
                 main.log.info(self.name + ": Git Pull - Aborting... Are there conflicting git files?")
                 return main.ERROR
@@ -456,8 +453,6 @@ class OnosDriver(CLI):
         #Create the cell file in the directory for writing (w+)
         cell_file = open(temp_directory+file_name , 'w+')
        
-        comment = ""
-        comment_string = "#"+ comment
         #Feature string is hardcoded environment variables
         #That you may wish to use by default on startup.
         #Note that you  may not want certain features listed
@@ -625,8 +620,8 @@ class OnosDriver(CLI):
 
             handle_before = self.handle.before
             print "handle_before = ", self.handle.before
-            handle_after = str(self.handle.after)
-            
+            #handle_after = str(self.handle.after)
+
             #self.handle.sendline("")
             #self.handle.expect("\$")
             #handle_more = str(self.handle.before)
@@ -1079,13 +1074,13 @@ class OnosDriver(CLI):
                     key, value = var.strip().split("=")
                     topology[key] = value
             #print "topology = ", topology
-            devices = topology.get('devices', False)
+            #devices = topology.get('devices', False)
             #print "devices = ", devices
-            links = topology.get('links', False)
+            #links = topology.get('links', False)
             #print "links = ", links
-            SCCs = topology.get('SCC(s)', False)
+            #SCCs = topology.get('SCC(s)', False)
             #print "SCCs = ", SCCs
-            paths = topology.get('paths', False)
+            #paths = topology.get('paths', False)
             #print "paths = ", paths
 
             return topology

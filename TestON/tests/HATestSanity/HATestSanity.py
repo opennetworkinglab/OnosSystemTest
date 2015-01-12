@@ -105,6 +105,7 @@ class HATestSanity:
 
         main.step("Compiling the latest version of ONOS")
         if PULL_CODE:
+            # Configure branch in params
             main.step("Git checkout and pull master")
             main.ONOSbench.git_checkout("master")
             git_pull_result = main.ONOSbench.git_pull()

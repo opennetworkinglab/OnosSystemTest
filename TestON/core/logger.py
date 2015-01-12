@@ -42,7 +42,7 @@ class Logger:
             
         logmsg = logmsg + "\n\tTest Script :" + path + "Tests/" + main.TEST + ".py"+ ""
         logmsg = logmsg + "\n\tTest Params : " + path + "Tests/" + main.TEST + ".params" + ""
-        logmsg = logmsg + "\n\tTopology : " + path + "Tests/" +main.TEST + ".tpl" + ""
+        logmsg = logmsg + "\n\tTopology : " + path + "Tests/" +main.TEST + ".topo" + ""
         logmsg = logmsg + "\n"+" " * 30+"+" +"-" * 18+"+" +"\n" +"-" * 27+"  { Script Exec Params }  "+"-" * 27 +"\n" +" " * 30 +"+"+"-" * 18 +"+\n";
         values = "\n\t" + str(main.params)
         values = re.sub(",", "\n\t", values)
@@ -110,7 +110,8 @@ class Logger:
            
         main.LogFileName = main.logdir + "/" + main.TEST + "_" +str(currentTime) + ".log"
         main.ReportFileName = main.logdir + "/" + main.TEST + "_" + str(currentTime) + ".rpt"
-                
+        main.JenkinsCSV = main.logdir + "/" + main.TEST + ".csv"
+ 
         #### Add log-level - Report
         logging.addLevelName(9, "REPORT")
         logging.addLevelName(7, "EXACT")
@@ -228,7 +229,17 @@ class Logger:
         #main.log.report(testResult)
         main.testResult = testResult
         main.log.exact(testResult)
-                
+
+        ##CSV output needed for Jenkin's plot plugin
+        #NOTE: the elements were orded based on the colors assigned to the data
+        logfile = open(main.JenkinsCSV ,"w")
+        logfile.write(",".join( ['Tests Failed', 'Tests Passed', 'Tests Planned'] ) + "\n")
+        logfile.write(",".join( [str(int(main.TOTAL_TC_FAIL)), str(int(main.TOTAL_TC_PASS)), str(int(main.TOTAL_TC_PLANNED))] ))
+        logfile.close()
+
+
+
+
     def updateCaseResults(self,main):
         '''
             Update the case result based on the steps execution and asserting each step in the test-case

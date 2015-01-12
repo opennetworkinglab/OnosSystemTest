@@ -3,6 +3,10 @@
 #Topology Performance test for ONOS-next
 #
 #andrew@onlab.us
+#
+#If your machine does not come with numpy
+#run the following command:
+#sudo apt-get install python-numpy python-scipy 
 
 import time
 import sys
@@ -27,20 +31,52 @@ class TopoPerfNext:
         ONOS1_ip = main.params['CTRL']['ip1']
         ONOS2_ip = main.params['CTRL']['ip2']
         ONOS3_ip = main.params['CTRL']['ip3']
+        
+        #### Hardcoded ONOS nodes particular to my env ####
+        ONOS4_ip = "10.128.174.4"
+        ONOS5_ip = "10.128.174.5"
+        ONOS6_ip = "10.128.174.6"
+        ONOS7_ip = "10.128.174.7"
+        #### ####
+
         MN1_ip = main.params['MN']['ip1']
         BENCH_ip = main.params['BENCH']['ip']
 
+        topo_cfg_file = main.params['TEST']['topo_config_file']
+        topo_cfg_name = main.params['TEST']['topo_config_name']
+        
         main.case("Setting up test environment")
+        main.log.info("Copying topology event accumulator config"+\
+            " to ONOS /package/etc")
+        main.ONOSbench.handle.sendline("cp ~/"+\
+            topo_cfg_file+\
+            " ~/ONOS/tools/package/etc/"+\
+            topo_cfg_name)
+        main.ONOSbench.handle.expect("\$")
+
+        main.log.report("Setting up test environment")
+
+        main.step("Cleaning previously installed ONOS if any")
+        main.ONOSbench.onos_uninstall(node_ip=ONOS4_ip)
+        main.ONOSbench.onos_uninstall(node_ip=ONOS5_ip)
+        main.ONOSbench.onos_uninstall(node_ip=ONOS6_ip)
+        main.ONOSbench.onos_uninstall(node_ip=ONOS7_ip)
 
         main.step("Creating cell file")
         cell_file_result = main.ONOSbench.create_cell_file(
-                BENCH_ip, cell_name, MN1_ip, "onos-core",
+                BENCH_ip, cell_name, MN1_ip, "onos-core,onos-app-metrics",
                 ONOS1_ip, ONOS2_ip, ONOS3_ip)
 
         main.step("Applying cell file to environment")
         cell_apply_result = main.ONOSbench.set_cell(cell_name)
         verify_cell_result = main.ONOSbench.verify_cell()
         
+        #NOTE: This step may be removed after proper 
+        #      copy cat log functionality
+        main.step("Removing raft/copy-cat logs from ONOS nodes")
+        main.ONOSbench.onos_remove_raft_logs()
+        time.sleep(30)
+
         main.step("Git checkout and pull "+checkout_branch)
         if git_pull == 'on':
             checkout_result = \
@@ -51,9 +87,18 @@ class TopoPerfNext:
             pull_result = main.TRUE
             main.log.info("Skipped git checkout and pull")
 
+        #TODO: Uncomment when wiki posting works
+        #main.log.report("Commit information - ")
+        #main.ONOSbench.get_version(report=True)
+
         main.step("Using mvn clean & install")
         #mvn_result = main.ONOSbench.clean_install()
         mvn_result = main.TRUE
+
+        main.step("Set cell for ONOS cli env")
+        main.ONOS1cli.set_cell(cell_name)
+        main.ONOS2cli.set_cell(cell_name)
+        main.ONOS3cli.set_cell(cell_name)
 
         main.step("Creating ONOS package")
         package_result = main.ONOSbench.onos_package()
@@ -63,15 +108,6 @@ class TopoPerfNext:
         install2_result = main.ONOSbench.onos_install(node=ONOS2_ip)
         install3_result = main.ONOSbench.onos_install(node=ONOS3_ip)
 
-        #NOTE: This step may be unnecessary
-        #main.step("Starting ONOS service")
-        #start_result = main.ONOSbench.onos_start(ONOS1_ip)
-
-        main.step("Set cell for ONOS cli env")
-        main.ONOS1cli.set_cell(cell_name)
-        main.ONOS2cli.set_cell(cell_name)
-        main.ONOS3cli.set_cell(cell_name)
-
         time.sleep(10)
 
         main.step("Start onos cli")
@@ -79,19 +115,14 @@ class TopoPerfNext:
         cli2 = main.ONOS2cli.start_onos_cli(ONOS2_ip)
         cli3 = main.ONOS3cli.start_onos_cli(ONOS3_ip)
 
-        main.step("Enable metrics feature")
-        main.ONOS1cli.feature_install("onos-app-metrics-topology")
-        main.ONOS2cli.feature_install("onos-app-metrics-topology")
-        main.ONOS3cli.feature_install("onos-app-metrics-topology")
-
         utilities.assert_equals(expect=main.TRUE,
                 actual= cell_file_result and cell_apply_result and\
                         verify_cell_result and checkout_result and\
                         pull_result and mvn_result and\
                         install1_result and install2_result and\
                         install3_result,
-                onpass="ONOS started successfully",
-                onfail="Failed to start ONOS")
+                onpass="Test Environment setup successful",
+                onfail="Failed to setup test environment")
 
     def CASE2(self, main):
         '''
@@ -115,6 +146,7 @@ class TopoPerfNext:
         import json
         import requests
         import os
+        import numpy
 
         ONOS1_ip = main.params['CTRL']['ip1']
         ONOS2_ip = main.params['CTRL']['ip2']
@@ -125,13 +157,16 @@ class TopoPerfNext:
        
         #Number of iterations of case
         num_iter = main.params['TEST']['numIter']
-       
+        #Number of first 'x' iterations to ignore:
+        iter_ignore = int(main.params['TEST']['iterIgnore'])
+
         #Timestamp 'keys' for json metrics output.
         #These are subject to change, hence moved into params
         deviceTimestamp = main.params['JSON']['deviceTimestamp']
         graphTimestamp = main.params['JSON']['graphTimestamp']
 
         debug_mode = main.params['TEST']['debugMode']
+        onos_log = main.params['TEST']['onosLogFile']
 
         #Threshold for the test
         threshold_str = main.params['TEST']['singleSwThreshold']
@@ -145,6 +180,7 @@ class TopoPerfNext:
         latency_ofp_to_graph_list = []
         latency_ofp_to_device_list = []
         latency_t0_to_device_list = []
+        latency_tcp_to_ofp_list = []
 
         #Directory/file to store tshark results
         tshark_of_output = "/tmp/tshark_of_topo.txt"
@@ -158,11 +194,19 @@ class TopoPerfNext:
         assertion = main.TRUE
       
         local_time = time.strftime('%x %X')
+        local_time = local_time.replace("/","")
+        local_time = local_time.replace(" ","_")
+        local_time = local_time.replace(":","")
         if debug_mode == 'on':
             main.ONOS1.tshark_pcap("eth0",
-                    "/tmp/single_sw_lat_pcap"+local_time) 
+                    "/tmp/single_sw_lat_pcap_"+local_time) 
 
-        main.log.report("Latency of adding one switch")
+            main.log.info("TEST")
+
+        main.log.report("Latency of adding one switch to controller")
+        main.log.report("First "+str(iter_ignore)+" iterations ignored"+
+                " for jvm warmup time")
+        main.log.report("Total iterations of test: "+str(num_iter))
 
         for i in range(0, int(num_iter)):
             main.log.info("Starting tshark capture")
@@ -287,11 +331,12 @@ class TopoPerfNext:
                      int(delta_device_3)) / 3
 
             #Ensure avg delta meets the threshold before appending
-            if avg_delta_device > 0.0 and avg_delta_device < 10000:
+            if avg_delta_device > 0.0 and avg_delta_device < 10000\
+                    and int(i) > iter_ignore:
                 latency_t0_to_device_list.append(avg_delta_device)
             else:
                 main.log.info("Results for t0-to-device ignored"+\
-                        "due to excess in threshold")
+                        "due to excess in threshold / warmup iteration.")
 
             #t0 to graph processing latency (end-to-end)
             delta_graph_1 = int(graph_timestamp_1) - int(t0_tcp)
@@ -305,7 +350,8 @@ class TopoPerfNext:
                      int(delta_graph_3)) / 3
 
             #Ensure avg delta meets the threshold before appending
-            if avg_delta_graph > 0.0 and avg_delta_graph < 10000:
+            if avg_delta_graph > 0.0 and avg_delta_graph < 10000\
+                    and int(i) > iter_ignore:
                 latency_end_to_end_list.append(avg_delta_graph)
             else:
                 main.log.info("Results for end-to-end ignored"+\
@@ -322,8 +368,20 @@ class TopoPerfNext:
                      int(delta_ofp_graph_3)) / 3
             
             if avg_delta_ofp_graph > threshold_min \
-                    and avg_delta_ofp_graph < threshold_max:
+                    and avg_delta_ofp_graph < threshold_max\
+                    and int(i) > iter_ignore:
                 latency_ofp_to_graph_list.append(avg_delta_ofp_graph)
+            elif avg_delta_ofp_graph > (-10) and \
+                    avg_delta_ofp_graph < 0.0 and\
+                    int(i) > iter_ignore:
+                main.log.info("Sub-millisecond result likely; "+
+                    "negative result was rounded to 0")
+                #NOTE: Current metrics framework does not 
+                #support sub-millisecond accuracy. Therefore,
+                #if the result is negative, we can reasonably
+                #conclude sub-millisecond results and just 
+                #append the best rounded effort - 0 ms. 
+                latency_ofp_to_graph_list.append(0)
             else:
                 main.log.info("Results for ofp-to-graph "+\
                         "ignored due to excess in threshold")
@@ -336,11 +394,20 @@ class TopoPerfNext:
             avg_delta_ofp_device = \
                     (float(delta_ofp_device_1)+\
                      float(delta_ofp_device_2)+\
-                     float(delta_ofp_device_3)) / 3.0
+                     float(delta_ofp_device_3)) / 3
             
             #NOTE: ofp - delta measurements are occasionally negative
             #      due to system time misalignment.
             latency_ofp_to_device_list.append(avg_delta_ofp_device)
+
+            delta_ofp_tcp = int(t0_ofp) - int(t0_tcp)
+            if delta_ofp_tcp > threshold_min \
+                    and delta_ofp_tcp < threshold_max and\
+                    int(i) > iter_ignore:
+                latency_tcp_to_ofp_list.append(delta_ofp_tcp)
+            else:
+                main.log.info("Results fo tcp-to-ofp "+\
+                        "ignored due to excess in threshold")
 
             #TODO:
             #Fetch logs upon threshold excess
@@ -365,7 +432,9 @@ class TopoPerfNext:
                     str(delta_device_2) + " ms")
             main.log.info("ONOS3 delta device - t0: "+
                     str(delta_device_3) + " ms")
-          
+         
+            main.log.info("TCP to OFP delta: "+
+                    str(delta_ofp_tcp) + " ms")
             #main.log.info("ONOS1 delta OFP - device: "+
             #        str(delta_ofp_device_1) + " ms")
             #main.log.info("ONOS2 delta OFP - device: "+
@@ -385,7 +454,8 @@ class TopoPerfNext:
         if len(latency_end_to_end_list) > 0 and\
            len(latency_ofp_to_graph_list) > 0 and\
            len(latency_ofp_to_device_list) > 0 and\
-           len(latency_t0_to_device_list) > 0:
+           len(latency_t0_to_device_list) > 0 and\
+           len(latency_tcp_to_ofp_list) > 0:
             assertion = main.TRUE
         elif len(latency_end_to_end_list) == 0:
             #The appending of 0 here is to prevent 
@@ -402,6 +472,9 @@ class TopoPerfNext:
         elif len(latency_t0_to_device_list) == 0:
             latency_t0_to_device_list.append(0)
             assertion = main.FALSE
+        elif len(latency_tcp_to_ofp_list) == 0:
+            latency_tcp_to_ofp_list.append(0)
+            assertion = main.FALSE
 
         #Calculate min, max, avg of latency lists
         latency_end_to_end_max = \
@@ -411,7 +484,9 @@ class TopoPerfNext:
         latency_end_to_end_avg = \
                 (int(sum(latency_end_to_end_list)) / \
                  len(latency_end_to_end_list))
-   
+        latency_end_to_end_std_dev = \
+                str(round(numpy.std(latency_end_to_end_list),1))
+
         latency_ofp_to_graph_max = \
                 int(max(latency_ofp_to_graph_list))
         latency_ofp_to_graph_min = \
@@ -419,6 +494,8 @@ class TopoPerfNext:
         latency_ofp_to_graph_avg = \
                 (int(sum(latency_ofp_to_graph_list)) / \
                  len(latency_ofp_to_graph_list))
+        latency_ofp_to_graph_std_dev = \
+                str(round(numpy.std(latency_ofp_to_graph_list),1))
 
         latency_ofp_to_device_max = \
                 int(max(latency_ofp_to_device_list))
@@ -427,27 +504,44 @@ class TopoPerfNext:
         latency_ofp_to_device_avg = \
                 (int(sum(latency_ofp_to_device_list)) / \
                  len(latency_ofp_to_device_list))
+        latency_ofp_to_device_std_dev = \
+                str(round(numpy.std(latency_ofp_to_device_list),1))
 
         latency_t0_to_device_max = \
-                float(max(latency_t0_to_device_list))
+                int(max(latency_t0_to_device_list))
         latency_t0_to_device_min = \
-                float(min(latency_t0_to_device_list))
+                int(min(latency_t0_to_device_list))
         latency_t0_to_device_avg = \
-                (float(sum(latency_t0_to_device_list)) / \
-                 len(latency_ofp_to_device_list))
+                (int(sum(latency_t0_to_device_list)) / \
+                 len(latency_t0_to_device_list))
+        latency_ofp_to_device_std_dev = \
+                str(round(numpy.std(latency_t0_to_device_list),1))
 
-        main.log.report("Switch add - End-to-end latency: \n"+\
-                "Min: "+str(latency_end_to_end_min)+" mx\n"+\
-                "Max: "+str(latency_end_to_end_max)+" ms\n"+\
-                "Avg: "+str(latency_end_to_end_avg)+" ms")
-        main.log.report("Switch add - OFP-to-Graph latency: \n"+\
-                "Min: "+str(latency_ofp_to_graph_min)+" ms \n"+\
-                "Max: "+str(latency_ofp_to_graph_max)+" ms\n"+\
-                "Avg: "+str(latency_ofp_to_graph_avg)+" ms")
-        main.log.report("Switch add - t0-to-Device latency: \n"+\
-                "Min: "+str(latency_t0_to_device_min)+" ms\n"+\
-                "Max: "+str(latency_t0_to_device_max)+" ms\n"+\
-                "Avg: "+str(latency_t0_to_device_avg)+" ms")
+        latency_tcp_to_ofp_max = \
+                int(max(latency_tcp_to_ofp_list))
+        latency_tcp_to_ofp_min = \
+                int(min(latency_tcp_to_ofp_list))
+        latency_tcp_to_ofp_avg = \
+                (int(sum(latency_tcp_to_ofp_list)) / \
+                 len(latency_tcp_to_ofp_list))
+        latency_tcp_to_ofp_std_dev = \
+                str(round(numpy.std(latency_tcp_to_ofp_list),1))
+
+        main.log.report("Switch add - End-to-end latency: "+\
+                "Avg: "+str(latency_end_to_end_avg)+" ms "+
+                "Std Deviation: "+latency_end_to_end_std_dev+" ms")
+        main.log.report("Switch add - OFP-to-Graph latency: "+\
+                "Note: results are not accurate to sub-millisecond. "+
+                "Any sub-millisecond results are rounded to 0 ms. ")
+        main.log.report("Avg: "+str(latency_ofp_to_graph_avg)+" ms "+
+                "Std Deviation: "+latency_ofp_to_graph_std_dev+" ms")
+        main.log.report("Switch add - TCP-to-OFP latency: "+\
+                "Avg: "+str(latency_tcp_to_ofp_avg)+" ms "+
+                "Std Deviation: "+latency_tcp_to_ofp_std_dev+" ms")
+
+        if debug_mode == 'on':
+            main.ONOS1.cp_logs_to_dir("/opt/onos/log/karaf.log",
+                    "/tmp/", copy_file_name="sw_lat_karaf")
 
         utilities.assert_equals(expect=main.TRUE, actual=assertion,
                 onpass="Switch latency test successful",
@@ -467,6 +561,7 @@ class TopoPerfNext:
         import os
         import requests
         import json
+        import numpy
 
         ONOS1_ip = main.params['CTRL']['ip1']
         ONOS2_ip = main.params['CTRL']['ip2']
@@ -487,13 +582,17 @@ class TopoPerfNext:
         debug_mode = main.params['TEST']['debugMode']
 
         local_time = time.strftime('%x %X')
+        local_time = local_time.replace("/","")
+        local_time = local_time.replace(" ","_")
+        local_time = local_time.replace(":","")
         if debug_mode == 'on':
             main.ONOS1.tshark_pcap("eth0",
-                    "/tmp/port_lat_pcap"+local_time) 
+                    "/tmp/port_lat_pcap_"+local_time) 
 
         #Threshold for this test case
         up_threshold_str = main.params['TEST']['portUpThreshold']
         down_threshold_str = main.params['TEST']['portDownThreshold']
+        
         up_threshold_obj = up_threshold_str.split(",")
         down_threshold_obj = down_threshold_str.split(",")
 
@@ -513,6 +612,8 @@ class TopoPerfNext:
         interface_config = "s1-eth1"
 
         main.log.report("Port enable / disable latency")
+        main.log.report("Simulated by ifconfig up / down")
+        main.log.report("Total iterations of test: "+str(num_iter))
 
         main.step("Assign switches s1 and s2 to controller 1")
         main.Mininet1.assign_sw_controller(sw="1",ip1=ONOS1_ip,
@@ -523,16 +624,7 @@ class TopoPerfNext:
         #Give enough time for metrics to propagate the 
         #assign controller event. Otherwise, these events may
         #carry over to our measurements
-        time.sleep(10)
-
-        main.step("Verify switch is assigned correctly")
-        result_s1 = main.Mininet1.get_sw_controller(sw="s1")
-        result_s2 = main.Mininet1.get_sw_controller(sw="s2")
-        if result_s1 == main.FALSE or result_s2 == main.FALSE:
-            main.log.info("Switch s1 was not assigned correctly")
-            assertion = main.FALSE
-        else:
-            main.log.info("Switch s1 was assigned correctly")
+        time.sleep(15)
 
         port_up_device_to_ofp_list = []
         port_up_graph_to_ofp_list = []
@@ -544,17 +636,25 @@ class TopoPerfNext:
             main.ONOS1.tshark_grep(tshark_port_status,
                     tshark_port_down)
             
-            time.sleep(10)
+            time.sleep(5)
 
             #Disable interface that is connected to switch 2
             main.step("Disable port: "+interface_config)
-            main.Mininet2.handle.sendline("sudo ifconfig "+
+            main.Mininet1.handle.sendline("sh ifconfig "+
                     interface_config+" down")
-            main.Mininet2.handle.expect("\$")
-            time.sleep(10)
+            main.Mininet1.handle.expect("mininet>")
 
+            time.sleep(3)
             main.ONOS1.tshark_stop()
-            time.sleep(5)
+            
+            main.step("Obtain t1 by metrics call")
+            json_str_up_1 = main.ONOS1cli.topology_events_metrics()
+            json_str_up_2 = main.ONOS2cli.topology_events_metrics()
+            json_str_up_3 = main.ONOS3cli.topology_events_metrics()
+
+            json_obj_1 = json.loads(json_str_up_1)
+            json_obj_2 = json.loads(json_str_up_2)
+            json_obj_3 = json.loads(json_str_up_3)
             
             #Copy tshark output file from ONOS to TestON instance
             #/tmp directory
@@ -566,7 +666,7 @@ class TopoPerfNext:
             f_line = f_port_down.readline()
             obj_down = f_line.split(" ")
             if len(f_line) > 0:
-                timestamp_begin_pt_down = int(float(obj_down[1]))*1000
+                timestamp_begin_pt_down = int(float(obj_down[1])*1000)
                 main.log.info("Port down begin timestamp: "+
                         str(timestamp_begin_pt_down))
             else:
@@ -578,18 +678,7 @@ class TopoPerfNext:
 
             main.log.info("TEST tshark obj: "+str(obj_down))
 
-            main.step("Obtain t1 by REST call")
-            json_str_1 = main.ONOS1cli.topology_events_metrics()
-            json_str_2 = main.ONOS2cli.topology_events_metrics()
-            json_str_3 = main.ONOS3cli.topology_events_metrics()
-
-            main.log.info("TEST json_str 1: "+str(json_str_1))
-
-            json_obj_1 = json.loads(json_str_1)
-            json_obj_2 = json.loads(json_str_2)
-            json_obj_3 = json.loads(json_str_3)
-           
-            time.sleep(5)
+            time.sleep(3)
 
             #Obtain graph timestamp. This timestsamp captures
             #the epoch time at which the topology graph was updated.
@@ -599,6 +688,9 @@ class TopoPerfNext:
                     json_obj_2[graphTimestamp]['value']
             graph_timestamp_3 = \
                     json_obj_3[graphTimestamp]['value']
+
+            main.log.info("TEST graph timestamp ONOS1: "+
+                    str(graph_timestamp_1))
 
             #Obtain device timestamp. This timestamp captures
             #the epoch time at which the device event happened
@@ -629,14 +721,14 @@ class TopoPerfNext:
             pt_down_graph_to_ofp_avg =\
                     (int(pt_down_graph_to_ofp_1) +
                      int(pt_down_graph_to_ofp_2) + 
-                     int(pt_down_graph_to_ofp_3)) / 3.0
+                     int(pt_down_graph_to_ofp_3)) / 3
             pt_down_device_to_ofp_avg = \
                     (int(pt_down_device_to_ofp_1) + 
                      int(pt_down_device_to_ofp_2) +
-                     int(pt_down_device_to_ofp_3)) / 3.0
+                     int(pt_down_device_to_ofp_3)) / 3
 
-            if pt_down_graph_to_ofp_avg > 0.0 and \
-                    pt_down_graph_to_ofp_avg < 1000:
+            if pt_down_graph_to_ofp_avg > down_threshold_min and \
+                    pt_down_graph_to_ofp_avg < down_threshold_max:
                 port_down_graph_to_ofp_list.append(
                     pt_down_graph_to_ofp_avg)
                 main.log.info("Port down: graph to ofp avg: "+
@@ -660,15 +752,28 @@ class TopoPerfNext:
             #Port up events 
             main.step("Enable port and obtain timestamp")
             main.step("Starting wireshark capture for port status up")
-            main.ONOS1.tshark_grep("OFP 130 Port Status", tshark_port_up)
+            main.ONOS1.tshark_grep(tshark_port_status, tshark_port_up)
             time.sleep(5)
 
-            main.Mininet2.handle.sendline("sudo ifconfig "+
+            main.Mininet1.handle.sendline("sh ifconfig "+
                     interface_config+" up")
-            main.Mininet2.handle.expect("\$")
-            time.sleep(10)
+            main.Mininet1.handle.expect("mininet>")
             
+            #Allow time for tshark to capture event
+            time.sleep(3)
             main.ONOS1.tshark_stop()
+
+            #Obtain metrics shortly afterwards
+            #This timestsamp captures
+            #the epoch time at which the topology graph was updated.
+            main.step("Obtain t1 by REST call")
+            json_str_up_1 = main.ONOS1cli.topology_events_metrics()
+            json_str_up_2 = main.ONOS2cli.topology_events_metrics()
+            json_str_up_3 = main.ONOS3cli.topology_events_metrics()
+            
+            json_obj_1 = json.loads(json_str_up_1)
+            json_obj_2 = json.loads(json_str_up_2)
+            json_obj_3 = json.loads(json_str_up_3)
 
             os.system("scp "+ONOS_user+"@"+ONOS1_ip+":"+
                     tshark_port_up+" /tmp/")
@@ -677,7 +782,7 @@ class TopoPerfNext:
             f_line = f_port_up.readline()
             obj_up = f_line.split(" ")
             if len(f_line) > 0:
-                timestamp_begin_pt_up = int(float(obj_up[1]))*1000
+                timestamp_begin_pt_up = int(float(obj_up[1])*1000)
                 main.log.info("Port up begin timestamp: "+
                         str(timestamp_begin_pt_up))
             else:
@@ -687,17 +792,6 @@ class TopoPerfNext:
             
             f_port_up.close()
 
-            main.step("Obtain t1 by REST call")
-            json_str_1 = main.ONOS1cli.topology_events_metrics()
-            json_str_2 = main.ONOS2cli.topology_events_metrics()
-            json_str_3 = main.ONOS3cli.topology_events_metrics()
-
-            json_obj_1 = json.loads(json_str_1)
-            json_obj_2 = json.loads(json_str_2)
-            json_obj_3 = json.loads(json_str_3)
-
-            #Obtain graph timestamp. This timestsamp captures
-            #the epoch time at which the topology graph was updated.
             graph_timestamp_1 = \
                     json_obj_1[graphTimestamp]['value']
             graph_timestamp_2 = \
@@ -730,15 +824,23 @@ class TopoPerfNext:
             pt_up_device_to_ofp_3 = int(device_timestamp_3) -\
                     int(timestamp_begin_pt_up)
 
+            main.log.info("ONOS1 delta G2O: "+str(pt_up_graph_to_ofp_1))
+            main.log.info("ONOS2 delta G2O: "+str(pt_up_graph_to_ofp_2))
+            main.log.info("ONOS3 delta G2O: "+str(pt_up_graph_to_ofp_3))
+
+            main.log.info("ONOS1 delta D2O: "+str(pt_up_device_to_ofp_1))
+            main.log.info("ONOS2 delta D2O: "+str(pt_up_device_to_ofp_2)) 
+            main.log.info("ONOS3 delta D2O: "+str(pt_up_device_to_ofp_3)) 
+
             pt_up_graph_to_ofp_avg = \
-                    (float(pt_up_graph_to_ofp_1) + 
-                     float(pt_up_graph_to_ofp_2) +
-                     float(pt_up_graph_to_ofp_3)) / 3
+                    (int(pt_up_graph_to_ofp_1) + 
+                     int(pt_up_graph_to_ofp_2) +
+                     int(pt_up_graph_to_ofp_3)) / 3
 
             pt_up_device_to_ofp_avg = \
-                    (float(pt_up_device_to_ofp_1) + 
-                     float(pt_up_device_to_ofp_2) +
-                     float(pt_up_device_to_ofp_3)) / 3
+                    (int(pt_up_device_to_ofp_1) + 
+                     int(pt_up_device_to_ofp_2) +
+                     int(pt_up_device_to_ofp_3)) / 3
 
             if pt_up_graph_to_ofp_avg > up_threshold_min and \
                     pt_up_graph_to_ofp_avg < up_threshold_max: 
@@ -775,44 +877,48 @@ class TopoPerfNext:
         port_down_graph_to_ofp_avg = \
                 (sum(port_down_graph_to_ofp_list) / 
                  len(port_down_graph_to_ofp_list))
+        port_down_graph_to_ofp_std_dev = \
+                str(round(numpy.std(port_down_graph_to_ofp_list),1))
         
-        main.log.report("Port down graph-to-ofp \nMin: "+
-                str(port_down_graph_to_ofp_min)+" ms  \nMax: "+
-                str(port_down_graph_to_ofp_max)+" ms  \nAvg: "+
-                str(port_down_graph_to_ofp_avg)+" ms")
+        main.log.report("Port down graph-to-ofp "+
+                "Avg: "+str(port_down_graph_to_ofp_avg)+" ms "+
+                "Std Deviation: "+port_down_graph_to_ofp_std_dev+" ms")
         
         port_down_device_to_ofp_min = min(port_down_device_to_ofp_list)
         port_down_device_to_ofp_max = max(port_down_device_to_ofp_list)
         port_down_device_to_ofp_avg = \
                 (sum(port_down_device_to_ofp_list) /\
                  len(port_down_device_to_ofp_list))
+        port_down_device_to_ofp_std_dev = \
+                str(round(numpy.std(port_down_device_to_ofp_list),1))
         
-        main.log.report("Port down device-to-ofp \nMin: "+
-                str(port_down_device_to_ofp_min)+" ms  \nMax: "+
-                str(port_down_device_to_ofp_max)+" ms  \nAvg: "+
-                str(port_down_device_to_ofp_avg)+" ms")
+        main.log.report("Port down device-to-ofp "+
+                "Avg: "+str(port_down_device_to_ofp_avg)+" ms "+
+                "Std Deviation: "+port_down_device_to_ofp_std_dev+" ms")
         
         port_up_graph_to_ofp_min = min(port_up_graph_to_ofp_list)
         port_up_graph_to_ofp_max = max(port_up_graph_to_ofp_list)
         port_up_graph_to_ofp_avg = \
                 (sum(port_up_graph_to_ofp_list) /\
                  len(port_up_graph_to_ofp_list))
+        port_up_graph_to_ofp_std_dev = \
+                str(round(numpy.std(port_up_graph_to_ofp_list),1))
         
-        main.log.report("Port up graph-to-ofp \nMin: "+
-                str(port_up_graph_to_ofp_min)+" ms  \nMax: "+
-                str(port_up_graph_to_ofp_max)+" ms  \nAvg: "+
-                str(port_up_graph_to_ofp_avg)+" ms")
+        main.log.report("Port up graph-to-ofp "+
+                "Avg: "+str(port_up_graph_to_ofp_avg)+" ms "+
+                "Std Deviation: "+port_up_graph_to_ofp_std_dev+" ms")
           
         port_up_device_to_ofp_min = min(port_up_device_to_ofp_list)
         port_up_device_to_ofp_max = max(port_up_device_to_ofp_list)
         port_up_device_to_ofp_avg = \
                 (sum(port_up_device_to_ofp_list) /\
                  len(port_up_device_to_ofp_list))
+        port_up_device_to_ofp_std_dev = \
+                str(round(numpy.std(port_up_device_to_ofp_list),1))
         
-        main.log.report("Port up device-to-ofp \nMin: "+
-                str(port_up_device_to_ofp_min)+" ms  \nMax: "+
-                str(port_up_device_to_ofp_max)+" ms  \nAvg: "+
-                str(port_up_device_to_ofp_avg)+" ms")
+        main.log.report("Port up device-to-ofp "+
+                "Avg: "+str(port_up_device_to_ofp_avg)+" ms "+
+                "Std Deviation: "+port_up_device_to_ofp_std_dev+" ms")
 
         utilities.assert_equals(expect=main.TRUE, actual=assertion,
                 onpass="Port discovery latency calculation successful",
@@ -832,7 +938,8 @@ class TopoPerfNext:
         import os
         import requests
         import json
-
+        import numpy 
+    
         ONOS1_ip = main.params['CTRL']['ip1']
         ONOS2_ip = main.params['CTRL']['ip2']
         ONOS3_ip = main.params['CTRL']['ip3']
@@ -852,9 +959,12 @@ class TopoPerfNext:
         debug_mode = main.params['TEST']['debugMode']
 
         local_time = time.strftime('%x %X')
+        local_time = local_time.replace("/","")
+        local_time = local_time.replace(" ","_")
+        local_time = local_time.replace(":","")
         if debug_mode == 'on':
             main.ONOS1.tshark_pcap("eth0",
-                    "/tmp/link_lat_pcap"+local_time) 
+                    "/tmp/link_lat_pcap_"+local_time) 
 
         #Threshold for this test case
         up_threshold_str = main.params['TEST']['linkUpThreshold']
@@ -877,8 +987,11 @@ class TopoPerfNext:
         link_down_graph_to_system_list = []
         link_up_graph_to_system_list = [] 
 
-        main.log.report("Add / remove link latency between "+
+        main.log.report("Link up / down discovery latency between "+
                 "two switches")
+        main.log.report("Simulated by setting loss-rate 100%")
+        main.log.report("'tc qdisc add dev <intfs> root netem loss 100%'") 
+        main.log.report("Total iterations of test: "+str(num_iter))
 
         main.step("Assign all switches")
         main.Mininet1.assign_sw_controller(sw="1",
@@ -927,17 +1040,17 @@ class TopoPerfNext:
                 for obj1 in json_obj1:
                     if '01' not in obj1['src']['device']:
                         link_down1 = True
-                        main.log.report("Link down from "+
+                        main.log.info("Link down from "+
                                 "s1 -> s2 on ONOS1 detected")
                 for obj2 in json_obj2:
                     if '01' not in obj2['src']['device']:
                         link_down2 = True
-                        main.log.report("Link down from "+
+                        main.log.info("Link down from "+
                                 "s1 -> s2 on ONOS2 detected")
                 for obj3 in json_obj3:
                     if '01' not in obj3['src']['device']:
                         link_down3 = True
-                        main.log.report("Link down from "+
+                        main.log.info("Link down from "+
                                 "s1 -> s2 on ONOS3 detected")
                 
                 loop_count += 1
@@ -992,18 +1105,18 @@ class TopoPerfNext:
                         graph_timestamp_3 and link_timestamp_1 and\
                         link_timestamp_2 and link_timestamp_3:
                     link_down_lat_graph1 = int(graph_timestamp_1) -\
-                            timestamp_link_down_t0
+                            int(timestamp_link_down_t0)
                     link_down_lat_graph2 = int(graph_timestamp_2) -\
-                            timestamp_link_down_t0
+                            int(timestamp_link_down_t0)
                     link_down_lat_graph3 = int(graph_timestamp_3) -\
-                            timestamp_link_down_t0
+                            int(timestamp_link_down_t0)
                 
                     link_down_lat_link1 = int(link_timestamp_1) -\
-                            timestamp_link_down_t0
+                            int(timestamp_link_down_t0)
                     link_down_lat_link2 = int(link_timestamp_2) -\
-                            timestamp_link_down_t0
+                            int(timestamp_link_down_t0)
                     link_down_lat_link3 = int(link_timestamp_3) -\
-                            timestamp_link_down_t0
+                            int(timestamp_link_down_t0)
                 else:
                     main.log.error("There was an error calculating"+
                         " the delta for link down event")
@@ -1015,23 +1128,23 @@ class TopoPerfNext:
                     link_down_lat_device2 = 0
                     link_down_lat_device3 = 0
         
-            main.log.report("Link down latency ONOS1 iteration "+
+            main.log.info("Link down latency ONOS1 iteration "+
                     str(i)+" (end-to-end): "+
                     str(link_down_lat_graph1)+" ms")
-            main.log.report("Link down latency ONOS2 iteration "+
+            main.log.info("Link down latency ONOS2 iteration "+
                     str(i)+" (end-to-end): "+
                     str(link_down_lat_graph2)+" ms")
-            main.log.report("Link down latency ONOS3 iteration "+
+            main.log.info("Link down latency ONOS3 iteration "+
                     str(i)+" (end-to-end): "+
                     str(link_down_lat_graph3)+" ms")
             
-            main.log.report("Link down latency ONOS1 iteration "+
+            main.log.info("Link down latency ONOS1 iteration "+
                     str(i)+" (link-event-to-system-timestamp): "+
                     str(link_down_lat_link1)+" ms")
-            main.log.report("Link down latency ONOS2 iteration "+
+            main.log.info("Link down latency ONOS2 iteration "+
                     str(i)+" (link-event-to-system-timestamp): "+
                     str(link_down_lat_link2)+" ms")
-            main.log.report("Link down latency ONOS3 iteration "+
+            main.log.info("Link down latency ONOS3 iteration "+
                     str(i)+" (link-event-to-system-timestamp): "+
                     str(link_down_lat_link3))
       
@@ -1039,11 +1152,11 @@ class TopoPerfNext:
             link_down_lat_graph_avg =\
                     (link_down_lat_graph1 +
                      link_down_lat_graph2 +
-                     link_down_lat_graph3) / 3.0
+                     link_down_lat_graph3) / 3
             link_down_lat_link_avg =\
                     (link_down_lat_link1 +
                      link_down_lat_link2 +
-                     link_down_lat_link3) / 3.0
+                     link_down_lat_link3) / 3
 
             #Set threshold and append latency to list
             if link_down_lat_graph_avg > down_threshold_min and\
@@ -1092,17 +1205,17 @@ class TopoPerfNext:
                 for obj1 in json_obj1:
                     if '01' in obj1['src']['device']:
                         link_down1 = False 
-                        main.log.report("Link up from "+
+                        main.log.info("Link up from "+
                             "s1 -> s2 on ONOS1 detected")
                 for obj2 in json_obj2:
                     if '01' in obj2['src']['device']:
                         link_down2 = False 
-                        main.log.report("Link up from "+
+                        main.log.info("Link up from "+
                             "s1 -> s2 on ONOS2 detected")
                 for obj3 in json_obj3:
                     if '01' in obj3['src']['device']:
                         link_down3 = False 
-                        main.log.report("Link up from "+
+                        main.log.info("Link up from "+
                             "s1 -> s2 on ONOS3 detected")
                 
                 loop_count += 1
@@ -1149,18 +1262,18 @@ class TopoPerfNext:
                         graph_timestamp_3 and link_timestamp_1 and\
                         link_timestamp_2 and link_timestamp_3:
                     link_up_lat_graph1 = int(graph_timestamp_1) -\
-                            timestamp_link_up_t0
+                            int(timestamp_link_up_t0)
                     link_up_lat_graph2 = int(graph_timestamp_2) -\
-                            timestamp_link_up_t0
+                            int(timestamp_link_up_t0)
                     link_up_lat_graph3 = int(graph_timestamp_3) -\
-                            timestamp_link_up_t0
+                            int(timestamp_link_up_t0)
                 
                     link_up_lat_link1 = int(link_timestamp_1) -\
-                            timestamp_link_up_t0
+                            int(timestamp_link_up_t0)
                     link_up_lat_link2 = int(link_timestamp_2) -\
-                            timestamp_link_up_t0
+                            int(timestamp_link_up_t0)
                     link_up_lat_link3 = int(link_timestamp_3) -\
-                            timestamp_link_up_t0
+                            int(timestamp_link_up_t0)
                 else:
                     main.log.error("There was an error calculating"+
                         " the delta for link down event")
@@ -1197,11 +1310,11 @@ class TopoPerfNext:
             link_up_lat_graph_avg =\
                     (link_up_lat_graph1 +
                      link_up_lat_graph2 +
-                     link_up_lat_graph3) / 3.0
+                     link_up_lat_graph3) / 3
             link_up_lat_link_avg =\
                     (link_up_lat_link1 +
                      link_up_lat_link2 +
-                     link_up_lat_link3) / 3.0
+                     link_up_lat_link3) / 3
 
             #Set threshold and append latency to list
             if link_up_lat_graph_avg > up_threshold_min and\
@@ -1230,15 +1343,17 @@ class TopoPerfNext:
         link_up_max = max(link_up_graph_to_system_list)
         link_up_avg = sum(link_up_graph_to_system_list) / \
                         len(link_up_graph_to_system_list)
+        link_down_std_dev = \
+                str(round(numpy.std(link_down_graph_to_system_list),1))
+        link_up_std_dev = \
+                str(round(numpy.std(link_up_graph_to_system_list),1))
 
-        main.log.report("Link down latency - \nMin: "+
-                str(link_down_min)+" ms  \nMax: "+
-                str(link_down_max)+" ms  \nAvg: "+
-                str(link_down_avg)+" ms")
-        main.log.report("Link up latency - \nMin: "+
-                str(link_up_min)+" ms  \nMax: "+
-                str(link_up_max)+" ms  \nAvg: "+
-                str(link_up_avg)+" ms")
+        main.log.report("Link down latency " +
+                "Avg: "+str(link_down_avg)+" ms "+
+                "Std Deviation: "+link_down_std_dev+" ms")
+        main.log.report("Link up latency "+
+                "Avg: "+str(link_up_avg)+" ms "+
+                "Std Deviation: "+link_up_std_dev+" ms")
 
         utilities.assert_equals(expect=main.TRUE, actual=assertion,
                 onpass="Link discovery latency calculation successful",
@@ -1284,10 +1399,13 @@ class TopoPerfNext:
         
         debug_mode = main.params['TEST']['debugMode']
 
-        local_time = time.strftime('%x %X')
+        local_time = time.strftime('%X')
+        local_time = local_time.replace("/","")
+        local_time = local_time.replace(" ","_")
+        local_time = local_time.replace(":","")
         if debug_mode == 'on':
             main.ONOS1.tshark_pcap("eth0",
-                    "/tmp/100_sw_lat_pcap"+local_time) 
+                    "/tmp/100_sw_lat_pcap_"+local_time) 
  
         #Threshold for this test case
         sw_disc_threshold_str = main.params['TEST']['swDisc100Threshold']
@@ -1489,9 +1607,9 @@ class TopoPerfNext:
         sw_lat_avg = sum(sw_discovery_lat_list) /\
                      len(sw_discovery_lat_list)
 
-        main.log.report("100 Switch discovery lat - \n"+\
-                "Min: "+str(sw_lat_min)+" ms\n"+\
-                "Max: "+str(sw_lat_max)+" ms\n"+\
-                "Avg: "+str(sw_lat_avg)+" ms\n")
+        main.log.report("100 Switch discovery lat "+\
+                "Min: "+str(sw_lat_min)+" ms"+\
+                "Max: "+str(sw_lat_max)+" ms"+\
+                "Avg: "+str(sw_lat_avg)+" ms")
 
 

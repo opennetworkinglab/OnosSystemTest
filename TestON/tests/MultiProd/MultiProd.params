@@ -1,0 +1,65 @@
+<PARAMS>
+    
+    <testcases>1,4,10,5,6,7,8,6,8,9,31,32,8,33</testcases>    
+
+    #Environment variables
+    <ENV>
+        <cellName>multi_test</cellName>
+    </ENV>
+
+    <CTRL>
+        <ip1>10.128.20.11</ip1>
+	    <ip2>10.128.20.12</ip2>
+	    <ip3>10.128.20.13</ip3>
+        <port1>6633</port1>
+        <port2>6633</port2>
+        <port3>6633</port3>
+    </CTRL>
+
+    <SDNIP>
+        <ethType>IPV4</ethType>
+        <tcpProto>6</tcpProto>
+        <icmpProto>1</icmpProto>
+        <srcPort>5001</srcPort>
+        <dstPort>5001</dstPort>
+    </SDNIP>
+
+    <MULTIPOINT_INTENT>
+        <device1>of:0000000000003008/1 </device1>
+        <device2>of:0000000000003009/1 </device2>
+        <device3>of:0000000000003010/1 </device3>
+        <mac1>00:00:00:00:00:0A </mac1>
+        <mac2>00:00:00:00:00:08 </mac2>
+        <ip1>10.0.3.0/24 </ip1>
+        <ip2>10.0.1.0/24 </ip2>
+    </MULTIPOINT_INTENT>
+
+    <PING>
+        <source1>h8</source1>
+        <source2>h9</source2>
+        <source3>h10</source3>
+        <source4>h11</source4>
+        <source5>h12</source5>
+        <source6>h13</source6>
+        <source7>h14</source7>
+        <source8>h15</source8>
+        <source9>h16</source9>
+        <source10>h17</source10>
+        <target1>10.0.0.18</target1>
+        <target2>10.0.0.19</target2>
+        <target3>10.0.0.20</target3>
+        <target4>10.0.0.21</target4>
+        <target5>10.0.0.22</target5>
+        <target6>10.0.0.23</target6>
+        <target7>10.0.0.24</target7>
+        <target8>10.0.0.25</target8>
+        <target9>10.0.0.26</target9>
+        <target10>10.0.0.27</target10>
+    </PING>
+
+    <timers>
+        <LinkDiscovery>5</LinkDiscovery>
+        <SwitchDiscovery>31</SwitchDiscovery>
+    </timers>
+
+</PARAMS>

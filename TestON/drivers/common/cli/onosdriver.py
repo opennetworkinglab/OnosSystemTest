@@ -20,10 +20,8 @@ OCT 9 2014
 import sys
 import time
 import pexpect
-import re
 import traceback
 import os.path
-import pydoc
 sys.path.append("../")
 from drivers.common.clidriver import CLI
 
@@ -82,7 +80,7 @@ class OnosDriver(CLI):
         '''
         response = ''
         try:
-            self.handle.sendline("\n")
+            self.handle.sendline("")
             self.handle.expect("\$")
             self.handle.sendline("exit")
             self.handle.expect("closed")
@@ -103,7 +101,7 @@ class OnosDriver(CLI):
         try:
             self.handle.sendline("onos-package")
             self.handle.expect("onos-package")
-            self.handle.expect("tar.gz",timeout=10)
+            self.handle.expect("tar.gz",timeout=30)
             handle = str(self.handle.before)
             main.log.info("onos-package command returned: "+
                     handle)
@@ -164,7 +162,7 @@ class OnosDriver(CLI):
             self.handle.sendline("cd "+ self.home)
             self.handle.expect("\$")
 
-            self.handle.sendline("\n")
+            self.handle.sendline("")
             self.handle.expect("\$")
             self.handle.sendline("mvn clean install")
             self.handle.expect("mvn clean install")
@@ -195,7 +193,7 @@ class OnosDriver(CLI):
                     for line in self.handle.before.splitlines():
                         if "Total time:" in line:
                             main.log.info(line)
-                    self.handle.sendline("\n")
+                    self.handle.sendline("")
                     self.handle.expect("\$", timeout=60)
                     return main.TRUE
                 elif i == 4:
@@ -224,12 +222,12 @@ class OnosDriver(CLI):
     def git_pull(self, comp1=""):
         '''
         Assumes that "git pull" works without login
-        
+
         This function will perform a git pull on the ONOS instance.
         If used as git_pull("NODE") it will do git pull + NODE. This is
         for the purpose of pulling from other nodes if necessary.
 
-        Otherwise, this function will perform a git pull in the 
+        Otherwise, this function will perform a git pull in the
         ONOS repository. If it has any problems, it will return main.ERROR
         If it successfully does a git_pull, it will return a 1 (main.TRUE)
         If it has no updates, it will return 3.
@@ -244,14 +242,13 @@ class OnosDriver(CLI):
                 self.handle.sendline("git pull")
             else:
                 self.handle.sendline("git pull " + comp1)
-           
-            uptodate = 0
+
             i=self.handle.expect(['fatal',
                 'Username\sfor\s(.*):\s',
                 '\sfile(s*) changed,\s',
                 'Already up-to-date',
                 'Aborting',
-                'You\sare\snot\scurrently\son\sa\sbranch', 
+                'You\sare\snot\scurrently\son\sa\sbranch',
                 'You\sasked\sme\sto\spull\swithout\stelling\sme\swhich\sbranch\syou',
                 'Pull\sis\snot\spossible\sbecause\syou\shave\sunmerged\sfiles',
                 pexpect.TIMEOUT],
@@ -392,10 +389,11 @@ class OnosDriver(CLI):
             self.handle.sendline("export TERM=xterm-256color")
             self.handle.expect("xterm-256color")
             self.handle.expect("\$")
-            self.handle.sendline("\n")
+            self.handle.sendline("")
             self.handle.expect("\$")
             self.handle.sendline("cd " + self.home + "; git log -1 --pretty=fuller --decorate=short | grep -A 6 \"commit\" --color=never")
-            self.handle.expect("--color=never")
+            #NOTE: for some reason there are backspaces inserted in this phrase when run from Jenkins on some tests
+            self.handle.expect("never")
             self.handle.expect("\$")
             response=(self.name +": \n"+ str(self.handle.before + self.handle.after))
             self.handle.sendline("cd " + self.home)
@@ -405,10 +403,20 @@ class OnosDriver(CLI):
                 print line
             if report:
                 for line in lines[2:-1]:
-                    main.log.report(line)
+                    #Bracket replacement is for Wiki-compliant
+                    #formatting. '<' or '>' are interpreted 
+                    #as xml specific tags that cause errors
+                    line = line.replace("<","[")
+                    line = line.replace(">","]")
+                    main.log.report("\t" + line)
             return lines[2]
         except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":     " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except pexpect.TIMEOUT:
+            main.log.error(self.name + ": TIMEOUT exception found")
             main.log.error(self.name + ":     " + self.handle.before)
             main.cleanup()
             main.exit()
@@ -445,15 +453,12 @@ class OnosDriver(CLI):
         #Create the cell file in the directory for writing (w+)
         cell_file = open(temp_directory+file_name , 'w+')
        
-        comment = ""
-        comment_string = "#"+ comment
         #Feature string is hardcoded environment variables
         #That you may wish to use by default on startup.
         #Note that you  may not want certain features listed
         #on here.
         core_feature_string = "export ONOS_FEATURES=webconsole,onos-api,"+\
-                "onos-cli,onos-openflow,onos-app-mobility,onos-app-tvue,"+\
-                "onos-app-proxyarp,"+extra_feature_string
+                "onos-cli,onos-openflow,"+extra_feature_string
         mn_string = "export OCN="
         onos_string = "export OC"
         temp_count = 1
@@ -615,8 +620,8 @@ class OnosDriver(CLI):
 
             handle_before = self.handle.before
             print "handle_before = ", self.handle.before
-            handle_after = str(self.handle.after)
-            
+            #handle_after = str(self.handle.after)
+
             #self.handle.sendline("")
             #self.handle.expect("\$")
             #handle_more = str(self.handle.before)
@@ -655,11 +660,15 @@ class OnosDriver(CLI):
         Returns: main.TRUE on success and main.FALSE on failure
         '''
         try:
-            self.handle.sendline("onos-install " + options + " " + node)
+            if options:
+                self.handle.sendline("onos-install " + options + " " + node)
+            else:
+                self.handle.sendline("onos-install "+node)
             self.handle.expect("onos-install ")
             #NOTE: this timeout may need to change depending on the network and size of ONOS
             i=self.handle.expect(["Network\sis\sunreachable",
                 "onos\sstart/running,\sprocess",
+                "ONOS\sis\salready\sinstalled",
                 pexpect.TIMEOUT],timeout=60)
 
             if i == 0:
@@ -668,10 +677,14 @@ class OnosDriver(CLI):
             elif i == 1:
                 main.log.info("ONOS was installed on " + node + " and started")
                 return main.TRUE
-            elif i == 2: 
+            elif i == 2:
+                main.log.info("ONOS is already installed on "+node)
+                return main.TRUE
+            elif i == 3: 
                 main.log.info("Installation of ONOS on " + node + " timed out")
                 return main.FALSE
 
+    
         except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
             main.log.error(self.name + ":    " + self.handle.before)
@@ -760,8 +773,8 @@ class OnosDriver(CLI):
             main.log.info(self.name+" ::::::")
             main.cleanup()
             main.exit()
-
-    def onos_uninstall(self):
+    
+    def onos_uninstall(self, node_ip=""):
         '''
         Calls the command: 'onos-uninstall'
         Uninstalls ONOS from the designated cell machine, stopping 
@@ -770,10 +783,11 @@ class OnosDriver(CLI):
         try:
             self.handle.sendline("")
             self.handle.expect("\$")
-            self.handle.sendline("onos-uninstall")
+            self.handle.sendline( "onos-uninstall "+str(node_ip) )
             self.handle.expect("\$")
 
-            main.log.info("ONOS cell machine was uninstalled")
+            main.log.info("ONOS "+node_ip+" was uninstalled")
+
             #onos-uninstall command does not return any text
             return main.TRUE
 
@@ -788,6 +802,40 @@ class OnosDriver(CLI):
             main.log.info(self.name+" ::::::")
             main.cleanup()
             main.exit()
+
+    def onos_die(self, node_ip):
+        '''
+        Issues the command 'onos-die <node-ip>'
+        This command calls onos-kill and also stops the node
+        '''
+        try:
+            self.handle.sendline("")
+            self.handle.expect("\$")
+            cmd_str = "onos-kill "+str(node_ip)
+            self.handle.sendline(cmd_str)
+            i = self.handle.expect([
+                "Killing\sONOS",
+                "ONOS\sprocess\sis\snot\srunning",
+                pexpect.TIMEOUT], timeout=20)
+            if i == 0:
+                main.log.info("ONOS instance "+str(node_ip)+
+                    " was killed and stopped")
+                return main.TRUE
+            elif i == 1:
+                main.log.info("ONOS process was not running")
+                return main.FALSE
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()
+
 
     def onos_kill(self, node_ip):
         '''
@@ -820,6 +868,43 @@ class OnosDriver(CLI):
                 main.log.info("ONOS instasnce was not killed")
                 return main.FALSE
         
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()
+
+    def onos_remove_raft_logs(self):
+        '''
+        Removes Raft / Copy cat files from ONOS to ensure
+        a cleaner environment.
+
+        Description:
+            Stops all ONOS defined in the cell,
+            wipes the raft / copycat log files
+        '''
+        try:
+            self.handle.sendline("")
+            self.handle.expect("\$")
+            self.handle.sendline("onos-remove-raft-logs")
+            #Sometimes this command hangs
+            i = self.handle.expect(["\$", pexpect.TIMEOUT],
+                    timeout=120)
+            if i == 1:
+                i = self.handle.expect(["\$", pexpect.TIMEOUT],
+                        timeout=120)
+                if i == 1:
+                    return main.FALSE
+            self.handle.sendline("")
+            self.handle.expect("\$")
+            return main.TRUE
+
         except pexpect.EOF:
             main.log.error(self.name + ": EOF exception found")
             main.log.error(self.name + ":    " + self.handle.before)
@@ -883,14 +968,15 @@ class OnosDriver(CLI):
             self.handle.sendline("onos-wait-for-start " + node )
             self.handle.expect("onos-wait-for-start")
             #NOTE: this timeout is arbitrary"
-            i = self.handle.expect(["\$", pexpect.TIMEOUT], timeout = 300)
+            i = self.handle.expect(["\$", pexpect.TIMEOUT], timeout = 120)
             if i == 0:
                 main.log.info(self.name + ": " + node + " is up")
                 return main.TRUE
             elif i == 1:
                 #NOTE: since this function won't return until ONOS is ready,
                 #   we will kill it on timeout
-                self.handle.sendline("\003")    #Control-C
+                main.log.error("ONOS has not started yet")
+                self.handle.send("\x03")    #Control-C
                 self.handle.expect("\$")
                 return main.FALSE
         except pexpect.EOF:
@@ -905,6 +991,61 @@ class OnosDriver(CLI):
             main.cleanup()
             main.exit()
 
+    def push_test_intents_shell(self, dpid_src, dpid_dst, num_intents,
+            dir_file, onos_ip, num_mult="", app_id="", report=True,
+            options=""):    
+        '''  
+        Description:
+            Use the linux prompt to push test intents to 
+            better parallelize the results than the CLI
+        Required:
+            * dpid_src: specify source dpid
+            * dpid_dst: specify destination dpid
+            * num_intents: specify number of intents to push
+            * dir_file: specify directory and file name to save
+              results
+            * onos_ip: specify the IP of ONOS to install on
+        NOTE: 
+            You must invoke this command at linux shell prompt
+        '''
+        try: 
+            #Create the string to sendline 
+            if options:
+                base_cmd = "onos "+str(onos_ip)+" push-test-intents "+\
+                options+" "
+            else:
+                base_cmd = "onos "+str(onos_ip)+" push-test-intents "
+            
+            add_dpid = base_cmd + str(dpid_src) + " " + str(dpid_dst)  
+            if not num_mult:
+                add_intents = add_dpid + " " + str(num_intents)
+            elif num_mult:
+                add_intents = add_dpid + " " + str(num_intents) + " " +\
+                              str(num_mult)
+                if app_id:
+                    add_app = add_intents + " " + str(app_id) 
+                else:
+                    add_app = add_intents
+
+            if report:
+                send_cmd = add_app + " > " + str(dir_file) + " &" 
+            else:
+                send_cmd = add_app + " &"
+            main.log.info("Send cmd: "+send_cmd)
+
+            self.handle.sendline(send_cmd)
+
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit() 
 
     def get_topology(self,topology_output):
         '''
@@ -926,21 +1067,21 @@ class OnosDriver(CLI):
                 if not line.startswith("time="):
                     continue
                 #else
-                print line
+                #print line
                 for var in line.split(","):
                     #print "'"+var+"'"
                     #print "'"+var.strip()+"'"
                     key, value = var.strip().split("=")
                     topology[key] = value
-            print "topology = ", topology
-            devices = topology.get('devices', False)
-            print "devices = ", devices
-            links = topology.get('links', False)
-            print "links = ", links
-            clusters = topology.get('clusters', False)
-            print "clusters = ", clusters
-            paths = topology.get('paths', False)
-            print "paths = ", paths
+            #print "topology = ", topology
+            #devices = topology.get('devices', False)
+            #print "devices = ", devices
+            #links = topology.get('links', False)
+            #print "links = ", links
+            #SCCs = topology.get('SCC(s)', False)
+            #print "SCCs = ", SCCs
+            #paths = topology.get('paths', False)
+            #print "paths = ", paths
 
             return topology
         except pexpect.EOF:
@@ -1032,29 +1173,37 @@ class OnosDriver(CLI):
         self.handle.expect("\$")
 
         self.handle.sendline("tshark -i "+str(interface)+
-                " -t e -w "+str(dir_file))
+                " -t e -w "+str(dir_file)+ " &")
+        self.handle.sendline("\r")
         self.handle.expect("Capturing on")
+        self.handle.sendline("\r")
+        self.handle.expect("\$")
 
         main.log.info("Tshark started capturing files on "+
                 str(interface)+ " and saving to directory: "+
-                str(dir_File))
+                str(dir_file))
 
 
-    def run_onos_topo_cfg(self):
+    def run_onos_topo_cfg(self, instance_name, json_file):
         '''
-         On ONOS bench, run this command: ./~/ONOS/tools/test/bin/onos-topo-cfg
+         On ONOS bench, run this command: ./~/ONOS/tools/test/bin/onos-topo-cfg $OC1 filename
             which starts the rest and copies the json file to the onos instance
         '''
-        self.handle.sendline("")
-        self.handle.expect("\$")
-        self.handle.sendline("cd ~/ONOS/tools/test/bin")
-        self.handle.expect("/bin$")
-        self.handle.sendline("./onos-topo-cfg")
-        self.handle.expect("{}admin@onosTestBench")
-        self.handle.sendline("cd ~")
-        self.handle.expect("\$")
-
-
+        try:
+            self.handle.sendline("")
+            self.handle.expect("\$")
+            self.handle.sendline("cd ~/ONOS/tools/test/bin")
+            self.handle.expect("/bin$")
+            cmd = "./onos-topo-cfg " +instance_name +" " +json_file
+            print "cmd = ", cmd
+            self.handle.sendline(cmd)
+            self.handle.expect("\$")
+            self.handle.sendline("cd ~")
+            self.handle.expect("\$")
+            return main.TRUE
+        except:
+            return main.FALSE
+            
     def tshark_grep(self, grep, directory, interface='eth0'):
         '''
         Required:
@@ -1129,4 +1278,117 @@ class OnosDriver(CLI):
             main.cleanup()
             main.exit()
 
+    def cp_logs_to_dir(self, log_to_copy, 
+            dest_dir, copy_file_name=""):
+        '''
+        Copies logs to a desired directory. 
+        Current implementation of ONOS deletes its karaf
+        logs on every iteration. For debugging purposes,
+        you may want to use this function to capture 
+        certain karaf logs. (or any other logs if needed)
+        Localtime will be attached to the filename
 
+        Required:
+            * log_to_copy: specify directory and log name to
+              copy.
+              ex) /opt/onos/log/karaf.log.1
+              For copying multiple files, leave copy_file_name
+              empty and only specify dest_dir - 
+              ex) /opt/onos/log/karaf*
+            * dest_dir: specify directory to copy to.
+              ex) /tmp/
+        Optional:   
+            * copy_file_name: If you want to rename the log
+              file, specify copy_file_name. This will not work
+              with multiple file copying
+        '''
+        try:
+            localtime = time.strftime('%x %X')
+            localtime = localtime.replace("/","")
+            localtime = localtime.replace(" ","_")
+            localtime = localtime.replace(":","")
+            if dest_dir[-1:] != "/":
+                dest_dir += "/"
+
+            if copy_file_name:
+                self.handle.sendline("cp "+str(log_to_copy)+
+                        " "+str(dest_dir)+str(copy_file_name)+
+                        localtime)
+                self.handle.expect("cp")
+                self.handle.expect("\$")
+            else:
+                self.handle.sendline("cp "+str(log_to_copy)+
+                        " "+str(dest_dir))
+                self.handle.expect("cp")
+                self.handle.expect("\$")
+                
+            return self.handle.before
+        
+        except pexpect.EOF:
+            main.log.error("Copying files failed")
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+        except:
+            main.log.error("Copying files failed")
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+
+    def check_logs(self, onos_ip):
+        '''
+        runs onos-check-logs on the given onos node
+        returns the response
+        '''
+        try:
+            cmd = "onos-check-logs " + str(onos_ip)
+            self.handle.sendline(cmd)
+            self.handle.expect(cmd)
+            self.handle.expect("\$")
+            response = self.handle.before
+            return response
+        except pexpect.EOF:
+            main.log.error("Lost ssh connection")
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+        except:
+            main.log.error("Some error in check_logs:")
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+
+    def onos_status(self, node=""):
+        '''
+        Calls onos command: 'onos-service [<node-ip>] status'
+        '''
+
+        try:
+            self.handle.sendline("")
+            self.handle.expect("\$")
+            self.handle.sendline("onos-service "+str(node)+
+                " status")
+            i = self.handle.expect([
+                "start/running",
+                "stop/waiting",
+                pexpect.TIMEOUT],timeout=120)
+
+            if i == 0:
+                main.log.info("ONOS is running")
+                return main.TRUE
+            elif i == 1:
+                main.log.info("ONOS is stopped")
+                return main.FALSE
+            else:
+                main.log.error("ONOS service failed to check the status")
+                main.cleanup()
+                main.exit()
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()

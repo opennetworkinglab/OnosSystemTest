@@ -10,6 +10,7 @@ If you are a contributor to the driver, please
 list your email here for future contact:
 
     andrew@onlab.us
+    shreya@onlab.us
 
 OCT 20 2014
 '''
@@ -23,6 +24,7 @@ import signal
 import re
 import sys
 import core.teston
+import time
 sys.path.append("../")
 from math import pow
 from drivers.common.cli.emulatordriver import Emulator
@@ -60,9 +62,16 @@ class LincOEDriver(Emulator):
         if self.handle :
             main.log.info("Handle successfully created")
             self.home = "~/linc-oe"
+         
             self.handle.sendline("cd "+self.home)
             self.handle.expect("oe$")
-
+          
+            #self.handle.sendline("pgrep -g linc")
+            #self.handle.expect("\$")
+            print "handle = ", self.handle.before            
+            
+            return main.TRUE 
+            ''' 
             main.log.info("Building Linc-OE")
             self.handle.sendline("make rel")
             i = self.handle.expect(["ERROR","linc-oe\$"],timeout=60)
@@ -73,15 +82,15 @@ class LincOEDriver(Emulator):
                 x = self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT])
                 main.log.info("make rel returned: "+ str(x))
             else: 
-                main.log.info(self.name+": Starting Linc-OE CLI.. This may take a while")
-                time.sleep(30)
-                self.handle.sendline("sudo ./rel/linc/bin/linc console")
-                j = self.handle.expect(["linc@",pexpect.EOF,pexpect.TIMEOUT])
-          
+            
+            main.log.info(self.name+": Starting Linc-OE CLI.. This may take a while")
+            time.sleep(30)
+            self.handle.sendline("sudo ./rel/linc/bin/linc console")
+            j = self.handle.expect(["linc@",pexpect.EOF,pexpect.TIMEOUT])
             if j == 0:
                 main.log.info("Linc-OE CLI started")
                 return main.TRUE
-
+            '''
         else:
             main.log.error(self.name+
                     ": Connection failed to the host "+
@@ -89,6 +98,26 @@ class LincOEDriver(Emulator):
             main.log.error(self.name+
                     ": Failed to connect to Linc-OE")
             return main.FALSE
+
+
+    def start_console(self):
+        import time
+        main.log.info(self.name+": Starting Linc-OE CLI.. This may take a while")
+        time.sleep(30)
+        self.handle.sendline("sudo ./rel/linc/bin/linc console")
+        j = self.handle.expect(["linc@",pexpect.EOF,pexpect.TIMEOUT])
+        start_result = self.handle.before
+        if j == 0:
+            main.log.info("Linc-OE CLI started")
+            return main.TRUE
+        else:
+            main.log.error(self.name+
+            ": Connection failed to the host "+self.user_name+"@"+self.ip_address)
+            main.log.error(self.name+
+            ": Failed to connect to Linc-OE")
+            return main.FALSE
+
+
 
     def build(self):
         '''
@@ -132,7 +161,7 @@ class LincOEDriver(Emulator):
         be created. They must be brought up manually
         '''
         try:
-            self.handle.sendline("ifconfig "+str(intf)+" up")
+            self.handle.sendline("ifconfig "+str(intfs)+" up")
             self.handle.expect("linc@")
    
             handle = self.handle.before
@@ -285,18 +314,42 @@ class LincOEDriver(Emulator):
             main.log.info(self.name+" :::::::")
             main.cleanup()
             main.exit()
+    
+    def stopLincOEConsole(self):
+        '''
+        This function is only used for packet optical testing
+        Send disconnect prompt to Linc-OE CLI
+        (CTRL+C) and kill the linc process
+        '''
+        try:
+            cmd = "pgrep -f linc"
+            self.handle.sendline("pgrep -f linc")
+            self.handle.expect("linc") 
+            print "stophandle = ", self.handle.before
+        except pexpect.EOF:
+            main.log.error(self.name+ ": EOF exception")
+            main.log.error(self.name+ ":    " + self.handle.before) 
 
     def disconnect(self):
         '''
         Send disconnect prompt to Linc-OE CLI
-        (CTRL+C)
+        (CTRL+C) and kill the linc process
         '''
         try:
             #Send CTRL+C twice to exit CLI
-            self.handle.sendline("\x03")
-            self.handle.sendline("\x03")
+            self.handle.send("\x03")
+            self.handle.send("\x03")
             self.handle.expect("\$")
-
+            handle1 = self.handle.before
+            cmd = "pgrep -f linc"
+            self.handle.sendline(cmd)
+            self.handle.expect("\$")
+            handle2 = self.handle.before
+            main.log.info("pid's = "+handle2)
+            cmd = "sudo kill -9 `pgrep -f linc`"
+            self.handle.sendline(cmd)
+            self.handle.expect("\$")
+            
         except pexpect.EOF:
             main.log.error(self.name+ ": EOF exception")
             main.log.error(self.name+ ":    " + self.handle.before)

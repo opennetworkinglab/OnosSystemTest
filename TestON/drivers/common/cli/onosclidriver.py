@@ -18,13 +18,10 @@ OCT 13 2014
 '''
 
 import sys
-import time
 import pexpect
 import re
 import traceback
-import os.path
-import pydoc
-import re
+#import os.path
 sys.path.append("../")
 from drivers.common.clidriver import CLI
 
@@ -1106,7 +1103,7 @@ class OnosCliDriver(CLI):
 
             if i == 0:
                 main.log.error("Error in adding point-to-point intent")
-                return handle
+                return main.FALSE
             else:
                 return main.TRUE
 
@@ -2032,7 +2029,7 @@ class OnosCliDriver(CLI):
 
             if i == 0:
                 main.log.error("Error in getting ports")
-                return (ouput, "Error")
+                return (output, "Error")
             else:
                 result = output
                 return result
@@ -2067,7 +2064,7 @@ class OnosCliDriver(CLI):
 
             if i == 0:
                 main.log.error("Error in getting ports")
-                return (ouput, "Error")
+                return (output, "Error")
             else:
                 result = output
                 return result
@@ -2101,7 +2098,7 @@ class OnosCliDriver(CLI):
 
             if i == 0:
                 main.log.error("Error in getting ports")
-                return (ouput, "Error")
+                return (output, "Error")
             else:
                 result = output
                 return result

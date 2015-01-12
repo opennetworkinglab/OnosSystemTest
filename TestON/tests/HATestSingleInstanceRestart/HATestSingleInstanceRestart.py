@@ -19,7 +19,7 @@ CASE13: Clean up
 CASE14: start election app on all onos nodes
 CASE15: Check that Leadership Election is still functional
 '''
-class SingleInstanceHATestRestart:
+class HATestSingleInstanceRestart:
 
     def __init__(self) :
         self.default = ''

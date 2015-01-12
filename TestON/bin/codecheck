@@ -1,0 +1,50 @@
+#!/bin/bash
+
+#These are from the Mininet coding style
+P8IGN=E251,E201,E302,E202,E126,E127,E203,E226,W391
+
+# help text function
+help ()
+{
+    echo "Usage: codecheck [FILE]... [OPTION]..."
+    echo "Simple script that runs some python code check tools on a file or folder"
+    echo "Note that for now, options must come after the file/folder path"
+    echo -e "\nOptions include:"
+    echo -e "   --fix\tRun the automatic style scripts on a file and save the output to FILE.fixed"
+    echo -e "   --reason\tShow a short snippit for each PEP8 violation"
+    echo -e "   --help\tDisplays this help text and exits"
+}
+
+
+if [ -z "$1" ] || [[ "$1" =~ --* ]]; then
+    help
+elif [ "$2" = "--fix" ]; then
+    file=$1.fixed
+    echo "Fixing PEP8 errors. WARNING: This may be harmful to your code."
+    echo "For safety, the new code is written to $file"
+    #autopep8 -a -a $1
+    autopep8 -a -a $1 --ignore=E501 | $(dirname "${BASH_SOURCE}")/unpep8 > $file
+    autopep8 --in-place -a -a $file --ignore=$P8IGN
+elif [ -z "$2" ] || [ "$2" = "--reason" ]; then
+    echo "Running pyflakes..."
+    #Pyflakes is a source checker. It doesn't run the code so it is safer than other programs
+    #ignoring some errors due to TestON
+    pyflakes $1 | grep -v "undefined name 'main'" | grep -v "undefined name 'utilities'"
+    echo "Running pylint..."
+    #Pylint is a static code checker
+    #ignoring some errors due to TestON
+    pylint -E --rcfile=$(dirname "${BASH_SOURCE}")/.pylint $1 | grep -v "Undefined variable 'main'" | grep -v "Undefined variable 'utilities'"
+
+    echo "Running PEP8..."
+    #PEP8 is a the most common python coding style standard
+    if [ -z "$2"]; then
+        pep8 --repeat --show-source --ignore=$P8IGN $1
+    else
+        pep8 --repeat --show-source --show-pep8 --ignore=$P8IGN $1
+    fi
+else
+    help
+fi
+
+
+

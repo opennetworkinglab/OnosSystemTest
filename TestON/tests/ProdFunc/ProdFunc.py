@@ -850,7 +850,7 @@ class ProdFunc:
         '''
         Host intents removal
         ''' 
-        main.log.report("This testcase removes host intents before adding the same intents or point intents")
+        main.log.report("This testcase removes any previously added intents before adding the same intents or point intents")
         main.log.report("__________________________________")        
         main.log.info("Host intents removal")
         main.case("Removing host intents")

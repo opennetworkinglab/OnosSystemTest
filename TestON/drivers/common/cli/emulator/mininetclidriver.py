@@ -2,7 +2,7 @@
 """
 Created on 26-Oct-2012
 
-author:: Anil Kumar ( anilkumar.s@paxterrasolutions.com )
+author: Anil Kumar ( anilkumar.s@paxterrasolutions.com )
 
 
 TestON is free software: you can redistribute it and/or modify
@@ -19,7 +19,19 @@ You should have received a copy of the GNU General Public License
 along with TestON.  If not, see <http://www.gnu.org/licenses/>.
 
 
-MininetCliDriver is the basic driver which will handle the Mininet functions"""
+MininetCliDriver is the basic driver which will handle the Mininet functions
+
+Some functions rely on a modified version of Mininet. These functions
+should all be noted in the comments. To get this MN version run these commands
+from within your Mininet folder:
+
+    git remote add jhall11 https://github.com/jhall11/sts.git
+    git fetch jhall11
+    git checkout -b jhall11/topology_refactoring2 remotes/jhall11/topology_refactoring2
+    git pull
+
+Note that you may need to run 'sudo make develop' if your mnexec.c file
+changed when switching branches."""
 import traceback
 import pexpect
 import re
@@ -892,7 +904,8 @@ class MininetCliDriver( Emulator ):
     def add_switch( self, sw, **kwargs ):
         """
         adds a switch to the mininet topology
-        NOTE: this uses a custom mn function
+        NOTE: This uses a custom mn function. MN repo should be on
+            jhall11/topology_refactoring2 branch
         NOTE: cannot currently specify what type of switch
         required params:
             switchname = name of the new switch as a string
@@ -926,11 +939,12 @@ class MininetCliDriver( Emulator ):
 
     def del_switch( self, sw ):
         """
-           delete a switch from the mininet topology
-           NOTE: this uses a custom mn function
-           required params:
+        delete a switch from the mininet topology
+        NOTE: This uses a custom mn function. MN repo should be on
+            jhall11/topology_refactoring2 branch
+        required params:
             switchname = name of the switch as a string
-           returns: main.FASLE on an error, else main.TRUE"""
+        returns: main.FASLE on an error, else main.TRUE"""
         command = "delswitch " + str( sw )
         try:
             response = self.execute(
@@ -957,7 +971,8 @@ class MininetCliDriver( Emulator ):
     def add_link( self, node1, node2 ):
         """
            add a link to the mininet topology
-           NOTE: this uses a custom mn function
+           NOTE: This uses a custom mn function. MN repo should be on
+                jhall11/topology_refactoring2 branch
            NOTE: cannot currently specify what type of link
            required params:
            node1 = the string node name of the first endpoint of the link
@@ -989,7 +1004,8 @@ class MininetCliDriver( Emulator ):
     def del_link( self, node1, node2 ):
         """
            delete a link from the mininet topology
-           NOTE: this uses a custom mn function
+           NOTE: This uses a custom mn function. MN repo should be on
+                jhall11/topology_refactoring2 branch
            required params:
            node1 = the string node name of the first endpoint of the link
            node2 = the string node name of the second endpoint of the link
@@ -1020,7 +1036,8 @@ class MininetCliDriver( Emulator ):
     def add_host( self, hostname, **kwargs ):
         """
         Add a host to the mininet topology
-        NOTE: this uses a custom mn function
+        NOTE: This uses a custom mn function. MN repo should be on
+            jhall11/topology_refactoring2 branch
         NOTE: cannot currently specify what type of host
         required params:
             hostname = the string hostname
@@ -1058,6 +1075,8 @@ class MininetCliDriver( Emulator ):
     def del_host( self, hostname ):
         """
            delete a host from the mininet topology
+           NOTE: This uses a custom mn function. MN repo should be on
+               jhall11/topology_refactoring2 branch
            NOTE: this uses a custom mn function
            required params:
            hostname = the string hostname

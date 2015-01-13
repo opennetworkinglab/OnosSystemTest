@@ -72,7 +72,7 @@ Running TestON
 
 3. Run the test 
 
-    teston> run MininetTest 
+    teston> run PingallExample
 
 The Tests
 -----------------------------------------------

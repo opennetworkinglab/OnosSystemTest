@@ -26,13 +26,27 @@ Dependencies
 ------------
 1. ONOS
 
-2. Mininet
+2. Mininet - Some driver functions rely on a modified version of Mininet. These functions are noted in the mininet driver file. To checkout this branch from your Mininet folder:
 
-3. Install python packages configObj and pexpect. they can be installed as :
+    $ git remote add jhall11 https://github.com/jhall11/mininet.git
+
+    $ git fetch jhall11
+
+    $ git checkout -b dynamic_topo remotes/jhall11/dynamic_topo
+
+    $ git pull
+
+    Note that you may need to run 'sudo make develop' if your mnexec.c file changed when switching branches.
+
+3. Install python packages configObj and pexpect (Note: pexpect 3.3 has a known bug. We recommend using version 3.2 for now). They can be installed as :
 
      $ sudo pip install configObj
 
-     $ sudo easy_install pexpect 
+     $ sudo pip install pexpect==3.2
+
+4. STS  - This can be installed by:
+
+    $ git clone https://github.com/jhall11/sts.git
 
 Configuration
 ------------
@@ -68,7 +82,7 @@ Each test has its own folder with the following files:
 
 1. .ospk file
 
-    - This is written in Openspeak, an word based language developed by Paxterra.
+    - This is written in Openspeak, a word based language developed by Paxterra.
 
     - It defines the cases and sequence of events for the test 
 

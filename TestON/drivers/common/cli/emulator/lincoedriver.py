@@ -161,7 +161,7 @@ class LincOEDriver(Emulator):
         be created. They must be brought up manually
         '''
         try:
-            self.handle.sendline("ifconfig "+str(intf)+" up")
+            self.handle.sendline("ifconfig "+str(intfs)+" up")
             self.handle.expect("linc@")
    
             handle = self.handle.before

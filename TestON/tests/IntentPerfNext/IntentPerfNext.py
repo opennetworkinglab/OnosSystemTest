@@ -238,9 +238,9 @@ class IntentPerfNext:
         intent_add_lat_std = \
             round(numpy.std(intent_add_lat_list),1)
         #END ITERATION FOR LOOP
-        main.log.report("Single intent add latency - \n"+
-                "Avg: "+str(intent_add_lat_avg)+" ms\n"+
-                "Std Deviation: "+str(intent_add_lat_std)+" ms")
+        main.log.report("Single intent add latency - ")
+        main.log.report("Avg: "+str(intent_add_lat_avg)+" ms")
+        main.log.report("Std Deviation: "+str(intent_add_lat_std)+" ms")
 
     def CASE3(self, main):
         '''
@@ -281,8 +281,6 @@ class IntentPerfNext:
 
         intent_reroute_lat_list = []
 
-        print device_id_list
-
         for i in range(0, int(num_iter)):
             #add_point_intent(ingr_device, ingr_port, 
             #                 egr_device, egr_port)
@@ -308,7 +306,7 @@ class IntentPerfNext:
             #NOTE: this interface is specific to
             #      topo-intentFlower.py topology
             #      reroute case.
-            main.log.info("Disabling interface s2-eth3 <--> s4")
+            main.log.info("Disabling interface s2-eth3")
             main.Mininet1.handle.sendline(
                     "sh ifconfig s2-eth3 down")
             t0_system = time.time()*1000
@@ -355,16 +353,7 @@ class IntentPerfNext:
                 main.log.info("Intent reroute latency exceeded "+
                         "threshold. Skipping iteration "+str(i))
 
-            #TODO: Possibly put this in the driver function
             main.log.info("Removing intents for next iteration")
-            
-            #NOTE: TODO: Currently, the remove intent will
-            #            not trigger the intent request 
-            #            timestamp. Thus we cannot use the same
-            #            intent to get the latency over iterations.
-            #            we can 1) install different intents every
-            #            time, or 2) look into state machine and 
-            #            determine what timestsamp to get
             main.ONOS1cli.remove_intent(intent_id)
             
             main.log.info("Bringing Mininet interface up for next "+
@@ -377,11 +366,150 @@ class IntentPerfNext:
         intent_reroute_lat_std = \
             round(numpy.std(intent_reroute_lat_list),1)
         #END ITERATION FOR LOOP
-        main.log.report("Single intent reroute latency - \n"+
-                "Avg: "+str(intent_reroute_lat_avg)+" ms\n"+
-                "Std Deviation: "+str(intent_reroute_lat_std)+" ms")
+        main.log.report("Single intent reroute latency - ")
+        main.log.report("Avg: "+str(intent_reroute_lat_avg)+" ms")
+        main.log.report("Std Deviation: "+str(intent_reroute_lat_std)+" ms")
+        
+    def CASE7(self, main):
+        '''
+        Batch intent reroute latency
+        '''
+        import time
+        import json
+        import requests
+        import os
+        import numpy
+
+        ONOS_ip_list = []
+        for i in range(1, 8):
+            ONOS_ip_list.append(main.params['CTRL']['ip'+str(i)])
+
+        ONOS_user = main.params['CTRL']['user']
+        default_sw_port = main.params['CTRL']['port1']
+    
+        batch_intent_size = main.params['TEST']['batchIntentSize']
+        batch_thresh_min = int(main.params['TEST']['batchThresholdMin'])
+        batch_thresh_max = int(main.params['TEST']['batchThresholdMax'])
+        install_time = main.params['JSON']['installedTime']
+
+        #number of iterations of case
+        num_iter = main.params['TEST']['numIter']
+        num_ignore = int(main.params['TEST']['numIgnore'])
+        num_switch = int(main.params['TEST']['numSwitch'])
+        n_thread = main.params['TEST']['numMult']
+
+        main.log.report("Batch intent installation test of "+
+               batch_intent_size +" intents")
+
+        batch_result_list = []
+
+        #Assign 'linear' switch format for basic intent testing
+        main.Mininet1.assign_sw_controller(
+                sw="1", ip1=ONOS1_ip,port1=default_sw_port)
+        main.Mininet1.assign_sw_controller(
+                sw="2", ip1=ONOS2_ip,port1=default_sw_port)
+        main.Mininet1.assign_sw_controller(
+                sw="3", ip1=ONOS2_ip,port1=default_sw_port)
+        main.Mininet1.assign_sw_controller(
+                sw="4", ip1=ONOS2_ip,port1=default_sw_port)
+        main.Mininet1.assign_sw_controller(
+                sw="5", ip1=ONOS3_ip,port1=default_sw_port)
+
+        time.sleep(10)
+
+        main.log.info("Getting list of available devices")
+        device_id_list = []
+        json_str = main.ONOS1cli.devices()
+        json_obj = json.loads(json_str)
+        for device in json_obj:
+            device_id_list.append(device['id'])
+
+        batch_install_lat = []
+        batch_withdraw_lat = []
+        sleep_time = 10
+        
+        base_dir = "/tmp/"
+        max_install_lat = []
+
+        for i in range(0, int(num_iter)):
+            main.log.info("Pushing "+
+                    str(int(batch_intent_size)*int(n_thread))+
+                    " intents. Iteration "+str(i))
             
+            main.ONOS1cli.push_test_intents(
+                "of:0000000000000001/1",
+                "of:0000000000000005/1",
+                1000, num_mult="1", app_id="1")
+               
+            #TODO: Check for installation success then proceed
+            time.sleep(30)
+            
+            #NOTE: this interface is specific to
+            #      topo-intentFlower.py topology
+            #      reroute case.
+            main.log.info("Disabling interface s2-eth3")
+            main.Mininet1.handle.sendline(
+                    "sh ifconfig s2-eth3 down")
+            t0_system = time.time()*1000
+
+            #TODO: Wait sufficient time for intents to install
+            time.sleep(10)
+
+            #TODO: get intent installation time
+            
+            #Obtain metrics from ONOS 1, 2, 3
+            intents_json_str_1 = main.ONOS1cli.intents_events_metrics()
+            intents_json_str_2 = main.ONOS2cli.intents_events_metrics()
+            intents_json_str_3 = main.ONOS3cli.intents_events_metrics()
+
+            intents_json_obj_1 = json.loads(intents_json_str_1)
+            intents_json_obj_2 = json.loads(intents_json_str_2)
+            intents_json_obj_3 = json.loads(intents_json_str_3)
+
+            #Parse values from the json object
+            intent_install_1 = \
+                    intents_json_obj_1[install_time]['value']
+            intent_install_2 = \
+                    intents_json_obj_2[install_time]['value']
+            intent_install_3 = \
+                    intents_json_obj_3[install_time]['value']
+
+            intent_reroute_lat_1 = \
+                    int(intent_install_1) - int(t0_system)
+            intent_reroute_lat_2 = \
+                    int(intent_install_2) - int(t0_system)
+            intent_reroute_lat_3 = \
+                    int(intent_install_3) - int(t0_system)
+            
+            intent_reroute_lat_avg = \
+                    (intent_reroute_lat_1 + 
+                     intent_reroute_lat_2 +
+                     intent_reroute_lat_3 ) / 3
+    
+            main.log.info("Intent reroute latency avg for iteration "+
+                    str(i)+": "+str(intent_reroute_lat_avg))
+            #TODO: Remove intents for next iteration
+            
+            time.sleep(5)
+
+            intents_str = main.ONOS1cli.intents()
+            intents_json = json.loads(intents_str)
+            for intents in intents_json:
+                intent_id = intents['id']
+                if intent_id:
+                    main.ONOS1cli.remove_intent(intent_id)
+
+            main.Mininet1.handle.sendline(
+                    "sh ifconfig s2-eth3 up")
+            
+            main.log.info("Intents removed and port back up")
+
+
     def CASE4(self, main):
+        '''
+        Batch intent install
+        '''
+        
         import time
         import json
         import requests
@@ -596,7 +724,7 @@ class IntentPerfNext:
 
         global cluster_count
         cluster_count += 2
-        main.log.info("Increasing cluster size to "+
+        main.log.report("Increasing cluster size to "+
                 str(cluster_count))
 
         install_result = main.FALSE
@@ -701,7 +829,7 @@ class IntentPerfNext:
             main.ONOSbench.push_test_intents_shell(
                 arg1,
                 arg2, 
-                150, "/tmp/temp.txt", "10.128.174.1",
+                100, "/tmp/temp.txt", "10.128.174.1",
                 num_mult="10", app_id=appid,report=False)
             #main.ONOSbench.push_test_intents_shell(
             #    "of:0000000000001002/1",
@@ -714,5 +842,5 @@ class IntentPerfNext:
             #    133, "/tmp/temp3.txt", "10.128.174.3",
             #    num_mult="6", app_id="3",report=False)
    
-            time.sleep(0.1)
+            time.sleep(0.2)
 

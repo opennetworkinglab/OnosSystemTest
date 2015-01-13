@@ -16,30 +16,23 @@ Created on 26-Oct-2012
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with TestON.  If not, see <http://www.gnu.org/licenses/>.		
+    along with TestON.  If not, see <http://www.gnu.org/licenses/>.
 
 
 MininetCliDriver is the basic driver which will handle the Mininet functions
 '''
 import traceback
 import pexpect
-import struct
-import fcntl
-import os
-import signal
 import re
 import sys
-import core.teston
 sys.path.append("../")
 from drivers.common.cli.emulatordriver import Emulator
-from drivers.common.clidriver import CLI
-from time import time
 
 class RemoteMininetDriver(Emulator):
     '''
     RemoteMininetCliDriver is the basic driver which will handle the Mininet functions
-    The main different between this and the MininetCliDriver is that this one does not build the mininet. 
-    It assumes that there is already a mininet running on the target. 
+    The main different between this and the MininetCliDriver is that this one does not build the mininet.
+    It assumes that there is already a mininet running on the target.
     '''
     def __init__(self):
         super(Emulator, self).__init__()
@@ -51,25 +44,25 @@ class RemoteMininetDriver(Emulator):
         #,user_name, ip_address, pwd,options):
         # Here the main is the TestON instance after creating all the log handles.
         for key in connectargs:
-            vars(self)[key] = connectargs[key]       
-        
+            vars(self)[key] = connectargs[key]
+
         self.name = self.options['name']
         self.handle = super(RemoteMininetDriver, self).connect(user_name = self.user_name, ip_address = self.ip_address,port = None, pwd = self.pwd)
-        
+
         self.ssh_handle = self.handle
-        
-        # Copying the readme file to process the 
+
+        # Copying the readme file to process the
         if self.handle :
             return main.TRUE
 
         else :
-            main.log.error("Connection failed to the host "+self.user_name+"@"+self.ip_address) 
+            main.log.error("Connection failed to the host "+self.user_name+"@"+self.ip_address)
             main.log.error("Failed to connect to the Mininet")
             return main.FALSE
 
 #*********************************************************************************************
 #*********************************************************************************************
-# checkForLoss will determine if any of the pings had any packets lost during the course of 
+# checkForLoss will determine if any of the pings had any packets lost during the course of
 # the pingLong.
 #*********************************************************************************************
 #*********************************************************************************************
@@ -84,7 +77,6 @@ class RemoteMininetDriver(Emulator):
         #EX: 393 packets transmitted, 380 received, 3% packet loss, time 78519ms
         # we may need to return a float to get around rounding errors
 
-        import os
         self.handle.sendline("")
         self.handle.expect("\$")
         #Clear any output waiting in the bg from killing pings
@@ -107,15 +99,15 @@ class RemoteMininetDriver(Emulator):
 
     def pingLong(self,**pingParams):
         '''
-        Starts a continuous ping on the mininet host outputing to a file in the /tmp dir. 
+        Starts a continuous ping on the mininet host outputing to a file in the /tmp dir.
         '''
         self.handle.sendline("")
         self.handle.expect("\$")
         args = utilities.parse_args(["SRC","TARGET","PINGTIME"],**pingParams)
         precmd = "sudo rm /tmp/ping." + args["SRC"]
         self.execute(cmd=precmd,prompt="(.*)",timeout=10)
-        command = "sudo mininet/util/m " + args["SRC"] + " ping "+args ["TARGET"]+" -i .2 -w " + str(args['PINGTIME']) + " > /tmp/ping." + args["SRC"] + " &"
-        main.log.info( command ) 
+        command = "sudo mininet/util/m " + args["SRC"] + " ping "+args ["TARGET"]+" -i .2 -w " + str(args['PINGTIME']) + " -D > /tmp/ping." + args["SRC"] + " &"
+        main.log.info( command )
         self.execute(cmd=command,prompt="(.*)",timeout=10)
         self.handle.sendline("")
         self.handle.expect("\$")
@@ -135,33 +127,28 @@ class RemoteMininetDriver(Emulator):
         self.handle.sendline("")
         self.handle.expect("\$")
         if re.search('Unreachable', result ):
-            main.log.info("Unreachable found in ping logs...") 
+            main.log.info("Unreachable found in ping logs...")
             return main.FALSE
-        elif re.search('64\sbytes', result): 
-            main.log.info("Pings look good") 
+        elif re.search('64\sbytes', result):
+            main.log.info("Pings look good")
             return main.TRUE
-        else: 
-            main.log.info("No, or faulty ping data...") 
+        else:
+            main.log.info("No, or faulty ping data...")
             return main.FALSE
-         
+
     def pingKill(self, testONUser, testONIP):
         '''
         Kills all continuous ping processes.
         Then copies all the ping files to the TestStation.
         '''
-        import time
         self.handle.sendline("")
         self.handle.expect("\$")
-        command = "sudo kill -SIGINT `pgrep ping`" 
-        main.log.info( command ) 
+        command = "sudo kill -SIGINT `pgrep ping`"
+        main.log.info( command )
         self.execute(cmd=command,prompt="(.*)",timeout=10)
-        #Commenting out in case TestON and MN are on the same machine. scp overrights the file anyways
-        #main.log.info( "Removing old ping data" )
-        #command = "rm /tmp/ping.*"
-        #os.popen(command) 
-        #time.sleep(2)      
+
         main.log.info( "Transferring ping files to TestStation" )
-        command = "scp /tmp/ping.* "+ str(testONUser) + "@" + str(testONIP) + ":/tmp/" 
+        command = "scp /tmp/ping.* "+ str(testONUser) + "@" + str(testONIP) + ":/tmp/"
         self.execute(cmd=command,prompt="100%",timeout=20)
         #Make sure the output is cleared
         self.handle.sendline("")
@@ -176,9 +163,8 @@ class RemoteMininetDriver(Emulator):
             return main.FALSE
         else:
             return main.TRUE
-    
+
     def pingLongKill(self):
-        import time
         self.handle.sendline("")
         self.handle.expect("\$")
         command = "sudo kill -SIGING `pgrep ping`"
@@ -187,7 +173,7 @@ class RemoteMininetDriver(Emulator):
         self.handle.sendline("")
         self.handle.expect("\$")
         return main.TRUE
-       
+
     def pingHostOptical(self,**pingParams):
         '''
         This function is only for Packey Optical related ping
@@ -228,31 +214,31 @@ class RemoteMininetDriver(Emulator):
             return main.FALSE
 
     def pingHost(self,**pingParams):
-        ''' 
-        Pings between two hosts on remote mininet  
-        ''' 
+        '''
+        Pings between two hosts on remote mininet
+        '''
         self.handle.sendline("")
         self.handle.expect("\$")
         args = utilities.parse_args(["SRC","TARGET"],**pingParams)
         #command = "mininet/util/m " + args["SRC"] + " ping "+args ["TARGET"]+" -c 4 -W 1 -i .2"
         command = "mininet/util/m " + args["SRC"] + " ping "+args ["TARGET"]+" -c 4 -W 1 -i .2"
-        main.log.info ( command ) 
+        main.log.info ( command )
         response = self.execute(cmd=command,prompt="rtt",timeout=10 )
         #self.handle.sendline("")
         #self.handle.expect("\$")
         if utilities.assert_matches(expect=',\s0\%\spacket\sloss',actual=response,onpass="No Packet loss",onfail="Host is not reachable"):
             main.log.info("NO PACKET LOSS, HOST IS REACHABLE")
-            main.last_result = main.TRUE 
+            main.last_result = main.TRUE
             return main.TRUE
         else :
             main.log.error("PACKET LOST, HOST IS NOT REACHABLE")
             main.last_result = main.FALSE
             return main.FALSE
-        
-    
+
+
     def checknum(self,num):
         '''
-        Verifies the correct number of switches are running 
+        Verifies the correct number of switches are running
         '''
         if self.handle :
             self.handle.sendline("")
@@ -261,7 +247,7 @@ class RemoteMininetDriver(Emulator):
             self.handle.expect("wc")
             self.handle.expect("\$")
             response = self.handle.before
-            self.handle.sendline('ps -ef | grep "bash -ms mininet:sw" | grep -v color | wc -l') 
+            self.handle.sendline('ps -ef | grep "bash -ms mininet:sw" | grep -v color | wc -l')
             self.handle.expect("color")
             self.handle.expect("\$")
             response2 = self.handle.before
@@ -274,10 +260,10 @@ class RemoteMininetDriver(Emulator):
             else:
                 return main.FALSE
         else :
-            main.log.error("Connection failed to the host") 
+            main.log.error("Connection failed to the host")
 
     def start_tcpdump(self, filename, intf = "eth0", port = "port 6633", user="admin"):
-        ''' 
+        '''
         Runs tpdump on an intferface and saves the file
         intf can be specified, or the default eth0 is used
         '''
@@ -297,7 +283,7 @@ class RemoteMininetDriver(Emulator):
             elif i == 2:
                 main.log.error(self.name + ": tcpdump command timed out! Check interface name, given interface was: " + intf)
                 return main.FALSE
-            elif i ==3: 
+            elif i ==3:
                 main.log.info(self.name +": " +  self.handle.before)
                 return main.TRUE
             else:
@@ -336,7 +322,7 @@ class RemoteMininetDriver(Emulator):
 
     def run_optical_mn_script(self):
         '''
-            This function is only meant for Packet Optical. 
+            This function is only meant for Packet Optical.
             It runs the python script "optical.py" to create the packet layer(mn)
             topology
         '''
@@ -354,9 +340,9 @@ class RemoteMininetDriver(Emulator):
             return main.FALSE
 
     def disconnect(self):
-        '''    
-        Called at the end of the test to disconnect the handle.    
-        '''    
+        '''
+        Called at the end of the test to disconnect the handle.
+        '''
         response = ''
         #print "Disconnecting Mininet"
         if self.handle:
@@ -372,57 +358,40 @@ class RemoteMininetDriver(Emulator):
 
     def get_flowTable(self, protoVersion, sw):
         #TODO document usage
-        #FIXME: clean up print statements and such
+        #TODO add option to look at cookies. ignoreing them for now
         self.handle.sendline("cd")
         self.handle.expect(["\$",pexpect.EOF,pexpect.TIMEOUT])
-        #TODO: Write seperate versions of the function for this, possibly a string that tells it which switch is in use?
-        #For 1.0 version of OVS
-        #command = "sudo ovs-ofctl dump-flows " + sw + " | awk '{OFS=\",\" ; print $1 $6 $7 }' |sort -n -k1"
-        #for 1.3 version of OVS
-        #command = "sudo ovs-ofctl dump-flows " + sw + " | awk '{OFS=\",\" ; print $1 $3 $7 $8}' |sort -n -k1"
+        #print "get_flowTable(" + str(protoVersion) +" " + str(sw) +")"
         #NOTE: Use format to force consistent flow table output across versions
         if protoVersion==1.0:
-            command = "sudo ovs-ofctl dump-flows " + sw + " -F OpenFlow10-table_id | awk '{OFS=\",\" ; print $1  $3  $6  $7  $8}' |sort -n -k1"
+            command = "sudo ovs-ofctl dump-flows " + sw + " -F OpenFlow10-table_id | awk '{OFS=\",\" ; print $1  $3  $6  $7  $8}' | cut -d ',' -f 2- | sort -n -k1 -r"
             self.handle.sendline(command)
-            self.handle.expect(["sort -n -k1",pexpect.EOF,pexpect.TIMEOUT])
+            self.handle.expect(["k1 -r",pexpect.EOF,pexpect.TIMEOUT])
             self.handle.expect(["OFPST_FLOW",pexpect.EOF,pexpect.TIMEOUT])
             response = self.handle.before
             #print "response=", response
             return response
         elif protoVersion==1.3:
-            command = "sudo ovs-ofctl dump-flows " + sw + " -O OpenFlow13  | awk '{OFS=\",\" ; print $1  $3  $6  $7}' |sort -n -k1" 
+            command = "sudo ovs-ofctl dump-flows " + sw + " -O OpenFlow13  | awk '{OFS=\",\" ; print $1  $3  $6  $7}' | cut -d ',' -f 2- | sort -n -k1 -r"
             self.handle.sendline(command)
-            #print "ovs-vsctl Command sent status."
-            #self.handle.expect(["sort -n -k1",pexpect.EOF,pexpect.TIMEOUT])
-            #print "sort return status: " 
-            #print self.handle.expect(["sort -n -k1",pexpect.EOF,pexpect.TIMEOUT])
-            #print self.handle.before
+            self.handle.expect(["k1 -r",pexpect.EOF,pexpect.TIMEOUT])
             self.handle.expect(["OFPST_FLOW",pexpect.EOF,pexpect.TIMEOUT])
-            #print "OFPST_FLOW expected status: " 
-            #print self.handle.expect(["OFPST_FLOW",pexpect.EOF,pexpect.TIMEOUT])
-            #print self.handle.before
             response = self.handle.before
             #print "response=", response
-            return response 
-        
+            return response
+        else:
+            main.log.error("Unknown  protoVersion in get_flowTable(). given: ("+str(type(protoVersion))+") '"+str(protoVersion)+"'")
+
 
     def flow_comp(self,flow1,flow2):
-        #print "Inside flow compare function"
-        #print "Flow1 Table:"
-        #for flow in flow1:
-            #print flow1
-        #print "Flow2 Table"
-        #for flow in flow2:
-            #print flow2
-
         if flow1==flow2:
             return main.TRUE
         else:
             main.log.info("Flow tables do not match, printing tables:")
-            #main.log.info("Flow Table 1:")
-            #main.log.info(flow1)
-            #main.log.info("Flow Table 2:")
-            #main.log.info(flow2)
+            main.log.info("Flow Table 1:")
+            main.log.info(flow1)
+            main.log.info("Flow Table 2:")
+            main.log.info(flow2)
             return main.FALSE
 
     def setIpTablesOUTPUT(self, dst_ip, dst_port, action='add', packet_type='tcp',rule='DROP'):
@@ -432,8 +401,8 @@ class RemoteMininetDriver(Emulator):
         Usage:
         * specify action ('add' or 'remove')
           when removing, pass in the same argument as you would add. It will
-          delete that specific rule. 
-        * specify the destination ip to block with dst_ip 
+          delete that specific rule.
+        * specify the destination ip to block with dst_ip
         * specify destination port to block to dst_port
         * optional packet type to block (default tcp)
         * optional iptables rule (default DROP)
@@ -464,8 +433,8 @@ class RemoteMininetDriver(Emulator):
             return
         else:
 
-            #If there is no existing rule in the iptables, we will see an 
-            #'iptables:'... message. We expect to see this message. 
+            #If there is no existing rule in the iptables, we will see an
+            #'iptables:'... message. We expect to see this message.
             #Otherwise, if there IS an existing rule, we will get the prompt
             # back, hence why we expect $ for remove type. We want to remove
             # an already existing rule
@@ -473,7 +442,7 @@ class RemoteMininetDriver(Emulator):
             if action_type == 'add':
                 #NOTE: "iptables:" expect is a result of return from the command
                 #      iptables -C ...
-                #      Any changes by the iptables command return string 
+                #      Any changes by the iptables command return string
                 #      will result in failure of the function. (deemed unlikely
                 #      at the time of writing this function)
                 #Check for existing rules on current input
@@ -505,7 +474,7 @@ class RemoteMininetDriver(Emulator):
                 match_result = main.TRUE
             else:
                 match_result = main.FALSE
-            #If match_result is main.TRUE, it means there is no matching rule. 
+            #If match_result is main.TRUE, it means there is no matching rule.
 
             #If tables does not exist and expected prompt is returned, go ahead and
             #add iptables rule

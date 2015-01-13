@@ -18,13 +18,10 @@ OCT 13 2014
 '''
 
 import sys
-import time
 import pexpect
 import re
 import traceback
-import os.path
-import pydoc
-import re
+#import os.path
 sys.path.append("../")
 from drivers.common.clidriver import CLI
 
@@ -172,7 +169,18 @@ class OnosCliDriver(CLI):
             main.cleanup()
             main.exit()
         
-    def start_onos_cli(self, ONOS_ip):
+    def start_onos_cli(self, ONOS_ip, karafTimeout=""):
+        '''
+        karafTimeout is an optional arugument. karafTimeout value passed by user would be used to set the 
+        current karaf shell idle timeout. Note that when ever this property is modified the shell will exit and
+        the subsequent login would reflect new idle timeout.
+        Below is an example to start a session with 60 seconds idle timeout (input value is in milliseconds):
+          
+        tValue = "60000"
+        main.ONOScli1.start_onos_cli(ONOS_ip, karafTimeout=tValue)
+        
+        Note: karafTimeout is left as str so that this could be read and passed to start_onos_cli from PARAMS file as str.
+        '''
         try:
             self.handle.sendline("")
             x = self.handle.expect([
@@ -190,6 +198,11 @@ class OnosCliDriver(CLI):
 
             if i == 0:
                 main.log.info(str(ONOS_ip)+" CLI Started successfully")
+                if karafTimeout:
+                    self.handle.sendline("config:property-set -p org.apache.karaf.shell sshIdleTimeout "+karafTimeout)
+                    self.handle.expect("\$")
+                    self.handle.sendline("onos -w "+str(ONOS_ip))
+                    self.handle.expect("onos>")
                 return main.TRUE
             else:
                 #If failed, send ctrl+c to process and try again
@@ -201,6 +214,11 @@ class OnosCliDriver(CLI):
                 if i == 0:
                     main.log.info(str(ONOS_ip)+" CLI Started "+
                         "successfully after retry attempt")
+                    if karafTimeout:
+                        self.handle.sendline("config:property-set -p org.apache.karaf.shell sshIdleTimeout "+karafTimeout)
+                        self.handle.expect("\$")
+                        self.handle.sendline("onos -w "+str(ONOS_ip))
+			self.handle.expect("onos>")
                     return main.TRUE
                 else:
                     main.log.error("Connection to CLI "+\
@@ -508,6 +526,33 @@ class OnosCliDriver(CLI):
             main.cleanup()
             main.exit()
 
+       
+    def balance_masters(self):
+        '''
+        This balances the devices across all controllers
+        by issuing command: 'onos> onos:balance-masters'
+        If required this could be extended to return devices balanced output.
+        '''
+        try:
+            self.handle.sendline("")
+            self.handle.expect("onos>")
+
+            self.handle.sendline("onos:balance-masters")
+            self.handle.expect("onos>")
+            return main.TRUE
+
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()
+
     def links(self, json_format=True):
         '''
         Lists all core links
@@ -693,7 +738,38 @@ class OnosCliDriver(CLI):
             main.log.info(self.name+" ::::::")
             main.cleanup()
             main.exit()
-    
+
+    def roles_not_null(self):
+        '''
+        Iterates through each device and checks if there is a master assigned
+        Returns: main.TRUE if each device has a master
+                 main.FALSE any device has no master
+        '''
+        try:
+            import json
+            raw_roles = self.roles()
+            roles_json = json.loads(raw_roles)
+            #search json for the device with id then return the device
+            for device in roles_json:
+                #print device
+                if device['master'] == "none":
+                    main.log.warn("Device has no master: " + str(device) )
+                    return main.FALSE
+            return main.TRUE
+
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()
+
+
     def paths(self, src_id, dst_id):
         '''
         Returns string of paths, and the cost.
@@ -875,7 +951,7 @@ class OnosCliDriver(CLI):
             handle = self.handle.before
             #print "handle =", handle
 
-            main.log.info("Intent installed between "+
+            main.log.info("Host intent installed between "+
                     str(host_id_one) + " and " + str(host_id_two))
 
             return handle
@@ -1027,7 +1103,7 @@ class OnosCliDriver(CLI):
 
             if i == 0:
                 main.log.error("Error in adding point-to-point intent")
-                return handle
+                return main.FALSE
             else:
                 return main.TRUE
 
@@ -1357,6 +1433,9 @@ class OnosCliDriver(CLI):
             
             if num_mult:
                 cmd += " " + str(num_mult)
+                #If app id is specified, then num_mult 
+                #must exist because of the way this command
+                #takes in arguments
                 if app_id:
                     cmd += " " + str(app_id)
             
@@ -1383,7 +1462,7 @@ class OnosCliDriver(CLI):
                     #Append the first result of second parse
                     lat_result.append(result[1].split(" ")[0])
 
-                print lat_result 
+                main.log.info(lat_result) 
                 return lat_result 
             else:
                 return main.TRUE
@@ -1713,7 +1792,7 @@ class OnosCliDriver(CLI):
         onos_node is the ip of one of the onos nodes in the cluster
         role must be either master, standby, or none
 
-        Returns main.TRUE or main.FALSE based argument varification.
+        Returns main.TRUE or main.FALSE based on argument verification.
             When device-role supports errors this should be extended to
             support that output
         '''
@@ -1805,5 +1884,233 @@ class OnosCliDriver(CLI):
             main.cleanup()
             main.exit()
 
+    def election_test_leader(self):
+        '''
+         * CLI command to get the current leader for the Election test application.
+         #NOTE: Requires installation of the onos-app-election feature
+         Returns: Node IP of the leader if one exists
+                  None if none exists
+                  Main.FALSE on error
+        '''
+        try:
+            self.handle.sendline("election-test-leader")
+            self.handle.expect("election-test-leader")
+            self.handle.expect("onos>")
+            response = self.handle.before
+            #Leader
+            node_search = re.search("The\scurrent\sleader\sfor\sthe\sElection\sapp\sis\s(?P<node>.+)\.", response)
+            if node_search:
+                node = node_search.group('node')
+                main.log.info("Election-test-leader on "+str(self.name)+" found " + node + " as the leader")
+                return node
+            #no leader
+            null_search = re.search("There\sis\scurrently\sno\sleader\selected\sfor\sthe\sElection\sapp", response)
+            if null_search:
+                main.log.info("Election-test-leader found no leader on " + self.name )
+                return None
+            #error
+            if re.search("Command\snot\sfound", response):
+                main.log.error("Election app is not loaded on " + self.name)
+                return main.FALSE
+            else:
+                main.log.error("Error in election_test_leader: unexpected response")
+                main.log.error( repr(response) )
+                return main.FALSE
+
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()
+
+    def election_test_run(self):
+        '''
+         * CLI command to run for leadership of the Election test application.
+         #NOTE: Requires installation of the onos-app-election feature
+         Returns: Main.TRUE on success
+                  Main.FALSE on error
+        '''
+        try:
+            self.handle.sendline("election-test-run")
+            self.handle.expect("election-test-run")
+            self.handle.expect("onos>")
+            response = self.handle.before
+            #success
+            search = re.search("Entering\sleadership\selections\sfor\sthe\sElection\sapp.", response)
+            if search:
+                main.log.info(self.name + " entering leadership elections for the Election app.")
+                return main.TRUE
+            #error
+            if re.search("Command\snot\sfound", response):
+                main.log.error("Election app is not loaded on " + self.name)
+                return main.FALSE
+            else:
+                main.log.error("Error in election_test_run: unexpected response")
+                main.log.error( repr(response) )
+                return main.FALSE
+
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()
+
+    def election_test_withdraw(self):
+        '''
+         * CLI command to withdraw the local node from leadership election for
+         * the Election test application.
+         #NOTE: Requires installation of the onos-app-election feature
+         Returns: Main.TRUE on success
+                  Main.FALSE on error
+        '''
+        try:
+            self.handle.sendline("election-test-withdraw")
+            self.handle.expect("election-test-withdraw")
+            self.handle.expect("onos>")
+            response = self.handle.before
+            #success
+            search = re.search("Withdrawing\sfrom\sleadership\selections\sfor\sthe\sElection\sapp.", response)
+            if search:
+                main.log.info(self.name + " withdrawing from leadership elections for the Election app.")
+                return main.TRUE
+            #error
+            if re.search("Command\snot\sfound", response):
+                main.log.error("Election app is not loaded on " + self.name)
+                return main.FALSE
+            else:
+                main.log.error("Error in election_test_withdraw: unexpected response")
+                main.log.error( repr(response) )
+                return main.FALSE
+
+
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()
 
     #***********************************
+    def getDevicePortsEnabledCount(self,dpid):
+        '''
+        Get the count of all enabled ports on a particular device/switch
+        '''
+        try:
+            dpid = str(dpid)
+            self.handle.sendline("")
+            self.handle.expect("onos>")
+
+            self.handle.sendline("onos:ports -e "+dpid+" | wc -l")
+            i = self.handle.expect([
+                "No such device",
+                "onos>"])
+            
+            #self.handle.sendline("")
+            #self.handle.expect("onos>")
+
+            output = self.handle.before
+
+            if i == 0:
+                main.log.error("Error in getting ports")
+                return (output, "Error")
+            else:
+                result = output
+                return result
+        
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()
+
+    def getDeviceLinksActiveCount(self,dpid):
+        '''
+        Get the count of all enabled ports on a particular device/switch
+        '''
+        try:
+            dpid = str(dpid)
+            self.handle.sendline("")
+            self.handle.expect("onos>")
+
+            self.handle.sendline("onos:links "+dpid+" | grep ACTIVE | wc -l")
+            i = self.handle.expect([
+                "No such device",
+                "onos>"])
+
+            output = self.handle.before
+
+            if i == 0:
+                main.log.error("Error in getting ports")
+                return (output, "Error")
+            else:
+                result = output
+                return result
+        
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()
+
+    def getAllIntentIds(self):
+        '''
+        Return a list of all Intent IDs
+        '''
+        try:
+            self.handle.sendline("")
+            self.handle.expect("onos>")
+
+            self.handle.sendline("onos:intents | grep id=")
+            i = self.handle.expect([
+                "Error",
+                "onos>"])
+
+            output = self.handle.before
+
+            if i == 0:
+                main.log.error("Error in getting ports")
+                return (output, "Error")
+            else:
+                result = output
+                return result
+        
+        except pexpect.EOF:
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":    " + self.handle.before)
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info(self.name+" ::::::")
+            main.log.error( traceback.print_exc())
+            main.log.info(self.name+" ::::::")
+            main.cleanup()
+            main.exit()

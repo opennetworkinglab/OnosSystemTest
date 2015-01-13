@@ -40,9 +40,11 @@ Dependencies
 
 3. Install python packages configObj and pexpect (Note: pexpect 3.3 has a known bug. We recommend using version 3.2 for now). They can be installed as :
 
-     $ sudo pip install configObj
+    $ sudo pip install configObj
 
-     $ sudo pip install pexpect==3.2
+    $ sudo pip install pexpect==3.2
+
+    $ sudo pip install numpy
 
 4. STS  - This can be installed by:
 

@@ -21,16 +21,19 @@ along with TestON.  If not, see <http://www.gnu.org/licenses/>.
 
 MininetCliDriver is the basic driver which will handle the Mininet functions
 
+Some functions rely on STS module. To install this,
+    git clone https://github.com/jhall11/sts.git
+
 Some functions rely on a modified version of Mininet. These functions
 should all be noted in the comments. To get this MN version run these commands
 from within your Mininet folder:
-
-    git remote add jhall11 https://github.com/jhall11/sts.git
+    git remote add jhall11 https://github.com/jhall11/mininet.git
     git fetch jhall11
-    git checkout -b jhall11/topology_refactoring2 remotes/jhall11/topology_refactoring2
+    git checkout -b dynamic_topo remotes/jhall11/dynamic_topo
     git pull
 
-Note that you may need to run 'sudo make develop' if your mnexec.c file
+
+    Note that you may need to run 'sudo make develop' if your mnexec.c file
 changed when switching branches."""
 import traceback
 import pexpect
@@ -905,7 +908,7 @@ class MininetCliDriver( Emulator ):
         """
         adds a switch to the mininet topology
         NOTE: This uses a custom mn function. MN repo should be on
-            jhall11/topology_refactoring2 branch
+            dynamic_topo branch
         NOTE: cannot currently specify what type of switch
         required params:
             switchname = name of the new switch as a string
@@ -941,7 +944,7 @@ class MininetCliDriver( Emulator ):
         """
         delete a switch from the mininet topology
         NOTE: This uses a custom mn function. MN repo should be on
-            jhall11/topology_refactoring2 branch
+            dynamic_topo branch
         required params:
             switchname = name of the switch as a string
         returns: main.FASLE on an error, else main.TRUE"""
@@ -972,7 +975,7 @@ class MininetCliDriver( Emulator ):
         """
            add a link to the mininet topology
            NOTE: This uses a custom mn function. MN repo should be on
-                jhall11/topology_refactoring2 branch
+                dynamic_topo branch
            NOTE: cannot currently specify what type of link
            required params:
            node1 = the string node name of the first endpoint of the link
@@ -1005,7 +1008,7 @@ class MininetCliDriver( Emulator ):
         """
            delete a link from the mininet topology
            NOTE: This uses a custom mn function. MN repo should be on
-                jhall11/topology_refactoring2 branch
+                dynamic_topo branch
            required params:
            node1 = the string node name of the first endpoint of the link
            node2 = the string node name of the second endpoint of the link
@@ -1037,7 +1040,7 @@ class MininetCliDriver( Emulator ):
         """
         Add a host to the mininet topology
         NOTE: This uses a custom mn function. MN repo should be on
-            jhall11/topology_refactoring2 branch
+            dynamic_topo branch
         NOTE: cannot currently specify what type of host
         required params:
             hostname = the string hostname
@@ -1076,7 +1079,7 @@ class MininetCliDriver( Emulator ):
         """
            delete a host from the mininet topology
            NOTE: This uses a custom mn function. MN repo should be on
-               jhall11/topology_refactoring2 branch
+               dynamic_topo branch
            NOTE: this uses a custom mn function
            required params:
            hostname = the string hostname

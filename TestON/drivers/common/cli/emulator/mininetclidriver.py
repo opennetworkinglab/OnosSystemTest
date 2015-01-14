@@ -217,7 +217,7 @@ class MininetCliDriver( Emulator ):
                 main.log.info( self.name + ": All hosts are reachable" )
                 return main.TRUE
             else:
-               main.log.error( self.name + ": Unable to reach all the hosts" )
+                main.log.error( self.name + ": Unable to reach all the hosts" )
                 main.log.info( "Pingall ouput: " + str( response ) )
                 # NOTE: Send ctrl-c to make sure pingall is done
                 self.handle.send( "\x03" )

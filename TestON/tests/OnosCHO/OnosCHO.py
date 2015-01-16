@@ -6,7 +6,9 @@ import time
 import json
 import itertools
 
+
 class OnosCHO:
+
     def __init__(self):
         self.default = ''
         global deviceDPIDs
@@ -16,6 +18,7 @@ class OnosCHO:
         global devicePortsEnabledCount
         global installedIntents
         global randomLink1, randomLink2, randomLink3, numSwitches, numLinks
+
     def CASE1(self, main):
         '''
         Startup sequence:
@@ -109,12 +112,13 @@ class OnosCHO:
 
         main.step("Start ONOS CLI on all nodes")
         cliResult = main.TRUE
+        karafTimeout = "3600000"
         time.sleep(15) # need to wait here for sometime. This will be removed once ONOS is stable enough
         for i in range(1,int(numCtrls)+1):
             ONOS_ip = main.params['CTRL']['ip'+str(i)]
             ONOScli = 'ONOScli'+str(i)
             main.log.info("ONOS Node "+ONOS_ip+" cli start:")
-            exec "startcli=main."+ONOScli+".start_onos_cli(ONOS_ip)"
+            exec "startcli=main."+ONOScli+".start_onos_cli(ONOS_ip, karafTimeout=karafTimeout)"
             utilities.assert_equals(expect=main.TRUE, actual=startcli,
                 onpass="Test step PASS",
                 onfail="Test step FAIL")
@@ -267,6 +271,7 @@ class OnosCHO:
             ONOScli = 'ONOScli'+str(i)
             main.log.info("Enabling Reactive mode on ONOS Node "+ONOS_ip)
             exec "inResult=main."+ONOScli+".feature_install(onosFeature)"
+            time.sleep(3)
             installResult = inResult and installResult
 
         time.sleep(5)
@@ -388,9 +393,9 @@ class OnosCHO:
                 onpass="Install 300 Host Intents and Ping All test PASS",
                 onfail="Install 300 Host Intents and Ping All test FAIL")
 
-    def CASE7(self,main):
+    def CASE70(self,main):
         '''
-        Randomly bring some core links down and verify ping all
+        Randomly bring some core links down and verify ping all (Host Intents Scenario)
         '''
         import random
         ONOS1_ip = main.params['CTRL']['ip1']
@@ -403,9 +408,9 @@ class OnosCHO:
         switchLinksToToggle = main.params['CORELINKS']['toggleLinks']
         link_sleep = int(main.params['timers']['LinkDiscovery'])
 
-        main.log.report("Randomly bring some core links down and verify ping all")
-        main.log.report("____________________________________________________")        
-        main.case("Randomly bring some core links down and verify ping all")
+        main.log.report("Host intents - Randomly bring some core links down and verify ping all")
+        main.log.report("_________________________________________________________________")        
+        main.case("Host intents - Randomly bring some core links down and verify ping all")
         main.step("Verify number of Switch links to toggle on each Core Switch are between 1 - 5")
         if (int(switchLinksToToggle) == 0 or int(switchLinksToToggle) > 5):
             main.log.info("Please check you PARAMS file. Valid range for number of switch links to toggle is between 1 to 5")
@@ -446,9 +451,9 @@ class OnosCHO:
                 onpass="Random Link cut Test PASS",
                 onfail="Random Link cut Test FAIL")
 
-    def CASE8(self,main):
+    def CASE80(self,main):
         '''
-        Bring the core links up that are down and verify ping all
+        Bring the core links up that are down and verify ping all (Host Intents Scenario)
         '''
         import random
         ONOS1_ip = main.params['CTRL']['ip1']
@@ -458,9 +463,9 @@ class OnosCHO:
         link_sleep = int(main.params['timers']['LinkDiscovery'])
         switchLinksToToggle = main.params['CORELINKS']['toggleLinks']
 
-        main.log.report("Bring the core links up that are down and verify ping all")
-        main.log.report("_____________________________________________________")        
-        main.case("Bring the core links up that are down and verify ping all")
+        main.log.report("Host intents - Bring the core links up that are down and verify ping all")
+        main.log.report("__________________________________________________________________")        
+        main.case("Host intents - Bring the core links up that are down and verify ping all")
         main.step("Bring randomly cut links on Core devices up")
         for i in range(int(switchLinksToToggle)): 
             main.Mininet1.link(END1=link1End1,END2=randomLink1[i],OPTION="up")
@@ -489,6 +494,108 @@ class OnosCHO:
         utilities.assert_equals(expect=main.TRUE, actual=caseResult8,
                 onpass="Link Up Test PASS",
                 onfail="Link Up Test FAIL")    
+
+    def CASE71(self,main):
+        '''
+        Randomly bring some core links down and verify ping all (Point Intents Scenario)
+        '''
+        import random
+        ONOS1_ip = main.params['CTRL']['ip1']
+        link1End1 = main.params['CORELINKS']['linkS3a']
+        link1End2 = main.params['CORELINKS']['linkS3b'].split(',')
+        link2End1 = main.params['CORELINKS']['linkS14a']
+        link2End2 = main.params['CORELINKS']['linkS14b'].split(',')
+        link3End1 = main.params['CORELINKS']['linkS18a']
+        link3End2 = main.params['CORELINKS']['linkS18b'].split(',')
+        switchLinksToToggle = main.params['CORELINKS']['toggleLinks']
+        link_sleep = int(main.params['timers']['LinkDiscovery'])
+
+        main.log.report("Point Intents - Randomly bring some core links down and verify ping all")
+        main.log.report("__________________________________________________________________")        
+        main.case("Point Intents - Randomly bring some core links down and verify ping all")
+        main.step("Verify number of Switch links to toggle on each Core Switch are between 1 - 5")
+        if (int(switchLinksToToggle) == 0 or int(switchLinksToToggle) > 5):
+            main.log.info("Please check you PARAMS file. Valid range for number of switch links to toggle is between 1 to 5")
+            main.cleanup()
+            main.exit()
+        else:
+            main.log.info("User provided Core switch links range to toggle is correct, proceeding to run the test")
+
+        main.step("Cut links on Core devices using user provided range")
+        randomLink1 = random.sample(link1End2,int(switchLinksToToggle))
+        randomLink2 = random.sample(link2End2,int(switchLinksToToggle))
+        randomLink3 = random.sample(link3End2,int(switchLinksToToggle))
+        for i in range(int(switchLinksToToggle)):
+            main.Mininet1.link(END1=link1End1,END2=randomLink1[i],OPTION="down")
+            main.Mininet1.link(END1=link2End1,END2=randomLink2[i],OPTION="down")
+            main.Mininet1.link(END1=link3End1,END2=randomLink3[i],OPTION="down")
+        time.sleep(link_sleep)
+
+        topology_output = main.ONOScli2.topology()
+        linkDown = main.ONOSbench.check_status(topology_output,numSwitches,str(int(numLinks)-int(switchLinksToToggle)*6))
+        utilities.assert_equals(expect=main.TRUE,actual=linkDown,
+                onpass="Link Down discovered properly",
+                onfail="Link down was not discovered in "+ str(link_sleep) + " seconds")
+
+        main.step("Verify Ping across all hosts")
+        pingResultLinkDown = main.FALSE
+        time1 = time.time()
+        pingResultLinkDown = main.Mininet1.pingall()
+        time2 = time.time()
+        timeDiff = round((time2-time1),2)
+        main.log.report("Time taken for Ping All: "+str(timeDiff)+" seconds")
+        utilities.assert_equals(expect=main.TRUE, actual=pingResultLinkDown,
+                onpass="PING ALL PASS",
+                onfail="PING ALL FAIL")
+
+        caseResult7 = linkDown and pingResultLinkDown
+        utilities.assert_equals(expect=main.TRUE, actual=caseResult7,
+                onpass="Random Link cut Test PASS",
+                onfail="Random Link cut Test FAIL")
+
+    def CASE81(self,main):
+        '''
+        Bring the core links up that are down and verify ping all (Point Intents Scenario)
+        '''
+        import random
+        ONOS1_ip = main.params['CTRL']['ip1']
+        link1End1 = main.params['CORELINKS']['linkS3a']
+        link2End1 = main.params['CORELINKS']['linkS14a']
+        link3End1 = main.params['CORELINKS']['linkS18a']
+        link_sleep = int(main.params['timers']['LinkDiscovery'])
+        switchLinksToToggle = main.params['CORELINKS']['toggleLinks']
+
+        main.log.report("Point intents - Bring the core links up that are down and verify ping all")
+        main.log.report("___________________________________________________________________")        
+        main.case("Point intents - Bring the core links up that are down and verify ping all")
+        main.step("Bring randomly cut links on Core devices up")
+        for i in range(int(switchLinksToToggle)): 
+            main.Mininet1.link(END1=link1End1,END2=randomLink1[i],OPTION="up")
+            main.Mininet1.link(END1=link2End1,END2=randomLink2[i],OPTION="up")
+            main.Mininet1.link(END1=link3End1,END2=randomLink3[i],OPTION="up")
+        time.sleep(link_sleep)
+
+        topology_output = main.ONOScli2.topology()
+        linkUp = main.ONOSbench.check_status(topology_output,numSwitches,str(numLinks))
+        utilities.assert_equals(expect=main.TRUE,actual=linkUp,
+                onpass="Link up discovered properly",
+                onfail="Link up was not discovered in "+ str(link_sleep) + " seconds")
+
+        main.step("Verify Ping across all hosts")
+        pingResultLinkUp = main.FALSE
+        time1 = time.time()
+        pingResultLinkUp = main.Mininet1.pingall()
+        time2 = time.time()
+        timeDiff = round((time2-time1),2)
+        main.log.report("Time taken for Ping All: "+str(timeDiff)+" seconds")
+        utilities.assert_equals(expect=main.TRUE, actual=pingResultLinkUp,
+                onpass="PING ALL PASS",
+                onfail="PING ALL FAIL")
+
+        caseResult8 = linkUp and pingResultLinkUp
+        utilities.assert_equals(expect=main.TRUE, actual=caseResult8,
+                onpass="Link Up Test PASS",
+                onfail="Link Up Test FAIL")
 
     def CASE9(self):
         '''

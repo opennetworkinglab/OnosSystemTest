@@ -386,9 +386,6 @@ class OnosDriver(CLI):
         Writes the COMMIT number to the report to be parsed by Jenkins data collecter.
         '''
         try:
-            self.handle.sendline("export TERM=xterm-256color")
-            self.handle.expect("xterm-256color")
-            self.handle.expect("\$")
             self.handle.sendline("")
             self.handle.expect("\$")
             self.handle.sendline("cd " + self.home + "; git log -1 --pretty=fuller --decorate=short | grep -A 6 \"commit\" --color=never")

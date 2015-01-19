@@ -21,8 +21,8 @@
 
         <ONOS1>
             <host>10.128.10.21</host>
-            <user>sdn</user>
-            <password>rocks</password>
+            <user>admin</user>
+            <password></password>
             <type>OnosDriver</type>
             <connect_order>3</connect_order>
             <COMPONENTS> </COMPONENTS>

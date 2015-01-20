@@ -50,6 +50,24 @@ Dependencies
 
     $ git clone https://github.com/jhall11/sts.git
 
+5. Linc-OE - Some testcases use this to emulate optical devices
+
+    Requirements:
+
+    1. Erlang R15B, R16B, R17 - if possible please use R17
+
+    2. libpcap-dev package if eth interfaces will be used
+
+    Building and Running:
+
+    $ git clone https://github.com/shivarammysore/LINC-Switch.git linc-oe
+
+    $ cd linc-oe
+
+    $ git checkout tags/oe-0.3
+
+    $ make rel
+
 Configuration
 ------------
 

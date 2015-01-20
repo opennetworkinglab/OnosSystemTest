@@ -179,7 +179,7 @@ def removeBogusLinefeeds( text ):
 def convertFromPep8( program ):
    oldProgram = program
    # Program text transforms
-   # program = reinstateCapWords( program )  # Turning off for now
+   program = reinstateCapWords( program )  # Turning off for now
    program = fixKeywords( program )
    program = insertExtraSpaces( program )
    # Undo string damage

@@ -233,7 +233,7 @@ class MininetCliDriver( Emulator ):
         """
            Uses the fping package for faster pinging...
            *requires fping to be installed on machine running mininet"""
-        args = utilities.parseArgs( [ "SRC", "TARGET" ], **pingParams )
+        args = utilities.parse_args( [ "SRC", "TARGET" ], **pingParams )
         command = args[ "SRC" ] + \
             " fping -i 100 -t 20 -C 1 -q " + args[ "TARGET" ]
         self.handle.sendline( command )
@@ -255,7 +255,7 @@ class MininetCliDriver( Emulator ):
         """
            Ping from one mininet host to another
            Currently the only supported Params: SRC and TARGET"""
-        args = utilities.parseArgs( [ "SRC", "TARGET" ], **pingParams )
+        args = utilities.parse_args( [ "SRC", "TARGET" ], **pingParams )
         command = args[ "SRC" ] + " ping " + \
             args[ "TARGET" ] + " -c 1 -i 1 -W 8"
         try:
@@ -705,7 +705,7 @@ class MininetCliDriver( Emulator ):
     def link( self, **linkargs ):
         """
            Bring link( s ) between two nodes up or down"""
-        args = utilities.parseArgs( [ "END1", "END2", "OPTION" ], **linkargs )
+        args = utilities.parse_args( [ "END1", "END2", "OPTION" ], **linkargs )
         end1 = args[ "END1" ] if args[ "END1" ] is not None else ""
         end2 = args[ "END2" ] if args[ "END2" ] is not None else ""
         option = args[ "OPTION" ] if args[ "OPTION" ] is not None else ""
@@ -733,7 +733,7 @@ class MininetCliDriver( Emulator ):
         """
            yank a mininet switch interface to a host"""
         main.log.info( 'Yank the switch interface attached to a host' )
-        args = utilities.parseArgs( [ "SW", "INTF" ], **yankargs )
+        args = utilities.parse_args( [ "SW", "INTF" ], **yankargs )
         sw = args[ "SW" ] if args[ "SW" ] is not None else ""
         intf = args[ "INTF" ] if args[ "INTF" ] is not None else ""
         command = "py " + str( sw ) + '.detach("' + str(intf) + '")'
@@ -753,7 +753,7 @@ class MininetCliDriver( Emulator ):
         """
            plug the yanked mininet switch interface to a switch"""
         main.log.info( 'Plug the switch interface attached to a switch' )
-        args = utilities.parseArgs( [ "SW", "INTF" ], **plugargs )
+        args = utilities.parse_args( [ "SW", "INTF" ], **plugargs )
         sw = args[ "SW" ] if args[ "SW" ] is not None else ""
         intf = args[ "INTF" ] if args[ "INTF" ] is not None else ""
         command = "py " + str( sw ) + '.attach("' + str(intf) + '")'
@@ -773,7 +773,7 @@ class MininetCliDriver( Emulator ):
         """
            Run dpctl command on all switches."""
         main.log.info( 'Run dpctl command on all switches' )
-        args = utilities.parseArgs( [ "CMD", "ARGS" ], **dpctlargs )
+        args = utilities.parse_args( [ "CMD", "ARGS" ], **dpctlargs )
         cmd = args[ "CMD" ] if args[ "CMD" ] is not None else ""
         cmdargs = args[ "ARGS" ] if args[ "ARGS" ] is not None else ""
         command = "dpctl " + cmd + " " + str( cmdargs )
@@ -825,14 +825,14 @@ class MininetCliDriver( Emulator ):
     def assignSwController( self, **kwargs ):
         """
            count is only needed if there is more than 1 controller"""
-        args = utilities.parseArgs( [ "COUNT" ], **kwargs )
+        args = utilities.parse_args( [ "COUNT" ], **kwargs )
         count = args[ "COUNT" ] if args != {} else 1
 
         argstring = "SW"
         for j in range( count ):
             argstring = argstring + ",IP" + \
                 str( j + 1 ) + ",PORT" + str( j + 1 )
-        args = utilities.parseArgs( argstring.split( "," ), **kwargs )
+        args = utilities.parse_args( argstring.split( "," ), **kwargs )
 
         sw = args[ "SW" ] if args[ "SW" ] is not None else ""
         ptcpA = int( args[ "PORT1" ] ) + \
@@ -843,7 +843,7 @@ class MininetCliDriver( Emulator ):
             str( sw ) + " " + ptcpB + " "
         for j in range( count ):
             i = j + 1
-            args = utilities.parseArgs(
+            args = utilities.parse_args(
                 [ "IP" + str( i ), "PORT" + str( i ) ], **kwargs )
             ip = args[
                 "IP" +

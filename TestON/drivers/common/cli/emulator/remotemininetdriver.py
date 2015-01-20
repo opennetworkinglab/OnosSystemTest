@@ -104,7 +104,7 @@ class RemoteMininetDriver( Emulator ):
         """
         self.handle.sendline( "" )
         self.handle.expect( "\$" )
-        args = utilities.parseArgs(
+        args = utilities.parse_args(
             [ "SRC", "TARGET", "PINGTIME" ], **pingParams )
         precmd = "sudo rm /tmp/ping." + args[ "SRC" ]
         self.execute( cmd=precmd, prompt="(.*)", timeout=10 )
@@ -124,7 +124,7 @@ class RemoteMininetDriver( Emulator ):
         """
         self.handle.sendline( "" )
         self.handle.expect( "\$" )
-        args = utilities.parseArgs( [ "SRC" ], **pingParams )
+        args = utilities.parse_args( [ "SRC" ], **pingParams )
         self.handle.sendline( "tail /tmp/ping." + args[ "SRC" ] )
         self.handle.expect( "tail" )
         self.handle.expect( "\$" )
@@ -187,7 +187,7 @@ class RemoteMininetDriver( Emulator ):
         Ping from one mininet host to another
         Currently the only supported Params: SRC and TARGET
         """
-        args = utilities.parseArgs( [ "SRC", "TARGET" ], **pingParams )
+        args = utilities.parse_args( [ "SRC", "TARGET" ], **pingParams )
         command = args[ "SRC" ] + " ping " + \
             args[ "TARGET" ] + " -c 1 -i 1 -W 8"
         try:
@@ -229,12 +229,12 @@ class RemoteMininetDriver( Emulator ):
         """
         self.handle.sendline( "" )
         self.handle.expect( "\$" )
-        args = utilities.parseArgs( [ "SRC", "TARGET" ], **pingParams )
+        args = utilities.parse_args( [ "SRC", "TARGET" ], **pingParams )
         command = "mininet/util/m " + \
             args[ "SRC" ] + " ping " + args[ "TARGET" ] + " -c 4 -W 1 -i .2"
         main.log.info( command )
         response = self.execute( cmd=command, prompt="rtt", timeout=10 )
-        if utilities.assertMatches(
+        if utilities.assert_matches(
                 expect=',\s0\%\spacket\sloss',
                 actual=response,
                 onpass="No Packet loss",

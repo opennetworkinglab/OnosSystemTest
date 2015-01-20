@@ -139,7 +139,7 @@ class MininetCliDriver( Emulator ):
             main.log.error( self.name + ": Failed to connect to the Mininet" )
             return main.FALSE
 
-    def numSwitchesN_links( self, topoType, depth, fanout ):
+    def numSwitchesNlinks( self, topoType, depth, fanout ):
         if topoType == 'tree':
             # In tree topology, if fanout arg is not given, by default it is 2
             if fanout is None:

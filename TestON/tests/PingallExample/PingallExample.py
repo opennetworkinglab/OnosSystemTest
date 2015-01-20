@@ -88,8 +88,8 @@ class PingallExample:
                         onos1Isup and cliResult )
 
         utilities.assert_equals( expect=main.TRUE, actual=case1Result,
-                                onpass="Test startup successful",
-                                onfail="Test startup NOT successful" )
+                                 onpass="Test startup successful",
+                                 onfail="Test startup NOT successful" )
 
         if case1Result == main.FALSE:
             main.cleanup()
@@ -158,5 +158,5 @@ class PingallExample:
         main.ONOScli1.featureUninstall( "onos-app-fwd" )
 
         utilities.assert_equals( expect=main.TRUE, actual=pingResult,
-                                onpass="All hosts are reachable",
-                                onfail="Some pings failed" )
+                                 onpass="All hosts are reachable",
+                                 onfail="Some pings failed" )

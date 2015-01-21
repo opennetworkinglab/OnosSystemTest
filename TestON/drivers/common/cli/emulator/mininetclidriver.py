@@ -1485,7 +1485,7 @@ class MininetCliDriver( Emulator ):
         # LINKS
 
         mnLinks = [
-            link for link in topo.patchPanel.networkLinks if (
+            link for link in topo.patch_panel.network_links if (
                 link.port1.enabled and link.port2.enabled ) ]
         if 2 * len( mnLinks ) == len( onos ):
             linkResults = main.TRUE

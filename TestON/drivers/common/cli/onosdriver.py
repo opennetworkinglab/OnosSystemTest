@@ -68,7 +68,7 @@ class OnosDriver( CLI ):
             main.exit()
         except:
             main.log.info( self.name + ":" * 30 )
-            main.log.error( traceback.printExc() )
+            main.log.error( traceback.print_exc() )
             main.log.info( ":" * 30 )
             main.cleanup()
             main.exit()
@@ -215,7 +215,7 @@ class OnosDriver( CLI ):
             main.exit()
         except:
             main.log.info( self.name + ":" * 60 )
-            main.log.error( traceback.printExc() )
+            main.log.error( traceback.print_exc() )
             main.log.info( ":" * 60 )
             main.cleanup()
             main.exit()
@@ -323,7 +323,7 @@ class OnosDriver( CLI ):
             main.exit()
         except:
             main.log.info( self.name + ":" * 60 )
-            main.log.error( traceback.printExc() )
+            main.log.error( traceback.print_exc() )
             main.log.info( ":" * 80 )
             main.cleanup()
             main.exit()
@@ -438,7 +438,7 @@ class OnosDriver( CLI ):
             main.exit()
         except:
             main.log.info( self.name + ":" * 60 )
-            main.log.error( traceback.printExc() )
+            main.log.error( traceback.print_exc() )
             main.log.info( ":" * 80 )
             main.cleanup()
             main.exit()
@@ -491,7 +491,7 @@ class OnosDriver( CLI ):
             main.exit()
         except:
             main.log.info( self.name + ":" * 60 )
-            main.log.error( traceback.printExc() )
+            main.log.error( traceback.print_exc() )
             main.log.info( ":" * 80 )
             main.cleanup()
             main.exit()
@@ -576,7 +576,7 @@ class OnosDriver( CLI ):
             main.exit()
         except:
             main.log.info( self.name + ":::::::::" )
-            main.log.error( traceback.printExc() )
+            main.log.error( traceback.print_exc() )
             main.log.info( ":::::::" )
             main.cleanup()
             main.exit()
@@ -615,7 +615,7 @@ class OnosDriver( CLI ):
             main.exit()
         except:
             main.log.info( self.name + " ::::::" )
-            main.log.error( traceback.printExc() )
+            main.log.error( traceback.print_exc() )
             main.log.info( self.name + " ::::::" )
             main.cleanup()
             main.exit()
@@ -650,7 +650,7 @@ class OnosDriver( CLI ):
             main.exit()
         except:
             main.log.info( self.name + " ::::::" )
-            main.log.error( traceback.printExc() )
+            main.log.error( traceback.print_exc() )
             main.log.info( self.name + " ::::::" )
             main.cleanup()
             main.exit()
@@ -711,7 +711,7 @@ class OnosDriver( CLI ):
             main.exit()
         except:
             main.log.info( self.name + " ::::::" )
-            main.log.error( traceback.printExc() )
+            main.log.error( traceback.print_exc() )
             main.log.info( self.name + " ::::::" )
             main.cleanup()
             main.exit()
@@ -766,7 +766,7 @@ class OnosDriver( CLI ):
             main.exit()
         except:
             main.log.info( self.name + " ::::::" )
-            main.log.error( traceback.printExc() )
+            main.log.error( traceback.print_exc() )
             main.log.info( self.name + " ::::::" )
             main.cleanup()
             main.exit()
@@ -804,7 +804,7 @@ class OnosDriver( CLI ):
             main.exit()
         except:
             main.log.info( self.name + " ::::::" )
-            main.log.error( traceback.printExc() )
+            main.log.error( traceback.print_exc() )
             main.log.info( self.name + " ::::::" )
             main.cleanup()
             main.exit()
@@ -842,7 +842,7 @@ class OnosDriver( CLI ):
             main.exit()
         except:
             main.log.info( self.name + " ::::::" )
-            main.log.error( traceback.printExc() )
+            main.log.error( traceback.print_exc() )
             main.log.info( self.name + " ::::::" )
             main.cleanup()
             main.exit()
@@ -871,7 +871,7 @@ class OnosDriver( CLI ):
             main.exit()
         except:
             main.log.info( self.name + " ::::::" )
-            main.log.error( traceback.printExc() )
+            main.log.error( traceback.print_exc() )
             main.log.info( self.name + " ::::::" )
             main.cleanup()
             main.exit()
@@ -904,7 +904,7 @@ class OnosDriver( CLI ):
             main.exit()
         except:
             main.log.info( self.name + " ::::::" )
-            main.log.error( traceback.printExc() )
+            main.log.error( traceback.print_exc() )
             main.log.info( self.name + " ::::::" )
             main.cleanup()
             main.exit()
@@ -950,7 +950,7 @@ class OnosDriver( CLI ):
             main.exit()
         except:
             main.log.info( self.name + " ::::::" )
-            main.log.error( traceback.printExc() )
+            main.log.error( traceback.print_exc() )
             main.log.info( self.name + " ::::::" )
             main.cleanup()
             main.exit()
@@ -987,7 +987,7 @@ class OnosDriver( CLI ):
             main.exit()
         except:
             main.log.info( self.name + " ::::::" )
-            main.log.error( traceback.printExc() )
+            main.log.error( traceback.print_exc() )
             main.log.info( self.name + " ::::::" )
             main.cleanup()
             main.exit()
@@ -1026,7 +1026,7 @@ class OnosDriver( CLI ):
             main.exit()
         except:
             main.log.info( self.name + " ::::::" )
-            main.log.error( traceback.printExc() )
+            main.log.error( traceback.print_exc() )
             main.log.info( self.name + " ::::::" )
             main.cleanup()
             main.exit()
@@ -1060,7 +1060,7 @@ class OnosDriver( CLI ):
             main.exit()
         except:
             main.log.info( self.name + " ::::::" )
-            main.log.error( traceback.printExc() )
+            main.log.error( traceback.print_exc() )
             main.log.info( self.name + " ::::::" )
             main.cleanup()
             main.exit()
@@ -1124,7 +1124,7 @@ class OnosDriver( CLI ):
             main.exit()
         except:
             main.log.info( self.name + " ::::::" )
-            main.log.error( traceback.printExc() )
+            main.log.error( traceback.print_exc() )
             main.log.info( self.name + " ::::::" )
             main.cleanup()
             main.exit()
@@ -1172,7 +1172,7 @@ class OnosDriver( CLI ):
             main.exit()
         except:
             main.log.info( self.name + " ::::::" )
-            main.log.error( traceback.printExc() )
+            main.log.error( traceback.print_exc() )
             main.log.info( self.name + " ::::::" )
             main.cleanup()
             main.exit()
@@ -1242,7 +1242,7 @@ class OnosDriver( CLI ):
             main.exit()
         except:
             main.log.info( self.name + " ::::::" )
-            main.log.error( traceback.printExc() )
+            main.log.error( traceback.print_exc() )
             main.log.info( self.name + " ::::::" )
             main.cleanup()
             main.exit()
@@ -1367,7 +1367,7 @@ class OnosDriver( CLI ):
             main.exit()
         except:
             main.log.info( self.name + " ::::::" )
-            main.log.error( traceback.printExc() )
+            main.log.error( traceback.print_exc() )
             main.log.info( self.name + " ::::::" )
             main.cleanup()
             main.exit()
@@ -1429,7 +1429,7 @@ class OnosDriver( CLI ):
         except:
             main.log.error( "Copying files failed" )
             main.log.info( self.name + " ::::::" )
-            main.log.error( traceback.printExc() )
+            main.log.error( traceback.print_exc() )
             main.log.info( self.name + " ::::::" )
 
     def checkLogs( self, onosIp ):
@@ -1451,7 +1451,7 @@ class OnosDriver( CLI ):
         except:
             main.log.error( "Some error in check_logs:" )
             main.log.info( self.name + " ::::::" )
-            main.log.error( traceback.printExc() )
+            main.log.error( traceback.print_exc() )
             main.log.info( self.name + " ::::::" )
 
     def onosStatus( self, node="" ):
@@ -1485,7 +1485,7 @@ class OnosDriver( CLI ):
             main.exit()
         except:
             main.log.info( self.name + " ::::::" )
-            main.log.error( traceback.printExc() )
+            main.log.error( traceback.print_exc() )
             main.log.info( self.name + " ::::::" )
             main.cleanup()
             main.exit()

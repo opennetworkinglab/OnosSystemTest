@@ -53,12 +53,12 @@ class LincOEDriver( Emulator ):
         self.name = self.options[ 'name' ]
         self.handle = \
             super( LincOEDriver, self ).connect(
-                user_name=self.user_name,
-                ip_address=self.ip_address,
+                userName=self.userName,
+                ipAddress=self.ipAddress,
                 port=None,
                 pwd=self.pwd )
 
-        self.ssh_handle = self.handle
+        self.sshHandle = self.handle
 
         if self.handle:
             main.log.info( "Handle successfully created" )
@@ -67,40 +67,18 @@ class LincOEDriver( Emulator ):
             self.handle.sendline( "cd " + self.home )
             self.handle.expect( "oe$" )
 
-            #self.handle.sendline( "pgrep -g linc" )
-            # self.handle.expect( "\$" )
             print "handle = ", self.handle.before
 
             return main.TRUE
-            """
-            main.log.info( "Building Linc-OE" )
-            self.handle.sendline( "make rel" )
-            i = self.handle.expect( [ "ERROR","linc-oe\$" ],timeout=60 )
-            if i == 0:
-                self.handle.sendline( "sudo pkill -9 epmd" )
-                self.handle.expect( "\$" )
-                self.handle.sendline( "make rel" )
-                x = self.handle.expect( [ "\$",pexpect.EOF,pexpect.TIMEOUT ] )
-                main.log.info( "make rel returned: "+ str( x ) )
-            else:
-
-            main.log.info( self.name+": Starting Linc-OE CLI.. This may take a while" )
-            time.sleep( 30 )
-            self.handle.sendline( "sudo ./rel/linc/bin/linc console" )
-            j = self.handle.expect( [ "linc@",pexpect.EOF,pexpect.TIMEOUT ] )
-            if j == 0:
-                main.log.info( "Linc-OE CLI started" )
-                return main.TRUE
-            """
         else:
             main.log.error( self.name +
                             ": Connection failed to the host " +
-                            self.user_name + "@" + self.ip_address )
+                            self.userName + "@" + self.ipAddress )
             main.log.error( self.name +
                             ": Failed to connect to Linc-OE" )
             return main.FALSE
 
-    def start_console( self ):
+    def startConsole( self ):
         import time
         main.log.info(
             self.name +
@@ -108,7 +86,7 @@ class LincOEDriver( Emulator ):
         time.sleep( 30 )
         self.handle.sendline( "sudo ./rel/linc/bin/linc console" )
         j = self.handle.expect( [ "linc@", pexpect.EOF, pexpect.TIMEOUT ] )
-        start_result = self.handle.before
+        startResult = self.handle.before
         if j == 0:
             main.log.info( "Linc-OE CLI started" )
             return main.TRUE
@@ -116,9 +94,9 @@ class LincOEDriver( Emulator ):
             main.log.error(
                 self.name +
                 ": Connection failed to the host " +
-                self.user_name +
+                self.userName +
                 "@" +
-                self.ip_address )
+                self.ipAddress )
             main.log.error( self.name +
                             ": Failed to connect to Linc-OE" )
             return main.FALSE
@@ -134,8 +112,6 @@ class LincOEDriver( Emulator ):
                 "\$" ] )
 
             if i == 0:
-                # If error, try to resolve the most common error
-                #( epmd running and cannot compile )
                 self.handle.sendline( "sudo pkill -9 epmd" )
                 self.handle.sendline( "make rel" )
                 self.handle.expect( "\$" )
@@ -153,12 +129,12 @@ class LincOEDriver( Emulator ):
             main.exit()
         except:
             main.log.info( self.name + " :::::::" )
-            main.log.error( traceback.print_exc() )
+            main.log.error( traceback.printExc() )
             main.log.info( self.name + " :::::::" )
             main.cleanup()
             main.exit()
 
-    def set_interface_up( self, intfs ):
+    def setInterfaceUp( self, intfs ):
         """
         Specify interface to bring up.
         When Linc-OE is started, tap interfaces should
@@ -179,17 +155,17 @@ class LincOEDriver( Emulator ):
             main.exit()
         except:
             main.log.info( self.name + " :::::::" )
-            main.log.error( traceback.print_exc() )
+            main.log.error( traceback.printExc() )
             main.log.info( self.name + " :::::::" )
             main.cleanup()
             main.exit()
 
-    def start_switch( self, sw_id ):
+    def startSwitch( self, swId ):
         """
         Start a logical switch using switch id
         """
         try:
-            self.handle.sendline( "linc:start_switch(" + str( sw_id ) + ")." )
+            self.handle.sendline( "linc:start_switch(" + str( swId ) + ")." )
             self.handle.expect( "linc@" )
 
             handle = self.handle.before
@@ -201,17 +177,17 @@ class LincOEDriver( Emulator ):
             main.exit()
         except:
             main.log.info( self.name + " :::::::" )
-            main.log.error( traceback.print_exc() )
+            main.log.error( traceback.printExc() )
             main.log.info( self.name + " :::::::" )
             main.cleanup()
             main.exit()
 
-    def stop_switch( self, sw_id ):
+    def stopSwitch( self, swId ):
         """
         Stop a logical switch using switch id
         """
         try:
-            self.handle.sendline( "linc:stop_switch(" + str( sw_id ) + ")." )
+            self.handle.sendline( "linc:stop_switch(" + str( swId ) + ")." )
             self.handle.expect( "linc@" )
 
             handle = self.handle.before
@@ -223,18 +199,18 @@ class LincOEDriver( Emulator ):
             main.exit()
         except:
             main.log.info( self.name + " :::::::" )
-            main.log.error( traceback.print_exc() )
+            main.log.error( traceback.printExc() )
             main.log.info( self.name + " :::::::" )
             main.cleanup()
             main.exit()
 
-    def get_datapath_id( self, sw_id ):
+    def getDatapathId( self, swId ):
         """
         Get datapath id of a specific switch by switch id
         """
         try:
             self.handle.sendline( "linc_logic:get_datapath_id(" +
-                                  str( sw_id ) + ")." )
+                                  str( swId ) + ")." )
             self.handle.expect( "linc@" )
 
             handle = self.handle.before
@@ -246,17 +222,17 @@ class LincOEDriver( Emulator ):
             main.exit()
         except:
             main.log.info( self.name + " :::::::" )
-            main.log.error( traceback.print_exc() )
+            main.log.error( traceback.printExc() )
             main.log.info( self.name + " :::::::" )
             main.cleanup()
             main.exit()
 
-    def list_ports( self, sw_id ):
+    def listPorts( self, swId ):
         """
         List all ports of a switch by switch id
         """
         try:
-            self.handle.sendline( "linc:ports(" + str( sw_id ) + ")." )
+            self.handle.sendline( "linc:ports(" + str( swId ) + ")." )
             self.handle.expect( "linc@" )
 
             handle = self.handle.before
@@ -268,18 +244,18 @@ class LincOEDriver( Emulator ):
             main.exit()
         except:
             main.log.info( self.name + " :::::::" )
-            main.log.error( traceback.print_exc() )
+            main.log.error( traceback.printExc() )
             main.log.info( self.name + " :::::::" )
             main.cleanup()
             main.exit()
 
-    def port_up( self, sw_id, pt_id ):
+    def portUp( self, swId, ptId ):
         """
         Bring port up using switch id and port id
         """
         try:
             self.handle.sendline( "linc:port_up(" +
-                                  str( sw_id ) + ", " + str( pt_id ) + ")." )
+                                  str( swId ) + ", " + str( ptId ) + ")." )
             self.handle.expect( "linc@" )
 
             handle = self.handle.before
@@ -291,18 +267,18 @@ class LincOEDriver( Emulator ):
             main.exit()
         except:
             main.log.info( self.name + " :::::::" )
-            main.log.error( traceback.print_exc() )
+            main.log.error( traceback.printExc() )
             main.log.info( self.name + " :::::::" )
             main.cleanup()
             main.exit()
 
-    def port_down( self, sw_id, pt_id ):
+    def portDown( self, swId, ptId ):
         """
         Bring port down using switch id and port id
         """
         try:
             self.handle.sendline( "linc:port_down(" +
-                                  str( sw_id ) + ", " + str( pt_id ) + ")." )
+                                  str( swId ) + ", " + str( ptId ) + ")." )
             self.handle.expect( "linc@" )
 
             handle = self.handle.before
@@ -314,7 +290,7 @@ class LincOEDriver( Emulator ):
             main.exit()
         except:
             main.log.info( self.name + " :::::::" )
-            main.log.error( traceback.print_exc() )
+            main.log.error( traceback.printExc() )
             main.log.info( self.name + " :::::::" )
             main.cleanup()
             main.exit()
@@ -361,7 +337,7 @@ class LincOEDriver( Emulator ):
             main.exit()
         except:
             main.log.info( self.name + " :::::::" )
-            main.log.error( traceback.print_exc() )
+            main.log.error( traceback.printExc() )
             main.log.info( self.name + " :::::::" )
             main.cleanup()
             main.exit()

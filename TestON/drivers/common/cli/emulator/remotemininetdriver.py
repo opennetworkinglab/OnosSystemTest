@@ -326,7 +326,7 @@ class RemoteMininetDriver( Emulator ):
         except:
             main.log.info(
                     self.name + ":" * 60 )
-            main.log.error( traceback.printExc() )
+            main.log.error( traceback.print_exc() )
             main.log.info( ":" * 80 )
             main.cleanup()
             main.exit()
@@ -346,7 +346,7 @@ class RemoteMininetDriver( Emulator ):
         except:
             main.log.info(
                     self.name + ":" * 60 )
-            main.log.error( traceback.printExc() )
+            main.log.error( traceback.print_exc() )
             main.log.info( ":" * 80 )
             main.cleanup()
             main.exit()
@@ -577,7 +577,7 @@ class RemoteMininetDriver( Emulator ):
                             self.name +
                             ": Timeout exception in setIpTables function" )
                     except:
-                        main.log.error( traceback.printExc() )
+                        main.log.error( traceback.print_exc() )
                         main.cleanup()
                         main.exit()
                 else:
@@ -620,7 +620,7 @@ class RemoteMininetDriver( Emulator ):
                             self.name +
                             ": Timeout exception in setIpTables function" )
                     except:
-                        main.log.error( traceback.printExc() )
+                        main.log.error( traceback.print_exc() )
                         main.cleanup()
                         main.exit()
                 else:

@@ -882,7 +882,7 @@ class MininetCliDriver( Emulator ):
             main.exit()
         except:
             main.log.info( self.name + ":" * 50 )
-            main.log.error( traceback.printExc() )
+            main.log.error( traceback.print_exc() )
             main.log.info( ":" * 50 )
             main.cleanup()
             main.exit()
@@ -1250,7 +1250,7 @@ class MininetCliDriver( Emulator ):
             main.exit()
         except:
             main.log.info( self.name + ":" * 50 )
-            main.log.error( traceback.printExc() )
+            main.log.error( traceback.print_exc() )
             main.log.info( ":" * 50 )
             main.cleanup()
             main.exit()
@@ -1269,7 +1269,7 @@ class MininetCliDriver( Emulator ):
             main.exit()
         except:
             main.log.info( self.name + ":" * 50 )
-            main.log.error( traceback.printExc() )
+            main.log.error( traceback.print_exc() )
             main.log.info( ":" * 50 )
             main.cleanup()
             main.exit()

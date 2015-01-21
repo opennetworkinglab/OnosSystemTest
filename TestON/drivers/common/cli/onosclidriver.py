@@ -20,7 +20,7 @@ import sys
 import pexpect
 import re
 import traceback
-# import os.path
+#import os.path
 sys.path.append( "../" )
 from drivers.common.clidriver import CLI
 
@@ -49,10 +49,10 @@ class OnosCliDriver( CLI ):
             self.name = self.options[ 'name' ]
             self.handle = super( OnosCliDriver, self ).connect(
                 user_name=self.user_name,
-                    ip_address=self.ip_address,
-                    port=self.port,
-                    pwd=self.pwd,
-                    home=self.home )
+                ip_address=self.ip_address,
+                port=self.port,
+                pwd=self.pwd,
+                home=self.home )
 
             self.handle.sendline( "cd " + self.home )
             self.handle.expect( "\$" )
@@ -193,7 +193,7 @@ class OnosCliDriver( CLI ):
             self.handle.sendline( "onos -w " + str( ONOS_ip ) )
             i = self.handle.expect( [
                 "onos>",
-                    pexpect.TIMEOUT ], timeout=60 )
+                pexpect.TIMEOUT ], timeout=60 )
 
             if i == 0:
                 main.log.info( str( ONOS_ip ) + " CLI Started successfully" )
@@ -253,7 +253,11 @@ class OnosCliDriver( CLI ):
             self.handle.sendline( "" )
             self.handle.expect( "onos>" )
 
+            self.handle.sendline( "log:log \"Sending CLI command: '"
+                                  + cmd_str + "'\"" )
+            self.handle.expect( "onos>" )
             self.handle.sendline( cmd_str )
+            self.handle.expect( cmd_str )
             self.handle.expect( "onos>" )
 
             handle = self.handle.before
@@ -261,10 +265,11 @@ class OnosCliDriver( CLI ):
             self.handle.sendline( "" )
             self.handle.expect( "onos>" )
 
-            handle += self.handle.before
-            handle += self.handle.after
+            #handle += self.handle.before
+            #handle += self.handle.after
 
-            main.log.info( "Command sent." )
+            main.log.info( "Command '" + str(cmd_str) + "' sent to "
+                           + self.name + "." )
             ansi_escape = re.compile( r'\x1b[^m]*m' )
             handle = ansi_escape.sub( '', handle )
 
@@ -298,32 +303,16 @@ class OnosCliDriver( CLI ):
             * tcp_port
         """
         try:
-            self.handle.sendline( "" )
-            self.handle.expect( "onos>" )
-
-            self.handle.sendline( "add-node " +
-                                  str( node_id ) + " " +
-                                  str( ONOS_ip ) + " " +
-                                  str( tcp_port ) )
-
-            i = self.handle.expect( [
-                "Error",
-                "onos>" ] )
-
-            # Clear handle to get previous output
-            self.handle.sendline( "" )
-            self.handle.expect( "onos>" )
-
-            handle = self.handle.before
-
-            if i == 0:
+            cmd_str = "add-node " + str( node_id ) + " " +\
+                str( ONOS_ip ) + " " + str( tcp_port )
+            handle = self.sendline( cmd_str )
+            if re.search( "Error", handle ):
                 main.log.error( "Error in adding node" )
                 main.log.error( handle )
                 return main.FALSE
             else:
                 main.log.info( "Node " + str( ONOS_ip ) + " added" )
                 return main.TRUE
-
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
@@ -344,11 +333,10 @@ class OnosCliDriver( CLI ):
             * node_id
         """
         try:
-            self.handle.sendline( "" )
-            self.handle.expect( "onos>" )
 
-            self.handle.sendline( "remove-node " + str( node_id ) )
-            self.handle.expect( "onos>" )
+            cmd_str = "remove-node " + str( node_id )
+            self.sendline( cmd_str )
+            # TODO: add error checking. Does ONOS give any errors?
 
             return main.TRUE
 
@@ -371,19 +359,9 @@ class OnosCliDriver( CLI ):
         Returns: entire handle of list of nodes
         """
         try:
-            self.handle.sendline( "" )
-            self.handle.expect( "onos>" )
-
-            self.handle.sendline( "nodes" )
-            self.handle.expect( "onos>" )
-
-            self.handle.sendline( "" )
-            self.handle.expect( "onos>" )
-
-            handle = self.handle.before
-
+            cmd_str = "nodes"
+            handle = self.sendline( cmd_str )
             return handle
-
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
@@ -402,19 +380,11 @@ class OnosCliDriver( CLI ):
         by issusing command: 'onos> onos:topology'
         """
         try:
-            self.handle.sendline( "" )
-            self.handle.expect( "onos>" )
             # either onos:topology or 'topology' will work in CLI
-            self.handle.sendline( "onos:topology" )
-            self.handle.expect( "onos>" )
-
-            handle = self.handle.before
-
-            main.log.info( "onos:topology returned: " +
-                           str( handle ) )
-
+            cmd_str = "onos:topology"
+            handle = self.sendline( cmd_str )
+            main.log.info( "onos:topology returned: " + str( handle ) )
             return handle
-
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
@@ -433,14 +403,10 @@ class OnosCliDriver( CLI ):
         by issuing command: 'onos> feature:install <feature_str>'
         """
         try:
-            self.handle.sendline( "" )
-            self.handle.expect( "onos>" )
-
-            self.handle.sendline( "feature:install " + str( feature_str ) )
-            self.handle.expect( "onos>" )
-
+            cmd_str = "feature:install " + str( feature_str )
+            self.sendline( cmd_str )
+            # TODO: Check for possible error responses from karaf
             return main.TRUE
-
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
@@ -463,14 +429,10 @@ class OnosCliDriver( CLI ):
         by issuing command: 'onos> feature:uninstall <feature_str>'
         """
         try:
-            self.handle.sendline( "" )
-            self.handle.expect( "onos>" )
-
-            self.handle.sendline( "feature:uninstall " + str( feature_str ) )
-            self.handle.expect( "onos>" )
-
+            cmd_str = "feature:uninstall " + str( feature_str )
+            self.sendline( cmd_str )
+            # TODO: Check for possible error responses from karaf
             return main.TRUE
-
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
@@ -490,32 +452,28 @@ class OnosCliDriver( CLI ):
             * json_format - boolean indicating if you want output in json
         """
         try:
-            self.handle.sendline( "" )
-            self.handle.expect( "onos>" )
-
             if json_format:
-                self.handle.sendline( "devices -j" )
-                self.handle.expect( "devices -j" )
-                self.handle.expect( "onos>" )
-                handle = self.handle.before
+                cmd_str = "devices -j"
+                handle = self.sendline( cmd_str )
                 """
-                handle variable here contains some ANSI escape color code sequences at the end which are invisible in the print command output
-                To make that escape sequence visible, use repr() function. The repr( handle ) output when printed shows the ANSI escape sequences.
-                In json.loads( somestring ), this somestring variable is actually repr( somestring ) and json.loads would fail with the escape sequence.
-                So we take off that escape sequence using
+                handle variable here contains some ANSI escape color code
+                sequences at the end which are invisible in the print command
+                output. To make that escape sequence visible, use repr()
+                function. The repr( handle ) output when printed shows the
+                ANSI escape sequences. In json.loads( somestring ), this
+                somestring variable is actually repr( somestring ) and
+                json.loads would fail with the escape sequence. So we take off
+                that escape sequence using:
+
                 ansi_escape = re.compile( r'\r\r\n\x1b[^m]*m' )
                 handle1 = ansi_escape.sub( '', handle )
                 """
-                # print "repr(handle) =", repr( handle )
                 ansi_escape = re.compile( r'\r\r\n\x1b[^m]*m' )
                 handle1 = ansi_escape.sub( '', handle )
-                # print "repr(handle1) = ", repr( handle1 )
                 return handle1
             else:
-                self.handle.sendline( "devices" )
-                self.handle.expect( "onos>" )
-                handle = self.handle.before
-                # print "handle =",handle
+                cmd_str = "devices"
+                handle = self.sendline( cmd_str )
                 return handle
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
@@ -536,13 +494,10 @@ class OnosCliDriver( CLI ):
         If required this could be extended to return devices balanced output.
         """
         try:
-            self.handle.sendline( "" )
-            self.handle.expect( "onos>" )
-
-            self.handle.sendline( "onos:balance-masters" )
-            self.handle.expect( "onos>" )
+            cmd_str = "onos:balance-masters"
+            self.sendline( cmd_str )
+            # TODO: Check for error responses from ONOS
             return main.TRUE
-
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
@@ -562,32 +517,28 @@ class OnosCliDriver( CLI ):
             * json_format - boolean indicating if you want output in json
         """
         try:
-            self.handle.sendline( "" )
-            self.handle.expect( "onos>" )
-
             if json_format:
-                self.handle.sendline( "links -j" )
-                self.handle.expect( "links -j" )
-                self.handle.expect( "onos>" )
-                handle = self.handle.before
+                cmd_str = "links -j"
+                handle = self.sendline( cmd_str )
                 """
-                handle variable here contains some ANSI escape color code sequences at the end which are invisible in the print command output
-                To make that escape sequence visible, use repr() function. The repr( handle ) output when printed shows the ANSI escape sequences.
-                In json.loads( somestring ), this somestring variable is actually repr( somestring ) and json.loads would fail with the escape sequence.
-                So we take off that escape sequence using
+                handle variable here contains some ANSI escape color code
+                sequences at the end which are invisible in the print command
+                output. To make that escape sequence visible, use repr()
+                function. The repr( handle ) output when printed shows the ANSI
+                escape sequences. In json.loads( somestring ), this somestring
+                variable is actually repr( somestring ) and json.loads would
+                fail with the escape sequence. So we take off that escape
+                sequence using:
+
                 ansi_escape = re.compile( r'\r\r\n\x1b[^m]*m' )
                 handle1 = ansi_escape.sub( '', handle )
                 """
-                # print "repr(handle) =", repr( handle )
                 ansi_escape = re.compile( r'\r\r\n\x1b[^m]*m' )
                 handle1 = ansi_escape.sub( '', handle )
-                # print "repr(handle1) = ", repr( handle1 )
                 return handle1
             else:
-                self.handle.sendline( "links" )
-                self.handle.expect( "onos>" )
-                handle = self.handle.before
-                # print "handle =",handle
+                cmd_str = "links"
+                handle = self.sendline( cmd_str )
                 return handle
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
@@ -608,35 +559,29 @@ class OnosCliDriver( CLI ):
             * json_format - boolean indicating if you want output in json
         """
         try:
-            self.handle.sendline( "" )
-            self.handle.expect( "onos>" )
-
             if json_format:
-                self.handle.sendline( "ports -j" )
-                self.handle.expect( "ports -j" )
-                self.handle.expect( "onos>" )
-                handle = self.handle.before
+                cmd_str = "ports -j"
+                handle = self.sendline( cmd_str )
                 """
-                handle variable here contains some ANSI escape color code sequences at the end which are invisible in the print command output
-                To make that escape sequence visible, use repr() function. The repr( handle ) output when printed shows the ANSI escape sequences.
-                In json.loads( somestring ), this somestring variable is actually repr( somestring ) and json.loads would fail with the escape sequence.
-                So we take off that escape sequence using the following commads:
+                handle variable here contains some ANSI escape color code
+                sequences at the end which are invisible in the print command
+                output. To make that escape sequence visible, use repr()
+                function. The repr( handle ) output when printed shows the ANSI
+                escape sequences. In json.loads( somestring ), this somestring
+                variable is actually repr( somestring ) and json.loads would
+                fail with the escape sequence. So we take off that escape
+                sequence using the following commads:
+
                 ansi_escape = re.compile( r'\r\r\n\x1b[^m]*m' )
                 handle1 = ansi_escape.sub( '', handle )
                 """
-                # print "repr(handle) =", repr( handle )
                 ansi_escape = re.compile( r'\r\r\n\x1b[^m]*m' )
                 handle1 = ansi_escape.sub( '', handle )
-                # print "repr(handle1) = ", repr( handle1 )
                 return handle1
 
             else:
-                self.handle.sendline( "ports" )
-                self.handle.expect( "onos>" )
-                self.handle.sendline( "" )
-                self.handle.expect( "onos>" )
-                handle = self.handle.before
-                # print "handle =",handle
+                cmd_str = "ports"
+                handle = self.sendline( cmd_str )
                 return handle
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
@@ -657,39 +602,31 @@ class OnosCliDriver( CLI ):
             * json_format - boolean indicating if you want output in json
         """
         try:
-            self.handle.sendline( "" )
-            self.handle.expect( "onos>" )
-
             if json_format:
-                self.handle.sendline( "roles -j" )
-                self.handle.expect( "roles -j" )
-                self.handle.expect( "onos>" )
-                handle = self.handle.before
+                cmd_str = "roles -j"
+                handle = self.sendline( cmd_str )
                 """
-                handle variable here contains some ANSI escape color code sequences at the
-                end which are invisible in the print command output. To make that escape
-                sequence visible, use repr() function. The repr( handle ) output when printed
-                shows the ANSI escape sequences. In json.loads( somestring ), this somestring
-                variable is actually repr( somestring ) and json.loads would fail with the escape
-                sequence.
+                handle variable here contains some ANSI escape color code
+                sequences at the end which are invisible in the print command
+                output. To make that escape sequence visible, use repr()
+                function. The repr( handle ) output when printed shows the ANSI
+                escape sequences. In json.loads( somestring ), this somestring
+                variable is actually repr( somestring ) and json.loads would
+                fail with the escape sequence.
 
-                So we take off that escape sequence using the following commads:
+                So we take off that escape sequence using the following
+                commads:
+
                 ansi_escape = re.compile( r'\r\r\n\x1b[^m]*m' )
                 handle1 = ansi_escape.sub( '', handle )
                 """
-                # print "repr(handle) =", repr( handle )
                 ansi_escape = re.compile( r'\r\r\n\x1b[^m]*m' )
                 handle1 = ansi_escape.sub( '', handle )
-                # print "repr(handle1) = ", repr( handle1 )
                 return handle1
 
             else:
-                self.handle.sendline( "roles" )
-                self.handle.expect( "onos>" )
-                self.handle.sendline( "" )
-                self.handle.expect( "onos>" )
-                handle = self.handle.before
-                # print "handle =",handle
+                cmd_str = "roles"
+                handle = self.sendline( cmd_str )
                 return handle
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
@@ -705,13 +642,14 @@ class OnosCliDriver( CLI ):
 
     def get_role( self, device_id ):
         """
-        Given the a string containing the json representation of the "roles" cli command and a
-        partial or whole device id, returns a json object containing the
-        roles output for the first device whose id contains "device_id"
+        Given the a string containing the json representation of the "roles"
+        cli command and a partial or whole device id, returns a json object
+        containing the roles output for the first device whose id contains
+        "device_id"
 
         Returns:
-        Dict of the role assignments for the given device or
-        None if not match
+        A dict of the role assignments for the given device or
+        None if no match
         """
         try:
             import json
@@ -775,28 +713,15 @@ class OnosCliDriver( CLI ):
         Issues command: onos:paths <src> <dst>
         """
         try:
-            self.handle.sendline( "" )
-            self.handle.expect( "onos>" )
-
-            self.handle.sendline( "onos:paths " +
-                                  str( src_id ) + " " + str( dst_id ) )
-            i = self.handle.expect( [
-                "Error",
-                "onos>" ] )
-
-            self.handle.sendline( "" )
-            self.handle.expect( "onos>" )
-
-            handle = self.handle.before
-
-            if i == 0:
+            cmd_str = "onos:paths " + str( src_id ) + " " + str( dst_id )
+            handle = self.sendline( cmd_str )
+            if re.search( "Error", handle ):
                 main.log.error( "Error in getting paths" )
                 return ( handle, "Error" )
             else:
                 path = handle.split( ";" )[ 0 ]
                 cost = handle.split( ";" )[ 1 ]
                 return ( path, cost )
-
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
@@ -816,32 +741,28 @@ class OnosCliDriver( CLI ):
             * json_format - boolean indicating if you want output in json
         """
         try:
-            self.handle.sendline( "" )
-            self.handle.expect( "onos>" )
-
             if json_format:
-                self.handle.sendline( "hosts -j" )
-                self.handle.expect( "hosts -j" )
-                self.handle.expect( "onos>" )
-                handle = self.handle.before
+                cmd_str = "hosts -j"
+                handle = self.sendline( cmd_str )
                 """
-                handle variable here contains some ANSI escape color code sequences at the end which are invisible in the print command output
-                To make that escape sequence visible, use repr() function. The repr( handle ) output when printed shows the ANSI escape sequences.
-                In json.loads( somestring ), this somestring variable is actually repr( somestring ) and json.loads would fail with the escape sequence.
-                So we take off that escape sequence using
+                handle variable here contains some ANSI escape color code
+                sequences at the end which are invisible in the print command
+                output. To make that escape sequence visible, use repr()
+                function. The repr( handle ) output when printed shows the ANSI
+                escape sequences. In json.loads( somestring ), this somestring
+                variable is actually repr( somestring ) and json.loads would
+                fail with the escape sequence. So we take off that escape
+                sequence using:
+
                 ansi_escape = re.compile( r'\r\r\n\x1b[^m]*m' )
                 handle1 = ansi_escape.sub( '', handle )
                 """
-                # print "repr(handle) =", repr( handle )
                 ansi_escape = re.compile( r'\r\r\n\x1b[^m]*m' )
                 handle1 = ansi_escape.sub( '', handle )
-                # print "repr(handle1) = ", repr( handle1 )
                 return handle1
             else:
-                self.handle.sendline( "hosts" )
-                self.handle.expect( "onos>" )
-                handle = self.handle.before
-                # print "handle =",handle
+                cmd_str = "hosts"
+                handle = self.sendline( cmd_str )
                 return handle
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
@@ -858,7 +779,10 @@ class OnosCliDriver( CLI ):
     def get_host( self, mac ):
         """
         Return the first host from the hosts api whose 'id' contains 'mac'
-        Note: mac must be a colon seperated mac address, but could be a partial mac address
+
+        Note: mac must be a colon seperated mac address, but could be a
+              partial mac address
+
         Return None if there is no match
         """
         import json
@@ -938,21 +862,12 @@ class OnosCliDriver( CLI ):
             specifying the two hosts.
         """
         try:
-            self.handle.sendline( "" )
-            self.handle.expect( "onos>" )
-
-            self.handle.sendline( "add-host-intent " +
-                                  str( host_id_one ) + " " + str( host_id_two ) )
-            self.handle.expect( "onos>" )
-
-            handle = self.handle.before
-            # print "handle =", handle
-
+            cmd_str = "add-host-intent " + str( host_id_one ) +\
+                " " + str( host_id_two )
+            handle = self.sendline( cmd_str )
             main.log.info( "Host intent installed between " +
                            str( host_id_one ) + " and " + str( host_id_two ) )
-
             return handle
-
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
@@ -974,21 +889,14 @@ class OnosCliDriver( CLI ):
             TODO: Still needs to be implemented via dev side
         """
         try:
-            self.handle.sendline( "add-optical-intent " +
-                                  str( ingress_device ) + " " + str( egress_device ) )
-            self.handle.expect( "add-optical-intent" )
-            i = self.handle.expect( [
-                "Error",
-                "onos>" ] )
-
-            handle = self.handle.before
-
+            cmd_str = "add-optical-intent " + str( ingress_device ) +\
+                " " + str( egress_device )
+            handle = self.sendline( cmd_str )
             # If error, return error message
-            if i == 0:
+            if re.search( "Error", handle ):
                 return handle
             else:
                 return main.TRUE
-
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
@@ -1001,10 +909,22 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def add_point_intent( self, ingress_device, egress_device,
-                          port_ingress="", port_egress="", ethType="", ethSrc="",
-                          ethDst="", bandwidth="", lambda_alloc=False,
-                          ipProto="", ipSrc="", ipDst="", tcpSrc="", tcpDst="" ):
+    def add_point_intent(
+            self,
+            ingress_device,
+            egress_device,
+            port_ingress="",
+            port_egress="",
+            ethType="",
+            ethSrc="",
+            ethDst="",
+            bandwidth="",
+            lambda_alloc=False,
+            ipProto="",
+            ipSrc="",
+            ipDst="",
+            tcpSrc="",
+            tcpDst="" ):
         """
         Required:
             * ingress_device: device id of ingress device
@@ -1090,19 +1010,12 @@ class OnosCliDriver( CLI ):
                     str( egress_device ) + "/" +\
                     str( port_egress )
 
-            self.handle.sendline( cmd )
-
-            main.log.info( cmd + " sent" )
-            i = self.handle.expect( [
-                "Error",
-                "onos>" ] )
-
-            if i == 0:
+            handle = self.sendline( cmd )
+            if re.search( "Error", handle ):
                 main.log.error( "Error in adding point-to-point intent" )
                 return main.FALSE
             else:
                 return main.TRUE
-
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
@@ -1116,14 +1029,29 @@ class OnosCliDriver( CLI ):
             main.exit()
 
     def add_multipoint_to_singlepoint_intent(
-                                            self, ingress_device1, ingress_device2, egress_device,
-                                            port_ingress="", port_egress="", ethType="", ethSrc="",
-                                            ethDst="", bandwidth="", lambda_alloc=False,
-                                            ipProto="", ipSrc="", ipDst="", tcpSrc="", tcpDst="", setEthSrc="", setEthDst="" ):
+            self,
+            ingress_device1,
+            ingress_device2,
+            egress_device,
+            port_ingress="",
+            port_egress="",
+            ethType="",
+            ethSrc="",
+            ethDst="",
+            bandwidth="",
+            lambda_alloc=False,
+            ipProto="",
+            ipSrc="",
+            ipDst="",
+            tcpSrc="",
+            tcpDst="",
+            setEthSrc="",
+            setEthDst="" ):
         """
         Note:
-            This function assumes that there would be 2 ingress devices and one egress device
-            For more number of ingress devices, this function needs to be modified
+            This function assumes that there would be 2 ingress devices and
+            one egress device. For more number of ingress devices, this
+            function needs to be modified
         Required:
             * ingress_device1: device id of ingress device1
             * ingress_device2: device id of ingress device2
@@ -1155,9 +1083,10 @@ class OnosCliDriver( CLI ):
 
             # If there are no optional arguments
             if not ethType and not ethSrc and not ethDst\
-                    and not bandwidth and not lambda_alloc \
-                    and not ipProto and not ipSrc and not ipDst \
-                    and not tcpSrc and not tcpDst and not setEthSrc and not setEthDst:
+                    and not bandwidth and not lambda_alloc\
+                    and not ipProto and not ipSrc and not ipDst\
+                    and not tcpSrc and not tcpDst and not setEthSrc\
+                    and not setEthDst:
                 cmd = "add-multi-to-single-intent"
 
             else:
@@ -1228,19 +1157,12 @@ class OnosCliDriver( CLI ):
                     str( egress_device ) + "/" +\
                     str( port_egress )
             print "cmd= ", cmd
-            self.handle.sendline( cmd )
-
-            main.log.info( cmd + " sent" )
-            i = self.handle.expect( [
-                "Error",
-                "onos>" ] )
-
-            if i == 0:
+            handle = self.sendline( cmd )
+            if re.search( "Error", handle ):
                 main.log.error( "Error in adding point-to-point intent" )
                 return self.handle
             else:
                 return main.TRUE
-
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
@@ -1256,24 +1178,20 @@ class OnosCliDriver( CLI ):
     def remove_intent( self, intent_id ):
         """
         Remove intent for specified intent id
+
+        Returns:
+            main.False on error and
+            cli output otherwise
         """
         try:
-            self.handle.sendline( "" )
-            self.handle.expect( "onos>" )
-
-            self.handle.sendline( "remove-intent " + str( intent_id ) )
-            i = self.handle.expect( [
-                "Error",
-                "onos>" ] )
-
-            handle = self.handle.before
-
-            if i == 0:
+            cmd_str = "remove-intent " + str( intent_id )
+            handle = self.sendline( cmd_str )
+            if re.search( "Error", handle ):
                 main.log.error( "Error in removing intent" )
-                return handle
+                return main.FALSE
             else:
+                # TODO: Should this be main.TRUE
                 return handle
-
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
@@ -1286,9 +1204,10 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    # This method should be used after installing application: onos-app-sdnip
     def routes( self, json_format=False ):
         """
+        NOTE: This method should be used after installing application:
+              onos-app-sdnip
         Optional:
             * json_format: enable output formatting in json
         Description:
@@ -1296,24 +1215,14 @@ class OnosCliDriver( CLI ):
         """
         try:
             if json_format:
-                self.handle.sendline( "routes -j" )
-                self.handle.expect( "routes -j" )
-                self.handle.expect( "onos>" )
-                handle_tmp = self.handle.before
-
+                cmd_str = "routes -j"
+                handle_tmp = self.sendline( cmd_str )
                 ansi_escape = re.compile( r'\r\r\n\x1b[^m]*m' )
                 handle = ansi_escape.sub( '', handle_tmp )
-
             else:
-                self.handle.sendline( "" )
-                self.handle.expect( "onos>" )
-
-                self.handle.sendline( "routes" )
-                self.handle.expect( "onos>" )
-                handle = self.handle.before
-
+                cmd_str = "routes"
+                handle = self.sendline( cmd_str )
             return handle
-
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
@@ -1335,23 +1244,14 @@ class OnosCliDriver( CLI ):
         """
         try:
             if json_format:
-                self.handle.sendline( "intents -j" )
-                self.handle.expect( "intents -j" )
-                self.handle.expect( "onos>" )
-                handle = self.handle.before
-
+                cmd_str = "intents -j"
+                handle = self.sendline( cmd_str )
                 ansi_escape = re.compile( r'\r\r\n\x1b[^m]*m' )
                 handle = ansi_escape.sub( '', handle )
             else:
-                self.handle.sendline( "" )
-                self.handle.expect( "onos>" )
-
-                self.handle.sendline( "intents" )
-                self.handle.expect( "onos>" )
-                handle = self.handle.before
-
+                cmd_str = "intents"
+                handle = self.sendline( cmd_str )
             return handle
-
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
@@ -1373,25 +1273,17 @@ class OnosCliDriver( CLI ):
         """
         try:
             if json_format:
-                self.handle.sendline( "flows -j" )
-                self.handle.expect( "flows -j" )
-                self.handle.expect( "onos>" )
-                handle = self.handle.before
+                cmd_str = "flows -j"
+                handle = self.sendline( cmd_str )
                 ansi_escape = re.compile( r'\r\r\n\x1b[^m]*m' )
                 handle = ansi_escape.sub( '', handle )
-
             else:
-                self.handle.sendline( "" )
-                self.handle.expect( "onos>" )
-                self.handle.sendline( "flows" )
-                self.handle.expect( "onos>" )
-                handle = self.handle.before
+                cmd_str = "flows"
+                handle = self.sendline( cmd_str )
             if re.search( "Error\sexecuting\scommand:", handle ):
-                main.log.error(
-                    self.name + ".flows() response: " + str( handle ) )
-
+                main.log.error( self.name + ".flows() response: " +
+                                str( handle ) )
             return handle
-
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
@@ -1425,25 +1317,17 @@ class OnosCliDriver( CLI ):
             cmd = "push-test-intents " +\
                   str( dpid_src ) + " " + str( dpid_dst ) + " " +\
                   str( num_intents )
-
             if num_mult:
                 cmd += " " + str( num_mult )
                 # If app id is specified, then num_mult
                 # must exist because of the way this command
-                # takes in arguments
+                #takes in arguments
                 if app_id:
                     cmd += " " + str( app_id )
-
-            self.handle.sendline( cmd )
-            self.handle.expect( cmd )
-            self.handle.expect( "onos>" )
-
-            handle = self.handle.before
-
+            handle = self.sendline( cmd )
             # Some color thing that we want to escape
             ansi_escape = re.compile( r'\r\r\n\x1b[^m]*m' )
             handle = ansi_escape.sub( '', handle )
-
             if report:
                 lat_result = []
                 main.log.info( handle )
@@ -1456,12 +1340,10 @@ class OnosCliDriver( CLI ):
                     result = result.split( ": " )
                     # Append the first result of second parse
                     lat_result.append( result[ 1 ].split( " " )[ 0 ] )
-
                 main.log.info( lat_result )
                 return lat_result
             else:
                 return main.TRUE
-
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
@@ -1482,25 +1364,15 @@ class OnosCliDriver( CLI ):
         """
         try:
             if json_format:
-                self.handle.sendline( "intents-events-metrics -j" )
-                self.handle.expect( "intents-events-metrics -j" )
-                self.handle.expect( "onos>" )
-
-                handle = self.handle.before
-
+                cmd_str = "intents-events-metrics -j"
+                handle = self.sendline( cmd_str )
                 # Some color thing that we want to escape
                 ansi_escape = re.compile( r'\r\r\n\x1b[^m]*m' )
                 handle = ansi_escape.sub( '', handle )
-
             else:
-                self.handle.sendline( "intents-events-metrics" )
-                self.handle.expect( "intents-events-metrics" )
-                self.handle.expect( "onos>" )
-
-                handle = self.handle.before
-
+                cmd_str = "intents-events-metrics"
+                handle = self.sendline( cmd_str )
             return handle
-
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
@@ -1521,25 +1393,15 @@ class OnosCliDriver( CLI ):
         """
         try:
             if json_format:
-                self.handle.sendline( "topology-events-metrics -j" )
-                self.handle.expect( "topology-events-metrics -j" )
-                self.handle.expect( "onos>" )
-
-                handle = self.handle.before
-
+                cmd_str = "topology-events-metrics -j"
+                handle = self.sendline( cmd_str )
                 # Some color thing that we want to escape
                 ansi_escape = re.compile( r'\r\r\n\x1b[^m]*m' )
                 handle = ansi_escape.sub( '', handle )
-
             else:
-                self.handle.sendline( "topology-events-metrics" )
-                self.handle.expect( "topology-events-metrics" )
-                self.handle.expect( "onos>" )
-
-                handle = self.handle.before
-
+                cmd_str = "topology-events-metrics"
+                handle = self.sendline( cmd_str )
             return handle
-
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
@@ -1758,8 +1620,8 @@ class OnosCliDriver( CLI ):
                 output = output + \
                     "The number of links and switches does not match what was expected"
                 result = main.FALSE
-            output = output + "\n ONOS sees %i devices (%i expected) and %i links (%i expected)"\
-                % ( int( devices ), int( numoswitch ), int( links ), int( numolink ) )
+            output = output + "\n ONOS sees %i devices (%i expected) and %i links (%i expected)" % (
+                int( devices ), int( numoswitch ), int( links ), int( numolink ) )
             if log_level == "report":
                 main.log.report( output )
             elif log_level == "warn":
@@ -1786,37 +1648,29 @@ class OnosCliDriver( CLI ):
         onos_node is the ip of one of the onos nodes in the cluster
         role must be either master, standby, or none
 
-        Returns main.TRUE or main.FALSE based on argument verification.
-            When device-role supports errors this should be extended to
-            support that output
+        Returns:
+            main.TRUE or main.FALSE based on argument verification and
+            main.ERROR if command returns and error
         """
         try:
-            # print "beginning device_role... \n\tdevice_id:" + device_id
-            # print "\tonos_node: " + onos_node
-            # print "\trole: "+ role
-            if role.lower() == "master" or \
-                    role.lower() == "standby" or \
+            if role.lower() == "master" or role.lower() == "standby" or\
                     role.lower() == "none":
-                self.handle.sendline( "" )
-                self.handle.expect( "onos>" )
-                self.handle.sendline( "device-role " +
-                                      str( device_id ) + " " +
-                                      str( onos_node ) + " " +
-                                      str( role ) )
-                i = self.handle.expect( [ "Error", "onos>" ] )
-                if i == 0:
-                    output = str( self.handle.before )
-                    self.handle.expect( "onos>" )
-                    output = output + str( self.handle.before )
+                cmd_str = "device-role " +\
+                    str( device_id ) + " " +\
+                    str( onos_node ) +  " " +\
+                    str( role )
+                handle = self.sendline( cmd_str )
+                if re.search( "Error", handle ):
+                    # end color output to escape any colours
+                    # from the cli
                     main.log.error( self.name + ": " +
-                                    output + '\033[0m' )  # end color output to escape any colours from the cli
+                                    handle + '\033[0m' )
                     return main.ERROR
-                self.handle.sendline( "" )
-                self.handle.expect( "onos>" )
                 return main.TRUE
             else:
+                main.log.error( "Invalid 'role' given to device_role(). " +
+                                "Value was '" + str(role) + "'." )
                 return main.FALSE
-
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
@@ -1836,35 +1690,28 @@ class OnosCliDriver( CLI ):
             * json_format - boolean indicating if you want output in json
         """
         try:
-            self.handle.sendline( "" )
-            self.handle.expect( "onos>" )
-
             if json_format:
-                self.handle.sendline( "clusters -j" )
-                self.handle.expect( "clusters -j" )
-                self.handle.expect( "onos>" )
-                handle = self.handle.before
+                cmd_str = "clusters -j"
+                handle = self.sendline( cmd_str )
                 """
                 handle variable here contains some ANSI escape color code
                 sequences at the end which are invisible in the print command
-                output. To make that escape sequence visible, use repr() function.
-                The repr( handle ) output when printed shows the ANSI escape sequences.
-                In json.loads( somestring ), this somestring variable is actually
-                repr( somestring ) and json.loads would fail with the escape sequence.
-                So we take off that escape sequence using
+                output. To make that escape sequence visible, use repr()
+                function. The repr( handle ) output when printed shows the ANSI
+                escape sequences. In json.loads( somestring ), this somestring
+                variable is actually repr( somestring ) and json.loads would fail
+                with the escape sequence. So we take off that escape sequence
+                using:
+
                 ansi_escape = re.compile( r'\r\r\n\x1b[^m]*m' )
                 handle1 = ansi_escape.sub( '', handle )
                 """
-                # print "repr(handle) =", repr( handle )
                 ansi_escape = re.compile( r'\r\r\n\x1b[^m]*m' )
                 handle1 = ansi_escape.sub( '', handle )
-                # print "repr(handle1) = ", repr( handle1 )
                 return handle1
             else:
-                self.handle.sendline( "clusters" )
-                self.handle.expect( "onos>" )
-                handle = self.handle.before
-                # print "handle =",handle
+                cmd_str = "clusters"
+                handle = self.sendline( cmd_str )
                 return handle
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
@@ -1880,45 +1727,43 @@ class OnosCliDriver( CLI ):
 
     def election_test_leader( self ):
         """
-         * CLI command to get the current leader for the Election test application.
-         #NOTE: Requires installation of the onos-app-election feature
-         Returns: Node IP of the leader if one exists
-                  None if none exists
-                  Main.FALSE on error
+        CLI command to get the current leader for the Election test application
+        NOTE: Requires installation of the onos-app-election feature
+        Returns: Node IP of the leader if one exists
+                 None if none exists
+                 Main.FALSE on error
         """
         try:
-            self.handle.sendline( "election-test-leader" )
-            self.handle.expect( "election-test-leader" )
-            self.handle.expect( "onos>" )
-            response = self.handle.before
+            cmd_str = "election-test-leader"
+            response = self.sendline( cmd_str )
             # Leader
-            node_search = re.search(
-                "The\scurrent\sleader\sfor\sthe\sElection\sapp\sis\s(?P<node>.+)\.",
-                response )
+            leaderPattern = "The\scurrent\sleader\sfor\sthe\sElection\s" +\
+                "app\sis\s(?P<node>.+)\."
+            node_search = re.search( leaderPattern, response )
             if node_search:
                 node = node_search.group( 'node' )
-                main.log.info( "Election-test-leader on " + str(
-                    self.name ) + " found " + node + " as the leader" )
+                main.log.info( "Election-test-leader on " + str( self.name ) +
+                               " found " + node + " as the leader" )
                 return node
             # no leader
-            null_search = re.search(
-                "There\sis\scurrently\sno\sleader\selected\sfor\sthe\sElection\sapp",
-                response )
+            nullPattern = "There\sis\scurrently\sno\sleader\selected\sfor\s" +\
+                "the\sElection\sapp"
+            null_search = re.search( nullPattern, response )
             if null_search:
-                main.log.info(
-                    "Election-test-leader found no leader on " +
-                    self.name )
+                main.log.info( "Election-test-leader found no leader on " +
+                               self.name )
                 return None
             # error
-            if re.search( "Command\snot\sfound", response ):
+            errorPattern = "Command\snot\sfound"
+            if re.search( errorPattern, response ):
                 main.log.error( "Election app is not loaded on " + self.name )
+                # TODO: Should this be main.ERROR?
                 return main.FALSE
             else:
-                main.log.error(
-                    "Error in election_test_leader: unexpected response" )
+                main.log.error( "Error in election_test_leader: " +
+                                "unexpected response" )
                 main.log.error( repr( response ) )
                 return main.FALSE
-
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
@@ -1933,35 +1778,32 @@ class OnosCliDriver( CLI ):
 
     def election_test_run( self ):
         """
-         * CLI command to run for leadership of the Election test application.
-         #NOTE: Requires installation of the onos-app-election feature
-         Returns: Main.TRUE on success
-                  Main.FALSE on error
+        CLI command to run for leadership of the Election test application.
+        NOTE: Requires installation of the onos-app-election feature
+        Returns: Main.TRUE on success
+                 Main.FALSE on error
         """
         try:
-            self.handle.sendline( "election-test-run" )
-            self.handle.expect( "election-test-run" )
-            self.handle.expect( "onos>" )
-            response = self.handle.before
+            cmd_str = "election-test-run"
+            response = self.sendline( cmd_str )
             # success
-            search = re.search(
-                "Entering\sleadership\selections\sfor\sthe\sElection\sapp.",
-                response )
+            successPattern = "Entering\sleadership\selections\sfor\sthe\s" +\
+                "Election\sapp."
+            search = re.search( successPattern, response )
             if search:
-                main.log.info(
-                    self.name +
-                    " entering leadership elections for the Election app." )
+                main.log.info( self.name + " entering leadership elections " +
+                               "for the Election app." )
                 return main.TRUE
             # error
-            if re.search( "Command\snot\sfound", response ):
+            errorPattern = "Command\snot\sfound"
+            if re.search( errorPattern, response ):
                 main.log.error( "Election app is not loaded on " + self.name )
                 return main.FALSE
             else:
-                main.log.error(
-                    "Error in election_test_run: unexpected response" )
+                main.log.error( "Error in election_test_run: " +
+                                "unexpected response" )
                 main.log.error( repr( response ) )
                 return main.FALSE
-
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
@@ -1983,29 +1825,25 @@ class OnosCliDriver( CLI ):
                   Main.FALSE on error
         """
         try:
-            self.handle.sendline( "election-test-withdraw" )
-            self.handle.expect( "election-test-withdraw" )
-            self.handle.expect( "onos>" )
-            response = self.handle.before
+            cmd_str = "election-test-withdraw"
+            response = self.sendline( cmd_str )
             # success
-            search = re.search(
-                "Withdrawing\sfrom\sleadership\selections\sfor\sthe\sElection\sapp.",
-                response )
-            if search:
-                main.log.info(
-                    self.name +
-                    " withdrawing from leadership elections for the Election app." )
+            successPattern = "Withdrawing\sfrom\sleadership\selections\sfor" +\
+                "\sthe\sElection\sapp."
+            if re.search( successPattern, response ):
+                main.log.info( self.name + " withdrawing from leadership " +
+                               "elections for the Election app." )
                 return main.TRUE
             # error
-            if re.search( "Command\snot\sfound", response ):
+            errorPattern = "Command\snot\sfound"
+            if re.search( errorPattern, response ):
                 main.log.error( "Election app is not loaded on " + self.name )
                 return main.FALSE
             else:
-                main.log.error(
-                    "Error in election_test_withdraw: unexpected response" )
+                main.log.error( "Error in election_test_withdraw: " +
+                                "unexpected response" )
                 main.log.error( repr( response ) )
                 return main.FALSE
-
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
@@ -2025,26 +1863,13 @@ class OnosCliDriver( CLI ):
         """
         try:
             dpid = str( dpid )
-            self.handle.sendline( "" )
-            self.handle.expect( "onos>" )
-
-            self.handle.sendline( "onos:ports -e " + dpid + " | wc -l" )
-            i = self.handle.expect( [
-                "No such device",
-                "onos>" ] )
-
-            # self.handle.sendline( "" )
-            # self.handle.expect( "onos>" )
-
-            output = self.handle.before
-
-            if i == 0:
+            cmd_str = "onos:ports -e " + dpid + " | wc -l"
+            output = self.sendline( cmd_str )
+            if re.search( "No such device", output ):
                 main.log.error( "Error in getting ports" )
                 return ( output, "Error" )
             else:
-                result = output
-                return result
-
+                return output
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
@@ -2063,26 +1888,13 @@ class OnosCliDriver( CLI ):
         """
         try:
             dpid = str( dpid )
-            self.handle.sendline( "" )
-            self.handle.expect( "onos>" )
-
-            self.handle.sendline(
-                "onos:links " +
-                dpid +
-                " | grep ACTIVE | wc -l" )
-            i = self.handle.expect( [
-                "No such device",
-                "onos>" ] )
-
-            output = self.handle.before
-
-            if i == 0:
-                main.log.error( "Error in getting ports" )
-                return ( output, "Error" )
+            cmd_str = "onos:links " + dpid + " | grep ACTIVE | wc -l"
+            output = self.sendline( cmd_str )
+            if re.search( "No such device", output ):
+                main.log.error( "Error in getting ports " )
+                return ( output, "Error " )
             else:
-                result = output
-                return result
-
+                return output
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
@@ -2100,23 +1912,13 @@ class OnosCliDriver( CLI ):
         Return a list of all Intent IDs
         """
         try:
-            self.handle.sendline( "" )
-            self.handle.expect( "onos>" )
-
-            self.handle.sendline( "onos:intents | grep id=" )
-            i = self.handle.expect( [
-                "Error",
-                "onos>" ] )
-
-            output = self.handle.before
-
-            if i == 0:
+            cmd_str = "onos:intents | grep id="
+            output = self.sendline( cmd_str )
+            if re.search( "Error", output ):
                 main.log.error( "Error in getting ports" )
                 return ( output, "Error" )
             else:
-                result = output
-                return result
-
+                return output
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
@@ -2128,4 +1930,3 @@ class OnosCliDriver( CLI ):
             main.log.info( self.name + " ::::::" )
             main.cleanup()
             main.exit()
-

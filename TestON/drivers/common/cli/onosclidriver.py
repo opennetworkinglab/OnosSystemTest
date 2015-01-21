@@ -142,13 +142,14 @@ class OnosCliDriver( CLI ):
                 # Expect the cellname in the ONOSCELL variable.
                 # Note that this variable name is subject to change
                 #   and that this driver will have to change accordingly
-                self.handle.expect( "ONOS_CELL=" + str( cellname ) )
-                handleBefore = self.handle.before
-                handleAfter = self.handle.after
+                self.handle.expect(str(cellname))
+
+                handle_before = self.handle.before
+                handle_after = self.handle.after
                 # Get the rest of the handle
-                self.handle.sendline( "" )
-                self.handle.expect( "\$" )
-                handleMore = self.handle.before
+                self.handle.sendline("")
+                self.handle.expect("\$")
+                handle_more = self.handle.before
 
                 main.log.info( "Cell call returned: " + handleBefore +
                                handleAfter + handleMore )

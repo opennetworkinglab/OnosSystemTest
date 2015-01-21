@@ -595,13 +595,13 @@ class OnosDriver( CLI ):
                 # Expect the cellname in the ONOSCELL variable.
                 # Note that this variable name is subject to change
                 #   and that this driver will have to change accordingly
-                self.handle.expect( "ONOS_CELL=" + str( cellname ) )
-                handleBefore = self.handle.before
-                handleAfter = self.handle.after
+                self.handle.expect(str(cellname))
+                handle_before = self.handle.before
+                handle_after = self.handle.after
                 # Get the rest of the handle
-                self.handle.sendline( "" )
-                self.handle.expect( "\$" )
-                handleMore = self.handle.before
+                self.handle.sendline("")
+                self.handle.expect("\$")
+                handle_more = self.handle.before
 
                 main.log.info( "Cell call returned: " + handleBefore +
                                handleAfter + handleMore )
@@ -1031,18 +1031,18 @@ class OnosDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def isup( self, node="" ):
+    def isup(self, node = "", timeout = 120):
         """
         Run's onos-wait-for-start which only returns once ONOS is at run
-        level 100( ready for use )
+        level 100(ready for use)
 
         Returns: main.TRUE if ONOS is running and main.FALSE on timeout
         """
         try:
-            self.handle.sendline( "onos-wait-for-start " + node )
-            self.handle.expect( "onos-wait-for-start" )
+            self.handle.sendline("onos-wait-for-start " + node )
+            self.handle.expect("onos-wait-for-start")
             # NOTE: this timeout is arbitrary"
-            i = self.handle.expect( [ "\$", pexpect.TIMEOUT ], timeout=120 )
+            i = self.handle.expect(["\$", pexpect.TIMEOUT], timeout)
             if i == 0:
                 main.log.info( self.name + ": " + node + " is up" )
                 return main.TRUE

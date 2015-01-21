@@ -103,10 +103,10 @@ class MininetCliDriver( Emulator ):
             main.log.info( self.name + ": building fresh mininet" )
             # for reactive/PARP enabled tests
             cmdString = "sudo mn " + self.options[ 'arg1' ] +\
-                    " " + self.options[ 'arg2' ] +\
-                    " --mac --controller " +\
-                    self.options[ 'controller' ] + " " +\
-                    self.options[ 'arg3' ]
+                " " + self.options[ 'arg2' ] +\
+                " --mac --controller " +\
+                self.options[ 'controller' ] + " " +\
+                self.options[ 'arg3' ]
 
             argList = self.options[ 'arg1' ].split( "," )
             global topoArgList
@@ -185,7 +185,7 @@ class MininetCliDriver( Emulator ):
             total_num_hosts = num_switches * num_hosts_per_sw
             num_links = total_num_hosts + ( num_switches - 1 )
             print "num_switches for %s(%d,%d) = %d and links=%d" %\
-                    ( topoType, depth, fanout, num_switches, num_links )
+                ( topoType, depth, fanout, num_switches, num_links )
         topoDict = {}
         topoDict = {
             "num_switches": int( num_switches ),
@@ -227,7 +227,7 @@ class MininetCliDriver( Emulator ):
             # NOTE: mininet's pingall rounds, so we will check the number of
             # passed and number of failed
             pattern = "Results\:\s0\%\sdropped\s\(" +\
-                    "(?P<passed>[\d]+)/(?P=passed)"
+                "(?P<passed>[\d]+)/(?P=passed)"
             if re.search( pattern, response ):
                 main.log.info( self.name + ": All hosts are reachable" )
                 return main.TRUE
@@ -323,11 +323,11 @@ class MininetCliDriver( Emulator ):
                 main.exit()
 
             pattern = "inet\s(addr|Mask):([0-1]{1}[0-9]{1,2}|" +\
-                    "2[0-4][0-9]|25[0-5]|[0-9]{1,2}).([0-1]{1}" +\
-                    "[0-9]{1,2}|2[0-4][0-9]|25[0-5]|[0-9]{1,2})." +\
-                    "([0-1]{1}[0-9]{1,2}|2[0-4][0-9]|25[0-5]|" +\
-                    "[0-9]{1,2}).([0-1]{1}[0-9]{1,2}|2[0-4]" +\
-                    "[0-9]|25[0-5]|[0-9]{1,2})"
+                "2[0-4][0-9]|25[0-5]|[0-9]{1,2}).([0-1]{1}" +\
+                "[0-9]{1,2}|2[0-4][0-9]|25[0-5]|[0-9]{1,2})." +\
+                "([0-1]{1}[0-9]{1,2}|2[0-4][0-9]|25[0-5]|" +\
+                "[0-9]{1,2}).([0-1]{1}[0-9]{1,2}|2[0-4]" +\
+                "[0-9]|25[0-5]|[0-9]{1,2})"
             # pattern = "inet addr:10.0.0.6"
             if re.search( pattern, response ):
                 main.log.info( self.name + ": Host Ip configured properly" )
@@ -588,7 +588,7 @@ class MininetCliDriver( Emulator ):
            return information dict about interfaces connected to the node"""
         if self.handle:
             cmd = 'py "\\n".join(["name=%s,mac=%s,ip=%s,enabled=%s"' +\
-                    ' % (i.name, i.MAC(), i.IP(), i.isUp())'
+                ' % (i.name, i.MAC(), i.IP(), i.isUp())'
             cmd += ' for i in %s.intfs.values()])' % node
             try:
                 response = self.execute(
@@ -851,7 +851,7 @@ class MininetCliDriver( Emulator ):
 
         sw = args[ "SW" ] if args[ "SW" ] is not None else ""
         ptcpA = int( args[ "PORT1" ] ) + \
-                    int( sw ) if args[ "PORT1" ] is not None else ""
+            int( sw ) if args[ "PORT1" ] is not None else ""
         ptcpB = "ptcp:" + str( ptcpA ) if ptcpA != "" else ""
 
         command = "sh ovs-vsctl set-controller s" + \
@@ -871,7 +871,7 @@ class MininetCliDriver( Emulator ):
                 "PORT" +
                 str( i ) ] is not None else ""
             tcp = "tcp:" + str( ip ) + ":" + str( port ) + \
-                               " " if ip != "" else ""
+                " " if ip != "" else ""
             command = command + tcp
         try:
             self.execute( cmd=command, prompt="mininet>", timeout=5 )
@@ -883,7 +883,7 @@ class MininetCliDriver( Emulator ):
         except:
             main.log.info( self.name + ":" * 50 )
             main.log.error( traceback.print_exc() )
-            main.log.info(":" * 50 )
+            main.log.info( ":" * 50 )
             main.cleanup()
             main.exit()
 
@@ -1251,7 +1251,7 @@ class MininetCliDriver( Emulator ):
         except:
             main.log.info( self.name + ":" * 50 )
             main.log.error( traceback.print_exc() )
-            main.log.info(":" * 50 )
+            main.log.info( ":" * 50 )
             main.cleanup()
             main.exit()
 
@@ -1270,7 +1270,7 @@ class MininetCliDriver( Emulator ):
         except:
             main.log.info( self.name + ":" * 50 )
             main.log.error( traceback.print_exc() )
-            main.log.info(":" * 50 )
+            main.log.info( ":" * 50 )
             main.cleanup()
             main.exit()
 
@@ -1290,7 +1290,7 @@ class MininetCliDriver( Emulator ):
             for port in switch.ports.values():
                 ports.append( { 'of_port': port.port_no,
                                 'mac': str( port.hw_addr ).replace( '\'',
-                                                                    ''),
+                                                                    '' ),
                                 'name': port.name } )
             output[ 'switches' ].append( {
                 "name": switch.name,
@@ -1344,7 +1344,7 @@ class MininetCliDriver( Emulator ):
             main.log.report( str( list1 ) )
             main.log.report( "Switches in ONOS but not in MN:" )
             list2 = [ switch for switch in onosDPIDs if switch not in mnDPIDs ]
-            main.log.report(str( list2 ) )
+            main.log.report( str( list2 ) )
         else:  # list of dpid's match in onos and mn
             switch_results = main.TRUE
         return switch_results
@@ -1476,7 +1476,7 @@ class MininetCliDriver( Emulator ):
                 # print port.hw_addr.toStr( separator='' )
                 ports.append( { 'of_port': port.port_no,
                                 'mac': str( port.hw_addr ).replace( '\'',
-                                                                    ''),
+                                                                    '' ),
                                 'name': port.name } )
             output[ 'switches' ].append( {
                 "name": switch.name,
@@ -1568,7 +1568,7 @@ class MininetCliDriver( Emulator ):
                 elif ( str( onos_node1 ) == str( node2 ) and
                         str( onos_node2 ) == str( node1 ) ):
                     if ( int( onos_port1 ) == int( port2 )
-                         and int( onos_port2 ) == int( port1 ) ):
+                            and int( onos_port2 ) == int( port1 ) ):
                         second_dir = main.TRUE
                     else:
                         main.log.warn(

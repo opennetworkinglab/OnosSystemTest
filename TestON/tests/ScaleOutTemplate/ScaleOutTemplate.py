@@ -4,133 +4,132 @@
 #
 # cameron@onlab.us
 
-import sys 
-import os 
+import sys
+import os
 
 
 class ScaleOutTemplate:
-    def __init__(self):
+
+    def __init__( self ):
         self.default = ''
-   
-    def CASE1(self, main):
-        
-        global cluster_count 
-        cluster_count = 1        
 
-        checkout_branch = main.params['GIT']['checkout']
-        git_pull = main.params['GIT']['autopull']
-        cell_name = main.params['ENV']['cellName']
-        BENCH_ip = main.params['BENCH']['ip1']
-        BENCH_user = main.params['BENCH']['user']
-        ONOS1_ip = main.params['CTRL']['ip1']
-        ONOS2_ip = main.params['CTRL']['ip2']
-        ONOS3_ip = main.params['CTRL']['ip3']
-        MN1_ip = main.params['MN']['ip1']
+    def CASE1( self, main ):
 
-        main.log.step("Cleaning Enviornment...")
-        main.ONOSbench.onos_uninstall(ONOS1_ip)
-        main.ONOSbench.onos_uninstall(ONOS2_ip)
-        main.ONOSbench.onos_uninstall(ONOS3_ip)                                     
-        
-        main.step("Git checkout and pull "+checkout_branch)
-        if git_pull == 'on':
-            checkout_result = main.ONOSbench.git_checkout(checkout_branch)       
-            pull_result = main.ONOSbench.git_pull()
-            
+        global clusterCount
+        clusterCount = 1
+
+        checkoutBranch = main.params[ 'GIT' ][ 'checkout' ]
+        gitPull = main.params[ 'GIT' ][ 'autopull' ]
+        cellName = main.params[ 'ENV' ][ 'cellName' ]
+        BENCHIp = main.params[ 'BENCH' ][ 'ip1' ]
+        BENCHUser = main.params[ 'BENCH' ][ 'user' ]
+        ONOS1Ip = main.params[ 'CTRL' ][ 'ip1' ]
+        ONOS2Ip = main.params[ 'CTRL' ][ 'ip2' ]
+        ONOS3Ip = main.params[ 'CTRL' ][ 'ip3' ]
+        MN1Ip = main.params[ 'MN' ][ 'ip1' ]
+
+        main.log.step( "Cleaning Enviornment..." )
+        main.ONOSbench.onosUninstall( ONOS1Ip )
+        main.ONOSbench.onosUninstall( ONOS2Ip )
+        main.ONOSbench.onosUninstall( ONOS3Ip )
+
+        main.step( "Git checkout and pull " + checkoutBranch )
+        if gitPull == 'on':
+            checkoutResult = main.ONOSbench.gitCheckout( checkoutBranch )
+            pullResult = main.ONOSbench.gitPull()
+
         else:
-            checkout_result = main.TRUE
-            pull_result = main.TRUE
-            main.log.info("Skipped git checkout and pull")
+            checkoutResult = main.TRUE
+            pullResult = main.TRUE
+            main.log.info( "Skipped git checkout and pull" )
 
-        mvn_result = main.ONOSbench.clean_install()
-                                                                   
-        main.step("Set cell for ONOS cli env")
-        main.ONOS1cli.set_cell(cell_name)
-        main.ONOS2cli.set_cell(cell_name)
-        main.ONOS3cli.set_cell(cell_name)
+        #mvnResult = main.ONOSbench.cleanInstall()
 
-        main.step("Creating ONOS package")
-        package_result = main.ONOSbench.onos_package()                             #no file or directory 
+        main.step( "Set cell for ONOS cli env" )
+        main.ONOS1cli.setCell( cellName )
+        main.ONOS2cli.setCell( cellName )
+        main.ONOS3cli.setCell( cellName )
 
-        main.step("Installing ONOS package")
-        install1_result = main.ONOSbench.onos_install(node=ONOS1_ip)
+        main.step( "Creating ONOS package" )
+        packageResult = main.ONOSbench.onosPackage()  
 
-        cell_name = main.params['ENV']['cellName']
-        main.step("Applying cell file to environment")
-        cell_apply_result = main.ONOSbench.set_cell(cell_name)
-        main.step("verify cells")
-        verify_cell_result = main.ONOSbench.verify_cell()
+        main.step( "Installing ONOS package" )
+        install1Result = main.ONOSbench.onosInstall( node=ONOS1Ip )
 
-        main.step("Set cell for ONOS cli env")
-        main.ONOS1cli.set_cell(cell_name) 
-        cli1 = main.ONOS1cli.start_onos_cli(ONOS1_ip)  
-       
+        cellName = main.params[ 'ENV' ][ 'cellName' ]
+        main.step( "Applying cell file to environment" )
+        cellApplyResult = main.ONOSbench.setCell( cellName )
+        main.step( "verify cells" )
+        verifyCellResult = main.ONOSbench.verifyCell()
 
-    def CASE2(self, main):
+        main.step( "Set cell for ONOS cli env" )
+        main.ONOS1cli.setCell()
+        cli1 = main.ONOS1cli.startOnosCli( ONOS1Ip )
 
-        '''  
-        Increase number of nodes and initiate CLI
-        '''
-        import time 
-        
-        global cluster_count
-        
-        ONOS1_ip = main.params['CTRL']['ip1']
-        ONOS2_ip = main.params['CTRL']['ip2']
-        ONOS3_ip = main.params['CTRL']['ip3']
-        #ONOS4_ip = main.params['CTRL']['ip4']
-        #ONOS5_ip = main.params['CTRL']['ip5']
-        #ONOS6_ip = main.params['CTRL']['ip6']
-        #ONOS7_ip = main.params['CTRL']['ip7']
-        cell_name = main.params['ENV']['cellName']
-        scale = int(main.params['SCALE'])
-       
-        #Cluster size increased everytime the case is defined
-        cluster_count += scale
- 
-        main.log.report("Increasing cluster size to "+
-                str(cluster_count))
-        install_result = main.FALSE
-        
+    def CASE2( self, main ):
+        ''
+        'Increase number of nodes and initiate CLI'
+        ''
+        import time
+
+        global clusterCount
+
+        ONOS1Ip = main.params[ 'CTRL' ][ 'ip1' ]
+        ONOS2Ip = main.params[ 'CTRL' ][ 'ip2' ]
+        ONOS3Ip = main.params[ 'CTRL' ][ 'ip3' ]
+        #ONOS4Ip = main.params[ 'CTRL' ][ 'ip4' ]
+        #ONOS5Ip = main.params[ 'CTRL' ][ 'ip5' ]
+        #ONOS6Ip = main.params[ 'CTRL' ][ 'ip6' ]
+        #ONOS7Ip = main.params[ 'CTRL' ][ 'ip7' ]
+        cellName = main.params[ 'ENV' ][ 'cellName' ]
+        scale = int( main.params[ 'SCALE' ] )
+
+        # Cluster size increased everytime the case is defined
+        clusterCount += scale
+
+        main.log.report( "Increasing cluster size to " +
+                         str( clusterCount ) )
+        installResult = main.FALSE
+
         if scale == 2:
-            if cluster_count == 3:
-                main.log.info("Installing nodes 2 and 3")
-                install2_result = main.ONOSbench.onos_install(node=ONOS2_ip)
-                install3_result = main.ONOSbench.onos_install(node=ONOS3_ip)
-                cli2 = main.ONOS1cli.start_onos_cli(ONOS2_ip)
-                cli3 = main.ONOS1cli.start_onos_cli(ONOS3_ip)
+            if clusterCount == 3:
+                main.log.info( "Installing nodes 2 and 3" )
+                install2Result = main.ONOSbench.onosInstall( node=ONOS2Ip )
+                install3Result = main.ONOSbench.onosInstall( node=ONOS3Ip )
+                cli2 = main.ONOS1cli.startOnosCli(ONOS1_ip)
+                cli3 = main.ONOS1cli.startOnosCli(ONOS2_ip)
 
-            '''
-            elif cluster_count == 5:
+            
+            #elif clusterCount == 5:
 
-                main.log.info("Installing nodes 4 and 5")
-                node4_result = main.ONOSbench.onos_install(node=ONOS4_ip)
-                node5_result = main.ONOSbench.onos_install(node=ONOS5_ip)
-                install_result = node4_result and node5_result
-                time.sleep(5)
+            #    main.log.info( "Installing nodes 4 and 5" )
+            #    node4Result = main.ONOSbench.onosInstall( node=ONOS4Ip )
+            #    node5Result = main.ONOSbench.onosInstall( node=ONOS5Ip )
+            #    installResult = node4Result and node5Result
+            #    time.sleep( 5 )
 
-                main.ONOS4cli.start_onos_cli(ONOS4_ip)
-                main.ONOS5cli.start_onos_cli(ONOS5_ip)
+            #    main.ONOS4cli.startOnosCli( ONOS4Ip )
+            #    main.ONOS5cli.startOnosCli( ONOS5Ip )
 
-            elif cluster_count == 7:
+            #elif clusterCount == 7:
 
-                main.log.info("Installing nodes 4 and 5")
-                node6_result = main.ONOSbench.onos_install(node=ONOS6_ip)
-                node7_result = main.ONOSbench.onos_install(node=ONOS7_ip)
-                install_result = node6_result and node7_result
-                time.sleep(5)
+            #    main.log.info( "Installing nodes 4 and 5" )
+            #    node6Result = main.ONOSbench.onosInstall( node=ONOS6Ip )
+            #    node7Result = main.ONOSbench.onosInstall( node=ONOS7Ip )
+            #    installResult = node6Result and node7Result
+            #    time.sleep( 5 )
+    
+            #    main.ONOS6cli.startOnosCli( ONOS6Ip )
+            #    main.ONOS7cli.startOnosCli( ONOS7Ip )
+            #
 
-                main.ONOS6cli.start_onos_cli(ONOS6_ip)
-                main.ONOS7cli.start_onos_cli(ONOS7_ip)
-            '''
-        if scale == 1: 
-            if cluster_count == 2:
-                main.log.info("Installing node 2")
-                install2_result = main.ONOSbench.onos_install(node=ONOS2_ip)
-                cli2 = main.ONOS1cli.start_onos_cli(ONOS2_ip)
+        if scale == 1:
+            if clusterCount == 2:
+                main.log.info( "Installing node 2" )
+                install2Result = main.ONOSbench.onosInstall( node=ONOS2Ip )
+                cli2 = main.ONOS1cli.startOnosCli(ONOS2_ip)
 
-            if cluster_count == 3:
-                main.log.info("Installing node 3")
-                install3_result = main.ONOSbench.onos_install(node=ONOS3_ip)
-                cli3 = main.ONOS1cli.start_onos_cli(ONOS3_ip)
-
+            if clusterCount == 3:
+                main.log.info( "Installing node 3" )
+                install3Result = main.ONOSbench.onosInstall( node=ONOS3Ip )
+                cli3 = main.ONOS1cli.startOnosCli(ONOS3_ip)

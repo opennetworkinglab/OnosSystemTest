@@ -144,12 +144,12 @@ class OnosCliDriver( CLI ):
                 #   and that this driver will have to change accordingly
                 self.handle.expect(str(cellname))
 
-                handle_before = self.handle.before
-                handle_after = self.handle.after
+                handleBefore = self.handle.before
+                handleAfter = self.handle.after
                 # Get the rest of the handle
                 self.handle.sendline("")
                 self.handle.expect("\$")
-                handle_more = self.handle.before
+                handleMore = self.handle.before
 
                 main.log.info( "Cell call returned: " + handleBefore +
                                handleAfter + handleMore )

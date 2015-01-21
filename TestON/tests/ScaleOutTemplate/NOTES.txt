@@ -1,0 +1,5 @@
+create the params file to go with the topofile and write the python case 
+need an __init__ doc? always empty? ask/look up
+remember to write in startup verification and check manually the first few times
+remember to refer to TopoConvNext for reference
+might need to delete THIS file when done 

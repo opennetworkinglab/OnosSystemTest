@@ -1,0 +1,41 @@
+<PARAMS>
+
+    <testcases>1,2</testcases>
+
+    <ENV>
+    <cellName>cam_cells</cellName>
+    </ENV>
+
+    <SCALE>2</SCALE>
+
+    <GIT>
+        <autopull>on</autopull>
+        <checkout>master</checkout>
+    </GIT>
+
+    <CTRL>
+        <USER>admin</USER>
+        <ip1>10.128.5.51</ip1>
+        <port1>6633</port1>
+        <ip2>10.128.5.52</ip2>
+        <port2>6633</port2>
+        <ip3>10.128.5.53</ip3>
+        <port3>6633</port3>
+    </CTRL>
+
+    <MN>
+        <ip1>10.128.5.59</ip1>
+    </MN>
+
+    <BENCH>
+        <user>admin</user>
+        <ip1>10.128.5.55</ip1>
+    </BENCH>
+
+    <TEST>
+    </TEST>
+
+    <JSON>
+    </JSON>
+
+</PARAMS>

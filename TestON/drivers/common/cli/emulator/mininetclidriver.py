@@ -1288,8 +1288,8 @@ class MininetCliDriver( Emulator ):
         for switch in topo.graph.switches:
             ports = []
             for port in switch.ports.values():
-                ports.append( { 'of_port': port.portNo,
-                                'mac': str( port.hwAddr ).replace( '\'',
+                ports.append( { 'of_port': port.port_no,
+                                'mac': str( port.hw_addr ).replace( '\'',
                                                                    '' ),
                                 'name': port.name } )
             output[ 'switches' ].append( {
@@ -1370,10 +1370,10 @@ class MininetCliDriver( Emulator ):
         for switch in topo.graph.switches:
             ports = []
             for port in switch.ports.values():
-                # print port.hwAddr.toStr( separator='' )
+                # print port.hw_addr.toStr( separator='' )
                 tmpPort = {}
-                tmpPort[ 'of_port' ] = port.portNo
-                tmpPort[ 'mac' ] = str( port.hwAddr ).replace( '\'', '' )
+                tmpPort[ 'of_port' ] = port.port_no
+                tmpPort[ 'mac' ] = str( port.hw_addr ).replace( '\'', '' )
                 tmpPort[ 'name' ] = port.name
                 tmpPort[ 'enabled' ] = port.enabled
 
@@ -1473,9 +1473,9 @@ class MininetCliDriver( Emulator ):
             # print switch
             ports = []
             for port in switch.ports.values():
-                # print port.hwAddr.toStr( separator='' )
-                ports.append( { 'of_port': port.portNo,
-                                'mac': str( port.hwAddr ).replace( '\'',
+                # print port.hw_addr.toStr( separator='' )
+                ports.append( { 'of_port': port.port_no,
+                                'mac': str( port.hw_addr ).replace( '\'',
                                                                    '' ),
                                 'name': port.name } )
             output[ 'switches' ].append( {
@@ -1485,7 +1485,7 @@ class MininetCliDriver( Emulator ):
         # LINKS
 
         mnLinks = [
-            link for link in topo.patchPanel.networkLinks if (
+            link for link in topo.patch_panel.network_links if (
                 link.port1.enabled and link.port2.enabled ) ]
         if 2 * len( mnLinks ) == len( onos ):
             linkResults = main.TRUE

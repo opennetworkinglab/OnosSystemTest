@@ -180,6 +180,7 @@ def convertFromPep8( program ):
    oldProgram = program
    # Program text transforms
    program = reinstateCapWords( program )  # Turning off for now
+   program = reinstateCapWords( program )
    program = fixKeywords( program )
    program = insertExtraSpaces( program )
    # Undo string damage

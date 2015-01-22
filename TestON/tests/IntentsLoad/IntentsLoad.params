@@ -1,0 +1,49 @@
+<PARAMS>
+
+    <testcases>1,2,4</testcases>
+
+    <ENV>
+    <cellName>cam_cells</cellName>
+    </ENV>
+
+    <SCALE>1</SCALE>
+
+    <GIT>
+        <autopull>off</autopull>
+        <checkout>master</checkout>
+    </GIT>
+
+    <CTRL>
+        <USER>admin</USER>
+        <ip1>10.128.5.51</ip1>
+        <port1>6633</port1>
+        <ip2>10.128.5.52</ip2>
+        <port2>6633</port2>
+        <ip3>10.128.5.53</ip3>
+        <port3>6633</port3>
+    </CTRL>
+
+    <MN>
+        <ip1>10.128.5.59</ip1>
+        <ip2>10.128.5.59</ip2>
+    </MN>
+
+    <BENCH>
+        <user>admin</user>
+        <ip1>10.128.5.55</ip1>
+    </BENCH>
+
+    <TEST>
+    <loadstart>curl --fail http://localhost:8181/onos/demo/intents/setup -H "Content-Type:application/json" -d '{"type" : "random"}'</loadstart>
+    <loadstop>curl --fail http://localhost:8181/onos/demo/intents/teardown</loadstop>
+    <arping>py [h.cmd("arping -c 1 -w 1 10.0.0.225") for h in net.hosts]</arping>
+    <metric1>intents-events-metrics|grep "Intent Installed Events"</metric1>
+    <duration>90</duration>
+    <log_interval>5</log_interval>
+    </TEST>
+
+    <JSON>
+        <intents_rate>intentInstalledRate</intents_rate>
+    </JSON>
+
+</PARAMS>

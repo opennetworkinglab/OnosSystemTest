@@ -66,8 +66,8 @@ class MininetCliDriver( Emulator ):
         self.handle = super(
             MininetCliDriver,
             self ).connect(
-            userName=self.userName,
-            ipAddress=self.ipAddress,
+            user_name=self.user_name,
+            ip_address=self.ip_address,
             port=None,
             pwd=self.pwd )
 
@@ -148,9 +148,9 @@ class MininetCliDriver( Emulator ):
             main.log.error(
                 self.name +
                 ": Connection failed to the host " +
-                self.userName +
+                self.user_name +
                 "@" +
-                self.ipAddress )
+                self.ip_address )
             main.log.error( self.name + ": Failed to connect to the Mininet" )
             return main.FALSE
 
@@ -882,7 +882,7 @@ class MininetCliDriver( Emulator ):
             main.exit()
         except:
             main.log.info( self.name + ":" * 50 )
-            main.log.error( traceback.printExc() )
+            main.log.error( traceback.print_exc() )
             main.log.info( ":" * 50 )
             main.cleanup()
             main.exit()
@@ -1250,7 +1250,7 @@ class MininetCliDriver( Emulator ):
             main.exit()
         except:
             main.log.info( self.name + ":" * 50 )
-            main.log.error( traceback.printExc() )
+            main.log.error( traceback.print_exc() )
             main.log.info( ":" * 50 )
             main.cleanup()
             main.exit()
@@ -1269,7 +1269,7 @@ class MininetCliDriver( Emulator ):
             main.exit()
         except:
             main.log.info( self.name + ":" * 50 )
-            main.log.error( traceback.printExc() )
+            main.log.error( traceback.print_exc() )
             main.log.info( ":" * 50 )
             main.cleanup()
             main.exit()

@@ -44,7 +44,7 @@ class RemoteMininetDriver( Emulator ):
         self.flag = 0
 
     def connect( self, **connectargs ):
-        """,userName, ipAddress, pwd,options ):
+        """,user_name, ip_address, pwd,options ):
          Here the main is the TestON instance after creating all the log
          handles."""
         for key in connectargs:
@@ -54,8 +54,8 @@ class RemoteMininetDriver( Emulator ):
         self.handle = super(
             RemoteMininetDriver,
             self ).connect(
-            userName=self.userName,
-            ipAddress=self.ipAddress,
+            user_name=self.user_name,
+            ip_address=self.ip_address,
             port=None,
             pwd=self.pwd )
 
@@ -68,9 +68,9 @@ class RemoteMininetDriver( Emulator ):
         else:
             main.log.error(
                 "Connection failed to the host " +
-                self.userName +
+                self.user_name +
                 "@" +
-                self.ipAddress )
+                self.ip_address )
             main.log.error( "Failed to connect to the Mininet" )
             return main.FALSE
 

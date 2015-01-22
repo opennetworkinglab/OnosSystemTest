@@ -26,19 +26,19 @@ class QuaggaCliDriver( CLI ):
 
         self.name = self.options[ 'name' ]
         # self.handle = super( QuaggaCliDriver,self ).connect(
-        # userName=self.userName, ipAddress=self.ipAddress,port=self.port,
+        # user_name=self.user_name, ip_address=self.ip_address,port=self.port,
         # pwd=self.pwd )
         self.handle = super(
             QuaggaCliDriver,
             self ).connect(
-                userName=self.userName,
-            ipAddress="1.1.1.1",
+                user_name=self.user_name,
+            ip_address="1.1.1.1",
             port=self.port,
             pwd=self.pwd )
         main.log.info(
             "connect parameters:" + str(
-                self.userName ) + ";" + str(
-                    self.ipAddress ) + ";" + str(
+                self.user_name ) + ";" + str(
+                    self.ip_address ) + ";" + str(
                 self.port ) + ";" + str(
                 self.pwd ) )
 
@@ -59,15 +59,15 @@ class QuaggaCliDriver( CLI ):
             main.log.info( "NO HANDLE" )
             return main.FALSE
 
-    def loginQuagga( self, ipAddress ):
+    def loginQuagga( self, ip_address ):
         self.name = self.options[ 'name' ]
         self.handle = super( QuaggaCliDriver, self ).connect(
-            userName=self.userName, ipAddress=ipAddress,
+            user_name=self.user_name, ip_address=ip_address,
             port=self.port, pwd=self.pwd )
         main.log.info( "connect parameters:" +
-                       str( self.userName ) +
+                       str( self.user_name ) +
                        ";" +
-                       str( self.ipAddress ) +
+                       str( self.ip_address ) +
                        ";" +
                        str( self.port ) +
                        ";" +
@@ -85,7 +85,7 @@ class QuaggaCliDriver( CLI ):
             self.handle.sendline( "enable" )
             # self.handle.expect( "bgpd#", timeout=5 )
             self.handle.expect( "bgpd#" )
-            main.log.info( "I in quagga on host " + str( ipAddress ) )
+            main.log.info( "I in quagga on host " + str( ip_address ) )
 
             return self.handle
         else:
@@ -154,7 +154,7 @@ class QuaggaCliDriver( CLI ):
         ingress = []
         egress = ""
         for peer in sdnipData[ 'bgpPeers' ]:
-            if peer[ 'ipAddress' ] == nextHop:
+            if peer[ 'ip_address' ] == nextHop:
                 egress = "of:" + \
                     str( peer[ 'attachmentDpid' ] ).replace( ":", "" ) + ":" +\
                     str( peer[ 'attachmentPort' ] )
@@ -302,7 +302,7 @@ class QuaggaCliDriver( CLI ):
                         peer[ 'attachmentDpid' ] ) and eq(
                         interfaceAddress[ 'interfacePort' ],
                         peer[ 'attachmentPort' ] ):
-                    bgpSpeakerIpAddress = interfaceAddress[ 'ipAddress' ]
+                    bgpSpeakerIpAddress = interfaceAddress[ 'ip_address' ]
                     break
                 else:
                     continue
@@ -310,7 +310,7 @@ class QuaggaCliDriver( CLI ):
             # from bgpSpeakerAttachmentPoint to bgpPeerAttachmentPoint
             # direction
             selectorStr = "IPV4_SRC{ip=" + bgpSpeakerIpAddress +\
-                    "/32}," + "IPV4_DST{ip=" + peer[ 'ipAddress' ] + "/32}," +\
+                    "/32}," + "IPV4_DST{ip=" + peer[ 'ip_address' ] + "/32}," +\
                         "IP_PROTO{protocol=6}, ETH_TYPE{ethType=800},\
                         TCP_DST{tcpPort=179}"
             selector = selectorStr.replace( " ", "" ).replace(
@@ -320,7 +320,7 @@ class QuaggaCliDriver( CLI ):
             intents.append( intent )
 
             selectorStr = "IPV4_SRC{ip=" + bgpSpeakerIpAddress + "/32}," +\
-                    "IPV4_DST{ip=" + peer[ 'ipAddress' ] + "/32}," +\
+                    "IPV4_DST{ip=" + peer[ 'ip_address' ] + "/32}," +\
                     "IP_PROTO{protocol=6}, ETH_TYPE{ethType=800},\
                     TCP_SRC{tcpPort=179}"
             selector = selectorStr.replace( " ", "" ).replace(
@@ -331,7 +331,7 @@ class QuaggaCliDriver( CLI ):
 
             # from bgpPeerAttachmentPoint to bgpSpeakerAttachmentPoint
             # direction
-            selectorStr = "IPV4_SRC{ip=" + peer[ 'ipAddress' ] + "/32}," +\
+            selectorStr = "IPV4_SRC{ip=" + peer[ 'ip_address' ] + "/32}," +\
                     "IPV4_DST{ip=" + bgpSpeakerIpAddress + "/32}," + \
                     "IP_PROTO{protocol=6}, ETH_TYPE{ethType=800},\
                     TCP_DST{tcpPort=179}"
@@ -341,7 +341,7 @@ class QuaggaCliDriver( CLI ):
                 bgpSpeakerAttachmentPoint + "/" + str( sorted( selector ) )
             intents.append( intent )
 
-            selectorStr = "IPV4_SRC{ip=" + peer[ 'ipAddress' ] + "/32}," +\
+            selectorStr = "IPV4_SRC{ip=" + peer[ 'ip_address' ] + "/32}," +\
                     "IPV4_DST{ip=" + bgpSpeakerIpAddress + "/32}," +\
                     "IP_PROTO{protocol=6}, ETH_TYPE{ethType=800},\
                      TCP_SRC{tcpPort=179}"
@@ -409,17 +409,17 @@ class QuaggaCliDriver( CLI ):
             return main.TRUE
         return main.FALSE
 
-    def pingTest( self, ipAddress, pingTestFile, pingTestResultFile ):
-        main.log.info( "Start the ping test on host:" + str( ipAddress ) )
+    def pingTest( self, ip_address, pingTestFile, pingTestResultFile ):
+        main.log.info( "Start the ping test on host:" + str( ip_address ) )
 
         self.name = self.options[ 'name' ]
         self.handle = super( QuaggaCliDriver, self ).connect(
-            userName=self.userName, ipAddress=ipAddress,
+            user_name=self.user_name, ip_address=ip_address,
             port=self.port, pwd=self.pwd )
         main.log.info( "connect parameters:" +
-                       str( self.userName ) +
+                       str( self.user_name ) +
                        ";" +
-                       str( self.ipAddress ) +
+                       str( self.ip_address ) +
                        ";" +
                        str( self.port ) +
                        ";" +
@@ -428,7 +428,7 @@ class QuaggaCliDriver( CLI ):
         if self.handle:
             # self.handle.expect( "" )
             # self.handle.expect( "\$" )
-            main.log.info( "I in host " + str( ipAddress ) )
+            main.log.info( "I in host " + str( ip_address ) )
             main.log.info(
                 pingTestFile +
                 " > " +

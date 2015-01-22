@@ -48,8 +48,8 @@ class OnosDriver( CLI ):
 
             self.name = self.options[ 'name' ]
             self.handle = super( OnosDriver, self ).connect(
-                userName=self.userName,
-                ipAddress=self.ipAddress,
+                user_name=self.user_name,
+                ip_address=self.ip_address,
                 port=self.port,
                 pwd=self.pwd,
                 home=self.home )

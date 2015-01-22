@@ -96,7 +96,7 @@ class TestParser:
                 if step == 0 :
                     i = 0
                     block = ''
-                    while i <= index :
+                    while i < index :
                         block += caseStatements[i]
                         i = i + 1
                     stepCode[step] = block   

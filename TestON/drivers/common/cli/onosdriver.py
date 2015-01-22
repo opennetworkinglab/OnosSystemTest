@@ -49,10 +49,10 @@ class OnosDriver( CLI ):
             self.name = self.options[ 'name' ]
             self.handle = super( OnosDriver, self ).connect(
                 user_name=self.user_name,
-                    ip_address=self.ip_address,
-                    port=self.port,
-                    pwd=self.pwd,
-                    home=self.home )
+                ip_address=self.ip_address,
+                port=self.port,
+                pwd=self.pwd,
+                home=self.home )
 
             self.handle.sendline( "cd " + self.home )
             self.handle.expect( "\$" )
@@ -67,12 +67,9 @@ class OnosDriver( CLI ):
             main.cleanup()
             main.exit()
         except:
-            main.log.info(
-                self.name +
-                ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::" )
+            main.log.info( self.name + ":" * 30 )
             main.log.error( traceback.print_exc() )
-            main.log.info(
-                ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::" )
+            main.log.info( ":" * 30 )
             main.cleanup()
             main.exit()
 
@@ -94,7 +91,7 @@ class OnosDriver( CLI ):
             response = main.FALSE
         return response
 
-    def onos_package( self ):
+    def onosPackage( self ):
         """
         Produce a self-contained tar.gz file that can be deployed
         and executed on any platform with Java 7 JRE.
@@ -119,7 +116,7 @@ class OnosDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def onos_build( self ):
+    def onosBuild( self ):
         """
         Use the pre defined script to build onos via mvn
         """
@@ -127,10 +124,10 @@ class OnosDriver( CLI ):
             self.handle.sendline( "onos-build" )
             self.handle.expect( "onos-build" )
             i = self.handle.expect( [
-                                    "BUILD SUCCESS",
-                                    "ERROR",
-                                    "BUILD FAILED" ],
-                                    timeout=120 )
+                "BUILD SUCCESS",
+                "ERROR",
+                "BUILD FAILED" ],
+                timeout=120 )
             handle = str( self.handle.before )
 
             main.log.info( "onos-build command returned: " +
@@ -149,7 +146,7 @@ class OnosDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def clean_install( self ):
+    def cleanInstall( self ):
         """
         Runs mvn clean install in the root of the ONOS directory.
         This will clean all ONOS artifacts then compile each module
@@ -158,7 +155,8 @@ class OnosDriver( CLI ):
         On Failure, exits the test
         """
         try:
-            main.log.info( "Running 'mvn clean install' on " + str( self.name ) +
+            main.log.info( "Running 'mvn clean install' on " +
+                           str( self.name ) +
                            ". This may take some time." )
             self.handle.sendline( "cd " + self.home )
             self.handle.expect( "\$" )
@@ -216,26 +214,23 @@ class OnosDriver( CLI ):
             main.cleanup()
             main.exit()
         except:
-            main.log.info(
-                self.name +
-                ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::" )
+            main.log.info( self.name + ":" * 60 )
             main.log.error( traceback.print_exc() )
-            main.log.info(
-                ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::" )
+            main.log.info( ":" * 60 )
             main.cleanup()
             main.exit()
 
-    def git_pull( self, comp1="" ):
+    def gitPull( self, comp1="" ):
         """
         Assumes that "git pull" works without login
 
         This function will perform a git pull on the ONOS instance.
-        If used as git_pull( "NODE" ) it will do git pull + NODE. This is
+        If used as gitPull( "NODE" ) it will do git pull + NODE. This is
         for the purpose of pulling from other nodes if necessary.
 
         Otherwise, this function will perform a git pull in the
         ONOS repository. If it has any problems, it will return main.ERROR
-        If it successfully does a git_pull, it will return a 1 ( main.TRUE )
+        If it successfully does a gitPull, it will return a 1 ( main.TRUE )
         If it has no updates, it will return 3.
 
         """
@@ -249,19 +244,24 @@ class OnosDriver( CLI ):
             else:
                 self.handle.sendline( "git pull " + comp1 )
 
-            i = self.handle.expect( [ 'fatal',
-                                    'Username\sfor\s(.*):\s',
-                                      '\sfile(s*) changed,\s',
-                                      'Already up-to-date',
-                                      'Aborting',
-                                      'You\sare\snot\scurrently\son\sa\sbranch',
-                                      'You\sasked\sme\sto\spull\swithout\stelling\sme\swhich\sbranch\syou',
-                                      'Pull\sis\snot\spossible\sbecause\syou\shave\sunmerged\sfiles',
-                                      pexpect.TIMEOUT ],
-                                    timeout=300 )
+            i = self.handle.expect(
+                [
+                    'fatal',
+                    'Username\sfor\s(.*):\s',
+                    '\sfile(s*) changed,\s',
+                    'Already up-to-date',
+                    'Aborting',
+                    'You\sare\snot\scurrently\son\sa\sbranch',
+                    'You\sasked\sme\sto\spull\swithout\stelling\sme\swhich\
+                            \sbranch\syou',
+                    'Pull\sis\snot\spossible\sbecause\syou\shave\sunmerged\
+                            \sfiles',
+                    pexpect.TIMEOUT ],
+                timeout=300 )
             # debug
-           # main.log.report( self.name +": DEBUG:  \n"+"git pull response: " +
-           # str( self.handle.before ) + str( self.handle.after ) )
+            # main.log.report( self.name +": DEBUG:  \n"+
+            # "git pull response: " +
+            # str( self.handle.before ) + str( self.handle.after ) )
             if i == 0:
                 main.log.error( self.name + ": Git pull had some issue..." )
                 return main.ERROR
@@ -275,29 +275,35 @@ class OnosDriver( CLI ):
                     self.name +
                     ": Git Pull - pulling repository now" )
                 self.handle.expect( "ONOS\$", 120 )
-                return main.TRUE  # So that only when git pull is done, we do mvn clean compile
+            # So that only when git pull is done, we do mvn clean compile
+                return main.TRUE
             elif i == 3:
                 main.log.info( self.name + ": Git Pull - Already up to date" )
                 return i
             elif i == 4:
                 main.log.info(
                     self.name +
-                    ": Git Pull - Aborting... Are there conflicting git files?" )
+                    ": Git Pull - Aborting...\
+                            Are there conflicting git files?" )
                 return main.ERROR
             elif i == 5:
                 main.log.info(
                     self.name +
-                    ": Git Pull - You are not currently on a branch so git pull failed!" )
+                    ": Git Pull - You are not currently\
+                            on a branch so git pull failed!" )
                 return main.ERROR
             elif i == 6:
                 main.log.info(
                     self.name +
-                    ": Git Pull - You have not configured an upstream branch to pull from. Git pull failed!" )
+                    ": Git Pull - You have not configured\
+                             an upstream branch to pull from\
+                             . Git pull failed!" )
                 return main.ERROR
             elif i == 7:
                 main.log.info(
                     self.name +
-                    ": Git Pull - Pull is not possible because you have unmerged files." )
+                    ": Git Pull - Pull is not possible\
+                            because you have unmerged files." )
                 return main.ERROR
             elif i == 8:
                 main.log.error( self.name + ": Git Pull - TIMEOUT" )
@@ -316,21 +322,19 @@ class OnosDriver( CLI ):
             main.cleanup()
             main.exit()
         except:
-            main.log.info(
-                self.name +
-                ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::" )
+            main.log.info( self.name + ":" * 60 )
             main.log.error( traceback.print_exc() )
-            main.log.info(
-                ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::" )
+            main.log.info( ":" * 80 )
             main.cleanup()
             main.exit()
 
-    def git_checkout( self, branch="master" ):
+    def gitCheckout( self, branch="master" ):
         """
         Assumes that "git pull" works without login
 
         This function will perform a git git checkout on the ONOS instance.
-        If used as git_checkout( "branch" ) it will do git checkout of the "branch".
+        If used as gitCheckout( "branch" ) it will do git checkout
+        of the "branch".
 
         Otherwise, this function will perform a git checkout of the master
         branch of the ONOS repository. If it has any problems, it will return
@@ -350,14 +354,18 @@ class OnosDriver( CLI ):
             cmd = "git checkout " + branch
             self.handle.sendline( cmd )
             self.handle.expect( cmd )
-            i = self.handle.expect( [ 'fatal',
-                                    'Username\sfor\s(.*):\s',
-                                      'Already\son\s\'',
-                                      'Switched\sto\sbranch\s\'' +
-                                          str( branch ),
-                                      pexpect.TIMEOUT,
-                                      'error: Your local changes to the following files would be overwritten by checkout:',
-                                      'error: you need to resolve your current index first' ], timeout=60 )
+            i = self.handle.expect(
+                [
+                    'fatal',
+                    'Username\sfor\s(.*):\s',
+                    'Already\son\s\'',
+                    'Switched\sto\sbranch\s\'' +
+                    str( branch ),
+                    pexpect.TIMEOUT,
+                    'error: Your local changes to the following files\
+                            would be overwritten by checkout:',
+                    'error: you need to resolve your current index first' ],
+                timeout=60 )
 
             if i == 0:
                 main.log.error(
@@ -366,9 +374,11 @@ class OnosDriver( CLI ):
                 main.log.error( self.name + ":     " + self.handle.before )
                 return main.ERROR
             elif i == 1:
-                main.log.error( self.name + ": Git checkout asking for username."
-                                + " Please configure your local git repository to be able "
-                                + "to access your remote repository passwordlessly" )
+                main.log.error(
+                    self.name +
+                    ": Git checkout asking for username." +
+                    " Please configure your local git repository to be able " +
+                    "to access your remote repository passwordlessly" )
                 return main.ERROR
             elif i == 2:
                 main.log.info(
@@ -396,21 +406,28 @@ class OnosDriver( CLI ):
                 return main.ERROR
             elif i == 5:
                 self.handle.expect( "Aborting" )
-                main.log.error( self.name + ": Git checkout error: \n" +
-                                "Your local changes to the following files would be overwritten by checkout:" +
-                                str( self.handle.before ) )
+                main.log.error(
+                    self.name +
+                    ": Git checkout error: \n" +
+                    "Your local changes to the following\
+                            files would be overwritten by checkout:" +
+                    str(
+                        self.handle.before ) )
                 self.handle.expect( "ONOS\$" )
                 return main.ERROR
             elif i == 6:
-                main.log.error( self.name + ": Git checkout error: \n" +
-                                "You need to resolve your current index first:" +
+                main.log.error( self.name +
+                                ": Git checkout error: \n" +
+                                "You need to resolve your\
+                                        current index first:" +
                                 str( self.handle.before ) )
                 self.handle.expect( "ONOS\$" )
                 return main.ERROR
             else:
                 main.log.error(
                     self.name +
-                    ": Git Checkout - Unexpected response, check for pull errors" )
+                    ": Git Checkout - Unexpected response,\
+                            check for pull errors" )
                 main.log.error( self.name + ":     " + self.handle.before )
                 return main.ERROR
 
@@ -420,18 +437,16 @@ class OnosDriver( CLI ):
             main.cleanup()
             main.exit()
         except:
-            main.log.info(
-                self.name +
-                ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::" )
+            main.log.info( self.name + ":" * 60 )
             main.log.error( traceback.print_exc() )
-            main.log.info(
-                ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::" )
+            main.log.info( ":" * 80 )
             main.cleanup()
             main.exit()
 
-    def get_version( self, report=False ):
+    def getVersion( self, report=False ):
         """
-        Writes the COMMIT number to the report to be parsed by Jenkins data collecter.
+        Writes the COMMIT number to the report to be parsed\
+                by Jenkins data collecter.
         """
         try:
             self.handle.sendline( "" )
@@ -439,7 +454,8 @@ class OnosDriver( CLI ):
             self.handle.sendline(
                 "cd " +
                 self.home +
-                "; git log -1 --pretty=fuller --decorate=short | grep -A 6 \"commit\" --color=never" )
+                "; git log -1 --pretty=fuller --decorate=short | grep -A 6\
+                        \"commit\" --color=never" )
             # NOTE: for some reason there are backspaces inserted in this
             # phrase when run from Jenkins on some tests
             self.handle.expect( "never" )
@@ -471,76 +487,73 @@ class OnosDriver( CLI ):
             main.cleanup()
             main.exit()
         except:
-            main.log.info(
-                self.name +
-                ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::" )
+            main.log.info( self.name + ":" * 60 )
             main.log.error( traceback.print_exc() )
-            main.log.info(
-                ":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::" )
+            main.log.info( ":" * 80 )
             main.cleanup()
             main.exit()
 
-    def create_cell_file( self, bench_ip, file_name, mn_ip_addrs,
-                          extra_feature_string, *onos_ip_addrs ):
+    def createCellFile( self, benchIp, fileName, mnIpAddrs,
+                         extraFeatureString, *onosIpAddrs ):
         """
         Creates a cell file based on arguments
         Required:
-            * Bench IP address ( bench_ip )
+            * Bench IP address ( benchIp )
                 - Needed to copy the cell file over
-            * File name of the cell file ( file_name )
-            * Mininet IP address ( mn_ip_addrs )
+            * File name of the cell file ( fileName )
+            * Mininet IP address ( mnIpAddrs )
                 - Note that only 1 ip address is
                   supported currently
-            * ONOS IP addresses ( onos_ip_addrs )
+            * ONOS IP addresses ( onosIpAddrs )
                 - Must be passed in as last arguments
 
         NOTE: Assumes cells are located at:
             ~/<self.home>/tools/test/cells/
         """
         # Variable initialization
-        cell_directory = self.home + "/tools/test/cells/"
+        cellDirectory = self.home + "/tools/test/cells/"
         # We want to create the cell file in the dependencies directory
         # of TestON first, then copy over to ONOS bench
-        temp_directory = "/tmp/"
+        tempDirectory = "/tmp/"
         # Create the cell file in the directory for writing ( w+ )
-        cell_file = open( temp_directory + file_name, 'w+' )
+        cellFile = open( tempDirectory + fileName, 'w+' )
 
         # Feature string is hardcoded environment variables
         # That you may wish to use by default on startup.
         # Note that you  may not want certain features listed
         # on here.
-        core_feature_string = "export ONOS_FEATURES=webconsole,onos-api," +\
-            "onos-cli,onos-openflow," + extra_feature_string
-        mn_string = "export OCN="
-        onos_string = "export OC"
-        temp_count = 1
+        coreFeatureString = "export ONOS_FEATURES=webconsole,onos-api," +\
+            "onos-cli,onos-openflow," + extraFeatureString
+        mnString = "export OCN="
+        onosString = "export OC"
+        tempCount = 1
 
-        # Create ONOS_NIC ip address prefix
-        temp_onos_ip = onos_ip_addrs[ 0 ]
-        temp_list = []
-        temp_list = temp_onos_ip.split( "." )
+        # Create ONOSNIC ip address prefix
+        tempOnosIp = onosIpAddrs[ 0 ]
+        tempList = []
+        tempList = tempOnosIp.split( "." )
         # Omit last element of list to format for NIC
-        temp_list = temp_list[ :-1 ]
+        tempList = tempList[ :-1 ]
         # Structure the nic string ip
-        nic_addr = ".".join( temp_list ) + ".*"
-        onos_nic_string = "export ONOS_NIC=" + nic_addr
+        nicAddr = ".".join( tempList ) + ".*"
+        onosNicString = "export ONOS_NIC=" + nicAddr
 
         try:
             # Start writing to file
-            cell_file.write( onos_nic_string + "\n" )
+            cellFile.write( onosNicString + "\n" )
 
-            for arg in onos_ip_addrs:
-                # For each argument in onos_ip_addrs, write to file
+            for arg in onosIpAddrs:
+                # For each argument in onosIpAddrs, write to file
                 # Output should look like the following:
                 #   export OC1="10.128.20.11"
                 #   export OC2="10.128.20.12"
-                cell_file.write( onos_string + str( temp_count ) +
-                                 "=" + "\"" + arg + "\"" + "\n" )
-                temp_count = temp_count + 1
+                cellFile.write( onosString + str( tempCount ) +
+                                "=" + "\"" + arg + "\"" + "\n" )
+                tempCount = tempCount + 1
 
-            cell_file.write( mn_string + "\"" + mn_ip_addrs + "\"" + "\n" )
-            cell_file.write( core_feature_string + "\n" )
-            cell_file.close()
+            cellFile.write( mnString + "\"" + mnIpAddrs + "\"" + "\n" )
+            cellFile.write( coreFeatureString + "\n" )
+            cellFile.close()
 
             # We use os.system to send the command to TestON cluster
             # to account for the case in which TestON is not located
@@ -548,8 +561,8 @@ class OnosDriver( CLI ):
             # Note that even if TestON is located on the same cluster
             # as ONOS bench, you must setup passwordless ssh
             # between TestON and ONOS bench in order to automate the test.
-            os.system( "scp " + temp_directory + file_name +
-                       " admin@" + bench_ip + ":" + cell_directory )
+            os.system( "scp " + tempDirectory + fileName +
+                       " admin@" + benchIp + ":" + cellDirectory )
 
             return main.TRUE
 
@@ -565,7 +578,7 @@ class OnosDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def set_cell( self, cellname ):
+    def setCell( self, cellname ):
         """
         Calls 'cell <name>' to set the environment variables on ONOSbench
         """
@@ -576,19 +589,19 @@ class OnosDriver( CLI ):
                 main.exit()
             else:
                 self.handle.sendline( "cell " + str( cellname ) )
-                # Expect the cellname in the ONOS_CELL variable.
+                # Expect the cellname in the ONOSCELL variable.
                 # Note that this variable name is subject to change
                 #   and that this driver will have to change accordingly
                 self.handle.expect( "ONOS_CELL=" + str( cellname ) )
-                handle_before = self.handle.before
-                handle_after = self.handle.after
+                handleBefore = self.handle.before
+                handleAfter = self.handle.after
                 # Get the rest of the handle
                 self.handle.sendline( "" )
                 self.handle.expect( "\$" )
-                handle_more = self.handle.before
+                handleMore = self.handle.before
 
-                main.log.info( "Cell call returned: " + handle_before +
-                               handle_after + handle_more )
+                main.log.info( "Cell call returned: " + handleBefore +
+                               handleAfter + handleMore )
 
                 return main.TRUE
 
@@ -604,7 +617,7 @@ class OnosDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def verify_cell( self ):
+    def verifyCell( self ):
         """
         Calls 'onos-verify-cell' to check for cell installation
         """
@@ -616,15 +629,15 @@ class OnosDriver( CLI ):
             self.handle.expect( "\$" )
             self.handle.sendline( "onos-verify-cell" )
             self.handle.expect( "\$" )
-            handle_before = self.handle.before
-            handle_after = self.handle.after
+            handleBefore = self.handle.before
+            handleAfter = self.handle.after
             # Get the rest of the handle
             self.handle.sendline( "" )
             self.handle.expect( "\$" )
-            handle_more = self.handle.before
+            handleMore = self.handle.before
 
-            main.log.info( "Verify cell returned: " + handle_before +
-                           handle_after + handle_more )
+            main.log.info( "Verify cell returned: " + handleBefore +
+                           handleAfter + handleMore )
 
             return main.TRUE
         except pexpect.EOF:
@@ -639,11 +652,11 @@ class OnosDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def onos_cli( self, ONOS_ip, cmdstr ):
+    def onosCli( self, ONOSIp, cmdstr ):
         """
         Uses 'onos' command to send various ONOS CLI arguments.
         Required:
-            * ONOS_ip: specify the ip of the cell machine
+            * ONOSIp: specify the ip of the cell machine
             * cmdstr: specify the command string to send
 
         This function is intended to expose the entire karaf
@@ -656,7 +669,7 @@ class OnosDriver( CLI ):
         available commands.
         """
         try:
-            if not ONOS_ip:
+            if not ONOSIp:
                 main.log.error( "You must specify the IP address" )
                 return main.FALSE
             if not cmdstr:
@@ -667,26 +680,26 @@ class OnosDriver( CLI ):
             self.handle.sendline( "" )
             self.handle.expect( "\$" )
 
-            self.handle.sendline( "onos -w " + ONOS_ip + " " + cmdstr )
+            self.handle.sendline( "onos -w " + ONOSIp + " " + cmdstr )
             self.handle.expect( "\$" )
 
-            handle_before = self.handle.before
+            handleBefore = self.handle.before
             print "handle_before = ", self.handle.before
-            # handle_after = str( self.handle.after )
+            # handleAfter = str( self.handle.after )
 
             # self.handle.sendline( "" )
             # self.handle.expect( "\$" )
-            # handle_more = str( self.handle.before )
+            # handleMore = str( self.handle.before )
 
             main.log.info( "Command sent successfully" )
 
             # Obtain return handle that consists of result from
             # the onos command. The string may need to be
             # configured further.
-            # return_string = handle_before + handle_after
-            return_string = handle_before
-            print "return_string = ", return_string
-            return return_string
+            # returnString = handleBefore + handleAfter
+            returnString = handleBefore
+            print "return_string = ", returnString
+            return returnString
 
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
@@ -700,7 +713,7 @@ class OnosDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def onos_install( self, options="-f", node="" ):
+    def onosInstall( self, options="-f", node="" ):
         """
         Installs ONOS bits on the designated cell machine.
         If -f option is provided, it also forces an uninstall.
@@ -720,7 +733,7 @@ class OnosDriver( CLI ):
             # NOTE: this timeout may need to change depending on the network
             # and size of ONOS
             i = self.handle.expect( [ "Network\sis\sunreachable",
-                                    "onos\sstart/running,\sprocess",
+                                      "onos\sstart/running,\sprocess",
                                       "ONOS\sis\salready\sinstalled",
                                       pexpect.TIMEOUT ], timeout=60 )
 
@@ -755,7 +768,7 @@ class OnosDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def onos_start( self, node_ip ):
+    def onosStart( self, nodeIp ):
         """
         Calls onos command: 'onos-service [<node-ip>] start'
         This command is a remote management of the ONOS upstart daemon
@@ -763,7 +776,7 @@ class OnosDriver( CLI ):
         try:
             self.handle.sendline( "" )
             self.handle.expect( "\$" )
-            self.handle.sendline( "onos-service " + str( node_ip ) +
+            self.handle.sendline( "onos-service " + str( nodeIp ) +
                                   " start" )
             i = self.handle.expect( [
                 "Job\sis\salready\srunning",
@@ -793,7 +806,7 @@ class OnosDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def onos_stop( self, node_ip ):
+    def onosStop( self, nodeIp ):
         """
         Calls onos command: 'onos-service [<node-ip>] stop'
         This command is a remote management of the ONOS upstart daemon
@@ -801,7 +814,7 @@ class OnosDriver( CLI ):
         try:
             self.handle.sendline( "" )
             self.handle.expect( "\$" )
-            self.handle.sendline( "onos-service " + str( node_ip ) +
+            self.handle.sendline( "onos-service " + str( nodeIp ) +
                                   " stop" )
             i = self.handle.expect( [
                 "stop/waiting",
@@ -813,7 +826,7 @@ class OnosDriver( CLI ):
                 return main.TRUE
             elif i == 1:
                 main.log.info( "Unknown ONOS instance specified: " +
-                               str( node_ip ) )
+                               str( nodeIp ) )
                 return main.FALSE
             else:
                 main.log.error( "ONOS service failed to stop" )
@@ -831,7 +844,7 @@ class OnosDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def onos_uninstall( self, node_ip="" ):
+    def onosUninstall( self, nodeIp="" ):
         """
         Calls the command: 'onos-uninstall'
         Uninstalls ONOS from the designated cell machine, stopping
@@ -840,10 +853,10 @@ class OnosDriver( CLI ):
         try:
             self.handle.sendline( "" )
             self.handle.expect( "\$" )
-            self.handle.sendline( "onos-uninstall " + str( node_ip ) )
+            self.handle.sendline( "onos-uninstall " + str( nodeIp ) )
             self.handle.expect( "\$" )
 
-            main.log.info( "ONOS " + node_ip + " was uninstalled" )
+            main.log.info( "ONOS " + nodeIp + " was uninstalled" )
 
             # onos-uninstall command does not return any text
             return main.TRUE
@@ -860,7 +873,7 @@ class OnosDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def onos_die( self, node_ip ):
+    def onosDie( self, nodeIp ):
         """
         Issues the command 'onos-die <node-ip>'
         This command calls onos-kill and also stops the node
@@ -868,14 +881,14 @@ class OnosDriver( CLI ):
         try:
             self.handle.sendline( "" )
             self.handle.expect( "\$" )
-            cmd_str = "onos-kill " + str( node_ip )
-            self.handle.sendline( cmd_str )
+            cmdStr = "onos-kill " + str( nodeIp )
+            self.handle.sendline( cmdStr )
             i = self.handle.expect( [
                 "Killing\sONOS",
                 "ONOS\sprocess\sis\snot\srunning",
                 pexpect.TIMEOUT ], timeout=20 )
             if i == 0:
-                main.log.info( "ONOS instance " + str( node_ip ) +
+                main.log.info( "ONOS instance " + str( nodeIp ) +
                                " was killed and stopped" )
                 return main.TRUE
             elif i == 1:
@@ -893,7 +906,7 @@ class OnosDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def onos_kill( self, node_ip ):
+    def onosKill( self, nodeIp ):
         """
         Calls the command: 'onos-kill [<node-ip>]'
         "Remotely, and unceremoniously kills the ONOS instance running on
@@ -902,7 +915,7 @@ class OnosDriver( CLI ):
         try:
             self.handle.sendline( "" )
             self.handle.expect( "\$" )
-            self.handle.sendline( "onos-kill " + str( node_ip ) )
+            self.handle.sendline( "onos-kill " + str( nodeIp ) )
             i = self.handle.expect( [
                 "\$",
                 "No\sroute\sto\shost",
@@ -912,14 +925,16 @@ class OnosDriver( CLI ):
             if i == 0:
                 main.log.info(
                     "ONOS instance " + str(
-                        node_ip ) + " was killed" )
+                        nodeIp ) + " was killed" )
                 return main.TRUE
             elif i == 1:
                 main.log.info( "No route to host" )
                 return main.FALSE
             elif i == 2:
-                main.log.info( "Passwordless login for host: " + str( node_ip ) +
-                               " not configured" )
+                main.log.info(
+                    "Passwordless login for host: " +
+                    str( nodeIp ) +
+                    " not configured" )
                 return main.FALSE
             else:
                 main.log.info( "ONOS instasnce was not killed" )
@@ -937,7 +952,7 @@ class OnosDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def onos_remove_raft_logs( self ):
+    def onosRemoveRaftLogs( self ):
         """
         Removes Raft / Copy cat files from ONOS to ensure
         a cleaner environment.
@@ -974,7 +989,7 @@ class OnosDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def onos_start_network( self, mntopo ):
+    def onosStartNetwork( self, mntopo ):
         """
         Calls the command 'onos-start-network [ <mininet-topo> ]
         "remotely starts the specified topology on the cell's
@@ -1047,49 +1062,57 @@ class OnosDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def push_test_intents_shell( self, dpid_src, dpid_dst, num_intents,
-                                 dir_file, onos_ip, num_mult="", app_id="", report=True,
-                                 options="" ):
+    def pushTestIntentsShell(
+            self,
+            dpidSrc,
+            dpidDst,
+            numIntents,
+            dirFile,
+            onosIp,
+            numMult="",
+            appId="",
+            report=True,
+            options="" ):
         """
         Description:
             Use the linux prompt to push test intents to
             better parallelize the results than the CLI
         Required:
-            * dpid_src: specify source dpid
-            * dpid_dst: specify destination dpid
-            * num_intents: specify number of intents to push
-            * dir_file: specify directory and file name to save
+            * dpidSrc: specify source dpid
+            * dpidDst: specify destination dpid
+            * numIntents: specify number of intents to push
+            * dirFile: specify directory and file name to save
               results
-            * onos_ip: specify the IP of ONOS to install on
+            * onosIp: specify the IP of ONOS to install on
         NOTE:
             You must invoke this command at linux shell prompt
         """
         try:
             # Create the string to sendline
             if options:
-                base_cmd = "onos " + str( onos_ip ) + " push-test-intents " +\
+                baseCmd = "onos " + str( onosIp ) + " push-test-intents " +\
                     options + " "
             else:
-                base_cmd = "onos " + str( onos_ip ) + " push-test-intents "
+                baseCmd = "onos " + str( onosIp ) + " push-test-intents "
 
-            add_dpid = base_cmd + str( dpid_src ) + " " + str( dpid_dst )
-            if not num_mult:
-                add_intents = add_dpid + " " + str( num_intents )
-            elif num_mult:
-                add_intents = add_dpid + " " + str( num_intents ) + " " +\
-                    str( num_mult )
-                if app_id:
-                    add_app = add_intents + " " + str( app_id )
+            addDpid = baseCmd + str( dpidSrc ) + " " + str( dpidDst )
+            if not numMult:
+                addIntents = addDpid + " " + str( numIntents )
+            elif numMult:
+                addIntents = addDpid + " " + str( numIntents ) + " " +\
+                    str( numMult )
+                if appId:
+                    addApp = addIntents + " " + str( appId )
                 else:
-                    add_app = add_intents
+                    addApp = addIntents
 
             if report:
-                send_cmd = add_app + " > " + str( dir_file ) + " &"
+                sendCmd = addApp + " > " + str( dirFile ) + " &"
             else:
-                send_cmd = add_app + " &"
-            main.log.info( "Send cmd: " + send_cmd )
+                sendCmd = addApp + " &"
+            main.log.info( "Send cmd: " + sendCmd )
 
-            self.handle.sendline( send_cmd )
+            self.handle.sendline( sendCmd )
 
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
@@ -1103,7 +1126,7 @@ class OnosDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def get_topology( self, topology_output ):
+    def getTopology( self, topologyOutput ):
         """
         parses the onos:topology output
         Returns: a topology dict populated by the key values found in
@@ -1112,13 +1135,13 @@ class OnosDriver( CLI ):
         try:
             # call the cli to get the topology summary
             # cmdstr = "onos:topology"
-            # cli_result = self.onos_cli( ip, cmdstr )
-            # print "cli_result = ", cli_result
+            # cliResult = self.onosCli( ip, cmdstr )
+            # print "cli_result = ", cliResult
 
             # Parse the output
             topology = {}
-            # for line in cli_result.split( "\n" ):
-            for line in topology_output.splitlines():
+            # for line in cliResult.split( "\n" ):
+            for line in topologyOutput.splitlines():
                 if not line.startswith( "time=" ):
                     continue
                 # else
@@ -1151,12 +1174,12 @@ class OnosDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def check_status(
-        self,
-        topology_result,
-        numoswitch,
-        numolink,
-        log_level="info" ):
+    def checkStatus(
+            self,
+            topologyResult,
+            numoswitch,
+            numolink,
+            logLevel="info" ):
         """
         Checks the number of swithes & links that ONOS sees against the
         supplied values. By default this will report to main.log, but the
@@ -1165,42 +1188,46 @@ class OnosDriver( CLI ):
         Params: ip = ip used for the onos cli
                 numoswitch = expected number of switches
                 numlink = expected number of links
-                log_level = level to log to. Currently accepts 'info', 'warn' and 'report'
+                logLevel = level to log to.
+                Currently accepts 'info', 'warn' and 'report'
 
 
-        log_level can
+        logLevel can
 
         Returns: main.TRUE if the number of switchs and links are correct,
                  main.FALSE if the numer of switches and links is incorrect,
                  and main.ERROR otherwise
         """
         try:
-            topology = self.get_topology( topology_result )
+            topology = self.getTopology( topologyResult )
             if topology == {}:
                 return main.ERROR
             output = ""
             # Is the number of switches is what we expected
             devices = topology.get( 'devices', False )
             links = topology.get( 'links', False )
-            if devices == False or links == False:
+            if not devices or not links:
                 return main.ERROR
-            switch_check = ( int( devices ) == int( numoswitch ) )
+            switchCheck = ( int( devices ) == int( numoswitch ) )
             # Is the number of links is what we expected
-            link_check = ( int( links ) == int( numolink ) )
-            if ( switch_check and link_check ):
+            linkCheck = ( int( links ) == int( numolink ) )
+            if ( switchCheck and linkCheck ):
                 # We expected the correct numbers
                 output = output + "The number of links and switches match "\
                     + "what was expected"
                 result = main.TRUE
             else:
                 output = output + \
-                    "The number of links and switches does not match what was expected"
+                    "The number of links and switches does not match\
+                    what was expected"
                 result = main.FALSE
-            output = output + "\n ONOS sees %i devices (%i expected) and %i links (%i expected)"\
-                % ( int( devices ), int( numoswitch ), int( links ), int( numolink ) )
-            if log_level == "report":
+            output = output + "\n ONOS sees %i devices (%i expected)\
+                     and %i links (%i expected)" %\
+                     ( int( devices ), int( numoswitch ),
+                       int( links ), int( numolink ) )
+            if logLevel == "report":
                 main.log.report( output )
-            elif log_level == "warn":
+            elif logLevel == "warn":
                 main.log.warn( output )
             else:
                 main.log.info( output )
@@ -1217,7 +1244,7 @@ class OnosDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def tshark_pcap( self, interface, dir_file ):
+    def tsharkPcap( self, interface, dirFile ):
         """
         Capture all packet activity and store in specified
         directory/file
@@ -1230,7 +1257,7 @@ class OnosDriver( CLI ):
         self.handle.expect( "\$" )
 
         self.handle.sendline( "tshark -i " + str( interface ) +
-                              " -t e -w " + str( dir_file ) + " &" )
+                              " -t e -w " + str( dirFile ) + " &" )
         self.handle.sendline( "\r" )
         self.handle.expect( "Capturing on" )
         self.handle.sendline( "\r" )
@@ -1238,19 +1265,21 @@ class OnosDriver( CLI ):
 
         main.log.info( "Tshark started capturing files on " +
                        str( interface ) + " and saving to directory: " +
-                       str( dir_file ) )
+                       str( dirFile ) )
 
-    def run_onos_topo_cfg( self, instance_name, json_file ):
+    def runOnosTopoCfg( self, instanceName, jsonFile ):
         """
-         On ONOS bench, run this command: ./~/ONOS/tools/test/bin/onos-topo-cfg $OC1 filename
-            which starts the rest and copies the json file to the onos instance
+         On ONOS bench, run this command:
+         ./~/ONOS/tools/test/bin/onos-topo-cfg $OC1 filename
+         which starts the rest and copies
+         the json file to the onos instance
         """
         try:
             self.handle.sendline( "" )
             self.handle.expect( "\$" )
             self.handle.sendline( "cd ~/ONOS/tools/test/bin" )
             self.handle.expect( "/bin$" )
-            cmd = "./onos-topo-cfg " + instance_name + " " + json_file
+            cmd = "./onos-topo-cfg " + instanceName + " " + jsonFile
             print "cmd = ", cmd
             self.handle.sendline( cmd )
             self.handle.expect( "\$" )
@@ -1260,7 +1289,7 @@ class OnosDriver( CLI ):
         except:
             return main.FALSE
 
-    def tshark_grep( self, grep, directory, interface='eth0' ):
+    def tsharkGrep( self, grep, directory, interface='eth0' ):
         """
         Required:
             * grep string
@@ -1275,14 +1304,20 @@ class OnosDriver( CLI ):
         self.handle.sendline( "" )
         self.handle.expect( "\$" )
         self.handle.sendline( "" )
-        self.handle.sendline( "tshark -i " + str( interface ) +
-                              " -t e | grep --line-buffered \"" + str(grep) + "\" >" + directory + " &" )
+        self.handle.sendline(
+            "tshark -i " +
+            str( interface ) +
+            " -t e | grep --line-buffered \"" +
+            str(grep) +
+            "\" >" +
+            directory +
+            " &" )
         self.handle.sendline( "\r" )
         self.handle.expect( "Capturing on" )
         self.handle.sendline( "\r" )
         self.handle.expect( "\$" )
 
-    def tshark_stop( self ):
+    def tsharkStop( self ):
         """
         Removes wireshark files from /tmp and kills all tshark processes
         """
@@ -1334,8 +1369,8 @@ class OnosDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def cp_logs_to_dir( self, log_to_copy,
-                        dest_dir, copy_file_name="" ):
+    def cpLogsToDir( self, logToCopy,
+                       destDir, copyFileName="" ):
         """
         Copies logs to a desired directory.
         Current implementation of ONOS deletes its karaf
@@ -1345,17 +1380,17 @@ class OnosDriver( CLI ):
         Localtime will be attached to the filename
 
         Required:
-            * log_to_copy: specify directory and log name to
+            * logToCopy: specify directory and log name to
               copy.
               ex ) /opt/onos/log/karaf.log.1
-              For copying multiple files, leave copy_file_name
-              empty and only specify dest_dir -
+              For copying multiple files, leave copyFileName
+              empty and only specify destDir -
               ex ) /opt/onos/log/karaf*
-            * dest_dir: specify directory to copy to.
+            * destDir: specify directory to copy to.
               ex ) /tmp/
         Optional:
-            * copy_file_name: If you want to rename the log
-              file, specify copy_file_name. This will not work
+            * copyFileName: If you want to rename the log
+              file, specify copyFileName. This will not work
               with multiple file copying
         """
         try:
@@ -1363,18 +1398,22 @@ class OnosDriver( CLI ):
             localtime = localtime.replace( "/", "" )
             localtime = localtime.replace( " ", "_" )
             localtime = localtime.replace( ":", "" )
-            if dest_dir[ -1: ] != "/":
-                dest_dir += "/"
+            if destDir[ -1: ] != "/":
+                destDir += "/"
 
-            if copy_file_name:
-                self.handle.sendline( "cp " + str( log_to_copy ) +
-                                      " " + str( dest_dir ) + str( copy_file_name ) +
-                                      localtime )
+            if copyFileName:
+                self.handle.sendline(
+                    "cp " +
+                    str( logToCopy ) +
+                    " " +
+                    str( destDir ) +
+                    str( copyFileName ) +
+                    localtime )
                 self.handle.expect( "cp" )
                 self.handle.expect( "\$" )
             else:
-                self.handle.sendline( "cp " + str( log_to_copy ) +
-                                      " " + str( dest_dir ) )
+                self.handle.sendline( "cp " + str( logToCopy ) +
+                                      " " + str( destDir ) )
                 self.handle.expect( "cp" )
                 self.handle.expect( "\$" )
 
@@ -1390,13 +1429,13 @@ class OnosDriver( CLI ):
             main.log.error( traceback.print_exc() )
             main.log.info( self.name + " ::::::" )
 
-    def check_logs( self, onos_ip ):
+    def checkLogs( self, onosIp ):
         """
         runs onos-check-logs on the given onos node
         returns the response
         """
         try:
-            cmd = "onos-check-logs " + str( onos_ip )
+            cmd = "onos-check-logs " + str( onosIp )
             self.handle.sendline( cmd )
             self.handle.expect( cmd )
             self.handle.expect( "\$" )
@@ -1412,7 +1451,7 @@ class OnosDriver( CLI ):
             main.log.error( traceback.print_exc() )
             main.log.info( self.name + " ::::::" )
 
-    def onos_status( self, node="" ):
+    def onosStatus( self, node="" ):
         """
         Calls onos command: 'onos-service [<node-ip>] status'
         """

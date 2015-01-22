@@ -1136,13 +1136,13 @@ class ProdFunc:
         main.log.report( "__________________________________" )
         main.log.info( "Adding point intents" )
         main.case(
-            "Adding bidirectional point for mn hosts \
-            ( h8-h18, h9-h19, h10-h20, h11-h21, h12-h22,\
-                h13-h23, h14-h24, h15-h25, h16-h26, h17-h27 )" )
-        
-        var1 = "Add point intents for mn hosts h8 and h18 or \
-                ONOS hosts h8 and h12"
-        main.step(var1)
+            '''Adding bidirectional point for mn hosts
+            ( h8-h18, h9-h19, h10-h20, h11-h21, h12-h22,
+                h13-h23, h14-h24, h15-h25, h16-h26, h17-h27 )''' )
+
+        main.step( "Add point intents for mn hosts h8 and h18 or \
+                ONOS hosts h8 and h12" )
+        # main.step(var1)
         ptpIntentResult = main.ONOS2.addPointIntent(
             "of:0000000000003008/1",
             "of:0000000000006018/1" )

@@ -99,24 +99,7 @@ class IntentsLoad:
                 install3Result = main.ONOSbench.onosInstall( node=ONOS3Ip )
                 cli2 = main.ONOS2cli.startOnosCli( ONOS2Ip )
                 cli3 = main.ONOS3cli.startOnosCli( ONOS3Ip )
-            """
-            elif clusterCount == 5:
-                main.log.info( "Installing nodes 4 and 5" )
-                node4Result = main.ONOSbench.onosInstall( node=ONOS4Ip )
-                node5Result = main.ONOSbench.onosInstall( node=ONOS5Ip )
-                installResult = node4Result and node5Result
-                time.sleep( 5 )
-                main.ONOS4cli.startOnosCli( ONOS4Ip )
-                main.ONOS5cli.startOnosCli( ONOS5Ip )
-            elif clusterCount == 7:
-                main.log.info( "Installing nodes 4 and 5" )
-                node6Result = main.ONOSbench.onosInstall( node=ONOS6Ip )
-                node7Result = main.ONOSbench.onosInstall( node=ONOS7Ip )
-                installResult = node6Result and node7Result
-                time.sleep( 5 )
-                main.ONOS6cli.startOnosCli( ONOS6Ip )
-                main.ONOS7cli.startOnosCli( ONOS7Ip )
-            """
+              
         if scale == 1:
             if clusterCount == 2:
                 main.log.info( "Installing node 2" )
@@ -291,3 +274,104 @@ class IntentsLoad:
 
         msg = ( "Final rate on node 2: " + str( lastRate2 ) )
         main.log.report( msg )
+
+
+    
+    def CASE5( self, main ):  # 2 node scale
+        import time
+        import json
+        import string
+
+        intentsRate = main.params[ 'JSON' ][ 'intents_rate' ]
+
+        defaultSwPort = main.params[ 'CTRL' ][ 'port1' ]
+
+        main.Mininet1.assignSwController(
+            sw="1",
+            ip1=ONOS1Ip,
+            port1=defaultSwPort )
+        main.Mininet1.assignSwController(
+            sw="2",
+            ip1=ONOS2Ip,
+            port1=defaultSwPort )
+        main.Mininet1.assignSwController(
+            sw="3",
+            ip1=ONOS3Ip,
+            port1=defaultSwPort )
+        main.Mininet1.assignSwController(
+            sw="4",
+            ip1=ONOS1Ip,
+            port1=defaultSwPort )
+        main.Mininet1.assignSwController(
+            sw="5",
+            ip1=ONOS2Ip,
+            port1=defaultSwPort )
+        main.Mininet1.assignSwController(
+            sw="6",
+            ip1=ONOS3Ip,
+            port1=defaultSwPort )
+        main.Mininet1.assignSwController(
+            sw="7",
+            ip1=ONOS1Ip,
+            port1=defaultSwPort )
+
+        mnArp = main.params[ 'TEST' ][ 'arping' ]
+        main.Mininet1.handle.sendline( mnArp )
+
+        generateLoad = main.params[ 'TEST' ][ 'loadstart' ]
+
+        main.ONOS1.handle.sendline( generateLoad )
+        main.ONOS2.handle.sendline( generateLoad )
+        main.ONOS3.handle.sendline( generateLoad )        
+
+        devicesJsonStr1 = main.ONOS1cli.devices()
+        devicesJsonObj1 = json.loads( devicesJsonStr1 )
+        devicesJsonStr2 = main.ONOS2cli.devices()
+        devicesJsonObj2 = json.loads( devicesJsonStr2 )
+        devicesJsonStr3 = main.ONOS3cli.devices()
+        devicesJsonObj3 = json.loads( devicesJsonStr3 )
+
+        getMetric = main.params[ 'TEST' ][ 'metric1' ]
+        testDuration = main.params[ 'TEST' ][ 'duration' ]
+        stop = time.time() + float( testDuration )
+
+        main.log.info( "Starting test loop..." )
+        logInterval = main.params[ 'TEST' ][ 'log_interval' ]
+
+        while time.time() < stop:
+            time.sleep( float( logInterval ) )
+
+            intentsJsonStr1 = main.ONOS1cli.intentsEventsMetrics()
+            intentsJsonObj1 = json.loads( intentsJsonStr1 )
+            main.log.info( "Node 1 rate: " +
+                           str( intentsJsonObj1[ intentsRate ][ 'm1_rate' ] ) )
+            lastRate1 = intentsJsonObj1[ intentsRate ][ 'm1_rate' ]
+
+            intentsJsonStr2 = main.ONOS2cli.intentsEventsMetrics()
+            intentsJsonObj2 = json.loads( intentsJsonStr2 )
+            main.log.info( "Node 2 rate: " +
+                           str( intentsJsonObj2[ intentsRate ][ 'm1_rate' ] ) )
+            lastRate2 = intentsJsonObj2[ intentsRate ][ 'm1_rate' ]
+
+            intentsJsonStr3 = main.ONOS3cli.intentsEventsMetrics()
+            intentsJsonObj3 = json.loads( intentsJsonStr3 )
+            main.log.info( "Node 3 rate: " +
+                           str( intentsJsonObj3[ intentsRate ][ 'm1_rate' ] ) )
+            lastRate3 = intentsJsonObj3[ intentsRate ][ 'm1_rate' ]
+
+        stopLoad = main.params[ 'TEST' ][ 'loadstop' ]
+        main.ONOS1.handle.sendline( stopLoad )
+        main.ONOS2.handle.sendline( stopLoad )
+        main.ONOS3.handle.sendline( stopLoad )
+
+        msg = ( "Final rate on node 1: " + str( lastRate1 ) )
+        main.log.report( msg )
+
+        msg = ( "Final rate on node 2: " + str( lastRate2 ) )
+        main.log.report( msg )
+
+        msg = ( "Final rate on node 3: " + str( lastRate3 ) )
+        main.log.report( msg )
+
+
+    

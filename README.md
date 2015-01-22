@@ -3,7 +3,12 @@ TestON, a testing infastructure by Paxterra
 TestON is the testing platform that all the ONOS tests are being run on currently. 
 
 
-Setup 
+Code Style
+-------------
+At ON.Lab, we have adopted the [Mininet Pyhton style](https://github.com/mininet/mininet/wiki/Mininet-Python-Style) for our drivers and testcases. The one exception is that TestON does not correctly parse multiline comments in testcases when the ending triple double quotes are on the same line as the comment. Therefore, in the testcases, the ending triple double quotes must be on it's own line.
+
+
+Setup
 -------------
 
 0. Pull the git repo from https://github.com/OPENNETWORKINGLAB/ONLabTest.git 

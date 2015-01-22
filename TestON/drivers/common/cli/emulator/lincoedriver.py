@@ -129,7 +129,7 @@ class LincOEDriver( Emulator ):
             main.exit()
         except:
             main.log.info( self.name + " :::::::" )
-            main.log.error( traceback.printExc() )
+            main.log.error( traceback.print_exc() )
             main.log.info( self.name + " :::::::" )
             main.cleanup()
             main.exit()
@@ -155,7 +155,7 @@ class LincOEDriver( Emulator ):
             main.exit()
         except:
             main.log.info( self.name + " :::::::" )
-            main.log.error( traceback.printExc() )
+            main.log.error( traceback.print_exc() )
             main.log.info( self.name + " :::::::" )
             main.cleanup()
             main.exit()
@@ -177,7 +177,7 @@ class LincOEDriver( Emulator ):
             main.exit()
         except:
             main.log.info( self.name + " :::::::" )
-            main.log.error( traceback.printExc() )
+            main.log.error( traceback.print_exc() )
             main.log.info( self.name + " :::::::" )
             main.cleanup()
             main.exit()
@@ -199,7 +199,7 @@ class LincOEDriver( Emulator ):
             main.exit()
         except:
             main.log.info( self.name + " :::::::" )
-            main.log.error( traceback.printExc() )
+            main.log.error( traceback.print_exc() )
             main.log.info( self.name + " :::::::" )
             main.cleanup()
             main.exit()
@@ -222,7 +222,7 @@ class LincOEDriver( Emulator ):
             main.exit()
         except:
             main.log.info( self.name + " :::::::" )
-            main.log.error( traceback.printExc() )
+            main.log.error( traceback.print_exc() )
             main.log.info( self.name + " :::::::" )
             main.cleanup()
             main.exit()
@@ -244,7 +244,7 @@ class LincOEDriver( Emulator ):
             main.exit()
         except:
             main.log.info( self.name + " :::::::" )
-            main.log.error( traceback.printExc() )
+            main.log.error( traceback.print_exc() )
             main.log.info( self.name + " :::::::" )
             main.cleanup()
             main.exit()
@@ -267,7 +267,7 @@ class LincOEDriver( Emulator ):
             main.exit()
         except:
             main.log.info( self.name + " :::::::" )
-            main.log.error( traceback.printExc() )
+            main.log.error( traceback.print_exc() )
             main.log.info( self.name + " :::::::" )
             main.cleanup()
             main.exit()
@@ -290,7 +290,7 @@ class LincOEDriver( Emulator ):
             main.exit()
         except:
             main.log.info( self.name + " :::::::" )
-            main.log.error( traceback.printExc() )
+            main.log.error( traceback.print_exc() )
             main.log.info( self.name + " :::::::" )
             main.cleanup()
             main.exit()
@@ -337,7 +337,7 @@ class LincOEDriver( Emulator ):
             main.exit()
         except:
             main.log.info( self.name + " :::::::" )
-            main.log.error( traceback.printExc() )
+            main.log.error( traceback.print_exc() )
             main.log.info( self.name + " :::::::" )
             main.cleanup()
             main.exit()

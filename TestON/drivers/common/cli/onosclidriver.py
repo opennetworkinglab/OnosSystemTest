@@ -263,18 +263,24 @@ class OnosCliDriver( CLI ):
             self.handle.expect( "onos>" )
             self.handle.sendline( cmdStr )
             self.handle.expect( "onos>" )
+            main.log.info( "Command '" + str( cmdStr ) + "' sent to "
+                           + self.name + "." )
 
             handle = self.handle.before
+            print "handle before anything:",
             print repr( handle )
             # Remove control strings from output
             ansiEscape = re.compile( r'\x1b[^m]*m' )
             handle = ansiEscape.sub( '', handle )
+            handle = re.sub(  r"\s\r", "", handle )
+            handle = handle.strip()
+            print "handle after stripping:",
+            print repr(handle)
             # parse for just the output, remove the cmd from handle
             output = handle.split( cmdStr, 1 )[1]
+            print "output:",
             print repr( output )
 
-            main.log.info( "Command '" + str( cmdStr ) + "' sent to "
-                           + self.name + "." )
 
             return output
         except pexpect.EOF:

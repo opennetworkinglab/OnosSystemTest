@@ -72,8 +72,7 @@ class TopoPerfNext:
 
         main.step("Creating cell file")
         cell_file_result = main.ONOSbench.create_cell_file(
-                BENCH_ip, cell_name, MN1_ip, 
-                "onos-core,onos-app-metrics,onos-app-gui",
+                BENCH_ip, cell_name, MN1_ip, "onos-core,onos-app-metrics",
                 ONOS1_ip)
 
         main.step("Applying cell file to environment")
@@ -88,9 +87,8 @@ class TopoPerfNext:
 
         main.step("Git checkout and pull "+checkout_branch)
         if git_pull == 'on':
-            #checkout_result = \
-                    #        main.ONOSbench.git_checkout(checkout_branch)
-            checkout_result = main.TRUE
+            checkout_result = \
+                    main.ONOSbench.git_checkout(checkout_branch)
             pull_result = main.ONOSbench.git_pull()
         else:
             checkout_result = main.TRUE
@@ -318,146 +316,58 @@ class TopoPerfNext:
             json_str_7 = ""
 
             json_obj_1 = json.loads(json_str_1)
+            json_obj_2 = json.loads(json_str_2)
+            json_obj_3 = json.loads(json_str_3)
             #Initialize scale-out variables
-            json_obj_2 = ""
-            json_obj_3 = "" 
             json_obj_4 = ""
             json_obj_5 = ""
             json_obj_6 = ""
             json_obj_7 = ""
-            
+
+            #Include scale-out measurements when applicable
+            if cluster_count == 5:
+                json_str_4 = main.ONOS4cli.topology_events_metrics()
+                json_str_5 = main.ONOS5cli.topology_events_metrics()
+                
+                json_obj_4 = json.loads(json_str_4)
+                json_obj_5 = json.loads(json_str_5)
+            elif cluster_count == 6:
+                main.log.info("TODO: create even number cluster events")
+            elif cluster_count == 7:
+                json_str_6 = main.ONOS6cli.topology_events_metrics()
+                json_str_7 = main.ONOS7cli.topology_events_metrics()
+
+                json_obj_6 = json.loads(json_str_6)
+                json_obj_7 = json.loads(json_str_7)
+
             #Obtain graph timestamp. This timestsamp captures
             #the epoch time at which the topology graph was updated.
             graph_timestamp_1 = \
                     json_obj_1[graphTimestamp]['value']
+            graph_timestamp_2 = \
+                    json_obj_2[graphTimestamp]['value']
+            graph_timestamp_3 = \
+                    json_obj_3[graphTimestamp]['value']
+
             #Obtain device timestamp. This timestamp captures
             #the epoch time at which the device event happened
             device_timestamp_1 = \
                     json_obj_1[deviceTimestamp]['value'] 
-           
+            device_timestamp_2 = \
+                    json_obj_2[deviceTimestamp]['value'] 
+            device_timestamp_3 = \
+                    json_obj_3[deviceTimestamp]['value'] 
+
             #t0 to device processing latency 
             delta_device_1 = int(device_timestamp_1) - int(t0_tcp)
-            
-            #t0 to graph processing latency (end-to-end)
-            delta_graph_1 = int(graph_timestamp_1) - int(t0_tcp)
-            
-            #ofp to graph processing latency (ONOS processing)
-            delta_ofp_graph_1 = int(graph_timestamp_1) - int(t0_ofp)
-            
-            #ofp to device processing latency (ONOS processing)
-            delta_ofp_device_1 = float(device_timestamp_1) - float(t0_ofp)
-
-            #TODO: Create even cluster number events
-
-            #Include scale-out measurements when applicable
-            if cluster_count >= 3:
-                json_str_2 = main.ONOS2cli.topology_events_metrics()
-                json_str_3 = main.ONOS3cli.topology_events_metrics()
-                json_obj_2 = json.loads(json_str_2)
-                json_obj_3 = json.loads(json_str_3)
-                graph_timestamp_2 = \
-                    json_obj_2[graphTimestamp]['value']
-                graph_timestamp_3 = \
-                    json_obj_3[graphTimestamp]['value']
-                device_timestamp_2 = \
-                    json_obj_2[deviceTimestamp]['value'] 
-                device_timestamp_3 = \
-                    json_obj_3[deviceTimestamp]['value'] 
-                delta_device_2 = int(device_timestamp_2) - int(t0_tcp)
-                delta_device_3 = int(device_timestamp_3) - int(t0_tcp)
-                delta_graph_2 = int(graph_timestamp_2) - int(t0_tcp)
-                delta_graph_3 = int(graph_timestamp_3) - int(t0_tcp)
-                delta_ofp_graph_2 = int(graph_timestamp_2) - int(t0_ofp)
-                delta_ofp_graph_3 = int(graph_timestamp_3) - int(t0_ofp)
-                delta_ofp_device_2 = float(device_timestamp_2) -\
-                        float(t0_ofp)
-                delta_ofp_device_3 = float(device_timestamp_3) -\
-                        float(t0_ofp)
-            else:
-                delta_device_2 = 0
-                delta_device_3 = 0
-                delta_graph_2 = 0
-                delta_graph_3 = 0
-                delta_ofp_graph_2 = 0
-                delta_ofp_graph_3 = 0
-                delta_ofp_device_2 = 0
-                delta_ofp_device_3 = 0
-
-            if cluster_count >= 5:
-                json_str_4 = main.ONOS4cli.topology_events_metrics()
-                json_str_5 = main.ONOS5cli.topology_events_metrics()
-                json_obj_4 = json.loads(json_str_4)
-                json_obj_5 = json.loads(json_str_5)
-                graph_timestamp_4 = \
-                    json_obj_4[graphTimestamp]['value']
-                graph_timestamp_5 = \
-                    json_obj_5[graphTimestamp]['value']
-                device_timestamp_4 = \
-                    json_obj_4[deviceTimestamp]['value'] 
-                device_timestamp_5 = \
-                    json_obj_5[deviceTimestamp]['value'] 
-                delta_device_4 = int(device_timestamp_4) - int(t0_tcp)
-                delta_device_5 = int(device_timestamp_5) - int(t0_tcp)
-                delta_graph_4 = int(graph_timestamp_4) - int(t0_tcp)
-                delta_graph_5 = int(graph_timestamp_5) - int(t0_tcp)
-                delta_ofp_graph_4 = int(graph_timestamp_4) - int(t0_ofp)
-                delta_ofp_graph_5 = int(graph_timestamp_5) - int(t0_ofp)
-                delta_ofp_device_4 = float(device_timestamp_4) -\
-                        float(t0_ofp)
-                delta_ofp_device_5 = float(device_timestamp_5) -\
-                        float(t0_ofp)
-            else:
-                delta_device_4 = 0
-                delta_device_5 = 0
-                delta_graph_4 = 0
-                delta_graph_5 = 0
-                delta_ofp_graph_4 = 0
-                delta_ofp_graph_5 = 0
-                delta_ofp_device_4 = 0
-                delta_ofp_device_5 = 0
-
-            if cluster_count >= 7:
-                json_str_6 = main.ONOS6cli.topology_events_metrics()
-                json_str_7 = main.ONOS7cli.topology_events_metrics()
-                json_obj_6 = json.loads(json_str_6)
-                json_obj_7 = json.loads(json_str_7)
-                graph_timestamp_6 = \
-                    json_obj_6[graphTimestamp]['value']
-                graph_timestamp_7 = \
-                    json_obj_7[graphTimestamp]['value']
-                device_timestamp_6 = \
-                    json_obj_6[deviceTimestamp]['value'] 
-                device_timestamp_7 = \
-                    json_obj_7[deviceTimestamp]['value'] 
-                delta_device_6 = int(device_timestamp_6) - int(t0_tcp)
-                delta_device_7 = int(device_timestamp_7) - int(t0_tcp)
-                delta_graph_6 = int(graph_timestamp_6) - int(t0_tcp)
-                delta_graph_7 = int(graph_timestamp_7) - int(t0_tcp)
-                delta_ofp_graph_6 = int(graph_timestamp_6) - int(t0_ofp)
-                delta_ofp_graph_7 = int(graph_timestamp_7) - int(t0_ofp)
-                delta_ofp_device_6 = float(device_timestamp_6) -\
-                        float(t0_ofp)
-                delta_ofp_device_7 = float(device_timestamp_7) -\
-                        float(t0_ofp)
-            else:
-                delta_device_6 = 0
-                delta_device_7 = 0
-                delta_graph_6 = 0
-                delta_graph_7 = 0
-                delta_ofp_graph_6 = 0 
-                delta_ofp_graph_7 = 0
-                delta_ofp_device_6 = 0
-                delta_ofp_device_7 = 0
-
+            delta_device_2 = int(device_timestamp_2) - int(t0_tcp)
+            delta_device_3 = int(device_timestamp_3) - int(t0_tcp)
+        
             #Get average of delta from all instances
             avg_delta_device = \
                     (int(delta_device_1)+\
                      int(delta_device_2)+\
-                     int(delta_device_3)+\
-                     int(delta_device_4)+\
-                     int(delta_device_5)+\
-                     int(delta_device_6)+\
-                     int(delta_device_7)) / cluster_count 
+                     int(delta_device_3)) / 3
 
             #Ensure avg delta meets the threshold before appending
             if avg_delta_device > 0.0 and avg_delta_device < 10000\
@@ -467,17 +377,18 @@ class TopoPerfNext:
                 main.log.info("Results for t0-to-device ignored"+\
                         "due to excess in threshold / warmup iteration.")
 
+            #t0 to graph processing latency (end-to-end)
+            delta_graph_1 = int(graph_timestamp_1) - int(t0_tcp)
+            delta_graph_2 = int(graph_timestamp_2) - int(t0_tcp)
+            delta_graph_3 = int(graph_timestamp_3) - int(t0_tcp)
+        
             #Get average of delta from all instances
             #TODO: use max delta graph
             #max_delta_graph = max(three)
             avg_delta_graph = \
                     (int(delta_graph_1)+\
                      int(delta_graph_2)+\
-                     int(delta_graph_3)+\
-                     int(delta_graph_4)+\
-                     int(delta_graph_5)+\
-                     int(delta_graph_6)+\
-                     int(delta_graph_7)) / cluster_count
+                     int(delta_graph_3)) / 3
 
             #Ensure avg delta meets the threshold before appending
             if avg_delta_graph > 0.0 and avg_delta_graph < 10000\
@@ -487,15 +398,15 @@ class TopoPerfNext:
                 main.log.info("Results for end-to-end ignored"+\
                         "due to excess in threshold")
 
+            #ofp to graph processing latency (ONOS processing)
+            delta_ofp_graph_1 = int(graph_timestamp_1) - int(t0_ofp)
+            delta_ofp_graph_2 = int(graph_timestamp_2) - int(t0_ofp)
+            delta_ofp_graph_3 = int(graph_timestamp_3) - int(t0_ofp)
             
             avg_delta_ofp_graph = \
                     (int(delta_ofp_graph_1)+\
                      int(delta_ofp_graph_2)+\
-                     int(delta_ofp_graph_3)+\
-                     int(delta_ofp_graph_4)+\
-                     int(delta_ofp_graph_5)+\
-                     int(delta_ofp_graph_6)+\
-                     int(delta_ofp_graph_7)) / cluster_count 
+                     int(delta_ofp_graph_3)) / 3
             
             if avg_delta_ofp_graph > threshold_min \
                     and avg_delta_ofp_graph < threshold_max\
@@ -516,15 +427,15 @@ class TopoPerfNext:
                 main.log.info("Results for ofp-to-graph "+\
                         "ignored due to excess in threshold")
 
+            #ofp to device processing latency (ONOS processing)
+            delta_ofp_device_1 = float(device_timestamp_1) - float(t0_ofp)
+            delta_ofp_device_2 = float(device_timestamp_2) - float(t0_ofp)
+            delta_ofp_device_3 = float(device_timestamp_3) - float(t0_ofp)
             
             avg_delta_ofp_device = \
                     (float(delta_ofp_device_1)+\
                      float(delta_ofp_device_2)+\
-                     float(delta_ofp_device_3)+\
-                     float(delta_ofp_device_4)+\
-                     float(delta_ofp_device_5)+\
-                     float(delta_ofp_device_6)+\
-                     float(delta_ofp_device_7)) / cluster_count 
+                     float(delta_ofp_device_3)) / 3
             
             #NOTE: ofp - delta measurements are occasionally negative
             #      due to system time misalignment.
@@ -544,15 +455,33 @@ class TopoPerfNext:
 
             main.log.info("ONOS1 delta end-to-end: "+
                     str(delta_graph_1) + " ms")
+            main.log.info("ONOS2 delta end-to-end: "+
+                    str(delta_graph_2) + " ms")
+            main.log.info("ONOS3 delta end-to-end: "+
+                    str(delta_graph_3) + " ms")
 
             main.log.info("ONOS1 delta OFP - graph: "+
                     str(delta_ofp_graph_1) + " ms")
+            main.log.info("ONOS2 delta OFP - graph: "+
+                    str(delta_ofp_graph_2) + " ms")
+            main.log.info("ONOS3 delta OFP - graph: "+
+                    str(delta_ofp_graph_3) + " ms")
             
             main.log.info("ONOS1 delta device - t0: "+
                     str(delta_device_1) + " ms")
+            main.log.info("ONOS2 delta device - t0: "+
+                    str(delta_device_2) + " ms")
+            main.log.info("ONOS3 delta device - t0: "+
+                    str(delta_device_3) + " ms")
          
             main.log.info("TCP to OFP delta: "+
                     str(delta_ofp_tcp) + " ms")
+            #main.log.info("ONOS1 delta OFP - device: "+
+            #        str(delta_ofp_device_1) + " ms")
+            #main.log.info("ONOS2 delta OFP - device: "+
+            #        str(delta_ofp_device_2) + " ms")
+            #main.log.info("ONOS3 delta OFP - device: "+
+            #        str(delta_ofp_device_3) + " ms")
 
             main.step("Remove switch from controller")
             main.Mininet1.delete_sw_controller("s1")
@@ -639,8 +568,6 @@ class TopoPerfNext:
         latency_tcp_to_ofp_std_dev = \
                 str(round(numpy.std(latency_tcp_to_ofp_list),1))
 
-        main.log.report("Cluster size: "+str(cluster_count)+\
-                " node(s)")
         main.log.report("Switch add - End-to-end latency: "+\
                 "Avg: "+str(latency_end_to_end_avg)+" ms "+
                 "Std Deviation: "+latency_end_to_end_std_dev+" ms")
@@ -676,7 +603,6 @@ class TopoPerfNext:
         import requests
         import json
         import numpy
-        global cluster_count
 
         ONOS1_ip = main.params['CTRL']['ip1']
         ONOS2_ip = main.params['CTRL']['ip2']
@@ -762,6 +688,15 @@ class TopoPerfNext:
             time.sleep(3)
             main.ONOS1.tshark_stop()
             
+            main.step("Obtain t1 by metrics call")
+            json_str_up_1 = main.ONOS1cli.topology_events_metrics()
+            json_str_up_2 = main.ONOS2cli.topology_events_metrics()
+            json_str_up_3 = main.ONOS3cli.topology_events_metrics()
+
+            json_obj_1 = json.loads(json_str_up_1)
+            json_obj_2 = json.loads(json_str_up_2)
+            json_obj_3 = json.loads(json_str_up_3)
+            
             #Copy tshark output file from ONOS to TestON instance
             #/tmp directory
             os.system("scp "+ONOS_user+"@"+ONOS1_ip+":"+
@@ -772,146 +707,66 @@ class TopoPerfNext:
             f_line = f_port_down.readline()
             obj_down = f_line.split(" ")
             if len(f_line) > 0:
-                #NOTE: obj_down[1] is a very unreliable
-                #      way to determine the timestamp. If 
-                #      results seem way off, check the object 
-                #      itself by printing it out
                 timestamp_begin_pt_down = int(float(obj_down[1])*1000)
-                # For some reason, wireshark decides to record the 
-                # timestamp at the 3rd object position instead of
-                # 2nd at unpredictable times. This statement is 
-                # used to capture that odd behavior and use the
-                # correct epoch time
-                if timestamp_begin_pt_down < 1400000000000:
-                    timestamp_begin_pt_down = \
-                        int(float(obj_down[2])*1000)
-
                 main.log.info("Port down begin timestamp: "+
                         str(timestamp_begin_pt_down))
             else:
                 main.log.info("Tshark output file returned unexpected"+
                         " results: "+str(obj_down))
                 timestamp_begin_pt_down = 0
-            f_port_down.close()
             
-            main.step("Obtain t1 by metrics call")
-            json_str_up_1 = main.ONOS1cli.topology_events_metrics()
-            json_obj_1 = json.loads(json_str_up_1)
+            f_port_down.close()
+
+            main.log.info("TEST tshark obj: "+str(obj_down))
+
+            time.sleep(3)
+
             #Obtain graph timestamp. This timestsamp captures
             #the epoch time at which the topology graph was updated.
             graph_timestamp_1 = \
                     json_obj_1[graphTimestamp]['value']
+            graph_timestamp_2 = \
+                    json_obj_2[graphTimestamp]['value']
+            graph_timestamp_3 = \
+                    json_obj_3[graphTimestamp]['value']
+
+            main.log.info("TEST graph timestamp ONOS1: "+
+                    str(graph_timestamp_1))
+
             #Obtain device timestamp. This timestamp captures
             #the epoch time at which the device event happened
             device_timestamp_1 = \
                     json_obj_1[deviceTimestamp]['value'] 
+            device_timestamp_2 = \
+                    json_obj_2[deviceTimestamp]['value'] 
+            device_timestamp_3 = \
+                    json_obj_3[deviceTimestamp]['value'] 
+
             #Get delta between graph event and OFP 
             pt_down_graph_to_ofp_1 = int(graph_timestamp_1) -\
                     int(timestamp_begin_pt_down)
+            pt_down_graph_to_ofp_2 = int(graph_timestamp_2) -\
+                    int(timestamp_begin_pt_down)
+            pt_down_graph_to_ofp_3 = int(graph_timestamp_3) -\
+                    int(timestamp_begin_pt_down)
+
             #Get delta between device event and OFP
             pt_down_device_to_ofp_1 = int(device_timestamp_1) -\
                     int(timestamp_begin_pt_down)
-            
-            if cluster_count >= 3:
-                json_str_up_2 = main.ONOS2cli.topology_events_metrics()
-                json_str_up_3 = main.ONOS3cli.topology_events_metrics()
-                json_obj_2 = json.loads(json_str_up_2)
-                json_obj_3 = json.loads(json_str_up_3)
-                graph_timestamp_2 = \
-                    json_obj_2[graphTimestamp]['value']
-                graph_timestamp_3 = \
-                    json_obj_3[graphTimestamp]['value']
-                device_timestamp_2 = \
-                    json_obj_2[deviceTimestamp]['value'] 
-                device_timestamp_3 = \
-                    json_obj_3[deviceTimestamp]['value'] 
-                pt_down_graph_to_ofp_2 = int(graph_timestamp_2) -\
+            pt_down_device_to_ofp_2 = int(device_timestamp_2) -\
                     int(timestamp_begin_pt_down)
-                pt_down_graph_to_ofp_3 = int(graph_timestamp_3) -\
+            pt_down_device_to_ofp_3 = int(device_timestamp_3) -\
                     int(timestamp_begin_pt_down)
-                pt_down_device_to_ofp_2 = int(device_timestamp_2) -\
-                    int(timestamp_begin_pt_down)
-                pt_down_device_to_ofp_3 = int(device_timestamp_3) -\
-                    int(timestamp_begin_pt_down)
-            else:
-                pt_down_graph_to_ofp_2 = 0
-                pt_down_graph_to_ofp_3 = 0
-                pt_down_device_to_ofp_2 = 0
-                pt_down_device_to_ofp_3 = 0
-
-            if cluster_count >= 5:
-                json_str_up_4 = main.ONOS4cli.topology_events_metrics()
-                json_str_up_5 = main.ONOS5cli.topology_events_metrics()
-                json_obj_4 = json.loads(json_str_up_4)
-                json_obj_5 = json.loads(json_str_up_5)
-                graph_timestamp_4 = \
-                    json_obj_4[graphTimestamp]['value']
-                graph_timestamp_5 = \
-                    json_obj_5[graphTimestamp]['value']
-                device_timestamp_4 = \
-                    json_obj_4[deviceTimestamp]['value'] 
-                device_timestamp_5 = \
-                    json_obj_5[deviceTimestamp]['value'] 
-                pt_down_graph_to_ofp_4 = int(graph_timestamp_4) -\
-                    int(timestamp_begin_pt_down)
-                pt_down_graph_to_ofp_5 = int(graph_timestamp_5) -\
-                    int(timestamp_begin_pt_down)
-                pt_down_device_to_ofp_4 = int(device_timestamp_4) -\
-                    int(timestamp_begin_pt_down)
-                pt_down_device_to_ofp_5 = int(device_timestamp_5) -\
-                    int(timestamp_begin_pt_down)
-            else:
-                pt_down_graph_to_ofp_4 = 0
-                pt_down_graph_to_ofp_5 = 0
-                pt_down_device_to_ofp_4 = 0
-                pt_down_device_to_ofp_5 = 0
-
-            if cluster_count >= 7:
-                json_str_up_6 = main.ONOS6cli.topology_events_metrics()
-                json_str_up_7 = main.ONOS7cli.topology_events_metrics()
-                json_obj_6 = json.loads(json_str_up_6)
-                json_obj_7 = json.loads(json_str_up_7)
-                graph_timestamp_6 = \
-                    json_obj_6[graphTimestamp]['value']
-                graph_timestamp_7 = \
-                    json_obj_7[graphTimestamp]['value']
-                device_timestamp_6 = \
-                    json_obj_6[deviceTimestamp]['value'] 
-                device_timestamp_7 = \
-                    json_obj_7[deviceTimestamp]['value'] 
-                pt_down_graph_to_ofp_6 = int(graph_timestamp_6) -\
-                    int(timestamp_begin_pt_down)
-                pt_down_graph_to_ofp_7 = int(graph_timestamp_7) -\
-                    int(timestamp_begin_pt_down)
-                pt_down_device_to_ofp_6 = int(device_timestamp_6) -\
-                    int(timestamp_begin_pt_down)
-                pt_down_device_to_ofp_7 = int(device_timestamp_7) -\
-                    int(timestamp_begin_pt_down)
-            else:
-                pt_down_graph_to_ofp_6 = 0
-                pt_down_graph_to_ofp_7 = 0
-                pt_down_device_to_ofp_6 = 0
-                pt_down_device_to_ofp_7 = 0
-
-            time.sleep(3)
-
+       
             #Caluclate average across clusters
             pt_down_graph_to_ofp_avg =\
                     (int(pt_down_graph_to_ofp_1) +
                      int(pt_down_graph_to_ofp_2) + 
-                     int(pt_down_graph_to_ofp_3) +
-                     int(pt_down_graph_to_ofp_4) +
-                     int(pt_down_graph_to_ofp_5) +
-                     int(pt_down_graph_to_ofp_6) +
-                     int(pt_down_graph_to_ofp_7)) / cluster_count 
+                     int(pt_down_graph_to_ofp_3)) / 3
             pt_down_device_to_ofp_avg = \
                     (int(pt_down_device_to_ofp_1) + 
                      int(pt_down_device_to_ofp_2) +
-                     int(pt_down_device_to_ofp_3) +
-                     int(pt_down_device_to_ofp_4) +
-                     int(pt_down_device_to_ofp_5) +
-                     int(pt_down_device_to_ofp_6) +
-                     int(pt_down_device_to_ofp_7)) / cluster_count 
+                     int(pt_down_device_to_ofp_3)) / 3
 
             if pt_down_graph_to_ofp_avg > down_threshold_min and \
                     pt_down_graph_to_ofp_avg < down_threshold_max:
@@ -946,145 +801,87 @@ class TopoPerfNext:
             main.Mininet1.handle.expect("mininet>")
             
             #Allow time for tshark to capture event
-            time.sleep(5)
-            main.ONOS1.tshark_stop()
-            
             time.sleep(3)
-            os.system("scp "+ONOS_user+"@"+ONOS1_ip+":"+
-                    tshark_port_up+" /tmp/")
-            f_port_up = open(tshark_port_up, 'r')
-            f_line = f_port_up.readline()
-            obj_up = f_line.split(" ")
-            if len(f_line) > 0:
-                timestamp_begin_pt_up = int(float(obj_up[1])*1000)
-                if timestamp_begin_pt_up < 1400000000000:
-                    timestamp_begin_pt_up = \
-                        int(float(obj_up[2])*1000)
-                main.log.info("Port up begin timestamp: "+
-                        str(timestamp_begin_pt_up))
-            else:
-                main.log.info("Tshark output file returned unexpected"+
-                        " results.")
-                timestamp_begin_pt_up = 0
-            f_port_up.close()
+            main.ONOS1.tshark_stop()
 
             #Obtain metrics shortly afterwards
             #This timestsamp captures
             #the epoch time at which the topology graph was updated.
             main.step("Obtain t1 by REST call")
             json_str_up_1 = main.ONOS1cli.topology_events_metrics()
+            json_str_up_2 = main.ONOS2cli.topology_events_metrics()
+            json_str_up_3 = main.ONOS3cli.topology_events_metrics()
+            
             json_obj_1 = json.loads(json_str_up_1)
+            json_obj_2 = json.loads(json_str_up_2)
+            json_obj_3 = json.loads(json_str_up_3)
+
+            os.system("scp "+ONOS_user+"@"+ONOS1_ip+":"+
+                    tshark_port_up+" /tmp/")
+
+            f_port_up = open(tshark_port_up, 'r')
+            f_line = f_port_up.readline()
+            obj_up = f_line.split(" ")
+            if len(f_line) > 0:
+                timestamp_begin_pt_up = int(float(obj_up[1])*1000)
+                main.log.info("Port up begin timestamp: "+
+                        str(timestamp_begin_pt_up))
+            else:
+                main.log.info("Tshark output file returned unexpected"+
+                        " results.")
+                timestamp_begin_pt_up = 0
+            
+            f_port_up.close()
+
             graph_timestamp_1 = \
                     json_obj_1[graphTimestamp]['value']
+            graph_timestamp_2 = \
+                    json_obj_2[graphTimestamp]['value']
+            graph_timestamp_3 = \
+                    json_obj_3[graphTimestamp]['value']
+
             #Obtain device timestamp. This timestamp captures
             #the epoch time at which the device event happened
             device_timestamp_1 = \
                     json_obj_1[deviceTimestamp]['value'] 
+            device_timestamp_2 = \
+                    json_obj_2[deviceTimestamp]['value'] 
+            device_timestamp_3 = \
+                    json_obj_3[deviceTimestamp]['value'] 
+
             #Get delta between graph event and OFP 
             pt_up_graph_to_ofp_1 = int(graph_timestamp_1) -\
                     int(timestamp_begin_pt_up)
+            pt_up_graph_to_ofp_2 = int(graph_timestamp_2) -\
+                    int(timestamp_begin_pt_up)
+            pt_up_graph_to_ofp_3 = int(graph_timestamp_3) -\
+                    int(timestamp_begin_pt_up)
+
             #Get delta between device event and OFP
             pt_up_device_to_ofp_1 = int(device_timestamp_1) -\
                     int(timestamp_begin_pt_up)
-            
-            if cluster_count >= 3:
-                json_str_up_2 = main.ONOS2cli.topology_events_metrics()
-                json_str_up_3 = main.ONOS3cli.topology_events_metrics()
-                json_obj_2 = json.loads(json_str_up_2)
-                json_obj_3 = json.loads(json_str_up_3)
-                graph_timestamp_2 = \
-                    json_obj_2[graphTimestamp]['value']
-                graph_timestamp_3 = \
-                    json_obj_3[graphTimestamp]['value']
-                device_timestamp_2 = \
-                    json_obj_2[deviceTimestamp]['value'] 
-                device_timestamp_3 = \
-                    json_obj_3[deviceTimestamp]['value'] 
-                pt_up_graph_to_ofp_2 = int(graph_timestamp_2) -\
+            pt_up_device_to_ofp_2 = int(device_timestamp_2) -\
                     int(timestamp_begin_pt_up)
-                pt_up_graph_to_ofp_3 = int(graph_timestamp_3) -\
+            pt_up_device_to_ofp_3 = int(device_timestamp_3) -\
                     int(timestamp_begin_pt_up)
-                pt_up_device_to_ofp_2 = int(device_timestamp_2) -\
-                    int(timestamp_begin_pt_up)
-                pt_up_device_to_ofp_3 = int(device_timestamp_3) -\
-                    int(timestamp_begin_pt_up)
-            else:
-                pt_up_graph_to_ofp_2 = 0
-                pt_up_graph_to_ofp_3 = 0
-                pt_up_device_to_ofp_2 = 0
-                pt_up_device_to_ofp_3 = 0
-            
-            if cluster_count >= 5:
-                json_str_up_4 = main.ONOS4cli.topology_events_metrics()
-                json_str_up_5 = main.ONOS5cli.topology_events_metrics()
-                json_obj_4 = json.loads(json_str_up_4)
-                json_obj_5 = json.loads(json_str_up_5)
-                graph_timestamp_4 = \
-                    json_obj_4[graphTimestamp]['value']
-                graph_timestamp_5 = \
-                    json_obj_5[graphTimestamp]['value']
-                device_timestamp_4 = \
-                    json_obj_4[deviceTimestamp]['value'] 
-                device_timestamp_5 = \
-                    json_obj_5[deviceTimestamp]['value'] 
-                pt_up_graph_to_ofp_4 = int(graph_timestamp_4) -\
-                    int(timestamp_begin_pt_up)
-                pt_up_graph_to_ofp_5 = int(graph_timestamp_5) -\
-                    int(timestamp_begin_pt_up)
-                pt_up_device_to_ofp_4 = int(device_timestamp_4) -\
-                    int(timestamp_begin_pt_up)
-                pt_up_device_to_ofp_5 = int(device_timestamp_5) -\
-                    int(timestamp_begin_pt_up)
-            else:
-                pt_up_graph_to_ofp_4 = 0
-                pt_up_graph_to_ofp_5 = 0
-                pt_up_device_to_ofp_4 = 0
-                pt_up_device_to_ofp_5 = 0
 
-            if cluster_count >= 7:
-                json_str_up_6 = main.ONOS6cli.topology_events_metrics()
-                json_str_up_7 = main.ONOS7cli.topology_events_metrics()
-                json_obj_6 = json.loads(json_str_up_6)
-                json_obj_7 = json.loads(json_str_up_7)
-                graph_timestamp_6 = \
-                    json_obj_6[graphTimestamp]['value']
-                graph_timestamp_7 = \
-                    json_obj_7[graphTimestamp]['value']
-                device_timestamp_6 = \
-                    json_obj_6[deviceTimestamp]['value'] 
-                device_timestamp_7 = \
-                    json_obj_7[deviceTimestamp]['value'] 
-                pt_up_graph_to_ofp_6 = int(graph_timestamp_6) -\
-                    int(timestamp_begin_pt_up)
-                pt_up_graph_to_ofp_7 = int(graph_timestamp_7) -\
-                    int(timestamp_begin_pt_up)
-                pt_up_device_to_ofp_6 = int(device_timestamp_6) -\
-                    int(timestamp_begin_pt_up)
-                pt_up_device_to_ofp_7 = int(device_timestamp_7) -\
-                    int(timestamp_begin_pt_up)
-            else:
-                pt_up_graph_to_ofp_6 = 0
-                pt_up_graph_to_ofp_7 = 0
-                pt_up_device_to_ofp_6 = 0
-                pt_up_device_to_ofp_7 = 0
+            main.log.info("ONOS1 delta G2O: "+str(pt_up_graph_to_ofp_1))
+            main.log.info("ONOS2 delta G2O: "+str(pt_up_graph_to_ofp_2))
+            main.log.info("ONOS3 delta G2O: "+str(pt_up_graph_to_ofp_3))
+
+            main.log.info("ONOS1 delta D2O: "+str(pt_up_device_to_ofp_1))
+            main.log.info("ONOS2 delta D2O: "+str(pt_up_device_to_ofp_2)) 
+            main.log.info("ONOS3 delta D2O: "+str(pt_up_device_to_ofp_3)) 
 
             pt_up_graph_to_ofp_avg = \
                     (int(pt_up_graph_to_ofp_1) + 
                      int(pt_up_graph_to_ofp_2) +
-                     int(pt_up_graph_to_ofp_3) +
-                     int(pt_up_graph_to_ofp_4) +
-                     int(pt_up_graph_to_ofp_5) +
-                     int(pt_up_graph_to_ofp_6) +
-                     int(pt_up_graph_to_ofp_7)) / cluster_count 
+                     int(pt_up_graph_to_ofp_3)) / 3
 
             pt_up_device_to_ofp_avg = \
                     (int(pt_up_device_to_ofp_1) + 
                      int(pt_up_device_to_ofp_2) +
-                     int(pt_up_device_to_ofp_3) +
-                     int(pt_up_device_to_ofp_4) +
-                     int(pt_up_device_to_ofp_5) +
-                     int(pt_up_device_to_ofp_6) +
-                     int(pt_up_device_to_ofp_7)) / cluster_count 
+                     int(pt_up_device_to_ofp_3)) / 3
 
             if pt_up_graph_to_ofp_avg > up_threshold_min and \
                     pt_up_graph_to_ofp_avg < up_threshold_max: 
@@ -1114,9 +911,7 @@ class TopoPerfNext:
         if (port_down_graph_to_ofp_list and port_down_device_to_ofp_list\
            and port_up_graph_to_ofp_list and port_up_device_to_ofp_list):
             assertion = main.TRUE
-        
-        main.log.report("Cluster size: "+str(cluster_count)+\
-                " node(s)")
+
         #Calculate and report latency measurements
         port_down_graph_to_ofp_min = min(port_down_graph_to_ofp_list)
         port_down_graph_to_ofp_max = max(port_down_graph_to_ofp_list)
@@ -1166,10 +961,6 @@ class TopoPerfNext:
                 "Avg: "+str(port_up_device_to_ofp_avg)+" ms "+
                 "Std Deviation: "+port_up_device_to_ofp_std_dev+" ms")
 
-        #Remove switches from controller for next test
-        main.Mininet1.delete_sw_controller("s1")
-        main.Mininet1.delete_sw_controller("s2")
-        
         utilities.assert_equals(expect=main.TRUE, actual=assertion,
                 onpass="Port discovery latency calculation successful",
                 onfail="Port discovery test failed")
@@ -1888,20 +1679,7 @@ class TopoPerfNext:
                 str(cluster_count))
 
         install_result = main.FALSE
-        if cluster_count == 3:
-            main.log.info("Installing nodes 2 and 3")
-            node2_result = \
-                main.ONOSbench.onos_install(node=ONOS2_ip)
-            node3_result = \
-                main.ONOSbench.onos_install(node=ONOS3_ip)
-            install_result = node2_result and node3_result
-            
-            time.sleep(5)
-
-            main.ONOS2cli.start_onos_cli(ONOS2_ip)
-            main.ONOS3cli.start_onos_cli(ONOS3_ip)
-
-        elif cluster_count == 5:
+        if cluster_count == 5:
             main.log.info("Installing nodes 4 and 5")
             node4_result = \
                 main.ONOSbench.onos_install(node=ONOS4_ip)
@@ -1926,6 +1704,7 @@ class TopoPerfNext:
 
             main.ONOS6cli.start_onos_cli(ONOS6_ip)
             main.ONOS7cli.start_onos_cli(ONOS7_ip)
+
 
 
 

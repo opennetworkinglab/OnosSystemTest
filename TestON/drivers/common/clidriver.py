@@ -64,8 +64,7 @@ class CLI( Component ):
                 self.user_name +
                 '@' +
                 self.ip_address,
-                env={
-                    "TERM": "vt100" },
+                env={ "TERM": "xterm-mono" },
                 maxread=50000 )
         else:
             self.handle = pexpect.spawn(
@@ -73,6 +72,7 @@ class CLI( Component ):
                 self.user_name +
                 '@' +
                 self.ip_address,
+                env={ "TERM": "xterm-mono" },
                 maxread=1000000,
                 timeout=60 )
 

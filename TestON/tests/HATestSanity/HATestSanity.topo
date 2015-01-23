@@ -162,10 +162,6 @@
             <type>RemoteMininetDriver</type>
             <connect_order>17</connect_order>
             <COMPONENTS>
-                # Specify the Option for mininet
-                <arg1> --custom ~/mininet/custom/topo-HA.py </arg1>
-                <arg2> --topo mytopo --arp</arg2>
-                <controller> remote </controller>
              </COMPONENTS>
         </Mininet2>
 

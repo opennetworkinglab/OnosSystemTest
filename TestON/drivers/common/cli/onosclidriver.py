@@ -261,7 +261,6 @@ class OnosCliDriver( CLI ):
                                   + cmdStr + "'\"" )
             self.handle.expect( "onos>" )
             self.handle.sendline( cmdStr )
-            self.handle.expect( cmdStr )
             self.handle.expect( "onos>" )
 
             handle = self.handle.before

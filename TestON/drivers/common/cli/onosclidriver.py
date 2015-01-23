@@ -183,6 +183,7 @@ class OnosCliDriver( CLI ):
         and passed to startOnosCli from PARAMS file as str.
         """
         try:
+            self.handle.setecho(False)
             self.handle.sendline( "" )
             x = self.handle.expect( [
                 "\$", "onos>" ], timeout=10 )
@@ -261,20 +262,21 @@ class OnosCliDriver( CLI ):
                                   + cmdStr + "'\"" )
             self.handle.expect( "onos>" )
             self.handle.sendline( cmdStr )
-            self.handle.expect( cmdStr )
             self.handle.expect( "onos>" )
 
             handle = self.handle.before
-
-            self.handle.sendline( "" )
-            self.handle.expect( "onos>" )
+            print repr( handle )
+            # Remove control strings from output
+            ansiEscape = re.compile( r'\x1b[^m]*m' )
+            handle = ansiEscape.sub( '', handle )
+            # parse for just the output, remove the cmd from handle
+            output = handle.split( cmdStr, 1 )[1]
+            print repr( output )
 
             main.log.info( "Command '" + str( cmdStr ) + "' sent to "
                            + self.name + "." )
-            ansiEscape = re.compile( r'\x1b[^m]*m' )
-            handle = ansiEscape.sub( '', handle )
 
-            return handle
+            return output
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )

@@ -183,7 +183,6 @@ class OnosCliDriver( CLI ):
         and passed to startOnosCli from PARAMS file as str.
         """
         try:
-            self.handle.setecho(False)
             self.handle.sendline( "" )
             x = self.handle.expect( [
                 "\$", "onos>" ], timeout=10 )
@@ -267,19 +266,14 @@ class OnosCliDriver( CLI ):
                            + self.name + "." )
 
             handle = self.handle.before
-            print "handle before anything:",
-            print repr( handle )
             # Remove control strings from output
             ansiEscape = re.compile( r'\x1b[^m]*m' )
             handle = ansiEscape.sub( '', handle )
+            #Remove extra return chars that get added
             handle = re.sub(  r"\s\r", "", handle )
             handle = handle.strip()
-            print "handle after stripping:",
-            print repr(handle)
             # parse for just the output, remove the cmd from handle
             output = handle.split( cmdStr, 1 )[1]
-            print "output:",
-            print repr( output )
 
 
             return output

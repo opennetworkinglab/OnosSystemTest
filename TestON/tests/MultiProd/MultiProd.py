@@ -44,9 +44,9 @@ class MultiProd:
 
         main.step( "Applying cell variable to environment" )
         cellResult1 = main.ONOSbench.setCell( cellName )
-        #cellResult2 = main.ONOScli1.setCell( cellName )
-        #cellResult3 = main.ONOScli2.setCell( cellName )
-        #cellResult4 = main.ONOScli3.setCell( cellName )
+        # cellResult2 = main.ONOScli1.setCell( cellName )
+        # cellResult3 = main.ONOScli2.setCell( cellName )
+        # cellResult4 = main.ONOScli3.setCell( cellName )
         verifyResult = main.ONOSbench.verifyCell()
         cellResult = cellResult1
 
@@ -62,12 +62,12 @@ class MultiProd:
         if gitPullResult == 1:
             main.step( "Using mvn clean & install" )
             cleanInstallResult = main.ONOSbench.cleanInstall()
-            #cleanInstallResult = main.TRUE
+            # cleanInstallResult = main.TRUE
 
         main.step( "Creating ONOS package" )
         packageResult = main.ONOSbench.onosPackage()
 
-        #main.step( "Creating a cell" )
+        # main.step( "Creating a cell" )
         # cellCreateResult = main.ONOSbench.createCellFile( **************
         # )
 
@@ -81,7 +81,8 @@ class MultiProd:
         onos3InstallResult = main.ONOSbench.onosInstall(
             options="-f",
             node=ONOS3Ip )
-        onosInstallResult = onos1InstallResult and onos2InstallResult and onos3InstallResult
+        onosInstallResult = onos1InstallResult and onos2InstallResult and\
+                onos3InstallResult
         if onosInstallResult == main.TRUE:
             main.log.report( "Installing ONOS package successful" )
         else:
@@ -98,7 +99,7 @@ class MultiProd:
 
         main.step( "Starting ONOS service" )
         startResult = main.TRUE
-        #startResult = main.ONOSbench.onosStart( ONOS1Ip )
+        # startResult = main.ONOSbench.onosStart( ONOS1Ip )
         startcli1 = main.ONOScli1.startOnosCli( ONOSIp=ONOS1Ip )
         startcli2 = main.ONOScli2.startOnosCli( ONOSIp=ONOS2Ip )
         startcli3 = main.ONOScli3.startOnosCli( ONOSIp=ONOS3Ip )
@@ -180,7 +181,8 @@ class MultiProd:
         ONOS3Port = main.params[ 'CTRL' ][ 'port3' ]
 
         main.log.report(
-            "This testcase is testing the assignment of all the switches to all controllers and discovering the hosts in reactive mode" )
+            "This testcase is testing the assignment of all the switches" +
+            " to all controllers and discovering the hosts in reactive mode" )
         main.log.report( "__________________________________" )
         main.case( "Pingall Test(No intents are added)" )
         main.step( "Assigning switches to controllers" )
@@ -219,7 +221,8 @@ class MultiProd:
         case4Result = switchMastership and pingResult
         if pingResult == main.TRUE:
             main.log.report(
-                "Pingall Test in reactive mode to discover the hosts successful" )
+                "Pingall Test in reactive mode to" +
+                " discover the hosts successful" )
         else:
             main.log.report(
                 "Pingall Test in reactive mode to discover the hosts failed" )
@@ -240,10 +243,12 @@ class MultiProd:
         ONOS3Ip = main.params[ 'CTRL' ][ 'ip3' ]
 
         main.log.report(
-            "This testcase is testing if all ONOS nodes are in topology sync with mininet and its peer ONOS nodes" )
+            "This testcase is testing if all ONOS nodes are in topologyi" +
+            " sync with mininet and its peer ONOS nodes" )
         main.log.report( "__________________________________" )
         main.case(
-            "Testing Mininet topology with the topology of multi instances ONOS" )
+            "Testing Mininet topology with the" +
+            " topology of multi instances ONOS" )
         main.step( "Collecting topology information from ONOS" )
         devices1 = main.ONOScli1.devices()
         devices2 = main.ONOScli2.devices()
@@ -362,17 +367,20 @@ class MultiProd:
                                 onfail="ONOS3 Switches view is incorrect" )
 
         """
-        portsResults1 =  main.Mininet1.comparePorts( MNTopo, json.loads( ports1 ) )
+        portsResults1 =  main.Mininet1.comparePorts( MNTopo,
+        json.loads( ports1 ) )
         utilities.assertEquals( expect=main.TRUE, actual=portsResults1,
                 onpass="ONOS1 Ports view is correct",
                 onfail="ONOS1 Ports view is incorrect" )
 
-        portsResults2 =  main.Mininet1.comparePorts( MNTopo, json.loads( ports2 ) )
+        portsResults2 =  main.Mininet1.comparePorts( MNTopo,
+        json.loads( ports2 ) )
         utilities.assertEquals( expect=main.TRUE, actual=portsResults2,
                 onpass="ONOS2 Ports view is correct",
                 onfail="ONOS2 Ports view is incorrect" )
 
-        portsResults3 =  main.Mininet1.comparePorts( MNTopo, json.loads( ports3 ) )
+        portsResults3 =  main.Mininet1.comparePorts( MNTopo,
+        json.loads( ports3 ) )
         utilities.assertEquals( expect=main.TRUE, actual=portsResults3,
                 onpass="ONOS3 Ports view is correct",
                 onfail="ONOS3 Ports view is incorrect" )
@@ -398,16 +406,19 @@ class MultiProd:
                                 onpass="ONOS2 Links view is correct",
                                 onfail="ONOS2 Links view is incorrect" )
 
-        #topoResult = switchesResults1 and switchesResults2 and switchesResults3\
+        # topoResult = switchesResults1 and switchesResults2
+        # and switchesResults3\
         # and portsResults1 and portsResults2 and portsResults3\
         # and linksResults1 and linksResults2 and linksResults3
 
-        topoResult = switchesResults1 and switchesResults2 and switchesResults3\
-            and linksResults1 and linksResults2 and linksResults3
+        topoResult = switchesResults1 and switchesResults2 and\
+                     switchesResults3 and linksResults1 and linksResults2 and\
+                     linksResults3
 
         if topoResult == main.TRUE:
             main.log.report(
-                "Topology Check Test with mininet and ONOS instances successful" )
+                "Topology Check Test with mininet" +
+                "and ONOS instances successful" )
         else:
             main.log.report(
                 "Topology Check Test with mininet and ONOS instances failed" )
@@ -430,14 +441,16 @@ class MultiProd:
             "onos-app-fwd" )
         main.log.info( "onos-app-fwd uninstalled" )
 
-        # After reactive forwarding is disabled, the reactive flows on switches timeout in 10-15s
+        # After reactive forwarding is disabled,
+        # the reactive flows on switches timeout in 10-15s
         # So sleep for 15s
         time.sleep( 15 )
 
         hosts = main.ONOScli1.hosts()
         main.log.info( hosts )
 
-        case10Result = appUninstallResult1 and appUninstallResult2 and appUninstallResult3
+        case10Result = appUninstallResult1 and\
+                appUninstallResult2 and appUninstallResult3
         utilities.assertEquals(
             expect=main.TRUE,
             actual=case10Result,
@@ -446,7 +459,8 @@ class MultiProd:
 
     def CASE6( self ):
         main.log.report(
-            "This testcase is testing the addition of host intents and then doing pingall" )
+            "This testcase is testing the addition of" +
+            " host intents and then doing pingall" )
         main.log.report( "__________________________________" )
         main.case( "Obtaining hostsfor adding host intents" )
         main.step( "Get hosts" )
@@ -457,25 +471,38 @@ class MultiProd:
         devicesIdList = main.ONOScli1.getAllDevicesId()
         main.log.info( devicesIdList )
 
-        # ONOS displays the hosts in hex format unlike mininet which does in decimal format
+        # ONOS displays the hosts in hex format
+        # unlike mininet which does in decimal format
         # So take care while adding intents
 
         """
-        main.step( "Add host intents for mn hosts(h8-h18,h9-h19,h10-h20,h11-h21,h12-h22,h13-h23,h14-h24,h15-h25,h16-h26,h17-h27)" )
-        hthIntentResult = main.ONOScli1.addHostIntent( "00:00:00:00:00:08/-1", "00:00:00:00:00:12/-1" )
-        hthIntentResult = main.ONOScli1.addHostIntent( "00:00:00:00:00:09/-1", "00:00:00:00:00:13/-1" )
-        hthIntentResult = main.ONOScli1.addHostIntent( "00:00:00:00:00:0A/-1", "00:00:00:00:00:14/-1" )
-        hthIntentResult = main.ONOScli1.addHostIntent( "00:00:00:00:00:0B/-1", "00:00:00:00:00:15/-1" )
-        hthIntentResult = main.ONOScli1.addHostIntent( "00:00:00:00:00:0C/-1", "00:00:00:00:00:16/-1" )
-        hthIntentResult = main.ONOScli1.addHostIntent( "00:00:00:00:00:0D/-1", "00:00:00:00:00:17/-1" )
-        hthIntentResult = main.ONOScli1.addHostIntent( "00:00:00:00:00:0E/-1", "00:00:00:00:00:18/-1" )
-        hthIntentResult = main.ONOScli1.addHostIntent( "00:00:00:00:00:0F/-1", "00:00:00:00:00:19/-1" )
-        hthIntentResult = main.ONOScli1.addHostIntent( "00:00:00:00:00:10/-1", "00:00:00:00:00:1A/-1" )
-        hthIntentResult = main.ONOScli1.addHostIntent( "00:00:00:00:00:11/-1", "00:00:00:00:00:1B/-1" )
+        main.step( "Add host intents for mn hosts(h8-h18,h9-h19,h10-h20,
+        h11-h21,h12-h22,h13-h23,h14-h24,h15-h25,h16-h26,h17-h27)" )
+        hthIntentResult = main.ONOScli1.addHostIntent( "00:00:00:00:00:08/-1",
+        "00:00:00:00:00:12/-1" )
+        hthIntentResult = main.ONOScli1.addHostIntent( "00:00:00:00:00:09/-1",
+        "00:00:00:00:00:13/-1" )
+        hthIntentResult = main.ONOScli1.addHostIntent( "00:00:00:00:00:0A/-1",
+        "00:00:00:00:00:14/-1" )
+        hthIntentResult = main.ONOScli1.addHostIntent( "00:00:00:00:00:0B/-1",
+        "00:00:00:00:00:15/-1" )
+        hthIntentResult = main.ONOScli1.addHostIntent( "00:00:00:00:00:0C/-1",
+        "00:00:00:00:00:16/-1" )
+        hthIntentResult = main.ONOScli1.addHostIntent( "00:00:00:00:00:0D/-1",
+        "00:00:00:00:00:17/-1" )
+        hthIntentResult = main.ONOScli1.addHostIntent( "00:00:00:00:00:0E/-1",
+        "00:00:00:00:00:18/-1" )
+        hthIntentResult = main.ONOScli1.addHostIntent( "00:00:00:00:00:0F/-1",
+        "00:00:00:00:00:19/-1" )
+        hthIntentResult = main.ONOScli1.addHostIntent( "00:00:00:00:00:10/-1",
+        "00:00:00:00:00:1A/-1" )
+        hthIntentResult = main.ONOScli1.addHostIntent( "00:00:00:00:00:11/-1",
+        "00:00:00:00:00:1B/-1" )
         """
         for i in range( 8, 18 ):
             main.log.info(
-                "Adding host intent between h" + str( i ) + " and h" + str( i + 10 ) )
+                "Adding host intent between h" + str( i ) +
+                " and h" + str( i + 10 ) )
             host1 = "00:00:00:00:00:" + \
                 str( hex( i )[ 2: ] ).zfill( 2 ).upper()
             host2 = "00:00:00:00:00:" + \
@@ -500,7 +527,7 @@ class MultiProd:
                 src="h" + str( i ), target="h" + str( i + 10 ) )
             if ping == main.FALSE and count < 5:
                 count += 1
-                #i = 8
+                # i = 8
                 PingResult = main.FALSE
                 main.log.report( "Ping between h" +
                                  str( i ) +
@@ -554,10 +581,12 @@ class MultiProd:
         linkSleep = int( main.params[ 'timers' ][ 'LinkDiscovery' ] )
 
         main.log.report(
-            "This testscase is killing a link to ensure that link discovery is consistent" )
+            "This testscase is killing a link to" +
+            " ensure that link discovery is consistent" )
         main.log.report( "__________________________________" )
         main.case(
-            "Killing a link to Ensure that Link Discovery is Working Properly" )
+            "Killing a link to Ensure that Link" +
+            " Discovery is Working Properly" )
         main.step( "Start continuous pings" )
 
         main.Mininet2.pingLong(
@@ -649,7 +678,8 @@ class MultiProd:
 
         main.step( "Compare ONOS Topology to MN Topology" )
         main.case(
-            "Testing Mininet topology with the topology of multi instances ONOS" )
+            "Testing Mininet topology with the" +
+            " topology of multi instances ONOS" )
         main.step( "Collecting topology information from ONOS" )
         devices1 = main.ONOScli1.devices()
         devices2 = main.ONOScli2.devices()
@@ -768,17 +798,20 @@ class MultiProd:
                                 onfail="ONOS3 Switches view is incorrect" )
 
         """
-        portsResults1 =  main.Mininet1.comparePorts( MNTopo, json.loads( ports1 ) )
+        portsResults1 =  main.Mininet1.comparePorts( MNTopo,
+        json.loads( ports1 ) )
         utilities.assertEquals( expect=main.TRUE, actual=portsResults1,
                 onpass="ONOS1 Ports view is correct",
                 onfail="ONOS1 Ports view is incorrect" )
 
-        portsResults2 =  main.Mininet1.comparePorts( MNTopo, json.loads( ports2 ) )
+        portsResults2 =  main.Mininet1.comparePorts( MNTopo,
+        json.loads( ports2 ) )
         utilities.assertEquals( expect=main.TRUE, actual=portsResults2,
                 onpass="ONOS2 Ports view is correct",
                 onfail="ONOS2 Ports view is incorrect" )
 
-        portsResults3 =  main.Mininet1.comparePorts( MNTopo, json.loads( ports3 ) )
+        portsResults3 =  main.Mininet1.comparePorts( MNTopo,
+        json.loads( ports3 ) )
         utilities.assertEquals( expect=main.TRUE, actual=portsResults3,
                 onpass="ONOS3 Ports view is correct",
                 onfail="ONOS3 Ports view is incorrect" )
@@ -804,12 +837,14 @@ class MultiProd:
                                 onpass="ONOS2 Links view is correct",
                                 onfail="ONOS2 Links view is incorrect" )
 
-        #topoResult = switchesResults1 and switchesResults2 and switchesResults3\
+        # topoResult = switchesResults1 and switchesResults2
+        # and switchesResults3\
         # and portsResults1 and portsResults2 and portsResults3\
         # and linksResults1 and linksResults2 and linksResults3
 
-        topoResult = switchesResults1 and switchesResults2 and switchesResults3\
-            and linksResults1 and linksResults2 and linksResults3
+        topoResult = switchesResults1 and switchesResults2\
+                and switchesResults3 and linksResults1 and\
+                linksResults2 and linksResults3
 
         utilities.assertEquals(
             expect=main.TRUE,
@@ -889,17 +924,21 @@ class MultiProd:
 
     def CASE9( self ):
         """
-        This test case adds point intents. Make sure you run test case 8 which is host intent removal before executing this test case.
-        Else the host intent's flows will persist on switches and the pings would work even if there is some issue with the point intent's flows
+        This test case adds point intents. Make sure you run test case 8
+        which is host intent removal before executing this test case.
+        Else the host intent's flows will persist on switches and the pings
+        would work even if there is some issue with the point intent's flows
         """
         main.log.report(
             "This testcase adds point intents and then does pingall" )
         main.log.report( "__________________________________" )
         main.log.info( "Adding point intents" )
         main.case(
-            "Adding bidirectional point for mn hosts(h8-h18,h9-h19,h10-h20,h11-h21,h12-h22,h13-h23,h14-h24,h15-h25,h16-h26,h17-h27)" )
+            "Adding bidirectional point for mn hosts(h8-h18,h9-h19,h10-h20," +
+            "h11-h21,h12-h22,h13-h23,h14-h24,h15-h25,h16-h26,h17-h27)" )
         main.step(
-            "Add point-to-point intents for mininet hosts h8 and h18 or ONOS hosts h8 and h12" )
+            "Add point-to-point intents for mininet hosts" +
+            " h8 and h18 or ONOS hosts h8 and h12" )
         ptpIntentResult = main.ONOScli1.addPointIntent(
             "of:0000000000003008/1",
             "of:0000000000006018/1" )
@@ -917,7 +956,8 @@ class MultiProd:
             # main.log.info( getIntentResult )
 
         main.step(
-            "Add point-to-point intents for mininet hosts h9 and h19 or ONOS hosts h9 and h13" )
+            "Add point-to-point intents for mininet hosts" +
+            " h9 and h19 or ONOS hosts h9 and h13" )
         ptpIntentResult = main.ONOScli1.addPointIntent(
             "of:0000000000003009/1",
             "of:0000000000006019/1" )
@@ -935,7 +975,8 @@ class MultiProd:
             # main.log.info( getIntentResult )
 
         main.step(
-            "Add point-to-point intents for mininet hosts h10 and h20 or ONOS hosts hA and h14" )
+            "Add point-to-point intents for mininet" +
+            " hosts h10 and h20 or ONOS hosts hA and h14" )
         ptpIntentResult = main.ONOScli1.addPointIntent(
             "of:0000000000003010/1",
             "of:0000000000006020/1" )
@@ -953,7 +994,8 @@ class MultiProd:
             # main.log.info( getIntentResult )
 
         main.step(
-            "Add point-to-point intents for mininet hosts h11 and h21 or ONOS hosts hB and h15" )
+            "Add point-to-point intents for mininet" +
+            " hosts h11 and h21 or ONOS hosts hB and h15" )
         ptpIntentResult = main.ONOScli1.addPointIntent(
             "of:0000000000003011/1",
             "of:0000000000006021/1" )
@@ -971,7 +1013,8 @@ class MultiProd:
             # main.log.info( getIntentResult )
 
         main.step(
-            "Add point-to-point intents for mininet hosts h12 and h22 or ONOS hosts hC and h16" )
+            "Add point-to-point intents for mininet" +
+            " hosts h12 and h22 or ONOS hosts hC and h16" )
         ptpIntentResult = main.ONOScli1.addPointIntent(
             "of:0000000000003012/1",
             "of:0000000000006022/1" )
@@ -989,7 +1032,8 @@ class MultiProd:
             # main.log.info( getIntentResult )
 
         main.step(
-            "Add point-to-point intents for mininet hosts h13 and h23 or ONOS hosts hD and h17" )
+            "Add point-to-point intents for mininet " +
+            "hosts h13 and h23 or ONOS hosts hD and h17" )
         ptpIntentResult = main.ONOScli1.addPointIntent(
             "of:0000000000003013/1",
             "of:0000000000006023/1" )
@@ -1007,7 +1051,8 @@ class MultiProd:
             # main.log.info( getIntentResult )
 
         main.step(
-            "Add point-to-point intents for mininet hosts h14 and h24 or ONOS hosts hE and h18" )
+            "Add point-to-point intents for mininet hosts" +
+            " h14 and h24 or ONOS hosts hE and h18" )
         ptpIntentResult = main.ONOScli1.addPointIntent(
             "of:0000000000003014/1",
             "of:0000000000006024/1" )
@@ -1025,7 +1070,8 @@ class MultiProd:
             # main.log.info( getIntentResult )
 
         main.step(
-            "Add point-to-point intents for mininet hosts h15 and h25 or ONOS hosts hF and h19" )
+            "Add point-to-point intents for mininet hosts" +
+            " h15 and h25 or ONOS hosts hF and h19" )
         ptpIntentResult = main.ONOScli1.addPointIntent(
             "of:0000000000003015/1",
             "of:0000000000006025/1" )
@@ -1043,7 +1089,8 @@ class MultiProd:
             # main.log.info( getIntentResult )
 
         main.step(
-            "Add point-to-point intents for mininet hosts h16 and h26 or ONOS hosts h10 and h1A" )
+            "Add point-to-point intents for mininet hosts" +
+            " h16 and h26 or ONOS hosts h10 and h1A" )
         ptpIntentResult = main.ONOScli1.addPointIntent(
             "of:0000000000003016/1",
             "of:0000000000006026/1" )
@@ -1061,7 +1108,8 @@ class MultiProd:
             # main.log.info( getIntentResult )
 
         main.step(
-            "Add point-to-point intents for mininet hosts h17 and h27 or ONOS hosts h11 and h1B" )
+            "Add point-to-point intents for mininet hosts h17" +
+            " and h27 or ONOS hosts h11 and h1B" )
         ptpIntentResult = main.ONOScli1.addPointIntent(
             "of:0000000000003017/1",
             "of:0000000000006027/1" )
@@ -1079,7 +1127,8 @@ class MultiProd:
             # main.log.info( getIntentResult )
 
         print(
-            "_______________________________________________________________________________________" )
+            "_______________________________________________________" +
+            "________________________________" )
 
         flowHandle = main.ONOScli1.flows()
         # print "flowHandle = ", flowHandle
@@ -1095,7 +1144,7 @@ class MultiProd:
                 src="h" + str( i ), target="h" + str( i + 10 ) )
             if ping == main.FALSE and count < 5:
                 count += 1
-                #i = 8
+                # i = 8
                 PingResult = main.FALSE
                 main.log.report( "Ping between h" +
                                  str( i ) +
@@ -1129,7 +1178,8 @@ class MultiProd:
                 PingResult = main.ERROR
         if PingResult == main.FALSE:
             main.log.report(
-                "Ping all test after Point intents addition failed. Cleaning up" )
+                "Ping all test after Point intents" +
+                " addition failed. Cleaning up" )
             # main.cleanup()
             # main.exit()
         if PingResult == main.TRUE:
@@ -1145,14 +1195,17 @@ class MultiProd:
 
     def CASE31( self ):
         """
-            This test case adds point intent related to SDN-IP matching on ICMP ( ethertype=IPV4, ipProto=1 )
+            This test case adds point intent related to
+            SDN-IP matching on ICMP ( ethertype=IPV4, ipProto=1 )
         """
         import json
 
         main.log.report(
-            "This test case adds point intent related to SDN-IP matching on ICMP" )
+            "This test case adds point intent " +
+            "related to SDN-IP matching on ICMP" )
         main.case(
-            "Adding bidirectional point intent related to SDN-IP matching on ICMP" )
+            "Adding bidirectional point intent related" +
+            " to SDN-IP matching on ICMP" )
         main.step( "Adding bidirectional point intent" )
         # add-point-intent --ipSrc=10.0.0.8/32 --ipDst=10.0.0.18/32
         # --ethType=IPV4 --ipProto=1  of:0000000000003008/1
@@ -1161,7 +1214,8 @@ class MultiProd:
         hostsJson = json.loads( main.ONOScli1.hosts() )
         for i in range( 8, 11 ):
             main.log.info(
-                "Adding point intent between h" + str( i ) + " and h" + str( i + 10 ) )
+                "Adding point intent between h" + str( i ) +
+                " and h" + str( i + 10 ) )
             host1 = "00:00:00:00:00:" + \
                 str( hex( i )[ 2: ] ).zfill( 2 ).upper()
             host2 = "00:00:00:00:00:" + \
@@ -1201,10 +1255,11 @@ class MultiProd:
             getIntentResult = main.ONOScli1.intents( jsonFormat=False )
             main.log.info( getIntentResult )
             if ( pIntentResult1 and pIntentResult2 ) == main.TRUE:
-                #getIntentResult = main.ONOScli1.intents()
+                # getIntentResult = main.ONOScli1.intents()
                 # main.log.info( getIntentResult )
                 main.log.info(
-                    "Point intent related to SDN-IP matching on ICMP install successful" )
+                    "Point intent related to SDN-IP matching" +
+                    " on ICMP install successful" )
 
         time.sleep( 15 )
         getIntentResult = main.ONOScli1.intents( jsonFormat=False )
@@ -1222,7 +1277,7 @@ class MultiProd:
                 src="h" + str( i ), target="h" + str( i + 10 ) )
             if ping == main.FALSE and count < 3:
                 count += 1
-                #i = 8
+                # i = 8
                 PingResult = main.FALSE
                 main.log.report( "Ping between h" +
                                  str( i ) +
@@ -1256,46 +1311,63 @@ class MultiProd:
                 PingResult = main.ERROR
         if PingResult == main.FALSE:
             main.log.report(
-                "Ping test after Point intents related to SDN-IP matching on ICMP failed." )
+                "Ping test after Point intents related to" +
+                " SDN-IP matching on ICMP failed." )
             # main.cleanup()
             # main.exit()
         if PingResult == main.TRUE:
             main.log.report(
-                "Ping all test after Point intents related to SDN-IP matching on ICMP successful" )
+                "Ping all test after Point intents related to" +
+                " SDN-IP matching on ICMP successful" )
 
         case31Result = PingResult and pIntentResult1 and pIntentResult2
         utilities.assertEquals(
             expect=main.TRUE,
             actual=case31Result,
-            onpass="Point intent related to SDN-IP matching on ICMP and ping test successful",
-            onfail="Point intent related to SDN-IP matching on ICMP and ping test failed" )
+            onpass="Point intent related to SDN-IP " +
+            "matching on ICMP and ping test successful",
+            onfail="Point intent related to SDN-IP" +
+            " matching on ICMP and ping test failed" )
 
     def CASE32( self ):
         """
-            This test case adds point intent related to SDN-IP matching on TCP ( ethertype=IPV4, ipProto=6, DefaultPort for iperf=5001 )
-            Note: Although BGP port is 179, we are using 5001 because iperf is used for verifying and iperf's default port is 5001
+            This test case adds point intent related to SDN-IP matching on TCP
+            ( ethertype=IPV4, ipProto=6, DefaultPort for iperf=5001 )
+            Note: Although BGP port is 179, we are using 5001 because iperf
+            is used for verifying and iperf's default port is 5001
         """
         import json
 
         main.log.report(
-            "This test case adds point intent related to SDN-IP matching on TCP" )
+            "This test case adds point intent" +
+            " related to SDN-IP matching on TCP" )
         main.case(
-            "Adding bidirectional point intent related to SDN-IP matching on TCP" )
+            "Adding bidirectional point intent related" +
+            " to SDN-IP matching on TCP" )
         main.step( "Adding bidirectional point intent" )
         """
-        add-point-intent --ipSrc=10.0.0.8/32 --ipDst=10.0.0.18/32 --ethType=IPV4 --ipProto=6 --tcpDst=5001  of:0000000000003008/1 of:0000000000006018/1
+        add-point-intent --ipSrc=10.0.0.8/32 --ipDst=10.0.0.18/32
+        --ethType=IPV4 --ipProto=6 --tcpDst=5001  of:0000000000003008/1
+        of:0000000000006018/1
 
-        add-point-intent --ipSrc=10.0.0.18/32 --ipDst=10.0.0.8/32 --ethType=IPV4 --ipProto=6 --tcpDst=5001  of:0000000000006018/1 of:0000000000003008/1
+        add-point-intent --ipSrc=10.0.0.18/32 --ipDst=10.0.0.8/32
+        --ethType=IPV4 --ipProto=6 --tcpDst=5001  of:0000000000006018/1
+        of:0000000000003008/1
 
-        add-point-intent --ipSrc=10.0.0.8/32 --ipDst=10.0.0.18/32 --ethType=IPV4 --ipProto=6 --tcpSrc=5001  of:0000000000003008/1 of:0000000000006018/1
+        add-point-intent --ipSrc=10.0.0.8/32 --ipDst=10.0.0.18/32
+        --ethType=IPV4 --ipProto=6 --tcpSrc=5001  of:0000000000003008/1
+        of:0000000000006018/1
 
-        add-point-intent --ipSrc=10.0.0.18/32 --ipDst=10.0.0.8/32 --ethType=IPV4 --ipProto=6 --tcpSrc=5001  of:0000000000006018/1 of:0000000000003008/1
+        add-point-intent --ipSrc=10.0.0.18/32 --ipDst=10.0.0.8/32
+        --ethType=IPV4 --ipProto=6 --tcpSrc=5001  of:0000000000006018/1
+        of:0000000000003008/1
 
         """
         hostsJson = json.loads( main.ONOScli1.hosts() )
         for i in range( 8, 9 ):
             main.log.info(
-                "Adding point intent between h" + str( i ) + " and h" + str( i + 10 ) )
+                "Adding point intent between h" + str( i ) +
+                " and h" + str( i + 10 ) )
             host1 = "00:00:00:00:00:" + \
                 str( hex( i )[ 2: ] ).zfill( 2 ).upper()
             host2 = "00:00:00:00:00:" + \
@@ -1347,12 +1419,14 @@ class MultiProd:
                 ipProto=main.params[ 'SDNIP' ][ 'tcpProto' ],
                 tcpSrc=main.params[ 'SDNIP' ][ 'srcPort' ] )
 
-            pIntentResult = pIntentResult1 and pIntentResult2 and pIntentResult3 and pIntentResult4
+            pIntentResult = pIntentResult1 and pIntentResult2 and\
+                    pIntentResult3 and pIntentResult4
             if pIntentResult == main.TRUE:
                 getIntentResult = main.ONOScli1.intents( jsonFormat=False )
                 main.log.info( getIntentResult )
                 main.log.info(
-                    "Point intent related to SDN-IP matching on TCP install successful" )
+                    "Point intent related to SDN-IP matching" +
+                    " on TCP install successful" )
 
         iperfResult = main.Mininet1.iperf( 'h8', 'h18' )
         if iperfResult == main.TRUE:
@@ -1364,29 +1438,42 @@ class MultiProd:
         utilities.assertEquals(
             expect=main.TRUE,
             actual=case32Result,
-            onpass="Ping all test after Point intents addition related to SDN-IP on TCP match successful",
-            onfail="Ping all test after Point intents addition related to SDN-IP on TCP match failed" )
+            onpass="Ping all test after Point intents addition related " +
+            "to SDN-IP on TCP match successful",
+            onfail="Ping all test after Point intents addition related " +
+            "to SDN-IP on TCP match failed" )
 
     def CASE33( self ):
         """
-            This test case adds multipoint to singlepoint  intent related to SDN-IP matching on destination ip and the action is to rewrite the mac address
-            Here the mac address to be rewritten is the mac address of the egress device
+            This test case adds multipoint to singlepoint  intent related to
+            SDN-IP matching on destination ip and the action is to rewrite
+            the mac address
+            Here the mac address to be rewritten is the mac address of the
+            egress device
         """
         import json
         import time
 
         main.log.report(
-            "This test case adds multipoint to singlepoint intent related to SDN-IP matching on destination ip and rewrite mac address action" )
+            "This test case adds multipoint to singlepoint intent related to" +
+            " SDN-IP matching on destination ip and " +
+            "rewrite mac address action" )
         main.case(
-            "Adding multipoint to singlepoint intent related to SDN-IP matching on destination ip" )
+            "Adding multipoint to singlepoint intent related to SDN-IP" +
+            " matching on destination ip" )
         main.step( "Adding bidirectional multipoint to singlepoint intent" )
         """
-        add-multi-to-single-intent --ipDst=10.0.3.0/24 --setEthDst=00:00:00:00:00:12 of:0000000000003008/1 0000000000003009/1 of:0000000000006018/1
+        add-multi-to-single-intent --ipDst=10.0.3.0/24
+        --setEthDst=00:00:00:00:00:12 of:0000000000003008/1 0000000000003009/1
+        of:0000000000006018/1
 
-        add-multi-to-single-intent --ipDst=10.0.1.0/24 --setEthDst=00:00:00:00:00:08 of:0000000000006018/1 0000000000003009/1 of:0000000000003008/1
+        add-multi-to-single-intent --ipDst=10.0.1.0/24
+        --setEthDst=00:00:00:00:00:08 of:0000000000006018/1 0000000000003009/1
+        of:0000000000003008/1
         """
         main.case(
-            "Installing multipoint to single point intent with rewrite mac address" )
+            "Installing multipoint to single point " +
+            "intent with rewrite mac address" )
         main.step( "Uninstalling proxy arp app" )
         # Unistall onos-app-proxyarp app to disable reactive forwarding
         appUninstallResult1 = main.ONOScli1.featureUninstall(
@@ -1420,7 +1507,8 @@ class MultiProd:
         main.Mininet1.changeDefaultGateway( host='h10', newGW='10.0.3.254' )
 
         main.step(
-            "Assigning random mac address to the default gateways since proxyarp app is uninstalled" )
+            "Assigning random mac address to the default gateways " +
+            "since proxyarp app is uninstalled" )
         main.Mininet1.addStaticMACAddress(
             host='h8',
             GW='10.0.1.254',
@@ -1510,14 +1598,18 @@ class MultiProd:
         pIntentResult = pIntentResult1 and pIntentResult2
         if pIntentResult == main.TRUE:
             main.log.info(
-                "Multi point intent with rewrite mac address installation successful" )
+                "Multi point intent with rewrite mac " +
+                "address installation successful" )
         else:
             main.log.info(
-                "Multi point intent with rewrite mac address installation failed" )
+                "Multi point intent with rewrite mac" +
+                " address installation failed" )
 
         case33Result = pIntentResult and PingResult
         utilities.assertEquals(
             expect=main.TRUE,
             actual=case33Result,
-            onpass="Ping all test after multipoint to single point intent addition with rewrite mac address successful",
-            onfail="Ping all test after multipoint to single point intent addition with rewrite mac address failed" )
+            onpass="Ping all test after multipoint to single point" +
+            " intent addition with rewrite mac address successful",
+            onfail="Ping all test after multipoint to single point intent" +
+            " addition with rewrite mac address failed" )

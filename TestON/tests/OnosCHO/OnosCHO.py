@@ -42,8 +42,8 @@ class OnosCHO:
 
         main.step( "Git checkout and pull " + git_branch )
         if git_pull == 'on':
-            checkout_result = main.ONOSbench.git_checkout( git_branch )
-            pull_result = main.ONOSbench.git_pull()
+            checkout_result = main.ONOSbench.gitCheckout( git_branch )
+            pull_result = main.ONOSbench.gitPull()
             cp_result = ( checkout_result and pull_result )
         else:
             checkout_result = main.TRUE
@@ -55,21 +55,21 @@ class OnosCHO:
                                  onfail="Test step FAIL" )
 
         main.step( "mvn clean & install" )
-        mvn_result = main.ONOSbench.clean_install()
+        mvn_result = main.ONOSbench.cleanInstall()
         utilities.assert_equals( expect=main.TRUE, actual=mvn_result,
                                  onpass="Test step PASS",
                                  onfail="Test step FAIL" )
 
-        main.ONOSbench.get_version( report=True )
+        main.ONOSbench.getVersion( report=True )
 
         main.step( "Apply Cell environment for ONOS" )
-        cell_result = main.ONOSbench.set_cell( cell_name )
+        cell_result = main.ONOSbench.setCell( cell_name )
         utilities.assert_equals( expect=main.TRUE, actual=cell_result,
                                  onpass="Test step PASS",
                                  onfail="Test step FAIL" )
 
         main.step( "Create ONOS package" )
-        packageResult = main.ONOSbench.onos_package()
+        packageResult = main.ONOSbench.onosPackage()
         utilities.assert_equals( expect=main.TRUE, actual=packageResult,
                                  onpass="Test step PASS",
                                  onfail="Test step FAIL" )
@@ -79,21 +79,21 @@ class OnosCHO:
         for i in range( 1, int( numCtrls ) + 1 ):
             ONOS_ip = main.params[ 'CTRL' ][ 'ip' + str( i ) ]
             main.log.info( "Unintsalling package on ONOS Node IP: " + ONOS_ip )
-            u_result = main.ONOSbench.onos_uninstall( ONOS_ip )
+            u_result = main.ONOSbench.onosUninstall( ONOS_ip )
             utilities.assert_equals( expect=main.TRUE, actual=u_result,
                                      onpass="Test step PASS",
                                      onfail="Test step FAIL" )
             uninstallResult = ( uninstallResult and u_result )
 
         main.step( "Removing copy-cat logs from ONOS nodes" )
-        main.ONOSbench.onos_remove_raft_logs()
+        main.ONOSbench.onosRemoveRaftLogs()
 
         main.step( "Install ONOS package on all Nodes" )
         installResult = main.TRUE
         for i in range( 1, int( numCtrls ) + 1 ):
             ONOS_ip = main.params[ 'CTRL' ][ 'ip' + str( i ) ]
             main.log.info( "Intsalling package on ONOS Node IP: " + ONOS_ip )
-            i_result = main.ONOSbench.onos_install( node=ONOS_ip )
+            i_result = main.ONOSbench.onosInstall( node=ONOS_ip )
             utilities.assert_equals( expect=main.TRUE, actual=i_result,
                                      onpass="Test step PASS",
                                      onfail="Test step FAIL" )
@@ -104,7 +104,7 @@ class OnosCHO:
         for i in range( 1, int( numCtrls ) + 1 ):
             ONOS_ip = main.params[ 'CTRL' ][ 'ip' + str( i ) ]
             main.log.info( "ONOS Node " + ONOS_ip + " status:" )
-            onos_status = main.ONOSbench.onos_status( node=ONOS_ip )
+            onos_status = main.ONOSbench.onosStatus( node=ONOS_ip )
             utilities.assert_equals( expect=main.TRUE, actual=onos_status,
                                      onpass="Test step PASS",
                                      onfail="Test step FAIL" )
@@ -121,7 +121,7 @@ class OnosCHO:
             ONOScli = 'ONOScli' + str( i )
             main.log.info( "ONOS Node " + ONOS_ip + " cli start:" )
             exec "startcli=main." + ONOScli + \
-                ".start_onos_cli(ONOS_ip, karafTimeout=karafTimeout)"
+                ".startOnosCli(ONOS_ip, karafTimeout=karafTimeout)"
             utilities.assert_equals( expect=main.TRUE, actual=startcli,
                                      onpass="Test step PASS",
                                      onfail="Test step FAIL" )
@@ -164,7 +164,7 @@ class OnosCHO:
             "Assign and Balance all Mininet switches across controllers" )
         main.step( "Assign switches to controllers" )
         for i in range( 1, 26 ):  # 1 to ( num of switches +1 )
-            main.Mininet1.assign_sw_controller(
+            main.Mininet1.assignSwController(
                 sw=str( i ),
                 count=int( numCtrls ),
                 ip1=ONOS1_ip,
@@ -180,7 +180,7 @@ class OnosCHO:
 
         switch_mastership = main.TRUE
         for i in range( 1, 26 ):
-            response = main.Mininet1.get_sw_controller( "s" + str( i ) )
+            response = main.Mininet1.getSwController( "s" + str( i ) )
             print( "Response is " + str( response ) )
             if re.search( "tcp:" + ONOS1_ip, response ):
                 switch_mastership = switch_mastership and main.TRUE
@@ -195,7 +195,7 @@ class OnosCHO:
 
         main.step( "Balance devices across controllers" )
         for i in range( int( numCtrls ) ):
-            balanceResult = main.ONOScli1.balance_masters()
+            balanceResult = main.ONOScli1.balanceMasters()
             # giving some breathing time for ONOS to complete re-balance
             time.sleep( 3 )
 
@@ -226,7 +226,7 @@ class OnosCHO:
 
         main.step( "Collect and store current number of switches and links" )
         topology_output = main.ONOScli1.topology()
-        topology_result = main.ONOSbench.get_topology( topology_output )
+        topology_result = main.ONOSbench.getTopology( topology_output )
         numSwitches = topology_result[ 'devices' ]
         numLinks = topology_result[ 'links' ]
         main.log.info(
@@ -244,7 +244,7 @@ class OnosCHO:
         print "Host MACs in Store: \n", str( hostMACs )
 
         main.step( "Collect and store all Devices Links" )
-        linksResult = main.ONOScli1.links( json_format=False )
+        linksResult = main.ONOScli1.links( jsonFormat=False )
         ansi_escape = re.compile( r'\x1b[^m]*m' )
         linksResult = ansi_escape.sub( '', linksResult )
         linksResult = linksResult.replace( " links", "" ).replace( "\r\r", "" )
@@ -259,10 +259,8 @@ class OnosCHO:
         main.step( "Collect and store each Device ports enabled Count" )
         for i in range( 1, 26 ):
             portResult = main.ONOScli1.getDevicePortsEnabledCount(
-                "of:00000000000000" +
-                format(
-                    i,
-                    '02x' ) )
+                "of:00000000000000" + format( i,'02x' ) )
+            print portResult
             portTemp = re.split( r'\t+', portResult )
             portCount = portTemp[ 1 ].replace( "\r\r\n\x1b[32m", "" )
             devicePortsEnabledCount.append( portCount )
@@ -271,10 +269,7 @@ class OnosCHO:
         main.step( "Collect and store each Device active links Count" )
         for i in range( 1, 26 ):
             linkCountResult = main.ONOScli1.getDeviceLinksActiveCount(
-                "of:00000000000000" +
-                format(
-                    i,
-                    '02x' ) )
+                "of:00000000000000" + format( i,'02x' ) )
             linkCountTemp = re.split( r'\t+', linkCountResult )
             linkCount = linkCountTemp[ 1 ].replace( "\r\r\n\x1b[32m", "" )
             deviceActiveLinksCount.append( linkCount )
@@ -304,7 +299,7 @@ class OnosCHO:
             ONOS_ip = main.params[ 'CTRL' ][ 'ip' + str( i ) ]
             ONOScli = 'ONOScli' + str( i )
             main.log.info( "Enabling Reactive mode on ONOS Node " + ONOS_ip )
-            exec "inResult=main." + ONOScli + ".feature_install(onosFeature)"
+            exec "inResult=main." + ONOScli + ".featureInstall(onosFeature)"
             time.sleep( 3 )
             installResult = inResult and installResult
 
@@ -333,7 +328,7 @@ class OnosCHO:
             ONOS_ip = main.params[ 'CTRL' ][ 'ip' + str( i ) ]
             ONOScli = 'ONOScli' + str( i )
             main.log.info( "Disabling Reactive mode on ONOS Node " + ONOS_ip )
-            exec "unResult=main." + ONOScli + ".feature_uninstall(onosFeature)"
+            exec "unResult=main." + ONOScli + ".featureUninstall(onosFeature)"
             uninstallResult = unResult and uninstallResult
 
         # Waiting for reative flows to be cleared.
@@ -428,7 +423,7 @@ class OnosCHO:
         intentResult = main.TRUE
         hostCombos = list( itertools.combinations( hostMACs, 2 ) )
         for i in range( len( hostCombos ) ):
-            iResult = main.ONOScli1.add_host_intent(
+            iResult = main.ONOScli1.addHostIntent(
                 hostCombos[ i ][ 0 ],
                 hostCombos[ i ][ 1 ] )
             intentResult = ( intentResult and iResult )
@@ -469,23 +464,17 @@ class OnosCHO:
         switchLinksToToggle = main.params[ 'CORELINKS' ][ 'toggleLinks' ]
         link_sleep = int( main.params[ 'timers' ][ 'LinkDiscovery' ] )
 
-        main.log.report(
-            "Host intents - Randomly bring some core links down and verify ping all" )
-        main.log.report(
-            "_________________________________________________________________" )
-        main.case(
-            "Host intents - Randomly bring some core links down and verify ping all" )
-        main.step(
-            "Verify number of Switch links to toggle on each Core Switch are between 1 - 5" )
+        main.log.report( "Host intents - Randomly bring some core links down and verify ping all" )
+        main.log.report( "_________________________________________________________________" )
+        main.case( "Host intents - Randomly bring some core links down and verify ping all" )
+        main.step( "Verify number of Switch links to toggle on each Core Switch are between 1 - 5" )
         if ( int( switchLinksToToggle ) ==
              0 or int( switchLinksToToggle ) > 5 ):
-            main.log.info(
-                "Please check you PARAMS file. Valid range for number of switch links to toggle is between 1 to 5" )
+            main.log.info( "Please check you PARAMS file. Valid range for number of switch links to toggle is between 1 to 5" )
             main.cleanup()
             main.exit()
         else:
-            main.log.info(
-                "User provided Core switch links range to toggle is correct, proceeding to run the test" )
+            main.log.info( "User provided Core switch links range to toggle is correct, proceeding to run the test" )
 
         main.step( "Cut links on Core devices using user provided range" )
         randomLink1 = random.sample( link1End2, int( switchLinksToToggle ) )
@@ -507,7 +496,7 @@ class OnosCHO:
         time.sleep( link_sleep )
 
         topology_output = main.ONOScli2.topology()
-        linkDown = main.ONOSbench.check_status(
+        linkDown = main.ONOSbench.checkStatus(
             topology_output, numSwitches, str(
                 int( numLinks ) - int( switchLinksToToggle ) * 6 ) )
         utilities.assert_equals(
@@ -572,7 +561,7 @@ class OnosCHO:
         time.sleep( link_sleep )
 
         topology_output = main.ONOScli2.topology()
-        linkUp = main.ONOSbench.check_status(
+        linkUp = main.ONOSbench.checkStatus(
             topology_output,
             numSwitches,
             str( numLinks ) )
@@ -618,14 +607,10 @@ class OnosCHO:
         switchLinksToToggle = main.params[ 'CORELINKS' ][ 'toggleLinks' ]
         link_sleep = int( main.params[ 'timers' ][ 'LinkDiscovery' ] )
 
-        main.log.report(
-            "Point Intents - Randomly bring some core links down and verify ping all" )
-        main.log.report(
-            "__________________________________________________________________" )
-        main.case(
-            "Point Intents - Randomly bring some core links down and verify ping all" )
-        main.step(
-            "Verify number of Switch links to toggle on each Core Switch are between 1 - 5" )
+        main.log.report( "Point Intents - Randomly bring some core links down and verify ping all" )
+        main.log.report( "__________________________________________________________________" )
+        main.case( "Point Intents - Randomly bring some core links down and verify ping all" )
+        main.step( "Verify number of Switch links to toggle on each Core Switch are between 1 - 5" )
         if ( int( switchLinksToToggle ) ==
              0 or int( switchLinksToToggle ) > 5 ):
             main.log.info(
@@ -656,7 +641,7 @@ class OnosCHO:
         time.sleep( link_sleep )
 
         topology_output = main.ONOScli2.topology()
-        linkDown = main.ONOSbench.check_status(
+        linkDown = main.ONOSbench.checkStatus(
             topology_output, numSwitches, str(
                 int( numLinks ) - int( switchLinksToToggle ) * 6 ) )
         utilities.assert_equals(
@@ -721,7 +706,7 @@ class OnosCHO:
         time.sleep( link_sleep )
 
         topology_output = main.ONOScli2.topology()
-        linkUp = main.ONOSbench.check_status(
+        linkUp = main.ONOSbench.checkStatus(
             topology_output,
             numSwitches,
             str( numLinks ) )
@@ -771,7 +756,7 @@ class OnosCHO:
                 "" ).split( ',' )
             point1 = pointLink[ 0 ].split( '/' )
             point2 = pointLink[ 1 ].split( '/' )
-            installResult = main.ONOScli1.add_point_intent(
+            installResult = main.ONOScli1.addPointIntent(
                 point1[ 0 ], point2[ 0 ], int(
                     point1[ 1 ] ), int(
                     point2[ 1 ] ) )
@@ -849,7 +834,7 @@ class OnosCHO:
             print "Intent IDs: ", intentIdList
             for id in range( len( intentIdList ) ):
                 print "Removing intent id (round 1) :", intentIdList[ id ]
-                main.ONOScli1.remove_intent( intent_id=intentIdList[ id ] )
+                main.ONOScli1.removeIntent( intent_id=intentIdList[ id ] )
                 time.sleep( 1 )
 
             main.log.info(
@@ -875,7 +860,7 @@ class OnosCHO:
                 print "Leftover Intent IDs: ", intentIdList1
                 for id in range( len( intentIdList1 ) ):
                     print "Removing intent id (round 2):", intentIdList1[ id ]
-                    main.ONOScli1.remove_intent(
+                    main.ONOScli1.removeIntent(
                         intent_id=intentIdList1[ id ] )
                     time.sleep( 2 )
             else:

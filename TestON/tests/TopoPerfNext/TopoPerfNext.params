@@ -1,8 +1,8 @@
 <PARAMS>
-    <testcases>1,2,3</testcases>
+    <testcases>1,2,3,6,2,3,6,2,3,6,2,3</testcases>
 
     <ENV>
-        <cellName>kelvin2</cellName>
+        <cellName>topo_perf_test</cellName>
     </ENV>
 
     <GIT>
@@ -13,21 +13,26 @@
 
     <CTRL>
         <user>admin</user>
-        <ip1>10.128.10.21</ip1>
+        <ip1>10.128.174.1</ip1>
         <port1>6633</port1>
-        <ip2>10.128.10.22</ip2>
+        <ip2>10.128.174.2</ip2>
         <port2>6633</port2>
-        <ip3>10.128.10.23</ip3>
+        <ip3>10.128.174.3</ip3>
         <port3>6633</port3>
+        <ip4>10.128.174.4</ip4>
+        
+        <ip5>10.128.174.5</ip5>
+        <ip6>10.128.174.6</ip6>
+        <ip7>10.128.174.7</ip7>
     </CTRL>
 
     <MN>
-        <ip1>10.128.10.24</ip1>
-        <ip2>10.128.10.24</ip2>
+        <ip1>10.128.10.90</ip1>
+        <ip2>10.128.10.91</ip2>
     </MN>
 
     <BENCH>
-        <ip>10.128.10.20</ip>
+        <ip>10.128.174.10</ip>
     </BENCH>
 
     <TEST>
@@ -46,7 +51,7 @@
         </topo_config_name>
 
         #Number of times to iterate each case
-        <numIter>20</numIter>
+        <numIter>12</numIter>
         <numSwitch>2</numSwitch>
         #Number of iterations to ignore initially
         <iterIgnore>2</iterIgnore>

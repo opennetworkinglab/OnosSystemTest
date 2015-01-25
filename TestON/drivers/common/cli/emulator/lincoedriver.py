@@ -53,8 +53,8 @@ class LincOEDriver( Emulator ):
         self.name = self.options[ 'name' ]
         self.handle = \
             super( LincOEDriver, self ).connect(
-                userName=self.userName,
-                ipAddress=self.ipAddress,
+                user_name=self.user_name,
+                ip_address=self.ip_address,
                 port=None,
                 pwd=self.pwd )
 
@@ -73,7 +73,7 @@ class LincOEDriver( Emulator ):
         else:
             main.log.error( self.name +
                             ": Connection failed to the host " +
-                            self.userName + "@" + self.ipAddress )
+                            self.user_name + "@" + self.ip_address )
             main.log.error( self.name +
                             ": Failed to connect to Linc-OE" )
             return main.FALSE
@@ -94,9 +94,9 @@ class LincOEDriver( Emulator ):
             main.log.error(
                 self.name +
                 ": Connection failed to the host " +
-                self.userName +
+                self.user_name +
                 "@" +
-                self.ipAddress )
+                self.ip_address )
             main.log.error( self.name +
                             ": Failed to connect to Linc-OE" )
             return main.FALSE
@@ -129,7 +129,7 @@ class LincOEDriver( Emulator ):
             main.exit()
         except:
             main.log.info( self.name + " :::::::" )
-            main.log.error( traceback.printExc() )
+            main.log.error( traceback.print_exc() )
             main.log.info( self.name + " :::::::" )
             main.cleanup()
             main.exit()
@@ -155,7 +155,7 @@ class LincOEDriver( Emulator ):
             main.exit()
         except:
             main.log.info( self.name + " :::::::" )
-            main.log.error( traceback.printExc() )
+            main.log.error( traceback.print_exc() )
             main.log.info( self.name + " :::::::" )
             main.cleanup()
             main.exit()
@@ -177,7 +177,7 @@ class LincOEDriver( Emulator ):
             main.exit()
         except:
             main.log.info( self.name + " :::::::" )
-            main.log.error( traceback.printExc() )
+            main.log.error( traceback.print_exc() )
             main.log.info( self.name + " :::::::" )
             main.cleanup()
             main.exit()
@@ -199,7 +199,7 @@ class LincOEDriver( Emulator ):
             main.exit()
         except:
             main.log.info( self.name + " :::::::" )
-            main.log.error( traceback.printExc() )
+            main.log.error( traceback.print_exc() )
             main.log.info( self.name + " :::::::" )
             main.cleanup()
             main.exit()
@@ -222,7 +222,7 @@ class LincOEDriver( Emulator ):
             main.exit()
         except:
             main.log.info( self.name + " :::::::" )
-            main.log.error( traceback.printExc() )
+            main.log.error( traceback.print_exc() )
             main.log.info( self.name + " :::::::" )
             main.cleanup()
             main.exit()
@@ -244,7 +244,7 @@ class LincOEDriver( Emulator ):
             main.exit()
         except:
             main.log.info( self.name + " :::::::" )
-            main.log.error( traceback.printExc() )
+            main.log.error( traceback.print_exc() )
             main.log.info( self.name + " :::::::" )
             main.cleanup()
             main.exit()
@@ -267,7 +267,7 @@ class LincOEDriver( Emulator ):
             main.exit()
         except:
             main.log.info( self.name + " :::::::" )
-            main.log.error( traceback.printExc() )
+            main.log.error( traceback.print_exc() )
             main.log.info( self.name + " :::::::" )
             main.cleanup()
             main.exit()
@@ -290,7 +290,7 @@ class LincOEDriver( Emulator ):
             main.exit()
         except:
             main.log.info( self.name + " :::::::" )
-            main.log.error( traceback.printExc() )
+            main.log.error( traceback.print_exc() )
             main.log.info( self.name + " :::::::" )
             main.cleanup()
             main.exit()
@@ -337,7 +337,7 @@ class LincOEDriver( Emulator ):
             main.exit()
         except:
             main.log.info( self.name + " :::::::" )
-            main.log.error( traceback.printExc() )
+            main.log.error( traceback.print_exc() )
             main.log.info( self.name + " :::::::" )
             main.cleanup()
             main.exit()

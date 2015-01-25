@@ -47,8 +47,8 @@ class OnosCliDriver( CLI ):
 
             self.name = self.options[ 'name' ]
             self.handle = super( OnosCliDriver, self ).connect(
-                userName=self.userName,
-                ipAddress=self.ipAddress,
+                user_name=self.user_name,
+                ip_address=self.ip_address,
                 port=self.port,
                 pwd=self.pwd,
                 home=self.home )
@@ -261,20 +261,22 @@ class OnosCliDriver( CLI ):
                                   + cmdStr + "'\"" )
             self.handle.expect( "onos>" )
             self.handle.sendline( cmdStr )
-            self.handle.expect( cmdStr )
             self.handle.expect( "onos>" )
-
-            handle = self.handle.before
-
-            self.handle.sendline( "" )
-            self.handle.expect( "onos>" )
-
             main.log.info( "Command '" + str( cmdStr ) + "' sent to "
                            + self.name + "." )
+
+            handle = self.handle.before
+            # Remove control strings from output
             ansiEscape = re.compile( r'\x1b[^m]*m' )
             handle = ansiEscape.sub( '', handle )
+            #Remove extra return chars that get added
+            handle = re.sub(  r"\s\r", "", handle )
+            handle = handle.strip()
+            # parse for just the output, remove the cmd from handle
+            output = handle.split( cmdStr, 1 )[1]
 
-            return handle
+
+            return output
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )

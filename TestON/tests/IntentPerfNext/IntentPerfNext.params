@@ -36,7 +36,7 @@
 
     <TEST>
         #Number of times to iterate each case
-        <numIter>12</numIter>
+        <numIter>3</numIter>
         <numIgnore>2</numIgnore>
         <numSwitch>8</numSwitch>
         <batchThresholdMin>0</batchThresholdMin>

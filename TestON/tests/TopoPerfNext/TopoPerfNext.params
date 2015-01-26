@@ -42,16 +42,17 @@
         #pcap file located at /tmp/'capture_name'
         <debugMode>off</debugMode>
         <onosLogFile>/opt/onos/log/karaf*</onosLogFile>
+        <mci>off</mci>
 
-        <topo_config_file>
+        <topoConfigFile>
         single_topo_event_accumulator.cfg
-        </topo_config_file>
-        <topo_config_name>
+        </topoConfigFile>
+        <topoConfigName>
         org.onlab.onos.net.topology.impl.DefaultTopologyProvider.cfg
-        </topo_config_name>
+        </topoConfigName>
 
         #Number of times to iterate each case
-        <numIter>12</numIter>
+        <numIter>5</numIter>
         <numSwitch>2</numSwitch>
         #Number of iterations to ignore initially
         <iterIgnore>2</iterIgnore>

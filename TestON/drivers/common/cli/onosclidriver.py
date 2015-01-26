@@ -868,6 +868,8 @@ class OnosCliDriver( CLI ):
             handle = self.sendline( cmdStr )
             main.log.info( "Host intent installed between " +
                            str( hostIdOne ) + " and " + str( hostIdTwo ) )
+            # There is no ouput here
+            # TODO Think about return values and refactor similar commands?
             return handle
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )

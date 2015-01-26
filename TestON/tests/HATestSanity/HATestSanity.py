@@ -54,7 +54,7 @@ class HATestSanity:
         PULLCODE = False
         if main.params[ 'Git' ] == 'True':
             PULLCODE = True
-
+        gitBranch = main.params[ 'branch' ]
         cellName = main.params[ 'ENV' ][ 'cellName' ]
 
         # set global variables
@@ -113,7 +113,7 @@ class HATestSanity:
         if PULLCODE:
             # TODO Configure branch in params
             main.step( "Git checkout and pull master" )
-            main.ONOSbench.gitCheckout( "master" )
+            main.ONOSbench.gitCheckout( gitBranch )
             gitPullResult = main.ONOSbench.gitPull()
 
             main.step( "Using mvn clean & install" )
@@ -412,6 +412,11 @@ class HATestSanity:
         pingResult = main.FALSE
         time1 = time.time()
         pingResult = main.Mininet1.pingall()
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=pingResult,
+            onpass="Reactive Pingall test passed",
+            onfail="Reactive Pingall failed, one or more ping pairs failed" )
         time2 = time.time()
         main.log.info( "Time for pingall: %2f seconds" % ( time2 - time1 ) )
 
@@ -441,9 +446,10 @@ class HATestSanity:
             host2Id = main.ONOScli1.getHost( host2 )[ 'id' ]
             # NOTE: get host can return None
             if host1Id and host2Id:
-                tmpResult = main.ONOScli1.addHostIntent(
+                main.ONOScli1.addHostIntent(
                     host1Id,
                     host2Id )
+                tmpResult = main.TRUE
             else:
                 main.log.error( "Error, getHost() failed" )
                 tmpResult = main.FALSE

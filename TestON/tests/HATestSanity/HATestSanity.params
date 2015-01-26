@@ -4,6 +4,7 @@
     <cellName>HA</cellName>
     </ENV>
     <Git>True</Git>
+    <branch>onos-1.0</branch>
     <num_controllers> 7 </num_controllers>
 
     <CTRL>

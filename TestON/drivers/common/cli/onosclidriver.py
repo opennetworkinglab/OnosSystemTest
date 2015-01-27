@@ -201,8 +201,8 @@ class OnosCliDriver( CLI ):
                 main.log.info( str( ONOSIp ) + " CLI Started successfully" )
                 if karafTimeout:
                     self.handle.sendline(
-                        "config:property-set -p org.apache.karaf.shel\
-                                l sshIdleTimeout " +
+                        "config:property-set -p org.apache.karaf.shell\
+                                 sshIdleTimeout " +
                         karafTimeout )
                     self.handle.expect( "\$" )
                     self.handle.sendline( "onos -w " + str( ONOSIp ) )
@@ -868,9 +868,14 @@ class OnosCliDriver( CLI ):
             cmdStr = "add-host-intent " + str( hostIdOne ) +\
                 " " + str( hostIdTwo )
             handle = self.sendline( cmdStr )
-            main.log.info( "Host intent installed between " +
+            if re.search( "Error", handle ):
+                main.log.error( "Error in adding Host intent" )
+                return handle
+            else:
+                main.log.info( "Host intent installed between " +
                            str( hostIdOne ) + " and " + str( hostIdTwo ) )
-            return handle
+                return main.TRUE
+
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )

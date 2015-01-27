@@ -25,7 +25,8 @@ class SdnIpTest:
         routeIntentsExpected: all expected MultiPointToSinglePointIntent intents
         bgpIntentsExpected: expected PointToPointIntent intents
         allRoutesActual: all routes from ONOS LCI
-        routeIntentsActual: actual MultiPointToSinglePointIntent intents from ONOS CLI
+        routeIntentsActual: actual MultiPointToSinglePointIntent intents from \
+        ONOS CLI
         bgpIntentsActual: actual PointToPointIntent intents from ONOS CLI
         """
         import time
@@ -34,10 +35,11 @@ class SdnIpTest:
         # from datetime import datetime
         from time import localtime, strftime
 
-        main.case(
-            "The test case is to help to setup the TestON environment and test new drivers" )
+        main.case("The test case is to help to setup the TestON environment \
+            and test new drivers" )
         # SDNIPJSONFILEPATH = "../tests/SdnIpTest/sdnip.json"
-        SDNIPJSONFILEPATH = "/home/admin/workspace/onos/tools/package/config/sdnip.json"
+        SDNIPJSONFILEPATH = \
+            "/home/admin/workspace/onos/tools/package/config/sdnip.json"
         # all expected routes for all BGP peers
         allRoutesExpected = []
         main.step( "Start to generate routes for all BGP peers" )
@@ -47,8 +49,10 @@ class SdnIpTest:
         # generate route with next hop
         for prefix in prefixesHost3:
             allRoutesExpected.append( prefix + "/" + "192.168.20.1" )
-        routeIntentsExpectedHost3 = main.QuaggaCliHost3.generateExpectedOnePeerRouteIntents(
-            prefixesHost3, "192.168.20.1", "00:00:00:00:02:02", SDNIPJSONFILEPATH )
+        routeIntentsExpectedHost3 = \
+            main.QuaggaCliHost3.generateExpectedOnePeerRouteIntents(
+            prefixesHost3, "192.168.20.1", "00:00:00:00:02:02",
+            SDNIPJSONFILEPATH )
 
         main.log.info( "Generate prefixes for host4" )
         prefixesHost4 = main.QuaggaCliHost4.generatePrefixes( 4, 10 )
@@ -56,16 +60,20 @@ class SdnIpTest:
         # generate route with next hop
         for prefix in prefixesHost4:
             allRoutesExpected.append( prefix + "/" + "192.168.30.1" )
-        routeIntentsExpectedHost4 = main.QuaggaCliHost4.generateExpectedOnePeerRouteIntents(
-            prefixesHost4, "192.168.30.1", "00:00:00:00:03:01", SDNIPJSONFILEPATH )
+        routeIntentsExpectedHost4 = \
+            main.QuaggaCliHost4.generateExpectedOnePeerRouteIntents(
+            prefixesHost4, "192.168.30.1", "00:00:00:00:03:01",
+            SDNIPJSONFILEPATH )
 
         main.log.info( "Generate prefixes for host5" )
         prefixesHost5 = main.QuaggaCliHost5.generatePrefixes( 5, 10 )
         main.log.info( prefixesHost5 )
         for prefix in prefixesHost5:
             allRoutesExpected.append( prefix + "/" + "192.168.60.2" )
-        routeIntentsExpectedHost5 = main.QuaggaCliHost5.generateExpectedOnePeerRouteIntents(
-            prefixesHost5, "192.168.60.1", "00:00:00:00:06:02", SDNIPJSONFILEPATH )
+        routeIntentsExpectedHost5 = \
+            main.QuaggaCliHost5.generateExpectedOnePeerRouteIntents(
+            prefixesHost5, "192.168.60.1", "00:00:00:00:06:02",
+            SDNIPJSONFILEPATH )
 
         routeIntentsExpected = routeIntentsExpectedHost3 + \
             routeIntentsExpectedHost4 + routeIntentsExpectedHost5
@@ -132,9 +140,10 @@ class SdnIpTest:
                 allRoutesExpected.append(
                     prefix + "/" + "192.168.40." + str( i - 100 ) )
 
-            routeIntentsExpectedHostX = main.QuaggaCliHost.generateExpectedOnePeerRouteIntents(
-                prefixesHostX, "192.168.40." + str( i - 100 ), "00:00:%02d:00:00:90" %
-                ( i - 101 ), SDNIPJSONFILEPATH )
+            routeIntentsExpectedHostX = \
+            main.QuaggaCliHost.generateExpectedOnePeerRouteIntents(
+                prefixesHostX, "192.168.40." + str( i - 100 ),
+                "00:00:%02d:00:00:90" % ( i - 101 ), SDNIPJSONFILEPATH )
             routeIntentsExpected = routeIntentsExpected + \
                 routeIntentsExpectedHostX
 
@@ -153,8 +162,8 @@ class SdnIpTest:
         getRoutesResult = main.ONOScli.routes( jsonFormat=True )
 
         # parse routes from ONOS CLI
-        allRoutesActual = main.QuaggaCliHost3.extractActualRoutes(
-            getRoutesResult )
+        allRoutesActual = \
+            main.QuaggaCliHost3.extractActualRoutes( getRoutesResult )
 
         allRoutesStrExpected = str( sorted( allRoutesExpected ) )
         allRoutesStrActual = str( allRoutesActual ).replace( 'u', "" )
@@ -165,8 +174,8 @@ class SdnIpTest:
         main.log.info( allRoutesStrActual )
         utilities.assertEquals(
             expect=allRoutesStrExpected, actual=allRoutesStrActual,
-                                onpass="***Routes in SDN-IP are correct!***",
-                                onfail="***Routes in SDN-IP are wrong!***" )
+            onpass="***Routes in SDN-IP are correct!***",
+            onfail="***Routes in SDN-IP are wrong!***" )
         if( eq( allRoutesStrExpected, allRoutesStrActual ) ):
             main.log.report(
                 "***Routes in SDN-IP after adding routes are correct!***" )
@@ -180,8 +189,8 @@ class SdnIpTest:
         main.step( "Check MultiPointToSinglePointIntent intents installed" )
         # routeIntentsExpected are generated when generating routes
         # get rpoute intents from ONOS CLI
-        routeIntentsActual = main.QuaggaCliHost3.extractActualRouteIntents(
-            getIntentsResult )
+        routeIntentsActual = \
+            main.QuaggaCliHost3.extractActualRouteIntents( getIntentsResult )
         routeIntentsStrExpected = str( sorted( routeIntentsExpected ) )
         routeIntentsStrActual = str( routeIntentsActual ).replace( 'u', "" )
         main.log.info( "MultiPointToSinglePoint intents expected:" )
@@ -189,25 +198,27 @@ class SdnIpTest:
         main.log.info( "MultiPointToSinglePoint intents get from ONOS CLI:" )
         main.log.info( routeIntentsStrActual )
         utilities.assertEquals(
-            expect=True, actual=eq(
-                routeIntentsStrExpected, routeIntentsStrActual ),
-                                onpass="***MultiPointToSinglePoint Intents in SDN-IP are correct!***",
-                                onfail="***MultiPointToSinglePoint Intents in SDN-IP are wrong!***" )
+            expect=True,
+            actual=eq( routeIntentsStrExpected, routeIntentsStrActual ),
+            onpass="***MultiPointToSinglePoint Intents in SDN-IP are \
+            correct!***",
+            onfail="***MultiPointToSinglePoint Intents in SDN-IP are \
+            wrong!***" )
 
         if( eq( routeIntentsStrExpected, routeIntentsStrActual ) ):
-            main.log.report(
-                "***MultiPointToSinglePoint Intents before deleting routes correct!***" )
+            main.log.report( "***MultiPointToSinglePoint Intents before \
+            deleting routes correct!***" )
         else:
-            main.log.report(
-                "***MultiPointToSinglePoint Intents before deleting routes wrong!***" )
+            main.log.report( "***MultiPointToSinglePoint Intents before \
+            deleting routes wrong!***" )
 
         main.step( "Check BGP PointToPointIntent intents installed" )
         # bgp intents expected
-        bgpIntentsExpected = main.QuaggaCliHost3.generateExpectedBgpIntents(
-            SDNIPJSONFILEPATH )
+        bgpIntentsExpected = \
+            main.QuaggaCliHost3.generateExpectedBgpIntents( SDNIPJSONFILEPATH )
         # get BGP intents from ONOS CLI
-        bgpIntentsActual = main.QuaggaCliHost3.extractActualBgpIntents(
-            getIntentsResult )
+        bgpIntentsActual = \
+            main.QuaggaCliHost3.extractActualBgpIntents( getIntentsResult )
 
         bgpIntentsStrExpected = str( bgpIntentsExpected ).replace( 'u', "" )
         bgpIntentsStrActual = str( bgpIntentsActual )
@@ -217,10 +228,10 @@ class SdnIpTest:
         main.log.info( bgpIntentsStrActual )
 
         utilities.assertEquals(
-            expect=True, actual=eq(
-                bgpIntentsStrExpected, bgpIntentsStrActual ),
-                                onpass="***PointToPointIntent Intents in SDN-IP are correct!***",
-                                onfail="***PointToPointIntent Intents in SDN-IP are wrong!***" )
+            expect=True,
+            actual=eq( bgpIntentsStrExpected, bgpIntentsStrActual ),
+            onpass="***PointToPointIntent Intents in SDN-IP are correct!***",
+            onfail="***PointToPointIntent Intents in SDN-IP are wrong!***" )
 
         if ( eq( bgpIntentsStrExpected, bgpIntentsStrActual ) ):
             main.log.report(
@@ -233,12 +244,11 @@ class SdnIpTest:
         # wait until all MultiPointToSinglePoint
         time.sleep( 20 )
         pingTestScript = "~/SDNIP/test-tools/CASE4-ping-as2host.sh"
-        pingTestResultsFile = "~/SDNIP/SdnIpIntentDemo/log/CASE4-ping-results-before-delete-routes-" + \
-            strftime( "%Y-%m-%d_%H:%M:%S", localtime() ) + ".txt"
+        pingTestResultsFile = \
+        "~/SDNIP/SdnIpIntentDemo/log/CASE4-ping-results-before-delete-routes-" \
+            + strftime( "%Y-%m-%d_%H:%M:%S", localtime() ) + ".txt"
         pingTestResults = main.QuaggaCliHost.pingTest(
-            "1.168.30.100",
-            pingTestScript,
-            pingTestResultsFile )
+            "1.168.30.100", pingTestScript, pingTestResultsFile )
         main.log.info( pingTestResults )
         time.sleep( 20 )
 
@@ -255,14 +265,15 @@ class SdnIpTest:
             QuaggaCliHostX.deleteRoutes( prefixesHostX, 1 )
 
         getRoutesResult = main.ONOScli.routes( jsonFormat=True )
-        allRoutesActual = main.QuaggaCliHost3.extractActualRoutes(
-            getRoutesResult )
+        allRoutesActual = \
+            main.QuaggaCliHost3.extractActualRoutes( getRoutesResult )
         main.log.info( "allRoutes_actual = " )
         main.log.info( allRoutesActual )
 
-        utilities.assertEquals( expect="[]", actual=str( allRoutesActual ),
-                                onpass="***Route number in SDN-IP is 0, correct!***",
-                                onfail="***Routes number in SDN-IP is not 0, wrong!***" )
+        utilities.assertEquals(
+            expect="[]", actual=str( allRoutesActual ),
+            onpass="***Route number in SDN-IP is 0, correct!***",
+            onfail="***Routes number in SDN-IP is not 0, wrong!***" )
 
         if( eq( allRoutesStrExpected, allRoutesStrActual ) ):
             main.log.report( "***Routes in SDN-IP after deleting correct!***" )
@@ -271,29 +282,31 @@ class SdnIpTest:
 
         main.step( "Check intents after deleting routes" )
         getIntentsResult = main.ONOScli.intents( jsonFormat=True )
-        routeIntentsActual = main.QuaggaCliHost3.extractActualRouteIntents(
-            getIntentsResult )
+        routeIntentsActual = \
+            main.QuaggaCliHost3.extractActualRouteIntents( getIntentsResult )
         main.log.info( "main.ONOScli.intents()= " )
         main.log.info( routeIntentsActual )
-        utilities.assertEquals( expect="[]", actual=str( routeIntentsActual ),
-                                onpass="***MultiPointToSinglePoint Intents number in SDN-IP is 0, correct!***",
-                                onfail="***MultiPointToSinglePoint Intents number in SDN-IP is 0, wrong!***" )
+        utilities.assertEquals(
+            expect="[]", actual=str( routeIntentsActual ),
+            onpass="***MultiPointToSinglePoint Intents number in SDN-IP is 0, \
+            correct!***",
+            onfail="***MultiPointToSinglePoint Intents number in SDN-IP is 0, \
+            wrong!***" )
 
         if( eq( routeIntentsStrExpected, routeIntentsStrActual ) ):
-            main.log.report(
-                "***MultiPointToSinglePoint Intents after deleting routes correct!***" )
+            main.log.report( "***MultiPointToSinglePoint Intents after \
+            deleting routes correct!***" )
         else:
-            main.log.report(
-                "***MultiPointToSinglePoint Intents after deleting routes wrong!***" )
+            main.log.report( "***MultiPointToSinglePoint Intents after \
+            deleting routes wrong!***" )
 
         time.sleep( 20 )
         pingTestScript = "~/SDNIP/test-tools/CASE4-ping-as2host.sh"
-        pingTestResultsFile = "~/SDNIP/SdnIpIntentDemo/log/CASE4-ping-results-after-delete-routes-" + \
-            strftime( "%Y-%m-%d_%H:%M:%S", localtime() ) + ".txt"
+        pingTestResultsFile = \
+        "~/SDNIP/SdnIpIntentDemo/log/CASE4-ping-results-after-delete-routes-" \
+            + strftime( "%Y-%m-%d_%H:%M:%S", localtime() ) + ".txt"
         pingTestResults = main.QuaggaCliHost.pingTest(
-            "1.168.30.100",
-            pingTestScript,
-            pingTestResultsFile )
+            "1.168.30.100", pingTestScript, pingTestResultsFile )
         main.log.info( pingTestResults )
         time.sleep( 100 )
 
@@ -308,7 +321,8 @@ class SdnIpTest:
         routeIntentsExpected: all expected MultiPointToSinglePointIntent intents
         bgpIntentsExpected: expected PointToPointIntent intents
         allRoutesActual: all routes from ONOS LCI
-        routeIntentsActual: actual MultiPointToSinglePointIntent intents from ONOS CLI
+        routeIntentsActual: actual MultiPointToSinglePointIntent intents from \
+        ONOS CLI
         bgpIntentsActual: actual PointToPointIntent intents from ONOS CLI
         """
         import time
@@ -317,10 +331,11 @@ class SdnIpTest:
         # from datetime import datetime
         from time import localtime, strftime
 
-        main.case(
-            "The test case is to help to setup the TestON environment and test new drivers" )
+        main.case( "The test case is to help to setup the TestON environment \
+            and test new drivers" )
         # SDNIPJSONFILEPATH = "../tests/SdnIpTest/sdnip.json"
-        SDNIPJSONFILEPATH = "/home/admin/workspace/onos/tools/package/config/sdnip.json"
+        SDNIPJSONFILEPATH = \
+            "/home/admin/workspace/onos/tools/package/config/sdnip.json"
         # all expected routes for all BGP peers
         allRoutesExpected = []
         main.step( "Start to generate routes for all BGP peers" )
@@ -330,8 +345,10 @@ class SdnIpTest:
         # generate route with next hop
         for prefix in prefixesHost3:
             allRoutesExpected.append( prefix + "/" + "192.168.20.1" )
-        routeIntentsExpectedHost3 = main.QuaggaCliHost3.generateExpectedOnePeerRouteIntents(
-            prefixesHost3, "192.168.20.1", "00:00:00:00:02:02", SDNIPJSONFILEPATH )
+        routeIntentsExpectedHost3 = \
+            main.QuaggaCliHost3.generateExpectedOnePeerRouteIntents(
+            prefixesHost3, "192.168.20.1", "00:00:00:00:02:02",
+            SDNIPJSONFILEPATH )
 
         main.log.info( "Generate prefixes for host4" )
         prefixesHost4 = main.QuaggaCliHost4.generatePrefixes( 4, 10 )
@@ -339,22 +356,13 @@ class SdnIpTest:
         # generate route with next hop
         for prefix in prefixesHost4:
             allRoutesExpected.append( prefix + "/" + "192.168.30.1" )
-        routeIntentsExpectedHost4 = main.QuaggaCliHost4.generateExpectedOnePeerRouteIntents(
-            prefixesHost4, "192.168.30.1", "00:00:00:00:03:01", SDNIPJSONFILEPATH )
+        routeIntentsExpectedHost4 = \
+            main.QuaggaCliHost4.generateExpectedOnePeerRouteIntents(
+            prefixesHost4, "192.168.30.1", "00:00:00:00:03:01",
+            SDNIPJSONFILEPATH )
 
         routeIntentsExpected = routeIntentsExpectedHost3 + \
             routeIntentsExpectedHost4
-
-        #
-        # main.log.info( "Generate prefixes for 100 guaggas" )
-        # for i in range( 101, 105 ):
-         #    prefixesHostX=main.QuaggaCliHost.generatePrefixes( str( i ),10 )
-         #    main.log.info( prefixesHostX )
-        # for prefix in prefixesHostX:
-        #    allRoutesExpected.append( prefix + "/" + "192.168.40."+ str( i-100 ) )
-        #    routeIntentsExpectedHostX = main.QuaggaCliHost.generateExpectedOnePeerRouteIntents( prefixesHostX, "192.168.40."+str( i ), "00:00:"+str( i-101 )+":00:00:90", SDNIPJSONFILEPATH )
-        # routeIntentsExpected = routeIntentsExpected + routeIntentsExpectedHostX
-        #
 
         cellName = main.params[ 'ENV' ][ 'cellName' ]
         ONOS1Ip = main.params[ 'CTRL' ][ 'ip1' ]
@@ -411,9 +419,10 @@ class SdnIpTest:
                 allRoutesExpected.append(
                     prefix + "/" + "192.168.40." + str( i - 100 ) )
 
-            routeIntentsExpectedHostX = main.QuaggaCliHost.generateExpectedOnePeerRouteIntents(
-                prefixesHostX, "192.168.40." + str( i - 100 ), "00:00:%02d:00:00:90" %
-                ( i - 101 ), SDNIPJSONFILEPATH )
+            routeIntentsExpectedHostX = \
+                main.QuaggaCliHost.generateExpectedOnePeerRouteIntents(
+                prefixesHostX, "192.168.40." + str( i - 100 ),
+                "00:00:%02d:00:00:90" % ( i - 101 ), SDNIPJSONFILEPATH )
             routeIntentsExpected = routeIntentsExpected + \
                 routeIntentsExpectedHostX
 
@@ -432,8 +441,8 @@ class SdnIpTest:
         getRoutesResult = main.ONOScli.routes( jsonFormat=True )
 
         # parse routes from ONOS CLI
-        allRoutesActual = main.QuaggaCliHost3.extractActualRoutes(
-            getRoutesResult )
+        allRoutesActual = \
+            main.QuaggaCliHost3.extractActualRoutes( getRoutesResult )
 
         allRoutesStrExpected = str( sorted( allRoutesExpected ) )
         allRoutesStrActual = str( allRoutesActual ).replace( 'u', "" )
@@ -444,8 +453,8 @@ class SdnIpTest:
         main.log.info( allRoutesStrActual )
         utilities.assertEquals(
             expect=allRoutesStrExpected, actual=allRoutesStrActual,
-                                onpass="***Routes in SDN-IP are correct!***",
-                                onfail="***Routes in SDN-IP are wrong!***" )
+            onpass="***Routes in SDN-IP are correct!***",
+            onfail="***Routes in SDN-IP are wrong!***" )
         if( eq( allRoutesStrExpected, allRoutesStrActual ) ):
             main.log.report(
                 "***Routes in SDN-IP after adding routes are correct!***" )
@@ -459,8 +468,8 @@ class SdnIpTest:
         main.step( "Check MultiPointToSinglePointIntent intents installed" )
         # routeIntentsExpected are generated when generating routes
         # get rpoute intents from ONOS CLI
-        routeIntentsActual = main.QuaggaCliHost3.extractActualRouteIntents(
-            getIntentsResult )
+        routeIntentsActual = \
+            main.QuaggaCliHost3.extractActualRouteIntents( getIntentsResult )
         routeIntentsStrExpected = str( sorted( routeIntentsExpected ) )
         routeIntentsStrActual = str( routeIntentsActual ).replace( 'u', "" )
         main.log.info( "MultiPointToSinglePoint intents expected:" )
@@ -468,17 +477,21 @@ class SdnIpTest:
         main.log.info( "MultiPointToSinglePoint intents get from ONOS CLI:" )
         main.log.info( routeIntentsStrActual )
         utilities.assertEquals(
-            expect=True, actual=eq(
-                routeIntentsStrExpected, routeIntentsStrActual ),
-                                onpass="***MultiPointToSinglePoint Intents in SDN-IP are correct!***",
-                                onfail="***MultiPointToSinglePoint Intents in SDN-IP are wrong!***" )
+            expect=True,
+            actual=eq( routeIntentsStrExpected, routeIntentsStrActual ),
+            onpass="***MultiPointToSinglePoint Intents in SDN-IP are \
+            correct!***",
+            onfail="***MultiPointToSinglePoint Intents in SDN-IP are \
+            wrong!***" )
 
         if( eq( routeIntentsStrExpected, routeIntentsStrActual ) ):
             main.log.report(
-                "***MultiPointToSinglePoint Intents before deleting routes correct!***" )
+                "***MultiPointToSinglePoint Intents before deleting routes \
+                correct!***" )
         else:
             main.log.report(
-                "***MultiPointToSinglePoint Intents before deleting routes wrong!***" )
+                "***MultiPointToSinglePoint Intents before deleting routes \
+                wrong!***" )
 
         main.step( "Check BGP PointToPointIntent intents installed" )
         # bgp intents expected
@@ -496,10 +509,10 @@ class SdnIpTest:
         main.log.info( bgpIntentsStrActual )
 
         utilities.assertEquals(
-            expect=True, actual=eq(
-                bgpIntentsStrExpected, bgpIntentsStrActual ),
-                                onpass="***PointToPointIntent Intents in SDN-IP are correct!***",
-                                onfail="***PointToPointIntent Intents in SDN-IP are wrong!***" )
+            expect=True,
+            actual=eq( bgpIntentsStrExpected, bgpIntentsStrActual ),
+            onpass="***PointToPointIntent Intents in SDN-IP are correct!***",
+            onfail="***PointToPointIntent Intents in SDN-IP are wrong!***" )
 
         if ( eq( bgpIntentsStrExpected, bgpIntentsStrActual ) ):
             main.log.report(
@@ -512,12 +525,11 @@ class SdnIpTest:
         # wait until all MultiPointToSinglePoint
         time.sleep( 20 )
         pingTestScript = "~/SDNIP/test-tools/CASE3-ping-as2host.sh"
-        pingTestResultsFile = "~/SDNIP/SdnIpIntentDemo/log/CASE3-ping-results-before-delete-routes-" + \
-            strftime( "%Y-%m-%d_%H:%M:%S", localtime() ) + ".txt"
+        pingTestResultsFile = \
+        "~/SDNIP/SdnIpIntentDemo/log/CASE3-ping-results-before-delete-routes-" \
+            + strftime( "%Y-%m-%d_%H:%M:%S", localtime() ) + ".txt"
         pingTestResults = main.QuaggaCliHost.pingTest(
-            "1.168.30.100",
-            pingTestScript,
-            pingTestResultsFile )
+            "1.168.30.100", pingTestScript, pingTestResultsFile )
         main.log.info( pingTestResults )
         time.sleep( 20 )
 
@@ -537,9 +549,10 @@ class SdnIpTest:
         main.log.info( "allRoutes_actual = " )
         main.log.info( allRoutesActual )
 
-        utilities.assertEquals( expect="[]", actual=str( allRoutesActual ),
-                                onpass="***Route number in SDN-IP is 0, correct!***",
-                                onfail="***Routes number in SDN-IP is not 0, wrong!***" )
+        utilities.assertEquals(
+            expect="[]", actual=str( allRoutesActual ),
+            onpass="***Route number in SDN-IP is 0, correct!***",
+            onfail="***Routes number in SDN-IP is not 0, wrong!***" )
 
         if( eq( allRoutesStrExpected, allRoutesStrActual ) ):
             main.log.report( "***Routes in SDN-IP after deleting correct!***" )
@@ -548,29 +561,33 @@ class SdnIpTest:
 
         main.step( "Check intents after deleting routes" )
         getIntentsResult = main.ONOScli.intents( jsonFormat=True )
-        routeIntentsActual = main.QuaggaCliHost3.extractActualRouteIntents(
-            getIntentsResult )
+        routeIntentsActual = \
+            main.QuaggaCliHost3.extractActualRouteIntents( getIntentsResult )
         main.log.info( "main.ONOScli.intents()= " )
         main.log.info( routeIntentsActual )
-        utilities.assertEquals( expect="[]", actual=str( routeIntentsActual ),
-                                onpass="***MultiPointToSinglePoint Intents number in SDN-IP is 0, correct!***",
-                                onfail="***MultiPointToSinglePoint Intents number in SDN-IP is 0, wrong!***" )
+        utilities.assertEquals(
+            expect="[]", actual=str( routeIntentsActual ),
+            onpass="***MultiPointToSinglePoint Intents number in SDN-IP is 0, \
+            correct!***",
+            onfail="***MultiPointToSinglePoint Intents number in SDN-IP is 0, \
+            wrong!***" )
 
         if( eq( routeIntentsStrExpected, routeIntentsStrActual ) ):
             main.log.report(
-                "***MultiPointToSinglePoint Intents after deleting routes correct!***" )
+                "***MultiPointToSinglePoint Intents after deleting routes \
+                correct!***" )
         else:
             main.log.report(
-                "***MultiPointToSinglePoint Intents after deleting routes wrong!***" )
+                "***MultiPointToSinglePoint Intents after deleting routes \
+                wrong!***" )
 
         time.sleep( 20 )
         pingTestScript = "~/SDNIP/test-tools/CASE3-ping-as2host.sh"
-        pingTestResultsFile = "~/SDNIP/SdnIpIntentDemo/log/CASE3-ping-results-after-delete-routes-" + \
-            strftime( "%Y-%m-%d_%H:%M:%S", localtime() ) + ".txt"
+        pingTestResultsFile = \
+        "~/SDNIP/SdnIpIntentDemo/log/CASE3-ping-results-after-delete-routes-" \
+            + strftime( "%Y-%m-%d_%H:%M:%S", localtime() ) + ".txt"
         pingTestResults = main.QuaggaCliHost.pingTest(
-            "1.168.30.100",
-            pingTestScript,
-            pingTestResultsFile )
+            "1.168.30.100", pingTestScript, pingTestResultsFile )
         main.log.info( pingTestResults )
         time.sleep( 100 )
 
@@ -585,7 +602,8 @@ class SdnIpTest:
         routeIntentsExpected: all expected MultiPointToSinglePointIntent intents
         bgpIntentsExpected: expected PointToPointIntent intents
         allRoutesActual: all routes from ONOS LCI
-        routeIntentsActual: actual MultiPointToSinglePointIntent intents from ONOS CLI
+        routeIntentsActual: actual MultiPointToSinglePointIntent intents from \
+        ONOS CLI
         bgpIntentsActual: actual PointToPointIntent intents from ONOS CLI
         """
         import time
@@ -594,8 +612,8 @@ class SdnIpTest:
         # from datetime import datetime
         from time import localtime, strftime
 
-        main.case(
-            "The test case is to help to setup the TestON environment and test new drivers" )
+        main.case("The test case is to help to setup the TestON environment \
+            and test new drivers" )
         SDNIPJSONFILEPATH = "../tests/SdnIpTest/sdnip.json"
         # all expected routes for all BGP peers
         allRoutesExpected = []
@@ -617,8 +635,10 @@ class SdnIpTest:
         # generate route with next hop
         for prefix in prefixesHost3:
             allRoutesExpected.append( prefix + "/" + "192.168.20.1" )
-        routeIntentsExpectedHost3 = main.QuaggaCliHost3.generateExpectedOnePeerRouteIntents(
-            prefixesHost3, "192.168.20.1", "00:00:00:00:02:02", SDNIPJSONFILEPATH )
+        routeIntentsExpectedHost3 = \
+            main.QuaggaCliHost3.generateExpectedOnePeerRouteIntents(
+            prefixesHost3, "192.168.20.1", "00:00:00:00:02:02",
+            SDNIPJSONFILEPATH )
 
         main.log.info( "Generate prefixes for host4" )
         prefixesHost4 = main.QuaggaCliHost4.generatePrefixes( 4, 10 )
@@ -626,8 +646,10 @@ class SdnIpTest:
         # generate route with next hop
         for prefix in prefixesHost4:
             allRoutesExpected.append( prefix + "/" + "192.168.30.1" )
-        routeIntentsExpectedHost4 = main.QuaggaCliHost4.generateExpectedOnePeerRouteIntents(
-            prefixesHost4, "192.168.30.1", "00:00:00:00:03:01", SDNIPJSONFILEPATH )
+        routeIntentsExpectedHost4 = \
+            main.QuaggaCliHost4.generateExpectedOnePeerRouteIntents(
+            prefixesHost4, "192.168.30.1", "00:00:00:00:03:01",
+            SDNIPJSONFILEPATH )
 
         routeIntentsExpected = routeIntentsExpectedHost3 + \
             routeIntentsExpectedHost4
@@ -689,8 +711,8 @@ class SdnIpTest:
         getRoutesResult = main.ONOScli.routes( jsonFormat=True )
 
         # parse routes from ONOS CLI
-        allRoutesActual = main.QuaggaCliHost3.extractActualRoutes(
-            getRoutesResult )
+        allRoutesActual = \
+            main.QuaggaCliHost3.extractActualRoutes( getRoutesResult )
 
         allRoutesStrExpected = str( sorted( allRoutesExpected ) )
         allRoutesStrActual = str( allRoutesActual ).replace( 'u', "" )
@@ -701,8 +723,8 @@ class SdnIpTest:
         main.log.info( allRoutesStrActual )
         utilities.assertEquals(
             expect=allRoutesStrExpected, actual=allRoutesStrActual,
-                                onpass="***Routes in SDN-IP are correct!***",
-                                onfail="***Routes in SDN-IP are wrong!***" )
+            onpass="***Routes in SDN-IP are correct!***",
+            onfail="***Routes in SDN-IP are wrong!***" )
         if( eq( allRoutesStrExpected, allRoutesStrActual ) ):
             main.log.report(
                 "***Routes in SDN-IP after adding routes are correct!***" )
@@ -716,8 +738,8 @@ class SdnIpTest:
         main.step( "Check MultiPointToSinglePointIntent intents installed" )
         # routeIntentsExpected are generated when generating routes
         # get rpoute intents from ONOS CLI
-        routeIntentsActual = main.QuaggaCliHost3.extractActualRouteIntents(
-            getIntentsResult )
+        routeIntentsActual = \
+            main.QuaggaCliHost3.extractActualRouteIntents( getIntentsResult )
         routeIntentsStrExpected = str( sorted( routeIntentsExpected ) )
         routeIntentsStrActual = str( routeIntentsActual ).replace( 'u', "" )
         main.log.info( "MultiPointToSinglePoint intents expected:" )
@@ -725,22 +747,26 @@ class SdnIpTest:
         main.log.info( "MultiPointToSinglePoint intents get from ONOS CLI:" )
         main.log.info( routeIntentsStrActual )
         utilities.assertEquals(
-            expect=True, actual=eq(
-                routeIntentsStrExpected, routeIntentsStrActual ),
-                                onpass="***MultiPointToSinglePoint Intents in SDN-IP are correct!***",
-                                onfail="***MultiPointToSinglePoint Intents in SDN-IP are wrong!***" )
+            expect=True,
+            actual=eq( routeIntentsStrExpected, routeIntentsStrActual ),
+            onpass="***MultiPointToSinglePoint Intents in SDN-IP are \
+            correct!***",
+            onfail="***MultiPointToSinglePoint Intents in SDN-IP are \
+            wrong!***" )
 
         if( eq( routeIntentsStrExpected, routeIntentsStrActual ) ):
             main.log.report(
-                "***MultiPointToSinglePoint Intents before deleting routes correct!***" )
+                "***MultiPointToSinglePoint Intents before deleting routes \
+                correct!***" )
         else:
             main.log.report(
-                "***MultiPointToSinglePoint Intents before deleting routes wrong!***" )
+                "***MultiPointToSinglePoint Intents before deleting routes \
+                wrong!***" )
 
         main.step( "Check BGP PointToPointIntent intents installed" )
         # bgp intents expected
-        bgpIntentsExpected = main.QuaggaCliHost3.generateExpectedBgpIntents(
-            SDNIPJSONFILEPATH )
+        bgpIntentsExpected = \
+            main.QuaggaCliHost3.generateExpectedBgpIntents( SDNIPJSONFILEPATH )
         # get BGP intents from ONOS CLI
         bgpIntentsActual = main.QuaggaCliHost3.extractActualBgpIntents(
             getIntentsResult )
@@ -753,10 +779,10 @@ class SdnIpTest:
         main.log.info( bgpIntentsStrActual )
 
         utilities.assertEquals(
-            expect=True, actual=eq(
-                bgpIntentsStrExpected, bgpIntentsStrActual ),
-                                onpass="***PointToPointIntent Intents in SDN-IP are correct!***",
-                                onfail="***PointToPointIntent Intents in SDN-IP are wrong!***" )
+            expect=True,
+            actual=eq( bgpIntentsStrExpected, bgpIntentsStrActual ),
+            onpass="***PointToPointIntent Intents in SDN-IP are correct!***",
+            onfail="***PointToPointIntent Intents in SDN-IP are wrong!***" )
 
         if ( eq( bgpIntentsStrExpected, bgpIntentsStrActual ) ):
             main.log.report(
@@ -769,12 +795,11 @@ class SdnIpTest:
         # wait until all MultiPointToSinglePoint
         time.sleep( 20 )
         pingTestScript = "~/SDNIP/SdnIpIntentDemo/CASE1-ping-as2host.sh"
-        pingTestResultsFile = "~/SDNIP/SdnIpIntentDemo/log/CASE1-ping-results-before-delete-routes-" + \
-            strftime( "%Y-%m-%d_%H:%M:%S", localtime() ) + ".txt"
+        pingTestResultsFile = \
+        "~/SDNIP/SdnIpIntentDemo/log/CASE1-ping-results-before-delete-routes-" \
+             + strftime( "%Y-%m-%d_%H:%M:%S", localtime() ) + ".txt"
         pingTestResults = main.QuaggaCliHost.pingTest(
-            "1.168.30.100",
-            pingTestScript,
-            pingTestResultsFile )
+            "1.168.30.100", pingTestScript, pingTestResultsFile )
         main.log.info( pingTestResults )
 
         # ping test
@@ -789,14 +814,15 @@ class SdnIpTest:
         # utilities.assertEquals( expect="Total SDN-IP routes = 1", actual=
         # main.ONOScli.getRoutesNum(),
         getRoutesResult = main.ONOScli.routes( jsonFormat=True )
-        allRoutesActual = main.QuaggaCliHost3.extractActualRoutes(
-            getRoutesResult )
+        allRoutesActual = \
+            main.QuaggaCliHost3.extractActualRoutes( getRoutesResult )
         main.log.info( "allRoutes_actual = " )
         main.log.info( allRoutesActual )
 
-        utilities.assertEquals( expect="[]", actual=str( allRoutesActual ),
-                                onpass="***Route number in SDN-IP is 0, correct!***",
-                                onfail="***Routes number in SDN-IP is not 0, wrong!***" )
+        utilities.assertEquals(
+            expect="[]", actual=str( allRoutesActual ),
+            onpass="***Route number in SDN-IP is 0, correct!***",
+            onfail="***Routes number in SDN-IP is not 0, wrong!***" )
 
         if( eq( allRoutesStrExpected, allRoutesStrActual ) ):
             main.log.report( "***Routes in SDN-IP after deleting correct!***" )
@@ -805,29 +831,33 @@ class SdnIpTest:
 
         main.step( "Check intents after deleting routes" )
         getIntentsResult = main.ONOScli.intents( jsonFormat=True )
-        routeIntentsActual = main.QuaggaCliHost3.extractActualRouteIntents(
-            getIntentsResult )
+        routeIntentsActual = \
+            main.QuaggaCliHost3.extractActualRouteIntents( getIntentsResult )
         main.log.info( "main.ONOScli.intents()= " )
         main.log.info( routeIntentsActual )
-        utilities.assertEquals( expect="[]", actual=str( routeIntentsActual ),
-                                onpass="***MultiPointToSinglePoint Intents number in SDN-IP is 0, correct!***",
-                                onfail="***MultiPointToSinglePoint Intents number in SDN-IP is 0, wrong!***" )
+        utilities.assertEquals(
+            expect="[]", actual=str( routeIntentsActual ),
+            onpass="***MultiPointToSinglePoint Intents number in SDN-IP is 0, \
+            correct!***",
+            onfail="***MultiPointToSinglePoint Intents number in SDN-IP is 0, \
+            wrong!***" )
 
         if( eq( routeIntentsStrExpected, routeIntentsStrActual ) ):
             main.log.report(
-                "***MultiPointToSinglePoint Intents after deleting routes correct!***" )
+                "***MultiPointToSinglePoint Intents after deleting routes \
+                correct!***" )
         else:
             main.log.report(
-                "***MultiPointToSinglePoint Intents after deleting routes wrong!***" )
+                "***MultiPointToSinglePoint Intents after deleting routes \
+                wrong!***" )
 
         time.sleep( 20 )
         pingTestScript = "~/SDNIP/SdnIpIntentDemo/CASE1-ping-as2host.sh"
-        pingTestResultsFile = "~/SDNIP/SdnIpIntentDemo/log/CASE1-ping-results-after-delete-routes-" + \
-            strftime( "%Y-%m-%d_%H:%M:%S", localtime() ) + ".txt"
+        pingTestResultsFile = \
+        "~/SDNIP/SdnIpIntentDemo/log/CASE1-ping-results-after-delete-routes-" \
+             + strftime( "%Y-%m-%d_%H:%M:%S", localtime() ) + ".txt"
         pingTestResults = main.QuaggaCliHost.pingTest(
-            "1.168.30.100",
-            pingTestScript,
-            pingTestResultsFile )
+            "1.168.30.100", pingTestScript, pingTestResultsFile )
         main.log.info( pingTestResults )
         time.sleep( 30 )
 
@@ -842,7 +872,8 @@ class SdnIpTest:
         routeIntentsExpected: all expected MultiPointToSinglePointIntent intents
         bgpIntentsExpected: expected PointToPointIntent intents
         allRoutesActual: all routes from ONOS LCI
-        routeIntentsActual: actual MultiPointToSinglePointIntent intents from ONOS CLI
+        routeIntentsActual: actual MultiPointToSinglePointIntent intents from \
+        ONOS CLI
         bgpIntentsActual: actual PointToPointIntent intents from ONOS CLI
         """
         import time
@@ -851,7 +882,8 @@ class SdnIpTest:
         from time import localtime, strftime
 
         main.case(
-            "The test case is to help to setup the TestON environment and test new drivers" )
+            "The test case is to help to setup the TestON environment and test \
+            new drivers" )
         SDNIPJSONFILEPATH = "../tests/SdnIpTest/sdnip.json"
         # all expected routes for all BGP peers
         allRoutesExpected = []
@@ -863,8 +895,10 @@ class SdnIpTest:
         # generate route with next hop
         for prefix in prefixesHost3:
             allRoutesExpected.append( prefix + "/" + "192.168.20.1" )
-        routeIntentsExpectedHost3 = main.QuaggaCliHost3.generateExpectedOnePeerRouteIntents(
-            prefixesHost3, "192.168.20.1", "00:00:00:00:02:02", SDNIPJSONFILEPATH )
+        routeIntentsExpectedHost3 = \
+            main.QuaggaCliHost3.generateExpectedOnePeerRouteIntents(
+            prefixesHost3, "192.168.20.1", "00:00:00:00:02:02",
+            SDNIPJSONFILEPATH )
 
         main.log.info( "Generate prefixes for host4" )
         prefixesHost4 = main.QuaggaCliHost4.generatePrefixes( 4, 10 )
@@ -872,8 +906,10 @@ class SdnIpTest:
         # generate route with next hop
         for prefix in prefixesHost4:
             allRoutesExpected.append( prefix + "/" + "192.168.30.1" )
-        routeIntentsExpectedHost4 = main.QuaggaCliHost4.generateExpectedOnePeerRouteIntents(
-            prefixesHost4, "192.168.30.1", "00:00:00:00:03:01", SDNIPJSONFILEPATH )
+        routeIntentsExpectedHost4 = \
+            main.QuaggaCliHost4.generateExpectedOnePeerRouteIntents(
+            prefixesHost4, "192.168.30.1", "00:00:00:00:03:01",
+            SDNIPJSONFILEPATH )
 
         routeIntentsExpected = routeIntentsExpectedHost3 + \
             routeIntentsExpectedHost4
@@ -933,10 +969,10 @@ class SdnIpTest:
         main.log.info( bgpIntentsStrActual )
 
         utilities.assertEquals(
-            expect=True, actual=eq(
-                bgpIntentsStrExpected, bgpIntentsStrActual ),
-                                onpass="***PointToPointIntent Intents in SDN-IP are correct!***",
-                                onfail="***PointToPointIntent Intents in SDN-IP are wrong!***" )
+            expect=True,
+            actual=eq( bgpIntentsStrExpected, bgpIntentsStrActual ),
+            onpass="***PointToPointIntent Intents in SDN-IP are correct!***",
+            onfail="***PointToPointIntent Intents in SDN-IP are wrong!***" )
 
         if ( eq( bgpIntentsStrExpected, bgpIntentsStrActual ) ):
             main.log.report(
@@ -953,7 +989,7 @@ class SdnIpTest:
         for roundNum in range( 1, 6 ):
             # round = round + 1;
             main.log.report( "The Round " + str( roundNum ) +
-                             " test starts........................................" )
+                " test starts..................................." )
 
             main.step( "Login all BGP peers and add routes into peers" )
             main.log.info( "Login Quagga CLI on host3" )
@@ -975,8 +1011,8 @@ class SdnIpTest:
             getRoutesResult = main.ONOScli.routes( jsonFormat=True )
 
             # parse routes from ONOS CLI
-            allRoutesActual = main.QuaggaCliHost3.extractActualRoutes(
-                getRoutesResult )
+            allRoutesActual = \
+                main.QuaggaCliHost3.extractActualRoutes( getRoutesResult )
 
             # allRoutesStrExpected = str( sorted( allRoutesExpected ) )
             allRoutesStrActual = str( allRoutesActual ).replace( 'u', "" )
@@ -987,8 +1023,8 @@ class SdnIpTest:
             main.log.info( allRoutesStrActual )
             utilities.assertEquals(
                 expect=allRoutesStrExpected, actual=allRoutesStrActual,
-                                    onpass="***Routes in SDN-IP are correct!***",
-                                    onfail="***Routes in SDN-IP are wrong!***" )
+                onpass="***Routes in SDN-IP are correct!***",
+                onfail="***Routes in SDN-IP are wrong!***" )
             if( eq( allRoutesStrExpected, allRoutesStrActual ) ):
                 main.log.report(
                     "***Routes in SDN-IP after adding correct!***" )
@@ -1002,42 +1038,42 @@ class SdnIpTest:
                 "Check MultiPointToSinglePointIntent intents installed" )
             # routeIntentsExpected are generated when generating routes
             # get route intents from ONOS CLI
-            routeIntentsActual = main.QuaggaCliHost3.extractActualRouteIntents(
-                getIntentsResult )
+            routeIntentsActual = \
+                main.QuaggaCliHost3.extractActualRouteIntents( getIntentsResult )
             # routeIntentsStrExpected = str( sorted( routeIntentsExpected ) )
             routeIntentsStrActual = str(
-                routeIntentsActual ).replace(
-                    'u',
-                    "" )
+                routeIntentsActual ).replace( 'u', "" )
             main.log.info( "MultiPointToSinglePoint intents expected:" )
             main.log.info( routeIntentsStrExpected )
             main.log.info(
                 "MultiPointToSinglePoint intents get from ONOS CLI:" )
             main.log.info( routeIntentsStrActual )
             utilities.assertEquals(
-                expect=True, actual=eq(
-                    routeIntentsStrExpected, routeIntentsStrActual ),
-                                    onpass="***MultiPointToSinglePoint Intents in SDN-IP are correct!***",
-                                    onfail="***MultiPointToSinglePoint Intents in SDN-IP are wrong!***" )
+                expect=True,
+                actual=eq( routeIntentsStrExpected, routeIntentsStrActual ),
+                onpass="***MultiPointToSinglePoint Intents in SDN-IP are \
+                correct!***",
+                onfail="***MultiPointToSinglePoint Intents in SDN-IP are \
+                wrong!***" )
 
             if( eq( routeIntentsStrExpected, routeIntentsStrActual ) ):
                 main.log.report(
-                    "***MultiPointToSinglePoint Intents after adding routes correct!***" )
+                    "***MultiPointToSinglePoint Intents after adding routes \
+                    correct!***" )
             else:
                 main.log.report(
-                    "***MultiPointToSinglePoint Intents after adding routes wrong!***" )
+                    "***MultiPointToSinglePoint Intents after adding routes \
+                    wrong!***" )
 
             #============================= Ping Test ========================
             # wait until all MultiPointToSinglePoint
             time.sleep( 20 )
             # pingTestScript = "~/SDNIP/SdnIpIntentDemo/CASE1-ping-as2host.sh"
-            pingTestResultsFile = "~/SDNIP/SdnIpIntentDemo/log/CASE2-Round" + str(
-                roundNum ) + "-ping-results-before-delete-routes-" + strftime( "%Y-%m-%d_%H:%M:%S",
-                                                                                 localtime() ) + ".txt"
+            pingTestResultsFile = "~/SDNIP/SdnIpIntentDemo/log/CASE2-Round" \
+                + str( roundNum ) + "-ping-results-before-delete-routes-" \
+                + strftime( "%Y-%m-%d_%H:%M:%S", localtime() ) + ".txt"
             pingTestResults = main.QuaggaCliHost.pingTest(
-                "1.168.30.100",
-                pingTestScript,
-                pingTestResultsFile )
+                "1.168.30.100", pingTestScript, pingTestResultsFile )
             main.log.info( pingTestResults )
             # ping test
 
@@ -1049,14 +1085,15 @@ class SdnIpTest:
             main.QuaggaCliHost4.deleteRoutes( prefixesHost4, 1 )
 
             getRoutesResult = main.ONOScli.routes( jsonFormat=True )
-            allRoutesActual = main.QuaggaCliHost3.extractActualRoutes(
-                getRoutesResult )
+            allRoutesActual = \
+                main.QuaggaCliHost3.extractActualRoutes( getRoutesResult )
             main.log.info( "allRoutes_actual = " )
             main.log.info( allRoutesActual )
 
-            utilities.assertEquals( expect="[]", actual=str( allRoutesActual ),
-                                    onpass="***Route number in SDN-IP is 0, correct!***",
-                                    onfail="***Routes number in SDN-IP is not 0, wrong!***" )
+            utilities.assertEquals(
+                expect="[]", actual=str( allRoutesActual ),
+                onpass="***Route number in SDN-IP is 0, correct!***",
+                onfail="***Routes number in SDN-IP is not 0, wrong!***" )
 
             if( eq( allRoutesStrExpected, allRoutesStrActual ) ):
                 main.log.report(
@@ -1067,31 +1104,33 @@ class SdnIpTest:
 
             main.step( "Check intents after deleting routes" )
             getIntentsResult = main.ONOScli.intents( jsonFormat=True )
-            routeIntentsActual = main.QuaggaCliHost3.extractActualRouteIntents(
-                getIntentsResult )
+            routeIntentsActual = \
+                main.QuaggaCliHost3.extractActualRouteIntents( getIntentsResult )
             main.log.info( "main.ONOScli.intents()= " )
             main.log.info( routeIntentsActual )
             utilities.assertEquals(
                 expect="[]", actual=str( routeIntentsActual ),
-                                    onpass="***MultiPointToSinglePoint Intents number in SDN-IP is 0, correct!***",
-                                    onfail="***MultiPointToSinglePoint Intents number in SDN-IP is 0, wrong!***" )
+                onpass="***MultiPointToSinglePoint Intents number in SDN-IP is \
+                0, correct!***",
+                onfail="***MultiPointToSinglePoint Intents number in SDN-IP is \
+                0, wrong!***" )
 
             if( eq( routeIntentsStrExpected, routeIntentsStrActual ) ):
                 main.log.report(
-                    "***MultiPointToSinglePoint Intents after deleting routes correct!***" )
+                    "***MultiPointToSinglePoint Intents after deleting routes \
+                    correct!***" )
             else:
                 main.log.report(
-                    "***MultiPointToSinglePoint Intents after deleting routes wrong!***" )
+                    "***MultiPointToSinglePoint Intents after deleting routes \
+                    wrong!***" )
 
             time.sleep( 20 )
             # pingTestScript = "~/SDNIP/SdnIpIntentDemo/CASE1-ping-as2host.sh"
-            pingTestResultsFile = "~/SDNIP/SdnIpIntentDemo/log/CASE2-Round" + str(
-                roundNum ) + "-ping-results-after-delete-routes-" + strftime( "%Y-%m-%d_%H:%M:%S",
-                                                                                 localtime() ) + ".txt"
+            pingTestResultsFile = "~/SDNIP/SdnIpIntentDemo/log/CASE2-Round" \
+                + str( roundNum ) + "-ping-results-after-delete-routes-" \
+                + strftime( "%Y-%m-%d_%H:%M:%S", localtime() ) + ".txt"
             pingTestResults = main.QuaggaCliHost.pingTest(
-                "1.168.30.100",
-                pingTestScript,
-                pingTestResultsFile )
+                "1.168.30.100", pingTestScript, pingTestResultsFile )
             main.log.info( pingTestResults )
             time.sleep( 30 )
 

@@ -443,6 +443,7 @@ class OnosCHO:
                                  onfail="PING ALL FAIL" )
 
         case4Result = ( intentResult and pingResult )
+        #case4Result = pingResult
         utilities.assert_equals(
             expect=main.TRUE,
             actual=case4Result,
@@ -470,7 +471,7 @@ class OnosCHO:
         main.step( "Verify number of Switch links to toggle on each Core Switch are between 1 - 5" )
         if ( int( switchLinksToToggle ) ==
              0 or int( switchLinksToToggle ) > 5 ):
-            main.log.info( "Please check you PARAMS file. Valid range for number of switch links to toggle is between 1 to 5" )
+            main.log.info( "Please check your PARAMS file. Valid range for number of switch links to toggle is between 1 to 5" )
             main.cleanup()
             main.exit()
         else:
@@ -834,7 +835,7 @@ class OnosCHO:
             print "Intent IDs: ", intentIdList
             for id in range( len( intentIdList ) ):
                 print "Removing intent id (round 1) :", intentIdList[ id ]
-                main.ONOScli1.removeIntent( intent_id=intentIdList[ id ] )
+                main.ONOScli1.removeIntent( intentId=intentIdList[ id ] )
                 time.sleep( 1 )
 
             main.log.info(
@@ -861,7 +862,7 @@ class OnosCHO:
                 for id in range( len( intentIdList1 ) ):
                     print "Removing intent id (round 2):", intentIdList1[ id ]
                     main.ONOScli1.removeIntent(
-                        intent_id=intentIdList1[ id ] )
+                        intentId=intentIdList1[ id ] )
                     time.sleep( 2 )
             else:
                 print "There are no more intents that need to be removed"

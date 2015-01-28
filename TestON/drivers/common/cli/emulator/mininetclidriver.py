@@ -129,7 +129,7 @@ class MininetCliDriver( Emulator ):
                     ": Something while cleaning MN took too long... " )
            """
 
-    def startNet( self, topoFile = None, args = None ):
+    def startNet( self, topoFile = '', args = '', timeout = 120 ):
 
         self.name = self.options[ 'name' ]
         if self.handle:
@@ -141,7 +141,7 @@ class MininetCliDriver( Emulator ):
                                       'Cleanup\scomplete',
                                       pexpect.EOF,
                                       pexpect.TIMEOUT ],
-                                    120 )
+                                    timeout )
             if i == 0:
                 main.log.info( self.name + ": Sending sudo password" )
                 self.handle.sendline( self.pwd )
@@ -149,7 +149,7 @@ class MininetCliDriver( Emulator ):
                                           '\$',
                                           pexpect.EOF,
                                           pexpect.TIMEOUT ],
-                                        120 )
+                                        timeout )
             if i == 1:
                 main.log.info( self.name + ": Clean" )
             elif i == 2:
@@ -158,7 +158,7 @@ class MininetCliDriver( Emulator ):
                 main.log.error(
                     self.name +
                     ": Something while cleaning MN took too long... " )
-            if topoFile == None and  args ==  None:
+            if topoFile == ''  and  args ==  '':
                 main.log.info( self.name + ": building fresh mininet" )
                 # for reactive/PARP enabled tests
                 cmdString = "sudo mn " + self.options[ 'arg1' ] +\
@@ -183,7 +183,7 @@ class MininetCliDriver( Emulator ):
                                               'Exception',
                                               pexpect.EOF,
                                               pexpect.TIMEOUT ],
-                                            300 )
+                                            timeout )
                     if i == 0:
                         main.log.info( self.name + ": mininet built" )
                         return main.TRUE
@@ -206,14 +206,17 @@ class MininetCliDriver( Emulator ):
                         return main.FALSE
                 return main.TRUE
             else:
-                self.handle.sendline('sudo ' + topoFile + ' ' + args)
-                self.handle.sendline('')
+                main.log.info( "Starting topo file " + topoFile )
+                if args == None:
+                    args = ''
+                else:
+                    main.log.info( "args = " + args)
+                self.handle.sendline( 'sudo ' + topoFile + ' ' + args)
                 i = 1
                 i = self.handle.expect( [ 'mininet>',
                                         pexpect.EOF ,
-                                        pexpect.TIMEOUT ], 
-                                        timeout = 2)
-                self.handle.expect('mininet>')
+                                        pexpect.TIMEOUT ],
+                                        timeout)
                 main.log.info(self.name + ": Network started")
                 return main.TRUE
 

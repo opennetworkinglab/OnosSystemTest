@@ -1,5 +1,5 @@
 <PARAMS>
-    <testcases>1,2,3,4</testcases>
+    <testcases>1,2,3</testcases>
     <ENV>
         <cellName>kelvin</cellName>
     </ENV>

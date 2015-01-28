@@ -1,10 +1,12 @@
 """
 Description: This test is an example of a simple single node ONOS test
-
+with 2 different topology on one test test
 List of test cases:
-CASE1: Compile ONOS and push it to the test machine
-CASE2: Assign mastership to controller
+CASE1: Compile ONOS and push it to the test machine: Also starts first topology
+CASE2: Assign mastership to controller: first topology
 CASE3: Pingall
+CASE4: Creates new topology: second topology
+CASE5: Assign mastership to controller: second topology
 """
 class Ping2topoExample:
 
@@ -104,7 +106,7 @@ class Ping2topoExample:
 
     def CASE2( self, main ):
         """
-           Assign mastership to controller
+           Assign mastership to controller : topology 1 has 13 switches
         """
         import re
 
@@ -172,6 +174,7 @@ class Ping2topoExample:
         """
         Stop mininet and start a new one using different topology
         """
+        main.log.info ("Starts new topology")
         main.log.info( "Stopping Mininet..." )
         main.Mininet1.stopNet()
 
@@ -191,7 +194,7 @@ class Ping2topoExample:
 
     def CASE5( self, main ):
         """
-           Assign mastership to controller
+           Assign mastership to controller: topology 2 has 25 switches
         """
         import re
 
@@ -202,14 +205,14 @@ class Ping2topoExample:
         ONOS1Ip = main.params[ 'CTRL' ][ 'ip1' ]
         ONOS1Port = main.params[ 'CTRL' ][ 'port1' ]
 
-        for i in range( 1, 25 ):
+        for i in range( 1, 26 ):
             main.Mininet1.assignSwController(
                 sw=str( i ),
                 ip1=ONOS1Ip,
                 port1=ONOS1Port )
 
         mastershipCheck = main.TRUE
-        for i in range( 1, 25 ):
+        for i in range( 1, 26 ):
             response = main.Mininet1.getSwController( "s" + str( i ) )
             try:
                 main.log.info( str( response ) )

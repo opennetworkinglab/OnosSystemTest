@@ -6,7 +6,7 @@ CASE1: Compile ONOS and push it to the test machine
 CASE2: Assign mastership to controller
 CASE3: Pingall
 """
-class PingallExample:
+class Ping2topoExample:
 
     def __init__( self ):
         self.default = ''
@@ -24,7 +24,7 @@ class PingallExample:
            onos-install -f
            onos-wait-for-start
         """
-        desc = "ONOS Single node cluster restart HA test - initialization"
+        desc = "Testing ping all function on two topology in one test run"
         main.log.report( desc )
         main.case( "Setting up test environment" )
 
@@ -167,3 +167,62 @@ class PingallExample:
         utilities.assert_equals( expect=main.TRUE, actual=pingResult,
                                  onpass="All hosts are reachable",
                                  onfail="Some pings failed" )
+    
+    def CASE4( self, main):
+        """
+        Stop mininet and start a new one using different topology
+        """
+        main.log.info( "Stopping Mininet..." )
+        main.Mininet1.stopNet()
+
+        main.log.info( "Starting Mininet..." )
+        topoFile = main.params[ 'TOPO1' ][ 'file' ]
+        args = main.params[ 'TOPO1' ][ 'args' ]
+        
+        isMnUp = main.FALSE
+        isMnUp = main.Mininet1.startNet(topoFile = topoFile, args = args)
+        utilities.assert_equals(
+                expect=main.TRUE,
+                actual=isMnUp,
+                onpass="New mininet topology is up and runing",
+                onfail="New mininet topology failed to run" )
+        
+        
+
+    def CASE5( self, main ):
+        """
+           Assign mastership to controller
+        """
+        import re
+
+        main.log.report( "Assigning switches to controller" )
+        main.case( "Assigning Controller" )
+        main.step( "Assign switches to controller" )
+
+        ONOS1Ip = main.params[ 'CTRL' ][ 'ip1' ]
+        ONOS1Port = main.params[ 'CTRL' ][ 'port1' ]
+
+        for i in range( 1, 25 ):
+            main.Mininet1.assignSwController(
+                sw=str( i ),
+                ip1=ONOS1Ip,
+                port1=ONOS1Port )
+
+        mastershipCheck = main.TRUE
+        for i in range( 1, 25 ):
+            response = main.Mininet1.getSwController( "s" + str( i ) )
+            try:
+                main.log.info( str( response ) )
+            except:
+                main.log.info( repr( response ) )
+            if re.search( "tcp:" + ONOS1Ip, response ):
+                mastershipCheck = mastershipCheck and main.TRUE
+            else:
+                mastershipCheck = main.FALSE
+        if mastershipCheck == main.TRUE:
+            main.log.report( "Switch mastership assigned correctly" )
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=mastershipCheck,
+            onpass="Switch mastership assigned correctly",
+            onfail="Switches not assigned correctly to controllers" )

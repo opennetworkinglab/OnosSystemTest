@@ -59,20 +59,48 @@ class MininetCliDriver( Emulator ):
         """
            Here the main is the TestON instance after creating
            all the log handles."""
-        for key in connectargs:
-            vars( self )[ key ] = connectargs[ key ]
+        try:
+            for key in connectargs:
+                vars( self )[ key ] = connectargs[ key ]
 
-        self.name = self.options[ 'name' ]
-        self.handle = super(
-            MininetCliDriver,
-            self ).connect(
-            user_name=self.user_name,
-            ip_address=self.ip_address,
-            port=None,
-            pwd=self.pwd )
+            self.name = self.options[ 'name' ]
+            self.handle = super(
+                MininetCliDriver,
+                self ).connect(
+                user_name=self.user_name,
+                ip_address=self.ip_address,
+                port=None,
+                pwd=self.pwd )
 
-        self.sshHandle = self.handle
+            self.sshHandle = self.handle
 
+            if self.handle:
+                main.log.info("Connection successful to the host " + 
+                        self.user_name +
+                        "@" +
+                        self.ip_address )
+                return main.TRUE
+            else:
+                main.log.error( "Connection failed to the host " +
+                        self.user_name +
+                        "@" +
+                        self.ip_address )
+                msin.log.error( "Failed to connect to the Mininet CLI" )
+                return main.FALSE
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info( self.name + ":::::::::::::::::::::::" )
+            main.log.error( traceback.print_exc() )
+            main.log.info( ":::::::::::::::::::::::" )
+            main.cleanup()
+            main.exit()
+
+
+        """
         if self.handle:
             main.log.info(
                 self.name +
@@ -99,51 +127,96 @@ class MininetCliDriver( Emulator ):
                 main.log.error(
                     self.name +
                     ": Something while cleaning MN took too long... " )
+           """
 
-            main.log.info( self.name + ": building fresh mininet" )
-            # for reactive/PARP enabled tests
-            cmdString = "sudo mn " + self.options[ 'arg1' ] +\
-                " " + self.options[ 'arg2' ] +\
-                " --mac --controller " +\
-                self.options[ 'controller' ] + " " +\
-                self.options[ 'arg3' ]
+    def startNet( self, topoFile = None, args = None ):
 
-            argList = self.options[ 'arg1' ].split( "," )
-            global topoArgList
-            topoArgList = argList[ 0 ].split( " " )
-            argList = map( int, argList[ 1: ] )
-            topoArgList = topoArgList[ 1: ] + argList
-
-            self.handle.sendline( cmdString )
-            self.handle.expect( [ "sudo mn", pexpect.EOF, pexpect.TIMEOUT ] )
-            while True:
-                i = self.handle.expect( [ 'mininet>',
-                                          '\*\*\*',
-                                          'Exception',
+        self.name = self.options[ 'name' ]
+        if self.handle:
+            main.log.info(
+                self.name +
+                ": Clearing any residual state or processes" )
+            self.handle.sendline( "sudo mn -c" )
+            i = self.handle.expect( [ 'password\sfor\s',
+                                      'Cleanup\scomplete',
+                                      pexpect.EOF,
+                                      pexpect.TIMEOUT ],
+                                    120 )
+            if i == 0:
+                main.log.info( self.name + ": Sending sudo password" )
+                self.handle.sendline( self.pwd )
+                i = self.handle.expect( [ '%s:' % ( self.user ),
+                                          '\$',
                                           pexpect.EOF,
                                           pexpect.TIMEOUT ],
-                                        300 )
-                if i == 0:
-                    main.log.info( self.name + ": mininet built" )
-                    return main.TRUE
-                if i == 1:
-                    self.handle.expect(
-                        [ "\n", pexpect.EOF, pexpect.TIMEOUT ] )
-                    main.log.info( self.handle.before )
-                elif i == 2:
-                    main.log.error(
-                        self.name +
-                        ": Launching mininet failed..." )
-                    return main.FALSE
-                elif i == 3:
-                    main.log.error( self.name + ": Connection timeout" )
-                    return main.FALSE
-                elif i == 4:  # timeout
-                    main.log.error(
-                        self.name +
-                        ": Something took too long... " )
-                    return main.FALSE
-            return main.TRUE
+                                        120 )
+            if i == 1:
+                main.log.info( self.name + ": Clean" )
+            elif i == 2:
+                main.log.error( self.name + ": Connection terminated" )
+            elif i == 3:  # timeout
+                main.log.error(
+                    self.name +
+                    ": Something while cleaning MN took too long... " )
+            if topoFile == None and  args ==  None:
+                main.log.info( self.name + ": building fresh mininet" )
+                # for reactive/PARP enabled tests
+                cmdString = "sudo mn " + self.options[ 'arg1' ] +\
+                    " " + self.options[ 'arg2' ] +\
+                    " --mac --controller " +\
+                    self.options[ 'controller' ] + " " +\
+                    self.options[ 'arg3' ]
+
+                argList = self.options[ 'arg1' ].split( "," )
+                global topoArgList
+                topoArgList = argList[ 0 ].split( " " )
+                argList = map( int, argList[ 1: ] )
+                topoArgList = topoArgList[ 1: ] + argList
+
+                self.handle.sendline( cmdString )
+                self.handle.expect( [ "sudo mn",
+                                    pexpect.EOF,
+                                    pexpect.TIMEOUT ] )
+                while True:
+                    i = self.handle.expect( [ 'mininet>',
+                                              '\*\*\*',
+                                              'Exception',
+                                              pexpect.EOF,
+                                              pexpect.TIMEOUT ],
+                                            300 )
+                    if i == 0:
+                        main.log.info( self.name + ": mininet built" )
+                        return main.TRUE
+                    if i == 1:
+                        self.handle.expect(
+                            [ "\n", pexpect.EOF, pexpect.TIMEOUT ] )
+                        main.log.info( self.handle.before )
+                    elif i == 2:
+                        main.log.error(
+                            self.name +
+                            ": Launching mininet failed..." )
+                        return main.FALSE
+                    elif i == 3:
+                        main.log.error( self.name + ": Connection timeout" )
+                        return main.FALSE
+                    elif i == 4:  # timeout
+                        main.log.error(
+                            self.name +
+                            ": Something took too long... " )
+                        return main.FALSE
+                return main.TRUE
+            else:
+                self.handle.sendline('sudo ' + topoFile + ' ' + args)
+                self.handle.sendline('')
+                i = 1
+                i = self.handle.expect( [ 'mininet>',
+                                        pexpect.EOF ,
+                                        pexpect.TIMEOUT ], 
+                                        timeout = 2)
+                self.handle.expect('mininet>')
+                main.log.info(self.name + ": Network started")
+                return main.TRUE
+
         else:  # if no handle
             main.log.error(
                 self.name +
@@ -1108,6 +1181,29 @@ class MininetCliDriver( Emulator ):
             main.exit()
 
     def disconnect( self ):
+        """
+        Called at the end of the test to disconnect the handle.
+        """
+        self.handle.sendline('')
+        i = 1
+        i = self.handle.expect( ['mininet>',pexpect.EOF,pexpect.TIMEOUT ], timeout = 2)
+        if i == 0:
+            self.stopNet()
+        response = ''
+        # print "Disconnecting Mininet"
+        if self.handle:
+            self.handle.sendline( "exit" )
+            self.handle.expect( "exit" )
+            self.handle.expect( "(.*)" )
+            main.log.info( "Mininet CLI is successfully disconnected" )
+            response = self.handle.before
+        else:
+            main.log.error( "Connection failed to the host" )
+            response = main.FALSE
+
+        return response
+
+    def stopNet( self ):
         main.log.info( self.name + ": Disconnecting mininet..." )
         response = ''
         if self.handle:
@@ -1116,10 +1212,7 @@ class MininetCliDriver( Emulator ):
                     cmd="exit",
                     prompt="(.*)",
                     timeout=120 )
-                response = self.execute(
-                    cmd="exit",
-                    prompt="(.*)",
-                    timeout=120 )
+                main.log.info( self.name + ": Disconnected")
                 self.handle.sendline( "sudo mn -c" )
                 response = main.TRUE
             except pexpect.EOF:
@@ -1131,6 +1224,8 @@ class MininetCliDriver( Emulator ):
             main.log.error( self.name + ": Connection failed to the host" )
             response = main.FALSE
         return response
+
+
 
     def arping( self, src, dest, destmac ):
         self.handle.sendline( '' )

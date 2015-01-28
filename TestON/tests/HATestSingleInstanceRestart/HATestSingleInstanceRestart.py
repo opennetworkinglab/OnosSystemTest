@@ -49,7 +49,7 @@ class HATestSingleInstanceRestart:
         PULLCODE = False
         if main.params[ 'Git' ] == 'True':
             PULLCODE = True
-
+        gitBranch = main.params[ 'branch' ]
         cellName = main.params[ 'ENV' ][ 'cellName' ]
 
         # set global variables
@@ -108,17 +108,14 @@ class HATestSingleInstanceRestart:
         if PULLCODE:
             # TODO Configure branch in params
             main.step( "Git checkout and pull master" )
-            main.ONOSbench.gitCheckout( "master" )
+            main.ONOSbench.gitCheckout( gitBranch )
             gitPullResult = main.ONOSbench.gitPull()
 
             main.step( "Using mvn clean & install" )
-            cleanInstallResult = main.TRUE
-
-            if gitPullResult == main.TRUE:
-                cleanInstallResult = main.ONOSbench.cleanInstall()
-            else:
-                main.log.warn( "Did not pull new code so skipping mvn " +
-                               "clean install" )
+            cleanInstallResult = main.ONOSbench.cleanInstall()
+        else:
+            main.log.warn( "Did not pull new code so skipping mvn " +
+                           "clean install" )
         main.ONOSbench.getVersion( report=True )
 
         cellResult = main.ONOSbench.setCell( "SingleHA" )
@@ -197,7 +194,6 @@ class HATestSingleInstanceRestart:
     def CASE3( self, main ):
         """
         Assign intents
-
         """
         # FIXME: we must reinstall intents until we have a persistant
         # datastore!
@@ -216,6 +212,11 @@ class HATestSingleInstanceRestart:
         pingResult = main.FALSE
         time1 = time.time()
         pingResult = main.Mininet1.pingall()
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=pingResult,
+            onpass="Reactive Pingall test passed",
+            onfail="Reactive Pingall failed, one or more ping pairs failed" )
         time2 = time.time()
         main.log.info( "Time for pingall: %2f seconds" % ( time2 - time1 ) )
 
@@ -247,11 +248,12 @@ class HATestSingleInstanceRestart:
                 tmpResult = main.FALSE
             intentAddResult = bool( pingResult and intentAddResult
                                      and tmpResult )
+            # TODO Check that intents were added?
         utilities.assert_equals(
             expect=True,
             actual=intentAddResult,
-            onpass="Switch mastership correctly assigned",
-            onfail="Error in ( re )assigning switch mastership" )
+            onpass="Pushed host intents to ONOS",
+            onfail="Error in pushing host intents to ONOS" )
         # TODO Check if intents all exist in datastore
 
     def CASE4( self, main ):
@@ -275,6 +277,12 @@ class HATestSingleInstanceRestart:
         if PingResult == main.FALSE:
             main.log.report(
                 "Intents have not been installed correctly, pings failed." )
+            #TODO: pretty print
+            main.log.warn( "ONSO1 intents: " )
+            main.log.warn( json.dumps( json.loads( main.ONOScli1.intents() ),
+                                       sort_keys=True,
+                                       indent=4,
+                                       separators=( ',', ': ' ) ) )
         if PingResult == main.TRUE:
             main.log.report(
                 "Intents have been installed correctly and verified by pings" )

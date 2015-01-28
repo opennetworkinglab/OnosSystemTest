@@ -43,18 +43,13 @@ class HATestSanity:
         """
         main.log.report( "ONOS HA Sanity test - initialization" )
         main.case( "Setting up test environment" )
-        # main.step( "This is a multiline \
-        #            comment\
-        #            this is \
-        #            a long \comment" )
-        print "First Line"
         # TODO: save all the timers and output them for plotting
 
         # load some vairables from the params file
         PULLCODE = False
         if main.params[ 'Git' ] == 'True':
             PULLCODE = True
-
+        gitBranch = main.params[ 'branch' ]
         cellName = main.params[ 'ENV' ][ 'cellName' ]
 
         # set global variables
@@ -113,17 +108,14 @@ class HATestSanity:
         if PULLCODE:
             # TODO Configure branch in params
             main.step( "Git checkout and pull master" )
-            main.ONOSbench.gitCheckout( "master" )
+            main.ONOSbench.gitCheckout( gitBranch )
             gitPullResult = main.ONOSbench.gitPull()
 
             main.step( "Using mvn clean & install" )
-            cleanInstallResult = main.TRUE
-
-            if gitPullResult == main.TRUE:
-                cleanInstallResult = main.ONOSbench.cleanInstall()
-            else:
-                main.log.warn( "Did not pull new code so skipping mvn " +
-                               "clean install" )
+            cleanInstallResult = main.ONOSbench.cleanInstall()
+        else:
+            main.log.warn( "Did not pull new code so skipping mvn " +
+                           "clean install" )
         main.ONOSbench.getVersion( report=True )
 
         main.step( "Creating ONOS package" )
@@ -412,6 +404,11 @@ class HATestSanity:
         pingResult = main.FALSE
         time1 = time.time()
         pingResult = main.Mininet1.pingall()
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=pingResult,
+            onpass="Reactive Pingall test passed",
+            onfail="Reactive Pingall failed, one or more ping pairs failed" )
         time2 = time.time()
         main.log.info( "Time for pingall: %2f seconds" % ( time2 - time1 ) )
 
@@ -478,7 +475,12 @@ class HATestSanity:
         if PingResult == main.FALSE:
             main.log.report(
                 "Intents have not been installed correctly, pings failed." )
-            main.log.info( main.ONOScli1.intents() )
+            #TODO: pretty print
+            main.log.warn( "ONSO1 intents: " )
+            main.log.warn( json.dumps( json.loads( main.ONOScli1.intents() ),
+                                       sort_keys=True,
+                                       indent=4,
+                                       separators=( ',', ': ' ) ) )
         if PingResult == main.TRUE:
             main.log.report(
                 "Intents have been installed correctly and verified by pings" )
@@ -930,23 +932,7 @@ class HATestSanity:
         clusters.append( main.ONOScli5.clusters() )
         clusters.append( main.ONOScli6.clusters() )
         clusters.append( main.ONOScli7.clusters() )
-        paths = []
-        tempTopo = main.ONOSbench.getTopology( main.ONOScli1.topology() )
-        paths.append( tempTopo.get( 'paths', False ) )
-        tempTopo = main.ONOSbench.getTopology( main.ONOScli2.topology() )
-        paths.append( tempTopo.get( 'paths', False ) )
-        tempTopo = main.ONOSbench.getTopology( main.ONOScli3.topology() )
-        paths.append( tempTopo.get( 'paths', False ) )
-        tempTopo = main.ONOSbench.getTopology( main.ONOScli4.topology() )
-        paths.append( tempTopo.get( 'paths', False ) )
-        tempTopo = main.ONOSbench.getTopology( main.ONOScli5.topology() )
-        paths.append( tempTopo.get( 'paths', False ) )
-        tempTopo = main.ONOSbench.getTopology( main.ONOScli6.topology() )
-        paths.append( tempTopo.get( 'paths', False ) )
-        tempTopo = main.ONOSbench.getTopology( main.ONOScli7.topology() )
-        paths.append( tempTopo.get( 'paths', False ) )
-
-        # Compare json objects for hosts, dataplane clusters and paths
+        # Compare json objects for hosts and dataplane clusters
 
         # hosts
         consistentHostsResult = main.TRUE
@@ -1009,30 +995,6 @@ class HATestSanity:
             str( numClusters ) +
             " SCCs" )
 
-        # paths
-        consistentPathsResult = main.TRUE
-        for controller in range( len( paths ) ):
-            controllerStr = str( controller + 1 )
-            if "Error" not in paths[ controller ]:
-                if paths[ controller ] == paths[ 0 ]:
-                    continue
-                else:  # paths not consistent
-                    main.log.report( "paths from ONOS" + controllerStr +
-                                     " is inconsistent with ONOS1" )
-                    consistentPathsResult = main.FALSE
-
-            else:
-                main.log.report( "Error in getting paths from ONOS" +
-                                 controllerStr )
-                consistentPathsResult = main.FALSE
-                main.log.warn( "ONOS" + controllerStr + " paths response: " +
-                               repr( paths[ controller ] ) )
-        utilities.assert_equals(
-            expect=main.TRUE,
-            actual=consistentPathsResult,
-            onpass="Paths count is consistent across all ONOS nodes",
-            onfail="ONOS nodes have different counts of paths" )
-
         main.step( "Comparing ONOS topology to MN" )
         devicesResults = main.TRUE
         portsResults = main.TRUE
@@ -1086,8 +1048,7 @@ class HATestSanity:
             linksResults = linksResults and currentLinksResult
 
         topoResult = devicesResults and portsResults and linksResults\
-            and consistentHostsResult and consistentClustersResult\
-            and consistentPathsResult
+            and consistentHostsResult and consistentClustersResult
         utilities.assert_equals( expect=main.TRUE, actual=topoResult,
                                 onpass="Topology Check Test successful",
                                 onfail="Topology Check Test NOT successful" )
@@ -1483,13 +1444,21 @@ class HATestSanity:
             devices.append( main.ONOScli6.devices() )
             devices.append( main.ONOScli7.devices() )
             hosts = []
-            hosts.append( main.ONOScli1.hosts() )
-            hosts.append( main.ONOScli2.hosts() )
-            hosts.append( main.ONOScli3.hosts() )
-            hosts.append( main.ONOScli4.hosts() )
-            hosts.append( main.ONOScli5.hosts() )
-            hosts.append( main.ONOScli6.hosts() )
-            hosts.append( main.ONOScli7.hosts() )
+            hosts.append( json.loads( main.ONOScli1.hosts() ) )
+            hosts.append( json.loads( main.ONOScli2.hosts() ) )
+            hosts.append( json.loads( main.ONOScli3.hosts() ) )
+            hosts.append( json.loads( main.ONOScli4.hosts() ) )
+            hosts.append( json.loads( main.ONOScli5.hosts() ) )
+            hosts.append( json.loads( main.ONOScli6.hosts() ) )
+            hosts.append( json.loads( main.ONOScli7.hosts() ) )
+            for controller in range( 0, len( hosts ) ):
+                controllerStr = str( controller + 1 )
+                for host in hosts[ controller ]:
+                    host
+                    if host[ 'ips' ] == []:
+                        main.log.error(
+                            "DEBUG:Error with host ips on controller" +
+                            controllerStr + ": " + str( host ) )
             ports = []
             ports.append( main.ONOScli1.ports() )
             ports.append( main.ONOScli2.ports() )
@@ -1514,180 +1483,145 @@ class HATestSanity:
             clusters.append( main.ONOScli5.clusters() )
             clusters.append( main.ONOScli6.clusters() )
             clusters.append( main.ONOScli7.clusters() )
-            paths = []
-            tempTopo = main.ONOSbench.getTopology( main.ONOScli1.topology() )
-            paths.append( tempTopo.get( 'paths', False ) )
-            tempTopo = main.ONOSbench.getTopology( main.ONOScli2.topology() )
-            paths.append( tempTopo.get( 'paths', False ) )
-            tempTopo = main.ONOSbench.getTopology( main.ONOScli3.topology() )
-            paths.append( tempTopo.get( 'paths', False ) )
-            tempTopo = main.ONOSbench.getTopology( main.ONOScli4.topology() )
-            paths.append( tempTopo.get( 'paths', False ) )
-            tempTopo = main.ONOSbench.getTopology( main.ONOScli5.topology() )
-            paths.append( tempTopo.get( 'paths', False ) )
-            tempTopo = main.ONOSbench.getTopology( main.ONOScli6.topology() )
-            paths.append( tempTopo.get( 'paths', False ) )
-            tempTopo = main.ONOSbench.getTopology( main.ONOScli7.topology() )
-            paths.append( tempTopo.get( 'paths', False ) )
 
             elapsed = time.time() - startTime
             cliTime = time.time() - cliStart
             print "CLI time: " + str( cliTime )
 
-            for controller in range( numControllers ):
-                controllerStr = str( controller + 1 )
-                if devices[ controller ] or "Error" not in devices[
-                        controller ]:
-                    currentDevicesResult = main.Mininet1.compareSwitches(
-                        MNTopo,
-                        json.loads(
-                            devices[ controller ] ) )
-                else:
-                    currentDevicesResult = main.FALSE
-                utilities.assert_equals( expect=main.TRUE,
-                                        actual=currentDevicesResult,
-                                        onpass="ONOS" + controllerStr +
-                                        " Switches view is correct",
-                                        onfail="ONOS" + controllerStr +
-                                        " Switches view is incorrect" )
+            try: 
+                for controller in range( numControllers ):
+                    controllerStr = str( controller + 1 )
+                    if devices[ controller ] or "Error" not in devices[
+                            controller ]:
+                        currentDevicesResult = main.Mininet1.compareSwitches(
+                            MNTopo,
+                            json.loads(
+                                devices[ controller ] ) )
+                    else:
+                        currentDevicesResult = main.FALSE
+                    utilities.assert_equals( expect=main.TRUE,
+                                            actual=currentDevicesResult,
+                                            onpass="ONOS" + controllerStr +
+                                            " Switches view is correct",
+                                            onfail="ONOS" + controllerStr +
+                                            " Switches view is incorrect" )
 
-                if ports[ controller ] or "Error" not in ports[ controller ]:
-                    currentPortsResult = main.Mininet1.comparePorts(
-                        MNTopo,
-                        json.loads(
-                            ports[ controller ] ) )
-                else:
-                    currentPortsResult = main.FALSE
-                utilities.assert_equals( expect=main.TRUE,
-                                        actual=currentPortsResult,
-                                        onpass="ONOS" + controllerStr +
-                                        " ports view is correct",
-                                        onfail="ONOS" + controllerStr +
-                                        " ports view is incorrect" )
+                    if ports[ controller ] or "Error" not in ports[ controller ]:
+                        currentPortsResult = main.Mininet1.comparePorts(
+                            MNTopo,
+                            json.loads(
+                                ports[ controller ] ) )
+                    else:
+                        currentPortsResult = main.FALSE
+                    utilities.assert_equals( expect=main.TRUE,
+                                            actual=currentPortsResult,
+                                            onpass="ONOS" + controllerStr +
+                                            " ports view is correct",
+                                            onfail="ONOS" + controllerStr +
+                                            " ports view is incorrect" )
 
-                if links[ controller ] or "Error" not in links[ controller ]:
-                    currentLinksResult = main.Mininet1.compareLinks(
-                        MNTopo,
-                        json.loads(
-                            links[ controller ] ) )
-                else:
-                    currentLinksResult = main.FALSE
-                utilities.assert_equals( expect=main.TRUE,
-                                        actual=currentLinksResult,
-                                        onpass="ONOS" + controllerStr +
-                                        " links view is correct",
-                                        onfail="ONOS" + controllerStr +
-                                        " links view is incorrect" )
-            devicesResults = devicesResults and currentDevicesResult
-            portsResults = portsResults and currentPortsResult
-            linksResults = linksResults and currentLinksResult
+                    if links[ controller ] or "Error" not in links[ controller ]:
+                        currentLinksResult = main.Mininet1.compareLinks(
+                            MNTopo,
+                            json.loads(
+                                links[ controller ] ) )
+                    else:
+                        currentLinksResult = main.FALSE
+                    utilities.assert_equals( expect=main.TRUE,
+                                            actual=currentLinksResult,
+                                            onpass="ONOS" + controllerStr +
+                                            " links view is correct",
+                                            onfail="ONOS" + controllerStr +
+                                            " links view is incorrect" )
+                devicesResults = devicesResults and currentDevicesResult
+                portsResults = portsResults and currentPortsResult
+                linksResults = linksResults and currentLinksResult
 
-            # Compare json objects for hosts, dataplane clusters and paths
+                # Compare json objects for hosts and dataplane clusters
 
-            # hosts
-            consistentHostsResult = main.TRUE
-            for controller in range( len( hosts ) ):
-                controllerStr = str( controller + 1 )
-                if "Error" not in hosts[ controller ]:
-                    if hosts[ controller ] == hosts[ 0 ]:
-                        continue
-                    else:  # hosts not consistent
-                        main.log.report( "hosts from ONOS" + controllerStr +
-                                         " is inconsistent with ONOS1" )
-                        main.log.warn( repr( hosts[ controller ] ) )
+                # hosts
+                consistentHostsResult = main.TRUE
+                for controller in range( len( hosts ) ):
+                    controllerStr = str( controller + 1 )
+                    if "Error" not in hosts[ controller ]:
+                        if hosts[ controller ] == hosts[ 0 ]:
+                            continue
+                        else:  # hosts not consistent
+                            main.log.report( "hosts from ONOS" + controllerStr +
+                                             " is inconsistent with ONOS1" )
+                            main.log.warn( repr( hosts[ controller ] ) )
+                            consistentHostsResult = main.FALSE
+
+                    else:
+                        main.log.report( "Error in getting ONOS hosts from ONOS" +
+                                         controllerStr )
                         consistentHostsResult = main.FALSE
+                        main.log.warn( "ONOS" + controllerStr +
+                                       " hosts response: " +
+                                       repr( hosts[ controller ] ) )
+                utilities.assert_equals(
+                    expect=main.TRUE,
+                    actual=consistentHostsResult,
+                    onpass="Hosts view is consistent across all ONOS nodes",
+                    onfail="ONOS nodes have different views of hosts" )
 
-                else:
-                    main.log.report( "Error in getting ONOS hosts from ONOS" +
-                                     controllerStr )
-                    consistentHostsResult = main.FALSE
-                    main.log.warn( "ONOS" + controllerStr +
-                                   " hosts response: " +
-                                   repr( hosts[ controller ] ) )
-            utilities.assert_equals(
-                expect=main.TRUE,
-                actual=consistentHostsResult,
-                onpass="Hosts view is consistent across all ONOS nodes",
-                onfail="ONOS nodes have different views of hosts" )
+                # Strongly connected clusters of devices
+                consistentClustersResult = main.TRUE
+                for controller in range( len( clusters ) ):
+                    controllerStr = str( controller + 1 )
+                    if "Error" not in clusters[ controller ]:
+                        if clusters[ controller ] == clusters[ 0 ]:
+                            continue
+                        else:  # clusters not consistent
+                            main.log.report( "clusters from ONOS" +
+                                             controllerStr +
+                                             " is inconsistent with ONOS1" )
+                            consistentClustersResult = main.FALSE
 
-            # Strongly connected clusters of devices
-            consistentClustersResult = main.TRUE
-            for controller in range( len( clusters ) ):
-                controllerStr = str( controller + 1 )
-                if "Error" not in clusters[ controller ]:
-                    if clusters[ controller ] == clusters[ 0 ]:
-                        continue
-                    else:  # clusters not consistent
-                        main.log.report( "clusters from ONOS" +
-                                         controllerStr +
-                                         " is inconsistent with ONOS1" )
+                    else:
+                        main.log.report( "Error in getting dataplane clusters " +
+                                         "from ONOS" + controllerStr )
                         consistentClustersResult = main.FALSE
+                        main.log.warn( "ONOS" + controllerStr +
+                                       " clusters response: " +
+                                       repr( clusters[ controller ] ) )
+                utilities.assert_equals(
+                    expect=main.TRUE,
+                    actual=consistentClustersResult,
+                    onpass="Clusters view is consistent across all ONOS nodes",
+                    onfail="ONOS nodes have different views of clusters" )
+                # there should always only be one cluster
+                numClusters = len( json.loads( clusters[ 0 ] ) )
+                utilities.assert_equals(
+                    expect=1,
+                    actual=numClusters,
+                    onpass="ONOS shows 1 SCC",
+                    onfail="ONOS shows " +
+                    str( numClusters ) +
+                    " SCCs" )
 
-                else:
-                    main.log.report( "Error in getting dataplane clusters " +
-                                     "from ONOS" + controllerStr )
-                    consistentClustersResult = main.FALSE
-                    main.log.warn( "ONOS" + controllerStr +
-                                   " clusters response: " +
-                                   repr( clusters[ controller ] ) )
-            utilities.assert_equals(
-                expect=main.TRUE,
-                actual=consistentClustersResult,
-                onpass="Clusters view is consistent across all ONOS nodes",
-                onfail="ONOS nodes have different views of clusters" )
-            # there should always only be one cluster
-            numClusters = len( json.loads( clusters[ 0 ] ) )
-            utilities.assert_equals(
-                expect=1,
-                actual=numClusters,
-                onpass="ONOS shows 1 SCC",
-                onfail="ONOS shows " +
-                str( numClusters ) +
-                " SCCs" )
+                topoResult = ( devicesResults and portsResults and linksResults
+                               and consistentHostsResult
+                               and consistentClustersResult )
 
-            # paths
-            consistentPathsResult = main.TRUE
-            for controller in range( len( paths ) ):
-                controllerStr = str( controller + 1 )
-                if "Error" not in paths[ controller ]:
-                    if paths[ controller ] == paths[ 0 ]:
-                        continue
-                    else:  # paths not consistent
-                        main.log.report( "paths from ONOS" + controllerStr +
-                                         " is inconsistent with ONOS1" )
-                        consistentPathsResult = main.FALSE
+                topoResult = topoResult and int( count <= 2 )
+                note = "note it takes about " + str( int( cliTime ) ) + \
+                    " seconds for the test to make all the cli calls to fetch " +\
+                    "the topology from each ONOS instance"
+                main.log.report(
+                    "Very crass estimate for topology discovery/convergence( " +
+                    str( note ) + " ): " + str( elapsed ) + " seconds, " +
+                    str( count ) + " tries" )
+                utilities.assert_equals( expect=main.TRUE, actual=topoResult,
+                                        onpass="Topology Check Test successful",
+                                        onfail="Topology Check Test NOT successful" )
+                if topoResult == main.TRUE:
+                    main.log.report( "ONOS topology view matches Mininet topology" )
+            except:
+                main.log.info( self.name + " ::::::" )
+                main.log.error( traceback.print_exc() )
+                main.log.info( self.name + " ::::::" )
 
-                else:
-                    main.log.report( "Error in getting paths from ONOS" +
-                                     controllerStr )
-                    consistentPathsResult = main.FALSE
-                    main.log.warn( "ONOS" + controllerStr +
-                                   " paths response: " +
-                                   repr( paths[ controller ] ) )
-            utilities.assert_equals(
-                expect=main.TRUE,
-                actual=consistentPathsResult,
-                onpass="Paths count is consistent across all ONOS nodes",
-                onfail="ONOS nodes have different counts of paths" )
-
-            topoResult = ( devicesResults and portsResults and linksResults
-                           and consistentHostsResult
-                           and consistentClustersResult
-                           and consistentPathsResult )
-
-        topoResult = topoResult and int( count <= 2 )
-        note = "note it takes about " + str( int( cliTime ) ) + \
-            " seconds for the test to make all the cli calls to fetch " +\
-            "the topology from each ONOS instance"
-        main.log.report(
-            "Very crass estimate for topology discovery/convergence( " +
-            str( note ) + " ): " + str( elapsed ) + " seconds, " +
-            str( count ) + " tries" )
-        utilities.assert_equals( expect=main.TRUE, actual=topoResult,
-                                onpass="Topology Check Test successful",
-                                onfail="Topology Check Test NOT successful" )
-        if topoResult == main.TRUE:
-            main.log.report( "ONOS topology view matches Mininet topology" )
 
     def CASE9( self, main ):
         """

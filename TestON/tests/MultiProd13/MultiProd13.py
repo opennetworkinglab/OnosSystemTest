@@ -11,8 +11,7 @@ import json
 
 time.sleep( 1 )
 
-
-class MultiProd13:
+class MultiProd:
 
     def __init__( self ):
         self.default = ''
@@ -53,8 +52,8 @@ class MultiProd13:
         main.step( "Removing raft logs before a clen installation of ONOS" )
         removeLogResult = main.ONOSbench.onosRemoveRaftLogs()
 
-        main.step( "Git checkout and pull master and get version" )
-        main.ONOSbench.gitCheckout( "master" )
+        main.step( "Git checkout, pull and get version" )
+        #main.ONOSbench.gitCheckout( "master" )
         gitPullResult = main.ONOSbench.gitPull()
         print "git_pull_result = ", gitPullResult
         versionResult = main.ONOSbench.getVersion( report=True )
@@ -514,7 +513,6 @@ class MultiProd13:
             tmpResult = main.ONOScli1.addHostIntent( host1Id, host2Id )
 
         flowHandle = main.ONOScli1.flows()
-        # print "flowHandle = ", flowHandle
         main.log.info( "flows:" + flowHandle )
 
         count = 1
@@ -857,7 +855,7 @@ class MultiProd13:
         Intent removal
         """
         main.log.report(
-            "This testcase removes host any previously added intents" )
+            "This testcase removes any previously added intents" )
         main.log.report( "__________________________________" )
         main.log.info( "Removing any previously installed intents" )
         main.case( "Removing intents" )
@@ -1424,9 +1422,13 @@ class MultiProd13:
             if pIntentResult == main.TRUE:
                 getIntentResult = main.ONOScli1.intents( jsonFormat=False )
                 main.log.info( getIntentResult )
-                main.log.info(
+                main.log.report(
                     "Point intent related to SDN-IP matching" +
                     " on TCP install successful" )
+            else:
+                main.log.report(
+                    "Point intent related to SDN-IP matching" +
+                    " on TCP install failed" )
 
         iperfResult = main.Mininet1.iperf( 'h8', 'h18' )
         if iperfResult == main.TRUE:

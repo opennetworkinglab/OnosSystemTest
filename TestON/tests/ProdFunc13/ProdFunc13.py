@@ -43,8 +43,8 @@ class ProdFunc13:
         main.step( "Removing raft logs before a clen installation of ONOS" )
         main.ONOSbench.onosRemoveRaftLogs()
 
-        main.step( "Git checkout and pull master and get version" )
-        main.ONOSbench.gitCheckout( "master" )
+        main.step( "Git checkout, pull and get version" )
+        #main.ONOSbench.gitCheckout( "master" )
         gitPullResult = main.ONOSbench.gitPull()
         main.log.info( "git_pull_result = " + gitPullResult )
         main.ONOSbench.getVersion( report=True )

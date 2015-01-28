@@ -95,7 +95,8 @@ class PingallExample:
             main.cleanup()
             main.exit()
         
-        main.step( "Starting Mininet CLI..." )
+        # Starting the mininet using the old way
+        main.step( "Starting Mininet ..." )
         netIsUp = main.Mininet1.startNet()
         if netIsUp:
             main.log.info("Mininet CLI is up")

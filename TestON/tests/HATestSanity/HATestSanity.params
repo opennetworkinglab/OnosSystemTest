@@ -1,9 +1,10 @@
 <PARAMS>
     <testcases>1,2,8,3,4,5,14,[6],8,7,4,15,9,8,4,10,8,4,11,8,4,12,8,4,13</testcases>
     <ENV>
-    <cellName>HA</cellName>
+        <cellName>HA</cellName>
     </ENV>
-    <Git>False</Git>
+    <Git> True </Git>
+    <branch> master </branch>
     <num_controllers> 7 </num_controllers>
 
     <CTRL>
@@ -56,6 +57,11 @@
         <LinkDiscovery>.2</LinkDiscovery>
         <SwitchDiscovery>.2</SwitchDiscovery>
     </timers>
+    <kill>
+        <switch> s5 </switch>
+        <dpid> 0000000000005000 </dpid>
+        <links> h5 s2 s1 s6 </links>
+    </kill>
     <MNtcpdump>
         <intf>eth0</intf>
         <port> </port>

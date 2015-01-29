@@ -1,5 +1,5 @@
 <PARAMS>
-    <testcases>1,5,7,2,3</testcases>
+    <testcases>1,4,5,2,3,4,5,2,3,4,5,2,3,4</testcases>
 
     <ENV>
         <cellName>intent_perf_test</cellName>
@@ -36,13 +36,15 @@
 
     <TEST>
         #Number of times to iterate each case
-        <numIter>15</numIter>
-        <numIgnore>3</numIgnore>
-        <numSwitch>9</numSwitch>
+        <numIter>3</numIter>
+        <numIgnore>2</numIgnore>
+        <numSwitch>8</numSwitch>
         <batchThresholdMin>0</batchThresholdMin>
         <batchThresholdMax>1000</batchThresholdMax>
-        <batchIntentSize>200</batchIntentSize>
+        <batchIntentSize>1</batchIntentSize>
         <numMult>1</numMult>
+        #Interface to bring down for intent reroute case
+        <intfs>s3-eth2</intfs>
     </TEST>
 
     <JSON>

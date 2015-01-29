@@ -29,62 +29,62 @@ class LincOETest:
         """
         import time
 
-        cell_name = main.params[ 'ENV' ][ 'cellName' ]
+        cellName = main.params[ 'ENV' ][ 'cellName' ]
 
-        ONOS1_ip = main.params[ 'CTRL' ][ 'ip1' ]
-        ONOS1_port = main.params[ 'CTRL' ][ 'port1' ]
+        ONOS1Ip = main.params[ 'CTRL' ][ 'ip1' ]
+        ONOS1Port = main.params[ 'CTRL' ][ 'port1' ]
 
-        git_pull_trigger = main.params[ 'GIT' ][ 'autoPull' ]
-        git_checkout_branch = main.params[ 'GIT' ][ 'checkout' ]
+        gitPullTrigger = main.params[ 'GIT' ][ 'autoPull' ]
+        gitCheckoutBranch = main.params[ 'GIT' ][ 'checkout' ]
 
         main.case( "Setting up test environment" )
 
         main.step( "Creating cell file" )
         # params: ( bench ip, cell name, mininet ip, *onos ips )
-        cell_file_result = main.ONOSbench.create_cell_file(
-            "10.128.20.10", cell_name, "10.128.10.90",
+        cellFileResult = main.ONOSbench.createCellFile(
+            "10.128.20.10", cellName, "10.128.10.90",
             "onos-core-trivial,onos-app-fwd",
             "10.128.174.1" )
 
         main.step( "Applying cell variable to environment" )
-        #cell_result = main.ONOSbench.set_cell( cell_name )
-        cell_result = main.ONOSbench.set_cell( "temp_cell_2" )
-        verify_result = main.ONOSbench.verify_cell()
+        # cellResult = main.ONOSbench.setCell( cellName )
+        cellResult = main.ONOSbench.setCell( "temp_cell_2" )
+        verifyResult = main.ONOSbench.verifyCell()
 
-        if git_pull_trigger == 'on':
+        if gitPullTrigger == 'on':
             main.step( "Git checkout and pull master" )
-            main.ONOSbench.git_checkout( git_checkout_branch )
-            git_pull_result = main.ONOSbench.git_pull()
+            main.ONOSbench.gitCheckout( gitCheckoutBranch )
+            gitPullResult = main.ONOSbench.gitPull()
         else:
             main.log.info( "Git checkout and pull skipped by config" )
-            git_pull_result = main.TRUE
+            gitPullResult = main.TRUE
 
         main.step( "Using mvn clean & install" )
-        #clean_install_result = main.ONOSbench.clean_install()
-        clean_install_result = main.TRUE
+        # cleanInstallResult = main.ONOSbench.cleanInstall()
+        cleanInstallResult = main.TRUE
 
         main.step( "Creating ONOS package" )
-        package_result = main.ONOSbench.onos_package()
+        packageResult = main.ONOSbench.onosPackage()
 
         main.step( "Installing ONOS package" )
-        onos_install_result = main.ONOSbench.onos_install()
-        onos1_isup = main.ONOSbench.isup()
+        onosInstallResult = main.ONOSbench.onosInstall()
+        onos1Isup = main.ONOSbench.isup()
 
         main.step( "Starting ONOS service" )
-        start_result = main.ONOSbench.onos_start( ONOS1_ip )
+        startResult = main.ONOSbench.onosStart( ONOS1Ip )
 
         main.step( "Setting cell for ONOScli" )
-        main.ONOScli.set_cell( cell_name )
+        main.ONOScli.setCell( cellName )
 
         main.step( "Starting ONOScli" )
-        main.ONOScli.start_onos_cli( ONOS1_ip )
+        main.ONOScli.startOnosCli( ONOS1Ip )
 
-        case1_result = ( clean_install_result and package_result and
-                         cell_result and verify_result and onos_install_result and
-                         onos1_isup and start_result )
-        utilities.assert_equals( expect=main.TRUE, actual=case1_result,
-                                 onpass="Test startup successful",
-                                 onfail="Test startup NOT successful" )
+        case1Result = ( cleanInstallResult and packageResult and
+                        cellResult and verifyResult and onosInstallResult and
+                        onos1Isup and startResult )
+        utilities.assertEquals( expect=main.TRUE, actual=case1Result,
+                                onpass="Test startup successful",
+                                onfail="Test startup NOT successful" )
 
         time.sleep( 10 )
 
@@ -94,18 +94,18 @@ class LincOETest:
         """
         import time
 
-        ONOS1_ip = main.params[ 'CTRL' ][ 'ip1' ]
-        default_sw_port = main.params[ 'CTRL' ][ 'port1' ]
+        ONOS1Ip = main.params[ 'CTRL' ][ 'ip1' ]
+        defaultSwPort = main.params[ 'CTRL' ][ 'port1' ]
 
         # Assign packet level switches to controller
-        main.Mininet1.assign_sw_controller(
+        main.Mininet1.assignSwController(
             sw="1",
-            ip1=ONOS1_ip,
-            port1=default_sw_port )
-        main.Mininet1.assign_sw_controller(
+            ip1=ONOS1Ip,
+            port1=defaultSwPort )
+        main.Mininet1.assignSwController(
             sw="2",
-            ip1=ONOS1_ip,
-            port1=default_sw_port )
+            ip1=ONOS1Ip,
+            port1=defaultSwPort )
 
         # Check devices in controller
         # This should include Linc-OE devices as well

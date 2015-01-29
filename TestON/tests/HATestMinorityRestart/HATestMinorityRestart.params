@@ -4,6 +4,7 @@
     <cellName>HA</cellName>
     </ENV>
     <Git>False</Git>
+    <branch> master </branch>
     <num_controllers> 7 </num_controllers>
 
     <CTRL>
@@ -56,6 +57,11 @@
         <LinkDiscovery>.2</LinkDiscovery>
         <SwitchDiscovery>.2</SwitchDiscovery>
     </timers>
+    <kill>
+        <switch> s5 </switch>
+        <dpid> 0000000000005000 </dpid>
+        <links> h5 s2 s1 s6 </links>
+    </kill>
     <MNtcpdump>
         <intf>eth0</intf>
         <port> </port>

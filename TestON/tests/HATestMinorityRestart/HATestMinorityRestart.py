@@ -898,12 +898,6 @@ class HATestMinorityRestart:
         hosts.append( main.ONOScli5.hosts() )
         hosts.append( main.ONOScli6.hosts() )
         hosts.append( main.ONOScli7.hosts() )
-        for controller in range( 0, len( hosts ) ):
-            controllerStr = str( controller + 1 )
-            for host in hosts[ controller ]:
-                if host[ 'ips' ] == []:
-                    main.log.error( "DEBUG:Error with host ips on controller" +
-                                    controllerStr + ": " + str( host ) )
         ports = []
         ports.append( main.ONOScli1.ports() )
         ports.append( main.ONOScli2.ports() )

@@ -44,7 +44,9 @@ class OnosCliDriver( CLI ):
                 if key == "home":
                     self.home = self.options[ 'home' ]
                     break
-
+            if self.home == None or self.home == "":
+                self.home = "~/ONOS"
+            
             self.name = self.options[ 'name' ]
             self.handle = super( OnosCliDriver, self ).connect(
                 user_name=self.user_name,

@@ -45,7 +45,9 @@ class OnosDriver( CLI ):
                 if key == "home":
                     self.home = self.options[ 'home' ]
                     break
-
+            if self.home == None or self.home == "":
+                self.home = "~/ONOS"
+            
             self.name = self.options[ 'name' ]
             self.handle = super( OnosDriver, self ).connect(
                 user_name=self.user_name,
@@ -238,7 +240,7 @@ class OnosDriver( CLI ):
             # main.log.info( self.name + ": Stopping ONOS" )
             # self.stop()
             self.handle.sendline( "cd " + self.home )
-            self.handle.expect( "ONOS\$" )
+            self.handle.expect( self.home + "\$" )
             if comp1 == "":
                 self.handle.sendline( "git pull" )
             else:
@@ -274,7 +276,7 @@ class OnosDriver( CLI ):
                 main.log.info(
                     self.name +
                     ": Git Pull - pulling repository now" )
-                self.handle.expect( "ONOS\$", 120 )
+                self.handle.expect( self.home + "\$", 120 )
             # So that only when git pull is done, we do mvn clean compile
                 return main.TRUE
             elif i == 3:
@@ -345,7 +347,7 @@ class OnosDriver( CLI ):
         """
         try:
             self.handle.sendline( "cd " + self.home )
-            self.handle.expect( "ONOS\$" )
+            self.handle.expect( self.home + "\$" )
             main.log.info(
                 self.name +
                 ": Checking out git branch: " +
@@ -385,7 +387,7 @@ class OnosDriver( CLI ):
                     self.name +
                     ": Git Checkout %s : Already on this branch" %
                     branch )
-                self.handle.expect( "ONOS\$" )
+                self.handle.expect( self.home + "\$" )
                 # main.log.info( "DEBUG: after checkout cmd = "+
                 # self.handle.before )
                 return main.TRUE
@@ -394,7 +396,7 @@ class OnosDriver( CLI ):
                     self.name +
                     ": Git checkout %s - Switched to this branch" %
                     branch )
-                self.handle.expect( "ONOS\$" )
+                self.handle.expect( self.home + "\$" )
                 # main.log.info( "DEBUG: after checkout cmd = "+
                 # self.handle.before )
                 return main.TRUE
@@ -413,7 +415,7 @@ class OnosDriver( CLI ):
                             files would be overwritten by checkout:" +
                     str(
                         self.handle.before ) )
-                self.handle.expect( "ONOS\$" )
+                self.handle.expect( self.home + "\$" )
                 return main.ERROR
             elif i == 6:
                 main.log.error( self.name +
@@ -421,7 +423,7 @@ class OnosDriver( CLI ):
                                 "You need to resolve your\
                                         current index first:" +
                                 str( self.handle.before ) )
-                self.handle.expect( "ONOS\$" )
+                self.handle.expect( self.home + "\$" )
                 return main.ERROR
             else:
                 main.log.error(

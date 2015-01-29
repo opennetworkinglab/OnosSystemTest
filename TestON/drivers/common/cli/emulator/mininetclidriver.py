@@ -72,10 +72,8 @@ class MininetCliDriver( Emulator ):
                 port=None,
                 pwd=self.pwd )
 
-            self.sshHandle = self.handle
-
             if self.handle:
-                main.log.info("Connection successful to the host " + 
+                main.log.info("Connection successful to the host " +
                         self.user_name +
                         "@" +
                         self.ip_address )
@@ -100,38 +98,8 @@ class MininetCliDriver( Emulator ):
             main.exit()
 
 
-        """
-        if self.handle:
-            main.log.info(
-                self.name +
-                ": Clearing any residual state or processes" )
-            self.handle.sendline( "sudo mn -c" )
-            i = self.handle.expect( [ 'password\sfor\s',
-                                      'Cleanup\scomplete',
-                                      pexpect.EOF,
-                                      pexpect.TIMEOUT ],
-                                    120 )
-            if i == 0:
-                main.log.info( self.name + ": Sending sudo password" )
-                self.handle.sendline( self.pwd )
-                i = self.handle.expect( [ '%s:' % ( self.user ),
-                                          '\$',
-                                          pexpect.EOF,
-                                          pexpect.TIMEOUT ],
-                                        120 )
-            if i == 1:
-                main.log.info( self.name + ": Clean" )
-            elif i == 2:
-                main.log.error( self.name + ": Connection terminated" )
-            elif i == 3:  # timeout
-                main.log.error(
-                    self.name +
-                    ": Something while cleaning MN took too long... " )
-           """
-
     def startNet( self, topoFile = '', args = '', timeout = 120 ):
 
-        self.name = self.options[ 'name' ]
         if self.handle:
             main.log.info(
                 self.name +

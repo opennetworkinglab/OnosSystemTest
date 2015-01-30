@@ -575,11 +575,11 @@ class TopoPerfNext:
                              str(round(endToEndAvg,2))+" ms"+
                              " End-to-end Std dev: "+
                              str(round(numpy.std(endToEndList),2))+" ms")
-            main.log.report( " Ofp-to-graph Avg: "+
-                             str(round(ofpToGraphAvg,2))+" ms"+
-                             " Ofp-to-graph Std dev: "+
-                             str(round(numpy.std(ofpToGraphList),2))+
-                             " ms")
+            #main.log.report( " Ofp-to-graph Avg: "+
+            #                 str(round(ofpToGraphAvg,2))+" ms"+
+            #                 " Ofp-to-graph Std dev: "+
+            #                 str(round(numpy.std(ofpToGraphList),2))+
+            #                 " ms")
 
         if debugMode == 'on':
             main.ONOS1.cpLogsToDir( "/opt/onos/log/karaf.log",
@@ -619,6 +619,7 @@ class TopoPerfNext:
         assertion = main.TRUE
         # Number of iterations of case
         numIter = main.params[ 'TEST' ][ 'numIter' ]
+        iterIgnore = int( main.params[ 'TEST' ][ 'iterIgnore' ] )
 
         # Timestamp 'keys' for json metrics output.
         # These are subject to change, hence moved into params
@@ -676,6 +677,13 @@ class TopoPerfNext:
         portUpGraphToOfpList = []
         portDownDeviceToOfpList = []
         portDownGraphToOfpList = []
+       
+        # Initialize 2d array filled with 0's
+        # arraySizeFormat[clusterCount][numIter]
+        portUpDevNodeIter = numpy.zeros(( clusterCount, int(numIter) ))
+        portUpGraphNodeIter = numpy.zeros(( clusterCount, int(numIter) ))
+        portDownDevNodeIter = numpy.zeros(( clusterCount, int(numIter) ))
+        portDownGraphNodeIter = numpy.zeros(( clusterCount, int(numIter) ))
 
         for i in range( 0, int( numIter ) ):
             main.step( "Starting wireshark capture for port status down" )
@@ -743,6 +751,23 @@ class TopoPerfNext:
             ptDownDeviceToOfp1 = int( deviceTimestamp1 ) -\
                 int( timestampBeginPtDown )
 
+            if ptDownGraphToOfp1 > downThresholdMin and\
+               ptDownGraphToOfp1 < downThresholdMax and i > iterIgnore:
+                portDownGraphNodeIter[0][i] = ptDownGraphToOfp1
+                main.log.info("iter"+str(i)+" port down graph-to-ofp: "+
+                              str(ptDownGraphToOfp1)+" ms")
+            else:
+                main.log.info("iter"+str(i)+" skipped. Result: "+
+                              str(ptDownGraphToOfp1)+" ms")
+            if ptDownDeviceToOfp1 > downThresholdMin and\
+               ptDownDeviceToOfp1 < downThresholdMax and i > iterIgnore:
+                portDownDevNodeIter[0][i] = ptDownDeviceToOfp1
+                main.log.info("iter"+str(i)+" port down device-to-ofp: "+
+                              str(ptDownDeviceToOfp1)+" ms")
+            else:
+                main.log.info("iter"+str(i)+" skipped. Result: "+
+                              str(ptDownDeviceToOfp1)+" ms")
+
             if clusterCount >= 3:
                 jsonStrUp2 = main.ONOS2cli.topologyEventsMetrics()
                 jsonStrUp3 = main.ONOS3cli.topologyEventsMetrics()
@@ -764,11 +789,30 @@ class TopoPerfNext:
                     int( timestampBeginPtDown )
                 ptDownDeviceToOfp3 = int( deviceTimestamp3 ) -\
                     int( timestampBeginPtDown )
-            else:
-                ptDownGraphToOfp2 = 0
-                ptDownGraphToOfp3 = 0
-                ptDownDeviceToOfp2 = 0
-                ptDownDeviceToOfp3 = 0
+
+                if ptDownGraphToOfp2 > downThresholdMin and\
+                   ptDownGraphToOfp2 < downThresholdMax and i > iterIgnore:
+                    portDownGraphNodeIter[1][i] = ptDownGraphToOfp2
+                    main.log.info("ONOS2 iter"+str(i)+" graph-to-ofp: "+
+                                  str(ptDownGraphToOfp2)+" ms")
+
+                if ptDownDeviceToOfp2 > downThresholdMin and\
+                   ptDownDeviceToOfp2 < downThresholdMax and i > iterIgnore:
+                    portDownDevNodeIter[1][i] = ptDownDeviceToOfp2
+                    main.log.info("ONOS2 iter"+str(i)+" device-to-ofp: "+
+                                  str(ptDownDeviceToOfp2)+" ms")
+
+                if ptDownGraphToOfp3 > downThresholdMin and\
+                   ptDownGraphToOfp3 < downThresholdMax and i > iterIgnore:
+                    portDownGraphNodeIter[2][i] = ptDownGraphToOfp3
+                    main.log.info("ONOS3 iter"+str(i)+" graph-to-ofp: "+
+                                  str(ptDownGraphToOfp3)+" ms")
+
+                if ptDownDeviceToOfp3 > downThresholdMin and\
+                   ptDownDeviceToOfp3 < downThresholdMax and i > iterIgnore:
+                    portDownDevNodeIter[2][i] = ptDownDeviceToOfp3
+                    main.log.info("ONOS3 iter"+str(i)+" device-to-ofp: "+
+                                  str(ptDownDeviceToOfp3)+" ms")
 
             if clusterCount >= 5:
                 jsonStrUp4 = main.ONOS4cli.topologyEventsMetrics()
@@ -791,11 +835,30 @@ class TopoPerfNext:
                     int( timestampBeginPtDown )
                 ptDownDeviceToOfp5 = int( deviceTimestamp5 ) -\
                     int( timestampBeginPtDown )
-            else:
-                ptDownGraphToOfp4 = 0
-                ptDownGraphToOfp5 = 0
-                ptDownDeviceToOfp4 = 0
-                ptDownDeviceToOfp5 = 0
+                
+                if ptDownGraphToOfp4 > downThresholdMin and\
+                   ptDownGraphToOfp4 < downThresholdMax and i > iterIgnore:
+                    portDownGraphNodeIter[3][i] = ptDownGraphToOfp4
+                    main.log.info("ONOS4 iter"+str(i)+" graph-to-ofp: "+
+                                  str(ptDownGraphToOfp4)+" ms")
+
+                if ptDownDeviceToOfp4 > downThresholdMin and\
+                   ptDownDeviceToOfp4 < downThresholdMax and i > iterIgnore:
+                    portDownDevNodeIter[3][i] = ptDownDeviceToOfp4
+                    main.log.info("ONOS4 iter"+str(i)+" device-to-ofp: "+
+                                  str(ptDownDeviceToOfp4)+" ms")
+
+                if ptDownGraphToOfp5 > downThresholdMin and\
+                   ptDownGraphToOfp5 < downThresholdMax and i > iterIgnore:
+                    portDownGraphNodeIter[4][i] = ptDownGraphToOfp5
+                    main.log.info("ONOS5 iter"+str(i)+" graph-to-ofp: "+
+                                  str(ptDownGraphToOfp5)+" ms")
+                
+                if ptDownDeviceToOfp5 > downThresholdMin and\
+                   ptDownDeviceToOfp5 < downThresholdMax and i > iterIgnore:
+                    portDownDevNodeIter[4][i] = ptDownDeviceToOfp5
+                    main.log.info("ONOS5 iter"+str(i)+" device-to-ofp: "+
+                                  str(ptDownDeviceToOfp5)+" ms")
 
             if clusterCount >= 7:
                 jsonStrUp6 = main.ONOS6cli.topologyEventsMetrics()
@@ -818,53 +881,32 @@ class TopoPerfNext:
                     int( timestampBeginPtDown )
                 ptDownDeviceToOfp7 = int( deviceTimestamp7 ) -\
                     int( timestampBeginPtDown )
-            else:
-                ptDownGraphToOfp6 = 0
-                ptDownGraphToOfp7 = 0
-                ptDownDeviceToOfp6 = 0
-                ptDownDeviceToOfp7 = 0
+                
+                if ptDownGraphToOfp6 > downThresholdMin and\
+                   ptDownGraphToOfp6 < downThresholdMax and i > iterIgnore:
+                    portDownGraphNodeIter[5][i] = ptDownGraphToOfp6
+                    main.log.info("ONOS6 iter"+str(i)+" graph-to-ofp: "+
+                                  str(ptDownGraphToOfp6)+" ms")
+
+                if ptDownDeviceToOfp6 > downThresholdMin and\
+                   ptDownDeviceToOfp6 < downThresholdMax and i > iterIgnore:
+                    portDownDevNodeIter[5][i] = ptDownDeviceToOfp6
+                    main.log.info("ONOS6 iter"+str(i)+" device-to-ofp: "+
+                                  str(ptDownDeviceToOfp6)+" ms")
+
+                if ptDownGraphToOfp7 > downThresholdMin and\
+                   ptDownGraphToOfp7 < downThresholdMax and i > iterIgnore:
+                    portDownGraphNodeIter[6][i] = ptDownGraphToOfp7
+                    main.log.info("ONOS7 iter"+str(i)+" graph-to-ofp: "+
+                                  str(ptDownGraphToOfp7)+" ms")
+                
+                if ptDownDeviceToOfp7 > downThresholdMin and\
+                   ptDownDeviceToOfp7 < downThresholdMax and i > iterIgnore:
+                    portDownDevNodeIter[6][i] = ptDownDeviceToOfp7
+                    main.log.info("ONOS7 iter"+str(i)+" device-to-ofp: "+
+                                  str(ptDownDeviceToOfp7)+" ms")
 
             time.sleep( 3 )
-
-            # Caluclate average across clusters
-            ptDownGraphToOfpAvg =\
-                ( int( ptDownGraphToOfp1 ) +
-                  int( ptDownGraphToOfp2 ) +
-                  int( ptDownGraphToOfp3 ) +
-                  int( ptDownGraphToOfp4 ) +
-                  int( ptDownGraphToOfp5 ) +
-                  int( ptDownGraphToOfp6 ) +
-                  int( ptDownGraphToOfp7 ) ) / clusterCount
-            ptDownDeviceToOfpAvg = \
-                ( int( ptDownDeviceToOfp1 ) +
-                  int( ptDownDeviceToOfp2 ) +
-                  int( ptDownDeviceToOfp3 ) +
-                  int( ptDownDeviceToOfp4 ) +
-                  int( ptDownDeviceToOfp5 ) +
-                  int( ptDownDeviceToOfp6 ) +
-                  int( ptDownDeviceToOfp7 ) ) / clusterCount
-
-            if ptDownGraphToOfpAvg > downThresholdMin and \
-                    ptDownGraphToOfpAvg < downThresholdMax:
-                portDownGraphToOfpList.append(
-                    ptDownGraphToOfpAvg )
-                main.log.info( "Port down: graph to ofp avg: " +
-                               str( ptDownGraphToOfpAvg ) + " ms" )
-            else:
-                main.log.info( "Average port down graph-to-ofp result" +
-                               " exceeded the threshold: " +
-                               str( ptDownGraphToOfpAvg ) )
-
-            if ptDownDeviceToOfpAvg > 0 and \
-                    ptDownDeviceToOfpAvg < 1000:
-                portDownDeviceToOfpList.append(
-                    ptDownDeviceToOfpAvg )
-                main.log.info( "Port down: device to ofp avg: " +
-                               str( ptDownDeviceToOfpAvg ) + " ms" )
-            else:
-                main.log.info( "Average port down device-to-ofp result" +
-                               " exceeded the threshold: " +
-                               str( ptDownDeviceToOfpAvg ) )
 
             # Port up events
             main.step( "Enable port and obtain timestamp" )
@@ -917,6 +959,24 @@ class TopoPerfNext:
             # Get delta between device event and OFP
             ptUpDeviceToOfp1 = int( deviceTimestamp1 ) -\
                 int( timestampBeginPtUp )
+            
+            if ptUpGraphToOfp1 > upThresholdMin and\
+               ptUpGraphToOfp1 < upThresholdMax and i > iterIgnore:
+                portUpGraphNodeIter[0][i] = ptUpGraphToOfp1
+                main.log.info("iter"+str(i)+" port up graph-to-ofp: "+
+                              str(ptUpGraphToOfp1)+" ms")
+            else:
+                main.log.info("iter"+str(i)+" skipped. Result: "+
+                              str(ptUpGraphToOfp1)+" ms")
+            
+            if ptUpDeviceToOfp1 > upThresholdMin and\
+               ptUpDeviceToOfp1 < upThresholdMax and i > iterIgnore:
+                portUpDevNodeIter[0][i] = ptUpDeviceToOfp1
+                main.log.info("iter"+str(i)+" port up device-to-ofp: "+
+                              str(ptUpDeviceToOfp1)+" ms")
+            else:
+                main.log.info("iter"+str(i)+" skipped. Result: "+
+                              str(ptUpDeviceToOfp1)+" ms")
 
             if clusterCount >= 3:
                 jsonStrUp2 = main.ONOS2cli.topologyEventsMetrics()
@@ -939,11 +999,30 @@ class TopoPerfNext:
                     int( timestampBeginPtUp )
                 ptUpDeviceToOfp3 = int( deviceTimestamp3 ) -\
                     int( timestampBeginPtUp )
-            else:
-                ptUpGraphToOfp2 = 0
-                ptUpGraphToOfp3 = 0
-                ptUpDeviceToOfp2 = 0
-                ptUpDeviceToOfp3 = 0
+            
+                if ptUpGraphToOfp2 > upThresholdMin and\
+                   ptUpGraphToOfp2 < upThresholdMax and i > iterIgnore:
+                    portUpGraphNodeIter[1][i] = ptUpGraphToOfp2
+                    main.log.info("iter"+str(i)+" port up graph-to-ofp: "+
+                              str(ptUpGraphToOfp2)+" ms")
+            
+                if ptUpDeviceToOfp2 > upThresholdMin and\
+                   ptUpDeviceToOfp2 < upThresholdMax and i > iterIgnore:
+                    portUpDevNodeIter[1][i] = ptUpDeviceToOfp2
+                    main.log.info("iter"+str(i)+" port up device-to-ofp: "+
+                              str(ptUpDeviceToOfp2)+" ms")
+                
+                if ptUpGraphToOfp3 > upThresholdMin and\
+                   ptUpGraphToOfp3 < upThresholdMax and i > iterIgnore:
+                    portUpGraphNodeIter[2][i] = ptUpGraphToOfp3
+                    main.log.info("iter"+str(i)+" port up graph-to-ofp: "+
+                              str(ptUpGraphToOfp3)+" ms")
+            
+                if ptUpDeviceToOfp3 > upThresholdMin and\
+                   ptUpDeviceToOfp3 < upThresholdMax and i > iterIgnore:
+                    portUpDevNodeIter[2][i] = ptUpDeviceToOfp3
+                    main.log.info("iter"+str(i)+" port up device-to-ofp: "+
+                              str(ptUpDeviceToOfp3)+" ms")
 
             if clusterCount >= 5:
                 jsonStrUp4 = main.ONOS4cli.topologyEventsMetrics()
@@ -966,11 +1045,30 @@ class TopoPerfNext:
                     int( timestampBeginPtUp )
                 ptUpDeviceToOfp5 = int( deviceTimestamp5 ) -\
                     int( timestampBeginPtUp )
-            else:
-                ptUpGraphToOfp4 = 0
-                ptUpGraphToOfp5 = 0
-                ptUpDeviceToOfp4 = 0
-                ptUpDeviceToOfp5 = 0
+                
+                if ptUpGraphToOfp4 > upThresholdMin and\
+                   ptUpGraphToOfp4 < upThresholdMax and i > iterIgnore:
+                    portUpGraphNodeIter[3][i] = ptUpGraphToOfp4
+                    main.log.info("iter"+str(i)+" port up graph-to-ofp: "+
+                              str(ptUpGraphToOfp4)+" ms")
+            
+                if ptUpDeviceToOfp4 > upThresholdMin and\
+                   ptUpDeviceToOfp4 < upThresholdMax and i > iterIgnore:
+                    portUpDevNodeIter[3][i] = ptUpDeviceToOfp4
+                    main.log.info("iter"+str(i)+" port up device-to-ofp: "+
+                              str(ptUpDeviceToOfp4)+" ms")
+                
+                if ptUpGraphToOfp5 > upThresholdMin and\
+                   ptUpGraphToOfp5 < upThresholdMax and i > iterIgnore:
+                    portUpGraphNodeIter[4][i] = ptUpGraphToOfp5
+                    main.log.info("iter"+str(i)+" port up graph-to-ofp: "+
+                              str(ptUpGraphToOfp5)+" ms")
+            
+                if ptUpDeviceToOfp5 > upThresholdMin and\
+                   ptUpDeviceToOfp5 < upThresholdMax and i > iterIgnore:
+                    portUpDevNodeIter[4][i] = ptUpDeviceToOfp5
+                    main.log.info("iter"+str(i)+" port up device-to-ofp: "+
+                              str(ptUpDeviceToOfp5)+" ms")
 
             if clusterCount >= 7:
                 jsonStrUp6 = main.ONOS6cli.topologyEventsMetrics()
@@ -993,118 +1091,82 @@ class TopoPerfNext:
                     int( timestampBeginPtUp )
                 ptUpDeviceToOfp7 = int( deviceTimestamp7 ) -\
                     int( timestampBeginPtUp )
-            else:
-                ptUpGraphToOfp6 = 0
-                ptUpGraphToOfp7 = 0
-                ptUpDeviceToOfp6 = 0
-                ptUpDeviceToOfp7 = 0
-
-            ptUpGraphToOfpAvg = \
-                ( int( ptUpGraphToOfp1 ) +
-                  int( ptUpGraphToOfp2 ) +
-                  int( ptUpGraphToOfp3 ) +
-                  int( ptUpGraphToOfp4 ) +
-                  int( ptUpGraphToOfp5 ) +
-                  int( ptUpGraphToOfp6 ) +
-                  int( ptUpGraphToOfp7 ) ) / clusterCount
-
-            ptUpDeviceToOfpAvg = \
-                ( int( ptUpDeviceToOfp1 ) +
-                  int( ptUpDeviceToOfp2 ) +
-                  int( ptUpDeviceToOfp3 ) +
-                  int( ptUpDeviceToOfp4 ) +
-                  int( ptUpDeviceToOfp5 ) +
-                  int( ptUpDeviceToOfp6 ) +
-                  int( ptUpDeviceToOfp7 ) ) / clusterCount
-
-            if ptUpGraphToOfpAvg > upThresholdMin and \
-                    ptUpGraphToOfpAvg < upThresholdMax:
-                portUpGraphToOfpList.append(
-                    ptUpGraphToOfpAvg )
-                main.log.info( "Port down: graph to ofp avg: " +
-                               str( ptUpGraphToOfpAvg ) + " ms" )
-            else:
-                main.log.info( "Average port up graph-to-ofp result" +
-                               " exceeded the threshold: " +
-                               str( ptUpGraphToOfpAvg ) )
-
-            if ptUpDeviceToOfpAvg > upThresholdMin and \
-                    ptUpDeviceToOfpAvg < upThresholdMax:
-                portUpDeviceToOfpList.append(
-                    ptUpDeviceToOfpAvg )
-                main.log.info( "Port up: device to ofp avg: " +
-                               str( ptUpDeviceToOfpAvg ) + " ms" )
-            else:
-                main.log.info( "Average port up device-to-ofp result" +
-                               " exceeded the threshold: " +
-                               str( ptUpDeviceToOfpAvg ) )
+                
+                if ptUpGraphToOfp6 > upThresholdMin and\
+                   ptUpGraphToOfp6 < upThresholdMax and i > iterIgnore:
+                    portUpGraphNodeIter[5][i] = ptUpGraphToOfp6
+                    main.log.info("iter"+str(i)+" port up graph-to-ofp: "+
+                              str(ptUpGraphToOfp6)+" ms")
+            
+                if ptUpDeviceToOfp6 > upThresholdMin and\
+                   ptUpDeviceToOfp6 < upThresholdMax and i > iterIgnore:
+                    portUpDevNodeIter[5][i] = ptUpDeviceToOfp6
+                    main.log.info("iter"+str(i)+" port up device-to-ofp: "+
+                              str(ptUpDeviceToOfp6)+" ms")
+                
+                if ptUpGraphToOfp7 > upThresholdMin and\
+                   ptUpGraphToOfp7 < upThresholdMax and i > iterIgnore:
+                    portUpGraphNodeIter[6][i] = ptUpGraphToOfp7
+                    main.log.info("iter"+str(i)+" port up graph-to-ofp: "+
+                              str(ptUpGraphToOfp7)+" ms")
+            
+                if ptUpDeviceToOfp7 > upThresholdMin and\
+                   ptUpDeviceToOfp7 < upThresholdMax and i > iterIgnore:
+                    portUpDevNodeIter[6][i] = ptUpDeviceToOfp7
+                    main.log.info("iter"+str(i)+" port up device-to-ofp: "+
+                              str(ptUpDeviceToOfp7)+" ms")
 
             # END ITERATION FOR LOOP
+        
+        portUpDevList = []
+        portUpGraphList = []
+        portDownDevList = []
+        portDownGraphList = []
 
-        # Check all list for latency existence and set assertion
-        if ( portDownGraphToOfpList and portDownDeviceToOfpList
-                and portUpGraphToOfpList and portUpDeviceToOfpList ):
-            assertion = main.TRUE
+        portUpDevAvg = 0
+        portUpGraphAvg = 0
+        portDownDevAvg = 0
+        portDownGraphAvg = 0
 
-        main.log.report( "Cluster size: " + str( clusterCount ) +
-                         " node(s)" )
-        # Calculate and report latency measurements
-        portDownGraphToOfpMin = min( portDownGraphToOfpList )
-        portDownGraphToOfpMax = max( portDownGraphToOfpList )
-        portDownGraphToOfpAvg = \
-            ( sum( portDownGraphToOfpList ) /
-              len( portDownGraphToOfpList ) )
-        portDownGraphToOfpStdDev = \
-            str( round( numpy.std( portDownGraphToOfpList ), 1 ) )
+        for node in range( 0, clusterCount ):
 
-        main.log.report( "Port down graph-to-ofp " +
-                         "Avg: " + str( portDownGraphToOfpAvg ) + " ms " +
-                         "Std Deviation: " + portDownGraphToOfpStdDev + " ms" )
+            # NOTE: 
+            # Currently the 2d array is initialized with 0's. 
+            # We want to avoid skewing our results if the array
+            # was not modified with the correct latency.
+            for item in portUpDevNodeIter[node]:
+                if item > 0.0:
+                    portUpDevList.append(item)
+            for item in portUpGraphNodeIter[node]:
+                if item > 0.0:
+                    portUpGraphList.append(item)
+            for item in portDownDevNodeIter[node]:
+                if item > 0.0:
+                    portDownDevList.append(item)
+            for item in portDownGraphNodeIter[node]:
+                if item > 0.0:
+                    portDownGraphList.append(item)
+       
+            portUpDevAvg = numpy.mean(portUpDevList)
+            portUpGraphAvg = numpy.mean(portUpGraphList)
+            portDownDevAvg = numpy.mean(portDownDevList)
+            portDownGraphAvg = numpy.mean(portDownGraphList)
 
-        portDownDeviceToOfpMin = min( portDownDeviceToOfpList )
-        portDownDeviceToOfpMax = max( portDownDeviceToOfpList )
-        portDownDeviceToOfpAvg = \
-            ( sum( portDownDeviceToOfpList ) /
-              len( portDownDeviceToOfpList ) )
-        portDownDeviceToOfpStdDev = \
-            str( round( numpy.std( portDownDeviceToOfpList ), 1 ) )
-
-        main.log.report(
-            "Port down device-to-ofp " +
-            "Avg: " +
-            str( portDownDeviceToOfpAvg ) +
-            " ms " +
-            "Std Deviation: " +
-            portDownDeviceToOfpStdDev +
-            " ms" )
-
-        portUpGraphToOfpMin = min( portUpGraphToOfpList )
-        portUpGraphToOfpMax = max( portUpGraphToOfpList )
-        portUpGraphToOfpAvg = \
-            ( sum( portUpGraphToOfpList ) /
-              len( portUpGraphToOfpList ) )
-        portUpGraphToOfpStdDev = \
-            str( round( numpy.std( portUpGraphToOfpList ), 1 ) )
-
-        main.log.report( "Port up graph-to-ofp " +
-                         "Avg: " + str( portUpGraphToOfpAvg ) + " ms " +
-                         "Std Deviation: " + portUpGraphToOfpStdDev + " ms" )
-
-        portUpDeviceToOfpMin = min( portUpDeviceToOfpList )
-        portUpDeviceToOfpMax = max( portUpDeviceToOfpList )
-        portUpDeviceToOfpAvg = \
-            ( sum( portUpDeviceToOfpList ) /
-              len( portUpDeviceToOfpList ) )
-        portUpDeviceToOfpStdDev = \
-            str( round( numpy.std( portUpDeviceToOfpList ), 1 ) )
-
-        main.log.report( "Port up device-to-ofp " +
-                         "Avg: " + str( portUpDeviceToOfpAvg ) + " ms " +
-                         "Std Deviation: " + portUpDeviceToOfpStdDev + " ms" )
+            main.log.report( " - Node "+str(node+1)+" Summary - " )
+            #main.log.report( " Port up ofp-to-device "+
+            #                 str(round(portUpDevAvg, 2))+" ms")
+            main.log.report( " Port up ofp-to-graph "+
+                             str(round(portUpGraphAvg, 2))+" ms")
+            #main.log.report( " Port down ofp-to-device "+
+            #                 str(round(portDownDevAvg, 2))+" ms")
+            main.log.report( " Port down ofp-to-graph "+
+                             str(round(portDownGraphAvg, 2))+" ms")
 
         # Remove switches from controller for next test
         main.Mininet1.deleteSwController( "s1" )
         main.Mininet1.deleteSwController( "s2" )
+
+        #TODO: correct assertion
 
         utilities.assert_equals(
             expect=main.TRUE,

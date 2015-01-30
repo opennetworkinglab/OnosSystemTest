@@ -33,9 +33,9 @@ class QuaggaCliDriver( CLI ):
                 ip_address="1.1.1.1",
                 port=self.port,
                 pwd=self.pwd )
-        main.log.info( "connect parameters:" + str( self.user_name ) + ";"
-                       + str( self.ip_address ) + ";" + str( self.port )
-                       + ";" + str(self.pwd ) )
+        #main.log.info( "connect parameters:" + str( self.user_name ) + ";"
+        #               + str( self.ip_address ) + ";" + str( self.port )
+        #               + ";" + str(self.pwd ) )
 
         if self.handle:
             # self.handle.expect( "",timeout=10 )
@@ -184,6 +184,17 @@ class QuaggaCliDriver( CLI ):
 
         allRoutesActual = []
         for route in routesJsonObj:
+            if route[ 'prefix' ] == '172.16.10.0/24':
+                continue
+            allRoutesActual.append(
+                route[ 'prefix' ] + "/" + route[ 'nextHop' ] )
+
+        return sorted( allRoutesActual )
+    def extractActualRoutesNew( self, getRoutesResult ):
+        routesJsonObj = json.loads( getRoutesResult )
+
+        allRoutesActual = []
+        for route in routesJsonObj['routes4']:
             if route[ 'prefix' ] == '172.16.10.0/24':
                 continue
             allRoutesActual.append(

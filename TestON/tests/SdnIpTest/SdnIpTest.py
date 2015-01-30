@@ -4,7 +4,7 @@ class SdnIpTest:
 
     def __init__( self ):
         self.default = ''
-   
+
     # This case is to setup ONOS
     def CASE100( self, main ):
         """
@@ -44,16 +44,16 @@ class SdnIpTest:
             main.log.warn( "Did not pull new code so skipping mvn " +
                             "clean install" )
         main.ONOSbench.getVersion( report=True )
-  
+
         #cellResult = main.ONOSbench.setCell( cellName )
         #verifyResult = main.ONOSbench.verifyCell()
         main.step( "Creating ONOS package" )
         packageResult = main.ONOSbench.onosPackage()
-  
+
         main.step( "Installing ONOS package" )
         onos1InstallResult = main.ONOSbench.onosInstall( options="-f",
                                                            node=ONOS1Ip )
-  
+
         main.step( "Checking if ONOS is up yet" )
         for i in range( 2 ):
             onos1Isup = main.ONOSbench.isup( ONOS1Ip )
@@ -61,18 +61,18 @@ class SdnIpTest:
                 break
         if not onos1Isup:
             main.log.report( "ONOS1 didn't start!" )
-  
+
         cliResult = main.ONOScli.startOnosCli( ONOS1Ip )
-  
+
         case1Result = ( cleanInstallResult and packageResult and
                         cellResult and verifyResult and
                         onos1InstallResult and
                         onos1Isup and cliResult )
-  
+
         utilities.assert_equals( expect=main.TRUE, actual=case1Result,
                                  onpass="ONOS startup successful",
                                  onfail="ONOS startup NOT successful" )
-  
+
         if case1Result == main.FALSE:
             main.cleanup()
             main.exit()
@@ -135,7 +135,7 @@ class SdnIpTest:
 
         routeIntentsExpected = routeIntentsExpectedHost3 + \
             routeIntentsExpectedHost4 + routeIntentsExpectedHost5
-        
+
         main.step( "Get devices in the network" )
         listResult = main.ONOScli.devices( jsonFormat=False )
         main.log.info( listResult )
@@ -170,7 +170,8 @@ class SdnIpTest:
             prefixesHostX = main.QuaggaCliHost.generatePrefixes( str( i ), 10 )
             main.log.info( prefixesHostX )
             for prefix in prefixesHostX:
-                allRoutesExpected.append( prefix + "/" + "192.168.40." + str( i - 100 ) )
+                allRoutesExpected.append( prefix + "/" + "192.168.40."
+                                           + str( i - 100 ) )
 
             routeIntentsExpectedHostX = \
             main.QuaggaCliHost.generateExpectedOnePeerRouteIntents(
@@ -189,14 +190,13 @@ class SdnIpTest:
             QuaggaCliHostX.addRoutes( prefixesHostX, 1 )
 
         time.sleep( 60 )
-
         # get routes inside SDN-IP
         getRoutesResult = main.ONOScli.routes( jsonFormat=True )
 
         # parse routes from ONOS CLI
         allRoutesActual = \
             main.QuaggaCliHost3.extractActualRoutes( getRoutesResult )
-        
+
         allRoutesStrExpected = str( sorted( allRoutesExpected ) )
         allRoutesStrActual = str( allRoutesActual ).replace( 'u', "" )
         main.step( "Check routes installed" )
@@ -343,7 +343,6 @@ class SdnIpTest:
             "1.168.30.100", pingTestScript, pingTestResultsFile )
         main.log.info( pingTestResults )
         time.sleep( 100 )
-
 
     def CASE3( self, main ):
         """

@@ -97,12 +97,12 @@ class Ping2topoExample:
             main.cleanup()
             main.exit()
         
-        main.step( "Starting Mininet CLI..." )
+        main.step( "Starting Mininet Topology..." )
         netIsUp = main.Mininet1.startNet()
         if netIsUp:
-            main.log.info("Mininet CLI is up")
+            main.log.info("Mininet topology is up")
         else:
-            main.log.info("Mininet CLI is down")
+            main.log.info("Mininet did not start")
 
     def CASE2( self, main ):
         """

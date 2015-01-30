@@ -7,7 +7,10 @@
             <password></password>
             <type>OnosDriver</type>
             <connect_order>1</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                #Specify which onos branch you want to run
+                <home></home>
+            </COMPONENTS>
         </ONOSbench>
 
         <ONOScli1>

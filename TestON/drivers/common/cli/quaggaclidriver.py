@@ -472,7 +472,7 @@ class QuaggaCliDriver( CLI ):
         if routesAdded == numRoutes:
             return main.TRUE
         return main.FALSE
-    
+
     # Please use deleteRoutes method instead of this one!
     def delRoute( self, net, numRoutes, routeRate ):
         try:
@@ -545,7 +545,7 @@ class QuaggaCliDriver( CLI ):
             child.expect( "Flow table show" )
             count = 0
             while True:
-                i = child.expect( [ '17\d\.\d{1,3}\.\d{1,3}\.\d{1,3}', 
+                i = child.expect( [ '17\d\.\d{1,3}\.\d{1,3}\.\d{1,3}',
                                    'CLI#', pexpect.TIMEOUT ] )
                 if i == 0:
                     count = count + 1

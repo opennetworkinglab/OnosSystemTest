@@ -411,6 +411,89 @@ class MininetCliDriver( Emulator ):
         else:
             return main.TRUE
 
+    def moveHost( self, host, oldSw, newSw, ):
+        """
+           Moves a host from one switch to another on the fly
+           Note: The intf between host and oldSw when detached
+                using detach(), will still show up in the 'net'
+                cmd, because switch.detach() doesn't affect switch.intfs[]
+                (which is correct behavior since the interfaces 
+                haven't moved).
+        """
+        if self.handle:
+            try:
+                # Bring link between oldSw-host down
+                cmd = "py net.configLinkStatus('" + oldSw + "'," + "'" + host + "'," +\
+                "'down')"
+                print "cmd1= ", cmd
+                response = self.execute(
+                cmd=cmd,
+                prompt="mininet>",
+                timeout=10 )
+     
+                # Determine hostintf and Oldswitchintf
+                cmd = "px hintf,sintf = " + host + ".connectionsTo(" + oldSw +\
+                ")[0]"
+                print "cmd2= ", cmd
+                self.handle.sendline( cmd )
+                self.handle.expect( "mininet>" )
+
+                # Determine ipaddress of the host-oldSw interface
+                cmd = "px ipaddr = hintf.IP()"
+                print "cmd3= ", cmd
+                self.handle.sendline( cmd )
+                self.handle.expect( "mininet>" )
+                
+                # Detach interface between oldSw-host
+                cmd = "px " + oldSw + ".detach( sintf )"
+                print "cmd4= ", cmd
+                self.handle.sendline( cmd )
+                self.handle.expect( "mininet>" )
+
+                # Add link between host-newSw
+                cmd = "py net.addLink(" + host + "," + newSw + ")"
+                print "cmd5= ", cmd
+                self.handle.sendline( cmd )
+                self.handle.expect( "mininet>" )
+ 
+                # Determine hostintf and Newswitchintf
+                cmd = "px hintf,sintf = " + host + ".connectionsTo(" + newSw +\
+                ")[0]"
+                print "cmd6= ", cmd
+                self.handle.sendline( cmd )
+                self.handle.expect( "mininet>" )                 
+
+                # Attach interface between newSw-host
+                cmd = "px " + newSw + ".attach( sintf )"
+                print "cmd3= ", cmd
+                self.handle.sendline( cmd )
+                self.handle.expect( "mininet>" )
+                
+                # Set ipaddress of the host-newSw interface
+                cmd = "px " + host + ".setIP( ip = ipaddr, intf = hintf)"
+                print "cmd7 = ", cmd
+                self.handle.sendline( cmd )
+                self.handle.expect( "mininet>" )
+                
+                cmd = "net"
+                print "cmd8 = ", cmd
+                self.handle.sendline( cmd )
+                self.handle.expect( "mininet>" )
+                print "output = ", self.handle.before
+
+                # Determine ipaddress of the host-newSw interface
+                cmd = "h1 ifconfig"
+                print "cmd9= ", cmd
+                self.handle.sendline( cmd )
+                self.handle.expect( "mininet>" )
+                print "ifconfig o/p = ", self.handle.before
+                
+                return main.TRUE
+            except pexpect.EOF:
+                main.log.error( self.name + ": EOF exception found" )
+                main.log.error( self.name + ":     " + self.handle.before )
+                return main.FALSE
+
     def changeIP( self, host, intf, newIP, newNetmask ):
         """
            Changes the ip address of a host on the fly

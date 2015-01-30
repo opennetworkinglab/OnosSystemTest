@@ -4,6 +4,7 @@
     <cellName>HA</cellName>
     </ENV>
     <Git>False</Git>
+    <branch> master </branch>
     <num_controllers> 7 </num_controllers>
 
     <CTRL>

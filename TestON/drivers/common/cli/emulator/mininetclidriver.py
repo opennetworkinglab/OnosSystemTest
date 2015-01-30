@@ -1492,9 +1492,9 @@ class MininetCliDriver( Emulator ):
         else:
             linkResults = main.FALSE
             main.log.report(
-                "Mininet has %i bidirectional links and " +
-                "ONOS has %i unidirectional links" %
-                ( len( mnLinks ), len( onos ) ) )
+                "Mininet has " + str( len( mnLinks ) ) +
+                " bidirectional links and ONOS has " +
+                str( len( onos ) ) + " unidirectional links" )
 
         # iterate through MN links and check if an ONOS link exists in
         # both directions

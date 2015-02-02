@@ -192,6 +192,8 @@ class IntentsLoad:
         msg = ( "Final rate on node 1: " + str( lastRate1 ) )
         main.log.report( msg )
 
+        ############## Insert jenkins csv file setup #############
+
     def CASE4( self, main ):  # 2 node scale
         import time
         import json

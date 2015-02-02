@@ -28,19 +28,14 @@ class QuaggaCliDriver( CLI ):
         # self.handle = super( QuaggaCliDriver,self ).connect(
         # user_name=self.user_name, ip_address=self.ip_address,port=self.port,
         # pwd=self.pwd )
-        self.handle = super(
-            QuaggaCliDriver,
-            self ).connect(
+        self.handle = super( QuaggaCliDriver, self ).connect(
                 user_name=self.user_name,
-            ip_address="1.1.1.1",
-            port=self.port,
-            pwd=self.pwd )
-        main.log.info(
-            "connect parameters:" + str(
-                self.user_name ) + ";" + str(
-                    self.ip_address ) + ";" + str(
-                self.port ) + ";" + str(
-                self.pwd ) )
+                ip_address="1.1.1.1",
+                port=self.port,
+                pwd=self.pwd )
+        main.log.info( "connect parameters:" + str( self.user_name ) + ";"
+                       + str( self.ip_address ) + ";" + str( self.port )
+                       + ";" + str(self.pwd ) )
 
         if self.handle:
             # self.handle.expect( "",timeout=10 )
@@ -64,14 +59,9 @@ class QuaggaCliDriver( CLI ):
         self.handle = super( QuaggaCliDriver, self ).connect(
             user_name=self.user_name, ip_address=ip_address,
             port=self.port, pwd=self.pwd )
-        main.log.info( "connect parameters:" +
-                       str( self.user_name ) +
-                       ";" +
-                       str( self.ip_address ) +
-                       ";" +
-                       str( self.port ) +
-                       ";" +
-                       str( self.pwd ) )
+        main.log.info( "connect parameters:" + str( self.user_name ) + ";"
+                       + str( self.ip_address ) + ";" + str( self.port )
+                       + ";" + str( self.pwd ) )
 
         if self.handle:
             # self.handle.expect( "" )
@@ -85,7 +75,7 @@ class QuaggaCliDriver( CLI ):
             self.handle.sendline( "enable" )
             # self.handle.expect( "bgpd#", timeout=5 )
             self.handle.expect( "bgpd#" )
-            main.log.info( "I in quagga on host " + str( ip_address ) )
+            main.log.info( "I am in quagga on host " + str( ip_address ) )
 
             return self.handle
         else:
@@ -114,8 +104,7 @@ class QuaggaCliDriver( CLI ):
     def generatePrefixes( self, net, numRoutes ):
         main.log.info( "I am in generate_prefixes method!" )
 
-        # each IP prefix will be composed by
-        #"net" + "." + m + "." + n + "." + x
+        # each IP prefix is composed by "net" + "." + m + "." + n + "." + x
         # the length of each IP prefix is 24
         routes = []
         routesGen = 0
@@ -124,10 +113,8 @@ class QuaggaCliDriver( CLI ):
 
         for i in range( 0, m ):
             for j in range( 0, 256 ):
-                network = str(
-                    net ) + "." + str(
-                        i ) + "." + str(
-                            j ) + ".0/24"
+                network = str( net ) + "." + str( i ) + "." + str( j ) \
+                    + ".0/24"
                 routes.append( network )
                 routesGen = routesGen + 1
 
@@ -144,39 +131,36 @@ class QuaggaCliDriver( CLI ):
 
     # This method generates a multiple to single point intent(
     # MultiPointToSinglePointIntent ) for a given route
-    def generateExpectedSingleRouteIntent(
-            self,
-            prefix,
-            nextHop,
-            nextHopMac,
-            sdnipData ):
+    def generateExpectedSingleRouteIntent( self, prefix, nextHop, nextHopMac,
+                                           sdnipData ):
 
-        ingress = []
+        ingresses = []
         egress = ""
         for peer in sdnipData[ 'bgpPeers' ]:
-            if peer[ 'ip_address' ] == nextHop:
-                egress = "of:" + \
-                    str( peer[ 'attachmentDpid' ] ).replace( ":", "" ) + ":" +\
-                    str( peer[ 'attachmentPort' ] )
-            else:
-                ingress.append( "of:" +
-                                str( peer[ 'attachmentDpid' ] ).replace( ":",
-                                     "" ) + ":" +
-                                str( peer[ 'attachmentPort' ] ) )
+            if peer[ 'ipAddress' ] == nextHop:
+                egress = "of:" + str(
+                    peer[ 'attachmentDpid' ] ).replace( ":", "" ) + ":" \
+                    + str( peer[ 'attachmentPort' ] )
+        for peer in sdnipData[ 'bgpPeers' ]:
+            if not peer[ 'ipAddress' ] == nextHop:
+                ingress = "of:" + str(
+                    peer[ 'attachmentDpid' ] ).replace( ":", "" ) + ":" \
+                    + str( peer[ 'attachmentPort' ] )
+                if not ingress == egress and ingress not in ingresses:
+                    ingresses.append( ingress )
+                    # ingresses.append( "of:" + str( peer[ 'attachmentDpid' ]
+                    # ).replace( ":", "" ) + ":" + str( peer[ 'attachmentPort'
+                    # ] ) )
 
         selector = "ETH_TYPE{ethType=800},IPV4_DST{ip=" + prefix + "}"
         treatment = "[ETH_DST{mac=" + str( nextHopMac ) + "}]"
 
-        intent = egress + "/" + \
-            str( sorted( ingress ) ) + "/" + selector + "/" + treatment
+        intent = egress + "/" + str( sorted( ingresses ) ) + "/" + \
+            selector + "/" + treatment
         return intent
 
-    def generateExpectedOnePeerRouteIntents(
-            self,
-            prefixes,
-            nextHop,
-            nextHopMac,
-            sdnipJsonFilePath ):
+    def generateExpectedOnePeerRouteIntents( self, prefixes, nextHop,
+                                             nextHopMac, sdnipJsonFilePath ):
         intents = []
         sdnipJsonFile = open( sdnipJsonFilePath ).read()
 
@@ -185,10 +169,7 @@ class QuaggaCliDriver( CLI ):
         for prefix in prefixes:
             intents.append(
                 self.generateExpectedSingleRouteIntent(
-                    prefix,
-                    nextHop,
-                    nextHopMac,
-                    sdnipData ) )
+                    prefix, nextHop, nextHopMac, sdnipData ) )
         return sorted( intents )
 
     # TODO
@@ -220,14 +201,15 @@ class QuaggaCliDriver( CLI ):
         for intent in intentsJsonObj:
             if intent[ 'appId' ] != "org.onosproject.sdnip":
                 continue
-            if intent[ 'type' ] == "MultiPointToSinglePointIntent" and intent[
-                    'state' ] == 'INSTALLED':
-                egress = str( intent[ 'egress' ][ 'device' ] ) + ":" + str(
-                    intent[ 'egress' ][ 'port' ] )
+            if intent[ 'type' ] == "MultiPointToSinglePointIntent" \
+            and intent[ 'state' ] == 'INSTALLED':
+                egress = str( intent[ 'egress' ][ 'device' ] ) + ":" \
+                    + str( intent[ 'egress' ][ 'port' ] )
                 ingress = []
                 for attachmentPoint in intent[ 'ingress' ]:
-                    ingress.append( str( attachmentPoint[ 'device' ] ) +
-                            ":" + str( attachmentPoint[ 'port' ] ) )
+                    ingress.append(
+                        str( attachmentPoint[ 'device' ] ) + ":"
+                        + str( attachmentPoint[ 'port' ] ) )
 
                 selector = intent[ 'selector' ].replace(
                     "[", "" ).replace( "]", "" ).replace( " ", "" )
@@ -235,8 +217,7 @@ class QuaggaCliDriver( CLI ):
                     str1, str2 = str( selector ).split( "," )
                     selector = str2 + "," + str1
 
-                intent = egress + "/" + \
-                    str( sorted( ingress ) ) + "/" + \
+                intent = egress + "/" + str( sorted( ingress ) ) + "/" + \
                     selector + "/" + intent[ 'treatment' ]
                 intents.append( intent )
         return sorted( intents )
@@ -251,22 +232,16 @@ class QuaggaCliDriver( CLI ):
         for intent in intentsJsonObj:
             if intent[ 'appId' ] != "org.onosproject.sdnip":
                 continue
-            if intent[ 'type' ] == "PointToPointIntent" and "protocol=6"\
-                    in str(  intent[ 'selector' ] ):
-                ingress = str( intent[ 'ingress' ][ 'device' ] ) + ":" + str(
-                    intent[ 'ingress' ][ 'port' ] )
-                egress = str( intent[ 'egress' ][ 'device' ] ) + ":" + str(
-                    intent[ 'egress' ][ 'port' ] )
-                selector = str(
-                    intent[ 'selector' ] ).replace(
-                    " ",
-                    "" ).replace(
-                    "[",
-                    "" ).replace(
-                    "]",
-                    "" ).split( "," )
-                intent = ingress + "/" + egress + \
-                    "/" + str( sorted( selector ) )
+            if intent[ 'type' ] == "PointToPointIntent" \
+            and "protocol=6" in str( intent[ 'selector' ] ):
+                ingress = str( intent[ 'ingress' ][ 'device' ] ) + ":" \
+                    + str( intent[ 'ingress' ][ 'port' ] )
+                egress = str( intent[ 'egress' ][ 'device' ] ) + ":" + \
+                    str( intent[ 'egress' ][ 'port' ] )
+                selector = str( intent[ 'selector' ] ).replace( " ", "" )\
+                    .replace( "[", "" ).replace( "]", "" ).split( "," )
+                intent = ingress + "/" + egress + "/" + \
+                    str( sorted( selector ) )
                 intents.append( intent )
 
         return sorted( intents )
@@ -282,73 +257,72 @@ class QuaggaCliDriver( CLI ):
         intents = []
         bgpPeerAttachmentPoint = ""
         bgpSpeakerAttachmentPoint = "of:" + str(
-            sdnipData[ 'bgpSpeakers' ][ 0 ][ 'attachmentDpid' ] ).replace( ":",
-             "" ) + ":" +\
-                     str( sdnipData[ 'bgpSpeakers' ][ 0 ][ 'attachmentPort' ] )
+            sdnipData[ 'bgpSpeakers' ][ 0 ][ 'attachmentDpid' ] )\
+            .replace( ":", "" ) + ":" \
+            + str( sdnipData[ 'bgpSpeakers' ][ 0 ][ 'attachmentPort' ] )
         for peer in sdnipData[ 'bgpPeers' ]:
-            bgpPeerAttachmentPoint = "of:" + \
-                str( peer[ 'attachmentDpid' ] ).replace( ":", "" ) +\
-                ":" + str( peer[ 'attachmentPort' ] )
+            bgpPeerAttachmentPoint = "of:" \
+                + str( peer[ 'attachmentDpid' ] ).replace( ":", "" ) \
+                + ":" + str( peer[ 'attachmentPort' ] )
             # find out the BGP speaker IP address for this BGP peer
             bgpSpeakerIpAddress = ""
-            for interfaceAddress in sdnipData[
-                    'bgpSpeakers' ][ 0 ][ 'interfaceAddresses' ]:
+            for interfaceAddress in \
+            sdnipData[ 'bgpSpeakers' ][ 0 ][ 'interfaceAddresses' ]:
                 # if eq( interfaceAddress[ 'interfaceDpid' ],sdnipData[
                 # 'bgpSpeakers' ][ 0 ][ 'attachmentDpid' ] ) and eq(
-                # interfaceAddress[ 'interfacePort' ], sdnipData[
-                # 'bgpSpeakers' ][ 0 ][ 'attachmentPort' ] ):
-                if eq(
-                        interfaceAddress[ 'interfaceDpid' ],
-                        peer[ 'attachmentDpid' ] ) and eq(
-                        interfaceAddress[ 'interfacePort' ],
+                # interfaceAddress[ 'interfacePort' ], sdnipData[ 'bgpSpeakers'
+                # ][ 0 ][ 'attachmentPort' ] ):
+                if eq( interfaceAddress[ 'interfaceDpid' ],
+                       peer[ 'attachmentDpid' ] ) \
+                and eq( interfaceAddress[ 'interfacePort' ],
                         peer[ 'attachmentPort' ] ):
-                    bgpSpeakerIpAddress = interfaceAddress[ 'ip_address' ]
+                    bgpSpeakerIpAddress = interfaceAddress[ 'ipAddress' ]
                     break
                 else:
                     continue
 
             # from bgpSpeakerAttachmentPoint to bgpPeerAttachmentPoint
             # direction
-            selectorStr = "IPV4_SRC{ip=" + bgpSpeakerIpAddress +\
-                    "/32}," + "IPV4_DST{ip=" + peer[ 'ip_address' ] + "/32}," +\
-                        "IP_PROTO{protocol=6}, ETH_TYPE{ethType=800},\
-                        TCP_DST{tcpPort=179}"
-            selector = selectorStr.replace( " ", "" ).replace(
-                "[", "" ).replace( "]", "" ).split( "," )
+            selectorStr = "IPV4_SRC{ip=" + bgpSpeakerIpAddress + "/32}," \
+                + "IPV4_DST{ip=" + peer[ 'ipAddress' ] + "/32}," \
+                + "IP_PROTO{protocol=6}, ETH_TYPE{ethType=800}, \
+                TCP_DST{tcpPort=179}"
+            selector = selectorStr.replace( " ", "" ).replace("[", "" )\
+                .replace( "]", "" ).split( "," )
             intent = bgpSpeakerAttachmentPoint + "/" + \
                 bgpPeerAttachmentPoint + "/" + str( sorted( selector ) )
             intents.append( intent )
 
-            selectorStr = "IPV4_SRC{ip=" + bgpSpeakerIpAddress + "/32}," +\
-                    "IPV4_DST{ip=" + peer[ 'ip_address' ] + "/32}," +\
-                    "IP_PROTO{protocol=6}, ETH_TYPE{ethType=800},\
-                    TCP_SRC{tcpPort=179}"
-            selector = selectorStr.replace( " ", "" ).replace(
-                "[", "" ).replace( "]", "" ).split( "," )
-            intent = bgpSpeakerAttachmentPoint + "/" + \
-                bgpPeerAttachmentPoint + "/" + str( sorted( selector ) )
+            selectorStr = "IPV4_SRC{ip=" + bgpSpeakerIpAddress + "/32}," \
+                + "IPV4_DST{ip=" + peer[ 'ipAddress' ] + "/32}," \
+                + "IP_PROTO{protocol=6}, ETH_TYPE{ethType=800}, \
+                TCP_SRC{tcpPort=179}"
+            selector = selectorStr.replace( " ", "" ).replace("[", "" )\
+                .replace( "]", "" ).split( "," )
+            intent = bgpSpeakerAttachmentPoint + "/" \
+                + bgpPeerAttachmentPoint + "/" + str( sorted( selector ) )
             intents.append( intent )
 
             # from bgpPeerAttachmentPoint to bgpSpeakerAttachmentPoint
             # direction
-            selectorStr = "IPV4_SRC{ip=" + peer[ 'ip_address' ] + "/32}," +\
-                    "IPV4_DST{ip=" + bgpSpeakerIpAddress + "/32}," + \
-                    "IP_PROTO{protocol=6}, ETH_TYPE{ethType=800},\
-                    TCP_DST{tcpPort=179}"
-            selector = selectorStr.replace( " ", "" ).replace(
-                "[", "" ).replace( "]", "" ).split( "," )
-            intent = bgpPeerAttachmentPoint + "/" + \
-                bgpSpeakerAttachmentPoint + "/" + str( sorted( selector ) )
+            selectorStr = "IPV4_SRC{ip=" + peer[ 'ipAddress' ] + "/32}," \
+                + "IPV4_DST{ip=" + bgpSpeakerIpAddress + "/32}," \
+                + "IP_PROTO{protocol=6}, ETH_TYPE{ethType=800}, \
+                TCP_DST{tcpPort=179}"
+            selector = selectorStr.replace( " ", "" ).replace("[", "" )\
+                .replace( "]", "" ).split( "," )
+            intent = bgpPeerAttachmentPoint + "/" \
+                + bgpSpeakerAttachmentPoint + "/" + str( sorted( selector ) )
             intents.append( intent )
 
-            selectorStr = "IPV4_SRC{ip=" + peer[ 'ip_address' ] + "/32}," +\
-                    "IPV4_DST{ip=" + bgpSpeakerIpAddress + "/32}," +\
-                    "IP_PROTO{protocol=6}, ETH_TYPE{ethType=800},\
-                     TCP_SRC{tcpPort=179}"
-            selector = selectorStr.replace( " ", "" ).replace(
-                "[", "" ).replace( "]", "" ).split( "," )
-            intent = bgpPeerAttachmentPoint + "/" + \
-                bgpSpeakerAttachmentPoint + "/" + str( sorted( selector ) )
+            selectorStr = "IPV4_SRC{ip=" + peer[ 'ipAddress' ] + "/32}," \
+                + "IPV4_DST{ip=" + bgpSpeakerIpAddress + "/32}," \
+                + "IP_PROTO{protocol=6}, ETH_TYPE{ethType=800}, \
+                TCP_SRC{tcpPort=179}"
+            selector = selectorStr.replace( " ", "" ).replace( "[", "" )\
+                .replace( "]", "" ).split( "," )
+            intent = bgpPeerAttachmentPoint + "/" \
+                + bgpSpeakerAttachmentPoint + "/" + str( sorted( selector ) )
             intents.append( intent )
 
         return sorted( intents )
@@ -374,8 +348,8 @@ class QuaggaCliDriver( CLI ):
             except:
                 main.log.warn( "Failed to add route" )
                 self.disconnect()
-            waitTimer = 1.00 / routeRate
-            time.sleep( waitTimer )
+            # waitTimer = 1.00 / routeRate
+            # time.sleep( waitTimer )
         if routesAdded == len( routes ):
             main.log.info( "Finished adding routes" )
             return main.TRUE
@@ -400,10 +374,10 @@ class QuaggaCliDriver( CLI ):
                 self.handle.sendline( routeCmd )
                 self.handle.expect( "bgpd", timeout=5 )
             except:
-                main.log.warn( "Failed to add route" )
+                main.log.warn( "Failed to delete route" )
                 self.disconnect()
-            waitTimer = 1.00 / routeRate
-            time.sleep( waitTimer )
+            # waitTimer = 1.00 / routeRate
+            # time.sleep( waitTimer )
         if routesAdded == len( routes ):
             main.log.info( "Finished deleting routes" )
             return main.TRUE
@@ -416,24 +390,15 @@ class QuaggaCliDriver( CLI ):
         self.handle = super( QuaggaCliDriver, self ).connect(
             user_name=self.user_name, ip_address=ip_address,
             port=self.port, pwd=self.pwd )
-        main.log.info( "connect parameters:" +
-                       str( self.user_name ) +
-                       ";" +
-                       str( self.ip_address ) +
-                       ";" +
-                       str( self.port ) +
-                       ";" +
-                       str( self.pwd ) )
+        main.log.info( "connect parameters:" + str( self.user_name ) + ";"
+                       + str( self.ip_address ) + ";" + str( self.port )
+                       + ";" + str( self.pwd ) )
 
         if self.handle:
             # self.handle.expect( "" )
             # self.handle.expect( "\$" )
             main.log.info( "I in host " + str( ip_address ) )
-            main.log.info(
-                pingTestFile +
-                " > " +
-                pingTestResultFile +
-                " &" )
+            main.log.info( pingTestFile + " > " + pingTestResultFile + " &" )
             self.handle.sendline(
                 pingTestFile +
                 " > " +
@@ -447,7 +412,7 @@ class QuaggaCliDriver( CLI ):
             main.log.info( "NO HANDLE" )
             return main.FALSE
 
-    # Please use the generateRoutes plus addRoutes instead of this one
+    # Please use the generateRoutes plus addRoutes instead of this one!
     def addRoute( self, net, numRoutes, routeRate ):
         try:
             self.handle.sendline( "" )
@@ -467,8 +432,8 @@ class QuaggaCliDriver( CLI ):
             numRoutes = 255
         for m in range( 1, j + 1 ):
             for n in range( 1, numRoutes + 1 ):
-                network = str( net ) + "." + str( m ) + \
-                              "." + str( n ) + ".0/24"
+                network = str( net ) + "." + str( m ) + "." + str( n ) \
+                    + ".0/24"
                 routeCmd = "network " + network
                 try:
                     self.handle.sendline( routeCmd )
@@ -481,10 +446,8 @@ class QuaggaCliDriver( CLI ):
                 routesAdded = routesAdded + 1
         for d in range( j + 1, j + 2 ):
             for e in range( 1, k + 1 ):
-                network = str(
-                    net ) + "." + str(
-                        d ) + "." + str(
-                            e ) + ".0/24"
+                network = str( net ) + "." + str( d ) + "." + str( e ) \
+                    + ".0/24"
                 routeCmd = "network " + network
                 try:
                     self.handle.sendline( routeCmd )
@@ -498,7 +461,8 @@ class QuaggaCliDriver( CLI ):
         if routesAdded == numRoutes:
             return main.TRUE
         return main.FALSE
-
+    
+    # Please use deleteRoutes method instead of this one!
     def delRoute( self, net, numRoutes, routeRate ):
         try:
             self.handle.sendline( "" )
@@ -518,8 +482,8 @@ class QuaggaCliDriver( CLI ):
             numRoutes = 255
         for m in range( 1, j + 1 ):
             for n in range( 1, numRoutes + 1 ):
-                network = str( net ) + "." + str( m ) + \
-                              "." + str( n ) + ".0/24"
+                network = str( net ) + "." + str( m ) + "." + str( n ) \
+                    + ".0/24"
                 routeCmd = "no network " + network
                 try:
                     self.handle.sendline( routeCmd )
@@ -532,8 +496,8 @@ class QuaggaCliDriver( CLI ):
                 routesDeleted = routesDeleted + 1
         for d in range( j + 1, j + 2 ):
             for e in range( 1, k + 1 ):
-                network = str( net ) + "." + str( d ) + \
-                              "." + str( e ) + ".0/24"
+                network = str( net ) + "." + str( d ) + "." + str( e ) \
+                    + ".0/24"
                 routeCmd = "no network " + network
                 try:
                     self.handle.sendline( routeCmd )
@@ -554,7 +518,7 @@ class QuaggaCliDriver( CLI ):
             child = pexpect.spawn( "telnet " + ip )
             i = child.expect( [ "login:", "CLI#", pexpect.TIMEOUT ] )
             if i == 0:
-                print "Username and password required. Passing login info."
+                print "user_name and password required. Passing login info."
                 child.sendline( user )
                 child.expect( "Password:" )
                 child.sendline( passwd )
@@ -570,10 +534,8 @@ class QuaggaCliDriver( CLI ):
             child.expect( "Flow table show" )
             count = 0
             while True:
-                i = child.expect(
-                    [ '17\d\.\d{1,3}\.\d{1,3}\.\d{1,3}',
-                      'CLI#',
-                      pexpect.TIMEOUT ] )
+                i = child.expect( [ '17\d\.\d{1,3}\.\d{1,3}\.\d{1,3}', 
+                                   'CLI#', pexpect.TIMEOUT ] )
                 if i == 0:
                     count = count + 1
                 elif i == 1:
@@ -620,3 +582,4 @@ class QuaggaCliDriver( CLI ):
             main.log.error( "Connection failed to the host" )
             response = main.FALSE
         return response
+

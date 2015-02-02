@@ -1,6 +1,6 @@
 <PARAMS>
     
-    <testcases>1,2</testcases>
+    <testcases>4</testcases>
 
     #Environment variables
     <ENV>

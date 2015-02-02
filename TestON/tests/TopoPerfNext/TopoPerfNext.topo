@@ -24,7 +24,7 @@
             <user>admin</user>
             <password>onos_test</password>
             <type>OnosCliDriver</type>
-            <connect_order>2</connect_order>
+            <connect_order>3</connect_order>
             <COMPONENTS> </COMPONENTS>
         </ONOS2cli>
         
@@ -33,7 +33,7 @@
             <user>admin</user>
             <password>onos_test</password>
             <type>OnosCliDriver</type>
-            <connect_order>2</connect_order>
+            <connect_order>4</connect_order>
             <COMPONENTS> </COMPONENTS>
         </ONOS3cli>
         
@@ -42,7 +42,7 @@
             <user>admin</user>
             <password>onos_test</password>
             <type>OnosCliDriver</type>
-            <connect_order>2</connect_order>
+            <connect_order>5</connect_order>
             <COMPONENTS> </COMPONENTS>
         </ONOS4cli>
         
@@ -51,7 +51,7 @@
             <user>admin</user>
             <password>onos_test</password>
             <type>OnosCliDriver</type>
-            <connect_order>2</connect_order>
+            <connect_order>6</connect_order>
             <COMPONENTS> </COMPONENTS>
         </ONOS5cli>
         
@@ -60,7 +60,7 @@
             <user>admin</user>
             <password>onos_test</password>
             <type>OnosCliDriver</type>
-            <connect_order>2</connect_order>
+            <connect_order>7</connect_order>
             <COMPONENTS> </COMPONENTS>
         </ONOS6cli>
         
@@ -69,7 +69,7 @@
             <user>admin</user>
             <password>onos_test</password>
             <type>OnosCliDriver</type>
-            <connect_order>2</connect_order>
+            <connect_order>8</connect_order>
             <COMPONENTS> </COMPONENTS>
         </ONOS7cli>
 
@@ -78,7 +78,7 @@
             <user>admin</user>
             <password>onos_test</password>
             <type>OnosDriver</type>
-            <connect_order>3</connect_order>
+            <connect_order>9</connect_order>
             <COMPONENTS> </COMPONENTS>
         </ONOS1>
 
@@ -87,7 +87,7 @@
             <user>admin</user>
             <password>onos_test</password>
             <type>OnosDriver</type>
-            <connect_order>3</connect_order>
+            <connect_order>10</connect_order>
             <COMPONENTS> </COMPONENTS>
         </ONOS2>
 
@@ -96,7 +96,7 @@
             <user>admin</user>
             <password>onos_test</password>
             <type>OnosDriver</type>
-            <connect_order>3</connect_order>
+            <connect_order>11</connect_order>
             <COMPONENTS> </COMPONENTS>
         </ONOS3>
         
@@ -105,7 +105,7 @@
             <user>admin</user>
             <password>onos_test</password>
             <type>OnosDriver</type>
-            <connect_order>3</connect_order>
+            <connect_order>12</connect_order>
             <COMPONENTS> </COMPONENTS>
         </ONOS4>
         
@@ -114,7 +114,7 @@
             <user>admin</user>
             <password>onos_test</password>
             <type>OnosDriver</type>
-            <connect_order>3</connect_order>
+            <connect_order>13</connect_order>
             <COMPONENTS> </COMPONENTS>
         </ONOS5>
         
@@ -123,7 +123,7 @@
             <user>admin</user>
             <password>onos_test</password>
             <type>OnosDriver</type>
-            <connect_order>3</connect_order>
+            <connect_order>14</connect_order>
             <COMPONENTS> </COMPONENTS>
         </ONOS6>
         
@@ -132,7 +132,7 @@
             <user>admin</user>
             <password>onos_test</password>
             <type>OnosDriver</type>
-            <connect_order>3</connect_order>
+            <connect_order>15</connect_order>
             <COMPONENTS> </COMPONENTS>
         </ONOS7>
 
@@ -141,7 +141,7 @@
             <user>admin</user>
             <password>onos_test</password>
             <type>MininetCliDriver</type>
-            <connect_order>4</connect_order>
+            <connect_order>16</connect_order>
             <COMPONENTS>
                 <arg1> --custom topo-perf-2sw.py </arg1>
                 <arg2> --arp --mac --topo mytopo</arg2>
@@ -155,7 +155,7 @@
             <user>admin</user>
             <password>onos_test</password>
             <type>RemoteMininetDriver</type>
-            <connect_order>5</connect_order>
+            <connect_order>17</connect_order>
             <COMPONENTS> </COMPONENTS>
         </Mininet2>
 

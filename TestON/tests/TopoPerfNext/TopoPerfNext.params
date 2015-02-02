@@ -52,7 +52,7 @@
         </topoConfigName>
 
         #Number of times to iterate each case
-        <numIter>5</numIter>
+        <numIter>10</numIter>
         <numSwitch>2</numSwitch>
         #Number of iterations to ignore initially
         <iterIgnore>2</iterIgnore>

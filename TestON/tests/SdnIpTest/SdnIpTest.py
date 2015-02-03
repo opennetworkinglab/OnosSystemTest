@@ -4,6 +4,7 @@ class SdnIpTest:
 
     def __init__( self ):
         self.default = ''
+        global branchName
 
     # This case is to setup ONOS
     def CASE100( self, main ):
@@ -27,6 +28,9 @@ class SdnIpTest:
         cellResult = main.ONOSbench.setCell( cellName )
         verifyResult = main.ONOSbench.verifyCell()
 
+        branchName = main.ONOSbench.getBranchName()
+        main.log.info( "ONOS is on branch: " + branchName )
+
         main.log.report( "Uninstalling ONOS" )
         main.ONOSbench.onosUninstall( ONOS1Ip )
 
@@ -38,11 +42,12 @@ class SdnIpTest:
 
         main.step( "Using mvn clean & install" )
         cleanInstallResult = main.TRUE
-        if gitPullResult == main.TRUE:
-            cleanInstallResult = main.ONOSbench.cleanInstall()
-        else:
-            main.log.warn( "Did not pull new code so skipping mvn " +
-                            "clean install" )
+#         if gitPullResult == main.TRUE:
+#             cleanInstallResult = main.ONOSbench.cleanInstall()
+#         else:
+#             main.log.warn( "Did not pull new code so skipping mvn " +
+#                             "clean install" )
+        cleanInstallResult = main.ONOSbench.cleanInstall()
         main.ONOSbench.getVersion( report=True )
 
         #cellResult = main.ONOSbench.setCell( cellName )
@@ -194,8 +199,15 @@ class SdnIpTest:
         getRoutesResult = main.ONOScli.routes( jsonFormat=True )
 
         # parse routes from ONOS CLI
-        allRoutesActual = \
-            main.QuaggaCliHost3.extractActualRoutes( getRoutesResult )
+        if branchName == "master":
+            allRoutesActual = \
+            main.QuaggaCliHost3.extractActualRoutesMaster( getRoutesResult )
+        elif branchName == "onos-1.0":
+            allRoutesActual = \
+            main.QuaggaCliHost3.extractActualRoutesOneDotZero( getRoutesResult )
+        else:
+            main.log("ONOS is on wrong branch")
+            exit
 
         allRoutesStrExpected = str( sorted( allRoutesExpected ) )
         allRoutesStrActual = str( allRoutesActual ).replace( 'u', "" )

@@ -21,6 +21,7 @@ import time
 import pexpect
 import traceback
 import os.path
+from requests.models import Response
 sys.path.append( "../" )
 from drivers.common.clidriver import CLI
 
@@ -442,6 +443,22 @@ class OnosDriver( CLI ):
             main.log.info( ":" * 80 )
             main.cleanup()
             main.exit()
+
+    def getBranchName( self ):
+        self.handle.sendline( "cd " + self.home )
+        self.handle.expect( "ONOS\$" )
+        self.handle.sendline( "git name-rev --name-only HEAD" )
+        self.handle.expect( "git name-rev --name-only HEAD" )
+        self.handle.expect( "\$" )
+
+        lines =  self.handle.before.splitlines()
+        if lines[1] == "master":
+            return "master"
+        elif lines[1] == "onos-1.0":
+            return "onos-1.0"
+        else:
+            main.log.info( lines[1] )
+            return "unexpected ONOS branch for SDN-IP test"
 
     def getVersion( self, report=False ):
         """

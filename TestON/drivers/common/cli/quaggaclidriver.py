@@ -179,7 +179,7 @@ class QuaggaCliDriver( CLI ):
         return intents
 
     # This method extracts all actual routes from ONOS CLI
-    def extractActualRoutes( self, getRoutesResult ):
+    def extractActualRoutesOneDotZero( self, getRoutesResult ):
         routesJsonObj = json.loads( getRoutesResult )
 
         allRoutesActual = []
@@ -190,7 +190,8 @@ class QuaggaCliDriver( CLI ):
                 route[ 'prefix' ] + "/" + route[ 'nextHop' ] )
 
         return sorted( allRoutesActual )
-    def extractActualRoutesNew( self, getRoutesResult ):
+
+    def extractActualRoutesMaster( self, getRoutesResult ):
         routesJsonObj = json.loads( getRoutesResult )
 
         allRoutesActual = []

@@ -4,19 +4,16 @@
         <ONOSbench>
             <host>10.128.10.20</host>
             <user>admin</user>
-            <password></password>
+            <password>onos_test</password>
             <type>OnosDriver</type>
             <connect_order>1</connect_order>
-            <COMPONENTS>
-                #Specify which onos branch you want to run
-                <home></home>
-            </COMPONENTS>
+            <COMPONENTS> </COMPONENTS>
         </ONOSbench>
 
         <ONOScli1>
             <host>10.128.10.20</host>
             <user>admin</user>
-            <password></password>
+            <password>onos_test</password>
             <type>OnosCliDriver</type>
             <connect_order>2</connect_order>
             <COMPONENTS> </COMPONENTS>
@@ -25,7 +22,7 @@
         <ONOS1>
             <host>10.128.10.21</host>
             <user>admin</user>
-            <password></password>
+            <password>onos_test</password>
             <type>OnosDriver</type>
             <connect_order>3</connect_order>
             <COMPONENTS> </COMPONENTS>

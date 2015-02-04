@@ -437,19 +437,36 @@ class HATestSanity:
                 str( hex( i )[ 2: ] ).zfill( 2 ).upper()
             host2 = "00:00:00:00:00:" + \
                 str( hex( i + 10 )[ 2: ] ).zfill( 2 ).upper()
-            host1Id = main.ONOScli1.getHost( host1 )[ 'id' ]
-            host2Id = main.ONOScli1.getHost( host2 )[ 'id' ]
-            # NOTE: get host can return None
+            # NOTE: getHost can return None
+            host1Dict = main.ONOScli1.getHost( host1 )
+            host2Dict = main.ONOScli1.getHost( host2 )
+            host1Id = None
+            host2Id = None
+            if host1Dict and host2Dict:
+                host1Id = host1Dict.get( 'id', None )
+                host2Id = host2Dict.get( 'id', None )
             if host1Id and host2Id:
                 tmpResult = main.ONOScli1.addHostIntent(
                     host1Id,
                     host2Id )
             else:
                 main.log.error( "Error, getHost() failed" )
+                main.log.warn( json.dumps( json.loads( main.ONOScli1.hosts() ),
+                                           sort_keys=True,
+                                           indent=4,
+                                           separators=( ',', ': ' ) ) )
                 tmpResult = main.FALSE
             intentAddResult = bool( pingResult and intentAddResult
                                      and tmpResult )
             # TODO Check that intents were added?
+        # Print the intent states
+        intents = main.ONOScli1.intents( )
+        intentStates = []
+        for intent in json.loads( intents ):  # Iter through intents of a node
+            intentStates.append( intent.get( 'state', None ) )
+        out = [ (i, intentStates.count( i ) ) for i in set( intentStates ) ]
+        main.log.info( dict( out ) )
+
         utilities.assert_equals(
             expect=True,
             actual=intentAddResult,
@@ -1261,13 +1278,32 @@ class HATestSanity:
             actual=intentCheck,
             onpass="Intents are consistent across all ONOS nodes",
             onfail="ONOS nodes have different views of intents" )
+        # Print the intent states
+        intents = []
+        intents.append( ONOS1Intents )
+        intents.append( ONOS2Intents )
+        intents.append( ONOS3Intents )
+        intents.append( ONOS4Intents )
+        intents.append( ONOS5Intents )
+        intents.append( ONOS6Intents )
+        intents.append( ONOS7Intents )
+        intentStates = []
+        for node in intents:  # Iter through ONOS nodes
+            nodeStates = []
+            for intent in json.loads( node ):  # Iter through intents of a node
+                nodeStates.append( intent[ 'state' ] )
+            intentStates.append( nodeStates )
+            out = [ (i, nodeStates.count( i ) ) for i in set( nodeStates ) ]
+            main.log.info( dict( out ) )
+
 
         # NOTE: Hazelcast has no durability, so intents are lost across system
         # restarts
         main.step( "Compare current intents with intents before the failure" )
         # NOTE: this requires case 5 to pass for intentState to be set.
         #      maybe we should stop the test if that fails?
-        if intentState == ONOS1Intents:
+        sameIntents = main.TRUE
+        if intentState and intentState == ONOS1Intents:
             sameIntents = main.TRUE
             main.log.report( "Intents are consistent with before failure" )
         # TODO: possibly the states have changed? we may need to figure out
@@ -1457,7 +1493,6 @@ class HATestSanity:
             for controller in range( 0, len( hosts ) ):
                 controllerStr = str( controller + 1 )
                 for host in hosts[ controller ]:
-                    host
                     if host[ 'ips' ] == []:
                         main.log.error(
                             "DEBUG:Error with host ips on controller" +
@@ -1611,7 +1646,7 @@ class HATestSanity:
                 note = "note it takes about " + str( int( cliTime ) ) + \
                     " seconds for the test to make all the cli calls to fetch " +\
                     "the topology from each ONOS instance"
-                main.log.report(
+                main.log.info(
                     "Very crass estimate for topology discovery/convergence( " +
                     str( note ) + " ): " + str( elapsed ) + " seconds, " +
                     str( count ) + " tries" )

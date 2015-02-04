@@ -104,6 +104,9 @@ class HATestSanity:
         cleanInstallResult = main.TRUE
         gitPullResult = main.TRUE
 
+        main.step( "Starting Mininet" )
+        main.Mininet1.startNet( )
+
         main.step( "Compiling the latest version of ONOS" )
         if PULLCODE:
             # TODO Configure branch in params

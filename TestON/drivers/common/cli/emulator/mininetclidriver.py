@@ -99,7 +99,11 @@ class MininetCliDriver( Emulator ):
 
 
     def startNet( self, topoFile = '', args = '', timeout = 120 ):
-
+        """
+        Starts Mininet accepts a topology(.py) file and/or an optional
+        arguement ,to start the mininet, as a parameter.
+        Returns true if the mininet starts successfully
+        """
         if self.handle:
             main.log.info(
                 self.name +
@@ -1236,7 +1240,8 @@ class MininetCliDriver( Emulator ):
 
     def disconnect( self ):
         """
-        Called at the end of the test to disconnect the handle.
+        Called at the end of the test to stop the mininet and
+        disconnect the handle.
         """
         self.handle.sendline('')
         i = 1
@@ -1258,6 +1263,10 @@ class MininetCliDriver( Emulator ):
         return response
 
     def stopNet( self ):
+        """
+        Stops mininet. returns true if the mininet succesfully stops.
+        """
+        
         main.log.info( self.name + ": Disconnecting mininet..." )
         response = ''
         if self.handle:

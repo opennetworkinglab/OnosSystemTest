@@ -246,6 +246,35 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
+    def log( self, cmdStr , arg = "" ):
+        """
+            log  the commands in the onos CLI.
+            returns false if Error occured
+        """
+        try:
+            self.handle.sendline( "" )
+            self.handle.expect( "onos>" )
+            self.handle.sendline( "log:log \"Sending CLI command: '"
+                                  + cmdStr + "'\"" )
+            self.handle.expect( "onos>" )
+            
+            response = self.handle.before
+            if re.search( "Error", response ):
+                return main.FALSE
+            return main.TRUE
+
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info( self.name + " ::::::" )
+            main.log.error( traceback.print_exc() )
+            main.log.info( self.name + " ::::::" )
+            main.cleanup()
+            main.exit()
+
     def sendline( self, cmdStr ):
         """
         Send a completely user specified string to
@@ -256,12 +285,7 @@ class OnosCliDriver( CLI ):
         sent using this method.
         """
         try:
-            self.handle.sendline( "" )
-            self.handle.expect( "onos>" )
-
-            self.handle.sendline( "log:log \"Sending CLI command: '"
-                                  + cmdStr + "'\"" )
-            self.handle.expect( "onos>" )
+            self.log( cmdStr )
             self.handle.sendline( cmdStr )
             self.handle.expect( "onos>" )
             main.log.info( "Command '" + str( cmdStr ) + "' sent to "

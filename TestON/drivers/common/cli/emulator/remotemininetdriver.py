@@ -380,12 +380,13 @@ class RemoteMininetDriver( Emulator ):
             self.handle.sendline( "exit" )
             self.handle.expect( "exit" )
             self.handle.expect( "(.*)" )
-            response = self.handle.before
-
+            # Close the ssh connection
+            self.handle.sendline( "" )
+            self.handle.expect( "\$" )
+            self.handle.sendline( "exit" )
+            self.handle.expect( "closed" )
         else:
             main.log.error( "Connection failed to the host" )
-            response = main.FALSE
-        return response
 
     def getFlowTable( self, protoVersion, sw ):
         """

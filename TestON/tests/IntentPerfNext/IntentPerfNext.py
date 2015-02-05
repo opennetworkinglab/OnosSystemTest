@@ -45,6 +45,9 @@ class IntentPerfNext:
 
         main.case( "Setting up test environment" )
 
+        main.step( "Starting mininet topology" )
+        main.Mininet1.startNet()
+
         main.step( "Creating cell file" )
         cellFileResult = main.ONOSbench.createCellFile(
             BENCHIp, cellName, MN1Ip,

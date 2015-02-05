@@ -1255,7 +1255,7 @@ class MininetCliDriver( Emulator ):
             self.handle.expect( "exit" )
             self.handle.expect( "(.*)" )
             main.log.info( "Mininet CLI is successfully disconnected" )
-            response = self.handle.before
+            response = main.TRUE
         else:
             main.log.error( "Connection failed to the host" )
             response = main.FALSE

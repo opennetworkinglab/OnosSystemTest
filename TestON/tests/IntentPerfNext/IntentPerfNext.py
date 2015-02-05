@@ -37,7 +37,8 @@ class IntentPerfNext:
         main.ONOSbench.onosUninstall( nodeIp=ONOS4Ip )
         main.ONOSbench.onosUninstall( nodeIp=ONOS5Ip )
         main.ONOSbench.onosUninstall( nodeIp=ONOS6Ip )
-        main.ONOSbench.onosUninstall( nodeIp=ONOS7Ip )
+        #TODO: Investigate why node 7 uninstall fails
+        #main.ONOSbench.onosUninstall( nodeIp=ONOS7Ip )
 
         MN1Ip = main.params[ 'MN' ][ 'ip1' ]
         BENCHIp = main.params[ 'BENCH' ][ 'ip' ]
@@ -724,7 +725,13 @@ class IntentPerfNext:
                             line = line[ 1: ]
                             line = line.split( ": " )
                             main.log.info( "Line read: " + str( line ) )
-                            result = line[ 1 ].split( " " )[ 0 ]
+                            #Prevent split method if line doesn't have
+                            #space
+                            if " " in str(line):
+                                result = line[ 1 ].split( " " )[ 0 ]
+                            else:
+                                main.log.warn( "Empty line read" )
+                                result = 0
                             # TODO: add parameters before appending latency
                             if lineCount == 0:
                                 batchInstallLat.append( int( result ) )
@@ -732,6 +739,10 @@ class IntentPerfNext:
                             elif lineCount == 1:
                                 batchWithdrawLat.append( int( result ) )
                                 withdrawResult = result
+                            else:
+                                main.log.warn("Invalid results")
+                                installResult = 'NA'
+                                withdrawResult = 'NA'
                             lineCount += 1
                     main.log.info( "Batch install latency for ONOS" +
                                    str( node ) + " with " +
@@ -757,16 +768,20 @@ class IntentPerfNext:
                 time.sleep( 5 )
 
             if maxInstallLat:
-                avgInstallLat = str( sum( maxInstallLat ) /
-                                      len( maxInstallLat ) )
+                avgInstallLat = str( round(
+                                            sum( maxInstallLat ) /
+                                            len( maxInstallLat )
+                                          , 2 ))
             else:
                 avgInstallLat = "NA"
                 main.log.report( "Batch installation failed" )
                 assertion = main.FALSE
 
             if maxWithdrawLat:
-                avgWithdrawLat = str( sum( maxWithdrawLat ) /
-                                       len( maxWithdrawLat ) )
+                avgWithdrawLat = str( round(
+                                            sum( maxWithdrawLat ) /
+                                            len( maxWithdrawLat )
+                                            , 2 ))
             else:
                 avgWithdrawLat = "NA"
                 main.log.report( "Batch withdraw failed" )
@@ -776,18 +791,28 @@ class IntentPerfNext:
                              "of size " + str( batchIntentSize ) + ": " +
                              str( avgInstallLat ) + " ms" )
             main.log.report( "Std Deviation of batch installation latency " +
-                             ": " + str( numpy.std( maxInstallLat ) ) + " ms" )
+                             ": " +
+                             str( round(numpy.std( maxInstallLat ),2)) +
+                             " ms" )
 
             main.log.report( "Avg of batch withdraw latency " +
                              "of size " + str( batchIntentSize ) + ": " +
                              str( avgWithdrawLat ) + " ms" )
             main.log.report( "Std Deviation of batch withdraw latency " +
                              ": " +
-                             str( numpy.std( maxWithdrawLat ) ) +
+                             str( round(numpy.std( maxWithdrawLat ),2)) +
                              " ms" )
 
-            batchIntentSize = batchIntentSize + 1000
-            main.log.report( "Increasing batch intent size to " +
+            if batch == 0:
+                batchIntentSize = 10
+            elif batch == 1:
+                batchIntentSize = 100
+            elif batch == 2:
+                batchIntentSize = 1000
+            elif batch == 3:
+                batchIntentSize = 2000
+            if batch < 4:
+                main.log.report( "Increasing batch intent size to " +
                              str(batchIntentSize) )
 
         #main.log.info( "Removing all intents for next test case" )

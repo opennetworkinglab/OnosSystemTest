@@ -101,7 +101,9 @@ for test in testnames:
     f.close()
     #https://wiki.onosproject.org/display/OST/Test+Results+-+HA#Test+Results+-+HA
     #Example anchor on new wiki:        #TestResults-HA-TestHATestSanity
-    page_name = "TestResults-HA-Test"
+    page_name = "Master+-+HA"
+    if "ONOS-HA-Maint" in job:
+        page_name = "1.0+-+HA"
 
     header += "<li><a href=\'#" + str(page_name) + str(test) + "\'> " + str(test) + " - Results: " + str(passes) + " Passed, " + str(fails) + " Failed</a></li>"
 

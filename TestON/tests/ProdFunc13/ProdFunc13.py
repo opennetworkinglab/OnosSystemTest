@@ -17,6 +17,7 @@ class ProdFunc13:
         self.default = ''
 
     def CASE1( self, main ):
+        import time
         """
         Startup sequence:
         cell <name>
@@ -43,10 +44,10 @@ class ProdFunc13:
         main.step( "Removing raft logs before a clen installation of ONOS" )
         main.ONOSbench.onosRemoveRaftLogs()
 
-        main.step( "Git checkout, pull and get version" )
+        main.step( "Git checkout and get version" )
         #main.ONOSbench.gitCheckout( "master" )
         gitPullResult = main.ONOSbench.gitPull()
-        main.log.info( "git_pull_result = " + gitPullResult )
+        main.log.info( "git_pull_result = " + str( gitPullResult ))
         main.ONOSbench.getVersion( report=True )
 
         if gitPullResult == 1:
@@ -78,7 +79,14 @@ class ProdFunc13:
         startResult = main.ONOSbench.onosStart( ONOS1Ip )
 
         main.ONOS2.startOnosCli( ONOSIp=main.params[ 'CTRL' ][ 'ip1' ] )
-
+        main.step( "Starting Mininet CLI..." )
+        
+        # Starting the mininet using the old way
+        main.step( "Starting Mininet ..." )
+        netIsUp = main.Mininet1.startNet()
+        if netIsUp:
+            main.log.info("Mininet CLI is up")
+        
         case1Result = ( packageResult and
                         cellResult and verifyResult
                         and onosInstallResult and
@@ -184,6 +192,7 @@ class ProdFunc13:
         main.case( "Disconnecting mininet and restarting ONOS" )
         main.step( "Disconnecting mininet and restarting ONOS" )
         mininetDisconnect = main.Mininet1.disconnect()
+        print "mininetDisconnect = ", mininetDisconnect        
 
         main.step( "Removing raft logs before a clen installation of ONOS" )
         main.ONOSbench.onosRemoveRaftLogs()
@@ -271,7 +280,7 @@ class ProdFunc13:
 
         print "devices_result = ", devicesResult
         devicesLinewise = devicesResult.split( "\n" )
-        devicesLinewise = devicesLinewise[ 1:-1 ]
+        devicesLinewise = devicesLinewise[ 1: ]
         roadmCount = 0
         packetLayerSWCount = 0
         for line in devicesLinewise:
@@ -631,11 +640,10 @@ class ProdFunc13:
 
         main.step( "Pingall" )
         pingResult = main.FALSE
-        while pingResult == main.FALSE:
-            time1 = time.time()
-            pingResult = main.Mininet1.pingall()
-            time2 = time.time()
-            print "Time for pingall: %2f seconds" % ( time2 - time1 )
+        time1 = time.time()
+        pingResult = main.Mininet1.pingall()
+        time2 = time.time()
+        print "Time for pingall: %2f seconds" % ( time2 - time1 )
 
         # Start onos cli again because u might have dropped out of
         # onos prompt to the shell prompt
@@ -734,6 +742,8 @@ class ProdFunc13:
             host1Id = main.ONOS2.getHost( host1 )[ 'id' ]
             host2Id = main.ONOS2.getHost( host2 )[ 'id' ]
             main.ONOS2.addHostIntent( host1Id, host2Id )
+            hIntents = main.ONOS2.intents( jsonFormat=False )
+            main.log.info( "intents:" + hIntents )
 
         time.sleep( 10 )
         hIntents = main.ONOS2.intents( jsonFormat=False )
@@ -1055,17 +1065,17 @@ class ProdFunc13:
 
     def CASE8( self ):
         """
-        Host intents removal
+        Intent removal
         """
+        import time
         main.log.report( "This testcase removes any previously added intents" +
-                         " before adding the same intents or point intents" )
+                         " before adding any new set of intents" )
         main.log.report( "__________________________________" )
-        main.log.info( "Host intents removal" )
-        main.case( "Removing host intents" )
+        main.log.info( "intent removal" )
+        main.case( "Removing installed intents" )
         main.step( "Obtain the intent id's" )
         intentResult = main.ONOS2.intents( jsonFormat=False )
         main.log.info( "intent_result = " + intentResult )
-
         intentLinewise = intentResult.split( "\n" )
         intentList = []
         for line in intentLinewise:
@@ -1113,11 +1123,11 @@ class ProdFunc13:
             # Note: If the ping result failed, that means the intents have been
             # withdrawn correctly.
         if PingResult == main.TRUE:
-            main.log.report( "Host intents have not been withdrawn correctly" )
+            main.log.report( "Installed intents have not been withdrawn correctly" )
             # main.cleanup()
             # main.exit()
         if PingResult == main.FALSE:
-            main.log.report( "Host intents have been withdrawn correctly" )
+            main.log.report( "Installed intents have been withdrawn correctly" )
 
         case8Result = case8Result and PingResult
 
@@ -1136,9 +1146,9 @@ class ProdFunc13:
         main.log.report( "__________________________________" )
         main.log.info( "Adding point intents" )
         main.case(
-            '''Adding bidirectional point for mn hosts
-            ( h8-h18, h9-h19, h10-h20, h11-h21, h12-h22,
-                h13-h23, h14-h24, h15-h25, h16-h26, h17-h27 )''' )
+            "Adding bidirectional point for mn hosts" +
+            "( h8-h18, h9-h19, h10-h20, h11-h21, h12-h22, " +
+            "h13-h23, h14-h24, h15-h25, h16-h26, h17-h27 )" )
 
         main.step( "Add point intents for mn hosts h8 and h18 or" +
                    "ONOS hosts h8 and h12" )
@@ -1332,8 +1342,7 @@ class ProdFunc13:
             "___________________________________________________________" )
 
         flowHandle = main.ONOS2.flows()
-        # print "flowHandle = ", flowHandle
-        main.log.info( "flows :" + flowHandle )
+        #main.log.info( "flows :" + flowHandle )
 
         count = 1
         i = 8

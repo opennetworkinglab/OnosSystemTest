@@ -1271,7 +1271,7 @@ class MininetCliDriver( Emulator ):
         response = ''
         if self.handle:
             try:
-        
+                self.handle.sendline("")
                 i = self.handle.expect( [ 'mininet>',
                                           '\$',
                                           pexpect.EOF,

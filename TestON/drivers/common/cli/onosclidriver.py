@@ -246,16 +246,22 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def log( self, cmdStr , arg = "" ):
+    def log( self, cmdStr , level = "" ):
         """
             log  the commands in the onos CLI.
-            returns false if Error occured
+            returns main.TRUE on success
+            returns main.FALSE if Error occured
+            Available level: DEBUG, TRACE, INFO, WARN, ERROR
+            Level defaults to INFO
         """
         try:
+            lvlStr = ""
+            if level:
+                lvlStr = "--level=" + level
+
             self.handle.sendline( "" )
             self.handle.expect( "onos>" )
-            self.handle.sendline( "log:log \"Sending CLI command: '"
-                                  + cmdStr + "'\"" )
+            self.handle.sendline( "log:log " + lvlStr + " " + cmdStr )
             self.handle.expect( "onos>" )
             
             response = self.handle.before
@@ -285,7 +291,9 @@ class OnosCliDriver( CLI ):
         sent using this method.
         """
         try:
-            self.log( cmdStr )
+            
+            logStr = "\"Sending CLI command: '" + cmdStr + "'\""
+            self.log( logStr )
             self.handle.sendline( cmdStr )
             self.handle.expect( "onos>" )
             main.log.info( "Command '" + str( cmdStr ) + "' sent to "

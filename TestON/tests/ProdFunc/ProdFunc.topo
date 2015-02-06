@@ -91,13 +91,5 @@
             </COMPONENTS>
         </LincOE2>
 
-        <LincOE3>
-            <host>10.128.20.30</host>
-            <user>admin</user>
-            <password>onos_test</password>
-            <type>LincOEDriver</type>
-            <connect_order>9</connect_order>
-        </LincOE3>
- 
     </COMPONENT>
 </TOPOLOGY>

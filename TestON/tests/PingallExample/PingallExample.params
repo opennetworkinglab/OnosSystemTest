@@ -1,0 +1,12 @@
+<PARAMS>
+    <testcases>1,2,3</testcases>
+    <ENV>
+        <cellName>HA</cellName>
+    </ENV>
+    <Git>True</Git>
+
+    <CTRL>
+        <ip1>10.128.30.11</ip1>
+        <port1>6633</port1>
+    </CTRL>
+</PARAMS>

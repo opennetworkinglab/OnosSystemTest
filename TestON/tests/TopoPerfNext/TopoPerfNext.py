@@ -63,6 +63,9 @@ class TopoPerfNext:
 
         main.log.report( "Setting up test environment" )
 
+        main.step( "Starting mininet topology " )
+        main.Mininet1.startNet()
+
         main.step( "Cleaning previously installed ONOS if any" )
         main.ONOSbench.onosUninstall( nodeIp=ONOS2Ip )
         main.ONOSbench.onosUninstall( nodeIp=ONOS3Ip )
@@ -309,7 +312,7 @@ class TopoPerfNext:
             main.log.info( "Object read in from OFP capture: " +
                            str( lineOfp ) )
 
-            if len( lineOfp ) > 1:
+            if len( obj ) > 1:
                 t0Ofp = float( obj[ 1 ] ) * 1000.0
             else:
                 main.log.error( "Tshark output file for OFP" +

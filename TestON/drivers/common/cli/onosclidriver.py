@@ -19,7 +19,6 @@ OCT 13 2014
 import sys
 import pexpect
 import re
-import traceback
 sys.path.append( "../" )
 from drivers.common.clidriver import CLI
 
@@ -62,15 +61,16 @@ class OnosCliDriver( CLI ):
             else:
                 main.log.info( "NO ONOS HANDLE" )
                 return main.FALSE
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
             main.cleanup()
             main.exit()
         except:
-            main.log.info( self.name + ":::::::::::::::::::::::" )
-            main.log.error( traceback.print_exc() )
-            main.log.info( ":::::::::::::::::::::::" )
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
@@ -92,11 +92,14 @@ class OnosCliDriver( CLI ):
             self.handle.sendline( "exit" )
             self.handle.expect( "closed" )
 
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
         except:
-            main.log.error( self.name + ": Connection failed to the host" )
+            main.log.exception( self.name + ": Connection failed to the host" )
             response = main.FALSE
         return response
 
@@ -115,6 +118,9 @@ class OnosCliDriver( CLI ):
             elif i == 1:
                 return main.TRUE
 
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
         except pexpect.EOF:
             main.log.error( self.name + ": eof exception found" )
             main.log.error( self.name + ":    " +
@@ -122,9 +128,7 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
         except:
-            main.log.info( self.name + " ::::::" )
-            main.log.error( traceback.print_exc() )
-            main.log.info( self.name + " ::::::" )
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
@@ -157,15 +161,16 @@ class OnosCliDriver( CLI ):
 
                 return main.TRUE
 
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
         except pexpect.EOF:
             main.log.error( self.name + ": eof exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
         except:
-            main.log.info( self.name + " ::::::" )
-            main.log.error( traceback.print_exc() )
-            main.log.info( self.name + " ::::::" )
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
@@ -234,15 +239,16 @@ class OnosCliDriver( CLI ):
                                     str( ONOSIp ) + " timeout" )
                     return main.FALSE
 
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
         except:
-            main.log.info( self.name + " ::::::" )
-            main.log.error( traceback.print_exc() )
-            main.log.info( self.name + " ::::::" )
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
@@ -311,15 +317,16 @@ class OnosCliDriver( CLI ):
 
 
             return output
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
         except:
-            main.log.info( self.name + " ::::::" )
-            main.log.error( traceback.print_exc() )
-            main.log.info( self.name + " ::::::" )
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
@@ -350,15 +357,16 @@ class OnosCliDriver( CLI ):
             else:
                 main.log.info( "Node " + str( ONOSIp ) + " added" )
                 return main.TRUE
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
         except:
-            main.log.info( self.name + " ::::::" )
-            main.log.error( traceback.print_exc() )
-            main.log.info( self.name + " ::::::" )
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
@@ -377,15 +385,16 @@ class OnosCliDriver( CLI ):
 
             return main.TRUE
 
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
         except:
-            main.log.info( self.name + " ::::::" )
-            main.log.error( traceback.print_exc() )
-            main.log.info( self.name + " ::::::" )
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
@@ -399,15 +408,16 @@ class OnosCliDriver( CLI ):
             cmdStr = "nodes"
             handle = self.sendline( cmdStr )
             return handle
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
         except:
-            main.log.info( self.name + " ::::::" )
-            main.log.error( traceback.print_exc() )
-            main.log.info( self.name + " ::::::" )
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
@@ -422,15 +432,16 @@ class OnosCliDriver( CLI ):
             handle = self.sendline( cmdStr )
             main.log.info( "onos:topology returned: " + str( handle ) )
             return handle
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
         except:
-            main.log.info( self.name + " ::::::" )
-            main.log.error( traceback.print_exc() )
-            main.log.info( self.name + " ::::::" )
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
@@ -444,6 +455,9 @@ class OnosCliDriver( CLI ):
             self.sendline( cmdStr )
             # TODO: Check for possible error responses from karaf
             return main.TRUE
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
@@ -452,11 +466,9 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
         except:
-            main.log.info( self.name + " ::::::" )
-            main.log.error( traceback.print_exc() )
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.log.report( "Failed to install feature" )
             main.log.report( "Exiting test" )
-            main.log.info( self.name + " ::::::" )
             main.cleanup()
             main.exit()
 
@@ -470,15 +482,16 @@ class OnosCliDriver( CLI ):
             self.sendline( cmdStr )
             # TODO: Check for possible error responses from karaf
             return main.TRUE
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
         except:
-            main.log.info( self.name + " ::::::" )
-            main.log.error( traceback.print_exc() )
-            main.log.info( self.name + " ::::::" )
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
@@ -512,15 +525,16 @@ class OnosCliDriver( CLI ):
                 cmdStr = "devices"
                 handle = self.sendline( cmdStr )
                 return handle
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
         except:
-            main.log.info( self.name + " ::::::" )
-            main.log.error( traceback.print_exc() )
-            main.log.info( self.name + " ::::::" )
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
@@ -535,15 +549,16 @@ class OnosCliDriver( CLI ):
             self.sendline( cmdStr )
             # TODO: Check for error responses from ONOS
             return main.TRUE
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
         except:
-            main.log.info( self.name + " ::::::" )
-            main.log.error( traceback.print_exc() )
-            main.log.info( self.name + " ::::::" )
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
@@ -577,15 +592,16 @@ class OnosCliDriver( CLI ):
                 cmdStr = "links"
                 handle = self.sendline( cmdStr )
                 return handle
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
         except:
-            main.log.info( self.name + " ::::::" )
-            main.log.error( traceback.print_exc() )
-            main.log.info( self.name + " ::::::" )
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
@@ -620,15 +636,16 @@ class OnosCliDriver( CLI ):
                 cmdStr = "ports"
                 handle = self.sendline( cmdStr )
                 return handle
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
         except:
-            main.log.info( self.name + " ::::::" )
-            main.log.error( traceback.print_exc() )
-            main.log.info( self.name + " ::::::" )
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
@@ -665,15 +682,16 @@ class OnosCliDriver( CLI ):
                 cmdStr = "roles"
                 handle = self.sendline( cmdStr )
                 return handle
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
         except:
-            main.log.info( self.name + " ::::::" )
-            main.log.error( traceback.print_exc() )
-            main.log.info( self.name + " ::::::" )
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
@@ -701,16 +719,16 @@ class OnosCliDriver( CLI ):
                     if str( deviceId ) in device[ 'id' ]:
                         return device
             return None
-
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
         except:
-            main.log.info( self.name + " ::::::" )
-            main.log.error( traceback.print_exc() )
-            main.log.info( self.name + " ::::::" )
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
@@ -732,15 +750,16 @@ class OnosCliDriver( CLI ):
                     return main.FALSE
             return main.TRUE
 
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
         except:
-            main.log.info( self.name + " ::::::" )
-            main.log.error( traceback.print_exc() )
-            main.log.info( self.name + " ::::::" )
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
@@ -759,15 +778,16 @@ class OnosCliDriver( CLI ):
                 path = handle.split( ";" )[ 0 ]
                 cost = handle.split( ";" )[ 1 ]
                 return ( path, cost )
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return ( handle, "Error" )
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
         except:
-            main.log.info( self.name + " ::::::" )
-            main.log.error( traceback.print_exc() )
-            main.log.info( self.name + " ::::::" )
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
@@ -801,15 +821,16 @@ class OnosCliDriver( CLI ):
                 cmdStr = "hosts"
                 handle = self.sendline( cmdStr )
                 return handle
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
         except:
-            main.log.info( self.name + " ::::::" )
-            main.log.error( traceback.print_exc() )
-            main.log.info( self.name + " ::::::" )
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
@@ -833,8 +854,13 @@ class OnosCliDriver( CLI ):
                 # search json for the host with mac then return the device
                 for host in hostsJson:
                     # print "%s in  %s?" % ( mac, host[ 'id' ] )
-                    if mac in host[ 'id' ]:
+                    if not host:
+                        pass
+                    elif mac in host[ 'id' ]:
                         return host
+            return None
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
             return None
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
@@ -842,9 +868,7 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
         except:
-            main.log.info( self.name + " ::::::" )
-            main.log.error( traceback.print_exc() )
-            main.log.info( self.name + " ::::::" )
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
@@ -877,15 +901,16 @@ class OnosCliDriver( CLI ):
 
             return onosHostList
 
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
         except:
-            main.log.info( self.name + " ::::::" )
-            main.log.error( traceback.print_exc() )
-            main.log.info( self.name + " ::::::" )
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
@@ -910,15 +935,16 @@ class OnosCliDriver( CLI ):
                            str( hostIdOne ) + " and " + str( hostIdTwo ) )
                 return main.TRUE
 
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
         except:
-            main.log.info( self.name + " ::::::" )
-            main.log.error( traceback.print_exc() )
-            main.log.info( self.name + " ::::::" )
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
@@ -939,15 +965,16 @@ class OnosCliDriver( CLI ):
                 return handle
             else:
                 return main.TRUE
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
         except:
-            main.log.info( self.name + " ::::::" )
-            main.log.error( traceback.print_exc() )
-            main.log.info( self.name + " ::::::" )
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
@@ -1058,15 +1085,16 @@ class OnosCliDriver( CLI ):
                 return main.FALSE
             else:
                 return main.TRUE
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
         except:
-            main.log.info( self.name + " ::::::" )
-            main.log.error( traceback.print_exc() )
-            main.log.info( self.name + " ::::::" )
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
@@ -1205,15 +1233,16 @@ class OnosCliDriver( CLI ):
                 return self.handle
             else:
                 return main.TRUE
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
         except:
-            main.log.info( self.name + " ::::::" )
-            main.log.error( traceback.print_exc() )
-            main.log.info( self.name + " ::::::" )
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
@@ -1234,15 +1263,16 @@ class OnosCliDriver( CLI ):
             else:
                 # TODO: Should this be main.TRUE
                 return handle
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
         except:
-            main.log.info( self.name + " ::::::" )
-            main.log.error( traceback.print_exc() )
-            main.log.info( self.name + " ::::::" )
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
@@ -1265,15 +1295,16 @@ class OnosCliDriver( CLI ):
                 cmdStr = "routes"
                 handle = self.sendline( cmdStr )
             return handle
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
         except:
-            main.log.info( self.name + " ::::::" )
-            main.log.error( traceback.print_exc() )
-            main.log.info( self.name + " ::::::" )
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
@@ -1294,15 +1325,16 @@ class OnosCliDriver( CLI ):
                 cmdStr = "intents"
                 handle = self.sendline( cmdStr )
             return handle
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
         except:
-            main.log.info( self.name + " ::::::" )
-            main.log.error( traceback.print_exc() )
-            main.log.info( self.name + " ::::::" )
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
@@ -1326,15 +1358,16 @@ class OnosCliDriver( CLI ):
                 main.log.error( self.name + ".flows() response: " +
                                 str( handle ) )
             return handle
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
         except:
-            main.log.info( self.name + " ::::::" )
-            main.log.error( traceback.print_exc() )
-            main.log.info( self.name + " ::::::" )
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
@@ -1384,15 +1417,16 @@ class OnosCliDriver( CLI ):
                 return latResult
             else:
                 return main.TRUE
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
         except:
-            main.log.info( self.name + " ::::::" )
-            main.log.error( traceback.print_exc() )
-            main.log.info( self.name + " ::::::" )
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
@@ -1413,15 +1447,16 @@ class OnosCliDriver( CLI ):
                 cmdStr = "intents-events-metrics"
                 handle = self.sendline( cmdStr )
             return handle
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
         except:
-            main.log.info( self.name + " ::::::" )
-            main.log.error( traceback.print_exc() )
-            main.log.info( self.name + " ::::::" )
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
@@ -1442,15 +1477,16 @@ class OnosCliDriver( CLI ):
                 cmdStr = "topology-events-metrics"
                 handle = self.sendline( cmdStr )
             return handle
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
         except:
-            main.log.info( self.name + " ::::::" )
-            main.log.error( traceback.print_exc() )
-            main.log.info( self.name + " ::::::" )
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
@@ -1493,15 +1529,16 @@ class OnosCliDriver( CLI ):
 
             return intentIdList
 
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
         except:
-            main.log.info( self.name + " ::::::" )
-            main.log.error( traceback.print_exc() )
-            main.log.info( self.name + " ::::::" )
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
@@ -1538,15 +1575,16 @@ class OnosCliDriver( CLI ):
                 idList.append( arg.split( "id=" )[ 1 ] )
             return idList
 
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
         except:
-            main.log.info( self.name + " ::::::" )
-            main.log.error( traceback.print_exc() )
-            main.log.info( self.name + " ::::::" )
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
@@ -1577,15 +1615,16 @@ class OnosCliDriver( CLI ):
 
             return idList
 
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
         except:
-            main.log.info( self.name + " ::::::" )
-            main.log.error( traceback.print_exc() )
-            main.log.info( self.name + " ::::::" )
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
@@ -1608,15 +1647,16 @@ class OnosCliDriver( CLI ):
                     if dpid in device[ 'id' ]:
                         return device
             return None
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
         except:
-            main.log.info( self.name + " ::::::" )
-            main.log.error( traceback.print_exc() )
-            main.log.info( self.name + " ::::::" )
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
@@ -1673,15 +1713,16 @@ class OnosCliDriver( CLI ):
             else:
                 main.log.info( output )
             return result
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
         except:
-            main.log.info( self.name + " ::::::" )
-            main.log.error( traceback.print_exc() )
-            main.log.info( self.name + " ::::::" )
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
@@ -1715,15 +1756,16 @@ class OnosCliDriver( CLI ):
                 main.log.error( "Invalid 'role' given to device_role(). " +
                                 "Value was '" + str(role) + "'." )
                 return main.FALSE
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
         except:
-            main.log.info( self.name + " ::::::" )
-            main.log.error( traceback.print_exc() )
-            main.log.info( self.name + " ::::::" )
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
@@ -1757,15 +1799,16 @@ class OnosCliDriver( CLI ):
                 cmdStr = "clusters"
                 handle = self.sendline( cmdStr )
                 return handle
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
         except:
-            main.log.info( self.name + " ::::::" )
-            main.log.error( traceback.print_exc() )
-            main.log.info( self.name + " ::::::" )
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
@@ -1808,15 +1851,16 @@ class OnosCliDriver( CLI ):
                                 "unexpected response" )
                 main.log.error( repr( response ) )
                 return main.FALSE
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return main.FALSE
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
         except:
-            main.log.info( self.name + " ::::::" )
-            main.log.error( traceback.print_exc() )
-            main.log.info( self.name + " ::::::" )
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
@@ -1848,15 +1892,16 @@ class OnosCliDriver( CLI ):
                                 "unexpected response" )
                 main.log.error( repr( response ) )
                 return main.FALSE
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return main.FALSE
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
         except:
-            main.log.info( self.name + " ::::::" )
-            main.log.error( traceback.print_exc() )
-            main.log.info( self.name + " ::::::" )
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
@@ -1888,15 +1933,16 @@ class OnosCliDriver( CLI ):
                                 "unexpected response" )
                 main.log.error( repr( response ) )
                 return main.FALSE
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return main.FALSE
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
         except:
-            main.log.info( self.name + " ::::::" )
-            main.log.error( traceback.print_exc() )
-            main.log.info( self.name + " ::::::" )
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
@@ -1913,15 +1959,16 @@ class OnosCliDriver( CLI ):
                 return ( output, "Error" )
             else:
                 return output
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return ( output, "Error" )
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
         except:
-            main.log.info( self.name + " ::::::" )
-            main.log.error( traceback.print_exc() )
-            main.log.info( self.name + " ::::::" )
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
@@ -1938,15 +1985,16 @@ class OnosCliDriver( CLI ):
                 return ( output, "Error " )
             else:
                 return output
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return ( output, "Error " )
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
         except:
-            main.log.info( self.name + " ::::::" )
-            main.log.error( traceback.print_exc() )
-            main.log.info( self.name + " ::::::" )
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
@@ -1962,14 +2010,36 @@ class OnosCliDriver( CLI ):
                 return ( output, "Error" )
             else:
                 return output
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return ( output, "Error" )
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
         except:
-            main.log.info( self.name + " ::::::" )
-            main.log.error( traceback.print_exc() )
-            main.log.info( self.name + " ::::::" )
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
+    def testExceptions( self, obj ):
+        """
+        Test exception logging
+        """
+        # FIXME: Remove this before you commit
+
+        try:
+            return obj[ 'dedf' ]
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()

@@ -329,7 +329,11 @@ class LincOEDriver( Emulator ):
             cmd = "sudo kill -9 `pgrep -f linc`"
             self.handle.sendline( cmd )
             self.handle.expect( "\$" )
-
+            # Close the ssh connection
+            self.handle.sendline( "" )
+            self.handle.expect( "\$" )
+            self.handle.sendline( "exit" )
+            self.handle.expect( "closed" )
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception" )
             main.log.error( self.name + ":    " + self.handle.before )

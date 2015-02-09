@@ -192,19 +192,10 @@ class MininetCliDriver( Emulator ):
                 if i == 0:
                     main.log.info(self.name + ": Network started")
                     return main.TRUE
-                if i == 1:
-                    self.handle.expect(
-                        [ "\n", pexpect.EOF, pexpect.TIMEOUT ] )
-                    main.log.info( self.handle.before )
-                elif i == 2:
-                    main.log.error(
-                        self.name +
-                        ": Launching mininet failed..." )
-                    return main.FALSE
-                elif i == 3:
+                elif i == 1:
                     main.log.error( self.name + ": Connection timeout" )
                     return main.FALSE
-                elif i == 4:  # timeout
+                elif i == 2:  # timeout
                     main.log.error(
                         self.name +
                         ": Something took too long... " )

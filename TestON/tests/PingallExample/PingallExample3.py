@@ -13,8 +13,7 @@ class PingallExample:
         
     def CASE1( self, main ):
         import threading
-        import time
-        import Queue
+        import time 
         """
            CASE1 is to compile ONOS and push it to the test machines
 
@@ -73,33 +72,22 @@ class PingallExample:
 
         main.step( "Installing ONOS package" )
         onos1InstallResult = main.FALSE
-        
-        main.log.info("Running thread")
-        q1 = Queue.Queue()
-        q2 = Queue.Queue()
-        q3 = Queue.Queue()
-        pool = []
         time1 = time.time()
-        t1 = threading.Thread(target=main.ONOScli1.startOnosCli, args= [ONOS1Ip, q1])
-        t2 = threading.Thread(target=main.ONOScli2.startOnosCli, args= [ONOS2Ip, q2])
-        t3 = threading.Thread(target=main.ONOScli3.startOnosCli, args= [ONOS3Ip, q3])
-        pool.append(t1)
-        pool.append(t2)
-        pool.append(t3)
-        for thread in pool:
-            thread.start()
-        for thread in pool:
-            thread.join()
+        cliResult = main.ONOScli1.startOnosCli( ONOS1Ip )
+        cliResult = main.ONOScli2.startOnosCli( ONOS2Ip )
+        cliResult = main.ONOScli3.startOnosCli( ONOS3Ip )
+        
         time2 = time.time()
-        if q1.get()==main.TRUE and q2.get() == main.TRUE and q3.get()==main.TRUE:
-            main.log.info( "Successful CLI startup!!!")
-        else:
-            main.log.info("ONOS CLI did not start up properly")
+
+        main.log.info("Time for connecting to CLI: %2f seconds" %(time2 - time1))
+        """onos1InstallResult = main.ONOSbench.onosInstall( options="-f",
+                                                              node1=ONOS1Ip,
+                                                              node2=ONOS2Ip,
+                                                              node3=ONOS3Ip)
+        """
+        if onos1InstallResult == main.FALSE:
             main.cleanup()
             main.exit()
-        
-        main.log.info("Time for connecting to CLI: %2f seconds" %(time2 - time1))
-
         main.step( "Checking if ONOS is up yet" )
         for i in range( 2 ):
             onos1Isup = main.ONOSbench.isup( ONOS1Ip )
@@ -114,6 +102,7 @@ class PingallExample:
 
         case1Result = ( cleanInstallResult and packageResult and
                         cellResult and verifyResult and
+                        onos1InstallResult and
                         onos1Isup and cliResult )
 
         utilities.assert_equals( expect=main.TRUE, actual=case1Result,

@@ -2,36 +2,74 @@
     <COMPONENT>
 
         <ONOSbench>
-            <host>10.128.30.10</host>
+            <host>10.128.10.20</host>
             <user>admin</user>
-            <password></password>
+            <password> </password>
             <type>OnosDriver</type>
             <connect_order>1</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <home>~/onos</home>
+            </COMPONENTS>
         </ONOSbench>
 
         <ONOScli1>
-            <host>10.128.30.10</host>
+            <host>10.128.10.20</host>
             <user>admin</user>
-            <password></password>
+            <password> </password>
             <type>OnosCliDriver</type>
             <connect_order>2</connect_order>
             <COMPONENTS> </COMPONENTS>
         </ONOScli1>
 
-        <ONOS1>
-            <host>10.128.30.11</host>
-            <user>sdn</user>
-            <password>rocks</password>
-            <type>OnosDriver</type>
+        <ONOScli2>
+            <host>10.128.10.20</host>
+            <user>admin</user>
+            <password> </password>
+            <type>OnosCliDriver</type>
             <connect_order>3</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </ONOScli2>
+
+        <ONOScli3>
+            <host>10.128.10.20</host>
+            <user>admin</user>
+            <password> </password>
+            <type>OnosCliDriver</type>
+            <connect_order>4</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </ONOScli3>
+
+        <ONOS1>
+            <host>10.128.10.21</host>
+            <user>admin</user>
+            <password> </password>
+            <type>OnosDriver</type>
+            <connect_order>5</connect_order>
             <COMPONENTS> </COMPONENTS>
         </ONOS1>
 
-        <Mininet1>
-            <host>10.128.30.9</host>
+        <ONOS2>
+            <host>10.128.10.22</host>
             <user>admin</user>
-            <password></password>
+            <password> </password>
+            <type>OnosDriver</type>
+            <connect_order>6</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </ONOS2>
+        
+        <ONOS3>
+            <host>10.128.10.23</host>
+            <user>admin</user>
+            <password> </password>
+            <type>OnosDriver</type>
+            <connect_order>7</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </ONOS3>
+
+        <Mininet1>
+            <host>10.128.10.20</host>
+            <user>admin</user>
+            <password> </password>
             <type>MininetCliDriver</type>
             <connect_order>4</connect_order>
             <COMPONENTS>

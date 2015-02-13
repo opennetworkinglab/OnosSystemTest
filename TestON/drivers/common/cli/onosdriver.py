@@ -527,8 +527,7 @@ class OnosDriver( CLI ):
         # That you may wish to use by default on startup.
         # Note that you  may not want certain features listed
         # on here.
-        coreFeatureString = "export ONOS_FEATURES=webconsole,onos-api," +\
-            "onos-cli,onos-openflow," + extraFeatureString
+        coreFeatureString = "export ONOS_FEATURES=" + extraFeatureString
         mnString = "export OCN="
         onosString = "export OC"
         tempCount = 1
@@ -597,7 +596,7 @@ class OnosDriver( CLI ):
                 # Expect the cellname in the ONOSCELL variable.
                 # Note that this variable name is subject to change
                 #   and that this driver will have to change accordingly
-                self.handle.expect( "ONOS_CELL=" + str( cellname ) )
+                self.handle.expect( "ONOS_CELL" )
                 handleBefore = self.handle.before
                 handleAfter = self.handle.after
                 # Get the rest of the handle

@@ -442,8 +442,13 @@ class MininetCliDriver( Emulator ):
                 self.handle.sendline( cmd )
                 self.handle.expect( "mininet>" )
 
-                # Determine ipaddress of the host-oldSw interface
+                # Determine ip and mac address of the host-oldSw interface
                 cmd = "px ipaddr = hintf.IP()"
+                print "cmd3= ", cmd
+                self.handle.sendline( cmd )
+                self.handle.expect( "mininet>" )
+
+                cmd = "px macaddr = hintf.MAC()"
                 print "cmd3= ", cmd
                 self.handle.sendline( cmd )
                 self.handle.expect( "mininet>" )
@@ -478,16 +483,22 @@ class MininetCliDriver( Emulator ):
                 print "cmd7 = ", cmd
                 self.handle.sendline( cmd )
                 self.handle.expect( "mininet>" )
+
+                # Set macaddress of the host-newSw interface
+                cmd = "px " + host + ".setMAC( mac = macaddr, intf = hintf)"
+                print "cmd8 = ", cmd
+                self.handle.sendline( cmd )
+                self.handle.expect( "mininet>" )
                 
                 cmd = "net"
-                print "cmd8 = ", cmd
+                print "cmd9 = ", cmd
                 self.handle.sendline( cmd )
                 self.handle.expect( "mininet>" )
                 print "output = ", self.handle.before
 
                 # Determine ipaddress of the host-newSw interface
-                cmd = "h1 ifconfig"
-                print "cmd9= ", cmd
+                cmd = host + " ifconfig"
+                print "cmd10= ", cmd
                 self.handle.sendline( cmd )
                 self.handle.expect( "mininet>" )
                 print "ifconfig o/p = ", self.handle.before
@@ -1255,7 +1266,7 @@ class MininetCliDriver( Emulator ):
             self.handle.expect( "exit" )
             self.handle.expect( "(.*)" )
             main.log.info( "Mininet CLI is successfully disconnected" )
-            response = self.handle.before
+            response = main.TRUE
         else:
             main.log.error( "Connection failed to the host" )
             response = main.FALSE

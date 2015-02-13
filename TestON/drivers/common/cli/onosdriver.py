@@ -23,17 +23,12 @@ import traceback
 import os.path
 sys.path.append( "../" )
 from drivers.common.clidriver import CLI
-import ThreadingOnos
-
-threadID = None
 
 class OnosDriver( CLI ):
     def __init__( self ):
         """
         Initialize client
         """
-        global threadID
-        threadID = 0
         super( CLI, self ).__init__()
 
     def connect( self, **connectargs ):

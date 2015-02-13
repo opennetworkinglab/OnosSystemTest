@@ -16,7 +16,7 @@
             <host>10.128.10.20</host>
             <user>admin</user>
             <password> </password>
-            <type>OnosCliDriver</type>
+            <type>OnosCliDriverThread</type>
             <connect_order>2</connect_order>
             <COMPONENTS> </COMPONENTS>
         </ONOScli1>
@@ -25,7 +25,7 @@
             <host>10.128.10.20</host>
             <user>admin</user>
             <password> </password>
-            <type>OnosCliDriver</type>
+            <type>OnosCliDriverThread</type>
             <connect_order>3</connect_order>
             <COMPONENTS> </COMPONENTS>
         </ONOScli2>
@@ -34,7 +34,7 @@
             <host>10.128.10.20</host>
             <user>admin</user>
             <password> </password>
-            <type>OnosCliDriver</type>
+            <type>OnosCliDriverThread</type>
             <connect_order>4</connect_order>
             <COMPONENTS> </COMPONENTS>
         </ONOScli3>

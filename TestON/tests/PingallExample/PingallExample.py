@@ -75,19 +75,40 @@ class PingallExample:
         onos1InstallResult = main.FALSE
         
         main.log.info("Running thread")
+        
+        time1 = time.time()
         q1 = Queue.Queue()
         q2 = Queue.Queue()
         q3 = Queue.Queue()
         pool = []
-        time1 = time.time()
+        CLI1 = (main.ONOScli1.startOnosCli,  ONOS1Ip, q1)
+        CLI2 = (main.ONOScli2.startOnosCli, ONOS2Ip, q2)
+        CLI3 = (main.ONOScli3.startOnosCli, ONOS3Ip, q3)
+       
+        CLItoRun = [CLI1,CLI2,CLI3]
+        i = 0
+        for  cli,ip,q in CLItoRun:
+            t = threading.Thread(target = cli, args=[ip,q])
+            pool.append(t)
+            t.start()
+        
+        
+        """
+        # This is how you create threads
+        # threadName = threading.Thread(target = main.<componentName>.<methodName>, args
+        # = [...args to pass... ]>)
         t1 = threading.Thread(target=main.ONOScli1.startOnosCli, args= [ONOS1Ip, q1])
         t2 = threading.Thread(target=main.ONOScli2.startOnosCli, args= [ONOS2Ip, q2])
         t3 = threading.Thread(target=main.ONOScli3.startOnosCli, args= [ONOS3Ip, q3])
         pool.append(t1)
         pool.append(t2)
         pool.append(t3)
+        
         for thread in pool:
             thread.start()
+        """
+        #then we join all the threads in the pool which simply letting all the
+        #threads to finish to move on to the code
         for thread in pool:
             thread.join()
         time2 = time.time()

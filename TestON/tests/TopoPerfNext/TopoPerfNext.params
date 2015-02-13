@@ -67,6 +67,13 @@
         <tabletFile>tablets_3node.json</tabletFile>
    </TEST>
 
+    <DB>
+        <postToDB>on</postToDB>
+        <portEventResultPath>
+        /home/admin/ONLabTest/TestON/tests/TopoPerfNext/portEventResultDb.log
+        </portEventResultPath>
+    </DB>
+
     <JSON>
         <deviceTimestamp>topologyDeviceEventTimestamp</deviceTimestamp>
         <hostTimestamp>topologyHostEventTimestamp</hostTimestamp>

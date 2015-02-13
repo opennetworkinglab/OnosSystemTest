@@ -23,14 +23,17 @@ import traceback
 import os.path
 sys.path.append( "../" )
 from drivers.common.clidriver import CLI
+import ThreadingOnos
 
+threadID = None
 
 class OnosDriver( CLI ):
-
     def __init__( self ):
         """
         Initialize client
         """
+        global threadID
+        threadID = 0
         super( CLI, self ).__init__()
 
     def connect( self, **connectargs ):
@@ -715,7 +718,7 @@ class OnosDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def onosInstall( self, options="-f", node="" ):
+    def onosInstall( self, options="-f", node=""):
         """
         Installs ONOS bits on the designated cell machine.
         If -f option is provided, it also forces an uninstall.
@@ -727,6 +730,7 @@ class OnosDriver( CLI ):
         Returns: main.TRUE on success and main.FALSE on failure
         """
         try:
+            main.log.info("Installing ONOS NOWWWWW!!")
             if options:
                 self.handle.sendline( "onos-install " + options + " " + node )
             else:

@@ -19,6 +19,7 @@ OCT 13 2014
 import sys
 import pexpect
 import re
+import Queue
 sys.path.append( "../" )
 from drivers.common.clidriver import CLI
 
@@ -172,7 +173,8 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def startOnosCli( self, ONOSIp, karafTimeout="" ):
+    def startOnosCli( self, ONOSIp, queue="", karafTimeout="" ):
+        import Queue
         """
         karafTimeout is an optional arugument. karafTimeout value passed
         by user would be used to set the current karaf shell idle timeout.
@@ -188,12 +190,15 @@ class OnosCliDriver( CLI ):
         and passed to startOnosCli from PARAMS file as str.
         """
         try:
+            if queue=="":
+                queue = Queue.Queue()
             self.handle.sendline( "" )
             x = self.handle.expect( [
                 "\$", "onos>" ], timeout=10 )
 
             if x == 1:
                 main.log.info( "ONOS cli is already running" )
+                queue.put(main.TRUE)
                 return main.TRUE
 
             # Wait for onos start ( -w ) and enter onos cli
@@ -212,6 +217,7 @@ class OnosCliDriver( CLI ):
                     self.handle.expect( "\$" )
                     self.handle.sendline( "onos -w " + str( ONOSIp ) )
                     self.handle.expect( "onos>" )
+                queue.put(main.TRUE)
                 return main.TRUE
             else:
                 # If failed, send ctrl+c to process and try again
@@ -231,14 +237,17 @@ class OnosCliDriver( CLI ):
                         self.handle.expect( "\$" )
                         self.handle.sendline( "onos -w " + str( ONOSIp ) )
                         self.handle.expect( "onos>" )
+                    queue.put(main.TRUE)
                     return main.TRUE
                 else:
                     main.log.error( "Connection to CLI " +
                                     str( ONOSIp ) + " timeout" )
+                    queue.put(main.TRUE)
                     return main.FALSE
 
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
+            queue.put(None)
             return None
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
@@ -411,18 +420,22 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def featureInstall( self, featureStr ):
+    def featureInstall( self, featureStr, queue="" ):
         """
         Installs a specified feature
         by issuing command: 'onos> feature:install <feature_str>'
         """
         try:
+            if queue=="":
+                queue = Queue.Queue()
             cmdStr = "feature:install " + str( featureStr )
             self.sendline( cmdStr )
             # TODO: Check for possible error responses from karaf
+            queue.put(main.TRUE)
             return main.TRUE
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
+            queue.put(None)
             return None
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
@@ -438,18 +451,22 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def featureUninstall( self, featureStr ):
+    def featureUninstall( self, featureStr, queue="" ):
         """
         Uninstalls a specified feature
         by issuing command: 'onos> feature:uninstall <feature_str>'
         """
         try:
+            if queue=="":
+                queue = Queue.Queue()
             cmdStr = "feature:uninstall " + str( featureStr )
             self.sendline( cmdStr )
             # TODO: Check for possible error responses from karaf
+            queue.put(main.TRUE)
             return main.TRUE
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
+            queue.put(None)
             return None
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
@@ -461,13 +478,15 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def devices( self, jsonFormat=True ):
+    def devices( self, jsonFormat=True, queue="" ):
         """
         Lists all infrastructure devices or switches
         Optional argument:
             * jsonFormat - boolean indicating if you want output in json
         """
         try:
+            if queue=="":
+                queue = Queue.Queue()
             if jsonFormat:
                 cmdStr = "devices -j"
                 handle = self.sendline( cmdStr )
@@ -486,13 +505,16 @@ class OnosCliDriver( CLI ):
                 """
                 ansiEscape = re.compile( r'\r\r\n\x1b[^m]*m' )
                 handle1 = ansiEscape.sub( '', handle )
+                queue.put(handle1)
                 return handle1
             else:
                 cmdStr = "devices"
                 handle = self.sendline( cmdStr )
+                queue.put(handle)
                 return handle
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
+            queue.put(None)
             return None
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
@@ -504,19 +526,23 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def balanceMasters( self ):
+    def balanceMasters( self, queue = "" ):
         """
         This balances the devices across all controllers
         by issuing command: 'onos> onos:balance-masters'
         If required this could be extended to return devices balanced output.
         """
         try:
+            if queue=="":
+                queue = Queue.Queue()
             cmdStr = "onos:balance-masters"
             self.sendline( cmdStr )
             # TODO: Check for error responses from ONOS
+            queue.put(main.TRUE)
             return main.TRUE
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
+            queue.put(None)
             return None
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
@@ -528,13 +554,15 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def links( self, jsonFormat=True ):
+    def links( self, jsonFormat=True, queue="" ):
         """
         Lists all core links
         Optional argument:
             * jsonFormat - boolean indicating if you want output in json
         """
         try:
+            if queue=="":
+                queue = Queue.Queue()
             if jsonFormat:
                 cmdStr = "links -j"
                 handle = self.sendline( cmdStr )
@@ -553,13 +581,16 @@ class OnosCliDriver( CLI ):
                 """
                 ansiEscape = re.compile( r'\r\r\n\x1b[^m]*m' )
                 handle1 = ansiEscape.sub( '', handle )
+                queue.put(handle1)
                 return handle1
             else:
                 cmdStr = "links"
                 handle = self.sendline( cmdStr )
+                queue.put(handle)
                 return handle
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
+            queue.put(None)
             return None
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
@@ -571,13 +602,15 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def ports( self, jsonFormat=True ):
+    def ports( self,jsonFormat=True, queue="" ):
         """
         Lists all ports
         Optional argument:
             * jsonFormat - boolean indicating if you want output in json
         """
         try:
+            if queue=="":
+                queue = Queue.Queue()
             if jsonFormat:
                 cmdStr = "ports -j"
                 handle = self.sendline( cmdStr )
@@ -596,14 +629,17 @@ class OnosCliDriver( CLI ):
                 """
                 ansiEscape = re.compile( r'\r\r\n\x1b[^m]*m' )
                 handle1 = ansiEscape.sub( '', handle )
+                queue.put(handle1)
                 return handle1
 
             else:
                 cmdStr = "ports"
                 handle = self.sendline( cmdStr )
+                queue.put(handle)
                 return handle
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
+            queue.put(None)
             return None
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
@@ -615,13 +651,15 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def roles( self, jsonFormat=True ):
+    def roles( self,jsonFormat=True, queue="" ):
         """
         Lists all devices and the controllers with roles assigned to them
         Optional argument:
             * jsonFormat - boolean indicating if you want output in json
         """
         try:
+            if queue=="":
+                queue = Queue.Queue()
             if jsonFormat:
                 cmdStr = "roles -j"
                 handle = self.sendline( cmdStr )
@@ -642,14 +680,17 @@ class OnosCliDriver( CLI ):
                 """
                 ansiEscape = re.compile( r'\r\r\n\x1b[^m]*m' )
                 handle1 = ansiEscape.sub( '', handle )
+                queue.put(handle1)
                 return handle1
 
             else:
                 cmdStr = "roles"
                 handle = self.sendline( cmdStr )
+                queue.put(handle)
                 return handle
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
+            queue.put(None)
             return None
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
@@ -661,7 +702,7 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def getRole( self, deviceId ):
+    def getRole( self, deviceId, queue="" ):
         """
         Given the a string containing the json representation of the "roles"
         cli command and a partial or whole device id, returns a json object
@@ -673,8 +714,11 @@ class OnosCliDriver( CLI ):
         None if no match
         """
         try:
+            if queue=="":
+                queue = Queue.Queue()
             import json
             if deviceId is None:
+                queue.put(None)
                 return None
             else:
                 rawRoles = self.roles()
@@ -683,10 +727,13 @@ class OnosCliDriver( CLI ):
                 for device in rolesJson:
                     # print device
                     if str( deviceId ) in device[ 'id' ]:
+                        queue.put(device)
                         return device
+            queue.put(None)
             return None
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
+            queue.put(None)
             return None
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
@@ -698,13 +745,15 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def rolesNotNull( self ):
+    def rolesNotNull( self , queue=""):
         """
         Iterates through each device and checks if there is a master assigned
         Returns: main.TRUE if each device has a master
                  main.FALSE any device has no master
         """
         try:
+            if queue=="":
+                queue = Queue.Queue()
             import json
             rawRoles = self.roles()
             rolesJson = json.loads( rawRoles )
@@ -713,11 +762,14 @@ class OnosCliDriver( CLI ):
                 # print device
                 if device[ 'master' ] == "none":
                     main.log.warn( "Device has no master: " + str( device ) )
+                    queue.put(main.FALSE)
                     return main.FALSE
+            queue.put(main.TRUE)
             return main.TRUE
 
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
+            queue.put(None)
             return None
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
@@ -729,7 +781,7 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def paths( self, srcId, dstId ):
+    def paths( self, srcId, dstI ):
         """
         Returns string of paths, and the cost.
         Issues command: onos:paths <src> <dst>
@@ -757,13 +809,15 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def hosts( self, jsonFormat=True ):
+    def hosts( self, jsonFormat=True, queue="" ):
         """
         Lists all discovered hosts
         Optional argument:
             * jsonFormat - boolean indicating if you want output in json
         """
         try:
+            if queue=="":
+                queue = Queue.Queue()
             if jsonFormat:
                 cmdStr = "hosts -j"
                 handle = self.sendline( cmdStr )
@@ -782,13 +836,16 @@ class OnosCliDriver( CLI ):
                 """
                 ansiEscape = re.compile( r'\r\r\n\x1b[^m]*m' )
                 handle1 = ansiEscape.sub( '', handle )
+                queue.put(handle1)
                 return handle1
             else:
                 cmdStr = "hosts"
                 handle = self.sendline( cmdStr )
+                queue.put(handle)
                 return handle
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
+            queue.put(None)
             return None
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
@@ -800,7 +857,7 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def getHost( self, mac ):
+    def getHost( self, mac, queue=""):
         """
         Return the first host from the hosts api whose 'id' contains 'mac'
 
@@ -811,7 +868,10 @@ class OnosCliDriver( CLI ):
         """
         import json
         try:
+            if queue=="":
+                queue = Queue.Queue()
             if mac is None:
+                queue.put(None)
                 return None
             else:
                 mac = mac
@@ -823,10 +883,13 @@ class OnosCliDriver( CLI ):
                     if not host:
                         pass
                     elif mac in host[ 'id' ]:
+                        queue.put(None)
                         return host
+            queue.put(None)
             return None
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
+            queue.put(None)
             return None
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
@@ -838,7 +901,7 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def getHostsId( self, hostList ):
+    def getHostsId( self, hostList, queue="" ):
         """
         Obtain list of hosts
         Issues command: 'onos> hosts'
@@ -854,6 +917,8 @@ class OnosCliDriver( CLI ):
             ONOS format ( 00:00:00:00:00:01/-1 , ... )
         """
         try:
+            if queue=="":
+                queue = Queue.Queue()
             onosHostList = []
 
             for host in hostList:
@@ -864,11 +929,12 @@ class OnosCliDriver( CLI ):
                 hostHex = ":".join( a + b for a, b in zip( i, i ) )
                 hostHex = hostHex + "/-1"
                 onosHostList.append( hostHex )
-
+            queue.put(onosHostList)
             return onosHostList
 
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
+            queue.put(None)
             return None
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
@@ -880,7 +946,7 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def addHostIntent( self, hostIdOne, hostIdTwo ):
+    def addHostIntent( self, hostIdOne, hostIdTwo, queue="" ):
         """
         Required:
             * hostIdOne: ONOS host id for host1
@@ -890,15 +956,19 @@ class OnosCliDriver( CLI ):
             specifying the two hosts.
         """
         try:
+            if queue=="":
+                queue = Queue.Queue()
             cmdStr = "add-host-intent " + str( hostIdOne ) +\
                 " " + str( hostIdTwo )
             handle = self.sendline( cmdStr )
             if re.search( "Error", handle ):
                 main.log.error( "Error in adding Host intent" )
+                queue.put(handle)
                 return handle
             else:
                 main.log.info( "Host intent installed between " +
                            str( hostIdOne ) + " and " + str( hostIdTwo ) )
+                queue.put(main.TRUE)
                 return main.TRUE
 
         except TypeError:
@@ -914,7 +984,7 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def addOpticalIntent( self, ingressDevice, egressDevice ):
+    def addOpticalIntent( self, ingressDevice, egressDevice, queue="" ):
         """
         Required:
             * ingressDevice: device id of ingress device
@@ -923,16 +993,21 @@ class OnosCliDriver( CLI ):
             TODO: Still needs to be implemented via dev side
         """
         try:
+            if queue=="":
+                queue = Queue.Queue()
             cmdStr = "add-optical-intent " + str( ingressDevice ) +\
                 " " + str( egressDevice )
             handle = self.sendline( cmdStr )
             # If error, return error message
             if re.search( "Error", handle ):
+                queue.put(handle)
                 return handle
             else:
+                queue.put(main.TRUE)
                 return main.TRUE
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
+            queue.put(None)
             return None
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
@@ -959,7 +1034,8 @@ class OnosCliDriver( CLI ):
             ipSrc="",
             ipDst="",
             tcpSrc="",
-            tcpDst="" ):
+            tcpDst="",
+            queue=""):
         """
         Required:
             * ingressDevice: device id of ingress device
@@ -985,6 +1061,8 @@ class OnosCliDriver( CLI ):
               intent via cli
         """
         try:
+            if queue=="":
+                queue = Queue.Queue()
             cmd = ""
 
             # If there are no optional arguments
@@ -1027,6 +1105,7 @@ class OnosCliDriver( CLI ):
                     main.log.error( "You must specify " +
                                     "the ingress port" )
                     # TODO: perhaps more meaningful return
+                    queue.put(main.FALSE)
                     return main.FALSE
 
                 cmd += " " + \
@@ -1039,6 +1118,7 @@ class OnosCliDriver( CLI ):
                 if not portEgress:
                     main.log.error( "You must specify " +
                                     "the egress port" )
+                    queue.put(main.FALSE)
                     return main.FALSE
 
                 cmd += " " +\
@@ -1048,11 +1128,14 @@ class OnosCliDriver( CLI ):
             handle = self.sendline( cmd )
             if re.search( "Error", handle ):
                 main.log.error( "Error in adding point-to-point intent" )
+                queue.put(main.FALSE)
                 return main.FALSE
             else:
+                queue.put(main.TRUE)
                 return main.TRUE
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
+            queue.put(None)
             return None
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
@@ -1082,7 +1165,8 @@ class OnosCliDriver( CLI ):
             tcpSrc="",
             tcpDst="",
             setEthSrc="",
-            setEthDst="" ):
+            setEthDst="",
+            queue=""):
         """
         Note:
             This function assumes that there would be 2 ingress devices and
@@ -1115,6 +1199,8 @@ class OnosCliDriver( CLI ):
               intent via cli
         """
         try:
+            if queue=="":
+                queue = Queue.Queue()
             cmd = ""
 
             # If there are no optional arguments
@@ -1162,6 +1248,7 @@ class OnosCliDriver( CLI ):
                     main.log.error( "You must specify " +
                                     "the ingress port1" )
                     # TODO: perhaps more meaningful return
+                    queue.put(main.FALSE)
                     return main.FALSE
 
                 cmd += " " + \
@@ -1175,6 +1262,7 @@ class OnosCliDriver( CLI ):
                     main.log.error( "You must specify " +
                                     "the ingress port2" )
                     # TODO: perhaps more meaningful return
+                    queue.put(main.FALSE)
                     return main.FALSE
 
                 cmd += " " + \
@@ -1187,6 +1275,7 @@ class OnosCliDriver( CLI ):
                 if not portEgress:
                     main.log.error( "You must specify " +
                                     "the egress port" )
+                    queue.put(main.FALSE)
                     return main.FALSE
 
                 cmd += " " +\
@@ -1196,11 +1285,14 @@ class OnosCliDriver( CLI ):
             handle = self.sendline( cmd )
             if re.search( "Error", handle ):
                 main.log.error( "Error in adding point-to-point intent" )
+                queue.put(self.handle)
                 return self.handle
             else:
+                queue.put(main.TRUE)
                 return main.TRUE
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
+            queue.put(None)
             return None
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
@@ -1212,7 +1304,7 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def removeIntent( self, intentId ):
+    def removeIntent( self, intentId, queue="" ):
         """
         Remove intent for specified intent id
 
@@ -1221,16 +1313,21 @@ class OnosCliDriver( CLI ):
             cli output otherwise
         """
         try:
+            if queue=="":
+                queue = Queue.Queue()
             cmdStr = "remove-intent " + str( intentId )
             handle = self.sendline( cmdStr )
             if re.search( "Error", handle ):
                 main.log.error( "Error in removing intent" )
+                queue.put(main.FALSE)
                 return main.FALSE
             else:
                 # TODO: Should this be main.TRUE
+                queue.put(handle)
                 return handle
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
+            queue.put(None)
             return None
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
@@ -1274,7 +1371,7 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def intents( self, jsonFormat=True ):
+    def intents( self, jsonFormat=True, queue="" ):
         """
         Optional:
             * jsonFormat: enable output formatting in json
@@ -1282,6 +1379,8 @@ class OnosCliDriver( CLI ):
             Obtain intents currently installed
         """
         try:
+            if queue=="":
+                queue = Queue.Queue()
             if jsonFormat:
                 cmdStr = "intents -j"
                 handle = self.sendline( cmdStr )
@@ -1290,9 +1389,11 @@ class OnosCliDriver( CLI ):
             else:
                 cmdStr = "intents"
                 handle = self.sendline( cmdStr )
+            queue.put(handle)
             return handle
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
+            queue.put(None)
             return None
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
@@ -1304,7 +1405,7 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def flows( self, jsonFormat=True ):
+    def flows( self, jsonFormat=True, queue="" ):
         """
         Optional:
             * jsonFormat: enable output formatting in json
@@ -1312,6 +1413,8 @@ class OnosCliDriver( CLI ):
             Obtain flows currently installed
         """
         try:
+            if queue=="":
+                queue = Queue.Queue()
             if jsonFormat:
                 cmdStr = "flows -j"
                 handle = self.sendline( cmdStr )
@@ -1323,9 +1426,11 @@ class OnosCliDriver( CLI ):
             if re.search( "Error\sexecuting\scommand:", handle ):
                 main.log.error( self.name + ".flows() response: " +
                                 str( handle ) )
+            queue.put(handle)
             return handle
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
+            queue.put(None)
             return None
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
@@ -1338,7 +1443,7 @@ class OnosCliDriver( CLI ):
             main.exit()
 
     def pushTestIntents( self, dpidSrc, dpidDst, numIntents,
-                          numMult="", appId="", report=True ):
+                          numMult="", appId="", report=True, queue="" ):
         """
         Description:
             Push a number of intents in a batch format to
@@ -1355,6 +1460,8 @@ class OnosCliDriver( CLI ):
             * report: default True, returns latency information
         """
         try:
+            if queue=="":
+                queue = Queue.Queue()
             cmd = "push-test-intents " +\
                   str( dpidSrc ) + " " + str( dpidDst ) + " " +\
                   str( numIntents )
@@ -1380,11 +1487,14 @@ class OnosCliDriver( CLI ):
                     # Append the first result of second parse
                     latResult.append( result[ 1 ].split( " " )[ 0 ] )
                 main.log.info( latResult )
+                queue.put(latResult)
                 return latResult
             else:
+                queue.put(main.TRUE)
                 return main.TRUE
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
+            queue.put(None)
             return None
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
@@ -1396,13 +1506,15 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def intentsEventsMetrics( self, jsonFormat=True ):
+    def intentsEventsMetrics( self, jsonFormat=True, queue="" ):
         """
         Description:Returns topology metrics
         Optional:
             * jsonFormat: enable json formatting of output
         """
         try:
+            if queue=="":
+                queue = Queue.Queue()
             if jsonFormat:
                 cmdStr = "intents-events-metrics -j"
                 handle = self.sendline( cmdStr )
@@ -1412,9 +1524,11 @@ class OnosCliDriver( CLI ):
             else:
                 cmdStr = "intents-events-metrics"
                 handle = self.sendline( cmdStr )
+            queue.put(handle)
             return handle
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
+            queue.put(None)
             return None
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
@@ -1426,13 +1540,15 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def topologyEventsMetrics( self, jsonFormat=True ):
+    def topologyEventsMetrics( self, jsonFormat=True, queue="" ):
         """
         Description:Returns topology metrics
         Optional:
             * jsonFormat: enable json formatting of output
         """
         try:
+            if queue=="":
+                queue = Queue.Queue()
             if jsonFormat:
                 cmdStr = "topology-events-metrics -j"
                 handle = self.sendline( cmdStr )
@@ -1442,9 +1558,11 @@ class OnosCliDriver( CLI ):
             else:
                 cmdStr = "topology-events-metrics"
                 handle = self.sendline( cmdStr )
+            queue.put(handle)
             return handle
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
+            queue.put(None)
             return None
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
@@ -1463,12 +1581,14 @@ class OnosCliDriver( CLI ):
     # a normal driver function, and parse it
     # using a wrapper function
 
-    def getAllIntentsId( self ):
+    def getAllIntentsId( self, queue="" ):
         """
         Description:
             Obtain all intent id's in a list
         """
         try:
+            if queue=="":
+                queue = Queue.Queue()
             # Obtain output of intents function
             intentsStr = self.intents()
             allIntentList = []
@@ -1492,11 +1612,12 @@ class OnosCliDriver( CLI ):
                     continue
                 else:
                     intentIdList.append( intents )
-
+            queue.put(intentIdList)
             return intentIdList
 
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
+            queue.put(None)
             return None
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
@@ -1508,7 +1629,7 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def getAllDevicesId( self ):
+    def getAllDevicesId( self, queue=""):
         """
         Use 'devices' function to obtain list of all devices
         and parse the result to obtain a list of all device
@@ -1522,12 +1643,15 @@ class OnosCliDriver( CLI ):
         you can iterate through the list to get mastership, etc.
         """
         try:
+            if queue=="":
+                queue = Queue.Queue()
             # Call devices and store result string
             devicesStr = self.devices( jsonFormat=False )
             idList = []
 
             if not devicesStr:
                 main.log.info( "There are no devices to get id from" )
+                queue.put(idList)
                 return idList
 
             # Split the string into list by comma
@@ -1539,10 +1663,12 @@ class OnosCliDriver( CLI ):
             # append to idList
             for arg in tempList:
                 idList.append( arg.split( "id=" )[ 1 ] )
+            queue.put(idList)
             return idList
 
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
+            queue.put(None)
             return None
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
@@ -1554,7 +1680,7 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def getAllNodesId( self ):
+    def getAllNodesId( self, queue="" ):
         """
         Uses 'nodes' function to obtain list of all nodes
         and parse the result of nodes to obtain just the
@@ -1563,11 +1689,14 @@ class OnosCliDriver( CLI ):
             list of node id's
         """
         try:
+            if queue=="":
+                queue = Queue.Queue()
             nodesStr = self.nodes()
             idList = []
 
             if not nodesStr:
                 main.log.info( "There are no nodes to get id from" )
+                queue.put(idList)
                 return idList
 
             # Sample nodesStr output
@@ -1578,11 +1707,12 @@ class OnosCliDriver( CLI ):
             tempList = [ node for node in nodesList if "id=" in node ]
             for arg in tempList:
                 idList.append( arg.split( "id=" )[ 1 ] )
-
+            queue.put(idList)
             return idList
 
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
+            queue.put(None)
             return None
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
@@ -1594,14 +1724,17 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def getDevice( self, dpid=None ):
+    def getDevice( self, dpid=None,queue="" ):
         """
         Return the first device from the devices api whose 'id' contains 'dpid'
         Return None if there is no match
         """
         import json
         try:
+            if queue=="":
+                queue = Queue.Queue()
             if dpid is None:
+                queue.put(None)
                 return None
             else:
                 dpid = dpid.replace( ':', '' )
@@ -1611,10 +1744,13 @@ class OnosCliDriver( CLI ):
                 for device in devicesJson:
                     # print "%s in  %s?" % ( dpid, device[ 'id' ] )
                     if dpid in device[ 'id' ]:
+                        queue.put(device)
                         return device
+            queue.put(None)
             return None
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
+            queue.put(None)
             return None
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
@@ -1626,7 +1762,7 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def checkStatus( self, ip, numoswitch, numolink, logLevel="info" ):
+    def checkStatus( self, ip, numoswitch, numolink, logLevel="info", queue="" ):
         """
         Checks the number of swithes & links that ONOS sees against the
         supplied values. By default this will report to main.log, but the
@@ -1646,14 +1782,18 @@ class OnosCliDriver( CLI ):
                  and main.ERROR otherwise
         """
         try:
+            if queue=="":
+                queue = Queue.Queue()
             topology = self.getTopology( ip )
             if topology == {}:
+                queue.put(main.ERROR)
                 return main.ERROR
             output = ""
             # Is the number of switches is what we expected
             devices = topology.get( 'devices', False )
             links = topology.get( 'links', False )
             if devices == False or links == False:
+                queue.put(main.ERROR)
                 return main.ERROR
             switchCheck = ( int( devices ) == int( numoswitch ) )
             # Is the number of links is what we expected
@@ -1678,9 +1818,11 @@ class OnosCliDriver( CLI ):
                 main.log.warn( output )
             else:
                 main.log.info( output )
+            queue.put(result)
             return result
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
+            queue.put(None)
             return None
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
@@ -1716,14 +1858,18 @@ class OnosCliDriver( CLI ):
                     # from the cli
                     main.log.error( self.name + ": " +
                                     handle + '\033[0m' )
+                    queue.put(main.ERROR)
                     return main.ERROR
+                queue.put(main.TRUE)
                 return main.TRUE
             else:
                 main.log.error( "Invalid 'role' given to device_role(). " +
                                 "Value was '" + str(role) + "'." )
+                queue.put(main.FALSE)
                 return main.FALSE
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
+            queue.put(None)
             return None
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
@@ -1912,21 +2058,26 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def getDevicePortsEnabledCount( self, dpid ):
+    def getDevicePortsEnabledCount( self, dpid, queue="" ):
         """
         Get the count of all enabled ports on a particular device/switch
         """
         try:
+            if queue=="":
+                queue = Queue.Queue()
             dpid = str( dpid )
             cmdStr = "onos:ports -e " + dpid + " | wc -l"
             output = self.sendline( cmdStr )
             if re.search( "No such device", output ):
                 main.log.error( "Error in getting ports" )
+                queue.put((output,"Error"))
                 return ( output, "Error" )
             else:
+                queue.put(output)
                 return output
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
+            queue.put((output,"Error"))
             return ( output, "Error" )
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
@@ -1938,21 +2089,26 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def getDeviceLinksActiveCount( self, dpid ):
+    def getDeviceLinksActiveCount( self, dpid, queue="" ):
         """
         Get the count of all enabled ports on a particular device/switch
         """
         try:
+            if queue=="":
+                queue = Queue.Queue()
             dpid = str( dpid )
             cmdStr = "onos:links " + dpid + " | grep ACTIVE | wc -l"
             output = self.sendline( cmdStr )
             if re.search( "No such device", output ):
-                main.log.error( "Error in getting ports " )
+                main.log.error( "Error in getting ports " ) 
+                queue.put((output,"Error"))
                 return ( output, "Error " )
             else:
+                queue.put(output)
                 return output
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
+            queue.put((output,"Error"))
             return ( output, "Error " )
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
@@ -1964,20 +2120,25 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def getAllIntentIds( self ):
+    def getAllIntentIds( self ,queue=""):
         """
         Return a list of all Intent IDs
         """
         try:
+            if queue=="":
+                queue = Queue.Queue()
             cmdStr = "onos:intents | grep id="
             output = self.sendline( cmdStr )
             if re.search( "Error", output ):
                 main.log.error( "Error in getting ports" )
+                queue.put((output,"Error"))
                 return ( output, "Error" )
             else:
+                queue.put(output)
                 return output
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
+            queue.put((output,"Error"))
             return ( output, "Error" )
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )

@@ -205,7 +205,12 @@ class PingallExample:
         pingResult = main.Mininet1.pingall()
         time2 = time.time()
         main.log.info( "Time for pingall: %2f seconds" % ( time2 - time1 ) )
-
+        
+        main.log.info("Check devices of ONOS using thread")
+        deviceThread = ThreadingOnos.ThreadingOnos(target=main.ONOScli1.devices,threadID=2,name="devices",args=[True])
+        deviceThread.start()
+        deviceThread.join()
+        print(deviceThread.result)
         # uninstall onos-app-fwd
         main.log.info( "Uninstall reactive forwarding app" )
         main.ONOScli1.featureUninstall( "onos-app-fwd" )

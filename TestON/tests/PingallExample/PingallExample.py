@@ -15,6 +15,7 @@ class PingallExample:
         import threading
         import time
         import Queue
+        import imp
         """
            CASE1 is to compile ONOS and push it to the test machines
 
@@ -27,6 +28,8 @@ class PingallExample:
            onos-install -f
            onos-wait-for-start
         """
+        ThreadingOnos = imp.load_source('ThreadingOnos','/home/admin/ONLabTest/TestON/tests/PingallExample/ThreadingOnos.py')
+
         desc = "ONOS Single node cluster restart HA test - initialization"
         main.log.report( desc )
         main.case( "Setting up test environment" )
@@ -73,46 +76,38 @@ class PingallExample:
 
         main.step( "Installing ONOS package" )
         onos1InstallResult = main.FALSE
-        
+        main.log.info("verifying cell with thread") 
+        tSample = ThreadingOnos.ThreadingOnos(target=main.ONOSbench.verifyCell,threadID=1,name="verify cell")
+        tSample.start()
         main.log.info("Running thread")
         
         time1 = time.time()
-        q1 = Queue.Queue()
-        q2 = Queue.Queue()
-        q3 = Queue.Queue()
         pool = []
-        CLI1 = (main.ONOScli1.startOnosCli,  ONOS1Ip, q1)
-        CLI2 = (main.ONOScli2.startOnosCli, ONOS2Ip, q2)
-        CLI3 = (main.ONOScli3.startOnosCli, ONOS3Ip, q3)
+        CLI1 = (main.ONOScli1.startOnosCli,  ONOS1Ip)
+        CLI2 = (main.ONOScli2.startOnosCli, ONOS2Ip)
+        CLI3 = (main.ONOScli3.startOnosCli, ONOS3Ip)
        
         CLItoRun = [CLI1,CLI2,CLI3]
         i = 0
-        for  cli,ip,q in CLItoRun:
-            t = threading.Thread(target = cli, args=[ip,q])
+        for  cli,ip in CLItoRun:
+            t = ThreadingOnos.ThreadingOnos(target = cli,threadID=i,name="startOnosCli",args=[ip])
             pool.append(t)
             t.start()
+            i = i + 1
         
-        
-        """
-        # This is how you create threads
-        # threadName = threading.Thread(target = main.<componentName>.<methodName>, args
-        # = [...args to pass... ]>)
-        t1 = threading.Thread(target=main.ONOScli1.startOnosCli, args= [ONOS1Ip, q1])
-        t2 = threading.Thread(target=main.ONOScli2.startOnosCli, args= [ONOS2Ip, q2])
-        t3 = threading.Thread(target=main.ONOScli3.startOnosCli, args= [ONOS3Ip, q3])
-        pool.append(t1)
-        pool.append(t2)
-        pool.append(t3)
-        
-        for thread in pool:
-            thread.start()
-        """
         #then we join all the threads in the pool which simply letting all the
         #threads to finish to move on to the code
+        startCliResult = main.FALSE
         for thread in pool:
             thread.join()
+            if thread.result == main.FALSE:
+                startCliResult = main.FALSE
+            else:
+                startCliResult = main.TRUE
+    
         time2 = time.time()
-        if q1.get()==main.TRUE and q2.get() == main.TRUE and q3.get()==main.TRUE:
+        
+        if startCliResult == main.TRUE:
             main.log.info( "Successful CLI startup!!!")
         else:
             main.log.info("ONOS CLI did not start up properly")

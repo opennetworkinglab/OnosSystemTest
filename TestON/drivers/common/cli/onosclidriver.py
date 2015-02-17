@@ -901,9 +901,6 @@ class OnosCliDriver( CLI ):
                            str( hostIdOne ) + " and " + str( hostIdTwo ) )
                 return main.TRUE
 
-        except TypeError:
-            main.log.exception( self.name + ": Object not as expected" )
-            return None
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )

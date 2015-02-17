@@ -101,11 +101,12 @@ for test in testnames:
     f.close()
     #https://wiki.onosproject.org/display/OST/Test+Results+-+HA#Test+Results+-+HA
     #Example anchor on new wiki:        #TestResults-HA-TestHATestSanity
-    page_name = "Master+-+HA"
+    page_name = "Master-HA"
     if "ONOS-HA-Maint" in job:
-        page_name = "1.0+-+HA"
+        #NOTE if page name starts with number it prepends 'id-' to anchor links
+        page_name = "id-1.0-HA"
 
-    header += "<li><a href=\'#" + str(page_name) + str(test) + "\'> " + str(test) + " - Results: " + str(passes) + " Passed, " + str(fails) + " Failed</a></li>"
+    header += "<li><a href=\'#" + str(page_name) + "-" + str(test) + "\'> " + str(test) + " - Results: " + str(passes) + " Passed, " + str(fails) + " Failed</a></li>"
 
     #*********************
     #include any other phrase specific to case you would like to include in wiki here

@@ -150,24 +150,38 @@ class HATestClusterRestart:
             onos1Isup = main.ONOSbench.isup( ONOS1Ip )
             if not onos1Isup:
                 main.log.report( "ONOS1 didn't start!" )
+                main.ONOSbench.onosStop( ONOS1Ip )
+                main.ONOSbench.onosStart( ONOS1Ip )
             onos2Isup = main.ONOSbench.isup( ONOS2Ip )
             if not onos2Isup:
                 main.log.report( "ONOS2 didn't start!" )
+                main.ONOSbench.onosStop( ONOS2Ip )
+                main.ONOSbench.onosStart( ONOS2Ip )
             onos3Isup = main.ONOSbench.isup( ONOS3Ip )
             if not onos3Isup:
                 main.log.report( "ONOS3 didn't start!" )
+                main.ONOSbench.onosStop( ONOS3Ip )
+                main.ONOSbench.onosStart( ONOS3Ip )
             onos4Isup = main.ONOSbench.isup( ONOS4Ip )
             if not onos4Isup:
                 main.log.report( "ONOS4 didn't start!" )
+                main.ONOSbench.onosStop( ONOS4Ip )
+                main.ONOSbench.onosStart( ONOS4Ip )
             onos5Isup = main.ONOSbench.isup( ONOS5Ip )
             if not onos5Isup:
                 main.log.report( "ONOS5 didn't start!" )
+                main.ONOSbench.onosStop( ONOS5Ip )
+                main.ONOSbench.onosStart( ONOS5Ip )
             onos6Isup = main.ONOSbench.isup( ONOS6Ip )
             if not onos6Isup:
                 main.log.report( "ONOS6 didn't start!" )
+                main.ONOSbench.onosStop( ONOS6Ip )
+                main.ONOSbench.onosStart( ONOS6Ip )
             onos7Isup = main.ONOSbench.isup( ONOS7Ip )
             if not onos7Isup:
                 main.log.report( "ONOS7 didn't start!" )
+                main.ONOSbench.onosStop( ONOS7Ip )
+                main.ONOSbench.onosStart( ONOS7Ip )
             onosIsupResult = onos1Isup and onos2Isup and onos3Isup\
                 and onos4Isup and onos5Isup and onos6Isup and onos7Isup
             if onosIsupResult == main.TRUE:
@@ -378,9 +392,9 @@ class HATestClusterRestart:
             onfail="Switches were not successfully reassigned" )
         mastershipCheck = mastershipCheck and roleCall and roleCheck
         utilities.assert_equals( expect=main.TRUE, actual=mastershipCheck,
-                                onpass="Switch mastership correctly assigned",
-                                onfail="Error in ( re )assigning switch" +
-                                " mastership" )
+                                 onpass="Switch mastership correctly assigned",
+                                 onfail="Error in (re)assigning switch" +
+                                 " mastership" )
 
     def CASE3( self, main ):
         """
@@ -448,6 +462,7 @@ class HATestClusterRestart:
                 host1Id = host1Dict.get( 'id', None )
                 host2Id = host2Dict.get( 'id', None )
             if host1Id and host2Id:
+
                 tmpResult = main.ONOScli1.addHostIntent(
                     host1Id,
                     host2Id )
@@ -493,7 +508,7 @@ class HATestClusterRestart:
                                " and h" + str( i + 10 ) )
             elif ping == main.TRUE:
                 main.log.info( "Ping test passed!" )
-                PingResult = main.TRUE
+                # Don't set PingResult or you'd override failures
         if PingResult == main.FALSE:
             main.log.report(
                 "Intents have not been installed correctly, pings failed." )
@@ -1498,6 +1513,7 @@ class HATestClusterRestart:
         count = 0
         main.step( "Collecting topology information from ONOS" )
         startTime = time.time()
+        # Give time for Gossip to work
         while topoResult == main.FALSE and elapsed < 60:
             count = count + 1
             if count > 1:

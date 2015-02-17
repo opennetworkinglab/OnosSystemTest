@@ -47,7 +47,7 @@ class OnosDriver( CLI ):
                     break
             if self.home == None or self.home == "":
                 self.home = "~/ONOS"
-            
+
             self.name = self.options[ 'name' ]
             self.handle = super( OnosDriver, self ).connect(
                 user_name=self.user_name,
@@ -1487,3 +1487,102 @@ class OnosDriver( CLI ):
             main.log.info( self.name + " ::::::" )
             main.cleanup()
             main.exit()
+
+    def setIpTables( self, ip, port='', action='add', packet_type='tcp',
+                     direction='INPUT', rule='DROP' ):
+        '''
+        Description:
+            add or remove iptables rule to DROP (default) packets from
+            specific IP and PORT
+        Usage:
+        * specify action ('add' or 'remove')
+          when removing, pass in the same argument as you would add. It will
+          delete that specific rule.
+        * specify the ip to block
+        * specify the destination port to block (defaults to all ports)
+        * optional packet type to block (default tcp)
+        * optional iptables rule (default DROP)
+        * optional direction to block (default 'INPUT')
+        Returns:
+            main.TRUE on success or
+            main.FALSE if given invalid input or
+            main.ERROR if there is an error in response from iptables
+        WARNING:
+        * This function uses root privilege iptables command which may result
+          in unwanted network errors. USE WITH CAUTION
+        '''
+        import time
+
+        # NOTE*********
+        #   The strict checking methods of this driver function is intentional
+        #   to discourage any misuse or error of iptables, which can cause
+        #   severe network errors
+        # *************
+
+        # NOTE: Sleep needed to give some time for rule to be added and
+        #       registered to the instance. If you are calling this function
+        #       multiple times this sleep will prevent any errors.
+        #       DO NOT REMOVE
+        time.sleep( 5 )
+        try:
+            # input validation
+            action_type = action.lower()
+            rule = rule.upper()
+            direction = direction.upper()
+            if action_type != 'add' and action_type != 'remove':
+                main.log.error( "Invalid action type. Use 'add' or "
+                                "'remove' table rule" )
+                if rule != 'DROP' and rule != 'ACCEPT' and rule != 'LOG':
+                    # NOTE Currently only supports rules DROP, ACCEPT, and LOG
+                    main.log.error( "Invalid rule. Valid rules are 'DROP' or "
+                                    "'ACCEPT' or 'LOG' only." )
+                    if direction != 'INPUT' and direction != 'OUTPUT':
+                        # NOTE currently only supports rules INPUT and OUPTUT
+                        main.log.error( "Invalid rule. Valid directions are"
+                                        " 'OUTPUT' or 'INPUT'" )
+                        return main.FALSE
+                    return main.FALSE
+                return main.FALSE
+            if action_type == 'add':
+                # -A is the 'append' action of iptables
+                actionFlag = '-A'
+            elif action_type == 'remove':
+                # -D is the 'delete' rule of iptables
+                actionFlag = '-D'
+            self.handle.sendline( "" )
+            self.handle.expect( "\$" )
+            cmd = "sudo iptables " + actionFlag + " " +\
+                  direction +\
+                  " -p " + str( packet_type ) +\
+                  " -s " + str( ip )
+            if port:
+                cmd += " --dport " + str( port )
+            cmd += " -j " + str( rule )
+
+            self.handle.sendline( cmd )
+            self.handle.expect( "\$" )
+            main.log.warn( self.handle.before )
+
+            info_string = "On " + str( self.name )
+            info_string += " " + str( action_type )
+            info_string += " iptable rule [ "
+            info_string += " IP: " + str( ip )
+            info_string += " Port: " + str( port )
+            info_string += " Rule: " + str( rule )
+            info_string += " Direction: " + str( direction ) + " ]"
+            main.log.info( info_string )
+            return main.TRUE
+        except pexpect.TIMEOUT:
+            main.log.exception( self.name + ": Timeout exception in "
+                                "setIpTables function" )
+            return main.ERROR
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.exception( "Unknown error:")
+            main.cleanup()
+            main.exit()
+

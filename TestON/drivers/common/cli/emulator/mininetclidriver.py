@@ -102,7 +102,8 @@ class MininetCliDriver( Emulator ):
         """
         Starts Mininet accepts a topology(.py) file and/or an optional
         arguement ,to start the mininet, as a parameter.
-        Returns true if the mininet starts successfully
+        Returns main.TRUE if the mininet starts successfully and
+                main.FALSE otherwise
         """
         if self.handle:
             main.log.info(
@@ -1275,9 +1276,13 @@ class MininetCliDriver( Emulator ):
 
     def stopNet( self ):
         """
-        Stops mininet. returns true if the mininet succesfully stops.
+        Stops mininet.
+        Returns main.TRUE if the mininet succesfully stops and
+                main.FALSE if the pexpect handle does not exist.
+
+        Will cleanuop and exit the test if mininet fails to stop
         """
-        
+
         main.log.info( self.name + ": Disconnecting mininet..." )
         response = ''
         if self.handle:

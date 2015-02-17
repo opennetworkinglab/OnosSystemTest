@@ -336,7 +336,6 @@ class RemoteMininetDriver( Emulator ):
         try:
             self.handle.sendline( "sudo pkill tcpdump" )
             self.handle.sendline( "" )
-            self.handle.sendline( "" )
             self.handle.expect( "\$" )
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )

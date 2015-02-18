@@ -207,7 +207,7 @@ class Logger:
         if (main.TOTAL_TC_PASS == 0):
             main.TOTAL_TC_SUCCESS = 0
         else:
-            main.TOTAL_TC_SUCCESS = str((main.TOTAL_TC_PASS*100)/main.TOTAL_TC_RUN)
+            main.TOTAL_TC_SUCCESS = str((main.TOTAL_TC_PASS*100)/main.TOTAL_TC_PLANNED)
             
         if (main.TOTAL_TC_RUN == 0) :
             main.TOTAL_TC_EXECPERCENT = 0
@@ -218,6 +218,7 @@ class Logger:
         testResult =  testResult + "\n Test Start           : " + str(main.STARTTIME.strftime("%d %b %Y %H:%M:%S"))
         testResult =  testResult + "\n Test End             : " + str(main.ENDTIME.strftime("%d %b %Y %H:%M:%S"))
         testResult =  testResult + "\n Execution Time       : " + str(main.EXECTIME)
+        testResult =  testResult + "\n Tests planned        : " + str(main.TC_PLANNED)
         testResult =  testResult + "\n Total tests planned  : " + str(main.TOTAL_TC_PLANNED)
         testResult =  testResult + "\n Total tests RUN      : " + str(main.TOTAL_TC_RUN)
         testResult =  testResult + "\n Total Pass           : " + str(main.TOTAL_TC_PASS)

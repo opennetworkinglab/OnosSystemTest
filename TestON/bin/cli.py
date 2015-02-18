@@ -85,6 +85,8 @@ class CLI( threading.Thread,Cmd,object ):
         Cmd.do_help( self, line )
         if line is '':
             output( self.helpStr )
+
+
     def do_run(self,args):
         '''
         run command will execute the test with following optional command line arguments
@@ -102,6 +104,8 @@ class CLI( threading.Thread,Cmd,object ):
             test.start()
         else :
             print main.TEST+ " test execution paused, please resume that before executing to another test"
+            test = main.TEST+ " test execution paused, please resume that before executing to another test"
+        return test        
                     
     def do_resume(self, line):
         '''
@@ -154,9 +158,13 @@ class CLI( threading.Thread,Cmd,object ):
         if testthread:
             if line == "main":
                 dump.pprint(vars(main))
+                variable = dump.pformat(vars(main))
+                return variable  
             else :
                 try :
                     dump.pprint(vars(main)[line])
+                    variable = dump.pformat(vars(main)[line])
+                    return variable 
                 except KeyError,e:
                     print e
         else :
@@ -172,8 +180,10 @@ class CLI( threading.Thread,Cmd,object ):
         '''
         if testthread:
             print "Currently executing test case is: "+str(main.CurrentTestCaseNumber)
+            return str(main.CurrentTestCaseNumber)
         else :
             print "There is no paused test "
+            return "There is no paused test "    
             
             
     def do_currentstep(self,line):
@@ -185,9 +195,11 @@ class CLI( threading.Thread,Cmd,object ):
         '''
         if testthread:
             print "Currently executing test step is: "+str(main.CurrentTestCaseNumber)+'.'+str(main.stepCount)
+            currentStep = str(main.CurrentTestCaseNumber)+'.'+str(main.stepCount)
+            return currentStep     
         else :
             print "There is no paused test "
-    
+            return "There is no paused test "    
     
     def do_stop(self,line):
         '''
@@ -212,12 +224,15 @@ class CLI( threading.Thread,Cmd,object ):
         try :
             if testthread :
                 print "Currently executing Test is: "+main.TEST
+                return "Currently executing Test is: "+main.TEST
             else :
                 print "Recently executed test is: "+main.TEST
+                return "Recently executed test is: "+main.TEST
             
         except NameError:
             print "There is no previously executed Test"
-            
+            return "There is no previously executed Test"
+
     def do_showlog(self,line):
         '''
         showlog will show the test's Log
@@ -228,24 +243,29 @@ class CLI( threading.Thread,Cmd,object ):
         Currently executing Test's log is: /home/openflow/TestON/logs/PoxTest_07_Jan_2013_21_46_58/PoxTest_07_Jan_2013_21_46_58.log
         .....
         '''
+        output = " "
         try :
             if testthread :
                 print "Currently executing Test's log is: "+main.LogFileName
-                
+                        
             else :
                 print "Last executed test's log is : "+main.LogFileName
             
             logFile = main.LogFileName
             logFileHandler = open(logFile, 'r')
+            
             for msg in logFileHandler.readlines() :
-                print msg,
+                 output = output + msg
+                 print msg,
                 
             logFileHandler.close()
             
+            
         except NameError:
             print "There is no previously executed Test"
+        output = output + "There is no previously executed Test"
             
-    
+        return output
             
     def parseArgs(self,args,options):
         '''
@@ -352,9 +372,21 @@ class CLI( threading.Thread,Cmd,object ):
         try :
             translated_code = ospk.interpret(text=line)
             print translated_code
+            return translated_code 
         except AttributeError, e:
             print 'Dynamic params are not allowed in single statement translations'
-        
+            return "Dynamic params are not allowed in single statement translations"
+    
+    def do_reverse(self,line):
+        from core import openspeak
+        ospk = openspeak.OpenSpeak()
+        #try :
+        translated_code = ospk.reverse_compiler(pythonfile=line)
+        print translated_code
+        return translated_code
+        #except :
+        #print 'Not Valid File given'
+        #return "invalid file name or path"
     def do_do (self,line):
         '''
         Do will translate and execute the openspeak statement for the paused test.
@@ -365,11 +397,13 @@ class CLI( threading.Thread,Cmd,object ):
             ospk = openspeak.OpenSpeak()
             try :
                 translated_code = ospk.interpret(text=line)
-                eval(translated_code)
+                return eval(translated_code)
             except (AttributeError,SyntaxError), e:
                 print 'Dynamic params are not allowed in single statement translations'
+                return "Dynamic params are not allowed in single statement translations"
         else :
             print "Do will translate and execute the openspeak statement for the paused test.\nPlease use interpret to translate the OpenSpeak statement."
+        return "Do will translate and execute the openspeak statement for the paused test.\nPlease use interpret to translate the OpenSpeak statement."
             
     def do_compile(self,line):
         '''
@@ -389,8 +423,10 @@ class CLI( threading.Thread,Cmd,object ):
         if os.path.exists(openspeakfile) :
             openspeak.compiler(openspeakfile=openspeakfile,writetofile=1)
             print "Auto-generated test-script file is "+ re.sub("ospk","py",openspeakfile,0)
+            return "Auto-generated test-script file is "+ re.sub("ospk","py",openspeakfile,0)    
         else:
             print 'There is no such file : '+line
+        return "There is no such file : "+line    
 
     def do_exit( self, _line ):
         "Exit"
@@ -479,10 +515,12 @@ class CLI( threading.Thread,Cmd,object ):
             converter.configparser(config)
             configDict = converter.configparser(config)
            
-            
         converter.writeDriver(drivers)
                       
-       
+    
+    def getlog(self) :
+        
+        return main.LogFileName       
                      
         
     def do_time( self, line ):
@@ -535,6 +573,7 @@ class TestThread(threading.Thread):
                     self.is_stop = True
 
         __builtin__.testthread = False       
+   
 
     def pause(self):
         '''

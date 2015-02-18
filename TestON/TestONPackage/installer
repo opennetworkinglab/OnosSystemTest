@@ -1,0 +1,59 @@
+#!/bin/sh
+
+## Step 1 Fid the Current working Directory.
+cwd=`pwd` 
+echo $cwd" is the current working directory "
+echo $cwd" is the current working directory " > $cwd/installer.log
+
+## Step 2: Add the Environment Variable in bashrc. ( Path without /)
+path=$cwd
+pathIs=`echo $path|sed -e 's/\///g'`
+echo " Adding environment Varaible : "
+echo " Adding environment Varaible : " >> $cwd/installer.log
+echo "export TestON_HOME"=$cwd >> ~/.bashrc
+#source ~/.bashrc
+echo $TestON_HOME
+
+## Step 3: Un tar the compressed TestON in the same folder
+echo " Uncompressing the TestON ... " >> $cwd/installer.log
+echo " Uncompressing the TestON ... "
+tar -zxvf TestON.tar.gz >> $cwd/installer.log
+echo " Uncompressing the javafx-sdk... "
+echo " Uncompressing the javafx-sdk... "  >> $cwd/installer.log
+####tar -zxvf javafx-sdk2.1.0.tar.gz >> $cwd/installer.log
+
+tar -zxvf lib.tar.gz >> $cwd/installer.log
+
+#####################tar -zxvf TAI_TestON.tar.gz >> $cwd/installer.log
+
+## Extracting Editor Java script code
+tar -zxvf EditorScripts.tar.gz >> $cwd/installer.log
+
+## Step 4: Removing unwanted hidden files if there are any.
+find -name .svn* -print0 | xargs -0 rm -rf
+find -name .meta* -print0 | xargs -0 rm -rf
+find -name .project -print0 | xargs -0 rm -rf
+
+
+## Step 6: Adding Desktop launcher for the TestON
+userName=`whoami`
+touch /home/$userName/Desktop/TestON.desktop
+#gksudo gedit /home/paxterra/Desktop/ANIL.desktop
+echo "" > /home/$userName/Desktop/TestON.desktop
+
+ls "/home/$userName/Desktop/TestON.desktop" | while read file; do 
+    ( echo "[Desktop Entry]";
+    echo "Type=Application";
+    echo "Terminal=true";
+    echo "Icon=$cwd/TestON.png";
+    echo "Name=TestON";
+    echo "Exec=sh $cwd/run.sh $cwd";  
+    cat ${file} ) > ${file}.new && mv ${file}.new ${file}
+done
+
+chmod 777 /home/$userName/Desktop/TestON.desktop
+#cp -r javafx-sdk2.1.0 /home/$userName/
+#cp -r EditorScripts /home/$userName/
+## Step 7: Launching TestON.
+sh $cwd/run.sh $cwd
+

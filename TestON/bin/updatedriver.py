@@ -24,10 +24,17 @@ from core import xmldict
 '''
 
 
+import inspect
+import sys
+import os
+import re 
+sys.path.append("../")
+from core import xmldict
+
 class UpdateDriver:
     def __init__(self):
         self.default = ''
-        self.configFile = "/home/openflow/TestON/config/ofadriver.cfg"
+        self.configFile = "/home/openflow/TestON/config/updatedriver.cfg"
         self.methodDict = {}
         self.fileDict = {}
         
@@ -42,20 +49,20 @@ class UpdateDriver:
         moduleList = modulePath.split("/")
         newModule = ".".join([moduleList[len(moduleList) - 2],moduleList[len(moduleList) - 1]])
         print "Message : Method list is being obatined , Please wait ..." 
-        try :
-            if Class :
-                Module = __import__(moduleList[len(moduleList) - 1], globals(), locals(), [Class], -1)
-                ClassList = [x.__name__ for x in Module.__dict__.values() if inspect.isclass(x)]
-                self.ClassList = ClassList
-                Class = vars(Module)[Class]
-                methodList = [x.__name__ for x in Class.__dict__.values() if inspect.isfunction(x)]
-            else :
-                Module = __import__(moduleList[len(moduleList) - 1], globals(), locals(),[moduleList[len(moduleList) - 2]], -1)
-                methodList = [x.__name__ for x in Module.__dict__.values() if inspect.isfunction(x)]
-                ClassList = [x.__name__ for x in Module.__dict__.values() if inspect.isclass(x)]
-                self.ClassList = ClassList
-        except :
-            print "Error : " +str(sys.exc_info()[1])
+        #try :
+        if Class :
+            Module = __import__(moduleList[len(moduleList) - 1], globals(), locals(), [Class], -1)
+            ClassList = [x.__name__ for x in Module.__dict__.values() if inspect.isclass(x)]
+            self.ClassList = ClassList
+            Class = vars(Module)[Class]
+            methodList = [x.__name__ for x in Class.__dict__.values() if inspect.isfunction(x)]
+        else :
+            Module = __import__(moduleList[len(moduleList) - 1], globals(), locals(),[moduleList[len(moduleList) - 2]], -1)
+            methodList = [x.__name__ for x in Module.__dict__.values() if inspect.isfunction(x)]
+            ClassList = [x.__name__ for x in Module.__dict__.values() if inspect.isclass(x)]
+            self.ClassList = ClassList
+        #except :
+        #    print "Error : " +str(sys.exc_info()[1])
          
         
         self.method = methodList
@@ -157,6 +164,7 @@ class UpdateDriver:
                         self.method_ignoreList(value,className)
                         self.class_ignoreList(value)
                         self.getMethodArgsHash(moduleName,value,className)
+            return True;
 
     def class_ignoreList(self,module) :
         '''
@@ -361,10 +369,9 @@ class UpdateDriver:
         
         print " " * 10 +"=" * 90 + "\n"
         content = content + " " * 30 + "*-- Welcome to Updated Driver --*\n"       
-        content = content + "\n" + " " * 10 + " " * 10 + "Config File : " + "/home/openflow/TestON/config/ofadriver.py"
+        content = content + "\n" + " " * 10 + " " * 10 + "Config File : " + "/home/openflow/TestON/config/" + driver + ".cfg"
         content = content + "\n" + " " * 10 + " " * 10 + "Drivers Name : " + driver      
         print content 
         print " " * 10 + "=" * 90 
-
 
 

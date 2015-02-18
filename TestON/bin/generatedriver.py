@@ -33,7 +33,6 @@ class GenerateDriver():
     '''
     def __init__(self):
         self.default = ''
-        self.prompt = '>'
         self.LASTRSP =''
         self.command_dictionary  = {}
         self.config_details = {}
@@ -104,21 +103,20 @@ class GenerateDriver():
         self.handle.sendline(self.cmd)
         timeoutVar = self.timeout if self.timeout else 10 
         
-        index = self.handle.expect([self.prompt, "byte\s\d+", 'Command not found.', pexpect.TIMEOUT,"\n:",pexpect.EOF], timeout = timeoutVar)
+        index = self.handle.expect([self.prompt, "--More--", 'Command not found.', pexpect.TIMEOUT,"\n:",pexpect.EOF], timeout = timeoutVar)
         if index == 0:
             self.LASTRSP = self.LASTRSP + self.handle.before
             #print "Expected Prompt Found"
         elif index == 1:
             self.LASTRSP = self.LASTRSP + self.handle.before
-            self.handle.send("\r")
-            print("Found More screen to go , Sending a key to proceed")
-            indexMore = self.handle.expect(["byte\s\d+", self.prompt], timeout = timeoutVar)
+            self.handle.send(args["MORE"])
+            main.log.info("Found More screen to go , Sending a key to proceed")
+            indexMore = self.handle.expect(["--More--", prompt], timeout = timeoutVar)
             while indexMore == 0:
-                print "Found another More screen to go , Sending a key to proceed"
-                self.handle.send("\r")
-                indexMore = self.handle.expect(["byte\s\d+", self.prompt,pexpect.EOF,pexpect.TIMEOUT], timeout = timeoutVar)
+                print "Found anoother More screen to go , Sending a key to proceed"
+                self.handle.send(args["MORE"])
+                indexMore = self.handle.expect(["--More--", prompt,pexpect.EOF,pexpect.TIMEOUT], timeout = timeoutVar)
                 self.LASTRSP = self.LASTRSP + self.handle.before
-            #print self.LASTRSP
         elif index ==2:
             print "Command not found" 
             self.LASTRSP = self.LASTRSP + self.handle.before
@@ -155,7 +153,7 @@ class GenerateDriver():
         help_keyword = self.config_details['device'][self.device_name]['help_keyword']
         interrupt_key = self.config_details['device'][self.device_name]['interrupt_key']
         command_details = self.execute(cmd=command+" "+help_keyword,prompt='\#',timeout=2)
-        #command_details = self.execute(cmd=command+" "+help_keyword,prompt='\#',timeout=2)
+        command_details = self.execute(cmd=command+" "+help_keyword,prompt='\#',timeout=2)
         self.handle.sendcontrol(interrupt_key)
         #print command_details
         return command_details
@@ -177,21 +175,17 @@ class GenerateDriver():
         for line in lines :
             value_match = re.search('[\s|\>|\+|\-|\<]{3}(\<(\w+))\s*',line)
             if value_match:
-                print " Enter Value for "+value_match.group(2)
+                print " Eneter Value for "+value_match.group(2)
                 #self.handle.interact()
             else:
-                match = re.search(r"\s\s[\w|-]+\s\s",line)
+                match = re.search('[\s|\>|\+|\-|\<]{3}([a-zA-Z0-9_\.\-\/]+)\s*',line)
                 if match :
-                    match_command = match.group(0)
-                    print match_command
+                    match_command = match.group(1)
                     options_list.append(match_command)
                     
         temp_dictionary[command] = options_list 
         self.command_dictionary[command] = options_list
         self.print_details(self.command_dictionary)
-        print "temp dir: --------"
-        print temp_dictionary
-        print "-------------"
         return temp_dictionary
     
     def print_details(self,command_dictionary):
@@ -246,22 +240,6 @@ class GenerateDriver():
             api_data = '    def '
             command_as_api = re.sub(" ","_" , command, 0)
             command_as_api = re.sub("\.|\-|\\|\/|\/","" , command_as_api, 0)
-            current_letter = 0
-            underscore_count = 0
-            command_temp = ""
-            for c in command_as_api:
-                current_letter = current_letter + 1
-                if c == "_":
-                    underscore_count = underscore_count+1
-                else:
-                    underscore_count = 0
-                if underscore_count > 1:
-                   command_temp = command_temp + ""
-                else:
-                   command_temp = command_temp + c
-            if command_temp[len(command_temp)-1] == "_":
-                command_temp = command_temp[0:len(command_temp)-1]
-            command_as_api = command_temp                 
             #options = ''
             #for option in self.command_dictionary[command]:
                 #options = options+',' + option
@@ -303,7 +281,7 @@ if __name__ == "__main__":
     commandlist = list(eval(command+','))
     connect_handle = generate.connect(user_name = user_name ,ip_address = ip_address, pwd = password , port = None)
     if connect_handle :
-   #     generate.configure()
+        generate.configure()
 
         for root_command in commandlist :
             generate.get_details_recursive(root_command)

@@ -106,7 +106,7 @@ for test in testnames:
         #NOTE if page name starts with number it prepends 'id-' to anchor links
         page_name = "id-1.0-HA"
 
-    header += "<li><a href=\'#" + str(page_name) + "-" + str(test) + "\'> " + str(test) + " - Results: " + str(passes) + " Passed, " + str(fails) + " Failed</a></li>"
+    header += "<li><a href=\'#" + str(page_name) + "-Test" + str(test) + "\'> " + str(test) + " - Results: " + str(passes) + " Passed, " + str(fails) + " Failed</a></li>"
 
     #*********************
     #include any other phrase specific to case you would like to include in wiki here

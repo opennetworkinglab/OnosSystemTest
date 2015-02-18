@@ -79,7 +79,7 @@ class OnosDriver( CLI ):
         """
         Called when Test is complete to disconnect the ONOS handle.
         """
-        response = ''
+        response = main.TRUE
         try:
             self.handle.sendline( "" )
             self.handle.expect( "\$" )

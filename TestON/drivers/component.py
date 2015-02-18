@@ -32,6 +32,7 @@ class Component( object ):
     def __init__( self ):
         self.default = ''
         self.wrapped = sys.modules[ __name__ ]
+        self.count = 0
 
     def __getattr__( self, name ):
         """
@@ -43,7 +44,12 @@ class Component( object ):
         try:
             return getattr( self.wrapped, name )
         except AttributeError as error:
-            main.log.error( str(error.__class__) + " " + str(error) )
+            # NOTE: The first time we load a driver module we get this error
+            if "'module' object has no attribute '__path__'" in error\
+                    and self.count == 0:
+                self.count += 1
+            else:
+                main.log.error( str(error.__class__) + " " + str(error) )
             try:
                 def experimentHandling( *args, **kwargs ):
                     if main.EXPERIMENTAL_MODE == main.TRUE:

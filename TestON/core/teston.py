@@ -146,6 +146,7 @@ class TestON:
         '''
         This method will initialize specified component
         '''
+        import importlib
         global driver_options
         self.log.info("Creating component Handle: "+component)
         driver_options = {}
@@ -157,7 +158,7 @@ class TestON:
         driver_options ['type'] = driverName
         
         classPath = self.getDriverPath(driverName.lower())
-        driverModule = __import__(classPath, globals(), locals(), [driverName.lower()], -1)
+        driverModule = importlib.import_module(classPath)
         driverClass = getattr(driverModule, driverName)
         driverObject = driverClass()
          

@@ -12,9 +12,9 @@
     # 10. Remove all intents on ONOS
     # 1,2,3,[4,5,6,5,70,80,5,10,5,9,5,71,81,5,10,5]*100
 
-    <testcases>1,2,3,4,5,12,3,4,5,13,3,4,5</testcases>
+    <testcases>1,2,3,4,5,12,4,5,13,4,5</testcases>
     <ENV>
-        <cellName>choTest5</cellName>
+        <cellName>fiveNodes</cellName>
     </ENV>
     <GIT>
         #autoPull 'on' or 'off'
@@ -44,15 +44,15 @@
     </TOPO3>
     <CTRL>
 	<numCtrl>5</numCtrl>
-        <ip1>10.128.40.41</ip1>
+        <ip1>10.128.10.21</ip1>
 	<port1>6633</port1>
-	<ip2>10.128.40.42</ip2>
+	<ip2>10.128.10.22</ip2>
 	<port2>6633</port2>
-	<ip3>10.128.40.43</ip3>
+	<ip3>10.128.10.23</ip3>
 	<port3>6633</port3>
-        <ip4>10.128.40.44</ip4>
+        <ip4>10.128.10.24</ip4>
 	<port4>6633</port4>
-	<ip5>10.128.40.45</ip5>
+	<ip5>10.128.10.25</ip5>
 	<port5>6633</port5>
     </CTRL>
     <HOSTS>

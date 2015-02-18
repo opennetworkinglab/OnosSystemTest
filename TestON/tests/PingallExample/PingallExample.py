@@ -102,6 +102,7 @@ class PingallExample:
             thread.join()
             if thread.result == main.FALSE:
                 startCliResult = main.FALSE
+                break
             else:
                 startCliResult = main.TRUE
     

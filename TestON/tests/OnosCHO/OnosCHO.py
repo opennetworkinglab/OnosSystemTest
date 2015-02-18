@@ -24,6 +24,9 @@ class OnosCHO:
         onos-wait-for-start
         """
         import time
+        import imp
+        ThreadingOnos = imp.load_source('ThreadingOnos','/home/admin/ONLabTest/TestON/tests/OnosCHO/ThreadingOnos.py')
+        threadID = 0
 
         main.numCtrls = main.params[ 'CTRL' ][ 'numCtrl' ]
         main.ONOS1_ip = main.params[ 'CTRL' ][ 'ip1' ]
@@ -86,7 +89,7 @@ class OnosCHO:
         uninstallResult = main.TRUE
         for i in range( 1, int( main.numCtrls ) + 1 ):
             ONOS_ip = main.params[ 'CTRL' ][ 'ip' + str( i ) ]
-            main.log.info( "Unintsalling package on ONOS Node IP: " + ONOS_ip )
+            main.log.info( "Uninstalling package on ONOS Node IP: " + ONOS_ip )
             u_result = main.ONOSbench.onosUninstall( ONOS_ip )
             utilities.assert_equals( expect=main.TRUE, actual=u_result,
                                      onpass="Test step PASS",
@@ -124,19 +127,39 @@ class OnosCHO:
         # need to wait here for sometime. This will be removed once ONOS is
         # stable enough
         time.sleep( 20 )
-        for i in range( 1, int( main.numCtrls ) + 1 ):
-            ONOS_ip = main.params[ 'CTRL' ][ 'ip' + str( i ) ]
-            ONOScli = 'ONOScli' + str( i )
-            main.log.info( "ONOS Node " + ONOS_ip + " cli start:" )
-            exec "startcli=main." + ONOScli + \
-                ".startOnosCli(ONOS_ip, karafTimeout=karafTimeout)"
-            utilities.assert_equals( expect=main.TRUE, actual=startcli,
-                                     onpass="Test step PASS",
-                                     onfail="Test step FAIL" )
-            cliResult = ( cliResult and startcli )
 
-        case1Result = ( cp_result and cell_result
-                        and packageResult and installResult and statusResult and cliResult )
+        main.log.step(" Start ONOS cli using thread ")
+        
+        CLI1 = (main.ONOScli1.startOnosCli,main.ONOS1_ip)
+        CLI2 = (main.ONOScli2.startOnosCli,main.ONOS2_ip)
+        CLI3 = (main.ONOScli3.startOnosCli,main.ONOS3_ip)
+        CLI4 = (main.ONOScli4.startOnosCli,main.ONOS4_ip)
+        CLI5 = (main.ONOScli5.startOnosCli,main.ONOS5_ip)
+        ONOSCLI = [CLI1,CLI2,CLI3,CLI4,CLI5]
+        pool = []
+        time1 = time.time()
+        for cli,ip in ONOSCLI:
+            t = ThreadingOnos.ThreadingOnos(target=cli,threadID=threadID,
+                    name="startOnosCli",args=[ip])
+            pool.append(t)
+            t.start()
+            threadID = threadID + 1
+            
+        case1Result  = main.FALSE
+        results = []
+        for thread in pool:
+            thread.join()
+            results.append(thread.result)
+        time2 = time.time()
+        
+        if( all(result == main.TRUE for result in results) == False):
+                main.log.info("ONOS CLI did not start up properly")
+                main.cleanup()
+                main.exit()
+        else:
+            main.log.info("Successful CLI startup!!!")
+            case1Result = main.TRUE
+        main.log.info("Time for connecting to CLI: %2f seconds" %(time2-time1))
         utilities.assert_equals( expect=main.TRUE, actual=case1Result,
                                  onpass="Set up test environment PASS",
                                  onfail="Set up test environment FAIL" )
@@ -295,21 +318,48 @@ class OnosCHO:
         import re
         import copy
         import time
+        import imp
+
+        ThreadingOnos = imp.load_source('ThreadingOnos','/home/admin/ONLabTest/TestON/tests/OnosCHO/ThreadingOnos.py')
+        threadID = 6
 
         main.log.report( "Enable Reactive forwarding and Verify ping all" )
         main.log.report( "______________________________________________" )
         main.case( "Enable Reactive forwarding and Verify ping all" )
         main.step( "Enable Reactive forwarding" )
         installResult = main.TRUE
-        for i in range( 1, int( main.numCtrls ) + 1 ):
-            onosFeature = 'onos-app-fwd'
-            ONOS_ip = main.params[ 'CTRL' ][ 'ip' + str( i ) ]
-            ONOScli = 'ONOScli' + str( i )
-            main.log.info( "Enabling Reactive mode on ONOS Node " + ONOS_ip )
-            exec "inResult=main." + ONOScli + ".featureInstall(onosFeature)"
-            time.sleep( 3 )
-            installResult = inResult and installResult
-
+        
+        CLI1 = (main.ONOScli1.featureInstall,"onos-app-fwd")
+        CLI2 = (main.ONOScli2.featureInstall,"onos-app-fwd")
+        CLI3 = (main.ONOScli3.featureInstall,"onos-app-fwd")
+        CLI4 = (main.ONOScli4.featureInstall,"onos-app-fwd")
+        CLI5 = (main.ONOScli5.featureInstall,"onos-app-fwd")
+        ONOSCLI = [CLI1,CLI2,CLI3,CLI4,CLI5]
+        pool = []
+        time1 = time.time()
+        for cli,feature in ONOSCLI:
+            t = ThreadingOnos.ThreadingOnos(target=cli,threadID=threadID,
+                    name="featureInstall",args=[feature])
+            pool.append(t)
+            t.start()
+            threadID = threadID + 1
+            
+        case4Result1  = main.FALSE
+        results = []
+        for thread in pool:
+            thread.join()
+            results.append(thread.result)
+        time2 = time.time()
+        
+        if( all(result == main.TRUE for result in results) == False):
+                main.log.info("Did not install onos-app-fwd feature properly")
+                main.cleanup()
+                main.exit()
+        else:
+            main.log.info("Successful feature:install onos-app-fwd!!!")
+            case4Result1 = main.TRUE
+        main.log.info("Time for feature:install onos-app-fwd: %2f seconds" %(time2-time1))
+        
         time.sleep( 5 )
 
         main.step( "Verify Pingall" )
@@ -330,19 +380,43 @@ class OnosCHO:
 
         main.step( "Disable Reactive forwarding" )
         uninstallResult = main.TRUE
-        for i in range( 1, int( main.numCtrls ) + 1 ):
-            onosFeature = 'onos-app-fwd'
-            ONOS_ip = main.params[ 'CTRL' ][ 'ip' + str( i ) ]
-            ONOScli = 'ONOScli' + str( i )
-            main.log.info( "Disabling Reactive mode on ONOS Node " + ONOS_ip )
-            exec "unResult=main." + ONOScli + ".featureUninstall(onosFeature)"
-            uninstallResult = unResult and uninstallResult
+        
+        CLI1 = (main.ONOScli1.featureUninstall,"onos-app-fwd")
+        CLI2 = (main.ONOScli2.featureUninstall,"onos-app-fwd")
+        CLI3 = (main.ONOScli3.featureUninstall,"onos-app-fwd")
+        CLI4 = (main.ONOScli4.featureUninstall,"onos-app-fwd")
+        CLI5 = (main.ONOScli5.featureUninstall,"onos-app-fwd")
+        ONOSCLI = [CLI1,CLI2,CLI3,CLI4,CLI5]
+        pool = []
+        time1 = time.time()
+        for cli,feature in ONOSCLI:
+            t = ThreadingOnos.ThreadingOnos(target=cli,threadID=threadID,
+                    name="featureUninstall",args=[feature])
+            pool.append(t)
+            t.start()
+            threadID = threadID + 1
+            
+        case4Result2  = main.FALSE
+        results = []
+        for thread in pool:
+            thread.join()
+            results.append(thread.result)
+        time2 = time.time()
+        
+        if( all(result == main.TRUE for result in results) == False):
+                main.log.info("Did not uninstall onos-app-fwd feature properly")
+                main.cleanup()
+                main.exit()
+        else:
+            main.log.info("Successful feature:uninstall onos-app-fwd!!!")
+            case4Result2 = main.TRUE
+        main.log.info("Time for feature:uninstall onos-app-fwd: %2f seconds" %(time2-time1))
 
         # Waiting for reative flows to be cleared.
-        time.sleep( 10 )
-
-        case3Result = installResult and ping_result and uninstallResult
-        utilities.assert_equals( expect=main.TRUE, actual=case3Result,
+        time.sleep( 5 )
+        
+        case4Result = case4Result1 and case4Result2
+        utilities.assert_equals( expect=main.TRUE, actual=case4Result,
                                  onpass="Reactive Mode Pingall test PASS",
                                  onfail="Reactive Mode Pingall test FAIL" )
 
@@ -948,7 +1022,10 @@ class OnosCHO:
         import re
         import time
         import copy
+        import imp
 
+        ThreadingOnos = imp.load_source('ThreadingOnos','/home/admin/ONLabTest/TestON/tests/OnosCHO/ThreadingOnos.py')
+        threadID = 0
         newTopo = main.params['TOPO2']['topo']
         main.numMNswitches = int ( main.params[ 'TOPO2' ][ 'numSwitches' ] )
         main.numMNlinks = int ( main.params[ 'TOPO2' ][ 'numLinks' ] )
@@ -1027,16 +1104,39 @@ class OnosCHO:
         #karafTimeout = "3600000" # This is not needed here as it is already set before.
         # need to wait here sometime for ONOS to bootup.
         time.sleep( 30 )
-        for i in range( 1, int( main.numCtrls ) + 1 ):
-            ONOS_ip = main.params[ 'CTRL' ][ 'ip' + str( i ) ]
-            ONOScli = 'ONOScli' + str( i )
-            main.log.info( "ONOS Node " + ONOS_ip + " cli start:" )
-            exec "startcli=main." + ONOScli + \
-                ".startOnosCli(ONOS_ip)"
-            utilities.assert_equals( expect=main.TRUE, actual=startcli,
-                                     onpass="Test step PASS",
-                                     onfail="Test step FAIL" )
-            cliResult = ( cliResult and startcli )
+
+        main.log.step(" Start ONOS cli using thread ")
+        
+        CLI1 = (main.ONOScli1.startOnosCli,main.ONOS1_ip)
+        CLI2 = (main.ONOScli2.startOnosCli,main.ONOS2_ip)
+        CLI3 = (main.ONOScli3.startOnosCli,main.ONOS3_ip)
+        CLI4 = (main.ONOScli4.startOnosCli,main.ONOS4_ip)
+        CLI5 = (main.ONOScli5.startOnosCli,main.ONOS5_ip)
+        ONOSCLI = [CLI1,CLI2,CLI3,CLI4,CLI5]
+        pool = []
+        time1 = time.time()
+        for cli,ip in ONOSCLI:
+            t = ThreadingOnos.ThreadingOnos(target=cli,threadID=threadID,
+                    name="startOnosCli",args=[ip])
+            pool.append(t)
+            t.start()
+            threadID = threadID + 1
+            
+        cliResult  = main.FALSE
+        results = []
+        for thread in pool:
+            thread.join()
+            results.append(thread.result)
+        time2 = time.time()
+        
+        if( all(result == main.TRUE for result in results) == False):
+                main.log.info("ONOS CLI did not start up properly")
+                main.cleanup()
+                main.exit()
+        else:
+            main.log.info("Successful CLI startup!!!")
+            cliResult = main.TRUE
+        main.log.info("Time for connecting to CLI: %2f seconds" %(time2-time1))
 
         main.step( "Balance devices across controllers" )
         for i in range( int( main.numCtrls ) ):
@@ -1137,16 +1237,45 @@ class OnosCHO:
         #karafTimeout = "3600000" # This is not needed here as it is already set before.
         # need to wait here sometime for ONOS to bootup.
         time.sleep( 30 )
-        for i in range( 1, int( main.numCtrls ) + 1 ):
-            ONOS_ip = main.params[ 'CTRL' ][ 'ip' + str( i ) ]
-            ONOScli = 'ONOScli' + str( i )
-            main.log.info( "ONOS Node " + ONOS_ip + " cli start:" )
-            exec "startcli=main." + ONOScli + \
-                ".startOnosCli(ONOS_ip)"
-            utilities.assert_equals( expect=main.TRUE, actual=startcli,
-                                     onpass="Test step PASS",
-                                     onfail="Test step FAIL" )
-            cliResult = ( cliResult and startcli )
+        
+        main.log.step(" Start ONOS cli using thread ")
+        
+        CLI1 = (main.ONOScli1.startOnosCli,main.ONOS1_ip)
+        CLI2 = (main.ONOScli2.startOnosCli,main.ONOS2_ip)
+        CLI3 = (main.ONOScli3.startOnosCli,main.ONOS3_ip)
+        CLI4 = (main.ONOScli4.startOnosCli,main.ONOS4_ip)
+        CLI5 = (main.ONOScli5.startOnosCli,main.ONOS5_ip)
+        ONOSCLI = [CLI1,CLI2,CLI3,CLI4,CLI5]
+        pool = []
+        time1 = time.time()
+        for cli,ip in ONOSCLI:
+            t = ThreadingOnos.ThreadingOnos(target=cli,threadID=threadID,
+                    name="startOnosCli",args=[ip])
+            pool.append(t)
+            t.start()
+            threadID = threadID + 1
+            
+        cliResult  = main.FALSE
+        results = []
+        for thread in pool:
+            thread.join()
+            results.append(thread.result)
+        time2 = time.time()
+        
+        if( all(result == main.TRUE for result in results) == False):
+                main.log.info("ONOS CLI did not start up properly")
+                main.cleanup()
+                main.exit()
+        else:
+            main.log.info("Successful CLI startup!!!")
+            cliResult = main.TRUE
+        main.log.info("Time for connecting to CLI: %2f seconds" %(time2-time1))
+
+        main.step( "Balance devices across controllers" )
+        for i in range( int( main.numCtrls ) ):
+            balanceResult = main.ONOScli1.balanceMasters()
+            # giving some breathing time for ONOS to complete re-balance
+            time.sleep( 3 )
 
         main.step( "Balance devices across controllers" )
         for i in range( int( main.numCtrls ) ):

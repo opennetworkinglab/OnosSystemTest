@@ -45,7 +45,7 @@ class OnosDriver( CLI ):
                 if key == "home":
                     self.home = self.options[ 'home' ]
                     break
-            if self.home == None or self.home == "":
+            if self.home is None or self.home == "":
                 self.home = "~/ONOS"
 
             self.name = self.options[ 'name' ]
@@ -79,7 +79,7 @@ class OnosDriver( CLI ):
         """
         Called when Test is complete to disconnect the ONOS handle.
         """
-        response = ''
+        response = main.TRUE
         try:
             self.handle.sendline( "" )
             self.handle.expect( "\$" )
@@ -169,8 +169,8 @@ class OnosDriver( CLI ):
             self.handle.expect( "mvn clean install" )
             while True:
                 i = self.handle.expect( [
-                    'There\sis\sinsufficient\smemory\sfor\sthe\sJava\s\
-                            Runtime\sEnvironment\sto\scontinue',
+                    'There\sis\sinsufficient\smemory\sfor\sthe\sJava\s' +
+                        'Runtime\sEnvironment\sto\scontinue',
                     'BUILD\sFAILURE',
                     'BUILD\sSUCCESS',
                     'ONOS\$',
@@ -205,8 +205,8 @@ class OnosDriver( CLI ):
                     main.cleanup()
                     main.exit()
                 else:
-                    main.log.error( self.name + ": unexpected response from \
-                            mvn clean install" )
+                    main.log.error( self.name + ": unexpected response from " +
+                            "mvn clean install" )
                     # return main.FALSE
                     main.cleanup()
                     main.exit()
@@ -254,10 +254,8 @@ class OnosDriver( CLI ):
                     'Already up-to-date',
                     'Aborting',
                     'You\sare\snot\scurrently\son\sa\sbranch',
-                    'You\sasked\sme\sto\spull\swithout\stelling\sme\swhich\
-                            \sbranch\syou',
-                    'Pull\sis\snot\spossible\sbecause\syou\shave\sunmerged\
-                            \sfiles',
+                    'You asked me to pull without telling me which branch you',
+                    'Pull is not possible because you have unmerged files',
                     pexpect.TIMEOUT ],
                 timeout=300 )
             # debug
@@ -285,27 +283,26 @@ class OnosDriver( CLI ):
             elif i == 4:
                 main.log.info(
                     self.name +
-                    ": Git Pull - Aborting...\
-                            Are there conflicting git files?" )
+                    ": Git Pull - Aborting..." +
+                    "Are there conflicting git files?" )
                 return main.ERROR
             elif i == 5:
                 main.log.info(
                     self.name +
-                    ": Git Pull - You are not currently\
-                            on a branch so git pull failed!" )
+                    ": Git Pull - You are not currently " +
+                    "on a branch so git pull failed!" )
                 return main.ERROR
             elif i == 6:
                 main.log.info(
                     self.name +
-                    ": Git Pull - You have not configured\
-                             an upstream branch to pull from\
-                             . Git pull failed!" )
+                    ": Git Pull - You have not configured an upstream " +
+                    "branch to pull from. Git pull failed!" )
                 return main.ERROR
             elif i == 7:
                 main.log.info(
                     self.name +
-                    ": Git Pull - Pull is not possible\
-                            because you have unmerged files." )
+                    ": Git Pull - Pull is not possible because " +
+                    "you have unmerged files." )
                 return main.ERROR
             elif i == 8:
                 main.log.error( self.name + ": Git Pull - TIMEOUT" )
@@ -348,27 +345,23 @@ class OnosDriver( CLI ):
         try:
             self.handle.sendline( "cd " + self.home )
             self.handle.expect( self.home + "\$" )
-            main.log.info(
-                self.name +
-                ": Checking out git branch: " +
-                branch +
-                "..." )
+            main.log.info( self.name +
+                           ": Checking out git branch/ref: " + branch + "..." )
             cmd = "git checkout " + branch
             self.handle.sendline( cmd )
             self.handle.expect( cmd )
             i = self.handle.expect(
-                [
-                    'fatal',
-                    'Username\sfor\s(.*):\s',
-                    'Already\son\s\'',
-                    'Switched\sto\sbranch\s\'' +
-                    str( branch ),
-                    pexpect.TIMEOUT,
-                    'error: Your local changes to the following files\
-                            would be overwritten by checkout:',
-                    'error: you need to resolve your current index first' ],
+                [ 'fatal',
+                  'Username\sfor\s(.*):\s',
+                  'Already\son\s\'',
+                  'Switched\sto\sbranch\s\'' + str( branch ),
+                  pexpect.TIMEOUT,
+                  'error: Your local changes to the following files' +
+                          'would be overwritten by checkout:',
+                  'error: you need to resolve your current index first',
+                  "You are in 'detached HEAD' state.",
+                  "HEAD is now at " ],
                 timeout=60 )
-
             if i == 0:
                 main.log.error(
                     self.name +
@@ -381,12 +374,12 @@ class OnosDriver( CLI ):
                     ": Git checkout asking for username." +
                     " Please configure your local git repository to be able " +
                     "to access your remote repository passwordlessly" )
+                # TODO add support for authenticating
                 return main.ERROR
             elif i == 2:
                 main.log.info(
                     self.name +
-                    ": Git Checkout %s : Already on this branch" %
-                    branch )
+                    ": Git Checkout %s : Already on this branch" % branch )
                 self.handle.expect( self.home + "\$" )
                 # main.log.info( "DEBUG: after checkout cmd = "+
                 # self.handle.before )
@@ -394,8 +387,7 @@ class OnosDriver( CLI ):
             elif i == 3:
                 main.log.info(
                     self.name +
-                    ": Git checkout %s - Switched to this branch" %
-                    branch )
+                    ": Git checkout %s - Switched to this branch" % branch )
                 self.handle.expect( self.home + "\$" )
                 # main.log.info( "DEBUG: after checkout cmd = "+
                 # self.handle.before )
@@ -403,33 +395,45 @@ class OnosDriver( CLI ):
             elif i == 4:
                 main.log.error( self.name + ": Git Checkout- TIMEOUT" )
                 main.log.error(
-                    self.name + " Response was: " + str(
-                        self.handle.before ) )
+                    self.name + " Response was: " + str( self.handle.before ) )
                 return main.ERROR
             elif i == 5:
                 self.handle.expect( "Aborting" )
                 main.log.error(
                     self.name +
                     ": Git checkout error: \n" +
-                    "Your local changes to the following\
-                            files would be overwritten by checkout:" +
-                    str(
-                        self.handle.before ) )
+                    "Your local changes to the following files would" +
+                    " be overwritten by checkout:" +
+                    str( self.handle.before ) )
                 self.handle.expect( self.home + "\$" )
                 return main.ERROR
             elif i == 6:
-                main.log.error( self.name +
-                                ": Git checkout error: \n" +
-                                "You need to resolve your\
-                                        current index first:" +
-                                str( self.handle.before ) )
+                main.log.error(
+                    self.name +
+                    ": Git checkout error: \n" +
+                    "You need to resolve your current index first:" +
+                    str( self.handle.before ) )
                 self.handle.expect( self.home + "\$" )
                 return main.ERROR
+            elif i == 7:
+                main.log.info(
+                    self.name +
+                    ": Git checkout " + str( branch ) +
+                    " - You are in 'detached HEAD' state. HEAD is now at " +
+                    str( branch ) )
+                self.handle.expect( self.home + "\$" )
+                return main.TRUE
+            elif i == 8:  # Already in detached HEAD on the specified commit
+                main.log.info(
+                    self.name +
+                    ": Git Checkout %s : Already on commit" % branch )
+                self.handle.expect( self.home + "\$" )
+                return main.TRUE
             else:
                 main.log.error(
                     self.name +
-                    ": Git Checkout - Unexpected response,\
-                            check for pull errors" )
+                    ": Git Checkout - Unexpected response, " +
+                    "check for pull errors" )
                 main.log.error( self.name + ":     " + self.handle.before )
                 return main.ERROR
 
@@ -447,7 +451,7 @@ class OnosDriver( CLI ):
 
     def getVersion( self, report=False ):
         """
-        Writes the COMMIT number to the report to be parsed\
+        Writes the COMMIT number to the report to be parsed
                 by Jenkins data collecter.
         """
         try:
@@ -456,8 +460,8 @@ class OnosDriver( CLI ):
             self.handle.sendline(
                 "cd " +
                 self.home +
-                "; git log -1 --pretty=fuller --decorate=short | grep -A 6\
-                        \"commit\" --color=never" )
+                "; git log -1 --pretty=fuller --decorate=short | grep -A 6 " +
+                " \"commit\" --color=never" )
             # NOTE: for some reason there are backspaces inserted in this
             # phrase when run from Jenkins on some tests
             self.handle.expect( "never" )
@@ -1219,13 +1223,13 @@ class OnosDriver( CLI ):
                 result = main.TRUE
             else:
                 output = output + \
-                    "The number of links and switches does not match\
-                    what was expected"
+                    "The number of links and switches does not match " + \
+                    "what was expected"
                 result = main.FALSE
-            output = output + "\n ONOS sees %i devices (%i expected)\
-                     and %i links (%i expected)" %\
-                     ( int( devices ), int( numoswitch ),
-                       int( links ), int( numolink ) )
+            output = output + "\n ONOS sees %i devices" % int ( devices )
+            output = output + " (%i expected) " %  int( numoswitch )
+            output = output + "and %i links " % int( links )
+            output = output + "(%i expected)" % int( numolink )
             if logLevel == "report":
                 main.log.report( output )
             elif logLevel == "warn":

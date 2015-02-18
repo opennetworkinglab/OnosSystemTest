@@ -76,7 +76,7 @@ class OnosCliDriver( CLI ):
         """
         Called when Test is complete to disconnect the ONOS handle.
         """
-        response = ''
+        response = main.TRUE
         try:
             self.handle.sendline( "" )
             i = self.handle.expect( [ "onos>", "\$" ] )
@@ -92,7 +92,7 @@ class OnosCliDriver( CLI ):
 
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
-            return None
+            response = main.FALSE
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )

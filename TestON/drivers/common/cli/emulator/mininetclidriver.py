@@ -1256,22 +1256,20 @@ class MininetCliDriver( Emulator ):
         disconnect the handle.
         """
         self.handle.sendline('')
-        i = 1
-        i = self.handle.expect( ['mininet>',pexpect.EOF,pexpect.TIMEOUT ], timeout = 2)
+        i = self.handle.expect( [ 'mininet>', pexpect.EOF, pexpect.TIMEOUT ],
+                                timeout = 2)
         if i == 0:
             self.stopNet()
-        response = ''
+        elif i == 1:
+            return main.TRUE
+        response = main.TRUE
         # print "Disconnecting Mininet"
         if self.handle:
             self.handle.sendline( "exit" )
             self.handle.expect( "exit" )
             self.handle.expect( "(.*)" )
-            main.log.info( "Mininet CLI is successfully disconnected" )
-            response = main.TRUE
         else:
             main.log.error( "Connection failed to the host" )
-            response = main.FALSE
-
         return response
 
     def stopNet( self ):
@@ -1280,10 +1278,10 @@ class MininetCliDriver( Emulator ):
         Returns main.TRUE if the mininet succesfully stops and
                 main.FALSE if the pexpect handle does not exist.
 
-        Will cleanuop and exit the test if mininet fails to stop
+        Will cleanup and exit the test if mininet fails to stop
         """
 
-        main.log.info( self.name + ": Disconnecting mininet..." )
+        main.log.info( self.name + ": Stopping mininet..." )
         response = ''
         if self.handle:
             try:
@@ -1291,7 +1289,7 @@ class MininetCliDriver( Emulator ):
                     cmd="exit",
                     prompt="(.*)",
                     timeout=120 )
-                main.log.info( self.name + ": Disconnected")
+                main.log.info( self.name + ": Stopped")
                 self.handle.sendline( "sudo mn -c" )
                 response = main.TRUE
             except pexpect.EOF:

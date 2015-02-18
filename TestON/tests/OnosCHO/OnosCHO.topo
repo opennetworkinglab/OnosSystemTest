@@ -101,7 +101,7 @@
         </ONOS5>
 	
         <Mininet1>
-            <host>10.128.40.40</host>
+            <host>10.128.40.50</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>MininetCliDriver</type>
@@ -116,7 +116,7 @@
         </Mininet1>
 
         <Mininet2>
-            <host>10.128.40.40</host>
+            <host>10.128.40.50</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>RemoteMininetDriver</type>

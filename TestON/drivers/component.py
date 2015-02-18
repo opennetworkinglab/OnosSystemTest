@@ -23,9 +23,6 @@ author:s: Anil Kumar ( anilkumar.s@paxterrasolutions.com ),
 
 
 """
-import re
-from logging import Logger
-
 
 class Component( object ):
 
@@ -39,26 +36,29 @@ class Component( object ):
     def __getattr__( self, name ):
         """
          This will invoke, if the attribute wasn't found the usual ways.
-          Here it will look for assert_attribute and will execute when AttributeError occurs.
-          It will return the result of the assert_attribute.
+         Here it will look for assert_attribute and will execute when
+         AttributeError occurs.
+         It will return the result of the assert_attribute.
         """
         try:
             return getattr( self.wrapped, name )
-        except AttributeError:
+        except AttributeError as error:
+            main.log.error( str(error.__class__) + " " + str(error) )
             try:
-                def experimentHandling( **kwargs ):
+                def experimentHandling( *args, **kwargs ):
                     if main.EXPERIMENTAL_MODE == main.TRUE:
-                        result = self.experimentRun( **kwargs )
-                        main.log.info( "EXPERIMENTAL MODE. API " + str(
-                            name ) + " not yet implemented. Returning dummy values" )
+                        result = self.experimentRun( *args, **kwargs )
+                        main.log.info( "EXPERIMENTAL MODE. API " +
+                                       str( name ) +
+                                       " not yet implemented. " +
+                                       "Returning dummy values" )
                         return result
                     else:
                         return main.FALSE
                 return experimentHandling
             except TypeError as e:
-                main.log.error(
-                    "Arguments for experimental mode does not have key 'retruns'" +
-                    e )
+                main.log.error( "Arguments for experimental mode does not" +
+                                " have key 'retruns'" + e )
 
     def connect( self ):
 
@@ -110,7 +110,8 @@ class Component( object ):
     def get_version( self ):
         return "Version unknown"
 
-    def experimentRun( self, **kwargs ):
+    def experimentRun( self, *args, **kwargs ):
+        # FIXME handle *args
         args = utilities.parse_args( [ "RETURNS" ], **kwargs )
         return args[ "RETURNS" ]
 

@@ -68,6 +68,13 @@ class PingallExample:
                 main.log.warn( "Did not pull new code so skipping mvn " +
                                "clean install" )
         main.ONOSbench.getVersion( report=True )
+        main.log.step("Uninstall and install ONOS to all nodes")
+        main.ONOSbench.onosUninstall( ONOS1Ip )
+        main.ONOSbench.onosUninstall( ONOS2Ip )
+        main.ONOSbench.onosUninstall( ONOS3Ip )
+        main.ONOSbench.onosInstall( node=ONOS1Ip )
+        main.ONOSbench.onosInstall( node=ONOS2Ip )
+        main.ONOSbench.onosInstall( node=ONOS3Ip )
 
         cellResult = main.ONOSbench.setCell( cellName )
         verifyResult = main.ONOSbench.verifyCell()

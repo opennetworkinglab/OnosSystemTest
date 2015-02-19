@@ -365,7 +365,7 @@ class OnosCHO:
         main.step( "Verify Pingall" )
         ping_result = main.FALSE
         time1 = time.time()
-        ping_result = main.Mininet1.pingall()
+        ping_result = main.Mininet1.pingall(timeout=60)
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(

@@ -293,7 +293,7 @@ class HATestSingleInstanceRestart:
                                " and h" + str( i + 10 ) )
             elif ping == main.TRUE:
                 main.log.info( "Ping test passed!" )
-                PingResult = main.TRUE
+                # Don't set PingResult or you'd override failures
         if PingResult == main.FALSE:
             main.log.report(
                 "Intents have not been installed correctly, pings failed." )

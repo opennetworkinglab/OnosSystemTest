@@ -23,33 +23,24 @@ class IntentPerfNext:
         gitPull = main.params[ 'GIT' ][ 'autoPull' ]
         checkoutBranch = main.params[ 'GIT' ][ 'checkout' ]
 
-        ONOS1Ip = main.params[ 'CTRL' ][ 'ip1' ]
-        ONOS2Ip = main.params[ 'CTRL' ][ 'ip2' ]
-        ONOS3Ip = main.params[ 'CTRL' ][ 'ip3' ]
-        ONOS4Ip = main.params[ 'CTRL' ][ 'ip4' ]
-        ONOS5Ip = main.params[ 'CTRL' ][ 'ip5' ]
-        ONOS6Ip = main.params[ 'CTRL' ][ 'ip6' ]
-        ONOS7Ip = main.params[ 'CTRL' ][ 'ip7' ]
-
-        main.ONOSbench.onosUninstall( nodeIp=ONOS1Ip )
-        main.ONOSbench.onosUninstall( nodeIp=ONOS2Ip )
-        main.ONOSbench.onosUninstall( nodeIp=ONOS3Ip )
-        main.ONOSbench.onosUninstall( nodeIp=ONOS4Ip )
-        main.ONOSbench.onosUninstall( nodeIp=ONOS5Ip )
-        main.ONOSbench.onosUninstall( nodeIp=ONOS6Ip )
-        #TODO: Investigate why node 7 uninstall fails
-        #main.ONOSbench.onosUninstall( nodeIp=ONOS7Ip )
+        ONOSIp = []
+        for i in range(1, 8):
+            ONOSIp.append(main.params[ 'CTRL' ][ 'ip'+str(i) ]) 
+            main.ONOSbench.onosUninstall( nodeIp = ONOSIp[i-1] )
 
         MN1Ip = main.params[ 'MN' ][ 'ip1' ]
         BENCHIp = main.params[ 'BENCH' ][ 'ip' ]
 
         main.case( "Setting up test environment" )
 
+        main.step( "Starting mininet topology" )
+        main.Mininet1.startNet()
+
         main.step( "Creating cell file" )
         cellFileResult = main.ONOSbench.createCellFile(
             BENCHIp, cellName, MN1Ip,
             "onos-core,onos-app-metrics,onos-gui",
-            ONOS1Ip )
+            ONOSIp[0] )
 
         main.step( "Applying cell file to environment" )
         cellApplyResult = main.ONOSbench.setCell( cellName )
@@ -80,21 +71,15 @@ class IntentPerfNext:
         packageResult = main.ONOSbench.onosPackage()
 
         main.step( "Installing ONOS package" )
-        install1Result = main.ONOSbench.onosInstall( node=ONOS1Ip )
-        #install2Result = main.ONOSbench.onosInstall( node=ONOS2Ip )
-        #install3Result = main.ONOSbench.onosInstall( node=ONOS3Ip )
+        install1Result = main.ONOSbench.onosInstall( node=ONOSIp[0] )
 
         main.step( "Set cell for ONOScli env" )
         main.ONOS1cli.setCell( cellName )
-        # main.ONOS2cli.setCell( cellName )
-        # main.ONOS3cli.setCell( cellName )
 
         time.sleep( 5 )
 
         main.step( "Start onos cli" )
-        cli1 = main.ONOS1cli.startOnosCli( ONOS1Ip )
-        #cli2 = main.ONOS2cli.startOnosCli( ONOS2Ip )
-        #cli3 = main.ONOS3cli.startOnosCli( ONOS3Ip )
+        cli1 = main.ONOS1cli.startOnosCli( ONOSIp[0] )
 
         utilities.assert_equals( expect=main.TRUE,
                                 actual=cellFileResult and cellApplyResult and
@@ -557,6 +542,9 @@ class IntentPerfNext:
     def CASE4( self, main ):
         """
         Batch intent install
+        
+        Supports scale-out scenarios and increasing
+        number of intents within each iteration
         """
         import time
         import json

@@ -150,24 +150,38 @@ class HATestMinorityRestart:
             onos1Isup = main.ONOSbench.isup( ONOS1Ip )
             if not onos1Isup:
                 main.log.report( "ONOS1 didn't start!" )
+                main.ONOSbench.onosStop( ONOS1Ip )
+                main.ONOSbench.onosStart( ONOS1Ip )
             onos2Isup = main.ONOSbench.isup( ONOS2Ip )
             if not onos2Isup:
                 main.log.report( "ONOS2 didn't start!" )
+                main.ONOSbench.onosStop( ONOS2Ip )
+                main.ONOSbench.onosStart( ONOS2Ip )
             onos3Isup = main.ONOSbench.isup( ONOS3Ip )
             if not onos3Isup:
                 main.log.report( "ONOS3 didn't start!" )
+                main.ONOSbench.onosStop( ONOS3Ip )
+                main.ONOSbench.onosStart( ONOS3Ip )
             onos4Isup = main.ONOSbench.isup( ONOS4Ip )
             if not onos4Isup:
                 main.log.report( "ONOS4 didn't start!" )
+                main.ONOSbench.onosStop( ONOS4Ip )
+                main.ONOSbench.onosStart( ONOS4Ip )
             onos5Isup = main.ONOSbench.isup( ONOS5Ip )
             if not onos5Isup:
                 main.log.report( "ONOS5 didn't start!" )
+                main.ONOSbench.onosStop( ONOS5Ip )
+                main.ONOSbench.onosStart( ONOS5Ip )
             onos6Isup = main.ONOSbench.isup( ONOS6Ip )
             if not onos6Isup:
                 main.log.report( "ONOS6 didn't start!" )
+                main.ONOSbench.onosStop( ONOS6Ip )
+                main.ONOSbench.onosStart( ONOS6Ip )
             onos7Isup = main.ONOSbench.isup( ONOS7Ip )
             if not onos7Isup:
                 main.log.report( "ONOS7 didn't start!" )
+                main.ONOSbench.onosStop( ONOS7Ip )
+                main.ONOSbench.onosStart( ONOS7Ip )
             onosIsupResult = onos1Isup and onos2Isup and onos3Isup\
                 and onos4Isup and onos5Isup and onos6Isup and onos7Isup
             if onosIsupResult == main.TRUE:
@@ -378,9 +392,9 @@ class HATestMinorityRestart:
             onfail="Switches were not successfully reassigned" )
         mastershipCheck = mastershipCheck and roleCall and roleCheck
         utilities.assert_equals( expect=main.TRUE, actual=mastershipCheck,
-                                onpass="Switch mastership correctly assigned",
-                                onfail="Error in ( re )assigning switch" +
-                                " mastership" )
+                                 onpass="Switch mastership correctly assigned",
+                                 onfail="Error in (re)assigning switch" +
+                                 " mastership" )
 
     def CASE3( self, main ):
         """
@@ -484,15 +498,15 @@ class HATestMinorityRestart:
         main.case( description )
         PingResult = main.TRUE
         for i in range( 8, 18 ):
-            ping = main.Mininet1.pingHost(
-                src="h" + str( i ), target="h" + str( i + 10 ) )
+            ping = main.Mininet1.pingHost( src="h" + str( i ),
+                                           target="h" + str( i + 10 ) )
             PingResult = PingResult and ping
             if ping == main.FALSE:
                 main.log.warn( "Ping failed between h" + str( i ) +
                                " and h" + str( i + 10 ) )
             elif ping == main.TRUE:
                 main.log.info( "Ping test passed!" )
-                PingResult = main.TRUE
+                # Don't set PingResult or you'd override failures
         if PingResult == main.FALSE:
             main.log.report(
                 "Intents have not been installed correctly, pings failed." )
@@ -1109,8 +1123,9 @@ class HATestMinorityRestart:
         cliResult3 = main.ONOScli3.startOnosCli( ONOS3Ip )
         cliResults = cliResult1 and cliResult2 and cliResult3
 
-        main.log.info( "Install leadership election app on restarted node" )
-
+        # Grab the time of restart so we chan check how long the gossip
+        # protocol has had time to work
+        main.restartTime = time.time()
         caseResults = main.TRUE and onosIsupResult and cliResults
         utilities.assert_equals( expect=main.TRUE, actual=caseResults,
                                 onpass="ONOS restart successful",
@@ -1149,8 +1164,6 @@ class HATestMinorityRestart:
         ONOS5Mastership = main.ONOScli5.roles()
         ONOS6Mastership = main.ONOScli6.roles()
         ONOS7Mastership = main.ONOScli7.roles()
-        # print json.dumps( json.loads( ONOS1Mastership ), sort_keys=True,
-        # indent=4, separators=( ',', ': ' ) )
         if "Error" in ONOS1Mastership or not ONOS1Mastership\
                 or "Error" in ONOS2Mastership or not ONOS2Mastership\
                 or "Error" in ONOS3Mastership or not ONOS3Mastership\
@@ -1243,133 +1256,147 @@ class HATestMinorityRestart:
         # NOTE: we expect mastership to change on controller failure
         mastershipCheck = consistentMastership
 
-        main.step( "Get the intents and compare across all nodes" )
-        ONOS1Intents = main.ONOScli1.intents( jsonFormat=True )
-        ONOS2Intents = main.ONOScli2.intents( jsonFormat=True )
-        ONOS3Intents = main.ONOScli3.intents( jsonFormat=True )
-        ONOS4Intents = main.ONOScli4.intents( jsonFormat=True )
-        ONOS5Intents = main.ONOScli5.intents( jsonFormat=True )
-        ONOS6Intents = main.ONOScli6.intents( jsonFormat=True )
-        ONOS7Intents = main.ONOScli7.intents( jsonFormat=True )
-        intentCheck = main.FALSE
-        if "Error" in ONOS1Intents or not ONOS1Intents\
-                or "Error" in ONOS2Intents or not ONOS2Intents\
-                or "Error" in ONOS3Intents or not ONOS3Intents\
-                or "Error" in ONOS4Intents or not ONOS4Intents\
-                or "Error" in ONOS5Intents or not ONOS5Intents\
-                or "Error" in ONOS6Intents or not ONOS6Intents\
-                or "Error" in ONOS7Intents or not ONOS7Intents:
-            main.log.report( "Error in getting ONOS intents" )
-            main.log.warn( "ONOS1 intents response: " + repr( ONOS1Intents ) )
-            main.log.warn( "ONOS2 intents response: " + repr( ONOS2Intents ) )
-            main.log.warn( "ONOS3 intents response: " + repr( ONOS3Intents ) )
-            main.log.warn( "ONOS4 intents response: " + repr( ONOS4Intents ) )
-            main.log.warn( "ONOS5 intents response: " + repr( ONOS5Intents ) )
-            main.log.warn( "ONOS6 intents response: " + repr( ONOS6Intents ) )
-            main.log.warn( "ONOS7 intents response: " + repr( ONOS7Intents ) )
-        elif ONOS1Intents == ONOS2Intents\
-                and ONOS1Intents == ONOS3Intents\
-                and ONOS1Intents == ONOS4Intents\
-                and ONOS1Intents == ONOS5Intents\
-                and ONOS1Intents == ONOS6Intents\
-                and ONOS1Intents == ONOS7Intents:
-            intentCheck = main.TRUE
-            main.log.report( "Intents are consistent across all ONOS nodes" )
-        else:
-            main.log.warn( "ONOS1 intents: " )
-            print json.dumps( json.loads( ONOS1Intents ), sort_keys=True,
-                              indent=4, separators=( ',', ': ' ) )
-            main.log.warn( "ONOS2 intents: " )
-            print json.dumps( json.loads( ONOS2Intents ), sort_keys=True,
-                              indent=4, separators=( ',', ': ' ) )
-            main.log.warn( "ONOS3 intents: " )
-            print json.dumps( json.loads( ONOS3Intents ), sort_keys=True,
-                              indent=4, separators=( ',', ': ' ) )
-            main.log.warn( "ONOS4 intents: " )
-            print json.dumps( json.loads( ONOS4Intents ), sort_keys=True,
-                              indent=4, separators=( ',', ': ' ) )
-            main.log.warn( "ONOS5 intents: " )
-            print json.dumps( json.loads( ONOS5Intents ), sort_keys=True,
-                              indent=4, separators=( ',', ': ' ) )
-            main.log.warn( "ONOS6 intents: " )
-            print json.dumps( json.loads( ONOS6Intents ), sort_keys=True,
-                              indent=4, separators=( ',', ': ' ) )
-            main.log.warn( "ONOS7 intents: " )
-            print json.dumps( json.loads( ONOS7Intents ), sort_keys=True,
-                              indent=4, separators=( ',', ': ' ) )
-        utilities.assert_equals(
-            expect=main.TRUE,
-            actual=intentCheck,
-            onpass="Intents are consistent across all ONOS nodes",
-            onfail="ONOS nodes have different views of intents" )
-        # Print the intent states
-        intents = []
-        intents.append( ONOS1Intents )
-        intents.append( ONOS2Intents )
-        intents.append( ONOS3Intents )
-        intents.append( ONOS4Intents )
-        intents.append( ONOS5Intents )
-        intents.append( ONOS6Intents )
-        intents.append( ONOS7Intents )
-        intentStates = []
-        for node in intents:  # Iter through ONOS nodes
-            nodeStates = []
-            for intent in json.loads( node ):  # Iter through intents of a node
-                nodeStates.append( intent[ 'state' ] )
-            intentStates.append( nodeStates )
-            out = [ (i, nodeStates.count( i ) ) for i in set( nodeStates ) ]
-            main.log.info( dict( out ) )
-
-
-        # NOTE: Hazelcast has no durability, so intents are lost across system
-        # restarts
-        main.step( "Compare current intents with intents before the failure" )
-        # NOTE: this requires case 5 to pass for intentState to be set.
-        #      maybe we should stop the test if that fails?
-        sameIntents = main.TRUE
-        if intentState and intentState == ONOS1Intents:
-            sameIntents = main.TRUE
-            main.log.report( "Intents are consistent with before failure" )
-        # TODO: possibly the states have changed? we may need to figure out
-        # what the aceptable states are
-        else:
-            try:
+        while True:
+            whileTime = time.time() - main.restartTime
+            # Gossip store
+            main.step( "Get the intents and compare across all nodes" )
+            ONOS1Intents = main.ONOScli1.intents( jsonFormat=True )
+            ONOS2Intents = main.ONOScli2.intents( jsonFormat=True )
+            ONOS3Intents = main.ONOScli3.intents( jsonFormat=True )
+            ONOS4Intents = main.ONOScli4.intents( jsonFormat=True )
+            ONOS5Intents = main.ONOScli5.intents( jsonFormat=True )
+            ONOS6Intents = main.ONOScli6.intents( jsonFormat=True )
+            ONOS7Intents = main.ONOScli7.intents( jsonFormat=True )
+            intentCheck = main.FALSE
+            if "Error" in ONOS1Intents or not ONOS1Intents\
+                    or "Error" in ONOS2Intents or not ONOS2Intents\
+                    or "Error" in ONOS3Intents or not ONOS3Intents\
+                    or "Error" in ONOS4Intents or not ONOS4Intents\
+                    or "Error" in ONOS5Intents or not ONOS5Intents\
+                    or "Error" in ONOS6Intents or not ONOS6Intents\
+                    or "Error" in ONOS7Intents or not ONOS7Intents:
+                main.log.report( "Error in getting ONOS intents" )
+                main.log.warn( "ONOS1 intents response: " +
+                               repr( ONOS1Intents ) )
+                main.log.warn( "ONOS2 intents response: " +
+                               repr( ONOS2Intents ) )
+                main.log.warn( "ONOS3 intents response: " +
+                               repr( ONOS3Intents ) )
+                main.log.warn( "ONOS4 intents response: " +
+                               repr( ONOS4Intents ) )
+                main.log.warn( "ONOS5 intents response: " +
+                               repr( ONOS5Intents ) )
+                main.log.warn( "ONOS6 intents response: " +
+                               repr( ONOS6Intents ) )
+                main.log.warn( "ONOS7 intents response: " +
+                               repr( ONOS7Intents ) )
+            elif ONOS1Intents == ONOS2Intents\
+                    and ONOS1Intents == ONOS3Intents\
+                    and ONOS1Intents == ONOS4Intents\
+                    and ONOS1Intents == ONOS5Intents\
+                    and ONOS1Intents == ONOS6Intents\
+                    and ONOS1Intents == ONOS7Intents:
+                intentCheck = main.TRUE
+                main.log.report( "Intents are consistent across all" +
+                                 " ONOS nodes" )
+            else:
                 main.log.warn( "ONOS1 intents: " )
-                print json.dumps( json.loads( ONOS1Intents ),
-                                  sort_keys=True, indent=4,
-                                  separators=( ',', ': ' ) )
-            except:
-                pass
-            sameIntents = main.FALSE
-        utilities.assert_equals(
-            expect=main.TRUE,
-            actual=sameIntents,
-            onpass="Intents are consistent with before failure",
-            onfail="The Intents changed during failure" )
-        intentCheck = intentCheck and sameIntents
+                print json.dumps( json.loads( ONOS1Intents ), sort_keys=True,
+                                  indent=4, separators=( ',', ': ' ) )
+                main.log.warn( "ONOS2 intents: " )
+                print json.dumps( json.loads( ONOS2Intents ), sort_keys=True,
+                                  indent=4, separators=( ',', ': ' ) )
+                main.log.warn( "ONOS3 intents: " )
+                print json.dumps( json.loads( ONOS3Intents ), sort_keys=True,
+                                  indent=4, separators=( ',', ': ' ) )
+                main.log.warn( "ONOS4 intents: " )
+                print json.dumps( json.loads( ONOS4Intents ), sort_keys=True,
+                                  indent=4, separators=( ',', ': ' ) )
+                main.log.warn( "ONOS5 intents: " )
+                print json.dumps( json.loads( ONOS5Intents ), sort_keys=True,
+                                  indent=4, separators=( ',', ': ' ) )
+                main.log.warn( "ONOS6 intents: " )
+                print json.dumps( json.loads( ONOS6Intents ), sort_keys=True,
+                                  indent=4, separators=( ',', ': ' ) )
+                main.log.warn( "ONOS7 intents: " )
+                print json.dumps( json.loads( ONOS7Intents ), sort_keys=True,
+                                  indent=4, separators=( ',', ': ' ) )
+            utilities.assert_equals(
+                expect=main.TRUE,
+                actual=intentCheck,
+                onpass="Intents are consistent across all ONOS nodes",
+                onfail="ONOS nodes have different views of intents" )
+            # Print the intent states
+            intents = []
+            intents.append( ONOS1Intents )
+            intents.append( ONOS2Intents )
+            intents.append( ONOS3Intents )
+            intents.append( ONOS4Intents )
+            intents.append( ONOS5Intents )
+            intents.append( ONOS6Intents )
+            intents.append( ONOS7Intents )
+            intentStates = []
+            for node in intents:  # Iter through ONOS nodes
+                nodeStates = []
+                # Iter through intents of a node
+                for intent in json.loads( node ):
+                    nodeStates.append( intent[ 'state' ] )
+                intentStates.append( nodeStates )
+                out = [ (i, nodeStates.count( i ) ) for i in set( nodeStates ) ]
+                main.log.info( dict( out ) )
 
-        main.step( "Get the OF Table entries and compare to before " +
-                   "component failure" )
-        FlowTables = main.TRUE
-        flows2 = []
-        for i in range( 28 ):
-            main.log.info( "Checking flow table on s" + str( i + 1 ) )
-            tmpFlows = main.Mininet2.getFlowTable( 1.3, "s" + str( i + 1 ) )
-            flows2.append( tmpFlows )
-            tempResult = main.Mininet2.flowComp(
-                flow1=flows[ i ],
-                flow2=tmpFlows )
-            FlowTables = FlowTables and tempResult
-            if FlowTables == main.FALSE:
-                main.log.info( "Differences in flow table for switch: s" +
-                               str( i + 1 ) )
-        if FlowTables == main.TRUE:
-            main.log.report( "No changes were found in the flow tables" )
-        utilities.assert_equals(
-            expect=main.TRUE,
-            actual=FlowTables,
-            onpass="No changes were found in the flow tables",
-            onfail="Changes were found in the flow tables" )
+
+            # NOTE: Store has no durability, so intents are lost across system
+            # restarts
+            main.step( "Compare current intents with intents before the failure" )
+            # NOTE: this requires case 5 to pass for intentState to be set.
+            #      maybe we should stop the test if that fails?
+            sameIntents = main.TRUE
+            if intentState and intentState == ONOS1Intents:
+                sameIntents = main.TRUE
+                main.log.report( "Intents are consistent with before failure" )
+            # TODO: possibly the states have changed? we may need to figure out
+            # what the aceptable states are
+            else:
+                try:
+                    main.log.warn( "ONOS1 intents: " )
+                    print json.dumps( json.loads( ONOS1Intents ),
+                                      sort_keys=True, indent=4,
+                                      separators=( ',', ': ' ) )
+                except:
+                    pass
+                sameIntents = main.FALSE
+            utilities.assert_equals(
+                expect=main.TRUE,
+                actual=sameIntents,
+                onpass="Intents are consistent with before failure",
+                onfail="The Intents changed during failure" )
+            intentCheck = intentCheck and sameIntents
+
+            main.step( "Get the OF Table entries and compare to before " +
+                       "component failure" )
+            FlowTables = main.TRUE
+            flows2 = []
+            for i in range( 28 ):
+                main.log.info( "Checking flow table on s" + str( i + 1 ) )
+                tmpFlows = main.Mininet2.getFlowTable( 1.3, "s" + str( i + 1 ) )
+                flows2.append( tmpFlows )
+                tempResult = main.Mininet2.flowComp(
+                    flow1=flows[ i ],
+                    flow2=tmpFlows )
+                FlowTables = FlowTables and tempResult
+                if FlowTables == main.FALSE:
+                    main.log.info( "Differences in flow table for switch: s" +
+                                   str( i + 1 ) )
+            if FlowTables == main.TRUE:
+                main.log.report( "No changes were found in the flow tables" )
+            utilities.assert_equals(
+                expect=main.TRUE,
+                actual=FlowTables,
+                onpass="No changes were found in the flow tables",
+                onfail="Changes were found in the flow tables" )
+            if topoResult == main.TRUE or ( whileTime  > 10 ) :
+                break
 
         main.step( "Check the continuous pings to ensure that no packets " +
                    "were dropped during component failure" )
@@ -1494,6 +1521,7 @@ class HATestMinorityRestart:
         count = 0
         main.step( "Collecting topology information from ONOS" )
         startTime = time.time()
+        # Give time for Gossip to work
         while topoResult == main.FALSE and elapsed < 60:
             count = count + 1
             if count > 1:

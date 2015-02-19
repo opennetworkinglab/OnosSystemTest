@@ -55,7 +55,7 @@ class MultiProd:
         main.step( "Git checkout, pull and get version" )
         #main.ONOSbench.gitCheckout( "master" )
         gitPullResult = main.ONOSbench.gitPull()
-        print "git_pull_result = ", gitPullResult
+        main.log.info( "git_pull_result = " + str( gitPullResult ))
         versionResult = main.ONOSbench.getVersion( report=True )
 
         if gitPullResult == 1:
@@ -105,6 +105,12 @@ class MultiProd:
         print startcli1
         print startcli2
         print startcli3
+
+        # Starting the mininet using the old way
+        main.step( "Starting Mininet ..." )
+        netIsUp = main.Mininet1.startNet()
+        if netIsUp:
+            main.log.info("Mininet CLI is up")
 
         case1Result = ( packageResult and
                         cellResult and verifyResult and onosInstallResult and

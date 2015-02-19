@@ -47,9 +47,6 @@ sys.path.append(tests_path)
 
 from core.utilities import Utilities
 
-import logging 
-import datetime
-from optparse import OptionParser
 
 class TestON:
     '''
@@ -79,11 +76,11 @@ class TestON:
         self.init_result = self.TRUE
         self.testResult = "Summary"
         self.stepName =""
-        self.EXPERIMENTAL_MODE = False   
+        self.EXPERIMENTAL_MODE = False
         self.test_target = None
         self.lastcommand = None
-        self.testDir = tests_path 
-        self.configFile = config_path + "teston.cfg" 
+        self.testDir = tests_path
+        self.configFile = config_path + "teston.cfg"
         self.parsingClass = "xmlparser"
         self.parserPath = core_path + "/xmlparser"
         self.loggerPath = core_path + "/logger"
@@ -111,7 +108,7 @@ class TestON:
                 if 'test_target' in self.componentDictionary[component].keys():
                     self.test_target = component
              
-        # Checking for the openspeak file and test script 
+        # Checking for the openspeak file and test script
         self.logger.initlog(self)
 
         # Creating Drivers Handles
@@ -151,7 +148,7 @@ class TestON:
         '''
         global driver_options
         self.log.info("Creating component Handle: "+component)
-        driver_options = {}         
+        driver_options = {}
         if 'COMPONENTS' in self.componentDictionary[component].keys():
             driver_options =dict(self.componentDictionary[component]['COMPONENTS'])
 
@@ -171,7 +168,7 @@ class TestON:
                                               options = driver_options)
         if not connect_result:
             self.log.error("Exiting form the test execution because the connecting to the "+component+" component failed.")
-            self.exit() 
+            self.exit()
             
         vars(self)[component] = driverObject
                         
@@ -186,7 +183,7 @@ class TestON:
         self.testCaseResult = {}
         self.TOTAL_TC = 0
         self.TOTAL_TC_RUN = 0
-        self.TOTAL_TC_PLANNED = 0 
+        self.TOTAL_TC_PLANNED = 0
         self.TOTAL_TC_NORESULT = 0
         self.TOTAL_TC_FAIL = 0
         self.TOTAL_TC_PASS = 0
@@ -194,7 +191,7 @@ class TestON:
         self.stepCount = 0
         self.CASERESULT = self.TRUE
         
-        import testparser 
+        import testparser
         testFile = self.tests_path + "/"+self.TEST + "/"+self.TEST + ".py"
         test = testparser.TestParser(testFile)
         self.testscript = test.testscript
@@ -205,8 +202,8 @@ class TestON:
         result = self.TRUE
 	while(repeat):
             for self.CurrentTestCaseNumber in self.testcases_list:
-                result = self.runCase(self.CurrentTestCaseNumber) 
-	    repeat-=1                   
+                result = self.runCase(self.CurrentTestCaseNumber)
+	    repeat-=1
         return result
     
     def runCase(self,testCaseNumber):
@@ -219,7 +216,7 @@ class TestON:
         stopped = False
         try :
             self.stepList = self.code[self.testCaseNumber].keys()
-        except KeyError,e:
+        except KeyError:
             main.log.error("There is no Test-Case "+ self.testCaseNumber)
             return main.FALSE
         
@@ -258,8 +255,8 @@ class TestON:
         
     def addCaseHeader(self):
         caseHeader = "\n"+"*" * 30+"\n Result summary for Testcase"+str(self.CurrentTestCaseNumber)+"\n"+"*" * 30+"\n"
-        self.log.exact(caseHeader) 
-        caseHeader = "\n"+"*" * 40 +"\nStart of Test Case"+str(self.CurrentTestCaseNumber)+" : " 
+        self.log.exact(caseHeader)
+        caseHeader = "\n"+"*" * 40 +"\nStart of Test Case"+str(self.CurrentTestCaseNumber)+" : "
         for driver in self.componentDictionary.keys():
             vars(self)[driver+'log'].info(caseHeader)
     
@@ -282,28 +279,29 @@ class TestON:
         '''
         result = self.TRUE
         self.logger.testSummary(self)
-        
+
         #self.reportFile.close()
-        
+
 
         #utilities.send_mail()
         try :
             for component in self.componentDictionary.keys():
-                tempObject  = vars(self)[component]    
-                print "Disconnecting "+str(tempObject)
-         
+                tempObject  = vars(self)[component]
+                print "Disconnecting " + str(tempObject)
                 tempObject.disconnect()
-            #tempObject.execute(cmd="exit",prompt="(.*)",timeout=120) 
+            #tempObject.execute(cmd="exit",prompt="(.*)",timeout=120)
 
         except(Exception):
+            self.log.exception( "Exception while disconnecting from " +
+                                 str( component ) )
             #print " There is an error with closing hanldes"
             result = self.FALSE
         # Closing all the driver's session files
         for driver in self.componentDictionary.keys():
            vars(self)[driver].close_log_handles()
-           
+
         return result
-        
+
     def pause(self):
         '''
         This function will pause the test's execution, and will continue after user provide 'resume' command.
@@ -380,7 +378,7 @@ class TestON:
         if self.stepCount > 1 :
             stepHeader = "\n"+"-"*45+"\nEnd of Step "+previousStep+"\n"+"-"*45+"\n"
         
-        stepHeader += "\n"+"-"*45+"\nStart of Step"+stepName+"\n"+"-"*45+"\n" 
+        stepHeader += "\n"+"-"*45+"\nStart of Step"+stepName+"\n"+"-"*45+"\n"
         for driver in self.componentDictionary.keys():
             vars(self)[driver+'log'].info(stepHeader)
             
@@ -388,10 +386,10 @@ class TestON:
         '''
            Test's each test-case information will append to the logs.
         '''
-        self.CurrentTestCase = testCaseName 
+        self.CurrentTestCase = testCaseName
         testCaseName = " " + str(testCaseName) + ""
         self.log.case(testCaseName)
-        caseHeader = testCaseName+"\n"+"*" * 40+"\n" 
+        caseHeader = testCaseName+"\n"+"*" * 40+"\n"
         for driver in self.componentDictionary.keys():
             vars(self)[driver+'log'].info(caseHeader)
         
@@ -423,7 +421,7 @@ class TestON:
         ''' It will load the default response parser '''
         response_dict = {}
         response_dict = self.response_to_dict(response, return_format)
-        return_format_string = self.dict_to_return_format(response,return_format,response_dict)   
+        return_format_string = self.dict_to_return_format(response,return_format,response_dict)
         return return_format_string
     
     def response_to_dict(self,response,return_format):
@@ -434,7 +432,7 @@ class TestON:
         ini_match = re.search('^\s*\[', response)
         if json_match :
             main.log.info(" Response is in 'JSON' format and Converting to '"+return_format+"' format")
-            # Formatting the json string 
+            # Formatting the json string
             
             response = re.sub(r"{\s*'?(\w)", r'{"\1', response)
             response = re.sub(r",\s*'?(\w)", r',"\1', response)
@@ -454,14 +452,13 @@ class TestON:
             from configobj import ConfigObj
             response_file = open("respnse_file.temp",'w')
             response_file.write(response)
-            response_file.close() 
+            response_file.close()
             response_dict = ConfigObj("respnse_file.temp")
             return response_dict
             
         elif xml_match :
             main.log.info(" Response is in 'XML' format and Converting to '"+return_format+"' format")
             try :
-                from core import dicttoobject
                 response_dict = xmldict.xml_to_dict("<response> "+str(response)+" </response>")
             except Exception, e:
                 main.log.error(e)
@@ -485,7 +482,7 @@ class TestON:
                         table_data = table_data + get_table(temp_val)
                 else :
                     table_data = table_data + str(value_to_convert) +"\t"
-                return table_data 
+                return table_data
             
             for value in response_dict.values() :
                 response_table =  response_table + get_table(value)
@@ -510,7 +507,6 @@ class TestON:
             
         elif return_format == 'xml':
             ''' Will return in xml format'''
-            from core import dicttoobject
             response_xml = xmldict.dict_to_xml(response_dict)
             response_xml = re.sub(">\s*<", ">\n<", response_xml)
             return "\n"+response_xml
@@ -566,14 +562,14 @@ def verifyExample(options):
         main.classPath = "examples."+main.TEST+"."+main.TEST
                
 def verifyLogdir(options):
-    #Verifying Log directory option      
+    #Verifying Log directory option
     if options.logdir:
         main.logdir = options.logdir
     else :
-        main.logdir = main.FALSE  
+        main.logdir = main.FALSE
         
 def verifyMail(options):
-    # Checking the mailing list 
+    # Checking the mailing list
     if options.mail:
         main.mail = options.mail
     elif main.params.has_key('mail'):
@@ -582,10 +578,10 @@ def verifyMail(options):
         main.mail = 'paxweb@paxterrasolutions.com'
 
 def verifyTestCases(options):
-    #Getting Test cases list 
+    #Getting Test cases list
     if options.testcases:
-	testcases_list = options.testcases 
-        #sys.exit() 
+	testcases_list = options.testcases
+        #sys.exit()
         testcases_list = re.sub("(\[|\])", "", options.testcases)
         main.testcases_list = eval(testcases_list+",")
     else :
@@ -604,16 +600,16 @@ def verifyTestCases(options):
 	            if type(testcase)==int:
 		        testcase=[testcase]
 	            list1.extend(testcase)
-	    main.testcases_list=list1	                                     
+	    main.testcases_list=list1
         else :
             print "testcases not specifed in params, please provide in params file or 'testcases' commandline argument"
-            sys.exit() 
+            sys.exit()
                   
 def verifyTestScript(options):
     '''
     Verifyies test script.
     '''
-    main.openspeak = openspeak.OpenSpeak()        
+    main.openspeak = openspeak.OpenSpeak()
     openspeakfile = main.testDir+"/" + main.TEST + "/" + main.TEST + ".ospk"
     testfile = main.testDir+"/" + main.TEST + "/" + main.TEST + ".py"
     if os.path.exists(openspeakfile) :
@@ -629,20 +625,20 @@ def verifyTestScript(options):
         testModule = __import__(main.classPath, globals(), locals(), [main.TEST], -1)
     except(ImportError):
         print "There was an import error, it might mean that there is no test like "+main.TEST
-        main.exit()       
+        main.exit()
 
     testClass = getattr(testModule, main.TEST)
     main.testObject = testClass()
     load_parser()
-    main.params = main.parser.parseParams(main.classPath)    
-    main.topology = main.parser.parseTopology(main.classPath) 
+    main.params = main.parser.parseParams(main.classPath)
+    main.topology = main.parser.parseTopology(main.classPath)
     
 def verifyParams():
     try :
         main.params = main.params['PARAMS']
     except(KeyError):
         print "Error with the params file: Either the file not specified or the format is not correct"
-        main.exit()            
+        main.exit()
     
     try :
         main.topology = main.topology['TOPOLOGY']
@@ -681,9 +677,9 @@ def load_parser() :
                     main.exit()
             else :
                 print "No Such File Exists !!"+ confighash['config']['parser']['file'] +"using default parser"
-                load_defaultParser() 
-        elif confighash['config']['parser']['file'] == None or confighash['config']['parser']['class'] == None :  
-            load_defaultParser() 
+                load_defaultParser()
+        elif confighash['config']['parser']['file'] == None or confighash['config']['parser']['class'] == None :
+            load_defaultParser()
     else:
         load_defaultParser()
 
@@ -694,7 +690,7 @@ def load_defaultParser():
     moduleList = main.parserPath.split("/")
     newModule = ".".join([moduleList[len(moduleList) - 2],moduleList[len(moduleList) - 1]])
     try :
-        parsingClass = main.parsingClass 
+        parsingClass = main.parsingClass
         parsingModule = __import__(newModule, globals(), locals(), [parsingClass], -1)
         parsingClass = getattr(parsingModule, parsingClass)
         main.parser = parsingClass()
@@ -733,8 +729,8 @@ def load_logger() :
             else :
                 print "No Such File Exists !!"+confighash['config']['logger']['file']+ "Using default logger"
                 load_defaultlogger()
-        elif confighash['config']['parser']['file'] == None or confighash['config']['parser']['class'] == None :  
-            load_defaultlogger() 
+        elif confighash['config']['parser']['file'] == None or confighash['config']['parser']['class'] == None :
+            load_defaultlogger()
     else:
         load_defaultlogger()
 
@@ -745,14 +741,14 @@ def load_defaultlogger():
     moduleList = main.loggerPath.split("/")
     newModule = ".".join([moduleList[len(moduleList) - 2],moduleList[len(moduleList) - 1]])
     try :
-        loggerClass = main.loggerClass 
+        loggerClass = main.loggerClass
         loggerModule = __import__(newModule, globals(), locals(), [loggerClass], -1)
         loggerClass = getattr(loggerModule, loggerClass)
         main.logger = loggerClass()
 
     except ImportError:
         print sys.exc_info()[1]
-        main.exit()    
+        main.exit()
 
 def load_defaultlogger():
     '''
@@ -761,7 +757,7 @@ def load_defaultlogger():
     moduleList = main.loggerPath.split("/")
     newModule = ".".join([moduleList[len(moduleList) - 2],moduleList[len(moduleList) - 1]])
     try :
-        loggerClass = main.loggerClass 
+        loggerClass = main.loggerClass
         loggerModule = __import__(newModule, globals(), locals(), [loggerClass], -1)
         loggerClass = getattr(loggerModule, loggerClass)
         main.logger = loggerClass()

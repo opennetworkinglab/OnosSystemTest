@@ -27,9 +27,13 @@ class TopoPerfNext:
 
         # Global cluster count for scale-out purposes
         global clusterCount
+        #TODO: fix run number implementation
+        global runNum 
         # Set initial cluster count
         clusterCount = 1
         ##
+
+        runNum = time.strftime("%d%H%M%S")
 
         cellName = main.params[ 'ENV' ][ 'cellName' ]
 
@@ -611,6 +615,7 @@ class TopoPerfNext:
         import json
         import numpy
         global clusterCount
+        global runNum
 
         ONOS1Ip = main.params[ 'CTRL' ][ 'ip1' ]
         ONOS2Ip = main.params[ 'CTRL' ][ 'ip2' ]
@@ -630,6 +635,9 @@ class TopoPerfNext:
         graphTimestamp = main.params[ 'JSON' ][ 'graphTimestamp' ]
 
         debugMode = main.params[ 'TEST' ][ 'debugMode' ]
+        postToDB = main.params[ 'DB' ][ 'postToDB' ]
+        resultPath = main.params[ 'DB' ][ 'portEventResultPath' ]
+        timeToPost = time.strftime("%Y-%m-%d %H:%M:%S")
 
         localTime = time.strftime( '%x %X' )
         localTime = localTime.replace( "/", "" )
@@ -1131,6 +1139,8 @@ class TopoPerfNext:
         portDownDevAvg = 0
         portDownGraphAvg = 0
 
+        dbCmdList = []
+
         for node in range( 0, clusterCount ):
 
             # NOTE: 
@@ -1150,20 +1160,34 @@ class TopoPerfNext:
                 if item > 0.0:
                     portDownGraphList.append(item)
        
-            portUpDevAvg = numpy.mean(portUpDevList)
-            portUpGraphAvg = numpy.mean(portUpGraphList)
-            portDownDevAvg = numpy.mean(portDownDevList)
-            portDownGraphAvg = numpy.mean(portDownGraphList)
+            portUpDevAvg = round(numpy.mean(portUpDevList), 2)
+            portUpGraphAvg = round(numpy.mean(portUpGraphList), 2)
+            portDownDevAvg = round(numpy.mean(portDownDevList), 2)
+            portDownGraphAvg = round(numpy.mean(portDownGraphList), 2)
 
             main.log.report( " - Node "+str(node+1)+" Summary - " )
             #main.log.report( " Port up ofp-to-device "+
             #                 str(round(portUpDevAvg, 2))+" ms")
             main.log.report( " Port up ofp-to-graph "+
-                             str(round(portUpGraphAvg, 2))+" ms")
+                             str(portUpGraphAvg)+" ms")
             #main.log.report( " Port down ofp-to-device "+
             #                 str(round(portDownDevAvg, 2))+" ms")
             main.log.report( " Port down ofp-to-graph "+
-                             str(round(portDownGraphAvg, 2))+" ms")
+                             str(portDownGraphAvg)+" ms")
+       
+            dbCmdList.append(
+                "INSERT INTO port_latency_tests VALUES("
+                   "'"+timeToPost+"','port_latency_results',"
+                   ""+runNum+","+str(clusterCount)+",'baremetal"+str(node+1)+"',"
+                   ""+str(portUpGraphAvg)+",0,"+str(portDownGraphAvg)+",0);"
+            )
+        
+        #Write to file for posting to DB
+        fResult = open(resultPath, 'a')
+        for line in dbCmdList:
+            if line:
+                fResult.write(line+"\n")
+        fResult.close()
 
         # Remove switches from controller for next test
         main.Mininet1.deleteSwController( "s1" )

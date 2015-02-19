@@ -43,7 +43,9 @@ class OnosCliDriver( CLI ):
                 if key == "home":
                     self.home = self.options[ 'home' ]
                     break
-
+            if self.home == None or self.home == "":
+                self.home = "~/ONOS"
+            
             self.name = self.options[ 'name' ]
             self.handle = super( OnosCliDriver, self ).connect(
                 user_name=self.user_name,
@@ -250,6 +252,41 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
+    def log( self, cmdStr , level = "" ):
+        """
+            log  the commands in the onos CLI.
+            returns main.TRUE on success
+            returns main.FALSE if Error occured
+            Available level: DEBUG, TRACE, INFO, WARN, ERROR
+            Level defaults to INFO
+        """
+        try:
+            lvlStr = ""
+            if level:
+                lvlStr = "--level=" + level
+
+            self.handle.sendline( "" )
+            self.handle.expect( "onos>" )
+            self.handle.sendline( "log:log " + lvlStr + " " + cmdStr )
+            self.handle.expect( "onos>" )
+            
+            response = self.handle.before
+            if re.search( "Error", response ):
+                return main.FALSE
+            return main.TRUE
+
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info( self.name + " ::::::" )
+            main.log.error( traceback.print_exc() )
+            main.log.info( self.name + " ::::::" )
+            main.cleanup()
+            main.exit()
+
     def sendline( self, cmdStr ):
         """
         Send a completely user specified string to
@@ -260,12 +297,9 @@ class OnosCliDriver( CLI ):
         sent using this method.
         """
         try:
-            self.handle.sendline( "" )
-            self.handle.expect( "onos>" )
-
-            self.handle.sendline( "log:log \"Sending CLI command: '"
-                                  + cmdStr + "'\"" )
-            self.handle.expect( "onos>" )
+            
+            logStr = "\"Sending CLI command: '" + cmdStr + "'\""
+            self.log( logStr )
             self.handle.sendline( cmdStr )
             self.handle.expect( "onos>" )
             main.log.info( "Command '" + str( cmdStr ) + "' sent to "

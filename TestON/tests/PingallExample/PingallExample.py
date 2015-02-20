@@ -14,7 +14,6 @@ class PingallExample:
     def CASE1( self, main ):
         import threading
         import time
-        import Queue
         import imp
         """
            CASE1 is to compile ONOS and push it to the test machines
@@ -75,7 +74,7 @@ class PingallExample:
         main.ONOSbench.onosInstall( node=ONOS1Ip )
         main.ONOSbench.onosInstall( node=ONOS2Ip )
         main.ONOSbench.onosInstall( node=ONOS3Ip )
-
+        time.sleep(10)
         cellResult = main.ONOSbench.setCell( cellName )
         verifyResult = main.ONOSbench.verifyCell()
         main.step( "Creating ONOS package" )
@@ -83,11 +82,8 @@ class PingallExample:
 
         main.step( "Installing ONOS package" )
         onos1InstallResult = main.FALSE
-        main.log.info("verifying cell with thread") 
-        tSample = ThreadingOnos.ThreadingOnos(target=main.ONOSbench.verifyCell,threadID=1,name="verify cell")
-        tSample.start()
+        time.sleep(30)
         main.log.info("Running thread")
-        
         time1 = time.time()
         pool = []
         CLI1 = (main.ONOScli1.startOnosCli,  ONOS1Ip)
@@ -97,9 +93,9 @@ class PingallExample:
         CLItoRun = [CLI1,CLI2,CLI3]
         i = 0
         for  cli,ip in CLItoRun:
-            t = ThreadingOnos.ThreadingOnos(target = cli,threadID=i,name="startOnosCli",args=[ip])
-            pool.append(t)
-            t.start()
+            thread = ThreadingOnos.ThreadingOnos(target = cli,threadID=i,name="startOnosCli",args=[ip])
+            pool.append(thread)
+            thread.start()
             i = i + 1
         
         #then we join all the threads in the pool which simply letting all the
@@ -134,11 +130,9 @@ class PingallExample:
 
         # TODO: if it becomes an issue, we can retry this step  a few times
 
-        cliResult = main.ONOScli1.startOnosCli( ONOS1Ip )
-
         case1Result = ( cleanInstallResult and packageResult and
                         cellResult and verifyResult and
-                        onos1Isup and cliResult )
+                        onos1Isup and startCliResult )
 
         utilities.assert_equals( expect=main.TRUE, actual=case1Result,
                                  onpass="Test startup successful",

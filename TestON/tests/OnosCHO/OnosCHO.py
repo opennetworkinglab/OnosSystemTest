@@ -126,9 +126,10 @@ class OnosCHO:
         karafTimeout = "3600000"
         # need to wait here for sometime. This will be removed once ONOS is
         # stable enough
-        time.sleep( 20 )
+        time.sleep( 25 )
 
         main.log.step(" Start ONOS cli using thread ")
+        startCliResult  = main.FALSE
         
         CLI1 = (main.ONOScli1.startOnosCli,main.ONOS1_ip)
         CLI2 = (main.ONOScli2.startOnosCli,main.ONOS2_ip)
@@ -145,7 +146,6 @@ class OnosCHO:
             t.start()
             threadID = threadID + 1
             
-        case1Result  = main.FALSE
         results = []
         for thread in pool:
             thread.join()
@@ -157,8 +157,10 @@ class OnosCHO:
                 main.cleanup()
                 main.exit()
         else:
-            main.log.info("Successful CLI startup!!!")
-            case1Result = main.TRUE
+            main.log.info("Successful CLI startup")
+            startCliResult = main.TRUE
+        case1Result = installResult and uninstallResult and statusResult and startCliResult
+        
         main.log.info("Time for connecting to CLI: %2f seconds" %(time2-time1))
         utilities.assert_equals( expect=main.TRUE, actual=case1Result,
                                  onpass="Set up test environment PASS",
@@ -328,12 +330,12 @@ class OnosCHO:
         main.case( "Enable Reactive forwarding and Verify ping all" )
         main.step( "Enable Reactive forwarding" )
         installResult = main.TRUE
-        
-        CLI1 = (main.ONOScli1.featureInstall,"onos-app-fwd")
-        CLI2 = (main.ONOScli2.featureInstall,"onos-app-fwd")
-        CLI3 = (main.ONOScli3.featureInstall,"onos-app-fwd")
-        CLI4 = (main.ONOScli4.featureInstall,"onos-app-fwd")
-        CLI5 = (main.ONOScli5.featureInstall,"onos-app-fwd")
+        feature = "onos-app-fwd"
+        CLI1 = (main.ONOScli1.featureInstall,feature)
+        CLI2 = (main.ONOScli2.featureInstall,feature)
+        CLI3 = (main.ONOScli3.featureInstall,feature)
+        CLI4 = (main.ONOScli4.featureInstall,feature)
+        CLI5 = (main.ONOScli5.featureInstall,feature)
         ONOSCLI = [CLI1,CLI2,CLI3,CLI4,CLI5]
         pool = []
         time1 = time.time()
@@ -344,7 +346,6 @@ class OnosCHO:
             t.start()
             threadID = threadID + 1
             
-        case4Result1  = main.FALSE
         results = []
         for thread in pool:
             thread.join()
@@ -356,8 +357,8 @@ class OnosCHO:
                 main.cleanup()
                 main.exit()
         else:
-            main.log.info("Successful feature:install onos-app-fwd!!!")
-            case4Result1 = main.TRUE
+            main.log.info("Successful feature:install onos-app-fwd")
+            installResult = main.TRUE
         main.log.info("Time for feature:install onos-app-fwd: %2f seconds" %(time2-time1))
         
         time.sleep( 5 )
@@ -365,7 +366,7 @@ class OnosCHO:
         main.step( "Verify Pingall" )
         ping_result = main.FALSE
         time1 = time.time()
-        ping_result = main.Mininet1.pingall(timeout=60)
+        ping_result = main.Mininet1.pingall(timeout=600)
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -379,8 +380,7 @@ class OnosCHO:
             main.log.report( "Pingall Test in Reactive mode failed" )
 
         main.step( "Disable Reactive forwarding" )
-        uninstallResult = main.TRUE
-        
+        uninstallResult = main.FALSE
         CLI1 = (main.ONOScli1.featureUninstall,"onos-app-fwd")
         CLI2 = (main.ONOScli2.featureUninstall,"onos-app-fwd")
         CLI3 = (main.ONOScli3.featureUninstall,"onos-app-fwd")
@@ -396,7 +396,6 @@ class OnosCHO:
             t.start()
             threadID = threadID + 1
             
-        case4Result2  = main.FALSE
         results = []
         for thread in pool:
             thread.join()
@@ -408,14 +407,13 @@ class OnosCHO:
                 main.cleanup()
                 main.exit()
         else:
-            main.log.info("Successful feature:uninstall onos-app-fwd!!!")
-            case4Result2 = main.TRUE
+            main.log.info("Successful feature:uninstall onos-app-fwd")
+            uninstallResult = main.TRUE
         main.log.info("Time for feature:uninstall onos-app-fwd: %2f seconds" %(time2-time1))
 
         # Waiting for reative flows to be cleared.
         time.sleep( 5 )
-        
-        case4Result = case4Result1 and case4Result2
+        case4Result =  installResult and uninstallResult and ping_result
         utilities.assert_equals( expect=main.TRUE, actual=case4Result,
                                  onpass="Reactive Mode Pingall test PASS",
                                  onfail="Reactive Mode Pingall test FAIL" )
@@ -965,47 +963,93 @@ class OnosCHO:
         import copy
         import time
 
+        ThreadingOnos = imp.load_source('ThreadingOnos','/home/admin/ONLabTest/TestON/tests/OnosCHO/ThreadingOnos.py')
+        threadID = 0
+
         main.log.report( "Enable Intent based Reactive forwarding and Verify ping all" )
         main.log.report( "_____________________________________________________" )
         main.case( "Enable Intent based Reactive forwarding and Verify ping all" )
         main.step( "Enable intent based Reactive forwarding" )
-        installResult = main.TRUE
-        for i in range( 1, int( main.numCtrls ) + 1 ):
-            onosFeature = 'onos-app-ifwd'
-            ONOS_ip = main.params[ 'CTRL' ][ 'ip' + str( i ) ]
-            ONOScli = 'ONOScli' + str( i )
-            main.log.info( "Enabling Intent based Reactive forwarding on ONOS Node " + ONOS_ip )
-            exec "inResult=main." + ONOScli + ".featureInstall(onosFeature)"
-            time.sleep( 3 )
-            installResult = inResult and installResult
-
-        time.sleep( 5 )
-
+        installResult = main.FALSE
+        feature = "onos-app-ifwd"
+        CLI1 = (main.ONOScli1.featureInstall,feature)
+        CLI2 = (main.ONOScli2.featureInstall,feature)
+        CLI3 = (main.ONOScli3.featureInstall,feature)
+        CLI4 = (main.ONOScli4.featureInstall,feature)
+        CLI5 = (main.ONOScli5.featureInstall,feature)
+        ONOSCLI = [CLI1,CLI2,CLI3,CLI4,CLI5]
+        pool = []
+        time1 = time.time()
+        for cli,feature in ONOSCLI:
+            t = ThreadingOnos.ThreadingOnos(target=cli,threadID=threadID,
+                    name="featureInstall",args=[feature])
+            pool.append(t)
+            t.start()
+            threadID = threadID + 1
+            
+        results = []
+        for thread in pool:
+            thread.join()
+            results.append(thread.result)
+        time2 = time.time()
+        
+        if( all(result == main.TRUE for result in results) == False):
+                main.log.info("Did not install onos-app-ifwd feature properly")
+                main.cleanup()
+                main.exit()
+        else:
+            main.log.info("Successful feature:install onos-app-ifwd")
+            installResult = main.TRUE
+        main.log.info("Time for feature:install onos-app-ifwd: %2f seconds" %(time2-time1))
+        
         main.step( "Verify Pingall" )
         ping_result = main.FALSE
         time1 = time.time()
-        ping_result = main.Mininet1.pingall()
+        ping_result = main.Mininet1.pingall(timeout=600)
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
             "Time taken for Ping All: " +
             str( timeDiff ) +
             " seconds" )
-
+        
         if ping_result == main.TRUE:
             main.log.report( "Pingall Test in Reactive mode successful" )
         else:
             main.log.report( "Pingall Test in Reactive mode failed" )
 
         main.step( "Disable Intent based Reactive forwarding" )
-        uninstallResult = main.TRUE
-        for i in range( 1, int( main.numCtrls ) + 1 ):
-            onosFeature = 'onos-app-ifwd'
-            ONOS_ip = main.params[ 'CTRL' ][ 'ip' + str( i ) ]
-            ONOScli = 'ONOScli' + str( i )
-            main.log.info( "Disabling Intent based Reactive forwarding on ONOS Node " + ONOS_ip )
-            exec "unResult=main." + ONOScli + ".featureUninstall(onosFeature)"
-            uninstallResult = unResult and uninstallResult
+        uninstallResult = main.FALSE
+        
+        CLI1 = (main.ONOScli1.featureUninstall,feature)
+        CLI2 = (main.ONOScli2.featureUninstall,feature)
+        CLI3 = (main.ONOScli3.featureUninstall,feature)
+        CLI4 = (main.ONOScli4.featureUninstall,feature)
+        CLI5 = (main.ONOScli5.featureUninstall,feature)
+        ONOSCLI = [CLI1,CLI2,CLI3,CLI4,CLI5]
+        pool = []
+        time1 = time.time()
+        for cli,feature in ONOSCLI:
+            t = ThreadingOnos.ThreadingOnos(target=cli,threadID=threadID,
+                    name="featureUninstall",args=[feature])
+            pool.append(t)
+            t.start()
+            threadID = threadID + 1
+            
+        results = []
+        for thread in pool:
+            thread.join()
+            results.append(thread.result)
+        time2 = time.time()
+        
+        if( all(result == main.TRUE for result in results) == False):
+                main.log.info("Did not uninstall onos-app-ifwd feature properly")
+                main.cleanup()
+                main.exit()
+        else:
+            main.log.info("Successful feature:uninstall onos-app-ifwd")
+            uninstallResult = main.TRUE
+        main.log.info("Time for feature:uninstall onos-app-ifwd: %2f seconds" %(time2-time1))
 
         # Waiting for reative flows to be cleared.
         time.sleep( 10 )
@@ -1134,7 +1178,7 @@ class OnosCHO:
                 main.cleanup()
                 main.exit()
         else:
-            main.log.info("Successful CLI startup!!!")
+            main.log.info("Successful CLI startup")
             cliResult = main.TRUE
         main.log.info("Time for connecting to CLI: %2f seconds" %(time2-time1))
 
@@ -1267,7 +1311,7 @@ class OnosCHO:
                 main.cleanup()
                 main.exit()
         else:
-            main.log.info("Successful CLI startup!!!")
+            main.log.info("Successful CLI startup")
             cliResult = main.TRUE
         main.log.info("Time for connecting to CLI: %2f seconds" %(time2-time1))
 

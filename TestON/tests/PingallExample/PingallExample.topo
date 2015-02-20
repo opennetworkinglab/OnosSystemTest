@@ -42,11 +42,7 @@
         <ONOS1>
             <host>10.128.10.21</host>
             <user>admin</user>
-<<<<<<< HEAD
             <password> </password>
-=======
-            <password></password>
->>>>>>> 4f176c86f6a3a43a6bd543fc617e89d7c955ec3d
             <type>OnosDriver</type>
             <connect_order>5</connect_order>
             <COMPONENTS> </COMPONENTS>

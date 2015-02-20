@@ -151,7 +151,7 @@
                 <arg1> --custom ~/mininet/custom/topo-HA.py </arg1>
                 <arg2> --topo mytopo </arg2>
                 <arg3> </arg3>
-                <controller> remote </controller>
+                <controller> none </controller>
             </COMPONENTS>
         </Mininet1>
 
@@ -162,7 +162,7 @@
             <type>RemoteMininetDriver</type>
             <connect_order>17</connect_order>
             <COMPONENTS>
-             </COMPONENTS>
+            </COMPONENTS>
         </Mininet2>
 
     </COMPONENT>

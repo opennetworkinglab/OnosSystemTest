@@ -336,7 +336,6 @@ class RemoteMininetDriver( Emulator ):
         try:
             self.handle.sendline( "sudo pkill tcpdump" )
             self.handle.sendline( "" )
-            self.handle.sendline( "" )
             self.handle.expect( "\$" )
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
@@ -374,12 +373,7 @@ class RemoteMininetDriver( Emulator ):
         """
         Called at the end of the test to disconnect the handle.
         """
-        response = ''
-        # print "Disconnecting Mininet"
         if self.handle:
-            self.handle.sendline( "exit" )
-            self.handle.expect( "exit" )
-            self.handle.expect( "(.*)" )
             # Close the ssh connection
             self.handle.sendline( "" )
             self.handle.expect( "\$" )
@@ -387,6 +381,7 @@ class RemoteMininetDriver( Emulator ):
             self.handle.expect( "closed" )
         else:
             main.log.error( "Connection failed to the host" )
+        return main.TRUE
 
     def getFlowTable( self, protoVersion, sw ):
         """

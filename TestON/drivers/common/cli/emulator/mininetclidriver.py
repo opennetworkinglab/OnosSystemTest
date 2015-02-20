@@ -102,7 +102,8 @@ class MininetCliDriver( Emulator ):
         """
         Starts Mininet accepts a topology(.py) file and/or an optional
         arguement ,to start the mininet, as a parameter.
-        Returns true if the mininet starts successfully
+        Returns main.TRUE if the mininet starts successfully and
+                main.FALSE otherwise
         """
         if self.handle:
             main.log.info(
@@ -189,9 +190,18 @@ class MininetCliDriver( Emulator ):
                                         pexpect.EOF ,
                                         pexpect.TIMEOUT ],
                                         timeout)
-                main.log.info(self.name + ": Network started")
+                if i == 0:
+                    main.log.info(self.name + ": Network started")
+                    return main.TRUE
+                elif i == 1:
+                    main.log.error( self.name + ": Connection timeout" )
+                    return main.FALSE
+                elif i == 2:  # timeout
+                    main.log.error(
+                        self.name +
+                        ": Something took too long... " )
+                    return main.FALSE
                 return main.TRUE
-
         else:  # if no handle
             main.log.error(
                 self.name +
@@ -1255,40 +1265,61 @@ class MininetCliDriver( Emulator ):
         disconnect the handle.
         """
         self.handle.sendline('')
-        i = 1
-        i = self.handle.expect( ['mininet>',pexpect.EOF,pexpect.TIMEOUT ], timeout = 2)
+        i = self.handle.expect( [ 'mininet>', pexpect.EOF, pexpect.TIMEOUT ],
+                                timeout = 2)
         if i == 0:
             self.stopNet()
-        response = ''
+        elif i == 1:
+            return main.TRUE
+        response = main.TRUE
         # print "Disconnecting Mininet"
         if self.handle:
             self.handle.sendline( "exit" )
             self.handle.expect( "exit" )
             self.handle.expect( "(.*)" )
-            main.log.info( "Mininet CLI is successfully disconnected" )
-            response = main.TRUE
         else:
             main.log.error( "Connection failed to the host" )
-            response = main.FALSE
-
         return response
 
-    def stopNet( self ):
+    def stopNet( self , timeout = 5):
         """
-        Stops mininet. returns true if the mininet succesfully stops.
+        Stops mininet.
+        Returns main.TRUE if the mininet succesfully stops and
+                main.FALSE if the pexpect handle does not exist.
+
+        Will cleanup and exit the test if mininet fails to stop
         """
-        
-        main.log.info( self.name + ": Disconnecting mininet..." )
+
+        main.log.info( self.name + ": Stopping mininet..." )
         response = ''
         if self.handle:
             try:
+                self.handle.sendline("")
+                i = self.handle.expect( [ 'mininet>',
+                                          '\$',
+                                          pexpect.EOF,
+                                          pexpect.TIMEOUT ],
+                                        timeout )
+                if i == 0:
+                    main.log.info( "Exiting mininet..." )
+               
                 response = self.execute(
                     cmd="exit",
                     prompt="(.*)",
                     timeout=120 )
-                main.log.info( self.name + ": Disconnected")
+                main.log.info( self.name + ": Stopped")
                 self.handle.sendline( "sudo mn -c" )
                 response = main.TRUE
+
+                if i == 1:
+                    main.log.info( " Mininet trying to exit while not " +
+                                   "in the mininet prompt" )
+                elif i == 2:
+                    main.log.error( "Something went wrong exiting mininet" )
+                elif i == 3:  # timeout
+                    main.log.error( "Something went wrong exiting mininet " +
+                                    "TIMEOUT" )
+                
             except pexpect.EOF:
                 main.log.error( self.name + ": EOF exception found" )
                 main.log.error( self.name + ":     " + self.handle.before )

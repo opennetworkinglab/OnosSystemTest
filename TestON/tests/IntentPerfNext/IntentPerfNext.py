@@ -39,7 +39,8 @@ class IntentPerfNext:
         main.step( "Creating cell file" )
         cellFileResult = main.ONOSbench.createCellFile(
             BENCHIp, cellName, MN1Ip,
-            "onos-core,onos-app-metrics,onos-gui",
+            ("onos-core,webconsole,onos-api,onos-app-metrics,onos-gui,"
+            "onos-cli,onos-openflow"),
             ONOSIp[0] )
 
         main.step( "Applying cell file to environment" )
@@ -582,6 +583,10 @@ class IntentPerfNext:
         nThread = main.params[ 'TEST' ][ 'numMult' ]
         #nThread = 105
 
+        # DB operation variables
+        intentInstallPath = main.params[ 'DB' ][ 'intentInstallPath' ]
+
+
         # Switch assignment NOTE: hardcoded
         if clusterCount == 1:
             for i in range( 1, numSwitch + 1 ):
@@ -662,14 +667,17 @@ class IntentPerfNext:
         batchInstallLat = []
         batchWithdrawLat = []
 
-        # Max intent install measurement of all nodes
-        maxInstallLat = []
-        maxWithdrawLat = []
         sleepTime = 10
 
         baseDir = "/tmp/"
 
+        # Batch size increase loop
         for batch in range( 0, 5 ):
+            # Max intent install measurement of all nodes
+            # Resets after each batch calculation
+            maxInstallLat = []
+            maxWithdrawLat = []
+            # Statistical gathering loop over number of iterations
             for i in range( 0, int( numIter ) ):
                 main.log.info( "Pushing " +
                                str( int( batchIntentSize ) * int( nThread ) ) +

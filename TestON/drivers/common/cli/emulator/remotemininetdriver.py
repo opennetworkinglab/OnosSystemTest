@@ -376,9 +376,20 @@ class RemoteMininetDriver( Emulator ):
         if self.handle:
             # Close the ssh connection
             self.handle.sendline( "" )
-            self.handle.expect( "\$" )
-            self.handle.sendline( "exit" )
-            self.handle.expect( "closed" )
+            #self.handle.expect( "\$" )
+            i = self.handle.expect( [ '\$', 'mininet>', pexpect.TIMEOUT ],
+                                timeout = 2)
+            if i == 0:
+                self.handle.sendline( "exit" )
+                self.handle.expect( "closed" )
+            elif i == 1:
+                self.handle.sendline( "exit" )
+                self.handle.expect( "exit" )
+                self.handle.expect('\$')
+                self.handle.sendline( "exit" )
+                self.handle.expect( "exit" )
+                self.handle.expect( "closed" )
+                
         else:
             main.log.error( "Connection failed to the host" )
         return main.TRUE

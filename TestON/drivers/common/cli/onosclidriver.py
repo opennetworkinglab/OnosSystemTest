@@ -1256,7 +1256,7 @@ class OnosCliDriver( CLI ):
             cli output otherwise
         """
         try:
-            cmdStr = "remove-intent " + str( intentId )
+            cmdStr = "remove-intent org.onosproject.cli " + str( intentId )
             handle = self.sendline( cmdStr )
             if re.search( "Error", handle ):
                 main.log.error( "Error in removing intent" )

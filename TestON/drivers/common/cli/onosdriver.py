@@ -643,8 +643,10 @@ class OnosDriver( CLI ):
                            handleAfter + handleMore )
 
             return main.TRUE
-        except pexpect.EOF:
-            main.log.error( self.name + ": EOF exception found" )
+        except pexpect.ExceptionPexpect as e:
+            main.log.error( self.name + ": Pexpect exception found of type " +
+                            str( type( e ) ) )
+            main.log.error ( e.get_trace() )
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
@@ -1579,6 +1581,52 @@ class OnosDriver( CLI ):
             main.log.exception( self.name + ": Timeout exception in "
                                 "setIpTables function" )
             return main.ERROR
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.exception( "Unknown error:")
+            main.cleanup()
+            main.exit()
+
+    def detailed_status(self, log_filename):
+        '''
+        This method is used by STS to check the status of the controller
+        Reports RUNNING, STARTING, STOPPED, FROZEN, ERROR (and reason)
+        '''
+        import re
+        try:
+            self.handle.sendline( "" )
+            self.handle.expect( "\$" )
+            self.handle.sendline( "cd " + self.home )
+            self.handle.expect( "\$" )
+            self.handle.sendline( "service onos status" )
+            self.handle.expect( "\$" )
+            response = self.handle.before
+            if re.search( "onos start/running", response ):
+                # onos start/running, process 10457
+                return 'RUNNING'
+            # FIXME: Implement this case
+            # elif re.search( pattern, response ):
+            #      return 'STARTING'
+            elif re.search( "onos stop/", response ):
+                # onos stop/waiting
+                # FIXME handle this differently?:  onos stop/pre-stop
+                return 'STOPPED'
+            # FIXME: Implement this case
+            # elif re.search( pattern, response ):
+            #      return 'FROZEN'
+            else:
+                main.log.warn( self.name +
+                               " WARNING: status recieved unknown response" )
+                main.log.warn( response )
+                return 'ERROR', "Unknown response: %s" % response
+        except pexpect.TIMEOUT:
+            main.log.exception( self.name + ": Timeout exception in "
+                                "setIpTables function" )
+            return 'ERROR', "Pexpect Timeout"
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )

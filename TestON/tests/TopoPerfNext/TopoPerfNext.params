@@ -72,6 +72,9 @@
         <portEventResultPath>
         /home/admin/ONLabTest/TestON/tests/TopoPerfNext/portEventResultDb.log
         </portEventResultPath>
+        <switchEventResultPath>
+        /home/admin/ONLabTest/TestON/tests/TopoPerfNext/switchEventResultDb.log
+        </switchEventResultPath>
     </DB>
 
     <JSON>

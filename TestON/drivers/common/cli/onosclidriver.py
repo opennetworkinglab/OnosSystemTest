@@ -148,7 +148,7 @@ class OnosCliDriver( CLI ):
                 # Expect the cellname in the ONOSCELL variable.
                 # Note that this variable name is subject to change
                 #   and that this driver will have to change accordingly
-                self.handle.expect( "ONOS_CELL=" + str( cellname ) )
+                self.handle.expect( "ONOS_CELL" )
                 handleBefore = self.handle.before
                 handleAfter = self.handle.after
                 # Get the rest of the handle
@@ -922,6 +922,7 @@ class OnosCliDriver( CLI ):
         Description:
             Adds a host-to-host intent ( bidrectional ) by
             specifying the two hosts.
+            returns a string of the intent id or an Error message
         """
         try:
             cmdStr = "add-host-intent " + str( hostIdOne ) +\
@@ -933,7 +934,11 @@ class OnosCliDriver( CLI ):
             else:
                 main.log.info( "Host intent installed between " +
                            str( hostIdOne ) + " and " + str( hostIdTwo ) )
-                return main.TRUE
+                match = re.search('id=0x([\da-f]+),', handle)
+                if match:
+                    return match.group()[3:-1]
+                else:
+                    return handle
 
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
@@ -1252,7 +1257,7 @@ class OnosCliDriver( CLI ):
             cli output otherwise
         """
         try:
-            cmdStr = "remove-intent " + str( intentId )
+            cmdStr = "remove-intent org.onosproject.cli " + str( intentId )
             handle = self.sendline( cmdStr )
             if re.search( "Error", handle ):
                 main.log.error( "Error in removing intent" )
@@ -1501,29 +1506,16 @@ class OnosCliDriver( CLI ):
         """
         try:
             # Obtain output of intents function
-            intentsStr = self.intents()
-            allIntentList = []
+            intentsStr = self.intents(jsonFormat=False)
             intentIdList = []
 
             # Parse the intents output for ID's
             intentsList = [ s.strip() for s in intentsStr.splitlines() ]
             for intents in intentsList:
-                if "onos>" in intents:
-                    continue
-                elif "intents" in intents:
-                    continue
-                else:
-                    lineList = intents.split( " " )
-                    allIntentList.append( lineList[ 0 ] )
-
-            allIntentList = allIntentList[ 1:-2 ]
-
-            for intents in allIntentList:
-                if not intents:
-                    continue
-                else:
-                    intentIdList.append( intents )
-
+                match = re.search('id=0x([\da-f]+),', intents)
+                if match:
+                    tmpId = match.group()[3:-1]
+                    intentIdList.append( tmpId )
             return intentIdList
 
         except TypeError:

@@ -16,12 +16,18 @@ class IntentPerfNext:
         """
         import time
         global clusterCount
+        global timeToPost
+        global runNum
+
         clusterCount = 1
+        timeToPost = time.strftime("%Y-%m-%d %H:%M:%S")
+        runNum = time.strftime("%d%H%M%S")
 
         cellName = main.params[ 'ENV' ][ 'cellName' ]
 
         gitPull = main.params[ 'GIT' ][ 'autoPull' ]
         checkoutBranch = main.params[ 'GIT' ][ 'checkout' ]
+        intentFilePath = main.params[ 'DB' ][ 'intentFilePath' ]
 
         ONOSIp = []
         for i in range(1, 8):
@@ -33,13 +39,20 @@ class IntentPerfNext:
 
         main.case( "Setting up test environment" )
 
+        main.step( "Clearing previous DB log file" )
+        fIntentLog = open(intentFilePath, 'w')
+        # Overwrite with empty line and close 
+        fIntentLog.write('')
+        fIntentLog.close()
+
         main.step( "Starting mininet topology" )
         main.Mininet1.startNet()
 
         main.step( "Creating cell file" )
         cellFileResult = main.ONOSbench.createCellFile(
             BENCHIp, cellName, MN1Ip,
-            "onos-core,onos-app-metrics,onos-gui",
+            ("onos-core,webconsole,onos-api,onos-app-metrics,onos-gui,"
+            "onos-cli,onos-openflow"),
             ONOSIp[0] )
 
         main.step( "Applying cell file to environment" )
@@ -552,6 +565,7 @@ class IntentPerfNext:
         import os
         import numpy
         global clusterCount
+        global timeToPost
 
         ONOS1Ip = main.params[ 'CTRL' ][ 'ip1' ]
         ONOS2Ip = main.params[ 'CTRL' ][ 'ip2' ]
@@ -581,6 +595,9 @@ class IntentPerfNext:
         numSwitch = int( main.params[ 'TEST' ][ 'numSwitch' ] )
         nThread = main.params[ 'TEST' ][ 'numMult' ]
         #nThread = 105
+
+        # DB operation variables
+        intentFilePath = main.params[ 'DB' ][ 'intentFilePath' ]
 
         # Switch assignment NOTE: hardcoded
         if clusterCount == 1:
@@ -659,17 +676,21 @@ class IntentPerfNext:
         for device in jsonObj:
             deviceIdList.append( device[ 'id' ] )
 
+        # List of install / witdhraw latencies for each batch
         batchInstallLat = []
         batchWithdrawLat = []
 
-        # Max intent install measurement of all nodes
-        maxInstallLat = []
-        maxWithdrawLat = []
         sleepTime = 10
 
         baseDir = "/tmp/"
 
+        # Batch size increase loop
         for batch in range( 0, 5 ):
+            # Max intent install measurement of all nodes
+            # Resets after each batch calculation
+            maxInstallLat = []
+            maxWithdrawLat = []
+            # Statistical gathering loop over number of iterations
             for i in range( 0, int( numIter ) ):
                 main.log.info( "Pushing " +
                                str( int( batchIntentSize ) * int( nThread ) ) +
@@ -741,6 +762,8 @@ class IntentPerfNext:
                                    str( batchIntentSize ) + "intents: " +
                                    str( withdrawResult ) + " ms" )
 
+                #NOTE: END node loop
+
                 if len( batchInstallLat ) > 0 and int( i ) > numIgnore:
                     maxInstallLat.append( max( batchInstallLat ) )
                 elif len( batchInstallLat ) == 0:
@@ -755,13 +778,18 @@ class IntentPerfNext:
                 # Sleep in between iterations
                 time.sleep( 5 )
 
+            #NOTE: END iteration loop
+
             if maxInstallLat:
                 avgInstallLat = str( round(
                                             sum( maxInstallLat ) /
                                             len( maxInstallLat )
                                           , 2 ))
+                stdInstallLat = str( round(
+                                    numpy.std(maxInstallLat), 2))
             else:
                 avgInstallLat = "NA"
+                stdInstallLat = "NA"
                 main.log.report( "Batch installation failed" )
                 assertion = main.FALSE
 
@@ -770,8 +798,11 @@ class IntentPerfNext:
                                             sum( maxWithdrawLat ) /
                                             len( maxWithdrawLat )
                                             , 2 ))
+                stdWithdrawLat = str( round(
+                                    numpy.std(maxWithdrawLat), 2))
             else:
                 avgWithdrawLat = "NA"
+                stdWithdrawLat = "NA"
                 main.log.report( "Batch withdraw failed" )
                 assertion = main.FALSE
 
@@ -780,16 +811,28 @@ class IntentPerfNext:
                              str( avgInstallLat ) + " ms" )
             main.log.report( "Std Deviation of batch installation latency " +
                              ": " +
-                             str( round(numpy.std( maxInstallLat ),2)) +
-                             " ms" )
+                             str( stdInstallLat ) + " ms" )
 
             main.log.report( "Avg of batch withdraw latency " +
                              "of size " + str( batchIntentSize ) + ": " +
                              str( avgWithdrawLat ) + " ms" )
             main.log.report( "Std Deviation of batch withdraw latency " +
                              ": " +
-                             str( round(numpy.std( maxWithdrawLat ),2)) +
-                             " ms" )
+                             str( stdWithdrawLat ) + " ms" )
+
+            dbCmd = (
+                "INSERT INTO intent_latency_tests VALUES("
+                "'"+timeToPost+"','intent_latency_results',"
+                ""+runNum+","+str(clusterCount)+","+str(batchIntentSize)+","
+                ""+str(avgInstallLat)+","+str(stdInstallLat)+","
+                ""+str(avgWithdrawLat)+","+str(stdWithdrawLat)+");"
+            )
+
+            # Write result to file (which is posted to DB by jenkins)
+            fResult = open(intentFilePath, 'a')
+            if dbCmd:        
+                fResult.write(dbCmd+"\n")
+            fResult.close()
 
             if batch == 0:
                 batchIntentSize = 10
@@ -802,6 +845,8 @@ class IntentPerfNext:
             if batch < 4:
                 main.log.report( "Increasing batch intent size to " +
                              str(batchIntentSize) )
+
+        #NOTE: END batch loop
 
         #main.log.info( "Removing all intents for next test case" )
         #jsonTemp = main.ONOS1cli.intents( jsonFormat=True )

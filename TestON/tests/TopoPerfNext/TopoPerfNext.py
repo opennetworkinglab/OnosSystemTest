@@ -29,6 +29,10 @@ class TopoPerfNext:
         global clusterCount
         #TODO: fix run number implementation
         global runNum 
+        global timeToPost
+
+        #Test run time
+        timeToPost = time.strftime("%Y-%m-%d %H:%M:%S")
         # Set initial cluster count
         clusterCount = 1
         ##
@@ -54,6 +58,9 @@ class TopoPerfNext:
         topoCfgFile = main.params[ 'TEST' ][ 'topoConfigFile' ]
         topoCfgName = main.params[ 'TEST' ][ 'topoConfigName' ]
 
+        portEventResultPath = main.params[ 'DB' ][ 'portEventResultPath' ]
+        switchEventResultPath = main.params[ 'DB' ][ 'switchEventResultPath' ]
+
         mvnCleanInstall = main.params[ 'TEST' ][ 'mci' ]
         
         main.case( "Setting up test environment" )
@@ -78,10 +85,19 @@ class TopoPerfNext:
         main.ONOSbench.onosUninstall( nodeIp=ONOS6Ip )
         main.ONOSbench.onosUninstall( nodeIp=ONOS7Ip )
 
+        main.step( "Clearing previous DB log files" )
+        fPortLog = open(portEventResultPath, 'w')
+        fPortLog.write('')
+        fPortLog.close()
+        fSwitchLog = open(switchEventResultPath, 'w')
+        fSwitchLog.write('')
+        fSwitchLog.close()
+        
         main.step( "Creating cell file" )
         cellFileResult = main.ONOSbench.createCellFile(
             BENCHIp, cellName, MN1Ip,
-            "onos-core,onos-app-metrics,onos-app-gui",
+            ("onos-core,onos-api,webconsole,onos-app-metrics,onos-app-gui,"
+            "onos-cli,onos-openflow"),
             ONOS1Ip )
 
         main.step( "Applying cell file to environment" )
@@ -117,23 +133,17 @@ class TopoPerfNext:
 
         main.step( "Set cell for ONOS cli env" )
         main.ONOS1cli.setCell( cellName )
-        # main.ONOS2cli.setCell( cellName )
-        # main.ONOS3cli.setCell( cellName )
 
         main.step( "Creating ONOS package" )
         packageResult = main.ONOSbench.onosPackage()
 
         main.step( "Installing ONOS package" )
         install1Result = main.ONOSbench.onosInstall( node=ONOS1Ip )
-        #install2Result = main.ONOSbench.onosInstall( node=ONOS2Ip )
-        #install3Result = main.ONOSbench.onosInstall( node=ONOS3Ip )
 
         time.sleep( 10 )
 
         main.step( "Start onos cli" )
         cli1 = main.ONOS1cli.startOnosCli( ONOS1Ip )
-        #cli2 = main.ONOS2cli.startOnosCli( ONOS2Ip )
-        #cli3 = main.ONOS3cli.startOnosCli( ONOS3Ip )
 
         utilities.assert_equals( expect=main.TRUE,
                                 actual=cellFileResult and cellApplyResult and
@@ -168,6 +178,7 @@ class TopoPerfNext:
         import os
         import numpy
         global clusterCount
+        global timeToPost
 
         ONOS1Ip = main.params[ 'CTRL' ][ 'ip1' ]
         ONOS2Ip = main.params[ 'CTRL' ][ 'ip2' ]
@@ -193,6 +204,7 @@ class TopoPerfNext:
 
         debugMode = main.params[ 'TEST' ][ 'debugMode' ]
         onosLog = main.params[ 'TEST' ][ 'onosLogFile' ]
+        resultPath = main.params[ 'DB' ][ 'switchEventResultPath' ]
 
         # Threshold for the test
         thresholdStr = main.params[ 'TEST' ][ 'singleSwThreshold' ]
@@ -543,9 +555,16 @@ class TopoPerfNext:
                     ofpToGraphLatNodeIter[6][i] = deltaOfpGraph7
                     main.log.info("ONOS7 iter"+str(i)+" ofp-to-graph: "+
                             str(deltaOfpGraph7)+" ms")
+                    
+            main.log.info("Switch up discovery latency")
+                
+            main.log.info("Starting tshark capture")
 
             main.step( "Remove switch from controller" )
             main.Mininet1.deleteSwController( "s1" )
+
+            #TODO: del controller does not have an OFP message.
+            #      However, we can capture TCP Fin,Ack as T0
 
             time.sleep( 5 )
 
@@ -557,6 +576,7 @@ class TopoPerfNext:
         ofpToGraphAvg = 0
         endToEndList = []
         ofpToGraphList = []
+        dbCmdList = []
 
         for node in range( 0, clusterCount ):
             # The latency 2d array was initialized to 0. 
@@ -574,14 +594,22 @@ class TopoPerfNext:
                 if item > 0.0:
                     ofpToGraphList.append(item)
 
-            endToEndAvg = numpy.mean(endToEndList)
+            endToEndAvg = round(numpy.mean(endToEndList), 2)
             ofpToGraphAvg = numpy.mean(ofpToGraphList)
+            endToEndStd = round(numpy.std(endToEndList), 2)
 
             main.log.report( " - Node "+str(node+1)+" Summary - " )
             main.log.report( " End-to-end Avg: "+
                              str(round(endToEndAvg,2))+" ms"+
                              " End-to-end Std dev: "+
-                             str(round(numpy.std(endToEndList),2))+" ms")
+                             str(round(endToEndStd,2))+" ms")
+            
+            dbCmdList.append(
+                "INSERT INTO switch_latency_tests VALUES("
+                   "'"+timeToPost+"','switch_latency_results',"
+                   ""+runNum+","+str(clusterCount)+",'baremetal"+str(node+1)+"',"
+                   ""+str(endToEndAvg)+","+str(endToEndStd)+",0,0);"
+            )
             #main.log.report( " Ofp-to-graph Avg: "+
             #                 str(round(ofpToGraphAvg,2))+" ms"+
             #                 " Ofp-to-graph Std dev: "+
@@ -591,6 +619,13 @@ class TopoPerfNext:
         if debugMode == 'on':
             main.ONOS1.cpLogsToDir( "/opt/onos/log/karaf.log",
                                       "/tmp/", copyFileName="sw_lat_karaf" )
+        
+        #Write to file for posting to DB
+        fResult = open(resultPath, 'a')
+        for line in dbCmdList:
+            if line:
+                fResult.write(line+"\n")
+        fResult.close()
 
         #TODO: correct assert
         assertion = main.TRUE
@@ -616,6 +651,7 @@ class TopoPerfNext:
         import numpy
         global clusterCount
         global runNum
+        global timeToPost
 
         ONOS1Ip = main.params[ 'CTRL' ][ 'ip1' ]
         ONOS2Ip = main.params[ 'CTRL' ][ 'ip2' ]
@@ -637,7 +673,6 @@ class TopoPerfNext:
         debugMode = main.params[ 'TEST' ][ 'debugMode' ]
         postToDB = main.params[ 'DB' ][ 'postToDB' ]
         resultPath = main.params[ 'DB' ][ 'portEventResultPath' ]
-        timeToPost = time.strftime("%Y-%m-%d %H:%M:%S")
 
         localTime = time.strftime( '%x %X' )
         localTime = localTime.replace( "/", "" )
@@ -1165,6 +1200,9 @@ class TopoPerfNext:
             portDownDevAvg = round(numpy.mean(portDownDevList), 2)
             portDownGraphAvg = round(numpy.mean(portDownGraphList), 2)
 
+            portUpStdDev = round(numpy.std(portUpGraphList),2)
+            portDownStdDev = round(numpy.std(portDownGraphList),2)
+
             main.log.report( " - Node "+str(node+1)+" Summary - " )
             #main.log.report( " Port up ofp-to-device "+
             #                 str(round(portUpDevAvg, 2))+" ms")
@@ -1179,7 +1217,8 @@ class TopoPerfNext:
                 "INSERT INTO port_latency_tests VALUES("
                    "'"+timeToPost+"','port_latency_results',"
                    ""+runNum+","+str(clusterCount)+",'baremetal"+str(node+1)+"',"
-                   ""+str(portUpGraphAvg)+",0,"+str(portDownGraphAvg)+",0);"
+                   ""+str(portUpGraphAvg)+","+str(portUpStdDev)+
+                   ","+str(portDownGraphAvg)+","+str(portDownStdDev)+");"
             )
         
         #Write to file for posting to DB
@@ -1188,6 +1227,8 @@ class TopoPerfNext:
             if line:
                 fResult.write(line+"\n")
         fResult.close()
+
+        print dbCmdList
 
         # Remove switches from controller for next test
         main.Mininet1.deleteSwController( "s1" )

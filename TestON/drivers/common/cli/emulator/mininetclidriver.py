@@ -83,7 +83,7 @@ class MininetCliDriver( Emulator ):
                         self.user_name +
                         "@" +
                         self.ip_address )
-                msin.log.error( "Failed to connect to the Mininet CLI" )
+                main.log.error( "Failed to connect to the Mininet CLI" )
                 return main.FALSE
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
@@ -957,6 +957,8 @@ class MininetCliDriver( Emulator ):
         return main.TRUE
 
     def getVersion( self ):
+        #FIXME: What uses this? This should be refactored to get
+        #       version from MN and not some other file
         fileInput = path + '/lib/Mininet/INSTALL'
         version = super( Mininet, self ).getVersion()
         pattern = 'Mininet\s\w\.\w\.\w\w*'
@@ -1499,12 +1501,12 @@ class MininetCliDriver( Emulator ):
 
         # print "mn"
         # print json.dumps( output,
-        #                   sortKeys=True,
+        #                   sort_keys=True,
         #                   indent=4,
         #                   separators=( ',', ': ' ) )
         # print "onos"
         # print json.dumps( switchesJson,
-        #                   sortKeys=True,
+        #                   sort_keys=True,
         #                   indent=4,
         #                   separators=( ',', ': ' ) )
 
@@ -1797,6 +1799,71 @@ class MininetCliDriver( Emulator ):
                     ( node2, port2, node1, port1 ) )
             linkResults = linkResults and firstDir and secondDir
         return linkResults
+
+    def compareHosts( self, topo, hostsJson ):
+        """
+           Compare mn and onos Hosts.
+           Since Mininet hosts are quiet, ONOS will only know of them when they
+           speak. For this reason, we will only check that the hosts in ONOS
+           stores are in Mininet, and not vice versa.
+           topo: sts TestONTopology object
+           hostsJson: parsed json object from the onos hosts api
+
+           This uses the sts TestONTopology object"""
+        import json
+        hostResults = main.TRUE
+        hosts = []
+        # iterate through the MN topology and pull out hosts
+        for mnHost in topo.graph.hosts:
+            interfaces = []
+            for intf in mnHost.interfaces:
+                interfaces.append( {
+                    "name": intf.name,  # str
+                    "ips": [ str( ip ) for ip in intf.ips ],  # list of IPAddrs
+                    # hw_addr is of type EthAddr, Not JSON serializable
+                    "hw_addr": str( intf.hw_addr ) } )
+            hosts.append( {
+                "name": mnHost.name,  # str
+                "interfaces": interfaces  } )  # list
+        for onosHost in hostsJson:
+            onosMAC = onosHost[ 'mac' ].lower()
+            match = False
+            for mnHost in hosts:
+                for mnIntf in mnHost[ 'interfaces' ]:
+                    if onosMAC == mnIntf[ 'hw_addr' ].lower() :
+                        match = True
+                        for ip in mnIntf[ 'ips' ]:
+                            if ip in onosHost[ 'ips' ]:
+                                pass  # all is well
+                            else:
+                                # misssing ip
+                                main.log.error( "ONOS host " + onosHost[ 'id' ]
+                                                + " has a different IP than " +
+                                                "the Mininet host." )
+                                output = json.dumps(
+                                                    onosHost,
+                                                    sort_keys=True,
+                                                    indent=4,
+                                                    separators=( ',', ': ' ) )
+                                main.log.info( output )
+                                hostResults = main.FALSE
+            if not match:
+                hostResults = main.FALSE
+                main.log.error( "ONOS host " + onosHost[ 'id' ] + " has no " +
+                                "corresponding Mininet host." )
+                output = json.dumps( onosHost,
+                                     sort_keys=True,
+                                     indent=4,
+                                     separators=( ',', ': ' ) )
+                main.log.info( output )
+        # DEBUG
+        main.log.debug( "mn hosts" )
+        for h in hosts:
+            main.log.debug( h )
+        main.log.debug( "onos hosts" )
+        main.log.debug( hostsJson )
+        # /DEBUG
+        return hostResults
 
     def getHosts( self ):
         """

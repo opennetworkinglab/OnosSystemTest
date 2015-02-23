@@ -1340,6 +1340,34 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
+    def checkIntentState(self, ID, intentsJson):
+        """
+            Check intent state.
+            Accepts an intent ID (hex format) and returns the intent's state.
+            ID: intent ID in hex format
+            intentsJson: parsed json object from the onos:intents api
+        """
+        import json
+        try:
+            state = "State Undefined"
+            for intent in intentsJson:
+                if str(ID) == intent['id']:
+                    state = intent['state']
+                    return state
+            return state
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+    
     def flows( self, jsonFormat=True ):
         """
         Optional:

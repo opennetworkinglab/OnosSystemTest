@@ -922,6 +922,7 @@ class OnosCliDriver( CLI ):
         Description:
             Adds a host-to-host intent ( bidrectional ) by
             specifying the two hosts.
+            returns a string of the intent id or an Error message
         """
         try:
             cmdStr = "add-host-intent " + str( hostIdOne ) +\
@@ -933,7 +934,11 @@ class OnosCliDriver( CLI ):
             else:
                 main.log.info( "Host intent installed between " +
                            str( hostIdOne ) + " and " + str( hostIdTwo ) )
-                return main.TRUE
+                match = re.search('id=0x([\da-f]+),', handle)
+                if match:
+                    return match.group()[3:-1]
+                else:
+                    return handle
 
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
@@ -1505,29 +1510,16 @@ class OnosCliDriver( CLI ):
         """
         try:
             # Obtain output of intents function
-            intentsStr = self.intents()
-            allIntentList = []
+            intentsStr = self.intents(jsonFormat=False)
             intentIdList = []
 
             # Parse the intents output for ID's
             intentsList = [ s.strip() for s in intentsStr.splitlines() ]
             for intents in intentsList:
-                if "onos>" in intents:
-                    continue
-                elif "intents" in intents:
-                    continue
-                else:
-                    lineList = intents.split( " " )
-                    allIntentList.append( lineList[ 0 ] )
-
-            allIntentList = allIntentList[ 1:-2 ]
-
-            for intents in allIntentList:
-                if not intents:
-                    continue
-                else:
-                    intentIdList.append( intents )
-
+                match = re.search('id=0x([\da-f]+),', intents)
+                if match:
+                    tmpId = match.group()[3:-1]
+                    intentIdList.append( tmpId )
             return intentIdList
 
         except TypeError:

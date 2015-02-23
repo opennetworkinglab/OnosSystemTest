@@ -278,9 +278,9 @@ class OnosCHO:
             main.log.info("Devices (actual): %s, Links (actual): %s" %
                     ( numOnosDevices , numOnosLinks ) )
             main.log.info("Topology does not match, exiting CHO test...")
-            time.sleep(300)
-            #main.cleanup()
-            #main.exit()
+            #time.sleep(300)
+            main.cleanup()
+            main.exit()
 
         # just returning TRUE for now as this one just collects data
         case3Result = main.TRUE

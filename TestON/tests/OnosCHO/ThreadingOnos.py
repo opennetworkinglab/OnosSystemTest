@@ -12,8 +12,6 @@ class ThreadingOnos(threading.Thread):
         self.result = None
     def run( self ):
         try:
-            print "args length = " + str(len(self.args))
-            print "Running ",self.name
             if self.target is not None:
                 if len(self.args) != 0:
                     self.result = self.target( *self.args )

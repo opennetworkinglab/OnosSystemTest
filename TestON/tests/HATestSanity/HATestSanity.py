@@ -41,6 +41,9 @@ class HATestSanity:
         onos-install -f
         onos-wait-for-start
         """
+        import threading
+        global threadID
+        threadID = 0
         main.log.report( "ONOS HA Sanity test - initialization" )
         main.case( "Setting up test environment" )
         # TODO: save all the timers and output them for plotting
@@ -69,6 +72,7 @@ class HATestSanity:
         global ONOS7Port
         global numControllers
 
+        # FIXME: just get controller port form params?
         ONOS1Ip = main.params[ 'CTRL' ][ 'ip1' ]
         ONOS1Port = main.params[ 'CTRL' ][ 'port1' ]
         ONOS2Ip = main.params[ 'CTRL' ][ 'ip2' ]
@@ -85,6 +89,14 @@ class HATestSanity:
         ONOS7Port = main.params[ 'CTRL' ][ 'port7' ]
         numControllers = int( main.params[ 'num_controllers' ] )
 
+        global CLIs
+        CLIs = []
+        global nodes
+        nodes = []
+        for i in range( 1, numControllers + 1 ):
+            CLIs.append( getattr( main, 'ONOScli' + str( i ) ) )
+            nodes.append( getattr( main, 'ONOS' + str( i ) ) )
+
         main.step( "Applying cell variable to environment" )
         cellResult = main.ONOSbench.setCell( cellName )
         verifyResult = main.ONOSbench.verifyCell()
@@ -92,6 +104,7 @@ class HATestSanity:
         # FIXME:this is short term fix
         main.log.report( "Removing raft logs" )
         main.ONOSbench.onosRemoveRaftLogs()
+
         main.log.report( "Uninstalling ONOS" )
         main.ONOSbench.onosUninstall( ONOS1Ip )
         main.ONOSbench.onosUninstall( ONOS2Ip )
@@ -187,15 +200,21 @@ class HATestSanity:
             if onosIsupResult == main.TRUE:
                 break
 
-        cliResult1 = main.ONOScli1.startOnosCli( ONOS1Ip )
-        cliResult2 = main.ONOScli2.startOnosCli( ONOS2Ip )
-        cliResult3 = main.ONOScli3.startOnosCli( ONOS3Ip )
-        cliResult4 = main.ONOScli4.startOnosCli( ONOS4Ip )
-        cliResult5 = main.ONOScli5.startOnosCli( ONOS5Ip )
-        cliResult6 = main.ONOScli6.startOnosCli( ONOS6Ip )
-        cliResult7 = main.ONOScli7.startOnosCli( ONOS7Ip )
-        cliResults = cliResult1 and cliResult2 and cliResult3 and\
-            cliResult4 and cliResult5 and cliResult6 and cliResult7
+        main.log.step( "Starting ONOS CLI sessions" )
+        cliResults = main.TRUE
+        threads = []
+        for i in range( numControllers ):
+            t = main.Thread( target=CLIs[i].startOnosCli,
+                             threadID=threadID,
+                             name="startOnosCli-" + str( i ),
+                             args=[nodes[i].ip_address] )
+            threads.append( t )
+            t.start()
+            threadID += 1
+
+        for t in threads:
+            t.join()
+            cliResults = cliResults and t.result
 
         main.step( "Start Packet Capture MN" )
         main.Mininet2.startTcpdump(
@@ -409,13 +428,20 @@ class HATestSanity:
 
         # install onos-app-fwd
         main.log.info( "Install reactive forwarding app" )
-        main.ONOScli1.featureInstall( "onos-app-fwd" )
-        main.ONOScli2.featureInstall( "onos-app-fwd" )
-        main.ONOScli3.featureInstall( "onos-app-fwd" )
-        main.ONOScli4.featureInstall( "onos-app-fwd" )
-        main.ONOScli5.featureInstall( "onos-app-fwd" )
-        main.ONOScli6.featureInstall( "onos-app-fwd" )
-        main.ONOScli7.featureInstall( "onos-app-fwd" )
+        appResults = main.TRUE
+        threads = []
+        for i in range( numControllers ):
+            t = main.Thread( target=CLIs[i].featureInstall,
+                             threadID=threadID,
+                             name="featureInstall-" + str( i ),
+                             args=["onos-app-fwd"] )
+            threads.append( t )
+            t.start()
+            threadID += 1
+
+        for t in threads:
+            t.join()
+            appResults = appResults and t.result
 
         # REACTIVE FWD test
         pingResult = main.FALSE
@@ -431,13 +457,20 @@ class HATestSanity:
 
         # uninstall onos-app-fwd
         main.log.info( "Uninstall reactive forwarding app" )
-        main.ONOScli1.featureUninstall( "onos-app-fwd" )
-        main.ONOScli2.featureUninstall( "onos-app-fwd" )
-        main.ONOScli3.featureUninstall( "onos-app-fwd" )
-        main.ONOScli4.featureUninstall( "onos-app-fwd" )
-        main.ONOScli5.featureUninstall( "onos-app-fwd" )
-        main.ONOScli6.featureUninstall( "onos-app-fwd" )
-        main.ONOScli7.featureUninstall( "onos-app-fwd" )
+        threads = []
+        for i in range( numControllers ):
+            t = main.Thread( target=CLIs[i].featureUninstall,
+                             threadID=threadID,
+                             name="featureUninstall-" + str( i ),
+                             args=["onos-app-fwd"] )
+            threads.append( t )
+            t.start()
+            threadID += 1
+
+        for t in threads:
+            t.join()
+            appResults = appResults and t.result
+
         # timeout for fwd flows
         time.sleep( 10 )
 
@@ -539,321 +572,208 @@ class HATestSanity:
         # ( intents,flows, topology,... ) from each ONOS node
         # We can then compare them with eachother and also with past states
 
-        main.step( "Get the Mastership of each switch from each controller" )
+        main.step( "Check that each switch has a master" )
         global mastershipState
         mastershipState = []
 
         # Assert that each device has a master
-        ONOS1MasterNotNull = main.ONOScli1.rolesNotNull()
-        ONOS2MasterNotNull = main.ONOScli2.rolesNotNull()
-        ONOS3MasterNotNull = main.ONOScli3.rolesNotNull()
-        ONOS4MasterNotNull = main.ONOScli4.rolesNotNull()
-        ONOS5MasterNotNull = main.ONOScli5.rolesNotNull()
-        ONOS6MasterNotNull = main.ONOScli6.rolesNotNull()
-        ONOS7MasterNotNull = main.ONOScli7.rolesNotNull()
-        rolesNotNull = ONOS1MasterNotNull and ONOS2MasterNotNull and\
-            ONOS3MasterNotNull and ONOS4MasterNotNull and\
-            ONOS5MasterNotNull and ONOS6MasterNotNull and\
-            ONOS7MasterNotNull
+        rolesNotNull = main.TRUE
+        threads = []
+        for i in range( numControllers ):
+            t = main.Thread( target=CLIs[i].rolesNotNull,
+                             threadID=threadID,
+                             name="rolesNotNull-" + str( i ),
+                             args=[] )
+            threads.append( t )
+            t.start()
+            threadID += 1
+
+        for t in threads:
+            t.join()
+            rolesNotNull = rolesNotNull and t.result
         utilities.assert_equals(
             expect=main.TRUE,
             actual=rolesNotNull,
             onpass="Each device has a master",
             onfail="Some devices don't have a master assigned" )
 
-        ONOS1Mastership = main.ONOScli1.roles()
-        ONOS2Mastership = main.ONOScli2.roles()
-        ONOS3Mastership = main.ONOScli3.roles()
-        ONOS4Mastership = main.ONOScli4.roles()
-        ONOS5Mastership = main.ONOScli5.roles()
-        ONOS6Mastership = main.ONOScli6.roles()
-        ONOS7Mastership = main.ONOScli7.roles()
-        if "Error" in ONOS1Mastership or not ONOS1Mastership\
-                or "Error" in ONOS2Mastership or not ONOS2Mastership\
-                or "Error" in ONOS3Mastership or not ONOS3Mastership\
-                or "Error" in ONOS4Mastership or not ONOS4Mastership\
-                or "Error" in ONOS5Mastership or not ONOS5Mastership\
-                or "Error" in ONOS6Mastership or not ONOS6Mastership\
-                or "Error" in ONOS7Mastership or not ONOS7Mastership:
-            main.log.report( "Error in getting ONOS roles" )
-            main.log.warn(
-                "ONOS1 mastership response: " +
-                repr( ONOS1Mastership ) )
-            main.log.warn(
-                "ONOS2 mastership response: " +
-                repr( ONOS2Mastership ) )
-            main.log.warn(
-                "ONOS3 mastership response: " +
-                repr( ONOS3Mastership ) )
-            main.log.warn(
-                "ONOS4 mastership response: " +
-                repr( ONOS4Mastership ) )
-            main.log.warn(
-                "ONOS5 mastership response: " +
-                repr( ONOS5Mastership ) )
-            main.log.warn(
-                "ONOS6 mastership response: " +
-                repr( ONOS6Mastership ) )
-            main.log.warn(
-                "ONOS7 mastership response: " +
-                repr( ONOS7Mastership ) )
-            consistentMastership = main.FALSE
-        elif ONOS1Mastership == ONOS2Mastership\
-                and ONOS1Mastership == ONOS3Mastership\
-                and ONOS1Mastership == ONOS4Mastership\
-                and ONOS1Mastership == ONOS5Mastership\
-                and ONOS1Mastership == ONOS6Mastership\
-                and ONOS1Mastership == ONOS7Mastership:
-            mastershipState = ONOS1Mastership
-            consistentMastership = main.TRUE
+        main.step( "Get the Mastership of each switch from each controller" )
+        ONOSMastership = []
+        mastershipCheck = main.FALSE
+        consistentMastership = True
+        rolesResults = True
+        threads = []
+        for i in range( numControllers ):
+            t = main.Thread( target=CLIs[i].roles,
+                             threadID=threadID,
+                             name="roles-" + str( i ),
+                             args=[] )
+            threads.append( t )
+            t.start()
+            threadID += 1
+
+        for t in threads:
+            t.join()
+            ONOSMastership.append( t.result )
+
+        for i in range( numControllers ):
+            if not ONOSMastership[i] or "Error" in ONOSMastership[i]:
+                main.log.report( "Error in getting ONOS" + str( i + 1 ) +
+                                 " roles" )
+                main.log.warn(
+                    "ONOS" + str( i + 1 ) + " mastership response: " +
+                    repr( ONOSMastership[i] ) )
+                rolesResults = False
+        utilities.assert_equals(
+            expect=True,
+            actual=rolesResults,
+            onpass="No error in reading roles output",
+            onfail="Error in reading roles from ONOS" )
+
+        main.step( "Check for consistency in roles from each controller" )
+        if all([ i == ONOSMastership[ 0 ] for i in ONOSMastership ] ):
             main.log.report(
                 "Switch roles are consistent across all ONOS nodes" )
         else:
-            main.log.warn(
-                "ONOS1 roles: ",
-                json.dumps(
-                    json.loads( ONOS1Mastership ),
-                    sort_keys=True,
-                    indent=4,
-                    separators=(
-                        ',',
-                        ': ' ) ) )
-            main.log.warn(
-                "ONOS2 roles: ",
-                json.dumps(
-                    json.loads( ONOS2Mastership ),
-                    sort_keys=True,
-                    indent=4,
-                    separators=(
-                        ',',
-                        ': ' ) ) )
-            main.log.warn(
-                "ONOS3 roles: ",
-                json.dumps(
-                    json.loads( ONOS3Mastership ),
-                    sort_keys=True,
-                    indent=4,
-                    separators=(
-                        ',',
-                        ': ' ) ) )
-            main.log.warn(
-                "ONOS4 roles: ",
-                json.dumps(
-                    json.loads( ONOS4Mastership ),
-                    sort_keys=True,
-                    indent=4,
-                    separators=(
-                        ',',
-                        ': ' ) ) )
-            main.log.warn(
-                "ONOS5 roles: ",
-                json.dumps(
-                    json.loads( ONOS5Mastership ),
-                    sort_keys=True,
-                    indent=4,
-                    separators=(
-                        ',',
-                        ': ' ) ) )
-            main.log.warn(
-                "ONOS6 roles: ",
-                json.dumps(
-                    json.loads( ONOS6Mastership ),
-                    sort_keys=True,
-                    indent=4,
-                    separators=(
-                        ',',
-                        ': ' ) ) )
-            main.log.warn(
-                "ONOS7 roles: ",
-                json.dumps(
-                    json.loads( ONOS7Mastership ),
-                    sort_keys=True,
-                    indent=4,
-                    separators=(
-                        ',',
-                        ': ' ) ) )
-            consistentMastership = main.FALSE
+            consistentMastership = False
         utilities.assert_equals(
-            expect=main.TRUE,
+            expect=True,
             actual=consistentMastership,
             onpass="Switch roles are consistent across all ONOS nodes",
             onfail="ONOS nodes have different views of switch roles" )
 
+        if rolesResults and not consistentMastership:
+            for i in range( numControllers ):
+                main.log.warn(
+                    "ONOS" + str( i + 1 ) + " roles: ",
+                    json.dumps(
+                        json.loads( ONOSMastership[ i ] ),
+                        sort_keys=True,
+                        indent=4,
+                        separators=( ',', ': ' ) ) )
+        elif rolesResults and not consistentMastership:
+            mastershipCheck = main.TRUE
+            mastershipState = ONOSMastership[ 0 ]
+
         main.step( "Get the intents from each controller" )
         global intentState
         intentState = []
-        ONOS1Intents = main.ONOScli1.intents( jsonFormat=True )
-        ONOS2Intents = main.ONOScli2.intents( jsonFormat=True )
-        ONOS3Intents = main.ONOScli3.intents( jsonFormat=True )
-        ONOS4Intents = main.ONOScli4.intents( jsonFormat=True )
-        ONOS5Intents = main.ONOScli5.intents( jsonFormat=True )
-        ONOS6Intents = main.ONOScli6.intents( jsonFormat=True )
-        ONOS7Intents = main.ONOScli7.intents( jsonFormat=True )
+        ONOSIntents = []
         intentCheck = main.FALSE
-        if "Error" in ONOS1Intents or not ONOS1Intents\
-                or "Error" in ONOS2Intents or not ONOS2Intents\
-                or "Error" in ONOS3Intents or not ONOS3Intents\
-                or "Error" in ONOS4Intents or not ONOS4Intents\
-                or "Error" in ONOS5Intents or not ONOS5Intents\
-                or "Error" in ONOS6Intents or not ONOS6Intents\
-                or "Error" in ONOS7Intents or not ONOS7Intents:
-            main.log.report( "Error in getting ONOS intents" )
-            main.log.warn( "ONOS1 intents response: " + repr( ONOS1Intents ) )
-            main.log.warn( "ONOS2 intents response: " + repr( ONOS2Intents ) )
-            main.log.warn( "ONOS3 intents response: " + repr( ONOS3Intents ) )
-            main.log.warn( "ONOS4 intents response: " + repr( ONOS4Intents ) )
-            main.log.warn( "ONOS5 intents response: " + repr( ONOS5Intents ) )
-            main.log.warn( "ONOS6 intents response: " + repr( ONOS6Intents ) )
-            main.log.warn( "ONOS7 intents response: " + repr( ONOS7Intents ) )
-        elif ONOS1Intents == ONOS2Intents\
-                and ONOS1Intents == ONOS3Intents\
-                and ONOS1Intents == ONOS4Intents\
-                and ONOS1Intents == ONOS5Intents\
-                and ONOS1Intents == ONOS6Intents\
-                and ONOS1Intents == ONOS7Intents:
-            intentState = ONOS1Intents
-            intentCheck = main.TRUE
-            main.log.report( "Intents are consistent across all ONOS nodes" )
-        else:
-            main.log.warn(
-                "ONOS1 intents: ",
-                json.dumps(
-                    json.loads( ONOS1Intents ),
-                    sort_keys=True,
-                    indent=4,
-                    separators=(
-                        ',',
-                        ': ' ) ) )
-            main.log.warn(
-                "ONOS2 intents: ",
-                json.dumps(
-                    json.loads( ONOS2Intents ),
-                    sort_keys=True,
-                    indent=4,
-                    separators=(
-                        ',',
-                        ': ' ) ) )
-            main.log.warn(
-                "ONOS3 intents: ",
-                json.dumps(
-                    json.loads( ONOS3Intents ),
-                    sort_keys=True,
-                    indent=4,
-                    separators=(
-                        ',',
-                        ': ' ) ) )
-            main.log.warn(
-                "ONOS4 intents: ",
-                json.dumps(
-                    json.loads( ONOS4Intents ),
-                    sort_keys=True,
-                    indent=4,
-                    separators=(
-                        ',',
-                        ': ' ) ) )
-            main.log.warn(
-                "ONOS5 intents: ",
-                json.dumps(
-                    json.loads( ONOS5Intents ),
-                    sort_keys=True,
-                    indent=4,
-                    separators=(
-                        ',',
-                        ': ' ) ) )
-            main.log.warn(
-                "ONOS6 intents: ",
-                json.dumps(
-                    json.loads( ONOS6Intents ),
-                    sort_keys=True,
-                    indent=4,
-                    separators=(
-                        ',',
-                        ': ' ) ) )
-            main.log.warn(
-                "ONOS7 intents: ",
-                json.dumps(
-                    json.loads( ONOS7Intents ),
-                    sort_keys=True,
-                    indent=4,
-                    separators=(
-                        ',',
-                        ': ' ) ) )
+        consistentIntents = True
+        intentsResults = True
+        threads = []
+        for i in range( numControllers ):
+            t = main.Thread( target=CLIs[i].intents,
+                             threadID=threadID,
+                             name="intents-" + str( i ),
+                             args=[ ] )
+                                             #args=[ jsonFormat=True ] )
+            threads.append( t )
+            t.start()
+            threadID += 1
+
+        for t in threads:
+            t.join()
+            ONOSIntents.append( t.result )
+
+        for i in range( numControllers ):
+            if not ONOSIntents[ i ] or "Error" in ONOSIntents[ i ]:
+                main.log.report( "Error in getting ONOS" + str( i + 1 ) +
+                                 " intents" )
+                main.log.warn( "ONOS" + str( i + 1 ) + " intents response: " +
+                               repr( ONOSIntents[ i ] ) )
+                intentsResults = False
         utilities.assert_equals(
-            expect=main.TRUE,
-            actual=intentCheck,
+            expect=True,
+            actual=intentsResults,
+            onpass="No error in reading intents output",
+            onfail="Error in reading intents from ONOS" )
+
+        main.step( "Check for consistency in Intents from each controller" )
+        if all([ i == ONOSIntents[ 0 ] for i in ONOSIntents ] ):
+            main.log.report( "Intents are consistent across all ONOS " +
+                             "nodes" )
+        else:
+            consistentIntents = False
+        utilities.assert_equals(
+            expect=True,
+            actual=consistentIntents,
             onpass="Intents are consistent across all ONOS nodes",
             onfail="ONOS nodes have different views of intents" )
+
+        if intentsResults and not consistentIntents:
+            for i in range( numControllers ):
+                main.log.warn(
+                    "ONOS" + str( i + 1 ) + " intents: ",
+                    json.dumps(
+                        json.loads( ONOSIntents[i] ),
+                        sort_keys=True,
+                        indent=4,
+                        separators=( ',', ': ' ) ) )
+        elif intentsResults and consistentIntents:
+            intentCheck = main.TRUE
+            intentState = ONOSIntents[ 0 ]
 
         main.step( "Get the flows from each controller" )
         global flowState
         flowState = []
-        ONOS1Flows = main.ONOScli1.flows( jsonFormat=True )
-        ONOS2Flows = main.ONOScli2.flows( jsonFormat=True )
-        ONOS3Flows = main.ONOScli3.flows( jsonFormat=True )
-        ONOS4Flows = main.ONOScli4.flows( jsonFormat=True )
-        ONOS5Flows = main.ONOScli5.flows( jsonFormat=True )
-        ONOS6Flows = main.ONOScli6.flows( jsonFormat=True )
-        ONOS7Flows = main.ONOScli7.flows( jsonFormat=True )
-        ONOS1FlowsJson = json.loads( ONOS1Flows )
-        ONOS2FlowsJson = json.loads( ONOS2Flows )
-        ONOS3FlowsJson = json.loads( ONOS3Flows )
-        ONOS4FlowsJson = json.loads( ONOS4Flows )
-        ONOS5FlowsJson = json.loads( ONOS5Flows )
-        ONOS6FlowsJson = json.loads( ONOS6Flows )
-        ONOS7FlowsJson = json.loads( ONOS7Flows )
+        ONOSFlows = []
+        ONOSFlowsJson = []
         flowCheck = main.FALSE
-        if "Error" in ONOS1Flows or not ONOS1Flows\
-                or "Error" in ONOS2Flows or not ONOS2Flows\
-                or "Error" in ONOS3Flows or not ONOS3Flows\
-                or "Error" in ONOS4Flows or not ONOS4Flows\
-                or "Error" in ONOS5Flows or not ONOS5Flows\
-                or "Error" in ONOS6Flows or not ONOS6Flows\
-                or "Error" in ONOS7Flows or not ONOS7Flows:
-            main.log.report( "Error in getting ONOS intents" )
-            main.log.warn( "ONOS1 flows repsponse: " + ONOS1Flows )
-            main.log.warn( "ONOS2 flows repsponse: " + ONOS2Flows )
-            main.log.warn( "ONOS3 flows repsponse: " + ONOS3Flows )
-            main.log.warn( "ONOS4 flows repsponse: " + ONOS4Flows )
-            main.log.warn( "ONOS5 flows repsponse: " + ONOS5Flows )
-            main.log.warn( "ONOS6 flows repsponse: " + ONOS6Flows )
-            main.log.warn( "ONOS7 flows repsponse: " + ONOS7Flows )
-        elif len( ONOS1FlowsJson ) == len( ONOS2FlowsJson )\
-                and len( ONOS1FlowsJson ) == len( ONOS3FlowsJson )\
-                and len( ONOS1FlowsJson ) == len( ONOS4FlowsJson )\
-                and len( ONOS1FlowsJson ) == len( ONOS5FlowsJson )\
-                and len( ONOS1FlowsJson ) == len( ONOS6FlowsJson )\
-                and len( ONOS1FlowsJson ) == len( ONOS7FlowsJson ):
-                # TODO: Do a better check, maybe compare flows on switches?
-            flowState = ONOS1Flows
-            flowCheck = main.TRUE
+        consistentFlows = True
+        flowsResults = True
+        threads = []
+        for i in range( numControllers ):
+            t = main.Thread( target=CLIs[i].flows,
+                             threadID=threadID,
+                             name="flows-" + str( i ),
+                             args=[ ] )
+                                             #args=[ jsonFormat=True ] )
+            threads.append( t )
+            t.start()
+            threadID += 1
+
+        for t in threads:
+            t.join()
+            ONOSFlows.append( t.result )
+            ONOSFlowsJson = json.loads( t.result )
+
+        for i in range( numControllers ):
+            if not ONOSFlows[ i ] or "Error" in ONOSFlows[ i ]:
+                main.log.report( "Error in getting ONOS" + str( i + 1 ) +
+                                 " flows" )
+                main.log.warn( "ONOS" + str( i + 1 ) + " flows response: " +
+                               repr( ONOSFlows[ i ] ) )
+                flowsResults = False
+        utilities.assert_equals(
+            expect=True,
+            actual=flowsResults,
+            onpass="No error in reading flows output",
+            onfail="Error in reading flows from ONOS" )
+
+        main.step( "Check for consistency in Flows from each controller" )
+        tmp = [ len( i ) == len( ONOSFlowsJson[ 0 ] ) for i in ONOSFlowsJson ]
+        if all( tmp ):
             main.log.report( "Flow count is consistent across all ONOS nodes" )
         else:
-            main.log.warn( "ONOS1 flows: " +
-                           json.dumps( ONOS1FlowsJson, sort_keys=True,
-                                       indent=4, separators=( ',', ': ' ) ) )
-            main.log.warn( "ONOS2 flows: " +
-                           json.dumps( ONOS2FlowsJson, sort_keys=True,
-                                       indent=4, separators=( ',', ': ' ) ) )
-            main.log.warn( "ONOS3 flows: " +
-                           json.dumps( ONOS3FlowsJson, sort_keys=True,
-                                       indent=4, separators=( ',', ': ' ) ) )
-            main.log.warn( "ONOS4 flows: " +
-                           json.dumps( ONOS4FlowsJson, sort_keys=True,
-                                       indent=4, separators=( ',', ': ' ) ) )
-            main.log.warn( "ONOS5 flows: " +
-                           json.dumps( ONOS5FlowsJson, sort_keys=True,
-                                       indent=4, separators=( ',', ': ' ) ) )
-            main.log.warn( "ONOS6 flows: " +
-                           json.dumps( ONOS6FlowsJson, sort_keys=True,
-                                       indent=4, separators=( ',', ': ' ) ) )
-            main.log.warn( "ONOS7 flows: " +
-                           json.dumps( ONOS7FlowsJson, sort_keys=True,
-                                       indent=4, separators=( ',', ': ' ) ) )
+            consistentFlows = False
         utilities.assert_equals(
-            expect=main.TRUE,
-            actual=flowCheck,
+            expect=True,
+            actual=consistentFlows,
             onpass="The flow count is consistent across all ONOS nodes",
             onfail="ONOS nodes have different flow counts" )
+
+        if flowsResults and not consistentFlows:
+            for i in range( numControllers ):
+                main.log.warn(
+                    "ONOS" + str( i + 1 ) + " flows: ",
+                    json.dumps( json.loads( ONOSFlows[i] ), sort_keys=True,
+                                indent=4, separators=( ',', ': ' ) ) )
+        elif flowsResults and consistentFlows:
+            flowCheck = main.TRUE
+            flowState = ONOSFlows[ 0 ]
+
 
         main.step( "Get the OF Table entries" )
         global flows
@@ -926,45 +846,75 @@ class HATestSanity:
 
         main.step( "Collecting topology information from ONOS" )
         devices = []
-        devices.append( main.ONOScli1.devices() )
-        devices.append( main.ONOScli2.devices() )
-        devices.append( main.ONOScli3.devices() )
-        devices.append( main.ONOScli4.devices() )
-        devices.append( main.ONOScli5.devices() )
-        devices.append( main.ONOScli6.devices() )
-        devices.append( main.ONOScli7.devices() )
+        threads = []
+        for i in range( numControllers ):
+            t = main.Thread( target=CLIs[i].devices,
+                             threadID=threadID,
+                             name="devices-" + str( i ),
+                             args=[ ] )
+            threads.append( t )
+            t.start()
+            threadID += 1
+
+        for t in threads:
+            t.join()
+            devices.append( t.result )
         hosts = []
-        hosts.append( main.ONOScli1.hosts() )
-        hosts.append( main.ONOScli2.hosts() )
-        hosts.append( main.ONOScli3.hosts() )
-        hosts.append( main.ONOScli4.hosts() )
-        hosts.append( main.ONOScli5.hosts() )
-        hosts.append( main.ONOScli6.hosts() )
-        hosts.append( main.ONOScli7.hosts() )
+        threads = []
+        for i in range( numControllers ):
+            t = main.Thread( target=CLIs[i].hosts,
+                             threadID=threadID,
+                             name="hosts-" + str( i ),
+                             args=[ ] )
+            threads.append( t )
+            t.start()
+            threadID += 1
+
+        for t in threads:
+            t.join()
+            hosts.append( t.result )
         ports = []
-        ports.append( main.ONOScli1.ports() )
-        ports.append( main.ONOScli2.ports() )
-        ports.append( main.ONOScli3.ports() )
-        ports.append( main.ONOScli4.ports() )
-        ports.append( main.ONOScli5.ports() )
-        ports.append( main.ONOScli6.ports() )
-        ports.append( main.ONOScli7.ports() )
+        threads = []
+        for i in range( numControllers ):
+            t = main.Thread( target=CLIs[i].ports,
+                             threadID=threadID,
+                             name="ports-" + str( i ),
+                             args=[ ] )
+            threads.append( t )
+            t.start()
+            threadID += 1
+
+        for t in threads:
+            t.join()
+            ports.append( t.result )
         links = []
-        links.append( main.ONOScli1.links() )
-        links.append( main.ONOScli2.links() )
-        links.append( main.ONOScli3.links() )
-        links.append( main.ONOScli4.links() )
-        links.append( main.ONOScli5.links() )
-        links.append( main.ONOScli6.links() )
-        links.append( main.ONOScli7.links() )
+        threads = []
+        for i in range( numControllers ):
+            t = main.Thread( target=CLIs[i].links,
+                             threadID=threadID,
+                             name="links-" + str( i ),
+                             args=[ ] )
+            threads.append( t )
+            t.start()
+            threadID += 1
+
+        for t in threads:
+            t.join()
+            links.append( t.result )
         clusters = []
-        clusters.append( main.ONOScli1.clusters() )
-        clusters.append( main.ONOScli2.clusters() )
-        clusters.append( main.ONOScli3.clusters() )
-        clusters.append( main.ONOScli4.clusters() )
-        clusters.append( main.ONOScli5.clusters() )
-        clusters.append( main.ONOScli6.clusters() )
-        clusters.append( main.ONOScli7.clusters() )
+        threads = []
+        for i in range( numControllers ):
+            t = main.Thread( target=CLIs[i].clusters,
+                             threadID=threadID,
+                             name="clusters-" + str( i ),
+                             args=[ ] )
+            threads.append( t )
+            t.start()
+            threadID += 1
+
+        for t in threads:
+            t.join()
+            clusters.append( t.result )
         # Compare json objects for hosts and dataplane clusters
 
         # hosts
@@ -1113,97 +1063,91 @@ class HATestSanity:
         import json
         main.case( "Running ONOS Constant State Tests" )
 
+        main.step( "Check that each switch has a master" )
         # Assert that each device has a master
-        ONOS1MasterNotNull = main.ONOScli1.rolesNotNull()
-        ONOS2MasterNotNull = main.ONOScli2.rolesNotNull()
-        ONOS3MasterNotNull = main.ONOScli3.rolesNotNull()
-        ONOS4MasterNotNull = main.ONOScli4.rolesNotNull()
-        ONOS5MasterNotNull = main.ONOScli5.rolesNotNull()
-        ONOS6MasterNotNull = main.ONOScli6.rolesNotNull()
-        ONOS7MasterNotNull = main.ONOScli7.rolesNotNull()
-        rolesNotNull = ONOS1MasterNotNull and ONOS2MasterNotNull and\
-            ONOS3MasterNotNull and ONOS4MasterNotNull and\
-            ONOS5MasterNotNull and ONOS6MasterNotNull and\
-            ONOS7MasterNotNull
+        rolesNotNull = main.TRUE
+        threads = []
+        for i in range( numControllers ):
+            t = main.Thread( target=CLIs[i].rolesNotNull,
+                             threadID=threadID,
+                             name="rolesNotNull-" + str( i ),
+                             args=[ ] )
+            threads.append( t )
+            t.start()
+            threadID += 1
+
+        for t in threads:
+            t.join()
+            rolesNotNull = rolesNotNull and t.result
         utilities.assert_equals(
             expect=main.TRUE,
             actual=rolesNotNull,
             onpass="Each device has a master",
             onfail="Some devices don't have a master assigned" )
 
-        main.step( "Check if switch roles are consistent across all nodes" )
-        ONOS1Mastership = main.ONOScli1.roles()
-        ONOS2Mastership = main.ONOScli2.roles()
-        ONOS3Mastership = main.ONOScli3.roles()
-        ONOS4Mastership = main.ONOScli4.roles()
-        ONOS5Mastership = main.ONOScli5.roles()
-        ONOS6Mastership = main.ONOScli6.roles()
-        ONOS7Mastership = main.ONOScli7.roles()
-        if "Error" in ONOS1Mastership or not ONOS1Mastership\
-                or "Error" in ONOS2Mastership or not ONOS2Mastership\
-                or "Error" in ONOS3Mastership or not ONOS3Mastership\
-                or "Error" in ONOS4Mastership or not ONOS4Mastership\
-                or "Error" in ONOS5Mastership or not ONOS5Mastership\
-                or "Error" in ONOS6Mastership or not ONOS6Mastership\
-                or "Error" in ONOS7Mastership or not ONOS7Mastership:
-            main.log.error( "Error in getting ONOS mastership" )
-            main.log.warn( "ONOS1 mastership response: " +
-                           repr( ONOS1Mastership ) )
-            main.log.warn( "ONOS2 mastership response: " +
-                           repr( ONOS2Mastership ) )
-            main.log.warn( "ONOS3 mastership response: " +
-                           repr( ONOS3Mastership ) )
-            main.log.warn( "ONOS4 mastership response: " +
-                           repr( ONOS4Mastership ) )
-            main.log.warn( "ONOS5 mastership response: " +
-                           repr( ONOS5Mastership ) )
-            main.log.warn( "ONOS6 mastership response: " +
-                           repr( ONOS6Mastership ) )
-            main.log.warn( "ONOS7 mastership response: " +
-                           repr( ONOS7Mastership ) )
-            consistentMastership = main.FALSE
-        elif ONOS1Mastership == ONOS2Mastership\
-                and ONOS1Mastership == ONOS3Mastership\
-                and ONOS1Mastership == ONOS4Mastership\
-                and ONOS1Mastership == ONOS5Mastership\
-                and ONOS1Mastership == ONOS6Mastership\
-                and ONOS1Mastership == ONOS7Mastership:
-            consistentMastership = main.TRUE
+        ONOSMastership = []
+        mastershipCheck = main.FALSE
+        consistentMastership = True
+        rolesResults = True
+        threads = []
+        for i in range( numControllers ):
+            t = main.Thread( target=CLIs[i].roles,
+                             threadID=threadID,
+                             name="roles-" + str( i ),
+                             args=[] )
+            threads.append( t )
+            t.start()
+            threadID += 1
+
+        for t in threads:
+            t.join()
+            ONOSMastership.append( t.result )
+
+        for i in range( numControllers ):
+            if not ONOSMastership[i] or "Error" in ONOSMastership[i]:
+                main.log.report( "Error in getting ONOS" + str( i + 1 ) +
+                                 " roles" )
+                main.log.warn(
+                    "ONOS" + str( i + 1 ) + " mastership response: " +
+                    repr( ONOSMastership[i] ) )
+                rolesResults = False
+        utilities.assert_equals(
+            expect=True,
+            actual=rolesResults,
+            onpass="No error in reading roles output",
+            onfail="Error in reading roles from ONOS" )
+
+        main.step( "Check for consistency in roles from each controller" )
+        if all([ i == ONOSMastership[ 0 ] for i in ONOSMastership ] ):
             main.log.report(
                 "Switch roles are consistent across all ONOS nodes" )
         else:
-            main.log.warn( "ONOS1 roles: ", json.dumps(
-                json.loads( ONOS1Mastership ), sort_keys=True, indent=4,
-                separators=( ',', ': ' ) ) )
-            main.log.warn( "ONOS2 roles: ", json.dumps(
-                json.loads( ONOS2Mastership ), sort_keys=True, indent=4,
-                separators=( ',', ': ' ) ) )
-            main.log.warn( "ONOS3 roles: ", json.dumps(
-                json.loads( ONOS3Mastership ), sort_keys=True, indent=4,
-                separators=( ',', ': ' ) ) )
-            main.log.warn( "ONOS4 roles: ", json.dumps(
-                json.loads( ONOS4Mastership ), sort_keys=True, indent=4,
-                separators=( ',', ': ' ) ) )
-            main.log.warn( "ONOS5 roles: ", json.dumps(
-                json.loads( ONOS5Mastership ), sort_keys=True, indent=4,
-                separators=( ',', ': ' ) ) )
-            main.log.warn( "ONOS6 roles: ", json.dumps(
-                json.loads( ONOS6Mastership ), sort_keys=True, indent=4,
-                separators=( ',', ': ' ) ) )
-            main.log.warn( "ONOS7 roles: ", json.dumps(
-                json.loads( ONOS7Mastership ), sort_keys=True, indent=4,
-                separators=( ',', ': ' ) ) )
-            consistentMastership = main.FALSE
+            consistentMastership = False
         utilities.assert_equals(
-            expect=main.TRUE,
+            expect=True,
             actual=consistentMastership,
             onpass="Switch roles are consistent across all ONOS nodes",
             onfail="ONOS nodes have different views of switch roles" )
 
+        if rolesResults and not consistentMastership:
+            for i in range( numControllers ):
+                main.log.warn(
+                    "ONOS" + str( i + 1 ) + " roles: ",
+                    json.dumps(
+                        json.loads( ONOSMastership[ i ] ),
+                        sort_keys=True,
+                        indent=4,
+                        separators=( ',', ': ' ) ) )
+        elif rolesResults and not consistentMastership:
+            mastershipCheck = main.TRUE
+
+
+
+
         description2 = "Compare switch roles from before failure"
         main.step( description2 )
 
-        currentJson = json.loads( ONOS1Mastership )
+        currentJson = json.loads( ONOSMastership[0] )
         oldJson = json.loads( mastershipState )
         mastershipCheck = main.TRUE
         for i in range( 1, 29 ):
@@ -1231,81 +1175,62 @@ class HATestSanity:
         mastershipCheck = mastershipCheck and consistentMastership
 
         main.step( "Get the intents and compare across all nodes" )
-        ONOS1Intents = main.ONOScli1.intents( jsonFormat=True )
-        ONOS2Intents = main.ONOScli2.intents( jsonFormat=True )
-        ONOS3Intents = main.ONOScli3.intents( jsonFormat=True )
-        ONOS4Intents = main.ONOScli4.intents( jsonFormat=True )
-        ONOS5Intents = main.ONOScli5.intents( jsonFormat=True )
-        ONOS6Intents = main.ONOScli6.intents( jsonFormat=True )
-        ONOS7Intents = main.ONOScli7.intents( jsonFormat=True )
+        ONOSIntents = []
         intentCheck = main.FALSE
-        if "Error" in ONOS1Intents or not ONOS1Intents\
-                or "Error" in ONOS2Intents or not ONOS2Intents\
-                or "Error" in ONOS3Intents or not ONOS3Intents\
-                or "Error" in ONOS4Intents or not ONOS4Intents\
-                or "Error" in ONOS5Intents or not ONOS5Intents\
-                or "Error" in ONOS6Intents or not ONOS6Intents\
-                or "Error" in ONOS7Intents or not ONOS7Intents:
-            main.log.report( "Error in getting ONOS intents" )
-            main.log.warn( "ONOS1 intents response: " + repr( ONOS1Intents ) )
-            main.log.warn( "ONOS2 intents response: " + repr( ONOS2Intents ) )
-            main.log.warn( "ONOS3 intents response: " + repr( ONOS3Intents ) )
-            main.log.warn( "ONOS4 intents response: " + repr( ONOS4Intents ) )
-            main.log.warn( "ONOS5 intents response: " + repr( ONOS5Intents ) )
-            main.log.warn( "ONOS6 intents response: " + repr( ONOS6Intents ) )
-            main.log.warn( "ONOS7 intents response: " + repr( ONOS7Intents ) )
-        elif ONOS1Intents == ONOS2Intents\
-                and ONOS1Intents == ONOS3Intents\
-                and ONOS1Intents == ONOS4Intents\
-                and ONOS1Intents == ONOS5Intents\
-                and ONOS1Intents == ONOS6Intents\
-                and ONOS1Intents == ONOS7Intents:
-            intentCheck = main.TRUE
-            main.log.report( "Intents are consistent across all ONOS nodes" )
-        else:
-            main.log.warn( "ONOS1 intents: " )
-            print json.dumps( json.loads( ONOS1Intents ), sort_keys=True,
-                              indent=4, separators=( ',', ': ' ) )
-            main.log.warn( "ONOS2 intents: " )
-            print json.dumps( json.loads( ONOS2Intents ), sort_keys=True,
-                              indent=4, separators=( ',', ': ' ) )
-            main.log.warn( "ONOS3 intents: " )
-            print json.dumps( json.loads( ONOS3Intents ), sort_keys=True,
-                              indent=4, separators=( ',', ': ' ) )
-            main.log.warn( "ONOS4 intents: " )
-            print json.dumps( json.loads( ONOS4Intents ), sort_keys=True,
-                              indent=4, separators=( ',', ': ' ) )
-            main.log.warn( "ONOS5 intents: " )
-            print json.dumps( json.loads( ONOS5Intents ), sort_keys=True,
-                              indent=4, separators=( ',', ': ' ) )
-            main.log.warn( "ONOS6 intents: " )
-            print json.dumps( json.loads( ONOS6Intents ), sort_keys=True,
-                              indent=4, separators=( ',', ': ' ) )
-            main.log.warn( "ONOS7 intents: " )
-            print json.dumps( json.loads( ONOS7Intents ), sort_keys=True,
-                              indent=4, separators=( ',', ': ' ) )
+        consistentIntents = True
+        intentsResults = True
+        threads = []
+        for i in range( numControllers ):
+            t = main.Thread( target=CLIs[i].intents,
+                             threadID=threadID,
+                             name="intents-" + str( i ),
+                             args=[ ] )
+                                             #args=[ jsonFormat=True ] )
+            threads.append( t )
+            t.start()
+            threadID += 1
+
+        for t in threads:
+            t.join()
+            ONOSIntents.append( t.result )
+
+        for i in range( numControllers ):
+            if not ONOSIntents[ i ] or "Error" in ONOSIntents[ i ]:
+                main.log.report( "Error in getting ONOS" + str( i + 1 ) +
+                                 " intents" )
+                main.log.warn( "ONOS" + str( i + 1 ) + " intents response: " +
+                               repr( ONOSIntents[ i ] ) )
+                intentsResults = False
         utilities.assert_equals(
-            expect=main.TRUE,
-            actual=intentCheck,
+            expect=True,
+            actual=intentsResults,
+            onpass="No error in reading intents output",
+            onfail="Error in reading intents from ONOS" )
+
+        main.step( "Check for consistency in Intents from each controller" )
+        if all([ i == ONOSIntents[ 0 ] for i in ONOSIntents ] ):
+            main.log.report( "Intents are consistent across all ONOS " +
+                             "nodes" )
+        else:
+            consistentIntents = False
+        utilities.assert_equals(
+            expect=True,
+            actual=consistentIntents,
             onpass="Intents are consistent across all ONOS nodes",
             onfail="ONOS nodes have different views of intents" )
-        # Print the intent states
-        intents = []
-        intents.append( ONOS1Intents )
-        intents.append( ONOS2Intents )
-        intents.append( ONOS3Intents )
-        intents.append( ONOS4Intents )
-        intents.append( ONOS5Intents )
-        intents.append( ONOS6Intents )
-        intents.append( ONOS7Intents )
-        intentStates = []
-        for node in intents:  # Iter through ONOS nodes
-            nodeStates = []
-            for intent in json.loads( node ):  # Iter through intents of a node
-                nodeStates.append( intent[ 'state' ] )
-            intentStates.append( nodeStates )
-            out = [ (i, nodeStates.count( i ) ) for i in set( nodeStates ) ]
-            main.log.info( dict( out ) )
+
+        if intentsResults and not consistentIntents:
+            for i in range( numControllers ):
+                main.log.warn(
+                    "ONOS" + str( i + 1 ) + " intents: ",
+                    json.dumps(
+                        json.loads( ONOSIntents[i] ),
+                        sort_keys=True,
+                        indent=4,
+                        separators=( ',', ': ' ) ) )
+        elif intentsResults and consistentIntents:
+            intentCheck = main.TRUE
+            intentState = ONOSIntents[ 0 ]
 
 
         # NOTE: Hazelcast has no durability, so intents are lost across system
@@ -1314,15 +1239,15 @@ class HATestSanity:
         # NOTE: this requires case 5 to pass for intentState to be set.
         #      maybe we should stop the test if that fails?
         sameIntents = main.TRUE
-        if intentState and intentState == ONOS1Intents:
+        if intentState and intentState == ONOSIntents[ 0 ]:
             sameIntents = main.TRUE
             main.log.report( "Intents are consistent with before failure" )
         # TODO: possibly the states have changed? we may need to figure out
         # what the aceptable states are
         else:
             try:
-                main.log.warn( "ONOS1 intents: " )
-                print json.dumps( json.loads( ONOS1Intents ),
+                main.log.warn( "ONOS intents: " )
+                print json.dumps( json.loads( ONOSIntents[ 0 ] ),
                                   sort_keys=True, indent=4,
                                   separators=( ',', ': ' ) )
             except:
@@ -1487,21 +1412,33 @@ class HATestSanity:
                     ctrls )
             cliStart = time.time()
             devices = []
-            devices.append( main.ONOScli1.devices() )
-            devices.append( main.ONOScli2.devices() )
-            devices.append( main.ONOScli3.devices() )
-            devices.append( main.ONOScli4.devices() )
-            devices.append( main.ONOScli5.devices() )
-            devices.append( main.ONOScli6.devices() )
-            devices.append( main.ONOScli7.devices() )
+            threads = []
+            for i in range( numControllers ):
+                t = main.Thread( target=CLIs[i].devices,
+                                 threadID=threadID,
+                                 name="devices-" + str( i ),
+                                 args=[ ] )
+                threads.append( t )
+                t.start()
+                threadID += 1
+
+            for t in threads:
+                t.join()
+                devices.append( t.result )
             hosts = []
-            hosts.append( json.loads( main.ONOScli1.hosts() ) )
-            hosts.append( json.loads( main.ONOScli2.hosts() ) )
-            hosts.append( json.loads( main.ONOScli3.hosts() ) )
-            hosts.append( json.loads( main.ONOScli4.hosts() ) )
-            hosts.append( json.loads( main.ONOScli5.hosts() ) )
-            hosts.append( json.loads( main.ONOScli6.hosts() ) )
-            hosts.append( json.loads( main.ONOScli7.hosts() ) )
+            threads = []
+            for i in range( numControllers ):
+                t = main.Thread( target=CLIs[i].hosts,
+                                 threadID=threadID,
+                                 name="hosts-" + str( i ),
+                                 args=[ ] )
+                threads.append( t )
+                t.start()
+                threadID += 1
+
+            for t in threads:
+                t.join()
+                hosts.append( json.loads( t.result ) )
             for controller in range( 0, len( hosts ) ):
                 controllerStr = str( controller + 1 )
                 for host in hosts[ controller ]:
@@ -1510,29 +1447,47 @@ class HATestSanity:
                             "DEBUG:Error with host ips on controller" +
                             controllerStr + ": " + str( host ) )
             ports = []
-            ports.append( main.ONOScli1.ports() )
-            ports.append( main.ONOScli2.ports() )
-            ports.append( main.ONOScli3.ports() )
-            ports.append( main.ONOScli4.ports() )
-            ports.append( main.ONOScli5.ports() )
-            ports.append( main.ONOScli6.ports() )
-            ports.append( main.ONOScli7.ports() )
+            threads = []
+            for i in range( numControllers ):
+                t = main.Thread( target=CLIs[i].ports,
+                                 threadID=threadID,
+                                 name="ports-" + str( i ),
+                                 args=[ ] )
+                threads.append( t )
+                t.start()
+                threadID += 1
+
+            for t in threads:
+                t.join()
+                ports.append( t.result )
             links = []
-            links.append( main.ONOScli1.links() )
-            links.append( main.ONOScli2.links() )
-            links.append( main.ONOScli3.links() )
-            links.append( main.ONOScli4.links() )
-            links.append( main.ONOScli5.links() )
-            links.append( main.ONOScli6.links() )
-            links.append( main.ONOScli7.links() )
+            threads = []
+            for i in range( numControllers ):
+                t = main.Thread( target=CLIs[i].links,
+                                 threadID=threadID,
+                                 name="links-" + str( i ),
+                                 args=[ ] )
+                threads.append( t )
+                t.start()
+                threadID += 1
+
+            for t in threads:
+                t.join()
+                links.append( t.result )
             clusters = []
-            clusters.append( main.ONOScli1.clusters() )
-            clusters.append( main.ONOScli2.clusters() )
-            clusters.append( main.ONOScli3.clusters() )
-            clusters.append( main.ONOScli4.clusters() )
-            clusters.append( main.ONOScli5.clusters() )
-            clusters.append( main.ONOScli6.clusters() )
-            clusters.append( main.ONOScli7.clusters() )
+            threads = []
+            for i in range( numControllers ):
+                t = main.Thread( target=CLIs[i].clusters,
+                                 threadID=threadID,
+                                 name="clusters-" + str( i ),
+                                 args=[ ] )
+                threads.append( t )
+                t.start()
+                threadID += 1
+
+            for t in threads:
+                t.join()
+                clusters.append( t.result )
 
             elapsed = time.time() - startTime
             cliTime = time.time() - cliStart
@@ -1835,12 +1790,6 @@ class HATestSanity:
         main.step( "Killing tcpdumps" )
         main.Mininet2.stopTcpdump()
 
-        main.step( "Checking ONOS Logs for errors" )
-        for i in range( 7 ):
-            print colors[ 'purple' ] + "Checking logs for errors on " + \
-                "ONOS" + str( i + 1 ) + ":" + colors[ 'end' ]
-            print main.ONOSbench.checkLogs( ips[ i ] )
-
         main.step( "Copying MN pcap and ONOS log files to test station" )
         testname = main.TEST
         teststationUser = main.params[ 'TESTONUSER' ]
@@ -1881,6 +1830,17 @@ class HATestSanity:
                                                 f )
         # sleep so scp can finish
         time.sleep( 10 )
+
+        main.step( "Stopping Mininet" )
+        main.Mininet1.stopNet()
+
+        main.step( "Checking ONOS Logs for errors" )
+        for i in range( 7 ):
+            print colors[ 'purple' ] + "Checking logs for errors on " + \
+                "ONOS" + str( i + 1 ) + ":" + colors[ 'end' ]
+            print main.ONOSbench.checkLogs( ips[ i ] )
+
+
         main.step( "Packing and rotating pcap archives" )
         os.system( "~/TestON/dependencies/rotate.sh " + str( testname ) )
 
@@ -1888,6 +1848,9 @@ class HATestSanity:
         utilities.assert_equals( expect=main.TRUE, actual=main.TRUE,
                                 onpass="Test cleanup successful",
                                 onfail="Test cleanup NOT successful" )
+        print "ActiveCount: ",
+        print threading.activeCount()
+        print threading.enumerate()
 
     def CASE14( self, main ):
         """

@@ -37,6 +37,7 @@ class PingallExample:
         PULLCODE = False
         if main.params[ 'Git' ] == 'True':
             PULLCODE = True
+        gitBranch = main.params[ 'branch' ]
         cellName = main.params[ 'ENV' ][ 'cellName' ]
 
         ONOS1Ip = main.params[ 'CTRL' ][ 'ip1' ]
@@ -55,17 +56,13 @@ class PingallExample:
 
         main.step( "Compiling the latest version of ONOS" )
         if PULLCODE:
-            main.step( "Git checkout and pull master" )
-            main.ONOSbench.gitCheckout( "master" )
+            main.step( "Git checkout and pull " + gitBranch )
+            main.ONOSbench.gitCheckout( gitBranch )
             gitPullResult = main.ONOSbench.gitPull()
 
             main.step( "Using mvn clean & install" )
             cleanInstallResult = main.TRUE
-            if gitPullResult == main.TRUE:
-                cleanInstallResult = main.ONOSbench.cleanInstall()
-            else:
-                main.log.warn( "Did not pull new code so skipping mvn " +
-                               "clean install" )
+            cleanInstallResult = main.ONOSbench.cleanInstall()
         main.ONOSbench.getVersion( report=True )
         main.log.step("Uninstall and install ONOS to all nodes")
         main.ONOSbench.onosUninstall( ONOS1Ip )
@@ -163,6 +160,16 @@ class PingallExample:
         ONOS1Ip = main.params[ 'CTRL' ][ 'ip1' ]
         ONOS1Port = main.params[ 'CTRL' ][ 'port1' ]
 
+        # DEBUG
+        '''
+        main.ONOScli1.handle.sendline("log:set TRACE org.onosproject ")
+        main.ONOScli1.handle.expect("onos>")
+        print main.ONOScli1.handle.before
+        main.ONOScli1.handle.sendline("log:list ")
+        main.ONOScli1.handle.expect("onos>")
+        print main.ONOScli1.handle.before
+        '''
+        # /DEBUG
         for i in range( 1, 14 ):
             main.Mininet1.assignSwController(
                 sw=str( i ),
@@ -204,7 +211,7 @@ class PingallExample:
         # REACTIVE FWD test
         pingResult = main.FALSE
         time1 = time.time()
-        pingResult = main.Mininet1.pingall()
+        pingResult = main.Mininet1.pingall(timeout=60)
         time2 = time.time()
         main.log.info( "Time for pingall: %2f seconds" % ( time2 - time1 ) )
         

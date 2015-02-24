@@ -160,16 +160,6 @@ class PingallExample:
         ONOS1Ip = main.params[ 'CTRL' ][ 'ip1' ]
         ONOS1Port = main.params[ 'CTRL' ][ 'port1' ]
 
-        # DEBUG
-        '''
-        main.ONOScli1.handle.sendline("log:set TRACE org.onosproject ")
-        main.ONOScli1.handle.expect("onos>")
-        print main.ONOScli1.handle.before
-        main.ONOScli1.handle.sendline("log:list ")
-        main.ONOScli1.handle.expect("onos>")
-        print main.ONOScli1.handle.before
-        '''
-        # /DEBUG
         for i in range( 1, 14 ):
             main.Mininet1.assignSwController(
                 sw=str( i ),

@@ -17,4 +17,4 @@ class ThreadingOnos(threading.Thread):
                     self.result = self.target( *self.args )
                 else: self.result = self.target()
         except:
-            print "Thread-" + str(self.threadID) + ":something went wrong with " + self.name + "method"
+            print "Thread-" + str(self.threadID) + ":something went wrong with " + self.name + " method"

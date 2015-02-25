@@ -46,6 +46,7 @@ sys.path.append(core_path )
 sys.path.append(tests_path)
 
 from core.utilities import Utilities
+from core.Thread import Thread
 
 
 class TestON:
@@ -87,6 +88,7 @@ class TestON:
         self.loggerClass = "Logger"
         self.logs_path = logs_path
         self.driver = ''
+        self.Thread = Thread
 	
         
         self.configparser()

@@ -26,8 +26,8 @@ class OnosCHO:
         import time
         import imp
         ThreadingOnos = imp.load_source('ThreadingOnos','/home/admin/ONLabTest/TestON/tests/OnosCHO/ThreadingOnos.py')
-        threadID = 0
-
+        main.threadID = 0
+        main.pingTimeout = 300
         main.numCtrls = main.params[ 'CTRL' ][ 'numCtrl' ]
         main.ONOS1_ip = main.params[ 'CTRL' ][ 'ip1' ]
         main.ONOS2_ip = main.params[ 'CTRL' ][ 'ip2' ]
@@ -140,11 +140,11 @@ class OnosCHO:
         pool = []
         time1 = time.time()
         for cli,ip in ONOSCLI:
-            t = ThreadingOnos.ThreadingOnos(target=cli,threadID=threadID,
+            t = ThreadingOnos.ThreadingOnos(target=cli,threadID=main.threadID,
                     name="startOnosCli",args=[ip])
             pool.append(t)
             t.start()
-            threadID = threadID + 1
+            main.threadID = main.threadID + 1
             
         results = []
         for thread in pool:
@@ -176,7 +176,7 @@ class OnosCHO:
         main.numMNswitches = int ( main.params[ 'TOPO1' ][ 'numSwitches' ] )
         main.numMNlinks = int ( main.params[ 'TOPO1' ][ 'numLinks' ] )
         main.numMNhosts = int ( main.params[ 'TOPO1' ][ 'numHosts' ] )
-
+        main.pingTimeout = 60
         main.log.report(
             "Assign and Balance all Mininet switches across controllers" )
         main.log.report(
@@ -242,20 +242,20 @@ class OnosCHO:
         main.deviceLinks = []
         main.deviceActiveLinksCount = []
         main.devicePortsEnabledCount = []
-
+        import imp
+        ThreadingOnos = imp.load_source('ThreadingOnos','/home/admin/ONLabTest/TestON/tests/OnosCHO/ThreadingOnos.py')
         main.log.report(
             "Collect and Store topology details from ONOS before running any Tests" )
         main.log.report(
             "____________________________________________________________________" )
         main.case( "Collect and Store Topology Deatils from ONOS" )
-
         main.step( "Collect and store current number of switches and links" )
         topology_output = main.ONOScli1.topology()
         topology_result = main.ONOSbench.getTopology( topology_output )
         numOnosDevices = topology_result[ 'devices' ]
         numOnosLinks = topology_result[ 'links' ]
 
-        if ( ( main.numMNswitches == int(numOnosDevices) ) and ( main.numMNlinks == int(numOnosLinks) ) ):
+        if ( ( main.numMNswitches == int(numOnosDevices) ) and ( main.numMNlinks >= int(numOnosLinks) ) ):
             main.step( "Store Device DPIDs" )
             for i in range( 1, (main.numMNswitches+1) ):
                 main.deviceDPIDs.append( "of:00000000000000" + format( i, '02x' ) )
@@ -280,22 +280,55 @@ class OnosCHO:
             print "Length of Links Store", len( main.deviceLinks )
 
             main.step( "Collect and store each Device ports enabled Count" )
-            for i in range( 1, ( main.numMNswitches + 1) ):
-                portResult = main.ONOScli1.getDevicePortsEnabledCount(
-                    "of:00000000000000" + format( i,'02x' ) )
-                portTemp = re.split( r'\t+', portResult )
-                portCount = portTemp[ 1 ].replace( "\r\r\n\x1b[32m", "" )
-                main.devicePortsEnabledCount.append( portCount )
+            
+            CLI1 = (main.ONOScli1)
+            CLI2 = (main.ONOScli2)
+            CLI3 = (main.ONOScli3)
+            CLI4 = (main.ONOScli4)
+            CLI5 = (main.ONOScli5)
+            ONOSCLI = [CLI1,CLI2,CLI3,CLI4,CLI5]
+            time1 = time.time()
+            
+            for i in xrange(1,(main.numMNswitches + 1),5):
+                pool = []
+                for cli in ONOSCLI:
+                    dpid = "of:00000000000000" + format( i,'02x' )
+                    t = ThreadingOnos.ThreadingOnos(target = cli.getDevicePortsEnabledCount,threadID = main.threadID, name = "getDevicePortsEnabledCount",args = [dpid])
+                    t.start()
+                    pool.append(t)
+                    i = i + 1
+                    main.threadID = main.threadID + 1
+                for thread in pool:
+                    thread.join()
+                    portResult = thread.result
+                    portTemp = re.split( r'\t+', portResult )
+                    portCount = portTemp[ 1 ].replace( "\r\r\n\x1b[32m", "" )
+                    main.devicePortsEnabledCount.append( portCount )
             print "Device Enabled Port Counts Stored: \n", str( main.devicePortsEnabledCount )
+            time2 = time.time()
+            main.log.info("Time for counting enabled ports of the switches: %2f seconds" %(time2-time1))
 
             main.step( "Collect and store each Device active links Count" )
-            for i in range( 1, ( main.numMNswitches + 1) ):
-                linkCountResult = main.ONOScli1.getDeviceLinksActiveCount(
-                    "of:00000000000000" + format( i,'02x' ) )
-                linkCountTemp = re.split( r'\t+', linkCountResult )
-                linkCount = linkCountTemp[ 1 ].replace( "\r\r\n\x1b[32m", "" )
-                main.deviceActiveLinksCount.append( linkCount )
-            print "Device Active Links Count Stored: \n", str( main.deviceActiveLinksCount )
+            time1 = time.time()
+            
+            for i in xrange(1,(main.numMNswitches + 1),5):
+                pool = []
+                for cli in ONOSCLI:
+                    dpid = "of:00000000000000" + format( i,'02x' )
+                    t = ThreadingOnos.ThreadingOnos(target = cli.getDeviceLinksActiveCount,threadID = main.threadID, name = "getDevicePortsEnabledCount",args = [dpid])
+                    t.start()
+                    pool.append(t)
+                    i = i + 1
+                    main.threadID = main.threadID + 1
+                for thread in pool:
+                    thread.join()
+                    linkCountResult = thread.result
+                    linkCountTemp = re.split( r'\t+', linkCountResult )
+                    linkCount = linkCountTemp[ 1 ].replace( "\r\r\n\x1b[32m", "" )
+                    main.deviceActiveLinksCount.append( linkCount )
+                print "Device Active Links Count Stored: \n", str( main.deviceActiveLinksCount )
+            time2 = time.time()
+            main.log.info("Time for counting all enabled links of the switches: %2f seconds" %(time2-time1))
 
         else:
             main.log.info("Devices (expected): %s, Links (expected): %s" % 
@@ -303,9 +336,9 @@ class OnosCHO:
             main.log.info("Devices (actual): %s, Links (actual): %s" %
                     ( numOnosDevices , numOnosLinks ) )
             main.log.info("Topology does not match, exiting CHO test...")
-            time.sleep(300)
-            #main.cleanup()
-            #main.exit()
+            #time.sleep(300)
+            main.cleanup()
+            main.exit()
 
         # just returning TRUE for now as this one just collects data
         case3Result = main.TRUE
@@ -323,7 +356,6 @@ class OnosCHO:
         import imp
 
         ThreadingOnos = imp.load_source('ThreadingOnos','/home/admin/ONLabTest/TestON/tests/OnosCHO/ThreadingOnos.py')
-        threadID = 6
 
         main.log.report( "Enable Reactive forwarding and Verify ping all" )
         main.log.report( "______________________________________________" )
@@ -340,11 +372,11 @@ class OnosCHO:
         pool = []
         time1 = time.time()
         for cli,feature in ONOSCLI:
-            t = ThreadingOnos.ThreadingOnos(target=cli,threadID=threadID,
+            t = ThreadingOnos.ThreadingOnos(target=cli,threadID=main.threadID,
                     name="featureInstall",args=[feature])
             pool.append(t)
             t.start()
-            threadID = threadID + 1
+            main.threadID = main.threadID + 1
             
         results = []
         for thread in pool:
@@ -366,7 +398,7 @@ class OnosCHO:
         main.step( "Verify Pingall" )
         ping_result = main.FALSE
         time1 = time.time()
-        ping_result = main.Mininet1.pingall(timeout=600)
+        ping_result = main.Mininet1.pingall(timeout=main.pingTimeout)
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -390,11 +422,11 @@ class OnosCHO:
         pool = []
         time1 = time.time()
         for cli,feature in ONOSCLI:
-            t = ThreadingOnos.ThreadingOnos(target=cli,threadID=threadID,
+            t = ThreadingOnos.ThreadingOnos(target=cli,threadID=main.threadID,
                     name="featureUninstall",args=[feature])
             pool.append(t)
             t.start()
-            threadID = threadID + 1
+            main.threadID = main.threadID + 1
             
         results = []
         for thread in pool:
@@ -423,6 +455,8 @@ class OnosCHO:
         Compare current ONOS topology with reference data
         """
         import re
+        import imp
+        ThreadingOnos = imp.load_source('ThreadingOnos','/home/admin/ONLabTest/TestON/tests/OnosCHO/ThreadingOnos.py')
         devicesDPIDTemp = []
         hostMACsTemp = []
         deviceLinksTemp = []
@@ -435,6 +469,36 @@ class OnosCHO:
         main.case( "Compare ONOS topology with reference data" )
 
         main.step( "Compare current Device ports enabled with reference" )
+
+        CLI1 = (main.ONOScli1)
+        CLI2 = (main.ONOScli2)
+        CLI3 = (main.ONOScli3)
+        CLI4 = (main.ONOScli4)
+        CLI5 = (main.ONOScli5)
+        ONOSCLI = [CLI1,CLI2,CLI3,CLI4,CLI5]
+        time1 = time.time()
+        
+        for i in xrange(1,(main.numMNswitches + 1),5):
+            pool = []
+            for cli in ONOSCLI:
+                dpid = "of:00000000000000" + format( i,'02x' )
+                t = ThreadingOnos.ThreadingOnos(target = cli.getDevicePortsEnabledCount,threadID = main.threadID, name = "getDevicePortsEnabledCount",args = [dpid])
+                t.start()
+                pool.append(t)
+                i = i + 1
+                main.threadID = main.threadID + 1
+            for thread in pool:
+                thread.join()
+                portResult = thread.result
+                portTemp = re.split( r'\t+', portResult )
+                portCount = portTemp[ 1 ].replace( "\r\r\n\x1b[32m", "" )
+                devicePortsEnabledCountTemp.append( portCount )
+        print "Device Enabled Port Counts Stored: \n", str( main.devicePortsEnabledCount )
+        time2 = time.time()
+        main.log.info("Time for counting enabled ports of the switches: %2f seconds" %(time2-time1))
+        
+        
+        """
         for i in range( 1, 26 ):
             portResult = main.ONOScli1.getDevicePortsEnabledCount(
                 "of:00000000000000" +
@@ -445,12 +509,14 @@ class OnosCHO:
             portCount = portTemp[ 1 ].replace( "\r\r\n\x1b[32m", "" )
             devicePortsEnabledCountTemp.append( portCount )
             time.sleep( 2 )
+        """
         main.log.info (
             "Device Enabled ports EXPECTED: %s" % 
 	     str( main.devicePortsEnabledCount ) )
         main.log.info (
             "Device Enabled ports ACTUAL: %s" % 
             str( devicePortsEnabledCountTemp ) )
+        
         if ( cmp( main.devicePortsEnabledCount,
                   devicePortsEnabledCountTemp ) == 0 ):
             stepResult1 = main.TRUE
@@ -458,16 +524,25 @@ class OnosCHO:
             stepResult1 = main.FALSE
 
         main.step( "Compare Device active links with reference" )
-        for i in range( 1, 26 ):
-            linkResult = main.ONOScli1.getDeviceLinksActiveCount(
-                "of:00000000000000" +
-                format(
-                    i,
-                    '02x' ) )
-            linkTemp = re.split( r'\t+', linkResult )
-            linkCount = linkTemp[ 1 ].replace( "\r\r\n\x1b[32m", "" )
-            deviceActiveLinksCountTemp.append( linkCount )
-            time.sleep( 3 )
+        time1 = time.time()
+        for i in xrange(1,(main.numMNswitches + 1),5):
+            pool = []
+            for cli in ONOSCLI:
+                dpid = "of:00000000000000" + format( i,'02x' )
+                t = ThreadingOnos.ThreadingOnos(target = cli.getDeviceLinksActiveCount,threadID = main.threadID, name = "getDevicePortsEnabledCount",args = [dpid])
+                t.start()
+                pool.append(t)
+                i = i + 1
+                main.threadID = main.threadID + 1
+            for thread in pool:
+                thread.join()
+                linkCountResult = thread.result
+                linkCountTemp = re.split( r'\t+', linkCountResult )
+                linkCount = linkCountTemp[ 1 ].replace( "\r\r\n\x1b[32m", "" )
+                deviceActiveLinksCountTemp.append( linkCount )
+            print "Device Active Links Count Stored: \n", str( main.deviceActiveLinksCount )
+        time2 = time.time()
+        main.log.info("Time for counting all enabled links of the switches: %2f seconds" %(time2-time1))
         main.log.info (
             "Device Active links EXPECTED: %s" %
               str( main.deviceActiveLinksCount ) )
@@ -494,21 +569,52 @@ class OnosCHO:
         main.log.report( "Add 300 host intents and verify pingall" )
         main.log.report( "_______________________________________" )
         import itertools
-
+        import imp
+        ThreadingOnos = imp.load_source('ThreadingOnos','/home/admin/ONLabTest/TestON/tests/OnosCHO/ThreadingOnos.py')
+        
         main.case( "Install 300 host intents" )
         main.step( "Add host Intents" )
         intentResult = main.TRUE
-        hostCombos = list( itertools.combinations( main.hostMACs, 2 ) )
-        for i in range( len( hostCombos ) ):
-            iResult = main.ONOScli1.addHostIntent(
-                hostCombos[ i ][ 0 ],
-                hostCombos[ i ][ 1 ] )
-            intentResult = ( intentResult and iResult )
-
+        hostCombos = list( itertools.combinations( main.hostMACs, 2 ) ) 
+        
+        CLI1 = (main.ONOScli1.addHostIntent)
+        CLI2 = (main.ONOScli2.addHostIntent)
+        CLI3 = (main.ONOScli3.addHostIntent)
+        CLI4 = (main.ONOScli4.addHostIntent)
+        CLI5 = (main.ONOScli5.addHostIntent)
+        ONOSCLI = [CLI1,CLI2,CLI3,CLI4,CLI5]
+        results = main.TRUE
+        intentIdList = []
+        time1 = time.time()
+        for i in xrange(0,len(hostCombos),5):
+            pool = []
+            for cli in ONOSCLI:
+                if i >= len(hostCombos):
+                    break
+                t = ThreadingOnos.ThreadingOnos(target=cli,threadID=main.threadID,
+                        name="addHostIntent",
+                        args=[hostCombos[i][0],hostCombos[i][1]])
+                pool.append(t)
+                t.start()
+                i = i + 1
+                main.threadID = main.threadID + 1
+                
+            for thread in pool:
+                thread.join()
+                intentIdList.append(thread.result)
+        time2 = time.time()
+        main.log.info("Time for adding host intents: %2f seconds" %(time2-time1))
+        print intentIdList
+        time1 = time.time()
+        getIntentResult = main.ONOScli1.getIntentState(intentId=intentIdList[0])
+        time2 = time.time()
+        main.log.info("Time for getting intent state: %2f seconds" %(time2-time1))
+        main.log.info("State:" + getIntentResult)
+        intentResult = main.TRUE
         main.step( "Verify Ping across all hosts" )
         pingResult = main.FALSE
         time1 = time.time()
-        pingResult = main.Mininet1.pingall()
+        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout)
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -520,6 +626,7 @@ class OnosCHO:
                                  onfail="PING ALL FAIL" )
 
         case4Result = ( intentResult and pingResult )
+        
         #case4Result = pingResult
         utilities.assert_equals(
             expect=main.TRUE,
@@ -590,7 +697,7 @@ class OnosCHO:
         main.step( "Verify Ping across all hosts" )
         pingResultLinkDown = main.FALSE
         time1 = time.time()
-        pingResultLinkDown = main.Mininet1.pingall()
+        pingResultLinkDown = main.Mininet1.pingall(timeout=main.pingTimeout)
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -912,10 +1019,43 @@ class OnosCHO:
                 intentsTemp = intentsList[ i ].split( ',' )
                 intentIdList.append( intentsTemp[ 0 ] )
             print "Intent IDs: ", intentIdList
-            for id in range( len( intentIdList ) ):
+            
+            
+            CLI1 = (main.ONOScli1.removeIntent)
+            CLI2 = (main.ONOScli2.removeIntent)
+            CLI3 = (main.ONOScli3.removeIntent)
+            CLI4 = (main.ONOScli4.removeIntent)
+            CLI5 = (main.ONOScli5.removeIntent)
+            ONOSCLI = [CLI1,CLI2,CLI3,CLI4,CLI5]
+            results = main.TRUE
+            time1 = time.time()
+            
+            for i in xrange(0,len(intentIdList),5):
+                pool = []
+                for cli in ONOSCLI:
+                    if i >= len(intentIdList):
+                        break
+                    print "Removing intent id (round 1) :", intentIdList[ i ]
+                    t = ThreadingOnos.ThreadingOnos(target=cli,threadID=main.threadID,
+                            name="removeIntent",
+                            args=[intentIdList[i]])
+                    pool.append(t)
+                    t.start()
+                    i = i + 1
+                    main.threadID = main.threadID + 1
+                    
+                for thread in pool:
+                    thread.join()
+                    results = results and thread.result
+ 
+            time2 = time.time()
+            main.log.info("Time for feature:install onos-app-fwd: %2f seconds" %(time2-time1))
+            """
+                for id in range( len( intentIdList ) ):
                 print "Removing intent id (round 1) :", intentIdList[ id ]
                 main.ONOScli1.removeIntent( intentId=intentIdList[ id ] )
                 #time.sleep( 1 )
+            """
 
             main.log.info(
                 "Verify all intents are removed and if any leftovers try remove one more time" )
@@ -935,14 +1075,26 @@ class OnosCHO:
             intentIdList1 = []
             if ( len( intentsList1 ) > 1 ):
                 for i in range( len( intentsList1 ) ):
-                    intentsTemp1 = intentsList[ i ].split( ',' )
+                    intentsTemp1 = intentsList1[ i ].split( ',' )
                     intentIdList1.append( intentsTemp1[ 0 ] )
                 print "Leftover Intent IDs: ", intentIdList1
-                for id in range( len( intentIdList1 ) ):
-                    print "Removing intent id (round 2):", intentIdList1[ id ]
-                    main.ONOScli1.removeIntent(
-                        intentId=intentIdList1[ id ] )
-                    #time.sleep( 2 )
+ 
+                for i in xrange(0,len(intentIdList1),5):
+                    pool = []
+                    for cli in ONOSCLI:
+                        print "Removing intent id (round 1) :", intentIdList1[ i ]
+                        t = ThreadingOnos.ThreadingOnos(target=cli,threadID=main.threadID,
+                                name="removeIntent",
+                                args=[intentIdList1[i]])
+                        pool.append(t)
+                        t.start()
+                        i = i + 1
+                        main.threadID = main.threadID + 1
+                        
+                    for thread in pool:
+                        thread.join()
+                        results = results and thread.result
+                step1Result = results
             else:
                 print "There are no more intents that need to be removed"
                 step1Result = main.TRUE
@@ -1069,12 +1221,11 @@ class OnosCHO:
         import imp
 
         ThreadingOnos = imp.load_source('ThreadingOnos','/home/admin/ONLabTest/TestON/tests/OnosCHO/ThreadingOnos.py')
-        threadID = 0
         newTopo = main.params['TOPO2']['topo']
         main.numMNswitches = int ( main.params[ 'TOPO2' ][ 'numSwitches' ] )
         main.numMNlinks = int ( main.params[ 'TOPO2' ][ 'numLinks' ] )
         main.numMNhosts = int ( main.params[ 'TOPO2' ][ 'numHosts' ] )
-
+        main.pingTimeout = 300
         main.log.report(
             "Load Chordal topology and Balance all Mininet switches across controllers" )
         main.log.report(
@@ -1160,11 +1311,11 @@ class OnosCHO:
         pool = []
         time1 = time.time()
         for cli,ip in ONOSCLI:
-            t = ThreadingOnos.ThreadingOnos(target=cli,threadID=threadID,
+            t = ThreadingOnos.ThreadingOnos(target=cli,threadID=main.threadID,
                     name="startOnosCli",args=[ip])
             pool.append(t)
             t.start()
-            threadID = threadID + 1
+            main.threadID = main.threadID + 1
             
         cliResult  = main.FALSE
         results = []
@@ -1207,7 +1358,7 @@ class OnosCHO:
         main.numMNswitches = int ( main.params[ 'TOPO3' ][ 'numSwitches' ] )
         main.numMNlinks = int ( main.params[ 'TOPO3' ][ 'numLinks' ] )
         main.numMNhosts = int ( main.params[ 'TOPO3' ][ 'numHosts' ] )
-
+        main.pingTimeout = 600
         main.log.report(
             "Load Spine and Leaf topology and Balance all Mininet switches across controllers" )
         main.log.report(
@@ -1293,11 +1444,11 @@ class OnosCHO:
         pool = []
         time1 = time.time()
         for cli,ip in ONOSCLI:
-            t = ThreadingOnos.ThreadingOnos(target=cli,threadID=threadID,
+            t = ThreadingOnos.ThreadingOnos(target=cli,threadID=main.threadID,
                     name="startOnosCli",args=[ip])
             pool.append(t)
             t.start()
-            threadID = threadID + 1
+            main.threadID = main.threadID + 1
             
         cliResult  = main.FALSE
         results = []

@@ -933,16 +933,11 @@ class OnosCliDriver( CLI ):
                 if match:
                     return match.group()[3:-1]
                 else:
-<<<<<<< HEAD
-                    return handle
-
-=======
                     main.log.error( "Error, intent ID not found" )
                     return None
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
             return None
->>>>>>> ce9e5c4eabb60af15b027777c2dd5604d331a231
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
@@ -1383,20 +1378,29 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def checkIntentState(self, ID, intentsJson):
+    def getIntentState(self, intentId, intentsJson=None):
         """
             Check intent state.
             Accepts an intent ID (hex format) and returns the intent's state.
-            ID: intent ID in hex format
+            intentId: intent ID in hex format
             intentsJson: parsed json object from the onos:intents api
         """
         import json
         try:
-            state = "State Undefined"
+            main.log.info("Checking the state of intent ID:" + intentId )
+            if not intentsJson:
+                intentsJson = self.intents()
+            state = "State is Undefined"
             for intent in intentsJson:
-                if str(ID) == intent['id']:
+                print intent['id'] 
+                """
+                if intentId == intent['id']:
+                    main.log.info("Found intent ID:" +str(intentId)+" status:" +
+                            intent['state'])
                     state = intent['state']
                     return state
+                """
+            main.log.info("Cannot find intent ID" + str(intentId) +" on the list")
             return state
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )

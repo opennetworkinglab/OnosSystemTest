@@ -645,8 +645,10 @@ class OnosDriver( CLI ):
                            handleAfter + handleMore )
 
             return main.TRUE
-        except pexpect.EOF:
-            main.log.error( self.name + ": EOF exception found" )
+        except pexpect.ExceptionPexpect as e:
+            main.log.error( self.name + ": Pexpect exception found of type " +
+                            str( type( e ) ) )
+            main.log.error ( e.get_trace() )
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()

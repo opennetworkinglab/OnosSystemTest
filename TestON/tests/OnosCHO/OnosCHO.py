@@ -304,14 +304,6 @@ class OnosCHO:
                     portTemp = re.split( r'\t+', portResult )
                     portCount = portTemp[ 1 ].replace( "\r\r\n\x1b[32m", "" )
                     main.devicePortsEnabledCount.append( portCount )
-            """
-            for i in range( 1, ( main.numMNswitches + 1) ):
-                portResult = main.ONOScli1.getDevicePortsEnabledCount(
-                    "of:00000000000000" + format( i,'02x' ) )
-                portTemp = re.split( r'\t+', portResult )
-                portCount = portTemp[ 1 ].replace( "\r\r\n\x1b[32m", "" )
-                main.devicePortsEnabledCount.append( portCount )
-            """
             print "Device Enabled Port Counts Stored: \n", str( main.devicePortsEnabledCount )
             time2 = time.time()
             main.log.info("Time for counting enabled ports of the switches: %2f seconds" %(time2-time1))
@@ -338,15 +330,6 @@ class OnosCHO:
             time2 = time.time()
             main.log.info("Time for counting all enabled links of the switches: %2f seconds" %(time2-time1))
 
-            """
-            for i in range( 1, ( main.numMNswitches + 1) ):
-                linkCountResult = main.ONOScli1.getDeviceLinksActiveCount(
-                    "of:00000000000000" + format( i,'02x' ) )
-                linkCountTemp = re.split( r'\t+', linkCountResult )
-                linkCount = linkCountTemp[ 1 ].replace( "\r\r\n\x1b[32m", "" )
-                main.deviceActiveLinksCount.append( linkCount )
-            print "Device Active Links Count Stored: \n", str( main.deviceActiveLinksCount )
-            """
         else:
             main.log.info("Devices (expected): %s, Links (expected): %s" % 
                     ( str( main.numMNswitches ), str( main.numMNlinks ) ) )
@@ -560,18 +543,6 @@ class OnosCHO:
             print "Device Active Links Count Stored: \n", str( main.deviceActiveLinksCount )
         time2 = time.time()
         main.log.info("Time for counting all enabled links of the switches: %2f seconds" %(time2-time1))
-        """
-        for i in range( 1, 26 ):
-            linkResult = main.ONOScli1.getDeviceLinksActiveCount(
-                "of:00000000000000" +
-                format(
-                    i,
-                    '02x' ) )
-            linkTemp = re.split( r'\t+', linkResult )
-            linkCount = linkTemp[ 1 ].replace( "\r\r\n\x1b[32m", "" )
-            deviceActiveLinksCountTemp.append( linkCount )
-            time.sleep( 3 )
-        """
         main.log.info (
             "Device Active links EXPECTED: %s" %
               str( main.deviceActiveLinksCount ) )
@@ -617,6 +588,8 @@ class OnosCHO:
         for i in xrange(0,len(hostCombos),5):
             pool = []
             for cli in ONOSCLI:
+                if i >= len(hostCombos):
+                    break
                 t = ThreadingOnos.ThreadingOnos(target=cli,threadID=main.threadID,
                         name="addHostIntent",
                         args=[hostCombos[i][0],hostCombos[i][1]])
@@ -1063,6 +1036,8 @@ class OnosCHO:
             for i in xrange(0,len(intentIdList),5):
                 pool = []
                 for cli in ONOSCLI:
+                    if i >= len(intentIdList):
+                        break
                     print "Removing intent id (round 1) :", intentIdList[ i ]
                     t = ThreadingOnos.ThreadingOnos(target=cli,threadID=main.threadID,
                             name="removeIntent",

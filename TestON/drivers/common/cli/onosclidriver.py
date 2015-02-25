@@ -2143,3 +2143,28 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
+    def intentSummary( self ):
+        """
+        Returns a dictonary containing the current intent states and the count
+        """
+        try:
+            intents = self.intents( )
+            intentStates = []
+            out = []
+            for intent in json.loads( intents ):
+                intentStates.append( intent.get( 'state', None ) )
+            for i in set( intentStates ):
+                out.append( (i, intentStates.count( i ) ) )
+            return dict( out )
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()

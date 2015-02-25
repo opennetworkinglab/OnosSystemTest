@@ -19,8 +19,10 @@ OCT 13 2014
 import sys
 import pexpect
 import re
+import json
 sys.path.append( "../" )
 from drivers.common.clidriver import CLI
+
 
 
 class OnosCliDriver( CLI ):
@@ -2024,14 +2026,19 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def testExceptions( self, obj ):
+    def intentSummary( self ):
         """
-        Test exception logging
+        Returns a dictonary containing the current intent states and the count
         """
-        # FIXME: Remove this before you commit
-
         try:
-            return obj[ 'dedf' ]
+            intents = self.intents( )
+            intentStates = []
+            out = []
+            for intent in json.loads( intents ):
+                intentStates.append( intent.get( 'state', None ) )
+            for i in set( intentStates ):
+                out.append( (i, intentStates.count( i ) ) )
+            return dict( out )
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
             return None

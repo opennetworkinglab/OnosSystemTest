@@ -780,11 +780,10 @@ class ProdFunc:
         idList = main.ONOS2.getAllDevicesId()
         for id in idList:
             count = main.ONOS2.FlowAddedCount( id )
-            print "count = ", count
-            if count != 3:
+            main.log.info("count = " +count)
+            if int(count) != 3:
                 case12Result = main.FALSE
                 break
-        print "case12Result = ", case12Result 
         utilities.assert_equals(
             expect=main.TRUE,
             actual=case12Result,

@@ -100,7 +100,7 @@ class OnosCHO:
         installResult = main.TRUE
         for i in range( 1, int( main.numCtrls ) + 1 ):
             ONOS_ip = main.params[ 'CTRL' ][ 'ip' + str( i ) ]
-            main.log.info( "Intsalling package on ONOS Node IP: " + ONOS_ip )
+            main.log.info( "Installing package on ONOS Node IP: " + ONOS_ip )
             i_result = main.ONOSbench.onosInstall( node=ONOS_ip )
             utilities.assert_equals( expect=main.TRUE, actual=i_result,
                                      onpass="Test step PASS",
@@ -191,19 +191,19 @@ class OnosCHO:
             main.log.report( "Controller assignment successfull" )
         else:
             main.log.report( "Controller assignment failed" )
-        time.sleep( 15 )
+        time.sleep( 20 )
 
-        #main.step( "Balance devices across controllers" )
-        #for i in range( int( main.numCtrls ) ):
-        #    balanceResult = main.ONOScli1.balanceMasters()
-            # giving some breathing time for ONOS to complete re-balance
-        #    time.sleep( 3 )
+        main.step( "Balance devices across controllers" )
+        for i in range( int( main.numCtrls ) ):
+            balanceResult = main.ONOScli1.balanceMasters()
+            #giving some breathing time for ONOS to complete re-balance
+            time.sleep( 3 )
 
-        #utilities.assert_equals(
-         #   expect=main.TRUE,
-          #  actual=balanceResult,
-           # onpass="Assign and Balance devices test PASS",
-            #onfail="Assign and Balance devices test FAIL" )
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=balanceResult,
+            onpass="Assign and Balance devices test PASS",
+            onfail="Assign and Balance devices test FAIL" )
 
     def CASE3( self, main ):
         """
@@ -363,7 +363,7 @@ class OnosCHO:
         main.case( "Compare ONOS topology with reference data" )
 
         main.step( "Compare current Device ports enabled with reference" )
-        for i in range( 1, 26 ):
+        for i in range( 1, main.numMNswitches + 1 ):
             portResult = main.ONOScli1.getDevicePortsEnabledCount(
                 "of:00000000000000" +
                 format(
@@ -386,7 +386,7 @@ class OnosCHO:
             stepResult1 = main.FALSE
 
         main.step( "Compare Device active links with reference" )
-        for i in range( 1, 26 ):
+        for i in range( 1, main.numMNswitches + 1 ):
             linkResult = main.ONOScli1.getDeviceLinksActiveCount(
                 "of:00000000000000" +
                 format(
@@ -463,13 +463,13 @@ class OnosCHO:
         main.randomLink1 = []
         main.randomLink2 = []
         main.randomLink3 = []
-        link1End1 = main.params[ 'CORELINKS' ][ 'linkS3a' ]
-        link1End2 = main.params[ 'CORELINKS' ][ 'linkS3b' ].split( ',' )
-        link2End1 = main.params[ 'CORELINKS' ][ 'linkS14a' ]
-        link2End2 = main.params[ 'CORELINKS' ][ 'linkS14b' ].split( ',' )
-        link3End1 = main.params[ 'CORELINKS' ][ 'linkS18a' ]
-        link3End2 = main.params[ 'CORELINKS' ][ 'linkS18b' ].split( ',' )
-        switchLinksToToggle = main.params[ 'CORELINKS' ][ 'toggleLinks' ]
+        link1End1 = main.params[ 'ATTCORELINKS' ][ 'linkS3a' ]
+        link1End2 = main.params[ 'ATTCORELINKS' ][ 'linkS3b' ].split( ',' )
+        link2End1 = main.params[ 'ATTCORELINKS' ][ 'linkS14a' ]
+        link2End2 = main.params[ 'ATTCORELINKS' ][ 'linkS14b' ].split( ',' )
+        link3End1 = main.params[ 'ATTCORELINKS' ][ 'linkS18a' ]
+        link3End2 = main.params[ 'ATTCORELINKS' ][ 'linkS18b' ].split( ',' )
+        switchLinksToToggle = main.params[ 'ATTCORELINKS' ][ 'toggleLinks' ]
         link_sleep = int( main.params[ 'timers' ][ 'LinkDiscovery' ] )
 
         main.log.report( "Host intents - Randomly bring some core links down and verify ping all" )
@@ -539,11 +539,11 @@ class OnosCHO:
         Bring the core links up that are down and verify ping all ( Host Intents Scenario )
         """
         import random
-        link1End1 = main.params[ 'CORELINKS' ][ 'linkS3a' ]
-        link2End1 = main.params[ 'CORELINKS' ][ 'linkS14a' ]
-        link3End1 = main.params[ 'CORELINKS' ][ 'linkS18a' ]
+        link1End1 = main.params[ 'ATTCORELINKS' ][ 'linkS3a' ]
+        link2End1 = main.params[ 'ATTCORELINKS' ][ 'linkS14a' ]
+        link3End1 = main.params[ 'ATTCORELINKS' ][ 'linkS18a' ]
         link_sleep = int( main.params[ 'timers' ][ 'LinkDiscovery' ] )
-        switchLinksToToggle = main.params[ 'CORELINKS' ][ 'toggleLinks' ]
+        switchLinksToToggle = main.params[ 'ATTCORELINKS' ][ 'toggleLinks' ]
 
         main.log.report(
             "Host intents - Bring the core links up that are down and verify ping all" )
@@ -607,13 +607,13 @@ class OnosCHO:
         main.randomLink1 = []
         main.randomLink2 = []
         main.randomLink3 = []
-        link1End1 = main.params[ 'CORELINKS' ][ 'linkS3a' ]
-        link1End2 = main.params[ 'CORELINKS' ][ 'linkS3b' ].split( ',' )
-        link2End1 = main.params[ 'CORELINKS' ][ 'linkS14a' ]
-        link2End2 = main.params[ 'CORELINKS' ][ 'linkS14b' ].split( ',' )
-        link3End1 = main.params[ 'CORELINKS' ][ 'linkS18a' ]
-        link3End2 = main.params[ 'CORELINKS' ][ 'linkS18b' ].split( ',' )
-        switchLinksToToggle = main.params[ 'CORELINKS' ][ 'toggleLinks' ]
+        link1End1 = main.params[ 'ATTCORELINKS' ][ 'linkS3a' ]
+        link1End2 = main.params[ 'ATTCORELINKS' ][ 'linkS3b' ].split( ',' )
+        link2End1 = main.params[ 'ATTCORELINKS' ][ 'linkS14a' ]
+        link2End2 = main.params[ 'ATTCORELINKS' ][ 'linkS14b' ].split( ',' )
+        link3End1 = main.params[ 'ATTCORELINKS' ][ 'linkS18a' ]
+        link3End2 = main.params[ 'ATTCORELINKS' ][ 'linkS18b' ].split( ',' )
+        switchLinksToToggle = main.params[ 'ATTCORELINKS' ][ 'toggleLinks' ]
         link_sleep = int( main.params[ 'timers' ][ 'LinkDiscovery' ] )
 
         main.log.report( "Point Intents - Randomly bring some core links down and verify ping all" )
@@ -685,11 +685,11 @@ class OnosCHO:
         Bring the core links up that are down and verify ping all ( Point Intents Scenario )
         """
         import random
-        link1End1 = main.params[ 'CORELINKS' ][ 'linkS3a' ]
-        link2End1 = main.params[ 'CORELINKS' ][ 'linkS14a' ]
-        link3End1 = main.params[ 'CORELINKS' ][ 'linkS18a' ]
+        link1End1 = main.params[ 'ATTCORELINKS' ][ 'linkS3a' ]
+        link2End1 = main.params[ 'ATTCORELINKS' ][ 'linkS14a' ]
+        link3End1 = main.params[ 'ATTCORELINKS' ][ 'linkS18a' ]
         link_sleep = int( main.params[ 'timers' ][ 'LinkDiscovery' ] )
-        switchLinksToToggle = main.params[ 'CORELINKS' ][ 'toggleLinks' ]
+        switchLinksToToggle = main.params[ 'ATTCORELINKS' ][ 'toggleLinks' ]
 
         main.log.report(
             "Point intents - Bring the core links up that are down and verify ping all" )

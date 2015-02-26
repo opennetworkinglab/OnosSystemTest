@@ -245,7 +245,7 @@ class MininetCliDriver( Emulator ):
         topoDict = self.numSwitchesN_links( *topoArgList )
         return topoDict
 
-    def pingall( self, timeout=300 ):
+    def pingall( self, timeout=600 ):
         """
            Verifies the reachability of the hosts using pingall command.
            Optional parameter timeout allows you to specify how long to

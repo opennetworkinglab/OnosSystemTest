@@ -604,9 +604,9 @@ class OnosCHO:
                 intentIdList.append(thread.result)
         time2 = time.time()
         main.log.info("Time for adding host intents: %2f seconds" %(time2-time1))
-        print intentIdList
         time1 = time.time()
-        getIntentResult = main.ONOScli1.getIntentState(intentId=intentIdList[0])
+        intentJson = main.ONOScli2.intents()
+        getIntentResult = main.ONOScli1.getIntentState(intentId=intentIdList[0],intentJson = intentJson)
         time2 = time.time()
         main.log.info("Time for getting intent state: %2f seconds" %(time2-time1))
         main.log.info("State:" + getIntentResult)

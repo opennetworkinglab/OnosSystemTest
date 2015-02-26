@@ -1381,27 +1381,31 @@ class OnosCliDriver( CLI ):
     def getIntentState(self, intentId, intentsJson=None):
         """
             Check intent state.
-            Accepts an intent ID (hex format) and returns the intent's state.
-            intentId: intent ID in hex format
+            Accepts a single intent ID (string type) or a list of intent IDs
+            and returns the intent(s) state.
+            intentId: intent ID (string type)
             intentsJson: parsed json object from the onos:intents api
+            Returns:
+            state = intent(s)- INSTALL,WITHDRAWN etc.
         """
         import json
+        import types
         try:
-            main.log.info("Checking the state of intent ID:" + intentId )
-            if not intentsJson:
-                intentsJson = self.intents()
             state = "State is Undefined"
-            for intent in intentsJson:
-                print intent['id'] 
-                """
-                if intentId == intent['id']:
-                    main.log.info("Found intent ID:" +str(intentId)+" status:" +
-                            intent['state'])
-                    state = intent['state']
-                    return state
-                """
-            main.log.info("Cannot find intent ID" + str(intentId) +" on the list")
-            return state
+            if isinstance(intentId,types.StringType):
+                if not intentsJson:
+                    intentsJsonTemp = json.loads(self.intents())
+                else:
+                    intentsJsonTemp = json.loads(intentsJson)
+                for intent in intentsJsonTemp:
+                    if intentId == intent['id']:
+                        state = intent['state']
+                        return state
+                main.log.info("Cannot find intent ID" + str(intentId) +" on the list")
+                return state
+            elif isinstance(intentId,types.ListType):
+                return state
+
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
             return None

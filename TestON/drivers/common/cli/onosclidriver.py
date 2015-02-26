@@ -1545,6 +1545,27 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
+
+    def FlowStateCount( self, id ):
+        """
+        Determine the number of flow rules for the given device id that are
+        in the added state
+        """     
+        try:
+            cmdStr = "flows any " + id + " | grep 'state=ADDED' | wc -l"
+            handle = self.sendline( cmdStr ) 
+            return handle
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit() 
+            
+
     def getAllDevicesId( self ):
         """
         Use 'devices' function to obtain list of all devices

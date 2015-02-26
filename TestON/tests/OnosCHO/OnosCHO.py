@@ -606,14 +606,6 @@ class OnosCHO:
         
         main.log.info("Time for adding host intents: %2f seconds" %(time2-time1))
         intentResult = results
-        """
-        for i in range( len( hostCombos ) ):
-            iResult = main.ONOScli1.addHostIntent(
-                hostCombos[ i ][ 0 ],
-                hostCombos[ i ][ 1 ] )
-            intentResult = ( intentResult and iResult )
-        """
-        
         main.step( "Verify Ping across all hosts" )
         pingResult = main.FALSE
         time1 = time.time()
@@ -737,15 +729,15 @@ class OnosCHO:
         for i in range( int( switchLinksToToggle ) ):
             main.Mininet1.link(
                 END1=link1End1,
-                END2=randomLink1[ i ],
+                END2=main.randomLink1[ i ],
                 OPTION="up" )
             main.Mininet1.link(
                 END1=link2End1,
-                END2=randomLink2[ i ],
+                END2=main.randomLink2[ i ],
                 OPTION="up" )
             main.Mininet1.link(
                 END1=link3End1,
-                END2=randomLink3[ i ],
+                END2=main.randomLink3[ i ],
                 OPTION="up" )
         time.sleep( link_sleep )
 
@@ -1085,7 +1077,9 @@ class OnosCHO:
                 for i in xrange(0,len(intentIdList1),5):
                     pool = []
                     for cli in ONOSCLI:
-                        print "Removing intent id (round 1) :", intentIdList1[ i ]
+                        if i >= len(intentIdList):
+                            break
+                        print "Removing intent id (round 2) :", intentIdList1[ i ]
                         t = ThreadingOnos.ThreadingOnos(target=cli,threadID=main.threadID,
                                 name="removeIntent",
                                 args=[intentIdList1[i]])
@@ -1487,3 +1481,153 @@ class OnosCHO:
             actual=case13Result,
             onpass="Starting new Spine topology test PASS",
             onfail="Starting new Spine topology test FAIL" )
+
+    def CASE14(self,main):
+        """
+        Install 300 host intents and verify ping all
+        """
+        main.log.report( "Add 300 host intents and verify pingall" )
+        main.log.report( "_______________________________________" )
+        import itertools
+        import imp
+        ThreadingOnos = imp.load_source('ThreadingOnos','/home/admin/ONLabTest/TestON/tests/OnosCHO/ThreadingOnos.py')
+        
+        main.case( "Install 300 host intents" )
+        main.step( "Add host Intents" )
+        intentResult = main.TRUE
+        hostCombos = list( itertools.combinations( main.hostMACs, 2 ) ) 
+        
+        CLI1 = (main.ONOScli1.addHostIntent)
+        CLI2 = (main.ONOScli2.addHostIntent)
+        CLI3 = (main.ONOScli3.addHostIntent)
+        CLI4 = (main.ONOScli4.addHostIntent)
+        CLI5 = (main.ONOScli5.addHostIntent)
+        ONOSCLI = [CLI1,CLI2,CLI3,CLI4,CLI5]
+        results = main.TRUE
+        time1 = time.time()
+        for i in xrange(0,len(hostCombos),5):
+            pool = []
+            for cli in ONOSCLI:
+                if i >= len(hostCombos):
+                    break
+                t = ThreadingOnos.ThreadingOnos(target=cli,threadID=main.threadID,
+                        name="addHostIntent",
+                        args=[hostCombos[i][0],hostCombos[i][1]])
+                pool.append(t)
+                t.start()
+                i = i + 1
+                main.threadID = main.threadID + 1
+                
+            for thread in pool:
+                thread.join()
+                results = results and thread.result
+
+        time2 = time.time()
+        
+        main.log.info("Time for adding host intents: %2f seconds" %(time2-time1))
+        intentResult = results
+        """
+        for i in range( len( hostCombos ) ):
+            iResult = main.ONOScli1.addHostIntent(
+                hostCombos[ i ][ 0 ],
+                hostCombos[ i ][ 1 ] )
+            intentResult = ( intentResult and iResult )
+        """
+        
+        main.step( "Verify Ping across all hosts" )
+        pingResult = main.FALSE
+        time1 = time.time()
+        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout)
+        time2 = time.time()
+        timeDiff = round( ( time2 - time1 ), 2 )
+        main.log.report(
+            "Time taken for Ping All: " +
+            str( timeDiff ) +
+            " seconds" )
+        utilities.assert_equals( expect=main.TRUE, actual=pingResult,
+                                 onpass="PING ALL PASS",
+                                 onfail="PING ALL FAIL" )
+
+        case4Result = ( intentResult and pingResult )
+        
+        #case4Result = pingResult
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=case4Result,
+            onpass="Install 300 Host Intents and Ping All test PASS",
+            onfail="Install 300 Host Intents and Ping All test FAIL" )
+    
+    def CASE15( self,main):
+        """
+        Install 300 host intents and verify ping all
+        """
+        main.log.report( "Add 300 host intents and verify pingall" )
+        main.log.report( "_______________________________________" )
+        import itertools
+        import imp
+        ThreadingOnos = imp.load_source('ThreadingOnos','/home/admin/ONLabTest/TestON/tests/OnosCHO/ThreadingOnos.py')
+        
+        main.case( "Install 300 host intents" )
+        main.step( "Add host Intents" )
+        intentResult = main.TRUE
+        hostCombos = list( itertools.combinations( main.hostMACs, 2 ) ) 
+        
+        CLI1 = (main.ONOScli1.addHostIntent)
+        CLI2 = (main.ONOScli2.addHostIntent)
+        CLI3 = (main.ONOScli3.addHostIntent)
+        CLI4 = (main.ONOScli4.addHostIntent)
+        CLI5 = (main.ONOScli5.addHostIntent)
+        ONOSCLI = [CLI1,CLI2,CLI3,CLI4,CLI5]
+        results = main.TRUE
+        time1 = time.time()
+        for i in xrange(0,len(hostCombos),5):
+            pool = []
+            for cli in ONOSCLI:
+                if i >= len(hostCombos):
+                    break
+                t = ThreadingOnos.ThreadingOnos(target=cli,threadID=main.threadID,
+                        name="addHostIntent",
+                        args=[hostCombos[i][0],hostCombos[i][1]])
+                pool.append(t)
+                t.start()
+                i = i + 1
+                main.threadID = main.threadID + 1
+                
+            for thread in pool:
+                thread.join()
+                results = results and thread.result
+
+        time2 = time.time()
+        
+        main.log.info("Time for adding host intents: %2f seconds" %(time2-time1))
+        intentResult = results
+        """
+        for i in range( len( hostCombos ) ):
+            iResult = main.ONOScli1.addHostIntent(
+                hostCombos[ i ][ 0 ],
+                hostCombos[ i ][ 1 ] )
+            intentResult = ( intentResult and iResult )
+        """
+        
+        main.step( "Verify Ping across all hosts" )
+        pingResult = main.FALSE
+        time1 = time.time()
+        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout)
+        time2 = time.time()
+        timeDiff = round( ( time2 - time1 ), 2 )
+        main.log.report(
+            "Time taken for Ping All: " +
+            str( timeDiff ) +
+            " seconds" )
+        utilities.assert_equals( expect=main.TRUE, actual=pingResult,
+                                 onpass="PING ALL PASS",
+                                 onfail="PING ALL FAIL" )
+
+        case4Result = ( intentResult and pingResult )
+        
+        #case4Result = pingResult
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=case4Result,
+            onpass="Install 300 Host Intents and Ping All test PASS",
+            onfail="Install 300 Host Intents and Ping All test FAIL" )

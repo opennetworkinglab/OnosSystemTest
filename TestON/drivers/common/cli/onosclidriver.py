@@ -1256,16 +1256,26 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def removeIntent( self, intentId ):
+    def removeIntent( self, intentId, app = 'org.onosproject.cli',
+        purge = False, sync = False ):
         """
-        Remove intent for specified intent id
-
+        Remove intent for specified application id and intent id
+        Optional args:- 
+        -s or --sync: Waits for the removal before returning
+        -p or --purge: Purge the intent from the store after removal  
+        
         Returns:
             main.False on error and
             cli output otherwise
         """
         try:
-            cmdStr = "remove-intent org.onosproject.cli " + str( intentId )
+            cmdStr = "remove-intent "
+            if purge:
+                cmdStr += " -p"
+            if sync:
+                cmdStr += " -s"
+
+            cmdStr += " " + app + " " + str( intentId )
             handle = self.sendline( cmdStr )
             if re.search( "Error", handle ):
                 main.log.error( "Error in removing intent" )

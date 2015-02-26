@@ -1546,7 +1546,7 @@ class OnosCliDriver( CLI ):
             main.exit()
 
 
-    def FlowStateCount( self, id ):
+    def FlowAddedCount( self, id ):
         """
         Determine the number of flow rules for the given device id that are
         in the added state

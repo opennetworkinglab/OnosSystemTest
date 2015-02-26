@@ -49,7 +49,7 @@
 
     <DB>
         <intentFilePath>
-        /home/admin/ONLabTest/TestON/tests/IntentPerfNext/intentInstallPathDb.log
+        /home/admin/ONLabTest/TestON/tests/IntentPerfNext/intentLatencyResultDb.log
         </intentFilePath>
     </DB>
 

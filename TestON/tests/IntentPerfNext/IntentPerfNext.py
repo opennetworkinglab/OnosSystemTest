@@ -375,6 +375,10 @@ class IntentPerfNext:
         ONOS2Ip = main.params[ 'CTRL' ][ 'ip2' ]
         ONOS3Ip = main.params[ 'CTRL' ][ 'ip3' ]
         ONOSUser = main.params[ 'CTRL' ][ 'user' ]
+       
+        ONOSIpList = []
+        for i in range( 1, 8 ):
+            ONOSIpList.append( main.params[ 'CTRL' ][ 'ip' + str( i ) ] )
 
         defaultSwPort = main.params[ 'CTRL' ][ 'port1' ]
 
@@ -391,6 +395,51 @@ class IntentPerfNext:
 
         # NOTE: May need to configure interface depending on topology
         intfs = main.params[ 'TEST' ][ 'intfs' ]
+        
+        # Distribute switches according to cluster count
+        for i in range( 1, 9 ):
+            if clusterCount == 1:
+                main.Mininet1.assignSwController(
+                    sw=str( i ), ip1=ONOSIpList[ 0 ],
+                    port1=defaultSwPort
+                )
+            elif clusterCount == 3:
+                if i < 3:
+                    index = 0
+                elif i < 6 and i >= 3:
+                    index = 1
+                else:
+                    index = 2
+                main.Mininet1.assignSwController(
+                    sw=str( i ), ip1=ONOSIpList[ index ],
+                    port1=defaultSwPort
+                )
+            elif clusterCount == 5:
+                if i < 3:
+                    index = 0
+                elif i < 5 and i >= 3:
+                    index = 1
+                elif i < 7 and i >= 5:
+                    index = 2
+                elif i == 7:
+                    index = 3
+                else:
+                    index = 4
+                main.Mininet1.assignSwController(
+                    sw=str( i ), ip1=ONOSIpList[ index ],
+                    port1=defaultSwPort
+                )
+            elif clusterCount == 7:
+                if i < 6:
+                    index = i
+                else:
+                    index = 6
+                main.Mininet1.assignSwController(
+                    sw=str( i ), ip1=ONOSIpList[ index ],
+                    port1=defaultSwPort
+                )
+
+        time.sleep(10)
 
         devicesJsonStr = main.ONOS1cli.devices()
         devicesJsonObj = json.loads( devicesJsonStr )
@@ -418,14 +467,15 @@ class IntentPerfNext:
             intentsStr = main.ONOS1cli.intents( jsonFormat=True )
             intentsObj = json.loads( intentsStr )
             for intent in intentsObj:
+                main.log.info(intent)
                 if intent[ 'state' ] == "INSTALLED":
                     main.log.info( "Intent installed successfully" )
                     intentId = intent[ 'id' ]
                     main.log.info( "Intent id: " + str( intentId ) )
-                else:
-                    # TODO: Add error handling
-                    main.log.info( "Intent installation failed" )
-                    intentId = ""
+                #else:
+                    #TODO: Add error handling
+                    #main.log.info( "Intent installation failed" )
+                    #intentId = ""
 
             main.log.info( "Disabling interface " + intfs )
             t0System = time.time() * 1000
@@ -509,7 +559,7 @@ class IntentPerfNext:
                   intentRerouteLat7 ) / clusterCount
 
             main.log.info( "Intent reroute latency avg for iteration " +
-                           str( i ) + ": " + str( intentRerouteLatAvg ) )
+                           str( i ) + ": " + str( intentRerouteLatAvg )+ " ms")
 
             if intentRerouteLatAvg > 0.0 and \
                intentRerouteLatAvg < 1000 and i > numIgnore:
@@ -690,6 +740,11 @@ class IntentPerfNext:
             # Resets after each batch calculation
             maxInstallLat = []
             maxWithdrawLat = []
+            # Max single intent install measurement of all nodes
+            # For example, if batch size is 1000, result latency
+            # will be divided by 1000
+            maxSingleInstallLat = []
+            maxSingleWithdrawLat = []
             # Statistical gathering loop over number of iterations
             for i in range( 0, int( numIter ) ):
                 main.log.info( "Pushing " +
@@ -703,7 +758,7 @@ class IntentPerfNext:
                         deviceIdList[ 7 ] + "/2",
                         batchIntentSize,
                         saveDir, ONOSIpList[ node - 1 ],
-                        numMult=nThread, appId=node )
+                        numMult=nThread )
 
                 # Wait sufficient time for intents to start
                 # installing
@@ -731,25 +786,36 @@ class IntentPerfNext:
                     with open( saveDir ) as fOnos:
                         lineCount = 0
                         for line in fOnos:
-                            line = line[ 1: ]
-                            line = line.split( ": " )
+                            line_temp = ""
                             main.log.info( "Line read: " + str( line ) )
+                            line_temp = line[ 1: ]
+                            line_temp = line_temp.split( ": " )
                             #Prevent split method if line doesn't have
                             #space
-                            if " " in str(line):
-                                result = line[ 1 ].split( " " )[ 0 ]
+                            if " " in str(line_temp):
+                                result = line_temp[ 1 ].split( " " )[ 0 ]
                             else:
                                 main.log.warn( "Empty line read" )
                                 result = 0
                             # TODO: add parameters before appending latency
                             if lineCount == 0:
-                                batchInstallLat.append( int( result ) )
+                                if "Failure" in str(line):
+                                    main.log.warn("Intent installation failed")
+                                    result = 'NA' 
+                                else:
+                                    main.log.info("Install result: "+result)
+                                    batchInstallLat.append( int( result ) )
                                 installResult = result
                             elif lineCount == 1:
-                                batchWithdrawLat.append( int( result ) )
+                                if "Failure" in str(line):
+                                    main.log.warn("Intent withdraw failed")
+                                    result = 'NA'
+                                else:
+                                    main.log.info("Withdraw result: "+result)
+                                    batchWithdrawLat.append( int( result ) )
                                 withdrawResult = result
                             else:
-                                main.log.warn("Invalid results")
+                                main.log.warn("Invalid results: excess lines")
                                 installResult = 'NA'
                                 withdrawResult = 'NA'
                             lineCount += 1
@@ -762,16 +828,33 @@ class IntentPerfNext:
                                    str( batchIntentSize ) + "intents: " +
                                    str( withdrawResult ) + " ms" )
 
+                    main.log.info( "Single intent install latency ONOS" +
+                                    str( node ) + " with " +
+                                    str( batchIntentSize ) + "intents: " +
+                                    str( float(installResult) /\
+                                         int(batchIntentSize) ) + " ms" )
+                    main.log.info( "Single intent withdraw latency ONOS" +
+                                    str( node ) + " with " +
+                                    str( batchIntentSize ) + "intents: " +
+                                    str( float(withdrawResult) /\
+                                         int(batchIntentSize) ) + " ms" )
+
                 #NOTE: END node loop
 
                 if len( batchInstallLat ) > 0 and int( i ) > numIgnore:
                     maxInstallLat.append( max( batchInstallLat ) )
+                    maxSingleInstallLat.append( 
+                            max( batchInstallLat ) / int( batchIntentSize ) 
+                    )
                 elif len( batchInstallLat ) == 0:
                     # If I failed to read anything from the file,
                     # increase the wait time before checking intents
                     sleepTime += 30
                 if len( batchWithdrawLat ) > 0 and int( i ) > numIgnore:
                     maxWithdrawLat.append( max( batchWithdrawLat ) )
+                    maxSingleWithdrawLat.append( 
+                            max( batchWithdrawLat ) / int( batchIntentSize ) 
+                    )
                 batchInstallLat = []
                 batchWithdrawLat = []
 
@@ -781,12 +864,16 @@ class IntentPerfNext:
             #NOTE: END iteration loop
 
             if maxInstallLat:
-                avgInstallLat = str( round(
-                                            sum( maxInstallLat ) /
-                                            len( maxInstallLat )
+                avgInstallLat = str( round( numpy.average(maxInstallLat)
                                           , 2 ))
                 stdInstallLat = str( round(
                                     numpy.std(maxInstallLat), 2))
+                avgSingleInstallLat = str( round( 
+                                            numpy.average(maxSingleInstallLat)
+                                           , 3 ))
+                stdSingleInstallLat = str( round(
+                                            numpy.std(maxSingleInstallLat),
+                                            3 ))
             else:
                 avgInstallLat = "NA"
                 stdInstallLat = "NA"
@@ -794,12 +881,16 @@ class IntentPerfNext:
                 assertion = main.FALSE
 
             if maxWithdrawLat:
-                avgWithdrawLat = str( round(
-                                            sum( maxWithdrawLat ) /
-                                            len( maxWithdrawLat )
+                avgWithdrawLat = str( round( numpy.average(maxWithdrawLat)
                                             , 2 ))
                 stdWithdrawLat = str( round(
                                     numpy.std(maxWithdrawLat), 2))
+                avgSingleWithdrawLat = str( round( 
+                                            numpy.average(maxSingleWithdrawLat)
+                                           , 3 ))
+                stdSingleWithdrawLat = str( round(
+                                            numpy.std(maxSingleWithdrawLat),
+                                            3 ))
             else:
                 avgWithdrawLat = "NA"
                 stdWithdrawLat = "NA"
@@ -812,6 +903,12 @@ class IntentPerfNext:
             main.log.report( "Std Deviation of batch installation latency " +
                              ": " +
                              str( stdInstallLat ) + " ms" )
+            main.log.report( "Avg of single installation latency " +
+                             "of size " + str( batchIntentSize ) + ": " +
+                             str( avgSingleInstallLat ) + " ms" )
+            main.log.report( "Std Deviation of single installation latency " +
+                             ": " +
+                             str( stdSingleInstallLat ) + " ms" )
 
             main.log.report( "Avg of batch withdraw latency " +
                              "of size " + str( batchIntentSize ) + ": " +
@@ -819,10 +916,16 @@ class IntentPerfNext:
             main.log.report( "Std Deviation of batch withdraw latency " +
                              ": " +
                              str( stdWithdrawLat ) + " ms" )
+            main.log.report( "Avg of single withdraw latency " +
+                             "of size " + str( batchIntentSize ) + ": " +
+                             str( avgSingleWithdrawLat ) + " ms" )
+            main.log.report( "Std Deviation of single withdraw latency " +
+                             ": " +
+                             str( stdSingleWithdrawLat ) + " ms" )
 
             dbCmd = (
-                "INSERT INTO intent_latency_tests VALUES("
-                "'"+timeToPost+"','intent_latency_results',"
+                "INSERT INTO intents_latency_tests VALUES("
+                "'"+timeToPost+"','intents_latency_results',"
                 ""+runNum+","+str(clusterCount)+","+str(batchIntentSize)+","
                 ""+str(avgInstallLat)+","+str(stdInstallLat)+","
                 ""+str(avgWithdrawLat)+","+str(stdWithdrawLat)+");"

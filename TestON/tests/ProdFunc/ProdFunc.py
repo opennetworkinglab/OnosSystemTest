@@ -758,12 +758,39 @@ class ProdFunc:
 
         case11Result = ping and pingResult
         utilities.assert_equals(
-            expect=main.TRUE,
-            actual=case11Result,
-            onpass= "Point intents for hosts on same devices" +
+            expect = main.TRUE,
+            actual = case11Result,
+            onpass = "Point intents for hosts on same devices" +
                     "Ping Test successful",
-            onfail= "Point intents for hosts on same devices" +
+            onfail = "Point intents for hosts on same devices" +
                     "Ping Test NOT successful" )
+
+
+    def CASE12( self ):
+        """
+        Verify the default flows on each switch
+        """
+        main.log.report( "This testcase is verifying num of default" +
+                         " flows on each switch" )
+        main.log.report( "__________________________________" )
+        main.case( "Verify num of default flows on each switch" )
+        main.step( "Obtaining the device id's and flowrule count on them" )
+
+        case12Result = main.TRUE
+        idList = main.ONOS2.getAllDevicesId()
+        for id in idList:
+            count = main.ONOS2.FlowAddedCount( id )
+            main.log.info("count = " +count)
+            if int(count) != 3:
+                case12Result = main.FALSE
+                break
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=case12Result,
+            onpass = "Expected default num of flows exist",
+            onfail = "Expected default num of flows do not exist")
+    
+    
         
 
     def CASE6( self ):

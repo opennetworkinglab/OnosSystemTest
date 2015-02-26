@@ -11,7 +11,7 @@ import json
 
 time.sleep( 1 )
 
-class MultiProd:
+class MultiProd13:
 
     def __init__( self ):
         self.default = ''

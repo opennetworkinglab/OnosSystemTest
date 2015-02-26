@@ -480,9 +480,14 @@ class OnosCliDriver( CLI ):
         by issuing command: 'onos> feature:uninstall <feature_str>'
         """
         try:
-            cmdStr = "feature:uninstall " + str( featureStr )
-            self.sendline( cmdStr )
-            # TODO: Check for possible error responses from karaf
+            cmdStr = 'feature:list -i | grep "' + featureStr + '"'
+            handle = self.sendline( cmdStr )
+            if handle != '':
+                cmdStr = "feature:uninstall " + str( featureStr )
+                self.sendline( cmdStr )
+                # TODO: Check for possible error responses from karaf
+            else:
+                main.log.info( "Feature needs to be installed before uninstalling it" )
             return main.TRUE
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
@@ -1249,16 +1254,26 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def removeIntent( self, intentId ):
+    def removeIntent( self, intentId, app = 'org.onosproject.cli',
+        purge = False, sync = False ):
         """
-        Remove intent for specified intent id
-
+        Remove intent for specified application id and intent id
+        Optional args:- 
+        -s or --sync: Waits for the removal before returning
+        -p or --purge: Purge the intent from the store after removal  
+        
         Returns:
             main.False on error and
             cli output otherwise
         """
         try:
-            cmdStr = "remove-intent org.onosproject.cli " + str( intentId )
+            cmdStr = "remove-intent "
+            if purge:
+                cmdStr += " -p"
+            if sync:
+                cmdStr += " -s"
+
+            cmdStr += " " + app + " " + str( intentId )
             handle = self.sendline( cmdStr )
             if re.search( "Error", handle ):
                 main.log.error( "Error in removing intent" )
@@ -1546,7 +1561,7 @@ class OnosCliDriver( CLI ):
             main.exit()
 
 
-    def FlowStateCount( self, id ):
+    def FlowAddedCount( self, id ):
         """
         Determine the number of flow rules for the given device id that are
         in the added state

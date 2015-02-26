@@ -63,7 +63,7 @@
                 #Specify the Option for mininet
                 <arg1> --custom ~/mininet/custom/topo-HA.py </arg1>
                 <arg2> --topo mytopo </arg2>
-                <arg3> --switch ovs,protocols=OpenFlow13 </arg3>
+                <arg3> --switch ovs,protocols=OpenFlow10 </arg3>
                 <controller> remote </controller>
             </COMPONENTS>
         </Mininet2>

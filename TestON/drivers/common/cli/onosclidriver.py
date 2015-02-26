@@ -480,10 +480,17 @@ class OnosCliDriver( CLI ):
         by issuing command: 'onos> feature:uninstall <feature_str>'
         """
         try:
-            cmdStr = "feature:uninstall " + str( featureStr )
-            self.sendline( cmdStr )
-            # TODO: Check for possible error responses from karaf
-            return main.TRUE
+            cmdStr = 'feature:list -i | grep "' + featureStr + '"'
+            handle = self.sendline( cmdStr )
+            print "handle = ", handle
+            searchStr = featureStr + " is not installed"
+            if re.search( searchStr, handle ):
+                main.log.info( "Feature needs to be installed before uninstalling it" )
+            else:
+                cmdStr = "feature:uninstall " + str( featureStr )
+                self.sendline( cmdStr )
+                # TODO: Check for possible error responses from karaf
+                return main.TRUE
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
             return None

@@ -1356,6 +1356,67 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
+    def getIntentState(self, intentsId, intentsJson=None):
+        """
+            Description:
+            Check intent state.
+            Accepts a single intent ID (string type) or a list of intent IDs.
+            Returns the state(string type) of the id if a single intent ID is
+            accepted.
+            Returns a dictionary with intent IDs as the key and its corresponding
+            states as the values
+            values
+            Required:
+            intentId: intent ID (string type)
+            intentsJson: parsed json object from the onos:intents api
+            Returns:
+            state = An intent's state- INSTALL,WITHDRAWN etc.
+            stateDict = Dictionary of intent's state. intent ID as the keys and
+            state as the values.
+        """
+        import json
+        import types
+        try:
+            state = "State is Undefined"
+            if not intentsJson:
+                intentsJsonTemp = json.loads(self.intents())
+            else:
+                intentsJsonTemp = json.loads(intentsJson)
+            if isinstance(intentsId,types.StringType):
+                for intent in intentsJsonTemp:
+                    if intentsId == intent['id']:
+                        state = intent['state']
+                        return state
+                main.log.info("Cannot find intent ID" + str(intentsId) +" on the list")
+                return state
+            elif isinstance(intentsId,types.ListType):
+                stateDict = {}
+                for ID in intentsId:
+                    for intents in intentsJsonTemp:
+                        if ID == intents['id']:
+                            stateDict[ID] = intents['state']
+                            break
+                if len(intentsId) != len(stateDict):
+                    main.log.info("Cannot find some of the intent ID state")
+                return stateDict
+            else:
+                main.log.info("Invalid intents ID entry")
+                return None
+            main.log.info("Something went wrong getting intent ID state")
+            return None
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+    
     def flows( self, jsonFormat=True ):
         """
         Optional:

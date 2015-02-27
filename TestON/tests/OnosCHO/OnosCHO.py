@@ -981,6 +981,7 @@ class OnosCHO:
             onfail="Ping all test after Point intents addition failed" )
 
     def CASE10( self ):
+        import time
         """
          Remove all Intents
         """
@@ -1007,6 +1008,9 @@ class OnosCHO:
             for i in range( len( intentsList ) ):
                 intentsTemp = intentsList[ i ].split( ',' )
                 intentIdList.append( intentsTemp[ 0 ] )
+            
+            print len(intentIdList)
+            print ""
             print "Intent IDs: ", intentIdList
             
             
@@ -1027,7 +1031,7 @@ class OnosCHO:
                     print "Removing intent id (round 1) :", intentIdList[ i ]
                     t = main.Thread(target=cli,threadID=main.threadID,
                             name="removeIntent",
-                            args=[intentIdList[i],'org.onosproject.cli',False,True])
+                            args=[intentIdList[i],'org.onosproject.cli',False,False])
                     pool.append(t)
                     t.start()
                     i = i + 1
@@ -1054,6 +1058,9 @@ class OnosCHO:
                 "" )
             intentsList1 = intentsList1.splitlines()
             intentsList1 = intentsList1[ 1: ]
+            
+            time.sleep(120)
+            
             print "Round 2 (leftover) intents to remove: ", intentsList1
             intentIdList1 = []
             if ( len( intentsList1 ) > 1 ):
@@ -1061,7 +1068,8 @@ class OnosCHO:
                     intentsTemp1 = intentsList1[ i ].split( ',' )
                     intentIdList1.append( intentsTemp1[ 0 ].split('=')[1] )
                 print "Leftover Intent IDs: ", intentIdList1
-                
+                print len(intentIdList1)
+
                 for i in xrange(0,len(intentIdList1),5):
                     pool = []
                     for cli in ONOSCLI:
@@ -1070,7 +1078,7 @@ class OnosCHO:
                         print "Removing intent id (round 2) :", intentIdList1[ i ]
                         t = main.Thread(target=cli,threadID=main.threadID,
                                 name="removeIntent",
-                                args=[intentIdList1[i],'org.onosproject.cli',False,True])
+                                args=[intentIdList1[i],'org.onosproject.cli',True,False])
                         pool.append(t)
                         t.start()
                         i = i + 1

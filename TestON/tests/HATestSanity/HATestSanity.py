@@ -479,16 +479,16 @@ class HATestSanity:
                 host1Id = host1Dict.get( 'id', None )
                 host2Id = host2Dict.get( 'id', None )
             if host1Id and host2Id:
-                '''
                 nodeNum = ( i % 7 ) + 1
                 node = getattr( main, ( 'ONOScli' + str( nodeNum ) ) )
                 tmpId = node.addHostIntent(
-                '''
-                tmpId = main.ONOScli1.addHostIntent(
                     host1Id,
                     host2Id )
-                main.log.info( "Added intent with id: " + tmpId )
-                intentIds.append( tmpId )
+                if tmpId:
+                    main.log.info( "Added intent with id: " + tmpId )
+                    intentIds.append( tmpId )
+                else:
+                    main.log.error( "addHostIntent reutrned None" )
             else:
                 main.log.error( "Error, getHost() failed" )
                 main.log.warn( json.dumps( json.loads( main.ONOScli1.hosts() ),
@@ -507,10 +507,13 @@ class HATestSanity:
         # Print the intent states
         intents = main.ONOScli1.intents()
         intentStates = []
+        installedCheck = True 
         main.log.info( "%-6s%-15s%-15s" % ( 'Count', 'ID', 'State' ) )
         count = 0
         for intent in json.loads( intents ):  # Iter through intents of a node
             state = intent.get( 'state', None )
+            if "INSTALLED" not in state:
+                installedCheck = False
             intentId = intent.get( 'id', None )
             intentStates.append( ( intentId, state ) )
         # add submitted intents not in the store
@@ -525,16 +528,28 @@ class HATestSanity:
             count += 1
             main.log.info( "%-6s%-15s%-15s" %
                            ( str( count ), str( i ), str( s ) ) )
+        main.ONOScli1.leaders()
+        main.ONOScli1.partitions()
+        # for node in nodes:
+        #     node.pendingMap()
+        pendingMap = main.ONOScli1.pendingMap()
+        main.ONOScli2.pendingMap()
+        main.ONOScli3.pendingMap()
+        main.ONOScli4.pendingMap()
+        main.ONOScli5.pendingMap()
+        main.ONOScli6.pendingMap()
+        main.ONOScli7.pendingMap()
         intentAddResult = bool( pingResult and hostResult and intentAddResult
-                                and not missingIntents)
+                                and not missingIntents and installedCheck )
         utilities.assert_equals(
             expect=True,
             actual=intentAddResult,
             onpass="Pushed host intents to ONOS",
             onfail="Error in pushing host intents to ONOS" )
 
-        if not intentAddResult:
+        if not intentAddResult or "key" in pendingMap:
             import time
+            installedCheck = True
             main.log.info( "Sleeping 60 seconds to see if intents are found" )
             time.sleep( 60 )
             onosIds = main.ONOScli1.getAllIntentsId()
@@ -548,6 +563,8 @@ class HATestSanity:
             for intent in json.loads( intents ):
                 # Iter through intents of a node
                 state = intent.get( 'state', None )
+                if "INSTALLED" not in state:
+                    installedCheck = False
                 intentId = intent.get( 'id', None )
                 intentStates.append( ( intentId, state ) )
             # add submitted intents not in the store
@@ -560,6 +577,14 @@ class HATestSanity:
                 count += 1
                 main.log.info( "%-6s%-15s%-15s" %
                                ( str( count ), str( i ), str( s ) ) )
+            main.ONOScli1.leaders()
+            main.ONOScli1.pendingMap()
+            main.ONOScli2.pendingMap()
+            main.ONOScli3.pendingMap()
+            main.ONOScli4.pendingMap()
+            main.ONOScli5.pendingMap()
+            main.ONOScli6.pendingMap()
+            main.ONOScli7.pendingMap()
 
     def CASE4( self, main ):
         """
@@ -597,6 +622,8 @@ class HATestSanity:
             actual=PingResult,
             onpass="Intents have been installed correctly and pings work",
             onfail="Intents have not been installed correctly, pings failed." )
+
+        installedCheck = True
         if PingResult is not main.TRUE:
             # Print the intent states
             intents = main.ONOScli1.intents()
@@ -606,6 +633,8 @@ class HATestSanity:
             # Iter through intents of a node
             for intent in json.loads( intents ):
                 state = intent.get( 'state', None )
+                if "INSTALLED" not in state:
+                    installedCheck = False
                 intentId = intent.get( 'id', None )
                 intentStates.append( ( intentId, state ) )
             intentStates.sort()
@@ -613,6 +642,44 @@ class HATestSanity:
                 count += 1
                 main.log.info( "%-6s%-15s%-15s" %
                                ( str( count ), str( i ), str( s ) ) )
+            main.ONOScli1.leaders()
+            main.ONOScli1.partitions()
+            main.ONOScli1.pendingMap()
+            main.ONOScli2.pendingMap()
+            main.ONOScli3.pendingMap()
+            main.ONOScli4.pendingMap()
+            main.ONOScli5.pendingMap()
+            main.ONOScli6.pendingMap()
+            main.ONOScli7.pendingMap()
+        if not installedCheck:
+            main.log.info( "Waiting 60 seconds to see if intent states change" )
+            time.sleep( 60 )
+            # Print the intent states
+            intents = main.ONOScli1.intents()
+            intentStates = []
+            main.log.info( "%-6s%-15s%-15s" % ( 'Count', 'ID', 'State' ) )
+            count = 0
+            # Iter through intents of a node
+            for intent in json.loads( intents ):
+                state = intent.get( 'state', None )
+                if "INSTALLED" not in state:
+                    installedCheck = False
+                intentId = intent.get( 'id', None )
+                intentStates.append( ( intentId, state ) )
+            intentStates.sort()
+            for i, s in intentStates:
+                count += 1
+                main.log.info( "%-6s%-15s%-15s" %
+                               ( str( count ), str( i ), str( s ) ) )
+            main.ONOScli1.leaders()
+            main.ONOScli1.partitions()
+            main.ONOScli1.pendingMap()
+            main.ONOScli2.pendingMap()
+            main.ONOScli3.pendingMap()
+            main.ONOScli4.pendingMap()
+            main.ONOScli5.pendingMap()
+            main.ONOScli6.pendingMap()
+            main.ONOScli7.pendingMap()
 
     def CASE5( self, main ):
         """
@@ -1843,7 +1910,7 @@ class HATestSanity:
         linkSleep = float( main.params[ 'timers' ][ 'LinkDiscovery' ] )
 
         description = "Restore a link to ensure that Link Discovery is " + \
-            "working properly"
+                      "working properly"
         main.log.report( description )
         main.case( description )
 
@@ -2129,7 +2196,11 @@ class HATestSanity:
                 "Leader for the election app should be an ONOS node," +
                 "instead got '" + str( leader ) + "'" )
             leaderResult = main.FALSE
-        withdrawResult = oldLeader.electionTestWithdraw()
+            oldLeader = None
+        else:
+            main.log.error( "Leader election --- why am I HERE?!?")
+        if oldLeader:
+            withdrawResult = oldLeader.electionTestWithdraw()
         utilities.assert_equals(
             expect=main.TRUE,
             actual=withdrawResult,
@@ -2182,7 +2253,10 @@ class HATestSanity:
 
         main.step( "Run for election on old leader( just so everyone " +
                    "is in the hat )" )
-        runResult = oldLeader.electionTestRun()
+        if oldLeader:
+            runResult = oldLeader.electionTestRun()
+        else:
+            runResult = main.FALSE
         utilities.assert_equals(
             expect=main.TRUE,
             actual=runResult,

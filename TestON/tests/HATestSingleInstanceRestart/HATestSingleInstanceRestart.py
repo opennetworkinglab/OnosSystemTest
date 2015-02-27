@@ -257,8 +257,11 @@ class HATestSingleInstanceRestart:
                 tmpId = main.ONOScli1.addHostIntent(
                     host1Id,
                     host2Id )
-                main.log.info( "Added intent with id: " + tmpId )
-                intentIds.append( tmpId )
+                if tmpId:
+                    main.log.info( "Added intent with id: " + tmpId )
+                    intentIds.append( tmpId )
+                else:
+                    main.log.error( "addHostIntent reutrned None" )
             else:
                 main.log.error( "Error, getHost() failed" )
                 main.log.warn( json.dumps( json.loads( main.ONOScli1.hosts() ),
@@ -277,10 +280,13 @@ class HATestSingleInstanceRestart:
         # Print the intent states
         intents = main.ONOScli1.intents()
         intentStates = []
+        installedCheck = True 
         main.log.info( "%-6s%-15s%-15s" % ( 'Count', 'ID', 'State' ) )
         count = 0
         for intent in json.loads( intents ):  # Iter through intents of a node
             state = intent.get( 'state', None )
+            if "INSTALLED" not in state:
+                installedCheck = False
             intentId = intent.get( 'id', None )
             intentStates.append( ( intentId, state ) )
         # add submitted intents not in the store
@@ -295,16 +301,22 @@ class HATestSingleInstanceRestart:
             count += 1
             main.log.info( "%-6s%-15s%-15s" %
                            ( str( count ), str( i ), str( s ) ) )
+        main.ONOScli1.leaders()
+        main.ONOScli1.partitions()
+        # for node in nodes:
+        #     node.pendingMap()
+        pendingMap = main.ONOScli1.pendingMap()
         intentAddResult = bool( pingResult and hostResult and intentAddResult
-                                and not missingIntents)
+                                and not missingIntents and installedCheck )
         utilities.assert_equals(
             expect=True,
             actual=intentAddResult,
             onpass="Pushed host intents to ONOS",
             onfail="Error in pushing host intents to ONOS" )
 
-        if not intentAddResult:
+        if not intentAddResult or "key" in pendingMap:
             import time
+            installedCheck = True
             main.log.info( "Sleeping 60 seconds to see if intents are found" )
             time.sleep( 60 )
             onosIds = main.ONOScli1.getAllIntentsId()
@@ -318,6 +330,8 @@ class HATestSingleInstanceRestart:
             for intent in json.loads( intents ):
                 # Iter through intents of a node
                 state = intent.get( 'state', None )
+                if "INSTALLED" not in state:
+                    installedCheck = False
                 intentId = intent.get( 'id', None )
                 intentStates.append( ( intentId, state ) )
             # add submitted intents not in the store
@@ -330,6 +344,8 @@ class HATestSingleInstanceRestart:
                 count += 1
                 main.log.info( "%-6s%-15s%-15s" %
                                ( str( count ), str( i ), str( s ) ) )
+            main.ONOScli1.leaders()
+            main.ONOScli1.pendingMap()
 
     def CASE4( self, main ):
         """
@@ -367,6 +383,8 @@ class HATestSingleInstanceRestart:
             actual=PingResult,
             onpass="Intents have been installed correctly and pings work",
             onfail="Intents have not been installed correctly, pings failed." )
+
+        installedCheck = True
         if PingResult is not main.TRUE:
             # Print the intent states
             intents = main.ONOScli1.intents()
@@ -376,6 +394,8 @@ class HATestSingleInstanceRestart:
             # Iter through intents of a node
             for intent in json.loads( intents ):
                 state = intent.get( 'state', None )
+                if "INSTALLED" not in state:
+                    installedCheck = False
                 intentId = intent.get( 'id', None )
                 intentStates.append( ( intentId, state ) )
             intentStates.sort()
@@ -383,6 +403,31 @@ class HATestSingleInstanceRestart:
                 count += 1
                 main.log.info( "%-6s%-15s%-15s" %
                                ( str( count ), str( i ), str( s ) ) )
+            main.ONOScli1.leaders()
+            main.ONOScli1.partitions()
+        if not installedCheck:
+            main.log.info( "Waiting 60 seconds to see if intent states change" )
+            time.sleep( 60 )
+            # Print the intent states
+            intents = main.ONOScli1.intents()
+            intentStates = []
+            main.log.info( "%-6s%-15s%-15s" % ( 'Count', 'ID', 'State' ) )
+            count = 0
+            # Iter through intents of a node
+            for intent in json.loads( intents ):
+                state = intent.get( 'state', None )
+                if "INSTALLED" not in state:
+                    installedCheck = False
+                intentId = intent.get( 'id', None )
+                intentStates.append( ( intentId, state ) )
+            intentStates.sort()
+            for i, s in intentStates:
+                count += 1
+                main.log.info( "%-6s%-15s%-15s" %
+                               ( str( count ), str( i ), str( s ) ) )
+            main.ONOScli1.leaders()
+            main.ONOScli1.partitions()
+            main.ONOScli1.pendingMap()
 
     def CASE5( self, main ):
         """
@@ -922,6 +967,7 @@ class HATestSingleInstanceRestart:
                 linksResults = linksResults and currentLinksResult
                 hostsResults = hostsResults and currentHostsResult
 
+                # "consistent" results don't make sense for single instance
             # there should always only be one cluster
             numClusters = len( json.loads( clusters[ 0 ] ) )
             clusterResults = main.FALSE
@@ -947,12 +993,6 @@ class HATestSingleInstanceRestart:
         utilities.assert_equals( expect=main.TRUE, actual=topoResult,
                                  onpass="Topology Check Test successful",
                                  onfail="Topology Check Test NOT successful" )
-        # this is temporary
-        # main.Mininet1.handle.sendline( "py [(s.intfs[i], s.intfs[i].mac) for s in net.switches for i in s.intfs]" )
-        # main.Mininet1.handle.expect( "mininet>" )
-        # main.log.error( main.Mininet1.handle.before )
-        # main.log.error( main.ONOScli1.hosts() )
-
         if topoResult == main.TRUE:
             main.log.report( "ONOS topology view matches Mininet topology" )
 
@@ -1233,7 +1273,11 @@ class HATestSingleInstanceRestart:
                 "Leader for the election app should be an ONOS node," +
                 "instead got '" + str( leader ) + "'" )
             leaderResult = main.FALSE
-        withdrawResult = oldLeader.electionTestWithdraw()
+            oldLeader = None
+        else:
+            main.log.error( "Leader election --- why am I HERE?!?")
+        if oldLeader:
+            withdrawResult = oldLeader.electionTestWithdraw()
         utilities.assert_equals(
             expect=main.TRUE,
             actual=withdrawResult,
@@ -1268,7 +1312,10 @@ class HATestSingleInstanceRestart:
 
         main.step( "Run for election on old leader( just so everyone " +
                    "is in the hat )" )
-        runResult = oldLeader.electionTestRun()
+        if oldLeader:
+            runResult = oldLeader.electionTestRun()
+        else:
+            runResult = main.FALSE
         utilities.assert_equals(
             expect=main.TRUE,
             actual=runResult,

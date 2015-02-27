@@ -605,11 +605,12 @@ class OnosCHO:
         time2 = time.time()
         main.log.info("Time for adding host intents: %2f seconds" %(time2-time1))
         time1 = time.time()
-        intentJson = main.ONOScli2.intents()
-        getIntentResult = main.ONOScli1.getIntentState(intentId=intentIdList[0],intentJson = intentJson)
+        intentsJson = main.ONOScli2.intents()
+        getIntentResult = main.ONOScli1.getIntentState(intentsId=intentIdList,intentsJson = intentsJson)
         time2 = time.time()
         main.log.info("Time for getting intent state: %2f seconds" %(time2-time1))
-        main.log.info("State:" + getIntentResult)
+        print getIntentResult
+        #main.log.info("State:" + getIntentResult)
         intentResult = main.TRUE
         main.step( "Verify Ping across all hosts" )
         pingResult = main.FALSE

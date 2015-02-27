@@ -2,23 +2,23 @@
    
     "bgpPeers" : [
 		{
-		    "attachmentDpid" : "00:00:00:00:00:00:00:a1",
-		    "attachmentPort" : "2",
+		    "attachmentDpid" : "00:00:00:00:00:00:00:01",
+		    "attachmentPort" : "1",
 		    "ipAddress" : "192.168.10.1"
 		},
 		{
-		    "attachmentDpid" : "00:00:00:00:00:00:00:a1",
-		    "attachmentPort" : "3",
+		    "attachmentDpid" : "00:00:00:00:00:00:00:01",
+		    "attachmentPort" : "2",
 		    "ipAddress" : "192.168.20.1"
 		},
 		{
-		    "attachmentDpid" : "00:00:00:00:00:00:00:a1",
-		    "attachmentPort" : "4",
+		    "attachmentDpid" : "00:00:00:00:00:00:00:01",
+		    "attachmentPort" : "3",
 		    "ipAddress" : "192.168.30.1"
 		},
 		{
-		    "attachmentDpid" : "00:00:00:00:00:00:00:a1",
-		    "attachmentPort" : "5",
+		    "attachmentDpid" : "00:00:00:00:00:00:00:01",
+		    "attachmentPort" : "4",
 		    "ipAddress" : "192.168.60.2"
 		}
 
@@ -26,28 +26,28 @@
     "bgpSpeakers" : [
 	    {
 	    	 "name" : "bgpSpeaker1",
-	    	 "attachmentDpid" : "00:00:00:00:00:00:00:a1",
+	    	 "attachmentDpid" : "00:00:00:00:00:00:00:02",
 	         "attachmentPort" : "1",
-	         "macAddress" : "00:00:00:00:00:01",
+	         "macAddress" : "00:00:00:00:00:02",
 	         "interfaceAddresses" : [
 				{
-				    "interfaceDpid" : "00:00:00:00:00:00:00:a1",
-		  		    "interfacePort" : "2",
+				    "interfaceDpid" : "00:00:00:00:00:00:00:01",
+		  		    "interfacePort" : "1",
 				    "ipAddress" : "192.168.10.101"
 				},
 				{
-				    "interfaceDpid" : "00:00:00:00:00:00:00:a1",
-		       		    "interfacePort" : "3",
+				    "interfaceDpid" : "00:00:00:00:00:00:00:01",
+		       		    "interfacePort" : "2",
 				    "ipAddress" : "192.168.20.101"
 				},
 				{
-				    "interfaceDpid" : "00:00:00:00:00:00:00:a1",
-		       		    "interfacePort" : "4",
+				    "interfaceDpid" : "00:00:00:00:00:00:00:01",
+		       		    "interfacePort" : "3",
 				    "ipAddress" : "192.168.30.101"
 				},
 				{
-				    "interfaceDpid" : "00:00:00:00:00:00:00:a1",
-		       		    "interfacePort" : "5",
+				    "interfaceDpid" : "00:00:00:00:00:00:00:01",
+		       		    "interfacePort" : "4",
 				    "ipAddress" : "192.168.60.101"
 				}
 		

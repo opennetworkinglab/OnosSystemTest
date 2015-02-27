@@ -38,8 +38,8 @@ class SDNIpModifiedTopo( Topo ):
         numHost101 = 101
         numHost200 = 200
         Topo.__init__( self, *args, **kwargs )
-        sw1 = self.addSwitch('sw1', dpid='00000000000000a1')
-        sw2 = self.addSwitch('sw2', dpid='00000000000000a2')
+        sw1 = self.addSwitch('sw1', dpid='0000000000000001')
+        sw2 = self.addSwitch('sw2', dpid='0000000000000002')
         #sw3 = self.addSwitch('sw3', dpid='00000000000000a3')
         #sw4 = self.addSwitch('sw4', dpid='00000000000000a4')
         #sw5 = self.addSwitch('sw5', dpid='00000000000000a5')

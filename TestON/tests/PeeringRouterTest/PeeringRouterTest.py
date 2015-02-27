@@ -1,6 +1,6 @@
 # from cupshelpers.config import prefix
 
-# Testing the basic functionality of ONOS Peering Router/BGP Router
+# Testing the basic functionality of SDN-IP
 
 
 class PeeringRouterTest:
@@ -38,9 +38,8 @@ class PeeringRouterTest:
 
         main.case("The test case is to help to setup the TestON environment \
             and test new drivers" )
-        # SDNIPJSONFILEPATH = "../tests/SdnIpTest/sdnip.json"
         SDNIPJSONFILEPATH = \
-            "/home/tutorial1/TestON/tests/PeeringRouterTest/sdnip.json"
+            "/home/sdnip/TestON/tests/PeeringRouter/sdnip.json"
         # all expected routes for all BGP peers
         allRoutesExpected = []
         main.step( "Start to generate routes for all BGP peers" )
@@ -95,7 +94,7 @@ class PeeringRouterTest:
             options="-f", node=ONOS1Ip )
 
         main.step( "Checking if ONOS is up yet" )
-        time.sleep( 60 )
+        time.sleep( 20 )
         onos1Isup = main.ONOSbench.isup( ONOS1Ip )
         if not onos1Isup:
             main.log.report( "ONOS1 didn't start!" )
@@ -108,8 +107,8 @@ class PeeringRouterTest:
         listResult = main.ONOScli.devices( jsonFormat=False )
         main.log.info( listResult )
         time.sleep( 10 )
-        main.log.info( "Installing sdn-ip feature" )
-        main.ONOScli.featureInstall( "onos-app-sdnip" )
+        main.log.info( "Installing gbprouter feature" )
+        main.ONOScli.featureInstall( "onos-app-bgprouter" )
         time.sleep( 10 )
         main.step( "Login all BGP peers and add routes into peers" )
 
@@ -134,7 +133,7 @@ class PeeringRouterTest:
         main.log.info( "Add routes to Quagga on host5" )
         main.QuaggaCliHost5.addRoutes( prefixesHost5, 1 )
 
-        time.sleep( 60 )
+        time.sleep( 30 )
 
         # get routes inside SDN-IP
         getRoutesResult = main.ONOScli.routes( jsonFormat=True )
@@ -219,12 +218,15 @@ class PeeringRouterTest:
             main.log.report(
                 "***PointToPointIntent Intents in SDN-IP are wrong!***" )
 
+        main.log.info( "Ping Test Start" )
+        time.sleep(1000000)
+
         #============================= Ping Test ========================
         # wait until all MultiPointToSinglePoint
         time.sleep( 20 )
-        pingTestScript = "~/SDNIP/test-tools/CASE4-ping-as2host.sh"
+        pingTestScript = "CASE4-ping-as2host.sh"
         pingTestResultsFile = \
-        "~/SDNIP/SdnIpIntentDemo/log/CASE4-ping-results-before-delete-routes-" \
+        "~/CASE4-ping-results-before-delete-routes-" \
             + strftime( "%Y-%m-%d_%H:%M:%S", localtime() ) + ".txt"
         pingTestResults = main.QuaggaCliHost.pingTest(
             "1.168.30.100", pingTestScript, pingTestResultsFile )
@@ -275,9 +277,9 @@ class PeeringRouterTest:
             deleting routes wrong!***" )
 
         time.sleep( 20 )
-        pingTestScript = "~/SDNIP/test-tools/CASE4-ping-as2host.sh"
+        pingTestScript = "CASE4-ping-as2host.sh"
         pingTestResultsFile = \
-        "~/SDNIP/SdnIpIntentDemo/log/CASE4-ping-results-after-delete-routes-" \
+        "~/CASE4-ping-results-after-delete-routes-" \
             + strftime( "%Y-%m-%d_%H:%M:%S", localtime() ) + ".txt"
         pingTestResults = main.QuaggaCliHost.pingTest(
             "1.168.30.100", pingTestScript, pingTestResultsFile )

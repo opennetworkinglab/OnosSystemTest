@@ -46,6 +46,7 @@ sys.path.append(core_path )
 sys.path.append(tests_path)
 
 from core.utilities import Utilities
+from core.Thread import Thread
 
 
 class TestON:
@@ -87,6 +88,7 @@ class TestON:
         self.loggerClass = "Logger"
         self.logs_path = logs_path
         self.driver = ''
+        self.Thread = Thread
 	
         
         self.configparser()
@@ -146,7 +148,6 @@ class TestON:
         '''
         This method will initialize specified component
         '''
-        import importlib
         global driver_options
         self.log.info("Creating component Handle: "+component)
         driver_options = {}
@@ -158,7 +159,7 @@ class TestON:
         driver_options ['type'] = driverName
         
         classPath = self.getDriverPath(driverName.lower())
-        driverModule = importlib.import_module(classPath)
+        driverModule = __import__(classPath, globals(), locals(), [driverName.lower()], -1)
         driverClass = getattr(driverModule, driverName)
         driverObject = driverClass()
          
@@ -241,10 +242,8 @@ class TestON:
                 exec code[testCaseNumber][step] in module.__dict__
                 self.stepCount = self.stepCount + 1
             except TypeError,e:
-                print "Exception in the following section of code:"
-                print code[testCaseNumber][step]
                 self.stepCount = self.stepCount + 1
-                self.log.exception(e)
+                self.log.error(e)
             return main.TRUE
         
         if cli.stop:
@@ -445,8 +444,8 @@ class TestON:
             try :
                 import json
                 response_dict = json.loads(response)
-            except Exception, e:
-                main.log.exception(e)
+            except Exception , e :
+                print e
                 main.log.error("Json Parser is unable to parse the string")
             return response_dict
         
@@ -464,7 +463,7 @@ class TestON:
             try :
                 response_dict = xmldict.xml_to_dict("<response> "+str(response)+" </response>")
             except Exception, e:
-                main.log.exception(e)
+                main.log.error(e)
             return response_dict
         
     def dict_to_return_format(self,response,return_format,response_dict):

@@ -1027,7 +1027,7 @@ class OnosCHO:
                     print "Removing intent id (round 1) :", intentIdList[ i ]
                     t = main.Thread(target=cli,threadID=main.threadID,
                             name="removeIntent",
-                            args=[intentIdList[i]])
+                            args=[intentIdList[i],'org.onosproject.cli',True,False])
                     pool.append(t)
                     t.start()
                     i = i + 1

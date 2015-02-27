@@ -1027,7 +1027,7 @@ class OnosCHO:
                     print "Removing intent id (round 1) :", intentIdList[ i ]
                     t = main.Thread(target=cli,threadID=main.threadID,
                             name="removeIntent",
-                            args=[intentIdList[i],'org.onosproject.cli',True,False])
+                            args=[intentIdList[i],'org.onosproject.cli',False,True])
                     pool.append(t)
                     t.start()
                     i = i + 1
@@ -1039,12 +1039,6 @@ class OnosCHO:
  
             time2 = time.time()
             main.log.info("Time for feature:install onos-app-fwd: %2f seconds" %(time2-time1))
-            """
-                for id in range( len( intentIdList ) ):
-                print "Removing intent id (round 1) :", intentIdList[ id ]
-                main.ONOScli1.removeIntent( intentId=intentIdList[ id ] )
-                #time.sleep( 1 )
-            """
 
             main.log.info(
                 "Verify all intents are removed and if any leftovers try remove one more time" )
@@ -1071,12 +1065,12 @@ class OnosCHO:
                 for i in xrange(0,len(intentIdList1),5):
                     pool = []
                     for cli in ONOSCLI:
-                        if i >= len(intentIdList):
+                        if i >= len(intentIdList1):
                             break
                         print "Removing intent id (round 2) :", intentIdList1[ i ]
                         t = main.Thread(target=cli,threadID=main.threadID,
                                 name="removeIntent",
-                                args=[intentIdList1[i]])
+                                args=[intentIdList1[i],'org.onosproject.cli',False,True])
                         pool.append(t)
                         t.start()
                         i = i + 1

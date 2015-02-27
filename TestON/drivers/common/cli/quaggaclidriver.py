@@ -23,7 +23,20 @@ class QuaggaCliDriver( CLI ):
     def connect( self, **connectargs ):
         for key in connectargs:
             vars( self )[ key ] = connectargs[ key ]
+        self.name = self.options[ 'name' ]
+        self.handle = super( QuaggaCliDriver, self ).connect(
+                user_name=self.user_name,
+                ip_address="127.0.0.1",
+                port=self.port,
+                pwd=self.pwd )
+        if self.handle:
+            return self.handle
+        else:
+            main.log.info( "NO HANDLE" )
+            return main.FALSE
+            
 
+    def connectQuagga( self ):
         self.name = self.options[ 'name' ]
         # self.handle = super( QuaggaCliDriver,self ).connect(
         # user_name=self.user_name, ip_address=self.ip_address,port=self.port,
@@ -183,11 +196,12 @@ class QuaggaCliDriver( CLI ):
         routesJsonObj = json.loads( getRoutesResult )
 
         allRoutesActual = []
-        for route in routesJsonObj:
-            if route[ 'prefix' ] == '172.16.10.0/24':
-                continue
-            allRoutesActual.append(
-                route[ 'prefix' ] + "/" + route[ 'nextHop' ] )
+        for route in routesJsonObj['routes4']:
+            if 'prefix' in route:
+                if route[ 'prefix' ] == '172.16.10.0/24':
+                    continue
+                allRoutesActual.append(
+                    route[ 'prefix' ] + "/" + route[ 'nextHop' ] )
 
         return sorted( allRoutesActual )
 
@@ -642,6 +656,26 @@ class QuaggaCliDriver( CLI ):
                 pronto( ip, user, passwd )
             # elif brand  == "cisco" or brand == "CISCO":
             #    cisco( ip,user,passwd )
+
+    def disable_bgp_peer( self, peer, peer_as ):
+        main.log.info( "I am in disconnect_peer_session method!" )
+
+        try:
+            self.handle.sendline( "" )
+            # self.handle.expect( "config-router" )
+            self.handle.expect( "config-router", timeout=5 )
+        except:
+            main.log.warn( "Probably not in config-router mode!" )
+            self.disconnect()
+        main.log.info( "Start to disable peer" )
+
+        cmd = "no neighbor " + peer + " remote-as " + peer_as
+        try:
+            self.handle.sendline( cmd )
+            self.handle.expect( "bgpd", timeout=5 )
+        except:
+            main.log.warn( "Failed to disable peer" )
+            self.disconnect()
 
     def disconnect( self ):
         """

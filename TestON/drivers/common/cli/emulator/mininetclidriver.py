@@ -267,6 +267,25 @@ class MininetCliDriver( Emulator ):
                 self.name +
                 ": Checking reachabilty to the hosts using pingall" )
             try:
+                self.handle.sendline("")
+                i = 0
+                i =  self.handle.expect( [ 'mininet>',
+                                        pexpect.EOF ,
+                                        pexpect.TIMEOUT ],
+                                        timeout)
+                if i == 0:
+                    main.log.info("Inside the mininet> prompt executing pingall...")
+                if i == 1:
+                    main.log.error(self.name + ":EOF exception found")
+                    main.log.error( self.name + ":     " + self.handle.before )
+                    main.cleanup()
+                    main.exit()
+                if i == 2:
+                    main.log.error( self.name + ": TIMEOUT exception found" )
+                    main.log.error( self.name +
+                                ":     " +
+                                str( self.handle.before ) )
+
                 response = self.execute(
                     cmd="pingall",
                     prompt="mininet>",

@@ -24,9 +24,7 @@ import os.path
 sys.path.append( "../" )
 from drivers.common.clidriver import CLI
 
-
 class OnosDriver( CLI ):
-
     def __init__( self ):
         """
         Initialize client
@@ -718,7 +716,7 @@ class OnosDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def onosInstall( self, options="-f", node="" ):
+    def onosInstall( self, options="-f", node=""):
         """
         Installs ONOS bits on the designated cell machine.
         If -f option is provided, it also forces an uninstall.
@@ -730,6 +728,7 @@ class OnosDriver( CLI ):
         Returns: main.TRUE on success and main.FALSE on failure
         """
         try:
+            main.log.info("Installing ONOS NOWWWWW!!")
             if options:
                 self.handle.sendline( "onos-install " + options + " " + node )
             else:
@@ -830,7 +829,7 @@ class OnosDriver( CLI ):
                 main.log.info( "ONOS service stopped" )
                 return main.TRUE
             elif i == 1:
-                main.log.info( "Unknown ONOS instance specified: " +
+                main.log.info( "onosStop() Unknown ONOS instance specified: " +
                                str( nodeIp ) )
                 return main.FALSE
             else:

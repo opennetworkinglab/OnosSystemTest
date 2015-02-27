@@ -1,12 +1,17 @@
 <PARAMS>
-    <testcases>1,2,3</testcases>
+    <testcases>1</testcases>
     <ENV>
-        <cellName>kelvin</cellName>
+        <cellName>fiveNodes</cellName>
     </ENV>
     <Git>True</Git>
+    <branch> master </branch>
 
     <CTRL>
         <ip1>10.128.10.21</ip1>
+        <ip2>10.128.10.22</ip2>
+        <ip3>10.128.10.23</ip3>
         <port1>6633</port1>
+        <port2>6633</port2>
+        <port3>6633</port3>
     </CTRL>
 </PARAMS>

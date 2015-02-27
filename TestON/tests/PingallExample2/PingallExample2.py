@@ -6,7 +6,7 @@ CASE1: Compile ONOS and push it to the test machine
 CASE2: Assign mastership to controller
 CASE3: Pingall
 """
-class PingallExample:
+class PingallExample2:
 
     def __init__( self ):
         self.default = ''
@@ -72,8 +72,8 @@ class PingallExample:
         main.ONOSbench.onosUninstall( ONOS2Ip )
         main.ONOSbench.onosUninstall( ONOS3Ip )
         main.ONOSbench.onosInstall( node=ONOS1Ip )
-        main.ONOSbench.onosInstall( node=ONOS2Ip )
-        main.ONOSbench.onosInstall( node=ONOS3Ip )
+        #main.ONOSbench.onosInstall( node=ONOS2Ip )
+        #main.ONOSbench.onosInstall( node=ONOS3Ip )
         time.sleep(10)
         cellResult = main.ONOSbench.setCell( cellName )
         verifyResult = main.ONOSbench.verifyCell()
@@ -90,7 +90,7 @@ class PingallExample:
         CLI2 = (main.ONOScli2.startOnosCli, ONOS2Ip)
         CLI3 = (main.ONOScli3.startOnosCli, ONOS3Ip)
        
-        CLItoRun = [CLI1,CLI2,CLI3]
+        CLItoRun = [CLI1]
         i = 0
         for  cli,ip in CLItoRun:
             thread = ThreadingOnos.ThreadingOnos(target = cli,threadID=i,name="startOnosCli",args=[ip])

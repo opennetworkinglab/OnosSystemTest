@@ -14,6 +14,8 @@ class PingallExample:
     def CASE1( self, main ):
         import threading
         import time
+        import Queue
+        import multiprocessing
         import imp
         """
            CASE1 is to compile ONOS and push it to the test machines
@@ -27,7 +29,7 @@ class PingallExample:
            onos-install -f
            onos-wait-for-start
         """
-        ThreadingOnos = imp.load_source('ThreadingOnos','/home/admin/ONLabTest/TestON/tests/PingallExample/ThreadingOnos.py')
+        ProcessOnos = imp.load_source('ProcessOnos','/home/admin/ONLabTest/TestON/tests/PingallExample/ProcessOnos.py')
 
         desc = "ONOS Single node cluster restart HA test - initialization"
         main.log.report( desc )
@@ -67,14 +69,7 @@ class PingallExample:
                 main.log.warn( "Did not pull new code so skipping mvn " +
                                "clean install" )
         main.ONOSbench.getVersion( report=True )
-        main.log.step("Uninstall and install ONOS to all nodes")
-        main.ONOSbench.onosUninstall( ONOS1Ip )
-        main.ONOSbench.onosUninstall( ONOS2Ip )
-        main.ONOSbench.onosUninstall( ONOS3Ip )
-        main.ONOSbench.onosInstall( node=ONOS1Ip )
-        main.ONOSbench.onosInstall( node=ONOS2Ip )
-        main.ONOSbench.onosInstall( node=ONOS3Ip )
-        time.sleep(10)
+
         cellResult = main.ONOSbench.setCell( cellName )
         verifyResult = main.ONOSbench.verifyCell()
         main.step( "Creating ONOS package" )
@@ -82,33 +77,23 @@ class PingallExample:
 
         main.step( "Installing ONOS package" )
         onos1InstallResult = main.FALSE
-        time.sleep(30)
+        main.log.info("verifying cell with process")
+        tSample = ProcessOnos.ProcessOnos(target=main.ONOSbench.verifyCell,processID=1,name="verify cell")
+        tSample.start()
+        tSample.join()
         main.log.info("Running thread")
+        
         time1 = time.time()
-        pool = []
         CLI1 = (main.ONOScli1.startOnosCli,  ONOS1Ip)
         CLI2 = (main.ONOScli2.startOnosCli, ONOS2Ip)
         CLI3 = (main.ONOScli3.startOnosCli, ONOS3Ip)
-       
-        CLItoRun = [CLI1,CLI2,CLI3]
-        i = 0
-        for  cli,ip in CLItoRun:
-            thread = ThreadingOnos.ThreadingOnos(target = cli,threadID=i,name="startOnosCli",args=[ip])
-            pool.append(thread)
-            thread.start()
-            i = i + 1
+        """
+        p1 = ProcessOnos.ProcessOnos(target=main.ONOScli1.startOnosCli,processID=0,name='startOnosCli',args=[ONOS1Ip])
+        p1.start()
+        p1.join()
+        """
+        startCliResult = p1.result
         
-        #then we join all the threads in the pool which simply letting all the
-        #threads to finish to move on to the code
-        startCliResult = main.FALSE
-        for thread in pool:
-            thread.join()
-            if thread.result == main.FALSE:
-                startCliResult = main.FALSE
-                break
-            else:
-                startCliResult = main.TRUE
-    
         time2 = time.time()
         
         if startCliResult == main.TRUE:
@@ -130,9 +115,11 @@ class PingallExample:
 
         # TODO: if it becomes an issue, we can retry this step  a few times
 
+        cliResult = main.ONOScli1.startOnosCli( ONOS1Ip )
+
         case1Result = ( cleanInstallResult and packageResult and
                         cellResult and verifyResult and
-                        onos1Isup and startCliResult )
+                        onos1Isup and cliResult )
 
         utilities.assert_equals( expect=main.TRUE, actual=case1Result,
                                  onpass="Test startup successful",
@@ -209,7 +196,7 @@ class PingallExample:
         main.log.info( "Time for pingall: %2f seconds" % ( time2 - time1 ) )
         
         main.log.info("Check devices of ONOS using thread")
-        deviceThread = ThreadingOnos.ThreadingOnos(target=main.ONOScli1.devices,threadID=2,name="devices",args=[True])
+        deviceThread = ProcessOnos.ProcessOnos(target=main.ONOScli1.devices,processID=2,name="devices",args=[True])
         deviceThread.start()
         deviceThread.join()
         print(deviceThread.result)

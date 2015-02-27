@@ -45,9 +45,9 @@ class OnosCliDriver( CLI ):
                 if key == "home":
                     self.home = self.options[ 'home' ]
                     break
-            if self.home == None or self.home == "":
+            if self.home is None or self.home == "":
                 self.home = "~/ONOS"
-            
+
             self.name = self.options[ 'name' ]
             self.handle = super( OnosCliDriver, self ).connect(
                 user_name=self.user_name,
@@ -271,7 +271,7 @@ class OnosCliDriver( CLI ):
             self.handle.expect( "onos>" )
             self.handle.sendline( "log:log " + lvlStr + " " + cmdStr )
             self.handle.expect( "onos>" )
-            
+
             response = self.handle.before
             if re.search( "Error", response ):
                 return main.FALSE
@@ -283,9 +283,7 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
         except:
-            main.log.info( self.name + " ::::::" )
-            main.log.error( traceback.print_exc() )
-            main.log.info( self.name + " ::::::" )
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
@@ -299,25 +297,21 @@ class OnosCliDriver( CLI ):
         sent using this method.
         """
         try:
-            
             logStr = "\"Sending CLI command: '" + cmdStr + "'\""
             self.log( logStr )
             self.handle.sendline( cmdStr )
             self.handle.expect( "onos>" )
             main.log.info( "Command '" + str( cmdStr ) + "' sent to "
                            + self.name + "." )
-
             handle = self.handle.before
             # Remove control strings from output
             ansiEscape = re.compile( r'\x1b[^m]*m' )
             handle = ansiEscape.sub( '', handle )
-            #Remove extra return chars that get added
+            # Remove extra return chars that get added
             handle = re.sub(  r"\s\r", "", handle )
             handle = handle.strip()
             # parse for just the output, remove the cmd from handle
             output = handle.split( cmdStr, 1 )[1]
-
-
             return output
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
@@ -929,6 +923,8 @@ class OnosCliDriver( CLI ):
         Description:
             Adds a host-to-host intent ( bidrectional ) by
             specifying the two hosts.
+        Returns:
+            A string of the intent id or None on Error
         """
         try:
             cmdStr = "add-host-intent " + str( hostIdOne ) +\
@@ -936,16 +932,19 @@ class OnosCliDriver( CLI ):
             handle = self.sendline( cmdStr )
             if re.search( "Error", handle ):
                 main.log.error( "Error in adding Host intent" )
-                return handle
+                return None
             else:
                 main.log.info( "Host intent installed between " +
-                           str( hostIdOne ) + " and " + str( hostIdTwo ) )
-                return main.TRUE
-
+                               str( hostIdOne ) + " and " + str( hostIdTwo ) )
+                match = re.search('id=0x([\da-f]+),', handle)
+                if match:
+                    return match.group()[3:-1]
+                else:
+                    main.log.error( "Error, intent ID not found" )
+                    return None
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
             return None
-
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
@@ -963,6 +962,10 @@ class OnosCliDriver( CLI ):
             * egressDevice: device id of egress device
         Optional:
             TODO: Still needs to be implemented via dev side
+        Description:
+            Adds an optical intent by specifying an ingress and egress device
+        Returns:
+            A string of the intent id or None on error
         """
         try:
             cmdStr = "add-optical-intent " + str( ingressDevice ) +\
@@ -970,9 +973,18 @@ class OnosCliDriver( CLI ):
             handle = self.sendline( cmdStr )
             # If error, return error message
             if re.search( "Error", handle ):
-                return handle
+                main.log.error( "Error in adding Optical intent" )
+                return None
             else:
-                return main.TRUE
+                main.log.info( "Optical intent installed between " +
+                               str( ingressDevice ) + " and " +
+                               str( egressDevice ) )
+                match = re.search('id=0x([\da-f]+),', handle)
+                if match:
+                    return match.group()[3:-1]
+                else:
+                    main.log.error( "Error, intent ID not found" )
+                    return None
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
             return None
@@ -1021,6 +1033,8 @@ class OnosCliDriver( CLI ):
         Description:
             Adds a point-to-point intent ( uni-directional ) by
             specifying device id's and optional fields
+        Returns:
+            A string of the intent id or None on error
 
         NOTE: This function may change depending on the
               options developers provide for point-to-point
@@ -1066,10 +1080,11 @@ class OnosCliDriver( CLI ):
                 cmd += " " + str( ingressDevice )
             else:
                 if not portIngress:
-                    main.log.error( "You must specify " +
-                                    "the ingress port" )
+                    main.log.error( "You must specify the ingress port" )
                     # TODO: perhaps more meaningful return
-                    return main.FALSE
+                    #       Would it make sense to throw an exception and exit
+                    #       the test?
+                    return None
 
                 cmd += " " + \
                     str( ingressDevice ) + "/" +\
@@ -1079,20 +1094,29 @@ class OnosCliDriver( CLI ):
                 cmd += " " + str( egressDevice )
             else:
                 if not portEgress:
-                    main.log.error( "You must specify " +
-                                    "the egress port" )
-                    return main.FALSE
+                    main.log.error( "You must specify the egress port" )
+                    return None
 
                 cmd += " " +\
                     str( egressDevice ) + "/" +\
                     str( portEgress )
 
             handle = self.sendline( cmd )
+            # If error, return error message
             if re.search( "Error", handle ):
                 main.log.error( "Error in adding point-to-point intent" )
-                return main.FALSE
+                return None
             else:
-                return main.TRUE
+                # TODO: print out all the options in this message?
+                main.log.info( "Point-to-point intent installed between " +
+                               str( ingressDevice ) + " and " +
+                               str( egressDevice ) )
+                match = re.search('id=0x([\da-f]+),', handle)
+                if match:
+                    return match.group()[3:-1]
+                else:
+                    main.log.error( "Error, intent ID not found" )
+                    return None
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
             return None
@@ -1111,7 +1135,8 @@ class OnosCliDriver( CLI ):
             ingressDevice1,
             ingressDevice2,
             egressDevice,
-            portIngress="",
+            portIngress1="",
+            portIngress2="",
             portEgress="",
             ethType="",
             ethSrc="",
@@ -1151,6 +1176,8 @@ class OnosCliDriver( CLI ):
         Description:
             Adds a multipoint-to-singlepoint intent ( uni-directional ) by
             specifying device id's and optional fields
+        Returns:
+            A string of the intent id or None on error
 
         NOTE: This function may change depending on the
               options developers provide for multipointpoint-to-singlepoint
@@ -1204,7 +1231,7 @@ class OnosCliDriver( CLI ):
                     main.log.error( "You must specify " +
                                     "the ingress port1" )
                     # TODO: perhaps more meaningful return
-                    return main.FALSE
+                    return None
 
                 cmd += " " + \
                     str( ingressDevice1 ) + "/" +\
@@ -1217,7 +1244,7 @@ class OnosCliDriver( CLI ):
                     main.log.error( "You must specify " +
                                     "the ingress port2" )
                     # TODO: perhaps more meaningful return
-                    return main.FALSE
+                    return None
 
                 cmd += " " + \
                     str( ingressDevice2 ) + "/" +\
@@ -1236,11 +1263,23 @@ class OnosCliDriver( CLI ):
                     str( portEgress )
             print "cmd= ", cmd
             handle = self.sendline( cmd )
+            # If error, return error message
             if re.search( "Error", handle ):
-                main.log.error( "Error in adding point-to-point intent" )
-                return self.handle
+                main.log.error( "Error in adding multipoint-to-singlepoint " +
+                                "intent" )
+                return None
             else:
-                return main.TRUE
+                # TODO: print out all the options in this message?
+                main.log.info( "Multipoint-to-singlepoint intent installed" +
+                               " between " + str( ingressDevice1 ) + ", " +
+                               str( ingressDevice2 ) + " and " +
+                               str( egressDevice ) )
+                match = re.search('id=0x([\da-f]+),', handle)
+                if match:
+                    return match.group()[3:-1]
+                else:
+                    main.log.error( "Error, intent ID not found" )
+                    return None
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
             return None
@@ -1356,6 +1395,66 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
+    def getIntentState(self, intentsId, intentsJson=None):
+        """
+            Check intent state.
+            Accepts a single intent ID (string type) or a list of intent IDs.
+            Returns the state(string type) of the id if a single intent ID is
+            accepted.
+            Returns a dictionary with intent IDs as the key and its corresponding
+            states as the values
+            values
+            Parameters:
+            intentId: intent ID (string type)
+            intentsJson: parsed json object from the onos:intents api
+            Returns:
+            state = An intent's state- INSTALL,WITHDRAWN etc.
+            stateDict = Dictionary of intent's state. intent ID as the keys and
+            state as the values.
+        """
+        import json
+        import types
+        try:
+            state = "State is Undefined"
+            if not intentsJson:
+                intentsJsonTemp = json.loads(self.intents())
+            else:
+                intentsJsonTemp = json.loads(intentsJson)
+            if isinstance(intentsId,types.StringType):
+                for intent in intentsJsonTemp:
+                    if intentsId == intent['id']:
+                        state = intent['state']
+                        return state
+                main.log.info("Cannot find intent ID" + str(intentsId) +" on the list")
+                return state
+            elif isinstance(intentsId,types.ListType):
+                stateDict = {}
+                for ID in intentsId:
+                    for intents in intentsJsonTemp:
+                        if ID == intents['id']:
+                            stateDict[ID] = intents['state']
+                            break
+                if len(intentsId) != len(stateDict):
+                    main.log.info("Cannot find some of the intent ID state")
+                return stateDict
+            else:
+                main.log.info("Invalid intents ID entry")
+                return None
+            main.log.info("Something went wrong getting intent ID state")
+            return None
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+    
     def flows( self, jsonFormat=True ):
         """
         Optional:
@@ -1522,29 +1621,16 @@ class OnosCliDriver( CLI ):
         """
         try:
             # Obtain output of intents function
-            intentsStr = self.intents()
-            allIntentList = []
+            intentsStr = self.intents(jsonFormat=False)
             intentIdList = []
 
             # Parse the intents output for ID's
             intentsList = [ s.strip() for s in intentsStr.splitlines() ]
             for intents in intentsList:
-                if "onos>" in intents:
-                    continue
-                elif "intents" in intents:
-                    continue
-                else:
-                    lineList = intents.split( " " )
-                    allIntentList.append( lineList[ 0 ] )
-
-            allIntentList = allIntentList[ 1:-2 ]
-
-            for intents in allIntentList:
-                if not intents:
-                    continue
-                else:
-                    intentIdList.append( intents )
-
+                match = re.search('id=0x([\da-f]+),', intents)
+                if match:
+                    tmpId = match.group()[3:-1]
+                    intentIdList.append( tmpId )
             return intentIdList
 
         except TypeError:
@@ -1726,7 +1812,7 @@ class OnosCliDriver( CLI ):
             # Is the number of switches is what we expected
             devices = topology.get( 'devices', False )
             links = topology.get( 'links', False )
-            if devices == False or links == False:
+            if devices is False or links is False:
                 return main.ERROR
             switchCheck = ( int( devices ) == int( numoswitch ) )
             # Is the number of links is what we expected

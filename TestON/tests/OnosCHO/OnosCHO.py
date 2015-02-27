@@ -1065,9 +1065,9 @@ class OnosCHO:
             if ( len( intentsList1 ) > 1 ):
                 for i in range( len( intentsList1 ) ):
                     intentsTemp1 = intentsList1[ i ].split( ',' )
-                    intentIdList1.append( intentsTemp1[ 0 ] )
+                    intentIdList1.append( intentsTemp1[ 0 ].split('=')[1] )
                 print "Leftover Intent IDs: ", intentIdList1
- 
+                
                 for i in xrange(0,len(intentIdList1),5):
                     pool = []
                     for cli in ONOSCLI:

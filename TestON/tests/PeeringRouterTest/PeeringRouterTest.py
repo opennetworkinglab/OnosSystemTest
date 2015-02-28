@@ -172,10 +172,8 @@ class PeeringRouterTest:
         getRoutesResult = main.ONOScli.routes( jsonFormat=True )
 
         # parse routes from ONOS CLI
-        # allRoutesActual = \
-        #    main.QuaggaCliHost3.extractActualRoutes( getRoutesResult )
-        allRoutesActual = []
-        main.log.info("allRoutesExpected")
+        allRoutesActual = \
+           main.QuaggaCliHost3.extractActualRoutes( getRoutesResult )
 
         allRoutesStrExpected = str( sorted( allRoutesExpected ) )
         allRoutesStrActual = str( allRoutesActual ).replace( 'u', "" )
@@ -214,10 +212,8 @@ class PeeringRouterTest:
         main.QuaggaCliHost5.deleteRoutes( prefixesHost5, 1 )
 
         getRoutesResult = main.ONOScli.routes( jsonFormat=True )
-        # FIX ME
-        #allRoutesActual = \
-        #    main.QuaggaCliHost3.extractActualRoutes( getRoutesResult )
-        allRoutesActual = []
+        allRoutesActual = \
+            main.QuaggaCliHost3.extractActualRoutes( getRoutesResult )
 
         main.log.info( "allRoutes_actual = " )
         main.log.info( allRoutesActual )

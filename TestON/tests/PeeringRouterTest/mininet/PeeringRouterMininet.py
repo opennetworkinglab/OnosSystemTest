@@ -22,12 +22,14 @@ from mininet.moduledeps import pathCheck
 
 import os.path
 import time
+import sys
 from subprocess import Popen, STDOUT, PIPE
 
 QUAGGA_DIR = '/usr/lib/quagga'
 #QUAGGA_DIR = '/usr/local/sbin'
 QUAGGA_RUN_DIR = '/usr/local/var/run/quagga'
 
+QUAGGA_CONFIG_FILE_DIR = '/home/tutorial1/ONLabTest/TestON/tests/PeeringRouterTest/mininet'
 
 class SDNIpModifiedTopo( Topo ):
     "SDN Ip Modified Topology"
@@ -126,7 +128,7 @@ def stopsshd( ):
 
 def startquagga( host, num, config_file ):
     info( '*** Starting Quagga on %s\n' % host )
-    zebra_cmd = 'sudo %s/zebra -d -f  zebra.conf -z %s/zserv%s.api -i %s/zebra%s.pid' % (QUAGGA_DIR, QUAGGA_RUN_DIR, num, QUAGGA_RUN_DIR, num)
+    zebra_cmd = 'sudo %s/zebra -d -f  %s/zebra.conf -z %s/zserv%s.api -i %s/zebra%s.pid' % (QUAGGA_DIR, QUAGGA_CONFIG_FILE_DIR, QUAGGA_RUN_DIR, num, QUAGGA_RUN_DIR, num)
     quagga_cmd = 'sudo %s/bgpd -d -f %s -z %s/zserv%s.api -i %s/bgpd%s.pid' % (QUAGGA_DIR, config_file, QUAGGA_RUN_DIR, num, QUAGGA_RUN_DIR, num)
     
     print zebra_cmd
@@ -137,7 +139,7 @@ def startquagga( host, num, config_file ):
     
 def startquaggahost5( host, num ):
     info( '*** Starting Quagga on %s\n' % host )
-    zebra_cmd = 'sudo %s/zebra -d -f zebra.conf -z %s/zserv%s.api -i %s/zebra%s.pid' % (QUAGGA_DIR, QUAGGA_RUN_DIR, num, QUAGGA_RUN_DIR, num)
+    zebra_cmd = 'sudo %s/zebra -d -f %s/zebra.conf -z %s/zserv%s.api -i %s/zebra%s.pid' % (QUAGGA_DIR, QUAGGA_CONFIG_FILE_DIR, QUAGGA_RUN_DIR, num, QUAGGA_RUN_DIR, num)
     quagga_cmd = 'sudo %s/bgpd -d -f ./as4quaggas/quagga%s.conf -z %s/zserv%s.api -i %s/bgpd%s.pid' % (QUAGGA_DIR, num, QUAGGA_RUN_DIR, num, QUAGGA_RUN_DIR, num)
    
     host.cmd( zebra_cmd )
@@ -285,14 +287,14 @@ def sdn1net():
      #   as6router.setIP('172.16.70.%d' % (baseip+2), 30, 'as6router-eth%d' % (i+1))
 
     # Start Quagga on border routers
-    startquagga(host3, 1, 'quagga1.conf')
-    startquagga(host4, 2, 'quagga2.conf')
+    startquagga(host3, 1, QUAGGA_CONFIG_FILE_DIR + '/quagga1.conf')
+    startquagga(host4, 2, QUAGGA_CONFIG_FILE_DIR + '/quagga2.conf')
     #for i in range(numHost101, numHost200 + 1):
         #host100=net.get('host%d' % (i))
         #startquaggahost5(host100, i)
 
     #startquagga(as6rs, 4, 'quagga-as6-rs.conf')
-    startquagga(host5, 5, 'quagga-as6.conf')
+    startquagga(host5, 5, QUAGGA_CONFIG_FILE_DIR + '/quagga-as6.conf')
 
     #root1, root2, rootTestOn  = net.get( 'root1', 'root2', 'rootTestOn' )
     root1, rootTestOn  = net.get( 'root1', 'rootTestOn' )
@@ -306,7 +308,7 @@ def sdn1net():
     
     stopsshd()    
 
-    startquagga(host1, 100, 'quagga-sdn-modified.conf')    
+    startquagga(host1, 100, QUAGGA_CONFIG_FILE_DIR + '/quagga-sdn-modified.conf')    
     hosts = [ host1, host3, host4, host5, as2host ];
     #sshdHosts = sshdHosts + hosts
     startsshds( hosts )
@@ -330,4 +332,6 @@ def sdn1net():
 
 if __name__ == '__main__':
     setLogLevel( 'debug' )
+    if len(sys.argv) > 1:
+        QUAGGA_CONFIG_FILE_DIR = sys.argv[1]
     sdn1net()

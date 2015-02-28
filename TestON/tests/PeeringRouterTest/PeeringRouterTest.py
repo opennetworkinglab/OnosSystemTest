@@ -49,9 +49,19 @@ class PeeringRouterTest:
 
         main.case("The test case is to help to setup the TestON environment \
             and test new drivers" )
-        CURRENT_PATH = "/home/sdnip/TestON/tests/PeeringRouterTest/"
-        SDNIPJSONFILEPATH = \
-            "/home/sdnip/TestON/tests/PeeringRouterTest/sdnip.json"
+        TESTCASE_ROOT_PATH = main.params[ 'ENV' ][ 'home' ]
+        TESTCASE_MININET_ROOT_PATH = TESTCASE_ROOT_PATH + "/mininet"
+        SDNIPJSONFILEPATH = TESTCASE_ROOT_PATH + "/sdnip.json"
+        main.log.info("sdnip.json file path: "+ SDNIPJSONFILEPATH)
+        # Launch mininet topology for this case
+        MININET_TOPO_FILE = TESTCASE_MININET_ROOT_PATH + "/PeeringRouterMininet.py"
+        main.step( "Launch mininet" )
+        main.Mininet.handle.sendline("sudo python " + MININET_TOPO_FILE + " " + TESTCASE_MININET_ROOT_PATH)
+        main.step("waiting 20 secs for all switches and quagga instances to comeup")
+        time.sleep(20)
+        main.step("verifying mininet launch")
+        main.log.info( "Login Quagga CLI on host3" )
+        main.QuaggaCliHost3.loginQuagga( "1.168.30.2" )
         # all expected routes for all BGP peers
         allRoutesExpected = []
         main.step( "Start to generate routes for all BGP peers" )
@@ -233,6 +243,10 @@ class PeeringRouterTest:
         utilities.assert_equals(expect=main.TRUE,actual=pingTestResults,
                                   onpass="disconnect check PASS",
                                   onfail="disconnect check FAIL")
+
+        main.ONOScli.disconnect()
+        main.ONOSbench.onosStop(ONOS1Ip);
+        main.Mininet.disconnect()
 
     def CASE5( self, main ):
         """

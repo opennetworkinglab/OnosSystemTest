@@ -5,6 +5,7 @@
     #Environment variables
     <ENV>
         <cellName>sdnip_single_instance</cellName>
+        <home>/home/tutorial1/ONLabTest/TestON/tests/PeeringRouterTest</home>
     </ENV>
 
     <CTRL>

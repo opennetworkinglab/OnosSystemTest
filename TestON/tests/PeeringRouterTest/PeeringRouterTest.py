@@ -53,6 +53,11 @@ class PeeringRouterTest:
         TESTCASE_MININET_ROOT_PATH = TESTCASE_ROOT_PATH + "/mininet"
         SDNIPJSONFILEPATH = TESTCASE_ROOT_PATH + "/sdnip.json"
         main.log.info("sdnip.json file path: "+ SDNIPJSONFILEPATH)
+
+	# Copy the json files to config dir
+        main.ONOSbench.handle.sendline("cp " + TESTCASE_ROOT_PATH + "/addresses.json ~/onos/tools/package/config/")
+        main.ONOSbench.handle.sendline("cp " + TESTCASE_ROOT_PATH + "/sdnip.json ~/onos/tools/package/config/")
+
         # Launch mininet topology for this case
         MININET_TOPO_FILE = TESTCASE_MININET_ROOT_PATH + "/PeeringRouterMininet.py"
         main.step( "Launch mininet" )
@@ -128,7 +133,7 @@ class PeeringRouterTest:
         listResult = main.ONOScli.devices( jsonFormat=False )
         main.log.info( listResult )
         time.sleep( 10 )
-        main.log.info( "Installing gbprouter feature" )
+        main.log.info( "Installing bgprouter feature" )
         main.ONOScli.featureInstall( "onos-app-bgprouter" )
         time.sleep( 10 )
         main.step( "Login all BGP peers and add routes into peers" )
@@ -154,8 +159,7 @@ class PeeringRouterTest:
         main.log.info( "Add routes to Quagga on host5" )
         main.QuaggaCliHost5.addRoutes( prefixesHost5, 1 )
 
-        #time.sleep( 30 )
-        time.sleep(10)
+        time.sleep( 30 )
 
         # get routes inside SDN-IP
         getRoutesResult = main.ONOScli.routes( jsonFormat=True )
@@ -231,7 +235,8 @@ class PeeringRouterTest:
 
         main.ONOScli.disconnect()
         main.ONOSbench.onosStop(ONOS1Ip);
-        main.Mininet.disconnect()
+        main.Mininet.stopNet()
+        time.sleep(10)
 
     def CASE5( self, main ):
         """
@@ -530,7 +535,12 @@ class PeeringRouterTest:
         TESTCASE_MININET_ROOT_PATH = TESTCASE_ROOT_PATH + "/routeconvergence/mininet"
         SDNIPJSONFILEPATH = TESTCASE_ROOT_PATH + "/sdnip.json"
         main.log.info("sdnip.json file path: "+ SDNIPJSONFILEPATH)
-        # Launch mininet topology for this case
+        
+        # Copy the json files to config dir
+        main.ONOSbench.handle.sendline("cp " + TESTCASE_ROOT_PATH + "/addresses.json ~/onos/tools/package/config/")
+        main.ONOSbench.handle.sendline("cp " + TESTCASE_ROOT_PATH + "/sdnip.json ~/onos/tools/package/config/")
+
+        # Launch mininet topology for this case        
         MININET_TOPO_FILE = TESTCASE_MININET_ROOT_PATH + "/PeeringRouterConvergenceMininet.py"
         main.step( "Launch mininet" )
         main.Mininet.handle.sendline("sudo python " + MININET_TOPO_FILE + " " + TESTCASE_MININET_ROOT_PATH)
@@ -631,8 +641,7 @@ class PeeringRouterTest:
         main.log.info( "Add routes to Quagga on host5" )
         main.QuaggaCliHost5.addRoutes( prefixesHost5, 1 )
 
-        #time.sleep( 30 )
-        time.sleep(10)
+        time.sleep( 30 )
 
         # get routes inside SDN-IP
         getRoutesResult = main.ONOScli.routes( jsonFormat=True )
@@ -759,5 +768,6 @@ class PeeringRouterTest:
 
         main.ONOScli.disconnect()
         main.ONOSbench.onosStop(ONOS1Ip);
-        main.Mininet.disconnect()
+        main.Mininet.stopNet()
+        time.sleep(10)
 

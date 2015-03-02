@@ -567,7 +567,6 @@ class OnosCHO:
         main.step( "Add host Intents" )
         intentResult = main.TRUE
         hostCombos = list( itertools.combinations( main.hostMACs, 2 ) ) 
-        
         CLI1 = (main.ONOScli1.addHostIntent)
         CLI2 = (main.ONOScli2.addHostIntent)
         CLI3 = (main.ONOScli3.addHostIntent)
@@ -599,7 +598,6 @@ class OnosCHO:
         getIntentResult = main.ONOScli1.getIntentState(intentsId = intentIdList,
                 intentsJson = intentsJson)
         print getIntentResult
-
         main.step( "Verify Ping across all hosts" )
         pingResult = main.FALSE
         time1 = time.time()
@@ -1008,11 +1006,7 @@ class OnosCHO:
             for i in range( len( intentsList ) ):
                 intentsTemp = intentsList[ i ].split( ',' )
                 intentIdList.append( intentsTemp[ 0 ] )
-            
-            print len(intentIdList)
-            print ""
             print "Intent IDs: ", intentIdList
-            
             
             CLI1 = (main.ONOScli1.removeIntent)
             CLI2 = (main.ONOScli2.removeIntent)
@@ -1036,11 +1030,10 @@ class OnosCHO:
                     t.start()
                     i = i + 1
                     main.threadID = main.threadID + 1
-                    
                 for thread in pool:
                     thread.join()
                     results = results and thread.result
- 
+                
             time2 = time.time()
             main.log.info("Time for feature:install onos-app-fwd: %2f seconds" %(time2-time1))
 
@@ -1059,8 +1052,6 @@ class OnosCHO:
             intentsList1 = intentsList1.splitlines()
             intentsList1 = intentsList1[ 1: ]
             
-            time.sleep(120)
-            
             print "Round 2 (leftover) intents to remove: ", intentsList1
             intentIdList1 = []
             if ( len( intentsList1 ) > 1 ):
@@ -1068,8 +1059,6 @@ class OnosCHO:
                     intentsTemp1 = intentsList1[ i ].split( ',' )
                     intentIdList1.append( intentsTemp1[ 0 ].split('=')[1] )
                 print "Leftover Intent IDs: ", intentIdList1
-                print len(intentIdList1)
-
                 for i in xrange(0,len(intentIdList1),5):
                     pool = []
                     for cli in ONOSCLI:
@@ -1095,6 +1084,8 @@ class OnosCHO:
             print "No Intent IDs found in Intents list: ", intentsList
             step1Result = main.FALSE
 
+        print main.ONOScli1.intents()
+        time.sleep(600)
         caseResult7 = step1Result
         utilities.assert_equals( expect=main.TRUE, actual=caseResult7,
                                  onpass="Intent removal test successful",

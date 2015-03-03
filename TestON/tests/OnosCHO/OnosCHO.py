@@ -24,7 +24,8 @@ class OnosCHO:
         onos-wait-for-start
         """
         import time
-        
+
+        global intentState
         main.threadID = 0
         main.pingTimeout = 300
         main.numCtrls = main.params[ 'CTRL' ][ 'numCtrl' ]
@@ -41,7 +42,13 @@ class OnosCHO:
         cell_name = main.params[ 'ENV' ][ 'cellName' ]
         git_pull = main.params[ 'GIT' ][ 'autoPull' ]
         git_branch = main.params[ 'GIT' ][ 'branch' ]
-
+        
+        main.CLIs = []
+        main.nodes = []
+        for i in range( 1, int(main.numCtrls) + 1 ):
+            main.CLIs.append( getattr( main, 'ONOScli' + str( i ) ) )
+            main.nodes.append( getattr( main, 'ONOS' + str( i ) ) )
+        
         main.case( "Set up test environment" )
         main.log.report( "Set up test environment" )
         main.log.report( "_______________________" )
@@ -126,32 +133,24 @@ class OnosCHO:
         # need to wait here for sometime. This will be removed once ONOS is
         # stable enough
         time.sleep( 25 )
-
         main.log.step(" Start ONOS cli using thread ")
-        startCliResult  = main.FALSE
-        
-        CLI1 = (main.ONOScli1.startOnosCli,main.ONOS1_ip)
-        CLI2 = (main.ONOScli2.startOnosCli,main.ONOS2_ip)
-        CLI3 = (main.ONOScli3.startOnosCli,main.ONOS3_ip)
-        CLI4 = (main.ONOScli4.startOnosCli,main.ONOS4_ip)
-        CLI5 = (main.ONOScli5.startOnosCli,main.ONOS5_ip)
-        ONOSCLI = [CLI1,CLI2,CLI3,CLI4,CLI5]
+        startCliResult  = main.TRUE
         pool = []
         time1 = time.time()
-        for cli,ip in ONOSCLI:
-            t = main.Thread(target=cli,threadID=main.threadID,
-                    name="startOnosCli",args=[ip])
+        for i in range( int( main.numCtrls) ):
+            t = main.Thread( target=main.CLIs[i].startOnosCli,
+                             threadID=main.threadID,
+                             name="startOnosCli",
+                             args=[ main.nodes[i].ip_address ] )
             pool.append(t)
             t.start()
             main.threadID = main.threadID + 1
-            
-        results = []
-        for thread in pool:
-            thread.join()
-            results.append(thread.result)
+        for t in pool:
+            t.join()
+            startCliResult = startCliResult and t.result
         time2 = time.time()
         
-        if( all(result == main.TRUE for result in results) == False):
+        if not startCliResult:
                 main.log.info("ONOS CLI did not start up properly")
                 main.cleanup()
                 main.exit()
@@ -278,18 +277,10 @@ class OnosCHO:
             print "Length of Links Store", len( main.deviceLinks )
 
             main.step( "Collect and store each Device ports enabled Count" )
-            
-            CLI1 = (main.ONOScli1)
-            CLI2 = (main.ONOScli2)
-            CLI3 = (main.ONOScli3)
-            CLI4 = (main.ONOScli4)
-            CLI5 = (main.ONOScli5)
-            ONOSCLI = [CLI1,CLI2,CLI3,CLI4,CLI5]
             time1 = time.time()
-            
-            for i in xrange(1,(main.numMNswitches + 1),5):
+            for i in xrange(1,(main.numMNswitches + 1), int( main.numCtrls ) ):
                 pool = []
-                for cli in ONOSCLI:
+                for cli in main.CLIs:
                     dpid = "of:00000000000000" + format( i,'02x' )
                     t = main.Thread(target = cli.getDevicePortsEnabledCount,threadID = main.threadID, name = "getDevicePortsEnabledCount",args = [dpid])
                     t.start()
@@ -309,11 +300,14 @@ class OnosCHO:
             main.step( "Collect and store each Device active links Count" )
             time1 = time.time()
             
-            for i in xrange(1,(main.numMNswitches + 1),5):
+            for i in xrange( 1,( main.numMNswitches + 1 ), int( main.numCtrls) ):
                 pool = []
-                for cli in ONOSCLI:
+                for cli in main.CLIs:
                     dpid = "of:00000000000000" + format( i,'02x' )
-                    t = main.Thread(target = cli.getDeviceLinksActiveCount,threadID = main.threadID, name = "getDevicePortsEnabledCount",args = [dpid])
+                    t = main.Thread( target = cli.getDeviceLinksActiveCount,
+                                     threadID = main.threadID,
+                                     name = "getDevicePortsEnabledCount",
+                                     args = [dpid])
                     t.start()
                     pool.append(t)
                     i = i + 1
@@ -357,34 +351,30 @@ class OnosCHO:
         main.step( "Enable Reactive forwarding" )
         installResult = main.TRUE
         feature = "onos-app-fwd"
-        CLI1 = (main.ONOScli1.featureInstall,feature)
-        CLI2 = (main.ONOScli2.featureInstall,feature)
-        CLI3 = (main.ONOScli3.featureInstall,feature)
-        CLI4 = (main.ONOScli4.featureInstall,feature)
-        CLI5 = (main.ONOScli5.featureInstall,feature)
-        ONOSCLI = [CLI1,CLI2,CLI3,CLI4,CLI5]
+        
         pool = []
         time1 = time.time()
-        for cli,feature in ONOSCLI:
-            t = main.Thread(target=cli,threadID=main.threadID,
-                    name="featureInstall",args=[feature])
+        for cli in main.CLIs:
+            t = main.Thread( target=cli.featureInstall,
+                    threadID=main.threadID,
+                    name="featureInstall",
+                    args=['onos-app-fwd'])
             pool.append(t)
             t.start()
             main.threadID = main.threadID + 1
             
-        results = []
-        for thread in pool:
-            thread.join()
-            results.append(thread.result)
+        installResult = main.TRUE
+        for t in pool:
+            t.join()
+            installResult = installResult and t.result
         time2 = time.time()
         
-        if( all(result == main.TRUE for result in results) == False):
+        if not installResult:
                 main.log.info("Did not install onos-app-fwd feature properly")
                 main.cleanup()
                 main.exit()
         else:
             main.log.info("Successful feature:install onos-app-fwd")
-            installResult = main.TRUE
         main.log.info("Time for feature:install onos-app-fwd: %2f seconds" %(time2-time1))
         
         time.sleep( 5 )
@@ -406,35 +396,28 @@ class OnosCHO:
             main.log.report( "Pingall Test in Reactive mode failed" )
 
         main.step( "Disable Reactive forwarding" )
-        uninstallResult = main.FALSE
-        CLI1 = (main.ONOScli1.featureUninstall,"onos-app-fwd")
-        CLI2 = (main.ONOScli2.featureUninstall,"onos-app-fwd")
-        CLI3 = (main.ONOScli3.featureUninstall,"onos-app-fwd")
-        CLI4 = (main.ONOScli4.featureUninstall,"onos-app-fwd")
-        CLI5 = (main.ONOScli5.featureUninstall,"onos-app-fwd")
-        ONOSCLI = [CLI1,CLI2,CLI3,CLI4,CLI5]
+        uninstallResult = main.TRUE
         pool = []
         time1 = time.time()
-        for cli,feature in ONOSCLI:
-            t = main.Thread(target=cli,threadID=main.threadID,
-                    name="featureUninstall",args=[feature])
+        for cli in main.CLIs:
+            t = main.Thread( target=cli.featureUninstall,
+                             threadID=main.threadID,
+                             name="featureUninstall",
+                             args=['onos-app-fwd'])
             pool.append(t)
             t.start()
             main.threadID = main.threadID + 1
-            
-        results = []
-        for thread in pool:
-            thread.join()
-            results.append(thread.result)
+        for t in pool:
+            t.join()
+            uninstallResult = uninstallResult and t.result
         time2 = time.time()
         
-        if( all(result == main.TRUE for result in results) == False):
+        if not uninstallResult:
                 main.log.info("Did not uninstall onos-app-fwd feature properly")
                 main.cleanup()
                 main.exit()
         else:
             main.log.info("Successful feature:uninstall onos-app-fwd")
-            uninstallResult = main.TRUE
         main.log.info("Time for feature:uninstall onos-app-fwd: %2f seconds" %(time2-time1))
 
         # Waiting for reative flows to be cleared.
@@ -462,20 +445,15 @@ class OnosCHO:
         main.case( "Compare ONOS topology with reference data" )
 
         main.step( "Compare current Device ports enabled with reference" )
-
-        CLI1 = (main.ONOScli1)
-        CLI2 = (main.ONOScli2)
-        CLI3 = (main.ONOScli3)
-        CLI4 = (main.ONOScli4)
-        CLI5 = (main.ONOScli5)
-        ONOSCLI = [CLI1,CLI2,CLI3,CLI4,CLI5]
         time1 = time.time()
-        
-        for i in xrange(1,(main.numMNswitches + 1),5):
+        for i in xrange( 1,(main.numMNswitches + 1), int( main.numCtrls ) ):
             pool = []
-            for cli in ONOSCLI:
+            for cli in main.CLIs:
                 dpid = "of:00000000000000" + format( i,'02x' )
-                t = main.Thread(target = cli.getDevicePortsEnabledCount,threadID = main.threadID, name = "getDevicePortsEnabledCount",args = [dpid])
+                t = main.Thread(target = cli.getDevicePortsEnabledCount,
+                        threadID = main.threadID,
+                        name = "getDevicePortsEnabledCount",
+                        args = [dpid])
                 t.start()
                 pool.append(t)
                 i = i + 1
@@ -489,20 +467,6 @@ class OnosCHO:
         print "Device Enabled Port Counts Stored: \n", str( main.devicePortsEnabledCount )
         time2 = time.time()
         main.log.info("Time for counting enabled ports of the switches: %2f seconds" %(time2-time1))
-        
-        
-        """
-        for i in range( 1, 26 ):
-            portResult = main.ONOScli1.getDevicePortsEnabledCount(
-                "of:00000000000000" +
-                format(
-                    i,
-                    '02x' ) )
-            portTemp = re.split( r'\t+', portResult )
-            portCount = portTemp[ 1 ].replace( "\r\r\n\x1b[32m", "" )
-            devicePortsEnabledCountTemp.append( portCount )
-            time.sleep( 2 )
-        """
         main.log.info (
             "Device Enabled ports EXPECTED: %s" % 
 	     str( main.devicePortsEnabledCount ) )
@@ -518,11 +482,14 @@ class OnosCHO:
 
         main.step( "Compare Device active links with reference" )
         time1 = time.time()
-        for i in xrange(1,(main.numMNswitches + 1),5):
+        for i in xrange( 1, ( main.numMNswitches + 1) , int( main.numCtrls ) ):
             pool = []
-            for cli in ONOSCLI:
+            for cli in main.CLIs:
                 dpid = "of:00000000000000" + format( i,'02x' )
-                t = main.Thread(target = cli.getDeviceLinksActiveCount,threadID = main.threadID, name = "getDevicePortsEnabledCount",args = [dpid])
+                t = main.Thread(target = cli.getDeviceLinksActiveCount,
+                        threadID = main.threadID,
+                        name = "getDevicePortsEnabledCount",
+                        args = [dpid])
                 t.start()
                 pool.append(t)
                 i = i + 1
@@ -567,21 +534,16 @@ class OnosCHO:
         main.step( "Add host Intents" )
         intentResult = main.TRUE
         hostCombos = list( itertools.combinations( main.hostMACs, 2 ) ) 
-        CLI1 = (main.ONOScli1.addHostIntent)
-        CLI2 = (main.ONOScli2.addHostIntent)
-        CLI3 = (main.ONOScli3.addHostIntent)
-        CLI4 = (main.ONOScli4.addHostIntent)
-        CLI5 = (main.ONOScli5.addHostIntent)
-        ONOSCLI = [CLI1,CLI2,CLI3,CLI4,CLI5]
-        results = main.TRUE
+        
         intentIdList = []
         time1 = time.time()
-        for i in xrange(0,len(hostCombos),5):
+        for i in xrange( 0, len( hostCombos ), int(main.numCtrls) ):
             pool = []
-            for cli in ONOSCLI:
-                if i >= len(hostCombos):
+            for cli in main.CLIs:
+                if i >= len( hostCombos ):
                     break
-                t = main.Thread(target=cli,threadID=main.threadID,
+                t = main.Thread( target=cli.addHostIntent,
+                        threadID=main.threadID,
                         name="addHostIntent",
                         args=[hostCombos[i][0],hostCombos[i][1]])
                 pool.append(t)
@@ -595,9 +557,10 @@ class OnosCHO:
         main.log.info("Time for adding host intents: %2f seconds" %(time2-time1))
         intentResult = main.TRUE
         intentsJson = main.ONOScli2.intents()
-        getIntentResult = main.ONOScli1.getIntentState(intentsId = intentIdList,
+        getIntentStateResult = main.ONOScli1.getIntentState(intentsId = intentIdList,
                 intentsJson = intentsJson)
-        print getIntentResult
+        print getIntentStateResult
+
         main.step( "Verify Ping across all hosts" )
         pingResult = main.FALSE
         time1 = time.time()
@@ -612,12 +575,11 @@ class OnosCHO:
                                  onpass="PING ALL PASS",
                                  onfail="PING ALL FAIL" )
 
-        case4Result = ( intentResult and pingResult )
+        case6Result = ( intentResult and pingResult )
         
-        #case4Result = pingResult
         utilities.assert_equals(
             expect=main.TRUE,
-            actual=case4Result,
+            actual=case6Result,
             onpass="Install 300 Host Intents and Ping All test PASS",
             onfail="Install 300 Host Intents and Ping All test FAIL" )
 
@@ -1008,31 +970,26 @@ class OnosCHO:
                 intentIdList.append( intentsTemp[ 0 ] )
             print "Intent IDs: ", intentIdList
             
-            CLI1 = (main.ONOScli1.removeIntent)
-            CLI2 = (main.ONOScli2.removeIntent)
-            CLI3 = (main.ONOScli3.removeIntent)
-            CLI4 = (main.ONOScli4.removeIntent)
-            CLI5 = (main.ONOScli5.removeIntent)
-            ONOSCLI = [CLI1,CLI2,CLI3,CLI4,CLI5]
             results = main.TRUE
             time1 = time.time()
             
-            for i in xrange(0,len(intentIdList),5):
+            for i in xrange(0,len( intentIdList ), int(main.numCtrls)):
                 pool = []
-                for cli in ONOSCLI:
+                for cli in main.CLIs:
                     if i >= len(intentIdList):
                         break
                     print "Removing intent id (round 1) :", intentIdList[ i ]
-                    t = main.Thread(target=cli,threadID=main.threadID,
+                    t = main.Thread(target=cli.removeIntent,
+                            threadID=main.threadID,
                             name="removeIntent",
                             args=[intentIdList[i],'org.onosproject.cli',False,False])
                     pool.append(t)
                     t.start()
                     i = i + 1
                     main.threadID = main.threadID + 1
-                for thread in pool:
-                    thread.join()
-                    results = results and thread.result
+                for t in pool:
+                    t.join()
+                    results = results and t.result
                 
             time2 = time.time()
             main.log.info("Time for feature:install onos-app-fwd: %2f seconds" %(time2-time1))
@@ -1059,13 +1016,13 @@ class OnosCHO:
                     intentsTemp1 = intentsList1[ i ].split( ',' )
                     intentIdList1.append( intentsTemp1[ 0 ].split('=')[1] )
                 print "Leftover Intent IDs: ", intentIdList1
-                for i in xrange(0,len(intentIdList1),5):
+                for i in xrange(0, len( intentIdList1 ), int(main.numCtrls)):
                     pool = []
-                    for cli in ONOSCLI:
+                    for cli in main.CLIs:
                         if i >= len(intentIdList1):
                             break
                         print "Removing intent id (round 2) :", intentIdList1[ i ]
-                        t = main.Thread(target=cli,threadID=main.threadID,
+                        t = main.Thread(target=cli.removeIntent,threadID=main.threadID,
                                 name="removeIntent",
                                 args=[intentIdList1[i],'org.onosproject.cli',True,False])
                         pool.append(t)
@@ -1073,9 +1030,9 @@ class OnosCHO:
                         i = i + 1
                         main.threadID = main.threadID + 1
                         
-                    for thread in pool:
-                        thread.join()
-                        results = results and thread.result
+                    for t in pool:
+                        t.join()
+                        results = results and t.result
                 step1Result = results
             else:
                 print "There are no more intents that need to be removed"
@@ -1083,11 +1040,10 @@ class OnosCHO:
         else:
             print "No Intent IDs found in Intents list: ", intentsList
             step1Result = main.FALSE
-
+        
         print main.ONOScli1.intents()
-        time.sleep(600)
-        caseResult7 = step1Result
-        utilities.assert_equals( expect=main.TRUE, actual=caseResult7,
+        caseResult10 = step1Result
+        utilities.assert_equals( expect=main.TRUE, actual=caseResult10,
                                  onpass="Intent removal test successful",
                                  onfail="Intent removal test failed" )
 
@@ -1108,15 +1064,10 @@ class OnosCHO:
         main.step( "Enable intent based Reactive forwarding" )
         installResult = main.FALSE
         feature = "onos-app-ifwd"
-        CLI1 = (main.ONOScli1.featureInstall,feature)
-        CLI2 = (main.ONOScli2.featureInstall,feature)
-        CLI3 = (main.ONOScli3.featureInstall,feature)
-        CLI4 = (main.ONOScli4.featureInstall,feature)
-        CLI5 = (main.ONOScli5.featureInstall,feature)
-        ONOSCLI = [CLI1,CLI2,CLI3,CLI4,CLI5]
+        
         pool = []
         time1 = time.time()
-        for cli,feature in ONOSCLI:
+        for cli,feature in main.CLIs:
             t = main.Thread(target=cli,threadID=threadID,
                     name="featureInstall",args=[feature])
             pool.append(t)
@@ -1157,15 +1108,9 @@ class OnosCHO:
         main.step( "Disable Intent based Reactive forwarding" )
         uninstallResult = main.FALSE
         
-        CLI1 = (main.ONOScli1.featureUninstall,feature)
-        CLI2 = (main.ONOScli2.featureUninstall,feature)
-        CLI3 = (main.ONOScli3.featureUninstall,feature)
-        CLI4 = (main.ONOScli4.featureUninstall,feature)
-        CLI5 = (main.ONOScli5.featureUninstall,feature)
-        ONOSCLI = [CLI1,CLI2,CLI3,CLI4,CLI5]
         pool = []
         time1 = time.time()
-        for cli,feature in ONOSCLI:
+        for cli,feature in main.CLIs:
             t = main.Thread(target=cli,threadID=threadID,
                     name="featureUninstall",args=[feature])
             pool.append(t)
@@ -1285,36 +1230,27 @@ class OnosCHO:
         time.sleep( 30 )
 
         main.log.step(" Start ONOS cli using thread ")
-        
-        CLI1 = (main.ONOScli1.startOnosCli,main.ONOS1_ip)
-        CLI2 = (main.ONOScli2.startOnosCli,main.ONOS2_ip)
-        CLI3 = (main.ONOScli3.startOnosCli,main.ONOS3_ip)
-        CLI4 = (main.ONOScli4.startOnosCli,main.ONOS4_ip)
-        CLI5 = (main.ONOScli5.startOnosCli,main.ONOS5_ip)
-        ONOSCLI = [CLI1,CLI2,CLI3,CLI4,CLI5]
         pool = []
         time1 = time.time()
-        for cli,ip in ONOSCLI:
-            t = main.Thread(target=cli,threadID=main.threadID,
-                    name="startOnosCli",args=[ip])
+        for i in range( int( main.numCtrls ) ):
+            t = main.Thread(target=cli.startOnosCli,
+                    threadID=main.threadID,
+                    name="startOnosCli",
+                    args=[nodes[i].ip_address])
             pool.append(t)
             t.start()
             main.threadID = main.threadID + 1
-            
-        cliResult  = main.FALSE
-        results = []
-        for thread in pool:
-            thread.join()
-            results.append(thread.result)
+        for t in pool:
+            t.join()
+            cliResult = cliResult and t.result
         time2 = time.time()
         
-        if( all(result == main.TRUE for result in results) == False):
+        if not cliResult:
                 main.log.info("ONOS CLI did not start up properly")
                 main.cleanup()
                 main.exit()
         else:
             main.log.info("Successful CLI startup")
-            cliResult = main.TRUE
         main.log.info("Time for connecting to CLI: %2f seconds" %(time2-time1))
 
         main.step( "Balance devices across controllers" )
@@ -1418,36 +1354,26 @@ class OnosCHO:
         time.sleep( 30 )
         
         main.log.step(" Start ONOS cli using thread ")
-        
-        CLI1 = (main.ONOScli1.startOnosCli,main.ONOS1_ip)
-        CLI2 = (main.ONOScli2.startOnosCli,main.ONOS2_ip)
-        CLI3 = (main.ONOScli3.startOnosCli,main.ONOS3_ip)
-        CLI4 = (main.ONOScli4.startOnosCli,main.ONOS4_ip)
-        CLI5 = (main.ONOScli5.startOnosCli,main.ONOS5_ip)
-        ONOSCLI = [CLI1,CLI2,CLI3,CLI4,CLI5]
         pool = []
-        time1 = time.time()
-        for cli,ip in ONOSCLI:
-            t = main.Thread(target=cli,threadID=main.threadID,
-                    name="startOnosCli",args=[ip])
+        for i in range( int( main.numCtrls ) ):
+            t = main.Thread(target=cli.startOnosCli,
+                    threadID=main.threadID,
+                    name="startOnosCli",
+                    args=[nodes[i].ip_address])
             pool.append(t)
             t.start()
             main.threadID = main.threadID + 1
-            
-        cliResult  = main.FALSE
-        results = []
-        for thread in pool:
-            thread.join()
-            results.append(thread.result)
+        for t in pool:
+            t.join()
+            cliResult = cliResult and t.result
         time2 = time.time()
         
-        if( all(result == main.TRUE for result in results) == False):
+        if not cliResult:
                 main.log.info("ONOS CLI did not start up properly")
                 main.cleanup()
                 main.exit()
         else:
             main.log.info("Successful CLI startup")
-            cliResult = main.TRUE
         main.log.info("Time for connecting to CLI: %2f seconds" %(time2-time1))
 
         main.step( "Balance devices across controllers" )
@@ -1469,9 +1395,9 @@ class OnosCHO:
             onpass="Starting new Spine topology test PASS",
             onfail="Starting new Spine topology test FAIL" )
 
-    def CASE14(self,main):
+    def CASE14( self ):
         """
-        Install 300 host intents and verify ping all
+        Install 300 host intents and verify ping all for Chordal Topology
         """
         main.log.report( "Add 300 host intents and verify pingall" )
         main.log.report( "_______________________________________" )
@@ -1482,43 +1408,33 @@ class OnosCHO:
         intentResult = main.TRUE
         hostCombos = list( itertools.combinations( main.hostMACs, 2 ) ) 
         
-        CLI1 = (main.ONOScli1.addHostIntent)
-        CLI2 = (main.ONOScli2.addHostIntent)
-        CLI3 = (main.ONOScli3.addHostIntent)
-        CLI4 = (main.ONOScli4.addHostIntent)
-        CLI5 = (main.ONOScli5.addHostIntent)
-        ONOSCLI = [CLI1,CLI2,CLI3,CLI4,CLI5]
-        results = main.TRUE
+        intentIdList = []
         time1 = time.time()
-        for i in xrange(0,len(hostCombos),5):
+        
+        for i in xrange( 0, len( hostCombos ), int(main.numCtrls) ):
             pool = []
-            for cli in ONOSCLI:
-                if i >= len(hostCombos):
+            for cli in main.CLIs:
+                if i >= len( hostCombos ):
                     break
-                t = main.Thread(target=cli,threadID=main.threadID,
+                t = main.Thread( target=cli.addHostIntent,
+                        threadID=main.threadID,
                         name="addHostIntent",
                         args=[hostCombos[i][0],hostCombos[i][1]])
                 pool.append(t)
                 t.start()
                 i = i + 1
                 main.threadID = main.threadID + 1
-                
             for thread in pool:
                 thread.join()
-                results = results and thread.result
-
+                intentIdList.append(thread.result)
         time2 = time.time()
-        
         main.log.info("Time for adding host intents: %2f seconds" %(time2-time1))
-        intentResult = results
-        """
-        for i in range( len( hostCombos ) ):
-            iResult = main.ONOScli1.addHostIntent(
-                hostCombos[ i ][ 0 ],
-                hostCombos[ i ][ 1 ] )
-            intentResult = ( intentResult and iResult )
-        """
-        
+        intentResult = main.TRUE
+        intentsJson = main.ONOScli2.intents()
+        getIntentStateResult = main.ONOScli1.getIntentState(intentsId = intentIdList,
+                intentsJson = intentsJson)
+        print getIntentStateResult
+
         main.step( "Verify Ping across all hosts" )
         pingResult = main.FALSE
         time1 = time.time()
@@ -1533,65 +1449,53 @@ class OnosCHO:
                                  onpass="PING ALL PASS",
                                  onfail="PING ALL FAIL" )
 
-        case4Result = ( intentResult and pingResult )
+        case14Result = ( intentResult and pingResult )
         
-        #case4Result = pingResult
         utilities.assert_equals(
             expect=main.TRUE,
-            actual=case4Result,
+            actual=case14Result,
             onpass="Install 300 Host Intents and Ping All test PASS",
             onfail="Install 300 Host Intents and Ping All test FAIL" )
-    
-    def CASE15( self,main):
+
+    def CASE15( self ):
         """
-        Install 300 host intents and verify ping all
+        Install 300 host intents and verify ping all for Spine Topology
         """
         main.log.report( "Add 300 host intents and verify pingall" )
         main.log.report( "_______________________________________" )
         import itertools
-
+        
         main.case( "Install 300 host intents" )
         main.step( "Add host Intents" )
         intentResult = main.TRUE
         hostCombos = list( itertools.combinations( main.hostMACs, 2 ) ) 
         
-        CLI1 = (main.ONOScli1.addHostIntent)
-        CLI2 = (main.ONOScli2.addHostIntent)
-        CLI3 = (main.ONOScli3.addHostIntent)
-        CLI4 = (main.ONOScli4.addHostIntent)
-        CLI5 = (main.ONOScli5.addHostIntent)
-        ONOSCLI = [CLI1,CLI2,CLI3,CLI4,CLI5]
-        results = main.TRUE
+        intentIdList = []
         time1 = time.time()
-        for i in xrange(0,len(hostCombos),5):
+        for i in xrange( 0, len( hostCombos ), int(main.numCtrls) ):
             pool = []
-            for cli in ONOSCLI:
-                if i >= len(hostCombos):
+            for cli in main.CLIs:
+                if i >= len( hostCombos ):
                     break
-                t = main.Thread(target=cli,threadID=main.threadID,
+                t = main.Thread( target=cli.addHostIntent,
+                        threadID=main.threadID,
                         name="addHostIntent",
                         args=[hostCombos[i][0],hostCombos[i][1]])
                 pool.append(t)
                 t.start()
                 i = i + 1
                 main.threadID = main.threadID + 1
-                
             for thread in pool:
                 thread.join()
-                results = results and thread.result
-
+                intentIdList.append(thread.result)
         time2 = time.time()
-        
         main.log.info("Time for adding host intents: %2f seconds" %(time2-time1))
-        intentResult = results
-        """
-        for i in range( len( hostCombos ) ):
-            iResult = main.ONOScli1.addHostIntent(
-                hostCombos[ i ][ 0 ],
-                hostCombos[ i ][ 1 ] )
-            intentResult = ( intentResult and iResult )
-        """
-        
+        intentResult = main.TRUE
+        intentsJson = main.ONOScli2.intents()
+        getIntentStateResult = main.ONOScli1.getIntentState(intentsId = intentIdList,
+                intentsJson = intentsJson)
+        print getIntentStateResult
+
         main.step( "Verify Ping across all hosts" )
         pingResult = main.FALSE
         time1 = time.time()
@@ -1606,11 +1510,11 @@ class OnosCHO:
                                  onpass="PING ALL PASS",
                                  onfail="PING ALL FAIL" )
 
-        case4Result = ( intentResult and pingResult )
+        case15Result = ( intentResult and pingResult )
         
-        #case4Result = pingResult
         utilities.assert_equals(
             expect=main.TRUE,
-            actual=case4Result,
+            actual=case15Result,
             onpass="Install 300 Host Intents and Ping All test PASS",
             onfail="Install 300 Host Intents and Ping All test FAIL" )
+

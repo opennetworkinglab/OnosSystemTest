@@ -233,7 +233,7 @@ class PeeringRouterTest:
                                   onpass="disconnect check PASS",
                                   onfail="disconnect check FAIL")
 
-        main.ONOScli.disconnect()
+        main.ONOScli.logout()
         main.ONOSbench.onosStop(ONOS1Ip);
         main.Mininet.stopNet()
         time.sleep(10)
@@ -766,7 +766,7 @@ class PeeringRouterTest:
                                   onpass="disconnect check PASS",
                                   onfail="disconnect check FAIL")
 
-        main.ONOScli.disconnect()
+        main.ONOScli.logout()
         main.ONOSbench.onosStop(ONOS1Ip);
         main.Mininet.stopNet()
         time.sleep(10)

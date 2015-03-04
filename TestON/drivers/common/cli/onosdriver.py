@@ -222,6 +222,80 @@ class OnosDriver( CLI ):
             main.cleanup()
             main.exit()
 
+    def mvnClean( self ):
+        """
+        Runs mvn clean the root of the ONOS directory.
+        This will clean all ONOS artifacts then compile each module
+
+        Returns: main.TRUE on success
+        On Failure, exits the test
+        """
+        try:
+            main.log.info( "Running 'mvn clean' on " +
+                           str( self.name ) +
+                           ". This may take some time." )
+            self.handle.sendline( "cd " + self.home )
+            self.handle.expect( "\$" )
+
+            self.handle.sendline( "" )
+            self.handle.expect( "\$" )
+            self.handle.sendline( "mvn clean" )
+            self.handle.expect( "mvn clean" )
+            while True:
+                i = self.handle.expect( [
+                    'There\sis\sinsufficient\smemory\sfor\sthe\sJava\s' +
+                        'Runtime\sEnvironment\sto\scontinue',
+                    'BUILD\sFAILURE',
+                    'BUILD\sSUCCESS',
+                    'ONOS\$',
+                    pexpect.TIMEOUT ], timeout=600 )
+                if i == 0:
+                    main.log.error( self.name + ":There is insufficient memory \
+                            for the Java Runtime Environment to continue." )
+                    # return main.FALSE
+                    main.cleanup()
+                    main.exit()
+                if i == 1:
+                    main.log.error( self.name + ": Build failure!" )
+                    # return main.FALSE
+                    main.cleanup()
+                    main.exit()
+                elif i == 2:
+                    main.log.info( self.name + ": Build success!" )
+                elif i == 3:
+                    main.log.info( self.name + ": Build complete" )
+                    # Print the build time
+                    for line in self.handle.before.splitlines():
+                        if "Total time:" in line:
+                            main.log.info( line )
+                    self.handle.sendline( "" )
+                    self.handle.expect( "\$", timeout=60 )
+                    return main.TRUE
+                elif i == 4:
+                    main.log.error(
+                        self.name +
+                        ": mvn clean TIMEOUT!" )
+                    # return main.FALSE
+                    main.cleanup()
+                    main.exit()
+                else:
+                    main.log.error( self.name + ": unexpected response from " +
+                            "mvn clean" )
+                    # return main.FALSE
+                    main.cleanup()
+                    main.exit()
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.info( self.name + ":" * 60 )
+            main.log.error( traceback.print_exc() )
+            main.log.info( ":" * 60 )
+            main.cleanup()
+            main.exit()
+
     def gitPull( self, comp1="" ):
         """
         Assumes that "git pull" works without login

@@ -48,14 +48,6 @@ class VLANHost( Host ):
         self.cmd( 'vconfig add %s %d' % ( intf, vlan ) )
         # assign the host's IP to the VLAN interface
         self.cmd( 'ifconfig %s.%d inet %s' % ( intf, vlan, params['ip'] ) )
-
-        info("vlan2 = %s" % vlan2)
- 
-        if vlan2 != 0:
-            self.cmd( 'ifconfig %s inet 0' % intf2 )
-            self.cmd( 'vconfig add %s %d' % ( intf2, vlan2 ) )
-            self.cmd( 'ifconfig %s.%d inet %s' % ( intf2, vlan2, ip2 ) )
-
         # update the intf name and host's intf map
         newName = '%s.%d' % ( intf, vlan )
         # update the (Mininet) interface to refer to VLAN interface name
@@ -88,7 +80,7 @@ class SDNIpModifiedTopo( Topo ):
         rootTestOn = self.addHost( 'rootTestOn', inNamespace=False, ip='0' )
 
         #AS2 host
-        host3 = self.addHost( 'host3', cls=VLANHost, vlan=10, intf2="host3-eth1", ip2="192.168.20.1", vlan2=20, inf="host3-eth0", ip="192.168.10.1")
+        host3 = self.addHost( 'host3', cls=VLANHost, vlan=10, inf="host3-eth0", ip="192.168.10.1")
         
         as2host = self.addHost( 'as2host' )
         #AS3 host
@@ -233,15 +225,19 @@ def sdn1net():
     #host2.cmd('/sbin/route add default gw 172.16.10.254 dev %s-eth0' % (host2.name))
 
     # Set up AS2
-    host3.setMAC('00:00:00:00:02:01', 'host3-eth0')
-    host3.setMAC('00:00:00:00:02:02', 'host3-eth1')
-
+    # add additional VLAN interface
+    host3.cmd( 'ifconfig host3-eth1 inet 0')
+    host3.cmd( 'vconfig add host3-eth1 20')
+    host3.cmd( 'ifconfig host3-eth1.20 inet 192.168.20.1')
+    # change the interface for the sencond connection to sw1 to vlan interface
     newName = "host3-eth1.20"
     secondIntf = host3.intf("host3-eth1")
     secondIntf.name = newName
-    # add VLAN interface to host's name to intf map
     host3.nameToIntf[ newName ] = secondIntf
-
+    
+    host3.setMAC('00:00:00:00:02:01', 'host3-eth0.10')
+    host3.setMAC('00:00:00:00:02:02', 'host3-eth1.20')
+    
     #host3.setIP('172.16.20.254', 24, 'host3-eth2')
     host3.setIP('3.0.0.254', 8, 'host3-eth2')
     host3.cmd('sysctl net.ipv4.conf.all.forwarding=1')
@@ -258,7 +254,7 @@ def sdn1net():
     as2host.cmd('ip route add default via 3.0.0.254')
     
     # Set up AS3
-    host4.setMAC('00:00:00:00:03:01', 'host4-eth0')
+    host4.setMAC('00:00:00:00:03:01', 'host4-eth0.30')
     host4.setIP('4.0.0.254', 8, 'host4-eth1')
     host4.setMAC('00:00:00:00:03:99', 'host4-eth1')
     host4.cmd('sysctl net.ipv4.conf.all.forwarding=1')
@@ -289,7 +285,7 @@ def sdn1net():
 
     # Set up AS6 - This has a router and a route server
     host5 = net.get('host5')
-    host5.setMAC('00:00:00:00:06:02', 'host5-eth0')
+    host5.setMAC('00:00:00:00:06:02', 'host5-eth0.60')
     #as6router.setIP('172.16.60.254', 24, 'as6router-eth1')
     host5.setIP('5.0.0.254', 8, 'host5-eth1')
     host5.cmd('sysctl net.ipv4.conf.all.forwarding=1')

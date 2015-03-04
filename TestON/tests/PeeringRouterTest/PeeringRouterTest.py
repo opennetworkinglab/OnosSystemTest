@@ -239,17 +239,6 @@ class PeeringRouterTest:
         time.sleep(10)
 
     def CASE5( self, main ):
-        """
-        Test the SDN-IP functionality
-        allRoutesExpected: all expected routes for all BGP peers
-        routeIntentsExpected: all expected MultiPointToSinglePointIntent \
-        intents
-        bgpIntentsExpected: expected PointToPointIntent intents
-        allRoutesActual: all routes from ONOS LCI
-        routeIntentsActual: actual MultiPointToSinglePointIntent intents from \
-        ONOS CLI
-        bgpIntentsActual: actual PointToPointIntent intents from ONOS CLI
-        """
         import time
         import json
         from operator import eq
@@ -262,9 +251,24 @@ class PeeringRouterTest:
         TESTCASE_MININET_ROOT_PATH = TESTCASE_ROOT_PATH + "/mininet"
         SDNIPJSONFILEPATH = TESTCASE_ROOT_PATH + "/sdnip.json"
         main.log.info("sdnip.json file path: "+ SDNIPJSONFILEPATH)
+
+        # Copy the json files to config dir
+        main.ONOSbench.handle.sendline("cp " + TESTCASE_ROOT_PATH + "/addresses.json ~/onos/tools/package/config/")
+        main.ONOSbench.handle.sendline("cp " + TESTCASE_ROOT_PATH + "/sdnip.json ~/onos/tools/package/config/")
+
+        # Launch mininet topology for this case
+        MININET_TOPO_FILE = TESTCASE_MININET_ROOT_PATH + "/PeeringRouterMininetVlan.py"
+        main.step( "Launch mininet" )
+        main.Mininet.handle.sendline("sudo python " + MININET_TOPO_FILE + " " + TESTCASE_MININET_ROOT_PATH)
+        main.step("waiting 20 secs for all switches and quagga instances to comeup")
+        time.sleep(20)
+        main.step( "Test whether Mininet is started" )
+        main.log.info( "Login Quagga CLI on host3" )
+        main.QuaggaCliHost3.loginQuagga( "1.168.30.2" )
         # all expected routes for all BGP peers
         allRoutesExpected = []
         main.step( "Start to generate routes for all BGP peers" )
+
         main.log.info( "Generate prefixes for host3" )
         prefixesHost3 = main.QuaggaCliHost3.generatePrefixes( 3, 10 )
         main.log.info( prefixesHost3 )
@@ -315,8 +319,6 @@ class PeeringRouterTest:
         onos1InstallResult = main.ONOSbench.onosInstall(
             options="-f", node=ONOS1Ip )
 
-        main.step( "Checking if ONOS is up yet" )
-        time.sleep( 20 )
         onos1Isup = main.ONOSbench.isup( ONOS1Ip )
         if not onos1Isup:
             main.log.report( "ONOS1 didn't start!" )
@@ -324,12 +326,11 @@ class PeeringRouterTest:
         main.step( "Start ONOS-cli" )
 
         main.ONOScli.startOnosCli( ONOS1Ip )
-
         main.step( "Get devices in the network" )
         listResult = main.ONOScli.devices( jsonFormat=False )
         main.log.info( listResult )
         time.sleep( 10 )
-        main.log.info( "Installing gbprouter feature" )
+        main.log.info( "Installing bgprouter feature" )
         main.ONOScli.featureInstall( "onos-app-bgprouter" )
         time.sleep( 10 )
         main.step( "Login all BGP peers and add routes into peers" )
@@ -355,17 +356,14 @@ class PeeringRouterTest:
         main.log.info( "Add routes to Quagga on host5" )
         main.QuaggaCliHost5.addRoutes( prefixesHost5, 1 )
 
-        #time.sleep( 30 )
-        time.sleep(10)
+        time.sleep( 30 )
 
         # get routes inside SDN-IP
         getRoutesResult = main.ONOScli.routes( jsonFormat=True )
 
         # parse routes from ONOS CLI
-        # allRoutesActual = \
-        #    main.QuaggaCliHost3.extractActualRoutes( getRoutesResult )
-        allRoutesActual = []
-        main.log.info("allRoutesExpected")
+        allRoutesActual = \
+           main.QuaggaCliHost3.extractActualRoutes( getRoutesResult )
 
         allRoutesStrExpected = str( sorted( allRoutesExpected ) )
         allRoutesStrActual = str( allRoutesActual ).replace( 'u', "" )
@@ -385,78 +383,18 @@ class PeeringRouterTest:
             main.log.report(
                 "***Routes in SDN-IP after adding routes are wrong!***" )
 
-        #time.sleep( 20 )
-        #getIntentsResult = main.ONOScli.intents( jsonFormat=True )
-
-        #main.step( "Check MultiPointToSinglePointIntent intents installed" )
-        # routeIntentsExpected are generated when generating routes
-        # get rpoute intents from ONOS CLI
-        #routeIntentsActual = \
-        #    main.QuaggaCliHost3.extractActualRouteIntents(
-        #        getIntentsResult )
-        #routeIntentsStrExpected = str( sorted( routeIntentsExpected ) )
-        #routeIntentsStrActual = str( routeIntentsActual ).replace( 'u', "" )
-        #main.log.info( "MultiPointToSinglePoint intents expected:" )
-        #main.log.info( routeIntentsStrExpected )
-        #main.log.info( "MultiPointToSinglePoint intents get from ONOS CLI:" )
-        #main.log.info( routeIntentsStrActual )
-        #utilities.assertEquals(
-        #    expect=True,
-        #    actual=eq( routeIntentsStrExpected, routeIntentsStrActual ),
-        #    onpass="***MultiPointToSinglePoint Intents in SDN-IP are \
-        #    correct!***",
-        #    onfail="***MultiPointToSinglePoint Intents in SDN-IP are \
-        #    wrong!***" )
-
-        #if( eq( routeIntentsStrExpected, routeIntentsStrActual ) ):
-        #    main.log.report( "***MultiPointToSinglePoint Intents before \
-        #    deleting routes correct!***" )
-        #else:
-        #    main.log.report( "***MultiPointToSinglePoint Intents before \
-        #    deleting routes wrong!***" )
-
-        #main.step( "Check BGP PointToPointIntent intents installed" )
-        ## bgp intents expected
-        #bgpIntentsExpected = \
-        #    main.QuaggaCliHost3.generateExpectedBgpIntents( SDNIPJSONFILEPATH )
-        ## get BGP intents from ONOS CLI
-        #bgpIntentsActual = \
-        #    main.QuaggaCliHost3.extractActualBgpIntents( getIntentsResult )
-
-        #bgpIntentsStrExpected = str( bgpIntentsExpected ).replace( 'u', "" )
-        #bgpIntentsStrActual = str( bgpIntentsActual )
-        #main.log.info( "PointToPointIntent intents expected:" )
-        #main.log.info( bgpIntentsStrExpected )
-        #main.log.info( "PointToPointIntent intents get from ONOS CLI:" )
-        #main.log.info( bgpIntentsStrActual )
-
-        #utilities.assertEquals(
-        #    expect=True,
-        #    actual=eq( bgpIntentsStrExpected, bgpIntentsStrActual ),
-        #    onpass="***PointToPointIntent Intents in SDN-IP are correct!***",
-        #    onfail="***PointToPointIntent Intents in SDN-IP are wrong!***" )
-
-        #if ( eq( bgpIntentsStrExpected, bgpIntentsStrActual ) ):
-        #    main.log.report(
-        #        "***PointToPointIntent Intents in SDN-IP are correct!***" )
-        #else:
-        #    main.log.report(
-        #        "***PointToPointIntent Intents in SDN-IP are wrong!***" )
-
         #============================= Ping Test ========================
-        # wait until all MultiPointToSinglePoint
-        time.sleep( 10 )
-        main.log.info("Start ping test")
-        pingTestScript = TESTCASE_ROOT_PATH + "CASE4-ping-as2host.sh"
-        pingTestResultsFile = \
-        TESTCASE_ROOT_PATH + "CASE4-ping-results-before-delete-routes-" \
-            + strftime( "%Y-%m-%d_%H:%M:%S", localtime() ) + ".txt"
-        pingTestResults = main.QuaggaCliHost.pingTest(
-            "1.168.30.100", pingTestScript, pingTestResultsFile )
+        pingTestResults = main.QuaggaCliHost.pingTestAndCheckAllPass( "1.168.30.100" )
         main.log.info("Ping test result")
-        main.log.info( pingTestResults )
-        time.sleep( 10 )
+        if pingTestResults:
+            main.log.info("Test succeeded")
+        else:
+            main.log.info("Test failed")
 
+        utilities.assert_equals(expect=main.TRUE,actual=pingTestResults,
+                                  onpass="Default connectivity check PASS",
+                                  onfail="Default connectivity check FAIL")
+        
         #============================= Deleting Routes ==================
         main.step( "Check deleting routes installed" )
         main.QuaggaCliHost3.deleteRoutes( prefixesHost3, 1 )
@@ -464,10 +402,8 @@ class PeeringRouterTest:
         main.QuaggaCliHost5.deleteRoutes( prefixesHost5, 1 )
 
         getRoutesResult = main.ONOScli.routes( jsonFormat=True )
-        # FIX ME
-        #allRoutesActual = \
-        #    main.QuaggaCliHost3.extractActualRoutes( getRoutesResult )
-        allRoutesActual = []
+        allRoutesActual = \
+            main.QuaggaCliHost3.extractActualRoutes( getRoutesResult )
 
         main.log.info( "allRoutes_actual = " )
         main.log.info( allRoutesActual )
@@ -482,44 +418,23 @@ class PeeringRouterTest:
         else:
             main.log.report( "***Routes in SDN-IP after deleting wrong!***" )
 
-        #main.step( "Check intents after deleting routes" )
-        #getIntentsResult = main.ONOScli.intents( jsonFormat=True )
-        #routeIntentsActual = \
-        #    main.QuaggaCliHost3.extractActualRouteIntents(
-        #        getIntentsResult )
-        #main.log.info( "main.ONOScli.intents()= " )
-        #main.log.info( routeIntentsActual )
-        #utilities.assertEquals(
-        #    expect="[]", actual=str( routeIntentsActual ),
-        #    onpass="***MultiPointToSinglePoint Intents number in SDN-IP is 0, \
-        #    correct!***",
-        #    onfail="***MultiPointToSinglePoint Intents number in SDN-IP is 0, \
-        #    wrong!***" )
+        #============================= Ping Test ========================
+        pingTestResults = main.QuaggaCliHost.pingTestAndCheckAllFail( "1.168.30.100" )
+        main.log.info("Ping test result")
+        if pingTestResults:
+            main.log.info("Test succeeded")
+        else:
+            main.log.info("Test failed")
 
-        #if( eq( routeIntentsStrExpected, routeIntentsStrActual ) ):
-        #    main.log.report( "***MultiPointToSinglePoint Intents after \
-        #    deleting routes correct!***" )
-        #else:
-        #    main.log.report( "***MultiPointToSinglePoint Intents after \
-        #    deleting routes wrong!***" )
+        utilities.assert_equals(expect=main.TRUE,actual=pingTestResults,
+                                  onpass="disconnect check PASS",
+                                  onfail="disconnect check FAIL")
 
-        time.sleep( 10 )
-        main.log.info("Ping test after removing routs")
-        pingTestScript = TESTCASE_ROOT_PATH + "CASE4-ping-as2host.sh"
-        pingTestResultsFile = \
-        TESTCASE_ROOT_PATH + "CASE4-ping-results-after-delete-routes-" \
-            + strftime( "%Y-%m-%d_%H:%M:%S", localtime() ) + ".txt"
-        pingTestResults = main.QuaggaCliHost.pingTest(
-            "1.168.30.100", pingTestScript, pingTestResultsFile )
-        main.log.info("Ping test results")
-        main.log.info( pingTestResults )
-        time.sleep( 10 )
-
-        # main.step( "Test whether Mininet is started" )
-        # main.Mininet2.handle.sendline( "xterm host1" )
-        # main.Mininet2.handle.expect( "mininet>" )
-        main.ONOScli.disconnect()
+        main.ONOScli.logout()
         main.ONOSbench.onosStop(ONOS1Ip);
+        main.Mininet.stopNet()
+        time.sleep(10)
+
 
     # Route convergence and connectivity test
     def CASE21( self, main):

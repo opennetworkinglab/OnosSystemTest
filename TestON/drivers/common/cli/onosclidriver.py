@@ -82,18 +82,11 @@ class OnosCliDriver( CLI ):
         """
         response = main.TRUE
         try:
-            self.handle.sendline( "" )
-            i = self.handle.expect( [ "onos>", "\$" ] )
-            if i == 0:
-                self.handle.sendline( "system:shutdown" )
-                self.handle.expect( "Confirm" )
-                self.handle.sendline( "yes" )
-                self.handle.expect( "\$" )
+            self.logout()
             self.handle.sendline( "" )
             self.handle.expect( "\$" )
             self.handle.sendline( "exit" )
             self.handle.expect( "closed" )
-
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
             response = main.FALSE
@@ -111,15 +104,15 @@ class OnosCliDriver( CLI ):
         """
         try:
             self.handle.sendline( "" )
-            i = self.handle.expect( [
-                "onos>",
-                "\$" ], timeout=10 )
-            if i == 0:
+            i = self.handle.expect( [ "onos>", "\$", pexpect.TIMEOUT ],
+                                    timeout=10 )
+            if i == 0:  # In ONOS CLI
                 self.handle.sendline( "logout" )
                 self.handle.expect( "\$" )
-            elif i == 1:
+            elif i == 1:  # not in CLI
                 return main.TRUE
-
+            elif i == 3:  # Timeout
+                return main.FALSE
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
             return None

@@ -646,6 +646,57 @@ class PeeringRouterTest:
                                   onpass="Default connectivity check PASS",
                                   onfail="Default connectivity check FAIL")
 
+        #============= Enabling the BGP session between QuaggaCliHost4 and ONOS ==================
+        main.log.info( "Enabling bgp session between QuaggaCliHost4 and 192.168.30.101:" )
+        main.QuaggaCliHost4.enable_bgp_peer( "192.168.30.101", "64513" )
+        main.log.info( "Sleeping for 150 seconds for network to converge" )
+        time.sleep(150)
+        # get routes inside SDN-IP
+        main.log.info( "Getting Routes from ONOS CLI" )
+        getRoutesResult = main.ONOScli.routes( jsonFormat=True )
+
+        # parse routes from ONOS CLI
+        newAllRoutesActual = \
+            main.QuaggaCliHost3.extractActualRoutes( getRoutesResult )
+        newAllRoutesStrActual = str( newAllRoutesActual ).replace( 'u', "" )
+
+        # Expected routes with changed next hop
+        newAllRoutesExpected = []
+        for prefix in prefixesHost3:
+            newAllRoutesExpected.append( prefix + "/" + "192.168.20.1" )
+        for prefix in prefixesHost4:
+            newAllRoutesExpected.append( prefix + "/" + "192.168.30.1" )
+        for prefix in prefixesHost5:
+            newAllRoutesExpected.append( prefix + "/" + "192.168.60.2" )
+        newAllRoutesStrExpected = str( sorted( newAllRoutesExpected ) )
+        main.step( "Check routes installed after convergence-2" )
+        main.log.info( "Routes expected:" )
+        main.log.info( newAllRoutesStrExpected )
+        main.log.info( "Routes got from ONOS CLI after convergence-2:" )
+        main.log.info( newAllRoutesStrActual )
+        utilities.assertEquals(
+            expect=newAllRoutesStrExpected, actual=newAllRoutesStrActual,
+            onpass="***Routes in SDN-IP are correct after convergence!***",
+            onfail="***Routes in SDN-IP are wrong after convergence!***" )
+        if( eq( newAllRoutesStrExpected, newAllRoutesStrActual ) ):
+            main.log.report(
+                "***Routes in SDN-IP after convergence are correct!***" )
+        else:
+            main.log.report(
+                "***Routes in SDN-IP after convergence are wrong!***" )
+
+        #============================= Ping Test ========================
+        pingTestResults = main.QuaggaCliHost.pingTestAndCheckAllPass( "1.168.30.100" )
+        main.log.info("Ping test result")
+        if pingTestResults:
+            main.log.info("Test succeeded")
+        else:
+            main.log.info("Test failed")
+       
+        utilities.assert_equals(expect=main.TRUE,actual=pingTestResults,
+                                  onpass="Default connectivity check PASS",
+                                  onfail="Default connectivity check FAIL")
+
         #============================= Deleting Routes ==================
         main.step( "Check deleting routes installed" )
         main.QuaggaCliHost3.deleteRoutes( prefixesHost3, 1 )

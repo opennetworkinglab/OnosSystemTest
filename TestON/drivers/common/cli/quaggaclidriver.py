@@ -677,6 +677,26 @@ class QuaggaCliDriver( CLI ):
             main.log.warn( "Failed to disable peer" )
             self.disconnect()
 
+    def enable_bgp_peer( self, peer, peer_as ):
+        main.log.info( "I am in enable_bgp_peer method!" )
+
+        try:
+            self.handle.sendline( "" )
+            # self.handle.expect( "config-router" )
+            self.handle.expect( "config-router", timeout=5 )
+        except:
+            main.log.warn( "Probably not in config-router mode!" )
+            self.disconnect()
+        main.log.info( "Start to disable peer" )
+
+        cmd = "neighbor " + peer + " remote-as " + peer_as
+        try:
+            self.handle.sendline( cmd )
+            self.handle.expect( "bgpd", timeout=5 )
+        except:
+            main.log.warn( "Failed to enable peer" )
+            self.disconnect()
+
     def disconnect( self ):
         """
         Called when Test is complete to disconnect the Quagga handle.

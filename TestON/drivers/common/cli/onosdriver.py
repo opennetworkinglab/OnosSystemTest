@@ -222,16 +222,16 @@ class OnosDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def mvnClean( self ):
+    def mvnCleanCompile( self ):
         """
-        Runs mvn clean the root of the ONOS directory.
+        Runs mvn clean compile the root of the ONOS directory.
         This will clean all ONOS artifacts then compile each module
 
         Returns: main.TRUE on success
         On Failure, exits the test
         """
         try:
-            main.log.info( "Running 'mvn clean' on " +
+            main.log.info( "Running 'mvn clean compile' on " +
                            str( self.name ) +
                            ". This may take some time." )
             self.handle.sendline( "cd " + self.home )
@@ -239,8 +239,8 @@ class OnosDriver( CLI ):
 
             self.handle.sendline( "" )
             self.handle.expect( "\$" )
-            self.handle.sendline( "mvn clean" )
-            self.handle.expect( "mvn clean" )
+            self.handle.sendline( "mvn clean compile" )
+            self.handle.expect( "mvn clean compile" )
             while True:
                 i = self.handle.expect( [
                     'There\sis\sinsufficient\smemory\sfor\sthe\sJava\s' +
@@ -274,13 +274,13 @@ class OnosDriver( CLI ):
                 elif i == 4:
                     main.log.error(
                         self.name +
-                        ": mvn clean TIMEOUT!" )
+                        ": mvn clean compile TIMEOUT!" )
                     # return main.FALSE
                     main.cleanup()
                     main.exit()
                 else:
                     main.log.error( self.name + ": unexpected response from " +
-                            "mvn clean" )
+                            "mvn clean compile" )
                     # return main.FALSE
                     main.cleanup()
                     main.exit()

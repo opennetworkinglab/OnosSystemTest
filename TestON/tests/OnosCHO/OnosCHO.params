@@ -11,8 +11,9 @@
     # 9. Install 114 point intents and verify ping all
     # 10. Remove all intents on ONOS
     # 1,2,3,[4,5,6,5,70,80,5,10,5,9,5,71,81,5,10,5]*100
+    # 1,2,3,4,5,6,10,12,3,4,5,6,10,13,3,4,5,6,10  (Multi threaded tests compare sequence)
 
-    <testcases>1,2,3,4,5,12,3,4,5,13,3,4,5</testcases>
+    <testcases>1,[2,3,4,5,6,70,80,10,12,3,4,5,6,10,13,3,4,5,6,10]*5</testcases>
     <ENV>
         <cellName>choTest5</cellName>
     </ENV>
@@ -59,7 +60,7 @@
 	<startMAC>00:00:00:00:00:01</startMAC>
 	<endMAC>00:00:00:00:00:19</endMAC>
     </HOSTS>
-    <CORELINKS>
+    <ATTCORELINKS>
         <toggleLinks>3</toggleLinks>
 	
 	<linkS3a>s3</linkS3a>
@@ -73,8 +74,14 @@
 	<linkS18a>s18</linkS18a>
 	<linkS18b>s14,s16,s17,s19,s20,s21,s22,s23</linkS18b>
 	#######s3,s14,s16,s17,s19,s20,s21,s22,s23########
-    </CORELINKS>
+    </ATTCORELINKS>
+    <CHORDALLINKS>
+	<toggleLinks>5</toggleLinks>
+    </CHORDALLINKS>
 
+    <SPINELINKS>
+    
+    </SPINELINKS>
     <timers>
         <LinkDiscovery>5</LinkDiscovery>
         <SwitchDiscovery>31</SwitchDiscovery>

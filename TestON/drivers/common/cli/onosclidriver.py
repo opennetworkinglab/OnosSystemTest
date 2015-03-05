@@ -19,6 +19,8 @@ OCT 13 2014
 import sys
 import pexpect
 import re
+import json
+import types
 sys.path.append( "../" )
 from drivers.common.clidriver import CLI
 
@@ -472,9 +474,14 @@ class OnosCliDriver( CLI ):
         by issuing command: 'onos> feature:uninstall <feature_str>'
         """
         try:
-            cmdStr = "feature:uninstall " + str( featureStr )
-            self.sendline( cmdStr )
-            # TODO: Check for possible error responses from karaf
+            cmdStr = 'feature:list -i | grep "' + featureStr + '"'
+            handle = self.sendline( cmdStr )
+            if handle != '':
+                cmdStr = "feature:uninstall " + str( featureStr )
+                self.sendline( cmdStr )
+                # TODO: Check for possible error responses from karaf
+            else:
+                main.log.info( "Feature needs to be installed before uninstalling it" )
             return main.TRUE
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
@@ -701,7 +708,6 @@ class OnosCliDriver( CLI ):
         None if no match
         """
         try:
-            import json
             if deviceId is None:
                 return None
             else:
@@ -733,7 +739,6 @@ class OnosCliDriver( CLI ):
                  main.FALSE any device has no master
         """
         try:
-            import json
             rawRoles = self.roles()
             rolesJson = json.loads( rawRoles )
             # search json for the device with id then return the device
@@ -837,7 +842,6 @@ class OnosCliDriver( CLI ):
 
         Return None if there is no match
         """
-        import json
         try:
             if mac is None:
                 return None
@@ -1286,7 +1290,6 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
-
     def removeIntent( self, intentId, app = 'org.onosproject.cli',
         purge = False, sync = False ):
         """
@@ -1405,8 +1408,6 @@ class OnosCliDriver( CLI ):
             stateDict = Dictionary of intent's state. intent ID as the keys and
             state as the values.
         """
-        import json
-        import types
         try:
             state = "State is Undefined"
             if not intentsJson:
@@ -1450,7 +1451,7 @@ class OnosCliDriver( CLI ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
-    
+
     def flows( self, jsonFormat=True ):
         """
         Optional:
@@ -1642,6 +1643,26 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
+    def FlowAddedCount( self, deviceId ):
+        """
+        Determine the number of flow rules for the given device id that are
+        in the added state
+        """
+        try:
+            cmdStr = "flows any " + str( deviceId ) + " | " +\
+                     "grep 'state=ADDED' | wc -l"
+            handle = self.sendline( cmdStr )
+            return handle
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
     def getAllDevicesId( self ):
         """
         Use 'devices' function to obtain list of all devices
@@ -1733,7 +1754,6 @@ class OnosCliDriver( CLI ):
         Return the first device from the devices api whose 'id' contains 'dpid'
         Return None if there is no match
         """
-        import json
         try:
             if dpid is None:
                 return None
@@ -2123,23 +2143,3 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def testExceptions( self, obj ):
-        """
-        Test exception logging
-        """
-        # FIXME: Remove this before you commit
-
-        try:
-            return obj[ 'dedf' ]
-        except TypeError:
-            main.log.exception( self.name + ": Object not as expected" )
-            return None
-        except pexpect.EOF:
-            main.log.error( self.name + ": EOF exception found" )
-            main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
-        except:
-            main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()

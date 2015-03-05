@@ -31,6 +31,7 @@ import re
 import __builtin__
 import new
 import xmldict
+import importlib
 module = new.module("test")
 import openspeak
 global path, drivers_path, core_path, tests_path,logs_path
@@ -159,7 +160,7 @@ class TestON:
         driver_options ['type'] = driverName
         
         classPath = self.getDriverPath(driverName.lower())
-        driverModule = __import__(classPath, globals(), locals(), [driverName.lower()], -1)
+        driverModule = importlib.import_module(classPath)
         driverClass = getattr(driverModule, driverName)
         driverObject = driverClass()
          
@@ -242,8 +243,10 @@ class TestON:
                 exec code[testCaseNumber][step] in module.__dict__
                 self.stepCount = self.stepCount + 1
             except TypeError,e:
+                print "Exception in the following section of code:"
+                print code[testCaseNumber][step]
                 self.stepCount = self.stepCount + 1
-                self.log.error(e)
+                self.log.exception(e)
             return main.TRUE
         
         if cli.stop:
@@ -444,8 +447,8 @@ class TestON:
             try :
                 import json
                 response_dict = json.loads(response)
-            except Exception , e :
-                print e
+            except Exception, e:
+                main.log.exception( e )
                 main.log.error("Json Parser is unable to parse the string")
             return response_dict
         
@@ -463,7 +466,7 @@ class TestON:
             try :
                 response_dict = xmldict.xml_to_dict("<response> "+str(response)+" </response>")
             except Exception, e:
-                main.log.error(e)
+                main.log.exception( e )
             return response_dict
         
     def dict_to_return_format(self,response,return_format,response_dict):

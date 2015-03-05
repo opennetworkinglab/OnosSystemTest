@@ -1508,7 +1508,7 @@ class OnosDriver( CLI ):
             main.log.error( traceback.print_exc() )
             main.log.info( self.name + " ::::::" )
 
-    def checkLogs( self, onosIp ):
+    def onosCheckLogs( self, onosIp ):
         """
         runs onos-check-logs on the given onos node
         returns the response

@@ -31,6 +31,7 @@ import re
 import __builtin__
 import new
 import xmldict
+import importlib
 module = new.module("test")
 import openspeak
 global path, drivers_path, core_path, tests_path,logs_path
@@ -46,6 +47,7 @@ sys.path.append(core_path )
 sys.path.append(tests_path)
 
 from core.utilities import Utilities
+from core.Thread import Thread
 
 
 class TestON:
@@ -87,6 +89,7 @@ class TestON:
         self.loggerClass = "Logger"
         self.logs_path = logs_path
         self.driver = ''
+        self.Thread = Thread
 	
         
         self.configparser()
@@ -146,7 +149,6 @@ class TestON:
         '''
         This method will initialize specified component
         '''
-        import importlib
         global driver_options
         self.log.info("Creating component Handle: "+component)
         driver_options = {}
@@ -446,7 +448,7 @@ class TestON:
                 import json
                 response_dict = json.loads(response)
             except Exception, e:
-                main.log.exception(e)
+                main.log.exception( e )
                 main.log.error("Json Parser is unable to parse the string")
             return response_dict
         
@@ -464,7 +466,7 @@ class TestON:
             try :
                 response_dict = xmldict.xml_to_dict("<response> "+str(response)+" </response>")
             except Exception, e:
-                main.log.exception(e)
+                main.log.exception( e )
             return response_dict
         
     def dict_to_return_format(self,response,return_format,response_dict):

@@ -35,7 +35,6 @@ from within your Mininet folder:
 
     Note that you may need to run 'sudo make develop' if your mnexec.c file
 changed when switching branches."""
-import traceback
 import pexpect
 import re
 import sys
@@ -83,17 +82,15 @@ class MininetCliDriver( Emulator ):
                         self.user_name +
                         "@" +
                         self.ip_address )
-                msin.log.error( "Failed to connect to the Mininet CLI" )
+                main.log.error( "Failed to connect to the Mininet CLI" )
                 return main.FALSE
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
-            main.log.info( self.name + ":::::::::::::::::::::::" )
-            main.log.error( traceback.print_exc() )
-            main.log.info( ":::::::::::::::::::::::" )
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
@@ -1032,10 +1029,8 @@ class MininetCliDriver( Emulator ):
             main.log.error( self.name + ":     " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
-            main.log.info( self.name + ":" * 50 )
-            main.log.error( traceback.print_exc() )
-            main.log.info( ":" * 50 )
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
@@ -1342,7 +1337,7 @@ class MininetCliDriver( Emulator ):
             main.log.info( self.name + ": ARP successful" )
             self.handle.expect( [ "mininet", pexpect.EOF, pexpect.TIMEOUT ] )
             return main.TRUE
-        except:
+        except Exception:
             main.log.warn( self.name + ": ARP FAILURE" )
             self.handle.expect( [ "mininet", pexpect.EOF, pexpect.TIMEOUT ] )
             return main.FALSE
@@ -1448,10 +1443,8 @@ class MininetCliDriver( Emulator ):
             main.log.error( self.name + ":     " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
-            main.log.info( self.name + ":" * 50 )
-            main.log.error( traceback.print_exc() )
-            main.log.info( ":" * 50 )
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
@@ -1467,10 +1460,8 @@ class MininetCliDriver( Emulator ):
             main.log.error( self.name + ":     " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
-            main.log.info( self.name + ":" * 50 )
-            main.log.error( traceback.print_exc() )
-            main.log.info( ":" * 50 )
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 

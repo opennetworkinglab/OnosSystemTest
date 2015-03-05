@@ -71,7 +71,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":     " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -93,7 +93,7 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
-        except:
+        except Exception:
             main.log.exception( self.name + ": Connection failed to the host" )
             response = main.FALSE
         return response
@@ -122,7 +122,7 @@ class OnosCliDriver( CLI ):
                             self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -164,7 +164,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -242,7 +242,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -275,7 +275,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -314,7 +314,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -354,7 +354,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -382,7 +382,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -405,7 +405,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -429,7 +429,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -454,7 +454,7 @@ class OnosCliDriver( CLI ):
             main.log.report( "Exiting test" )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.log.report( "Failed to install feature" )
             main.log.report( "Exiting test" )
@@ -484,7 +484,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -527,7 +527,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -551,7 +551,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -594,7 +594,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -638,7 +638,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -684,7 +684,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -720,7 +720,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -750,7 +750,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -778,7 +778,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -821,7 +821,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -858,7 +858,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -900,7 +900,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -940,7 +940,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -983,7 +983,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -1115,7 +1115,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -1278,7 +1278,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -1318,7 +1318,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -1350,7 +1350,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -1380,7 +1380,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -1440,7 +1440,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -1473,7 +1473,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -1532,7 +1532,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -1562,7 +1562,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -1592,7 +1592,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -1631,7 +1631,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -1651,7 +1651,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -1697,7 +1697,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -1737,7 +1737,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -1768,7 +1768,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -1834,7 +1834,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -1877,7 +1877,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -1920,7 +1920,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -1972,7 +1972,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -2013,7 +2013,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -2054,7 +2054,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -2080,7 +2080,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -2106,7 +2106,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -2131,7 +2131,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -2157,7 +2157,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()

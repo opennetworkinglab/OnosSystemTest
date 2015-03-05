@@ -243,7 +243,7 @@ class HATestMinorityRestart:
             response = main.Mininet1.getSwController( "s" + str( i ) )
             try:
                 main.log.info( str( response ) )
-            except:
+            except Exception:
                 main.log.info( repr( response ) )
             if re.search( "tcp:" + ONOS1Ip, response )\
                     and re.search( "tcp:" + ONOS2Ip, response )\
@@ -401,6 +401,7 @@ class HATestMinorityRestart:
         Assign intents
         """
         import time
+        import json
         main.log.report( "Adding host intents" )
         main.case( "Adding host Intents" )
 
@@ -493,6 +494,7 @@ class HATestMinorityRestart:
         """
         Ping across added host intents
         """
+        import json
         description = " Ping across added host intents"
         main.log.report( description )
         main.case( description )
@@ -1136,6 +1138,7 @@ class HATestMinorityRestart:
         Check state after ONOS failure
         """
         import json
+        import time
         main.case( "Running ONOS Constant State Tests" )
 
         # Assert that each device has a master
@@ -1363,7 +1366,7 @@ class HATestMinorityRestart:
                     print json.dumps( json.loads( ONOS1Intents ),
                                       sort_keys=True, indent=4,
                                       separators=( ',', ': ' ) )
-                except:
+                except Exception:
                     pass
                 sameIntents = main.FALSE
             utilities.assert_equals(
@@ -1475,8 +1478,8 @@ class HATestMinorityRestart:
         if result == main.TRUE:
             main.log.report( "Constant State Tests Passed" )
         utilities.assert_equals( expect=main.TRUE, actual=result,
-                                onpass="Constant State Tests Passed",
-                                onfail="Constant state tests failed" )
+                                 onpass="Constant State Tests Passed",
+                                 onfail="Constant state tests failed" )
 
     def CASE8( self, main ):
         """

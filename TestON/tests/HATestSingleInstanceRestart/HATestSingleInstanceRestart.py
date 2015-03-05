@@ -180,7 +180,7 @@ class HATestSingleInstanceRestart:
             response = main.Mininet1.getSwController( "s" + str( i ) )
             try:
                 main.log.info( str( response ) )
-            except:
+            except Exception:
                 main.log.info( repr( response ) )
             if re.search( "tcp:" + ONOS1Ip, response ):
                 mastershipCheck = mastershipCheck and main.TRUE
@@ -198,6 +198,7 @@ class HATestSingleInstanceRestart:
         """
         Assign intents
         """
+        import json
         # FIXME: we must reinstall intents until we have a persistant
         # datastore!
         import time
@@ -280,6 +281,7 @@ class HATestSingleInstanceRestart:
         """
         Ping across added host intents
         """
+        import json
         description = " Ping across added host intents"
         main.log.report( description )
         main.case( description )
@@ -499,9 +501,9 @@ class HATestSingleInstanceRestart:
         utilities.assert_equals( expect=main.TRUE, actual=caseResults,
                                 onpass="ONOS restart successful",
                                 onfail="ONOS restart NOT successful" )
-        main.log.info(
-            "ESTIMATE: ONOS took %s seconds to restart" %
-            str( elapsed ) )
+        if elapsed:
+            main.log.info( "ESTIMATE: ONOS took %s seconds to restart" %
+                           str( elapsed ) )
         time.sleep( 5 )
 
     def CASE7( self, main ):
@@ -613,7 +615,7 @@ class HATestSingleInstanceRestart:
                 print json.dumps( json.loads( ONOS1Intents ),
                                   sort_keys=True, indent=4,
                                   separators=( ',', ': ' ) )
-            except:
+            except Exception:
                 pass
             sameIntents = main.FALSE
         utilities.assert_equals(

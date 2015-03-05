@@ -21,7 +21,6 @@ author:: Anil Kumar ( anilkumar.s@paxterrasolutions.com )
 
 MininetCliDriver is the basic driver which will handle the Mininet functions
 """
-import traceback
 import pexpect
 import re
 import sys
@@ -323,11 +322,8 @@ class RemoteMininetDriver( Emulator ):
             main.log.error( self.name + ":     " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
-            main.log.info(
-                    self.name + ":" * 60 )
-            main.log.error( traceback.print_exc() )
-            main.log.info( ":" * 80 )
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
@@ -342,11 +338,8 @@ class RemoteMininetDriver( Emulator ):
             main.log.error( self.name + ":     " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
-            main.log.info(
-                    self.name + ":" * 60 )
-            main.log.error( traceback.print_exc() )
-            main.log.info( ":" * 80 )
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
@@ -583,8 +576,9 @@ class RemoteMininetDriver( Emulator ):
                         main.log.error(
                             self.name +
                             ": Timeout exception in setIpTables function" )
-                    except:
-                        main.log.error( traceback.print_exc() )
+                    except Exception:
+                        main.log.exception( self.name +
+                                            ": Uncaught exception!" )
                         main.cleanup()
                         main.exit()
                 else:
@@ -596,6 +590,7 @@ class RemoteMininetDriver( Emulator ):
                 if actionType == 'remove':
                     # -D is the 'delete' rule of iptables
                     actionRemove = '-D'
+                    # noinspection PyBroadException
                     try:
                         self.handle.sendline( "" )
                         # Delete a specific rule specified into the function
@@ -626,8 +621,9 @@ class RemoteMininetDriver( Emulator ):
                         main.log.error(
                             self.name +
                             ": Timeout exception in setIpTables function" )
-                    except:
-                        main.log.error( traceback.print_exc() )
+                    except Exception:
+                        main.log.exception( self.name +
+                                            ": Uncaught exception!" )
                         main.cleanup()
                         main.exit()
                 else:

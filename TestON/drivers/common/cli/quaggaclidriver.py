@@ -2,13 +2,7 @@
 
 import time
 import pexpect
-import struct
-import fcntl
-import os
 import sys
-import signal
-import sys
-import re
 import json
 sys.path.append( "../" )
 from drivers.common.clidriver import CLI
@@ -87,7 +81,7 @@ class QuaggaCliDriver( CLI ):
         try:
             self.handle.sendline( "" )
             self.handle.expect( "bgpd#" )
-        except:
+        except Exception:
             main.log.warn( "Probably not currently in enable mode!" )
             self.disconnect()
             return main.FALSE
@@ -98,7 +92,7 @@ class QuaggaCliDriver( CLI ):
             self.handle.sendline( routerAS )
             self.handle.expect( "config-router", timeout=5 )
             return main.TRUE
-        except:
+        except Exception:
             return main.FALSE
 
     def generatePrefixes( self, net, numRoutes ):
@@ -335,7 +329,7 @@ class QuaggaCliDriver( CLI ):
             self.handle.sendline( "" )
             # self.handle.expect( "config-router" )
             self.handle.expect( "config-router", timeout=5 )
-        except:
+        except Exception:
             main.log.warn( "Probably not in config-router mode!" )
             self.disconnect()
         main.log.info( "Start to add routes" )
@@ -345,7 +339,7 @@ class QuaggaCliDriver( CLI ):
             try:
                 self.handle.sendline( routeCmd )
                 self.handle.expect( "bgpd", timeout=5 )
-            except:
+            except Exception:
                 main.log.warn( "Failed to add route" )
                 self.disconnect()
             # waitTimer = 1.00 / routeRate
@@ -363,7 +357,7 @@ class QuaggaCliDriver( CLI ):
             self.handle.sendline( "" )
             # self.handle.expect( "config-router" )
             self.handle.expect( "config-router", timeout=5 )
-        except:
+        except Exception:
             main.log.warn( "Probably not in config-router mode!" )
             self.disconnect()
         main.log.info( "Start to delete routes" )
@@ -373,7 +367,7 @@ class QuaggaCliDriver( CLI ):
             try:
                 self.handle.sendline( routeCmd )
                 self.handle.expect( "bgpd", timeout=5 )
-            except:
+            except Exception:
                 main.log.warn( "Failed to delete route" )
                 self.disconnect()
             # waitTimer = 1.00 / routeRate
@@ -417,7 +411,7 @@ class QuaggaCliDriver( CLI ):
         try:
             self.handle.sendline( "" )
             self.handle.expect( "config-router" )
-        except:
+        except Exception:
             main.log.warn( "Probably not in config-router mode!" )
             self.disconnect()
         main.log.info( "Adding Routes" )
@@ -438,7 +432,7 @@ class QuaggaCliDriver( CLI ):
                 try:
                     self.handle.sendline( routeCmd )
                     self.handle.expect( "bgpd" )
-                except:
+                except Exception:
                     main.log.warn( "failed to add route" )
                     self.disconnect()
                 waitTimer = 1.00 / routeRate
@@ -452,9 +446,9 @@ class QuaggaCliDriver( CLI ):
                 try:
                     self.handle.sendline( routeCmd )
                     self.handle.expect( "bgpd" )
-                except:
+                except Exception:
                     main.log.warn( "failed to add route" )
-                    self.disconnect
+                    self.disconnect()
                 waitTimer = 1.00 / routeRate
                 time.sleep( waitTimer )
                 routesAdded = routesAdded + 1
@@ -467,7 +461,7 @@ class QuaggaCliDriver( CLI ):
         try:
             self.handle.sendline( "" )
             self.handle.expect( "config-router" )
-        except:
+        except Exception:
             main.log.warn( "Probably not in config-router mode!" )
             self.disconnect()
         main.log.info( "Deleting Routes" )
@@ -488,7 +482,7 @@ class QuaggaCliDriver( CLI ):
                 try:
                     self.handle.sendline( routeCmd )
                     self.handle.expect( "bgpd" )
-                except:
+                except Exception:
                     main.log.warn( "Failed to delete route" )
                     self.disconnect()
                 waitTimer = 1.00 / routeRate
@@ -502,7 +496,7 @@ class QuaggaCliDriver( CLI ):
                 try:
                     self.handle.sendline( routeCmd )
                     self.handle.expect( "bgpd" )
-                except:
+                except Exception:
                     main.log.warn( "Failed to delete route" )
                     self.disconnect()
                 waitTimer = 1.00 / routeRate
@@ -578,7 +572,7 @@ class QuaggaCliDriver( CLI ):
         response = ''
         try:
             self.handle.close()
-        except:
+        except Exception:
             main.log.error( "Connection failed to the host" )
             response = main.FALSE
         return response

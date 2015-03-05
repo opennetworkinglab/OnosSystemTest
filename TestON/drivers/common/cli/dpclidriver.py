@@ -1,16 +1,8 @@
 """
 Driver for blank dataplane VMs. Created for SDNIP test.
 """
-import time
 import pexpect
-import struct
-import fcntl
-import os
 import sys
-import signal
-import sys
-import re
-import json
 sys.path.append( "../" )
 from drivers.common.clidriver import CLI
 
@@ -95,15 +87,15 @@ class DPCliDriver( CLI ):
         self.handle.sendline( "" )
         self.handle.expect( "\$" )
 
-        self.handle.sendline( "scp " + str( destlogin ) + "@" + 
-			      str( destip ) + ":/tmp/local_ip.txt /tmp/ip_table" +
-			      str( net ) + ".txt" )
-        
-	i = self.handle.expect( [
-				"100%",
+        self.handle.sendline( "scp " + str( destlogin ) + "@" +
+                              str( destip ) + ":/tmp/local_ip.txt /tmp/ip_table" +
+                              str( netsrc ) + ".txt" )
+
+        i = self.handle.expect( [
+                                "100%",
                                 "password",
                                 pexpect.TIMEOUT ],
-		                timeout=30 )
+                                timeout=30 )
 
         if i == 0:
             main.log.info( "Copied ping file successfully" )
@@ -120,20 +112,20 @@ class DPCliDriver( CLI ):
         self.handle.expect( "\$" )
 
         main.log.info( "Pinging interfaces on the " + str( netdst ) +
-		       " network from " + str( netsrc ) + "." + 
-		       str( netstrt ) + ".1.1" )
+                       " network from " + str( netsrc ) + "." +
+                       str( netstrt ) + ".1.1" )
         self.handle.sendline( "sudo fping -S " + str( netsrc ) + "." +
-			      str( netstrt ) + ".1.1 -f /tmp/ip_table" + 
-			      str( netdst ) + ".txt" )
+                              str( netstrt ) + ".1.1 -f /tmp/ip_table" +
+                              str( netdst ) + ".txt" )
         while 1:
             i = self.handle.expect( [
-				    "reachable",
+                                    "reachable",
                                     "unreachable",
                                     "\$",
                                     "password",
                                     pexpect.TIMEOUT,
                                     "not installed" ],
-				    timeout=45 )
+                                    timeout=45 )
             if i == 0:
                 result = main.TRUE
             elif i == 1:
@@ -142,6 +134,7 @@ class DPCliDriver( CLI ):
                 return result
             elif i == 2:
                 main.log.info( "All interfaces reachable" )
+                result = main.FALSE
                 return result
             elif i == 3:
                 self.handle.sendline( self.pwd )
@@ -183,8 +176,8 @@ class DPCliDriver( CLI ):
         try:
             self.handle.sendline( "exit" )
             self.handle.expect( "closed" )
-        except:
-            main.log.error( "Connection failed to the host" )
+        except Exception:
+            main.log.exception( "Connection failed to the host" )
             response = main.FALSE
         return response
 

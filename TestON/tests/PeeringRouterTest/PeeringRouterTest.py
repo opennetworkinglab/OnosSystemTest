@@ -248,7 +248,7 @@ class PeeringRouterTest:
         main.case("The test case is to help to setup the TestON environment \
             and test new drivers" )
         TESTCASE_ROOT_PATH = main.params[ 'ENV' ][ 'home' ]
-        TESTCASE_MININET_ROOT_PATH = TESTCASE_ROOT_PATH + "/mininet"
+        TESTCASE_MININET_ROOT_PATH = TESTCASE_ROOT_PATH + "/vlan/mininet"
         SDNIPJSONFILEPATH = TESTCASE_ROOT_PATH + "/sdnip.json"
         main.log.info("sdnip.json file path: "+ SDNIPJSONFILEPATH)
 

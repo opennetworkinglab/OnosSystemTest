@@ -192,9 +192,9 @@ def sdn1net():
     ## Adding 2nd, 3rd and 4th interface to host1 connected to sw1 (for another BGP peering)
     #sw1 = net.get('sw1')
     host1.setMAC('00:00:00:00:00:01', 'host1-eth0')
-    host1.cmd('ip addr add 192.168.20.101/24 dev host1-eth0')
-    host1.cmd('ip addr add 192.168.30.101/24 dev host1-eth0')
-    host1.cmd('ip addr add 192.168.60.101/24 dev host1-eth0')
+    #host1.cmd('ip addr add 192.168.20.101/24 dev host1-eth0')
+    #host1.cmd('ip addr add 192.168.30.101/24 dev host1-eth0')
+    #host1.cmd('ip addr add 192.168.60.101/24 dev host1-eth0')
 
     # Net has to be start after adding the above link
     net.start()
@@ -206,7 +206,6 @@ def sdn1net():
     as6sw.cmd('ovs-vsctl set-controller as6sw none')
     as6sw.cmd('ovs-vsctl set-fail-mode as6sw standalone')
 
-
     sw1 = net.get('sw1')
     sw1.cmd('ovs-vsctl set-controller sw1 tcp:127.0.0.1:6633')
     
@@ -214,7 +213,21 @@ def sdn1net():
     swTestOn.cmd('ovs-vsctl set-controller swTestOn none')
     swTestOn.cmd('ovs-vsctl set-fail-mode swTestOn standalone')
 
-    host1.defaultIntf().setIP('192.168.10.101/24') 
+    #host1.defaultIntf().setIP('192.168.10.101/24') 
+    
+    host1.cmd( 'ifconfig host1-eth0 inet 0')
+    host1.cmd( 'vconfig add host1-eth0 10')
+    host1.cmd( 'ifconfig host1-eth0.10 inet 192.168.10.101')
+    
+    host1.cmd( 'vconfig add host1-eth0 20')
+    host1.cmd( 'ifconfig host1-eth0.20 inet 192.168.20.101')
+    
+    host1.cmd( 'vconfig add host1-eth0 30')
+    host1.cmd( 'ifconfig host1-eth0.30 inet 192.168.30.101')
+    
+    host1.cmd( 'vconfig add host1-eth0 60')
+    host1.cmd( 'ifconfig host1-eth0.60 inet 192.168.60.101')
+
     # Run BGPd
     #host1.cmd('%s -d -f %s' % (BGPD, BGPD_CONF))
     #host1.cmd('/sbin/route add default gw 192.168.10.254 dev %s-eth0' % (host1.name))

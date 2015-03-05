@@ -19,7 +19,7 @@
 		{
 		    "attachmentDpid" : "00:00:00:00:00:00:00:01",
 		    "attachmentPort" : "4",
-		    "ipAddress" : "192.168.60.2"
+		    "ipAddress" : "192.168.60.1"
 		}
 
     ],

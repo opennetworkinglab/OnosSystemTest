@@ -142,7 +142,7 @@ class TestON:
             try :
                 self.configDict = xmldict.xml_to_dict(xml)
                 return self.configDict
-            except :
+            except (Exception):
                 print "There is no such file to parse " + self.configFile
                         
     def componentInit(self,component):
@@ -243,8 +243,9 @@ class TestON:
                 exec code[testCaseNumber][step] in module.__dict__
                 self.stepCount = self.stepCount + 1
             except TypeError,e:
-                print "Exception in the following section of code:"
-                print code[testCaseNumber][step]
+                print "Exception in the following section of code: Test Step " +\
+                      str(testCaseNumber) + "." + str(step) + " ):"
+                #print code[testCaseNumber][step]
                 self.stepCount = self.stepCount + 1
                 self.log.exception(e)
             return main.TRUE

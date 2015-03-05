@@ -1397,7 +1397,6 @@ class OnosCliDriver( CLI ):
             accepted.
             Returns a dictionary with intent IDs as the key and its corresponding
             states as the values
-            values
             Parameters:
             intentId: intent ID (string type)
             intentsJson: parsed json object from the onos:intents api
@@ -1422,15 +1421,18 @@ class OnosCliDriver( CLI ):
                 main.log.info("Cannot find intent ID" + str(intentsId) +" on the list")
                 return state
             elif isinstance(intentsId,types.ListType):
-                stateDict = {}
+                dictList = []
                 for ID in intentsId:
+                    stateDict = {}
                     for intents in intentsJsonTemp:
                         if ID == intents['id']:
-                            stateDict[ID] = intents['state']
+                            stateDict['state'] = intents['state']
+                            stateDict['id'] = ID
+                            dictList.append(stateDict)
                             break
-                if len(intentsId) != len(stateDict):
+                if len(intentsId) != len(dictList):
                     main.log.info("Cannot find some of the intent ID state")
-                return stateDict
+                return dictList
             else:
                 main.log.info("Invalid intents ID entry")
                 return None

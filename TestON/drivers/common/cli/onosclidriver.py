@@ -297,18 +297,28 @@ class OnosCliDriver( CLI ):
             logStr = "\"Sending CLI command: '" + cmdStr + "'\""
             self.log( logStr )
             self.handle.sendline( cmdStr )
-            self.handle.expect( "onos>" )
+            i = self.handle.expect( ["onos>", "\$", pexpect.TIMEOUT] )
+            response = self.handle.before
+            if i == 2:
+                self.handle.sendline()
+                self.handle.expect( "\$" )
+                response += self.handle.before
+                print response
+                try:
+                    print self.handle.after
+                except:
+                    pass
+            # TODO: do something with i
             main.log.info( "Command '" + str( cmdStr ) + "' sent to "
                            + self.name + "." )
-            handle = self.handle.before
             # Remove control strings from output
             ansiEscape = re.compile( r'\x1b[^m]*m' )
-            handle = ansiEscape.sub( '', handle )
+            response = ansiEscape.sub( '', response )
             # Remove extra return chars that get added
-            handle = re.sub(  r"\s\r", "", handle )
-            handle = handle.strip()
-            # parse for just the output, remove the cmd from handle
-            output = handle.split( cmdStr, 1 )[1]
+            response = re.sub(  r"\s\r", "", response )
+            response = response.strip()
+            # parse for just the output, remove the cmd from response
+            output = response.split( cmdStr, 1 )[1]
             return output
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
@@ -2143,11 +2153,10 @@ class OnosCliDriver( CLI ):
         try:
             intents = self.intents( )
             intentStates = []
-            out = []
-            for intent in json.loads( intents ):
+            for intent in json.loads( intents ):  # Iter through intents of a node
                 intentStates.append( intent.get( 'state', None ) )
-            for i in set( intentStates ):
-                out.append( (i, intentStates.count( i ) ) )
+            out = [ (i, intentStates.count( i ) ) for i in set( intentStates ) ]
+            main.log.info( dict( out ) )
             return dict( out )
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
@@ -2161,3 +2170,70 @@ class OnosCliDriver( CLI ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
+
+    def leaders( self ):
+        """
+        Returns the output of the leaders command.
+        """
+        # FIXME: add json output
+        try:
+            output = self.sendline( "onos:leaders" )
+            main.log.warn( output )
+            return output
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
+    def pendingMap( self ):
+        """
+        Returns the output of the intent Pending map.
+        """
+        # FIXME: add json output
+        try:
+            output = self.sendline( "onos:intents -p" )
+            main.log.warn( output )
+            return output
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
+    def partitions( self ):
+        """
+        Returns the output of the raft partitions command for ONOS.
+        """
+        # FIXME: add json output
+        try:
+            output = self.sendline( "partitions" )
+            main.log.warn( output )
+            return output
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+

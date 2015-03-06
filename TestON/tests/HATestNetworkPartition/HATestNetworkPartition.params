@@ -1,28 +1,30 @@
 <PARAMS>
-    #CASE1: Compile ONOS and push it to the test machines
-    #CASE2: Assign mastership to controllers
-    #CASE3: Assign intents
-    #CASE4: Ping across added host intents
-    #CASE5: Reading state of ONOS
-    #CASE6: The Failure case. Since this is the Sanity test, we do nothing.
-    #CASE7: Check state after control plane failure
-    #CASE8: Compare topo
-    #CASE9: Link s3-s28 down
-    #CASE10: Link s3-s28 up
-    #CASE11: Switch down
-    #CASE12: Switch up
-    #CASE13: Clean up
-    #CASE14: start election app on all onos nodes
-    #CASE15: Check that Leadership Election is still functional
-    #1,2,8,3,4,5,14,[6],8,3,7,4,15,9,8,4,10,8,4,11,8,4,12,8,4,13
-    #extra hosts test 1,2,8,11,8,12,8
-    <testcases>1,2,8,3,4,5,14,[6],8,3,7,4,15,9,8,4,10,8,4,11,8,4,12,8,4,13</testcases>
+
+#List of test cases:
+#CASE1: Compile ONOS and push it to the test machines
+#CASE2: Assign mastership to controllers
+#CASE3: Assign intents
+#CASE4: Ping across added host intents
+#CASE5: Reading state of ONOS
+#CASE6: The Failure case. We will create IPTables rules here.
+#CASE7: Check state after control plane partition.
+#CASE8: Compare topo
+#CASE9: Link s3-s28 down
+#CASE10: Link s3-s28 up
+#CASE11: Switch down
+#CASE12: Switch up
+#CASE13: Clean up
+#CASE14: start election app on all onos nodes
+#CASE15: Check that Leadership Election is still functional
+#CASE16: Repair network partition
+              #1,2,8,3,4,5,14,[6],8,7,4,15,9,8,4,10,8,4,11,8,4,12,8,4,13
+    <testcases>1,2,5,14,[6],8,7,4,15,9,8,4,10,8,4,11,8,4,12,8,4,16,13</testcases>
     <ENV>
         <cellName>HA</cellName>
     </ENV>
-    <Git>False</Git>
+    <Git> False </Git>
     <branch> master </branch>
-    <num_controllers> 1 </num_controllers>
+    <num_controllers> 7 </num_controllers>
 
     <CTRL>
         <ip1>10.128.30.11</ip1>

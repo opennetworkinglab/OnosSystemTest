@@ -633,8 +633,10 @@ class OnosDriver( CLI ):
                            handleAfter + handleMore )
 
             return main.TRUE
-        except pexpect.EOF:
-            main.log.error( self.name + ": EOF exception found" )
+        except pexpect.ExceptionPexpect as e:
+            main.log.error( self.name + ": Pexpect exception found of type " +
+                            str( type( e ) ) )
+            main.log.error ( e.get_trace() )
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
@@ -1477,8 +1479,8 @@ class OnosDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def setIpTables( self, ip, port='', action='add', packet_type='tcp',
-                     direction='INPUT', rule='DROP' ):
+    def setIpTables( self, ip, port='', action='add', packet_type='',
+                     direction='INPUT', rule='DROP', states=True ):
         """
         Description:
             add or remove iptables rule to DROP (default) packets from
@@ -1492,6 +1494,8 @@ class OnosDriver( CLI ):
         * optional packet type to block (default tcp)
         * optional iptables rule (default DROP)
         * optional direction to block (default 'INPUT')
+        * States boolean toggles adding all supported tcp states to the
+          firewall rule
         Returns:
             main.TRUE on success or
             main.FALSE if given invalid input or
@@ -1512,7 +1516,7 @@ class OnosDriver( CLI ):
         #       registered to the instance. If you are calling this function
         #       multiple times this sleep will prevent any errors.
         #       DO NOT REMOVE
-        time.sleep( 5 )
+        # time.sleep( 5 )
         try:
             # input validation
             action_type = action.lower()
@@ -1542,10 +1546,16 @@ class OnosDriver( CLI ):
             self.handle.expect( "\$" )
             cmd = "sudo iptables " + actionFlag + " " +\
                   direction +\
-                  " -p " + str( packet_type ) +\
                   " -s " + str( ip )
+                  # " -p " + str( packet_type ) +\
+            if packet_type:
+                cmd += " -p " + str( packet_type )
             if port:
                 cmd += " --dport " + str( port )
+            if states:
+                cmd += " -m state --state="
+                #FIXME- Allow user to configure which states to block
+                cmd += "INVALID,ESTABLISHED,NEW,RELATED,UNTRACKED"
             cmd += " -j " + str( rule )
 
             self.handle.sendline( cmd )

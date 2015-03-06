@@ -87,7 +87,7 @@ class SDNIpModifiedTopo( Topo ):
         host4 = self.addHost( 'host4', cls=VLANHost, vlan=30, inf="host4-eth0", ip="192.168.30.1" )
         as3host = self.addHost( 'as3host' )
         #AS6 host
-        host5 = self.addHost( 'host5', cls=VLANHost, vlan=60, inf="host5-eth0", ip="192.168.60.1" )
+        host5 = self.addHost( 'host5', cls=VLANHost, vlan=60, inf="host5-eth0", ip="192.168.60.2" )
         as6host = self.addHost( 'as6host' )
 
         self.addLink( host1, sw2 )
@@ -205,6 +205,10 @@ def sdn1net():
     as6sw = net.get('as6sw')
     as6sw.cmd('ovs-vsctl set-controller as6sw none')
     as6sw.cmd('ovs-vsctl set-fail-mode as6sw standalone')
+    
+    as6sw.cmd( 'sudo ovs-vsctl set port as6sw-eth1 trunk=60')
+    as6sw.cmd( 'sudo ovs-vsctl set port as6sw-eth2 trunk=60')
+
 
     sw1 = net.get('sw1')
     sw1.cmd('ovs-vsctl set-controller sw1 tcp:127.0.0.1:6633')

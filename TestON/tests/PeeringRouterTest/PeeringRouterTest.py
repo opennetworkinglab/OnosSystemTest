@@ -253,7 +253,7 @@ class PeeringRouterTest:
             and test new drivers" )
         TESTCASE_ROOT_PATH = main.params[ 'ENV' ][ 'home' ]
         TESTCASE_MININET_ROOT_PATH = TESTCASE_ROOT_PATH + "/vlan/mininet"
-        SDNIPJSONFILEPATH = TESTCASE_ROOT_PATH + "/sdnip.json"
+        SDNIPJSONFILEPATH = TESTCASE_ROOT_PATH + "/vlan/sdnip.json"
         main.log.info("sdnip.json file path: "+ SDNIPJSONFILEPATH)
 
         # Copy the json files to config dir

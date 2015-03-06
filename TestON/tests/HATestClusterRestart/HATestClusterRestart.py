@@ -243,7 +243,7 @@ class HATestClusterRestart:
             response = main.Mininet1.getSwController( "s" + str( i ) )
             try:
                 main.log.info( str( response ) )
-            except:
+            except Exception:
                 main.log.info( repr( response ) )
             if re.search( "tcp:" + ONOS1Ip, response )\
                     and re.search( "tcp:" + ONOS2Ip, response )\
@@ -1362,7 +1362,7 @@ class HATestClusterRestart:
                 print json.dumps( json.loads( ONOS1Intents ),
                                   sort_keys=True, indent=4,
                                   separators=( ',', ': ' ) )
-            except:
+            except Exception:
                 pass
             sameIntents = main.FALSE
         utilities.assert_equals(

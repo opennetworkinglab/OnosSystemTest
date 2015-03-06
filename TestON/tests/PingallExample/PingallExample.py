@@ -127,7 +127,7 @@ class PingallExample:
             response = main.Mininet1.getSwController( "s" + str( i ) )
             try:
                 main.log.info( str( response ) )
-            except:
+            except Exception:
                 main.log.info( repr( response ) )
             if re.search( "tcp:" + ONOS1Ip, response ):
                 mastershipCheck = mastershipCheck and main.TRUE

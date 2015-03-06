@@ -31,6 +31,9 @@ class OnosCliDriver( CLI ):
         """
         Initialize client
         """
+        self.name = None
+        self.home = None
+        self.handle = None
         super( CLI, self ).__init__()
 
     def connect( self, **connectargs ):
@@ -71,7 +74,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":     " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -81,6 +84,7 @@ class OnosCliDriver( CLI ):
         Called when Test is complete to disconnect the ONOS handle.
         """
         response = main.TRUE
+        # noinspection PyBroadException
         try:
             self.logout()
             self.handle.sendline( "" )
@@ -93,7 +97,7 @@ class OnosCliDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
-        except:
+        except Exception:
             main.log.exception( self.name + ": Connection failed to the host" )
             response = main.FALSE
         return response
@@ -122,7 +126,7 @@ class OnosCliDriver( CLI ):
                             self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -164,14 +168,14 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
     def startOnosCli( self, ONOSIp, karafTimeout="" ):
         """
-        karafTimeout is an optional arugument. karafTimeout value passed
+        karafTimeout is an optional argument. karafTimeout value passed
         by user would be used to set the current karaf shell idle timeout.
         Note that when ever this property is modified the shell will exit and
         the subsequent login would reflect new idle timeout.
@@ -242,16 +246,16 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
-    def log( self, cmdStr , level = "" ):
+    def log( self, cmdStr, level="" ):
         """
             log  the commands in the onos CLI.
             returns main.TRUE on success
-            returns main.FALSE if Error occured
+            returns main.FALSE if Error occurred
             Available level: DEBUG, TRACE, INFO, WARN, ERROR
             Level defaults to INFO
         """
@@ -275,7 +279,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -314,7 +318,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -335,6 +339,7 @@ class OnosCliDriver( CLI ):
         Optional:
             * tcpPort
         """
+        # noinspection PyBroadException
         try:
             cmdStr = "add-node " + str( nodeId ) + " " +\
                 str( ONOSIp ) + " " + str( tcpPort )
@@ -354,7 +359,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -382,7 +387,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -405,7 +410,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -413,7 +418,7 @@ class OnosCliDriver( CLI ):
     def topology( self ):
         """
         Shows the current state of the topology
-        by issusing command: 'onos> onos:topology'
+        by issuing command: 'onos> onos:topology'
         """
         try:
             # either onos:topology or 'topology' will work in CLI
@@ -429,7 +434,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -454,7 +459,7 @@ class OnosCliDriver( CLI ):
             main.log.report( "Exiting test" )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.log.report( "Failed to install feature" )
             main.log.report( "Exiting test" )
@@ -474,7 +479,8 @@ class OnosCliDriver( CLI ):
                 self.sendline( cmdStr )
                 # TODO: Check for possible error responses from karaf
             else:
-                main.log.info( "Feature needs to be installed before uninstalling it" )
+                main.log.info( "Feature needs to be installed before " +
+                               "uninstalling it" )
             return main.TRUE
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
@@ -484,7 +490,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -527,7 +533,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -551,7 +557,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -594,7 +600,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -617,7 +623,7 @@ class OnosCliDriver( CLI ):
                 escape sequences. In json.loads( somestring ), this somestring
                 variable is actually repr( somestring ) and json.loads would
                 fail with the escape sequence. So we take off that escape
-                sequence using the following commads:
+                sequence using the following commands:
 
                 ansiEscape = re.compile( r'\r\r\n\x1b[^m]*m' )
                 handle1 = ansiEscape.sub( '', handle )
@@ -638,7 +644,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -684,7 +690,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -720,7 +726,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -750,7 +756,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -778,7 +784,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -821,7 +827,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -830,7 +836,7 @@ class OnosCliDriver( CLI ):
         """
         Return the first host from the hosts api whose 'id' contains 'mac'
 
-        Note: mac must be a colon seperated mac address, but could be a
+        Note: mac must be a colon separated mac address, but could be a
               partial mac address
 
         Return None if there is no match
@@ -858,7 +864,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -900,7 +906,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -911,7 +917,7 @@ class OnosCliDriver( CLI ):
             * hostIdOne: ONOS host id for host1
             * hostIdTwo: ONOS host id for host2
         Description:
-            Adds a host-to-host intent ( bidrectional ) by
+            Adds a host-to-host intent ( bidirectional ) by
             specifying the two hosts.
         Returns:
             A string of the intent id or None on Error
@@ -940,7 +946,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -983,7 +989,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -1031,8 +1037,6 @@ class OnosCliDriver( CLI ):
               intent via cli
         """
         try:
-            cmd = ""
-
             # If there are no optional arguments
             if not ethType and not ethSrc and not ethDst\
                     and not bandwidth and not lambdaAlloc \
@@ -1115,7 +1119,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -1170,12 +1174,10 @@ class OnosCliDriver( CLI ):
             A string of the intent id or None on error
 
         NOTE: This function may change depending on the
-              options developers provide for multipointpoint-to-singlepoint
+              options developers provide for multipoint-to-singlepoint
               intent via cli
         """
         try:
-            cmd = ""
-
             # If there are no optional arguments
             if not ethType and not ethSrc and not ethDst\
                     and not bandwidth and not lambdaAlloc\
@@ -1278,13 +1280,13 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
-    def removeIntent( self, intentId, app = 'org.onosproject.cli',
-        purge = False, sync = False ):
+    def removeIntent( self, intentId, app='org.onosproject.cli',
+                      purge=False, sync=False ):
         """
         Remove intent for specified application id and intent id
         Optional args:- 
@@ -1318,7 +1320,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -1350,7 +1352,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -1380,7 +1382,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -1391,8 +1393,8 @@ class OnosCliDriver( CLI ):
             Accepts a single intent ID (string type) or a list of intent IDs.
             Returns the state(string type) of the id if a single intent ID is
             accepted.
-            Returns a dictionary with intent IDs as the key and its corresponding
-            states as the values
+            Returns a dictionary with intent IDs as the key and its
+            corresponding states as the values
             Parameters:
             intentId: intent ID (string type)
             intentsJson: parsed json object from the onos:intents api
@@ -1404,17 +1406,18 @@ class OnosCliDriver( CLI ):
         try:
             state = "State is Undefined"
             if not intentsJson:
-                intentsJsonTemp = json.loads(self.intents())
+                intentsJsonTemp = json.loads( self.intents() )
             else:
-                intentsJsonTemp = json.loads(intentsJson)
-            if isinstance(intentsId,types.StringType):
+                intentsJsonTemp = json.loads( intentsJson )
+            if isinstance( intentsId, types.StringType ):
                 for intent in intentsJsonTemp:
                     if intentsId == intent['id']:
                         state = intent['state']
                         return state
-                main.log.info("Cannot find intent ID" + str(intentsId) +" on the list")
+                main.log.info( "Cannot find intent ID" + str( intentsId ) +
+                               " on the list" )
                 return state
-            elif isinstance(intentsId,types.ListType):
+            elif isinstance( intentsId, types.ListType ):
                 dictList = []
                 for ID in intentsId:
                     stateDict = {}
@@ -1422,16 +1425,14 @@ class OnosCliDriver( CLI ):
                         if ID == intents['id']:
                             stateDict['state'] = intents['state']
                             stateDict['id'] = ID
-                            dictList.append(stateDict)
+                            dictList.append( stateDict )
                             break
-                if len(intentsId) != len(dictList):
-                    main.log.info("Cannot find some of the intent ID state")
+                if len( intentsId ) != len( dictList ):
+                    main.log.info( "Cannot find some of the intent ID state" )
                 return dictList
             else:
                 main.log.info("Invalid intents ID entry")
                 return None
-            main.log.info("Something went wrong getting intent ID state")
-            return None
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
             return None
@@ -1440,7 +1441,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -1473,13 +1474,13 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
     def pushTestIntents( self, dpidSrc, dpidDst, numIntents,
-                          numMult="", appId="", report=True ):
+                         numMult="", appId="", report=True ):
         """
         Description:
             Push a number of intents in a batch format to
@@ -1532,7 +1533,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -1562,7 +1563,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -1592,7 +1593,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -1631,7 +1632,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -1651,7 +1652,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -1697,7 +1698,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -1737,7 +1738,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -1768,28 +1769,28 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
     def checkStatus( self, ip, numoswitch, numolink, logLevel="info" ):
         """
-        Checks the number of swithes & links that ONOS sees against the
+        Checks the number of switches & links that ONOS sees against the
         supplied values. By default this will report to main.log, but the
-        log level can be specifid.
+        log level can be specified.
 
         Params: ip = ip used for the onos cli
                 numoswitch = expected number of switches
-                numlink = expected number of links
+                numolink = expected number of links
                 logLevel = level to log to. Currently accepts
                 'info', 'warn' and 'report'
 
 
         logLevel can
 
-        Returns: main.TRUE if the number of switchs and links are correct,
-                 main.FALSE if the numer of switches and links is incorrect,
+        Returns: main.TRUE if the number of switches and links are correct,
+                 main.FALSE if the number of switches and links is incorrect,
                  and main.ERROR otherwise
         """
         try:
@@ -1807,13 +1808,12 @@ class OnosCliDriver( CLI ):
             linkCheck = ( int( links ) == int( numolink ) )
             if ( switchCheck and linkCheck ):
                 # We expected the correct numbers
-                output = output + "The number of links and switches match "\
-                    + "what was expected"
+                output += "The number of links and switches match " +\
+                          "what was expected"
                 result = main.TRUE
             else:
-                output = output + \
-                    "The number of links and switches does not matc\
-                    h what was expected"
+                output += "The number of links and switches does not match " +\
+                          "what was expected"
                 result = main.FALSE
             output = output + "\n ONOS sees %i devices (%i expected) \
                     and %i links (%i expected)" % (
@@ -1834,7 +1834,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -1877,7 +1877,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -1920,7 +1920,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -1972,7 +1972,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -2013,7 +2013,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -2054,7 +2054,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -2080,7 +2080,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -2106,7 +2106,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -2131,14 +2131,14 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
     def intentSummary( self ):
         """
-        Returns a dictonary containing the current intent states and the count
+        Returns a dictionary containing the current intent states and the count
         """
         try:
             intents = self.intents( )
@@ -2157,7 +2157,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()

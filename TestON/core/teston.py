@@ -90,8 +90,7 @@ class TestON:
         self.logs_path = logs_path
         self.driver = ''
         self.Thread = Thread
-	
-        
+
         self.configparser()
         verifyOptions(options)
         load_logger()
@@ -142,7 +141,7 @@ class TestON:
             try :
                 self.configDict = xmldict.xml_to_dict(xml)
                 return self.configDict
-            except :
+            except Exception:
                 print "There is no such file to parse " + self.configFile
                         
     def componentInit(self,component):
@@ -199,14 +198,14 @@ class TestON:
         test = testparser.TestParser(testFile)
         self.testscript = test.testscript
         self.code = test.getStepCode()
-	repeat= int(self.params['repeat']) if ('repeat' in self.params) else 1
-	main.TOTAL_TC_PLANNED = len(self.testcases_list)*repeat
+        repeat= int(self.params['repeat']) if ('repeat' in self.params) else 1
+        self.TOTAL_TC_PLANNED = len(self.testcases_list)*repeat
         
         result = self.TRUE
-	while(repeat):
+        while(repeat):
             for self.CurrentTestCaseNumber in self.testcases_list:
                 result = self.runCase(self.CurrentTestCaseNumber)
-	    repeat-=1
+            repeat-=1
         return result
     
     def runCase(self,testCaseNumber):
@@ -220,15 +219,15 @@ class TestON:
         try :
             self.stepList = self.code[self.testCaseNumber].keys()
         except KeyError:
-            main.log.error("There is no Test-Case "+ self.testCaseNumber)
-            return main.FALSE
+            self.log.error("There is no Test-Case "+ self.testCaseNumber)
+            return self.FALSE
         
         self.stepCount = 0
         while self.stepCount < len(self.code[self.testCaseNumber].keys()):
             result = self.runStep(self.stepList,self.code,self.testCaseNumber)
-            if result == main.FALSE:
+            if result == self.FALSE:
                 break
-            elif result == main.TRUE :
+            elif result == self.TRUE:
                 continue
             
         if not stopped :
@@ -436,7 +435,7 @@ class TestON:
         xml_match = re.search('^\s*\<', response)
         ini_match = re.search('^\s*\[', response)
         if json_match :
-            main.log.info(" Response is in 'JSON' format and Converting to '"+return_format+"' format")
+            self.log.info(" Response is in 'JSON' format and Converting to '"+return_format+"' format")
             # Formatting the json string
             
             response = re.sub(r"{\s*'?(\w)", r'{"\1', response)
@@ -448,12 +447,12 @@ class TestON:
                 import json
                 response_dict = json.loads(response)
             except Exception, e:
-                main.log.exception( e )
-                main.log.error("Json Parser is unable to parse the string")
+                self.log.exception( e )
+                self.log.error("Json Parser is unable to parse the string")
             return response_dict
         
         elif ini_match :
-            main.log.info(" Response is in 'INI' format and Converting to '"+return_format+"' format")
+            self.log.info(" Response is in 'INI' format and Converting to '"+return_format+"' format")
             from configobj import ConfigObj
             response_file = open("respnse_file.temp",'w')
             response_file.write(response)
@@ -462,11 +461,11 @@ class TestON:
             return response_dict
             
         elif xml_match :
-            main.log.info(" Response is in 'XML' format and Converting to '"+return_format+"' format")
+            self.log.info(" Response is in 'XML' format and Converting to '"+return_format+"' format")
             try :
                 response_dict = xmldict.xml_to_dict("<response> "+str(response)+" </response>")
             except Exception, e:
-                main.log.exception( e )
+                self.log.exception( e )
             return response_dict
         
     def dict_to_return_format(self,response,return_format,response_dict):
@@ -585,7 +584,7 @@ def verifyMail(options):
 def verifyTestCases(options):
     #Getting Test cases list
     if options.testcases:
-	testcases_list = options.testcases
+        testcases_list = options.testcases
         #sys.exit()
         testcases_list = re.sub("(\[|\])", "", options.testcases)
         main.testcases_list = eval(testcases_list+",")
@@ -594,18 +593,18 @@ def verifyTestCases(options):
             temp = eval(main.params['testcases']+",")
             list1=[]
             if type(temp[0])==list:
-	        for test in temp:
-      	            for testcase in test:
-	                if type(testcase)==int:
-		            testcase=[testcase]
-	                list1.extend(testcase)
-	    else :
-	    	temp=list(temp)
-      	        for testcase in temp:
-	            if type(testcase)==int:
-		        testcase=[testcase]
-	            list1.extend(testcase)
-	    main.testcases_list=list1
+                for test in temp:
+                    for testcase in test:
+                        if type(testcase)==int:
+                            testcase=[testcase]
+                        list1.extend(testcase)
+            else :
+                temp=list(temp)
+                for testcase in temp:
+                    if type(testcase)==int:
+                        testcase=[testcase]
+                    list1.extend(testcase)
+            main.testcases_list=list1
         else :
             print "testcases not specifed in params, please provide in params file or 'testcases' commandline argument"
             sys.exit()

@@ -39,7 +39,7 @@ class xmlparser :
             try :
                 parsedInfo = xmldict.xml_to_dict(xml)
                 return parsedInfo
-            except :
+            except Exception:
                 print "There is no such file to parse " + fileName 
         else :
             print "file name is not correct"

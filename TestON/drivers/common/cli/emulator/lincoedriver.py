@@ -14,20 +14,11 @@ list your email here for future contact:
 
 OCT 20 2014
 """
-import traceback
+
 import pexpect
-import struct
-import fcntl
-import os
-import signal
-import re
 import sys
-import core.teston
-import time
 sys.path.append( "../" )
-from math import pow
 from drivers.common.cli.emulatordriver import Emulator
-from drivers.common.clidriver import CLI
 
 
 class LincOEDriver( Emulator ):
@@ -45,7 +36,6 @@ class LincOEDriver( Emulator ):
         """
         Create ssh handle for Linc-OE cli
         """
-        import time
 
         for key in connectargs:
             vars( self )[ key ] = connectargs[ key ]
@@ -127,10 +117,8 @@ class LincOEDriver( Emulator ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
-            main.log.info( self.name + " :::::::" )
-            main.log.error( traceback.print_exc() )
-            main.log.info( self.name + " :::::::" )
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
@@ -153,10 +141,8 @@ class LincOEDriver( Emulator ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
-            main.log.info( self.name + " :::::::" )
-            main.log.error( traceback.print_exc() )
-            main.log.info( self.name + " :::::::" )
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
@@ -175,10 +161,8 @@ class LincOEDriver( Emulator ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
-            main.log.info( self.name + " :::::::" )
-            main.log.error( traceback.print_exc() )
-            main.log.info( self.name + " :::::::" )
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
@@ -197,10 +181,8 @@ class LincOEDriver( Emulator ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
-            main.log.info( self.name + " :::::::" )
-            main.log.error( traceback.print_exc() )
-            main.log.info( self.name + " :::::::" )
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
@@ -220,10 +202,8 @@ class LincOEDriver( Emulator ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
-            main.log.info( self.name + " :::::::" )
-            main.log.error( traceback.print_exc() )
-            main.log.info( self.name + " :::::::" )
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
@@ -242,10 +222,8 @@ class LincOEDriver( Emulator ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
-            main.log.info( self.name + " :::::::" )
-            main.log.error( traceback.print_exc() )
-            main.log.info( self.name + " :::::::" )
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
@@ -265,10 +243,8 @@ class LincOEDriver( Emulator ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
-            main.log.info( self.name + " :::::::" )
-            main.log.error( traceback.print_exc() )
-            main.log.info( self.name + " :::::::" )
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
@@ -288,10 +264,8 @@ class LincOEDriver( Emulator ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
-            main.log.info( self.name + " :::::::" )
-            main.log.error( traceback.print_exc() )
-            main.log.info( self.name + " :::::::" )
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
@@ -339,10 +313,8 @@ class LincOEDriver( Emulator ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
-            main.log.info( self.name + " :::::::" )
-            main.log.error( traceback.print_exc() )
-            main.log.info( self.name + " :::::::" )
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 

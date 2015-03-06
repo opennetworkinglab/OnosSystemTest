@@ -19,7 +19,6 @@ OCT 9 2014
 import sys
 import time
 import pexpect
-import traceback
 import os.path
 sys.path.append( "../" )
 from drivers.common.clidriver import CLI
@@ -31,6 +30,9 @@ class OnosDriver( CLI ):
         """
         Initialize client
         """
+        self.name = None
+        self.home = None
+        self.handle = None
         super( CLI, self ).__init__()
 
     def connect( self, **connectargs ):
@@ -68,10 +70,8 @@ class OnosDriver( CLI ):
             main.log.error( self.name + ":     " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
-            main.log.info( self.name + ":" * 30 )
-            main.log.error( traceback.print_exc() )
-            main.log.info( ":" * 30 )
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
@@ -88,8 +88,8 @@ class OnosDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
-        except:
-            main.log.error( self.name + ": Connection failed to the host" )
+        except Exception:
+            main.log.exception( self.name + ": Connection failed to the host" )
             response = main.FALSE
         return response
 
@@ -113,8 +113,8 @@ class OnosDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-        except:
-            main.log.error( "Failed to package ONOS" )
+        except Exception:
+            main.log.exception( "Failed to package ONOS" )
             main.cleanup()
             main.exit()
 
@@ -143,8 +143,8 @@ class OnosDriver( CLI ):
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-        except:
-            main.log.error( "Failed to build ONOS" )
+        except Exception:
+            main.log.exception( "Failed to build ONOS" )
             main.cleanup()
             main.exit()
 
@@ -170,7 +170,7 @@ class OnosDriver( CLI ):
             while True:
                 i = self.handle.expect( [
                     'There\sis\sinsufficient\smemory\sfor\sthe\sJava\s' +
-                        'Runtime\sEnvironment\sto\scontinue',
+                    'Runtime\sEnvironment\sto\scontinue',
                     'BUILD\sFAILURE',
                     'BUILD\sSUCCESS',
                     'ONOS\$',
@@ -206,7 +206,7 @@ class OnosDriver( CLI ):
                     main.exit()
                 else:
                     main.log.error( self.name + ": unexpected response from " +
-                            "mvn clean install" )
+                                    "mvn clean install" )
                     # return main.FALSE
                     main.cleanup()
                     main.exit()
@@ -215,10 +215,8 @@ class OnosDriver( CLI ):
             main.log.error( self.name + ":     " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
-            main.log.info( self.name + ":" * 60 )
-            main.log.error( traceback.print_exc() )
-            main.log.info( ":" * 60 )
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
@@ -320,10 +318,8 @@ class OnosDriver( CLI ):
             main.log.error( self.name + ":     " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
-            main.log.info( self.name + ":" * 60 )
-            main.log.error( traceback.print_exc() )
-            main.log.info( ":" * 80 )
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
@@ -357,7 +353,7 @@ class OnosDriver( CLI ):
                   'Switched\sto\sbranch\s\'' + str( branch ),
                   pexpect.TIMEOUT,
                   'error: Your local changes to the following files' +
-                          'would be overwritten by checkout:',
+                  'would be overwritten by checkout:',
                   'error: you need to resolve your current index first',
                   "You are in 'detached HEAD' state.",
                   "HEAD is now at " ],
@@ -442,17 +438,15 @@ class OnosDriver( CLI ):
             main.log.error( self.name + ":     " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
-            main.log.info( self.name + ":" * 60 )
-            main.log.error( traceback.print_exc() )
-            main.log.info( ":" * 80 )
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
     def getVersion( self, report=False ):
         """
         Writes the COMMIT number to the report to be parsed
-                by Jenkins data collecter.
+                by Jenkins data collector.
         """
         try:
             self.handle.sendline( "" )
@@ -492,15 +486,13 @@ class OnosDriver( CLI ):
             main.log.error( self.name + ":     " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
-            main.log.info( self.name + ":" * 60 )
-            main.log.error( traceback.print_exc() )
-            main.log.info( ":" * 80 )
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
     def createCellFile( self, benchIp, fileName, mnIpAddrs,
-                         extraFeatureString, *onosIpAddrs ):
+                        extraFeatureString, *onosIpAddrs ):
         """
         Creates a cell file based on arguments
         Required:
@@ -576,10 +568,8 @@ class OnosDriver( CLI ):
             main.log.error( self.name + ":     " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
-            main.log.info( self.name + ":::::::::" )
-            main.log.error( traceback.print_exc() )
-            main.log.info( ":::::::" )
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
@@ -615,10 +605,8 @@ class OnosDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
-            main.log.info( self.name + " ::::::" )
-            main.log.error( traceback.print_exc() )
-            main.log.info( self.name + " ::::::" )
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
@@ -650,10 +638,8 @@ class OnosDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
-            main.log.info( self.name + " ::::::" )
-            main.log.error( traceback.print_exc() )
-            main.log.info( self.name + " ::::::" )
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
@@ -711,10 +697,8 @@ class OnosDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
-            main.log.info( self.name + " ::::::" )
-            main.log.error( traceback.print_exc() )
-            main.log.info( self.name + " ::::::" )
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
@@ -766,10 +750,8 @@ class OnosDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
-            main.log.info( self.name + " ::::::" )
-            main.log.error( traceback.print_exc() )
-            main.log.info( self.name + " ::::::" )
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
@@ -804,10 +786,8 @@ class OnosDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
-            main.log.info( self.name + " ::::::" )
-            main.log.error( traceback.print_exc() )
-            main.log.info( self.name + " ::::::" )
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
@@ -842,10 +822,8 @@ class OnosDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
-            main.log.info( self.name + " ::::::" )
-            main.log.error( traceback.print_exc() )
-            main.log.info( self.name + " ::::::" )
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
@@ -871,10 +849,8 @@ class OnosDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
-            main.log.info( self.name + " ::::::" )
-            main.log.error( traceback.print_exc() )
-            main.log.info( self.name + " ::::::" )
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
@@ -904,10 +880,8 @@ class OnosDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
-            main.log.info( self.name + " ::::::" )
-            main.log.error( traceback.print_exc() )
-            main.log.info( self.name + " ::::::" )
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
@@ -942,7 +916,7 @@ class OnosDriver( CLI ):
                     " not configured" )
                 return main.FALSE
             else:
-                main.log.info( "ONOS instasnce was not killed" )
+                main.log.info( "ONOS instance was not killed" )
                 return main.FALSE
 
         except pexpect.EOF:
@@ -950,10 +924,8 @@ class OnosDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
-            main.log.info( self.name + " ::::::" )
-            main.log.error( traceback.print_exc() )
-            main.log.info( self.name + " ::::::" )
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
@@ -987,10 +959,8 @@ class OnosDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
-            main.log.info( self.name + " ::::::" )
-            main.log.error( traceback.print_exc() )
-            main.log.info( self.name + " ::::::" )
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
@@ -1026,10 +996,8 @@ class OnosDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
-            main.log.info( self.name + " ::::::" )
-            main.log.error( traceback.print_exc() )
-            main.log.info( self.name + " ::::::" )
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
@@ -1060,10 +1028,8 @@ class OnosDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
-            main.log.info( self.name + " ::::::" )
-            main.log.error( traceback.print_exc() )
-            main.log.info( self.name + " ::::::" )
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
@@ -1124,10 +1090,8 @@ class OnosDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
-            main.log.info( self.name + " ::::::" )
-            main.log.error( traceback.print_exc() )
-            main.log.info( self.name + " ::::::" )
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
@@ -1172,10 +1136,8 @@ class OnosDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
-            main.log.info( self.name + " ::::::" )
-            main.log.error( traceback.print_exc() )
-            main.log.info( self.name + " ::::::" )
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
@@ -1186,21 +1148,21 @@ class OnosDriver( CLI ):
             numolink,
             logLevel="info" ):
         """
-        Checks the number of swithes & links that ONOS sees against the
+        Checks the number of switches & links that ONOS sees against the
         supplied values. By default this will report to main.log, but the
-        log level can be specifid.
+        log level can be specific.
 
         Params: ip = ip used for the onos cli
                 numoswitch = expected number of switches
-                numlink = expected number of links
+                numolink = expected number of links
                 logLevel = level to log to.
                 Currently accepts 'info', 'warn' and 'report'
 
 
         logLevel can
 
-        Returns: main.TRUE if the number of switchs and links are correct,
-                 main.FALSE if the numer of switches and links is incorrect,
+        Returns: main.TRUE if the number of switches and links are correct,
+                 main.FALSE if the number of switches and links is incorrect,
                  and main.ERROR otherwise
         """
         try:
@@ -1216,7 +1178,7 @@ class OnosDriver( CLI ):
             switchCheck = ( int( devices ) == int( numoswitch ) )
             # Is the number of links is what we expected
             linkCheck = ( int( links ) == int( numolink ) )
-            if ( switchCheck and linkCheck ):
+            if switchCheck and linkCheck:
                 # We expected the correct numbers
                 output = output + "The number of links and switches match "\
                     + "what was expected"
@@ -1226,8 +1188,8 @@ class OnosDriver( CLI ):
                     "The number of links and switches does not match " + \
                     "what was expected"
                 result = main.FALSE
-            output = output + "\n ONOS sees %i devices" % int ( devices )
-            output = output + " (%i expected) " %  int( numoswitch )
+            output = output + "\n ONOS sees %i devices" % int( devices )
+            output = output + " (%i expected) " % int( numoswitch )
             output = output + "and %i links " % int( links )
             output = output + "(%i expected)" % int( numolink )
             if logLevel == "report":
@@ -1242,10 +1204,8 @@ class OnosDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
-            main.log.info( self.name + " ::::::" )
-            main.log.error( traceback.print_exc() )
-            main.log.info( self.name + " ::::::" )
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
@@ -1258,19 +1218,29 @@ class OnosDriver( CLI ):
             * interface: interface to capture
             * dir: directory/filename to store pcap
         """
-        self.handle.sendline( "" )
-        self.handle.expect( "\$" )
+        try:
+            self.handle.sendline( "" )
+            self.handle.expect( "\$" )
 
-        self.handle.sendline( "tshark -i " + str( interface ) +
-                              " -t e -w " + str( dirFile ) + " &" )
-        self.handle.sendline( "\r" )
-        self.handle.expect( "Capturing on" )
-        self.handle.sendline( "\r" )
-        self.handle.expect( "\$" )
+            self.handle.sendline( "tshark -i " + str( interface ) +
+                                  " -t e -w " + str( dirFile ) + " &" )
+            self.handle.sendline( "\r" )
+            self.handle.expect( "Capturing on" )
+            self.handle.sendline( "\r" )
+            self.handle.expect( "\$" )
 
-        main.log.info( "Tshark started capturing files on " +
-                       str( interface ) + " and saving to directory: " +
-                       str( dirFile ) )
+            main.log.info( "Tshark started capturing files on " +
+                           str( interface ) + " and saving to directory: " +
+                           str( dirFile ) )
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
 
     def runOnosTopoCfg( self, instanceName, jsonFile ):
         """
@@ -1291,8 +1261,15 @@ class OnosDriver( CLI ):
             self.handle.sendline( "cd ~" )
             self.handle.expect( "\$" )
             return main.TRUE
-        except:
-            return main.FALSE
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
 
     def tsharkGrep( self, grep, directory, interface='eth0' ):
         """
@@ -1306,33 +1283,53 @@ class OnosDriver( CLI ):
             and stores the results to specified directory.
             The timestamp is hardcoded to be in epoch
         """
-        self.handle.sendline( "" )
-        self.handle.expect( "\$" )
-        self.handle.sendline( "" )
-        self.handle.sendline(
-            "tshark -i " +
-            str( interface ) +
-            " -t e | grep --line-buffered \"" +
-            str(grep) +
-            "\" >" +
-            directory +
-            " &" )
-        self.handle.sendline( "\r" )
-        self.handle.expect( "Capturing on" )
-        self.handle.sendline( "\r" )
-        self.handle.expect( "\$" )
+        try:
+            self.handle.sendline( "" )
+            self.handle.expect( "\$" )
+            self.handle.sendline( "" )
+            self.handle.sendline(
+                "tshark -i " +
+                str( interface ) +
+                " -t e | grep --line-buffered \"" +
+                str(grep) +
+                "\" >" +
+                directory +
+                " &" )
+            self.handle.sendline( "\r" )
+            self.handle.expect( "Capturing on" )
+            self.handle.sendline( "\r" )
+            self.handle.expect( "\$" )
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
 
     def tsharkStop( self ):
         """
         Removes wireshark files from /tmp and kills all tshark processes
         """
         # Remove all pcap from previous captures
-        self.execute( cmd="sudo rm /tmp/wireshark*" )
-        self.handle.sendline( "" )
-        self.handle.sendline( "sudo kill -9 `ps -ef | grep \"tshark -i\" |" +
-                              " grep -v grep | awk '{print $2}'`" )
-        self.handle.sendline( "" )
-        main.log.info( "Tshark stopped" )
+        try:
+            self.execute( cmd="sudo rm /tmp/wireshark*" )
+            self.handle.sendline( "" )
+            self.handle.sendline( "sudo kill -9 `ps -ef | grep \"tshark -i\"" +
+                                  " | grep -v grep | awk '{print $2}'`" )
+            self.handle.sendline( "" )
+            main.log.info( "Tshark stopped" )
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
 
     def ptpd( self, args ):
         """
@@ -1367,15 +1364,13 @@ class OnosDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
-            main.log.info( self.name + " ::::::" )
-            main.log.error( traceback.print_exc() )
-            main.log.info( self.name + " ::::::" )
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
     def cpLogsToDir( self, logToCopy,
-                       destDir, copyFileName="" ):
+                     destDir, copyFileName="" ):
         """
         Copies logs to a desired directory.
         Current implementation of ONOS deletes its karaf
@@ -1407,13 +1402,9 @@ class OnosDriver( CLI ):
                 destDir += "/"
 
             if copyFileName:
-                self.handle.sendline(
-                    "cp " +
-                    str( logToCopy ) +
-                    " " +
-                    str( destDir ) +
-                    str( copyFileName ) +
-                    localtime )
+                self.handle.sendline( "cp " + str( logToCopy ) + " " +
+                                      str( destDir ) + str( copyFileName ) +
+                                      localtime )
                 self.handle.expect( "cp" )
                 self.handle.expect( "\$" )
             else:
@@ -1428,11 +1419,8 @@ class OnosDriver( CLI ):
             main.log.error( "Copying files failed" )
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-        except:
-            main.log.error( "Copying files failed" )
-            main.log.info( self.name + " ::::::" )
-            main.log.error( traceback.print_exc() )
-            main.log.info( self.name + " ::::::" )
+        except Exception:
+            main.log.exception( "Copying files failed" )
 
     def checkLogs( self, onosIp ):
         """
@@ -1450,11 +1438,10 @@ class OnosDriver( CLI ):
             main.log.error( "Lost ssh connection" )
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
-        except:
-            main.log.error( "Some error in check_logs:" )
-            main.log.info( self.name + " ::::::" )
-            main.log.error( traceback.print_exc() )
-            main.log.info( self.name + " ::::::" )
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
 
     def onosStatus( self, node="" ):
         """
@@ -1485,16 +1472,14 @@ class OnosDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
-            main.log.info( self.name + " ::::::" )
-            main.log.error( traceback.print_exc() )
-            main.log.info( self.name + " ::::::" )
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
     def setIpTables( self, ip, port='', action='add', packet_type='tcp',
                      direction='INPUT', rule='DROP' ):
-        '''
+        """
         Description:
             add or remove iptables rule to DROP (default) packets from
             specific IP and PORT
@@ -1514,7 +1499,7 @@ class OnosDriver( CLI ):
         WARNING:
         * This function uses root privilege iptables command which may result
           in unwanted network errors. USE WITH CAUTION
-        '''
+        """
         import time
 
         # NOTE*********
@@ -1585,16 +1570,16 @@ class OnosDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
-            main.log.exception( "Unknown error:")
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
     def detailed_status(self, log_filename):
-        '''
+        """
         This method is used by STS to check the status of the controller
         Reports RUNNING, STARTING, STOPPED, FROZEN, ERROR (and reason)
-        '''
+        """
         import re
         try:
             self.handle.sendline( "" )
@@ -1619,7 +1604,7 @@ class OnosDriver( CLI ):
             #      return 'FROZEN'
             else:
                 main.log.warn( self.name +
-                               " WARNING: status recieved unknown response" )
+                               " WARNING: status received unknown response" )
                 main.log.warn( response )
                 return 'ERROR', "Unknown response: %s" % response
         except pexpect.TIMEOUT:
@@ -1631,8 +1616,8 @@ class OnosDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
-            main.log.exception( "Unknown error:")
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 

@@ -51,6 +51,7 @@ class MininetCliDriver( Emulator ):
     def __init__( self ):
         super( Emulator, self ).__init__()
         self.handle = self
+        self.name = None
         self.wrapped = sys.modules[ __name__ ]
         self.flag = 0
 
@@ -72,16 +73,16 @@ class MininetCliDriver( Emulator ):
                 pwd=self.pwd )
 
             if self.handle:
-                main.log.info("Connection successful to the host " +
-                        self.user_name +
-                        "@" +
-                        self.ip_address )
+                main.log.info( "Connection successful to the host " +
+                               self.user_name +
+                               "@" +
+                               self.ip_address )
                 return main.TRUE
             else:
                 main.log.error( "Connection failed to the host " +
-                        self.user_name +
-                        "@" +
-                        self.ip_address )
+                                self.user_name +
+                                "@" +
+                                self.ip_address )
                 main.log.error( "Failed to connect to the Mininet CLI" )
                 return main.FALSE
         except pexpect.EOF:
@@ -94,11 +95,10 @@ class MininetCliDriver( Emulator ):
             main.cleanup()
             main.exit()
 
-
-    def startNet( self, topoFile = '', args = '', timeout = 120 ):
+    def startNet( self, topoFile='', args='', timeout=120 ):
         """
         Starts Mininet accepts a topology(.py) file and/or an optional
-        arguement ,to start the mininet, as a parameter.
+        argument ,to start the mininet, as a parameter.
         Returns main.TRUE if the mininet starts successfully and
                 main.FALSE otherwise
         """
@@ -115,7 +115,7 @@ class MininetCliDriver( Emulator ):
             if i == 0:
                 main.log.info( self.name + ": Sending sudo password" )
                 self.handle.sendline( self.pwd )
-                i = self.handle.expect( [ '%s:' % ( self.user ),
+                i = self.handle.expect( [ '%s:' % self.user,
                                           '\$',
                                           pexpect.EOF,
                                           pexpect.TIMEOUT ],
@@ -128,7 +128,7 @@ class MininetCliDriver( Emulator ):
                 main.log.error(
                     self.name +
                     ": Something while cleaning MN took too long... " )
-            if topoFile == ''  and  args ==  '':
+            if topoFile == '' and args == '':
                 main.log.info( self.name + ": building fresh mininet" )
                 # for reactive/PARP enabled tests
                 cmdString = "sudo mn " + self.options[ 'arg1' ] +\
@@ -177,15 +177,14 @@ class MininetCliDriver( Emulator ):
                 return main.TRUE
             else:
                 main.log.info( "Starting topo file " + topoFile )
-                if args == None:
+                if args is None:
                     args = ''
                 else:
                     main.log.info( "args = " + args)
                 self.handle.sendline( 'sudo ' + topoFile + ' ' + args)
-                i = 1
                 i = self.handle.expect( [ 'mininet>',
-                                        pexpect.EOF ,
-                                        pexpect.TIMEOUT ],
+                                          pexpect.EOF,
+                                          pexpect.TIMEOUT ],
                                         timeout)
                 if i == 0:
                     main.log.info(self.name + ": Network started")
@@ -241,10 +240,8 @@ class MininetCliDriver( Emulator ):
             numLinks = totalNumHosts + ( numSwitches - 1 )
             print "num_switches for %s(%d,%d) = %d and links=%d" %\
                 ( topoType, depth, fanout, numSwitches, numLinks )
-        topoDict = {}
-        topoDict = {
-            "num_switches": int( numSwitches ),
-            "num_corelinks": int( numLinks ) }
+        topoDict = { "num_switches": int( numSwitches ),
+                     "num_corelinks": int( numLinks ) }
         return topoDict
 
     def calculateSwAndLinks( self ):
@@ -394,6 +391,7 @@ class MininetCliDriver( Emulator ):
             main.log.error( self.name + ": Connection failed to the host" )
 
     def verifySSH( self, **connectargs ):
+        # FIXME: Who uses this and what is the purpose? seems very specific
         try:
             response = self.execute(
                 cmd="h1 /usr/sbin/sshd -D&",
@@ -434,17 +432,16 @@ class MininetCliDriver( Emulator ):
         if self.handle:
             try:
                 # Bring link between oldSw-host down
-                cmd = "py net.configLinkStatus('" + oldSw + "'," + "'" + host + "'," +\
-                "'down')"
+                cmd = "py net.configLinkStatus('" + oldSw + "'," + "'"+ host +\
+                      "'," + "'down')"
                 print "cmd1= ", cmd
-                response = self.execute(
-                cmd=cmd,
-                prompt="mininet>",
-                timeout=10 )
+                response = self.execute( cmd=cmd,
+                                         prompt="mininet>",
+                                         timeout=10 )
      
                 # Determine hostintf and Oldswitchintf
                 cmd = "px hintf,sintf = " + host + ".connectionsTo(" + oldSw +\
-                ")[0]"
+                      ")[0]"
                 print "cmd2= ", cmd
                 self.handle.sendline( cmd )
                 self.handle.expect( "mininet>" )
@@ -474,7 +471,7 @@ class MininetCliDriver( Emulator ):
  
                 # Determine hostintf and Newswitchintf
                 cmd = "px hintf,sintf = " + host + ".connectionsTo(" + newSw +\
-                ")[0]"
+                      ")[0]"
                 print "cmd6= ", cmd
                 self.handle.sendline( cmd )
                 self.handle.expect( "mininet>" )                 
@@ -563,7 +560,7 @@ class MininetCliDriver( Emulator ):
 
     def addStaticMACAddress( self, host, GW, macaddr ):
         """
-           Changes the mac address of a geateway host"""
+           Changes the mac address of a gateway host"""
         if self.handle:
             try:
                 # h1  arp -s 10.0.1.254 00:00:00:00:11:11
@@ -573,7 +570,7 @@ class MininetCliDriver( Emulator ):
                 response = self.handle.before
                 main.log.info( "response = " + response )
                 main.log.info(
-                    "Mac adrress of gateway " +
+                    "Mac address of gateway " +
                     GW +
                     " changed to " +
                     macaddr )
@@ -802,7 +799,7 @@ class MininetCliDriver( Emulator ):
             self.handle.expect( "mininet>" )
             response = self.handle.before
             if re.search( 'Results:', response ):
-                main.log.info( self.name + ": iperf test succssful" )
+                main.log.info( self.name + ": iperf test successful" )
                 return main.TRUE
             else:
                 main.log.error( self.name + ": iperf test failed" )
@@ -1058,10 +1055,10 @@ class MininetCliDriver( Emulator ):
             dynamic_topo branch
         NOTE: cannot currently specify what type of switch
         required params:
-            switchname = name of the new switch as a string
-        optional keyvalues:
+            sw = name of the new switch as a string
+        optional keywords:
             dpid = "dpid"
-        returns: main.FASLE on an error, else main.TRUE
+        returns: main.FALSE on an error, else main.TRUE
         """
         dpid = kwargs.get( 'dpid', '' )
         command = "addswitch " + str( sw ) + " " + str( dpid )
@@ -1093,8 +1090,8 @@ class MininetCliDriver( Emulator ):
         NOTE: This uses a custom mn function. MN repo should be on
             dynamic_topo branch
         required params:
-            switchname = name of the switch as a string
-        returns: main.FASLE on an error, else main.TRUE"""
+            sw = name of the switch as a string
+        returns: main.FALSE on an error, else main.TRUE"""
         command = "delswitch " + str( sw )
         try:
             response = self.execute(
@@ -1127,7 +1124,7 @@ class MininetCliDriver( Emulator ):
            required params:
            node1 = the string node name of the first endpoint of the link
            node2 = the string node name of the second endpoint of the link
-           returns: main.FASLE on an error, else main.TRUE"""
+           returns: main.FALSE on an error, else main.TRUE"""
         command = "addlink " + str( node1 ) + " " + str( node2 )
         try:
             response = self.execute(
@@ -1159,7 +1156,7 @@ class MininetCliDriver( Emulator ):
            required params:
            node1 = the string node name of the first endpoint of the link
            node2 = the string node name of the second endpoint of the link
-           returns: main.FASLE on an error, else main.TRUE"""
+           returns: main.FALSE on an error, else main.TRUE"""
         command = "dellink " + str( node1 ) + " " + str( node2 )
         try:
             response = self.execute(
@@ -1193,7 +1190,7 @@ class MininetCliDriver( Emulator ):
             hostname = the string hostname
         optional key-value params
             switch = "switch name"
-            returns: main.FASLE on an error, else main.TRUE
+            returns: main.FALSE on an error, else main.TRUE
         """
         switch = kwargs.get( 'switch', '' )
         command = "addhost " + str( hostname ) + " " + str( switch )
@@ -1230,7 +1227,7 @@ class MininetCliDriver( Emulator ):
            NOTE: this uses a custom mn function
            required params:
            hostname = the string hostname
-           returns: main.FASLE on an error, else main.TRUE"""
+           returns: main.FALSE on an error, else main.TRUE"""
         command = "delhost " + str( hostname )
         try:
             response = self.execute(
@@ -1261,7 +1258,7 @@ class MininetCliDriver( Emulator ):
         """
         self.handle.sendline('')
         i = self.handle.expect( [ 'mininet>', pexpect.EOF, pexpect.TIMEOUT ],
-                                timeout = 2)
+                                timeout=2)
         if i == 0:
             self.stopNet()
         elif i == 1:
@@ -1276,10 +1273,10 @@ class MininetCliDriver( Emulator ):
             main.log.error( "Connection failed to the host" )
         return response
 
-    def stopNet( self , timeout = 5):
+    def stopNet( self, timeout=5):
         """
         Stops mininet.
-        Returns main.TRUE if the mininet succesfully stops and
+        Returns main.TRUE if the mininet successfully stops and
                 main.FALSE if the pexpect handle does not exist.
 
         Will cleanup and exit the test if mininet fails to stop
@@ -1324,8 +1321,6 @@ class MininetCliDriver( Emulator ):
             main.log.error( self.name + ": Connection failed to the host" )
             response = main.FALSE
         return response
-
-
 
     def arping( self, src, dest, destmac ):
         self.handle.sendline( '' )
@@ -1388,12 +1383,10 @@ class MininetCliDriver( Emulator ):
             main.log.error( self.name + ":     " + self.handle.before )
             main.cleanup()
             main.exit()
-        else:
-            main.log.info( response )
 
     def startTcpdump( self, filename, intf="eth0", port="port 6633" ):
         """
-           Runs tpdump on an intferface and saves the file
+           Runs tpdump on an interface and saves the file
            intf can be specified, or the default eth0 is used"""
         try:
             self.handle.sendline( "" )
@@ -1449,7 +1442,8 @@ class MininetCliDriver( Emulator ):
             main.exit()
 
     def stopTcpdump( self ):
-        "pkills tcpdump"
+        """
+            pkills tcpdump"""
         try:
             self.handle.sendline( "sh sudo pkill tcpdump" )
             self.handle.expect( "mininet>" )
@@ -1480,8 +1474,7 @@ class MininetCliDriver( Emulator ):
             ports = []
             for port in switch.ports.values():
                 ports.append( { 'of_port': port.port_no,
-                                'mac': str( port.hw_addr ).replace( '\'',
-                                                                   '' ),
+                                'mac': str( port.hw_addr ).replace( '\'', '' ),
                                 'name': port.name } )
             output[ 'switches' ].append( {
                 "name": switch.name,
@@ -1562,17 +1555,15 @@ class MininetCliDriver( Emulator ):
             ports = []
             for port in switch.ports.values():
                 # print port.hw_addr.toStr( separator='' )
-                tmpPort = {}
-                tmpPort[ 'of_port' ] = port.port_no
-                tmpPort[ 'mac' ] = str( port.hw_addr ).replace( '\'', '' )
-                tmpPort[ 'name' ] = port.name
-                tmpPort[ 'enabled' ] = port.enabled
+                tmpPort = { 'of_port': port.port_no,
+                            'mac': str( port.hw_addr ).replace( '\'', '' ),
+                            'name': port.name,
+                            'enabled': port.enabled }
 
                 ports.append( tmpPort )
-            tmpSwitch = {}
-            tmpSwitch[ 'name' ] = switch.name
-            tmpSwitch[ 'dpid' ] = str( switch.dpid ).zfill( 16 )
-            tmpSwitch[ 'ports' ] = ports
+            tmpSwitch = { 'name': switch.name,
+                          'dpid': str( switch.dpid ).zfill( 16 ),
+                          'ports': ports }
 
             output[ 'switches' ].append( tmpSwitch )
 
@@ -1653,8 +1644,7 @@ class MininetCliDriver( Emulator ):
 
            This uses the sts TestONTopology object"""
         # FIXME: this does not look for extra links in ONOS, only checks that
-        # ONOS has what is in MN
-        linkResults = main.TRUE
+        #        ONOS has what is in MN
         output = { "switches": [] }
         onos = linksJson
         # iterate through the MN topology and pull out switches and and port
@@ -1666,8 +1656,7 @@ class MininetCliDriver( Emulator ):
             for port in switch.ports.values():
                 # print port.hw_addr.toStr( separator='' )
                 ports.append( { 'of_port': port.port_no,
-                                'mac': str( port.hw_addr ).replace( '\'',
-                                                                   '' ),
+                                'mac': str( port.hw_addr ).replace( '\'', '' ),
                                 'name': port.name } )
             output[ 'switches' ].append( {
                 "name": switch.name,
@@ -1743,7 +1732,7 @@ class MininetCliDriver( Emulator ):
                         main.log.warn(
                             'The port numbers do not match for ' +
                             str( link ) +
-                            ' between ONOS and MN. When cheking ONOS for ' +
+                            ' between ONOS and MN. When checking ONOS for ' +
                             'link %s/%s -> %s/%s' %
                             ( node1,
                               port1,
@@ -1765,7 +1754,7 @@ class MininetCliDriver( Emulator ):
                         main.log.warn(
                             'The port numbers do not match for ' +
                             str( link ) +
-                            ' between ONOS and MN. When cheking ONOS for ' +
+                            ' between ONOS and MN. When checking ONOS for ' +
                             'link %s/%s -> %s/%s' %
                             ( node2,
                               port2,
@@ -1818,7 +1807,7 @@ class MininetCliDriver( Emulator ):
            updates the port address and status information for
            each port in mn"""
         # TODO: Add error checking. currently the mininet command has no output
-        main.log.info( "Updateing MN port information" )
+        main.log.info( "Updating MN port information" )
         try:
             self.handle.sendline( "" )
             self.handle.expect( "mininet>" )

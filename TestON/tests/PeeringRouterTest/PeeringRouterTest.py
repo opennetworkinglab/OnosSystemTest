@@ -391,6 +391,19 @@ class PeeringRouterTest:
 
         #============================= Ping Test ========================
         pingTestResults = main.TRUE
+        sources = ["as2host", "as3host", "as6host"]
+        targets = ["192.168.10.101", "192.168.20.101", "192.168.30.101", "192.168.60.101"]
+        for source in sources:
+            for target in targets:
+                r = main.Mininet.pingHost(SRC=source, TARGET=target)
+                if r == main.FALSE:
+                    pingTestResults = main.FALSE      
+
+        utilities.assert_equals(expect=main.TRUE,actual=pingTestResults,
+                                  onpass="Router connectivity check PASS",
+                                  onfail="Router connectivity check FAIL")
+
+        pingTestResults = main.TRUE
         for m in range( 3, 6 ):
             for n in range( 1, 10 ):
                 hostIp = str( m ) + ".0." + str( n ) + ".1"
@@ -440,10 +453,18 @@ class PeeringRouterTest:
                                   onpass="disconnect check PASS",
                                   onfail="disconnect check FAIL")
 
+
+        time.sleep(20);
+        
         main.ONOScli.logout()
+        main.log.info("ONOS cli logout")
+        time.sleep(20);
         main.ONOSbench.onosStop(ONOS1Ip);
+        main.log.info("onos stop")
+        time.sleep(20);
         main.Mininet.stopNet()
-        time.sleep(10)
+        main.log.info("mininet stop")
+        time.sleep(20)
 
 
     def CASE7( self, main ):

@@ -812,7 +812,7 @@ class OnosDriver( CLI ):
                 main.log.info( "ONOS service stopped" )
                 return main.TRUE
             elif i == 1:
-                main.log.info( "Unknown ONOS instance specified: " +
+                main.log.info( "onosStop() Unknown ONOS instance specified: " +
                                str( nodeIp ) )
                 return main.FALSE
             else:

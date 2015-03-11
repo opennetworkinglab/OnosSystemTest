@@ -39,7 +39,7 @@ class OnosCliDriver( CLI ):
         try:
             for key in connectargs:
                 vars( self )[ key ] = connectargs[ key ]
-            self.home = "~/ONOS"
+            self.home = "~/onos"
             for key in self.options:
                 if key == "home":
                     self.home = self.options[ 'home' ]

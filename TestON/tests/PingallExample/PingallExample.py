@@ -94,6 +94,14 @@ class PingallExample:
         if case1Result == main.FALSE:
             main.cleanup()
             main.exit()
+        
+        # Starting the mininet using the old way
+        main.step( "Starting Mininet ..." )
+        netIsUp = main.Mininet1.startNet()
+        if netIsUp:
+            main.log.info("Mininet CLI is up")
+        else:
+            main.log.info("Mininet CLI is down")
 
     def CASE2( self, main ):
         """
@@ -119,7 +127,7 @@ class PingallExample:
             response = main.Mininet1.getSwController( "s" + str( i ) )
             try:
                 main.log.info( str( response ) )
-            except:
+            except Exception:
                 main.log.info( repr( response ) )
             if re.search( "tcp:" + ONOS1Ip, response ):
                 mastershipCheck = mastershipCheck and main.TRUE

@@ -21,7 +21,6 @@ Created on 07-Jan-2013
 
 '''
 
-import re
 import json
 class JsonParser:
     '''
@@ -37,7 +36,7 @@ class JsonParser:
         response_dict = {}
         try :
             response_dict = json.loads(json_response)
-        except :
+        except Exception:
             main.log.error("Json Parser is unable to parse the string")
         return response_dict         
     
@@ -50,7 +49,7 @@ class JsonParser:
         json_response = {}
         try :
             json_response = json.dumps(response_dict)
-        except :
+        except Exception:
             main.log.error("Json Parser is unable to parse the string")
         return json_response  
     '''

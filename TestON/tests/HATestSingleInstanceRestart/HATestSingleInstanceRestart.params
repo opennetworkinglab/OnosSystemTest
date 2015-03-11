@@ -1,9 +1,27 @@
 <PARAMS>
+    #CASE1: Compile ONOS and push it to the test machines
+    #CASE2: Assign mastership to controllers
+    #CASE3: Assign intents
+    #CASE4: Ping across added host intents
+    #CASE5: Reading state of ONOS
+    #CASE6: The Failure case. Since this is the Sanity test, we do nothing.
+    #CASE7: Check state after control plane failure
+    #CASE8: Compare topo
+    #CASE9: Link s3-s28 down
+    #CASE10: Link s3-s28 up
+    #CASE11: Switch down
+    #CASE12: Switch up
+    #CASE13: Clean up
+    #CASE14: start election app on all onos nodes
+    #CASE15: Check that Leadership Election is still functional
+    #1,2,8,3,4,5,14,[6],8,3,7,4,15,9,8,4,10,8,4,11,8,4,12,8,4,13
+    #extra hosts test 1,2,8,11,8,12,8
     <testcases>1,2,8,3,4,5,14,[6],8,3,7,4,15,9,8,4,10,8,4,11,8,4,12,8,4,13</testcases>
     <ENV>
-    <cellName>HA</cellName>
+        <cellName>HA</cellName>
     </ENV>
     <Git>False</Git>
+    <branch> master </branch>
     <num_controllers> 1 </num_controllers>
 
     <CTRL>
@@ -56,6 +74,11 @@
         <LinkDiscovery>.2</LinkDiscovery>
         <SwitchDiscovery>.2</SwitchDiscovery>
     </timers>
+    <kill>
+        <switch> s5 </switch>
+        <dpid> 0000000000005000 </dpid>
+        <links> h5 s2 s1 s6 </links>
+    </kill>
     <MNtcpdump>
         <intf>eth0</intf>
         <port> </port>

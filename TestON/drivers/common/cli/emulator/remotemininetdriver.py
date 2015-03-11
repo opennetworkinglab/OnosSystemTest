@@ -21,7 +21,6 @@ author:: Anil Kumar ( anilkumar.s@paxterrasolutions.com )
 
 MininetCliDriver is the basic driver which will handle the Mininet functions
 """
-import traceback
 import pexpect
 import re
 import sys
@@ -40,11 +39,12 @@ class RemoteMininetDriver( Emulator ):
     def __init__( self ):
         super( Emulator, self ).__init__()
         self.handle = self
+        self.name = None
         self.wrapped = sys.modules[ __name__ ]
         self.flag = 0
 
     def connect( self, **connectargs ):
-        """,userName, ipAddress, pwd,options ):
+        """,user_name, ip_address, pwd,options ):
          Here the main is the TestON instance after creating all the log
          handles."""
         for key in connectargs:
@@ -54,12 +54,10 @@ class RemoteMininetDriver( Emulator ):
         self.handle = super(
             RemoteMininetDriver,
             self ).connect(
-            userName=self.userName,
-            ipAddress=self.ipAddress,
+            user_name=self.user_name,
+            ip_address=self.ip_address,
             port=None,
             pwd=self.pwd )
-
-        self.sshHandle = self.handle
 
         # Copying the readme file to process the
         if self.handle:
@@ -68,9 +66,9 @@ class RemoteMininetDriver( Emulator ):
         else:
             main.log.error(
                 "Connection failed to the host " +
-                self.userName +
+                self.user_name +
                 "@" +
-                self.ipAddress )
+                self.ip_address )
             main.log.error( "Failed to connect to the Mininet" )
             return main.FALSE
 
@@ -99,7 +97,7 @@ class RemoteMininetDriver( Emulator ):
 
     def pingLong( self, **pingParams ):
         """
-        Starts a continuous ping on the mininet host outputing
+        Starts a continuous ping on the mininet host outputting
         to a file in the /tmp dir.
         """
         self.handle.sendline( "" )
@@ -109,8 +107,9 @@ class RemoteMininetDriver( Emulator ):
         precmd = "sudo rm /tmp/ping." + args[ "SRC" ]
         self.execute( cmd=precmd, prompt="(.*)", timeout=10 )
         command = "sudo mininet/util/m " + args[ "SRC" ] + " ping " +\
-                args[ "TARGET" ] + " -i .2 -w " + str( args[ 'PINGTIME' ] ) +\
-                " -D > /tmp/ping." + args[ "SRC" ] + " &"
+                  args[ "TARGET" ] + " -i .2 -w " +\
+                  str( args[ 'PINGTIME' ] ) + " -D > /tmp/ping." +\
+                  args[ "SRC" ] + " &"
         main.log.info( command )
         self.execute( cmd=command, prompt="(.*)", timeout=10 )
         self.handle.sendline( "" )
@@ -182,7 +181,7 @@ class RemoteMininetDriver( Emulator ):
 
     def pingHostOptical( self, **pingParams ):
         """
-        This function is only for Packey Optical related ping
+        This function is only for Packet Optical related ping
         Use the next pingHost() function for all normal scenarios )
         Ping from one mininet host to another
         Currently the only supported Params: SRC and TARGET
@@ -281,7 +280,7 @@ class RemoteMininetDriver( Emulator ):
             port="port 6633",
             user="admin" ):
         """
-        Runs tpdump on an intferface and saves the file
+        Runs tcpdump on an interface and saves the file
         intf can be specified, or the default eth0 is used
         """
         try:
@@ -323,19 +322,16 @@ class RemoteMininetDriver( Emulator ):
             main.log.error( self.name + ":     " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
-            main.log.info(
-                    self.name + ":" * 60 )
-            main.log.error( traceback.print_exc() )
-            main.log.info( ":" * 80 )
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
     def stopTcpdump( self ):
-        "pkills tcpdump"
+        """
+            pkills tcpdump"""
         try:
             self.handle.sendline( "sudo pkill tcpdump" )
-            self.handle.sendline( "" )
             self.handle.sendline( "" )
             self.handle.expect( "\$" )
         except pexpect.EOF:
@@ -343,11 +339,8 @@ class RemoteMininetDriver( Emulator ):
             main.log.error( self.name + ":     " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
-            main.log.info(
-                    self.name + ":" * 60 )
-            main.log.error( traceback.print_exc() )
-            main.log.info( ":" * 80 )
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
@@ -374,23 +367,31 @@ class RemoteMininetDriver( Emulator ):
         """
         Called at the end of the test to disconnect the handle.
         """
-        response = ''
-        # print "Disconnecting Mininet"
         if self.handle:
-            self.handle.sendline( "exit" )
-            self.handle.expect( "exit" )
-            self.handle.expect( "(.*)" )
-            response = self.handle.before
-
+            # Close the ssh connection
+            self.handle.sendline( "" )
+            # self.handle.expect( "\$" )
+            i = self.handle.expect( [ '\$', 'mininet>', pexpect.TIMEOUT ],
+                                    timeout=2)
+            if i == 0:
+                self.handle.sendline( "exit" )
+                self.handle.expect( "closed" )
+            elif i == 1:
+                self.handle.sendline( "exit" )
+                self.handle.expect( "exit" )
+                self.handle.expect('\$')
+                self.handle.sendline( "exit" )
+                self.handle.expect( "exit" )
+                self.handle.expect( "closed" )
+                
         else:
             main.log.error( "Connection failed to the host" )
-            response = main.FALSE
-        return response
+        return main.TRUE
 
     def getFlowTable( self, protoVersion, sw ):
         """
          TODO document usage
-         TODO add option to look at cookies. ignoreing them for now
+         TODO add option to look at cookies. ignoring them for now
 
          print "get_flowTable(" + str( protoVersion ) +" " + str( sw ) +")"
          NOTE: Use format to force consistent flow table output across
@@ -563,7 +564,7 @@ class RemoteMininetDriver( Emulator ):
                             str( rule ) )
 
                         infoString = "Rules added to " + str( self.name )
-                        infoString += "iptable rule added to block IP: " + \
+                        infoString += "iptables rule added to block IP: " + \
                             str( dstIp )
                         infoString += "Port: " + \
                             str( dstPort ) + " Rule: " + str( rule )
@@ -576,8 +577,9 @@ class RemoteMininetDriver( Emulator ):
                         main.log.error(
                             self.name +
                             ": Timeout exception in setIpTables function" )
-                    except:
-                        main.log.error( traceback.print_exc() )
+                    except Exception:
+                        main.log.exception( self.name +
+                                            ": Uncaught exception!" )
                         main.cleanup()
                         main.exit()
                 else:
@@ -589,6 +591,7 @@ class RemoteMininetDriver( Emulator ):
                 if actionType == 'remove':
                     # -D is the 'delete' rule of iptables
                     actionRemove = '-D'
+                    # noinspection PyBroadException
                     try:
                         self.handle.sendline( "" )
                         # Delete a specific rule specified into the function
@@ -619,8 +622,9 @@ class RemoteMininetDriver( Emulator ):
                         main.log.error(
                             self.name +
                             ": Timeout exception in setIpTables function" )
-                    except:
-                        main.log.error( traceback.print_exc() )
+                    except Exception:
+                        main.log.exception( self.name +
+                                            ": Uncaught exception!" )
                         main.cleanup()
                         main.exit()
                 else:

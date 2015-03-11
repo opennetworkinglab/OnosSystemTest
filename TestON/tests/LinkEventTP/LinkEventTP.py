@@ -89,7 +89,64 @@ class LinkEventTP:
         #mvn clean install, for debugging set param 'skipCleanInstall' to yes to speed up test
         if skipMvn != "yes":
             mvnResult = main.ONOSbench.cleanInstall()
-           
+
+        #configuring file to enable flicker
+        main.log.step(" Configuring null provider to enable flicker. Flicker Rate = " + flickerRate )
+        homeDir = os.path.expanduser('~')
+        main.log.info(homeDir)
+        localPath = "/onos/tools/package/etc/org.onosproject.provider.nil.link.impl.NullLinkProvider.cfg"
+        filePath = homeDir + localPath
+        main.log.info(filePath)
+
+        neighborsString = ""
+        for node in range(1, maxNodes + 1):
+            neighborsString += ONOSIp[node]
+            if node < maxNodes:
+                neighborsString += ","
+
+        configFile = open(filePath, 'w+')
+        main.log.info("File opened")
+        configFile.write("# Sample configurations for the NullLinkProvider.\n")
+        configFile.write("# \n")
+        configFile.write("# If enabled, sets time between linkEvent generation\n")
+        configFile.write("# in milliseconds.\n")
+        configFile.write("#\n") 
+        configFile.write("eventRate = " + flickerRate)
+        configFile.write("\n")
+        configFile.write("#Set order of islands to chain together, in a line.\n")
+        configFile.write("neighbors = " + neighborsString)
+        configFile.close()
+        main.log.info("Configuration completed")
+
+        ### configure event rate file ###
+        main.log.step("Writing Default Topology Provider config file")
+        localPath = main.params[ 'TEST' ][ 'configFile' ]
+        filePath = homeDir + localPath
+        main.log.info(filePath)
+        configFile = open(filePath, 'w+')
+        main.log.info("File Opened")
+        configFile.write("maxEvents = 1\n")
+        configFile.write("maxIdleMs = 0\n")
+        configFile.write("maxBatchMs = 0\n")
+        main.log.info("File written and closed")
+       
+ 
+        devices_by_ip = ""
+        for node in range(1, maxNodes + 1):
+            devices_by_ip += (ONOSIp[node] + ":" + str(5))
+            if node < maxNodes:
+                devices_by_ip +=(",")
+        
+        main.log.step("Configuring device provider")
+        localPath = "/onos/tools/package/etc/org.onosproject.provider.nil.device.impl.NullDeviceProvider.cfg"
+        filePath = homeDir + localPath
+        main.log.info(filePath)
+        configFile = open(filePath, 'w+')
+        main.log.info("Device config file opened")
+        configFile.write("devConfigs = " + devices_by_ip)
+        configFile.close()
+        main.log.info("File closed")
+
         logFileName = main.params[ 'TEST' ][ 'logFile' ]
         logFile = open(logFileName, 'w+')
         main.log.info("Created log File")
@@ -108,7 +165,7 @@ class LinkEventTP:
         main.ONOS1cli.startOnosCli( ONOSIp[1] )
         main.step( "ONOS 1 is up and running." )
         main.ONOSbench.handle.expect(":~") #there is a dangling sendline somewhere...	
-        
+    
     def CASE2( self, main ):
         # This case increases the cluster size by whatever scale is
         # Note: 'scale' is the size of the step
@@ -162,7 +219,7 @@ class LinkEventTP:
             main.ONOSbench.onosInstall( ONOSIp[node] )
             exec "a = main.ONOS%scli.startOnosCli" %str(node)
             a(ONOSIp[node])
-
+        
         for node in range(1, clusterCount + 1):
             for i in range( 2 ):
                 isup = main.ONOSbench.isup( ONOSIp[node] )

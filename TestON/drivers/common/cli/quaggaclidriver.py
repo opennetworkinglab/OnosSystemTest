@@ -354,16 +354,35 @@ class QuaggaCliDriver( CLI ):
             self.disconnect()
         main.log.info( "Start to add routes" )
 
-        for i in range( 0, len( routes ) ):
-            routeCmd = "network " + routes[ i ]
+        chunk_size = 20
+
+        if len(routes) > chunk_size:
+            num_iter = (int) (len(routes) / chunk_size) 
+        else:
+            num_iter = 1;
+
+        total = 0
+        for n in range( 0, num_iter + 1):
+            routeCmd = ""
+            if (len( routes ) - (n * chunk_size)) >= chunk_size:
+                m = (n + 1) * chunk_size
+            else:
+                m = len( routes )
+            for i in range( n * chunk_size, m ):
+                routeCmd = routeCmd + "network " + routes[ i ] + "\n"
+                total = total + 1
+
+            main.log.info(routeCmd)
             try:
                 self.handle.sendline( routeCmd )
                 self.handle.expect( "bgpd", timeout=5 )
             except:
                 main.log.warn( "Failed to add route" )
                 self.disconnect()
+            
             # waitTimer = 1.00 / routeRate
-            # time.sleep( waitTimer )
+            main.log.info("Total routes so far " + ((str) (total)) + " wait for 0 sec")
+            #time.sleep( 1 )
         if routesAdded == len( routes ):
             main.log.info( "Finished adding routes" )
             return main.TRUE
@@ -425,77 +444,6 @@ class QuaggaCliDriver( CLI ):
         else:
             main.log.info( "NO HANDLE" )
             return main.FALSE
-
-    def pingTestAndCheckAllPass( self, ip_address):
-        main.log.info( "Start the ping test on host:" + str( ip_address ) )
-
-        self.name = self.options[ 'name' ]
-        self.handle = super( QuaggaCliDriver, self ).connect(
-            user_name=self.user_name, ip_address=ip_address,
-            port=self.port, pwd=self.pwd )
-        main.log.info( "connect parameters:" + str( self.user_name ) + ";"
-                       + str( self.ip_address ) + ";" + str( self.port )
-                       + ";" + str( self.pwd ) )
-
-        testPass = main.TRUE
-
-        if self.handle:
-            # self.handle.expect( "" )
-            # self.handle.expect( "\$" )
-            main.log.info( "I in host " + str( ip_address ) )
- 
-            # Ping to 3.0.x.1 is just for sanity check. It always succeeds.
-            for m in range( 3, 6 ):
-                for n in range( 1, 11 ):
-                    hostIp = str( m ) + ".0." + str( n ) + ".1"
-                    main.log.info( "Ping to " + hostIp )
-                    try:
-                        self.handle.sendline("ping -c 1 " + hostIp)
-                        self.handle.expect( "64 bytes from", timeout=1 )
-                    except:
-                        main.log.warn("Ping error")
-                        testPass = main.FALSE
-
-            return testPass
-        else:
-            main.log.info( "NO HANDLE" )
-            return main.FALSE
-
-    def pingTestAndCheckAllFail( self, ip_address):
-        main.log.info( "Start the ping test on host:" + str( ip_address ) )
-
-        self.name = self.options[ 'name' ]
-        self.handle = super( QuaggaCliDriver, self ).connect(
-            user_name=self.user_name, ip_address=ip_address,
-            port=self.port, pwd=self.pwd )
-        main.log.info( "connect parameters:" + str( self.user_name ) + ";"
-                       + str( self.ip_address ) + ";" + str( self.port )
-                       + ";" + str( self.pwd ) )
-
-        testPass = main.TRUE
-
-        if self.handle:
-            # self.handle.expect( "" )
-            # self.handle.expect( "\$" )
-            main.log.info( "I in host " + str( ip_address ) )
-
-            for m in range( 4, 6 ):
-                for n in range( 1, 11 ):
-                    hostIp = str( m ) + ".0." + str( n ) + ".1"
-                    main.log.info( "Ping to " + hostIp )
-                    try:
-                        self.handle.sendline("ping -c 1 " + hostIp)
-                        self.handle.expect( "64 bytes from", timeout=1 )
-                        testPass = main.FALSE
-                    except:
-                        main.log.warn("Ping error")
-
-            return testPass
-        else:
-            main.log.info( "NO HANDLE" )
-            return main.FALSE
-
-
 
 
     # Please use the generateRoutes plus addRoutes instead of this one!

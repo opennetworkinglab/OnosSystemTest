@@ -478,12 +478,12 @@ class PeeringRouterTest:
             and test new drivers" )
         TESTCASE_ROOT_PATH = main.params[ 'ENV' ][ 'home' ]
         TESTCASE_MININET_ROOT_PATH = TESTCASE_ROOT_PATH + "/vlan/mininet"
-        SDNIPJSONFILEPATH = TESTCASE_ROOT_PATH + "/sdnip.json"
+        SDNIPJSONFILEPATH = TESTCASE_ROOT_PATH + "/vlan/sdnip.json"
         main.log.info("sdnip.json file path: "+ SDNIPJSONFILEPATH)
 
         # Copy the json files to config dir
-        main.ONOSbench.handle.sendline("cp " + TESTCASE_ROOT_PATH + "/addresses.json ~/onos/tools/package/config/")
-        main.ONOSbench.handle.sendline("cp " + TESTCASE_ROOT_PATH + "/sdnip.json ~/onos/tools/package/config/")
+        main.ONOSbench.handle.sendline("cp " + TESTCASE_ROOT_PATH + "/vlan/addresses.json ~/onos/tools/package/config/")
+        main.ONOSbench.handle.sendline("cp " + TESTCASE_ROOT_PATH + "/vlan/sdnip.json ~/onos/tools/package/config/")
 
         # Launch mininet topology for this case
         MININET_TOPO_FILE = TESTCASE_MININET_ROOT_PATH + "/PeeringRouterMininetVlan.py"
@@ -499,7 +499,7 @@ class PeeringRouterTest:
         main.step( "Start to generate routes for all BGP peers" )
 
         main.log.info( "Generate prefixes for host3" )
-        prefixesHost3 = main.QuaggaCliHost3.generatePrefixes( 3, 255 )
+        prefixesHost3 = main.QuaggaCliHost3.generatePrefixes( 3, 3500 )
         main.log.info( prefixesHost3 )
         # generate route with next hop
         for prefix in prefixesHost3:
@@ -509,7 +509,7 @@ class PeeringRouterTest:
             prefixesHost3, "192.168.20.1", "00:00:00:00:02:02",
             SDNIPJSONFILEPATH )
         main.log.info( "Generate prefixes for host4" )
-        prefixesHost4 = main.QuaggaCliHost4.generatePrefixes( 4, 255 )
+        prefixesHost4 = main.QuaggaCliHost4.generatePrefixes( 4, 3500 )
         main.log.info( prefixesHost4 )
         # generate route with next hop
         for prefix in prefixesHost4:
@@ -520,7 +520,7 @@ class PeeringRouterTest:
             SDNIPJSONFILEPATH )
 
         main.log.info( "Generate prefixes for host5" )
-        prefixesHost5 = main.QuaggaCliHost5.generatePrefixes( 5, 255 )
+        prefixesHost5 = main.QuaggaCliHost5.generatePrefixes( 5, 3500 )
         main.log.info( prefixesHost5 )
         for prefix in prefixesHost5:
             allRoutesExpected.append( prefix + "/" + "192.168.60.2" )
@@ -570,12 +570,16 @@ class PeeringRouterTest:
         main.log.info( "Add routes to Quagga on host3" )
         main.QuaggaCliHost3.addRoutes( prefixesHost3, 1 )
 
+        time.sleep(20)
+
         main.log.info( "Login Quagga CLI on host4" )
         main.QuaggaCliHost4.loginQuagga( "1.168.30.3" )
         main.log.info( "Enter configuration model of Quagga CLI on host4" )
         main.QuaggaCliHost4.enterConfig( 64516 )
         main.log.info( "Add routes to Quagga on host4" )
         main.QuaggaCliHost4.addRoutes( prefixesHost4, 1 )
+
+        time.sleep(20)
 
         main.log.info( "Login Quagga CLI on host5" )
         main.QuaggaCliHost5.loginQuagga( "1.168.30.5" )
@@ -584,7 +588,17 @@ class PeeringRouterTest:
         main.log.info( "Add routes to Quagga on host5" )
         main.QuaggaCliHost5.addRoutes( prefixesHost5, 1 )
 
-        time.sleep( 30 )
+        time.sleep(60)
+
+        # get routes inside SDN-IP
+        getRoutesResult = main.ONOScli.routes( jsonFormat=True )
+
+        # parse routes from ONOS CLI
+        allRoutesActual = \
+           main.QuaggaCliHost3.extractActualRoutes( getRoutesResult )
+
+        allRoutesStrExpected = str( sorted( allRoutesExpected ) )
+        allRoutesStrActual = str( allRoutesActual ).replace( 'u', "" )
 
         # get routes inside SDN-IP
         getRoutesResult = main.ONOScli.routes( jsonFormat=True )
@@ -611,59 +625,23 @@ class PeeringRouterTest:
             main.log.report(
                 "***Routes in SDN-IP after adding routes are wrong!***" )
 
+        time.sleep(20)
+
+
         #============================= Ping Test ========================
-        pingTestResults = main.QuaggaCliHost.pingTestAndCheckAllPass( "1.168.30.100" )
-        main.log.info("Ping test result")
-        if pingTestResults:
-            main.log.info("Test succeeded")
-        else:
-            main.log.info("Test failed")
+        pingTestResults = main.TRUE
+        for m in range( 3, 6 ):
+            for n in range( 1, 10 ):
+                hostIp = str( m ) + ".0." + str( n ) + ".1"
+                r = main.Mininet.pingHost(SRC="as2host", TARGET=hostIp)
+                if r == main.FALSE:
+                    pingTestResults = main.FALSE
 
         utilities.assert_equals(expect=main.TRUE,actual=pingTestResults,
                                   onpass="Default connectivity check PASS",
                                   onfail="Default connectivity check FAIL")
 
-        #============================= Deleting Routes ==================
-        main.step( "Check deleting routes installed" )
-        main.QuaggaCliHost3.deleteRoutes( prefixesHost3, 1 )
-        main.QuaggaCliHost4.deleteRoutes( prefixesHost4, 1 )
-        main.QuaggaCliHost5.deleteRoutes( prefixesHost5, 1 )
-
-        getRoutesResult = main.ONOScli.routes( jsonFormat=True )
-        allRoutesActual = \
-            main.QuaggaCliHost3.extractActualRoutes( getRoutesResult )
-
-        main.log.info( "allRoutes_actual = " )
-        main.log.info( allRoutesActual )
-
-        utilities.assertEquals(
-            expect="[]", actual=str( allRoutesActual ),
-            onpass="***Route number in SDN-IP is 0, correct!***",
-            onfail="***Routes number in SDN-IP is not 0, wrong!***" )
-
-        if( eq( allRoutesStrExpected, allRoutesStrActual ) ):
-            main.log.report( "***Routes in SDN-IP after deleting correct!***" )
-        else:
-            main.log.report( "***Routes in SDN-IP after deleting wrong!***" )
-
-        #============================= Ping Test ========================
-        pingTestResults = main.QuaggaCliHost.pingTestAndCheckAllFail( "1.168.30.100" )
-        main.log.info("Ping test result")
-        if pingTestResults:
-            main.log.info("Test succeeded")
-        else:
-            main.log.info("Test failed")
-
-        utilities.assert_equals(expect=main.TRUE,actual=pingTestResults,
-                                  onpass="disconnect check PASS",
-                                  onfail="disconnect check FAIL")
-
-        main.ONOScli.logout()
-        main.ONOSbench.onosStop(ONOS1Ip);
-        main.Mininet.stopNet()
         time.sleep(10)
-
-
 
     # Route convergence and connectivity test
     def CASE21( self, main):

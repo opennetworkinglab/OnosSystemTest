@@ -1198,15 +1198,13 @@ class OnosCHO:
                         intentIdList1.append( intentsTemp1[ 0 ].split('=')[1] )
                     print "Leftover Intent IDs: ", intentIdList1
                     print len(intentIdList1)
-                    results = main.TRUE
                     for intent in intentIdList1:
-                        results = main.CLIs[0].removeIntent(intent,'org.onosproject.cli',True,False) and results
+                        main.CLIs[0].removeIntent(intent,'org.onosproject.cli',True,False)
                 else:
-                    moreIntents = main.FALSE
                     break
                 if removeIntentCount == 5:
                     break
-                
+
             else:
                 print "There are no more intents that need to be removed"
                 step1Result = main.TRUE

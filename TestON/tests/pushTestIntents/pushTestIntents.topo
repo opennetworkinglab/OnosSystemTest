@@ -8,10 +8,7 @@
             <password>onos_test</password>
             <type>OnosDriver</type>
             <connect_order>1</connect_order>
-            <COMPONENTS>
-		<home>~/onos</home>
-	    </COMPONENTS>
-
+            <COMPONENTS><home>~/onos</home></COMPONENTS>
         </ONOSbench>
 
         <ONOS1cli>
@@ -59,7 +56,7 @@
             <COMPONENTS> </COMPONENTS>
         </ONOS5cli>
 
-	<ONOS6cli>
+        <ONOS6cli>
             <host>10.128.5.55</host>
             <user>admin</user>
             <password>onos_test</password>
@@ -113,7 +110,7 @@
             <COMPONENTS> </COMPONENTS>
         </ONOS4>
 
-	
+    
         <ONOS5>
             <host>10.128.5.65</host>
             <user>sdn</user>
@@ -144,3 +141,6 @@
     </COMPONENT>
 
 </TOPOLOGY>
+
+
+    

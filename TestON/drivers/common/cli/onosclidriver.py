@@ -43,7 +43,7 @@ class OnosCliDriver( CLI ):
         try:
             for key in connectargs:
                 vars( self )[ key ] = connectargs[ key ]
-            self.home = "~/ONOS"
+            self.home = "~/onos"
             for key in self.options:
                 if key == "home":
                     self.home = self.options[ 'home' ]
@@ -147,12 +147,12 @@ class OnosCliDriver( CLI ):
                 # Expect the cellname in the ONOSCELL variable.
                 # Note that this variable name is subject to change
                 #   and that this driver will have to change accordingly
-                self.handle.expect( "ONOS_CELL" )
+                self.handle.expect(str(cellname))
                 handleBefore = self.handle.before
                 handleAfter = self.handle.after
                 # Get the rest of the handle
-                self.handle.sendline( "" )
-                self.handle.expect( "\$" )
+                self.handle.sendline("")
+                self.handle.expect("\$")
                 handleMore = self.handle.before
 
                 main.log.info( "Cell call returned: " + handleBefore +

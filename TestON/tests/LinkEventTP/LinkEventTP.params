@@ -1,12 +1,14 @@
 <PARAMS>
 
-    <testcases>1,3,2,4,2,5</testcases>
+    <testcases>1,2,3,2,3,2,3</testcases>
 
     <ENV>
     <cellName>network_tp_test</cellName>
+    <cellFeatures>"webconsole,onos-core,onos-api,onos-cli,onos-null,onos-rest,onos-app-metrics,onos-app-metrics-intent,onos-app-metrics-topology"</cellFeatures>
     </ENV>
-
-    <SCALE>1</SCALE>
+    
+    <SCALE>2</SCALE>
+    <availableNodes>7</availableNodes>
 
     <GIT>
         <autopull>off</autopull>
@@ -21,22 +23,35 @@
         <port2>6633</port2>
         <ip3>10.128.5.53</ip3>
         <port3>6633</port3>
-    </CTRL>
+        <ip4>10.128.5.54</ip4>
+        <port4>6633</port4>
+        <ip5>10.128.5.65</ip5>
+        <port5>6633</port5>
+	    <ip6>10.128.5.66</ip6>
+        <port6>6633</port6>
+	    <ip7>10.128.5.67</ip7>
+        <port7>6633</port7>
+        </CTRL>
 
     <BENCH>
         <user>admin</user>
-        <ip1>10.128.5.55</ip1>
+        <ip1>localhost</ip1>
     </BENCH>
 
-    <TEST>                              #   duration =      time the test loop runs
-                                        #   log_interval =  how often the data is reported 
-                                        #   wait =          time between tests, used to let the averages run down 
-                                         
-    <metric1>topologyLinkEventRate</metric1>
-    <flickerRate>1</flickerRate>
-    <duration>600</duration>
-    <log_interval>30</log_interval>
-    <wait>30</wait>
+    <TEST>          #   duration =      time the test loop runs
+                    #   log_interval =  how often the data is reported 
+                    #   wait =          time between tests, used to let the averages run down 
+               
+        <flickerRates>1000,0,0,0,0,0,0</flickerRates>
+        <devicesPerNode>20,0,0,0,0,0,0</devicesPerNode>
+        <flickerRate>1000</flickerRate>
+        <linkgraphdif>.03</linkgraphdif>          # 0-1 indicated link/graph rate dif tolerance
+        <duration>120</duration>
+        <log_interval>15</log_interval>
+        <wait>60</wait>
+        <skipCleanInstall>yes</skipCleanInstall>
+        <MN>localhost</MN>
+	    <logFile>link_event_tp_results_LOG</logFile>
     </TEST>
 
     <JSON>

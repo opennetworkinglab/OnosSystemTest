@@ -5,7 +5,7 @@
 # cameron@onlab.us
 
 import sys
-import os
+import os.path
 
 
 class ScaleOutTemplate:
@@ -15,12 +15,13 @@ class ScaleOutTemplate:
 
     def CASE1( self, main ):            #This is the initialization case
                                         #this case will clean up all nodes 
-                                        #but only node 1 is started in this case
+        import time                     #but only node 1 is started in this case
         
         global clusterCount             #number of nodes running
         global ONOSIp                   #list of ONOS IP addresses 
         clusterCount = 1
         ONOSIp = [ 0 ]
+
 
         #Load values from params file
         checkoutBranch = main.params[ 'GIT' ][ 'checkout' ]
@@ -38,7 +39,22 @@ class ScaleOutTemplate:
         for i in range(1, maxNodes + 1): 
             ipString = 'ip' + str(i) 
             ONOSIp.append(main.params[ 'CTRL' ][ ipString ])   
-        
+
+        #############################
+        tempIp = [ ONOSIp[1],ONOSIp[2],ONOSIp[3],ONOSIp[4],ONOSIp[5]]
+        main.ONOSbench.createLinkGraphFile(BENCHIp, tempIp, str(7)) 
+
+        main.log.info("marker")
+        #############################
+
+
+        #kill off all onos processes 
+        main.log.step("Safety check, killing all ONOS processes")
+        main.log.step("before initiating enviornment setup")
+        for node in range(1, maxNodes + 1):
+            main.ONOSbench.onosDie(ONOSIp[node])
+
+
         #construct the cell file
         main.log.info("Creating cell file")
         exec "a = main.ONOSbench.createCellFile"
@@ -52,24 +68,25 @@ class ScaleOutTemplate:
         for i in range(1, maxNodes + 1):
             main.log.info(" Uninstalling ONOS " + str(i) )
             main.ONOSbench.onosUninstall( ONOSIp[i] )
-
-        #git 
-        main.step( "Git checkout and pull " + checkoutBranch )
-        if gitPull == 'on':
-            checkoutResult = main.ONOSbench.gitCheckout( checkoutBranch )
-            pullResult = main.ONOSbench.gitPull()
-
-        else:
-            checkoutResult = main.TRUE
-            pullResult = main.TRUE
-            main.log.info( "Skipped git checkout and pull" )
         
         #mvn clean install, for debugging set param 'skipCleanInstall' to yes to speed up test
         if skipMvn != "yes":
             mvnResult = main.ONOSbench.cleanInstall()
+                        
+            #git
+            main.step( "Git checkout and pull " + checkoutBranch )
+            if gitPull == 'on':
+                checkoutResult = main.ONOSbench.gitCheckout( checkoutBranch )
+                pullResult = main.ONOSbench.gitPull()
 
-        main.step( "Set cell for ONOS cli env" )
-        main.ONOS1cli.setCell( cellName )
+            else:
+                checkoutResult = main.TRUE
+                pullResult = main.TRUE
+                main.log.info( "Skipped git checkout and pull" )
+
+
+        #main.step( "Set cell for ONOS cli env" )
+        #main.ONOS1cli.setCell( cellName )
         
         main.step( "Creating ONOS package" )
         packageResult = main.ONOSbench.onosPackage()  
@@ -86,6 +103,7 @@ class ScaleOutTemplate:
         main.step( "Set cell for ONOS cli env" )
         cli1 = main.ONOS1cli.startOnosCli( ONOSIp[1] )
 
+        
     def CASE2( self, main ):
         # This case increases the cluster size by whatever scale is
         # Note: 'scale' is the size of the step
@@ -99,14 +117,18 @@ class ScaleOutTemplate:
         ''
         import time
         global clusterCount
-
+        
+        BENCHIp = main.params[ 'BENCH' ][ 'ip1' ]
         scale = int( main.params[ 'SCALE' ] )
         clusterCount += scale
 
         main.log.report( "Increasing cluster size to " + str( clusterCount ) )
         for node in range((clusterCount - scale) + 1, clusterCount + 1):
+            main.ONOSbench.onosDie(ONOSIp[node])
+            time.sleep(10)
             main.log.info("Starting ONOS " + str(node) + " at IP: " + ONOSIp[node])    
-            main.ONOSbench.onosInstall( ONOSIp[node])
+            main.ONOSbench.onosInstall( node=ONOSIp[node])
             exec "a = main.ONOS%scli.startOnosCli" %str(node)
             a(ONOSIp[node])
-      
+         
+

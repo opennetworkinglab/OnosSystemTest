@@ -163,7 +163,7 @@ class OnosCHO:
         utilities.assert_equals( expect=main.TRUE, actual=case1Result,
                                  onpass="Set up test environment PASS",
                                  onfail="Set up test environment FAIL" )
-
+        time.sleep(30)
     def CASE2( self, main ):
         """
         This test loads a Topology (ATT) on Mininet and balances all switches.
@@ -1170,40 +1170,13 @@ class OnosCHO:
         removeIntentCount = 0
         print "Current number of intents" , len(intentsList)
         if ( len( intentsList ) > 1 ):
-            for i in range( len( intentsList ) ):
-                intentsTemp = intentsList[ i ].split( ',' )
-                intentIdList.append( intentsTemp[ 0 ] )
-            print "Intent IDs: ", intentIdList
-            
             results = main.TRUE
-            time1 = time.time()
-            
-            for i in xrange(0,len( intentIdList ), int(main.numCtrls)):
-                pool = []
-                for cli in main.CLIs:
-                    if i >= len(intentIdList):
-                        break
-                    print "Removing intent id (round 1) :", intentIdList[ i ]
-                    t = main.Thread(target=cli.removeIntent,
-                            threadID=main.threadID,
-                            name="removeIntent",
-                            args=[intentIdList[i],'org.onosproject.cli',False,False])
-                    pool.append(t)
-                    t.start()
-                    i = i + 1
-                    main.threadID = main.threadID + 1
-                for t in pool:
-                    t.join()
-                    results = results and t.result
-                
-            time2 = time.time()
-            main.log.info("Time for feature:install onos-app-fwd: %2f seconds" %(time2-time1))
-
+            main.log.info("Removing intent...")
             while moreIntents:
                 removeIntentCount = removeIntentCount + 1
-                main.log.info(
-                    "Verify all intents are removed and if any leftovers try remove one more time" )
                 intentsList1 = main.ONOScli1.getAllIntentIds()
+                if len( intentsList1 ) == 0:
+                    break
                 ansi_escape = re.compile( r'\x1b[^m]*m' )
                 intentsList1 = ansi_escape.sub( '', intentsList1 )
                 intentsList1 = intentsList1.replace(
@@ -1214,16 +1187,12 @@ class OnosCHO:
                     "\r\r",
                     "" )
                 intentsList1 = intentsList1.splitlines()
-                intentsList1 = intentsList1[ 1: ] 
-                if ( len( intentsList1 ) > 1 ):
-                    moreIntents = main.TRUE
-                else:
-                    moreIntents = main.FALSE
-                time.sleep(10)
-                print "Round %d (leftover) intents to remove: " %(removeIntentCount)
+                intentsList1 = intentsList1[ 1: ]
+                print "Round %d intents to remove: " %(removeIntentCount)
                 print intentsList1
                 intentIdList1 = []
                 if ( len( intentsList1 ) > 1 ):
+                    moreIntents = main.TRUE
                     for i in range( len( intentsList1 ) ):
                         intentsTemp1 = intentsList1[ i ].split( ',' )
                         intentIdList1.append( intentsTemp1[ 0 ].split('=')[1] )
@@ -1233,29 +1202,11 @@ class OnosCHO:
                     for intent in intentIdList1:
                         results = main.CLIs[0].removeIntent(intent,'org.onosproject.cli',True,False) and results
                 else:
+                    moreIntents = main.FALSE
                     break
                 if removeIntentCount == 5:
                     break
                 
-                """
-                for i in xrange(0, len( intentIdList1 ), int(main.numCtrls)):
-                    pool = []
-                    for cli in main.CLIs:
-                        if i >= len(intentIdList1):
-                            break
-                        print "Removing intent id (round 2) :", intentIdList1[ i ]
-                        t = main.Thread(target=cli.removeIntent,threadID=main.threadID,
-                                name="removeIntent",
-                                args=[intentIdList1[i],'org.onosproject.cli',True,False])
-                        pool.append(t)
-                        t.start()
-                        i = i + 1
-                        main.threadID = main.threadID + 1
-                        
-                    for t in pool:
-                        t.join()
-                        results = results and t.result
-                """
             else:
                 print "There are no more intents that need to be removed"
                 step1Result = main.TRUE
@@ -1264,7 +1215,7 @@ class OnosCHO:
             step1Result = main.FALSE
 
         print main.ONOScli1.intents()
-        time.sleep(300)
+        # time.sleep(300)
         caseResult10 = step1Result
         utilities.assert_equals( expect=main.TRUE, actual=caseResult10,
                                  onpass="Intent removal test successful",

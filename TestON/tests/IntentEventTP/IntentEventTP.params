@@ -1,0 +1,66 @@
+<PARAMS>
+
+    <testcases>1,3,2,3,2,3,2,3</testcases>
+    
+    <debugMode></debugMode>  #nothing means false 
+
+    <ENV>
+    <cellName>intentTP</cellName>
+    <cellFeatures>"webconsole,onos-core,onos-api,onos-cli,onos-null,onos-gui,onos-rest,onos-app-metrics,onos-app-metrics-intent,onos-app-metrics-topology"</cellFeatures>
+    </ENV>
+
+    <SCALE>2</SCALE>
+    <availableNodes>7</availableNodes>
+
+    <GIT>
+        <autopull>off</autopull>
+        <checkout>master</checkout>
+    </GIT>
+
+    <CTRL> 
+        <USER>admin</USER>
+
+        <ip1>10.128.5.51</ip1>
+        <port1>6633</port1>
+
+        <ip2>10.128.5.52</ip2>
+        <port2>6633</port2>
+
+        <ip3>10.128.5.53</ip3>
+        <port3>6633</port3>
+
+        <ip4>10.128.5.54</ip4>
+        <port4>6633</port4>
+
+        <ip5>10.128.5.65</ip5>
+        <port5>6633</port5>
+
+        <ip6>10.128.5.66</ip6>
+        <port6>6633</port6>
+
+         <ip7>10.128.5.67</ip7>
+        <port7>6633</port7> 
+    </CTRL>
+
+    <MN><ip1>10.128.5.55</ip1></MN>
+
+    <BENCH>
+        <user>admin</user>
+        <ip1>10.128.5.55</ip1>
+    </BENCH>
+
+    <TEST> 
+        <loadFrom>1,0,0,0,0,0,0</loadFrom>                                     #generate load on server, 1 = generator on 
+        <numSwitches>35</numSwitches>
+        <skipCleanInstall>yes</skipCleanInstall>
+        <duration>60</duration>
+        <log_interval>5</log_interval>                            
+    </TEST>
+
+    <METRICS>
+        <intents_rate>intents-events-metrics|grep "Intent Installed Events"|cut -d ' ' -f7</intents_rate>
+        <intents_withdrawn>intents-events-metrics|grep "Intent Withdrawn Events"|cut -d ' ' -f7</intents_withdrawn>
+        <intents_failed>intents-events-metrics|grep "Intent Failed Events"|cut -d ' ' -f7</intents_failed>
+    </METRICS>
+
+</PARAMS>

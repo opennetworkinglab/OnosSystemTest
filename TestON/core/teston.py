@@ -90,7 +90,7 @@ class TestON:
         self.logs_path = logs_path
         self.driver = ''
         self.Thread = Thread
-
+        
         self.configparser()
         verifyOptions(options)
         load_logger()
@@ -242,8 +242,9 @@ class TestON:
                 exec code[testCaseNumber][step] in module.__dict__
                 self.stepCount = self.stepCount + 1
             except TypeError,e:
-                print "Exception in the following section of code:"
-                print code[testCaseNumber][step]
+                print "Exception in the following section of code: Test Step " +\
+                      str(testCaseNumber) + "." + str(step) + " ):"
+                #print code[testCaseNumber][step]
                 self.stepCount = self.stepCount + 1
                 self.log.exception(e)
             return main.TRUE
@@ -493,7 +494,7 @@ class TestON:
                 
 
                 
-            #response_table = response_table + '\t'.join(response_dict.values())
+            # response_table = response_table + '\t'.join(response_dict.values())
                 
             return response_table
         
@@ -537,7 +538,7 @@ def verifyOptions(options):
     import pprint
     pp = pprint.PrettyPrinter(indent=4)
 
-    #pp.pprint(options)
+    # pp.pprint(options)
     verifyTest(options)
     verifyExample(options)
     verifyTestScript(options)
@@ -566,7 +567,7 @@ def verifyExample(options):
         main.classPath = "examples."+main.TEST+"."+main.TEST
                
 def verifyLogdir(options):
-    #Verifying Log directory option
+    # Verifying Log directory option
     if options.logdir:
         main.logdir = options.logdir
     else :
@@ -582,10 +583,10 @@ def verifyMail(options):
         main.mail = 'paxweb@paxterrasolutions.com'
 
 def verifyTestCases(options):
-    #Getting Test cases list
+    # Getting Test cases list
     if options.testcases:
         testcases_list = options.testcases
-        #sys.exit()
+        # sys.exit()
         testcases_list = re.sub("(\[|\])", "", options.testcases)
         main.testcases_list = eval(testcases_list+",")
     else :

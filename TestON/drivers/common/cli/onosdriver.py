@@ -42,7 +42,7 @@ class OnosDriver( CLI ):
         try:
             for key in connectargs:
                 vars( self )[ key ] = connectargs[ key ]
-            self.home = "~/ONOS"
+            self.home = "~/onos"
             for key in self.options:
                 if key == "home":
                     self.home = self.options[ 'home' ]
@@ -587,12 +587,12 @@ class OnosDriver( CLI ):
                 # Expect the cellname in the ONOSCELL variable.
                 # Note that this variable name is subject to change
                 #   and that this driver will have to change accordingly
-                self.handle.expect( "ONOS_CELL" )
+                self.handle.expect(str(cellname))
                 handleBefore = self.handle.before
                 handleAfter = self.handle.after
                 # Get the rest of the handle
-                self.handle.sendline( "" )
-                self.handle.expect( "\$" )
+                self.handle.sendline("")
+                self.handle.expect("\$")
                 handleMore = self.handle.before
 
                 main.log.info( "Cell call returned: " + handleBefore +
@@ -633,8 +633,10 @@ class OnosDriver( CLI ):
                            handleAfter + handleMore )
 
             return main.TRUE
-        except pexpect.EOF:
-            main.log.error( self.name + ": EOF exception found" )
+        except pexpect.ExceptionPexpect as e:
+            main.log.error( self.name + ": Pexpect exception found of type " +
+                            str( type( e ) ) )
+            main.log.error ( e.get_trace() )
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
@@ -1001,18 +1003,18 @@ class OnosDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def isup( self, node="" ):
+    def isup(self, node = "", timeout = 120):
         """
         Run's onos-wait-for-start which only returns once ONOS is at run
-        level 100( ready for use )
+        level 100(ready for use)
 
         Returns: main.TRUE if ONOS is running and main.FALSE on timeout
         """
         try:
-            self.handle.sendline( "onos-wait-for-start " + node )
-            self.handle.expect( "onos-wait-for-start" )
+            self.handle.sendline("onos-wait-for-start " + node )
+            self.handle.expect("onos-wait-for-start")
             # NOTE: this timeout is arbitrary"
-            i = self.handle.expect( [ "\$", pexpect.TIMEOUT ], timeout=120 )
+            i = self.handle.expect(["\$", pexpect.TIMEOUT], timeout)
             if i == 0:
                 main.log.info( self.name + ": " + node + " is up" )
                 return main.TRUE
@@ -1439,8 +1441,6 @@ class OnosDriver( CLI ):
                 return main.TRUE
             elif i == 1:
                 main.log.info( "ONOS is stopped" )
-                return main.FALSE
-            else:
                 main.log.error( "ONOS service failed to check the status" )
                 main.cleanup()
                 main.exit()
@@ -1454,8 +1454,8 @@ class OnosDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def setIpTables( self, ip, port='', action='add', packet_type='tcp',
-                     direction='INPUT', rule='DROP' ):
+    def setIpTables( self, ip, port='', action='add', packet_type='',
+                     direction='INPUT', rule='DROP', states=True ):
         """
         Description:
             add or remove iptables rule to DROP (default) packets from
@@ -1469,6 +1469,8 @@ class OnosDriver( CLI ):
         * optional packet type to block (default tcp)
         * optional iptables rule (default DROP)
         * optional direction to block (default 'INPUT')
+        * States boolean toggles adding all supported tcp states to the
+          firewall rule
         Returns:
             main.TRUE on success or
             main.FALSE if given invalid input or
@@ -1489,7 +1491,7 @@ class OnosDriver( CLI ):
         #       registered to the instance. If you are calling this function
         #       multiple times this sleep will prevent any errors.
         #       DO NOT REMOVE
-        time.sleep( 5 )
+        # time.sleep( 5 )
         try:
             # input validation
             action_type = action.lower()
@@ -1519,10 +1521,16 @@ class OnosDriver( CLI ):
             self.handle.expect( "\$" )
             cmd = "sudo iptables " + actionFlag + " " +\
                   direction +\
-                  " -p " + str( packet_type ) +\
                   " -s " + str( ip )
+                  # " -p " + str( packet_type ) +\
+            if packet_type:
+                cmd += " -p " + str( packet_type )
             if port:
                 cmd += " --dport " + str( port )
+            if states:
+                cmd += " -m state --state="
+                #FIXME- Allow user to configure which states to block
+                cmd += "INVALID,ESTABLISHED,NEW,RELATED,UNTRACKED"
             cmd += " -j " + str( rule )
 
             self.handle.sendline( cmd )
@@ -1597,4 +1605,174 @@ class OnosDriver( CLI ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
+
+    def createLinkGraphFile( self, benchIp, ONOSIpList, deviceCount):
+        '''
+            Create/formats the LinkGraph.cfg file based on arguments 
+                -only creates a linear topology and connects islands 
+                -evenly distributes devices 
+                -must be called by ONOSbench
+
+                ONOSIpList - list of all of the node IPs to be used 
+                
+                deviceCount - number of switches to be assigned 
+        '''
+        main.log.step("Creating link graph configuration file." )
+        linkGraphPath = self.home + "/tools/package/etc/linkGraph.cfg"
+        tempFile = "/tmp/linkGraph.cfg"        
+
+        linkGraph = open(tempFile, 'w+')
+        linkGraph.write("# NullLinkProvider topology description (config file).\n")
+        linkGraph.write("# The NodeId is only added if the destination is another node's device.\n")
+        linkGraph.write("# Bugs: Comments cannot be appended to a line to be read.\n")
+        
+        clusterCount = len(ONOSIpList)
+        
+        if type(deviceCount) is int or type(deviceCount) is str: 
+            deviceCount = int(deviceCount)
+            switchList = [0]*(clusterCount+1)
+            baselineSwitchCount = deviceCount/clusterCount
+        
+            for node in range(1, clusterCount + 1):
+                switchList[node] = baselineSwitchCount
+
+            for node in range(1, (deviceCount%clusterCount)+1):
+                switchList[node] += 1
+        
+        if type(deviceCount) is list:
+            main.log.info("Using provided device distribution")
+            switchList = [0]
+            for i in deviceCount:
+                switchList.append(int(i))
+
+        tempList = ['0']
+        tempList.extend(ONOSIpList)
+        ONOSIpList = tempList
+
+        myPort = 6
+        lastSwitch = 0
+        for node in range(1, clusterCount+1):
+            if switchList[node] == 0:
+                continue
+
+            linkGraph.write("graph " + ONOSIpList[node] + " {\n")
+            
+            if node > 1:
+                #connect to last device on previous node
+                line = ("\t0:5 -> " + str(lastSwitch) + ":6:" + lastIp + "\n")     #ONOSIpList[node-1]  
+                linkGraph.write(line)            
+               
+            lastSwitch = 0 
+            for switch in range (0, switchList[node]-1):    
+                line = ""
+                line = ("\t" + str(switch) + ":" + str(myPort))
+                line += " -- "
+                line += (str(switch+1) + ":" + str(myPort-1) + "\n")
+                linkGraph.write(line)
+                lastSwitch = switch+1 
+            lastIp = ONOSIpList[node]
+                
+            #lastSwitch += 1
+            if node < (clusterCount): 
+                #connect to first device on the next node
+                line = ("\t" + str(lastSwitch) + ":6 -> 0:5:" + ONOSIpList[node+1] + "\n")             
+                linkGraph.write(line)
+                
+            linkGraph.write("}\n")
+        linkGraph.close()
+
+        #SCP
+        os.system( "scp " + tempFile + " admin@" + benchIp + ":" + linkGraphPath)        
+        main.log.info("linkGraph.cfg creation complete")
+
+    def createNullDevProviderFile( self, benchIp, ONOSIpList, deviceCount, numPorts=10):
+        
+        '''
+            benchIp = Ip address of the test bench 
+            ONOSIpList = list of Ip addresses of nodes switches will be devided amongst 
+            deviceCount = number of switches to distribute 
+            numPorts = number of ports per device, when not specified in file it defaults to 10, optional arg
+        '''
+
+        main.log.step("Creating null device provider configuration file." )
+        nullDevicePath = self.home + "/tools/package/etc/org.onosproject.provider.nil.device.impl.NullDeviceProvider.cfg"
+        tempFile = "/tmp/org.onosproject.provider.nil.device.impl.NullDeviceProvider.cfg"
+        configFile = open(tempFile, 'w+')
+        clusterCount = len(ONOSIpList)
+
+        if type(deviceCount) is int or type(deviceCount) is str:
+            main.log.info("Creating device distribution")
+            deviceCount = int(deviceCount)
+            switchList = [0]*(clusterCount+1)
+            baselineSwitchCount = deviceCount/clusterCount
+
+            for node in range(1, clusterCount + 1):
+                switchList[node] = baselineSwitchCount
+
+            for node in range(1, (deviceCount%clusterCount)+1):
+                switchList[node] += 1
+
+        if type(deviceCount) is list: 
+            main.log.info("Using provided device distribution") 
+            switchList = ['0']
+            switchList.extend(deviceCount)
+
+        ONOSIp = [0]
+        ONOSIp.extend(ONOSIpList)
+ 
+        devicesString  = "devConfigs = "
+        for node in range(1, len(ONOSIp)):
+            devicesString += (ONOSIp[node] + ":" + str(switchList[node] ))
+            if node < clusterCount:
+                devicesString += (",")
+
+        configFile.write(devicesString + "\n")
+        if numPorts == 10:
+            configFile.write("#numPorts = 10")
+        else: 
+            configFile.write("numPorts = " + str(numPorts))
+
+        configFile.close()        
+        os.system( "scp " + tempFile + " admin@" + benchIp + ":" + nullDevicePath)
+
+    def createNullLinkProviderFile( self, benchIp, neighborIpList=0, eventRate=0, onNode=False): 
+        '''
+                neighbor list is an optional list of neighbors to be written directly to the file
+                onNode - bool, if true, alternate file path will be used to scp, inteneded
+                        for use on cell
+        '''
+
+        main.log.step("Creating Null Link Provider config file")
+        nullLinkPath = self.home + "/tools/package/etc/org.onosproject.provider.nil.link.impl.NullLinkProvider.cfg"
+        if onNode == True: 
+            nullLinkPath = "/opt/onos/apache-karaf-3.0.2/etc/org.onosproject.provider.nil.link.impl.NullLinkProvider.cfg"
+        tempFile = "/tmp/org.onosproject.provider.nil.link.impl.NullLinkProvider.cfg"
+        configFile = open(tempFile, 'w+')
+    
+        eventRate = int(eventRate)
+
+        if eventRate == 0: 
+            configFile.write("#eventRate = \n")
+        else: 
+            configFile.write("eventRate = " + str(eventRate) + "\n") 
+
+        configFile.write("#cfgFile = /tmp/foo.cfg        #If enabled, points to the full path to the topology file.\n") 
+        
+        if neighborIpList != 0:
+            configFile.write("neighbors = ")
+            for n in range (0, len(neighborIpList)):
+                configFile.write(neighborIpList[n])
+                if n < (len(neighborIpList) - 1):
+                    configFile.write(",")            
+        else: 
+            configFile.write("#neighbors = ") 
+        
+        configFile.close()
+        if onNode == False:
+            os.system( "scp " + tempFile + " admin@" + benchIp + ":" + nullLinkPath)
+        if onNode == True:
+            os.system( "scp " + tempFile + " sdn@" + benchIp + ":" + nullLinkPath)
+        
+
+
 

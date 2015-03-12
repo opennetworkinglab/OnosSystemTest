@@ -249,8 +249,10 @@ class OnosCHO:
         main.step( "Collect and store current number of switches and links" )
         topology_output = main.ONOScli1.topology()
         topology_result = main.ONOSbench.getTopology( topology_output )
-        numOnosDevices = topology_result[ 'devices' ]
-        numOnosLinks = topology_result[ 'links' ]
+        numOnosDevices = topology_result[ 'deviceCount' ]
+        numOnosLinks = topology_result[ 'linkCount' ]
+        print numOnosDevices
+        print numOnosLinks
 
         if ( ( main.numMNswitches == int(numOnosDevices) ) and ( main.numMNlinks >= int(numOnosLinks) ) ):
             main.step( "Store Device DPIDs" )
@@ -529,7 +531,7 @@ class OnosCHO:
         main.log.report( "Add 300 host intents and verify pingall" )
         main.log.report( "_______________________________________" )
         import itertools
-        
+        import time
         main.case( "Install 300 host intents" )
         main.step( "Add host Intents" )
         intentResult = main.TRUE
@@ -547,6 +549,7 @@ class OnosCHO:
                         name="addHostIntent",
                         args=[hostCombos[i][0],hostCombos[i][1]])
                 pool.append(t)
+                time.sleep(1)
                 t.start()
                 i = i + 1
                 main.threadID = main.threadID + 1
@@ -560,7 +563,7 @@ class OnosCHO:
         getIntentStateResult = main.ONOScli1.getIntentState(intentsId = intentIdList,
                 intentsJson = intentsJson)
         print getIntentStateResult
-
+        time.sleep(30)
         main.step( "Verify Ping across all hosts" )
         pingResult = main.FALSE
         time1 = time.time()
@@ -1201,6 +1204,9 @@ class OnosCHO:
                     for intent in intentIdList1:
                         main.CLIs[0].removeIntent(intent,'org.onosproject.cli',True,False)
                 else:
+                    time.sleep(15)
+                    if len(main.ONOScli1.intents()):
+                        continue
                     break
                 if removeIntentCount == 5:
                     break
@@ -1319,7 +1325,6 @@ class OnosCHO:
         import re
         import time
         import copy
-        
 
         Thread = imp.load_source('Thread','/home/admin/ONLabTest/TestON/tests/OnosCHO/Thread.py')
         newTopo = main.params['TOPO2']['topo']
@@ -1327,6 +1332,8 @@ class OnosCHO:
         main.numMNlinks = int ( main.params[ 'TOPO2' ][ 'numLinks' ] )
         main.numMNhosts = int ( main.params[ 'TOPO2' ][ 'numHosts' ] )
         main.pingTimeout = 60
+        
+        time.sleep(60)
         main.log.report(
             "Load Chordal topology and Balance all Mininet switches across controllers" )
         main.log.report(
@@ -1451,6 +1458,8 @@ class OnosCHO:
         main.numMNlinks = int ( main.params[ 'TOPO3' ][ 'numLinks' ] )
         main.numMNhosts = int ( main.params[ 'TOPO3' ][ 'numHosts' ] )
         main.pingTimeout = 600
+        
+        time.sleep(60)
         main.log.report(
             "Load Spine and Leaf topology and Balance all Mininet switches across controllers" )
         main.log.report(

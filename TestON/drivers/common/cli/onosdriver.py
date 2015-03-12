@@ -1097,39 +1097,16 @@ class OnosDriver( CLI ):
 
     def getTopology( self, topologyOutput ):
         """
-        parses the onos:topology output
-        Returns: a topology dict populated by the key values found in
-                 the cli command.
+        Definition:
+            Loads a json topology output
+        Return:
+            topology = current ONOS topology
         """
+        import json
         try:
-            # call the cli to get the topology summary
-            # cmdstr = "onos:topology"
-            # cliResult = self.onosCli( ip, cmdstr )
-            # print "cli_result = ", cliResult
-
-            # Parse the output
-            topology = {}
-            # for line in cliResult.split( "\n" ):
-            for line in topologyOutput.splitlines():
-                if not line.startswith( "time=" ):
-                    continue
-                # else
-                # print line
-                for var in line.split( "," ):
-                    # print "'"+var+"'"
-                    # print "'"+var.strip()+"'"
-                    key, value = var.strip().split( "=" )
-                    topology[ key ] = value
-            # print "topology = ", topology
-            # devices = topology.get( 'devices', False )
-            # print "devices = ", devices
-            # links = topology.get( 'links', False )
-            # print "links = ", links
-            # SCCs = topology.get( 'SCC(s)', False )
-            # print "SCCs = ", SCCs
-            # paths = topology.get( 'paths', False )
-            # print "paths = ", paths
-
+            # either onos:topology or 'topology' will work in CLI
+            topology = json.loads(topologyOutput)
+            print topology
             return topology
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
@@ -1171,8 +1148,8 @@ class OnosDriver( CLI ):
                 return main.ERROR
             output = ""
             # Is the number of switches is what we expected
-            devices = topology.get( 'devices', False )
-            links = topology.get( 'links', False )
+            devices = topology.get( 'deviceCount', False )
+            links = topology.get( 'linkCount', False )
             if not devices or not links:
                 return main.ERROR
             switchCheck = ( int( devices ) == int( numoswitch ) )

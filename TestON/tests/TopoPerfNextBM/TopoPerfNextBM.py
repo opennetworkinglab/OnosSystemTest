@@ -1164,22 +1164,12 @@ class TopoPerfNextBM:
         main.step( "Packaging cell definition" )
         main.ONOSbench.onosPackage()
 
-        #for node in range( 1, clusterCount + 1 ):
-        #    main.log.info( "Starting ONOS " +str(node)+ " at IP: "+
-        #                    main.params[ 'CTRL' ][ 'ip'+str(node) ] )
-            # Concurrently install onos to avoid election timeouts
-        #    os.system("onos-install -f "+main.params[ 'CTRL' ][ 'ip'+str(node) ]+" &" )
-       
-        #time.sleep( 30 )
-
         for node in range( 1, clusterCount + 1 ):
-            main.ONOSbench.onosInstall(node = main.params[ 'CTRL' ][ 'ip'+str(node) ])
-            time.sleep(10)
-            exec "a = main.ONOS%scli.startOnosCli" %str(node)
-            a(main.params[ 'CTRL' ][ 'ip'+str(node) ])
-
-        time.sleep(20)
-
+            main.ONOSbench.onosInstall(
+                    node = main.params[ 'CTRL' ][ 'ip'+str(node) ])
+        
+        time.sleep( 20 )
+        
         for node in range( 1, clusterCount + 1):
             for i in range( 2 ):
                 isup = main.ONOSbench.isup( 
@@ -1189,3 +1179,8 @@ class TopoPerfNextBM:
                     break
             if not isup:
                 main.log.error( "ONOS "+str(node) + " did not start" )
+
+        for node in range( 1, clusterCount + 1):
+            exec "a = main.ONOS%scli.startOnosCli" %str(node)
+            a(main.params[ 'CTRL' ][ 'ip'+str(node) ])
+

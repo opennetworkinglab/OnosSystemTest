@@ -427,14 +427,17 @@ class OnosCliDriver( CLI ):
 
     def topology( self ):
         """
-        Shows the current state of the topology
-        by issuing command: 'onos> onos:topology'
+        Definition:
+            Returns the ouput of topology command.
+        Return:
+            topology = current ONOS topology
         """
+        import json
         try:
             # either onos:topology or 'topology' will work in CLI
-            cmdStr = "onos:topology"
+            cmdStr = "topology -j"
             handle = self.sendline( cmdStr )
-            main.log.info( "onos:topology returned: " + str( handle ) )
+            main.log.info( "topology -j returned: " + str( handle ) )
             return handle
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )

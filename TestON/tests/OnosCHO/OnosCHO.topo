@@ -2,18 +2,16 @@
     <COMPONENT>
 
         <ONOSbench>
-            <host>10.128.10.20</host>
+            <host>10.128.40.40</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>OnosDriver</type>
             <connect_order>1</connect_order>
-            <COMPONENTS>
-                <home>~/onos</home>
-            </COMPONENTS>
+            <COMPONENTS> </COMPONENTS>
         </ONOSbench>
 
         <ONOScli1>
-            <host>10.128.10.20</host>
+            <host>10.128.40.40</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>OnosCliDriver</type>
@@ -22,7 +20,7 @@
         </ONOScli1>
 
 	 <ONOScli2>
-            <host>10.128.10.20</host>
+            <host>10.128.40.40</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>OnosCliDriver</type>
@@ -31,7 +29,7 @@
         </ONOScli2>
 
 	 <ONOScli3>
-            <host>10.128.10.20</host>
+            <host>10.128.40.40</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>OnosCliDriver</type>
@@ -40,7 +38,7 @@
         </ONOScli3>
 
         <ONOScli4>
-            <host>10.128.10.20</host>
+            <host>10.128.40.40</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>OnosCliDriver</type>
@@ -49,7 +47,7 @@
         </ONOScli4>
 
 	 <ONOScli5>
-            <host>10.128.10.20</host>
+            <host>10.128.40.40</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>OnosCliDriver</type>
@@ -58,7 +56,7 @@
         </ONOScli5>
 	
         <ONOS1>
-            <host>10.128.10.21</host>
+            <host>10.128.40.41</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>OnosCliDriver</type>
@@ -67,7 +65,7 @@
         </ONOS1>
 
 	<ONOS2>
-            <host>10.128.10.22</host>
+            <host>10.128.40.42</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>OnosCliDriver</type>
@@ -76,7 +74,7 @@
         </ONOS2>
 	
 	<ONOS3>
-            <host>10.128.10.23</host>
+            <host>10.128.40.43</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>OnosCliDriver</type>
@@ -85,7 +83,7 @@
         </ONOS3>
 
         <ONOS4>
-            <host>10.128.10.24</host>
+            <host>10.128.40.44</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>OnosCliDriver</type>
@@ -94,7 +92,7 @@
         </ONOS4>
 
 	<ONOS5>
-            <host>10.128.10.25</host>
+            <host>10.128.40.45</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>OnosCliDriver</type>
@@ -103,7 +101,7 @@
         </ONOS5>
 	
         <Mininet1>
-            <host>10.128.10.20</host>
+            <host>10.128.40.50</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>MininetCliDriver</type>
@@ -118,7 +116,7 @@
         </Mininet1>
 
         <Mininet2>
-            <host>10.128.10.20</host>
+            <host>10.128.40.50</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>RemoteMininetDriver</type>

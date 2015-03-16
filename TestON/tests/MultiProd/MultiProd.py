@@ -637,8 +637,8 @@ class MultiProd:
         main.step( "Determine the current number of switches and links" )
         topologyOutput = main.ONOScli1.topology()
         topologyResult = main.ONOSbench.getTopology( topologyOutput )
-        activeSwitches = topologyResult[ 'devices' ]
-        links = topologyResult[ 'links' ]
+        activeSwitches = topologyResult[ 'devicesCount' ]
+        links = topologyResult[ 'linkCount' ]
         print "activeSwitches = ", type( activeSwitches )
         print "links = ", type( links )
         main.log.info(

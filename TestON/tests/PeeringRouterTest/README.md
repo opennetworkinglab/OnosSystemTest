@@ -6,10 +6,12 @@
 a) CASE4 - Basic Route advertisement and connectivity in untagged network
 b) CASE5 - Basic Route advertisement and connectivity in tagged network
 c) CASE7 - Scale test with 25k routes
-d) CASE21 - Route convergence due to bgp peering session flapping in untagged network
-e) CASE22 - Basic Route advertisement and connectivity in untagged network with Route server
-f) CASE31 - Route convergence due to bgp peering session flapping in tagged network
-g) CASE32 - Basic Route advertisement and connectivity in tagged network with Route server
+d) CASE8 - Flap a route 20 times with 100 msec interval
+e) CASE9 - Flap a next-hop 20 times with 100 msec interval
+f) CASE21 - Route convergence due to bgp peering session flapping in untagged network
+g) CASE22 - Basic Route advertisement and connectivity in untagged network with Route server
+h) CASE31 - Route convergence due to bgp peering session flapping in tagged network
+i) CASE32 - Basic Route advertisement and connectivity in tagged network with Route server
 
 3) Before running the testcases, ensure quagga is installed on the machine:
 a) "sudo apt-get install quagga"

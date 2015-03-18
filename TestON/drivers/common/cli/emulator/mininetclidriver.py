@@ -1275,7 +1275,7 @@ class MininetCliDriver( Emulator ):
             main.log.error( "Connection failed to the host" )
         return response
 
-    def stopNet( self, timeout=5):
+    def stopNet( self, fileName = "", timeout=5):
         """
         Stops mininet.
         Returns main.TRUE if the mininet successfully stops and
@@ -1304,7 +1304,7 @@ class MininetCliDriver( Emulator ):
                 main.log.info( self.name + ": Stopped")
                 self.handle.sendline( "sudo mn -c" )
                 response = main.TRUE
-
+                
                 if i == 1:
                     main.log.info( " Mininet trying to exit while not " +
                                    "in the mininet prompt" )
@@ -1314,6 +1314,10 @@ class MininetCliDriver( Emulator ):
                     main.log.error( "Something went wrong exiting mininet " +
                                     "TIMEOUT" )
                 
+                if fileName:
+                    self.handle.sendline("")
+                    self.handle.expect('\$')
+                    self.handle.sendline("sudo kill -9 \`ps -ef | grep \""+ fileName +"\" | grep -v grep | awk '{print $2}'\`")
             except pexpect.EOF:
                 main.log.error( self.name + ": EOF exception found" )
                 main.log.error( self.name + ":     " + self.handle.before )

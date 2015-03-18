@@ -7,7 +7,9 @@
             <password>onos_test</password>
             <type>OnosDriver</type>
             <connect_order>1</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <home> ~/ONOS</home>
+            </COMPONENTS>
         </ONOSbench>
 
         <ONOScli1>

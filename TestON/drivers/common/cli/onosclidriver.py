@@ -508,6 +508,31 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
+    def deviceRemove( self, deviceId ):
+        """
+        Removes particular device from storage
+
+        TODO: refactor this function
+        """
+        try:
+            cmdStr = "device-remove "+str(deviceId)
+            handle = self.sendline( cmdStr )
+            return main.TRUE
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+        
+
+
     def devices( self, jsonFormat=True ):
         """
         Lists all infrastructure devices or switches
@@ -1597,7 +1622,11 @@ class OnosCliDriver( CLI ):
             else:
                 cmdStr = "topology-events-metrics"
                 handle = self.sendline( cmdStr )
-            return handle
+            if handle:
+                return handle
+            else:
+                # Return empty json 
+                return '{}'
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
             return None

@@ -768,16 +768,22 @@ class ProdFunc13:
 
     def CASE12( self ):
         """
-        Verify the default flows on each switch
+        Verify the default flows on each switch in proactive mode
         """
+        main.log.report( "This testcase is verifying num of default" +
+                         " flows on each switch" )
+        main.log.report( "__________________________________" )
+        main.case( "Verify num of default flows on each switch" )
+        main.step( "Obtaining the device id's and flowrule count on them" )
+
         case12Result = main.TRUE
         idList = main.ONOS2.getAllDevicesId()
         for id in idList:
-            count = main.ONOS2.FlowStateCount( id )
-            print "count = ", count
-            if count != 5:
+            count = main.ONOS2.FlowAddedCount( id )
+            main.log.info("count = " +count)
+            if int(count) != 3:
                 case12Result = main.FALSE
-        
+                break
         utilities.assert_equals(
             expect=main.TRUE,
             actual=case12Result,
@@ -1070,8 +1076,8 @@ class ProdFunc13:
         main.step( "Determine the current number of switches and links" )
         topologyOutput = main.ONOS2.topology()
         topologyResult = main.ONOS1.getTopology( topologyOutput )
-        activeSwitches = topologyResult[ 'devices' ]
-        links = topologyResult[ 'links' ]
+        activeSwitches = topologyResult[ 'deviceCount' ]
+        links = topologyResult[ 'linkCount' ]
         print "activeSwitches = ", type( activeSwitches )
         print "links = ", type( links )
         main.log.info(

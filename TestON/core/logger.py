@@ -115,8 +115,8 @@ class Logger:
         #### Add log-level - Report
         logging.addLevelName(9, "REPORT")
         logging.addLevelName(7, "EXACT")
-        logging.addLevelName(10, "CASE")
-        logging.addLevelName(11, "STEP")
+        logging.addLevelName(11, "CASE")
+        logging.addLevelName(12, "STEP")
         main.log = logging.getLogger(main.TEST)
         def report (msg):
             '''
@@ -183,13 +183,42 @@ class Logger:
 
         ### initializing logging module and settig log level
         main.log.setLevel(logging.INFO)
+        main.log.setLevel(logging.DEBUG) # Temporary
         main.LogFileHandler.setLevel(logging.INFO)
        
         # create console handler with a higher log level
         main.ConsoleHandler = logging.StreamHandler()
         main.ConsoleHandler.setLevel(logging.INFO)
+        main.ConsoleHandler.setLevel(logging.DEBUG) #Temporary
         # create formatter and add it to the handlers
-        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        #formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        class MyFormatter( logging.Formatter ):
+            colors = { 'cyan': '\033[96m', 'purple': '\033[95m',
+                       'blue': '\033[94m', 'green': '\033[92m',
+                       'yellow': '\033[93m', 'red': '\033[91m',
+                       'end': '\033[0m' }
+
+            FORMATS = {'DEFAULT': '%(asctime)s - %(name)s - %(levelname)s - %(message)s'}
+            if COLORS:  # NOTE:colors will only be loaded if command is run from one line
+                        #      IE:   './cli.py run testname'
+                        #      This is to prevent issues with Jenkins parsing
+                        # TODO: Make colors configurable
+                levels = { logging.ERROR : colors['red'] +
+                                           FORMATS['DEFAULT'] +
+                                           colors['end'],
+                           logging.WARN : colors['yellow'] +
+                                          FORMATS['DEFAULT'] +
+                                          colors['end'],
+                           logging.DEBUG : colors['purple'] +
+                                          FORMATS['DEFAULT'] +
+                                          colors['end'] }
+                FORMATS.update( levels )
+
+            def format( self, record ):
+                self._fmt = self.FORMATS.get( record.levelno,
+                                              self.FORMATS[ 'DEFAULT' ] )
+                return logging.Formatter.format( self, record )
+        formatter = MyFormatter()
         main.ConsoleHandler.setFormatter(formatter)
         main.LogFileHandler.setFormatter(formatter)
 

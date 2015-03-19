@@ -48,11 +48,12 @@ import pprint
 dump = pprint.PrettyPrinter(indent=4)
 __builtin__.testthread = False
 introduction = "TestON is the testing framework \nDeveloped by Paxterra Solutions (www.paxterrasolutions.com)"
+__builtin__.COLORS = False
 
 path = re.sub("teston$", "", os.getcwd())
 sys.path.append(path+"/Core")
 sys.path.append("../")
-from core.teston import * 
+from core.teston import *
 
 class CLI( threading.Thread,Cmd,object ):
     "command-line interface to execute the test."
@@ -61,7 +62,7 @@ class CLI( threading.Thread,Cmd,object ):
 
     def __init__( self, teston, stdin=sys.stdin ):
         self.teston = teston
-        
+
         self._mainevent = threading.Event()
         threading.Thread.__init__(self)
         self.main_stop = False
@@ -592,6 +593,8 @@ def dictToObj(dictionary):
 
 if __name__ == '__main__':
     if len(sys.argv) > 1:
+        __builtin__.COLORS = True
         CLI("test").onecmd(' '.join(sys.argv[1:]))
     else:
+        __builtin__.COLORS = False
         CLI("test").cmdloop()

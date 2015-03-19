@@ -326,7 +326,7 @@ class MininetCliDriver( Emulator ):
         command = args[ "SRC" ] + " ping " + \
             args[ "TARGET" ] + " -c 1 -i 1 -W 8"
         try:
-            main.log.warn( "Sending: " + command )
+            main.log.info( "Sending: " + command )
             self.handle.sendline( command )
             i = self.handle.expect( [ command, pexpect.TIMEOUT ] )
             if i == 1:

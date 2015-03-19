@@ -84,19 +84,23 @@ class OnosCliDriver( CLI ):
         Called when Test is complete to disconnect the ONOS handle.
         """
         response = main.TRUE
-        # noinspection PyBroadException
         try:
-            self.logout()
-            self.handle.sendline( "" )
-            self.handle.expect( "\$" )
-            self.handle.sendline( "exit" )
-            self.handle.expect( "closed" )
+            if self.handle:
+                i = self.logout()
+                if i == main.TRUE:
+                    self.handle.sendline( "" )
+                    self.handle.expect( "\$" )
+                    self.handle.sendline( "exit" )
+                    self.handle.expect( "closed" )
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
             response = main.FALSE
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
+        except ValueError:
+            main.log.exception( "Exception in discconect of " + self.name )
+            response = main.TRUE
         except Exception:
             main.log.exception( self.name + ": Connection failed to the host" )
             response = main.FALSE
@@ -105,27 +109,36 @@ class OnosCliDriver( CLI ):
     def logout( self ):
         """
         Sends 'logout' command to ONOS cli
+        Returns main.TRUE if exited CLI and
+                main.FALSE on timeout (not guranteed you are disconnected)
+                None on TypeError
+                Exits test on unknown error or pexpect exits unexpectedly
         """
         try:
-            self.handle.sendline( "" )
-            i = self.handle.expect( [ "onos>", "\$", pexpect.TIMEOUT ],
-                                    timeout=10 )
-            if i == 0:  # In ONOS CLI
-                self.handle.sendline( "logout" )
-                self.handle.expect( "\$" )
-            elif i == 1:  # not in CLI
+            if self.handle:
+                self.handle.sendline( "" )
+                i = self.handle.expect( [ "onos>", "\$", pexpect.TIMEOUT ],
+                                        timeout=10 )
+                if i == 0:  # In ONOS CLI
+                    self.handle.sendline( "logout" )
+                    self.handle.expect( "\$" )
+                    return main.TRUE
+                elif i == 1:  # not in CLI
+                    return main.TRUE
+                elif i == 3:  # Timeout
+                    return main.FALSE
+            else:
                 return main.TRUE
-            elif i == 3:  # Timeout
-                return main.FALSE
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
             return None
         except pexpect.EOF:
             main.log.error( self.name + ": eof exception found" )
-            main.log.error( self.name + ":    " +
-                            self.handle.before )
+            main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
+        except ValueError:
+            main.log.error( self.name + "ValueError exception in logout method" )
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
@@ -349,7 +362,6 @@ class OnosCliDriver( CLI ):
         Optional:
             * tcpPort
         """
-        # noinspection PyBroadException
         try:
             cmdStr = "add-node " + str( nodeId ) + " " +\
                 str( ONOSIp ) + " " + str( tcpPort )
@@ -402,16 +414,24 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def nodes( self ):
+    def nodes( self, jsonFormat=True):
         """
         List the nodes currently visible
         Issues command: 'nodes'
-        Returns: entire handle of list of nodes
+        Optional argument:
+            * jsonFormat - boolean indicating if you want output in json
         """
         try:
-            cmdStr = "nodes"
-            handle = self.sendline( cmdStr )
-            return handle
+            if jsonFormat:
+                cmdStr = "nodes -j"
+                output = self.sendline( cmdStr )
+                ansiEscape = re.compile( r'\r\r\n\x1b[^m]*m' )
+                parsedOutput = ansiEscape.sub( '', output )
+                return parsedOutput
+            else:
+                cmdStr = "nodes"
+                output = self.sendline( cmdStr )
+                return output
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
             return None
@@ -938,6 +958,7 @@ class OnosCliDriver( CLI ):
             handle = self.sendline( cmdStr )
             if re.search( "Error", handle ):
                 main.log.error( "Error in adding Host intent" )
+                main.log.debug( "Response from ONOS was: " + repr( handle ) )
                 return None
             else:
                 main.log.info( "Host intent installed between " +
@@ -947,6 +968,8 @@ class OnosCliDriver( CLI ):
                     return match.group()[3:-1]
                 else:
                     main.log.error( "Error, intent ID not found" )
+                    main.log.debug( "Response from ONOS was: " +
+                                    repr( handle ) )
                     return None
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
@@ -1299,10 +1322,10 @@ class OnosCliDriver( CLI ):
                       purge=False, sync=False ):
         """
         Remove intent for specified application id and intent id
-        Optional args:- 
+        Optional args:-
         -s or --sync: Waits for the removal before returning
-        -p or --purge: Purge the intent from the store after removal  
-        
+        -p or --purge: Purge the intent from the store after removal
+
         Returns:
             main.False on error and
             cli output otherwise
@@ -1472,7 +1495,7 @@ class OnosCliDriver( CLI ):
             else:
                 cmdStr = "flows"
                 handle = self.sendline( cmdStr )
-            if re.search( "Error\sexecuting\scommand:", handle ):
+            if re.search( "Error:", handle ):
                 main.log.error( self.name + ".flows() response: " +
                                 str( handle ) )
             return handle
@@ -2171,15 +2194,31 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def leaders( self ):
+    def leaders( self, jsonFormat=True ):
         """
         Returns the output of the leaders command.
+        Optional argument:
+            * jsonFormat - boolean indicating if you want output in json
         """
         # FIXME: add json output
+        # Sample JSON
+        # {
+        #     "electedTime": "13m ago",
+        #     "epoch": 4,
+        #     "leader": "10.128.30.17",
+        #     "topic": "intent-partition-3"
+        #  },
         try:
-            output = self.sendline( "onos:leaders" )
-            main.log.warn( output )
-            return output
+            if jsonFormat:
+                cmdStr = "onos:leaders -j"
+                output = self.sendline( cmdStr )
+                ansiEscape = re.compile( r'\r\r\n\x1b[^m]*m' )
+                cleanedOutput = ansiEscape.sub( '', output )
+                return cleanedOutput
+            else:
+                cmdStr = "onos:leaders"
+                output = self.sendline( cmdStr )
+                return output
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
             return None
@@ -2193,15 +2232,21 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def pendingMap( self ):
+    def pendingMap( self, jsonFormat=True ):
         """
         Returns the output of the intent Pending map.
         """
-        # FIXME: add json output
         try:
-            output = self.sendline( "onos:intents -p" )
-            main.log.warn( output )
-            return output
+            if jsonFormat:
+                cmdStr = "onos:intents -p -j"
+                output = self.sendline( cmdStr )
+                ansiEscape = re.compile( r'\r\r\n\x1b[^m]*m' )
+                cleanedOutput = ansiEscape.sub( '', output )
+                return cleanedOutput
+            else:
+                cmdStr = "onos:intents -p"
+                output = self.sendline( cmdStr )
+                return output
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
             return None
@@ -2215,15 +2260,32 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def partitions( self ):
+    def partitions( self, jsonFormat=True ):
         """
         Returns the output of the raft partitions command for ONOS.
         """
-        # FIXME: add json output
+        # Sample JSON
+        # {
+        #     "leader": "tcp://10.128.30.11:7238",
+        #     "members": [
+        #         "tcp://10.128.30.11:7238",
+        #         "tcp://10.128.30.17:7238",
+        #         "tcp://10.128.30.13:7238",
+        #     ],
+        #     "name": "p1",
+        #     "term": 3
+        # },
         try:
-            output = self.sendline( "partitions" )
-            main.log.warn( output )
-            return output
+            if jsonFormat:
+                cmdStr = "onos:partitions -j"
+                output = self.sendline( cmdStr )
+                ansiEscape = re.compile( r'\r\r\n\x1b[^m]*m' )
+                cleanedOutput = ansiEscape.sub( '', output )
+                return cleanedOutput
+            else:
+                cmdStr = "onos:partitions"
+                output = self.sendline( cmdStr )
+                return output
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
             return None

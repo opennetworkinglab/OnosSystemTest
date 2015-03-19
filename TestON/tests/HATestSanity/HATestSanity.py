@@ -26,7 +26,6 @@ class HATestSanity:
 
     def __init__( self ):
         self.default = ''
-        self.threadID = 0
 
     def CASE1( self, main ):
         """
@@ -66,8 +65,8 @@ class HATestSanity:
         global ONOS6Port
         global ONOS7Port
         global numControllers
-
         numControllers = int( main.params[ 'num_controllers' ] )
+
         # FIXME: just get controller port from params?
         # TODO: do we really need all these?
         ONOS1Port = main.params[ 'CTRL' ][ 'port1' ]
@@ -109,6 +108,8 @@ class HATestSanity:
             main.step( "Git checkout and pull " + gitBranch )
             main.ONOSbench.gitCheckout( gitBranch )
             gitPullResult = main.ONOSbench.gitPull()
+            if gitPullResult == main.ERROR:
+                main.log.error( "Error pulling git branch" )
 
             main.step( "Using mvn clean & install" )
             cleanInstallResult = main.ONOSbench.cleanInstall()
@@ -145,12 +146,10 @@ class HATestSanity:
         threads = []
         for i in range( numControllers ):
             t = main.Thread( target=CLIs[i].startOnosCli,
-                             threadID=self.threadID,
                              name="startOnosCli-" + str( i ),
                              args=[nodes[i].ip_address] )
             threads.append( t )
             t.start()
-            self.threadID += 1
 
         for t in threads:
             t.join()
@@ -180,6 +179,18 @@ class HATestSanity:
         Assign mastership to controllers
         """
         import re
+        assert numControllers, "numControllers not defined"
+        assert main, "main not defined"
+        assert utilities.assert_equals, "utilities.assert_equals not defined"
+        assert CLIs, "CLIs not defined"
+        assert nodes, "nodes not defined"
+        assert ONOS1Port, "ONOS1Port not defined"
+        assert ONOS2Port, "ONOS2Port not defined"
+        assert ONOS3Port, "ONOS3Port not defined"
+        assert ONOS4Port, "ONOS4Port not defined"
+        assert ONOS5Port, "ONOS5Port not defined"
+        assert ONOS6Port, "ONOS6Port not defined"
+        assert ONOS7Port, "ONOS7Port not defined"
 
         main.log.report( "Assigning switches to controllers" )
         main.case( "Assigning Controllers" )
@@ -218,7 +229,7 @@ class HATestSanity:
             actual=mastershipCheck,
             onpass="Switch mastership assigned correctly",
             onfail="Switches not assigned correctly to controllers" )
-
+        #FIXME: turning off because of ONOS-1286
         # Manually assign mastership to the controller we want
         roleCall = main.TRUE
         roleCheck = main.TRUE
@@ -353,7 +364,6 @@ class HATestSanity:
         except ( AttributeError, AssertionError ):
             main.log.exception( "Something is wrong with ONOS device view" )
             main.log.info( main.ONOScli1.devices() )
-
         utilities.assert_equals(
             expect=main.TRUE,
             actual=roleCall,
@@ -378,6 +388,11 @@ class HATestSanity:
         """
         import time
         import json
+        assert numControllers, "numControllers not defined"
+        assert main, "main not defined"
+        assert utilities.assert_equals, "utilities.assert_equals not defined"
+        assert CLIs, "CLIs not defined"
+        assert nodes, "nodes not defined"
         main.log.report( "Adding host intents" )
         main.case( "Adding host Intents" )
 
@@ -390,12 +405,10 @@ class HATestSanity:
         threads = []
         for i in range( numControllers ):
             t = main.Thread( target=CLIs[i].featureInstall,
-                             threadID=self.threadID,
                              name="featureInstall-" + str( i ),
                              args=["onos-app-fwd"] )
             threads.append( t )
             t.start()
-            self.threadID += 1
 
         for t in threads:
             t.join()
@@ -403,36 +416,35 @@ class HATestSanity:
 
         # REACTIVE FWD test
         pingResult = main.FALSE
-        time1 = time.time()
-        pingResult = main.Mininet1.pingall()
-        utilities.assert_equals(
-            expect=main.TRUE,
-            actual=pingResult,
-            onpass="Reactive Pingall test passed",
-            onfail="Reactive Pingall failed, one or more ping pairs failed" )
-        time2 = time.time()
-        main.log.info( "Time for pingall: %2f seconds" % ( time2 - time1 ) )
+        for i in range(2):  # Retry if pingall fails first time
+            time1 = time.time()
+            pingResult = main.Mininet1.pingall()
+            utilities.assert_equals(
+                expect=main.TRUE,
+                actual=pingResult,
+                onpass="Reactive Pingall test passed",
+                onfail="Reactive Pingall failed, one or more ping pairs failed" )
+            time2 = time.time()
+            main.log.info( "Time for pingall: %2f seconds" % ( time2 - time1 ) )
 
         # uninstall onos-app-fwd
         main.log.info( "Uninstall reactive forwarding app" )
         threads = []
         for i in range( numControllers ):
             t = main.Thread( target=CLIs[i].featureUninstall,
-                             threadID=self.threadID,
                              name="featureUninstall-" + str( i ),
                              args=["onos-app-fwd"] )
             threads.append( t )
             t.start()
-            self.threadID += 1
 
         for t in threads:
             t.join()
             appResults = appResults and t.result
 
         # timeout for fwd flows
-        time.sleep( 10 )
+        time.sleep( 11 )
 
-        main.step( "Add  host intents" )
+        main.step( "Add host intents" )
         intentIds = []
         # TODO:  move the host numbers to params
         #        Maybe look at all the paths we ping?
@@ -446,48 +458,65 @@ class HATestSanity:
             host2 = "00:00:00:00:00:" + \
                 str( hex( i + 10 )[ 2: ] ).zfill( 2 ).upper()
             # NOTE: getHost can return None
-            host1Dict = CLIs[ 0 ].getHost( host1 )
-            host2Dict = CLIs[ 0 ].getHost( host2 )
+            host1Dict = main.ONOScli1.getHost( host1 )
+            host2Dict = main.ONOScli1.getHost( host2 )
             host1Id = None
             host2Id = None
             if host1Dict and host2Dict:
                 host1Id = host1Dict.get( 'id', None )
                 host2Id = host2Dict.get( 'id', None )
             if host1Id and host2Id:
-                nodeNum = ( i % 7 ) + 1
-                tmpId = nodes[ nodeNum ].addHostIntent( host1Id, host2Id )
+                nodeNum = ( i % 7 )
+                tmpId = CLIs[ nodeNum ].addHostIntent( host1Id, host2Id )
                 if tmpId:
                     main.log.info( "Added intent with id: " + tmpId )
                     intentIds.append( tmpId )
                 else:
-                    main.log.error( "addHostIntent returned None" )
+                    main.log.error( "addHostIntent returned: " +
+                                     repr( tmpId ) )
             else:
-                main.log.error( "Error, getHost() failed" )
-                main.log.warn( json.dumps( json.loads( CLIs[ 0 ].hosts() ),
-                                           sort_keys=True,
-                                           indent=4,
-                                           separators=( ',', ': ' ) ) )
+                main.log.error( "Error, getHost() failed for h" + str( i ) +
+                                " and/or h" + str( i + 10 ) )
+                hosts = CLIs[ 0 ].hosts()
+                main.log.warn( "Hosts output: " )
+                try:
+                    main.log.warn( json.dumps( json.loads( hosts ),
+                                               sort_keys=True,
+                                               indent=4,
+                                               separators=( ',', ': ' ) ) )
+                except ( ValueError, TypeError ):
+                    main.log.warn( repr( hosts ) )
                 hostResult = main.FALSE
+        # FIXME: DEBUG
+        intentStart = time.time()
         onosIds = main.ONOScli1.getAllIntentsId()
         main.log.info( "Submitted intents: " + str( intentIds ) )
         main.log.info( "Intents in ONOS: " + str( onosIds ) )
         for intent in intentIds:
             if intent in onosIds:
-                pass  # intent submitted is still in onos
+                pass  # intent submitted is in onos
             else:
                 intentAddResult = False
+        # FIXME: DEBUG
+        if intentAddResult:
+            intentStop = time.time()
+        else:
+            intentStop = None
         # Print the intent states
         intents = main.ONOScli1.intents()
         intentStates = []
         installedCheck = True
         main.log.info( "%-6s%-15s%-15s" % ( 'Count', 'ID', 'State' ) )
         count = 0
-        for intent in json.loads( intents ):  # Iter through intents of a node
-            state = intent.get( 'state', None )
-            if "INSTALLED" not in state:
-                installedCheck = False
-            intentId = intent.get( 'id', None )
-            intentStates.append( ( intentId, state ) )
+        try:
+            for intent in json.loads( intents ):
+                state = intent.get( 'state', None )
+                if "INSTALLED" not in state:
+                    installedCheck = False
+                intentId = intent.get( 'id', None )
+                intentStates.append( ( intentId, state ) )
+        except ( ValueError, TypeError ):
+            main.log.exception( "Error parsing intents" )
         # add submitted intents not in the store
         tmplist = [ i for i, s in intentStates ]
         missingIntents = False
@@ -500,11 +529,63 @@ class HATestSanity:
             count += 1
             main.log.info( "%-6s%-15s%-15s" %
                            ( str( count ), str( i ), str( s ) ) )
-        main.ONOScli1.leaders()
-        main.ONOScli1.partitions()
-        # for node in nodes:
-        #     node.pendingMap()
+        leaders = main.ONOScli1.leaders()
+        try:
+            if leaders:
+                parsedLeaders = json.loads( leaders )
+                main.log.warn( json.dumps( parsedLeaders,
+                                           sort_keys=True,
+                                           indent=4,
+                                           separators=( ',', ': ' ) ) )
+                # check for all intent partitions
+                # check for election
+                topics = []
+                for i in range( 14 ):
+                    topics.append( "intent-partition-" + str( i ) )
+                # FIXME: this should only be after we start the app
+                # FIXME: move this to the election test sections
+                topics.append( "org.onosproject.election" )
+                main.log.debug( topics )
+                ONOStopics = [ j['topic'] for j in parsedLeaders ]
+                for topic in topics:
+                    if topic not in ONOStopics:
+                        main.log.error( "Error: " + topic +
+                                        " not in leaders" )
+            else:
+                main.log.error( "leaders() returned None" )
+        except ( ValueError, TypeError ):
+            main.log.exception( "Error parsing leaders" )
+            main.log.error( repr( leaders ) )
+        partitions = main.ONOScli1.partitions()
+        try:
+            if partitions :
+                parsedPartitions = json.loads( partitions )
+                main.log.warn( json.dumps( parsedPartitions,
+                                           sort_keys=True,
+                                           indent=4,
+                                           separators=( ',', ': ' ) ) )
+                # TODO check for a leader in all paritions
+                # TODO check for consistency among nodes
+            else:
+                main.log.error( "partitions() returned None" )
+        except ( ValueError, TypeError ):
+            main.log.exception( "Error parsing partitions" )
+            main.log.error( repr( partitions ) )
         pendingMap = main.ONOScli1.pendingMap()
+        try:
+            if pendingMap :
+                parsedPending = json.loads( pendingMap )
+                main.log.warn( json.dumps( parsedPending,
+                                           sort_keys=True,
+                                           indent=4,
+                                           separators=( ',', ': ' ) ) )
+                # TODO check something here?
+            else:
+                main.log.error( "pendingMap() returned None" )
+        except ( ValueError, TypeError ):
+            main.log.exception( "Error parsing pending map" )
+            main.log.error( repr( pendingMap ) )
+
         intentAddResult = bool( pingResult and hostResult and intentAddResult
                                 and not missingIntents and installedCheck )
         utilities.assert_equals(
@@ -512,6 +593,27 @@ class HATestSanity:
             actual=intentAddResult,
             onpass="Pushed host intents to ONOS",
             onfail="Error in pushing host intents to ONOS" )
+        for i in range(100):
+            onosIds = main.ONOScli1.getAllIntentsId()
+            main.log.info( "Submitted intents: " + str( sorted( intentIds ) ) )
+            main.log.info( "Intents in ONOS: " + str( sorted( onosIds ) ) )
+            if sorted(onosIds) == sorted(intentIds):
+                break
+            else:
+                time.sleep(1)
+        # FIXME: DEBUG
+        if not intentStop:
+            intentStop = time.time()
+        gossipTime = intentStop - intentStart
+        main.log.info( "It took about " + str( gossipTime ) +
+                        " seconds for all intents to appear on ONOS1" )
+        # FIXME: make this time configurable/calculate based off of # of nodes
+        #        and gossip rounds
+        utilities.assert_greater_equals(
+                expect=30, actual=gossipTime,
+                onpass="ECM anti-entropy for intents worked within " +
+                       "expected time",
+                onfail="Intent ECM anti-entropy took too long" )
 
         if not intentAddResult or "key" in pendingMap:
             import time
@@ -526,13 +628,16 @@ class HATestSanity:
             intentStates = []
             main.log.info( "%-6s%-15s%-15s" % ( 'Count', 'ID', 'State' ) )
             count = 0
-            for intent in json.loads( intents ):
-                # Iter through intents of a node
-                state = intent.get( 'state', None )
-                if "INSTALLED" not in state:
-                    installedCheck = False
-                intentId = intent.get( 'id', None )
-                intentStates.append( ( intentId, state ) )
+            try:
+                for intent in json.loads( intents ):
+                    # Iter through intents of a node
+                    state = intent.get( 'state', None )
+                    if "INSTALLED" not in state:
+                        installedCheck = False
+                    intentId = intent.get( 'id', None )
+                    intentStates.append( ( intentId, state ) )
+            except ( ValueError, TypeError ):
+                main.log.exception( "Error parsing intents" )
             # add submitted intents not in the store
             tmplist = [ i for i, s in intentStates ]
             for i in intentIds:
@@ -543,8 +648,61 @@ class HATestSanity:
                 count += 1
                 main.log.info( "%-6s%-15s%-15s" %
                                ( str( count ), str( i ), str( s ) ) )
-            main.ONOScli1.leaders()
-            main.ONOScli1.pendingMap()
+            leaders = main.ONOScli1.leaders()
+            try:
+                if leaders:
+                    parsedLeaders = json.loads( leaders )
+                    main.log.warn( json.dumps( parsedLeaders,
+                                               sort_keys=True,
+                                               indent=4,
+                                               separators=( ',', ': ' ) ) )
+                    # check for all intent partitions
+                    # check for election
+                    topics = []
+                    for i in range( 14 ):
+                        topics.append( "intent-partition-" + str( i ) )
+                    # FIXME: this should only be after we start the app
+                    topics.append( "org.onosproject.election" )
+                    main.log.debug( topics )
+                    ONOStopics = [ j['topic'] for j in parsedLeaders ]
+                    for topic in topics:
+                        if topic not in ONOStopics:
+                            main.log.error( "Error: " + topic +
+                                            " not in leaders" )
+                else:
+                    main.log.error( "leaders() returned None" )
+            except ( ValueError, TypeError ):
+                main.log.exception( "Error parsing leaders" )
+                main.log.error( repr( leaders ) )
+            partitions = main.ONOScli1.partitions()
+            try:
+                if partitions :
+                    parsedPartitions = json.loads( partitions )
+                    main.log.warn( json.dumps( parsedPartitions,
+                                               sort_keys=True,
+                                               indent=4,
+                                               separators=( ',', ': ' ) ) )
+                    # TODO check for a leader in all paritions
+                    # TODO check for consistency among nodes
+                else:
+                    main.log.error( "partitions() returned None" )
+            except ( ValueError, TypeError ):
+                main.log.exception( "Error parsing partitions" )
+                main.log.error( repr( partitions ) )
+            pendingMap = main.ONOScli1.pendingMap()
+            try:
+                if pendingMap :
+                    parsedPending = json.loads( pendingMap )
+                    main.log.warn( json.dumps( parsedPending,
+                                               sort_keys=True,
+                                               indent=4,
+                                               separators=( ',', ': ' ) ) )
+                    # TODO check something here?
+                else:
+                    main.log.error( "pendingMap() returned None" )
+            except ( ValueError, TypeError ):
+                main.log.exception( "Error parsing pending map" )
+                main.log.error( repr( pendingMap ) )
 
     def CASE4( self, main ):
         """
@@ -552,6 +710,11 @@ class HATestSanity:
         """
         import json
         import time
+        assert numControllers, "numControllers not defined"
+        assert main, "main not defined"
+        assert utilities.assert_equals, "utilities.assert_equals not defined"
+        assert CLIs, "CLIs not defined"
+        assert nodes, "nodes not defined"
         description = " Ping across added host intents"
         main.log.report( description )
         main.case( description )
@@ -571,10 +734,14 @@ class HATestSanity:
                 "Intents have not been installed correctly, pings failed." )
             # TODO: pretty print
             main.log.warn( "ONOS1 intents: " )
-            main.log.warn( json.dumps( json.loads( main.ONOScli1.intents() ),
-                                       sort_keys=True,
-                                       indent=4,
-                                       separators=( ',', ': ' ) ) )
+            try:
+                tmpIntents = main.ONOScli1.intents()
+                main.log.warn( json.dumps( json.loads( tmpIntents ),
+                                           sort_keys=True,
+                                           indent=4,
+                                           separators=( ',', ': ' ) ) )
+            except ( ValueError, TypeError ):
+                main.log.warn( repr( tmpIntents ) )
         if PingResult == main.TRUE:
             main.log.report(
                 "Intents have been installed correctly and verified by pings" )
@@ -592,20 +759,76 @@ class HATestSanity:
             main.log.info( "%-6s%-15s%-15s" % ( 'Count', 'ID', 'State' ) )
             count = 0
             # Iter through intents of a node
-            for intent in json.loads( intents ):
-                state = intent.get( 'state', None )
-                if "INSTALLED" not in state:
-                    installedCheck = False
-                intentId = intent.get( 'id', None )
-                intentStates.append( ( intentId, state ) )
+            try:
+                for intent in json.loads( intents ):
+                    state = intent.get( 'state', None )
+                    if "INSTALLED" not in state:
+                        installedCheck = False
+                    intentId = intent.get( 'id', None )
+                    intentStates.append( ( intentId, state ) )
+            except ( ValueError, TypeError ):
+                main.log.exception( "Error parsing intents." )
             intentStates.sort()
             for i, s in intentStates:
                 count += 1
                 main.log.info( "%-6s%-15s%-15s" %
                                ( str( count ), str( i ), str( s ) ) )
-            main.ONOScli1.leaders()
-            main.ONOScli1.partitions()
-            main.ONOScli1.pendingMap()
+            leaders = main.ONOScli1.leaders()
+            try:
+                if leaders:
+                    parsedLeaders = json.loads( leaders )
+                    main.log.warn( json.dumps( parsedLeaders,
+                                               sort_keys=True,
+                                               indent=4,
+                                               separators=( ',', ': ' ) ) )
+                    # check for all intent partitions
+                    # check for election
+                    topics = []
+                    for i in range( 14 ):
+                        topics.append( "intent-partition-" + str( i ) )
+                    # FIXME: this should only be after we start the app
+                    topics.append( "org.onosproject.election" )
+                    main.log.debug( topics )
+                    ONOStopics = [ j['topic'] for j in parsedLeaders ]
+                    for topic in topics:
+                        if topic not in ONOStopics:
+                            main.log.error( "Error: " + topic +
+                                            " not in leaders" )
+                else:
+                    main.log.error( "leaders() returned None" )
+            except ( ValueError, TypeError ):
+                main.log.exception( "Error parsing leaders" )
+                main.log.error( repr( leaders ) )
+            partitions = main.ONOScli1.partitions()
+            try:
+                if partitions :
+                    parsedPartitions = json.loads( partitions )
+                    main.log.warn( json.dumps( parsedPartitions,
+                                               sort_keys=True,
+                                               indent=4,
+                                               separators=( ',', ': ' ) ) )
+                    # TODO check for a leader in all paritions
+                    # TODO check for consistency among nodes
+                else:
+                    main.log.error( "partitions() returned None" )
+            except ( ValueError, TypeError ):
+                main.log.exception( "Error parsing partitions" )
+                main.log.error( repr( partitions ) )
+            pendingMap = main.ONOScli1.pendingMap()
+            try:
+                if pendingMap :
+                    parsedPending = json.loads( pendingMap )
+                    main.log.warn( json.dumps( parsedPending,
+                                               sort_keys=True,
+                                               indent=4,
+                                               separators=( ',', ': ' ) ) )
+                    # TODO check something here?
+                else:
+                    main.log.error( "pendingMap() returned None" )
+            except ( ValueError, TypeError ):
+                main.log.exception( "Error parsing pending map" )
+                main.log.error( repr( pendingMap ) )
+
         if not installedCheck:
             main.log.info( "Waiting 60 seconds to see if the state of " +
                            "intents change" )
@@ -616,26 +839,87 @@ class HATestSanity:
             main.log.info( "%-6s%-15s%-15s" % ( 'Count', 'ID', 'State' ) )
             count = 0
             # Iter through intents of a node
-            for intent in json.loads( intents ):
-                state = intent.get( 'state', None )
-                if "INSTALLED" not in state:
-                    installedCheck = False
-                intentId = intent.get( 'id', None )
-                intentStates.append( ( intentId, state ) )
+            try:
+                for intent in json.loads( intents ):
+                    state = intent.get( 'state', None )
+                    if "INSTALLED" not in state:
+                        installedCheck = False
+                    intentId = intent.get( 'id', None )
+                    intentStates.append( ( intentId, state ) )
+            except ( ValueError, TypeError ):
+                main.log.exception( "Error parsing intents." )
             intentStates.sort()
             for i, s in intentStates:
                 count += 1
                 main.log.info( "%-6s%-15s%-15s" %
                                ( str( count ), str( i ), str( s ) ) )
-            main.ONOScli1.leaders()
-            main.ONOScli1.partitions()
-            main.ONOScli1.pendingMap()
+            leaders = main.ONOScli1.leaders()
+            try:
+                if leaders:
+                    parsedLeaders = json.loads( leaders )
+                    main.log.warn( json.dumps( parsedLeaders,
+                                               sort_keys=True,
+                                               indent=4,
+                                               separators=( ',', ': ' ) ) )
+                    # check for all intent partitions
+                    # check for election
+                    topics = []
+                    for i in range( 14 ):
+                        topics.append( "intent-partition-" + str( i ) )
+                    # FIXME: this should only be after we start the app
+                    topics.append( "org.onosproject.election" )
+                    main.log.debug( topics )
+                    ONOStopics = [ j['topic'] for j in parsedLeaders ]
+                    for topic in topics:
+                        if topic not in ONOStopics:
+                            main.log.error( "Error: " + topic +
+                                            " not in leaders" )
+                else:
+                    main.log.error( "leaders() returned None" )
+            except ( ValueError, TypeError ):
+                main.log.exception( "Error parsing leaders" )
+                main.log.error( repr( leaders ) )
+            partitions = main.ONOScli1.partitions()
+            try:
+                if partitions :
+                    parsedPartitions = json.loads( partitions )
+                    main.log.warn( json.dumps( parsedPartitions,
+                                               sort_keys=True,
+                                               indent=4,
+                                               separators=( ',', ': ' ) ) )
+                    # TODO check for a leader in all paritions
+                    # TODO check for consistency among nodes
+                else:
+                    main.log.error( "partitions() returned None" )
+            except ( ValueError, TypeError ):
+                main.log.exception( "Error parsing partitions" )
+                main.log.error( repr( partitions ) )
+            pendingMap = main.ONOScli1.pendingMap()
+            try:
+                if pendingMap :
+                    parsedPending = json.loads( pendingMap )
+                    main.log.warn( json.dumps( parsedPending,
+                                               sort_keys=True,
+                                               indent=4,
+                                               separators=( ',', ': ' ) ) )
+                    # TODO check something here?
+                else:
+                    main.log.error( "pendingMap() returned None" )
+            except ( ValueError, TypeError ):
+                main.log.exception( "Error parsing pending map" )
+                main.log.error( repr( pendingMap ) )
 
     def CASE5( self, main ):
         """
         Reading state of ONOS
         """
         import json
+        import time
+        assert numControllers, "numControllers not defined"
+        assert main, "main not defined"
+        assert utilities.assert_equals, "utilities.assert_equals not defined"
+        assert CLIs, "CLIs not defined"
+        assert nodes, "nodes not defined"
         # assumes that sts is already in you PYTHONPATH
         from sts.topology.teston_topology import TestONTopology
 
@@ -647,19 +931,17 @@ class HATestSanity:
 
         main.step( "Check that each switch has a master" )
         global mastershipState
-        mastershipState = []
+        mastershipState = '[]'
 
         # Assert that each device has a master
         rolesNotNull = main.TRUE
         threads = []
         for i in range( numControllers ):
             t = main.Thread( target=CLIs[i].rolesNotNull,
-                             threadID=self.threadID,
                              name="rolesNotNull-" + str( i ),
                              args=[] )
             threads.append( t )
             t.start()
-            self.threadID += 1
 
         for t in threads:
             t.join()
@@ -678,12 +960,10 @@ class HATestSanity:
         threads = []
         for i in range( numControllers ):
             t = main.Thread( target=CLIs[i].roles,
-                             threadID=self.threadID,
                              name="roles-" + str( i ),
                              args=[] )
             threads.append( t )
             t.start()
-            self.threadID += 1
 
         for t in threads:
             t.join()
@@ -717,14 +997,17 @@ class HATestSanity:
 
         if rolesResults and not consistentMastership:
             for i in range( numControllers ):
-                main.log.warn(
-                    "ONOS" + str( i + 1 ) + " roles: ",
-                    json.dumps(
-                        json.loads( ONOSMastership[ i ] ),
-                        sort_keys=True,
-                        indent=4,
-                        separators=( ',', ': ' ) ) )
-        elif rolesResults and not consistentMastership:
+                try:
+                    main.log.warn(
+                        "ONOS" + str( i + 1 ) + " roles: ",
+                        json.dumps(
+                            json.loads( ONOSMastership[ i ] ),
+                            sort_keys=True,
+                            indent=4,
+                            separators=( ',', ': ' ) ) )
+                except ( ValueError, TypeError ):
+                    main.log.warn( repr( ONOSMastership[ i ] ) )
+        elif rolesResults and consistentMastership:
             mastershipCheck = main.TRUE
             mastershipState = ONOSMastership[ 0 ]
 
@@ -738,13 +1021,11 @@ class HATestSanity:
         threads = []
         for i in range( numControllers ):
             t = main.Thread( target=CLIs[i].intents,
-                             threadID=self.threadID,
                              name="intents-" + str( i ),
                              args=[],
                              kwargs={ 'jsonFormat': True } )
             threads.append( t )
             t.start()
-            self.threadID += 1
 
         for t in threads:
             t.join()
@@ -764,11 +1045,12 @@ class HATestSanity:
             onfail="Error in reading intents from ONOS" )
 
         main.step( "Check for consistency in Intents from each controller" )
-        if all([ i == ONOSIntents[ 0 ] for i in ONOSIntents ] ):
+        if all([ sorted( i ) == sorted( ONOSIntents[ 0 ] ) for i in ONOSIntents ] ):
             main.log.report( "Intents are consistent across all ONOS " +
                              "nodes" )
         else:
             consistentIntents = False
+            main.log.report( "Intents not consistent" )
         utilities.assert_equals(
             expect=True,
             actual=consistentIntents,
@@ -776,14 +1058,22 @@ class HATestSanity:
             onfail="ONOS nodes have different views of intents" )
 
         if intentsResults and not consistentIntents:
+            n = len(ONOSIntents)
+            main.log.warn( "ONOS" + str( n ) + " intents: " )
+            main.log.warn( json.dumps( json.loads( ONOSIntents[ -1 ] ),
+                                       sort_keys=True,
+                                       indent=4,
+                                       separators=( ',', ': ' ) ) )
             for i in range( numControllers ):
-                main.log.warn(
-                    "ONOS" + str( i + 1 ) + " intents: ",
-                    json.dumps(
-                        json.loads( ONOSIntents[i] ),
-                        sort_keys=True,
-                        indent=4,
-                        separators=( ',', ': ' ) ) )
+                if ONOSIntents[ i ] != ONOSIntents[ -1 ]:
+                    main.log.warn( "ONOS" + str( i + 1 ) + " intents: " )
+                    main.log.warn( json.dumps( json.loads( ONOSIntents[i] ),
+                                               sort_keys=True,
+                                               indent=4,
+                                               separators=( ',', ': ' ) ) )
+                else:
+                    main.log.warn( nodes[ i ].name + " intents match ONOS" +
+                                   str( n ) + " intents" )
         elif intentsResults and consistentIntents:
             intentCheck = main.TRUE
             intentState = ONOSIntents[ 0 ]
@@ -799,17 +1089,17 @@ class HATestSanity:
         threads = []
         for i in range( numControllers ):
             t = main.Thread( target=CLIs[i].flows,
-                             threadID=self.threadID,
                              name="flows-" + str( i ),
                              args=[],
                              kwargs={ 'jsonFormat': True } )
             threads.append( t )
             t.start()
-            self.threadID += 1
 
+        # FIXME: why am I sleeping here?
+        time.sleep(30)
         for t in threads:
             t.join()
-            result = t.result()
+            result = t.result
             ONOSFlows.append( result )
 
         for i in range( numControllers ):
@@ -827,6 +1117,7 @@ class HATestSanity:
                     # FIXME: change this to log.error?
                     main.log.exception( "Error in parsing ONOS" + num +
                                         " response as json." )
+                    main.log.error( repr( ONOSFlows[ i ] ) )
                     ONOSFlowsJson.append( None )
                     flowsResults = False
         utilities.assert_equals(
@@ -849,10 +1140,15 @@ class HATestSanity:
 
         if flowsResults and not consistentFlows:
             for i in range( numControllers ):
-                main.log.warn(
-                    "ONOS" + str( i + 1 ) + " flows: ",
-                    json.dumps( json.loads( ONOSFlows[i] ), sort_keys=True,
-                                indent=4, separators=( ',', ': ' ) ) )
+                try:
+                    main.log.warn(
+                        "ONOS" + str( i + 1 ) + " flows: " +
+                        json.dumps( json.loads( ONOSFlows[i] ), sort_keys=True,
+                                    indent=4, separators=( ',', ': ' ) ) )
+                except ( ValueError, TypeError ):
+                    main.log.warn(
+                        "ONOS" + str( i + 1 ) + " flows: " +
+                        repr( ONOSFlows[ i ] ) )
         elif flowsResults and consistentFlows:
             flowCheck = main.TRUE
             flowState = ONOSFlows[ 0 ]
@@ -911,26 +1207,9 @@ class HATestSanity:
 
         main.step( "Create TestONTopology object" )
         ctrls = []
-        count = 1
-        print " Testing new sts tuple..."
         for node in nodes:
             temp = ( node, node.name, node.ip_address, 6633 )
-            print temp
             ctrls.append( temp )
-        print " Testing old sts tuple..."
-        while True:
-            temp = ()
-            if ( 'ip' + str( count ) ) in main.params[ 'CTRL' ]:
-                temp = temp + ( getattr( main, ( 'ONOS' + str( count ) ) ), )
-                temp = temp + ( "ONOS" + str( count ), )
-                temp = temp + ( main.params[ 'CTRL' ][ 'ip' + str( count ) ], )
-                temp = temp + \
-                    ( eval( main.params[ 'CTRL' ][ 'port' + str( count ) ] ), )
-                print temp
-                ctrls.append( temp )
-                count += 1
-            else:
-                break
         MNTopo = TestONTopology( main.Mininet1, ctrls )
 
         main.step( "Collecting topology information from ONOS" )
@@ -938,12 +1217,10 @@ class HATestSanity:
         threads = []
         for i in range( numControllers ):
             t = main.Thread( target=CLIs[i].devices,
-                             threadID=self.threadID,
                              name="devices-" + str( i ),
                              args=[ ] )
             threads.append( t )
             t.start()
-            self.threadID += 1
 
         for t in threads:
             t.join()
@@ -952,12 +1229,10 @@ class HATestSanity:
         threads = []
         for i in range( numControllers ):
             t = main.Thread( target=CLIs[i].hosts,
-                             threadID=self.threadID,
                              name="hosts-" + str( i ),
                              args=[ ] )
             threads.append( t )
             t.start()
-            self.threadID += 1
 
         for t in threads:
             t.join()
@@ -967,17 +1242,17 @@ class HATestSanity:
                 # FIXME: better handling of this, print which node
                 #        Maybe use thread name?
                 main.log.exception( "Error parsing json output of hosts" )
+                # FIXME: should this be an empty json object instead?
+                hosts.append( None )
 
         ports = []
         threads = []
         for i in range( numControllers ):
             t = main.Thread( target=CLIs[i].ports,
-                             threadID=self.threadID,
                              name="ports-" + str( i ),
                              args=[ ] )
             threads.append( t )
             t.start()
-            self.threadID += 1
 
         for t in threads:
             t.join()
@@ -986,12 +1261,10 @@ class HATestSanity:
         threads = []
         for i in range( numControllers ):
             t = main.Thread( target=CLIs[i].links,
-                             threadID=self.threadID,
                              name="links-" + str( i ),
                              args=[ ] )
             threads.append( t )
             t.start()
-            self.threadID += 1
 
         for t in threads:
             t.join()
@@ -1000,12 +1273,10 @@ class HATestSanity:
         threads = []
         for i in range( numControllers ):
             t = main.Thread( target=CLIs[i].clusters,
-                             threadID=self.threadID,
                              name="clusters-" + str( i ),
                              args=[ ] )
             threads.append( t )
             t.start()
-            self.threadID += 1
 
         for t in threads:
             t.join()
@@ -1055,7 +1326,7 @@ class HATestSanity:
 
         # Strongly connected clusters of devices
         consistentClustersResult = main.TRUE
-        for controller in range( 0, len( clusters ) ):
+        for controller in range( len( clusters ) ):
             controllerStr = str( controller + 1 )
             if "Error" not in clusters[ controller ]:
                 if clusters[ controller ] == clusters[ 0 ]:
@@ -1078,7 +1349,11 @@ class HATestSanity:
             onpass="Clusters view is consistent across all ONOS nodes",
             onfail="ONOS nodes have different views of clusters" )
         # there should always only be one cluster
-        numClusters = len( json.loads( clusters[ 0 ] ) )
+        try:
+            numClusters = len( json.loads( clusters[ 0 ] ) )
+        except ( ValueError, TypeError ):
+            main.log.exception( "Error parsing clusters[0]: " +
+                                repr( clusters[ 0 ] ) )
         clusterResults = main.FALSE
         if numClusters == 1:
             clusterResults = main.TRUE
@@ -1157,6 +1432,11 @@ class HATestSanity:
         The Failure case. Since this is the Sanity test, we do nothing.
         """
         import time
+        assert numControllers, "numControllers not defined"
+        assert main, "main not defined"
+        assert utilities.assert_equals, "utilities.assert_equals not defined"
+        assert CLIs, "CLIs not defined"
+        assert nodes, "nodes not defined"
         main.log.report( "Wait 60 seconds instead of inducing a failure" )
         time.sleep( 60 )
         utilities.assert_equals(
@@ -1170,6 +1450,11 @@ class HATestSanity:
         Check state after ONOS failure
         """
         import json
+        assert numControllers, "numControllers not defined"
+        assert main, "main not defined"
+        assert utilities.assert_equals, "utilities.assert_equals not defined"
+        assert CLIs, "CLIs not defined"
+        assert nodes, "nodes not defined"
         main.case( "Running ONOS Constant State Tests" )
 
         main.step( "Check that each switch has a master" )
@@ -1178,12 +1463,10 @@ class HATestSanity:
         threads = []
         for i in range( numControllers ):
             t = main.Thread( target=CLIs[i].rolesNotNull,
-                             threadID=self.threadID,
                              name="rolesNotNull-" + str( i ),
                              args=[ ] )
             threads.append( t )
             t.start()
-            self.threadID += 1
 
         for t in threads:
             t.join()
@@ -1201,12 +1484,10 @@ class HATestSanity:
         threads = []
         for i in range( numControllers ):
             t = main.Thread( target=CLIs[i].roles,
-                             threadID=self.threadID,
                              name="roles-" + str( i ),
                              args=[] )
             threads.append( t )
             t.start()
-            self.threadID += 1
 
         for t in threads:
             t.join()
@@ -1252,9 +1533,16 @@ class HATestSanity:
 
         description2 = "Compare switch roles from before failure"
         main.step( description2 )
-
-        currentJson = json.loads( ONOSMastership[0] )
-        oldJson = json.loads( mastershipState )
+        try:
+            currentJson = json.loads( ONOSMastership[0] )
+            oldJson = json.loads( mastershipState )
+        except ( ValueError, TypeError ):
+            main.log.exception( "Something is wrong with parsing " +
+                                "ONOSMastership[0] or mastershipState" )
+            main.log.error( "ONOSMastership[0]: " + repr( ONOSMastership[0] ) )
+            main.log.error( "mastershipState" + repr( mastershipState ) )
+            main.cleanup()
+            main.exit()
         mastershipCheck = main.TRUE
         for i in range( 1, 29 ):
             switchDPID = str(
@@ -1285,13 +1573,11 @@ class HATestSanity:
         threads = []
         for i in range( numControllers ):
             t = main.Thread( target=CLIs[i].intents,
-                             threadID=self.threadID,
                              name="intents-" + str( i ),
                              args=[],
                              kwargs={ 'jsonFormat': True } )
             threads.append( t )
             t.start()
-            self.threadID += 1
 
         for t in threads:
             t.join()
@@ -1311,7 +1597,7 @@ class HATestSanity:
             onfail="Error in reading intents from ONOS" )
 
         main.step( "Check for consistency in Intents from each controller" )
-        if all( [ i == ONOSIntents[ 0 ] for i in ONOSIntents ] ):
+        if all([ sorted( i ) == sorted( ONOSIntents[ 0 ] ) for i in ONOSIntents ] ):
             main.log.report( "Intents are consistent across all ONOS " +
                              "nodes" )
         else:
@@ -1325,24 +1611,26 @@ class HATestSanity:
         for node in ONOSIntents:  # Iter through ONOS nodes
             nodeStates = []
             # Iter through intents of a node
-            for intent in json.loads( node ):
-                nodeStates.append( intent[ 'state' ] )
+            try:
+                for intent in json.loads( node ):
+                    nodeStates.append( intent[ 'state' ] )
+            except ( ValueError, TypeError ):
+                main.log.exception( "Error in parsing intents" )
+                main.log.error( repr( node ) )
             intentStates.append( nodeStates )
             out = [ (i, nodeStates.count( i ) ) for i in set( nodeStates ) ]
             main.log.info( dict( out ) )
 
         if intentsResults and not consistentIntents:
             for i in range( numControllers ):
-                main.log.warn(
-                    "ONOS" + str( i + 1 ) + " intents: ",
-                    json.dumps(
-                        json.loads( ONOSIntents[ i ] ),
-                        sort_keys=True,
-                        indent=4,
-                        separators=( ',', ': ' ) ) )
+                main.log.warn( "ONOS" + str( i + 1 ) + " intents: " )
+                main.log.warn( json.dumps(
+                    json.loads( ONOSIntents[ i ] ),
+                    sort_keys=True,
+                    indent=4,
+                    separators=( ',', ': ' ) ) )
         elif intentsResults and consistentIntents:
             intentCheck = main.TRUE
-            intentState = ONOSIntents[ 0 ]
 
         # NOTE: Store has no durability, so intents are lost across system
         #       restarts
@@ -1358,11 +1646,12 @@ class HATestSanity:
         else:
             try:
                 main.log.warn( "ONOS intents: " )
-                print json.dumps( json.loads( ONOSIntents[ 0 ] ),
-                                  sort_keys=True, indent=4,
-                                  separators=( ',', ': ' ) )
-            except Exception:
+                main.log.warn( json.dumps( json.loads( ONOSIntents[ 0 ] ),
+                                           sort_keys=True, indent=4,
+                                           separators=( ',', ': ' ) ) )
+            except ( ValueError, TypeError ):
                 main.log.exception( "Exception printing intents" )
+                main.log.warn( repr( ONOSIntents[0] ) )
             sameIntents = main.FALSE
         utilities.assert_equals(
             expect=main.TRUE,
@@ -1425,8 +1714,8 @@ class HATestSanity:
         #       leader will likely change
         leader = nodes[ 0 ].ip_address
         leaderResult = main.TRUE
-        for node in nodes:
-            leaderN = node.electionTestLeader()
+        for cli in CLIs:
+            leaderN = cli.electionTestLeader()
             # verify leader is ONOS1
             if leaderN == leader:
                 # all is well
@@ -1441,7 +1730,7 @@ class HATestSanity:
                 leaderResult = main.FALSE
             elif leader != leaderN:
                 leaderResult = main.FALSE
-                main.log.report( node.name + " sees " + str( leaderN ) +
+                main.log.report( cli.name + " sees " + str( leaderN ) +
                                  " as the leader of the election app. " +
                                  "Leader should be " + str( leader ) )
         if leaderResult:
@@ -1474,26 +1763,20 @@ class HATestSanity:
         from sts.topology.teston_topology import TestONTopology
         import json
         import time
+        assert numControllers, "numControllers not defined"
+        assert main, "main not defined"
+        assert utilities.assert_equals, "utilities.assert_equals not defined"
+        assert CLIs, "CLIs not defined"
+        assert nodes, "nodes not defined"
 
         description = "Compare ONOS Topology view to Mininet topology"
         main.case( description )
         main.log.report( description )
         main.step( "Create TestONTopology object" )
         ctrls = []
-        count = 1
-        #FIXME: use the new method?
-        while True:
-            temp = ()
-            if ( 'ip' + str( count ) ) in main.params[ 'CTRL' ]:
-                temp = temp + ( getattr( main, ( 'ONOS' + str( count ) ) ), )
-                temp = temp + ( "ONOS" + str( count ), )
-                temp = temp + ( main.params[ 'CTRL' ][ 'ip' + str( count ) ], )
-                temp = temp + \
-                    ( eval( main.params[ 'CTRL' ][ 'port' + str( count ) ] ), )
-                ctrls.append( temp )
-                count += 1
-            else:
-                break
+        for node in nodes:
+            temp = ( node, node.name, node.ip_address, 6633 )
+            ctrls.append( temp )
         MNTopo = TestONTopology( main.Mininet1, ctrls )
 
         main.step( "Comparing ONOS topology to MN" )
@@ -1517,12 +1800,10 @@ class HATestSanity:
             threads = []
             for i in range( numControllers ):
                 t = main.Thread( target=CLIs[i].devices,
-                                 threadID=self.threadID,
                                  name="devices-" + str( i ),
                                  args=[ ] )
                 threads.append( t )
                 t.start()
-                self.threadID += 1
 
             for t in threads:
                 t.join()
@@ -1532,16 +1813,18 @@ class HATestSanity:
             threads = []
             for i in range( numControllers ):
                 t = main.Thread( target=CLIs[i].hosts,
-                                 threadID=self.threadID,
                                  name="hosts-" + str( i ),
                                  args=[ ] )
                 threads.append( t )
                 t.start()
-                self.threadID += 1
 
             for t in threads:
                 t.join()
-                hosts.append( json.loads( t.result ) )
+                try:
+                    hosts.append( json.loads( t.result ) )
+                except ( ValueError, TypeError ):
+                    main.log.exception( "Error parsing hosts results" )
+                    main.log.error( repr( t.result ) )
             for controller in range( 0, len( hosts ) ):
                 controllerStr = str( controller + 1 )
                 for host in hosts[ controller ]:
@@ -1554,12 +1837,10 @@ class HATestSanity:
             threads = []
             for i in range( numControllers ):
                 t = main.Thread( target=CLIs[i].ports,
-                                 threadID=self.threadID,
                                  name="ports-" + str( i ),
                                  args=[ ] )
                 threads.append( t )
                 t.start()
-                self.threadID += 1
 
             for t in threads:
                 t.join()
@@ -1568,12 +1849,10 @@ class HATestSanity:
             threads = []
             for i in range( numControllers ):
                 t = main.Thread( target=CLIs[i].links,
-                                 threadID=self.threadID,
                                  name="links-" + str( i ),
                                  args=[ ] )
                 threads.append( t )
                 t.start()
-                self.threadID += 1
 
             for t in threads:
                 t.join()
@@ -1582,12 +1861,10 @@ class HATestSanity:
             threads = []
             for i in range( numControllers ):
                 t = main.Thread( target=CLIs[i].clusters,
-                                 threadID=self.threadID,
                                  name="clusters-" + str( i ),
                                  args=[ ] )
                 threads.append( t )
                 t.start()
-                self.threadID += 1
 
             for t in threads:
                 t.join()
@@ -1710,7 +1987,11 @@ class HATestSanity:
                 onpass="Clusters view is consistent across all ONOS nodes",
                 onfail="ONOS nodes have different views of clusters" )
             # there should always only be one cluster
-            numClusters = len( json.loads( clusters[ 0 ] ) )
+            try:
+                numClusters = len( json.loads( clusters[ 0 ] ) )
+            except ( ValueError, TypeError ):
+                main.log.exception( "Error parsing clusters[0]: " +
+                                    repr( clusters[0] ) )
             clusterResults = main.FALSE
             if numClusters == 1:
                 clusterResults = main.TRUE
@@ -1739,11 +2020,50 @@ class HATestSanity:
         if topoResult == main.TRUE:
             main.log.report( "ONOS topology view matches Mininet topology" )
 
+        #FIXME: move this to an ONOS state case
+        main.step( "Checking ONOS nodes" )
+        nodesOutput = []
+        threads = []
+        for i in range( numControllers ):
+            t = main.Thread( target=CLIs[i].nodes,
+                             name="nodes-" + str( i ),
+                             args=[ ] )
+            threads.append( t )
+            t.start()
+
+        for t in threads:
+            t.join()
+            nodesOutput.append( t.result )
+        ips = [ node.ip_address for node in nodes ]
+        for i in nodesOutput:
+            try:
+                current = json.loads( i )
+                for node in current:
+                    if node['ip'] in ips:  # node in nodes() output is in cell
+                        if node['state'] == 'ACTIVE':
+                            pass # as it should be
+                        else:
+                            main.log.error( "Error in ONOS node availability" )
+                            main.log.error(
+                                    json.dumps( current,
+                                                sort_keys=True,
+                                                indent=4,
+                                                separators=( ',', ': ' ) ) )
+                            break
+            except ( ValueError, TypeError ):
+                main.log.error( "Error parsing nodes output" )
+                main.log.warn( repr( i ) )
+
     def CASE9( self, main ):
         """
         Link s3-s28 down
         """
         import time
+        assert numControllers, "numControllers not defined"
+        assert main, "main not defined"
+        assert utilities.assert_equals, "utilities.assert_equals not defined"
+        assert CLIs, "CLIs not defined"
+        assert nodes, "nodes not defined"
         # NOTE: You should probably run a topology check after this
 
         linkSleep = float( main.params[ 'timers' ][ 'LinkDiscovery' ] )
@@ -1768,6 +2088,11 @@ class HATestSanity:
         Link s3-s28 up
         """
         import time
+        assert numControllers, "numControllers not defined"
+        assert main, "main not defined"
+        assert utilities.assert_equals, "utilities.assert_equals not defined"
+        assert CLIs, "CLIs not defined"
+        assert nodes, "nodes not defined"
         # NOTE: You should probably run a topology check after this
 
         linkSleep = float( main.params[ 'timers' ][ 'LinkDiscovery' ] )
@@ -1793,6 +2118,11 @@ class HATestSanity:
         """
         # NOTE: You should probably run a topology check after this
         import time
+        assert numControllers, "numControllers not defined"
+        assert main, "main not defined"
+        assert utilities.assert_equals, "utilities.assert_equals not defined"
+        assert CLIs, "CLIs not defined"
+        assert nodes, "nodes not defined"
 
         switchSleep = float( main.params[ 'timers' ][ 'SwitchDiscovery' ] )
 
@@ -1825,6 +2155,18 @@ class HATestSanity:
         """
         # NOTE: You should probably run a topology check after this
         import time
+        assert numControllers, "numControllers not defined"
+        assert main, "main not defined"
+        assert utilities.assert_equals, "utilities.assert_equals not defined"
+        assert CLIs, "CLIs not defined"
+        assert nodes, "nodes not defined"
+        assert ONOS1Port, "ONOS1Port not defined"
+        assert ONOS2Port, "ONOS2Port not defined"
+        assert ONOS3Port, "ONOS3Port not defined"
+        assert ONOS4Port, "ONOS4Port not defined"
+        assert ONOS5Port, "ONOS5Port not defined"
+        assert ONOS6Port, "ONOS6Port not defined"
+        assert ONOS7Port, "ONOS7Port not defined"
 
         switchSleep = float( main.params[ 'timers' ][ 'SwitchDiscovery' ] )
         switch = main.params[ 'kill' ][ 'switch' ]
@@ -1874,6 +2216,11 @@ class HATestSanity:
         """
         import os
         import time
+        assert numControllers, "numControllers not defined"
+        assert main, "main not defined"
+        assert utilities.assert_equals, "utilities.assert_equals not defined"
+        assert CLIs, "CLIs not defined"
+        assert nodes, "nodes not defined"
 
         # printing colors to terminal
         colors = { 'cyan': '\033[96m', 'purple': '\033[95m',
@@ -1948,6 +2295,12 @@ class HATestSanity:
         """
         start election app on all onos nodes
         """
+        assert numControllers, "numControllers not defined"
+        assert main, "main not defined"
+        assert utilities.assert_equals, "utilities.assert_equals not defined"
+        assert CLIs, "CLIs not defined"
+        assert nodes, "nodes not defined"
+
         leaderResult = main.TRUE
         # install app on onos 1
         main.log.info( "Install leadership election app" )
@@ -1980,9 +2333,9 @@ class HATestSanity:
 
         # install on other nodes and check for leader.
         # Leader should be ONOS1 and each app should show the same leader
-        for node in nodes[ 1: ]:
-            node.featureInstall( "onos-app-election" )
-            leaderN = node.electionTestLeader()
+        for cli in CLIs[ 1: ]:
+            cli.featureInstall( "onos-app-election" )
+            leaderN = cli.electionTestLeader()
             # verify leader is ONOS1
             if leaderN == leader:
                 # all is well
@@ -1997,7 +2350,7 @@ class HATestSanity:
                 leaderResult = main.FALSE
             elif leader != leaderN:
                 leaderResult = main.FALSE
-                main.log.report( node.names + " sees " + str( leaderN ) +
+                main.log.report( cli.name + " sees " + str( leaderN ) +
                                  " as the leader of the election app. Leader" +
                                  " should be " +
                                  str( leader ) )
@@ -2015,6 +2368,12 @@ class HATestSanity:
         """
         Check that Leadership Election is still functional
         """
+        assert numControllers, "numControllers not defined"
+        assert main, "main not defined"
+        assert utilities.assert_equals, "utilities.assert_equals not defined"
+        assert CLIs, "CLIs not defined"
+        assert nodes, "nodes not defined"
+
         leaderResult = main.TRUE
         description = "Check that Leadership Election is still functional"
         main.log.report( description )
@@ -2023,7 +2382,6 @@ class HATestSanity:
         leader = main.ONOScli1.electionTestLeader()
         # TODO: do some sanity checking on leader before using it
         withdrawResult = main.FALSE
-        oldLeader = None
         if leader is None or leader == main.FALSE:
             main.log.report(
                 "Leader for the election app should be an ONOS node," +
@@ -2046,11 +2404,11 @@ class HATestSanity:
 
         main.step( "Make sure new leader is elected" )
         leaderList = []
-        for node in nodes:
-            leaderN = node.electionTestLeader()
+        for cli in CLIs:
+            leaderN = cli.electionTestLeader()
             leaderList.append( leaderN )
             if leaderN == leader:
-                main.log.report(  node.name + " still sees " + str( leader ) +
+                main.log.report(  cli.name + " still sees " + str( leader ) +
                                   " as leader after they withdrew" )
                 leaderResult = main.FALSE
             elif leaderN == main.FALSE:
@@ -2073,6 +2431,7 @@ class HATestSanity:
             for n in range( len( leaderList ) ):
                 main.log.report( "ONOS" + str( n + 1 ) + " response: " +
                                  str( leaderList[ n ] ) )
+        leaderResult = leaderResult and consistentLeader
         if leaderResult:
             main.log.report( "Leadership election tests passed( consistent " +
                              "view of leader across listeners and a new " +

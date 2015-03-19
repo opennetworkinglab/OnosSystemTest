@@ -70,7 +70,7 @@ for test in testnames:
 
     output +="<p></p>"
     #output +="   Date: %s, %s %s" % (name.split("_")[2], name.split("_")[1], name.split("_")[3]) + "<p>*******************<p>"
-    #Open the latest log folder 
+    #Open the latest log folder
     output += "<h2>Test "+str(test)+"</h2><p>************************************</p>"
 
     f = open(path + name + ".rpt")
@@ -102,8 +102,11 @@ for test in testnames:
     #https://wiki.onosproject.org/display/OST/Test+Results+-+HA#Test+Results+-+HA
     #Example anchor on new wiki:        #TestResults-HA-TestHATestSanity
     page_name = "Master-HA"
-    if "ONOS-HA-Maint" in job:
-        #NOTE if page name starts with number it prepends 'id-' to anchor links
+    if "ONOS-HA-1.1.X" in job:
+        page_name = "Blackbird-HA"
+    elif "ONOS-HA-Maint" in job:
+        # NOTE if page name starts with number confluence prepends 'id-'
+        #      to anchor links
         page_name = "id-1.0-HA"
 
     header += "<li><a href=\'#" + str(page_name) + "-Test" + str(test) + "\'> " + str(test) + " - Results: " + str(passes) + " Passed, " + str(fails) + " Failed</a></li>"

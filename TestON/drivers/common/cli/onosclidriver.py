@@ -1164,11 +1164,9 @@ class OnosCliDriver( CLI ):
 
     def addMultipointToSinglepointIntent(
             self,
-            ingressDevice1,
-            ingressDevice2,
+            ingressDeviceList,
             egressDevice,
-            portIngress1="",
-            portIngress2="",
+            portIngressList=None,
             portEgress="",
             ethType="",
             ethSrc="",
@@ -1188,8 +1186,8 @@ class OnosCliDriver( CLI ):
             one egress device. For more number of ingress devices, this
             function needs to be modified
         Required:
-            * ingressDevice1: device id of ingress device1
-            * ingressDevice2: device id of ingress device2
+            * ingressDeviceList: List of device ids of ingress device 
+                ( Atleast 2 ingress devices required in the list )
             * egressDevice: device id of egress device
         Optional:
             * ethType: specify ethType
@@ -1254,31 +1252,21 @@ class OnosCliDriver( CLI ):
 
             # Check whether the user appended the port
             # or provided it as an input
-            if "/" in ingressDevice1:
-                cmd += " " + str( ingressDevice1 )
+
+            if portIngressList is None:
+                for ingressDevice in ingressDeviceList:
+                    if "/" in ingressDevice:
+                        cmd += " " + str( ingressDevice )
+                    else:
+                        main.log.error( "You must specify " +
+                                    "the ingress port" )
+                        # TODO: perhaps more meaningful return
+                        return main.FALSE
             else:
-                if not portIngress1:
-                    main.log.error( "You must specify " +
-                                    "the ingress port1" )
-                    # TODO: perhaps more meaningful return
-                    return None
-
-                cmd += " " + \
-                    str( ingressDevice1 ) + "/" +\
-                    str( portIngress1 ) + " "
-
-            if "/" in ingressDevice2:
-                cmd += " " + str( ingressDevice2 )
-            else:
-                if not portIngress2:
-                    main.log.error( "You must specify " +
-                                    "the ingress port2" )
-                    # TODO: perhaps more meaningful return
-                    return None
-
-                cmd += " " + \
-                    str( ingressDevice2 ) + "/" +\
-                    str( portIngress2 ) + " "
+                for ingressDevice,portIngress in zip(ingressDeviceList,portIngressList):
+                    cmd += " " + \
+                        str( ingressDevice ) + "/" +\
+                        str( portIngress ) + " "
 
             if "/" in egressDevice:
                 cmd += " " + str( egressDevice )
@@ -1291,6 +1279,7 @@ class OnosCliDriver( CLI ):
                 cmd += " " +\
                     str( egressDevice ) + "/" +\
                     str( portEgress )
+
             print "cmd= ", cmd
             handle = self.sendline( cmd )
             # If error, return error message
@@ -1301,15 +1290,14 @@ class OnosCliDriver( CLI ):
             else:
                 # TODO: print out all the options in this message?
                 main.log.info( "Multipoint-to-singlepoint intent installed" +
-                               " between " + str( ingressDevice1 ) + ", " +
-                               str( ingressDevice2 ) + " and " +
-                               str( egressDevice ) )
-                match = re.search('id=0x([\da-f]+),', handle)
-                if match:
-                    return match.group()[3:-1]
-                else:
-                    main.log.error( "Error, intent ID not found" )
-                    return None
+                               " failed " )
+                return None
+                #match = re.search('id=0x([\da-f]+),', handle)
+                #if match:
+                    #return match.group()[3:-1]
+                #else:
+                    #main.log.error( "Error, intent ID not found" )
+                    #return None
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
             return None

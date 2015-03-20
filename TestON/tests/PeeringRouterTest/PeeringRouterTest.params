@@ -1,11 +1,11 @@
 <PARAMS>
     
-    <testcases>4</testcases>
+    <testcases>5,7,8,9,31,32</testcases>
 
     #Environment variables
     <ENV>
         <cellName>sdnip_single_instance</cellName>
-        <home>/home/tutorial1/ONLabTest/TestON/tests/PeeringRouterTest</home>
+        <home>/home/admin/ONLabTest/TestON/tests/PeeringRouterTest</home>
     </ENV>
 
     <CTRL>

@@ -319,6 +319,13 @@ class PeeringRouterTest:
         main.log.report( "Uninstalling ONOS" )
         main.ONOSbench.onosUninstall( ONOS1Ip )
 
+        # Copy the cfg files to config dir
+        main.log.info("Copying two cfg files to onos etc folder")
+        main.ONOSbench.handle.sendline("cp " + TESTCASE_ROOT_PATH + "/org.onosproject.openflow.controller.impl.OpenFlowControllerImpl.cfg ~/onos/tools/package/etc/")
+        main.ONOSbench.handle.sendline("cp " + TESTCASE_ROOT_PATH + "/org.onosproject.openflow.controller.impl.OpenFlowControllerImpl.cfg ~/onos/tools/package/etc/")
+        main.step( "Creating ONOS package" )
+        packageResult = main.ONOSbench.onosPackage()
+
         main.step( "Installing ONOS package" )
         onos1InstallResult = main.ONOSbench.onosInstall(
             options="-f", node=ONOS1Ip )
@@ -543,6 +550,13 @@ class PeeringRouterTest:
         main.log.report( "Uninstalling ONOS" )
         main.ONOSbench.onosUninstall( ONOS1Ip )
 
+        # Copy the cfg files to config dir
+        main.log.info("Copying two cfg files to onos etc folder")
+        main.ONOSbench.handle.sendline("cp " + TESTCASE_ROOT_PATH + "/org.onosproject.openflow.controller.impl.OpenFlowControllerImpl.cfg ~/onos/tools/package/etc/")
+        main.ONOSbench.handle.sendline("cp " + TESTCASE_ROOT_PATH + "/org.onosproject.openflow.controller.impl.OpenFlowControllerImpl.cfg ~/onos/tools/package/etc/")
+        main.step( "Creating ONOS package" )
+        packageResult = main.ONOSbench.onosPackage()
+
         main.step( "Installing ONOS package" )
         onos1InstallResult = main.ONOSbench.onosInstall(
             options="-f", node=ONOS1Ip )
@@ -720,6 +734,13 @@ class PeeringRouterTest:
         main.log.report( "Uninstalling ONOS" )
         main.ONOSbench.onosUninstall( ONOS1Ip )
 
+        # Copy the cfg files to config dir
+        main.log.info("Copying two cfg files to onos etc folder")
+        main.ONOSbench.handle.sendline("cp " + TESTCASE_ROOT_PATH + "/org.onosproject.openflow.controller.impl.OpenFlowControllerImpl.cfg ~/onos/tools/package/etc/")
+        main.ONOSbench.handle.sendline("cp " + TESTCASE_ROOT_PATH + "/org.onosproject.openflow.controller.impl.OpenFlowControllerImpl.cfg ~/onos/tools/package/etc/")
+        main.step( "Creating ONOS package" )
+        packageResult = main.ONOSbench.onosPackage()
+
         main.step( "Installing ONOS package" )
         onos1InstallResult = main.ONOSbench.onosInstall(
             options="-f", node=ONOS1Ip )
@@ -762,6 +783,7 @@ class PeeringRouterTest:
         main.QuaggaCliHost3.addRoutes( prefixesHost3, 1 )
         main.log.info("Add the route finally and wait for 10 sec")
 
+        #============================= Ping Test ========================
         for j in range(0, 30):
             r = main.Mininet.pingHost(SRC="as6host", TARGET="3.0.0.1")
 
@@ -949,6 +971,13 @@ class PeeringRouterTest:
         main.log.report( "Uninstalling ONOS" )
         main.ONOSbench.onosUninstall( ONOS1Ip )
 
+        # Copy the cfg files to config dir
+        main.log.info("Copying two cfg files to onos etc folder")
+        main.ONOSbench.handle.sendline("cp " + TESTCASE_ROOT_PATH + "/org.onosproject.openflow.controller.impl.OpenFlowControllerImpl.cfg ~/onos/tools/package/etc/")
+        main.ONOSbench.handle.sendline("cp " + TESTCASE_ROOT_PATH + "/org.onosproject.openflow.controller.impl.OpenFlowControllerImpl.cfg ~/onos/tools/package/etc/")
+        main.step( "Creating ONOS package" )
+        packageResult = main.ONOSbench.onosPackage()
+
         main.step( "Installing ONOS package" )
         onos1InstallResult = main.ONOSbench.onosInstall(
             options="-f", node=ONOS1Ip )
@@ -1083,6 +1112,19 @@ class PeeringRouterTest:
             main.log.report(
                 "***Routes in SDN-IP after convergence are wrong!***" )
 
+        #============================= Ping Test ========================
+        pingTestResults = main.TRUE
+        for m in range( 3, 6 ):
+            for n in range( 1, 10 ):
+                hostIp = str( m ) + ".0." + str( n ) + ".1"
+                r = main.Mininet.pingHost(SRC="as2host", TARGET=hostIp)
+                if r == main.FALSE:
+                    pingTestResults = main.FALSE
+
+        utilities.assert_equals(expect=main.TRUE,actual=pingTestResults,
+                                  onpass="Default connectivity check PASS",
+                                  onfail="Default connectivity check FAIL")
+
         #============= Flap the BGP session between QuaggaCliHost4 and ONOS ==================
         main.log.info( "Disabling bgp session and enable it 20 times very fast between QuaggaCliHost4 and 192.168.30.101:" )
         for i in range(0, 20):
@@ -1128,6 +1170,19 @@ class PeeringRouterTest:
         else:
             main.log.report(
                 "***Routes in SDN-IP after convergence are wrong!***" )
+
+        #============================= Ping Test ========================
+        pingTestResults = main.TRUE
+        for m in range( 3, 6 ):
+            for n in range( 1, 10 ):
+                hostIp = str( m ) + ".0." + str( n ) + ".1"
+                r = main.Mininet.pingHost(SRC="as2host", TARGET=hostIp)
+                if r == main.FALSE:
+                    pingTestResults = main.FALSE
+
+        utilities.assert_equals(expect=main.TRUE,actual=pingTestResults,
+                                  onpass="Default connectivity check PASS",
+                                  onfail="Default connectivity check FAIL")
 
         main.ONOScli.logout()
         main.log.info("ONOS cli logout")
@@ -1216,6 +1271,13 @@ class PeeringRouterTest:
         main.ONOSbench.onosRemoveRaftLogs()
         main.log.report( "Uninstalling ONOS" )
         main.ONOSbench.onosUninstall( ONOS1Ip )
+
+        # Copy the cfg files to config dir
+        main.log.info("Copying two cfg files to onos etc folder")
+        main.ONOSbench.handle.sendline("cp " + TESTCASE_ROOT_PATH + "/org.onosproject.openflow.controller.impl.OpenFlowControllerImpl.cfg ~/onos/tools/package/etc/")
+        main.ONOSbench.handle.sendline("cp " + TESTCASE_ROOT_PATH + "/org.onosproject.openflow.controller.impl.OpenFlowControllerImpl.cfg ~/onos/tools/package/etc/")
+        main.step( "Creating ONOS package" )
+        packageResult = main.ONOSbench.onosPackage()
 
         main.step( "Installing ONOS package" )
         onos1InstallResult = main.ONOSbench.onosInstall(
@@ -1517,6 +1579,13 @@ class PeeringRouterTest:
         main.ONOSbench.onosRemoveRaftLogs()
         main.log.report( "Uninstalling ONOS" )
         main.ONOSbench.onosUninstall( ONOS1Ip )
+
+        # Copy the cfg files to config dir
+        main.log.info("Copying two cfg files to onos etc folder")
+        main.ONOSbench.handle.sendline("cp " + TESTCASE_ROOT_PATH + "/org.onosproject.openflow.controller.impl.OpenFlowControllerImpl.cfg ~/onos/tools/package/etc/")
+        main.ONOSbench.handle.sendline("cp " + TESTCASE_ROOT_PATH + "/org.onosproject.openflow.controller.impl.OpenFlowControllerImpl.cfg ~/onos/tools/package/etc/")
+        main.step( "Creating ONOS package" )
+        packageResult = main.ONOSbench.onosPackage()
 
         main.step( "Installing ONOS package" )
         onos1InstallResult = main.ONOSbench.onosInstall(
@@ -1825,6 +1894,13 @@ class PeeringRouterTest:
         main.log.report( "Uninstalling ONOS" )
         main.ONOSbench.onosUninstall( ONOS1Ip )
 
+        # Copy the cfg files to config dir
+        main.log.info("Copying two cfg files to onos etc folder")
+        main.ONOSbench.handle.sendline("cp " + TESTCASE_ROOT_PATH + "/org.onosproject.openflow.controller.impl.OpenFlowControllerImpl.cfg ~/onos/tools/package/etc/")
+        main.ONOSbench.handle.sendline("cp " + TESTCASE_ROOT_PATH + "/org.onosproject.openflow.controller.impl.OpenFlowControllerImpl.cfg ~/onos/tools/package/etc/")
+        main.step( "Creating ONOS package" )
+        packageResult = main.ONOSbench.onosPackage()
+
         main.step( "Installing ONOS package" )
         onos1InstallResult = main.ONOSbench.onosInstall(
             options="-f", node=ONOS1Ip )
@@ -1913,16 +1989,32 @@ class PeeringRouterTest:
                 "***Routes in SDN-IP after adding routes are wrong!***" )
 
         #============================= Ping Test ========================
-        pingTestResults = main.QuaggaCliHost.pingTestAndCheckAllPass( "1.168.30.100" )
-        main.log.info("Ping test result")
-        if pingTestResults:
-            main.log.info("Test succeeded")
-        else:
-            main.log.info("Test failed")
-       
+        pingTestResults = main.TRUE
+        sources = ["as2host", "as3host", "as6host"]
+        targets = ["192.168.10.101", "192.168.20.101", "192.168.30.101", "192.168.60.101"]
+        for source in sources:
+            for target in targets:
+                r = main.Mininet.pingHost(SRC=source, TARGET=target)
+                if r == main.FALSE:
+                    pingTestResults = main.FALSE
+
+        utilities.assert_equals(expect=main.TRUE,actual=pingTestResults,
+                                  onpass="Router connectivity check PASS",
+                                  onfail="Router connectivity check FAIL")
+
+        pingTestResults = main.TRUE
+        for m in range( 3, 6 ):
+            for n in range( 1, 10 ):
+                hostIp = str( m ) + ".0." + str( n ) + ".1"
+                r = main.Mininet.pingHost(SRC="as2host", TARGET=hostIp)
+                if r == main.FALSE:
+                    pingTestResults = main.FALSE
+
         utilities.assert_equals(expect=main.TRUE,actual=pingTestResults,
                                   onpass="Default connectivity check PASS",
                                   onfail="Default connectivity check FAIL")
+
+        time.sleep(20)
 
         #============= Disconnect the BGP session between QuaggaCliHost4 and ONOS ==================
         main.log.info( "Disabling bgp session between QuaggaCliHost4 and 192.168.30.101:" )
@@ -1964,16 +2056,32 @@ class PeeringRouterTest:
                 "***Routes in SDN-IP after convergence are wrong!***" )
 
         #============================= Ping Test ========================
-        pingTestResults = main.QuaggaCliHost.pingTestAndCheckAllPass( "1.168.30.100" )
-        main.log.info("Ping test result")
-        if pingTestResults:
-            main.log.info("Test succeeded")
-        else:
-            main.log.info("Test failed")
-       
+        pingTestResults = main.TRUE
+        sources = ["as2host", "as3host", "as6host"]
+        targets = ["192.168.10.101", "192.168.20.101", "192.168.30.101", "192.168.60.101"]
+        for source in sources:
+            for target in targets:
+                r = main.Mininet.pingHost(SRC=source, TARGET=target)
+                if r == main.FALSE:
+                    pingTestResults = main.FALSE
+
+        utilities.assert_equals(expect=main.TRUE,actual=pingTestResults,
+                                  onpass="Router connectivity check PASS",
+                                  onfail="Router connectivity check FAIL")
+
+        pingTestResults = main.TRUE
+        for m in range( 3, 6 ):
+            for n in range( 1, 10 ):
+                hostIp = str( m ) + ".0." + str( n ) + ".1"
+                r = main.Mininet.pingHost(SRC="as2host", TARGET=hostIp)
+                if r == main.FALSE:
+                    pingTestResults = main.FALSE
+
         utilities.assert_equals(expect=main.TRUE,actual=pingTestResults,
                                   onpass="Default connectivity check PASS",
                                   onfail="Default connectivity check FAIL")
+
+        time.sleep(20)
 
         #============= Enabling the BGP session between QuaggaCliHost4 and ONOS ==================
         main.log.info( "Enabling bgp session between QuaggaCliHost4 and 192.168.30.101:" )
@@ -2050,16 +2158,19 @@ class PeeringRouterTest:
             main.log.report( "***Routes in SDN-IP after deleting wrong!***" )
 
         #============================= Ping Test ========================
-        pingTestResults = main.QuaggaCliHost.pingTestAndCheckAllFail( "1.168.30.100" )
-        main.log.info("Ping test result")
-        if pingTestResults:
-            main.log.info("Test succeeded")
-        else:
-            main.log.info("Test failed")
+        pingTestResults = main.TRUE
+        for m in range( 4, 6 ):
+            for n in range( 1, 10 ):
+                hostIp = str( m ) + ".0." + str( n ) + ".1"
+                r = main.Mininet.pingHost(SRC="as2host", TARGET=hostIp)
+                if r == main.TRUE:
+                    pingTestResults = main.FALSE
 
         utilities.assert_equals(expect=main.TRUE,actual=pingTestResults,
                                   onpass="disconnect check PASS",
                                   onfail="disconnect check FAIL")
+
+        time.sleep(20);
 
         main.ONOScli.logout()
         main.ONOSbench.onosStop(ONOS1Ip);
@@ -2144,6 +2255,13 @@ class PeeringRouterTest:
         main.log.report( "Uninstalling ONOS" )
         main.ONOSbench.onosUninstall( ONOS1Ip )
 
+        # Copy the cfg files to config dir
+        main.log.info("Copying two cfg files to onos etc folder")
+        main.ONOSbench.handle.sendline("cp " + TESTCASE_ROOT_PATH + "/org.onosproject.openflow.controller.impl.OpenFlowControllerImpl.cfg ~/onos/tools/package/etc/")
+        main.ONOSbench.handle.sendline("cp " + TESTCASE_ROOT_PATH + "/org.onosproject.openflow.controller.impl.OpenFlowControllerImpl.cfg ~/onos/tools/package/etc/")
+        main.step( "Creating ONOS package" )
+        packageResult = main.ONOSbench.onosPackage()
+
         main.step( "Installing ONOS package" )
         onos1InstallResult = main.ONOSbench.onosInstall(
             options="-f", node=ONOS1Ip )
@@ -2214,16 +2332,32 @@ class PeeringRouterTest:
                 "***Routes in SDN-IP after adding routes are wrong!***" )
 
         #============================= Ping Test ========================
-        pingTestResults = main.QuaggaCliHost.pingTestAndCheckAllPass( "1.168.30.100" )
-        main.log.info("Ping test result")
-        if pingTestResults:
-            main.log.info("Test succeeded")
-        else:
-            main.log.info("Test failed")
-       
+        pingTestResults = main.TRUE
+        sources = ["as2host", "as3host", "as6host"]
+        targets = ["192.168.10.101", "192.168.20.101", "192.168.30.101", "192.168.60.101"]
+        for source in sources:
+            for target in targets:
+                r = main.Mininet.pingHost(SRC=source, TARGET=target)
+                if r == main.FALSE:
+                    pingTestResults = main.FALSE
+
+        utilities.assert_equals(expect=main.TRUE,actual=pingTestResults,
+                                  onpass="Router connectivity check PASS",
+                                  onfail="Router connectivity check FAIL")
+
+        pingTestResults = main.TRUE
+        for m in range( 3, 6 ):
+            for n in range( 1, 10 ):
+                hostIp = str( m ) + ".0." + str( n ) + ".1"
+                r = main.Mininet.pingHost(SRC="as2host", TARGET=hostIp)
+                if r == main.FALSE:
+                    pingTestResults = main.FALSE
+
         utilities.assert_equals(expect=main.TRUE,actual=pingTestResults,
                                   onpass="Default connectivity check PASS",
                                   onfail="Default connectivity check FAIL")
+
+        time.sleep(20)
 
         #============= Disconnect the BGP session between QuaggaCliHost4 and ONOS ==================
         main.log.info( "Disabling bgp session between QuaggaCliHost4 and 192.168.30.101:" )
@@ -2265,16 +2399,32 @@ class PeeringRouterTest:
                 "***Routes in SDN-IP after convergence are wrong!***" )
 
         #============================= Ping Test ========================
-        pingTestResults = main.QuaggaCliHost.pingTestAndCheckAllPass( "1.168.30.100" )
-        main.log.info("Ping test result")
-        if pingTestResults:
-            main.log.info("Test succeeded")
-        else:
-            main.log.info("Test failed")
-       
+        pingTestResults = main.TRUE
+        sources = ["as2host", "as3host", "as6host"]
+        targets = ["192.168.10.101", "192.168.20.101", "192.168.30.101", "192.168.60.101"]
+        for source in sources:
+            for target in targets:
+                r = main.Mininet.pingHost(SRC=source, TARGET=target)
+                if r == main.FALSE:
+                    pingTestResults = main.FALSE
+
+        utilities.assert_equals(expect=main.TRUE,actual=pingTestResults,
+                                  onpass="Router connectivity check PASS",
+                                  onfail="Router connectivity check FAIL")
+
+        pingTestResults = main.TRUE
+        for m in range( 3, 6 ):
+            for n in range( 1, 10 ):
+                hostIp = str( m ) + ".0." + str( n ) + ".1"
+                r = main.Mininet.pingHost(SRC="as2host", TARGET=hostIp)
+                if r == main.FALSE:
+                    pingTestResults = main.FALSE
+
         utilities.assert_equals(expect=main.TRUE,actual=pingTestResults,
                                   onpass="Default connectivity check PASS",
                                   onfail="Default connectivity check FAIL")
+
+        time.sleep(20)
 
         #============= Enabling the BGP session between QuaggaCliHost4 and ONOS ==================
         main.log.info( "Enabling bgp session between QuaggaCliHost4 and 192.168.30.101:" )
@@ -2316,16 +2466,32 @@ class PeeringRouterTest:
                 "***Routes in SDN-IP after convergence are wrong!***" )
 
         #============================= Ping Test ========================
-        pingTestResults = main.QuaggaCliHost.pingTestAndCheckAllPass( "1.168.30.100" )
-        main.log.info("Ping test result")
-        if pingTestResults:
-            main.log.info("Test succeeded")
-        else:
-            main.log.info("Test failed")
-       
+        pingTestResults = main.TRUE
+        sources = ["as2host", "as3host", "as6host"]
+        targets = ["192.168.10.101", "192.168.20.101", "192.168.30.101", "192.168.60.101"]
+        for source in sources:
+            for target in targets:
+                r = main.Mininet.pingHost(SRC=source, TARGET=target)
+                if r == main.FALSE:
+                    pingTestResults = main.FALSE
+
+        utilities.assert_equals(expect=main.TRUE,actual=pingTestResults,
+                                  onpass="Router connectivity check PASS",
+                                  onfail="Router connectivity check FAIL")
+
+        pingTestResults = main.TRUE
+        for m in range( 3, 6 ):
+            for n in range( 1, 10 ):
+                hostIp = str( m ) + ".0." + str( n ) + ".1"
+                r = main.Mininet.pingHost(SRC="as2host", TARGET=hostIp)
+                if r == main.FALSE:
+                    pingTestResults = main.FALSE
+
         utilities.assert_equals(expect=main.TRUE,actual=pingTestResults,
                                   onpass="Default connectivity check PASS",
                                   onfail="Default connectivity check FAIL")
+
+        time.sleep(20)
 
         #============================= Deleting Routes ==================
         main.step( "Check deleting routes installed" )
@@ -2351,16 +2517,18 @@ class PeeringRouterTest:
             main.log.report( "***Routes in SDN-IP after deleting wrong!***" )
 
         #============================= Ping Test ========================
-        pingTestResults = main.QuaggaCliHost.pingTestAndCheckAllFail( "1.168.30.100" )
-        main.log.info("Ping test result")
-        if pingTestResults:
-            main.log.info("Test succeeded")
-        else:
-            main.log.info("Test failed")
+        pingTestResults = main.TRUE
+        for m in range( 4, 6 ):
+            for n in range( 1, 10 ):
+                hostIp = str( m ) + ".0." + str( n ) + ".1"
+                r = main.Mininet.pingHost(SRC="as2host", TARGET=hostIp)
+                if r == main.TRUE:
+                    pingTestResults = main.FALSE
 
         utilities.assert_equals(expect=main.TRUE,actual=pingTestResults,
                                   onpass="disconnect check PASS",
                                   onfail="disconnect check FAIL")
+        time.sleep(20)
 
         main.ONOScli.logout()
         main.ONOSbench.onosStop(ONOS1Ip);

@@ -30,7 +30,7 @@ QUAGGA_DIR = '/usr/lib/quagga'
 #QUAGGA_DIR = '/usr/local/sbin'
 QUAGGA_RUN_DIR = '/usr/local/var/run/quagga'
 
-QUAGGA_CONFIG_FILE_DIR = '/home/tutorial1/ONLabTest/TestON/tests/PeeringRouterTest/mininet'
+QUAGGA_CONFIG_FILE_DIR = '/home/admin/ONLabTest/TestON/tests/PeeringRouterTest/mininet'
 
 class VLANHost( Host ):
     "Host connected to VLAN interface"

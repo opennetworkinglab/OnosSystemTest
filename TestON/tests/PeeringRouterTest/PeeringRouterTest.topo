@@ -3,8 +3,8 @@
 
         <Mininet>
             <host>127.0.0.1</host>
-            <user>tutorial1</user>
-            <password>tutorial1</password>
+            <user>admin</user>
+            <password>onos_test</password>
             <type>MininetCliDriver</type>
             <connect_order>1</connect_order>
             <COMPONENTS> </COMPONENTS>
@@ -12,8 +12,8 @@
 
         <ONOSbench>
             <host>127.0.0.1</host>
-            <user>tutorial1</user>
-            <password>tutorial1</password>
+            <user>admin</user>
+            <password></password>
             <type>OnosDriver</type>
             <connect_order>2</connect_order>
             <COMPONENTS> 
@@ -23,8 +23,8 @@
 
         <ONOScli>
             <host>127.0.0.1</host>
-            <user>tutorial1</user>
-            <password>tutorial1</password>
+            <user>admin</user>
+            <password></password>
             <type>OnosCliDriver</type>
             <connect_order>3</connect_order>
             <COMPONENTS> 
@@ -34,8 +34,8 @@
 
         <ONOS1>
             <host>127.0.0.1</host>
-            <user>tutorial1</user>
-            <password>tutorial1</password>
+            <user>admin</user>
+            <password></password>
             <type>OnosDriver</type>
             <connect_order>4</connect_order>
             <COMPONENTS> 
@@ -45,7 +45,7 @@
 
         <QuaggaCliHost3>
             <host>1.168.30.2</host>
-            <user>tutorial1</user>
+            <user>admin</user>
             <password></password>
             <type>QuaggaCliDriver</type>
             <connect_order>5</connect_order>
@@ -53,7 +53,7 @@
         </QuaggaCliHost3>
         <QuaggaCliHost4>
             <host>1.168.30.3</host>
-            <user>tutorial1</user>
+            <user>admin</user>
             <password></password>
             <type>QuaggaCliDriver</type>
             <connect_order>6</connect_order>
@@ -61,7 +61,7 @@
         </QuaggaCliHost4>
         <QuaggaCliHost5>
             <host>1.168.30.5</host>
-            <user>tutorial1</user>
+            <user>admin</user>
             <password></password>
             <type>QuaggaCliDriver</type>
             <connect_order>7</connect_order>
@@ -69,7 +69,7 @@
         </QuaggaCliHost5>
         <QuaggaCliHost>
             <host>1.168.30.100</host>
-            <user>tutorial1</user>
+            <user>admin</user>
             <password></password>
             <type>QuaggaCliDriver</type>
             <connect_order>8</connect_order>

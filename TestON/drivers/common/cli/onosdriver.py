@@ -81,13 +81,17 @@ class OnosDriver( CLI ):
         """
         response = main.TRUE
         try:
-            self.handle.sendline( "" )
-            self.handle.expect( "\$" )
-            self.handle.sendline( "exit" )
-            self.handle.expect( "closed" )
+            if self.handle:
+                self.handle.sendline( "" )
+                self.handle.expect( "\$" )
+                self.handle.sendline( "exit" )
+                self.handle.expect( "closed" )
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
+        except ValueError:
+            main.log.exception( "Exception in discconect of " + self.name )
+            response = main.TRUE
         except Exception:
             main.log.exception( self.name + ": Connection failed to the host" )
             response = main.FALSE
@@ -220,9 +224,13 @@ class OnosDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def gitPull( self, comp1="" ):
+    def gitPull( self, comp1="", fastForward=True ):
         """
         Assumes that "git pull" works without login
+
+        If the fastForward boolean is set to true, only git pulls that can
+        be fast forwarded will be performed. IE if you have not local commits
+        in your branch.
 
         This function will perform a git pull on the ONOS instance.
         If used as gitPull( "NODE" ) it will do git pull + NODE. This is
@@ -239,11 +247,12 @@ class OnosDriver( CLI ):
             # self.stop()
             self.handle.sendline( "cd " + self.home )
             self.handle.expect( self.home + "\$" )
-            if comp1 == "":
-                self.handle.sendline( "git pull" )
-            else:
-                self.handle.sendline( "git pull " + comp1 )
-
+            cmd = "git pull"
+            if comp1 != "":
+                cmd += ' ' +  comp1
+            if fastForward:
+                cmd += ' ' + " --ff-only"
+            self.handle.sendline( cmd )
             i = self.handle.expect(
                 [
                     'fatal',
@@ -254,6 +263,9 @@ class OnosDriver( CLI ):
                     'You\sare\snot\scurrently\son\sa\sbranch',
                     'You asked me to pull without telling me which branch you',
                     'Pull is not possible because you have unmerged files',
+                    'Please enter a commit message to explain why this merge',
+                    'Found a swap file by the name',
+                    'Please, commit your changes before you can merge.',
                     pexpect.TIMEOUT ],
                 timeout=300 )
             # debug
@@ -261,7 +273,11 @@ class OnosDriver( CLI ):
             # "git pull response: " +
             # str( self.handle.before ) + str( self.handle.after ) )
             if i == 0:
-                main.log.error( self.name + ": Git pull had some issue..." )
+                main.log.error( self.name + ": Git pull had some issue" )
+                output = self.handle.after
+                self.handle.expect( '\$' )
+                output += self.handle.before
+                main.log.warn( output )
                 return main.ERROR
             elif i == 1:
                 main.log.error(
@@ -303,6 +319,29 @@ class OnosDriver( CLI ):
                     "you have unmerged files." )
                 return main.ERROR
             elif i == 8:
+                # NOTE: abandoning test since we can't reliably handle this
+                #       there could be different default text editors and we
+                #       also don't know if we actually want to make the commit
+                main.log.error( "Git pull resulted in a merge commit message" +
+                                ". Exiting test!" )
+                main.cleanup()
+                main.exit()
+            elif i == 9:  # Merge commit message but swap file exists
+                main.log.error( "Git pull resulted in a merge commit message" +
+                                " but a swap file exists." )
+                try:
+                    self.handle.send( 'A' )  # Abort
+                    self.handle.expect( "\$" )
+                    return main.ERROR
+                except Exception:
+                    main.log.exception( "Couldn't exit editor prompt!")
+                    main.cleanup()
+                    main.exit()
+            elif i == 10:  # In the middle of a merge commit
+                main.log.error( "Git branch is in the middle of a merge. " )
+                main.log.warn( self.handle.before + self.handle.after )
+                return main.ERROR
+            elif i == 11:
                 main.log.error( self.name + ": Git Pull - TIMEOUT" )
                 main.log.error(
                     self.name + " Response was: " + str(
@@ -348,9 +387,9 @@ class OnosDriver( CLI ):
             self.handle.expect( cmd )
             i = self.handle.expect(
                 [ 'fatal',
-                  'Username\sfor\s(.*):\s',
-                  'Already\son\s\'',
-                  'Switched\sto\sbranch\s\'' + str( branch ),
+                  'Username for (.*): ',
+                  'Already on \'',
+                  'Switched to branch \'' + str( branch ),
                   pexpect.TIMEOUT,
                   'error: Your local changes to the following files' +
                   'would be overwritten by checkout:',
@@ -805,6 +844,7 @@ class OnosDriver( CLI ):
                                   " stop" )
             i = self.handle.expect( [
                 "stop/waiting",
+                "Could not resolve hostname",
                 "Unknown\sinstance",
                 pexpect.TIMEOUT ], timeout=60 )
 
@@ -812,9 +852,12 @@ class OnosDriver( CLI ):
                 main.log.info( "ONOS service stopped" )
                 return main.TRUE
             elif i == 1:
-                main.log.info( "Unknown ONOS instance specified: " +
+                main.log.info( "onosStop() Unknown ONOS instance specified: " +
                                str( nodeIp ) )
                 return main.FALSE
+            elif i == 2:
+                main.log.warn( "ONOS wasn't running" )
+                return main.TRUE
             else:
                 main.log.error( "ONOS service failed to stop" )
                 return main.FALSE

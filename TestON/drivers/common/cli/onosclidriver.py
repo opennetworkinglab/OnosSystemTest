@@ -1182,9 +1182,10 @@ class OnosCliDriver( CLI ):
             setEthDst="" ):
         """
         Note:
-            This function assumes that there would be 2 ingress devices and
-            one egress device. For more number of ingress devices, this
-            function needs to be modified
+            This function assumes the format of all ingress devices
+            is same. That is, all ingress devices include port nos 
+            with a "/" or all ingress devices could specify device 
+            ids and port nos seperately.
         Required:
             * ingressDeviceList: List of device ids of ingress device 
                 ( Atleast 2 ingress devices required in the list )
@@ -1245,6 +1246,7 @@ class OnosCliDriver( CLI ):
                     cmd += " --tcpSrc " + str( tcpSrc )
                 if tcpDst:
                     cmd += " --tcpDst " + str( tcpDst )
+            function needs to be modified
                 if setEthSrc:
                     cmd += " --setEthSrc " + str( setEthSrc )
                 if setEthDst:
@@ -1263,10 +1265,11 @@ class OnosCliDriver( CLI ):
                         # TODO: perhaps more meaningful return
                         return main.FALSE
             else:
-                for ingressDevice,portIngress in zip(ingressDeviceList,portIngressList):
-                    cmd += " " + \
-                        str( ingressDevice ) + "/" +\
-                        str( portIngress ) + " "
+                if len( ingressDeviceList ) == len( portIngressList )
+                    for ingressDevice,portIngress in zip( ingressDeviceList,portIngressList ):
+                        cmd += " " + \
+                            str( ingressDevice ) + "/" +\
+                            str( portIngress ) + " "
 
             if "/" in egressDevice:
                 cmd += " " + str( egressDevice )

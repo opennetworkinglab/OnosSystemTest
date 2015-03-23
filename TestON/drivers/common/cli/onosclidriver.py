@@ -138,7 +138,8 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
         except ValueError:
-            main.log.error( self.name + "ValueError exception in logout method" )
+            main.log.error( self.name +
+                            "ValueError exception in logout method" )
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
@@ -1767,22 +1768,15 @@ class OnosCliDriver( CLI ):
             list of node id's
         """
         try:
-            nodesStr = self.nodes()
+            nodesStr = self.nodes( jsonFormat=True )
             idList = []
-
+            # Sample nodesStr output
+            # id=local, address=127.0.0.1:9876, state=ACTIVE *
             if not nodesStr:
                 main.log.info( "There are no nodes to get id from" )
                 return idList
-
-            # Sample nodesStr output
-            # id=local, address=127.0.0.1:9876, state=ACTIVE *
-
-            # Split the string into list by comma
-            nodesList = nodesStr.split( "," )
-            tempList = [ node for node in nodesList if "id=" in node ]
-            for arg in tempList:
-                idList.append( arg.split( "id=" )[ 1 ] )
-
+            nodesJson = json.loads( nodesStr )
+            idList = [ node.get('id') for node in nodesJson ]
             return idList
 
         except TypeError:
@@ -2198,7 +2192,7 @@ class OnosCliDriver( CLI ):
         try:
             intents = self.intents( )
             intentStates = []
-            for intent in json.loads( intents ):  # Iter through intents of a node
+            for intent in json.loads( intents ):
                 intentStates.append( intent.get( 'state', None ) )
             out = [ (i, intentStates.count( i ) ) for i in set( intentStates ) ]
             main.log.info( dict( out ) )

@@ -247,7 +247,7 @@ class TestON:
                 #print code[testCaseNumber][step]
                 self.stepCount = self.stepCount + 1
                 self.log.exception(e)
-                return main.FALSE
+                self.cleanup()
             return main.TRUE
         
         if cli.stop:

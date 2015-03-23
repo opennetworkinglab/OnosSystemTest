@@ -996,8 +996,8 @@ class OnosDriver( CLI ):
                                         timeout=120 )
                 if i == 1:
                     return main.FALSE
-            self.handle.sendline( "" )
-            self.handle.expect( "\$" )
+            #self.handle.sendline( "" )
+            #self.handle.expect( "\$" )
             return main.TRUE
 
         except pexpect.EOF:

@@ -48,7 +48,7 @@ class OnosDriver( CLI ):
                     self.home = self.options[ 'home' ]
                     break
             if self.home is None or self.home == "":
-                self.home = "~/ONOS"
+                self.home = "~/onos"
 
             self.name = self.options[ 'name' ]
             self.handle = super( OnosDriver, self ).connect(
@@ -177,6 +177,7 @@ class OnosDriver( CLI ):
                     'Runtime\sEnvironment\sto\scontinue',
                     'BUILD\sFAILURE',
                     'BUILD\sSUCCESS',
+                    'onos\$',  #TODO: fix this to be more generic?
                     'ONOS\$',
                     pexpect.TIMEOUT ], timeout=600 )
                 if i == 0:
@@ -192,7 +193,7 @@ class OnosDriver( CLI ):
                     main.exit()
                 elif i == 2:
                     main.log.info( self.name + ": Build success!" )
-                elif i == 3:
+                elif i == 3 or i == 4:
                     main.log.info( self.name + ": Build complete" )
                     # Print the build time
                     for line in self.handle.before.splitlines():
@@ -201,7 +202,7 @@ class OnosDriver( CLI ):
                     self.handle.sendline( "" )
                     self.handle.expect( "\$", timeout=60 )
                     return main.TRUE
-                elif i == 4:
+                elif i == 5:
                     main.log.error(
                         self.name +
                         ": mvn clean install TIMEOUT!" )
@@ -1267,14 +1268,14 @@ class OnosDriver( CLI ):
     def runOnosTopoCfg( self, instanceName, jsonFile ):
         """
          On ONOS bench, run this command:
-         ./~/ONOS/tools/test/bin/onos-topo-cfg $OC1 filename
+         {ONOS_HOME}/tools/test/bin/onos-topo-cfg $OC1 filename
          which starts the rest and copies
          the json file to the onos instance
         """
         try:
             self.handle.sendline( "" )
             self.handle.expect( "\$" )
-            self.handle.sendline( "cd ~/ONOS/tools/test/bin" )
+            self.handle.sendline( "cd " + self.home + "/tools/test/bin" )
             self.handle.expect( "/bin$" )
             cmd = "./onos-topo-cfg " + instanceName + " " + jsonFile
             print "cmd = ", cmd

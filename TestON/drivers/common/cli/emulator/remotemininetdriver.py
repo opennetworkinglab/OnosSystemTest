@@ -299,7 +299,7 @@ class RemoteMininetDriver( Emulator ):
             self.handle.sendline( "" )
             i = self.handle.expect( [ 'No\ssuch\device', 'listening\son',
                                     pexpect.TIMEOUT, "\$" ], timeout=10 )
-            main.log.warn( self.handle.before + self.handle.after )
+            main.log.info( self.handle.before + self.handle.after )
             if i == 0:
                 main.log.error( self.name + ": tcpdump - No such device exists.\
                         tcpdump attempted on: " + intf )
@@ -591,7 +591,6 @@ class RemoteMininetDriver( Emulator ):
                 if actionType == 'remove':
                     # -D is the 'delete' rule of iptables
                     actionRemove = '-D'
-                    # noinspection PyBroadException
                     try:
                         self.handle.sendline( "" )
                         # Delete a specific rule specified into the function

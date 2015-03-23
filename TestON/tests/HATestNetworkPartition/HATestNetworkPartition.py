@@ -529,7 +529,7 @@ class HATestNetworkPartition:
         if PingResult == main.FALSE:
             main.log.report(
                 "Intents have not been installed correctly, pings failed." )
-            main.log.warn( "ONSO1 intents: " )
+            main.log.warn( "ONOS1 intents: " )
             main.log.warn( json.dumps( json.loads( main.ONOScli1.intents() ),
                                        sort_keys=True,
                                        indent=4,

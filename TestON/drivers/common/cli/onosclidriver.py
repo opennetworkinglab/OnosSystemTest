@@ -1287,7 +1287,7 @@ class OnosCliDriver( CLI ):
                         # TODO: perhaps more meaningful return
                         return main.FALSE
             else:
-                if len( ingressDeviceList ) == len( portIngressList )
+                if len( ingressDeviceList ) == len( portIngressList ):
                     for ingressDevice,portIngress in zip( ingressDeviceList,portIngressList ):
                         cmd += " " + \
                             str( ingressDevice ) + "/" +\

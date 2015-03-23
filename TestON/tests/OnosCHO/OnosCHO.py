@@ -255,7 +255,7 @@ class OnosCHO:
             "Collect and Store topology details from ONOS before running any Tests" )
         main.log.report(
             "____________________________________________________________________" )
-        main.case( "Collect and Store Topology Deatils from ONOS" )
+        main.case( "Collect and Store Topology Details from ONOS" )
         main.step( "Collect and store current number of switches and links" )
         topology_output = main.ONOScli1.topology()
         topology_result = main.ONOSbench.getTopology( topology_output )
@@ -273,7 +273,10 @@ class OnosCHO:
             for i in range( 1, ( main.numMNhosts + 1 ) ):
                 main.hostMACs.append( "00:00:00:00:00:" + format( i, '02x' ) + "/-1" )
             print "Host MACs in Store: \n", str( main.hostMACs )
-
+            main.MACsDict = {}
+            for i in range(len(main.deviceDPIDs)):
+                main.MACsDict[main.deviceDPIDs[i]] = main.hostMACs[i].split('/')[0]
+            print main.MACsDict
             main.step( "Collect and store all Devices Links" )
             linksResult = main.ONOScli1.links( jsonFormat=False )
             ansi_escape = re.compile( r'\x1b[^m]*m' )
@@ -1289,13 +1292,13 @@ class OnosCHO:
         
     def CASE9( self ):
         """
-        Install 300 point intents and verify ping all (Att Topology)
+        Install 600 point intents and verify ping all (Att Topology)
         """
-        main.log.report( "Add 300 point intents and verify pingall (Att Topology)" )
+        main.log.report( "Add 600 point intents and verify pingall (Att Topology)" )
         main.log.report( "_______________________________________" )
         import itertools
         import time
-        main.case( "Install 300 point intents" )
+        main.case( "Install 600 point intents" )
         main.step( "Add point Intents" )
         intentResult = main.TRUE
         deviceCombos = list( itertools.permutations( main.deviceDPIDs, 2 ) ) 
@@ -1315,9 +1318,9 @@ class OnosCHO:
                 t = main.Thread( target=cli.addPointIntent,
                         threadID=main.threadID,
                         name="addPointIntent",
-                        args=[deviceCombos[i][0],deviceCombos[i][1],1,1,"IPV4"])
+                        args=[deviceCombos[i][0],deviceCombos[i][1],1,1,"IPV4","",main.MACsDict.get(deviceCombos[i][1])])
                 pool.append(t)
-                time.sleep(1)
+                #time.sleep(1)
                 t.start()
                 i = i + 1
                 main.threadID = main.threadID + 1
@@ -1352,9 +1355,10 @@ class OnosCHO:
         utilities.assert_equals(
             expect=main.TRUE,
             actual=case6Result,
-            onpass="Install 300 point Intents and Ping All test PASS",
-            onfail="Install 300 point Intents and Ping All test FAIL" )
-
+            onpass="Install 600 point Intents and Ping All test PASS",
+            onfail="Install 600 point Intents and Ping All test FAIL" )
+        main.cleanup()
+        main.exit()
     def CASE90( self ):
         """
         Install single-multi point intents and verify Ping all works

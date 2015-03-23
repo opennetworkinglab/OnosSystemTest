@@ -17,14 +17,6 @@ class Thread( threading.Thread ):
         try:
             if self.target is not None:
                 self.result = self.target( *self.args, **self.kwargs )
-            '''
-            if self.target is not None:
-                if len(self.args) != 0:
-                    self.result = self.target( *self.args )
-                else:
-                    self.result = self.target()
-                    # FIXME: handle kwargs?
-            '''
         except Exception as e:
             print "Thread-" + str( self.threadID ) + " '" + self.name + "'"\
                   ":something went wrong with " + self.target + " method"

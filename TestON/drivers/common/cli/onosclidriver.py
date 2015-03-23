@@ -1246,7 +1246,6 @@ class OnosCliDriver( CLI ):
                     cmd += " --tcpSrc " + str( tcpSrc )
                 if tcpDst:
                     cmd += " --tcpDst " + str( tcpDst )
-            function needs to be modified
                 if setEthSrc:
                     cmd += " --setEthSrc " + str( setEthSrc )
                 if setEthDst:

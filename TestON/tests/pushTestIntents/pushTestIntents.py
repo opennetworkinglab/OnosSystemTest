@@ -175,16 +175,21 @@ class pushTestIntents:
         debug = main.params[ 'TEST' ][ 'switchCount' ]
         for i in range(0,len(intentsList)):
             intentsList[i] = int(intentsList[i]) 
-         
+  
+        if debug == "True": 
+            debug = True
+        else: 
+            debug = False
    
         linkCount = 0
-        while True:
+        for i in range(0,10):
             main.ONOSbench.handle.sendline("onos $OC1 links|wc -l")
             main.ONOSbench.handle.expect(":~")
             linkCount = main.ONOSbench.handle.before    
             if debug: main.log.info("Link Count check: " + linkCount)   
             if str((switchCount*2)-2) in linkCount: 
                 break 
+            time.sleep(2)
     
         links = "--" 
         while "=null:" not in links:
@@ -225,6 +230,8 @@ class pushTestIntents:
             withdrawn = []
 
             for run in range(0, (warmUp + sampleSize)):
+                if run > warmUp: 
+                    time.sleep(5)
         
                 myRawResult = "--"
                 while "ms" not in myRawResult:
@@ -233,22 +240,32 @@ class pushTestIntents:
                     myRawResult = main.ONOSbench.handle.before
                     if debug: main.log.info(myRawResult)
 
-                main.log.info(myRawResult)  
+                if debug: main.log.info(myRawResult)  
 
                 if run >= warmUp: 
                     myRawResult = myRawResult.splitlines()
                     for line in myRawResult:
                         if "install" in line:
-                            installed.append(line.split(" ")[5])  
-                        if "withdrawn" in line: 
-                            withdrawn.append(line.split(" ")[5])
-                    print(installed)
-                    print(withdrawn)
-            
-            main.log.info("Scale: " + str(clusterCount) + "\tIntent batch size: " + str(intentSize)) 
-            
+                            installed.append(int(line.split(" ")[5]))  
+                    
+                    for line in myRawResult:
+                        if "withdraw" in line: 
+                            withdrawn.append(int(line.split(" ")[5]))
+
+                    print("installed: " + str(installed))
+                    print("withraw: " + str(withdrawn) + "\n")
+    
+            main.log.report("----------------------------------------------------")
+            main.log.report("Scale: " + str(clusterCount) + "\tIntent batch size: " + str(intentSize)) 
+            main.log.report("Installed average: " + str(numpy.mean(installed)))
+            main.log.report("Installed standard deviation: " + str(numpy.std(installed)))
+            main.log.report("Withdraw average: " + str(numpy.mean(withdrawn)))
+            main.log.report("Withdraw standard deviation: " + str(numpy.std(withdrawn)))
+            main.log.report("     ")
+
+        
                 
-                time.sleep(5)
+            
 
 
 

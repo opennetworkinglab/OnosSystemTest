@@ -1,10 +1,14 @@
 <PARAMS>
-    <testcases>1,3,2,3,2,3,2,3</testcases>
+    <testcases>1,2,3</testcases>
+    
     <ENV>
-    <cellName>network_tp_test</cellName>
-    <cellFeatures>"webconsole,onos-core,onos-api,onos-cli,onos-null,onos-rest,onos-app-metrics,onos-app-metrics-intent,onos-app-metrics-topology"</cellFeatures>
+        <cellName>network_tp_test</cellName>
+        <cellFeatures>"webconsole,onos-core,onos-api,onos-cli,onos-null,onos-rest,onos-app-metrics,onos-app-metrics-intent,onos-app-metrics-topology"</cellFeatures>
+        <onBaremetal>true</onBaremetal>   "true"
     </ENV>
-    <SCALE>2</SCALE>
+        
+    <SCALE>6</SCALE>
+    
     <availableNodes>7</availableNodes>
 
     <GIT>
@@ -26,7 +30,7 @@
         <port5>6633</port5>
 	<ip6>10.254.1.206</ip6>
         <port6>6633</port6>
-	<ip7>10.254.1.207</ip7>
+        <ip7>10.254.1.207</ip7>
         <port7>6633</port7>
     </CTRL>
 
@@ -38,21 +42,21 @@
     <TEST>          #   duration =      time the test loop runs
                     #   log_interval =  how often the data is reported 
                     #   wait =          time between tests, used to let the averages run down 
-               
-        <flickerRates>1000,0,0,0,0,0,0</flickerRates>
-        <devicesPerNode>20,0,0,0,0,0,0</devicesPerNode>
+        <configFile>/onos/tools/package/etc/org.onosproject.net.topology.impl.DefaultTopologyProvider.cfg</configFile>       
+        <flickerRates>20000,20000,20000,20000,20000,20000,20000</flickerRates>
+        <devicesPerNode>40,40,40,40,40,40,40</devicesPerNode>
         <flickerRate>1000</flickerRate>
         <linkgraphdif>.03</linkgraphdif>          # 0-1 indicated link/graph rate dif tolerance
-        <duration>120</duration>
+        <duration>1800</duration>
         <log_interval>15</log_interval>
         <wait>60</wait>
         <skipCleanInstall>yes</skipCleanInstall>
         <MN>localhost</MN>
-	    <logFile>link_event_tp_results_LOG</logFile>
+        <logFile>link_event_tp_results_LOG</logFile>
     </TEST>
 
     <JSON>
         <intents_rate>intentInstalledRate</intents_rate>
-    </JSON>
+    </JSON> 
 
 </PARAMS>

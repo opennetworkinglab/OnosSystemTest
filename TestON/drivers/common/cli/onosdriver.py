@@ -1779,7 +1779,7 @@ class OnosDriver( CLI ):
         configFile.close()        
         os.system( "scp " + tempFile + " admin@" + benchIp + ":" + nullDevicePath)
 
-    def createNullLinkProviderFile( self, benchIp, neighborIpList=0, eventRate=0, onNode=False): 
+    def createNullLinkProviderFile( self, benchIp, neighborIpList=0,fileName="", eventRate=0, onNode=False): 
         '''
                 neighbor list is an optional list of neighbors to be written directly to the file
                 onNode - bool, if true, alternate file path will be used to scp, inteneded
@@ -1799,9 +1799,12 @@ class OnosDriver( CLI ):
             configFile.write("#eventRate = \n")
         else: 
             configFile.write("eventRate = " + str(eventRate) + "\n") 
-
-        configFile.write("#cfgFile = /tmp/foo.cfg        #If enabled, points to the full path to the topology file.\n") 
         
+        if fileName == "":
+            configFile.write("#cfgFile = /tmp/foo.cfg        #If enabled, points to the full path to the topology file.\n") 
+        else: 
+            configFile.write("cfgFile =" + str(fileName) + "\n")
+
         if neighborIpList != 0:
             configFile.write("neighbors = ")
             for n in range (0, len(neighborIpList)):

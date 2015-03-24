@@ -6,19 +6,31 @@
     <availableNodes>7</availableNodes>
  
     <ENV>
-        <cellName>defaultCell</cellName>
+        <cellName>intentRerouteCell</cellName>
         <cellFeatures>webconsole,onos-core,onos-api,onos-cli,onos-null,onos-gui,onos-rest,onos-app-metrics,onos-app-metrics-intent,onos-app-metrics-topology </cellFeatures>
+        <scale1switches>8,</scale1switches>
+        <scale3switches>2,3,3</scale3switches>
+        <scale5switches>2,3,1,1,1</scale5switches>
+        <scale7switches>1,1,2,1,1,1,1</scale7switches>
+    
     </ENV>
 
     <TEST>
         <skipCleanInstall>yes</skipCleanInstall>
-        <switchCount>7</switchCount>
         <warmUp>4</warmUp>
-        <sampleSize>10</sampleSize>                     
+        <sampleSize>20</sampleSize>                     
         <wait></wait>
-        <intents>1000</intents>                       #list format, will be split on ','
-        <debug>False</debug>                                        #"True" for true
+        <intents>1,100,1000,5000</intents>                       #list format, will be split on ','
+        <debug>True</debug>                          
     </TEST>
+
+    <METRICS>
+        <Submitted>0</Submitted>
+        <Installed>1</Installed>
+        <Failed>0</Failed>
+        <Withdraw>0</Withdraw>
+        <Withdrawn>0</Withdrawn>
+    </METRICS>
 
     <GIT>
         <autopull>on</autopull>

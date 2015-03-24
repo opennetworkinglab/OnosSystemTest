@@ -156,8 +156,10 @@ class TopoPerfNextBM:
         defaultSwPort = main.params['CTRL']['port1']
         numIter = main.params['TEST']['numIter']
         iterIgnore = int(main.params['TEST']['iterIgnore'])
+        
         deviceTimestamp = main.params['JSON']['deviceTimestamp']
         graphTimestamp = main.params['JSON']['graphTimestamp']
+
         debugMode = main.params['TEST']['debugMode']
         onosLog = main.params['TEST']['onosLogFile']
         resultPath = main.params['DB']['switchEventResultPath']
@@ -166,25 +168,26 @@ class TopoPerfNextBM:
         thresholdMin = int(thresholdObj[0])
         thresholdMax = int(thresholdObj[1])
        
-        #TODO: Look for 'role-request' messages,
-        #      which replaces the 'vendor' messages previously seen
-        #      on OVS 2.0.1
-        tsharkOfString = main.params[ 'TSHARK' ][ 'ofpRoleReply' ]
+        # Look for 'role-request' messages,
+        # which replaces the 'vendor' messages previously seen
+        # on OVS 2.0.1
         tsharkTcpString = main.params[ 'TSHARK' ][ 'tcpSynAck' ]
+        tsharkFeatureReply = main.params[ 'TSHARK' ][ 'featureReply' ]
+        tsharkRoleRequest = main.params[ 'TSHARK' ][ 'roleRequest' ]
+        tsharkOfString = main.params[ 'TSHARK' ][ 'ofpRoleReply' ]
+
         tsharkOfOutput = '/tmp/tshark_of_topo.txt'
         tsharkTcpOutput = '/tmp/tshark_tcp_topo.txt'
+        tsharkRoleOutput = '/tmp/tshark_role_request.txt'
+        tsharkFeatureOutput = '/tmp/tshark_feature_reply.txt'
 
-        latencyEndToEndList = []
-        latencyOfpToGraphList = []
-        latencyOfpToDeviceList = []
-        latencyT0ToDeviceList = []
-        latencyTcpToOfpList = []
-        
         endToEndLatNodeIter = numpy.zeros((clusterCount, int(numIter)))
         ofpToGraphLatNodeIter = numpy.zeros((clusterCount, int(numIter)))
         ofpToDeviceLatNodeIter = numpy.zeros((clusterCount, int(numIter)))
         
         tcpToOfpLatIter = []
+        tcpToFeatureLatIter = []
+        tcpToRoleLatIter = []
         assertion = main.TRUE
         localTime = time.strftime('%x %X')
         localTime = localTime.replace('/', '')
@@ -204,7 +207,9 @@ class TopoPerfNextBM:
             main.log.info('Starting tshark capture')
             main.ONOS1.tsharkGrep(tsharkTcpString, tsharkTcpOutput)
             main.ONOS1.tsharkGrep(tsharkOfString, tsharkOfOutput)
-            
+            main.ONOS1.tsharkGrep(tsharkRoleRequest, tsharkRoleOutput)
+            main.ONOS1.tsharkGrep(tsharkFeatureReply, tsharkFeatureOutput)
+
             time.sleep(10)
            
             main.log.info('Assigning s3 to controller')
@@ -219,6 +224,14 @@ class TopoPerfNextBM:
             main.log.info('Copying over tshark files')
             os.system('scp ' + ONOSUser + '@' + ONOS1Ip +
                     ':' + tsharkTcpOutput + ' /tmp/')
+            os.system('scp ' + ONOSUser + '@' + ONOS1Ip +
+                    ':' + tsharkRoleOutput + ' /tmp/')
+            os.system('scp ' + ONOSUser + '@' + ONOS1Ip +
+                    ':' + tsharkFeatureOutput + ' /tmp/')
+            os.system('scp ' + ONOSUser + '@' +
+                      ONOS1Ip + ':' + tsharkOfOutput + ' /tmp/')
+           
+            # Get tcp syn / ack output
             time.sleep(5)
             tcpFile = open(tsharkTcpOutput, 'r')
             tempText = tcpFile.readline()
@@ -234,10 +247,8 @@ class TopoPerfNextBM:
                 t0Tcp = 0
                 assertion = main.FALSE
             tcpFile.close()
-            
-            os.system('scp ' + ONOSUser + '@' +
-                      ONOS1Ip + ':' + tsharkOfOutput + ' /tmp/')
-            
+           
+            # Get Role reply output
             time.sleep(5)
             ofFile = open(tsharkOfOutput, 'r')
             lineOfp = ''
@@ -247,7 +258,6 @@ class TopoPerfNextBM:
                     lineOfp = tempText
                 else:
                     break
-
             obj = lineOfp.split(' ')
             main.log.info('Object read in from OFP capture: ' +
                     str(lineOfp))
@@ -259,7 +269,92 @@ class TopoPerfNextBM:
                 t0Ofp = 0
                 assertion = main.FALSE
             ofFile.close()
-            
+           
+            # Get role request output
+            roleFile = open(tsharkRoleOutput, 'r')
+            tempText = roleFile.readline()
+            tempText = tempText.split(' ')
+            if len(tempText) > 1:
+                main.log.info('Object read in from role request capture:' +
+                        str(tempText))
+                roleTimestamp = float(tempText[1]) * 1000.0
+            else:
+                main.log.error('Tshark output file for role request' +
+                        ' returned unexpected results')
+                timeRoleRequest = 0
+                assertion = main.FALSE
+            roleFile.close()
+
+            # Get feature reply output
+            featureFile = open(tsharkFeatureOutput, 'r')
+            tempText = featureFile.readline()
+            tempText = tempText.split(' ')
+            if len(tempText) > 1:
+                main.log.info('Object read in from feature reply capture: '+
+                        str(tempText))
+                featureTimestamp = float(tempText[1]) * 1000.0
+            else:
+                main.log.error('Tshark output file for feature reply' +
+                        ' returned unexpected results')
+                timeFeatureReply = 0
+                assertion = main.FALSE
+            featureFile.close()
+
+            # TODO: calculate feature reply, role request times
+            # stack measurements correctly and report
+
+            """
+            #TODO: Refactor in progress
+
+            for node in range(0, clusterCount):
+                nodeNum = node+1
+                exec "metricsSwUp = main.ONOS%scli.topologyEventsMetrics"%str(nodeNum) 
+                jsonStr = metricsSwUp()
+                jsonObj = json.loads(jsonStr)
+                graphTimestamp = jsonObj[graphTimestamp]['value']
+                deviceTimestamp = jsonObj[deviceTimestamp]['value']
+               
+                deltaGraphTcp = int(graphTimestamp) - int(t0Tcp)
+                deltaDeviceTcp = int(deviceTimestamp) - int(t0Tcp)
+                deltaGraphOfp = int(graphTimestamp) - int(t0Ofp)
+                deltaDeviceOfp = int(deviceTimestamp) - int(t0Ofp)
+                deltaRoleTcp = int(roleTimestamp) - int(t0Tcp) 
+                deltaFeatureTcp = int(featureTimestamp) - int(t0Tcp)
+                deltaOfpTcp = int(t0Ofp) - int(t0Tcp)
+
+                if deltaGraphTcp > thresholdMin and\
+                   deltaGraphTcp < thresholdMax and i >= iterIgnore:
+                    endToEndLatNodeIter[node][i] = deltaGraphTcp
+                    main.log.info("ONOS "+str(nodeNum)+ " tcp-to-graph: "+
+                            str(deltaGraphTcp) + " ms")
+                else:
+                    main.log.info("ONOS "+str(nodeNum)+ " tcp-to-graph "+
+                            "measurement ignored due to excess in "+
+                            "threshold or premature iteration")
+
+                if deltaGraphOfp > thresholdMin and\
+                   deltaGraphOfp < thresholdMax and i >= iterIgnore:
+                    ofpToGraphLatNodeIter[node][i] = deltaGraphOfp
+                    main.log.info("ONOS "+str(nodeNum)+ " ofp-to-graph: "+
+                            str(deltaGraphOfp) + " ms")
+                else:
+                    main.log.info("ONOS "+str(nodeNum)+ " ofp-to-graph: "+
+                            "measurement ignored due to excess in "+
+                            "threshold or premature iteration")
+
+                if deltaDeviceOfp > thresholdMin and\
+                   deltaDeviceOfp < thresholdMax and i >= iterIgnore:
+                    ofpToDeviceLatNodeIter[node][i] = deltaDeviceOfp
+                    main.log.info("ONOS "+str(nodeNum)+ " ofp-to-device: "+
+                            str(deltaDeviceOfp) + " ms")
+                else:
+                    main.log.info("ONOS "+str(nodeNum)+ " ofp-to-device: "+
+                            "measurement ignored due to excess in "+
+                            "threshold or premature iteration")
+
+
+            # ********************
+            """
             jsonStr1 = main.ONOS1cli.topologyEventsMetrics()
             jsonStr2 = ''
             jsonStr3 = ''
@@ -275,7 +370,8 @@ class TopoPerfNextBM:
             jsonObj5 = ''
             jsonObj6 = ''
             jsonObj7 = ''
-            
+
+
             graphTimestamp1 = jsonObj1[graphTimestamp]['value']
             deviceTimestamp1 = jsonObj1[deviceTimestamp]['value']
             
@@ -286,39 +382,46 @@ class TopoPerfNextBM:
             deltaGraph1 = int(graphTimestamp1) - int(t0Tcp)
             deltaOfpGraph1 = int(graphTimestamp1) - int(t0Ofp)
             deltaOfpDevice1 = int(deviceTimestamp1) - int(t0Ofp)
+            # Tshark timestamps 
             deltaTcpOfp1 = int(t0Ofp) - int(t0Tcp)
+            deltaRoleTcp1 = int(roleTimestamp) - int(t0Tcp) 
+            deltaFeatureTcp1 = int(featureTimestamp) - int(t0Tcp)
+            deltaOfpTcp1 = int(t0Ofp) - int(t0Tcp)
             
             if deltaTcpOfp1 > thresholdMin and\
                deltaTcpOfp1 < thresholdMax and i >= iterIgnore:
                 tcpToOfpLatIter.append(deltaTcpOfp1)
-                main.log.info('ONOS1 iter' + str(i) +
+            main.log.info('ONOS1 iter' + str(i) +
                               ' tcp-to-ofp: ' +
                               str(deltaTcpOfp1) + ' ms')
-            else:
-                tcpToOfpLatIter.append(0)
-                main.log.info('ONOS1 iter' + str(i) +
-                        ' tcp-to-ofp: ' + str(deltaTcpOfp1) +
-                        ' ms - ignored this iteration')
+            if deltaFeatureTcp1 > thresholdMin and\
+               deltaFeatureTcp1 < thresholdMax and i >= iterIgnore:
+                tcpToFeatureLatIter.append(deltaFeatureTcp1)
+            main.log.info('ONOS1 iter' + str(i) +
+                            ' tcp-to-feature-reply: ' +
+                            str(deltaFeatureTcp1) + ' ms')
+            if deltaRoleTcp1 > thresholdMin and\
+               deltaRoleTcp1 < thresholdMax and i >= iterIgnore:
+                tcpToRoleLatIter.append(deltaRoleTcp1)
+            main.log.info('ONOS1 iter' + str(i) +
+                            ' tcp-to-role-request: ' +
+                            str(deltaRoleTcp1) + ' ms')
             if deltaGraph1 > thresholdMin and\
                deltaGraph1 < thresholdMax and i >= iterIgnore:
                 endToEndLatNodeIter[0][i] = deltaGraph1
-                main.log.info('ONOS1 iter' + str(i) +
+            main.log.info('ONOS1 iter' + str(i) +
                               ' end-to-end: ' +
                               str(deltaGraph1) + ' ms')
-            else:
-                main.log.info('ONOS1 iter' + str(i) +
-                        ' end-to-end: ' + str(deltaGraph1) +
-                        ' ms - ignored this iteration')
             if deltaOfpGraph1 > thresholdMin and \
                deltaOfpGraph1 < thresholdMax and i >= iterIgnore:
                 ofpToGraphLatNodeIter[0][i] = deltaOfpGraph1
-                main.log.info('ONOS1 iter' + str(i) +
+            main.log.info('ONOS1 iter' + str(i) +
                         ' ofp-to-graph: ' +
                         str(deltaOfpGraph1) + ' ms')
             if deltaOfpDevice1 > thresholdMin and\
                deltaOfpDevice1 < thresholdMax and i >= iterIgnore:
                 ofpToDeviceLatNodeIter[0][i] = deltaOfpDevice1
-                main.log.info('ONOS1 iter' + str(i) +
+            main.log.info('ONOS1 iter' + str(i) +
                         ' ofp-to-device: ' +
                         str(deltaOfpDevice1))
             
@@ -342,36 +445,36 @@ class TopoPerfNextBM:
                 if deltaGraph2 > thresholdMin and\
                    deltaGraph2 < thresholdMax and i >= iterIgnore:
                     endToEndLatNodeIter[1][i] = deltaGraph2
-                    main.log.info('ONOS2 iter' + str(i) +
+                main.log.info('ONOS2 iter' + str(i) +
                             ' end-to-end: ' +
                             str(deltaGraph2) + ' ms')
                 if deltaOfpGraph2 > thresholdMin and\
                    deltaOfpGraph2 < thresholdMax and i >= iterIgnore:
                     ofpToGraphLatNodeIter[1][i] = deltaOfpGraph2
-                    main.log.info('ONOS2 iter' + str(i) +
+                main.log.info('ONOS2 iter' + str(i) +
                             ' ofp-to-graph: ' +
                             str(deltaOfpGraph2) + ' ms')
                 if deltaOfpDevice2 > thresholdMin and\
                    deltaOfpDevice2 < thresholdMax and i >= iterIgnore:
                     ofpToDeviceLatNodeIter[1][i] = deltaOfpDevice2
-                    main.log.info('ONOS2 iter' + str(i) +
+                main.log.info('ONOS2 iter' + str(i) +
                             ' ofp-to-device: ' +
-                            str(deltaOfpDevice2))
+                            str(deltaOfpDevice2)+ ' ms')
                 if deltaGraph3 > thresholdMin and\
                    deltaGraph3 < thresholdMax and i >= iterIgnore:
                     endToEndLatNodeIter[2][i] = deltaGraph3
-                    main.log.info('ONOS3 iter' + str(i) +
+                main.log.info('ONOS3 iter' + str(i) +
                             ' end-to-end: ' + str(deltaGraph3) + ' ms')
                 if deltaOfpGraph3 > thresholdMin and\
                    deltaOfpGraph3 < thresholdMax and i >= iterIgnore:
                     ofpToGraphLatNodeIter[2][i] = deltaOfpGraph3
-                    main.log.info('ONOS3 iter' + str(i) +
+                main.log.info('ONOS3 iter' + str(i) +
                             ' ofp-to-graph: ' +
                             str(deltaOfpGraph3) + ' ms')
                 if deltaOfpDevice3 > thresholdMin and\
-                        deltaOfpDevice3 < thresholdMax and i >= iterIgnore:
+                   deltaOfpDevice3 < thresholdMax and i >= iterIgnore:
                     ofpToDeviceLatNodeIter[2][i] = deltaOfpDevice3
-                    main.log.info('ONOS3 iter' + str(i) +
+                main.log.info('ONOS3 iter' + str(i) +
                             ' ofp-to-device: ' + str(deltaOfpDevice3))
             if clusterCount >= 5:
                 jsonStr4 = main.ONOS4cli.topologyEventsMetrics()
@@ -393,32 +496,32 @@ class TopoPerfNextBM:
                 if deltaGraph4 > thresholdMin and \
                    deltaGraph4 < thresholdMax and i >= iterIgnore:
                     endToEndLatNodeIter[3][i] = deltaGraph4
-                    main.log.info('ONOS4 iter' + str(i) +
+                main.log.info('ONOS4 iter' + str(i) +
                             ' end-to-end: ' + str(deltaGraph4) + ' ms')
                 if deltaOfpDevice4 > thresholdMin and \
                    deltaOfpDevice4 < thresholdMax and i >= iterIgnore:
                     ofpToDeviceLatNodeIter[3][i] = deltaOfpDevice4
-                    main.log.info('ONOS4 iter' + str(i) +
+                main.log.info('ONOS4 iter' + str(i) +
                             ' ofp-to-device: ' + str(deltaOfpDevice4))
                 if deltaOfpGraph4 > thresholdMin and \
                         deltaOfpGraph4 < thresholdMax and i >= iterIgnore:
                     ofpToGraphLatNodeIter[3][i] = deltaOfpGraph4
-                    main.log.info('ONOS4 iter' + str(i) +
+                main.log.info('ONOS4 iter' + str(i) +
                             ' ofp-to-graph: ' + str(deltaOfpGraph4) + ' ms')
                 if deltaGraph5 > thresholdMin and\
                         deltaGraph5 < thresholdMax and i >= iterIgnore:
                     endToEndLatNodeIter[4][i] = deltaGraph5
-                    main.log.info('ONOS5 iter' + str(i) +
+                main.log.info('ONOS5 iter' + str(i) +
                             ' end-to-end: ' + str(deltaGraph5) + ' ms')
                 if deltaOfpDevice5 > thresholdMin and\
                         deltaOfpDevice5 < thresholdMax and i >= iterIgnore:
                     ofpToDeviceLatNodeIter[4][i] = deltaOfpDevice5
-                    main.log.info('ONOS5 iter' + str(i) +
+                main.log.info('ONOS5 iter' + str(i) +
                             ' ofp-to-device: ' + str(deltaOfpDevice5))
                 if deltaOfpGraph5 > thresholdMin and\
                         deltaOfpGraph5 < thresholdMax and i >= iterIgnore:
                     ofpToGraphLatNodeIter[4][i] = deltaOfpGraph5
-                    main.log.info('ONOS5 iter' + str(i) +
+                main.log.info('ONOS5 iter' + str(i) +
                             ' ofp-to-graph: ' +
                             str(deltaOfpGraph5) + ' ms')
             if clusterCount >= 7:
@@ -441,38 +544,38 @@ class TopoPerfNextBM:
                 if deltaGraph6 > thresholdMin and \
                    deltaGraph6 < thresholdMax and i >= iterIgnore:
                     endToEndLatNodeIter[5][i] = deltaGraph6
-                    main.log.info('ONOS6 iter' + str(i) +
+                main.log.info('ONOS6 iter' + str(i) +
                             ' end-to-end: ' + str(deltaGraph6) + ' ms')
                 if deltaOfpDevice6 > thresholdMin and\
                    deltaOfpDevice6 < thresholdMax and i >= iterIgnore:
                     ofpToDeviceLatNodeIter[5][i] = deltaOfpDevice6
-                    main.log.info('ONOS6 iter' + str(i) +
+                main.log.info('ONOS6 iter' + str(i) +
                             ' ofp-to-device: ' + str(deltaOfpDevice6))
                 if deltaOfpGraph6 > thresholdMin and\
                    deltaOfpGraph6 < thresholdMax and i >= iterIgnore:
                     ofpToGraphLatNodeIter[5][i] = deltaOfpGraph6
-                    main.log.info('ONOS6 iter' + str(i) +
+                main.log.info('ONOS6 iter' + str(i) +
                             ' ofp-to-graph: ' +
                             str(deltaOfpGraph6) + ' ms')
                 if deltaGraph7 > thresholdMin and \
                    deltaGraph7 < thresholdMax and i >= iterIgnore:
                     endToEndLatNodeIter[6][i] = deltaGraph7
-                    main.log.info('ONOS7 iter' + str(i) +
+                main.log.info('ONOS7 iter' + str(i) +
                             ' end-to-end: ' + 
                             str(deltaGraph7) + ' ms')
                 if deltaOfpDevice7 > thresholdMin and\
                         deltaOfpDevice7 < thresholdMax and i >= iterIgnore:
                     ofpToDeviceLatNodeIter[6][i] = deltaOfpDevice7
-                    main.log.info('ONOS7 iter' + str(i) +
+                main.log.info('ONOS7 iter' + str(i) +
                             ' ofp-to-device: ' +
                             str(deltaOfpDevice7))
                 if deltaOfpGraph7 > thresholdMin and \
                         deltaOfpGraph7 < thresholdMax and i >= iterIgnore:
                     ofpToGraphLatNodeIter[6][i] = deltaOfpGraph7
-                    main.log.info('ONOS7 iter' + str(i) +
+                main.log.info('ONOS7 iter' + str(i) +
                             ' ofp-to-graph: ' +
                             str(deltaOfpGraph7) + ' ms')
-            
+
             time.sleep(5)
         
             # Get device id to remove
@@ -499,11 +602,19 @@ class TopoPerfNextBM:
 
         endToEndAvg = 0
         ofpToGraphAvg = 0
-        endToEndList = []
-        ofpToGraphList = []
-        ofpToDeviceList = []
         dbCmdList = []
         for node in range(0, clusterCount):
+            # List of latency for each node
+            endToEndList = []
+            ofpToGraphList = []
+            ofpToDeviceList = []
+            tcpToOfpList = []
+            tcpToFeatureList = []
+            tcpToRoleList = []
+
+            # LatNodeIter 2d arrays contain all iteration latency
+            # for each node of the current scale cluster size
+
             for item in endToEndLatNodeIter[node]:
                 if item > 0.0:
                     endToEndList.append(item)
@@ -516,7 +627,22 @@ class TopoPerfNextBM:
                 if item > 0.0:
                     ofpToDeviceList.append(item)
 
+            for item in tcpToOfpLatIter:
+                if item > 0.0:
+                    tcpToOfpList.append(item)
+
+            for item in tcpToFeatureLatIter:
+                if item > 0.0:
+                    tcpToFeatureList.append(item)
+
+            for item in tcpToRoleLatIter:
+                if item > 0.0:
+                    tcpToRoleList.append(item)
+
             endToEndAvg = round(numpy.mean(endToEndList), 2)
+            tcpToOfpAvg = round(numpy.mean(tcpToOfpList), 2)
+            tcpToFeatureAvg = round(numpy.mean(tcpToFeatureList), 2)
+            tcpToRoleAvg = round(numpy.mean(tcpToRoleList), 2)
             ofpToGraphAvg = round(numpy.mean(ofpToGraphList), 2)
             endToEndStd = round(numpy.std(endToEndList), 2)
             ofpToGraphStd = round(numpy.std(ofpToGraphList), 2)
@@ -526,6 +652,9 @@ class TopoPerfNextBM:
             main.log.report(' End-to-end Avg: ' + str(endToEndAvg) +
                     ' ms' + ' End-to-end Std dev: ' +
                     str(endToEndStd) + ' ms')
+            main.log.report(' Tcp-to-role-reply : ' + str(tcpToOfpAvg) + ' ms')
+            main.log.report(' Tcp-to-feature-reply : ' + str(tcpToFeatureAvg) + ' ms')
+            main.log.report(' Tcp-to-role-request : ' + str(tcpToRoleAvg) + ' ms')
             main.log.report(' Ofp-to-graph Avg: ' + str(ofpToGraphAvg) +
                     ' ms' + ' Ofp-to-graph Std dev: ' +
                     str(ofpToGraphStd) + ' ms')
@@ -658,7 +787,59 @@ class TopoPerfNextBM:
                         ' results: ' + str(objDown))
                 timestampBeginPtDown = 0
             fPortDown.close()
-            
+          
+            """
+            # TODO: Refactor in progress
+
+            for node in range(0, clusterCount):
+                nodeNum = node+1
+                exec "metricsDown = main.ONOS%scli.topologyEventsMetrics"%str(nodeNum) 
+                jsonStrDown = metricsDown()
+                jsonObj = json.loads(jsonStrDown)
+                
+                graphTimestamp = jsonObj[graphTimestamp]['value']
+                deviceTimestamp = jsonObj[deviceTimestamp]['value']
+                linkTimestamp = jsonObj[linkTimestamp]['value']
+                
+                ptDownGraphToOfp = int(graphTimestamp) - int(timestampBeginPtDown)
+                ptDownDeviceToOfp = int(deviceTimestamp) - int(timestampBeginPtDown)
+                ptDownLinkToOfp = int(linkTimestamp) - int(timestampBeginPtDown)
+
+                if ptDownGraphToOfp > downThresholdMin and\
+                   ptDownGraphToOfp < downThresholdMax and i > iterIgnore:
+                    portDownGraphNodeIter[node][i] = ptDownGraphToOfp
+                    main.log.info("ONOS "+str(nodeNum)+ 
+                            " port down graph-to-ofp: "+
+                            str(ptDownGraphToOfp) + " ms") 
+                else:
+                    main.log.info("ONOS "+str(nodeNum)+
+                            " port down graph-to-ofp ignored"+
+                            " due to excess in threshold or premature iteration")
+
+                if ptDownDeviceToOfp > downThresholdMin and\
+                   ptDownDeviceToOfp < downThresholdMax and i > iterIgnore:
+                    portDownDeviceNodeIter[node][i] = ptDownDeviceToOfp
+                    main.log.info("ONOS "+str(nodeNum)+ 
+                            " port down device-to-ofp: "+
+                            str(ptDownDeviceToOfp) + " ms") 
+                else:
+                    main.log.info("ONOS "+str(nodeNum)+
+                            " port down device-to-ofp ignored"+
+                            " due to excess in threshold or premature iteration")
+
+                if ptDownLinkToOfp > downThresholdMin and\
+                   ptDownLinkToOfp < downThresholdMax and i > iterIgnore:
+                    portDownLinkNodeIter[node][i] = ptDownLinkToOfp
+                    main.log.info("ONOS "+str(nodeNum)+
+                            " port down link-to-ofp: "+
+                            str(ptDownLinkToOfp) + " ms")
+                else:
+                    main.log.info("ONOS "+str(nodeNum)+
+                            " port down link-to-ofp ignored"+
+                            " due to excess in threshold or premature iteration")
+            """
+            # *************************
+
             main.step('Obtain t1 by metrics call')
             
             jsonStrUp1 = main.ONOS1cli.topologyEventsMetrics()
@@ -669,26 +850,19 @@ class TopoPerfNextBM:
             ptDownGraphToOfp1 = int(graphTimestamp1) - int(timestampBeginPtDown)
             ptDownDeviceToOfp1 = int(deviceTimestamp1) - int(timestampBeginPtDown)
             ptDownLinkToOfp1 = int(linkTimestamp1) - int(timestampBeginPtDown)
-            
+           
             if ptDownGraphToOfp1 > downThresholdMin and\
                ptDownGraphToOfp1 < downThresholdMax and i > iterIgnore:
                 portDownGraphNodeIter[0][i] = ptDownGraphToOfp1
                 main.log.info('ONOS1 iter' + str(i) +
                         ' port down graph-to-ofp: ' +
                         str(ptDownGraphToOfp1) + ' ms')
-            else:
-                main.log.info('ONOS1 iter' + str(i) + 
-                        ' skipped. Result: ' +
-                        str(ptDownGraphToOfp1) + ' ms')
+            
             if ptDownDeviceToOfp1 > downThresholdMin and \
                ptDownDeviceToOfp1 < downThresholdMax and i > iterIgnore:
                 portDownDevNodeIter[0][i] = ptDownDeviceToOfp1
                 main.log.info('ONOS1 iter' + str(i) + 
                         ' port down device-to-ofp: ' +
-                        str(ptDownDeviceToOfp1) + ' ms')
-            else:
-                main.log.info('ONOS1 iter' + str(i) +
-                        ' skipped. Result: ' +
                         str(ptDownDeviceToOfp1) + ' ms')
             if ptDownLinkToOfp1 > downThresholdMin and\
                ptDownLinkToOfp1 < downThresholdMax and i > iterIgnore:
@@ -696,9 +870,7 @@ class TopoPerfNextBM:
                 main.log.info('ONOS1 iter' + str(i) +
                         ' port down link-to-ofp: ' +
                         str(ptDownLinkToOfp1) + ' ms')
-            else:
-                main.log.info('ONOS1 Link-to-ofp skipped. Result: ' +
-                        str(ptDownLinkToOfp1) + ' ms')
+            
             if clusterCount >= 3:
                 jsonStrUp2 = main.ONOS2cli.topologyEventsMetrics()
                 jsonStrUp3 = main.ONOS3cli.topologyEventsMetrics()
@@ -858,7 +1030,7 @@ class TopoPerfNextBM:
                     main.log.info('ONOS7 iter' + str(i) +
                             ' link-to-ofp: ' +
                             str(ptDownLinkToOfp7) + ' ms')
-            
+
             time.sleep(3)
             
             main.step('Starting wireshark capture for port status up')
@@ -888,6 +1060,62 @@ class TopoPerfNextBM:
                 main.log.info('Tshark output file returned unexpected' + ' results.')
                 timestampBeginPtUp = 0
             fPortUp.close()
+            """ 
+            # TODO: Refactoring in progress
+            
+            for node in range(0, clusterCount):
+                nodeNum = node+1
+                exec "metricsUp = main.ONOS%scli.topologyEventsMetrics"%str(nodeNum) 
+                jsonStrUp = metricsUp()
+                jsonObj = json.loads(jsonStrUp)
+                
+                print jsonObj
+
+                graphTimestamp = jsonObj[graphTimestamp]['value']
+                deviceTimestamp = jsonObj[deviceTimestamp]['value']
+                linkTimestamp = jsonObj[linkTimestamp]['value']
+                
+                ptUpGraphToOfp = int(graphTimestamp) - int(timestampBeginPtUp)
+                ptUpDeviceToOfp = int(deviceTimestamp) - int(timestampBeginPtUp)
+                ptUpLinkToOfp = int(linkTimestamp) - int(timestampBeginPtUp)
+
+                if ptUpGraphToOfp > upThresholdMin and\
+                   ptUpGraphToOfp < upThresholdMax and i > iterIgnore:
+                    portUpGraphNodeIter[node][i] = ptUpGraphToOfp
+                    main.log.info("ONOS "+str(nodeNum)+ 
+                            " port up graph-to-ofp: "+
+                            str(ptUpGraphToOfp) + " ms") 
+                else:
+                    main.log.info("ONOS "+str(nodeNum)+
+                            " port up graph-to-ofp ignored"+
+                            " due to excess in threshold or premature iteration")
+
+                if ptUpDeviceToOfp > upThresholdMin and\
+                   ptUpDeviceToOfp < upThresholdMax and i > iterIgnore:
+                    portUpDeviceNodeIter[node][i] = ptUpDeviceToOfp
+                    main.log.info("ONOS "+str(nodeNum)+ 
+                            " port up device-to-ofp: "+
+                            str(ptUpDeviceToOfp) + " ms") 
+                else:
+                    main.log.info("ONOS "+str(nodeNum)+
+                            " port up device-to-ofp ignored"+
+                            " due to excess in threshold or premature iteration")
+
+                if ptUpLinkToOfp > upThresholdMin and\
+                   ptUpLinkToOfp < upThresholdMax and i > iterIgnore:
+                    portUpLinkNodeIter[node][i] = ptUpLinkToOfp
+                    main.log.info("ONOS "+str(nodeNum)+
+                            " port up link-to-ofp: "+
+                            str(ptUpLinkToOfp) + " ms")
+                else:
+                    main.log.info("ONOS "+str(nodeNum)+
+                            " port up link-to-ofp ignored"+
+                            " due to excess in threshold or premature iteration")
+
+            """
+
+            # *****************************
+            
             main.step('Obtain t1 by REST call')
             jsonStrUp1 = main.ONOS1cli.topologyEventsMetrics()
             jsonObj1 = json.loads(jsonStrUp1)
@@ -903,19 +1131,11 @@ class TopoPerfNextBM:
                 main.log.info('ONOS1 iter' + str(i) +
                         ' port up graph-to-ofp: ' +
                         str(ptUpGraphToOfp1) + ' ms')
-            else:
-                main.log.info('ONOS1 iter' + str(i) +
-                        ' skipped. Result: ' +
-                        str(ptUpGraphToOfp1) + ' ms')
             if ptUpDeviceToOfp1 > upThresholdMin and \
                ptUpDeviceToOfp1 < upThresholdMax and i > iterIgnore:
                 portUpDevNodeIter[0][i] = ptUpDeviceToOfp1
                 main.log.info('ONOS1 iter' + str(i) +
                         ' port up device-to-ofp: ' +
-                        str(ptUpDeviceToOfp1) + ' ms')
-            else:
-                main.log.info('ONOS1 iter' + str(i) +
-                        ' skipped. Result: ' +
                         str(ptUpDeviceToOfp1) + ' ms')
             if ptUpLinkToOfp1 > downThresholdMin and\
                ptUpLinkToOfp1 < downThresholdMax and i > iterIgnore:
@@ -1005,10 +1225,16 @@ class TopoPerfNextBM:
                     main.log.info('ONOS4 iter' + str(i) +
                             ' port up device-to-ofp: ' +
                             str(ptUpDeviceToOfp4) + ' ms')
+                if ptUpLinkToOfp4 > downThresholdMin and\
+                   ptUpLinkToOfp4 < downThresholdMax and i > iterIgnore:
+                    portUpLinkNodeIter[3][i] = ptUpLinkToOfp4
+                    main.log.info('ONOS4 iter' + str(i) +
+                            ' port up link-to-ofp: ' +
+                            str(ptUpLinkToOfp4) + ' ms')
                 if ptUpGraphToOfp5 > upThresholdMin and\
                     ptUpGraphToOfp5 < upThresholdMax and i > iterIgnore:
                     portUpGraphNodeIter[4][i] = ptUpGraphToOfp5
-                    main.log.info('ONSO5 iter' + str(i) +
+                    main.log.info('ONOS5 iter' + str(i) +
                             ' port up graph-to-ofp: ' +
                             str(ptUpGraphToOfp5) + ' ms')
                 if ptUpDeviceToOfp5 > upThresholdMin and \
@@ -1017,6 +1243,13 @@ class TopoPerfNextBM:
                     main.log.info('ONOS5 iter' + str(i) +
                             ' port up device-to-ofp: ' +
                             str(ptUpDeviceToOfp5) + ' ms')
+                if ptUpLinkToOfp5 > downThresholdMin and\
+                   ptUpLinkToOfp5 < downThresholdMax and i > iterIgnore:
+                    portUpLinkNodeIter[4][i] = ptUpLinkToOfp5
+                    main.log.info('ONOS5 iter' + str(i) +
+                            ' port up link-to-ofp: ' +
+                            str(ptUpLinkToOfp5) + ' ms')
+            
             if clusterCount >= 7:
                 jsonStrUp6 = main.ONOS6cli.topologyEventsMetrics()
                 jsonStrUp7 = main.ONOS7cli.topologyEventsMetrics()
@@ -1026,45 +1259,67 @@ class TopoPerfNextBM:
                 graphTimestamp7 = jsonObj7[graphTimestamp]['value']
                 deviceTimestamp6 = jsonObj6[deviceTimestamp]['value']
                 deviceTimestamp7 = jsonObj7[deviceTimestamp]['value']
+                linkTimestamp6 = jsonObj6[linkTimestamp]['value']
+                linkTimestamp7 = jsonObj7[linkTimestamp]['value']
                 ptUpGraphToOfp6 = int(graphTimestamp6) - int(timestampBeginPtUp)
                 ptUpGraphToOfp7 = int(graphTimestamp7) - int(timestampBeginPtUp)
                 ptUpDeviceToOfp6 = int(deviceTimestamp6) - int(timestampBeginPtUp)
                 ptUpDeviceToOfp7 = int(deviceTimestamp7) - int(timestampBeginPtUp)
+                ptUpLinkToOfp6 = int(linkTimestamp6) - int(timestampBeginPtUp)
+                ptUpLinkToOfp7 = int(linkTimestamp7) - int(timestampBeginPtUp)
                 if ptUpGraphToOfp6 > upThresholdMin and\
                    ptUpGraphToOfp6 < upThresholdMax and i > iterIgnore:
                     portUpGraphNodeIter[5][i] = ptUpGraphToOfp6
-                    main.log.info('iter' + str(i) +
+                    main.log.info('ONOS6 iter' + str(i) +
                             ' port up graph-to-ofp: ' +
                             str(ptUpGraphToOfp6) + ' ms')
                 if ptUpDeviceToOfp6 > upThresholdMin and\
                    ptUpDeviceToOfp6 < upThresholdMax and i > iterIgnore:
                     portUpDevNodeIter[5][i] = ptUpDeviceToOfp6
-                    main.log.info('iter' + str(i) +
+                    main.log.info('ONOS6 iter' + str(i) +
                             ' port up device-to-ofp: ' + 
                             str(ptUpDeviceToOfp6) + ' ms')
+                if ptUpLinkToOfp6 > downThresholdMin and\
+                   ptUpLinkToOfp6 < downThresholdMax and i > iterIgnore:
+                    portUpLinkNodeIter[5][i] = ptUpLinkToOfp6
+                    main.log.info('ONOS6 iter' + str(i) +
+                            ' port up link-to-ofp: ' +
+                            str(ptUpLinkToOfp6) + ' ms')
                 if ptUpGraphToOfp7 > upThresholdMin and \
                    ptUpGraphToOfp7 < upThresholdMax and i > iterIgnore:
                     portUpGraphNodeIter[6][i] = ptUpGraphToOfp7
-                    main.log.info('iter' + str(i) +
+                    main.log.info('ONOS7 iter' + str(i) +
                             ' port up graph-to-ofp: ' + 
                             str(ptUpGraphToOfp7) + ' ms')
                 if ptUpDeviceToOfp7 > upThresholdMin and\
                    ptUpDeviceToOfp7 < upThresholdMax and i > iterIgnore:
                     portUpDevNodeIter[6][i] = ptUpDeviceToOfp7
-                    main.log.info('iter' + str(i) +
+                    main.log.info('ONOS7 iter' + str(i) +
                             ' port up device-to-ofp: ' +
                             str(ptUpDeviceToOfp7) + ' ms')
+                if ptUpLinkToOfp7 > downThresholdMin and\
+                   ptUpLinkToOfp7 < downThresholdMax and i > iterIgnore:
+                    portUpLinkNodeIter[6][i] = ptUpLinkToOfp7
+                    main.log.info('ONOS7 iter' + str(i) +
+                            ' port up link-to-ofp: ' +
+                            str(ptUpLinkToOfp7) + ' ms')
 
         dbCmdList = []
         for node in range(0, clusterCount):
             portUpDevList = []
             portUpGraphList = []
+            portUpLinkList = []
             portDownDevList = []
             portDownGraphList = []
+            portDownLinkList = []
+
             portUpDevAvg = 0
             portUpGraphAvg = 0
+            portUpLinkAvg = 0
             portDownDevAvg = 0
             portDownGraphAvg = 0
+            portDownLinkAvg = 0
+
             for item in portUpDevNodeIter[node]:
                 if item > 0.0:
                     portUpDevList.append(item)
@@ -1072,6 +1327,10 @@ class TopoPerfNextBM:
             for item in portUpGraphNodeIter[node]:
                 if item > 0.0:
                     portUpGraphList.append(item)
+
+            for item in portUpLinkNodeIter[node]:
+                if item > 0.0:
+                    portUpLinkList.append(item)
 
             for item in portDownDevNodeIter[node]:
                 if item > 0.0:
@@ -1081,21 +1340,36 @@ class TopoPerfNextBM:
                 if item > 0.0:
                     portDownGraphList.append(item)
 
+            for item in portDownLinkNodeIter[node]:
+                if item > 0.0:
+                    portDownLinkList.append(item)
+
             portUpDevAvg = round(numpy.mean(portUpDevList), 2)
             portUpGraphAvg = round(numpy.mean(portUpGraphList), 2)
+            portUpLinkAvg = round(numpy.mean(portUpLinkList), 2)
+
             portDownDevAvg = round(numpy.mean(portDownDevList), 2)
             portDownGraphAvg = round(numpy.mean(portDownGraphList), 2)
+            portDownLinkAvg = round(numpy.mean(portDownLinkList), 2)
+            
             portUpStdDev = round(numpy.std(portUpGraphList), 2)
             portDownStdDev = round(numpy.std(portDownGraphList), 2)
+           
             main.log.report(' - Node ' + str(node + 1) + ' Summary - ')
             main.log.report(' Port up ofp-to-device ' +
-                    str(round(portUpDevAvg, 2)) + ' ms')
+                    str(portUpDevAvg) + ' ms')
             main.log.report(' Port up ofp-to-graph ' +
                     str(portUpGraphAvg) + ' ms')
+            main.log.report(' Port up ofp-to-link ' +
+                    str(portUpLinkAvg) + ' ms')
+            
             main.log.report(' Port down ofp-to-device ' +
                     str(round(portDownDevAvg, 2)) + ' ms')
             main.log.report(' Port down ofp-to-graph ' +
                     str(portDownGraphAvg) + ' ms')
+            main.log.report(' Port down ofp-to-link ' +
+                    str(portDownLinkAvg) + ' ms')
+
             dbCmdList.append("INSERT INTO port_latency_tests VALUES('" + 
                     timeToPost + "','port_latency_results'," + runNum +
                     ',' + str(clusterCount) + ",'baremetal" + str(node + 1) +

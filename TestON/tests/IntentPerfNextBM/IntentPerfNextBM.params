@@ -1,5 +1,5 @@
 <PARAMS>
-    <testcases>1,2,3,4,2,3,4,2,3,4,2,3</testcases>
+    <testcases>1,2,4,2,4,2,4,2</testcases>
 
     <ENV>
         <cellName>intent_perf_test</cellName>
@@ -49,6 +49,7 @@
         <numMult>1</numMult>
         #Interface to bring down for intent reroute case
         <intfs>s3-eth2</intfs>
+        <cellStr>webconsole,onos-core,onos-api,onos-app-metrics,onos-app-gui,onos-cli,onos-openflow</cellStr>
     </TEST>
 
     <DB>

@@ -33,7 +33,7 @@ class IntentEventTP:
         maxNodes = int(main.params[ 'availableNodes' ])
         MNip = main.params[ 'MN' ][ 'ip1' ]
         skipMvn = main.params[ 'TEST' ][ 'skipCleanInstall' ]
-        numSwitches = main.params[ 'TEST' ][ 'numSwitches' ]
+        numSwitches = (main.params[ 'TEST' ][ 'numSwitches' ]).split(",")
 
         homeDir = os.path.expanduser('~')
         
@@ -83,68 +83,26 @@ class IntentEventTP:
         if skipMvn != "yes":
             mvnResult = main.ONOSbench.cleanInstall()
  
-        #configure null device provider         
-        switchList = [0,int(numSwitches),0,0,0,0,0,0]
-        devicesString  = ""
-        for node in range(1, maxNodes + 1):
-            devicesString += (ONOSIp[node] + ":" + str(switchList[node] ))
-            if node < maxNodes:
-                devicesString += (",")
+        #null link
+        #null provider 
+        #linkgraph 
+        #intentPerf
 
-        main.log.info("Configuring device provider: ONOS 1 with " + (numSwitches) + " switches")
-        localPath = "/onos/tools/package/etc/org.onosproject.provider.nil.device.impl.NullDeviceProvider.cfg"
-        filePath = homeDir + localPath
-        main.log.info(filePath)
+        myDistribution = []
+        for node in range (1, clusterCount + 1):
+            myDistribution.append(numSwitches[node-1])
 
-        configFile = open(filePath, 'w+')
-        configFile.write("devConfigs = " + devicesString + "\n")
-        configFile.write("#numPorts = 8") 
-        configFile.close()
-        main.log.info("DevConfig = " + devicesString) 
-        main.log.info("Device provider file written and closed")
+        main.ONOSbench.createLinkGraphFile( BENCHIp,cellIp,myDistribution)
+        main.ONOSbench.createNullDevProviderFile( BENCHIp, cellIp, myDistribution)
+        main.ONOSbench.createNullLinkProviderFile(BENCHIp)
 
-        ## configuring null link provider
-        main.log.info(" Configuring null provider to disable flicker" )
-        homeDir = os.path.expanduser('~')
-        main.log.info(homeDir)
-        localPath = "/onos/tools/package/etc/org.onosproject.provider.nil.link.impl.NullLinkProvider.cfg"
-        filePath = homeDir + localPath
-        main.log.info(filePath)
-
-        neighborsString = ""
-        for node in range(1, maxNodes + 1):
-            neighborsString += ONOSIp[node]
-            if node < maxNodes:
-                neighborsString += ","
-
-        configFile = open(filePath, 'w+')
-        configFile.write("#eventRate =\n")
-        configFile.write("#cfgFile = /tmp/foo.cfg        #If enabled, points to the full path to the topology file.\n")
-        configFile.write("#neighbors = ")
-        configFile.close()
-        main.log.info("Configuration completed")
+        main.log.step("Writing IntentPerf config file") 
+        intentPerfConfig = open( homeDir + "/onos/tools/package/etc/org.onosproject.intentperf.IntentPerfInstaller.cfg", "w+")
+        intentPerfConfig.write("numKeys = 40000\n")        
+        intentPerfConfig.write("cyclePeriod = 1000\n")
+        intentPerfConfig.write("numNeighors = 0\n")
+        intentPerfConfig.close()
         
-        main.log.info("Writing link graph configuration file..." )
-        homeDir = os.path.expanduser('~')
-        localPath = "/onos/tools/package/etc/linkGraph.cfg"
-        filePath = homeDir + localPath
-        linkGraph = open(filePath, 'w+')
-        linkGraph.write("# NullLinkProvider topology description (config file).\n")
-        linkGraph.write("# The NodeId is only added if the destination is another node's device.\n")
-        linkGraph.write("# Bugs: Comments cannot be appended to a line to be read.\n")
-
-        myPort = 6
-        for node in range(1, clusterCount+1):
-            linkGraph.write("graph " + ONOSIp[node] + " {\n")
-            for switch in range (0, switchList[node]-1):
-                line = ""
-                line = ("\t" + str(switch) + ":" + str(myPort))
-                line += " -- "
-                line += (str(switch+1) + ":" + str(myPort-1) + "\n")
-                linkGraph.write(line) 
-            linkGraph.write("}")
-        linkGraph.close()        
-
         main.step( "Creating ONOS package" )
         packageResult = main.ONOSbench.onosPackage()  
 
@@ -170,7 +128,7 @@ class IntentEventTP:
             main.ONOSbench.handle.expect(":~")
             clusterCheck = ((main.ONOSbench.handle.before).splitlines())[3]
             print("\nBefore: " + str(clusterCheck))
-            if "SCC(s)=1," in clusterCheck and ("devices=" + str(numSwitches)) in clusterCheck:                  #check for links and devices too 
+            if "SCC(s)=1," in clusterCheck:     
                 break 
             if clusterCheck != lastOutput:
                 sameOutput = False 
@@ -205,7 +163,7 @@ class IntentEventTP:
         cellName = main.params[ 'ENV' ][ 'cellName' ]
         MNip = main.params[ 'MN' ][ 'ip1' ]
         BENCHIp = main.params[ 'BENCH' ][ 'ip1' ]
-        numSwitches = int(main.params[ 'TEST' ][ 'numSwitches' ])
+        numSwitches = (main.params[ 'TEST' ][ 'numSwitches' ]).split(",")
         scale = int( main.params[ 'SCALE' ] )
         maxNodes = int(main.params[ 'availableNodes' ])
         clusterCount += scale
@@ -234,53 +192,23 @@ class IntentEventTP:
         main.step( "Set Cell" )
         main.ONOSbench.setCell(cellName)
 
-        baselineSwitchCount = numSwitches/clusterCount
-        switchList = [0,0,0,0,0,0,0,0]
-        
-        for node in range(1, clusterCount + 1):
-            switchList[node] = baselineSwitchCount  
-            
-        for node in range(1, (numSwitches%clusterCount)+1):
-            switchList[node] += 1
-                      
-        devicesString  = ""
-        for node in range(1, maxNodes + 1):
-            devicesString += (ONOSIp[node] + ":" + str(switchList[node] ))
-            if node < maxNodes:
-                devicesString += (",")
+        myDistribution = []
+        for node in range (1, clusterCount + 1):
+            myDistribution.append(numSwitches[node-1])
 
-        main.log.info("Configuring device provider")
-        localPath = "/onos/tools/package/etc/org.onosproject.provider.nil.device.impl.NullDeviceProvider.cfg"
-        filePath = homeDir + localPath
-        main.log.info(filePath)
+        main.ONOSbench.createLinkGraphFile( BENCHIp, cellIp, myDistribution)
+        main.ONOSbench.createNullDevProviderFile( BENCHIp, cellIp, myDistribution)
+        main.ONOSbench.createNullLinkProviderFile( BENCHIp )
 
-        configFile = open(filePath, 'w+')
-        configFile.write("devConfigs = " + devicesString +"\n")
-        configFile.write("# numPorts = 8")
-        configFile.close()
-        main.log.info("DevConfig = " + devicesString)
-        main.log.info("Device provider file written and closed")
+        #neighbors = max(1, clusterCount-1) 
+        neighbors = 0
 
-        main.log.info("Writing link graph configuration file..." )
-        homeDir = os.path.expanduser('~')
-        localPath = "/onos/tools/package/etc/linkGraph.cfg"
-        filePath = homeDir + localPath
-        linkGraph = open(filePath, 'w+')
-        linkGraph.write("# NullLinkProvider topology description (config file).\n")
-        linkGraph.write("# The NodeId is only added if the destination is another node's device.\n")
-        linkGraph.write("# Bugs: Comments cannot be appended to a line to be read.\n")
-
-        myPort = 6
-        for node in range(1, clusterCount+1):
-            linkGraph.write("graph " + ONOSIp[node] + " {\n")
-            for switch in range (0, switchList[node]-1):
-                line = ""
-                line = ("\t" + str(switch) + ":" + str(myPort))
-                line += " -- "
-                line += (str(switch+1) + ":" + str(myPort-1) + "\n")
-                linkGraph.write(line)
-            linkGraph.write("}\n")
-        linkGraph.close()
+        main.log.step("Writing IntentPerf config file")
+        intentPerfConfig = open( homeDir + "/onos/tools/package/etc/org.onosproject.intentperf.IntentPerfInstaller.cfg", "w+")
+        intentPerfConfig.write("numKeys = 40000\n")
+        intentPerfConfig.write("cyclePeriod = 1000\n")
+        intentPerfConfig.write("numNeighors = " + str(neighbors) + "\n")
+        intentPerfConfig.close()
 
         main.step( "Creating ONOS package, preparing to reinstall" )
         packageResult = main.ONOSbench.onosPackage()   
@@ -306,7 +234,7 @@ class IntentEventTP:
             main.ONOSbench.handle.expect(":~")
             clusterCheck = ((main.ONOSbench.handle.before).splitlines())[3]
             print("\nBefore: " + str(clusterCheck))
-            if "SCC(s)=1," in clusterCheck and ("nodes=" + str(clusterCount)) in clusterCheck and ("devices=" + str(numSwitches)) in clusterCheck:  
+            if ("SCC(s)=1,") in clusterCheck:   
                 break
             if clusterCheck != lastOutput:
                 sameOutput = False
@@ -326,6 +254,7 @@ class IntentEventTP:
         import json
         import string 
         import csv
+        import numpy
 
         main.log.info("Cluster Count = " + str(clusterCount))
 
@@ -338,7 +267,7 @@ class IntentEventTP:
 
         metricList = [intentsRate, intentsWithdrawn, intentsFailed]
         
-        tempsleep =40
+        tempsleep =20
         main.log.info("sleeping " + str(tempsleep)) 
         time.sleep(tempsleep)
         
@@ -351,47 +280,59 @@ class IntentEventTP:
                 main.ONOSbench.handle.sendline(cmd)
                 main.ONOSbench.handle.expect(":~")
                 main.log.info("Load initiated on node " + str(node))
-       
+        
+            time.sleep(5)
+            actcmd = "onos $OC" + str(node) + " intent-perf-start"
+            main.ONOSbench.handle.sendline(actcmd)
+            main.ONOSbench.handle.expect(":~")
+            main.log.info("Starting ONOS " + str(node) + "  intent-perf...")
+
         main.log.info( "Starting test loop for " + str(testDuration) + " seconds...\n" )
         stop = time.time() + float( testDuration )
         
         while time.time() < stop:
             time.sleep( float( logInterval ) )
+            groupResult = []
             for node in range (1, clusterCount + 1):
-                myResults = ['0','0','0']
-                for metric in metricList: 
-
-                    onosEnv = "onos $OC" + str(node)  
-                    cmd = onosEnv + " " + metric
-                    main.log.info("COMMAND: " + cmd)
-                    main.ONOSbench.handle.sendline( cmd )
-                    time.sleep(10)
-                    main.ONOSbench.handle.expect(":~")                   
-                    rawResult = main.ONOSbench.handle.before
-                    rawResult = (rawResult.splitlines())
-
-                    tempResult = "--"
-                    for word in rawResult:
-                        if debug: print("word: " + word)
-                        if "m1" in str(word): 
-                            tempResult = word
-                            break
-
-                    if tempResult == "--": 
-                        main.log.error("WRONG pexepct.before data\n" + str(rawResult))
-                        main.log.info("retrying command... ")
-                        main.ONOSbench.handle.sendline(cmd)
-                        main.ONOSbench.handle.expect(":~")
-                        test = main.ONOSbench.handle.before
-                        print ("\n\n" + str(test))
-
-                    tempResult = round(float(tempResult.replace("m1=","")),1)
-                    tempResult = str(tempResult)                        # easy way to clean up number/prep to log
-                    resultIndex = metricList.index(metric)
-                    myResults[resultIndex] = tempResult
+                if loadFrom[node] == "0": continue
+                groupResult.append(0)               
                 
-                main.log.info("\tNode " + str(node))
-                main.log.info("Installed\tWithdrawn\tFailed")
-                main.log.info(myResults[0] + "\t\t " + myResults[1] + "\t\t" + myResults[2] + "\n")
-                
+                cmd = " onos-ssh $OC" + str(node) +  """ cat /opt/onos/log/karaf.log | grep "SNAPSHOT | Throughput" | tail -1  """ 
+                main.log.info("COMMAND: " + str(cmd))
+  
+                x = 0 
+                while True: 
+                    main.ONOSbench.handle.sendline(cmd)                   
+                    main.ONOSbench.handle.expect(":~")
+                    raw = main.ONOSbench.handle.before 
+                    if "OVERALL=" in raw: 
+                        break 
+                    x += 1
+                    if x > 10: 
+                        main.log.error("Expected output not being recieved... continuing")
+                        break
+                    time.sleep(2)
 
+                raw = raw.splitlines()
+                splitResults = []
+                for line in raw: 
+                    splitResults.extend(line.split(" "))
+
+                myResult = "--" 
+                for field in splitResults: 
+                    if "OVERALL" in field: 
+                        myResult = field 
+                
+                if myResult == "--": 
+                    main.log.error("Parsing/Pexpect error\n" + str(splitResults)) 
+
+                myResult = myResult.replace(";", "") 
+                myResult = myResult.replace("OVERALL=","")
+                myResult = float(myResult)  
+                groupResult[len(groupResult) -1] = myResult 
+
+                main.log.info("Node " + str(node) + " overall rate: " + str(myResult))
+
+            main.log.report("Results from this round of polling: " + str(groupResult)) 
+            main.log.report("Cluster Total: " + str(numpy.sum(groupResult)) + "\n")
+                

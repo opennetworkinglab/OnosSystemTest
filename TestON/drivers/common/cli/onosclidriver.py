@@ -2347,16 +2347,65 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
+    def appStatus( self, appName ):
+        """
+        Uses the onos:apps cli command to return the status of an application.
+        Returns:
+            "ACTIVE" - If app is installed and activated
+            "INSTALLED" - If app is installed and deactivated
+            "UNINSTALLED" - If app is not installed
+            None - on error
+        """
+        # FIXME also use app-ids to see if an uninstalled app is registered?
+        # FIXME "UNREGISTERED"?
+        try:
+            if not isinstance( appName, types.StringType ):
+                main.log.error( self.name + ".appStatus(): appName must be" +
+                                " a string" )
+                return None
+            output = self.apps( jsonFormat=True )
+            appsJson = json.loads( output )
+            state = None
+            for app in appsJson:
+                if appName == app.get('name'):
+                    state = app.get('state')
+                    break
+            if state == "ACTIVE" or state == "INSTALLED":
+                return state
+            elif state is None:
+                return "UNINSTALLED"
+            elif state:
+                main.log.error( "Unexpected state from 'onos:apps': " +
+                                str( state ) )
+                return state
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
     def app( self, appName, option ):
         """
         Interacts with the app command for ONOS. This command manages
         application inventory.
         """
         # Validate argument types
-        if isinstance( appName, types.StringType ):
+        valid = True
+        if not isinstance( appName, types.StringType ):
             main.log.error( self.name + ".app(): appName must be a string" )
-        if isinstance( option, types.StringType ):
-            main.log.error( self.name + ".option(): option must be a string" )
+            valid = False
+        if not isinstance( option, types.StringType ):
+            main.log.error( self.name + ".app(): option must be a string" )
+            valid = False
+        if not valid:
+            return main.FALSE
         # Validate Option
         option = option.lower()
         # NOTE: Install may become a valid option
@@ -2369,10 +2418,11 @@ class OnosCliDriver( CLI ):
         else:
             # Invalid option
             main.log.error( "The ONOS app command argument only takes the " +
-                            "values: (activate|deactivate|uninstall)." )
+                            "values: (activate|deactivate|uninstall); was " +
+                            "given '" + option + "'")
             return main.FALSE
         try:
-            cmdStr = "onos:app" + option + appName
+            cmdStr = "onos:app " + option + " " + appName
             output = self.sendline( cmdStr )
             # FIXME: look at specific exceptions/Errors
             # Some Possible outputs:
@@ -2381,14 +2431,140 @@ class OnosCliDriver( CLI ):
             if "Error executing command" in output:
                 main.log.error( "Error in processing onos:app command: " +
                                 str( output ) )
-                return main.ERROR
+                return main.FALSE
             elif "No such application" in output:
                 main.log.error( "The application '" + appName +
                                 "' is not installed in ONOS" )
-                return main.ERROR
+                return main.FALSE
+            elif "Command not found:" in output:
+                main.log.error( "Error in processing onos:app command: " +
+                                str( output ) )
+                return main.FALSE
+
             # NOTE: we may need to add more checks here
             main.log.debug( "app response: " + str( output ) )
             return main.TRUE
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return main.ERROR
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
+    def activateApp( self, appName ):
+        """
+        Activate an app that is already installed in ONOS
+        Returns main.TRUE if the command was successfully sent
+                main.FALSE if the cli responded with an error or given
+                    incorrect input
+        """
+        try:
+            if not isinstance( appName, types.StringType ):
+                main.log.error( self.name + ".activateApp(): appName must be" +
+                                " a string" )
+                return main.FALSE
+            status = self.appStatus( appName )
+            if status == "INSTALLED":
+                response = self.app( appName, "activate" )
+                return response
+            elif status == "ACTIVE":
+                return main.TRUE
+            elif status == "UNINSTALLED":
+                main.log.error( self.name + ": Tried to activate the " +
+                                "application '" + appName + "' which is not " +
+                                "installed." )
+            else:
+                main.log.error( "Unexpected return value from appStatus: " +
+                                str( status ) )
+                return main.ERROR
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return main.ERROR
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
+    def deactivateApp( self, appName ):
+        """
+        Deactivate an app that is already activated in ONOS
+        Returns main.TRUE if the command was successfully sent
+                main.FALSE if the cli responded with an error or given
+                    incorrect input
+        """
+        try:
+            if not isinstance( appName, types.StringType ):
+                main.log.error( self.name + ".deactivateApp(): appName must " +
+                                "be a string" )
+                return main.FALSE
+            status = self.appStatus( appName )
+            if status == "INSTALLED":
+                return main.TRUE
+            elif status == "ACTIVE":
+                response = self.app( appName, "deactivate" )
+                return response
+            elif status == "UNINSTALLED":
+                main.log.warn( self.name + ": Tried to deactivate the " +
+                                "application '" + appName + "' which is not " +
+                                "installed." )
+                return main.TRUE
+            else:
+                main.log.error( "Unexpected return value from appStatus: " +
+                                str( status ) )
+                return main.ERROR
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return main.ERROR
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
+    def uninstallApp( self, appName ):
+        """
+        Uninstall an app that is already installed in ONOS
+        Returns main.TRUE if the command was successfully sent
+                main.FALSE if the cli responded with an error or given
+                    incorrect input
+        """
+        # TODO: check with Thomas about the state machine for apps
+        try:
+            if not isinstance( appName, types.StringType ):
+                main.log.error( self.name + ".uninstallApp(): appName must " +
+                                "be a string" )
+                return main.FALSE
+            status = self.appStatus( appName )
+            if status == "INSTALLED":
+                response = self.app( appName, "uninstall" )
+                return response
+            elif status == "ACTIVE":
+                main.log.warn( self.name + ": Tried to uninstall the " +
+                                "application '" + appName + "' which is " +
+                                "currently active." )
+                response = self.app( appName, "uninstall" )
+                return response
+            elif status == "UNINSTALLED":
+                return main.TRUE
+            else:
+                main.log.error( "Unexpected return value from appStatus: " +
+                                str( status ) )
+                return main.ERROR
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
             return main.ERROR

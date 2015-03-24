@@ -143,7 +143,7 @@ class PingallExample:
 
     def CASE3( self, main ):
         """
-           Assign intents
+           Install forwarding app, Pingall and unistall the app
         """
         import time
 
@@ -152,7 +152,19 @@ class PingallExample:
 
         # install onos-app-fwd
         main.log.info( "Install reactive forwarding app" )
-        main.ONOScli1.featureInstall( "onos-app-fwd" )
+        import json
+        main.log.warn(" pretty print json")
+        main.log.debug( json.dumps( json.loads( main.ONOScli1.apps() ),
+                                    sort_keys=True,
+                                    indent=4, separators=(',',':') ) )
+        main.log.warn(" get the status of the app")
+        print main.ONOScli1.appStatus( "org.onosproject.fwd" )
+        main.log.warn(" print the standard apps output")
+        main.log.debug( main.ONOScli1.apps( jsonFormat=False ) )
+        main.log.warn(" activate the app")
+        print main.ONOScli1.activateApp( "org.onosproject.fwd" )
+        main.log.warn(" print the standard apps output")
+        main.log.debug( main.ONOScli1.apps( jsonFormat=False ) )
 
         # REACTIVE FWD test
         pingResult = main.FALSE
@@ -163,7 +175,16 @@ class PingallExample:
 
         # uninstall onos-app-fwd
         main.log.info( "Uninstall reactive forwarding app" )
-        main.ONOScli1.featureUninstall( "onos-app-fwd" )
+        main.log.warn(" print the standard apps output")
+        main.log.debug( main.ONOScli1.apps( jsonFormat=False ) )
+        main.log.warn(" deactivate the app")
+        print main.ONOScli1.deactivateApp( "org.onosproject.fwd" )
+        main.log.warn(" print the standard apps output")
+        main.log.debug( main.ONOScli1.apps( jsonFormat=False ) )
+        main.log.warn(" uninstall the app")
+        print main.ONOScli1.uninstallApp( "org.onosproject.fwd" )
+        main.log.warn(" print the standard apps output")
+        main.log.debug( main.ONOScli1.apps( jsonFormat=False ) )
 
         utilities.assert_equals( expect=main.TRUE, actual=pingResult,
                                  onpass="All hosts are reachable",

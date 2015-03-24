@@ -453,7 +453,6 @@ class OnosCliDriver( CLI ):
         Return:
             topology = current ONOS topology
         """
-        import json
         try:
             # either onos:topology or 'topology' will work in CLI
             cmdStr = "topology -j"
@@ -537,7 +536,7 @@ class OnosCliDriver( CLI ):
         """
         try:
             cmdStr = "device-remove "+str(deviceId)
-            handle = self.sendline( cmdStr )
+            self.sendline( cmdStr )
             return main.TRUE
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
@@ -551,8 +550,6 @@ class OnosCliDriver( CLI ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
-        
-
 
     def devices( self, jsonFormat=True ):
         """
@@ -1207,11 +1204,11 @@ class OnosCliDriver( CLI ):
         """
         Note:
             This function assumes the format of all ingress devices
-            is same. That is, all ingress devices include port nos 
-            with a "/" or all ingress devices could specify device 
-            ids and port nos seperately.
+            is same. That is, all ingress devices include port numbers
+            with a "/" or all ingress devices could specify device
+            ids and port numbers seperately.
         Required:
-            * ingressDeviceList: List of device ids of ingress device 
+            * ingressDeviceList: List of device ids of ingress device
                 ( Atleast 2 ingress devices required in the list )
             * egressDevice: device id of egress device
         Optional:
@@ -1284,12 +1281,12 @@ class OnosCliDriver( CLI ):
                         cmd += " " + str( ingressDevice )
                     else:
                         main.log.error( "You must specify " +
-                                    "the ingress port" )
+                                        "the ingress port" )
                         # TODO: perhaps more meaningful return
                         return main.FALSE
             else:
                 if len( ingressDeviceList ) == len( portIngressList ):
-                    for ingressDevice,portIngress in zip( ingressDeviceList,portIngressList ):
+                    for ingressDevice, portIngress in zip( ingressDeviceList, portIngressList ):
                         cmd += " " + \
                             str( ingressDevice ) + "/" +\
                             str( portIngress ) + " "
@@ -1318,12 +1315,6 @@ class OnosCliDriver( CLI ):
                 main.log.info( "Multipoint-to-singlepoint intent installed" +
                                " failed " )
                 return None
-                #match = re.search('id=0x([\da-f]+),', handle)
-                #if match:
-                    #return match.group()[3:-1]
-                #else:
-                    #main.log.error( "Error, intent ID not found" )
-                    #return None
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
             return None
@@ -1639,7 +1630,7 @@ class OnosCliDriver( CLI ):
             if handle:
                 return handle
             else:
-                # Return empty json 
+                # Return empty json
                 return '{}'
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
@@ -2315,3 +2306,98 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
+    def apps( self, jsonFormat=True ):
+        """
+        Returns the output of the apps command for ONOS. This command lists
+        information about installed ONOS applications
+        """
+        # Sample JSON object
+        # [{"name":"org.onosproject.openflow","id":0,"version":"1.2.0",
+        # "description":"ONOS OpenFlow protocol southbound providers",
+        # "origin":"ON.Lab","permissions":"[]","featuresRepo":"",
+        # "features":"[onos-openflow]","state":"ACTIVE"}]
+        try:
+            if jsonFormat:
+                cmdStr = "onos:apps -j"
+                output = self.sendline( cmdStr )
+                assert "Error executing command" not in output
+                ansiEscape = re.compile( r'\r\r\n\x1b[^m]*m' )
+                cleanedOutput = ansiEscape.sub( '', output )
+                return cleanedOutput
+            else:
+                cmdStr = "onos:apps"
+                output = self.sendline( cmdStr )
+                assert "Error executing command" not in output
+                return output
+        # FIXME: look at specific exceptions/Errors
+        except AssertionError:
+            main.log.error( "Error in processing onos:app command: " +
+                            str( output ) )
+            return None
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
+    def app( self, appName, option ):
+        """
+        Interacts with the app command for ONOS. This command manages
+        application inventory.
+        """
+        # Validate argument types
+        if isinstance( appName, types.StringType ):
+            main.log.error( self.name + ".app(): appName must be a string" )
+        if isinstance( option, types.StringType ):
+            main.log.error( self.name + ".option(): option must be a string" )
+        # Validate Option
+        option = option.lower()
+        # NOTE: Install may become a valid option
+        if option == "activate":
+            pass
+        elif option == "deactivate":
+            pass
+        elif option == "uninstall":
+            pass
+        else:
+            # Invalid option
+            main.log.error( "The ONOS app command argument only takes the " +
+                            "values: (activate|deactivate|uninstall)." )
+            return main.FALSE
+        try:
+            cmdStr = "onos:app" + option + appName
+            output = self.sendline( cmdStr )
+            # FIXME: look at specific exceptions/Errors
+            # Some Possible outputs:
+            # app a b -> No such application:
+            # app a -> Error executing command onos:app: argument name is required
+            if "Error executing command" in output:
+                main.log.error( "Error in processing onos:app command: " +
+                                str( output ) )
+                return main.ERROR
+            elif "No such application" in output:
+                main.log.error( "The application '" + appName +
+                                "' is not installed in ONOS" )
+                return main.ERROR
+            # NOTE: we may need to add more checks here
+            main.log.debug( "app response: " + str( output ) )
+            return main.TRUE
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return main.ERROR
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()

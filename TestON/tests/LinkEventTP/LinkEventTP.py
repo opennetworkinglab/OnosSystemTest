@@ -36,9 +36,12 @@ class LinkEventTP:
         flickerRate = main.params[ 'TEST' ][ 'flickerRate']
         deviceDistribution = (main.params[ 'TEST' ][ 'devicesPerNode']).split(",")    
         MNip = main.params[ 'TEST' ][ 'MN' ]
-      
+        logFileName = main.params[ 'TEST' ][ 'logFile' ]
+        onBaremetal = main.params[ 'ENV' ][ 'onBaremetal' ]
+
         main.ONOSbench.handle.sendline("export TERM=vt100")
         main.ONOSbench.handle.expect(":~") 	    
+        homeDir = os.path.expanduser('~')
 
         #Populate ONOSIp with ips from params 
         for i in range(1, maxNodes + 1): 
@@ -90,34 +93,6 @@ class LinkEventTP:
         if skipMvn != "yes":
             mvnResult = main.ONOSbench.cleanInstall()
 
-        #configuring file to enable flicker
-        main.log.step(" Configuring null provider to enable flicker. Flicker Rate = " + flickerRate )
-        homeDir = os.path.expanduser('~')
-        main.log.info(homeDir)
-        localPath = "/onos/tools/package/etc/org.onosproject.provider.nil.link.impl.NullLinkProvider.cfg"
-        filePath = homeDir + localPath
-        main.log.info(filePath)
-
-        neighborsString = ""
-        for node in range(1, maxNodes + 1):
-            neighborsString += ONOSIp[node]
-            if node < maxNodes:
-                neighborsString += ","
-
-        configFile = open(filePath, 'w+')
-        main.log.info("File opened")
-        configFile.write("# Sample configurations for the NullLinkProvider.\n")
-        configFile.write("# \n")
-        configFile.write("# If enabled, sets time between linkEvent generation\n")
-        configFile.write("# in milliseconds.\n")
-        configFile.write("#\n") 
-        configFile.write("eventRate = " + flickerRate)
-        configFile.write("\n")
-        configFile.write("#Set order of islands to chain together, in a line.\n")
-        configFile.write("neighbors = " + neighborsString)
-        configFile.close()
-        main.log.info("Configuration completed")
-
         ### configure event rate file ###
         main.log.step("Writing Default Topology Provider config file")
         localPath = main.params[ 'TEST' ][ 'configFile' ]
@@ -129,28 +104,27 @@ class LinkEventTP:
         configFile.write("maxIdleMs = 0\n")
         configFile.write("maxBatchMs = 0\n")
         main.log.info("File written and closed")
-       
- 
-        devices_by_ip = ""
-        for node in range(1, maxNodes + 1):
-            devices_by_ip += (ONOSIp[node] + ":" + str(5))
-            if node < maxNodes:
-                devices_by_ip +=(",")
-        
-        main.log.step("Configuring device provider")
-        localPath = "/onos/tools/package/etc/org.onosproject.provider.nil.device.impl.NullDeviceProvider.cfg"
-        filePath = homeDir + localPath
-        main.log.info(filePath)
-        configFile = open(filePath, 'w+')
-        main.log.info("Device config file opened")
-        configFile.write("devConfigs = " + devices_by_ip)
         configFile.close()
-        main.log.info("File closed")
 
-        logFileName = main.params[ 'TEST' ][ 'logFile' ]
         logFile = open(logFileName, 'w+')
         main.log.info("Created log File")
         logFile.close()
+
+        if onBaremetal == "true":
+            filename = "/onos/tools/package/bin/onos-service"
+            serviceConfig = open(homeDir + filename, 'w+')
+            serviceConfig.write("#!/bin/bash\n ")
+            serviceConfig.write("#------------------------------------- \n ")
+            serviceConfig.write("# Starts ONOS Apache Karaf container\n ")
+            serviceConfig.write("#------------------------------------- \n ")
+            serviceConfig.write("#export JAVA_HOME=${JAVA_HOME:-/usr/lib/jvm/java-7-openjdk-amd64/}\n ")
+            serviceConfig.write("""export JAVA_OPTS="${JAVA_OPTS:--Xms256m -Xmx8G}" \n """)
+            serviceConfig.write("")
+            serviceConfig.write("ONOS_HOME=/opt/onos \n ")
+            serviceConfig.write("")
+            serviceConfig.write("[ -d $ONOS_HOME ] && cd $ONOS_HOME || ONOS_HOME=$(dirname $0)/..\n")
+            serviceConfig.write("""${ONOS_HOME}/apache-karaf-$KARAF_VERSION/bin/karaf "$@" \n """)
+            serviceConfig.close() 
 
         main.step( "Creating ONOS package" )
         packageResult = main.ONOSbench.onosPackage()  
@@ -212,11 +186,14 @@ class LinkEventTP:
         main.step( "Set Cell" )
         main.ONOSbench.setCell(cellName)
 
+        main.step( "Packaging" ) 
+        main.ONOSbench.onosPackage()
+
         main.log.report( "Increasing cluster size to " + str( clusterCount ) )
         for node in range(1, clusterCount + 1):
             time.sleep(10)
             main.log.info("Starting ONOS " + str(node) + " at IP: " + ONOSIp[node])
-            main.ONOSbench.onosInstall( ONOSIp[node] )
+            main.ONOSbench.onosInstall( node=ONOSIp[node] )
             exec "a = main.ONOS%scli.startOnosCli" %str(node)
             a(ONOSIp[node])
         
@@ -245,8 +222,7 @@ class LinkEventTP:
         linkResult = main.FALSE
         scale = int( main.params[ 'SCALE' ] )
 
-        testDelay = main.params[ 'TEST' ][ 'wait']
-        time.sleep( float( testDelay ) )
+        testDelay = main.params[ 'TEST' ][ 'wait' ]
                 
         for node in range(1, clusterCount + 1): 
             main.log.info("Writing flicker file to node " + str(node))

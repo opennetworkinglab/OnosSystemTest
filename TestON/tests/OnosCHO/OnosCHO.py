@@ -731,11 +731,6 @@ class OnosCHO:
         
         intentIdList = []
         time1 = time.time()
-        """
-        for i in xrange(0 ,len(hostCombos)):
-            tempId = ONOScli1.addHostIntent( hostCombos[i][0],hostCombos[i][1]] )
-            intentIdList.append(hostCombos[i][0],hostCombos[i][1]])
-        """
         for i in xrange( 0, len( hostCombos ), int(main.numCtrls) ):
             pool = []
             for cli in main.CLIs:
@@ -746,7 +741,6 @@ class OnosCHO:
                         name="addHostIntent",
                         args=[hostCombos[i][0],hostCombos[i][1]])
                 pool.append(t)
-                #time.sleep(1)
                 t.start()
                 i = i + 1
                 main.threadID = main.threadID + 1
@@ -754,7 +748,8 @@ class OnosCHO:
                 thread.join()
                 intentIdList.append(thread.result)
         time2 = time.time()
-        main.log.info("Time for adding host intents: %2f seconds" %(time2-time1)) 
+        main.log.info("Time for adding host intents: %2f seconds" %(time2-time1))
+
         intentResult = main.TRUE
         intentsJson = main.ONOScli2.intents()
         getIntentStateResult = main.ONOScli1.getIntentState(intentsId = intentIdList,
@@ -1289,8 +1284,8 @@ class OnosCHO:
         utilities.assert_equals( expect=main.TRUE, actual=caseResult83,
                                  onpass="Link Up Test PASS",
                                  onfail="Link Up Test FAIL" )
-        
-    def CASE9( self ):
+    
+    def CASE90( self ):
         """
         Install 600 point intents and verify ping all (Att Topology)
         """
@@ -1305,11 +1300,6 @@ class OnosCHO:
         
         intentIdList = []
         time1 = time.time()
-        """
-        for i in xrange(0 ,len(hostCombos)):
-            tempId = ONOScli1.addHostIntent( hostCombos[i][0],hostCombos[i][1]] )
-            intentIdList.append(hostCombos[i][0],hostCombos[i][1]])
-        """
         for i in xrange( 0, len( deviceCombos ), int(main.numCtrls) ):
             pool = []
             for cli in main.CLIs:
@@ -1357,9 +1347,134 @@ class OnosCHO:
             actual=case6Result,
             onpass="Install 600 point Intents and Ping All test PASS",
             onfail="Install 600 point Intents and Ping All test FAIL" )
-        main.cleanup()
-        main.exit()
-    def CASE90( self ):
+
+    def CASE91( self ):
+        """
+        Install ###$$$ point intents and verify ping all (Chordal Topology)
+        """
+        main.log.report( "Add ###$$$ point intents and verify pingall (Chordal Topology)" )
+        main.log.report( "_______________________________________" )
+        import itertools
+        import time
+        main.case( "Install ###$$$ point intents" )
+        main.step( "Add point Intents" )
+        intentResult = main.TRUE
+        deviceCombos = list( itertools.permutations( main.deviceDPIDs, 2 ) ) 
+        
+        intentIdList = []
+        time1 = time.time()
+        for i in xrange( 0, len( deviceCombos ), int(main.numCtrls) ):
+            pool = []
+            for cli in main.CLIs:
+                if i >= len( deviceCombos ):
+                    break
+                t = main.Thread( target=cli.addPointIntent,
+                        threadID=main.threadID,
+                        name="addPointIntent",
+                        args=[deviceCombos[i][0],deviceCombos[i][1],1,1,"IPV4","",main.MACsDict.get(deviceCombos[i][1])])
+                pool.append(t)
+                #time.sleep(1)
+                t.start()
+                i = i + 1
+                main.threadID = main.threadID + 1
+            for thread in pool:
+                thread.join()
+                intentIdList.append(thread.result)
+        time2 = time.time()
+        main.log.info("Time for adding point intents: %2f seconds" %(time2-time1)) 
+        intentResult = main.TRUE
+        intentsJson = main.ONOScli2.intents()
+        getIntentStateResult = main.ONOScli1.getIntentState(intentsId = intentIdList,
+                intentsJson = intentsJson)
+        print getIntentStateResult
+        # Takes awhile for all the onos to get the intents
+        time.sleep(30)
+        main.step( "Verify Ping across all hosts" )
+        pingResult = main.FALSE
+        time1 = time.time()
+        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout)
+        time2 = time.time()
+        timeDiff = round( ( time2 - time1 ), 2 )
+        main.log.report(
+            "Time taken for Ping All: " +
+            str( timeDiff ) +
+            " seconds" )
+        utilities.assert_equals( expect=main.TRUE, actual=pingResult,
+                                 onpass="PING ALL PASS",
+                                 onfail="PING ALL FAIL" )
+
+        case6Result = ( intentResult and pingResult )
+        
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=case6Result,
+            onpass="Install ###$$$ point Intents and Ping All test PASS",
+            onfail="Install ###$$$ point Intents and Ping All test FAIL" )
+    
+    def CASE92( self ):
+        """
+        Install $$$### point intents and verify ping all (Spine Topology)
+        """
+        main.log.report( "Add $$$### point intents and verify pingall (Spine Topology)" )
+        main.log.report( "_______________________________________" )
+        import itertools
+        import time
+        main.case( "Install $$$### point intents" )
+        main.step( "Add point Intents" )
+        intentResult = main.TRUE
+        deviceCombos = list( itertools.permutations( main.deviceDPIDs, 2 ) ) 
+        
+        intentIdList = []
+        time1 = time.time()
+        for i in xrange( 0, len( deviceCombos ), int(main.numCtrls) ):
+            pool = []
+            for cli in main.CLIs:
+                if i >= len( deviceCombos ):
+                    break
+                t = main.Thread( target=cli.addPointIntent,
+                        threadID=main.threadID,
+                        name="addPointIntent",
+                        args=[deviceCombos[i][0],deviceCombos[i][1],1,1,"IPV4","",main.MACsDict.get(deviceCombos[i][1])])
+                pool.append(t)
+                #time.sleep(1)
+                t.start()
+                i = i + 1
+                main.threadID = main.threadID + 1
+            for thread in pool:
+                thread.join()
+                intentIdList.append(thread.result)
+        time2 = time.time()
+        main.log.info("Time for adding point intents: %2f seconds" %(time2-time1)) 
+        intentResult = main.TRUE
+        intentsJson = main.ONOScli2.intents()
+        getIntentStateResult = main.ONOScli1.getIntentState(intentsId = intentIdList,
+                intentsJson = intentsJson)
+        print getIntentStateResult
+        # Takes awhile for all the onos to get the intents
+        time.sleep(30)
+        main.step( "Verify Ping across all hosts" )
+        pingResult = main.FALSE
+        time1 = time.time()
+        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout)
+        time2 = time.time()
+        timeDiff = round( ( time2 - time1 ), 2 )
+        main.log.report(
+            "Time taken for Ping All: " +
+            str( timeDiff ) +
+            " seconds" )
+        utilities.assert_equals( expect=main.TRUE, actual=pingResult,
+                                 onpass="PING ALL PASS",
+                                 onfail="PING ALL FAIL" )
+
+        case6Result = ( intentResult and pingResult )
+        
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=case6Result,
+            onpass="Install $$$### point Intents and Ping All test PASS",
+            onfail="Install $$$### point Intents and Ping All test FAIL" )
+
+    def CASE93( self ):
         """
         Install single-multi point intents and verify Ping all works
         for att topology
@@ -1427,7 +1542,7 @@ class OnosCHO:
             onpass="Ping all test after Point intents addition successful",
             onfail="Ping all test after Point intents addition failed" )
 
-    def CASE91( self ):
+    def CASE94( self ):
         """
         Install single-multi point intents and verify Ping all works
         """
@@ -1437,73 +1552,6 @@ class OnosCHO:
         main.case( "Install single-multi point intents and Ping all" )
         deviceLinksCopy = copy.copy( main.deviceLinks )
         main.step( "Install single-multi point intents" )
-        for i in range( len( deviceLinksCopy ) ):
-            pointLink = str(
-                deviceLinksCopy[ i ] ).replace(
-                "src=",
-                "" ).replace(
-                "dst=",
-                "" ).split( ',' )
-            point1 = pointLink[ 0 ].split( '/' )
-            point2 = pointLink[ 1 ].split( '/' )
-            installResult = main.ONOScli1.addPointIntent(
-                point1[ 0 ], point2[ 0 ], int(
-                    point1[ 1 ] ), int(
-                    point2[ 1 ] ) )
-            if installResult == main.TRUE:
-                print "Installed Point intent between :", point1[ 0 ], int( point1[ 1 ] ), point2[ 0 ], int( point2[ 1 ] )
-
-        main.step( "Obtain the intent id's" )
-        intentsList = main.ONOScli1.getAllIntentIds()
-        ansi_escape = re.compile( r'\x1b[^m]*m' )
-        intentsList = ansi_escape.sub( '', intentsList )
-        intentsList = intentsList.replace(
-            " onos:intents | grep id=",
-            "" ).replace(
-            "id=",
-            "" ).replace(
-            "\r\r",
-             "" )
-        intentsList = intentsList.splitlines()
-        intentsList = intentsList[ 1: ]
-        intentIdList = []
-        for i in range( len( intentsList ) ):
-            intentsTemp = intentsList[ i ].split( ',' )
-            intentIdList.append( intentsTemp[ 0 ] )
-        print "Intent IDs: ", intentIdList
-        print "Total Intents installed: ", len( intentIdList )
-
-        main.step( "Verify Ping across all hosts" )
-        pingResult = main.FALSE
-        time1 = time.time()
-        pingResult = main.Mininet1.pingall()
-        time2 = time.time()
-        timeDiff = round( ( time2 - time1 ), 2 )
-        main.log.report(
-            "Time taken for Ping All: " +
-            str( timeDiff ) +
-            " seconds" )
-        utilities.assert_equals( expect=main.TRUE, actual=pingResult,
-                                 onpass="PING ALL PASS",
-                                 onfail="PING ALL FAIL" )
-
-        case8_result = installResult and pingResult
-        utilities.assert_equals(
-            expect=main.TRUE,
-            actual=case8_result,
-            onpass="Ping all test after Point intents addition successful",
-            onfail="Ping all test after Point intents addition failed" )
-
-    def CASE92( self ):
-        """
-        Install 114 point intents and verify Ping all works
-        """
-        import copy
-        main.log.report( "Install 114 point intents and verify Ping all" )
-        main.log.report( "___________________________________________" )
-        main.case( "Install 114 point intents and Ping all" )
-        deviceLinksCopy = copy.copy( main.deviceLinks )
-        main.step( "Install 114 point intents" )
         for i in range( len( deviceLinksCopy ) ):
             pointLink = str(
                 deviceLinksCopy[ i ] ).replace(
@@ -1619,8 +1667,26 @@ class OnosCHO:
                         intentIdList1.append( intentsTemp1[ 0 ].split('=')[1] )
                     print "Leftover Intent IDs: ", intentIdList1
                     print len(intentIdList1)
-                    for intent in intentIdList1:
-                        main.CLIs[0].removeIntent(intent,'org.onosproject.cli',True,False)
+                    time1 = time.time()
+                    for i in xrange( 0, len( intentIdList1 ), int(main.numCtrls) ):
+                        pool = []
+                        for cli in main.CLIs:
+                            if i >= len( intentIdList1 ):
+                                break
+                            t = main.Thread( target=cli.removeIntent,
+                                    threadID=main.threadID,
+                                    name="removeIntent",
+                                    args=[intentIdList1[i],'org.onosproject.cli',True,False])
+                            pool.append(t)
+                            #time.sleep(1)
+                            t.start()
+                            i = i + 1
+                            main.threadID = main.threadID + 1
+                        for thread in pool:
+                            thread.join()
+                            intentIdList.append(thread.result)
+                    time2 = time.time()
+                    main.log.info("Time for removing host intents: %2f seconds" %(time2-time1))
                     time.sleep(10)
                 else:
                     time.sleep(15)
@@ -1636,7 +1702,6 @@ class OnosCHO:
             step1Result = main.FALSE
 
         print main.ONOScli1.intents()
-        # time.sleep(300)
         caseResult10 = step1Result
         utilities.assert_equals( expect=main.TRUE, actual=caseResult10,
                                  onpass="Intent removal test successful",

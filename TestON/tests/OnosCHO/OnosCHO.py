@@ -1,4 +1,4 @@
-import time
+
 import sys
 import os
 import re
@@ -163,9 +163,8 @@ class OnosCHO:
         utilities.assert_equals( expect=main.TRUE, actual=case1Result,
                                  onpass="Set up test environment PASS",
                                  onfail="Set up test environment FAIL" )
-        time.sleep(30)
 
-    def CASE2( self, main ):
+    def CASE20( self, main ):
         """
         This test script Loads a new Topology (Att) on CHO setup and balances all switches
         """
@@ -231,12 +230,162 @@ class OnosCHO:
             time.sleep( 3 )
         """
         case2Result = ( switch_mastership and startStatus )
-        time.sleep(45)
+        #time.sleep(45)
         utilities.assert_equals(
             expect=main.TRUE,
             actual=case2Result,
             onpass="Starting new Att topology test PASS",
             onfail="Starting new Att topology test FAIL" )
+
+    def CASE21( self, main ):
+        """
+        This test script Loads a new Topology (Chordal) on CHO setup and balances all switches
+        """
+        import re
+        import time
+        import copy
+
+        main.newTopo = main.params['TOPO2']['topo']
+        main.numMNswitches = int ( main.params[ 'TOPO2' ][ 'numSwitches' ] )
+        main.numMNlinks = int ( main.params[ 'TOPO2' ][ 'numLinks' ] )
+        main.numMNhosts = int ( main.params[ 'TOPO2' ][ 'numHosts' ] )
+        main.pingTimeout = 120
+        main.log.report(
+            "Load Chordal topology and Balance all Mininet switches across controllers" )
+        main.log.report(
+            "________________________________________________________________________" )
+        main.case(
+            "Assign and Balance all Mininet switches across controllers" )
+        main.step( "Stop any previous Mininet network topology" )
+        #stopStatus = main.Mininet1.stopNet(fileName = "topoChordal" )
+        #time.sleep(10)
+        main.step( "Start Mininet with Chordal topology" )
+        startStatus = main.Mininet1.startNet(topoFile = main.newTopo)
+        time.sleep(15)
+        main.step( "Assign switches to controllers" )
+        for i in range( 1, ( main.numMNswitches + 1 ) ):  # 1 to ( num of switches +1 )
+            main.Mininet1.assignSwController(
+                sw=str( i ),
+                count=int( main.numCtrls ),
+                ip1=main.ONOS1_ip,
+                port1=main.ONOS1_port,
+                ip2=main.ONOS2_ip,
+                port2=main.ONOS2_port,
+                ip3=main.ONOS3_ip,
+                port3=main.ONOS3_port,
+                ip4=main.ONOS4_ip,
+                port4=main.ONOS4_port,
+                ip5=main.ONOS5_ip,
+                port5=main.ONOS5_port )
+
+        switch_mastership = main.TRUE
+        for i in range( 1, ( main.numMNswitches + 1 ) ):
+            response = main.Mininet1.getSwController( "s" + str( i ) )
+            print( "Response is " + str( response ) )
+            if re.search( "tcp:" + main.ONOS1_ip, response ):
+                switch_mastership = switch_mastership and main.TRUE
+            else:
+                switch_mastership = main.FALSE
+
+        if switch_mastership == main.TRUE:
+            main.log.report( "Controller assignment successfull" )
+        else:
+            main.log.report( "Controller assignment failed" )
+        time.sleep( 5 )
+        
+        #Don't balance master for now..
+        """
+        main.step( "Balance devices across controllers" )
+        for i in range( int( main.numCtrls ) ):
+            balanceResult = main.ONOScli1.balanceMasters()
+            # giving some breathing time for ONOS to complete re-balance
+            time.sleep( 3 )
+        """
+        case21Result = switch_mastership
+        time.sleep(30)
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=case21Result,
+            onpass="Starting new Chordal topology test PASS",
+            onfail="Starting new Chordal topology test FAIL" )
+        
+    def CASE22( self, main ):
+        """
+        This test script Loads a new Topology (Spine) on CHO setup and balances all switches
+        """
+        import re
+        import time
+        import copy
+
+        main.newTopo = main.params['TOPO3']['topo']
+        main.numMNswitches = int ( main.params[ 'TOPO3' ][ 'numSwitches' ] )
+        main.numMNlinks = int ( main.params[ 'TOPO3' ][ 'numLinks' ] )
+        main.numMNhosts = int ( main.params[ 'TOPO3' ][ 'numHosts' ] )
+        main.pingTimeout = 400
+        
+        main.log.report(
+            "Load Spine and Leaf topology and Balance all Mininet switches across controllers" )
+        main.log.report(
+            "________________________________________________________________________" )
+        # need to wait here for sometime until ONOS bootup
+        main.case(
+            "Assign and Balance all Mininet switches across controllers" )
+        main.step( "Stop any previous Mininet network topology" )
+        #stopStatus = main.Mininet1.stopNet(fileName = "topoSpine" )
+        main.step( "Start Mininet with Spine topology" )
+        startStatus = main.Mininet1.startNet(topoFile = main.newTopo)
+        time.sleep(20)
+        main.step( "Assign switches to controllers" )
+        for i in range( 1, ( main.numMNswitches + 1 ) ):  # 1 to ( num of switches +1 )
+            main.Mininet1.assignSwController(
+                sw=str( i ),
+                count= 1,
+                ip1=main.ONOS1_ip,
+                port1=main.ONOS1_port,
+                ip2=main.ONOS2_ip,
+                port2=main.ONOS2_port,
+                ip3=main.ONOS3_ip,
+                port3=main.ONOS3_port,
+                ip4=main.ONOS4_ip,
+                port4=main.ONOS4_port,
+                ip5=main.ONOS5_ip,
+                port5=main.ONOS5_port )
+
+        switch_mastership = main.TRUE
+        for i in range( 1, ( main.numMNswitches + 1 ) ):
+            response = main.Mininet1.getSwController( "s" + str( i ) )
+            print( "Response is " + str( response ) )
+            if re.search( "tcp:" + main.ONOS1_ip, response ):
+                switch_mastership = switch_mastership and main.TRUE
+            else:
+                switch_mastership = main.FALSE
+        
+        if switch_mastership == main.TRUE:
+            main.log.report( "Controller assignment successfull" )
+        else:
+            main.log.report( "Controller assignment failed" )
+        time.sleep( 5 )
+        """
+        main.step( "Balance devices across controllers" )
+        
+        for i in range( int( main.numCtrls ) ):
+            balanceResult = main.ONOScli1.balanceMasters()
+            # giving some breathing time for ONOS to complete re-balance
+            time.sleep( 3 )
+
+        main.step( "Balance devices across controllers" )
+        for i in range( int( main.numCtrls ) ):
+            balanceResult = main.ONOScli1.balanceMasters()
+            # giving some breathing time for ONOS to complete re-balance
+            time.sleep( 3 )
+        """
+        case22Result = switch_mastership
+        time.sleep(30)
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=case22Result,
+            onpass="Starting new Spine topology test PASS",
+            onfail="Starting new Spine topology test FAIL" )
 
     def CASE3( self, main ):
         """
@@ -274,7 +423,8 @@ class OnosCHO:
                 main.hostMACs.append( "00:00:00:00:00:" + format( i, '02x' ) + "/-1" )
             print "Host MACs in Store: \n", str( main.hostMACs )
             main.MACsDict = {}
-            for i in range(len(main.deviceDPIDs)):
+            print "Creating dictionary of DPID and HostMacs"
+            for i in range(len(main.hostMACs)):
                 main.MACsDict[main.deviceDPIDs[i]] = main.hostMACs[i].split('/')[0]
             print main.MACsDict
             main.step( "Collect and store all Devices Links" )
@@ -354,7 +504,7 @@ class OnosCHO:
                                  onpass="Saving ONOS topology data test PASS",
                                  onfail="Saving ONOS topology data test FAIL" )
 
-    def CASE4( self, main ):
+    def CASE40( self, main ):
         """
         Verify Reactive forwarding (Att Topology)
         """
@@ -716,7 +866,7 @@ class OnosCHO:
                                  onpass="Compare Topology test PASS",
                                  onfail="Compare Topology test FAIL" )
 
-    def CASE6( self ):
+    def CASE60( self ):
         """
         Install 300 host intents and verify ping all (Att Topology)
         """
@@ -771,13 +921,136 @@ class OnosCHO:
                                  onpass="PING ALL PASS",
                                  onfail="PING ALL FAIL" )
 
-        case6Result = ( intentResult and pingResult )
+        case60Result = ( intentResult and pingResult )
         
         utilities.assert_equals(
             expect=main.TRUE,
-            actual=case6Result,
+            actual=case60Result,
             onpass="Install 300 Host Intents and Ping All test PASS",
             onfail="Install 300 Host Intents and Ping All test FAIL" )
+
+    def CASE61( self ):
+        """
+        Install 600 host intents and verify ping all for Chordal Topology
+        """
+        main.log.report( "Add 600 host intents and verify pingall (Chordal Topo)" )
+        main.log.report( "_______________________________________" )
+        import itertools
+        
+        main.case( "Install 600 host intents" )
+        main.step( "Add host Intents" )
+        intentResult = main.TRUE
+        hostCombos = list( itertools.combinations( main.hostMACs, 2 ) ) 
+        
+        intentIdList = []
+        time1 = time.time()
+        
+        for i in xrange( 0, len( hostCombos ), int(main.numCtrls) ):
+            pool = []
+            for cli in main.CLIs:
+                if i >= len( hostCombos ):
+                    break
+                t = main.Thread( target=cli.addHostIntent,
+                        threadID=main.threadID,
+                        name="addHostIntent",
+                        args=[hostCombos[i][0],hostCombos[i][1]])
+                pool.append(t)
+                t.start()
+                i = i + 1
+                main.threadID = main.threadID + 1
+            for thread in pool:
+                thread.join()
+                intentIdList.append(thread.result)
+        time2 = time.time()
+        main.log.info("Time for adding host intents: %2f seconds" %(time2-time1))
+        intentResult = main.TRUE
+        intentsJson = main.ONOScli2.intents()
+        getIntentStateResult = main.ONOScli1.getIntentState(intentsId = intentIdList,
+                intentsJson = intentsJson)
+        print getIntentStateResult
+
+        main.step( "Verify Ping across all hosts" )
+        pingResult = main.FALSE
+        time1 = time.time()
+        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout)
+        time2 = time.time()
+        timeDiff = round( ( time2 - time1 ), 2 )
+        main.log.report(
+            "Time taken for Ping All: " +
+            str( timeDiff ) +
+            " seconds" )
+        utilities.assert_equals( expect=main.TRUE, actual=pingResult,
+                                 onpass="PING ALL PASS",
+                                 onfail="PING ALL FAIL" )
+
+        case14Result = ( intentResult and pingResult )
+        
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=case14Result,
+            onpass="Install 300 Host Intents and Ping All test PASS",
+            onfail="Install 300 Host Intents and Ping All test FAIL" )
+
+    def CASE62( self ):
+        """
+        Install 2278 host intents and verify ping all for Spine Topology
+        """
+        main.log.report( "Add 2278 host intents and verify pingall (Spine Topo)" )
+        main.log.report( "_______________________________________" )
+        import itertools
+        
+        main.case( "Install 2278 host intents" )
+        main.step( "Add host Intents" )
+        intentResult = main.TRUE
+        hostCombos = list( itertools.combinations( main.hostMACs, 2 ) ) 
+        main.pingTimeout = 300
+        intentIdList = []
+        time1 = time.time()
+        for i in xrange( 0, len( hostCombos ), int(main.numCtrls) ):
+            pool = []
+            for cli in main.CLIs:
+                if i >= len( hostCombos ):
+                    break
+                t = main.Thread( target=cli.addHostIntent,
+                        threadID=main.threadID,
+                        name="addHostIntent",
+                        args=[hostCombos[i][0],hostCombos[i][1]])
+                pool.append(t)
+                t.start()
+                i = i + 1
+                main.threadID = main.threadID + 1
+            for thread in pool:
+                thread.join()
+                intentIdList.append(thread.result)
+        time2 = time.time()
+        main.log.info("Time for adding host intents: %2f seconds" %(time2-time1))
+        intentResult = main.TRUE
+        intentsJson = main.ONOScli2.intents()
+        getIntentStateResult = main.ONOScli1.getIntentState(intentsId = intentIdList,
+                intentsJson = intentsJson)
+        print getIntentStateResult
+
+        main.step( "Verify Ping across all hosts" )
+        pingResult = main.FALSE
+        time1 = time.time()
+        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout)
+        time2 = time.time()
+        timeDiff = round( ( time2 - time1 ), 2 )
+        main.log.report(
+            "Time taken for Ping All: " +
+            str( timeDiff ) +
+            " seconds" )
+        utilities.assert_equals( expect=main.TRUE, actual=pingResult,
+                                 onpass="PING ALL PASS",
+                                 onfail="PING ALL FAIL" )
+
+        case15Result = ( intentResult and pingResult )
+        
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=case15Result,
+            onpass="Install 2278 Host Intents and Ping All test PASS",
+            onfail="Install 2278 Host Intents and Ping All test FAIL" )
 
     def CASE70( self, main ):
         """
@@ -787,13 +1060,13 @@ class OnosCHO:
         main.randomLink1 = []
         main.randomLink2 = []
         main.randomLink3 = []
-        link1End1 = main.params[ 'CORELINKS' ][ 'linkS3a' ]
-        link1End2 = main.params[ 'CORELINKS' ][ 'linkS3b' ].split( ',' )
-        link2End1 = main.params[ 'CORELINKS' ][ 'linkS14a' ]
-        link2End2 = main.params[ 'CORELINKS' ][ 'linkS14b' ].split( ',' )
-        link3End1 = main.params[ 'CORELINKS' ][ 'linkS18a' ]
-        link3End2 = main.params[ 'CORELINKS' ][ 'linkS18b' ].split( ',' )
-        switchLinksToToggle = main.params[ 'CORELINKS' ][ 'toggleLinks' ]
+        link1End1 = main.params[ 'ATTCORELINKS' ][ 'linkS3a' ]
+        link1End2 = main.params[ 'ATTCORELINKS' ][ 'linkS3b' ].split( ',' )
+        link2End1 = main.params[ 'ATTCORELINKS' ][ 'linkS14a' ]
+        link2End2 = main.params[ 'ATTCORELINKS' ][ 'linkS14b' ].split( ',' )
+        link3End1 = main.params[ 'ATTCORELINKS' ][ 'linkS18a' ]
+        link3End2 = main.params[ 'ATTCORELINKS' ][ 'linkS18b' ].split( ',' )
+        switchLinksToToggle = main.params[ 'ATTCORELINKS' ][ 'toggleLinks' ]
         link_sleep = int( main.params[ 'timers' ][ 'LinkDiscovery' ] )
 
         main.log.report( "Randomly bring some core links down and verify ping all (Host Intents-Att Topo)" )
@@ -863,11 +1136,11 @@ class OnosCHO:
         Bring the core links up that are down and verify ping all ( Host Intents-Att Topo )
         """
         import random
-        link1End1 = main.params[ 'CORELINKS' ][ 'linkS3a' ]
-        link2End1 = main.params[ 'CORELINKS' ][ 'linkS14a' ]
-        link3End1 = main.params[ 'CORELINKS' ][ 'linkS18a' ]
+        link1End1 = main.params[ 'ATTCORELINKS' ][ 'linkS3a' ]
+        link2End1 = main.params[ 'ATTCORELINKS' ][ 'linkS14a' ]
+        link3End1 = main.params[ 'ATTCORELINKS' ][ 'linkS18a' ]
         link_sleep = int( main.params[ 'timers' ][ 'LinkDiscovery' ] )
-        switchLinksToToggle = main.params[ 'CORELINKS' ][ 'toggleLinks' ]
+        switchLinksToToggle = main.params[ 'ATTCORELINKS' ][ 'toggleLinks' ]
 
         main.log.report(
             "Bring the core links up that are down and verify ping all (Host Intents-Att Topo" )
@@ -925,39 +1198,37 @@ class OnosCHO:
 
     def CASE71( self, main ):
         """
-        Randomly bring some core links down and verify ping all ( Point Intents-Att Topo )
+        Randomly bring some core links down and verify ping all ( Host Intents-Att Topo)
         """
         import random
         main.randomLink1 = []
         main.randomLink2 = []
         main.randomLink3 = []
-        link1End1 = main.params[ 'CORELINKS' ][ 'linkS3a' ]
-        link1End2 = main.params[ 'CORELINKS' ][ 'linkS3b' ].split( ',' )
-        link2End1 = main.params[ 'CORELINKS' ][ 'linkS14a' ]
-        link2End2 = main.params[ 'CORELINKS' ][ 'linkS14b' ].split( ',' )
-        link3End1 = main.params[ 'CORELINKS' ][ 'linkS18a' ]
-        link3End2 = main.params[ 'CORELINKS' ][ 'linkS18b' ].split( ',' )
-        switchLinksToToggle = main.params[ 'CORELINKS' ][ 'toggleLinks' ]
+        link1End1 = main.params[ 'ATTCORELINKS' ][ 'linkS3a' ]
+        link1End2 = main.params[ 'ATTCORELINKS' ][ 'linkS3b' ].split( ',' )
+        link2End1 = main.params[ 'ATTCORELINKS' ][ 'linkS14a' ]
+        link2End2 = main.params[ 'ATTCORELINKS' ][ 'linkS14b' ].split( ',' )
+        link3End1 = main.params[ 'ATTCORELINKS' ][ 'linkS18a' ]
+        link3End2 = main.params[ 'ATTCORELINKS' ][ 'linkS18b' ].split( ',' )
+        switchLinksToToggle = main.params[ 'ATTCORELINKS' ][ 'toggleLinks' ]
         link_sleep = int( main.params[ 'timers' ][ 'LinkDiscovery' ] )
 
-        main.log.report( "Randomly bring some core links down and verify ping all (Point Intents-Att Topo" )
-        main.log.report( "__________________________________________________________________" )
-        main.case( "Point Intents - Randomly bring some core links down and verify ping all" )
+        main.log.report( "Randomly bring some core links down and verify ping all (Host Intents-Att Topo)" )
+        main.log.report( "___________________________________________________________________________" )
+        main.case( "Host intents - Randomly bring some core links down and verify ping all" )
         main.step( "Verify number of Switch links to toggle on each Core Switch are between 1 - 5" )
         if ( int( switchLinksToToggle ) ==
              0 or int( switchLinksToToggle ) > 5 ):
-            main.log.info(
-                "Please check you PARAMS file. Valid range for number of switch links to toggle is between 1 to 5" )
+            main.log.info( "Please check your PARAMS file. Valid range for number of switch links to toggle is between 1 to 5" )
             #main.cleanup()
             #main.exit()
         else:
-            main.log.info(
-                "User provided Core switch links range to toggle is correct, proceeding to run the test" )
+            main.log.info( "User provided Core switch links range to toggle is correct, proceeding to run the test" )
 
         main.step( "Cut links on Core devices using user provided range" )
-        randomLink1 = random.sample( link1End2, int( switchLinksToToggle ) )
-        randomLink2 = random.sample( link2End2, int( switchLinksToToggle ) )
-        randomLink3 = random.sample( link3End2, int( switchLinksToToggle ) )
+        main.randomLink1 = random.sample( link1End2, int( switchLinksToToggle ) )
+        main.randomLink2 = random.sample( link2End2, int( switchLinksToToggle ) )
+        main.randomLink3 = random.sample( link3End2, int( switchLinksToToggle ) )
         for i in range( int( switchLinksToToggle ) ):
             main.Mininet1.link(
                 END1=link1End1,
@@ -975,8 +1246,8 @@ class OnosCHO:
 
         topology_output = main.ONOScli2.topology()
         linkDown = main.ONOSbench.checkStatus(
-            topology_output, main.numSwitches, str(
-                int( main.numLinks ) - int( switchLinksToToggle ) * 6 ) )
+            topology_output, main.numMNswitches, str(
+                int( main.numMNlinks ) - int( switchLinksToToggle ) * 6 ) )
         utilities.assert_equals(
             expect=main.TRUE,
             actual=linkDown,
@@ -988,7 +1259,7 @@ class OnosCHO:
         main.step( "Verify Ping across all hosts" )
         pingResultLinkDown = main.FALSE
         time1 = time.time()
-        pingResultLinkDown = main.Mininet1.pingall()
+        pingResultLinkDown = main.Mininet1.pingall(timeout=main.pingTimeout)
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -999,28 +1270,28 @@ class OnosCHO:
                                  onpass="PING ALL PASS",
                                  onfail="PING ALL FAIL" )
 
-        caseResult7 = linkDown and pingResultLinkDown
-        utilities.assert_equals( expect=main.TRUE, actual=caseResult7,
+        caseResult71 = linkDown and pingResultLinkDown
+        utilities.assert_equals( expect=main.TRUE, actual=caseResult71,
                                  onpass="Random Link cut Test PASS",
                                  onfail="Random Link cut Test FAIL" )
 
     def CASE81( self, main ):
         """
-        Bring the core links up that are down and verify ping all ( Point Intents-Att Topo )
+        Bring the core links up that are down and verify ping all ( Host Intents-Att Topo )
         """
         import random
-        link1End1 = main.params[ 'CORELINKS' ][ 'linkS3a' ]
-        link2End1 = main.params[ 'CORELINKS' ][ 'linkS14a' ]
-        link3End1 = main.params[ 'CORELINKS' ][ 'linkS18a' ]
+        link1End1 = main.params[ 'ATTCORELINKS' ][ 'linkS3a' ]
+        link2End1 = main.params[ 'ATTCORELINKS' ][ 'linkS14a' ]
+        link3End1 = main.params[ 'ATTCORELINKS' ][ 'linkS18a' ]
         link_sleep = int( main.params[ 'timers' ][ 'LinkDiscovery' ] )
-        switchLinksToToggle = main.params[ 'CORELINKS' ][ 'toggleLinks' ]
+        switchLinksToToggle = main.params[ 'ATTCORELINKS' ][ 'toggleLinks' ]
 
         main.log.report(
-            "Bring the core links up that are down and verify ping all (Point Intents-Att Topo" )
+            "Bring the core links up that are down and verify ping all (Host Intents-Att Topo" )
         main.log.report(
-            "___________________________________________________________________" )
+            "__________________________________________________________________" )
         main.case(
-            "Point intents - Bring the core links up that are down and verify ping all" )
+            "Host intents - Bring the core links up that are down and verify ping all" )
         main.step( "Bring randomly cut links on Core devices up" )
         for i in range( int( switchLinksToToggle ) ):
             main.Mininet1.link(
@@ -1122,8 +1393,8 @@ class OnosCHO:
                                  onpass="PING ALL PASS",
                                  onfail="PING ALL FAIL" )
 
-        caseResult72 = pingResultLinkDown
-        utilities.assert_equals( expect=main.TRUE, actual=caseResult72,
+        caseResult71 = pingResultLinkDown
+        utilities.assert_equals( expect=main.TRUE, actual=caseResult71,
                                  onpass="Random Link cut Test PASS",
                                  onfail="Random Link cut Test FAIL" )
 
@@ -1181,30 +1452,38 @@ class OnosCHO:
         utilities.assert_equals( expect=main.TRUE, actual=caseResult82,
                                  onpass="Link Up Test PASS",
                                  onfail="Link Up Test FAIL" )
- 
+
     def CASE73( self, main ):
         """
-        Randomly bring some core links down and verify ping all ( Host Intents-Spine Topo)
+        Randomly bring some links down and verify ping all ( Host Intents-Chordal Topo)
         """
         import random
-        main.pingTimeout = 600
+        import itertools 
         link_sleep = int( main.params[ 'timers' ][ 'LinkDiscovery' ] )
-
-        main.log.report( "Bring some core links down and verify ping all (Host Intents-Spine Topo)" )
+        
+        main.log.report( "Randomly bring some core links down and verify ping all (Host Intents-Chordal Topo)" )
         main.log.report( "___________________________________________________________________________" )
-
-        main.someLinks = [('s1','s9'),('s3','s9'),('s6','s10'),('s8','s10')]
-        for switch in main.someLinks:
+        main.case( "Host intents - Randomly bring some core links down and verify ping all" )
+        switches = []
+        switchesComb = []
+        for i in range( main.numMNswitches ):
+            switches.append('s%d'%(i+1))
+        switchesLinksComb = list(itertools.combinations(switches,2))
+        main.randomLinks = random.sample(switchesLinksComb, 5 )
+        print main.randomLinks
+        main.step( "Cut links on random devices" )
+        
+        for switch in main.randomLinks:
             main.Mininet1.link(
                 END1=switch[0],
                 END2=switch[1],
-                OPTION="down" )
+                OPTION="down")
         time.sleep( link_sleep )
 
         topology_output = main.ONOScli2.topology()
         linkDown = main.ONOSbench.checkStatus(
             topology_output, main.numMNswitches, str(
-                int( main.numMNlinks ) - 8 ))
+                int( main.numMNlinks ) - 5 * 2 ) )
         utilities.assert_equals(
             expect=main.TRUE,
             actual=linkDown,
@@ -1227,30 +1506,32 @@ class OnosCHO:
                                  onpass="PING ALL PASS",
                                  onfail="PING ALL FAIL" )
 
-        caseResult73 = linkDown and pingResultLinkDown
+        caseResult73 = pingResultLinkDown
         utilities.assert_equals( expect=main.TRUE, actual=caseResult73,
                                  onpass="Random Link cut Test PASS",
                                  onfail="Random Link cut Test FAIL" )
 
     def CASE83( self, main ):
         """
-        Bring the core links up that are down and verify ping all ( Host Intents-Spine Topo )
+        Bring the core links up that are down and verify ping all ( Host Intents Chordal Topo )
         """
         import random
-
         link_sleep = int( main.params[ 'timers' ][ 'LinkDiscovery' ] )
+       
         main.log.report(
-            "Bring the core links up that are down and verify ping all (Host Intents-Spine Topo" )
+            "Bring the core links up that are down and verify ping all (Host Intents-Chordal Topo" )
         main.log.report(
             "__________________________________________________________________" )
         main.case(
             "Host intents - Bring the core links up that are down and verify ping all" )
+        main.step( "Bring randomly cut links on devices up" )
         
-        for switch in main.someLinks:
+        for switch in main.randomLinks:
             main.Mininet1.link(
                 END1=switch[0],
                 END2=switch[1],
                 OPTION="up")
+
         time.sleep( link_sleep )
 
         topology_output = main.ONOScli2.topology()
@@ -1282,6 +1563,126 @@ class OnosCHO:
 
         caseResult83 = linkUp and pingResultLinkUp
         utilities.assert_equals( expect=main.TRUE, actual=caseResult83,
+                                 onpass="Link Up Test PASS",
+                                 onfail="Link Up Test FAIL" )
+
+    def CASE74( self, main ):
+        """
+        Randomly bring some core links down and verify ping all ( Host Intents-Spine Topo)
+        """
+        import random
+        main.randomLink1 = []
+        main.randomLink2 = []
+        main.randomLink3 = []
+        main.randomLink4 = []
+        link1End1 = main.params[ 'SPINECORELINKS' ][ 'linkS9' ]
+        link1End2top = main.params[ 'SPINECORELINKS' ][ 'linkS9top' ].split( ',' )
+        link1End2bot = main.params[ 'SPINECORELINKS' ][ 'linkS9bot' ].split( ',' )
+        link2End1 = main.params[ 'SPINECORELINKS' ][ 'linkS10' ]
+        link2End2top = main.params[ 'SPINECORELINKS' ][ 'linkS10top' ].split( ',' )
+        link2End2bot = main.params[ 'SPINECORELINKS' ][ 'linkS10bot' ].split( ',' )
+        link_sleep = int( main.params[ 'timers' ][ 'LinkDiscovery' ] )
+        main.pingTimeout = 400
+        
+        main.log.report( "Bring some core links down and verify ping all (Host Intents-Spine Topo)" )
+        main.log.report( "___________________________________________________________________________" )
+        
+        linkIndex = range(4)
+        linkIndexS9 = random.sample(linkIndex,1)[0] 
+        linkIndex.remove(linkIndexS9)
+        linkIndexS10 = random.sample(linkIndex,1)[0]
+        main.randomLink1 = link1End2top[linkIndexS9]
+        main.randomLink2 = link2End2top[linkIndexS10]
+        main.randomLink3 = random.sample(link1End2bot,1)[0]
+        main.randomLink4 = random.sample(link2End2bot,1)[0]
+        main.Mininet1.link( END1=link1End1, END2=main.randomLink1, OPTION="down" )
+        main.Mininet1.link( END1=link2End1, END2=main.randomLink2, OPTION="down" )
+        main.Mininet1.link( END1=link1End1, END2=main.randomLink3, OPTION="down" )
+        main.Mininet1.link( END1=link2End1, END2=main.randomLink4, OPTION="down" )
+
+        time.sleep( link_sleep )
+
+        topology_output = main.ONOScli2.topology()
+        linkDown = main.ONOSbench.checkStatus(
+            topology_output, main.numMNswitches, str(
+                int( main.numMNlinks ) - 8 ))
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=linkDown,
+            onpass="Link Down discovered properly",
+            onfail="Link down was not discovered in " +
+            str( link_sleep ) +
+            " seconds" )
+
+        main.step( "Verify Ping across all hosts" )
+        pingResultLinkDown = main.FALSE
+        time1 = time.time()
+        pingResultLinkDown = main.Mininet1.pingall(timeout=main.pingTimeout)
+        time2 = time.time()
+        timeDiff = round( ( time2 - time1 ), 2 )
+        main.log.report(
+            "Time taken for Ping All: " +
+            str( timeDiff ) +
+            " seconds" )
+        utilities.assert_equals( expect=main.TRUE, actual=pingResultLinkDown,
+                                 onpass="PING ALL PASS",
+                                 onfail="PING ALL FAIL" )
+
+        caseResult74 = linkDown and pingResultLinkDown
+        utilities.assert_equals( expect=main.TRUE, actual=caseResult74,
+                                 onpass="Random Link cut Test PASS",
+                                 onfail="Random Link cut Test FAIL" )
+
+    def CASE84( self, main ):
+        """
+        Bring the core links up that are down and verify ping all ( Host Intents-Spine Topo )
+        """
+        import random
+        link1End1 = main.params[ 'SPINECORELINKS' ][ 'linkS9' ]
+        link2End1 = main.params[ 'SPINECORELINKS' ][ 'linkS10' ]
+        link_sleep = int( main.params[ 'timers' ][ 'LinkDiscovery' ] )
+        main.log.report(
+            "Bring the core links up that are down and verify ping all (Host Intents-Spine Topo" )
+        main.log.report(
+            "__________________________________________________________________" )
+        main.case(
+            "Host intents - Bring the core links up that are down and verify ping all" )
+        
+        main.Mininet1.link( END1=link1End1, END2=main.randomLink1, OPTION="up" )
+        main.Mininet1.link( END1=link2End1, END2=main.randomLink2, OPTION="up" )
+        main.Mininet1.link( END1=link1End1, END2=main.randomLink3, OPTION="up" )
+        main.Mininet1.link( END1=link2End1, END2=main.randomLink4, OPTION="up" )
+       
+        time.sleep( link_sleep )
+        topology_output = main.ONOScli2.topology()
+        linkUp = main.ONOSbench.checkStatus(
+            topology_output,
+            main.numMNswitches,
+            str( main.numMNlinks ) )
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=linkUp,
+            onpass="Link up discovered properly",
+            onfail="Link up was not discovered in " +
+            str( link_sleep ) +
+            " seconds" )
+
+        main.step( "Verify Ping across all hosts" )
+        pingResultLinkUp = main.FALSE
+        time1 = time.time()
+        pingResultLinkUp = main.Mininet1.pingall()
+        time2 = time.time()
+        timeDiff = round( ( time2 - time1 ), 2 )
+        main.log.report(
+            "Time taken for Ping All: " +
+            str( timeDiff ) +
+            " seconds" )
+        utilities.assert_equals( expect=main.TRUE, actual=pingResultLinkUp,
+                                 onpass="PING ALL PASS",
+                                 onfail="PING ALL FAIL" )
+
+        caseResult84 = linkUp and pingResultLinkUp
+        utilities.assert_equals( expect=main.TRUE, actual=caseResult84,
                                  onpass="Link Up Test PASS",
                                  onfail="Link Up Test FAIL" )
     
@@ -1340,11 +1741,11 @@ class OnosCHO:
                                  onpass="PING ALL PASS",
                                  onfail="PING ALL FAIL" )
 
-        case6Result = ( intentResult and pingResult )
+        case90Result = ( intentResult and pingResult )
         
         utilities.assert_equals(
             expect=main.TRUE,
-            actual=case6Result,
+            actual=case90Result,
             onpass="Install 600 point Intents and Ping All test PASS",
             onfail="Install 600 point Intents and Ping All test FAIL" )
 
@@ -1403,11 +1804,11 @@ class OnosCHO:
                                  onpass="PING ALL PASS",
                                  onfail="PING ALL FAIL" )
 
-        case6Result = ( intentResult and pingResult )
+        case91Result = ( intentResult and pingResult )
         
         utilities.assert_equals(
             expect=main.TRUE,
-            actual=case6Result,
+            actual=case911Result,
             onpass="Install ###$$$ point Intents and Ping All test PASS",
             onfail="Install ###$$$ point Intents and Ping All test FAIL" )
     
@@ -1466,11 +1867,11 @@ class OnosCHO:
                                  onpass="PING ALL PASS",
                                  onfail="PING ALL FAIL" )
 
-        case6Result = ( intentResult and pingResult )
+        case92Result = ( intentResult and pingResult )
         
         utilities.assert_equals(
             expect=main.TRUE,
-            actual=case6Result,
+            actual=case92Result,
             onpass="Install $$$### point Intents and Ping All test PASS",
             onfail="Install $$$### point Intents and Ping All test FAIL" )
 
@@ -1635,6 +2036,7 @@ class OnosCHO:
         step1Result = main.TRUE
         moreIntents = main.TRUE
         removeIntentCount = 0
+        intentsCount = len(intentsList)
         print "Current number of intents" , len(intentsList)
         if ( len( intentsList ) > 1 ):
             results = main.TRUE
@@ -1678,7 +2080,6 @@ class OnosCHO:
                                     name="removeIntent",
                                     args=[intentIdList1[i],'org.onosproject.cli',True,False])
                             pool.append(t)
-                            #time.sleep(1)
                             t.start()
                             i = i + 1
                             main.threadID = main.threadID + 1
@@ -1695,7 +2096,7 @@ class OnosCHO:
                     break
 
             else:
-                print "There are no more intents that need to be removed"
+                print "Removed %d intents" %(intentsCount)
                 step1Result = main.TRUE
         else:
             print "No Intent IDs found in Intents list: ", intentsList
@@ -1800,279 +2201,6 @@ class OnosCHO:
         utilities.assert_equals( expect=main.TRUE, actual=case11Result,
                                  onpass="Intent based Reactive forwarding Pingall test PASS",
                                  onfail="Intent based Reactive forwarding Pingall test FAIL" )
-
-    def CASE12( self, main ):
-        """
-        This test script Loads a new Topology (Chordal) on CHO setup and balances all switches
-        """
-        import re
-        import time
-        import copy
-
-        main.newTopo = main.params['TOPO2']['topo']
-        main.numMNswitches = int ( main.params[ 'TOPO2' ][ 'numSwitches' ] )
-        main.numMNlinks = int ( main.params[ 'TOPO2' ][ 'numLinks' ] )
-        main.numMNhosts = int ( main.params[ 'TOPO2' ][ 'numHosts' ] )
-        main.pingTimeout = 120
-        main.log.report(
-            "Load Chordal topology and Balance all Mininet switches across controllers" )
-        main.log.report(
-            "________________________________________________________________________" )
-        main.case(
-            "Assign and Balance all Mininet switches across controllers" )
-        main.step( "Stop any previous Mininet network topology" )
-        stopStatus = main.Mininet1.stopNet(fileName = "topoChordal" )
-        time.sleep(10)
-        main.step( "Start Mininet with Chordal topology" )
-        startStatus = main.Mininet1.startNet(topoFile = main.newTopo)
-        time.sleep(15)
-        main.step( "Assign switches to controllers" )
-        for i in range( 1, ( main.numMNswitches + 1 ) ):  # 1 to ( num of switches +1 )
-            main.Mininet1.assignSwController(
-                sw=str( i ),
-                count=int( main.numCtrls ),
-                ip1=main.ONOS1_ip,
-                port1=main.ONOS1_port,
-                ip2=main.ONOS2_ip,
-                port2=main.ONOS2_port,
-                ip3=main.ONOS3_ip,
-                port3=main.ONOS3_port,
-                ip4=main.ONOS4_ip,
-                port4=main.ONOS4_port,
-                ip5=main.ONOS5_ip,
-                port5=main.ONOS5_port )
-
-        switch_mastership = main.TRUE
-        for i in range( 1, ( main.numMNswitches + 1 ) ):
-            response = main.Mininet1.getSwController( "s" + str( i ) )
-            print( "Response is " + str( response ) )
-            if re.search( "tcp:" + main.ONOS1_ip, response ):
-                switch_mastership = switch_mastership and main.TRUE
-            else:
-                switch_mastership = main.FALSE
-
-        if switch_mastership == main.TRUE:
-            main.log.report( "Controller assignment successfull" )
-        else:
-            main.log.report( "Controller assignment failed" )
-        time.sleep( 5 )
-        
-        #Don't balance master for now..
-        """
-        main.step( "Balance devices across controllers" )
-        for i in range( int( main.numCtrls ) ):
-            balanceResult = main.ONOScli1.balanceMasters()
-            # giving some breathing time for ONOS to complete re-balance
-            time.sleep( 3 )
-        """
-        case12Result = switch_mastership
-        time.sleep(30)
-        utilities.assert_equals(
-            expect=main.TRUE,
-            actual=case12Result,
-            onpass="Starting new Chordal topology test PASS",
-            onfail="Starting new Chordal topology test FAIL" )
-        
-    def CASE13( self, main ):
-        """
-        This test script Loads a new Topology (Spine) on CHO setup and balances all switches
-        """
-        import re
-        import time
-        import copy
-
-        main.newTopo = main.params['TOPO3']['topo']
-        main.numMNswitches = int ( main.params[ 'TOPO3' ][ 'numSwitches' ] )
-        main.numMNlinks = int ( main.params[ 'TOPO3' ][ 'numLinks' ] )
-        main.numMNhosts = int ( main.params[ 'TOPO3' ][ 'numHosts' ] )
-        main.pingTimeout = 600
-        
-        main.log.report(
-            "Load Spine and Leaf topology and Balance all Mininet switches across controllers" )
-        main.log.report(
-            "________________________________________________________________________" )
-        # need to wait here for sometime until ONOS bootup
-        main.case(
-            "Assign and Balance all Mininet switches across controllers" )
-        main.step( "Stop any previous Mininet network topology" )
-        stopStatus = main.Mininet1.stopNet(fileName = "topoSpine" )
-        main.step( "Start Mininet with Spine topology" )
-        startStatus = main.Mininet1.startNet(topoFile = main.newTopo)
-        time.sleep(20)
-        main.step( "Assign switches to controllers" )
-        for i in range( 1, ( main.numMNswitches + 1 ) ):  # 1 to ( num of switches +1 )
-            main.Mininet1.assignSwController(
-                sw=str( i ),
-                count= 1,
-                ip1=main.ONOS1_ip,
-                port1=main.ONOS1_port,
-                ip2=main.ONOS2_ip,
-                port2=main.ONOS2_port,
-                ip3=main.ONOS3_ip,
-                port3=main.ONOS3_port,
-                ip4=main.ONOS4_ip,
-                port4=main.ONOS4_port,
-                ip5=main.ONOS5_ip,
-                port5=main.ONOS5_port )
-
-        switch_mastership = main.TRUE
-        for i in range( 1, ( main.numMNswitches + 1 ) ):
-            response = main.Mininet1.getSwController( "s" + str( i ) )
-            print( "Response is " + str( response ) )
-            if re.search( "tcp:" + main.ONOS1_ip, response ):
-                switch_mastership = switch_mastership and main.TRUE
-            else:
-                switch_mastership = main.FALSE
-        
-        if switch_mastership == main.TRUE:
-            main.log.report( "Controller assignment successfull" )
-        else:
-            main.log.report( "Controller assignment failed" )
-        time.sleep( 5 )
-        """
-        main.step( "Balance devices across controllers" )
-        
-        for i in range( int( main.numCtrls ) ):
-            balanceResult = main.ONOScli1.balanceMasters()
-            # giving some breathing time for ONOS to complete re-balance
-            time.sleep( 3 )
-
-        main.step( "Balance devices across controllers" )
-        for i in range( int( main.numCtrls ) ):
-            balanceResult = main.ONOScli1.balanceMasters()
-            # giving some breathing time for ONOS to complete re-balance
-            time.sleep( 3 )
-        """
-        case13Result = switch_mastership
-        time.sleep(30)
-        utilities.assert_equals(
-            expect=main.TRUE,
-            actual=case13Result,
-            onpass="Starting new Spine topology test PASS",
-            onfail="Starting new Spine topology test FAIL" )
-
-    def CASE14( self ):
-        """
-        Install 300 host intents and verify ping all for Chordal Topology
-        """
-        main.log.report( "Add 300 host intents and verify pingall (Chordal Topo)" )
-        main.log.report( "_______________________________________" )
-        import itertools
-        
-        main.case( "Install 300 host intents" )
-        main.step( "Add host Intents" )
-        intentResult = main.TRUE
-        hostCombos = list( itertools.combinations( main.hostMACs, 2 ) ) 
-        
-        intentIdList = []
-        time1 = time.time()
-        
-        for i in xrange( 0, len( hostCombos ), int(main.numCtrls) ):
-            pool = []
-            for cli in main.CLIs:
-                if i >= len( hostCombos ):
-                    break
-                t = main.Thread( target=cli.addHostIntent,
-                        threadID=main.threadID,
-                        name="addHostIntent",
-                        args=[hostCombos[i][0],hostCombos[i][1]])
-                pool.append(t)
-                t.start()
-                i = i + 1
-                main.threadID = main.threadID + 1
-            for thread in pool:
-                thread.join()
-                intentIdList.append(thread.result)
-        time2 = time.time()
-        main.log.info("Time for adding host intents: %2f seconds" %(time2-time1))
-        intentResult = main.TRUE
-        intentsJson = main.ONOScli2.intents()
-        getIntentStateResult = main.ONOScli1.getIntentState(intentsId = intentIdList,
-                intentsJson = intentsJson)
-        print getIntentStateResult
-
-        main.step( "Verify Ping across all hosts" )
-        pingResult = main.FALSE
-        time1 = time.time()
-        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout)
-        time2 = time.time()
-        timeDiff = round( ( time2 - time1 ), 2 )
-        main.log.report(
-            "Time taken for Ping All: " +
-            str( timeDiff ) +
-            " seconds" )
-        utilities.assert_equals( expect=main.TRUE, actual=pingResult,
-                                 onpass="PING ALL PASS",
-                                 onfail="PING ALL FAIL" )
-
-        case14Result = ( intentResult and pingResult )
-        
-        utilities.assert_equals(
-            expect=main.TRUE,
-            actual=case14Result,
-            onpass="Install 300 Host Intents and Ping All test PASS",
-            onfail="Install 300 Host Intents and Ping All test FAIL" )
-
-    def CASE15( self ):
-        """
-        Install 2278 host intents and verify ping all for Spine Topology
-        """
-        main.log.report( "Add 2278 host intents and verify pingall (Spine Topo)" )
-        main.log.report( "_______________________________________" )
-        import itertools
-        
-        main.case( "Install 2278 host intents" )
-        main.step( "Add host Intents" )
-        intentResult = main.TRUE
-        hostCombos = list( itertools.combinations( main.hostMACs, 2 ) ) 
-        main.pingTimeout = 300
-        intentIdList = []
-        time1 = time.time()
-        for i in xrange( 0, len( hostCombos ), int(main.numCtrls) ):
-            pool = []
-            for cli in main.CLIs:
-                if i >= len( hostCombos ):
-                    break
-                t = main.Thread( target=cli.addHostIntent,
-                        threadID=main.threadID,
-                        name="addHostIntent",
-                        args=[hostCombos[i][0],hostCombos[i][1]])
-                pool.append(t)
-                t.start()
-                i = i + 1
-                main.threadID = main.threadID + 1
-            for thread in pool:
-                thread.join()
-                intentIdList.append(thread.result)
-        time2 = time.time()
-        main.log.info("Time for adding host intents: %2f seconds" %(time2-time1))
-        intentResult = main.TRUE
-        intentsJson = main.ONOScli2.intents()
-        getIntentStateResult = main.ONOScli1.getIntentState(intentsId = intentIdList,
-                intentsJson = intentsJson)
-        print getIntentStateResult
-
-        main.step( "Verify Ping across all hosts" )
-        pingResult = main.FALSE
-        time1 = time.time()
-        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout)
-        time2 = time.time()
-        timeDiff = round( ( time2 - time1 ), 2 )
-        main.log.report(
-            "Time taken for Ping All: " +
-            str( timeDiff ) +
-            " seconds" )
-        utilities.assert_equals( expect=main.TRUE, actual=pingResult,
-                                 onpass="PING ALL PASS",
-                                 onfail="PING ALL FAIL" )
-
-        case15Result = ( intentResult and pingResult )
-        
-        utilities.assert_equals(
-            expect=main.TRUE,
-            actual=case15Result,
-            onpass="Install 2278 Host Intents and Ping All test PASS",
-            onfail="Install 2278 Host Intents and Ping All test FAIL" )
 
     def CASE99(self):
         import time

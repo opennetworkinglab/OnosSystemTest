@@ -21,6 +21,7 @@ import pexpect
 import re
 import json
 import types
+import time
 sys.path.append( "../" )
 from drivers.common.clidriver import CLI
 
@@ -2396,38 +2397,35 @@ class OnosCliDriver( CLI ):
         Interacts with the app command for ONOS. This command manages
         application inventory.
         """
-        # Validate argument types
-        valid = True
-        if not isinstance( appName, types.StringType ):
-            main.log.error( self.name + ".app(): appName must be a string" )
-            valid = False
-        if not isinstance( option, types.StringType ):
-            main.log.error( self.name + ".app(): option must be a string" )
-            valid = False
-        if not valid:
-            return main.FALSE
-        # Validate Option
-        option = option.lower()
-        # NOTE: Install may become a valid option
-        if option == "activate":
-            pass
-        elif option == "deactivate":
-            pass
-        elif option == "uninstall":
-            pass
-        else:
-            # Invalid option
-            main.log.error( "The ONOS app command argument only takes the " +
-                            "values: (activate|deactivate|uninstall); was " +
-                            "given '" + option + "'")
-            return main.FALSE
         try:
+            # Validate argument types
+            valid = True
+            if not isinstance( appName, types.StringType ):
+                main.log.error( self.name + ".app(): appName must be a " +
+                                "string" )
+                valid = False
+            if not isinstance( option, types.StringType ):
+                main.log.error( self.name + ".app(): option must be a string" )
+                valid = False
+            if not valid:
+                return main.FALSE
+            # Validate Option
+            option = option.lower()
+            # NOTE: Install may become a valid option
+            if option == "activate":
+                pass
+            elif option == "deactivate":
+                pass
+            elif option == "uninstall":
+                pass
+            else:
+                # Invalid option
+                main.log.error( "The ONOS app command argument only takes " +
+                                "the values: (activate|deactivate|uninstall)" +
+                                "; was given '" + option + "'")
+                return main.FALSE
             cmdStr = "onos:app " + option + " " + appName
             output = self.sendline( cmdStr )
-            # FIXME: look at specific exceptions/Errors
-            # Some Possible outputs:
-            # app a b -> No such application:
-            # app a -> Error executing command onos:app: argument name is required
             if "Error executing command" in output:
                 main.log.error( "Error in processing onos:app command: " +
                                 str( output ) )
@@ -2440,9 +2438,12 @@ class OnosCliDriver( CLI ):
                 main.log.error( "Error in processing onos:app command: " +
                                 str( output ) )
                 return main.FALSE
-
+            elif "Unsupported command:" in output:
+                main.log.error( "Incorrect command given to 'app': " +
+                                str( output ) )
             # NOTE: we may need to add more checks here
-            main.log.debug( "app response: " + str( output ) )
+            # else: Command was successful
+            main.log.debug( "app response: " + repr( output ) )
             return main.TRUE
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
@@ -2457,9 +2458,12 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def activateApp( self, appName ):
+    def activateApp( self, appName, check=True ):
         """
         Activate an app that is already installed in ONOS
+        appName is the hierarchical app name, not the feature name
+        If check is True, method will check the status of the app after the
+        command is issued
         Returns main.TRUE if the command was successfully sent
                 main.FALSE if the cli responded with an error or given
                     incorrect input
@@ -2472,7 +2476,17 @@ class OnosCliDriver( CLI ):
             status = self.appStatus( appName )
             if status == "INSTALLED":
                 response = self.app( appName, "activate" )
-                return response
+                if check and response == main.TRUE:
+                    for i in range(10):  # try 10 times then give up
+                        # TODO: Check with Thomas about this delay
+                        status = self.appStatus( appName )
+                        if status == "ACTIVE":
+                            return main.TRUE
+                        else:
+                            time.sleep( 1 )
+                    return main.FALSE
+                else:  # not 'check' or command didn't succeed
+                    return response
             elif status == "ACTIVE":
                 return main.TRUE
             elif status == "UNINSTALLED":
@@ -2496,9 +2510,12 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def deactivateApp( self, appName ):
+    def deactivateApp( self, appName, check=True ):
         """
         Deactivate an app that is already activated in ONOS
+        appName is the hierarchical app name, not the feature name
+        If check is True, method will check the status of the app after the
+        command is issued
         Returns main.TRUE if the command was successfully sent
                 main.FALSE if the cli responded with an error or given
                     incorrect input
@@ -2513,7 +2530,16 @@ class OnosCliDriver( CLI ):
                 return main.TRUE
             elif status == "ACTIVE":
                 response = self.app( appName, "deactivate" )
-                return response
+                if check and response == main.TRUE:
+                    for i in range(10):  # try 10 times then give up
+                        status = self.appStatus( appName )
+                        if status == "INSTALLED":
+                            return main.TRUE
+                        else:
+                            time.sleep( 1 )
+                    return main.FALSE
+                else:  # not check or command didn't succeed
+                    return response
             elif status == "UNINSTALLED":
                 main.log.warn( self.name + ": Tried to deactivate the " +
                                 "application '" + appName + "' which is not " +
@@ -2536,9 +2562,12 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def uninstallApp( self, appName ):
+    def uninstallApp( self, appName, check=True ):
         """
         Uninstall an app that is already installed in ONOS
+        appName is the hierarchical app name, not the feature name
+        If check is True, method will check the status of the app after the
+        command is issued
         Returns main.TRUE if the command was successfully sent
                 main.FALSE if the cli responded with an error or given
                     incorrect input
@@ -2552,13 +2581,31 @@ class OnosCliDriver( CLI ):
             status = self.appStatus( appName )
             if status == "INSTALLED":
                 response = self.app( appName, "uninstall" )
-                return response
+                if check and response == main.TRUE:
+                    for i in range(10):  # try 10 times then give up
+                        status = self.appStatus( appName )
+                        if status == "UNINSTALLED":
+                            return main.TRUE
+                        else:
+                            time.sleep( 1 )
+                    return main.FALSE
+                else:  # not check or command didn't succeed
+                    return response
             elif status == "ACTIVE":
                 main.log.warn( self.name + ": Tried to uninstall the " +
                                 "application '" + appName + "' which is " +
                                 "currently active." )
                 response = self.app( appName, "uninstall" )
-                return response
+                if check and response == main.TRUE:
+                    for i in range(10):  # try 10 times then give up
+                        status = self.appStatus( appName )
+                        if status == "UNINSTALLED":
+                            return main.TRUE
+                        else:
+                            time.sleep( 1 )
+                    return main.FALSE
+                else:  # not check or command didn't succeed
+                    return response
             elif status == "UNINSTALLED":
                 return main.TRUE
             else:
@@ -2577,3 +2624,113 @@ class OnosCliDriver( CLI ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
+
+    def appIDs( self, jsonFormat=True ):
+        """
+        Show the mappings between app id and app names given by the 'app-ids'
+        cli command
+        """
+        try:
+            cmdStr = "app-ids"
+            if jsonFormat:
+                cmdStr += " -j"
+                output = self.sendline( cmdStr )
+                assert "Error executing command" not in output
+                ansiEscape = re.compile( r'\r\r\n\x1b[^m]*m' )
+                cleanedOutput = ansiEscape.sub( '', output )
+                return cleanedOutput
+            else:
+                output = self.sendline( cmdStr )
+                assert "Error executing command" not in output
+                return output
+        except AssertionError:
+            main.log.error( "Error in processing onos:app-ids command: " +
+                            str( output ) )
+            return None
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
+    def appToIDCheck( self ):
+        """
+        This method will check that each application's ID listed in 'apps' is
+        the same as the ID listed in 'app-ids'. The check will also check that
+        there are no duplicate IDs issued. Note that an app ID should be
+        a globaly unique numerical identifier for app/app-like features. Once
+        an ID is registered, the ID is never freed up so that if an app is
+        reinstalled it will have the same ID.
+
+        Returns: main.TRUE  if the check passes and
+                 main.FALSE if the check fails or
+                 main.ERROR if there is some error in processing the test
+        """
+        try:
+            ids = json.loads( self.appIDs( jsonFormat=True ) )
+            apps = json.loads( self.apps( jsonFormat=True ) )
+            result = main.TRUE
+            for app in apps:
+                appID = app.get( 'id' )
+                if appID is None:
+                    main.log.error( "Error parsing app: " + str( app ) )
+                    result = main.FALSE
+                appName = app.get( 'name' )
+                if appName is None:
+                    main.log.error( "Error parsing app: " + str( app ) )
+                    result = main.FALSE
+                # get the entry in ids that has the same appID
+                current = filter(lambda item: item[ 'id' ] == appID, ids)
+                main.log.debug( "Comparing " + str( app ) + " to " +
+                                str( current ) )
+                if not current:  # if ids doesn't have this id
+                    result = main.FALSE
+                    main.log.error( "'app-ids' does not have the ID for " +
+                                    str( appName ) + " that apps does." )
+                elif len( current ) > 1:
+                    # there is more than one app with this ID
+                    result = main.FALSE
+                    # We will log this later in the method
+                elif not current[0][ 'name' ] == appName:
+                    currentName = current[0][ 'name' ]
+                    result = main.FALSE
+                    main.log.error( "'app-ids' has " + str( currentName ) +
+                                    " registered under id:" + str( appID ) +
+                                    " but 'apps' has " + str( appName ) )
+                else:
+                    pass  # id and name match!
+            # now make sure that app-ids has no duplicates
+            idsList = []
+            namesList = []
+            for item in ids:
+                idsList.append( item[ 'id' ] )
+                namesList.append( item[ 'name' ] )
+            if len( idsList ) != len( set( idsList ) ) or\
+               len( namesList ) != len( set( namesList ) ):
+                    main.log.error( "'app-ids' has some duplicate entries: \n"
+                                    + json.dumps( ids,
+                                                  sort_keys=True,
+                                                  indent=4,
+                                                  separators=( ',', ': ' ) ) )
+                    result = main.FALSE
+            return result
+        except ( ValueError, TypeError ):
+            main.log.exception( self.name + ": Object not as expected" )
+            return main.ERROR
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+

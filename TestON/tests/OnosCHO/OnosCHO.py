@@ -1599,7 +1599,7 @@ class OnosCHO:
         main.Mininet1.link( END1=link2End1, END2=main.randomLink2, OPTION="down" )
         main.Mininet1.link( END1=link1End1, END2=main.randomLink3, OPTION="down" )
         main.Mininet1.link( END1=link2End1, END2=main.randomLink4, OPTION="down" )
-
+        
         time.sleep( link_sleep )
 
         topology_output = main.ONOScli2.topology()
@@ -1808,7 +1808,7 @@ class OnosCHO:
         
         utilities.assert_equals(
             expect=main.TRUE,
-            actual=case911Result,
+            actual=case91Result,
             onpass="Install ###$$$ point Intents and Ping All test PASS",
             onfail="Install ###$$$ point Intents and Ping All test FAIL" )
     

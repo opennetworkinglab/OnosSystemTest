@@ -94,7 +94,7 @@ class PingallExample:
         if case1Result == main.FALSE:
             main.cleanup()
             main.exit()
-        
+
         # Starting the mininet using the old way
         main.step( "Starting Mininet ..." )
         netIsUp = main.Mininet1.startNet()
@@ -151,22 +151,11 @@ class PingallExample:
         main.case( "Run Pingall" )
 
         # install onos-app-fwd
-        main.log.info( "Install reactive forwarding app" )
-        import json
-        main.log.warn(" pretty print json")
-        main.log.debug( json.dumps( json.loads( main.ONOScli1.apps() ),
-                                    sort_keys=True,
-                                    indent=4, separators=(',',':') ) )
-        main.log.warn(" get the status of the app")
-        print main.ONOScli1.appStatus( "org.onosproject.fwd" )
-        main.log.warn(" print the standard apps output")
-        main.log.debug( main.ONOScli1.apps( jsonFormat=False ) )
-        main.log.warn(" activate the app")
-        print main.ONOScli1.activateApp( "org.onosproject.fwd" )
-        main.log.warn(" print the standard apps output")
-        main.log.debug( main.ONOScli1.apps( jsonFormat=False ) )
+        main.step( "Activate reactive forwarding app" )
+        main.ONOScli1.activateApp( "org.onosproject.fwd" )
 
         # REACTIVE FWD test
+        main.step( "Run the pingall command in Mininet" )
         pingResult = main.FALSE
         time1 = time.time()
         pingResult = main.Mininet1.pingall()
@@ -174,17 +163,8 @@ class PingallExample:
         main.log.info( "Time for pingall: %2f seconds" % ( time2 - time1 ) )
 
         # uninstall onos-app-fwd
-        main.log.info( "Uninstall reactive forwarding app" )
-        main.log.warn(" print the standard apps output")
-        main.log.debug( main.ONOScli1.apps( jsonFormat=False ) )
-        main.log.warn(" deactivate the app")
-        print main.ONOScli1.deactivateApp( "org.onosproject.fwd" )
-        main.log.warn(" print the standard apps output")
-        main.log.debug( main.ONOScli1.apps( jsonFormat=False ) )
-        main.log.warn(" uninstall the app")
-        print main.ONOScli1.uninstallApp( "org.onosproject.fwd" )
-        main.log.warn(" print the standard apps output")
-        main.log.debug( main.ONOScli1.apps( jsonFormat=False ) )
+        main.step( "Deactivate reactive forwarding app" )
+        main.ONOScli1.deactivateApp( "org.onosproject.fwd" )
 
         utilities.assert_equals( expect=main.TRUE, actual=pingResult,
                                  onpass="All hosts are reachable",

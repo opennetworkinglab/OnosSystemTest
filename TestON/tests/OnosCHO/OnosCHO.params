@@ -1,5 +1,5 @@
 <PARAMS>
-    #CHO sequence : 1,2,3,[4,5,6,5,7,8,5,10,5,9,5,7,8,5,10,5]*2
+    #CHO sequence : 1,2,3,[4,5,6,5,70,80,5,10,5,9,5,71,81,5,10,5]*100
     # 1. ONOS brinup Test case
     # 2. Assign and Balance all Mininet switches across controllers
     # 3. Collect reference toplogy for topo compare
@@ -8,19 +8,41 @@
     # 6. Install 300 host intents and verify ping all
     # 7. Randomly bring some core links down and verify pingall
     # 8. Bring core links Up that were down and verify pingall
-    # 9. Install 114 point intents and verify ping all
+    # 9. Install 300 point intents and verify ping all
     # 10. Remove all intents on ONOS
-    # 1,2,3,[4,5,6,5,7,8,5,10,5,9,5,7,8,5,10,5]*2
+    # 1,2,3,[4,5,6,5,70,80,5,10,5,9,5,71,81,5,10,5]*100
+    # 1,2,3,4,5,6,10,12,3,4,5,6,10,13,3,4,5,6,10 [2,3,4,5,6,70,80,10,9,10]*25
 
-    <testcases>1,2,3,[4,5,6,5,70,80,5,10,5,9,5,71,81,5,10,5]*100</testcases>
+    <testcases>1,2,[3,4,5,6,70,80,10,9,71,81,10]*25,12,[3,41,5,72,82,14,10]*25,13,[3,42,5,73,83,15,10]*25</testcases>
     <ENV>
         <cellName>choTest5</cellName>
     </ENV>
     <GIT>
         #autoPull 'on' or 'off'
-        <autoPull>on</autoPull>
+        <autoPull>off</autoPull>
         <branch>master</branch>
-    </GIT>
+    </GIT>-t
+    <TOPO1>
+	<topo>~/mininet/custom/topoAtt.py</topo>t
+	<numSwitches>25</numSwitches>
+	<numHosts>25</numHosts>
+	<numLinks>114</numLinks>
+	<numPaths>1</numPaths>
+    </TOPO1>
+    <TOPO2>
+	<topo>~/mininet/custom/topoChordal.py</topo>
+	<numSwitches>25</numSwitches>
+	<numHosts>25</numHosts>
+	<numLinks>600</numLinks>
+	<numPaths>1</numPaths>
+    </TOPO2>
+    <TOPO3>
+	<topo>~/mininet/custom/topoSpine.py</topo>
+	<numSwitches>78</numSwitches>
+	<numHosts>68</numHosts>
+	<numLinks>284</numLinks>
+	<numPaths>1</numPaths>
+    </TOPO3>
     <CTRL>
 	<numCtrl>5</numCtrl>
         <ip1>10.128.40.41</ip1>
@@ -38,13 +60,6 @@
 	<startMAC>00:00:00:00:00:01</startMAC>
 	<endMAC>00:00:00:00:00:19</endMAC>
     </HOSTS>
-    <ONOSTOPO>
-	<numDevices>25</numDevices>
-	<numLinks>114</numLinks>
-	<numHosts>25</numHosts>
-	<numIntents>300</numIntents>
-	<numPaths>1360</numPaths>
-    </ONOSTOPO>
     <CORELINKS>
         <toggleLinks>3</toggleLinks>
 	

@@ -17,6 +17,7 @@ class ProdFunc:
         self.default = ''
 
     def CASE1( self, main ):
+        import time
         """
         Startup sequence:
         cell <name>
@@ -43,10 +44,10 @@ class ProdFunc:
         main.step( "Removing raft logs before a clen installation of ONOS" )
         main.ONOSbench.onosRemoveRaftLogs()
 
-        main.step( "Git checkout and pull master and get version" )
-        main.ONOSbench.gitCheckout( "master" )
+        main.step( "Git checkout and get version" )
+        #main.ONOSbench.gitCheckout( "master" )
         gitPullResult = main.ONOSbench.gitPull()
-        main.log.info( "git_pull_result = " + gitPullResult )
+        main.log.info( "git_pull_result = " + str( gitPullResult ))
         main.ONOSbench.getVersion( report=True )
 
         if gitPullResult == 1:
@@ -78,14 +79,21 @@ class ProdFunc:
         startResult = main.ONOSbench.onosStart( ONOS1Ip )
 
         main.ONOS2.startOnosCli( ONOSIp=main.params[ 'CTRL' ][ 'ip1' ] )
-
+        main.step( "Starting Mininet CLI..." )
+        
+        # Starting the mininet using the old way
+        main.step( "Starting Mininet ..." )
+        netIsUp = main.Mininet1.startNet()
+        if netIsUp:
+            main.log.info("Mininet CLI is up")
+        
         case1Result = ( packageResult and
                         cellResult and verifyResult
                         and onosInstallResult and
                         onos1Isup and startResult )
         utilities.assert_equals( expect=main.TRUE, actual=case1Result,
-                                onpass="Test startup successful",
-                                onfail="Test startup NOT successful" )
+                                 onpass="Test startup successful",
+                                 onfail="Test startup NOT successful" )
 
     def CASE2( self, main ):
         """
@@ -122,10 +130,10 @@ class ProdFunc:
         else:
             case2Result = main.TRUE
         utilities.assert_equals( expect=main.TRUE, actual=case2Result,
-                                onpass="Switch down discovery successful",
-                                onfail="Switch down discovery failed" )
+                                 onpass="Switch down discovery successful",
+                                 onfail="Switch down discovery failed" )
 
-    def CASE11( self, main ):
+    def CASE101( self, main ):
         """
         Cleanup sequence:
         onos-service <nodeIp> stop
@@ -149,8 +157,8 @@ class ProdFunc:
 
         case11Result = killResult and stopResult and uninstallResult
         utilities.assert_equals( expect=main.TRUE, actual=case11Result,
-                                onpass="Cleanup successful",
-                                onfail="Cleanup failed" )
+                                 onpass="Cleanup successful",
+                                 onfail="Cleanup failed" )
 
     def CASE3( self, main ):
         """
@@ -178,12 +186,13 @@ class ProdFunc:
         cellName = main.params[ 'ENV' ][ 'cellName' ]
         ONOS1Ip = main.params[ 'CTRL' ][ 'ip1' ]
 
-        main.log.report( "This testcase exits the mininet cli and reinstalls\
-                        ONOS to switch over to Packet Optical topology" )
+        main.log.report( "This testcase exits the mininet cli and reinstalls" +
+                         "ONOS to switch over to Packet Optical topology" )
         main.log.report( "_____________________________________________" )
         main.case( "Disconnecting mininet and restarting ONOS" )
         main.step( "Disconnecting mininet and restarting ONOS" )
         mininetDisconnect = main.Mininet1.disconnect()
+        print "mininetDisconnect = ", mininetDisconnect        
 
         main.step( "Removing raft logs before a clen installation of ONOS" )
         main.ONOSbench.onosRemoveRaftLogs()
@@ -214,10 +223,10 @@ class ProdFunc:
         utilities.assert_equals(
             expect=main.TRUE,
             actual=case20Result,
-            onpass="Exiting functionality mininet topology and reinstalling \
-                    ONOS successful",
-            onfail="Exiting functionality mininet topology and reinstalling \
-                    ONOS failed" )
+            onpass= "Exiting functionality mininet topology and reinstalling" +
+                    " ONOS successful",
+            onfail= "Exiting functionality mininet topology and reinstalling" +
+                    " ONOS failed" )
 
     def CASE21( self, main ):
         """
@@ -262,8 +271,8 @@ class ProdFunc:
             these hardcoded values need to be changed
         """
         main.log.report(
-            "This testcase compares the optical+packet topology against what\
-             is expected" )
+            "This testcase compares the optical+packet topology against what" +
+            " is expected" )
         main.case( "Topology comparision" )
         main.step( "Topology comparision" )
         main.ONOS3.startOnosCli( ONOSIp=main.params[ 'CTRL' ][ 'ip1' ] )
@@ -271,7 +280,7 @@ class ProdFunc:
 
         print "devices_result = ", devicesResult
         devicesLinewise = devicesResult.split( "\n" )
-        devicesLinewise = devicesLinewise[ 1:-1 ]
+        devicesLinewise = devicesLinewise[ 1: ]
         roadmCount = 0
         packetLayerSWCount = 0
         for line in devicesLinewise:
@@ -283,8 +292,8 @@ class ProdFunc:
             elif availability == 'true' and type == 'SWITCH':
                 packetLayerSWCount += 1
         if roadmCount == 4:
-            print "Number of Optical Switches = %d and is \
-                    correctly detected" % roadmCount
+            print "Number of Optical Switches = %d and is" % roadmCount +\
+                  " correctly detected"
             main.log.info(
                 "Number of Optical Switches = " +
                 str( roadmCount ) +
@@ -299,16 +308,16 @@ class ProdFunc:
             opticalSWResult = main.FALSE
 
         if packetLayerSWCount == 2:
-            print "Number of Packet layer or mininet Switches = %d and \
-                    is correctly detected" % packetLayerSWCount
+            print "Number of Packet layer or mininet Switches = %d "\
+                    % packetLayerSWCount + "and is correctly detected"
             main.log.info(
                 "Number of Packet layer or mininet Switches = " +
                 str( packetLayerSWCount ) +
                 " and is correctly detected" )
             packetSWResult = main.TRUE
         else:
-            print "Number of Packet layer or mininet Switches = %d and \
-                    is wrong" % packetLayerSWCount
+            print "Number of Packet layer or mininet Switches = %d and"\
+                    % packetLayerSWCount + " is wrong"
             main.log.info(
                 "Number of Packet layer or mininet Switches = " +
                 str( packetLayerSWCount ) +
@@ -362,8 +371,8 @@ class ProdFunc:
             ping mininet hosts
         """
         main.log.report(
-            "This testcase adds bidirectional point intents between 2 \
-                packet layer( mininet ) devices and ping mininet hosts" )
+            "This testcase adds bidirectional point intents between 2 " +
+            "packet layer( mininet ) devices and ping mininet hosts" )
         main.case( "Topology comparision" )
         main.step( "Adding point intents" )
         ptpIntentResult = main.ONOS3.addPointIntent(
@@ -414,21 +423,21 @@ class ProdFunc:
 
         if PingResult == main.FALSE:
             main.log.report(
-                "Point intents for packet optical have not ben installed\
-                correctly. Cleaning up" )
+                "Point intents for packet optical have not ben installed" +
+                " correctly. Cleaning up" )
         if PingResult == main.TRUE:
             main.log.report(
-                "Point Intents for packet optical have been\
-                installed correctly" )
+                "Point Intents for packet optical have been " +
+                "installed correctly" )
 
         case23Result = PingResult
         utilities.assert_equals(
             expect=main.TRUE,
             actual=case23Result,
-            onpass="Point intents addition for packet optical and\
-                    Pingall Test successful",
-            onfail="Point intents addition for packet optical and\
-                    Pingall Test NOT successful" )
+            onpass= "Point intents addition for packet optical and" +
+                    "Pingall Test successful",
+            onfail= "Point intents addition for packet optical and" +
+                    "Pingall Test NOT successful" )
 
     def CASE24( self, main ):
         import time
@@ -461,11 +470,11 @@ class ProdFunc:
                     linksState = item[ 'state' ]
                     if linksState == "INACTIVE":
                         main.log.info(
-                            "Links state is inactive as expected due to one \
-                            of the ports being down" )
+                            "Links state is inactive as expected due to one" +
+                            " of the ports being down" )
                         main.log.report(
-                            "Links state is inactive as expected due to one \
-                            of the ports being down" )
+                            "Links state is inactive as expected due to one" +
+                            " of the ports being down" )
                         linksStateResult = main.TRUE
                         break
                     else:
@@ -511,15 +520,15 @@ class ProdFunc:
 
         case24Result = PingResult and linksStateResult
         utilities.assert_equals( expect=main.TRUE, actual=case24Result,
-                                onpass="Packet optical rerouting successful",
-                                onfail="Packet optical rerouting failed" )
+                                 onpass="Packet optical rerouting successful",
+                                 onfail="Packet optical rerouting failed" )
 
     def CASE4( self, main ):
         import re
         import time
-        main.log.report( "This testcase is testing the assignment of \
-                         all the switches to all the controllers and \
-                         discovering the hists in reactive mode" )
+        main.log.report( "This testcase is testing the assignment of" +
+                         " all the switches to all the controllers and" +
+                         " discovering the hosts in reactive mode" )
         main.log.report( "__________________________________" )
         main.case( "Pingall Test" )
         main.step( "Assigning switches to controllers" )
@@ -631,11 +640,10 @@ class ProdFunc:
 
         main.step( "Pingall" )
         pingResult = main.FALSE
-        while pingResult == main.FALSE:
-            time1 = time.time()
-            pingResult = main.Mininet1.pingall()
-            time2 = time.time()
-            print "Time for pingall: %2f seconds" % ( time2 - time1 )
+        time1 = time.time()
+        pingResult = main.Mininet1.pingall()
+        time2 = time.time()
+        print "Time for pingall: %2f seconds" % ( time2 - time1 )
 
         # Start onos cli again because u might have dropped out of
         # onos prompt to the shell prompt
@@ -644,11 +652,11 @@ class ProdFunc:
 
         case4Result = SwitchMastership and pingResult
         if pingResult == main.TRUE:
-            main.log.report( "Pingall Test in reactive mode to \
-                             discover the hosts successful" )
+            main.log.report( "Pingall Test in reactive mode to" +
+                             " discover the hosts successful" )
         else:
-            main.log.report( "Pingall Test in reactive mode to \
-                              discover the hosts failed" )
+            main.log.report( "Pingall Test in reactive mode to" +
+                             " discover the hosts failed" )
 
         utilities.assert_equals(
             expect=main.TRUE,
@@ -680,9 +688,115 @@ class ProdFunc:
             onpass="Reactive forwarding app uninstallation successful",
             onfail="Reactive forwarding app uninstallation failed" )
 
+
+    def CASE11( self ):
+        # NOTE: This testcase require reactive forwarding mode enabled
+        # NOTE: in the beginning and then uninstall it before adding 
+        # NOTE: point intents. Again the app is installed so that 
+        # NOTE: testcase 10 can be ran successively
+        import time
+        main.log.report(
+            "This testcase moves a host from one switch to another to add" +
+            "point intents between them and then perform ping" )
+        main.log.report( "__________________________________" )
+        main.log.info( "Moving host from one switch to another" )
+        main.case( "Moving host from a device and attach it to another device" )
+        main.step( "Moving host h9 from device s9 and attach it to s8" )
+        main.Mininet1.moveHost(host = 'h9', oldSw = 's9', newSw = 's8')
+
+        time.sleep(15) #Time delay to have all the flows ready
+        main.step( "Pingall" )
+        pingResult = main.FALSE
+        time1 = time.time()
+        pingResult = main.Mininet1.pingall()
+        time2 = time.time()
+        print "Time for pingall: %2f seconds" % ( time2 - time1 )
+
+        hosts = main.ONOS2.hosts( jsonFormat = False )
+        main.log.info( hosts )
+        
+        main.case( "Uninstalling reactive forwarding app" )
+        # Unistall onos-app-fwd app to disable reactive forwarding
+        appUninstallResult = main.ONOS2.featureUninstall( "onos-app-fwd" )
+        main.log.info( "onos-app-fwd uninstalled" )
+
+        main.step( "Add point intents between hosts on the same device")
+        ptpIntentResult = main.ONOS2.addPointIntent(
+            "of:0000000000003008/1",
+            "of:0000000000003008/3" )
+        if ptpIntentResult == main.TRUE:
+            getIntentResult = main.ONOS2.intents()
+            main.log.info( "Point to point intent install successful" )
+            # main.log.info( getIntentResult )
+
+        ptpIntentResult = main.ONOS2.addPointIntent(
+            "of:0000000000003008/3",
+            "of:0000000000003008/1" )
+        if ptpIntentResult == main.TRUE:
+            getIntentResult = main.ONOS2.intents()
+            main.log.info( "Point to point intent install successful" )
+            # main.log.info( getIntentResult )
+
+        main.case( "Ping hosts on the same devices" )
+        ping = main.Mininet1.pingHost( src = 'h8', target = 'h9' )
+
+        '''
+        main.case( "Installing reactive forwarding app" )
+        # Install onos-app-fwd app to enable reactive forwarding
+        appUninstallResult = main.ONOS2.featureInstall( "onos-app-fwd" )
+        main.log.info( "onos-app-fwd installed" )
+        '''
+
+        if ping == main.FALSE:
+            main.log.report(
+                "Point intents for hosts on same devices haven't" +
+                " been installed correctly. Cleaning up" )
+        if ping == main.TRUE:
+            main.log.report(
+                "Point intents for hosts on same devices" +
+                "installed correctly. Cleaning up" )
+
+        case11Result = ping and pingResult
+        utilities.assert_equals(
+            expect = main.TRUE,
+            actual = case11Result,
+            onpass = "Point intents for hosts on same devices" +
+                    "Ping Test successful",
+            onfail = "Point intents for hosts on same devices" +
+                    "Ping Test NOT successful" )
+
+
+    def CASE12( self ):
+        """
+        Verify the default flows on each switch
+        """
+        main.log.report( "This testcase is verifying num of default" +
+                         " flows on each switch" )
+        main.log.report( "__________________________________" )
+        main.case( "Verify num of default flows on each switch" )
+        main.step( "Obtaining the device id's and flowrule count on them" )
+
+        case12Result = main.TRUE
+        idList = main.ONOS2.getAllDevicesId()
+        for id in idList:
+            count = main.ONOS2.FlowAddedCount( id )
+            main.log.info("count = " +count)
+            if int(count) != 3:
+                case12Result = main.FALSE
+                break
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=case12Result,
+            onpass = "Expected default num of flows exist",
+            onfail = "Expected default num of flows do not exist")
+    
+    
+        
+
     def CASE6( self ):
-        main.log.report( "This testcase is testing the addition of \
-                         host intents and then does pingall" )
+        import time
+        main.log.report( "This testcase is testing the addition of" +
+                         " host intents and then does pingall" )
         main.log.report( "__________________________________" )
         main.case( "Obtaining host id's" )
         main.step( "Get hosts" )
@@ -732,13 +846,15 @@ class ProdFunc:
             # NOTE: get host can return None
             # TODO: handle this
             host1Id = main.ONOS2.getHost( host1 )[ 'id' ]
+      
             host2Id = main.ONOS2.getHost( host2 )[ 'id' ]
             main.ONOS2.addHostIntent( host1Id, host2Id )
 
         time.sleep( 10 )
         hIntents = main.ONOS2.intents( jsonFormat=False )
         main.log.info( "intents:" + hIntents )
-        main.ONOS2.flows()
+        flows = main.ONOS2.flows()
+        main.log.info( "flows:" + flows )     
 
         count = 1
         i = 8
@@ -785,7 +901,7 @@ class ProdFunc:
                 PingResult = main.ERROR
         if PingResult == main.FALSE:
             main.log.report(
-                "Ping all test after Host intent addition failed. Cleaning up" )
+                "Ping all test after Host intent addition failed.Cleaning up" )
             # main.cleanup()
             # main.exit()
         if PingResult == main.TRUE:
@@ -802,10 +918,10 @@ class ProdFunc:
     def CASE5( self, main ):
         import json
         # assumes that sts is already in you PYTHONPATH
-        from sts.topology.testonTopology import TestONTopology
+        from sts.topology.teston_topology import TestONTopology
         # main.ONOS2.startOnosCli( ONOSIp=main.params[ 'CTRL' ][ 'ip1' ] )
-        main.log.report( "This testcase is testing if all ONOS nodes \
-                         are in topology sync with mininet" )
+        main.log.report( "This testcase is testing if all ONOS nodes" +
+                         " are in topology sync with mininet" )
         main.log.report( "__________________________________" )
         main.case( "Comparing Mininet topology with the topology of ONOS" )
         main.step( "Start continuous pings" )
@@ -912,17 +1028,17 @@ class ProdFunc:
             onfail="Topology checks failed" )
 
     def CASE7( self, main ):
-        from sts.topology.testonTopology import TestONTopology
+        from sts.topology.teston_topology import TestONTopology
 
         linkSleep = int( main.params[ 'timers' ][ 'LinkDiscovery' ] )
 
-        main.log.report( "This testscase is killing a link to ensure that \
-                         link discovery is consistent" )
+        main.log.report( "This testscase is killing a link to ensure that" +
+                         " link discovery is consistent" )
         main.log.report( "__________________________________" )
-        main.log.report( "Killing a link to ensure that link discovery \
-                         is consistent" )
-        main.case( "Killing a link to Ensure that Link Discovery \
-                   is Working Properly" )
+        main.log.report( "Killing a link to ensure that link discovery" +
+                         " is consistent" )
+        main.case( "Killing a link to Ensure that Link Discovery" +
+                   "is Working Properly" )
         """
         main.step( "Start continuous pings" )
 
@@ -1050,31 +1166,28 @@ class ProdFunc:
 
         result = LinkDown and LinkUp and TopologyCheck
         utilities.assert_equals( expect=main.TRUE, actual=result,
-                                onpass="Link failure is discovered correctly",
-                                onfail="Link Discovery failed" )
+                                 onpass="Link failure is discovered correctly",
+                                 onfail="Link Discovery failed" )
 
     def CASE8( self ):
         """
-        Host intents removal
+        Intent removal
         """
-        main.log.report( "This testcase removes any previously added intents \
-                         before adding the same intents or point intents" )
+        import time
+        main.log.report( "This testcase removes any previously added intents" +
+                         " before adding any new set of intents" )
         main.log.report( "__________________________________" )
-        main.log.info( "Host intents removal" )
-        main.case( "Removing host intents" )
+        main.log.info( "intent removal" )
+        main.case( "Removing installed intents" )
         main.step( "Obtain the intent id's" )
         intentResult = main.ONOS2.intents( jsonFormat=False )
         main.log.info( "intent_result = " + intentResult )
-
         intentLinewise = intentResult.split( "\n" )
-        intentList = []
-        for line in intentLinewise:
-            if line.startswith( "id=" ):
-                intentList.append( line )
 
-        intentids = []
-        for line in intentList:
-            intentids.append( line.split( "," )[ 0 ].split( "=" )[ 1 ] )
+        intentList = [line for line in intentLinewise \
+            if line.startswith( "id=")]
+        intentids = [line.split( "," )[ 0 ].split( "=" )[ 1 ] for line in \
+            intentList]
         for id in intentids:
             print "id = ", id
 
@@ -1085,8 +1198,20 @@ class ProdFunc:
 
         intentResult = main.ONOS2.intents( jsonFormat=False )
         main.log.info( "intent_result = " + intentResult )
-
-        case8Result = main.TRUE
+        
+        intentList = [line for line in intentResult.split( "\n" ) \
+            if line.startswith( "id=")]
+        intentState = [line.split( "," )[ 1 ].split( "=" )[ 1 ] for line in \
+            intentList]
+        for state in intentState:
+            print state
+        
+        case8Result = main.TRUE        
+        for state in intentState:
+            if state != 'WITHDRAWN':
+                case8Result = main.FALSE
+                break
+                
         if case8Result == main.TRUE:
             main.log.report( "Intent removal successful" )
         else:
@@ -1113,11 +1238,11 @@ class ProdFunc:
             # Note: If the ping result failed, that means the intents have been
             # withdrawn correctly.
         if PingResult == main.TRUE:
-            main.log.report( "Host intents have not been withdrawn correctly" )
+            main.log.report( "Installed intents have not been withdrawn correctly" )
             # main.cleanup()
             # main.exit()
         if PingResult == main.FALSE:
-            main.log.report( "Host intents have been withdrawn correctly" )
+            main.log.report( "Installed intents have been withdrawn correctly" )
 
         case8Result = case8Result and PingResult
 
@@ -1127,8 +1252,8 @@ class ProdFunc:
             main.log.report( "Intent removal failed" )
 
         utilities.assert_equals( expect=main.FALSE, actual=case8Result,
-                                onpass="Intent removal test failed",
-                                onfail="Intent removal test passed" )
+                                 onpass="Intent removal test passed",
+                                 onfail="Intent removal test failed" )
 
     def CASE9( self ):
         main.log.report(
@@ -1136,12 +1261,13 @@ class ProdFunc:
         main.log.report( "__________________________________" )
         main.log.info( "Adding point intents" )
         main.case(
-            "Adding bidirectional point for mn hosts \
-                  ( h8-h18, h9-h19, h10-h20, h11-h21, h12-h22,\
-                   h13-h23, h14-h24, h15-h25, h16-h26, h17-h27 )" )
-        main.step(
-            "Add point intents for mininet hosts h8 and h18 or \
-                  ONOS hosts h8 and h12" )
+            "Adding bidirectional point for mn hosts" +
+            "( h8-h18, h9-h19, h10-h20, h11-h21, h12-h22, " +
+            "h13-h23, h14-h24, h15-h25, h16-h26, h17-h27 )" )
+
+        main.step( "Add point intents for mn hosts h8 and h18 or" +
+                   "ONOS hosts h8 and h12" )
+        # main.step(var1)
         ptpIntentResult = main.ONOS2.addPointIntent(
             "of:0000000000003008/1",
             "of:0000000000006018/1" )
@@ -1158,9 +1284,8 @@ class ProdFunc:
             main.log.info( "Point to point intent install successful" )
             # main.log.info( getIntentResult )
 
-        main.step(
-            "Add point intents for mininet hosts h9 and h19 or \
-                  ONOS hosts h9 and h13" )
+        var2 = "Add point intents for mn hosts h9&h19 or ONOS hosts h9&h13"
+        main.step(var2)
         ptpIntentResult = main.ONOS2.addPointIntent(
             "of:0000000000003009/1",
             "of:0000000000006019/1" )
@@ -1177,9 +1302,8 @@ class ProdFunc:
             main.log.info( "Point to point intent install successful" )
             # main.log.info( getIntentResult )
 
-        main.step(
-            "Add point intents for mininet hosts h10 and h20 or \
-                  ONOS hosts hA and h14" )
+        var3 = "Add point intents for MN hosts h10&h20 or ONOS hosts hA&h14"
+        main.step(var3)
         ptpIntentResult = main.ONOS2.addPointIntent(
             "of:0000000000003010/1",
             "of:0000000000006020/1" )
@@ -1196,9 +1320,9 @@ class ProdFunc:
             main.log.info( "Point to point intent install successful" )
             # main.log.info( getIntentResult )
 
-        main.step(
-            "Add point intents for mininet hosts h11 and h21 or \
-                  ONOS hosts hB and h15" )
+        var4 = "Add point intents for mininet hosts h11 and h21 or" +\
+               " ONOS hosts hB and h15"
+        main.case(var4)
         ptpIntentResult = main.ONOS2.addPointIntent(
             "of:0000000000003011/1",
             "of:0000000000006021/1" )
@@ -1215,9 +1339,9 @@ class ProdFunc:
             main.log.info( "Point to point intent install successful" )
             # main.log.info( getIntentResult )
 
-        main.step(
-            "Add point intents for mininet hosts h12 and h22 \
-                  ONOS hosts hC and h16" )
+        var5 = "Add point intents for mininet hosts h12 and h22 " +\
+               "ONOS hosts hC and h16"
+        main.case(var5)
         ptpIntentResult = main.ONOS2.addPointIntent(
             "of:0000000000003012/1",
             "of:0000000000006022/1" )
@@ -1234,9 +1358,9 @@ class ProdFunc:
             main.log.info( "Point to point intent install successful" )
             # main.log.info( getIntentResult )
 
-        main.step(
-            "Add point intents for mininet hosts h13 and h23 or \
-                  ONOS hosts hD and h17" )
+        var6 = "Add point intents for mininet hosts h13 and h23 or" +\
+               " ONOS hosts hD and h17"
+        main.case(var6)
         ptpIntentResult = main.ONOS2.addPointIntent(
             "of:0000000000003013/1",
             "of:0000000000006023/1" )
@@ -1253,9 +1377,9 @@ class ProdFunc:
             main.log.info( "Point to point intent install successful" )
             # main.log.info( getIntentResult )
 
-        main.step(
-            "Add point intents for mininet hosts h14 and h24 or \
-                  ONOS hosts hE and h18" )
+        var7 = "Add point intents for mininet hosts h14 and h24 or" +\
+               " ONOS hosts hE and h18"
+        main.case(var7)
         ptpIntentResult = main.ONOS2.addPointIntent(
             "of:0000000000003014/1",
             "of:0000000000006024/1" )
@@ -1272,9 +1396,9 @@ class ProdFunc:
             main.log.info( "Point to point intent install successful" )
             # main.log.info( getIntentResult )
 
-        main.step(
-            "Add point intents for mininet hosts h15 and h25 or \
-                  ONOS hosts hF and h19" )
+        var8 = "Add point intents for mininet hosts h15 and h25 or" +\
+               " ONOS hosts hF and h19"
+        main.case(var8)
         ptpIntentResult = main.ONOS2.addPointIntent(
             "of:0000000000003015/1",
             "of:0000000000006025/1" )
@@ -1291,9 +1415,9 @@ class ProdFunc:
             main.log.info( "Point to point intent install successful" )
             # main.log.info( getIntentResult )
 
-        main.step(
-            "Add intents for mininet hosts h16 and h26 or \
-                  ONOS hosts h10 and h1A" )
+        var9 = "Add intents for mininet hosts h16 and h26 or" +\
+               " ONOS hosts h10 and h1A"
+        main.case(var9)
         ptpIntentResult = main.ONOS2.addPointIntent(
             "of:0000000000003016/1",
             "of:0000000000006026/1" )
@@ -1310,16 +1434,16 @@ class ProdFunc:
             main.log.info( "Point to point intent install successful" )
             # main.log.info( getIntentResult )
 
-        main.step(
-            "Add point intents for mininet hosts h17 and h27 or \
-                  ONOS hosts h11 and h1B" )
+        var10 = "Add point intents for mininet hosts h17 and h27 or" +\
+                " ONOS hosts h11 and h1B"
+        main.case(var10)
         ptpIntentResult = main.ONOS2.addPointIntent(
             "of:0000000000003017/1",
             "of:0000000000006027/1" )
         if ptpIntentResult == main.TRUE:
             getIntentResult = main.ONOS2.intents()
             main.log.info( "Point to point intent install successful" )
-            main.log.info( getIntentResult )
+            #main.log.info( getIntentResult )
 
         ptpIntentResult = main.ONOS2.addPointIntent(
             "of:0000000000006027/1",
@@ -1327,14 +1451,13 @@ class ProdFunc:
         if ptpIntentResult == main.TRUE:
             getIntentResult = main.ONOS2.intents()
             main.log.info( "Point to point intent install successful" )
-            main.log.info( getIntentResult )
+            #main.log.info( getIntentResult )
 
         print(
             "___________________________________________________________" )
 
         flowHandle = main.ONOS2.flows()
-        # print "flowHandle = ", flowHandle
-        main.log.info( "flows :" + flowHandle )
+        #main.log.info( "flows :" + flowHandle )
 
         count = 1
         i = 8

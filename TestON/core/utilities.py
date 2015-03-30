@@ -29,11 +29,9 @@ Utilities will take care about the basic functions like :
 '''
 import re
 from configobj import ConfigObj
-import pydoc
 from core import ast as ast
 import smtplib
 
-import mimetypes
 import email
 import os
 import email.mime.application
@@ -265,7 +263,7 @@ class Utilities:
             try :
                 parsedInfo = ConfigObj(self.fileName)
                 return parsedInfo
-            except :
+            except Exception:
                 print "There is no such file to parse "+fileName 
         else:
             return 0   

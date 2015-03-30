@@ -35,7 +35,6 @@ from within your Mininet folder:
 
     Note that you may need to run 'sudo make develop' if your mnexec.c file
 changed when switching branches."""
-import traceback
 import pexpect
 import re
 import sys
@@ -52,6 +51,7 @@ class MininetCliDriver( Emulator ):
     def __init__( self ):
         super( Emulator, self ).__init__()
         self.handle = self
+        self.name = None
         self.wrapped = sys.modules[ __name__ ]
         self.flag = 0
 
@@ -59,20 +59,49 @@ class MininetCliDriver( Emulator ):
         """
            Here the main is the TestON instance after creating
            all the log handles."""
-        for key in connectargs:
-            vars( self )[ key ] = connectargs[ key ]
+        try:
+            for key in connectargs:
+                vars( self )[ key ] = connectargs[ key ]
 
-        self.name = self.options[ 'name' ]
-        self.handle = super(
-            MininetCliDriver,
-            self ).connect(
-            userName=self.userName,
-            ipAddress=self.ipAddress,
-            port=None,
-            pwd=self.pwd )
+            self.name = self.options[ 'name' ]
+            self.handle = super(
+                MininetCliDriver,
+                self ).connect(
+                user_name=self.user_name,
+                ip_address=self.ip_address,
+                port=None,
+                pwd=self.pwd )
 
-        self.sshHandle = self.handle
+            if self.handle:
+                main.log.info( "Connection successful to the host " +
+                               self.user_name +
+                               "@" +
+                               self.ip_address )
+                return main.TRUE
+            else:
+                main.log.error( "Connection failed to the host " +
+                                self.user_name +
+                                "@" +
+                                self.ip_address )
+                main.log.error( "Failed to connect to the Mininet CLI" )
+                return main.FALSE
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
 
+    def startNet( self, topoFile='', args='', timeout=120 ):
+        """
+        Starts Mininet accepts a topology(.py) file and/or an optional
+        argument ,to start the mininet, as a parameter.
+        Returns main.TRUE if the mininet starts successfully and
+                main.FALSE otherwise
+        """
         if self.handle:
             main.log.info(
                 self.name +
@@ -82,15 +111,15 @@ class MininetCliDriver( Emulator ):
                                       'Cleanup\scomplete',
                                       pexpect.EOF,
                                       pexpect.TIMEOUT ],
-                                    120 )
+                                    timeout )
             if i == 0:
                 main.log.info( self.name + ": Sending sudo password" )
                 self.handle.sendline( self.pwd )
-                i = self.handle.expect( [ '%s:' % ( self.user ),
+                i = self.handle.expect( [ '%s:' % self.user,
                                           '\$',
                                           pexpect.EOF,
                                           pexpect.TIMEOUT ],
-                                        120 )
+                                        timeout )
             if i == 1:
                 main.log.info( self.name + ": Clean" )
             elif i == 2:
@@ -99,58 +128,83 @@ class MininetCliDriver( Emulator ):
                 main.log.error(
                     self.name +
                     ": Something while cleaning MN took too long... " )
+            if topoFile == '' and args == '':
+                main.log.info( self.name + ": building fresh mininet" )
+                # for reactive/PARP enabled tests
+                cmdString = "sudo mn " + self.options[ 'arg1' ] +\
+                    " " + self.options[ 'arg2' ] +\
+                    " --mac --controller " +\
+                    self.options[ 'controller' ] + " " +\
+                    self.options[ 'arg3' ]
 
-            main.log.info( self.name + ": building fresh mininet" )
-            # for reactive/PARP enabled tests
-            cmdString = "sudo mn " + self.options[ 'arg1' ] +\
-                " " + self.options[ 'arg2' ] +\
-                " --mac --controller " +\
-                self.options[ 'controller' ] + " " +\
-                self.options[ 'arg3' ]
+                argList = self.options[ 'arg1' ].split( "," )
+                global topoArgList
+                topoArgList = argList[ 0 ].split( " " )
+                argList = map( int, argList[ 1: ] )
+                topoArgList = topoArgList[ 1: ] + argList
 
-            argList = self.options[ 'arg1' ].split( "," )
-            global topoArgList
-            topoArgList = argList[ 0 ].split( " " )
-            argList = map( int, argList[ 1: ] )
-            topoArgList = topoArgList[ 1: ] + argList
-
-            self.handle.sendline( cmdString )
-            self.handle.expect( [ "sudo mn", pexpect.EOF, pexpect.TIMEOUT ] )
-            while True:
+                self.handle.sendline( cmdString )
+                self.handle.expect( [ "sudo mn",
+                                    pexpect.EOF,
+                                    pexpect.TIMEOUT ] )
+                while True:
+                    i = self.handle.expect( [ 'mininet>',
+                                              '\*\*\*',
+                                              'Exception',
+                                              pexpect.EOF,
+                                              pexpect.TIMEOUT ],
+                                            timeout )
+                    if i == 0:
+                        main.log.info( self.name + ": mininet built" )
+                        return main.TRUE
+                    if i == 1:
+                        self.handle.expect(
+                            [ "\n", pexpect.EOF, pexpect.TIMEOUT ] )
+                        main.log.info( self.handle.before )
+                    elif i == 2:
+                        main.log.error(
+                            self.name +
+                            ": Launching mininet failed..." )
+                        return main.FALSE
+                    elif i == 3:
+                        main.log.error( self.name + ": Connection timeout" )
+                        return main.FALSE
+                    elif i == 4:  # timeout
+                        main.log.error(
+                            self.name +
+                            ": Something took too long... " )
+                        return main.FALSE
+                return main.TRUE
+            else:
+                main.log.info( "Starting topo file " + topoFile )
+                if args is None:
+                    args = ''
+                else:
+                    main.log.info( "args = " + args)
+                self.handle.sendline( 'sudo ' + topoFile + ' ' + args)
                 i = self.handle.expect( [ 'mininet>',
-                                          '\*\*\*',
-                                          'Exception',
                                           pexpect.EOF,
                                           pexpect.TIMEOUT ],
-                                        300 )
+                                        timeout)
                 if i == 0:
-                    main.log.info( self.name + ": mininet built" )
+                    main.log.info(self.name + ": Network started")
                     return main.TRUE
-                if i == 1:
-                    self.handle.expect(
-                        [ "\n", pexpect.EOF, pexpect.TIMEOUT ] )
-                    main.log.info( self.handle.before )
-                elif i == 2:
-                    main.log.error(
-                        self.name +
-                        ": Launching mininet failed..." )
-                    return main.FALSE
-                elif i == 3:
+                elif i == 1:
                     main.log.error( self.name + ": Connection timeout" )
                     return main.FALSE
-                elif i == 4:  # timeout
+                elif i == 2:  # timeout
                     main.log.error(
                         self.name +
                         ": Something took too long... " )
                     return main.FALSE
-            return main.TRUE
+                return main.TRUE
         else:  # if no handle
             main.log.error(
                 self.name +
                 ": Connection failed to the host " +
-                self.userName +
+                self.user_name +
                 "@" +
-                self.ipAddress )
+                self.ip_address )
             main.log.error( self.name + ": Failed to connect to the Mininet" )
             return main.FALSE
 
@@ -186,10 +240,8 @@ class MininetCliDriver( Emulator ):
             numLinks = totalNumHosts + ( numSwitches - 1 )
             print "num_switches for %s(%d,%d) = %d and links=%d" %\
                 ( topoType, depth, fanout, numSwitches, numLinks )
-        topoDict = {}
-        topoDict = {
-            "num_switches": int( numSwitches ),
-            "num_corelinks": int( numLinks ) }
+        topoDict = { "num_switches": int( numSwitches ),
+                     "num_corelinks": int( numLinks ) }
         return topoDict
 
     def calculateSwAndLinks( self ):
@@ -274,7 +326,7 @@ class MininetCliDriver( Emulator ):
         command = args[ "SRC" ] + " ping " + \
             args[ "TARGET" ] + " -c 1 -i 1 -W 8"
         try:
-            main.log.warn( "Sending: " + command )
+            main.log.info( "Sending: " + command )
             self.handle.sendline( command )
             i = self.handle.expect( [ command, pexpect.TIMEOUT ] )
             if i == 1:
@@ -339,6 +391,7 @@ class MininetCliDriver( Emulator ):
             main.log.error( self.name + ": Connection failed to the host" )
 
     def verifySSH( self, **connectargs ):
+        # FIXME: Who uses this and what is the purpose? seems very specific
         try:
             response = self.execute(
                 cmd="h1 /usr/sbin/sshd -D&",
@@ -366,6 +419,99 @@ class MininetCliDriver( Emulator ):
             return main.FALSE
         else:
             return main.TRUE
+
+    def moveHost( self, host, oldSw, newSw, ):
+        """
+           Moves a host from one switch to another on the fly
+           Note: The intf between host and oldSw when detached
+                using detach(), will still show up in the 'net'
+                cmd, because switch.detach() doesn't affect switch.intfs[]
+                (which is correct behavior since the interfaces 
+                haven't moved).
+        """
+        if self.handle:
+            try:
+                # Bring link between oldSw-host down
+                cmd = "py net.configLinkStatus('" + oldSw + "'," + "'"+ host +\
+                      "'," + "'down')"
+                print "cmd1= ", cmd
+                response = self.execute( cmd=cmd,
+                                         prompt="mininet>",
+                                         timeout=10 )
+     
+                # Determine hostintf and Oldswitchintf
+                cmd = "px hintf,sintf = " + host + ".connectionsTo(" + oldSw +\
+                      ")[0]"
+                print "cmd2= ", cmd
+                self.handle.sendline( cmd )
+                self.handle.expect( "mininet>" )
+
+                # Determine ip and mac address of the host-oldSw interface
+                cmd = "px ipaddr = hintf.IP()"
+                print "cmd3= ", cmd
+                self.handle.sendline( cmd )
+                self.handle.expect( "mininet>" )
+
+                cmd = "px macaddr = hintf.MAC()"
+                print "cmd3= ", cmd
+                self.handle.sendline( cmd )
+                self.handle.expect( "mininet>" )
+                
+                # Detach interface between oldSw-host
+                cmd = "px " + oldSw + ".detach( sintf )"
+                print "cmd4= ", cmd
+                self.handle.sendline( cmd )
+                self.handle.expect( "mininet>" )
+
+                # Add link between host-newSw
+                cmd = "py net.addLink(" + host + "," + newSw + ")"
+                print "cmd5= ", cmd
+                self.handle.sendline( cmd )
+                self.handle.expect( "mininet>" )
+ 
+                # Determine hostintf and Newswitchintf
+                cmd = "px hintf,sintf = " + host + ".connectionsTo(" + newSw +\
+                      ")[0]"
+                print "cmd6= ", cmd
+                self.handle.sendline( cmd )
+                self.handle.expect( "mininet>" )                 
+
+                # Attach interface between newSw-host
+                cmd = "px " + newSw + ".attach( sintf )"
+                print "cmd3= ", cmd
+                self.handle.sendline( cmd )
+                self.handle.expect( "mininet>" )
+                
+                # Set ipaddress of the host-newSw interface
+                cmd = "px " + host + ".setIP( ip = ipaddr, intf = hintf)"
+                print "cmd7 = ", cmd
+                self.handle.sendline( cmd )
+                self.handle.expect( "mininet>" )
+
+                # Set macaddress of the host-newSw interface
+                cmd = "px " + host + ".setMAC( mac = macaddr, intf = hintf)"
+                print "cmd8 = ", cmd
+                self.handle.sendline( cmd )
+                self.handle.expect( "mininet>" )
+                
+                cmd = "net"
+                print "cmd9 = ", cmd
+                self.handle.sendline( cmd )
+                self.handle.expect( "mininet>" )
+                print "output = ", self.handle.before
+
+                # Determine ipaddress of the host-newSw interface
+                cmd = host + " ifconfig"
+                print "cmd10= ", cmd
+                self.handle.sendline( cmd )
+                self.handle.expect( "mininet>" )
+                print "ifconfig o/p = ", self.handle.before
+                
+                return main.TRUE
+            except pexpect.EOF:
+                main.log.error( self.name + ": EOF exception found" )
+                main.log.error( self.name + ":     " + self.handle.before )
+                return main.FALSE
 
     def changeIP( self, host, intf, newIP, newNetmask ):
         """
@@ -414,7 +560,7 @@ class MininetCliDriver( Emulator ):
 
     def addStaticMACAddress( self, host, GW, macaddr ):
         """
-           Changes the mac address of a geateway host"""
+           Changes the mac address of a gateway host"""
         if self.handle:
             try:
                 # h1  arp -s 10.0.1.254 00:00:00:00:11:11
@@ -424,7 +570,7 @@ class MininetCliDriver( Emulator ):
                 response = self.handle.before
                 main.log.info( "response = " + response )
                 main.log.info(
-                    "Mac adrress of gateway " +
+                    "Mac address of gateway " +
                     GW +
                     " changed to " +
                     macaddr )
@@ -653,7 +799,7 @@ class MininetCliDriver( Emulator ):
             self.handle.expect( "mininet>" )
             response = self.handle.before
             if re.search( 'Results:', response ):
-                main.log.info( self.name + ": iperf test succssful" )
+                main.log.info( self.name + ": iperf test successful" )
                 return main.TRUE
             else:
                 main.log.error( self.name + ": iperf test failed" )
@@ -805,6 +951,8 @@ class MininetCliDriver( Emulator ):
         return main.TRUE
 
     def getVersion( self ):
+        #FIXME: What uses this? This should be refactored to get
+        #       version from MN and not some other file
         fileInput = path + '/lib/Mininet/INSTALL'
         version = super( Mininet, self ).getVersion()
         pattern = 'Mininet\s\w\.\w\.\w\w*'
@@ -880,10 +1028,8 @@ class MininetCliDriver( Emulator ):
             main.log.error( self.name + ":     " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
-            main.log.info( self.name + ":" * 50 )
-            main.log.error( traceback.print_exc() )
-            main.log.info( ":" * 50 )
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
@@ -911,10 +1057,10 @@ class MininetCliDriver( Emulator ):
             dynamic_topo branch
         NOTE: cannot currently specify what type of switch
         required params:
-            switchname = name of the new switch as a string
-        optional keyvalues:
+            sw = name of the new switch as a string
+        optional keywords:
             dpid = "dpid"
-        returns: main.FASLE on an error, else main.TRUE
+        returns: main.FALSE on an error, else main.TRUE
         """
         dpid = kwargs.get( 'dpid', '' )
         command = "addswitch " + str( sw ) + " " + str( dpid )
@@ -946,8 +1092,8 @@ class MininetCliDriver( Emulator ):
         NOTE: This uses a custom mn function. MN repo should be on
             dynamic_topo branch
         required params:
-            switchname = name of the switch as a string
-        returns: main.FASLE on an error, else main.TRUE"""
+            sw = name of the switch as a string
+        returns: main.FALSE on an error, else main.TRUE"""
         command = "delswitch " + str( sw )
         try:
             response = self.execute(
@@ -980,7 +1126,7 @@ class MininetCliDriver( Emulator ):
            required params:
            node1 = the string node name of the first endpoint of the link
            node2 = the string node name of the second endpoint of the link
-           returns: main.FASLE on an error, else main.TRUE"""
+           returns: main.FALSE on an error, else main.TRUE"""
         command = "addlink " + str( node1 ) + " " + str( node2 )
         try:
             response = self.execute(
@@ -1012,7 +1158,7 @@ class MininetCliDriver( Emulator ):
            required params:
            node1 = the string node name of the first endpoint of the link
            node2 = the string node name of the second endpoint of the link
-           returns: main.FASLE on an error, else main.TRUE"""
+           returns: main.FALSE on an error, else main.TRUE"""
         command = "dellink " + str( node1 ) + " " + str( node2 )
         try:
             response = self.execute(
@@ -1046,7 +1192,7 @@ class MininetCliDriver( Emulator ):
             hostname = the string hostname
         optional key-value params
             switch = "switch name"
-            returns: main.FASLE on an error, else main.TRUE
+            returns: main.FALSE on an error, else main.TRUE
         """
         switch = kwargs.get( 'switch', '' )
         command = "addhost " + str( hostname ) + " " + str( switch )
@@ -1083,7 +1229,7 @@ class MininetCliDriver( Emulator ):
            NOTE: this uses a custom mn function
            required params:
            hostname = the string hostname
-           returns: main.FASLE on an error, else main.TRUE"""
+           returns: main.FALSE on an error, else main.TRUE"""
         command = "delhost " + str( hostname )
         try:
             response = self.execute(
@@ -1108,20 +1254,70 @@ class MininetCliDriver( Emulator ):
             main.exit()
 
     def disconnect( self ):
-        main.log.info( self.name + ": Disconnecting mininet..." )
+        """
+        Called at the end of the test to stop the mininet and
+        disconnect the handle.
+        """
+        self.handle.sendline('')
+        i = self.handle.expect( [ 'mininet>', pexpect.EOF, pexpect.TIMEOUT ],
+                                timeout=2)
+        if i == 0:
+            self.stopNet()
+        elif i == 1:
+            return main.TRUE
+        response = main.TRUE
+        # print "Disconnecting Mininet"
+        if self.handle:
+            self.handle.sendline( "exit" )
+            self.handle.expect( "exit" )
+            self.handle.expect( "(.*)" )
+        else:
+            main.log.error( "Connection failed to the host" )
+        return response
+
+    def stopNet( self, fileName = "", timeout=5):
+        """
+        Stops mininet.
+        Returns main.TRUE if the mininet successfully stops and
+                main.FALSE if the pexpect handle does not exist.
+
+        Will cleanup and exit the test if mininet fails to stop
+        """
+
+        main.log.info( self.name + ": Stopping mininet..." )
         response = ''
         if self.handle:
             try:
+                self.handle.sendline("")
+                i = self.handle.expect( [ 'mininet>',
+                                          '\$',
+                                          pexpect.EOF,
+                                          pexpect.TIMEOUT ],
+                                        timeout )
+                if i == 0:
+                    main.log.info( "Exiting mininet..." )
+               
                 response = self.execute(
                     cmd="exit",
                     prompt="(.*)",
                     timeout=120 )
-                response = self.execute(
-                    cmd="exit",
-                    prompt="(.*)",
-                    timeout=120 )
+                main.log.info( self.name + ": Stopped")
                 self.handle.sendline( "sudo mn -c" )
                 response = main.TRUE
+                
+                if i == 1:
+                    main.log.info( " Mininet trying to exit while not " +
+                                   "in the mininet prompt" )
+                elif i == 2:
+                    main.log.error( "Something went wrong exiting mininet" )
+                elif i == 3:  # timeout
+                    main.log.error( "Something went wrong exiting mininet " +
+                                    "TIMEOUT" )
+                
+                if fileName:
+                    self.handle.sendline("")
+                    self.handle.expect('\$')
+                    self.handle.sendline("sudo kill -9 \`ps -ef | grep \""+ fileName +"\" | grep -v grep | awk '{print $2}'\`")
             except pexpect.EOF:
                 main.log.error( self.name + ": EOF exception found" )
                 main.log.error( self.name + ":     " + self.handle.before )
@@ -1142,7 +1338,7 @@ class MininetCliDriver( Emulator ):
             main.log.info( self.name + ": ARP successful" )
             self.handle.expect( [ "mininet", pexpect.EOF, pexpect.TIMEOUT ] )
             return main.TRUE
-        except:
+        except Exception:
             main.log.warn( self.name + ": ARP FAILURE" )
             self.handle.expect( [ "mininet", pexpect.EOF, pexpect.TIMEOUT ] )
             return main.FALSE
@@ -1193,12 +1389,10 @@ class MininetCliDriver( Emulator ):
             main.log.error( self.name + ":     " + self.handle.before )
             main.cleanup()
             main.exit()
-        else:
-            main.log.info( response )
 
     def startTcpdump( self, filename, intf="eth0", port="port 6633" ):
         """
-           Runs tpdump on an intferface and saves the file
+           Runs tpdump on an interface and saves the file
            intf can be specified, or the default eth0 is used"""
         try:
             self.handle.sendline( "" )
@@ -1248,15 +1442,14 @@ class MininetCliDriver( Emulator ):
             main.log.error( self.name + ":     " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
-            main.log.info( self.name + ":" * 50 )
-            main.log.error( traceback.print_exc() )
-            main.log.info( ":" * 50 )
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
     def stopTcpdump( self ):
-        "pkills tcpdump"
+        """
+            pkills tcpdump"""
         try:
             self.handle.sendline( "sh sudo pkill tcpdump" )
             self.handle.expect( "mininet>" )
@@ -1267,10 +1460,8 @@ class MininetCliDriver( Emulator ):
             main.log.error( self.name + ":     " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
-            main.log.info( self.name + ":" * 50 )
-            main.log.error( traceback.print_exc() )
-            main.log.info( ":" * 50 )
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
@@ -1289,8 +1480,7 @@ class MininetCliDriver( Emulator ):
             ports = []
             for port in switch.ports.values():
                 ports.append( { 'of_port': port.port_no,
-                                'mac': str( port.hw_addr ).replace( '\'',
-                                                                   '' ),
+                                'mac': str( port.hw_addr ).replace( '\'', '' ),
                                 'name': port.name } )
             output[ 'switches' ].append( {
                 "name": switch.name,
@@ -1299,12 +1489,12 @@ class MininetCliDriver( Emulator ):
 
         # print "mn"
         # print json.dumps( output,
-        #                   sortKeys=True,
+        #                   sort_keys=True,
         #                   indent=4,
         #                   separators=( ',', ': ' ) )
         # print "onos"
         # print json.dumps( switchesJson,
-        #                   sortKeys=True,
+        #                   sort_keys=True,
         #                   indent=4,
         #                   separators=( ',', ': ' ) )
 
@@ -1371,17 +1561,15 @@ class MininetCliDriver( Emulator ):
             ports = []
             for port in switch.ports.values():
                 # print port.hw_addr.toStr( separator='' )
-                tmpPort = {}
-                tmpPort[ 'of_port' ] = port.port_no
-                tmpPort[ 'mac' ] = str( port.hw_addr ).replace( '\'', '' )
-                tmpPort[ 'name' ] = port.name
-                tmpPort[ 'enabled' ] = port.enabled
+                tmpPort = { 'of_port': port.port_no,
+                            'mac': str( port.hw_addr ).replace( '\'', '' ),
+                            'name': port.name,
+                            'enabled': port.enabled }
 
                 ports.append( tmpPort )
-            tmpSwitch = {}
-            tmpSwitch[ 'name' ] = switch.name
-            tmpSwitch[ 'dpid' ] = str( switch.dpid ).zfill( 16 )
-            tmpSwitch[ 'ports' ] = ports
+            tmpSwitch = { 'name': switch.name,
+                          'dpid': str( switch.dpid ).zfill( 16 ),
+                          'ports': ports }
 
             output[ 'switches' ].append( tmpSwitch )
 
@@ -1462,8 +1650,7 @@ class MininetCliDriver( Emulator ):
 
            This uses the sts TestONTopology object"""
         # FIXME: this does not look for extra links in ONOS, only checks that
-        # ONOS has what is in MN
-        linkResults = main.TRUE
+        #        ONOS has what is in MN
         output = { "switches": [] }
         onos = linksJson
         # iterate through the MN topology and pull out switches and and port
@@ -1475,8 +1662,7 @@ class MininetCliDriver( Emulator ):
             for port in switch.ports.values():
                 # print port.hw_addr.toStr( separator='' )
                 ports.append( { 'of_port': port.port_no,
-                                'mac': str( port.hw_addr ).replace( '\'',
-                                                                   '' ),
+                                'mac': str( port.hw_addr ).replace( '\'', '' ),
                                 'name': port.name } )
             output[ 'switches' ].append( {
                 "name": switch.name,
@@ -1492,9 +1678,9 @@ class MininetCliDriver( Emulator ):
         else:
             linkResults = main.FALSE
             main.log.report(
-                "Mininet has %i bidirectional links and " +
-                "ONOS has %i unidirectional links" %
-                ( len( mnLinks ), len( onos ) ) )
+                "Mininet has " + str( len( mnLinks ) ) +
+                " bidirectional links and ONOS has " +
+                str( len( onos ) ) + " unidirectional links" )
 
         # iterate through MN links and check if an ONOS link exists in
         # both directions
@@ -1552,7 +1738,7 @@ class MininetCliDriver( Emulator ):
                         main.log.warn(
                             'The port numbers do not match for ' +
                             str( link ) +
-                            ' between ONOS and MN. When cheking ONOS for ' +
+                            ' between ONOS and MN. When checking ONOS for ' +
                             'link %s/%s -> %s/%s' %
                             ( node1,
                               port1,
@@ -1574,7 +1760,7 @@ class MininetCliDriver( Emulator ):
                         main.log.warn(
                             'The port numbers do not match for ' +
                             str( link ) +
-                            ' between ONOS and MN. When cheking ONOS for ' +
+                            ' between ONOS and MN. When checking ONOS for ' +
                             'link %s/%s -> %s/%s' %
                             ( node2,
                               port2,
@@ -1597,6 +1783,64 @@ class MininetCliDriver( Emulator ):
                     ( node2, port2, node1, port1 ) )
             linkResults = linkResults and firstDir and secondDir
         return linkResults
+
+    def compareHosts( self, topo, hostsJson ):
+        """
+           Compare mn and onos Hosts.
+           Since Mininet hosts are quiet, ONOS will only know of them when they
+           speak. For this reason, we will only check that the hosts in ONOS
+           stores are in Mininet, and not vice versa.
+           topo: sts TestONTopology object
+           hostsJson: parsed json object from the onos hosts api
+
+           This uses the sts TestONTopology object"""
+        import json
+        hostResults = main.TRUE
+        hosts = []
+        # iterate through the MN topology and pull out hosts
+        for mnHost in topo.graph.hosts:
+            interfaces = []
+            for intf in mnHost.interfaces:
+                interfaces.append( {
+                    "name": intf.name,  # str
+                    "ips": [ str( ip ) for ip in intf.ips ],  # list of IPAddrs
+                    # hw_addr is of type EthAddr, Not JSON serializable
+                    "hw_addr": str( intf.hw_addr ) } )
+            hosts.append( {
+                "name": mnHost.name,  # str
+                "interfaces": interfaces  } )  # list
+        for onosHost in hostsJson:
+            onosMAC = onosHost[ 'mac' ].lower()
+            match = False
+            for mnHost in hosts:
+                for mnIntf in mnHost[ 'interfaces' ]:
+                    if onosMAC == mnIntf[ 'hw_addr' ].lower() :
+                        match = True
+                        for ip in mnIntf[ 'ips' ]:
+                            if ip in onosHost[ 'ips' ]:
+                                pass  # all is well
+                            else:
+                                # misssing ip
+                                main.log.error( "ONOS host " + onosHost[ 'id' ]
+                                                + " has a different IP than " +
+                                                "the Mininet host." )
+                                output = json.dumps(
+                                                    onosHost,
+                                                    sort_keys=True,
+                                                    indent=4,
+                                                    separators=( ',', ': ' ) )
+                                main.log.info( output )
+                                hostResults = main.FALSE
+            if not match:
+                hostResults = main.FALSE
+                main.log.error( "ONOS host " + onosHost[ 'id' ] + " has no " +
+                                "corresponding Mininet host." )
+                output = json.dumps( onosHost,
+                                     sort_keys=True,
+                                     indent=4,
+                                     separators=( ',', ': ' ) )
+                main.log.info( output )
+        return hostResults
 
     def getHosts( self ):
         """
@@ -1627,7 +1871,7 @@ class MininetCliDriver( Emulator ):
            updates the port address and status information for
            each port in mn"""
         # TODO: Add error checking. currently the mininet command has no output
-        main.log.info( "Updateing MN port information" )
+        main.log.info( "Updating MN port information" )
         try:
             self.handle.sendline( "" )
             self.handle.expect( "mininet>" )

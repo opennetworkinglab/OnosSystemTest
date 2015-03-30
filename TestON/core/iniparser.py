@@ -48,7 +48,7 @@ class iniparser:
             try :
                 parsedInfo = ConfigObj(self.fileName)
                 return parsedInfo
-            except :
+            except Exception:
                 print "There is no such file to parse "+fileName
         else:
             return 0

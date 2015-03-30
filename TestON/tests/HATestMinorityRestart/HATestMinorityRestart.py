@@ -1,4 +1,4 @@
-'''
+"""
 Description: This test is to determine if ONOS can handle
     a minority of it's nodes restarting
 
@@ -18,1842 +18,2431 @@ CASE12: Switch up
 CASE13: Clean up
 CASE14: start election app on all onos nodes
 CASE15: Check that Leadership Election is still functional
-'''
+"""
+
+
 class HATestMinorityRestart:
 
-    def __init__(self) :
+    def __init__( self ):
         self.default = ''
 
-    def CASE1(self,main) :
-        '''
+    def CASE1( self, main ):
+        """
         CASE1 is to compile ONOS and push it to the test machines
 
         Startup sequence:
-        git pull
-        mvn clean install
-        onos-package
         cell <name>
         onos-verify-cell
         NOTE: temporary - onos-remove-raft-logs
+        onos-uninstall
+        start mininet
+        git pull
+        mvn clean install
+        onos-package
         onos-install -f
         onos-wait-for-start
-        '''
-        import time
-        main.log.report("ONOS HA test: Restart minority of ONOS nodes - initialization")
-        main.case("Setting up test environment")
+        start cli sessions
+        start tcpdump
+        """
+        main.log.report(
+            "ONOS HA test: Restart minority of ONOS nodes - initialization" )
+        main.case( "Setting up test environment" )
+        # TODO: save all the timers and output them for plotting
 
-        # load some vairables from the params file
-        PULL_CODE = False
-        if main.params['Git'] == 'True':
-            PULL_CODE = True
-        cell_name = main.params['ENV']['cellName']
+        # load some variables from the params file
+        PULLCODE = False
+        if main.params[ 'Git' ] == 'True':
+            PULLCODE = True
+        gitBranch = main.params[ 'branch' ]
+        cellName = main.params[ 'ENV' ][ 'cellName' ]
 
-        #set global variables
-        global ONOS1_ip
-        global ONOS1_port
-        global ONOS2_ip
-        global ONOS2_port
-        global ONOS3_ip
-        global ONOS3_port
-        global ONOS4_ip
-        global ONOS4_port
-        global ONOS5_ip
-        global ONOS5_port
-        global ONOS6_ip
-        global ONOS6_port
-        global ONOS7_ip
-        global ONOS7_port
-        global num_controllers
+        # set global variables
+        global ONOS1Port
+        global ONOS2Port
+        global ONOS3Port
+        global ONOS4Port
+        global ONOS5Port
+        global ONOS6Port
+        global ONOS7Port
+        global numControllers
+        numControllers = int( main.params[ 'num_controllers' ] )
 
-        ONOS1_ip = main.params['CTRL']['ip1']
-        ONOS1_port = main.params['CTRL']['port1']
-        ONOS2_ip = main.params['CTRL']['ip2']
-        ONOS2_port = main.params['CTRL']['port2']
-        ONOS3_ip = main.params['CTRL']['ip3']
-        ONOS3_port = main.params['CTRL']['port3']
-        ONOS4_ip = main.params['CTRL']['ip4']
-        ONOS4_port = main.params['CTRL']['port4']
-        ONOS5_ip = main.params['CTRL']['ip5']
-        ONOS5_port = main.params['CTRL']['port5']
-        ONOS6_ip = main.params['CTRL']['ip6']
-        ONOS6_port = main.params['CTRL']['port6']
-        ONOS7_ip = main.params['CTRL']['ip7']
-        ONOS7_port = main.params['CTRL']['port7']
-        num_controllers = int(main.params['num_controllers'])
+        # FIXME: just get controller port from params?
+        # TODO: do we really need all these?
+        ONOS1Port = main.params[ 'CTRL' ][ 'port1' ]
+        ONOS2Port = main.params[ 'CTRL' ][ 'port2' ]
+        ONOS3Port = main.params[ 'CTRL' ][ 'port3' ]
+        ONOS4Port = main.params[ 'CTRL' ][ 'port4' ]
+        ONOS5Port = main.params[ 'CTRL' ][ 'port5' ]
+        ONOS6Port = main.params[ 'CTRL' ][ 'port6' ]
+        ONOS7Port = main.params[ 'CTRL' ][ 'port7' ]
 
+        global CLIs
+        CLIs = []
+        global nodes
+        nodes = []
+        for i in range( 1, numControllers + 1 ):
+            CLIs.append( getattr( main, 'ONOScli' + str( i ) ) )
+            nodes.append( getattr( main, 'ONOS' + str( i ) ) )
 
-        main.step("Applying cell variable to environment")
-        cell_result = main.ONOSbench.set_cell(cell_name)
-        verify_result = main.ONOSbench.verify_cell()
+        main.step( "Applying cell variable to environment" )
+        cellResult = main.ONOSbench.setCell( cellName )
+        verifyResult = main.ONOSbench.verifyCell()
 
-        #FIXME:this is short term fix
-        main.log.report("Removing raft logs")
-        main.ONOSbench.onos_remove_raft_logs()
-        main.log.report("Uninstalling ONOS")
-        main.ONOSbench.onos_uninstall(ONOS1_ip)
-        main.ONOSbench.onos_uninstall(ONOS2_ip)
-        main.ONOSbench.onos_uninstall(ONOS3_ip)
-        main.ONOSbench.onos_uninstall(ONOS4_ip)
-        main.ONOSbench.onos_uninstall(ONOS5_ip)
-        main.ONOSbench.onos_uninstall(ONOS6_ip)
-        main.ONOSbench.onos_uninstall(ONOS7_ip)
+        # FIXME:this is short term fix
+        main.log.report( "Removing raft logs" )
+        main.ONOSbench.onosRemoveRaftLogs()
 
-        clean_install_result = main.TRUE
-        git_pull_result = main.TRUE
+        main.log.report( "Uninstalling ONOS" )
+        for node in nodes:
+            main.ONOSbench.onosUninstall( node.ip_address )
 
-        main.step("Compiling the latest version of ONOS")
-        if PULL_CODE:
-            main.step("Git checkout and pull master")
-            main.ONOSbench.git_checkout("master")
-            git_pull_result = main.ONOSbench.git_pull()
+        cleanInstallResult = main.TRUE
+        gitPullResult = main.TRUE
 
-            main.step("Using mvn clean & install")
-            clean_install_result = main.TRUE
-            if git_pull_result == main.TRUE:
-                clean_install_result = main.ONOSbench.clean_install()
-            else:
-                main.log.warn("Did not pull new code so skipping mvn "+ \
-                        "clean install")
-        main.ONOSbench.get_version(report=True)
+        main.step( "Starting Mininet" )
+        main.Mininet1.startNet( )
 
-        main.step("Creating ONOS package")
-        package_result = main.ONOSbench.onos_package()
+        main.step( "Compiling the latest version of ONOS" )
+        if PULLCODE:
+            main.step( "Git checkout and pull " + gitBranch )
+            main.ONOSbench.gitCheckout( gitBranch )
+            gitPullResult = main.ONOSbench.gitPull()
+            if gitPullResult == main.ERROR:
+                main.log.error( "Error pulling git branch" )
 
-        main.step("Installing ONOS package")
-        onos1_install_result = main.ONOSbench.onos_install(options="-f",
-                node=ONOS1_ip)
-        onos2_install_result = main.ONOSbench.onos_install(options="-f",
-                node=ONOS2_ip)
-        onos3_install_result = main.ONOSbench.onos_install(options="-f",
-                node=ONOS3_ip)
-        onos4_install_result = main.ONOSbench.onos_install(options="-f",
-                node=ONOS4_ip)
-        onos5_install_result = main.ONOSbench.onos_install(options="-f",
-                node=ONOS5_ip)
-        onos6_install_result = main.ONOSbench.onos_install(options="-f",
-                node=ONOS6_ip)
-        onos7_install_result = main.ONOSbench.onos_install(options="-f",
-                node=ONOS7_ip)
-        onos_install_result = onos1_install_result and onos2_install_result\
-                and onos3_install_result and onos4_install_result\
-                and onos5_install_result and onos6_install_result\
-                and onos7_install_result
-        '''
-        #FIXME: work around until onos is less fragile
-        main.ONOSbench.handle.sendline("onos-cluster-install")
-        print main.ONOSbench.handle.expect("\$")
-        onos_install_result = main.TRUE
-        '''
+            main.step( "Using mvn clean & install" )
+            cleanInstallResult = main.ONOSbench.cleanInstall()
+        else:
+            main.log.warn( "Did not pull new code so skipping mvn " +
+                           "clean install" )
+        main.ONOSbench.getVersion( report=True )
 
+        main.step( "Creating ONOS package" )
+        packageResult = main.ONOSbench.onosPackage()
 
-        main.step("Checking if ONOS is up yet")
-        #TODO check bundle:list?
-        for i in range(2):
-            onos1_isup = main.ONOSbench.isup(ONOS1_ip)
-            if not onos1_isup:
-                main.log.report("ONOS1 didn't start!")
-            onos2_isup = main.ONOSbench.isup(ONOS2_ip)
-            if not onos2_isup:
-                main.log.report("ONOS2 didn't start!")
-            onos3_isup = main.ONOSbench.isup(ONOS3_ip)
-            if not onos3_isup:
-                main.log.report("ONOS3 didn't start!")
-            onos4_isup = main.ONOSbench.isup(ONOS4_ip)
-            if not onos4_isup:
-                main.log.report("ONOS4 didn't start!")
-            onos5_isup = main.ONOSbench.isup(ONOS5_ip)
-            if not onos5_isup:
-                main.log.report("ONOS5 didn't start!")
-            onos6_isup = main.ONOSbench.isup(ONOS6_ip)
-            if not onos6_isup:
-                main.log.report("ONOS6 didn't start!")
-            onos7_isup = main.ONOSbench.isup(ONOS7_ip)
-            if not onos7_isup:
-                main.log.report("ONOS7 didn't start!")
-            onos_isup_result = onos1_isup and onos2_isup and onos3_isup\
-                    and onos4_isup and onos5_isup and onos6_isup and onos7_isup
-            if onos_isup_result == main.TRUE:
+        main.step( "Installing ONOS package" )
+        onosInstallResult = main.TRUE
+        for node in nodes:
+            tmpResult = main.ONOSbench.onosInstall( options="-f",
+                                                    node=node.ip_address )
+            onosInstallResult = onosInstallResult and tmpResult
+
+        main.step( "Checking if ONOS is up yet" )
+        for i in range( 2 ):
+            onosIsupResult = main.TRUE
+            for node in nodes:
+                started = main.ONOSbench.isup( node.ip_address )
+                if not started:
+                    main.log.report( node.name + " didn't start!" )
+                    main.ONOSbench.onosStop( node.ip_address )
+                    main.ONOSbench.onosStart( node.ip_address )
+                onosIsupResult = onosIsupResult and started
+            if onosIsupResult == main.TRUE:
                 break
-        # TODO: if it becomes an issue, we can retry this step  a few times
 
+        main.log.step( "Starting ONOS CLI sessions" )
+        cliResults = main.TRUE
+        threads = []
+        for i in range( numControllers ):
+            t = main.Thread( target=CLIs[i].startOnosCli,
+                             name="startOnosCli-" + str( i ),
+                             args=[nodes[i].ip_address] )
+            threads.append( t )
+            t.start()
 
-        cli_result1 = main.ONOScli1.start_onos_cli(ONOS1_ip)
-        cli_result2 = main.ONOScli2.start_onos_cli(ONOS2_ip)
-        cli_result3 = main.ONOScli3.start_onos_cli(ONOS3_ip)
-        cli_result4 = main.ONOScli4.start_onos_cli(ONOS4_ip)
-        cli_result5 = main.ONOScli5.start_onos_cli(ONOS5_ip)
-        cli_result6 = main.ONOScli6.start_onos_cli(ONOS6_ip)
-        cli_result7 = main.ONOScli7.start_onos_cli(ONOS7_ip)
-        cli_results = cli_result1 and cli_result2 and cli_result3 and\
-                cli_result4 and cli_result5 and cli_result6 and cli_result7
+        for t in threads:
+            t.join()
+            cliResults = cliResults and t.result
 
+        main.step( "Start Packet Capture MN" )
+        main.Mininet2.startTcpdump(
+            str( main.params[ 'MNtcpdump' ][ 'folder' ] ) + str( main.TEST )
+            + "-MN.pcap",
+            intf=main.params[ 'MNtcpdump' ][ 'intf' ],
+            port=main.params[ 'MNtcpdump' ][ 'port' ] )
 
-        main.step("Start Packet Capture MN")
-        main.Mininet2.start_tcpdump(
-                str(main.params['MNtcpdump']['folder'])+str(main.TEST)+"-MN.pcap",
-                intf = main.params['MNtcpdump']['intf'],
-                port = main.params['MNtcpdump']['port'])
+        case1Result = ( cleanInstallResult and packageResult and
+                        cellResult and verifyResult and onosInstallResult
+                        and onosIsupResult and cliResults )
 
+        utilities.assert_equals( expect=main.TRUE, actual=case1Result,
+                                 onpass="Test startup successful",
+                                 onfail="Test startup NOT successful" )
 
-        case1_result = (clean_install_result and package_result and
-                cell_result and verify_result and onos_install_result and
-                onos_isup_result and cli_results)
-
-        utilities.assert_equals(expect=main.TRUE, actual=case1_result,
-                onpass="Test startup successful",
-                onfail="Test startup NOT successful")
-
-
-        if case1_result==main.FALSE:
+        if case1Result == main.FALSE:
             main.cleanup()
             main.exit()
 
-    def CASE2(self,main) :
-        '''
+    def CASE2( self, main ):
+        """
         Assign mastership to controllers
-        '''
-        import time
-        import json
+        """
         import re
+        assert numControllers, "numControllers not defined"
+        assert main, "main not defined"
+        assert utilities.assert_equals, "utilities.assert_equals not defined"
+        assert CLIs, "CLIs not defined"
+        assert nodes, "nodes not defined"
+        assert ONOS1Port, "ONOS1Port not defined"
+        assert ONOS2Port, "ONOS2Port not defined"
+        assert ONOS3Port, "ONOS3Port not defined"
+        assert ONOS4Port, "ONOS4Port not defined"
+        assert ONOS5Port, "ONOS5Port not defined"
+        assert ONOS6Port, "ONOS6Port not defined"
+        assert ONOS7Port, "ONOS7Port not defined"
 
-        main.log.report("Assigning switches to controllers")
-        main.case("Assigning Controllers")
-        main.step("Assign switches to controllers")
+        main.log.report( "Assigning switches to controllers" )
+        main.case( "Assigning Controllers" )
+        main.step( "Assign switches to controllers" )
 
-        for i in range (1,29):
-           main.Mininet1.assign_sw_controller(sw=str(i),count=num_controllers,
-                    ip1=ONOS1_ip,port1=ONOS1_port,
-                    ip2=ONOS2_ip,port2=ONOS2_port,
-                    ip3=ONOS3_ip,port3=ONOS3_port,
-                    ip4=ONOS4_ip,port4=ONOS4_port,
-                    ip5=ONOS5_ip,port5=ONOS5_port,
-                    ip6=ONOS6_ip,port6=ONOS6_port,
-                    ip7=ONOS7_ip,port7=ONOS7_port)
+        # TODO: rewrite this function to take lists of ips and ports?
+        #       or list of tuples?
+        for i in range( 1, 29 ):
+            main.Mininet1.assignSwController(
+                sw=str( i ),
+                count=numControllers,
+                ip1=nodes[ 0 ].ip_address, port1=ONOS1Port,
+                ip2=nodes[ 1 ].ip_address, port2=ONOS2Port,
+                ip3=nodes[ 2 ].ip_address, port3=ONOS3Port,
+                ip4=nodes[ 3 ].ip_address, port4=ONOS4Port,
+                ip5=nodes[ 4 ].ip_address, port5=ONOS5Port,
+                ip6=nodes[ 5 ].ip_address, port6=ONOS6Port,
+                ip7=nodes[ 6 ].ip_address, port7=ONOS7Port )
 
-        mastership_check = main.TRUE
-        for i in range (1,29):
-            response = main.Mininet1.get_sw_controller("s"+str(i))
+        mastershipCheck = main.TRUE
+        for i in range( 1, 29 ):
+            response = main.Mininet1.getSwController( "s" + str( i ) )
             try:
-                main.log.info(str(response))
-            except:
-                main.log.info(repr(response))
-            if re.search("tcp:"+ONOS1_ip,response)\
-                    and re.search("tcp:"+ONOS2_ip,response)\
-                    and re.search("tcp:"+ONOS3_ip,response)\
-                    and re.search("tcp:"+ONOS4_ip,response)\
-                    and re.search("tcp:"+ONOS5_ip,response)\
-                    and re.search("tcp:"+ONOS6_ip,response)\
-                    and re.search("tcp:"+ONOS7_ip,response):
-                mastership_check = mastership_check and main.TRUE
+                main.log.info( str( response ) )
+            except Exception:
+                main.log.info( repr( response ) )
+            for node in nodes:
+                if re.search( "tcp:" + node.ip_address, response ):
+                    mastershipCheck = mastershipCheck and main.TRUE
+                else:
+                    mastershipCheck = main.FALSE
+        if mastershipCheck == main.TRUE:
+            main.log.report( "Switch mastership assigned correctly" )
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=mastershipCheck,
+            onpass="Switch mastership assigned correctly",
+            onfail="Switches not assigned correctly to controllers" )
+        #FIXME: turning off because of ONOS-1286
+        # Manually assign mastership to the controller we want
+        roleCall = main.TRUE
+        roleCheck = main.TRUE
+        try:
+            # Assign switch
+            ip = nodes[ 0 ].ip_address  # ONOS1
+            deviceId = main.ONOScli1.getDevice( "1000" ).get( 'id' )
+            assert deviceId, "No device id for s1 in ONOS"
+            roleCall = roleCall and main.ONOScli1.deviceRole(
+                deviceId,
+                ip )
+            # Check assignment
+            if ip in main.ONOScli1.getRole( deviceId ).get( 'master' ):
+                roleCheck = roleCheck and main.TRUE
             else:
-                mastership_check = main.FALSE
-        if mastership_check == main.TRUE:
-            main.log.report("Switch mastership assigned correctly")
-        utilities.assert_equals(expect = main.TRUE,actual=mastership_check,
-                onpass="Switch mastership assigned correctly",
-                onfail="Switches not assigned correctly to controllers")
+                roleCheck = roleCheck and main.FALSE
 
-        #Manually assign mastership to the controller we want
-        role_call = main.TRUE
-        role_check = main.TRUE
+            # Assign switch
+            deviceId = main.ONOScli1.getDevice( "2800" ).get( 'id' )
+            assert deviceId, "No device id for s28 in ONOS"
+            roleCall = roleCall and main.ONOScli1.deviceRole(
+                deviceId,
+                ip )
+            # Check assignment
+            if ip in main.ONOScli1.getRole( deviceId ).get( 'master' ):
+                roleCheck = roleCheck and main.TRUE
+            else:
+                roleCheck = roleCheck and main.FALSE
 
-        device_id = main.ONOScli1.get_device("1000")['id']
-        role_call = role_call and main.ONOScli1.device_role(device_id, ONOS1_ip)
-        if ONOS1_ip in main.ONOScli1.get_role(device_id)['master']:
-            role_check = role_check and main.TRUE
-        else:
-            role_check = role_check and main.FALSE
+            ip = nodes[ 1 ].ip_address  # ONOS2
+            # Assign switch
+            deviceId = main.ONOScli1.getDevice( "2000" ).get( 'id' )
+            assert deviceId, "No device id for s2 in ONOS"
+            roleCall = roleCall and main.ONOScli1.deviceRole(
+                deviceId,
+                ip )
+            # Check assignment
+            if ip in main.ONOScli1.getRole( deviceId ).get( 'master' ):
+                roleCheck = roleCheck and main.TRUE
+            else:
+                roleCheck = roleCheck and main.FALSE
 
-        device_id = main.ONOScli1.get_device("2800")['id']
-        role_call = role_call and main.ONOScli1.device_role(device_id, ONOS1_ip)
-        if ONOS1_ip in main.ONOScli1.get_role(device_id)['master']:
-            role_check = role_check and main.TRUE
-        else:
-            role_check = role_check and main.FALSE
+            # Assign switch
+            deviceId = main.ONOScli1.getDevice( "3000" ).get( 'id' )
+            assert deviceId, "No device id for s3 in ONOS"
+            roleCall = roleCall and main.ONOScli1.deviceRole(
+                deviceId,
+                ip )
+            # Check assignment
+            if ip in main.ONOScli1.getRole( deviceId ).get( 'master' ):
+                roleCheck = roleCheck and main.TRUE
+            else:
+                roleCheck = roleCheck and main.FALSE
 
-        device_id = main.ONOScli1.get_device("2000")['id']
-        role_call = role_call and main.ONOScli1.device_role(device_id, ONOS2_ip)
-        if ONOS2_ip in main.ONOScli1.get_role(device_id)['master']:
-            role_check = role_check and main.TRUE
-        else:
-            role_check = role_check and main.FALSE
+            ip = nodes[ 2 ].ip_address  # ONOS3
+            # Assign switch
+            deviceId = main.ONOScli1.getDevice( "5000" ).get( 'id' )
+            assert deviceId, "No device id for s5 in ONOS"
+            roleCall = roleCall and main.ONOScli1.deviceRole(
+                deviceId,
+                ip )
+            # Check assignment
+            if ip in main.ONOScli1.getRole( deviceId ).get( 'master' ):
+                roleCheck = roleCheck and main.TRUE
+            else:
+                roleCheck = roleCheck and main.FALSE
 
-        device_id = main.ONOScli1.get_device("3000")['id']
-        role_call = role_call and main.ONOScli1.device_role(device_id, ONOS2_ip)
-        if ONOS2_ip in main.ONOScli1.get_role(device_id)['master']:
-            role_check = role_check and main.TRUE
-        else:
-            role_check = role_check and main.FALSE
+            # Assign switch
+            deviceId = main.ONOScli1.getDevice( "6000" ).get( 'id' )
+            assert deviceId, "No device id for s6 in ONOS"
+            roleCall = roleCall and main.ONOScli1.deviceRole(
+                deviceId,
+                ip )
+            # Check assignment
+            if ip in main.ONOScli1.getRole( deviceId ).get( 'master' ):
+                roleCheck = roleCheck and main.TRUE
+            else:
+                roleCheck = roleCheck and main.FALSE
 
-        device_id = main.ONOScli1.get_device("5000")['id']
-        role_call = role_call and main.ONOScli1.device_role(device_id, ONOS3_ip)
-        if ONOS3_ip in main.ONOScli1.get_role(device_id)['master']:
-            role_check = role_check and main.TRUE
-        else:
-            role_check = role_check and main.FALSE
+            ip = nodes[ 3 ].ip_address  # ONOS4
+            # Assign switch
+            deviceId = main.ONOScli1.getDevice( "3004" ).get( 'id' )
+            assert deviceId, "No device id for s4 in ONOS"
+            roleCall = roleCall and main.ONOScli1.deviceRole(
+                deviceId,
+                ip )
+            # Check assignment
+            if ip in main.ONOScli1.getRole( deviceId ).get( 'master' ):
+                roleCheck = roleCheck and main.TRUE
+            else:
+                roleCheck = roleCheck and main.FALSE
 
-        device_id = main.ONOScli1.get_device("6000")['id']
-        role_call = role_call and main.ONOScli1.device_role(device_id, ONOS3_ip)
-        if ONOS3_ip in main.ONOScli1.get_role(device_id)['master']:
-            role_check = role_check and main.TRUE
-        else:
-            role_check = role_check and main.FALSE
+            ip = nodes[ 4 ].ip_address  # ONOS5
+            for i in range( 8, 18 ):
+                dpid = '3' + str( i ).zfill( 3 )
+                deviceId = main.ONOScli1.getDevice( dpid ).get( 'id' )
+                assert deviceId, "No device id for s%i in ONOS" % i
+                roleCall = roleCall and main.ONOScli1.deviceRole(
+                    deviceId,
+                    ip )
+                # Check assignment
+                if ip in main.ONOScli1.getRole( deviceId ).get( 'master' ):
+                    roleCheck = roleCheck and main.TRUE
+                else:
+                    roleCheck = roleCheck and main.FALSE
 
-        device_id =  main.ONOScli1.get_device("3004")['id']
-        role_call = role_call and main.ONOScli1.device_role(device_id, ONOS4_ip)
-        if ONOS4_ip in main.ONOScli1.get_role(device_id)['master']:
-            role_check = role_check and main.TRUE
-        else:
-            role_check = role_check and main.FALSE
+            ip = nodes[ 5 ].ip_address  # ONOS6
+            deviceId = main.ONOScli1.getDevice( "6007" ).get( 'id' )
+            assert deviceId, "No device id for s7 in ONOS"
+            roleCall = roleCall and main.ONOScli1.deviceRole(
+                deviceId,
+                ip )
+            # Check assignment
+            if ip in main.ONOScli1.getRole( deviceId ).get( 'master' ):
+                roleCheck = roleCheck and main.TRUE
+            else:
+                roleCheck = roleCheck and main.FALSE
 
-        device_id = main.ONOScli1.get_device("3008")['id']
-        role_call = role_call and main.ONOScli1.device_role(device_id, ONOS5_ip)
-        if ONOS5_ip in main.ONOScli1.get_role(device_id)['master']:
-            role_check = role_check and main.TRUE
-        else:
-            role_check = role_check and main.FALSE
+            ip = nodes[ 6 ].ip_address  # ONOS7
+            for i in range( 18, 28 ):
+                dpid = '6' + str( i ).zfill( 3 )
+                deviceId = main.ONOScli1.getDevice( dpid ).get( 'id' )
+                assert deviceId, "No device id for s%i in ONOS" % i
+                roleCall = roleCall and main.ONOScli1.deviceRole(
+                    deviceId,
+                    ip )
+                # Check assignment
+                if ip in main.ONOScli1.getRole( deviceId ).get( 'master' ):
+                    roleCheck = roleCheck and main.TRUE
+                else:
+                    roleCheck = roleCheck and main.FALSE
+        except ( AttributeError, AssertionError ):
+            main.log.exception( "Something is wrong with ONOS device view" )
+            main.log.info( main.ONOScli1.devices() )
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=roleCall,
+            onpass="Re-assigned switch mastership to designated controller",
+            onfail="Something wrong with deviceRole calls" )
 
-        device_id = main.ONOScli1.get_device("3009")['id']
-        role_call = role_call and main.ONOScli1.device_role(device_id, ONOS5_ip)
-        if ONOS5_ip in main.ONOScli1.get_role(device_id)['master']:
-            role_check = role_check and main.TRUE
-        else:
-            role_check = role_check and main.FALSE
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=roleCheck,
+            onpass="Switches were successfully reassigned to designated " +
+                   "controller",
+            onfail="Switches were not successfully reassigned" )
+        mastershipCheck = mastershipCheck and roleCall and roleCheck
+        utilities.assert_equals( expect=main.TRUE, actual=mastershipCheck,
+                                 onpass="Switch mastership correctly assigned",
+                                 onfail="Error in (re)assigning switch" +
+                                 " mastership" )
 
-        device_id = main.ONOScli1.get_device("3010")['id']
-        role_call = role_call and main.ONOScli1.device_role(device_id, ONOS5_ip)
-        if ONOS5_ip in main.ONOScli1.get_role(device_id)['master']:
-            role_check = role_check and main.TRUE
-        else:
-            role_check = role_check and main.FALSE
-
-        device_id = main.ONOScli1.get_device("3011")['id']
-        role_call = role_call and main.ONOScli1.device_role(device_id, ONOS5_ip)
-        if ONOS5_ip in main.ONOScli1.get_role(device_id)['master']:
-            role_check = role_check and main.TRUE
-        else:
-            role_check = role_check and main.FALSE
-
-        device_id = main.ONOScli1.get_device("3012")['id']
-        role_call = role_call and main.ONOScli1.device_role(device_id, ONOS5_ip)
-        if ONOS5_ip in main.ONOScli1.get_role(device_id)['master']:
-            role_check = role_check and main.TRUE
-        else:
-            role_check = role_check and main.FALSE
-
-        device_id = main.ONOScli1.get_device("3013")['id']
-        role_call = role_call and main.ONOScli1.device_role(device_id, ONOS5_ip)
-        if ONOS5_ip in main.ONOScli1.get_role(device_id)['master']:
-            role_check = role_check and main.TRUE
-        else:
-            role_check = role_check and main.FALSE
-
-        device_id = main.ONOScli1.get_device("3014")['id']
-        role_call = role_call and main.ONOScli1.device_role(device_id, ONOS5_ip)
-        if ONOS5_ip in main.ONOScli1.get_role(device_id)['master']:
-            role_check = role_check and main.TRUE
-        else:
-            role_check = role_check and main.FALSE
-
-        device_id = main.ONOScli1.get_device("3015")['id']
-        role_call = role_call and main.ONOScli1.device_role(device_id, ONOS5_ip)
-        if ONOS5_ip in main.ONOScli1.get_role(device_id)['master']:
-            role_check = role_check and main.TRUE
-        else:
-            role_check = role_check and main.FALSE
-
-        device_id = main.ONOScli1.get_device("3016")['id']
-        role_call = role_call and main.ONOScli1.device_role(device_id, ONOS5_ip)
-        if ONOS5_ip in main.ONOScli1.get_role(device_id)['master']:
-            role_check = role_check and main.TRUE
-        else:
-            role_check = role_check and main.FALSE
-
-        device_id = main.ONOScli1.get_device("3017")['id']
-        role_call = role_call and main.ONOScli1.device_role(device_id, ONOS5_ip)
-        if ONOS5_ip in main.ONOScli1.get_role(device_id)['master']:
-            role_check = role_check and main.TRUE
-        else:
-            role_check = role_check and main.FALSE
-
-        device_id = main.ONOScli1.get_device("6007")['id']
-        role_call = role_call and main.ONOScli1.device_role(device_id, ONOS6_ip)
-        if ONOS6_ip in main.ONOScli1.get_role(device_id)['master']:
-            role_check = role_check and main.TRUE
-        else:
-            role_check = role_check and main.FALSE
-
-        device_id = main.ONOScli1.get_device("6018")['id']
-        role_call = role_call and main.ONOScli1.device_role(device_id, ONOS7_ip)
-        if ONOS7_ip in main.ONOScli1.get_role(device_id)['master']:
-            role_check = role_check and main.TRUE
-        else:
-            role_check = role_check and main.FALSE
-
-        device_id = main.ONOScli1.get_device("6019")['id']
-        role_call = role_call and main.ONOScli1.device_role(device_id, ONOS7_ip)
-        if ONOS7_ip in main.ONOScli1.get_role(device_id)['master']:
-            role_check = role_check and main.TRUE
-        else:
-            role_check = role_check and main.FALSE
-
-        device_id = main.ONOScli1.get_device("6020")['id']
-        role_call = role_call and main.ONOScli1.device_role(device_id, ONOS7_ip)
-        if ONOS7_ip in main.ONOScli1.get_role(device_id)['master']:
-            role_check = role_check and main.TRUE
-        else:
-            role_check = role_check and main.FALSE
-
-        device_id = main.ONOScli1.get_device("6021")['id']
-        role_call = role_call and main.ONOScli1.device_role(device_id, ONOS7_ip)
-        if ONOS7_ip in main.ONOScli1.get_role(device_id)['master']:
-            role_check = role_check and main.TRUE
-        else:
-            role_check = role_check and main.FALSE
-
-        device_id = main.ONOScli1.get_device("6022")['id']
-        role_call = role_call and main.ONOScli1.device_role(device_id, ONOS7_ip)
-        if ONOS7_ip in main.ONOScli1.get_role(device_id)['master']:
-            role_check = role_check and main.TRUE
-        else:
-            role_check = role_check and main.FALSE
-
-        device_id = main.ONOScli1.get_device("6023")['id']
-        role_call = role_call and main.ONOScli1.device_role(device_id, ONOS7_ip)
-        if ONOS7_ip in main.ONOScli1.get_role(device_id)['master']:
-            role_check = role_check and main.TRUE
-        else:
-            role_check = role_check and main.FALSE
-
-        device_id = main.ONOScli1.get_device("6024")['id']
-        role_call = role_call and main.ONOScli1.device_role(device_id, ONOS7_ip)
-        if ONOS7_ip in main.ONOScli1.get_role(device_id)['master']:
-            role_check = role_check and main.TRUE
-        else:
-            role_check = role_check and main.FALSE
-
-        device_id = main.ONOScli1.get_device("6025")['id']
-        role_call = role_call and main.ONOScli1.device_role(device_id, ONOS7_ip)
-        if ONOS7_ip in main.ONOScli1.get_role(device_id)['master']:
-            role_check = role_check and main.TRUE
-        else:
-            role_check = role_check and main.FALSE
-
-        device_id = main.ONOScli1.get_device("6026")['id']
-        role_call = role_call and main.ONOScli1.device_role(device_id, ONOS7_ip)
-        if ONOS7_ip in main.ONOScli1.get_role(device_id)['master']:
-            role_check = role_check and main.TRUE
-        else:
-            role_check = role_check and main.FALSE
-
-        device_id = main.ONOScli1.get_device("6027")['id']
-        role_call = role_call and main.ONOScli1.device_role(device_id, ONOS7_ip)
-        if ONOS7_ip in main.ONOScli1.get_role(device_id)['master']:
-            role_check = role_check and main.TRUE
-        else:
-            role_check = role_check and main.FALSE
-
-        utilities.assert_equals(expect = main.TRUE,actual=role_call,
-                onpass="Re-assigned switch mastership to designated controller",
-                onfail="Something wrong with device_role calls")
-
-        utilities.assert_equals(expect = main.TRUE,actual=role_check,
-                onpass="Switches were successfully reassigned to designated controller",
-                onfail="Switches were not successfully reassigned")
-        mastership_check = mastership_check and role_call and role_check
-        utilities.assert_equals(expect = main.TRUE,actual=mastership_check,
-                onpass="Switch mastership correctly assigned",
-                onfail="Error in (re)assigning switch mastership")
-
-
-    def CASE3(self,main) :
+    def CASE3( self, main ):
         """
         Assign intents
-
         """
         import time
         import json
-        import re
-        main.log.report("Adding host intents")
-        main.case("Adding host Intents")
+        assert numControllers, "numControllers not defined"
+        assert main, "main not defined"
+        assert utilities.assert_equals, "utilities.assert_equals not defined"
+        assert CLIs, "CLIs not defined"
+        assert nodes, "nodes not defined"
+        main.log.report( "Adding host intents" )
+        main.case( "Adding host Intents" )
 
-        main.step("Discovering  Hosts( Via pingall for now)")
-        #FIXME: Once we have a host discovery mechanism, use that instead
+        main.step( "Discovering  Hosts( Via pingall for now )" )
+        # FIXME: Once we have a host discovery mechanism, use that instead
 
-        #install onos-app-fwd
-        main.log.info("Install reactive forwarding app")
-        main.ONOScli1.feature_install("onos-app-fwd")
-        main.ONOScli2.feature_install("onos-app-fwd")
-        main.ONOScli3.feature_install("onos-app-fwd")
-        main.ONOScli4.feature_install("onos-app-fwd")
-        main.ONOScli5.feature_install("onos-app-fwd")
-        main.ONOScli6.feature_install("onos-app-fwd")
-        main.ONOScli7.feature_install("onos-app-fwd")
+        # install onos-app-fwd
+        main.log.info( "Install reactive forwarding app" )
+        appResults = main.TRUE
+        threads = []
+        for i in range( numControllers ):
+            t = main.Thread( target=CLIs[i].featureInstall,
+                             name="featureInstall-" + str( i ),
+                             args=["onos-app-fwd"] )
+            threads.append( t )
+            t.start()
 
-        #REACTIVE FWD test
-        ping_result = main.FALSE
-        time1 = time.time()
-        ping_result = main.Mininet1.pingall()
-        time2 = time.time()
-        main.log.info("Time for pingall: %2f seconds" % (time2 - time1))
+        for t in threads:
+            t.join()
+            appResults = appResults and t.result
 
-        #uninstall onos-app-fwd
-        main.log.info("Uninstall reactive forwarding app")
-        main.ONOScli1.feature_uninstall("onos-app-fwd")
-        main.ONOScli2.feature_uninstall("onos-app-fwd")
-        main.ONOScli3.feature_uninstall("onos-app-fwd")
-        main.ONOScli4.feature_uninstall("onos-app-fwd")
-        main.ONOScli5.feature_uninstall("onos-app-fwd")
-        main.ONOScli6.feature_uninstall("onos-app-fwd")
-        main.ONOScli7.feature_uninstall("onos-app-fwd")
-        #timeout for fwd flows
-        time.sleep(10)
+        # REACTIVE FWD test
+        pingResult = main.FALSE
+        for i in range(2):  # Retry if pingall fails first time
+            time1 = time.time()
+            pingResult = main.Mininet1.pingall()
+            utilities.assert_equals(
+                expect=main.TRUE,
+                actual=pingResult,
+                onpass="Reactive Pingall test passed",
+                onfail="Reactive Pingall failed, one or more ping pairs failed" )
+            time2 = time.time()
+            main.log.info( "Time for pingall: %2f seconds" % ( time2 - time1 ) )
 
-        main.step("Add  host intents")
-        #TODO:  move the host numbers to params
-        import json
-        intents_json= json.loads(main.ONOScli1.hosts())
-        intent_add_result = True
-        for i in range(8,18):
-            main.log.info("Adding host intent between h"+str(i)+" and h"+str(i+10))
-            host1 =  "00:00:00:00:00:" + str(hex(i)[2:]).zfill(2).upper()
-            host2 =  "00:00:00:00:00:" + str(hex(i+10)[2:]).zfill(2).upper()
-            host1_id = main.ONOScli1.get_host(host1)['id']
-            host2_id = main.ONOScli1.get_host(host2)['id']
-            #NOTE: get host can return None
-            if host1_id and host2_id:
-                tmp_result = main.ONOScli1.add_host_intent(host1_id, host2_id )
+        # uninstall onos-app-fwd
+        main.log.info( "Uninstall reactive forwarding app" )
+        threads = []
+        for i in range( numControllers ):
+            t = main.Thread( target=CLIs[i].featureUninstall,
+                             name="featureUninstall-" + str( i ),
+                             args=["onos-app-fwd"] )
+            threads.append( t )
+            t.start()
+
+        for t in threads:
+            t.join()
+            appResults = appResults and t.result
+
+        # timeout for fwd flows
+        time.sleep( 11 )
+
+        main.step( "Add host intents" )
+        intentIds = []
+        # TODO:  move the host numbers to params
+        #        Maybe look at all the paths we ping?
+        intentAddResult = True
+        hostResult = main.TRUE
+        for i in range( 8, 18 ):
+            main.log.info( "Adding host intent between h" + str( i ) +
+                           " and h" + str( i + 10 ) )
+            host1 = "00:00:00:00:00:" + \
+                str( hex( i )[ 2: ] ).zfill( 2 ).upper()
+            host2 = "00:00:00:00:00:" + \
+                str( hex( i + 10 )[ 2: ] ).zfill( 2 ).upper()
+            # NOTE: getHost can return None
+            host1Dict = main.ONOScli1.getHost( host1 )
+            host2Dict = main.ONOScli1.getHost( host2 )
+            host1Id = None
+            host2Id = None
+            if host1Dict and host2Dict:
+                host1Id = host1Dict.get( 'id', None )
+                host2Id = host2Dict.get( 'id', None )
+            if host1Id and host2Id:
+                nodeNum = ( i % 7 )
+                tmpId = CLIs[ nodeNum ].addHostIntent( host1Id, host2Id )
+                if tmpId:
+                    main.log.info( "Added intent with id: " + tmpId )
+                    intentIds.append( tmpId )
+                else:
+                    main.log.error( "addHostIntent returned: " +
+                                     repr( tmpId ) )
             else:
-                main.log.error("Error, get_host() failed")
-                tmp_result = main.FALSE
-            intent_add_result = bool(intent_add_result and tmp_result)
-        utilities.assert_equals(expect=True, actual=intent_add_result,
-                onpass="Switch mastership correctly assigned",
-                onfail="Error in (re)assigning switch mastership")
-        #TODO Check if intents all exist in datastore
-        #NOTE: Do we need to print this once the test is working?
-        #main.log.info(json.dumps(json.loads(main.ONOScli1.intents(json_format=True)),
-        #    sort_keys=True, indent=4, separators=(',', ': ') ) )
+                main.log.error( "Error, getHost() failed for h" + str( i ) +
+                                " and/or h" + str( i + 10 ) )
+                hosts = CLIs[ 0 ].hosts()
+                main.log.warn( "Hosts output: " )
+                try:
+                    main.log.warn( json.dumps( json.loads( hosts ),
+                                               sort_keys=True,
+                                               indent=4,
+                                               separators=( ',', ': ' ) ) )
+                except ( ValueError, TypeError ):
+                    main.log.warn( repr( hosts ) )
+                hostResult = main.FALSE
+        onosIds = main.ONOScli1.getAllIntentsId()
+        main.log.info( "Submitted intents: " + str( intentIds ) )
+        main.log.info( "Intents in ONOS: " + str( onosIds ) )
+        for intent in intentIds:
+            if intent in onosIds:
+                pass  # intent submitted is in onos
+            else:
+                intentAddResult = False
+        # Print the intent states
+        intents = main.ONOScli1.intents()
+        intentStates = []
+        installedCheck = True
+        main.log.info( "%-6s%-15s%-15s" % ( 'Count', 'ID', 'State' ) )
+        count = 0
+        try:
+            for intent in json.loads( intents ):
+                state = intent.get( 'state', None )
+                if "INSTALLED" not in state:
+                    installedCheck = False
+                intentId = intent.get( 'id', None )
+                intentStates.append( ( intentId, state ) )
+        except ( ValueError, TypeError ):
+            main.log.exception( "Error parsing intents" )
+        # add submitted intents not in the store
+        tmplist = [ i for i, s in intentStates ]
+        missingIntents = False
+        for i in intentIds:
+            if i not in tmplist:
+                intentStates.append( ( i, " - " ) )
+                missingIntents = True
+        intentStates.sort()
+        for i, s in intentStates:
+            count += 1
+            main.log.info( "%-6s%-15s%-15s" %
+                           ( str( count ), str( i ), str( s ) ) )
+        leaders = main.ONOScli1.leaders()
+        try:
+            if leaders:
+                parsedLeaders = json.loads( leaders )
+                main.log.warn( json.dumps( parsedLeaders,
+                                           sort_keys=True,
+                                           indent=4,
+                                           separators=( ',', ': ' ) ) )
+                # check for all intent partitions
+                # check for election
+                topics = []
+                for i in range( 14 ):
+                    topics.append( "intent-partition-" + str( i ) )
+                # FIXME: this should only be after we start the app
+                topics.append( "org.onosproject.election" )
+                main.log.debug( topics )
+                ONOStopics = [ j['topic'] for j in parsedLeaders ]
+                for topic in topics:
+                    if topic not in ONOStopics:
+                        main.log.error( "Error: " + topic +
+                                        " not in leaders" )
+            else:
+                main.log.error( "leaders() returned None" )
+        except ( ValueError, TypeError ):
+            main.log.exception( "Error parsing leaders" )
+            main.log.error( repr( leaders ) )
+        partitions = main.ONOScli1.partitions()
+        try:
+            if partitions :
+                parsedPartitions = json.loads( partitions )
+                main.log.warn( json.dumps( parsedPartitions,
+                                           sort_keys=True,
+                                           indent=4,
+                                           separators=( ',', ': ' ) ) )
+                # TODO check for a leader in all paritions
+                # TODO check for consistency among nodes
+            else:
+                main.log.error( "partitions() returned None" )
+        except ( ValueError, TypeError ):
+            main.log.exception( "Error parsing partitions" )
+            main.log.error( repr( partitions ) )
+        pendingMap = main.ONOScli1.pendingMap()
+        try:
+            if pendingMap :
+                parsedPending = json.loads( pendingMap )
+                main.log.warn( json.dumps( parsedPending,
+                                           sort_keys=True,
+                                           indent=4,
+                                           separators=( ',', ': ' ) ) )
+                # TODO check something here?
+            else:
+                main.log.error( "pendingMap() returned None" )
+        except ( ValueError, TypeError ):
+            main.log.exception( "Error parsing pending map" )
+            main.log.error( repr( pendingMap ) )
 
-    def CASE4(self,main) :
+        intentAddResult = bool( pingResult and hostResult and intentAddResult
+                                and not missingIntents and installedCheck )
+        utilities.assert_equals(
+            expect=True,
+            actual=intentAddResult,
+            onpass="Pushed host intents to ONOS",
+            onfail="Error in pushing host intents to ONOS" )
+
+        if not intentAddResult or "key" in pendingMap:
+            import time
+            installedCheck = True
+            main.log.info( "Sleeping 60 seconds to see if intents are found" )
+            time.sleep( 60 )
+            onosIds = main.ONOScli1.getAllIntentsId()
+            main.log.info( "Submitted intents: " + str( intentIds ) )
+            main.log.info( "Intents in ONOS: " + str( onosIds ) )
+            # Print the intent states
+            intents = main.ONOScli1.intents()
+            intentStates = []
+            main.log.info( "%-6s%-15s%-15s" % ( 'Count', 'ID', 'State' ) )
+            count = 0
+            try:
+                for intent in json.loads( intents ):
+                    # Iter through intents of a node
+                    state = intent.get( 'state', None )
+                    if "INSTALLED" not in state:
+                        installedCheck = False
+                    intentId = intent.get( 'id', None )
+                    intentStates.append( ( intentId, state ) )
+            except ( ValueError, TypeError ):
+                main.log.exception( "Error parsing intents" )
+            # add submitted intents not in the store
+            tmplist = [ i for i, s in intentStates ]
+            for i in intentIds:
+                if i not in tmplist:
+                    intentStates.append( ( i, " - " ) )
+            intentStates.sort()
+            for i, s in intentStates:
+                count += 1
+                main.log.info( "%-6s%-15s%-15s" %
+                               ( str( count ), str( i ), str( s ) ) )
+            leaders = main.ONOScli1.leaders()
+            try:
+                if leaders:
+                    parsedLeaders = json.loads( leaders )
+                    main.log.warn( json.dumps( parsedLeaders,
+                                               sort_keys=True,
+                                               indent=4,
+                                               separators=( ',', ': ' ) ) )
+                    # check for all intent partitions
+                    # check for election
+                    topics = []
+                    for i in range( 14 ):
+                        topics.append( "intent-partition-" + str( i ) )
+                    # FIXME: this should only be after we start the app
+                    topics.append( "org.onosproject.election" )
+                    main.log.debug( topics )
+                    ONOStopics = [ j['topic'] for j in parsedLeaders ]
+                    for topic in topics:
+                        if topic not in ONOStopics:
+                            main.log.error( "Error: " + topic +
+                                            " not in leaders" )
+                else:
+                    main.log.error( "leaders() returned None" )
+            except ( ValueError, TypeError ):
+                main.log.exception( "Error parsing leaders" )
+                main.log.error( repr( leaders ) )
+            partitions = main.ONOScli1.partitions()
+            try:
+                if partitions :
+                    parsedPartitions = json.loads( partitions )
+                    main.log.warn( json.dumps( parsedPartitions,
+                                               sort_keys=True,
+                                               indent=4,
+                                               separators=( ',', ': ' ) ) )
+                    # TODO check for a leader in all paritions
+                    # TODO check for consistency among nodes
+                else:
+                    main.log.error( "partitions() returned None" )
+            except ( ValueError, TypeError ):
+                main.log.exception( "Error parsing partitions" )
+                main.log.error( repr( partitions ) )
+            pendingMap = main.ONOScli1.pendingMap()
+            try:
+                if pendingMap :
+                    parsedPending = json.loads( pendingMap )
+                    main.log.warn( json.dumps( parsedPending,
+                                               sort_keys=True,
+                                               indent=4,
+                                               separators=( ',', ': ' ) ) )
+                    # TODO check something here?
+                else:
+                    main.log.error( "pendingMap() returned None" )
+            except ( ValueError, TypeError ):
+                main.log.exception( "Error parsing pending map" )
+                main.log.error( repr( pendingMap ) )
+
+    def CASE4( self, main ):
         """
         Ping across added host intents
         """
-        description = " Ping across added host intents"
-        main.log.report(description)
-        main.case(description)
-        Ping_Result = main.TRUE
-        for i in range(8,18):
-            ping = main.Mininet1.pingHost(src="h"+str(i),target="h"+str(i+10))
-            Ping_Result = Ping_Result and ping
-            if ping==main.FALSE:
-                main.log.warn("Ping failed between h"+str(i)+" and h" + str(i+10))
-            elif ping==main.TRUE:
-                main.log.info("Ping test passed!")
-                Ping_Result = main.TRUE
-        if Ping_Result==main.FALSE:
-            main.log.report("Intents have not been installed correctly, pings failed.")
-        if Ping_Result==main.TRUE:
-            main.log.report("Intents have been installed correctly and verified by pings")
-        utilities.assert_equals(expect = main.TRUE,actual=Ping_Result,
-                onpass="Intents have been installed correctly and pings work",
-                onfail ="Intents have not been installed correctly, pings failed." )
-
-    def CASE5(self,main) :
-        '''
-        Reading state of ONOS
-        '''
-        import time
         import json
-        from subprocess import Popen, PIPE
-        from sts.topology.teston_topology import TestONTopology # assumes that sts is already in you PYTHONPATH
-
-        main.log.report("Setting up and gathering data for current state")
-        main.case("Setting up and gathering data for current state")
-        #The general idea for this test case is to pull the state of (intents,flows, topology,...) from each ONOS node
-        #We can then compare them with eachother and also with past states
-
-        main.step("Get the Mastership of each switch from each controller")
-        global mastership_state
-        mastership_state = []
-
-        #Assert that each device has a master
-        ONOS1_master_not_null = main.ONOScli1.roles_not_null()
-        ONOS2_master_not_null = main.ONOScli2.roles_not_null()
-        ONOS3_master_not_null = main.ONOScli3.roles_not_null()
-        ONOS4_master_not_null = main.ONOScli4.roles_not_null()
-        ONOS5_master_not_null = main.ONOScli5.roles_not_null()
-        ONOS6_master_not_null = main.ONOScli6.roles_not_null()
-        ONOS7_master_not_null = main.ONOScli7.roles_not_null()
-        roles_not_null = ONOS1_master_not_null and ONOS2_master_not_null and\
-                ONOS3_master_not_null and ONOS4_master_not_null and\
-                ONOS5_master_not_null and ONOS6_master_not_null and\
-                ONOS7_master_not_null
-        utilities.assert_equals(expect = main.TRUE,actual=roles_not_null,
-                onpass="Each device has a master",
-                onfail="Some devices don't have a master assigned")
-
-
-        ONOS1_mastership = main.ONOScli1.roles()
-        ONOS2_mastership = main.ONOScli2.roles()
-        ONOS3_mastership = main.ONOScli3.roles()
-        ONOS4_mastership = main.ONOScli4.roles()
-        ONOS5_mastership = main.ONOScli5.roles()
-        ONOS6_mastership = main.ONOScli6.roles()
-        ONOS7_mastership = main.ONOScli7.roles()
-        #print json.dumps(json.loads(ONOS1_mastership), sort_keys=True, indent=4, separators=(',', ': '))
-        if "Error" in ONOS1_mastership or not ONOS1_mastership\
-                or "Error" in ONOS2_mastership or not ONOS2_mastership\
-                or "Error" in ONOS3_mastership or not ONOS3_mastership\
-                or "Error" in ONOS4_mastership or not ONOS4_mastership\
-                or "Error" in ONOS5_mastership or not ONOS5_mastership\
-                or "Error" in ONOS6_mastership or not ONOS6_mastership\
-                or "Error" in ONOS7_mastership or not ONOS7_mastership:
-                    main.log.report("Error in getting ONOS roles")
-                    main.log.warn("ONOS1 mastership response: " + repr(ONOS1_mastership))
-                    main.log.warn("ONOS2 mastership response: " + repr(ONOS2_mastership))
-                    main.log.warn("ONOS3 mastership response: " + repr(ONOS3_mastership))
-                    main.log.warn("ONOS4 mastership response: " + repr(ONOS4_mastership))
-                    main.log.warn("ONOS5 mastership response: " + repr(ONOS5_mastership))
-                    main.log.warn("ONOS6 mastership response: " + repr(ONOS6_mastership))
-                    main.log.warn("ONOS7 mastership response: " + repr(ONOS7_mastership))
-                    consistent_mastership = main.FALSE
-        elif ONOS1_mastership == ONOS2_mastership\
-                and ONOS1_mastership == ONOS3_mastership\
-                and ONOS1_mastership == ONOS4_mastership\
-                and ONOS1_mastership == ONOS5_mastership\
-                and ONOS1_mastership == ONOS6_mastership\
-                and ONOS1_mastership == ONOS7_mastership:
-                    mastership_state = ONOS1_mastership
-                    consistent_mastership = main.TRUE
-                    main.log.report("Switch roles are consistent across all ONOS nodes")
-        else:
-            main.log.warn("ONOS1 roles: ", json.dumps(json.loads(ONOS1_mastership),
-                sort_keys=True, indent=4, separators=(',', ': ')))
-            main.log.warn("ONOS2 roles: ", json.dumps(json.loads(ONOS2_mastership),
-                sort_keys=True, indent=4, separators=(',', ': ')))
-            main.log.warn("ONOS3 roles: ", json.dumps(json.loads(ONOS3_mastership),
-                sort_keys=True, indent=4, separators=(',', ': ')))
-            main.log.warn("ONOS4 roles: ", json.dumps(json.loads(ONOS4_mastership),
-                sort_keys=True, indent=4, separators=(',', ': ')))
-            main.log.warn("ONOS5 roles: ", json.dumps(json.loads(ONOS5_mastership),
-                sort_keys=True, indent=4, separators=(',', ': ')))
-            main.log.warn("ONOS6 roles: ", json.dumps(json.loads(ONOS6_mastership),
-                sort_keys=True, indent=4, separators=(',', ': ')))
-            main.log.warn("ONOS7 roles: ", json.dumps(json.loads(ONOS7_mastership),
-                sort_keys=True, indent=4, separators=(',', ': ')))
-            consistent_mastership = main.FALSE
-        utilities.assert_equals(expect = main.TRUE,actual=consistent_mastership,
-                onpass="Switch roles are consistent across all ONOS nodes",
-                onfail="ONOS nodes have different views of switch roles")
-
-
-        main.step("Get the intents from each controller")
-        global intent_state
-        intent_state = []
-        ONOS1_intents = main.ONOScli1.intents( json_format=True )
-        ONOS2_intents = main.ONOScli2.intents( json_format=True )
-        ONOS3_intents = main.ONOScli3.intents( json_format=True )
-        ONOS4_intents = main.ONOScli4.intents( json_format=True )
-        ONOS5_intents = main.ONOScli5.intents( json_format=True )
-        ONOS6_intents = main.ONOScli6.intents( json_format=True )
-        ONOS7_intents = main.ONOScli7.intents( json_format=True )
-        intent_check = main.FALSE
-        if "Error" in ONOS1_intents or not ONOS1_intents\
-                or "Error" in ONOS2_intents or not ONOS2_intents\
-                or "Error" in ONOS3_intents or not ONOS3_intents\
-                or "Error" in ONOS4_intents or not ONOS4_intents\
-                or "Error" in ONOS5_intents or not ONOS5_intents\
-                or "Error" in ONOS6_intents or not ONOS6_intents\
-                or "Error" in ONOS7_intents or not ONOS7_intents:
-                    main.log.report("Error in getting ONOS intents")
-                    main.log.warn("ONOS1 intents response: " + repr(ONOS1_intents))
-                    main.log.warn("ONOS2 intents response: " + repr(ONOS2_intents))
-                    main.log.warn("ONOS3 intents response: " + repr(ONOS3_intents))
-                    main.log.warn("ONOS4 intents response: " + repr(ONOS4_intents))
-                    main.log.warn("ONOS5 intents response: " + repr(ONOS5_intents))
-                    main.log.warn("ONOS6 intents response: " + repr(ONOS6_intents))
-                    main.log.warn("ONOS7 intents response: " + repr(ONOS7_intents))
-        elif ONOS1_intents == ONOS2_intents\
-                and ONOS1_intents == ONOS3_intents\
-                and ONOS1_intents == ONOS4_intents\
-                and ONOS1_intents == ONOS5_intents\
-                and ONOS1_intents == ONOS6_intents\
-                and ONOS1_intents == ONOS7_intents:
-                    intent_state = ONOS1_intents
-                    intent_check = main.TRUE
-                    main.log.report("Intents are consistent across all ONOS nodes")
-        else:
-            main.log.warn("ONOS1 intents: ", json.dumps(json.loads(ONOS1_intents),
-                sort_keys=True, indent=4, separators=(',', ': ')))
-            main.log.warn("ONOS2 intents: ", json.dumps(json.loads(ONOS2_intents),
-                sort_keys=True, indent=4, separators=(',', ': ')))
-            main.log.warn("ONOS3 intents: ", json.dumps(json.loads(ONOS3_intents),
-                sort_keys=True, indent=4, separators=(',', ': ')))
-            main.log.warn("ONOS4 intents: ", json.dumps(json.loads(ONOS4_intents),
-                sort_keys=True, indent=4, separators=(',', ': ')))
-            main.log.warn("ONOS5 intents: ", json.dumps(json.loads(ONOS5_intents),
-                sort_keys=True, indent=4, separators=(',', ': ')))
-            main.log.warn("ONOS6 intents: ", json.dumps(json.loads(ONOS6_intents),
-                sort_keys=True, indent=4, separators=(',', ': ')))
-            main.log.warn("ONOS7 intents: ", json.dumps(json.loads(ONOS7_intents),
-                sort_keys=True, indent=4, separators=(',', ': ')))
-        utilities.assert_equals(expect = main.TRUE,actual=intent_check,
-                onpass="Intents are consistent across all ONOS nodes",
-                onfail="ONOS nodes have different views of intents")
-
-
-        main.step("Get the flows from each controller")
-        global flow_state
-        flow_state = []
-        ONOS1_flows = main.ONOScli1.flows( json_format=True )
-        ONOS2_flows = main.ONOScli2.flows( json_format=True )
-        ONOS3_flows = main.ONOScli3.flows( json_format=True )
-        ONOS4_flows = main.ONOScli4.flows( json_format=True )
-        ONOS5_flows = main.ONOScli5.flows( json_format=True )
-        ONOS6_flows = main.ONOScli6.flows( json_format=True )
-        ONOS7_flows = main.ONOScli7.flows( json_format=True )
-        flow_check = main.FALSE
-        if "Error" in ONOS1_flows or not ONOS1_flows\
-                or "Error" in ONOS2_flows or not ONOS2_flows\
-                or "Error" in ONOS3_flows or not ONOS3_flows\
-                or "Error" in ONOS4_flows or not ONOS4_flows\
-                or "Error" in ONOS5_flows or not ONOS5_flows\
-                or "Error" in ONOS6_flows or not ONOS6_flows\
-                or "Error" in ONOS7_flows or not ONOS7_flows:
-                    main.log.report("Error in getting ONOS intents")
-                    main.log.warn("ONOS1 flows repsponse: "+ ONOS1_flows)
-                    main.log.warn("ONOS2 flows repsponse: "+ ONOS2_flows)
-                    main.log.warn("ONOS3 flows repsponse: "+ ONOS3_flows)
-                    main.log.warn("ONOS4 flows repsponse: "+ ONOS4_flows)
-                    main.log.warn("ONOS5 flows repsponse: "+ ONOS5_flows)
-                    main.log.warn("ONOS6 flows repsponse: "+ ONOS6_flows)
-                    main.log.warn("ONOS7 flows repsponse: "+ ONOS7_flows)
-        elif len(json.loads(ONOS1_flows)) == len(json.loads(ONOS2_flows))\
-                and len(json.loads(ONOS1_flows)) == len(json.loads(ONOS3_flows))\
-                and len(json.loads(ONOS1_flows)) == len(json.loads(ONOS4_flows))\
-                and len(json.loads(ONOS1_flows)) == len(json.loads(ONOS5_flows))\
-                and len(json.loads(ONOS1_flows)) == len(json.loads(ONOS6_flows))\
-                and len(json.loads(ONOS1_flows)) == len(json.loads(ONOS7_flows)):
-                #TODO: Do a better check, maybe compare flows on switches?
-                    flow_state = ONOS1_flows
-                    flow_check = main.TRUE
-                    main.log.report("Flow count is consistent across all ONOS nodes")
-        else:
-            main.log.warn("ONOS1 flows: "+ json.dumps(json.loads(ONOS1_flows),
-                sort_keys=True, indent=4, separators=(',', ': ')))
-            main.log.warn("ONOS2 flows: "+ json.dumps(json.loads(ONOS2_flows),
-                sort_keys=True, indent=4, separators=(',', ': ')))
-            main.log.warn("ONOS3 flows: "+ json.dumps(json.loads(ONOS3_flows),
-                sort_keys=True, indent=4, separators=(',', ': ')))
-            main.log.warn("ONOS4 flows: "+ json.dumps(json.loads(ONOS4_flows),
-                sort_keys=True, indent=4, separators=(',', ': ')))
-            main.log.warn("ONOS5 flows: "+ json.dumps(json.loads(ONOS5_flows),
-                sort_keys=True, indent=4, separators=(',', ': ')))
-            main.log.warn("ONOS6 flows: "+ json.dumps(json.loads(ONOS6_flows),
-                sort_keys=True, indent=4, separators=(',', ': ')))
-            main.log.warn("ONOS7 flows: "+ json.dumps(json.loads(ONOS7_flows),
-                sort_keys=True, indent=4, separators=(',', ': ')))
-        utilities.assert_equals(expect = main.TRUE,actual=flow_check,
-                onpass="The flow count is consistent across all ONOS nodes",
-                onfail="ONOS nodes have different flow counts")
-
-
-        main.step("Get the OF Table entries")
-        global flows
-        flows=[]
-        for i in range(1,29):
-            flows.append(main.Mininet2.get_flowTable(1.3, "s"+str(i)))
-
-        #TODO: Compare switch flow tables with ONOS flow tables
-
-        main.step("Start continuous pings")
-        main.Mininet2.pingLong(src=main.params['PING']['source1'],
-                            target=main.params['PING']['target1'],pingTime=500)
-        main.Mininet2.pingLong(src=main.params['PING']['source2'],
-                            target=main.params['PING']['target2'],pingTime=500)
-        main.Mininet2.pingLong(src=main.params['PING']['source3'],
-                            target=main.params['PING']['target3'],pingTime=500)
-        main.Mininet2.pingLong(src=main.params['PING']['source4'],
-                            target=main.params['PING']['target4'],pingTime=500)
-        main.Mininet2.pingLong(src=main.params['PING']['source5'],
-                            target=main.params['PING']['target5'],pingTime=500)
-        main.Mininet2.pingLong(src=main.params['PING']['source6'],
-                            target=main.params['PING']['target6'],pingTime=500)
-        main.Mininet2.pingLong(src=main.params['PING']['source7'],
-                            target=main.params['PING']['target7'],pingTime=500)
-        main.Mininet2.pingLong(src=main.params['PING']['source8'],
-                            target=main.params['PING']['target8'],pingTime=500)
-        main.Mininet2.pingLong(src=main.params['PING']['source9'],
-                            target=main.params['PING']['target9'],pingTime=500)
-        main.Mininet2.pingLong(src=main.params['PING']['source10'],
-                            target=main.params['PING']['target10'],pingTime=500)
-
-        main.step("Create TestONTopology object")
-        ctrls = []
-        count = 1
-        while True:
-            temp = ()
-            if ('ip' + str(count)) in main.params['CTRL']:
-                temp = temp + (getattr(main,('ONOS' + str(count))),)
-                temp = temp + ("ONOS"+str(count),)
-                temp = temp + (main.params['CTRL']['ip'+str(count)],)
-                temp = temp + (eval(main.params['CTRL']['port'+str(count)]),)
-                ctrls.append(temp)
-                count = count + 1
-            else:
-                break
-        MNTopo = TestONTopology(main.Mininet1, ctrls) # can also add Intent API info for intent operations
-
-        main.step("Collecting topology information from ONOS")
-        devices = []
-        devices.append( main.ONOScli1.devices() )
-        devices.append( main.ONOScli2.devices() )
-        devices.append( main.ONOScli3.devices() )
-        devices.append( main.ONOScli4.devices() )
-        devices.append( main.ONOScli5.devices() )
-        devices.append( main.ONOScli6.devices() )
-        devices.append( main.ONOScli7.devices() )
-        hosts = []
-        hosts.append( json.loads( main.ONOScli1.hosts() ) )
-        hosts.append( json.loads( main.ONOScli2.hosts() ) )
-        hosts.append( json.loads( main.ONOScli3.hosts() ) )
-        hosts.append( json.loads( main.ONOScli4.hosts() ) )
-        hosts.append( json.loads( main.ONOScli5.hosts() ) )
-        hosts.append( json.loads( main.ONOScli6.hosts() ) )
-        hosts.append( json.loads( main.ONOScli7.hosts() ) )
-        for controller in range(0, len(hosts) ):
-            for host in hosts[controller]:
-                if host['ips'] == []:
-                    main.log.error("DEBUG:Error with host ips on controller"+str(controller+1)+": " + str(host))
-        ports = []
-        ports.append( main.ONOScli1.ports() )
-        ports.append( main.ONOScli2.ports() )
-        ports.append( main.ONOScli3.ports() )
-        ports.append( main.ONOScli4.ports() )
-        ports.append( main.ONOScli5.ports() )
-        ports.append( main.ONOScli6.ports() )
-        ports.append( main.ONOScli7.ports() )
-        links = []
-        links.append( main.ONOScli1.links() )
-        links.append( main.ONOScli2.links() )
-        links.append( main.ONOScli3.links() )
-        links.append( main.ONOScli4.links() )
-        links.append( main.ONOScli5.links() )
-        links.append( main.ONOScli6.links() )
-        links.append( main.ONOScli7.links() )
-        clusters = []
-        clusters.append( main.ONOScli1.clusters() )
-        clusters.append( main.ONOScli2.clusters() )
-        clusters.append( main.ONOScli3.clusters() )
-        clusters.append( main.ONOScli4.clusters() )
-        clusters.append( main.ONOScli5.clusters() )
-        clusters.append( main.ONOScli6.clusters() )
-        clusters.append( main.ONOScli7.clusters() )
-        paths = []
-        temp_topo = main.ONOSbench.get_topology( main.ONOScli1.topology() )
-        paths.append( temp_topo.get('paths', False) )
-        temp_topo = main.ONOSbench.get_topology( main.ONOScli2.topology() )
-        paths.append( temp_topo.get('paths', False) )
-        temp_topo = main.ONOSbench.get_topology( main.ONOScli3.topology() )
-        paths.append( temp_topo.get('paths', False) )
-        temp_topo = main.ONOSbench.get_topology( main.ONOScli4.topology() )
-        paths.append( temp_topo.get('paths', False) )
-        temp_topo = main.ONOSbench.get_topology( main.ONOScli5.topology() )
-        paths.append( temp_topo.get('paths', False) )
-        temp_topo = main.ONOSbench.get_topology( main.ONOScli6.topology() )
-        paths.append( temp_topo.get('paths', False) )
-        temp_topo = main.ONOSbench.get_topology( main.ONOScli7.topology() )
-        paths.append( temp_topo.get('paths', False) )
-
-        #Compare json objects for hosts, dataplane clusters and paths
-
-        #hosts
-        consistent_hosts_result = main.TRUE
-        for controller in range( len( hosts ) ):
-            if not "Error" in hosts[controller]:
-                if hosts[controller] == hosts[0]:
-                    continue
-                else:#hosts not consistent
-                    main.log.report("hosts from ONOS" + str(controller + 1) + " is inconsistent with ONOS1")
-                    main.log.warn( repr( hosts[controller] ) )
-                    consistent_hosts_result = main.FALSE
-
-            else:
-                main.log.report("Error in getting ONOS hosts from ONOS" + str(controller + 1) )
-                consistent_hosts_result = main.FALSE
-                main.log.warn("ONOS" + str(controller + 1) + " hosts response: " + repr(hosts[controller]) )
-        utilities.assert_equals(expect = main.TRUE,actual=consistent_hosts_result,
-                onpass="Hosts view is consistent across all ONOS nodes",
-                onfail="ONOS nodes have different views of hosts")
-
-        #Strongly connected clusters of devices
-        consistent_clusters_result = main.TRUE
-        for controller in range( len( clusters ) ):
-            if not "Error" in clusters[controller]:
-                if clusters[controller] == clusters[0]:
-                    continue
-                else:#clusters not consistent
-                    main.log.report("clusters from ONOS" + str(controller + 1) + " is inconsistent with ONOS1")
-                    consistent_clusters_result = main.FALSE
-
-            else:
-                main.log.report("Error in getting dataplane clusters from ONOS" + str(controller + 1) )
-                consistent_clusters_result = main.FALSE
-                main.log.warn("ONOS" + str(controller + 1) + " clusters response: " + repr(clusters[controller]) )
-        utilities.assert_equals(expect = main.TRUE,actual=consistent_clusters_result,
-                onpass="Clusters view is consistent across all ONOS nodes",
-                onfail="ONOS nodes have different views of clusters")
-        num_clusters =  len(json.loads(clusters[0])) #there should always only be one cluster
-        utilities.assert_equals(expect = 1, actual = num_clusters,
-                onpass="ONOS shows 1 SCC",
-                onfail="ONOS shows "+str(num_clusters) +" SCCs")
-
-
-        #paths
-        consistent_paths_result = main.TRUE
-        for controller in range( len( paths ) ):
-            if not "Error" in paths[controller]:
-                if paths[controller] == paths[0]:
-                    continue
-                else:#paths not consistent
-                    main.log.report("paths from ONOS" + str(controller + 1) + " is inconsistent with ONOS1")
-                    consistent_paths_result = main.FALSE
-
-            else:
-                main.log.report("Error in getting paths from ONOS" + str(controller + 1) )
-                consistent_paths_result = main.FALSE
-                main.log.warn("ONOS" + str(controller + 1) + " paths response: " + repr(paths[controller]) )
-        utilities.assert_equals(expect = main.TRUE,actual=consistent_paths_result,
-                onpass="Paths count is consistent across all ONOS nodes",
-                onfail="ONOS nodes have different counts of paths")
-
-
-        main.step("Comparing ONOS topology to MN")
-        devices_results = main.TRUE
-        ports_results = main.TRUE
-        links_results = main.TRUE
-        for controller in range(num_controllers):
-            if devices[controller] or not "Error" in devices[controller]:
-                current_devices_result =  main.Mininet1.compare_switches(MNTopo, json.loads(devices[controller]))
-            else:
-                current_devices_result = main.FALSE
-            utilities.assert_equals(expect=main.TRUE, actual=current_devices_result,
-                    onpass="ONOS"+str(int(controller+1))+" Switches view is correct",
-                    onfail="ONOS"+str(int(controller+1))+" Switches view is incorrect")
-
-            if ports[controller] or not "Error" in ports[controller]:
-                current_ports_result =  main.Mininet1.compare_ports(MNTopo, json.loads(ports[controller]))
-            else:
-                current_ports_result = main.FALSE
-            utilities.assert_equals(expect=main.TRUE, actual=current_ports_result,
-                    onpass="ONOS"+str(int(controller+1))+" ports view is correct",
-                    onfail="ONOS"+str(int(controller+1))+" ports view is incorrect")
-
-            if links[controller] or not "Error" in links[controller]:
-                current_links_result =  main.Mininet1.compare_links(MNTopo, json.loads(links[controller]))
-            else:
-                current_links_result = main.FALSE
-            utilities.assert_equals(expect=main.TRUE, actual=current_links_result,
-                    onpass="ONOS"+str(int(controller+1))+" links view is correct",
-                    onfail="ONOS"+str(int(controller+1))+" links view is incorrect")
-
-            devices_results = devices_results and current_devices_result
-            ports_results = ports_results and current_ports_result
-            links_results = links_results and current_links_result
-
-        topo_result = devices_results and ports_results and links_results\
-                and consistent_hosts_result and consistent_clusters_result\
-                and consistent_paths_result
-        utilities.assert_equals(expect=main.TRUE, actual=topo_result,
-                onpass="Topology Check Test successful",
-                onfail="Topology Check Test NOT successful")
-
-        final_assert = main.TRUE
-        final_assert = final_assert and topo_result and flow_check \
-                and intent_check and consistent_mastership and roles_not_null
-        utilities.assert_equals(expect=main.TRUE, actual=final_assert,
-                onpass="State check successful",
-                onfail="State check NOT successful")
-
-
-    def CASE6(self,main) :
-        '''
-        The Failure case.
-        '''
         import time
-        main.log.report("Killing 3 ONOS nodes")
-        main.log.case("Restart minority of ONOS nodes")
-        #TODO: Randomize these nodes
-        main.ONOSbench.onos_kill(ONOS1_ip)
-        time.sleep(10)
-        main.ONOSbench.onos_kill(ONOS2_ip)
-        time.sleep(10)
-        main.ONOSbench.onos_kill(ONOS3_ip)
+        assert numControllers, "numControllers not defined"
+        assert main, "main not defined"
+        assert utilities.assert_equals, "utilities.assert_equals not defined"
+        assert CLIs, "CLIs not defined"
+        assert nodes, "nodes not defined"
+        description = " Ping across added host intents"
+        main.log.report( description )
+        main.case( description )
+        PingResult = main.TRUE
+        for i in range( 8, 18 ):
+            ping = main.Mininet1.pingHost( src="h" + str( i ),
+                                           target="h" + str( i + 10 ) )
+            PingResult = PingResult and ping
+            if ping == main.FALSE:
+                main.log.warn( "Ping failed between h" + str( i ) +
+                               " and h" + str( i + 10 ) )
+            elif ping == main.TRUE:
+                main.log.info( "Ping test passed!" )
+                # Don't set PingResult or you'd override failures
+        if PingResult == main.FALSE:
+            main.log.report(
+                "Intents have not been installed correctly, pings failed." )
+            # TODO: pretty print
+            main.log.warn( "ONOS1 intents: " )
+            try:
+                tmpIntents = main.ONOScli1.intents()
+                main.log.warn( json.dumps( json.loads( tmpIntents ),
+                                           sort_keys=True,
+                                           indent=4,
+                                           separators=( ',', ': ' ) ) )
+            except ( ValueError, TypeError ):
+                main.log.warn( repr( tmpIntents ) )
+        if PingResult == main.TRUE:
+            main.log.report(
+                "Intents have been installed correctly and verified by pings" )
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=PingResult,
+            onpass="Intents have been installed correctly and pings work",
+            onfail="Intents have not been installed correctly, pings failed." )
 
-        main.step("Checking if ONOS is up yet")
+        installedCheck = True
+        if PingResult is not main.TRUE:
+            # Print the intent states
+            intents = main.ONOScli1.intents()
+            intentStates = []
+            main.log.info( "%-6s%-15s%-15s" % ( 'Count', 'ID', 'State' ) )
+            count = 0
+            # Iter through intents of a node
+            try:
+                for intent in json.loads( intents ):
+                    state = intent.get( 'state', None )
+                    if "INSTALLED" not in state:
+                        installedCheck = False
+                    intentId = intent.get( 'id', None )
+                    intentStates.append( ( intentId, state ) )
+            except ( ValueError, TypeError ):
+                main.log.exception( "Error parsing intents." )
+            intentStates.sort()
+            for i, s in intentStates:
+                count += 1
+                main.log.info( "%-6s%-15s%-15s" %
+                               ( str( count ), str( i ), str( s ) ) )
+            leaders = main.ONOScli1.leaders()
+            try:
+                if leaders:
+                    parsedLeaders = json.loads( leaders )
+                    main.log.warn( json.dumps( parsedLeaders,
+                                               sort_keys=True,
+                                               indent=4,
+                                               separators=( ',', ': ' ) ) )
+                    # check for all intent partitions
+                    # check for election
+                    topics = []
+                    for i in range( 14 ):
+                        topics.append( "intent-partition-" + str( i ) )
+                    # FIXME: this should only be after we start the app
+                    topics.append( "org.onosproject.election" )
+                    main.log.debug( topics )
+                    ONOStopics = [ j['topic'] for j in parsedLeaders ]
+                    for topic in topics:
+                        if topic not in ONOStopics:
+                            main.log.error( "Error: " + topic +
+                                            " not in leaders" )
+                else:
+                    main.log.error( "leaders() returned None" )
+            except ( ValueError, TypeError ):
+                main.log.exception( "Error parsing leaders" )
+                main.log.error( repr( leaders ) )
+            partitions = main.ONOScli1.partitions()
+            try:
+                if partitions :
+                    parsedPartitions = json.loads( partitions )
+                    main.log.warn( json.dumps( parsedPartitions,
+                                               sort_keys=True,
+                                               indent=4,
+                                               separators=( ',', ': ' ) ) )
+                    # TODO check for a leader in all paritions
+                    # TODO check for consistency among nodes
+                else:
+                    main.log.error( "partitions() returned None" )
+            except ( ValueError, TypeError ):
+                main.log.exception( "Error parsing partitions" )
+                main.log.error( repr( partitions ) )
+            pendingMap = main.ONOScli1.pendingMap()
+            try:
+                if pendingMap :
+                    parsedPending = json.loads( pendingMap )
+                    main.log.warn( json.dumps( parsedPending,
+                                               sort_keys=True,
+                                               indent=4,
+                                               separators=( ',', ': ' ) ) )
+                    # TODO check something here?
+                else:
+                    main.log.error( "pendingMap() returned None" )
+            except ( ValueError, TypeError ):
+                main.log.exception( "Error parsing pending map" )
+                main.log.error( repr( pendingMap ) )
+
+        if not installedCheck:
+            main.log.info( "Waiting 60 seconds to see if the state of " +
+                           "intents change" )
+            time.sleep( 60 )
+            # Print the intent states
+            intents = main.ONOScli1.intents()
+            intentStates = []
+            main.log.info( "%-6s%-15s%-15s" % ( 'Count', 'ID', 'State' ) )
+            count = 0
+            # Iter through intents of a node
+            try:
+                for intent in json.loads( intents ):
+                    state = intent.get( 'state', None )
+                    if "INSTALLED" not in state:
+                        installedCheck = False
+                    intentId = intent.get( 'id', None )
+                    intentStates.append( ( intentId, state ) )
+            except ( ValueError, TypeError ):
+                main.log.exception( "Error parsing intents." )
+            intentStates.sort()
+            for i, s in intentStates:
+                count += 1
+                main.log.info( "%-6s%-15s%-15s" %
+                               ( str( count ), str( i ), str( s ) ) )
+            leaders = main.ONOScli1.leaders()
+            try:
+                if leaders:
+                    parsedLeaders = json.loads( leaders )
+                    main.log.warn( json.dumps( parsedLeaders,
+                                               sort_keys=True,
+                                               indent=4,
+                                               separators=( ',', ': ' ) ) )
+                    # check for all intent partitions
+                    # check for election
+                    topics = []
+                    for i in range( 14 ):
+                        topics.append( "intent-partition-" + str( i ) )
+                    # FIXME: this should only be after we start the app
+                    topics.append( "org.onosproject.election" )
+                    main.log.debug( topics )
+                    ONOStopics = [ j['topic'] for j in parsedLeaders ]
+                    for topic in topics:
+                        if topic not in ONOStopics:
+                            main.log.error( "Error: " + topic +
+                                            " not in leaders" )
+                else:
+                    main.log.error( "leaders() returned None" )
+            except ( ValueError, TypeError ):
+                main.log.exception( "Error parsing leaders" )
+                main.log.error( repr( leaders ) )
+            partitions = main.ONOScli1.partitions()
+            try:
+                if partitions :
+                    parsedPartitions = json.loads( partitions )
+                    main.log.warn( json.dumps( parsedPartitions,
+                                               sort_keys=True,
+                                               indent=4,
+                                               separators=( ',', ': ' ) ) )
+                    # TODO check for a leader in all paritions
+                    # TODO check for consistency among nodes
+                else:
+                    main.log.error( "partitions() returned None" )
+            except ( ValueError, TypeError ):
+                main.log.exception( "Error parsing partitions" )
+                main.log.error( repr( partitions ) )
+            pendingMap = main.ONOScli1.pendingMap()
+            try:
+                if pendingMap :
+                    parsedPending = json.loads( pendingMap )
+                    main.log.warn( json.dumps( parsedPending,
+                                               sort_keys=True,
+                                               indent=4,
+                                               separators=( ',', ': ' ) ) )
+                    # TODO check something here?
+                else:
+                    main.log.error( "pendingMap() returned None" )
+            except ( ValueError, TypeError ):
+                main.log.exception( "Error parsing pending map" )
+                main.log.error( repr( pendingMap ) )
+
+    def CASE5( self, main ):
+        """
+        Reading state of ONOS
+        """
+        import json
+        import time
+        assert numControllers, "numControllers not defined"
+        assert main, "main not defined"
+        assert utilities.assert_equals, "utilities.assert_equals not defined"
+        assert CLIs, "CLIs not defined"
+        assert nodes, "nodes not defined"
+        # assumes that sts is already in you PYTHONPATH
+        from sts.topology.teston_topology import TestONTopology
+
+        main.log.report( "Setting up and gathering data for current state" )
+        main.case( "Setting up and gathering data for current state" )
+        # The general idea for this test case is to pull the state of
+        # ( intents,flows, topology,... ) from each ONOS node
+        # We can then compare them with each other and also with past states
+
+        main.step( "Check that each switch has a master" )
+        global mastershipState
+        mastershipState = '[]'
+
+        # Assert that each device has a master
+        rolesNotNull = main.TRUE
+        threads = []
+        for i in range( numControllers ):
+            t = main.Thread( target=CLIs[i].rolesNotNull,
+                             name="rolesNotNull-" + str( i ),
+                             args=[] )
+            threads.append( t )
+            t.start()
+
+        for t in threads:
+            t.join()
+            rolesNotNull = rolesNotNull and t.result
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=rolesNotNull,
+            onpass="Each device has a master",
+            onfail="Some devices don't have a master assigned" )
+
+        main.step( "Get the Mastership of each switch from each controller" )
+        ONOSMastership = []
+        mastershipCheck = main.FALSE
+        consistentMastership = True
+        rolesResults = True
+        threads = []
+        for i in range( numControllers ):
+            t = main.Thread( target=CLIs[i].roles,
+                             name="roles-" + str( i ),
+                             args=[] )
+            threads.append( t )
+            t.start()
+
+        for t in threads:
+            t.join()
+            ONOSMastership.append( t.result )
+
+        for i in range( numControllers ):
+            if not ONOSMastership[i] or "Error" in ONOSMastership[i]:
+                main.log.report( "Error in getting ONOS" + str( i + 1 ) +
+                                 " roles" )
+                main.log.warn(
+                    "ONOS" + str( i + 1 ) + " mastership response: " +
+                    repr( ONOSMastership[i] ) )
+                rolesResults = False
+        utilities.assert_equals(
+            expect=True,
+            actual=rolesResults,
+            onpass="No error in reading roles output",
+            onfail="Error in reading roles from ONOS" )
+
+        main.step( "Check for consistency in roles from each controller" )
+        if all([ i == ONOSMastership[ 0 ] for i in ONOSMastership ] ):
+            main.log.report(
+                "Switch roles are consistent across all ONOS nodes" )
+        else:
+            consistentMastership = False
+        utilities.assert_equals(
+            expect=True,
+            actual=consistentMastership,
+            onpass="Switch roles are consistent across all ONOS nodes",
+            onfail="ONOS nodes have different views of switch roles" )
+
+        if rolesResults and not consistentMastership:
+            for i in range( numControllers ):
+                try:
+                    main.log.warn(
+                        "ONOS" + str( i + 1 ) + " roles: ",
+                        json.dumps(
+                            json.loads( ONOSMastership[ i ] ),
+                            sort_keys=True,
+                            indent=4,
+                            separators=( ',', ': ' ) ) )
+                except ( ValueError, TypeError ):
+                    main.log.warn( repr( ONOSMastership[ i ] ) )
+        elif rolesResults and consistentMastership:
+            mastershipCheck = main.TRUE
+            mastershipState = ONOSMastership[ 0 ]
+
+        main.step( "Get the intents from each controller" )
+        global intentState
+        intentState = []
+        ONOSIntents = []
+        intentCheck = main.FALSE
+        consistentIntents = True
+        intentsResults = True
+        threads = []
+        for i in range( numControllers ):
+            t = main.Thread( target=CLIs[i].intents,
+                             name="intents-" + str( i ),
+                             args=[],
+                             kwargs={ 'jsonFormat': True } )
+            threads.append( t )
+            t.start()
+
+        for t in threads:
+            t.join()
+            ONOSIntents.append( t.result )
+
+        for i in range( numControllers ):
+            if not ONOSIntents[ i ] or "Error" in ONOSIntents[ i ]:
+                main.log.report( "Error in getting ONOS" + str( i + 1 ) +
+                                 " intents" )
+                main.log.warn( "ONOS" + str( i + 1 ) + " intents response: " +
+                               repr( ONOSIntents[ i ] ) )
+                intentsResults = False
+        utilities.assert_equals(
+            expect=True,
+            actual=intentsResults,
+            onpass="No error in reading intents output",
+            onfail="Error in reading intents from ONOS" )
+
+        main.step( "Check for consistency in Intents from each controller" )
+        if all([ sorted( i ) == sorted( ONOSIntents[ 0 ] ) for i in ONOSIntents ] ):
+            main.log.report( "Intents are consistent across all ONOS " +
+                             "nodes" )
+        else:
+            consistentIntents = False
+            main.log.report( "Intents not consistent" )
+        utilities.assert_equals(
+            expect=True,
+            actual=consistentIntents,
+            onpass="Intents are consistent across all ONOS nodes",
+            onfail="ONOS nodes have different views of intents" )
+
+        if intentsResults and not consistentIntents:
+            n = len(ONOSIntents)
+            main.log.warn( "ONOS" + str( n ) + " intents: " )
+            main.log.warn( json.dumps( json.loads( ONOSIntents[ -1 ] ),
+                                       sort_keys=True,
+                                       indent=4,
+                                       separators=( ',', ': ' ) ) )
+            for i in range( numControllers ):
+                if ONOSIntents[ i ] != ONOSIntents[ -1 ]:
+                    main.log.warn( "ONOS" + str( i + 1 ) + " intents: " )
+                    main.log.warn( json.dumps( json.loads( ONOSIntents[i] ),
+                                               sort_keys=True,
+                                               indent=4,
+                                               separators=( ',', ': ' ) ) )
+                else:
+                    main.log.warn( nodes[ i ].name + " intents match ONOS" +
+                                   str( n ) + " intents" )
+        elif intentsResults and consistentIntents:
+            intentCheck = main.TRUE
+            intentState = ONOSIntents[ 0 ]
+
+        main.step( "Get the flows from each controller" )
+        global flowState
+        flowState = []
+        ONOSFlows = []
+        ONOSFlowsJson = []
+        flowCheck = main.FALSE
+        consistentFlows = True
+        flowsResults = True
+        threads = []
+        for i in range( numControllers ):
+            t = main.Thread( target=CLIs[i].flows,
+                             name="flows-" + str( i ),
+                             args=[],
+                             kwargs={ 'jsonFormat': True } )
+            threads.append( t )
+            t.start()
+
+        time.sleep(30)
+        for t in threads:
+            t.join()
+            result = t.result
+            ONOSFlows.append( result )
+
+        for i in range( numControllers ):
+            num = str( i + 1 )
+            if not ONOSFlows[ i ] or "Error" in ONOSFlows[ i ]:
+                main.log.report( "Error in getting ONOS" + num + " flows" )
+                main.log.warn( "ONOS" + num + " flows response: " +
+                               repr( ONOSFlows[ i ] ) )
+                flowsResults = False
+                ONOSFlowsJson.append( None )
+            else:
+                try:
+                    ONOSFlowsJson.append( json.loads( ONOSFlows[ i ] ) )
+                except ( ValueError, TypeError ):
+                    # FIXME: change this to log.error?
+                    main.log.exception( "Error in parsing ONOS" + num +
+                                        " response as json." )
+                    main.log.error( repr( ONOSFlows[ i ] ) )
+                    ONOSFlowsJson.append( None )
+                    flowsResults = False
+        utilities.assert_equals(
+            expect=True,
+            actual=flowsResults,
+            onpass="No error in reading flows output",
+            onfail="Error in reading flows from ONOS" )
+
+        main.step( "Check for consistency in Flows from each controller" )
+        tmp = [ len( i ) == len( ONOSFlowsJson[ 0 ] ) for i in ONOSFlowsJson ]
+        if all( tmp ):
+            main.log.report( "Flow count is consistent across all ONOS nodes" )
+        else:
+            consistentFlows = False
+        utilities.assert_equals(
+            expect=True,
+            actual=consistentFlows,
+            onpass="The flow count is consistent across all ONOS nodes",
+            onfail="ONOS nodes have different flow counts" )
+
+        if flowsResults and not consistentFlows:
+            for i in range( numControllers ):
+                try:
+                    main.log.warn(
+                        "ONOS" + str( i + 1 ) + " flows: " +
+                        json.dumps( json.loads( ONOSFlows[i] ), sort_keys=True,
+                                    indent=4, separators=( ',', ': ' ) ) )
+                except ( ValueError, TypeError ):
+                    main.log.warn(
+                        "ONOS" + str( i + 1 ) + " flows: " +
+                        repr( ONOSFlows[ i ] ) )
+        elif flowsResults and consistentFlows:
+            flowCheck = main.TRUE
+            flowState = ONOSFlows[ 0 ]
+
+        main.step( "Get the OF Table entries" )
+        global flows
+        flows = []
+        for i in range( 1, 29 ):
+            flows.append( main.Mininet2.getFlowTable( 1.3, "s" + str( i ) ) )
+        if flowCheck == main.FALSE:
+            for table in flows:
+                main.log.warn( table )
+        # TODO: Compare switch flow tables with ONOS flow tables
+
+        main.step( "Start continuous pings" )
+        main.Mininet2.pingLong(
+            src=main.params[ 'PING' ][ 'source1' ],
+            target=main.params[ 'PING' ][ 'target1' ],
+            pingTime=500 )
+        main.Mininet2.pingLong(
+            src=main.params[ 'PING' ][ 'source2' ],
+            target=main.params[ 'PING' ][ 'target2' ],
+            pingTime=500 )
+        main.Mininet2.pingLong(
+            src=main.params[ 'PING' ][ 'source3' ],
+            target=main.params[ 'PING' ][ 'target3' ],
+            pingTime=500 )
+        main.Mininet2.pingLong(
+            src=main.params[ 'PING' ][ 'source4' ],
+            target=main.params[ 'PING' ][ 'target4' ],
+            pingTime=500 )
+        main.Mininet2.pingLong(
+            src=main.params[ 'PING' ][ 'source5' ],
+            target=main.params[ 'PING' ][ 'target5' ],
+            pingTime=500 )
+        main.Mininet2.pingLong(
+            src=main.params[ 'PING' ][ 'source6' ],
+            target=main.params[ 'PING' ][ 'target6' ],
+            pingTime=500 )
+        main.Mininet2.pingLong(
+            src=main.params[ 'PING' ][ 'source7' ],
+            target=main.params[ 'PING' ][ 'target7' ],
+            pingTime=500 )
+        main.Mininet2.pingLong(
+            src=main.params[ 'PING' ][ 'source8' ],
+            target=main.params[ 'PING' ][ 'target8' ],
+            pingTime=500 )
+        main.Mininet2.pingLong(
+            src=main.params[ 'PING' ][ 'source9' ],
+            target=main.params[ 'PING' ][ 'target9' ],
+            pingTime=500 )
+        main.Mininet2.pingLong(
+            src=main.params[ 'PING' ][ 'source10' ],
+            target=main.params[ 'PING' ][ 'target10' ],
+            pingTime=500 )
+
+        main.step( "Create TestONTopology object" )
+        ctrls = []
+        for node in nodes:
+            temp = ( node, node.name, node.ip_address, 6633 )
+            ctrls.append( temp )
+        MNTopo = TestONTopology( main.Mininet1, ctrls )
+
+        main.step( "Collecting topology information from ONOS" )
+        devices = []
+        threads = []
+        for i in range( numControllers ):
+            t = main.Thread( target=CLIs[i].devices,
+                             name="devices-" + str( i ),
+                             args=[ ] )
+            threads.append( t )
+            t.start()
+
+        for t in threads:
+            t.join()
+            devices.append( t.result )
+        hosts = []
+        threads = []
+        for i in range( numControllers ):
+            t = main.Thread( target=CLIs[i].hosts,
+                             name="hosts-" + str( i ),
+                             args=[ ] )
+            threads.append( t )
+            t.start()
+
+        for t in threads:
+            t.join()
+            try:
+                hosts.append( json.loads( t.result ) )
+            except ( ValueError, TypeError ):
+                # FIXME: better handling of this, print which node
+                #        Maybe use thread name?
+                main.log.exception( "Error parsing json output of hosts" )
+                # FIXME: should this be an empty json object instead?
+                hosts.append( None )
+
+        ports = []
+        threads = []
+        for i in range( numControllers ):
+            t = main.Thread( target=CLIs[i].ports,
+                             name="ports-" + str( i ),
+                             args=[ ] )
+            threads.append( t )
+            t.start()
+
+        for t in threads:
+            t.join()
+            ports.append( t.result )
+        links = []
+        threads = []
+        for i in range( numControllers ):
+            t = main.Thread( target=CLIs[i].links,
+                             name="links-" + str( i ),
+                             args=[ ] )
+            threads.append( t )
+            t.start()
+
+        for t in threads:
+            t.join()
+            links.append( t.result )
+        clusters = []
+        threads = []
+        for i in range( numControllers ):
+            t = main.Thread( target=CLIs[i].clusters,
+                             name="clusters-" + str( i ),
+                             args=[ ] )
+            threads.append( t )
+            t.start()
+
+        for t in threads:
+            t.join()
+            clusters.append( t.result )
+        # Compare json objects for hosts and dataplane clusters
+
+        # hosts
+        consistentHostsResult = main.TRUE
+        for controller in range( len( hosts ) ):
+            controllerStr = str( controller + 1 )
+            if "Error" not in hosts[ controller ]:
+                if hosts[ controller ] == hosts[ 0 ]:
+                    continue
+                else:  # hosts not consistent
+                    main.log.report( "hosts from ONOS" +
+                                     controllerStr +
+                                     " is inconsistent with ONOS1" )
+                    main.log.warn( repr( hosts[ controller ] ) )
+                    consistentHostsResult = main.FALSE
+
+            else:
+                main.log.report( "Error in getting ONOS hosts from ONOS" +
+                                 controllerStr )
+                consistentHostsResult = main.FALSE
+                main.log.warn( "ONOS" + controllerStr +
+                               " hosts response: " +
+                               repr( hosts[ controller ] ) )
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=consistentHostsResult,
+            onpass="Hosts view is consistent across all ONOS nodes",
+            onfail="ONOS nodes have different views of hosts" )
+
+        ipResult = main.TRUE
+        for controller in range( 0, len( hosts ) ):
+            controllerStr = str( controller + 1 )
+            for host in hosts[ controller ]:
+                if not host.get( 'ips', [ ] ):
+                    main.log.error( "DEBUG:Error with host ips on controller" +
+                                    controllerStr + ": " + str( host ) )
+                    ipResult = main.FALSE
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=ipResult,
+            onpass="The ips of the hosts aren't empty",
+            onfail="The ip of at least one host is missing" )
+
+        # Strongly connected clusters of devices
+        consistentClustersResult = main.TRUE
+        for controller in range( len( clusters ) ):
+            controllerStr = str( controller + 1 )
+            if "Error" not in clusters[ controller ]:
+                if clusters[ controller ] == clusters[ 0 ]:
+                    continue
+                else:  # clusters not consistent
+                    main.log.report( "clusters from ONOS" + controllerStr +
+                                     " is inconsistent with ONOS1" )
+                    consistentClustersResult = main.FALSE
+
+            else:
+                main.log.report( "Error in getting dataplane clusters " +
+                                 "from ONOS" + controllerStr )
+                consistentClustersResult = main.FALSE
+                main.log.warn( "ONOS" + controllerStr +
+                               " clusters response: " +
+                               repr( clusters[ controller ] ) )
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=consistentClustersResult,
+            onpass="Clusters view is consistent across all ONOS nodes",
+            onfail="ONOS nodes have different views of clusters" )
+        # there should always only be one cluster
+        try:
+            numClusters = len( json.loads( clusters[ 0 ] ) )
+        except ( ValueError, TypeError ):
+            main.log.exception( "Error parsing clusters[0]: " +
+                                repr( clusters[ 0 ] ) )
+        clusterResults = main.FALSE
+        if numClusters == 1:
+            clusterResults = main.TRUE
+        utilities.assert_equals(
+            expect=1,
+            actual=numClusters,
+            onpass="ONOS shows 1 SCC",
+            onfail="ONOS shows " + str( numClusters ) + " SCCs" )
+
+        main.step( "Comparing ONOS topology to MN" )
+        devicesResults = main.TRUE
+        portsResults = main.TRUE
+        linksResults = main.TRUE
+        for controller in range( numControllers ):
+            controllerStr = str( controller + 1 )
+            if devices[ controller ] or "Error" not in devices[ controller ]:
+                currentDevicesResult = main.Mininet1.compareSwitches(
+                    MNTopo,
+                    json.loads( devices[ controller ] ) )
+            else:
+                currentDevicesResult = main.FALSE
+            utilities.assert_equals( expect=main.TRUE,
+                                     actual=currentDevicesResult,
+                                     onpass="ONOS" + controllerStr +
+                                     " Switches view is correct",
+                                     onfail="ONOS" + controllerStr +
+                                     " Switches view is incorrect" )
+
+            if ports[ controller ] or "Error" not in ports[ controller ]:
+                currentPortsResult = main.Mininet1.comparePorts(
+                    MNTopo,
+                    json.loads( ports[ controller ] ) )
+            else:
+                currentPortsResult = main.FALSE
+            utilities.assert_equals( expect=main.TRUE,
+                                     actual=currentPortsResult,
+                                     onpass="ONOS" + controllerStr +
+                                     " ports view is correct",
+                                     onfail="ONOS" + controllerStr +
+                                     " ports view is incorrect" )
+
+            if links[ controller ] or "Error" not in links[ controller ]:
+                currentLinksResult = main.Mininet1.compareLinks(
+                    MNTopo,
+                    json.loads( links[ controller ] ) )
+            else:
+                currentLinksResult = main.FALSE
+            utilities.assert_equals( expect=main.TRUE,
+                                     actual=currentLinksResult,
+                                     onpass="ONOS" + controllerStr +
+                                     " links view is correct",
+                                     onfail="ONOS" + controllerStr +
+                                     " links view is incorrect" )
+
+            devicesResults = devicesResults and currentDevicesResult
+            portsResults = portsResults and currentPortsResult
+            linksResults = linksResults and currentLinksResult
+
+        topoResult = ( devicesResults and portsResults and linksResults
+                       and consistentHostsResult and consistentClustersResult
+                       and clusterResults and ipResult )
+        utilities.assert_equals( expect=main.TRUE, actual=topoResult,
+                                 onpass="Topology Check Test successful",
+                                 onfail="Topology Check Test NOT successful" )
+
+        finalAssert = main.TRUE
+        finalAssert = ( finalAssert and topoResult and flowCheck
+                        and intentCheck and consistentMastership
+                        and rolesNotNull )
+        utilities.assert_equals( expect=main.TRUE, actual=finalAssert,
+                                 onpass="State check successful",
+                                 onfail="State check NOT successful" )
+
+    def CASE6( self, main ):
+        """
+        The Failure case.
+        """
+        import time
+        assert numControllers, "numControllers not defined"
+        assert main, "main not defined"
+        assert utilities.assert_equals, "utilities.assert_equals not defined"
+        assert CLIs, "CLIs not defined"
+        assert nodes, "nodes not defined"
+        main.log.report( "Killing 3 ONOS nodes" )
+        main.case( "Restart minority of ONOS nodes" )
+        # TODO: Randomize these nodes
+        # TODO: use threads in this case
+        main.ONOSbench.onosKill( nodes[0].ip_address )
+        time.sleep( 10 )
+        main.ONOSbench.onosKill( nodes[1].ip_address )
+        time.sleep( 10 )
+        main.ONOSbench.onosKill( nodes[2].ip_address )
+
+        main.step( "Checking if ONOS is up yet" )
         count = 0
-        onos_isup_result = main.FALSE
-        while onos_isup_result == main.FALSE and count < 10:
-            onos1_isup = main.ONOSbench.isup(ONOS1_ip)
-            onos2_isup = main.ONOSbench.isup(ONOS2_ip)
-            onos3_isup = main.ONOSbench.isup(ONOS3_ip)
-            onos_isup_result = onos1_isup and onos2_isup and onos3_isup
+        onosIsupResult = main.FALSE
+        while onosIsupResult == main.FALSE and count < 10:
+            onos1Isup = main.ONOSbench.isup( nodes[0].ip_address )
+            onos2Isup = main.ONOSbench.isup( nodes[1].ip_address )
+            onos3Isup = main.ONOSbench.isup( nodes[2].ip_address )
+            onosIsupResult = onos1Isup and onos2Isup and onos3Isup
             count = count + 1
         # TODO: if it becomes an issue, we can retry this step  a few times
 
+        cliResult1 = main.ONOScli1.startOnosCli( nodes[0].ip_address )
+        cliResult2 = main.ONOScli2.startOnosCli( nodes[1].ip_address )
+        cliResult3 = main.ONOScli3.startOnosCli( nodes[2].ip_address )
+        cliResults = cliResult1 and cliResult2 and cliResult3
 
-        cli_result1 = main.ONOScli1.start_onos_cli(ONOS1_ip)
-        cli_result2 = main.ONOScli2.start_onos_cli(ONOS2_ip)
-        cli_result3 = main.ONOScli3.start_onos_cli(ONOS3_ip)
-        cli_results = cli_result1 and cli_result2 and cli_result3
+        # Grab the time of restart so we chan check how long the gossip
+        # protocol has had time to work
+        main.restartTime = time.time()
+        caseResults = main.TRUE and onosIsupResult and cliResults
+        utilities.assert_equals( expect=main.TRUE, actual=caseResults,
+                                 onpass="ONOS restart successful",
+                                 onfail="ONOS restart NOT successful" )
 
-        main.log.info("Install leadership election app on restarted node")
-
-        case_results = main.TRUE and onos_isup_result and cli_results
-        utilities.assert_equals(expect=main.TRUE, actual=case_results,
-                onpass="ONOS restart successful",
-                onfail="ONOS restart NOT successful")
-
-
-    def CASE7(self,main) :
-        '''
+    def CASE7( self, main ):
+        """
         Check state after ONOS failure
-        '''
-        import os
+        """
         import json
-        main.case("Running ONOS Constant State Tests")
+        assert numControllers, "numControllers not defined"
+        assert main, "main not defined"
+        assert utilities.assert_equals, "utilities.assert_equals not defined"
+        assert CLIs, "CLIs not defined"
+        assert nodes, "nodes not defined"
+        main.case( "Running ONOS Constant State Tests" )
 
-        #Assert that each device has a master
-        ONOS1_master_not_null = main.ONOScli1.roles_not_null()
-        ONOS2_master_not_null = main.ONOScli2.roles_not_null()
-        ONOS3_master_not_null = main.ONOScli3.roles_not_null()
-        ONOS4_master_not_null = main.ONOScli4.roles_not_null()
-        ONOS5_master_not_null = main.ONOScli5.roles_not_null()
-        ONOS6_master_not_null = main.ONOScli6.roles_not_null()
-        ONOS7_master_not_null = main.ONOScli7.roles_not_null()
-        roles_not_null = ONOS1_master_not_null and ONOS2_master_not_null and\
-                ONOS3_master_not_null and ONOS4_master_not_null and\
-                ONOS5_master_not_null and ONOS6_master_not_null and\
-                ONOS7_master_not_null
-        utilities.assert_equals(expect = main.TRUE,actual=roles_not_null,
-                onpass="Each device has a master",
-                onfail="Some devices don't have a master assigned")
+        main.step( "Check that each switch has a master" )
+        # Assert that each device has a master
+        rolesNotNull = main.TRUE
+        threads = []
+        for i in range( numControllers ):
+            t = main.Thread( target=CLIs[i].rolesNotNull,
+                             name="rolesNotNull-" + str( i ),
+                             args=[ ] )
+            threads.append( t )
+            t.start()
 
+        for t in threads:
+            t.join()
+            rolesNotNull = rolesNotNull and t.result
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=rolesNotNull,
+            onpass="Each device has a master",
+            onfail="Some devices don't have a master assigned" )
 
+        ONOSMastership = []
+        mastershipCheck = main.FALSE
+        consistentMastership = True
+        rolesResults = True
+        threads = []
+        for i in range( numControllers ):
+            t = main.Thread( target=CLIs[i].roles,
+                             name="roles-" + str( i ),
+                             args=[] )
+            threads.append( t )
+            t.start()
 
-        main.step("Check if switch roles are consistent across all nodes")
-        ONOS1_mastership = main.ONOScli1.roles()
-        ONOS2_mastership = main.ONOScli2.roles()
-        ONOS3_mastership = main.ONOScli3.roles()
-        ONOS4_mastership = main.ONOScli4.roles()
-        ONOS5_mastership = main.ONOScli5.roles()
-        ONOS6_mastership = main.ONOScli6.roles()
-        ONOS7_mastership = main.ONOScli7.roles()
-        #print json.dumps(json.loads(ONOS1_mastership), sort_keys=True, indent=4, separators=(',', ': '))
-        if "Error" in ONOS1_mastership or not ONOS1_mastership\
-                or "Error" in ONOS2_mastership or not ONOS2_mastership\
-                or "Error" in ONOS3_mastership or not ONOS3_mastership\
-                or "Error" in ONOS4_mastership or not ONOS4_mastership\
-                or "Error" in ONOS5_mastership or not ONOS5_mastership\
-                or "Error" in ONOS6_mastership or not ONOS6_mastership\
-                or "Error" in ONOS7_mastership or not ONOS7_mastership:
-                    main.log.error("Error in getting ONOS mastership")
-                    main.log.warn("ONOS1 mastership response: " + repr(ONOS1_mastership))
-                    main.log.warn("ONOS2 mastership response: " + repr(ONOS2_mastership))
-                    main.log.warn("ONOS3 mastership response: " + repr(ONOS3_mastership))
-                    main.log.warn("ONOS4 mastership response: " + repr(ONOS4_mastership))
-                    main.log.warn("ONOS5 mastership response: " + repr(ONOS5_mastership))
-                    main.log.warn("ONOS6 mastership response: " + repr(ONOS6_mastership))
-                    main.log.warn("ONOS7 mastership response: " + repr(ONOS7_mastership))
-                    consistent_mastership = main.FALSE
-        elif ONOS1_mastership == ONOS2_mastership\
-                and ONOS1_mastership == ONOS3_mastership\
-                and ONOS1_mastership == ONOS4_mastership\
-                and ONOS1_mastership == ONOS5_mastership\
-                and ONOS1_mastership == ONOS6_mastership\
-                and ONOS1_mastership == ONOS7_mastership:
-                    consistent_mastership = main.TRUE
-                    main.log.report("Switch roles are consistent across all ONOS nodes")
+        for t in threads:
+            t.join()
+            ONOSMastership.append( t.result )
+
+        for i in range( numControllers ):
+            if not ONOSMastership[i] or "Error" in ONOSMastership[i]:
+                main.log.report( "Error in getting ONOS" + str( i + 1 ) +
+                                 " roles" )
+                main.log.warn(
+                    "ONOS" + str( i + 1 ) + " mastership response: " +
+                    repr( ONOSMastership[i] ) )
+                rolesResults = False
+        utilities.assert_equals(
+            expect=True,
+            actual=rolesResults,
+            onpass="No error in reading roles output",
+            onfail="Error in reading roles from ONOS" )
+
+        main.step( "Check for consistency in roles from each controller" )
+        if all([ i == ONOSMastership[ 0 ] for i in ONOSMastership ] ):
+            main.log.report(
+                "Switch roles are consistent across all ONOS nodes" )
         else:
-            main.log.warn("ONOS1 roles: ", json.dumps(json.loads(ONOS1_mastership),
-                sort_keys=True, indent=4, separators=(',', ': ')))
-            main.log.warn("ONOS2 roles: ", json.dumps(json.loads(ONOS2_mastership),
-                sort_keys=True, indent=4, separators=(',', ': ')))
-            main.log.warn("ONOS3 roles: ", json.dumps(json.loads(ONOS3_mastership),
-                sort_keys=True, indent=4, separators=(',', ': ')))
-            main.log.warn("ONOS4 roles: ", json.dumps(json.loads(ONOS4_mastership),
-                sort_keys=True, indent=4, separators=(',', ': ')))
-            main.log.warn("ONOS5 roles: ", json.dumps(json.loads(ONOS5_mastership),
-                sort_keys=True, indent=4, separators=(',', ': ')))
-            main.log.warn("ONOS6 roles: ", json.dumps(json.loads(ONOS6_mastership),
-                sort_keys=True, indent=4, separators=(',', ': ')))
-            main.log.warn("ONOS7 roles: ", json.dumps(json.loads(ONOS7_mastership),
-                sort_keys=True, indent=4, separators=(',', ': ')))
-            consistent_mastership = main.FALSE
-        utilities.assert_equals(expect = main.TRUE,actual=consistent_mastership,
-                onpass="Switch roles are consistent across all ONOS nodes",
-                onfail="ONOS nodes have different views of switch roles")
+            consistentMastership = False
+        utilities.assert_equals(
+            expect=True,
+            actual=consistentMastership,
+            onpass="Switch roles are consistent across all ONOS nodes",
+            onfail="ONOS nodes have different views of switch roles" )
 
+        if rolesResults and not consistentMastership:
+            for i in range( numControllers ):
+                main.log.warn(
+                    "ONOS" + str( i + 1 ) + " roles: ",
+                    json.dumps(
+                        json.loads( ONOSMastership[ i ] ),
+                        sort_keys=True,
+                        indent=4,
+                        separators=( ',', ': ' ) ) )
+        elif rolesResults and not consistentMastership:
+            mastershipCheck = main.TRUE
 
         description2 = "Compare switch roles from before failure"
-        main.step(description2)
-
-        current_json = json.loads(ONOS1_mastership)
-        old_json = json.loads(mastership_state)
-        mastership_check = main.TRUE
-        for i in range(1,29):
-            switchDPID = str(main.Mininet1.getSwitchDPID(switch="s"+str(i)))
-
-            current = [switch['master'] for switch in current_json if switchDPID in switch['id']]
-            old = [switch['master'] for switch in old_json if switchDPID in switch['id']]
+        main.step( description2 )
+        try:
+            currentJson = json.loads( ONOSMastership[0] )
+            oldJson = json.loads( mastershipState )
+        except ( ValueError, TypeError ):
+            main.log.exception( "Something is wrong with parsing " +
+                                "ONOSMastership[0] or mastershipState" )
+            main.log.error( "ONOSMastership[0]: " + repr( ONOSMastership[0] ) )
+            main.log.error( "mastershipState" + repr( mastershipState ) )
+            main.cleanup()
+            main.exit()
+        mastershipCheck = main.TRUE
+        for i in range( 1, 29 ):
+            switchDPID = str(
+                main.Mininet1.getSwitchDPID( switch="s" + str( i ) ) )
+            current = [ switch[ 'master' ] for switch in currentJson
+                        if switchDPID in switch[ 'id' ] ]
+            old = [ switch[ 'master' ] for switch in oldJson
+                    if switchDPID in switch[ 'id' ] ]
             if current == old:
-                mastership_check = mastership_check and main.TRUE
+                mastershipCheck = mastershipCheck and main.TRUE
             else:
-                main.log.warn("Mastership of switch %s changed" % switchDPID)
-                mastership_check = main.FALSE
-        if mastership_check == main.TRUE:
-            main.log.report("Mastership of Switches was not changed")
-        utilities.assert_equals(expect=main.TRUE,actual=mastership_check,
-                onpass="Mastership of Switches was not changed",
-                onfail="Mastership of some switches changed")
-        #NOTE: we expect mastership to change on controller failure
-        mastership_check = consistent_mastership
+                main.log.warn( "Mastership of switch %s changed" % switchDPID )
+                mastershipCheck = main.FALSE
+        if mastershipCheck == main.TRUE:
+            main.log.report( "Mastership of Switches was not changed" )
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=mastershipCheck,
+            onpass="Mastership of Switches was not changed",
+            onfail="Mastership of some switches changed" )
+        # NOTE: we expect mastership to change on controller failure
+        mastershipCheck = consistentMastership
 
+        main.step( "Get the intents and compare across all nodes" )
+        ONOSIntents = []
+        intentCheck = main.FALSE
+        consistentIntents = True
+        intentsResults = True
+        threads = []
+        for i in range( numControllers ):
+            t = main.Thread( target=CLIs[i].intents,
+                             name="intents-" + str( i ),
+                             args=[],
+                             kwargs={ 'jsonFormat': True } )
+            threads.append( t )
+            t.start()
 
+        for t in threads:
+            t.join()
+            ONOSIntents.append( t.result )
 
-        main.step("Get the intents and compare across all nodes")
-        ONOS1_intents = main.ONOScli1.intents( json_format=True )
-        ONOS2_intents = main.ONOScli2.intents( json_format=True )
-        ONOS3_intents = main.ONOScli3.intents( json_format=True )
-        ONOS4_intents = main.ONOScli4.intents( json_format=True )
-        ONOS5_intents = main.ONOScli5.intents( json_format=True )
-        ONOS6_intents = main.ONOScli6.intents( json_format=True )
-        ONOS7_intents = main.ONOScli7.intents( json_format=True )
-        intent_check = main.FALSE
-        if "Error" in ONOS1_intents or not ONOS1_intents\
-                or "Error" in ONOS2_intents or not ONOS2_intents\
-                or "Error" in ONOS3_intents or not ONOS3_intents\
-                or "Error" in ONOS4_intents or not ONOS4_intents\
-                or "Error" in ONOS5_intents or not ONOS5_intents\
-                or "Error" in ONOS6_intents or not ONOS6_intents\
-                or "Error" in ONOS7_intents or not ONOS7_intents:
-                    main.log.report("Error in getting ONOS intents")
-                    main.log.warn("ONOS1 intents response: " + repr(ONOS1_intents))
-                    main.log.warn("ONOS2 intents response: " + repr(ONOS2_intents))
-                    main.log.warn("ONOS3 intents response: " + repr(ONOS3_intents))
-                    main.log.warn("ONOS4 intents response: " + repr(ONOS4_intents))
-                    main.log.warn("ONOS5 intents response: " + repr(ONOS5_intents))
-                    main.log.warn("ONOS6 intents response: " + repr(ONOS6_intents))
-                    main.log.warn("ONOS7 intents response: " + repr(ONOS7_intents))
-        elif ONOS1_intents == ONOS2_intents\
-                and ONOS1_intents == ONOS3_intents\
-                and ONOS1_intents == ONOS4_intents\
-                and ONOS1_intents == ONOS5_intents\
-                and ONOS1_intents == ONOS6_intents\
-                and ONOS1_intents == ONOS7_intents:
-                    intent_check = main.TRUE
-                    main.log.report("Intents are consistent across all ONOS nodes")
+        for i in range( numControllers ):
+            if not ONOSIntents[ i ] or "Error" in ONOSIntents[ i ]:
+                main.log.report( "Error in getting ONOS" + str( i + 1 ) +
+                                 " intents" )
+                main.log.warn( "ONOS" + str( i + 1 ) + " intents response: " +
+                               repr( ONOSIntents[ i ] ) )
+                intentsResults = False
+        utilities.assert_equals(
+            expect=True,
+            actual=intentsResults,
+            onpass="No error in reading intents output",
+            onfail="Error in reading intents from ONOS" )
+
+        main.step( "Check for consistency in Intents from each controller" )
+        if all([ sorted( i ) == sorted( ONOSIntents[ 0 ] ) for i in ONOSIntents ] ):
+            main.log.report( "Intents are consistent across all ONOS " +
+                             "nodes" )
         else:
-            main.log.warn("ONOS1 intents: ")
-            print json.dumps(json.loads(ONOS1_intents),
-                sort_keys=True, indent=4, separators=(',', ': '))
-            main.log.warn("ONOS2 intents: ")
-            print json.dumps(json.loads(ONOS2_intents),
-                sort_keys=True, indent=4, separators=(',', ': '))
-            main.log.warn("ONOS3 intents: ")
-            print json.dumps(json.loads(ONOS3_intents),
-                sort_keys=True, indent=4, separators=(',', ': '))
-            main.log.warn("ONOS4 intents: ")
-            print json.dumps(json.loads(ONOS4_intents),
-                sort_keys=True, indent=4, separators=(',', ': '))
-            main.log.warn("ONOS5 intents: ")
-            print json.dumps(json.loads(ONOS5_intents),
-                sort_keys=True, indent=4, separators=(',', ': '))
-            main.log.warn("ONOS6 intents: ")
-            print json.dumps(json.loads(ONOS6_intents),
-                sort_keys=True, indent=4, separators=(',', ': '))
-            main.log.warn("ONOS7 intents: ")
-            print json.dumps(json.loads(ONOS7_intents),
-                sort_keys=True, indent=4, separators=(',', ': '))
-        utilities.assert_equals(expect = main.TRUE,actual=intent_check,
-                onpass="Intents are consistent across all ONOS nodes",
-                onfail="ONOS nodes have different views of intents")
+            consistentIntents = False
+        utilities.assert_equals(
+            expect=True,
+            actual=consistentIntents,
+            onpass="Intents are consistent across all ONOS nodes",
+            onfail="ONOS nodes have different views of intents" )
+        intentStates = []
+        for node in ONOSIntents:  # Iter through ONOS nodes
+            nodeStates = []
+            # Iter through intents of a node
+            try:
+                for intent in json.loads( node ):
+                    nodeStates.append( intent[ 'state' ] )
+            except ( ValueError, TypeError ):
+                main.log.exception( "Error in parsing intents" )
+                main.log.error( repr( node ) )
+            intentStates.append( nodeStates )
+            out = [ (i, nodeStates.count( i ) ) for i in set( nodeStates ) ]
+            main.log.info( dict( out ) )
 
-        #NOTE: Hazelcast has no durability, so intents are lost across system restarts
-        main.step("Compare current intents with intents before the failure")
-        #NOTE: this requires case 5 to pass for intent_state to be set.
+        if intentsResults and not consistentIntents:
+            for i in range( numControllers ):
+                main.log.warn( "ONOS" + str( i + 1 ) + " intents: " )
+                main.log.warn( json.dumps(
+                    json.loads( ONOSIntents[ i ] ),
+                    sort_keys=True,
+                    indent=4,
+                    separators=( ',', ': ' ) ) )
+        elif intentsResults and consistentIntents:
+            intentCheck = main.TRUE
+
+        # NOTE: Store has no durability, so intents are lost across system
+        #       restarts
+        main.step( "Compare current intents with intents before the failure" )
+        # NOTE: this requires case 5 to pass for intentState to be set.
         #      maybe we should stop the test if that fails?
-        if intent_state == ONOS1_intents:
-            same_intents = main.TRUE
-            main.log.report("Intents are consistent with before failure")
-        #TODO: possibly the states have changed? we may need to figure out what the aceptable states are
+        sameIntents = main.TRUE
+        if intentState and intentState == ONOSIntents[ 0 ]:
+            sameIntents = main.TRUE
+            main.log.report( "Intents are consistent with before failure" )
+        # TODO: possibly the states have changed? we may need to figure out
+        #       what the acceptable states are
         else:
             try:
-                main.log.warn("ONOS1 intents: ")
-                print json.dumps(json.loads(ONOS1_intents),
-                    sort_keys=True, indent=4, separators=(',', ': '))
-            except:
-                pass
-            same_intents = main.FALSE
-        utilities.assert_equals(expect = main.TRUE,actual=same_intents,
-                onpass="Intents are consistent with before failure",
-                onfail="The Intents changed during failure")
-        intent_check = intent_check and same_intents
+                main.log.warn( "ONOS intents: " )
+                main.log.warn( json.dumps( json.loads( ONOSIntents[ 0 ] ),
+                                           sort_keys=True, indent=4,
+                                           separators=( ',', ': ' ) ) )
+            except ( ValueError, TypeError ):
+                main.log.exception( "Exception printing intents" )
+                main.log.warn( repr( ONOSIntents[0] ) )
+            sameIntents = main.FALSE
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=sameIntents,
+            onpass="Intents are consistent with before failure",
+            onfail="The Intents changed during failure" )
+        intentCheck = intentCheck and sameIntents
 
+        main.step( "Get the OF Table entries and compare to before " +
+                   "component failure" )
+        FlowTables = main.TRUE
+        flows2 = []
+        for i in range( 28 ):
+            main.log.info( "Checking flow table on s" + str( i + 1 ) )
+            tmpFlows = main.Mininet2.getFlowTable( 1.3, "s" + str( i + 1 ) )
+            flows2.append( tmpFlows )
+            tempResult = main.Mininet2.flowComp(
+                flow1=flows[ i ],
+                flow2=tmpFlows )
+            FlowTables = FlowTables and tempResult
+            if FlowTables == main.FALSE:
+                main.log.info( "Differences in flow table for switch: s" +
+                               str( i + 1 ) )
+        if FlowTables == main.TRUE:
+            main.log.report( "No changes were found in the flow tables" )
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=FlowTables,
+            onpass="No changes were found in the flow tables",
+            onfail="Changes were found in the flow tables" )
 
+        main.step( "Check the continuous pings to ensure that no packets " +
+                   "were dropped during component failure" )
+        main.Mininet2.pingKill( main.params[ 'TESTONUSER' ],
+                                main.params[ 'TESTONIP' ] )
+        LossInPings = main.FALSE
+        # NOTE: checkForLoss returns main.FALSE with 0% packet loss
+        for i in range( 8, 18 ):
+            main.log.info(
+                "Checking for a loss in pings along flow from s" +
+                str( i ) )
+            LossInPings = main.Mininet2.checkForLoss(
+                "/tmp/ping.h" +
+                str( i ) ) or LossInPings
+        if LossInPings == main.TRUE:
+            main.log.info( "Loss in ping detected" )
+        elif LossInPings == main.ERROR:
+            main.log.info( "There are multiple mininet process running" )
+        elif LossInPings == main.FALSE:
+            main.log.info( "No Loss in the pings" )
+            main.log.report( "No loss of dataplane connectivity" )
+        utilities.assert_equals(
+            expect=main.FALSE,
+            actual=LossInPings,
+            onpass="No Loss of connectivity",
+            onfail="Loss of dataplane connectivity detected" )
 
-        main.step("Get the OF Table entries and compare to before component failure")
-        Flow_Tables = main.TRUE
-        flows2=[]
-        for i in range(28):
-            main.log.info("Checking flow table on s" + str(i+1))
-            tmp_flows = main.Mininet2.get_flowTable(1.3, "s"+str(i+1))
-            flows2.append(tmp_flows)
-            temp_result = main.Mininet2.flow_comp(flow1=flows[i],flow2=tmp_flows)
-            Flow_Tables = Flow_Tables and temp_result
-            if Flow_Tables == main.FALSE:
-                main.log.info("Differences in flow table for switch: "+str(i+1))
-        if Flow_Tables == main.TRUE:
-            main.log.report("No changes were found in the flow tables")
-        utilities.assert_equals(expect=main.TRUE,actual=Flow_Tables,
-                onpass="No changes were found in the flow tables",
-                onfail="Changes were found in the flow tables")
-
-        main.step("Check the continuous pings to ensure that no packets were dropped during component failure")
-        #FIXME: This check is always failing. Investigate cause
-        #NOTE:  this may be something to do with file permsissions
-        #       or slight change in format
-        main.Mininet2.pingKill(main.params['TESTONUSER'], main.params['TESTONIP'])
-        Loss_In_Pings = main.FALSE 
-        #NOTE: checkForLoss returns main.FALSE with 0% packet loss
-        for i in range(8,18):
-            main.log.info("Checking for a loss in pings along flow from s" + str(i))
-            Loss_In_Pings = main.Mininet2.checkForLoss("/tmp/ping.h"+str(i)) or Loss_In_Pings
-        if Loss_In_Pings == main.TRUE:
-            main.log.info("Loss in ping detected")
-        elif Loss_In_Pings == main.ERROR:
-            main.log.info("There are multiple mininet process running")
-        elif Loss_In_Pings == main.FALSE:
-            main.log.info("No Loss in the pings")
-            main.log.report("No loss of dataplane connectivity")
-        utilities.assert_equals(expect=main.FALSE,actual=Loss_In_Pings,
-                onpass="No Loss of connectivity",
-                onfail="Loss of dataplane connectivity detected")
-
-
-        #Test of LeadershipElection
-        leader_list = []
-        leader_result = main.TRUE
-        for controller in range(1,num_controllers+1):
-            node = getattr( main, ( 'ONOScli' + str( controller ) ) )#loop through ONOScli handlers
-            leaderN = node.election_test_leader()
-            leader_list.append(leaderN)
+        # Test of LeadershipElection
+        leaderList = []
+        # FIXME: make sure this matches nodes that were restarted
+        restarted = [ nodes[0].ip_address, nodes[1].ip_address,
+                      nodes[2].ip_address ]
+            
+        leaderResult = main.TRUE
+        for cli in CLIs:
+            leaderN = cli.electionTestLeader()
+            leaderList.append( leaderN )
             if leaderN == main.FALSE:
-                #error in  response
-                main.log.report("Something is wrong with election_test_leader function, check the error logs")
-                leader_result = main.FALSE
-            elif leaderN == None:
-                main.log.report("ONOS"+str(controller) + " shows no leader for the election-app was elected after the old one died")
-                leader_result = main.FALSE
-            elif leaderN == ONOS1_ip or leaderN == ONOS2_ip or leaderN == ONOS3_ip:
-                main.log.report("ONOS"+str(controller) + " shows "+str(leaderN)+" as leader for the election-app, but it was restarted")
-                leader_result = main.FALSE
-        if len( set( leader_list ) ) != 1:
-            leader_result = main.FALSE
-            main.log.error("Inconsistent view of leader for the election test app")
-            #TODO: print the list
-        if leader_result:
-            main.log.report("Leadership election tests passed(consistent view of leader across listeners and a new leader was re-elected if applicable)")
-        utilities.assert_equals(expect=main.TRUE, actual=leader_result,
-                onpass="Leadership election passed",
-                onfail="Something went wrong with Leadership election")
+                # error in  response
+                main.log.report( "Something is wrong with " +
+                                 "electionTestLeader function, check the" +
+                                 " error logs" )
+                leaderResult = main.FALSE
+            elif leaderN is None:
+                main.log.report( cli.name +
+                                 " shows no leader for the election-app was" +
+                                 " elected after the old one died" )
+                leaderResult = main.FALSE
+            elif leaderN in restarted:
+                main.log.report( cli.name + " shows " + str( leaderN ) +
+                                 " as leader for the election-app, but it " +
+                                 "was restarted" )
+                leaderResult = main.FALSE
+        if len( set( leaderList ) ) != 1:
+            leaderResult = main.FALSE
+            main.log.error(
+                "Inconsistent view of leader for the election test app" )
+            # TODO: print the list
+        if leaderResult:
+            main.log.report( "Leadership election tests passed( consistent " +
+                             "view of leader across listeners and a new " +
+                             "leader was re-elected if applicable )" )
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=leaderResult,
+            onpass="Leadership election passed",
+            onfail="Something went wrong with Leadership election" )
 
-
-        result = mastership_check and intent_check and Flow_Tables and (not Loss_In_Pings) and roles_not_null\
-                and leader_result
-        result = int(result)
+        result = ( mastershipCheck and intentCheck and FlowTables and
+                   ( not LossInPings ) and rolesNotNull and leaderResult )
+        result = int( result )
         if result == main.TRUE:
-            main.log.report("Constant State Tests Passed")
-        utilities.assert_equals(expect=main.TRUE,actual=result,
-                onpass="Constant State Tests Passed",
-                onfail="Constant state tests failed")
+            main.log.report( "Constant State Tests Passed" )
+        utilities.assert_equals( expect=main.TRUE, actual=result,
+                                 onpass="Constant State Tests Passed",
+                                 onfail="Constant state tests failed" )
 
-    def CASE8 (self,main):
-        '''
+    def CASE8( self, main ):
+        """
         Compare topo
-        '''
+        """
         import sys
-        sys.path.append("/home/admin/sts") # Trying to remove some dependancies, #FIXME add this path to params
-        from sts.topology.teston_topology import TestONTopology # assumes that sts is already in you PYTHONPATH
+        # FIXME add this path to params
+        sys.path.append( "/home/admin/sts" )
+        # assumes that sts is already in you PYTHONPATH
+        from sts.topology.teston_topology import TestONTopology
         import json
         import time
+        assert numControllers, "numControllers not defined"
+        assert main, "main not defined"
+        assert utilities.assert_equals, "utilities.assert_equals not defined"
+        assert CLIs, "CLIs not defined"
+        assert nodes, "nodes not defined"
 
-        description ="Compare ONOS Topology view to Mininet topology"
-        main.case(description)
-        main.log.report(description)
-        main.step("Create TestONTopology object")
+        description = "Compare ONOS Topology view to Mininet topology"
+        main.case( description )
+        main.log.report( description )
+        main.step( "Create TestONTopology object" )
         ctrls = []
-        count = 1
-        while True:
-            temp = ()
-            if ('ip' + str(count)) in main.params['CTRL']:
-                temp = temp + (getattr(main,('ONOS' + str(count))),)
-                temp = temp + ("ONOS"+str(count),)
-                temp = temp + (main.params['CTRL']['ip'+str(count)],)
-                temp = temp + (eval(main.params['CTRL']['port'+str(count)]),)
-                ctrls.append(temp)
-                count = count + 1
-            else:
-                break
-        MNTopo = TestONTopology(main.Mininet1, ctrls) # can also add Intent API info for intent operations
+        for node in nodes:
+            temp = ( node, node.name, node.ip_address, 6633 )
+            ctrls.append( temp )
+        MNTopo = TestONTopology( main.Mininet1, ctrls )
 
-        main.step("Comparing ONOS topology to MN")
-        devices_results = main.TRUE
-        ports_results = main.TRUE
-        links_results = main.TRUE
-        topo_result = main.FALSE
+        main.step( "Comparing ONOS topology to MN" )
+        devicesResults = main.TRUE
+        portsResults = main.TRUE
+        linksResults = main.TRUE
+        hostsResults = main.TRUE
+        topoResult = main.FALSE
         elapsed = 0
         count = 0
-        main.step("Collecting topology information from ONOS")
-        start_time = time.time()
-        while topo_result == main.FALSE and elapsed < 60:
-            count = count + 1
+        main.step( "Collecting topology information from ONOS" )
+        startTime = time.time()
+        # Give time for Gossip to work
+        while topoResult == main.FALSE and elapsed < 60:
+            count += 1
             if count > 1:
-                MNTopo = TestONTopology(main.Mininet1, ctrls) # can also add Intent API info for intent operations
-            cli_start = time.time()
+                # TODO: Deprecate STS usage
+                MNTopo = TestONTopology( main.Mininet1, ctrls )
+            cliStart = time.time()
             devices = []
-            devices.append( main.ONOScli1.devices() )
-            devices.append( main.ONOScli2.devices() )
-            devices.append( main.ONOScli3.devices() )
-            devices.append( main.ONOScli4.devices() )
-            devices.append( main.ONOScli5.devices() )
-            devices.append( main.ONOScli6.devices() )
-            devices.append( main.ONOScli7.devices() )
+            threads = []
+            for i in range( numControllers ):
+                t = main.Thread( target=CLIs[i].devices,
+                                 name="devices-" + str( i ),
+                                 args=[ ] )
+                threads.append( t )
+                t.start()
+
+            for t in threads:
+                t.join()
+                devices.append( t.result )
             hosts = []
-            hosts.append( json.loads( main.ONOScli1.hosts() ) )
-            hosts.append( json.loads( main.ONOScli2.hosts() ) )
-            hosts.append( json.loads( main.ONOScli3.hosts() ) )
-            hosts.append( json.loads( main.ONOScli4.hosts() ) )
-            hosts.append( json.loads( main.ONOScli5.hosts() ) )
-            hosts.append( json.loads( main.ONOScli6.hosts() ) )
-            hosts.append( json.loads( main.ONOScli7.hosts() ) )
-            for controller in range(0, len(hosts) ):
-                for host in hosts[controller]:
-                    host
-                    if host['ips'] == []:
-                        main.log.error("DEBUG:Error with host ips on controller"+str(controller+1)+": " + str(host))
+            ipResult = main.TRUE
+            threads = []
+            for i in range( numControllers ):
+                t = main.Thread( target=CLIs[i].hosts,
+                                 name="hosts-" + str( i ),
+                                 args=[ ] )
+                threads.append( t )
+                t.start()
+
+            for t in threads:
+                t.join()
+                try:
+                    hosts.append( json.loads( t.result ) )
+                except ( ValueError, TypeError ):
+                    main.log.exception( "Error parsing hosts results" )
+                    main.log.error( repr( t.result ) )
+            for controller in range( 0, len( hosts ) ):
+                controllerStr = str( controller + 1 )
+                for host in hosts[ controller ]:
+                    if host is None or host.get( 'ips', [] ) == []:
+                        main.log.error(
+                            "DEBUG:Error with host ips on controller" +
+                            controllerStr + ": " + str( host ) )
+                        ipResult = main.FALSE
             ports = []
-            ports.append( main.ONOScli1.ports() )
-            ports.append( main.ONOScli2.ports() )
-            ports.append( main.ONOScli3.ports() )
-            ports.append( main.ONOScli4.ports() )
-            ports.append( main.ONOScli5.ports() )
-            ports.append( main.ONOScli6.ports() )
-            ports.append( main.ONOScli7.ports() )
+            threads = []
+            for i in range( numControllers ):
+                t = main.Thread( target=CLIs[i].ports,
+                                 name="ports-" + str( i ),
+                                 args=[ ] )
+                threads.append( t )
+                t.start()
+
+            for t in threads:
+                t.join()
+                ports.append( t.result )
             links = []
-            links.append( main.ONOScli1.links() )
-            links.append( main.ONOScli2.links() )
-            links.append( main.ONOScli3.links() )
-            links.append( main.ONOScli4.links() )
-            links.append( main.ONOScli5.links() )
-            links.append( main.ONOScli6.links() )
-            links.append( main.ONOScli7.links() )
+            threads = []
+            for i in range( numControllers ):
+                t = main.Thread( target=CLIs[i].links,
+                                 name="links-" + str( i ),
+                                 args=[ ] )
+                threads.append( t )
+                t.start()
+
+            for t in threads:
+                t.join()
+                links.append( t.result )
             clusters = []
-            clusters.append( main.ONOScli1.clusters() )
-            clusters.append( main.ONOScli2.clusters() )
-            clusters.append( main.ONOScli3.clusters() )
-            clusters.append( main.ONOScli4.clusters() )
-            clusters.append( main.ONOScli5.clusters() )
-            clusters.append( main.ONOScli6.clusters() )
-            clusters.append( main.ONOScli7.clusters() )
-            paths = []
-            temp_topo = main.ONOSbench.get_topology( main.ONOScli1.topology() )
-            paths.append( temp_topo.get('paths', False) )
-            temp_topo = main.ONOSbench.get_topology( main.ONOScli2.topology() )
-            paths.append( temp_topo.get('paths', False) )
-            temp_topo = main.ONOSbench.get_topology( main.ONOScli3.topology() )
-            paths.append( temp_topo.get('paths', False) )
-            temp_topo = main.ONOSbench.get_topology( main.ONOScli4.topology() )
-            paths.append( temp_topo.get('paths', False) )
-            temp_topo = main.ONOSbench.get_topology( main.ONOScli5.topology() )
-            paths.append( temp_topo.get('paths', False) )
-            temp_topo = main.ONOSbench.get_topology( main.ONOScli6.topology() )
-            paths.append( temp_topo.get('paths', False) )
-            temp_topo = main.ONOSbench.get_topology( main.ONOScli7.topology() )
-            paths.append( temp_topo.get('paths', False) )
+            threads = []
+            for i in range( numControllers ):
+                t = main.Thread( target=CLIs[i].clusters,
+                                 name="clusters-" + str( i ),
+                                 args=[ ] )
+                threads.append( t )
+                t.start()
 
+            for t in threads:
+                t.join()
+                clusters.append( t.result )
 
-            elapsed = time.time() - start_time
-            cli_time = time.time() - cli_start
-            print "CLI time: " + str(cli_time)
+            elapsed = time.time() - startTime
+            cliTime = time.time() - cliStart
+            print "CLI time: " + str( cliTime )
 
-            for controller in range(num_controllers):
-                if devices[controller] or not "Error" in devices[controller]:
-                    current_devices_result =  main.Mininet1.compare_switches(MNTopo, json.loads(devices[controller]))
+            for controller in range( numControllers ):
+                controllerStr = str( controller + 1 )
+                if devices[ controller ] or "Error" not in devices[
+                        controller ]:
+                    currentDevicesResult = main.Mininet1.compareSwitches(
+                        MNTopo,
+                        json.loads( devices[ controller ] ) )
                 else:
-                    current_devices_result = main.FALSE
-                utilities.assert_equals(expect=main.TRUE, actual=current_devices_result,
-                        onpass="ONOS"+str(int(controller+1))+" Switches view is correct",
-                        onfail="ONOS"+str(int(controller+1))+" Switches view is incorrect")
+                    currentDevicesResult = main.FALSE
+                utilities.assert_equals( expect=main.TRUE,
+                                         actual=currentDevicesResult,
+                                         onpass="ONOS" + controllerStr +
+                                         " Switches view is correct",
+                                         onfail="ONOS" + controllerStr +
+                                         " Switches view is incorrect" )
 
-                if ports[controller] or not "Error" in ports[controller]:
-                    current_ports_result =  main.Mininet1.compare_ports(MNTopo, json.loads(ports[controller]))
+                if ports[ controller ] or "Error" not in ports[ controller ]:
+                    currentPortsResult = main.Mininet1.comparePorts(
+                        MNTopo,
+                        json.loads( ports[ controller ] ) )
                 else:
-                    current_ports_result = main.FALSE
-                utilities.assert_equals(expect=main.TRUE, actual=current_ports_result,
-                        onpass="ONOS"+str(int(controller+1))+" ports view is correct",
-                        onfail="ONOS"+str(int(controller+1))+" ports view is incorrect")
+                    currentPortsResult = main.FALSE
+                utilities.assert_equals( expect=main.TRUE,
+                                         actual=currentPortsResult,
+                                         onpass="ONOS" + controllerStr +
+                                         " ports view is correct",
+                                         onfail="ONOS" + controllerStr +
+                                         " ports view is incorrect" )
 
-                if links[controller] or not "Error" in links[controller]:
-                    current_links_result =  main.Mininet1.compare_links(MNTopo, json.loads(links[controller]))
+                if links[ controller ] or "Error" not in links[ controller ]:
+                    currentLinksResult = main.Mininet1.compareLinks(
+                        MNTopo,
+                        json.loads( links[ controller ] ) )
                 else:
-                    current_links_result = main.FALSE
-                utilities.assert_equals(expect=main.TRUE, actual=current_links_result,
-                        onpass="ONOS"+str(int(controller+1))+" links view is correct",
-                        onfail="ONOS"+str(int(controller+1))+" links view is incorrect")
-            devices_results = devices_results and current_devices_result
-            ports_results = ports_results and current_ports_result
-            links_results = links_results and current_links_result
+                    currentLinksResult = main.FALSE
+                utilities.assert_equals( expect=main.TRUE,
+                                         actual=currentLinksResult,
+                                         onpass="ONOS" + controllerStr +
+                                         " links view is correct",
+                                         onfail="ONOS" + controllerStr +
+                                         " links view is incorrect" )
 
-            #Compare json objects for hosts, dataplane clusters and paths
+                if hosts[ controller ] or "Error" not in hosts[ controller ]:
+                    currentHostsResult = main.Mininet1.compareHosts(
+                        MNTopo, hosts[ controller ] )
+                else:
+                    currentHostsResult = main.FALSE
+                utilities.assert_equals( expect=main.TRUE,
+                                         actual=currentHostsResult,
+                                         onpass="ONOS" + controllerStr +
+                                         " hosts exist in Mininet",
+                                         onfail="ONOS" + controllerStr +
+                                         " hosts don't match Mininet" )
 
-            #hosts
-            consistent_hosts_result = main.TRUE
+                devicesResults = devicesResults and currentDevicesResult
+                portsResults = portsResults and currentPortsResult
+                linksResults = linksResults and currentLinksResult
+                hostsResults = hostsResults and currentHostsResult
+
+            # Compare json objects for hosts and dataplane clusters
+
+            # hosts
+            consistentHostsResult = main.TRUE
             for controller in range( len( hosts ) ):
-                if not "Error" in hosts[controller]:
-                    if hosts[controller] == hosts[0]:
+                controllerStr = str( controller + 1 )
+                if "Error" not in hosts[ controller ]:
+                    if hosts[ controller ] == hosts[ 0 ]:
                         continue
-                    else:#hosts not consistent
-                        main.log.report("hosts from ONOS" + str(controller + 1) + " is inconsistent with ONOS1")
-                        main.log.warn( repr( hosts[controller] ) )
-                        consistent_hosts_result = main.FALSE
+                    else:  # hosts not consistent
+                        main.log.report( "hosts from ONOS" + controllerStr +
+                                         " is inconsistent with ONOS1" )
+                        main.log.warn( repr( hosts[ controller ] ) )
+                        consistentHostsResult = main.FALSE
 
                 else:
-                    main.log.report("Error in getting ONOS hosts from ONOS" + str(controller + 1) )
-                    consistent_hosts_result = main.FALSE
-            if consistent_hosts_result == main.FALSE:
-                for controller in range( len( hosts ) ):
-                    main.log.warn("ONOS" + str(controller + 1) + " hosts response: " + repr(hosts[controller]) )
-            utilities.assert_equals(expect = main.TRUE,actual=consistent_hosts_result,
-                    onpass="Hosts view is consistent across all ONOS nodes",
-                    onfail="ONOS nodes have different views of hosts")
+                    main.log.report( "Error in getting ONOS hosts from ONOS" +
+                                     controllerStr )
+                    consistentHostsResult = main.FALSE
+                    main.log.warn( "ONOS" + controllerStr +
+                                   " hosts response: " +
+                                   repr( hosts[ controller ] ) )
+            utilities.assert_equals(
+                expect=main.TRUE,
+                actual=consistentHostsResult,
+                onpass="Hosts view is consistent across all ONOS nodes",
+                onfail="ONOS nodes have different views of hosts" )
 
-            #Strongly connected clusters of devices
-            consistent_clusters_result = main.TRUE
+            # Strongly connected clusters of devices
+            consistentClustersResult = main.TRUE
             for controller in range( len( clusters ) ):
-                if not "Error" in clusters[controller]:
-                    if clusters[controller] == clusters[0]:
+                controllerStr = str( controller + 1 )
+                if "Error" not in clusters[ controller ]:
+                    if clusters[ controller ] == clusters[ 0 ]:
                         continue
-                    else:#clusters not consistent
-                        main.log.report("clusters from ONOS" + str(controller + 1) + " is inconsistent with ONOS1")
-                        consistent_clusters_result = main.FALSE
+                    else:  # clusters not consistent
+                        main.log.report( "clusters from ONOS" +
+                                         controllerStr +
+                                         " is inconsistent with ONOS1" )
+                        consistentClustersResult = main.FALSE
 
                 else:
-                    main.log.report("Error in getting dataplane clusters from ONOS" + str(controller + 1) )
-                    consistent_clusters_result = main.FALSE
-                    main.log.warn("ONOS" + str(controller + 1) + " clusters response: " + repr(clusters[controller]) )
-            utilities.assert_equals(expect = main.TRUE,actual=consistent_clusters_result,
-                    onpass="Clusters view is consistent across all ONOS nodes",
-                    onfail="ONOS nodes have different views of clusters")
-            num_clusters =  len(json.loads(clusters[0])) #there should always only be one cluster
-            utilities.assert_equals(expect = 1, actual = num_clusters,
-                    onpass="ONOS shows 1 SCC",
-                    onfail="ONOS shows "+str(num_clusters) +" SCCs")
+                    main.log.report( "Error in getting dataplane clusters " +
+                                     "from ONOS" + controllerStr )
+                    consistentClustersResult = main.FALSE
+                    main.log.warn( "ONOS" + controllerStr +
+                                   " clusters response: " +
+                                   repr( clusters[ controller ] ) )
+            utilities.assert_equals(
+                expect=main.TRUE,
+                actual=consistentClustersResult,
+                onpass="Clusters view is consistent across all ONOS nodes",
+                onfail="ONOS nodes have different views of clusters" )
+            # there should always only be one cluster
+            try:
+                numClusters = len( json.loads( clusters[ 0 ] ) )
+            except ( ValueError, TypeError ):
+                main.log.exception( "Error parsing clusters[0]: " +
+                                    repr( clusters[0] ) )
+            clusterResults = main.FALSE
+            if numClusters == 1:
+                clusterResults = main.TRUE
+            utilities.assert_equals(
+                expect=1,
+                actual=numClusters,
+                onpass="ONOS shows 1 SCC",
+                onfail="ONOS shows " + str( numClusters ) + " SCCs" )
 
+            topoResult = ( devicesResults and portsResults and linksResults
+                           and hostsResults and consistentHostsResult
+                           and consistentClustersResult and clusterResults
+                           and ipResult )
 
-            #paths
-            consistent_paths_result = main.TRUE
-            for controller in range( len( paths ) ):
-                if not "Error" in paths[controller]:
-                    if paths[controller] == paths[0]:
-                        continue
-                    else:#paths not consistent
-                        main.log.report("paths from ONOS" + str(controller + 1) + " is inconsistent with ONOS1")
-                        consistent_paths_result = main.FALSE
+        topoResult = topoResult and int( count <= 2 )
+        note = "note it takes about " + str( int( cliTime ) ) + \
+            " seconds for the test to make all the cli calls to fetch " +\
+            "the topology from each ONOS instance"
+        main.log.info(
+            "Very crass estimate for topology discovery/convergence( " +
+            str( note ) + " ): " + str( elapsed ) + " seconds, " +
+            str( count ) + " tries" )
+        utilities.assert_equals( expect=main.TRUE, actual=topoResult,
+                                 onpass="Topology Check Test successful",
+                                 onfail="Topology Check Test NOT successful" )
+        if topoResult == main.TRUE:
+            main.log.report( "ONOS topology view matches Mininet topology" )
 
-                else:
-                    main.log.report("Error in getting paths from ONOS" + str(controller + 1) )
-                    consistent_paths_result = main.FALSE
-                    main.log.warn("ONOS" + str(controller + 1) + " paths response: " + repr(paths[controller]) )
-            utilities.assert_equals(expect = main.TRUE,actual=consistent_paths_result,
-                    onpass="Paths count is consistent across all ONOS nodes",
-                    onfail="ONOS nodes have different counts of paths")
-
-
-            topo_result = devices_results and ports_results and links_results\
-                    and consistent_hosts_result and consistent_clusters_result and consistent_paths_result
-
-        topo_result = topo_result and int(count <= 2)
-        note = "note it takes about "+str( int(cli_time) )+" seconds for the test to make all the cli calls to fetch the topology from each ONOS instance"
-        main.log.report("Very crass estimate for topology discovery/convergence("+ str(note) + "): " +\
-                str(elapsed) + " seconds, " + str(count) +" tries" )
-        utilities.assert_equals(expect=main.TRUE, actual=topo_result,
-                onpass="Topology Check Test successful",
-                onfail="Topology Check Test NOT successful")
-        if topo_result == main.TRUE:
-            main.log.report("ONOS topology view matches Mininet topology")
-
-
-    def CASE9 (self,main):
-        '''
+    def CASE9( self, main ):
+        """
         Link s3-s28 down
-        '''
-        #NOTE: You should probably run a topology check after this
-
-        link_sleep = float(main.params['timers']['LinkDiscovery'])
-
-        description = "Turn off a link to ensure that Link Discovery is working properly"
-        main.log.report(description)
-        main.case(description)
-
-
-        main.step("Kill Link between s3 and s28")
-        Link_Down = main.Mininet1.link(END1="s3",END2="s28",OPTION="down")
-        main.log.info("Waiting " + str(link_sleep) + " seconds for link down to be discovered")
-        time.sleep(link_sleep)
-        utilities.assert_equals(expect=main.TRUE,actual=Link_Down,
-                onpass="Link down succesful",
-                onfail="Failed to bring link down")
-        #TODO do some sort of check here
-
-    def CASE10 (self,main):
-        '''
-        Link s3-s28 up
-        '''
-        #NOTE: You should probably run a topology check after this
-
-        link_sleep = float(main.params['timers']['LinkDiscovery'])
-
-        description = "Restore a link to ensure that Link Discovery is working properly"
-        main.log.report(description)
-        main.case(description)
-
-        main.step("Bring link between s3 and s28 back up")
-        Link_Up = main.Mininet1.link(END1="s3",END2="s28",OPTION="up")
-        main.log.info("Waiting " + str(link_sleep) + " seconds for link up to be discovered")
-        time.sleep(link_sleep)
-        utilities.assert_equals(expect=main.TRUE,actual=Link_Up,
-                onpass="Link up succesful",
-                onfail="Failed to bring link up")
-        #TODO do some sort of check here
-
-
-    def CASE11 (self, main) :
-        '''
-        Switch Down
-        '''
-        #NOTE: You should probably run a topology check after this
+        """
         import time
+        assert numControllers, "numControllers not defined"
+        assert main, "main not defined"
+        assert utilities.assert_equals, "utilities.assert_equals not defined"
+        assert CLIs, "CLIs not defined"
+        assert nodes, "nodes not defined"
+        # NOTE: You should probably run a topology check after this
 
-        switch_sleep = float(main.params['timers']['SwitchDiscovery'])
+        linkSleep = float( main.params[ 'timers' ][ 'LinkDiscovery' ] )
+
+        description = "Turn off a link to ensure that Link Discovery " +\
+                      "is working properly"
+        main.log.report( description )
+        main.case( description )
+
+        main.step( "Kill Link between s3 and s28" )
+        LinkDown = main.Mininet1.link( END1="s3", END2="s28", OPTION="down" )
+        main.log.info( "Waiting " + str( linkSleep ) +
+                       " seconds for link down to be discovered" )
+        time.sleep( linkSleep )
+        utilities.assert_equals( expect=main.TRUE, actual=LinkDown,
+                                 onpass="Link down successful",
+                                 onfail="Failed to bring link down" )
+        # TODO do some sort of check here
+
+    def CASE10( self, main ):
+        """
+        Link s3-s28 up
+        """
+        import time
+        assert numControllers, "numControllers not defined"
+        assert main, "main not defined"
+        assert utilities.assert_equals, "utilities.assert_equals not defined"
+        assert CLIs, "CLIs not defined"
+        assert nodes, "nodes not defined"
+        # NOTE: You should probably run a topology check after this
+
+        linkSleep = float( main.params[ 'timers' ][ 'LinkDiscovery' ] )
+
+        description = "Restore a link to ensure that Link Discovery is " + \
+                      "working properly"
+        main.log.report( description )
+        main.case( description )
+
+        main.step( "Bring link between s3 and s28 back up" )
+        LinkUp = main.Mininet1.link( END1="s3", END2="s28", OPTION="up" )
+        main.log.info( "Waiting " + str( linkSleep ) +
+                       " seconds for link up to be discovered" )
+        time.sleep( linkSleep )
+        utilities.assert_equals( expect=main.TRUE, actual=LinkUp,
+                                 onpass="Link up successful",
+                                 onfail="Failed to bring link up" )
+        # TODO do some sort of check here
+
+    def CASE11( self, main ):
+        """
+        Switch Down
+        """
+        # NOTE: You should probably run a topology check after this
+        import time
+        assert numControllers, "numControllers not defined"
+        assert main, "main not defined"
+        assert utilities.assert_equals, "utilities.assert_equals not defined"
+        assert CLIs, "CLIs not defined"
+        assert nodes, "nodes not defined"
+
+        switchSleep = float( main.params[ 'timers' ][ 'SwitchDiscovery' ] )
 
         description = "Killing a switch to ensure it is discovered correctly"
-        main.log.report(description)
-        main.case(description)
+        main.log.report( description )
+        main.case( description )
+        switch = main.params[ 'kill' ][ 'switch' ]
+        switchDPID = main.params[ 'kill' ][ 'dpid' ]
 
-        #TODO: Make this switch parameterizable
-        main.step("Kill s28 ")
-        main.log.report("Deleting s28")
-        main.Mininet1.del_switch("s28")
-        main.log.info("Waiting " + str(switch_sleep) + " seconds for switch down to be discovered")
-        time.sleep(switch_sleep)
-        device = main.ONOScli1.get_device(dpid="0028")
-        #Peek at the deleted switch
-        main.log.warn( str(device) )
+        # TODO: Make this switch parameterizable
+        main.step( "Kill " + switch )
+        main.log.report( "Deleting " + switch )
+        main.Mininet1.delSwitch( switch )
+        main.log.info( "Waiting " + str( switchSleep ) +
+                       " seconds for switch down to be discovered" )
+        time.sleep( switchSleep )
+        device = main.ONOScli1.getDevice( dpid=switchDPID )
+        # Peek at the deleted switch
+        main.log.warn( str( device ) )
         result = main.FALSE
-        if device and device['available'] == False:
+        if device and device[ 'available' ] is False:
             result = main.TRUE
-        utilities.assert_equals(expect=main.TRUE,actual=result,
-                onpass="Kill switch succesful",
-                onfail="Failed to kill switch?")
+        utilities.assert_equals( expect=main.TRUE, actual=result,
+                                 onpass="Kill switch successful",
+                                 onfail="Failed to kill switch?" )
 
-    def CASE12 (self, main) :
-        '''
+    def CASE12( self, main ):
+        """
         Switch Up
-        '''
-        #NOTE: You should probably run a topology check after this
+        """
+        # NOTE: You should probably run a topology check after this
         import time
+        assert numControllers, "numControllers not defined"
+        assert main, "main not defined"
+        assert utilities.assert_equals, "utilities.assert_equals not defined"
+        assert CLIs, "CLIs not defined"
+        assert nodes, "nodes not defined"
+        assert ONOS1Port, "ONOS1Port not defined"
+        assert ONOS2Port, "ONOS2Port not defined"
+        assert ONOS3Port, "ONOS3Port not defined"
+        assert ONOS4Port, "ONOS4Port not defined"
+        assert ONOS5Port, "ONOS5Port not defined"
+        assert ONOS6Port, "ONOS6Port not defined"
+        assert ONOS7Port, "ONOS7Port not defined"
 
-        switch_sleep = float(main.params['timers']['SwitchDiscovery'])
+        switchSleep = float( main.params[ 'timers' ][ 'SwitchDiscovery' ] )
+        switch = main.params[ 'kill' ][ 'switch' ]
+        switchDPID = main.params[ 'kill' ][ 'dpid' ]
+        links = main.params[ 'kill' ][ 'links' ].split()
         description = "Adding a switch to ensure it is discovered correctly"
-        main.log.report(description)
-        main.case(description)
+        main.log.report( description )
+        main.case( description )
 
-        main.step("Add back s28")
-        main.log.report("Adding back s28")
-        main.Mininet1.add_switch("s28", dpid = '0000000000002800')
-        #TODO: New dpid or same? Ask Thomas?
-        main.Mininet1.add_link('s28', 's3')
-        main.Mininet1.add_link('s28', 's6')
-        main.Mininet1.add_link('s28', 'h28')
-        main.Mininet1.assign_sw_controller(sw="28",count=num_controllers,
-                ip1=ONOS1_ip,port1=ONOS1_port,
-                ip2=ONOS2_ip,port2=ONOS2_port,
-                ip3=ONOS3_ip,port3=ONOS3_port,
-                ip4=ONOS4_ip,port4=ONOS4_port,
-                ip5=ONOS5_ip,port5=ONOS5_port,
-                ip6=ONOS6_ip,port6=ONOS6_port,
-                ip7=ONOS7_ip,port7=ONOS7_port)
-        main.log.info("Waiting " + str(switch_sleep) + " seconds for switch up to be discovered")
-        time.sleep(switch_sleep)
-        device = main.ONOScli1.get_device(dpid="0028")
-        #Peek at the deleted switch
-        main.log.warn( str(device) )
+        main.step( "Add back " + switch )
+        main.log.report( "Adding back " + switch )
+        main.Mininet1.addSwitch( switch, dpid=switchDPID )
+        for peer in links:
+            main.Mininet1.addLink( switch, peer )
+        main.Mininet1.assignSwController( sw=switch.split( 's' )[ 1 ],
+                                          count=numControllers,
+                                          ip1=nodes[ 0 ].ip_address,
+                                          port1=ONOS1Port,
+                                          ip2=nodes[ 1 ].ip_address,
+                                          port2=ONOS2Port,
+                                          ip3=nodes[ 2 ].ip_address,
+                                          port3=ONOS3Port,
+                                          ip4=nodes[ 3 ].ip_address,
+                                          port4=ONOS4Port,
+                                          ip5=nodes[ 4 ].ip_address,
+                                          port5=ONOS5Port,
+                                          ip6=nodes[ 5 ].ip_address,
+                                          port6=ONOS6Port,
+                                          ip7=nodes[ 6 ].ip_address,
+                                          port7=ONOS7Port )
+        main.log.info( "Waiting " + str( switchSleep ) +
+                       " seconds for switch up to be discovered" )
+        time.sleep( switchSleep )
+        device = main.ONOScli1.getDevice( dpid=switchDPID )
+        # Peek at the deleted switch
+        main.log.warn( str( device ) )
         result = main.FALSE
-        if device and device['available'] == True:
+        if device and device[ 'available' ]:
             result = main.TRUE
-        utilities.assert_equals(expect=main.TRUE,actual=result,
-                onpass="add switch succesful",
-                onfail="Failed to add switch?")
+        utilities.assert_equals( expect=main.TRUE, actual=result,
+                                 onpass="add switch successful",
+                                 onfail="Failed to add switch?" )
 
-    def CASE13 (self, main) :
-        '''
+    def CASE13( self, main ):
+        """
         Clean up
-        '''
+        """
         import os
         import time
-        #printing colors to terminal
-        colors = {}
-        colors['cyan']   = '\033[96m'
-        colors['purple'] = '\033[95m'
-        colors['blue']   = '\033[94m'
-        colors['green']  = '\033[92m'
-        colors['yellow'] = '\033[93m'
-        colors['red']    = '\033[91m'
-        colors['end']    = '\033[0m'
+        assert numControllers, "numControllers not defined"
+        assert main, "main not defined"
+        assert utilities.assert_equals, "utilities.assert_equals not defined"
+        assert CLIs, "CLIs not defined"
+        assert nodes, "nodes not defined"
+
+        # printing colors to terminal
+        colors = { 'cyan': '\033[96m', 'purple': '\033[95m',
+                   'blue': '\033[94m', 'green': '\033[92m',
+                   'yellow': '\033[93m', 'red': '\033[91m', 'end': '\033[0m' }
         description = "Test Cleanup"
-        main.log.report(description)
-        main.case(description)
-        main.step("Killing tcpdumps")
-        main.Mininet2.stop_tcpdump()
+        main.log.report( description )
+        main.case( description )
+        main.step( "Killing tcpdumps" )
+        main.Mininet2.stopTcpdump()
 
-        main.step("Checking ONOS Logs for errors")
-        print colors['purple'] + "Checking logs for errors on ONOS1:" + colors['end']
-        print main.ONOSbench.check_logs(ONOS1_ip)
-        print colors['purple'] + "Checking logs for errors on ONOS2:" + colors['end']
-        print main.ONOSbench.check_logs(ONOS2_ip)
-        print colors['purple'] + "Checking logs for errors on ONOS3:" + colors['end']
-        print main.ONOSbench.check_logs(ONOS3_ip)
-        print colors['purple'] + "Checking logs for errors on ONOS4:" + colors['end']
-        print main.ONOSbench.check_logs(ONOS4_ip)
-        print colors['purple'] + "Checking logs for errors on ONOS5:" + colors['end']
-        print main.ONOSbench.check_logs(ONOS5_ip)
-        print colors['purple'] + "Checking logs for errors on ONOS6:" + colors['end']
-        print main.ONOSbench.check_logs(ONOS6_ip)
-        print colors['purple'] + "Checking logs for errors on ONOS7:" + colors['end']
-        print main.ONOSbench.check_logs(ONOS7_ip)
-
-        main.step("Copying MN pcap and ONOS log files to test station")
+        main.step( "Copying MN pcap and ONOS log files to test station" )
         testname = main.TEST
-        teststation_user = main.params['TESTONUSER']
-        teststation_IP = main.params['TESTONIP']
-        #NOTE: MN Pcap file is being saved to ~/packet_captures
+        teststationUser = main.params[ 'TESTONUSER' ]
+        teststationIP = main.params[ 'TESTONIP' ]
+        # NOTE: MN Pcap file is being saved to ~/packet_captures
         #       scp this file as MN and TestON aren't necessarily the same vm
-        #FIXME: scp
-        #####mn files
-        #TODO: Load these from params
-        #NOTE: must end in /
-        log_folder = "/opt/onos/log/"
-        log_files = ["karaf.log", "karaf.log.1"]
-        #NOTE: must end in /
-        dst_dir = "~/packet_captures/"
-        for f in log_files:
-            main.ONOSbench.handle.sendline( "scp sdn@"+ONOS1_ip+":"+log_folder+f+" "+
-                    teststation_user +"@"+teststation_IP+":"+\
-                    dst_dir + str(testname) + "-ONOS1-"+f )
-            main.ONOSbench.handle.sendline( "scp sdn@"+ONOS2_ip+":"+log_folder+f+" "+
-                    teststation_user +"@"+teststation_IP+":"+\
-                    dst_dir + str(testname) + "-ONOS2-"+f )
-            main.ONOSbench.handle.sendline( "scp sdn@"+ONOS3_ip+":"+log_folder+f+" "+
-                    teststation_user +"@"+teststation_IP+":"+\
-                    dst_dir + str(testname) + "-ONOS3-"+f )
-            main.ONOSbench.handle.sendline( "scp sdn@"+ONOS4_ip+":"+log_folder+f+" "+
-                    teststation_user +"@"+teststation_IP+":"+\
-                    dst_dir + str(testname) + "-ONOS4-"+f )
-            main.ONOSbench.handle.sendline( "scp sdn@"+ONOS5_ip+":"+log_folder+f+" "+
-                    teststation_user +"@"+teststation_IP+":"+\
-                    dst_dir + str(testname) + "-ONOS5-"+f )
-            main.ONOSbench.handle.sendline( "scp sdn@"+ONOS6_ip+":"+log_folder+f+" "+
-                    teststation_user +"@"+teststation_IP+":"+\
-                    dst_dir + str(testname) + "-ONOS6-"+f )
-            main.ONOSbench.handle.sendline( "scp sdn@"+ONOS7_ip+":"+log_folder+f+" "+
-                    teststation_user +"@"+teststation_IP+":"+\
-                    dst_dir + str(testname) + "-ONOS7-"+f )
+        # FIXME: scp
+        # mn files
+        # TODO: Load these from params
+        # NOTE: must end in /
+        logFolder = "/opt/onos/log/"
+        logFiles = [ "karaf.log", "karaf.log.1" ]
+        # NOTE: must end in /
+        dstDir = "~/packet_captures/"
+        for f in logFiles:
+            for node in nodes:
+                main.ONOSbench.handle.sendline( "scp sdn@" + node.ip_address +
+                                                ":" + logFolder + f + " " +
+                                                teststationUser + "@" +
+                                                teststationIP + ":" +
+                                                dstDir + str( testname ) +
+                                                "-" + node.name + "-" + f )
+                main.ONOSbench.handle.expect( "\$" )
 
-        #std*.log's
-        #NOTE: must end in /
-        log_folder = "/opt/onos/var/"
-        log_files = ["stderr.log", "stdout.log"]
-        #NOTE: must end in /
-        dst_dir = "~/packet_captures/"
-        for f in log_files:
-            main.ONOSbench.handle.sendline( "scp sdn@"+ONOS1_ip+":"+log_folder+f+" "+
-                    teststation_user +"@"+teststation_IP+":"+\
-                    dst_dir + str(testname) + "-ONOS1-"+f )
-            main.ONOSbench.handle.sendline( "scp sdn@"+ONOS2_ip+":"+log_folder+f+" "+
-                    teststation_user +"@"+teststation_IP+":"+\
-                    dst_dir + str(testname) + "-ONOS2-"+f )
-            main.ONOSbench.handle.sendline( "scp sdn@"+ONOS3_ip+":"+log_folder+f+" "+
-                    teststation_user +"@"+teststation_IP+":"+\
-                    dst_dir + str(testname) + "-ONOS3-"+f )
-            main.ONOSbench.handle.sendline( "scp sdn@"+ONOS4_ip+":"+log_folder+f+" "+
-                    teststation_user +"@"+teststation_IP+":"+\
-                    dst_dir + str(testname) + "-ONOS4-"+f )
-            main.ONOSbench.handle.sendline( "scp sdn@"+ONOS5_ip+":"+log_folder+f+" "+
-                    teststation_user +"@"+teststation_IP+":"+\
-                    dst_dir + str(testname) + "-ONOS5-"+f )
-            main.ONOSbench.handle.sendline( "scp sdn@"+ONOS6_ip+":"+log_folder+f+" "+
-                    teststation_user +"@"+teststation_IP+":"+\
-                    dst_dir + str(testname) + "-ONOS6-"+f )
-            main.ONOSbench.handle.sendline( "scp sdn@"+ONOS7_ip+":"+log_folder+f+" "+
-                    teststation_user +"@"+teststation_IP+":"+\
-                    dst_dir + str(testname) + "-ONOS7-"+f )
+        # std*.log's
+        # NOTE: must end in /
+        logFolder = "/opt/onos/var/"
+        logFiles = [ "stderr.log", "stdout.log" ]
+        # NOTE: must end in /
+        dstDir = "~/packet_captures/"
+        for f in logFiles:
+            for node in nodes:
+                main.ONOSbench.handle.sendline( "scp sdn@" + node.ip_address +
+                                                ":" + logFolder + f + " " +
+                                                teststationUser + "@" +
+                                                teststationIP + ":" +
+                                                dstDir + str( testname ) +
+                                                "-" + node.name + "-" + f )
+                main.ONOSbench.handle.expect( "\$" )
+        # sleep so scp can finish
+        time.sleep( 10 )
 
+        main.step( "Stopping Mininet" )
+        main.Mininet1.stopNet()
 
-        #sleep so scp can finish
-        time.sleep(10)
-        main.step("Packing and rotating pcap archives")
-        os.system("~/TestON/dependencies/rotate.sh "+ str(testname))
+        main.step( "Checking ONOS Logs for errors" )
+        for node in nodes:
+            print colors[ 'purple' ] + "Checking logs for errors on " + \
+                node.name + ":" + colors[ 'end' ]
+            print main.ONOSbench.checkLogs( node.ip_address )
 
+        main.step( "Packing and rotating pcap archives" )
+        os.system( "~/TestON/dependencies/rotate.sh " + str( testname ) )
 
-        #TODO: actually check something here
-        utilities.assert_equals(expect=main.TRUE, actual=main.TRUE,
-                onpass="Test cleanup successful",
-                onfail="Test cleanup NOT successful")
+        # TODO: actually check something here
+        utilities.assert_equals( expect=main.TRUE, actual=main.TRUE,
+                                 onpass="Test cleanup successful",
+                                 onfail="Test cleanup NOT successful" )
 
-    def CASE14 ( self, main ) :
-        '''
+    def CASE14( self, main ):
+        """
         start election app on all onos nodes
-        '''
-        leader_result = main.TRUE
-        #install app on onos 1
-        main.log.info("Install leadership election app")
-        main.ONOScli1.feature_install("onos-app-election")
-        #wait for election
-        #check for leader
-        leader = main.ONOScli1.election_test_leader()
-        #verify leader is ONOS1
-        if leader == ONOS1_ip:
-            #all is well
-            pass
-        elif leader == None:
-            #No leader elected
-            main.log.report("No leader was elected")
-            leader_result = main.FALSE
-        elif leader == main.FALSE:
-            #error in  response
-            #TODO: add check for "Command not found:" in the driver, this means the app isn't loaded
-            main.log.report("Something is wrong with election_test_leader function, check the error logs")
-            leader_result = main.FALSE
-        else:
-            #error in  response
-            main.log.report("Unexpected response from election_test_leader function:'"+str(leader)+"'")
-            leader_result = main.FALSE
+        """
+        import time
+        assert numControllers, "numControllers not defined"
+        assert main, "main not defined"
+        assert utilities.assert_equals, "utilities.assert_equals not defined"
+        assert CLIs, "CLIs not defined"
+        assert nodes, "nodes not defined"
 
-
-
-
-        #install on other nodes and check for leader.
-        #Should be onos1 and each app should show the same leader
-        for controller in range(2,num_controllers+1):
-            node = getattr( main, ( 'ONOScli' + str( controller ) ) )#loop through ONOScli handlers
-            node.feature_install("onos-app-election")
-            leaderN = node.election_test_leader()
-            #verify leader is ONOS1
-            if leaderN == ONOS1_ip:
-                #all is well
+        leaderResult = main.TRUE
+        # install app on onos 1
+        main.log.info( "Install leadership election app" )
+        main.ONOScli1.featureInstall( "onos-app-election" )
+        leader = nodes[0].ip_address
+        # wait for election
+        # check for leader
+        for i in range(2):  # try this twice
+            leader1 = main.ONOScli1.electionTestLeader()
+            # verify leader is ONOS1
+            if leader1 == leader:
+                # all is well
+                # pass
+                if i > 0:
+                    main.log.warn( "It took ONOS sometime for leader to be" +
+                                   "elected" )
+                    main.log.debug( "I don't think this should be happening" )
+                break
+            elif leader1 is None:
+                # No leader elected
+                main.log.report( "No leader was elected" )
+                leaderResult = main.FALSE
+            elif leader1 == main.FALSE:
+                # error in  response
+                # TODO: add check for "Command not found:" in the driver, this
+                # means the app isn't loaded
+                main.log.report( "Something is wrong with electionTestLeader" +
+                                 " function, check the error logs" )
+                leaderResult = main.FALSE
+            else:
+                # error in  response
+                main.log.report(
+                    "Unexpected response from electionTestLeader function:'" +
+                    str( leader1 ) + "'" )
+                leaderResult = main.FALSE
+            time.sleep(2)
+        # install on other nodes and check for leader.
+        # Leader should be ONOS1 and each app should show the same leader
+        for cli in CLIs[ 1: ]:
+            cli.featureInstall( "onos-app-election" )
+            leaderN = cli.electionTestLeader()
+            # verify leader is ONOS1
+            if leaderN == leader:
+                # all is well
                 pass
             elif leaderN == main.FALSE:
-                #error in  response
-                #TODO: add check for "Command not found:" in the driver, this means the app isn't loaded
-                main.log.report("Something is wrong with election_test_leader function, check the error logs")
-                leader_result = main.FALSE
+                # error in  response
+                # TODO: add check for "Command not found:" in the driver, this
+                # means the app isn't loaded
+                main.log.report( "Something is wrong with " +
+                                 "electionTestLeader function, check the" +
+                                 " error logs" )
+                leaderResult = main.FALSE
             elif leader != leaderN:
-                leader_result = main.FALSE
-                main.log.report("ONOS" + str(controller) + " sees "+str(leaderN) +
-                        " as the leader of the election app. Leader should be "+str(leader) )
-        if leader_result:
-            main.log.report("Leadership election tests passed(consistent view of leader across listeners and a leader was elected)")
-        utilities.assert_equals(expect=main.TRUE, actual=leader_result,
-                onpass="Leadership election passed",
-                onfail="Something went wrong with Leadership election")
+                leaderResult = main.FALSE
+                main.log.report( cli.name + " sees " + str( leaderN ) +
+                                 " as the leader of the election app. Leader" +
+                                 " should be " +
+                                 str( leader ) )
+        if leaderResult:
+            main.log.report( "Leadership election tests passed( consistent " +
+                             "view of leader across listeners and a leader " +
+                             "was elected )" )
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=leaderResult,
+            onpass="Leadership election passed",
+            onfail="Something went wrong with Leadership election" )
 
-    def CASE15 ( self, main ) :
-        '''
+    def CASE15( self, main ):
+        """
         Check that Leadership Election is still functional
-        '''
-        leader_result = main.TRUE
+        """
+        assert numControllers, "numControllers not defined"
+        assert main, "main not defined"
+        assert utilities.assert_equals, "utilities.assert_equals not defined"
+        assert CLIs, "CLIs not defined"
+        assert nodes, "nodes not defined"
+
+        leaderResult = main.TRUE
         description = "Check that Leadership Election is still functional"
-        main.log.report(description)
-        main.case(description)
-        main.step("Find current leader and withdraw")
-        leader = main.ONOScli1.election_test_leader()
-        #TODO: do some sanity checking on leader before using it
-        withdraw_result = main.FALSE
-        if leader == ONOS1_ip:
-            old_leader = getattr( main, "ONOScli1" )
-        elif leader == ONOS2_ip:
-            old_leader = getattr( main, "ONOScli2" )
-        elif leader == ONOS3_ip:
-            old_leader = getattr( main, "ONOScli3" )
-        elif leader == ONOS4_ip:
-            old_leader = getattr( main, "ONOScli4" )
-        elif leader == ONOS5_ip:
-            old_leader = getattr( main, "ONOScli5" )
-        elif leader == ONOS6_ip:
-            old_leader = getattr( main, "ONOScli6" )
-        elif leader == ONOS7_ip:
-            old_leader = getattr( main, "ONOScli7" )
-        elif leader == None or leader == main.FALSE:
-            main.log.report("Leader for the election app should be an ONOS node,"\
-                    +"instead got '"+str(leader)+"'")
-            leader_result = main.FALSE
-        withdraw_result = old_leader.election_test_withdraw()
-
-
-        main.step("Make sure new leader is elected")
-        leader_list = []
-        for controller in range(1,num_controllers+1):
-            node = getattr( main, ( 'ONOScli' + str( controller ) ) )#loop through ONOScli handlers
-            leader_list.append( node.election_test_leader() )
-        for leaderN in leader_list:
-            if leaderN == leader:
-                main.log.report("ONOS"+str(controller)+" still sees " + str(leader) +\
-                        " as leader after they withdrew")
-                leader_result = main.FALSE
-            elif leaderN == main.FALSE:
-                #error in  response
-                #TODO: add check for "Command not found:" in the driver, this means the app isn't loaded
-                main.log.report("Something is wrong with election_test_leader function, check the error logs")
-                leader_result = main.FALSE
-        consistent_leader = main.FALSE
-        if len( set( leader_list ) ) == 1:
-            main.log.info("Each Election-app sees '"+str(leader_list[0])+"' as the leader")
-            consistent_leader = main.TRUE
+        main.log.report( description )
+        main.case( description )
+        main.step( "Find current leader and withdraw" )
+        leader = main.ONOScli1.electionTestLeader()
+        # TODO: do some sanity checking on leader before using it
+        withdrawResult = main.FALSE
+        if leader is None or leader == main.FALSE:
+            main.log.report(
+                "Leader for the election app should be an ONOS node," +
+                "instead got '" + str( leader ) + "'" )
+            leaderResult = main.FALSE
+            oldLeader = None
+        for i in range( len( CLIs ) ):
+            if leader == nodes[ i ].ip_address:
+                oldLeader = CLIs[ i ]
+                break
         else:
-            main.log.report("Inconsistent responses for leader of Election-app:")
-            for n in range(len(leader_list)):
-                main.log.report("ONOS" + str(n+1) + " response: " + str(leader_list[n]) )
-        if leader_result:
-            main.log.report("Leadership election tests passed(consistent view of leader across listeners and a new leader was elected when the old leader resigned)")
-        utilities.assert_equals(expect=main.TRUE, actual=leader_result,
-                onpass="Leadership election passed",
-                onfail="Something went wrong with Leadership election")
+            main.log.error( "Leader election, could not find current leader" )
+        if oldLeader:
+            withdrawResult = oldLeader.electionTestWithdraw()
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=withdrawResult,
+            onpass="App was withdrawn from election",
+            onfail="App was not withdrawn from election" )
 
+        main.step( "Make sure new leader is elected" )
+        leaderList = []
+        for cli in CLIs:
+            leaderN = cli.electionTestLeader()
+            leaderList.append( leaderN )
+            if leaderN == leader:
+                main.log.report(  cli.name + " still sees " + str( leader ) +
+                                  " as leader after they withdrew" )
+                leaderResult = main.FALSE
+            elif leaderN == main.FALSE:
+                # error in  response
+                # TODO: add check for "Command not found:" in the driver, this
+                #       means the app isn't loaded
+                main.log.report( "Something is wrong with " +
+                                 "electionTestLeader function, " +
+                                 "check the error logs" )
+                leaderResult = main.FALSE
+        consistentLeader = main.FALSE
+        if len( set( leaderList ) ) == 1:
+            main.log.info( "Each Election-app sees '" +
+                           str( leaderList[ 0 ] ) +
+                           "' as the leader" )
+            consistentLeader = main.TRUE
+        else:
+            main.log.report(
+                "Inconsistent responses for leader of Election-app:" )
+            for n in range( len( leaderList ) ):
+                main.log.report( "ONOS" + str( n + 1 ) + " response: " +
+                                 str( leaderList[ n ] ) )
+        leaderResult = leaderResult and consistentLeader
+        if leaderResult:
+            main.log.report( "Leadership election tests passed( consistent " +
+                             "view of leader across listeners and a new " +
+                             "leader was elected when the old leader " +
+                             "resigned )" )
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=leaderResult,
+            onpass="Leadership election passed",
+            onfail="Something went wrong with Leadership election" )
 
-        main.step("Run for election on old leader(just so everyone is in the hat)")
-        run_result = old_leader.election_test_run()
-        if consistent_leader == main.TRUE:
-            after_run = main.ONOScli1.election_test_leader()
-            #verify leader didn't just change
-            if after_run == leader_list[0]:
-                leader_result = main.TRUE
+        main.step( "Run for election on old leader( just so everyone " +
+                   "is in the hat )" )
+        if oldLeader:
+            runResult = oldLeader.electionTestRun()
+        else:
+            runResult = main.FALSE
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=runResult,
+            onpass="App re-ran for election",
+            onfail="App failed to run for election" )
+        if consistentLeader == main.TRUE:
+            afterRun = main.ONOScli1.electionTestLeader()
+            # verify leader didn't just change
+            if afterRun == leaderList[ 0 ]:
+                leaderResult = main.TRUE
             else:
-                leader_result = main.FALSE
-        #TODO: assert on  run and withdraw results?
+                leaderResult = main.FALSE
+        # TODO: assert on  run and withdraw results?
 
-        utilities.assert_equals(expect=main.TRUE, actual=leader_result,
-                onpass="Leadership election passed",
-                onfail="Something went wrong with Leadership election after the old leader re-ran for election")
-
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=leaderResult,
+            onpass="Leadership election passed",
+            onfail="Something went wrong with Leadership election after " +
+                   "the old leader re-ran for election" )

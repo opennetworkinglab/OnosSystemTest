@@ -7,7 +7,9 @@
             <password>onos_test</password>
             <type>OnosDriver</type>
             <connect_order>1</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <home> ~/ONOS</home>
+            </COMPONENTS>
         </ONOSbench>
 
         <ONOScli1>
@@ -56,7 +58,7 @@
         </ONOScli5>
 	
         <ONOS1>
-            <host>10.128.40.40</host>
+            <host>10.128.40.41</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>OnosCliDriver</type>
@@ -65,7 +67,7 @@
         </ONOS1>
 
 	<ONOS2>
-            <host>10.128.40.40</host>
+            <host>10.128.40.42</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>OnosCliDriver</type>
@@ -74,7 +76,7 @@
         </ONOS2>
 	
 	<ONOS3>
-            <host>10.128.40.40</host>
+            <host>10.128.40.43</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>OnosCliDriver</type>
@@ -83,7 +85,7 @@
         </ONOS3>
 
         <ONOS4>
-            <host>10.128.40.40</host>
+            <host>10.128.40.44</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>OnosCliDriver</type>
@@ -92,7 +94,7 @@
         </ONOS4>
 
 	<ONOS5>
-            <host>10.128.40.40</host>
+            <host>10.128.40.45</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>OnosCliDriver</type>
@@ -101,7 +103,7 @@
         </ONOS5>
 	
         <Mininet1>
-            <host>10.128.40.40</host>
+            <host>10.128.40.50</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>MininetCliDriver</type>
@@ -116,7 +118,7 @@
         </Mininet1>
 
         <Mininet2>
-            <host>10.128.40.40</host>
+            <host>10.128.40.50</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>RemoteMininetDriver</type>

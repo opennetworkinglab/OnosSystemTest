@@ -1,5 +1,5 @@
 <PARAMS>
-    <testcases>1,2,3</testcases>
+    <testcases>1,2,3,6,2,3,6,2,3,6,2,3</testcases>
 
     <ENV>
         <cellName>topo_perf_test</cellName>
@@ -19,6 +19,11 @@
         <port2>6633</port2>
         <ip3>10.128.174.3</ip3>
         <port3>6633</port3>
+        <ip4>10.128.174.4</ip4>
+        
+        <ip5>10.128.174.5</ip5>
+        <ip6>10.128.174.6</ip6>
+        <ip7>10.128.174.7</ip7>
     </CTRL>
 
     <MN>
@@ -37,16 +42,17 @@
         #pcap file located at /tmp/'capture_name'
         <debugMode>off</debugMode>
         <onosLogFile>/opt/onos/log/karaf*</onosLogFile>
+        <mci>off</mci>
 
-        <topo_config_file>
+        <topoConfigFile>
         single_topo_event_accumulator.cfg
-        </topo_config_file>
-        <topo_config_name>
+        </topoConfigFile>
+        <topoConfigName>
         org.onlab.onos.net.topology.impl.DefaultTopologyProvider.cfg
-        </topo_config_name>
+        </topoConfigName>
 
         #Number of times to iterate each case
-        <numIter>20</numIter>
+        <numIter>10</numIter>
         <numSwitch>2</numSwitch>
         #Number of iterations to ignore initially
         <iterIgnore>2</iterIgnore>
@@ -60,6 +66,16 @@
     
         <tabletFile>tablets_3node.json</tabletFile>
    </TEST>
+
+    <DB>
+        <postToDB>on</postToDB>
+        <portEventResultPath>
+        /home/admin/ONLabTest/TestON/tests/TopoPerfNext/portEventResultDb.log
+        </portEventResultPath>
+        <switchEventResultPath>
+        /home/admin/ONLabTest/TestON/tests/TopoPerfNext/switchEventResultDb.log
+        </switchEventResultPath>
+    </DB>
 
     <JSON>
         <deviceTimestamp>topologyDeviceEventTimestamp</deviceTimestamp>

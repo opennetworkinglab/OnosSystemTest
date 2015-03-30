@@ -64,8 +64,7 @@ class CLI( Component ):
                 self.user_name +
                 '@' +
                 self.ip_address,
-                env={
-                    "TERM": "vt100" },
+                env={ "TERM": "xterm-mono" },
                 maxread=50000 )
         else:
             self.handle = pexpect.spawn(
@@ -73,6 +72,7 @@ class CLI( Component ):
                 self.user_name +
                 '@' +
                 self.ip_address,
+                env={ "TERM": "xterm-mono" },
                 maxread=1000000,
                 timeout=60 )
 
@@ -94,10 +94,17 @@ class CLI( Component ):
                 i = self.handle.expect(
                     [ ssh_newkey, 'password:', pexpect.EOF ] )
             if i == 1:
-                main.log.info(
-                    "ssh connection asked for password, gave password" )
-                self.handle.sendline( self.pwd )
-                self.handle.expect( '>|#|\$' )
+                if self.pwd:
+                    main.log.info(
+                        "ssh connection asked for password, gave password" )
+                    self.handle.sendline( self.pwd )
+                    self.handle.expect( '>|#|\$' )
+                else:
+                    # FIXME: TestON does not support a username having no
+                    #        password
+                    main.log.error( "Server asked for password, but none was "
+                                    "given in the .topo file" )
+                    main.exit()
             elif i == 2:
                 main.log.error( "Connection timeout" )
                 return main.FALSE

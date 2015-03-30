@@ -532,7 +532,7 @@ class OnosDriver( CLI ):
             main.exit()
 
     def createCellFile( self, benchIp, fileName, mnIpAddrs,
-                        extraFeatureString, *onosIpAddrs ):
+                        appString, *onosIpAddrs ):
         """
         Creates a cell file based on arguments
         Required:
@@ -556,11 +556,11 @@ class OnosDriver( CLI ):
         # Create the cell file in the directory for writing ( w+ )
         cellFile = open( tempDirectory + fileName, 'w+' )
 
-        # Feature string is hardcoded environment variables
+        # App string is hardcoded environment variables
         # That you may wish to use by default on startup.
-        # Note that you  may not want certain features listed
+        # Note that you  may not want certain apps listed
         # on here.
-        coreFeatureString = "export ONOS_FEATURES=" + extraFeatureString
+        appString = "export ONOS_APPS=" + appString
         mnString = "export OCN="
         onosString = "export OC"
         tempCount = 1
@@ -589,7 +589,7 @@ class OnosDriver( CLI ):
                 tempCount = tempCount + 1
 
             cellFile.write( mnString + "\"" + mnIpAddrs + "\"" + "\n" )
-            cellFile.write( coreFeatureString + "\n" )
+            cellFile.write( appString + "\n" )
             cellFile.close()
 
             # We use os.system to send the command to TestON cluster
@@ -1729,37 +1729,54 @@ class OnosDriver( CLI ):
         os.system( "scp " + tempFile + " admin@" + benchIp + ":" + linkGraphPath)        
         main.log.info("linkGraph.cfg creation complete")
 
-    def createNullDevProviderFile( self, benchIp, ONOSIpList, deviceCount, numPorts=10):
+    def configNullDev( self, ONOSIpList, deviceCount, numPorts=10):
         
         '''
-            benchIp = Ip address of the test bench 
             ONOSIpList = list of Ip addresses of nodes switches will be devided amongst 
-            deviceCount = number of switches to distribute 
-            numPorts = number of ports per device, when not specified in file it defaults to 10, optional arg
+            deviceCount = number of switches to distribute, or list of values to use as custom distribution  
+            numPorts = number of ports per device. Defaults to 10 both in this function and in ONOS. Optional arg
         '''
 
-        main.log.step("Creating null device provider configuration file." )
-        nullDevicePath = self.home + "/tools/package/etc/org.onosproject.provider.nil.device.impl.NullDeviceProvider.cfg"
-        tempFile = "/tmp/org.onosproject.provider.nil.device.impl.NullDeviceProvider.cfg"
-        configFile = open(tempFile, 'w+')
+        main.log.step("Configuring Null Device Provider" )
         clusterCount = len(ONOSIpList)
 
-        if type(deviceCount) is int or type(deviceCount) is str:
-            main.log.info("Creating device distribution")
-            deviceCount = int(deviceCount)
-            switchList = [0]*(clusterCount+1)
-            baselineSwitchCount = deviceCount/clusterCount
+        try: 
+            
+            if type(deviceCount) is int or type(deviceCount) is str:
+                main.log.step("Creating device distribution")
+                deviceCount = int(deviceCount)
+                switchList = [0]*(clusterCount+1)
+                baselineSwitchCount = deviceCount/clusterCount
 
-            for node in range(1, clusterCount + 1):
-                switchList[node] = baselineSwitchCount
+                for node in range(1, clusterCount + 1):
+                    switchList[node] = baselineSwitchCount
 
-            for node in range(1, (deviceCount%clusterCount)+1):
-                switchList[node] += 1
+                for node in range(1, (deviceCount%clusterCount)+1):
+                    switchList[node] += 1
+                
+            if type(deviceCount) is list: 
+                main.log.info("Using provided device distribution") 
+                
+                if len(deviceCount) == clusterCount: 
+                    switchList = ['0']
+                    switchList.extend(deviceCount)
+                
+                if len(deviceCount) == (clusterCount + 1): 
+                    if deviceCount[0] == '0' or deviceCount[0] == 0: 
+                        switchList = deviceCount
 
-        if type(deviceCount) is list: 
-            main.log.info("Using provided device distribution") 
-            switchList = ['0']
-            switchList.extend(deviceCount)
+                assert len(switchList) == (clusterCount + 1)
+        
+        except AssertionError:
+            main.log.error( "Bad device/Ip list match") 
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
 
         ONOSIp = [0]
         ONOSIp.extend(ONOSIpList)
@@ -1769,57 +1786,69 @@ class OnosDriver( CLI ):
             devicesString += (ONOSIp[node] + ":" + str(switchList[node] ))
             if node < clusterCount:
                 devicesString += (",")
+        
+        try: 
+            self.handle.sendline("onos $OC1 cfg set org.onosproject.provider.nil.device.impl.NullDeviceProvider devConfigs " + devicesString )
+            self.handle.expect(":~")
+            self.handle.sendline("onos $OC1 cfg set org.onosproject.provider.nil.device.impl.NullDeviceProvider numPorts " + str(numPorts) )
+            self.handle.expect(":~")
 
-        configFile.write(devicesString + "\n")
-        if numPorts == 10:
-            configFile.write("#numPorts = 10")
-        else: 
-            configFile.write("numPorts = " + str(numPorts))
+            for i in range(10):
+                self.handle.sendline("onos $OC1 cfg get org.onosproject.provider.nil.device.impl.NullDeviceProvider")
+                self.handle.expect(":~")
+                verification = self.handle.before
+                if (" value=" + str(numPorts)) in verification and (" value=" + devicesString) in verification:
+                    break
+                else:
+                    time.sleep(1)
 
-        configFile.close()        
-        os.system( "scp " + tempFile + " admin@" + benchIp + ":" + nullDevicePath)
+            assert ("value=" + str(numPorts)) in verification and (" value=" + fileName) in verification
+        
+        except AssertionError:
+            main.log.error("Incorrect Config settings: " + verification)
 
-    def createNullLinkProviderFile( self, benchIp, neighborIpList=0,fileName="", eventRate=0, onNode=False): 
+        except:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
+    def configNullLink( self,fileName="/opt/onos/apache-karaf-3.0.2/etc/linkGraph.cfg", eventRate=0): 
         '''
-                neighbor list is an optional list of neighbors to be written directly to the file
-                onNode - bool, if true, alternate file path will be used to scp, inteneded
-                        for use on cell
+                fileName default is currently the same as the default on ONOS, specify alternate file if 
+                you want to use a different topology file than linkGraph.cfg
         '''
 
-        main.log.step("Creating Null Link Provider config file")
-        nullLinkPath = self.home + "/tools/package/etc/org.onosproject.provider.nil.link.impl.NullLinkProvider.cfg"
-        if onNode == True: 
-            nullLinkPath = "/opt/onos/apache-karaf-3.0.2/etc/org.onosproject.provider.nil.link.impl.NullLinkProvider.cfg"
-        tempFile = "/tmp/org.onosproject.provider.nil.link.impl.NullLinkProvider.cfg"
-        configFile = open(tempFile, 'w+')
-    
-        eventRate = int(eventRate)
-
-        if eventRate == 0: 
-            configFile.write("#eventRate = \n")
-        else: 
-            configFile.write("eventRate = " + str(eventRate) + "\n") 
         
-        if fileName == "":
-            configFile.write("#cfgFile = /tmp/foo.cfg        #If enabled, points to the full path to the topology file.\n") 
-        else: 
-            configFile.write("cfgFile =" + str(fileName) + "\n")
-
-        if neighborIpList != 0:
-            configFile.write("neighbors = ")
-            for n in range (0, len(neighborIpList)):
-                configFile.write(neighborIpList[n])
-                if n < (len(neighborIpList) - 1):
-                    configFile.write(",")            
-        else: 
-            configFile.write("#neighbors = ") 
+        try: 
+            self.handle.sendline("onos $OC1 cfg set org.onosproject.provider.nil.link.impl.NullLinkProvider eventRate " + str(eventRate)) 
+            self.handle.expect(":~")            
+            self.handle.sendline("onos $OC1 cfg set org.onosproject.provider.nil.link.impl.NullLinkProvider cfgFile " + fileName )
+            self.handle.expect(":~")
+               
+            for i in range(10): 
+                self.handle.sendline("onos $OC1 cfg get org.onosproject.provider.nil.link.impl.NullLinkProvider") 
+                self.handle.expect(":~")
+                verification = self.handle.before
+                if (" value=" + str(eventRate)) in verification and (" value=" + fileName) in verification: 
+                    break
+                else: 
+                    time.sleep(1)
+            
+            assert ("value=" + str(eventRate)) in verification and (" value=" + fileName) in verification
+            
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
         
-        configFile.close()
-        if onNode == False:
-            os.system( "scp " + tempFile + " admin@" + benchIp + ":" + nullLinkPath)
-        if onNode == True:
-            os.system( "scp " + tempFile + " sdn@" + benchIp + ":" + nullLinkPath)
-        
+        except AssertionError:
+            main.log.info("Settings did not post to ONOS")
+            main.log.error(varification)            
 
-
+        except:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.log.error(varification)
+            main.cleanup()
+            main.exit()
 

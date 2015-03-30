@@ -2357,8 +2357,6 @@ class OnosCliDriver( CLI ):
             "UNINSTALLED" - If app is not installed
             None - on error
         """
-        # FIXME also use app-ids to see if an uninstalled app is registered?
-        # FIXME "UNREGISTERED"?
         try:
             if not isinstance( appName, types.StringType ):
                 main.log.error( self.name + ".appStatus(): appName must be" +
@@ -2443,7 +2441,7 @@ class OnosCliDriver( CLI ):
                                 str( output ) )
             # NOTE: we may need to add more checks here
             # else: Command was successful
-            main.log.debug( "app response: " + repr( output ) )
+            #main.log.debug( "app response: " + repr( output ) )
             return main.TRUE
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
@@ -2483,6 +2481,8 @@ class OnosCliDriver( CLI ):
                         if status == "ACTIVE":
                             return main.TRUE
                         else:
+                            main.log.debug( "The state of application " +
+                                            appName + " is " + status )
                             time.sleep( 1 )
                     return main.FALSE
                 else:  # not 'check' or command didn't succeed
@@ -2688,8 +2688,8 @@ class OnosCliDriver( CLI ):
                     result = main.FALSE
                 # get the entry in ids that has the same appID
                 current = filter(lambda item: item[ 'id' ] == appID, ids)
-                main.log.debug( "Comparing " + str( app ) + " to " +
-                                str( current ) )
+                # main.log.debug( "Comparing " + str( app ) + " to " +
+                #                 str( current ) )
                 if not current:  # if ids doesn't have this id
                     result = main.FALSE
                     main.log.error( "'app-ids' does not have the ID for " +

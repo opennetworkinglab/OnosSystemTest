@@ -415,6 +415,8 @@ class HATestNetworkPartition:
 
         # install onos-app-fwd
         main.log.info( "Install reactive forwarding app" )
+        appResults = CLIs[0].activateApp( "org.onosproject.fwd" )
+        '''
         main.ONOScli1.featureInstall( "onos-app-fwd" )
         main.ONOScli2.featureInstall( "onos-app-fwd" )
         main.ONOScli3.featureInstall( "onos-app-fwd" )
@@ -422,6 +424,7 @@ class HATestNetworkPartition:
         main.ONOScli5.featureInstall( "onos-app-fwd" )
         main.ONOScli6.featureInstall( "onos-app-fwd" )
         main.ONOScli7.featureInstall( "onos-app-fwd" )
+        '''
 
         # REACTIVE FWD test
         pingResult = main.FALSE
@@ -437,6 +440,8 @@ class HATestNetworkPartition:
 
         # uninstall onos-app-fwd
         main.log.info( "Uninstall reactive forwarding app" )
+        appResults = appResults and CLIs[0].deactivateApp( "org.onosproject.fwd" )
+        '''
         main.ONOScli1.featureUninstall( "onos-app-fwd" )
         main.ONOScli2.featureUninstall( "onos-app-fwd" )
         main.ONOScli3.featureUninstall( "onos-app-fwd" )
@@ -444,6 +449,7 @@ class HATestNetworkPartition:
         main.ONOScli5.featureUninstall( "onos-app-fwd" )
         main.ONOScli6.featureUninstall( "onos-app-fwd" )
         main.ONOScli7.featureUninstall( "onos-app-fwd" )
+        '''
         # timeout for fwd flows
         time.sleep( 10 )
 

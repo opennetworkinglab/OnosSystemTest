@@ -298,7 +298,7 @@ class HATestSanity:
                 roleCall = roleCall and main.ONOScli1.deviceRole( deviceId,
                                                                   ip )
                 # Check assignment
-                master =  main.ONOScli1.getRole( deviceId ).get( 'master' ):
+                master =  main.ONOScli1.getRole( deviceId ).get( 'master' )
                 if ip in master:
                     roleCheck = roleCheck and main.TRUE
                 else:

@@ -298,13 +298,15 @@ class HATestMinorityRestart:
                 roleCall = roleCall and main.ONOScli1.deviceRole( deviceId,
                                                                   ip )
                 # Check assignment
-                if ip in main.ONOScli1.getRole( deviceId ).get( 'master' ):
+                master =  main.ONOScli1.getRole( deviceId ).get( 'master' )
+                if ip in master:
                     roleCheck = roleCheck and main.TRUE
                 else:
                     roleCheck = roleCheck and main.FALSE
                     main.log.error( "Error, controller " + ip + " is not" +
                                     " master " + "of device " +
-                                    str( deviceId ) )
+                                    str( deviceId ) + ". Master is " +
+                                    repr( master ) + "." )
         except ( AttributeError, AssertionError ):
             main.log.exception( "Something is wrong with ONOS device view" )
             main.log.info( main.ONOScli1.devices() )
@@ -570,6 +572,8 @@ class HATestMinorityRestart:
                 onpass="ECM anti-entropy for intents worked within " +
                        "expected time",
                 onfail="Intent ECM anti-entropy took too long" )
+        if gossipTime <= 30:
+            intentAddResult = True
 
         if not intentAddResult or "key" in pendingMap:
             import time

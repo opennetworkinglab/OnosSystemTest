@@ -1777,21 +1777,25 @@ class OnosDriver( CLI ):
             main.cleanup()
             main.exit()
 
-
         ONOSIp = [0]
         ONOSIp.extend(ONOSIpList)
  
-        devicesString  = "devConfigs = "
+        devicesString  = ""
         for node in range(1, len(ONOSIp)):
             devicesString += (ONOSIp[node] + ":" + str(switchList[node] ))
             if node < clusterCount:
                 devicesString += (",")
         
-        try: 
-            self.handle.sendline("onos $OC1 cfg set org.onosproject.provider.nil.device.impl.NullDeviceProvider devConfigs " + devicesString )
+        try:
+            cmd = ("onos $OC1 cfg set org.onosproject.provider.nil.device.impl.NullDeviceProvider devConfigs " + devicesString )
+            self.handle.sendline(cmd)
             self.handle.expect(":~")
-            self.handle.sendline("onos $OC1 cfg set org.onosproject.provider.nil.device.impl.NullDeviceProvider numPorts " + str(numPorts) )
+            main.log.info(cmd)
+            
+            cmd = ("onos $OC1 cfg set org.onosproject.provider.nil.device.impl.NullDeviceProvider numPorts " + str(numPorts) )
+            self.handle.sendline(cmd)
             self.handle.expect(":~")
+            main.log.info(cmd)
 
             for i in range(10):
                 self.handle.sendline("onos $OC1 cfg get org.onosproject.provider.nil.device.impl.NullDeviceProvider")
@@ -1802,7 +1806,7 @@ class OnosDriver( CLI ):
                 else:
                     time.sleep(1)
 
-            assert ("value=" + str(numPorts)) in verification and (" value=" + fileName) in verification
+            assert ("value=" + str(numPorts)) in verification and (" value=" + devicesString) in verification
         
         except AssertionError:
             main.log.error("Incorrect Config settings: " + verification)

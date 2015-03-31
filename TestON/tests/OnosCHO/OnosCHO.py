@@ -1953,6 +1953,61 @@ class OnosCHO:
             onpass="Install 25 multi to single point Intents and Ping All test PASS",
             onfail="Install 25 multi to single point Intents and Ping All test FAIL" )
         
+    def CASE94( self ):
+        """
+        Install multi-single point intents and verify Ping all works
+        for spine topology
+        """
+        import copy
+        import time
+        main.log.report( "Install multi-single point intents and verify Ping all" )
+        main.log.report( "___________________________________________" )
+        main.case( "Install multi-single point intents and Ping all" )
+        deviceDPIDsCopy = copy.copy(main.deviceDPIDs)
+        portIngressList = ['1']*(len(deviceDPIDsCopy) - 1)
+        intentIdList = []
+        print "MACsDict", main.MACsDict
+        time1 = time.time()
+        for i in xrange(0,len(deviceDPIDsCopy),int(main.numCtrls)):
+            pool = []
+            for cli in main.CLIs:
+                egressDevice = deviceDPIDsCopy[i]
+                ingressDeviceList = copy.copy(deviceDPIDsCopy)
+                ingressDeviceList.remove(egressDevice)
+                if i >= len( deviceDPIDsCopy ):
+                    break
+                t = main.Thread( target=cli.addMultipointToSinglepointIntent,
+                        threadID=main.threadID,
+                        name="addMultipointToSinglepointIntent",
+                        args =[ingressDeviceList,egressDevice,portIngressList,'1','IPV4','',main.MACsDict.get(egressDevice)])
+                pool.append(t)
+                #time.sleep(1)
+                t.start()
+                i = i + 1
+                main.threadID = main.threadID + 1
+            for thread in pool:
+                thread.join()
+                intentIdList.append(thread.result)
+        time2 = time.time()
+        main.log.info("Time for adding point intents: %2f seconds" %(time2-time1)) 
+        time.sleep(5)
+        main.step( "Verify Ping across all hosts" )
+        pingResult = main.FALSE
+        time1 = time.time()
+        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout)
+        time2 = time.time()
+        timeDiff = round( ( time2 - time1 ), 2 )
+        main.log.report(
+            "Time taken for Ping All: " +
+            str( timeDiff ) +
+            " seconds" )
+
+        case94Result = pingResult
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=case94Result,
+            onpass="Install 25 multi to single point Intents and Ping All test PASS",
+            onfail="Install 25 multi to single point Intents and Ping All test FAIL" )
         
         
     def CASE96( self ):

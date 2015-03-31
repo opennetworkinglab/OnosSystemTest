@@ -162,9 +162,28 @@ class HATestClusterRestart:
             intf=main.params[ 'MNtcpdump' ][ 'intf' ],
             port=main.params[ 'MNtcpdump' ][ 'port' ] )
 
+        appCheck = main.TRUE
+        threads = []
+        for i in range( numControllers ):
+            t = main.Thread( target=CLIs[i].appToIDCheck,
+                             name="appToIDCheck-" + str( i ),
+                             args=[] )
+            threads.append( t )
+            t.start()
+
+        for t in threads:
+            t.join()
+            appCheck = appCheck and t.result
+        utilities.assert_equals( expect=main.TRUE, actual=appCheck,
+                                 onpass="App Ids seem to be correct",
+                                 onfail="Something is wrong with app Ids" )
+        if appCheck != main.TRUE:
+            main.log.warn( CLIs[0].apps() )
+            main.log.warn( CLIs[0].appIDs() )
+
         case1Result = ( cleanInstallResult and packageResult and
                         cellResult and verifyResult and onosInstallResult
-                        and onosIsupResult and cliResults )
+                        and onosIsupResult and cliResults and appCheck)
 
         utilities.assert_equals( expect=main.TRUE, actual=case1Result,
                                  onpass="Test startup successful",
@@ -221,6 +240,9 @@ class HATestClusterRestart:
                 if re.search( "tcp:" + node.ip_address, response ):
                     mastershipCheck = mastershipCheck and main.TRUE
                 else:
+                    main.log.error( "Error, node " + node.ip_address + " is " +
+                                    "not in the list of controllers s" +
+                                    str( i ) + " is connecting to." )
                     mastershipCheck = main.FALSE
         if mastershipCheck == main.TRUE:
             main.log.report( "Switch mastership assigned correctly" )
@@ -229,138 +251,62 @@ class HATestClusterRestart:
             actual=mastershipCheck,
             onpass="Switch mastership assigned correctly",
             onfail="Switches not assigned correctly to controllers" )
-        #FIXME: turning off because of ONOS-1286
         # Manually assign mastership to the controller we want
         roleCall = main.TRUE
         roleCheck = main.TRUE
         try:
-            # Assign switch
-            ip = nodes[ 0 ].ip_address  # ONOS1
-            deviceId = main.ONOScli1.getDevice( "1000" ).get( 'id' )
-            assert deviceId, "No device id for s1 in ONOS"
-            roleCall = roleCall and main.ONOScli1.deviceRole(
-                deviceId,
-                ip )
-            # Check assignment
-            if ip in main.ONOScli1.getRole( deviceId ).get( 'master' ):
-                roleCheck = roleCheck and main.TRUE
-            else:
-                roleCheck = roleCheck and main.FALSE
-
-            # Assign switch
-            deviceId = main.ONOScli1.getDevice( "2800" ).get( 'id' )
-            assert deviceId, "No device id for s28 in ONOS"
-            roleCall = roleCall and main.ONOScli1.deviceRole(
-                deviceId,
-                ip )
-            # Check assignment
-            if ip in main.ONOScli1.getRole( deviceId ).get( 'master' ):
-                roleCheck = roleCheck and main.TRUE
-            else:
-                roleCheck = roleCheck and main.FALSE
-
-            ip = nodes[ 1 ].ip_address  # ONOS2
-            # Assign switch
-            deviceId = main.ONOScli1.getDevice( "2000" ).get( 'id' )
-            assert deviceId, "No device id for s2 in ONOS"
-            roleCall = roleCall and main.ONOScli1.deviceRole(
-                deviceId,
-                ip )
-            # Check assignment
-            if ip in main.ONOScli1.getRole( deviceId ).get( 'master' ):
-                roleCheck = roleCheck and main.TRUE
-            else:
-                roleCheck = roleCheck and main.FALSE
-
-            # Assign switch
-            deviceId = main.ONOScli1.getDevice( "3000" ).get( 'id' )
-            assert deviceId, "No device id for s3 in ONOS"
-            roleCall = roleCall and main.ONOScli1.deviceRole(
-                deviceId,
-                ip )
-            # Check assignment
-            if ip in main.ONOScli1.getRole( deviceId ).get( 'master' ):
-                roleCheck = roleCheck and main.TRUE
-            else:
-                roleCheck = roleCheck and main.FALSE
-
-            ip = nodes[ 2 ].ip_address  # ONOS3
-            # Assign switch
-            deviceId = main.ONOScli1.getDevice( "5000" ).get( 'id' )
-            assert deviceId, "No device id for s5 in ONOS"
-            roleCall = roleCall and main.ONOScli1.deviceRole(
-                deviceId,
-                ip )
-            # Check assignment
-            if ip in main.ONOScli1.getRole( deviceId ).get( 'master' ):
-                roleCheck = roleCheck and main.TRUE
-            else:
-                roleCheck = roleCheck and main.FALSE
-
-            # Assign switch
-            deviceId = main.ONOScli1.getDevice( "6000" ).get( 'id' )
-            assert deviceId, "No device id for s6 in ONOS"
-            roleCall = roleCall and main.ONOScli1.deviceRole(
-                deviceId,
-                ip )
-            # Check assignment
-            if ip in main.ONOScli1.getRole( deviceId ).get( 'master' ):
-                roleCheck = roleCheck and main.TRUE
-            else:
-                roleCheck = roleCheck and main.FALSE
-
-            ip = nodes[ 3 ].ip_address  # ONOS4
-            # Assign switch
-            deviceId = main.ONOScli1.getDevice( "3004" ).get( 'id' )
-            assert deviceId, "No device id for s4 in ONOS"
-            roleCall = roleCall and main.ONOScli1.deviceRole(
-                deviceId,
-                ip )
-            # Check assignment
-            if ip in main.ONOScli1.getRole( deviceId ).get( 'master' ):
-                roleCheck = roleCheck and main.TRUE
-            else:
-                roleCheck = roleCheck and main.FALSE
-
-            ip = nodes[ 4 ].ip_address  # ONOS5
-            for i in range( 8, 18 ):
-                dpid = '3' + str( i ).zfill( 3 )
-                deviceId = main.ONOScli1.getDevice( dpid ).get( 'id' )
-                assert deviceId, "No device id for s%i in ONOS" % i
-                roleCall = roleCall and main.ONOScli1.deviceRole(
-                    deviceId,
-                    ip )
+            for i in range( 1, 29 ):  # switches 1 through 28
+                # set up correct variables:
+                if i == 1:
+                    ip = nodes[ 0 ].ip_address  # ONOS1
+                    deviceId = main.ONOScli1.getDevice( "1000" ).get( 'id' )
+                elif i == 2:
+                    ip = nodes[ 1 ].ip_address  # ONOS2
+                    deviceId = main.ONOScli1.getDevice( "2000" ).get( 'id' )
+                elif i == 3:
+                    ip = nodes[ 1 ].ip_address  # ONOS2
+                    deviceId = main.ONOScli1.getDevice( "3000" ).get( 'id' )
+                elif i == 4:
+                    ip = nodes[ 3 ].ip_address  # ONOS4
+                    deviceId = main.ONOScli1.getDevice( "3004" ).get( 'id' )
+                elif i == 5:
+                    ip = nodes[ 2 ].ip_address  # ONOS3
+                    deviceId = main.ONOScli1.getDevice( "5000" ).get( 'id' )
+                elif i == 6:
+                    ip = nodes[ 2 ].ip_address  # ONOS3
+                    deviceId = main.ONOScli1.getDevice( "6000" ).get( 'id' )
+                elif i == 7:
+                    ip = nodes[ 5 ].ip_address  # ONOS6
+                    deviceId = main.ONOScli1.getDevice( "6007" ).get( 'id' )
+                elif i >= 8 and i <= 17:
+                    ip = nodes[ 4 ].ip_address  # ONOS5
+                    dpid = '3' + str( i ).zfill( 3 )
+                    deviceId = main.ONOScli1.getDevice( dpid ).get( 'id' )
+                elif i >= 18 and i <= 27:
+                    ip = nodes[ 6 ].ip_address  # ONOS7
+                    dpid = '6' + str( i ).zfill( 3 )
+                    deviceId = main.ONOScli1.getDevice( dpid ).get( 'id' )
+                elif i == 28:
+                    ip = nodes[ 0 ].ip_address  # ONOS1
+                    deviceId = main.ONOScli1.getDevice( "2800" ).get( 'id' )
+                else:
+                    main.log.error( "You didn't write an else statement for " +
+                                    "switch s" + str( i ) )
+                # Assign switch
+                assert deviceId, "No device id for s" + str( i ) + " in ONOS"
+                # TODO: make this controller dynamic
+                roleCall = roleCall and main.ONOScli1.deviceRole( deviceId,
+                                                                  ip )
                 # Check assignment
-                if ip in main.ONOScli1.getRole( deviceId ).get( 'master' ):
+                master =  main.ONOScli1.getRole( deviceId ).get( 'master' )
+                if ip in master:
                     roleCheck = roleCheck and main.TRUE
                 else:
                     roleCheck = roleCheck and main.FALSE
-
-            ip = nodes[ 5 ].ip_address  # ONOS6
-            deviceId = main.ONOScli1.getDevice( "6007" ).get( 'id' )
-            assert deviceId, "No device id for s7 in ONOS"
-            roleCall = roleCall and main.ONOScli1.deviceRole(
-                deviceId,
-                ip )
-            # Check assignment
-            if ip in main.ONOScli1.getRole( deviceId ).get( 'master' ):
-                roleCheck = roleCheck and main.TRUE
-            else:
-                roleCheck = roleCheck and main.FALSE
-
-            ip = nodes[ 6 ].ip_address  # ONOS7
-            for i in range( 18, 28 ):
-                dpid = '6' + str( i ).zfill( 3 )
-                deviceId = main.ONOScli1.getDevice( dpid ).get( 'id' )
-                assert deviceId, "No device id for s%i in ONOS" % i
-                roleCall = roleCall and main.ONOScli1.deviceRole(
-                    deviceId,
-                    ip )
-                # Check assignment
-                if ip in main.ONOScli1.getRole( deviceId ).get( 'master' ):
-                    roleCheck = roleCheck and main.TRUE
-                else:
-                    roleCheck = roleCheck and main.FALSE
+                    main.log.error( "Error, controller " + ip + " is not" +
+                                    " master " + "of device " +
+                                    str( deviceId ) + ". Master is " +
+                                    repr( master ) + "." )
         except ( AttributeError, AssertionError ):
             main.log.exception( "Something is wrong with ONOS device view" )
             main.log.info( main.ONOScli1.devices() )
@@ -403,18 +349,27 @@ class HATestClusterRestart:
 
         # install onos-app-fwd
         main.log.info( "Install reactive forwarding app" )
-        appResults = main.TRUE
+        appResults = CLIs[0].activateApp( "org.onosproject.fwd" )
+
+        # FIXME: add this to asserts
+        appCheck = main.TRUE
         threads = []
         for i in range( numControllers ):
-            t = main.Thread( target=CLIs[i].featureInstall,
-                             name="featureInstall-" + str( i ),
-                             args=["onos-app-fwd"] )
+            t = main.Thread( target=CLIs[i].appToIDCheck,
+                             name="appToIDCheck-" + str( i ),
+                             args=[] )
             threads.append( t )
             t.start()
 
         for t in threads:
             t.join()
-            appResults = appResults and t.result
+            appCheck = appCheck and t.result
+        utilities.assert_equals( expect=main.TRUE, actual=appCheck,
+                                 onpass="App Ids seem to be correct",
+                                 onfail="Something is wrong with app Ids" )
+        if appCheck != main.TRUE:
+            main.log.warn( CLIs[0].apps() )
+            main.log.warn( CLIs[0].appIDs() )
 
         # REACTIVE FWD test
         pingResult = main.FALSE
@@ -431,17 +386,24 @@ class HATestClusterRestart:
 
         # uninstall onos-app-fwd
         main.log.info( "Uninstall reactive forwarding app" )
+        appResults = appResults and CLIs[0].deactivateApp( "org.onosproject.fwd" )
         threads = []
         for i in range( numControllers ):
-            t = main.Thread( target=CLIs[i].featureUninstall,
-                             name="featureUninstall-" + str( i ),
-                             args=["onos-app-fwd"] )
+            t = main.Thread( target=CLIs[i].appToIDCheck,
+                             name="appToIDCheck-" + str( i ),
+                             args=[] )
             threads.append( t )
             t.start()
 
         for t in threads:
             t.join()
-            appResults = appResults and t.result
+            appCheck = appCheck and t.result
+        utilities.assert_equals( expect=main.TRUE, actual=appCheck,
+                                 onpass="App Ids seem to be correct",
+                                 onfail="Something is wrong with app Ids" )
+        if appCheck != main.TRUE:
+            main.log.warn( CLIs[0].apps() )
+            main.log.warn( CLIs[0].appIDs() )
 
         # timeout for fwd flows
         time.sleep( 11 )
@@ -489,6 +451,8 @@ class HATestClusterRestart:
                 except ( ValueError, TypeError ):
                     main.log.warn( repr( hosts ) )
                 hostResult = main.FALSE
+        # FIXME: DEBUG
+        intentStart = time.time()
         onosIds = main.ONOScli1.getAllIntentsId()
         main.log.info( "Submitted intents: " + str( intentIds ) )
         main.log.info( "Intents in ONOS: " + str( onosIds ) )
@@ -497,6 +461,11 @@ class HATestClusterRestart:
                 pass  # intent submitted is in onos
             else:
                 intentAddResult = False
+        # FIXME: DEBUG
+        if intentAddResult:
+            intentStop = time.time()
+        else:
+            intentStop = None
         # Print the intent states
         intents = main.ONOScli1.intents()
         intentStates = []
@@ -533,12 +502,9 @@ class HATestClusterRestart:
                                            indent=4,
                                            separators=( ',', ': ' ) ) )
                 # check for all intent partitions
-                # check for election
                 topics = []
                 for i in range( 14 ):
                     topics.append( "intent-partition-" + str( i ) )
-                # FIXME: this should only be after we start the app
-                topics.append( "org.onosproject.election" )
                 main.log.debug( topics )
                 ONOStopics = [ j['topic'] for j in parsedLeaders ]
                 for topic in topics:
@@ -587,6 +553,29 @@ class HATestClusterRestart:
             actual=intentAddResult,
             onpass="Pushed host intents to ONOS",
             onfail="Error in pushing host intents to ONOS" )
+        for i in range(100):
+            onosIds = main.ONOScli1.getAllIntentsId()
+            main.log.info( "Submitted intents: " + str( sorted( intentIds ) ) )
+            main.log.info( "Intents in ONOS: " + str( sorted( onosIds ) ) )
+            if sorted(onosIds) == sorted(intentIds):
+                break
+            else:
+                time.sleep(1)
+        # FIXME: DEBUG
+        if not intentStop:
+            intentStop = time.time()
+        gossipTime = intentStop - intentStart
+        main.log.info( "It took about " + str( gossipTime ) +
+                        " seconds for all intents to appear on ONOS1" )
+        # FIXME: make this time configurable/calculate based off of number of
+        #        nodes and gossip rounds
+        utilities.assert_greater_equals(
+                expect=30, actual=gossipTime,
+                onpass="ECM anti-entropy for intents worked within " +
+                       "expected time",
+                onfail="Intent ECM anti-entropy took too long" )
+        if gossipTime <= 30:
+            intentAddResult = True
 
         if not intentAddResult or "key" in pendingMap:
             import time
@@ -1068,6 +1057,7 @@ class HATestClusterRestart:
             threads.append( t )
             t.start()
 
+        # NOTE: Flows command can take some time to run
         time.sleep(30)
         for t in threads:
             t.join()
@@ -1394,7 +1384,7 @@ class HATestClusterRestart:
         finalAssert = main.TRUE
         finalAssert = ( finalAssert and topoResult and flowCheck
                         and intentCheck and consistentMastership
-                        and rolesNotNull )
+                        and mastershipCheck and rolesNotNull )
         utilities.assert_equals( expect=main.TRUE, actual=finalAssert,
                                  onpass="State check successful",
                                  onfail="State check NOT successful" )
@@ -2024,6 +2014,40 @@ class HATestClusterRestart:
         if topoResult == main.TRUE:
             main.log.report( "ONOS topology view matches Mininet topology" )
 
+        # FIXME: move this to an ONOS state case
+        main.step( "Checking ONOS nodes" )
+        nodesOutput = []
+        threads = []
+        for i in range( numControllers ):
+            t = main.Thread( target=CLIs[i].nodes,
+                             name="nodes-" + str( i ),
+                             args=[ ] )
+            threads.append( t )
+            t.start()
+
+        for t in threads:
+            t.join()
+            nodesOutput.append( t.result )
+        ips = [ node.ip_address for node in nodes ]
+        for i in nodesOutput:
+            try:
+                current = json.loads( i )
+                for node in current:
+                    if node['ip'] in ips:  # node in nodes() output is in cell
+                        if node['state'] == 'ACTIVE':
+                            pass  # as it should be
+                        else:
+                            main.log.error( "Error in ONOS node availability" )
+                            main.log.error(
+                                    json.dumps( current,
+                                                sort_keys=True,
+                                                indent=4,
+                                                separators=( ',', ': ' ) ) )
+                            break
+            except ( ValueError, TypeError ):
+                main.log.error( "Error parsing nodes output" )
+                main.log.warn( repr( i ) )
+
     def CASE9( self, main ):
         """
         Link s3-s28 down
@@ -2265,6 +2289,7 @@ class HATestClusterRestart:
         """
         start election app on all onos nodes
         """
+        import time
         assert numControllers, "numControllers not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
@@ -2272,58 +2297,21 @@ class HATestClusterRestart:
         assert nodes, "nodes not defined"
 
         leaderResult = main.TRUE
-        # install app on onos 1
         main.log.info( "Install leadership election app" )
-        main.ONOScli1.featureInstall( "onos-app-election" )
-        leader = nodes[0].ip_address
-        # wait for election
-        # check for leader
-        leader1 = main.ONOScli1.electionTestLeader()
-        # verify leader is ONOS1
-        if leader1 == leader:
-            # all is well
-            pass
-        elif leader1 is None:
-            # No leader elected
-            main.log.report( "No leader was elected" )
-            leaderResult = main.FALSE
-        elif leader1 == main.FALSE:
-            # error in  response
-            # TODO: add check for "Command not found:" in the driver, this
-            # means the app isn't loaded
-            main.log.report( "Something is wrong with electionTestLeader" +
-                             " function, check the error logs" )
-            leaderResult = main.FALSE
-        else:
-            # error in  response
-            main.log.report(
-                "Unexpected response from electionTestLeader function:'" +
-                str( leader1 ) + "'" )
-            leaderResult = main.FALSE
-
-        # install on other nodes and check for leader.
-        # Leader should be ONOS1 and each app should show the same leader
-        for cli in CLIs[ 1: ]:
-            cli.featureInstall( "onos-app-election" )
-            leaderN = cli.electionTestLeader()
-            # verify leader is ONOS1
-            if leaderN == leader:
-                # all is well
-                pass
-            elif leaderN == main.FALSE:
-                # error in  response
-                # TODO: add check for "Command not found:" in the driver, this
-                # means the app isn't loaded
-                main.log.report( "Something is wrong with " +
-                                 "electionTestLeader function, check the" +
-                                 " error logs" )
+        main.ONOScli1.activateApp( "org.onosproject.election" )
+        leaders = []
+        for cli in CLIs:
+            leader = cli.electionTestLeader()
+            if leader is None or leader == main.FALSE:
+                main.log.report( cli.name + ": Leader for the election app " +
+                                 "should be an ONOS node, instead got '" +
+                                 str( leader ) + "'" )
                 leaderResult = main.FALSE
-            elif leader != leaderN:
-                leaderResult = main.FALSE
-                main.log.report( cli.name + " sees " + str( leaderN ) +
-                                 " as the leader of the election app. Leader" +
-                                 " should be " +
-                                 str( leader ) )
+            leaders.append( leader )
+        if len( set( leaders ) ) != 1:
+            leaderResult = main.FALSE
+            main.log.error( "Results of electionTestLeader is order of CLIs:" +
+                            str( leaders ) )
         if leaderResult:
             main.log.report( "Leadership election tests passed( consistent " +
                              "view of leader across listeners and a leader " +
@@ -2350,7 +2338,7 @@ class HATestClusterRestart:
         main.case( description )
         main.step( "Find current leader and withdraw" )
         leader = main.ONOScli1.electionTestLeader()
-        # TODO: do some sanity checking on leader before using it
+        # do some sanity checking on leader before using it
         withdrawResult = main.FALSE
         if leader is None or leader == main.FALSE:
             main.log.report(
@@ -2362,7 +2350,7 @@ class HATestClusterRestart:
             if leader == nodes[ i ].ip_address:
                 oldLeader = CLIs[ i ]
                 break
-        else:
+        else:  # FOR/ELSE statement
             main.log.error( "Leader election, could not find current leader" )
         if oldLeader:
             withdrawResult = oldLeader.electionTestWithdraw()
@@ -2373,6 +2361,7 @@ class HATestClusterRestart:
             onfail="App was not withdrawn from election" )
 
         main.step( "Make sure new leader is elected" )
+        # FIXME: use threads
         leaderList = []
         for cli in CLIs:
             leaderN = cli.electionTestLeader()
@@ -2389,6 +2378,11 @@ class HATestClusterRestart:
                                  "electionTestLeader function, " +
                                  "check the error logs" )
                 leaderResult = main.FALSE
+            elif leaderN is None:
+                # node may not have recieved the event yet
+                leaderN = cli.electionTestLeader()
+                leaderList.pop()
+                leaderList.append( leaderN )
         consistentLeader = main.FALSE
         if len( set( leaderList ) ) == 1:
             main.log.info( "Each Election-app sees '" +

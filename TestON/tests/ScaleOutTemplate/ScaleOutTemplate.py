@@ -71,7 +71,8 @@ class ScaleOutTemplate:
          
         clusterCount = int(scale[0])
         scale.remove(scale[0])       
-        
+        main.log.info("CLUSTER COUNT: " + str(clusterCount))
+
         #kill off all onos processes 
         main.log.step("Safety check, killing all ONOS processes")
         main.log.step("before initiating enviornment setup")
@@ -92,6 +93,8 @@ class ScaleOutTemplate:
 
         main.ONOSbench.createCellFile(BENCHIp,cellName,MN1Ip,str(Apps), *cellIp)
 
+        main.step( "Set Cell" )
+        main.ONOSbench.setCell(cellName)
         
         main.step( "Creating ONOS package" )
         packageResult = main.ONOSbench.onosPackage()  

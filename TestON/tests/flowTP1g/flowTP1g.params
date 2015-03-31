@@ -17,8 +17,8 @@
         <skipCleanInstall>yes</skipCleanInstall> 
         <warmUp>4</warmUp>                               #number of runs to warm up the system
         <sampleSize>20</sampleSize>                      #number of runs to take data from
-        <neighbors>6</neighbors>                    #list of number of neighbors
-        <servers>7</servers>                      #list of servers
+        <neighbors>4,2,0</neighbors>                    #list of number of neighbors
+        <servers>7,5,3,1</servers>                      #list of servers
         <flows>122500</flows>
         <switches>35</switches>
 

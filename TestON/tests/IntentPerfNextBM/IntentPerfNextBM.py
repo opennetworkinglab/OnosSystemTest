@@ -23,6 +23,7 @@ class IntentPerfNextBM:
         gitPull = main.params['GIT']['autoPull']
         checkoutBranch = main.params['GIT']['checkout']
         intentFilePath = main.params['DB']['intentFilePath']
+        cellStr = main.params[ 'TEST' ][ 'cellStr' ]
         ONOSIp = []
         
         for i in range(1, 8):
@@ -39,7 +40,8 @@ class IntentPerfNextBM:
         main.step('Starting mininet topology')
         main.Mininet1.startNet()
         main.step('Creating cell file')
-        cellFileResult = main.TRUE
+        cellFileResult = main.ONOSbench.createCellFile(
+                BENCHIp, cellName, MN1Ip, cellStr, ONOSIp[0])
         main.step('Applying cell file to environment')
         cellApplyResult = main.ONOSbench.setCell(cellName)
         verifyCellResult = main.ONOSbench.verifyCell()
@@ -151,7 +153,6 @@ class IntentPerfNextBM:
 
         time.sleep(20)
         
-        batchResultList = []
         deviceIdList = []
         batchInstallLat = []
         batchWithdrawLat = []
@@ -165,6 +166,9 @@ class IntentPerfNextBM:
         for device in jsonObj:
             deviceIdList.append(device['id'])
 
+        if not jsonObj:
+            main.log.warn( "Devices not found, check topology" )
+            
         sleepTime = 10
         baseDir = '/tmp/'
         for batch in range(0, 5):
@@ -283,6 +287,7 @@ class IntentPerfNextBM:
                 stdWithdrawLat = 'NA'
                 main.log.report('Batch withdraw failed')
                 assertion = main.FALSE
+            
             main.log.report('Avg of batch installation latency ' +
                     'of size ' + str(batchIntentSize) + ': ' +
                     str(avgInstallLat) + ' ms')
@@ -293,6 +298,7 @@ class IntentPerfNextBM:
                     str(avgWithdrawLat) + ' ms')
             main.log.report('Std Deviation of batch withdraw latency ' +
                     ': ' + str(round(numpy.std(maxWithdrawLat), 2)) + ' ms')
+            
             main.log.report('Avg of batch withdraw latency ' + 'of size ' +
                     str(batchIntentSize) + ': ' + str(avgWithdrawLat) + ' ms')
             main.log.report('Std Deviation of batch withdraw latency ' +
@@ -302,6 +308,7 @@ class IntentPerfNextBM:
                     str(avgSingleWithdrawLat) + ' ms')
             main.log.report('Std Deviation of single withdraw latency ' +
                     ': ' + str(stdSingleWithdrawLat) + ' ms')
+            
             dbCmd = "INSERT INTO intents_latency_tests VALUES('" +\
                     timeToPost + "','intents_latency_results'," +\
                     runNum + ',' + str(clusterCount) + ',' +\
@@ -680,27 +687,28 @@ class IntentPerfNextBM:
         import time
         import json
         
-        cellName = main.params[ 'ENV' ][ 'cellName' ]
-        features = main.params[ 'ENV' ][ 'cellFeatures' ]
-        benchIp = main.params[ 'BENCH' ][ 'ip' ]
-        mininetIp = main.params[ 'TEST' ][ 'MN' ]
-        
         clusterCount += 2
+        
+        cellName = main.params[ 'ENV' ][ 'cellName' ]
+        features = main.params[ 'TEST' ][ 'cellStr' ]
+        benchIp = main.params[ 'BENCH' ][ 'ip' ]
+        mininetIp = main.params[ 'MN' ][ 'ip1' ]
+        
         main.log.report('Increasing cluster size to ' + str(clusterCount))
         
         ONOSIp = []
         for i in range( 1, 8 ):
-            ONOSIp.append( main.params[ 'CTRL' ][ 'ip'+str(i) ]
+            ONOSIp.append( main.params[ 'CTRL' ][ 'ip'+str(i) ] )
 
         main.step( "Cleaning environment" )
-        for i in range( 1, 8 ):
+        for i in range( 0, 7 ):
             main.ONOSbench.onosDie( ONOSIp[i] )
-            main.log.info( "Uninstalling ONOS "+str(i) )
+            main.log.info( "Uninstalling ONOS "+str(i+1) )
             main.ONOSbench.onosUninstall( ONOSIp[i] )
 
         main.step( "Creating new cell file" )
         cellIp = []
-        for node in range( 1, clusterCount + 1 )
+        for node in range( 1, clusterCount + 1 ):
             cellIp.append( ONOSIp[node] )
         main.ONOSbench.createCellFile( benchIp, cellName,
                                        mininetIp, str(features), *cellIp )
@@ -712,12 +720,9 @@ class IntentPerfNextBM:
         main.ONOSbench.onosPackage()
 
         for node in range( 1, clusterCount + 1 ):
-            time.sleep(10)
-            main.log.info( "Starting ONOS "+str(node) +
-                            " at IP: "+ONOSIp[node] )
-            main.ONOSbench.onosInstall( ONOSIp[node] )
-            exec "a = main.ONOS%scli.startOnosCli" %str(node)
-            a( ONOSIp[node] )
+            main.ONOSbench.onosInstall( node = ONOSIp[node] )
+            
+        time.sleep( 20 )
 
         for node in range( 1, clusterCount + 1 ):
             for i in range( 2 ):
@@ -729,6 +734,12 @@ class IntentPerfNextBM:
                 if not isup:
                     main.log.info( "ONOS" + str(node) + " did not start")
         
+        for node in range( 1, clusterCount + 1 ):
+            exec "a = main.ONOS%scli.startOnosCli" %str(node)
+            a( ONOSIp[node] )
+
+        time.sleep(30)
+
         utilities.assert_equals(expect=main.TRUE, actual=assertion,
             onpass='Scale out to ' + str(clusterCount) + ' nodes successful',
             onfail='Scale out to ' + str(clusterCount) + ' nodes failed')

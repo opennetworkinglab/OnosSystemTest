@@ -182,7 +182,7 @@ class flowTP1g:
             serviceConfig.write("# Starts ONOS Apache Karaf container\n ")
             serviceConfig.write("#------------------------------------- \n ")
             serviceConfig.write("#export JAVA_HOME=${JAVA_HOME:-/usr/lib/jvm/java-7-openjdk-amd64/}\n ")
-            serviceConfig.write("""export JAVA_OPTS="${JAVA_OPTS:--Xms256m -Xmx8G}" \n """)
+            serviceConfig.write("""export JAVA_OPTS="${JAVA_OPTS:--Xms8G -Xmx8G}" \n """)
             serviceConfig.write("")
             serviceConfig.write("ONOS_HOME=/opt/onos \n ")
             serviceConfig.write("")

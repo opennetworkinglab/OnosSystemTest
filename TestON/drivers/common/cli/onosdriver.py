@@ -48,7 +48,7 @@ class OnosDriver( CLI ):
                     self.home = self.options[ 'home' ]
                     break
             if self.home is None or self.home == "":
-                self.home = "~/ONOS"
+                self.home = "~/onos"
 
             self.name = self.options[ 'name' ]
             self.handle = super( OnosDriver, self ).connect(
@@ -81,13 +81,17 @@ class OnosDriver( CLI ):
         """
         response = main.TRUE
         try:
-            self.handle.sendline( "" )
-            self.handle.expect( "\$" )
-            self.handle.sendline( "exit" )
-            self.handle.expect( "closed" )
+            if self.handle:
+                self.handle.sendline( "" )
+                self.handle.expect( "\$" )
+                self.handle.sendline( "exit" )
+                self.handle.expect( "closed" )
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
+        except ValueError:
+            main.log.exception( "Exception in discconect of " + self.name )
+            response = main.TRUE
         except Exception:
             main.log.exception( self.name + ": Connection failed to the host" )
             response = main.FALSE
@@ -173,6 +177,7 @@ class OnosDriver( CLI ):
                     'Runtime\sEnvironment\sto\scontinue',
                     'BUILD\sFAILURE',
                     'BUILD\sSUCCESS',
+                    'onos\$',  #TODO: fix this to be more generic?
                     'ONOS\$',
                     pexpect.TIMEOUT ], timeout=600 )
                 if i == 0:
@@ -188,7 +193,7 @@ class OnosDriver( CLI ):
                     main.exit()
                 elif i == 2:
                     main.log.info( self.name + ": Build success!" )
-                elif i == 3:
+                elif i == 3 or i == 4:
                     main.log.info( self.name + ": Build complete" )
                     # Print the build time
                     for line in self.handle.before.splitlines():
@@ -197,7 +202,7 @@ class OnosDriver( CLI ):
                     self.handle.sendline( "" )
                     self.handle.expect( "\$", timeout=60 )
                     return main.TRUE
-                elif i == 4:
+                elif i == 5:
                     main.log.error(
                         self.name +
                         ": mvn clean install TIMEOUT!" )
@@ -220,9 +225,13 @@ class OnosDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def gitPull( self, comp1="" ):
+    def gitPull( self, comp1="", fastForward=True ):
         """
         Assumes that "git pull" works without login
+
+        If the fastForward boolean is set to true, only git pulls that can
+        be fast forwarded will be performed. IE if you have not local commits
+        in your branch.
 
         This function will perform a git pull on the ONOS instance.
         If used as gitPull( "NODE" ) it will do git pull + NODE. This is
@@ -239,11 +248,12 @@ class OnosDriver( CLI ):
             # self.stop()
             self.handle.sendline( "cd " + self.home )
             self.handle.expect( self.home + "\$" )
-            if comp1 == "":
-                self.handle.sendline( "git pull" )
-            else:
-                self.handle.sendline( "git pull " + comp1 )
-
+            cmd = "git pull"
+            if comp1 != "":
+                cmd += ' ' +  comp1
+            if fastForward:
+                cmd += ' ' + " --ff-only"
+            self.handle.sendline( cmd )
             i = self.handle.expect(
                 [
                     'fatal',
@@ -254,6 +264,9 @@ class OnosDriver( CLI ):
                     'You\sare\snot\scurrently\son\sa\sbranch',
                     'You asked me to pull without telling me which branch you',
                     'Pull is not possible because you have unmerged files',
+                    'Please enter a commit message to explain why this merge',
+                    'Found a swap file by the name',
+                    'Please, commit your changes before you can merge.',
                     pexpect.TIMEOUT ],
                 timeout=300 )
             # debug
@@ -261,7 +274,11 @@ class OnosDriver( CLI ):
             # "git pull response: " +
             # str( self.handle.before ) + str( self.handle.after ) )
             if i == 0:
-                main.log.error( self.name + ": Git pull had some issue..." )
+                main.log.error( self.name + ": Git pull had some issue" )
+                output = self.handle.after
+                self.handle.expect( '\$' )
+                output += self.handle.before
+                main.log.warn( output )
                 return main.ERROR
             elif i == 1:
                 main.log.error(
@@ -303,6 +320,29 @@ class OnosDriver( CLI ):
                     "you have unmerged files." )
                 return main.ERROR
             elif i == 8:
+                # NOTE: abandoning test since we can't reliably handle this
+                #       there could be different default text editors and we
+                #       also don't know if we actually want to make the commit
+                main.log.error( "Git pull resulted in a merge commit message" +
+                                ". Exiting test!" )
+                main.cleanup()
+                main.exit()
+            elif i == 9:  # Merge commit message but swap file exists
+                main.log.error( "Git pull resulted in a merge commit message" +
+                                " but a swap file exists." )
+                try:
+                    self.handle.send( 'A' )  # Abort
+                    self.handle.expect( "\$" )
+                    return main.ERROR
+                except Exception:
+                    main.log.exception( "Couldn't exit editor prompt!")
+                    main.cleanup()
+                    main.exit()
+            elif i == 10:  # In the middle of a merge commit
+                main.log.error( "Git branch is in the middle of a merge. " )
+                main.log.warn( self.handle.before + self.handle.after )
+                return main.ERROR
+            elif i == 11:
                 main.log.error( self.name + ": Git Pull - TIMEOUT" )
                 main.log.error(
                     self.name + " Response was: " + str(
@@ -348,9 +388,9 @@ class OnosDriver( CLI ):
             self.handle.expect( cmd )
             i = self.handle.expect(
                 [ 'fatal',
-                  'Username\sfor\s(.*):\s',
-                  'Already\son\s\'',
-                  'Switched\sto\sbranch\s\'' + str( branch ),
+                  'Username for (.*): ',
+                  'Already on \'',
+                  'Switched to branch \'' + str( branch ),
                   pexpect.TIMEOUT,
                   'error: Your local changes to the following files' +
                   'would be overwritten by checkout:',
@@ -492,7 +532,7 @@ class OnosDriver( CLI ):
             main.exit()
 
     def createCellFile( self, benchIp, fileName, mnIpAddrs,
-                        extraFeatureString, *onosIpAddrs ):
+                        appString, *onosIpAddrs ):
         """
         Creates a cell file based on arguments
         Required:
@@ -516,11 +556,11 @@ class OnosDriver( CLI ):
         # Create the cell file in the directory for writing ( w+ )
         cellFile = open( tempDirectory + fileName, 'w+' )
 
-        # Feature string is hardcoded environment variables
+        # App string is hardcoded environment variables
         # That you may wish to use by default on startup.
-        # Note that you  may not want certain features listed
+        # Note that you  may not want certain apps listed
         # on here.
-        coreFeatureString = "export ONOS_FEATURES=" + extraFeatureString
+        appString = "export ONOS_APPS=" + appString
         mnString = "export OCN="
         onosString = "export OC"
         tempCount = 1
@@ -549,7 +589,7 @@ class OnosDriver( CLI ):
                 tempCount = tempCount + 1
 
             cellFile.write( mnString + "\"" + mnIpAddrs + "\"" + "\n" )
-            cellFile.write( coreFeatureString + "\n" )
+            cellFile.write( appString + "\n" )
             cellFile.close()
 
             # We use os.system to send the command to TestON cluster
@@ -805,6 +845,7 @@ class OnosDriver( CLI ):
                                   " stop" )
             i = self.handle.expect( [
                 "stop/waiting",
+                "Could not resolve hostname",
                 "Unknown\sinstance",
                 pexpect.TIMEOUT ], timeout=60 )
 
@@ -812,9 +853,12 @@ class OnosDriver( CLI ):
                 main.log.info( "ONOS service stopped" )
                 return main.TRUE
             elif i == 1:
-                main.log.info( "Unknown ONOS instance specified: " +
+                main.log.info( "onosStop() Unknown ONOS instance specified: " +
                                str( nodeIp ) )
                 return main.FALSE
+            elif i == 2:
+                main.log.warn( "ONOS wasn't running" )
+                return main.TRUE
             else:
                 main.log.error( "ONOS service failed to stop" )
                 return main.FALSE
@@ -952,8 +996,8 @@ class OnosDriver( CLI ):
                                         timeout=120 )
                 if i == 1:
                     return main.FALSE
-            self.handle.sendline( "" )
-            self.handle.expect( "\$" )
+            #self.handle.sendline( "" )
+            #self.handle.expect( "\$" )
             return main.TRUE
 
         except pexpect.EOF:
@@ -1224,14 +1268,14 @@ class OnosDriver( CLI ):
     def runOnosTopoCfg( self, instanceName, jsonFile ):
         """
          On ONOS bench, run this command:
-         ./~/ONOS/tools/test/bin/onos-topo-cfg $OC1 filename
+         {ONOS_HOME}/tools/test/bin/onos-topo-cfg $OC1 filename
          which starts the rest and copies
          the json file to the onos instance
         """
         try:
             self.handle.sendline( "" )
             self.handle.expect( "\$" )
-            self.handle.sendline( "cd ~/ONOS/tools/test/bin" )
+            self.handle.sendline( "cd " + self.home + "/tools/test/bin" )
             self.handle.expect( "/bin$" )
             cmd = "./onos-topo-cfg " + instanceName + " " + jsonFile
             print "cmd = ", cmd
@@ -1685,37 +1729,54 @@ class OnosDriver( CLI ):
         os.system( "scp " + tempFile + " admin@" + benchIp + ":" + linkGraphPath)        
         main.log.info("linkGraph.cfg creation complete")
 
-    def createNullDevProviderFile( self, benchIp, ONOSIpList, deviceCount, numPorts=10):
+    def configNullDev( self, ONOSIpList, deviceCount, numPorts=10):
         
         '''
-            benchIp = Ip address of the test bench 
             ONOSIpList = list of Ip addresses of nodes switches will be devided amongst 
-            deviceCount = number of switches to distribute 
-            numPorts = number of ports per device, when not specified in file it defaults to 10, optional arg
+            deviceCount = number of switches to distribute, or list of values to use as custom distribution  
+            numPorts = number of ports per device. Defaults to 10 both in this function and in ONOS. Optional arg
         '''
 
-        main.log.step("Creating null device provider configuration file." )
-        nullDevicePath = self.home + "/tools/package/etc/org.onosproject.provider.nil.device.impl.NullDeviceProvider.cfg"
-        tempFile = "/tmp/org.onosproject.provider.nil.device.impl.NullDeviceProvider.cfg"
-        configFile = open(tempFile, 'w+')
+        main.log.step("Configuring Null Device Provider" )
         clusterCount = len(ONOSIpList)
 
-        if type(deviceCount) is int or type(deviceCount) is str:
-            main.log.info("Creating device distribution")
-            deviceCount = int(deviceCount)
-            switchList = [0]*(clusterCount+1)
-            baselineSwitchCount = deviceCount/clusterCount
+        try: 
+            
+            if type(deviceCount) is int or type(deviceCount) is str:
+                main.log.step("Creating device distribution")
+                deviceCount = int(deviceCount)
+                switchList = [0]*(clusterCount+1)
+                baselineSwitchCount = deviceCount/clusterCount
 
-            for node in range(1, clusterCount + 1):
-                switchList[node] = baselineSwitchCount
+                for node in range(1, clusterCount + 1):
+                    switchList[node] = baselineSwitchCount
 
-            for node in range(1, (deviceCount%clusterCount)+1):
-                switchList[node] += 1
+                for node in range(1, (deviceCount%clusterCount)+1):
+                    switchList[node] += 1
+                
+            if type(deviceCount) is list: 
+                main.log.info("Using provided device distribution") 
+                
+                if len(deviceCount) == clusterCount: 
+                    switchList = ['0']
+                    switchList.extend(deviceCount)
+                
+                if len(deviceCount) == (clusterCount + 1): 
+                    if deviceCount[0] == '0' or deviceCount[0] == 0: 
+                        switchList = deviceCount
 
-        if type(deviceCount) is list: 
-            main.log.info("Using provided device distribution") 
-            switchList = ['0']
-            switchList.extend(deviceCount)
+                assert len(switchList) == (clusterCount + 1)
+        
+        except AssertionError:
+            main.log.error( "Bad device/Ip list match") 
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
 
         ONOSIp = [0]
         ONOSIp.extend(ONOSIpList)
@@ -1725,54 +1786,69 @@ class OnosDriver( CLI ):
             devicesString += (ONOSIp[node] + ":" + str(switchList[node] ))
             if node < clusterCount:
                 devicesString += (",")
+        
+        try: 
+            self.handle.sendline("onos $OC1 cfg set org.onosproject.provider.nil.device.impl.NullDeviceProvider devConfigs " + devicesString )
+            self.handle.expect(":~")
+            self.handle.sendline("onos $OC1 cfg set org.onosproject.provider.nil.device.impl.NullDeviceProvider numPorts " + str(numPorts) )
+            self.handle.expect(":~")
 
-        configFile.write(devicesString + "\n")
-        if numPorts == 10:
-            configFile.write("#numPorts = 10")
-        else: 
-            configFile.write("numPorts = " + str(numPorts))
+            for i in range(10):
+                self.handle.sendline("onos $OC1 cfg get org.onosproject.provider.nil.device.impl.NullDeviceProvider")
+                self.handle.expect(":~")
+                verification = self.handle.before
+                if (" value=" + str(numPorts)) in verification and (" value=" + devicesString) in verification:
+                    break
+                else:
+                    time.sleep(1)
 
-        configFile.close()        
-        os.system( "scp " + tempFile + " admin@" + benchIp + ":" + nullDevicePath)
+            assert ("value=" + str(numPorts)) in verification and (" value=" + fileName) in verification
+        
+        except AssertionError:
+            main.log.error("Incorrect Config settings: " + verification)
 
-    def createNullLinkProviderFile( self, benchIp, neighborIpList=0, eventRate=0, onNode=False): 
+        except:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
+    def configNullLink( self,fileName="/opt/onos/apache-karaf-3.0.2/etc/linkGraph.cfg", eventRate=0): 
         '''
-                neighbor list is an optional list of neighbors to be written directly to the file
-                onNode - bool, if true, alternate file path will be used to scp, inteneded
-                        for use on cell
+                fileName default is currently the same as the default on ONOS, specify alternate file if 
+                you want to use a different topology file than linkGraph.cfg
         '''
 
-        main.log.step("Creating Null Link Provider config file")
-        nullLinkPath = self.home + "/tools/package/etc/org.onosproject.provider.nil.link.impl.NullLinkProvider.cfg"
-        if onNode == True: 
-            nullLinkPath = "/opt/onos/apache-karaf-3.0.2/etc/org.onosproject.provider.nil.link.impl.NullLinkProvider.cfg"
-        tempFile = "/tmp/org.onosproject.provider.nil.link.impl.NullLinkProvider.cfg"
-        configFile = open(tempFile, 'w+')
-    
-        eventRate = int(eventRate)
-
-        if eventRate == 0: 
-            configFile.write("#eventRate = \n")
-        else: 
-            configFile.write("eventRate = " + str(eventRate) + "\n") 
-
-        configFile.write("#cfgFile = /tmp/foo.cfg        #If enabled, points to the full path to the topology file.\n") 
         
-        if neighborIpList != 0:
-            configFile.write("neighbors = ")
-            for n in range (0, len(neighborIpList)):
-                configFile.write(neighborIpList[n])
-                if n < (len(neighborIpList) - 1):
-                    configFile.write(",")            
-        else: 
-            configFile.write("#neighbors = ") 
+        try: 
+            self.handle.sendline("onos $OC1 cfg set org.onosproject.provider.nil.link.impl.NullLinkProvider eventRate " + str(eventRate)) 
+            self.handle.expect(":~")            
+            self.handle.sendline("onos $OC1 cfg set org.onosproject.provider.nil.link.impl.NullLinkProvider cfgFile " + fileName )
+            self.handle.expect(":~")
+               
+            for i in range(10): 
+                self.handle.sendline("onos $OC1 cfg get org.onosproject.provider.nil.link.impl.NullLinkProvider") 
+                self.handle.expect(":~")
+                verification = self.handle.before
+                if (" value=" + str(eventRate)) in verification and (" value=" + fileName) in verification: 
+                    break
+                else: 
+                    time.sleep(1)
+            
+            assert ("value=" + str(eventRate)) in verification and (" value=" + fileName) in verification
+            
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
         
-        configFile.close()
-        if onNode == False:
-            os.system( "scp " + tempFile + " admin@" + benchIp + ":" + nullLinkPath)
-        if onNode == True:
-            os.system( "scp " + tempFile + " sdn@" + benchIp + ":" + nullLinkPath)
-        
+        except AssertionError:
+            main.log.info("Settings did not post to ONOS")
+            main.log.error(varification)            
 
-
+        except:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.log.error(varification)
+            main.cleanup()
+            main.exit()
 

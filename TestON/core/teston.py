@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 '''
 Created on 22-Oct-2012
-    
+
 @author: Anil Kumar (anilkumar.s@paxterrasolutions.com)
 
 
@@ -16,7 +16,7 @@ Created on 22-Oct-2012
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with TestON.  If not, see <http://www.gnu.org/licenses/>.		
+    along with TestON.  If not, see <http://www.gnu.org/licenses/>.
 
 
 
@@ -90,7 +90,7 @@ class TestON:
         self.logs_path = logs_path
         self.driver = ''
         self.Thread = Thread
-        
+
         self.configparser()
         verifyOptions(options)
         load_logger()
@@ -99,17 +99,17 @@ class TestON:
         self.driversList=[]
         if type(self.componentDictionary) == str :
             self.componentDictionary = dict(self.componentDictionary)
-            
+
         for component in self.componentDictionary :
             self.driversList.append(self.componentDictionary[component]['type'])
-            
+
         self.driversList = list(set(self.driversList)) # Removing duplicates.
         # Checking the test_target option set for the component or not
         if type(self.componentDictionary) == dict:
             for component in self.componentDictionary.keys():
                 if 'test_target' in self.componentDictionary[component].keys():
                     self.test_target = component
-             
+
         # Checking for the openspeak file and test script
         self.logger.initlog(self)
 
@@ -247,7 +247,7 @@ class TestON:
                 #print code[testCaseNumber][step]
                 self.stepCount = self.stepCount + 1
                 self.log.exception(e)
-                return main.FALSE
+                self.cleanup()
             return main.TRUE
         
         if cli.stop:

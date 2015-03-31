@@ -637,10 +637,8 @@ class MultiProd13:
         main.step( "Determine the current number of switches and links" )
         topologyOutput = main.ONOScli1.topology()
         topologyResult = main.ONOSbench.getTopology( topologyOutput )
-        activeSwitches = topologyResult[ 'devices' ]
-        links = topologyResult[ 'links' ]
-        print "activeSwitches = ", type( activeSwitches )
-        print "links = ", type( links )
+        activeSwitches = topologyResult[ 'deviceCount' ]
+        links = topologyResult[ 'linkCount' ]
         main.log.info(
             "Currently there are %s switches and %s links" %
             ( str( activeSwitches ), str( links ) ) )
@@ -1535,39 +1533,54 @@ class MultiProd13:
         main.Mininet1.verifyStaticGWandMAC( host='h9' )
         main.Mininet1.verifyStaticGWandMAC( host='h10' )
 
+        ingressDevice1=main.params[ 'MULTIPOINT_INTENT' ][ 'device1' ]
+        ingressDevice2=main.params[ 'MULTIPOINT_INTENT' ][ 'device2' ]
+        ingressDeviceList = []
+        ingressDeviceList.append( ingressDevice1 )
+        ingressDeviceList.append( ingressDevice2 )
+
         main.step( "Adding multipoint to singlepoint intent" )
         pIntentResult1 = main.ONOScli1.addMultipointToSinglepointIntent(
-            ingressDevice1=main.params[ 'MULTIPOINT_INTENT' ][ 'device1' ],
-            ingressDevice2=main.params[ 'MULTIPOINT_INTENT' ][ 'device2' ],
+            ingressDeviceList,
             egressDevice=main.params[ 'MULTIPOINT_INTENT' ][ 'device3' ],
             ipDst=main.params[ 'MULTIPOINT_INTENT' ][ 'ip1' ],
             setEthDst=main.params[ 'MULTIPOINT_INTENT' ][ 'mac1' ] )
 
+        ingressDevice1=main.params[ 'MULTIPOINT_INTENT' ][ 'device3' ]
+        ingressDevice2=main.params[ 'MULTIPOINT_INTENT' ][ 'device2' ]
+        ingressDeviceList = [ingressDevice1, ingressDevice2]
+
         pIntentResult2 = main.ONOScli1.addMultipointToSinglepointIntent(
-            ingressDevice1=main.params[ 'MULTIPOINT_INTENT' ][ 'device3' ],
-            ingressDevice2=main.params[ 'MULTIPOINT_INTENT' ][ 'device2' ],
+            ingressDeviceList,
             egressDevice=main.params[ 'MULTIPOINT_INTENT' ][ 'device1' ],
             ipDst=main.params[ 'MULTIPOINT_INTENT' ][ 'ip2' ],
             setEthDst=main.params[ 'MULTIPOINT_INTENT' ][ 'mac2' ] )
 
-        getIntentResult = main.ONOScli1.intents( jsonFormat=False )
-        main.log.info( "intents = " + getIntentResult )
+        pIntentResult = pIntentResult1 and pIntentResult2
+        if pIntentResult == main.FALSE:
+            main.log.info(
+                "Multi point to single point intent " +
+                "installation failed" )
+        else:
+            pIntentResult = main.TRUE 
+            getIntentResult = main.ONOScli1.intents( jsonFormat=False )
+            main.log.info( "intents = " + getIntentResult )
 
-        time.sleep( 10 )
-        getFlowsResult = main.ONOScli1.flows( jsonFormat=False )
-        main.log.info( "flows = " + getFlowsResult )
+            time.sleep( 10 )
+            getFlowsResult = main.ONOScli1.flows( jsonFormat=False )
+            main.log.info( "flows = " + getFlowsResult )
 
-        count = 1
-        i = 8
-        PingResult = main.TRUE
+            count = 1
+            i = 8
+            PingResult = main.TRUE
 
-        main.log.info( "\n\nh" + str( i ) + " is Pinging h" + str( i + 2 ) )
-        ping = main.Mininet1.pingHost(
+            main.log.info( "\n\nh" + str( i ) + " is Pinging h" + str( i + 2 ) )
+            ping = main.Mininet1.pingHost(
             src="h" + str( i ), target="h" + str( i + 2 ) )
-        if ping == main.FALSE and count < 3:
-            count += 1
-            PingResult = main.FALSE
-            main.log.report( "Ping between h" +
+            if ping == main.FALSE and count < 3:
+                count += 1
+                PingResult = main.FALSE
+                main.log.report( "Ping between h" +
                              str( i ) +
                              " and h" +
                              str( i +
@@ -1575,43 +1588,38 @@ class MultiProd13:
                              " failed. Making attempt number " +
                              str( count ) +
                              " in 2 seconds" )
-            time.sleep( 2 )
-        elif ping == main.FALSE:
-            main.log.report( "All ping attempts between h" +
+                time.sleep( 2 )
+            elif ping == main.FALSE:
+                main.log.report( "All ping attempts between h" +
                              str( i ) +
                              " and h" +
                              str( i +
                                   10 ) +
                              "have failed" )
-            PingResult = main.FALSE
-        elif ping == main.TRUE:
-            main.log.info( "Ping test between h" +
+                PingResult = main.FALSE
+            elif ping == main.TRUE:
+                main.log.info( "Ping test between h" +
                            str( i ) +
                            " and h" +
                            str( i +
                                 2 ) +
                            "passed!" )
-            PingResult = main.TRUE
-        else:
-            main.log.info( "Unknown error" )
-            PingResult = main.ERROR
+                PingResult = main.TRUE
+            else:
+                main.log.info( "Unknown error" )
+                PingResult = main.ERROR
 
-        if PingResult == main.FALSE:
-            main.log.report( "Ping test failed." )
-            # main.cleanup()
-            # main.exit()
-        if PingResult == main.TRUE:
-            main.log.report( "Ping all successful" )
+            if PingResult == main.FALSE:
+                main.log.report( "Ping test failed." )
+                # main.cleanup()
+                # main.exit()
+            if PingResult == main.TRUE:
+                main.log.report( "Ping all successful" )
 
-        pIntentResult = pIntentResult1 and pIntentResult2
         if pIntentResult == main.TRUE:
             main.log.info(
                 "Multi point intent with rewrite mac " +
-                "address installation successful" )
-        else:
-            main.log.info(
-                "Multi point intent with rewrite mac" +
-                " address installation failed" )
+                "address installation and ping successful" )
 
         case33Result = pIntentResult and PingResult
         utilities.assertEquals(

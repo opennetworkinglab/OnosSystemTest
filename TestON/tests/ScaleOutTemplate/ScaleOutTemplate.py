@@ -92,6 +92,8 @@ class ScaleOutTemplate:
 
         main.ONOSbench.createCellFile(BENCHIp,cellName,MN1Ip,str(Apps), *cellIp)
 
+        main.step( "Set Cell" )
+        main.ONOSbench.setCell(cellName)
         
         main.step( "Creating ONOS package" )
         packageResult = main.ONOSbench.onosPackage()  

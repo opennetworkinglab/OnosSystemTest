@@ -237,13 +237,15 @@ class HATestSingleInstanceRestart:
                 roleCall = roleCall and main.ONOScli1.deviceRole( deviceId,
                                                                   ip )
                 # Check assignment
-                if ip in main.ONOScli1.getRole( deviceId ).get( 'master' ):
+                master =  main.ONOScli1.getRole( deviceId ).get( 'master' )
+                if ip in master:
                     roleCheck = roleCheck and main.TRUE
                 else:
                     roleCheck = roleCheck and main.FALSE
                     main.log.error( "Error, controller " + ip + " is not" +
                                     " master " + "of device " +
-                                    str( deviceId ) )
+                                    str( deviceId ) + ". Master is " +
+                                    repr( master ) + "." )
         except ( AttributeError, AssertionError ):
             main.log.exception( "Something is wrong with ONOS device view" )
             main.log.info( main.ONOScli1.devices() )

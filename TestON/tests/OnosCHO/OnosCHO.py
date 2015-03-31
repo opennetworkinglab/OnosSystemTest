@@ -220,17 +220,36 @@ class OnosCHO:
             main.log.report( "Controller assignment successfull" )
         else:
             main.log.report( "Controller assignment failed" )
-        time.sleep( 5 )
-        #Don't balance master for now..
+        
+        """topoFailed = main.FALSE
+        checkCount = 0
+        while(topoFailed  == main.FALSE):
+            topology_output = main.ONOScli1.topology()
+            topology_result = main.ONOSbench.getTopology( topology_output )
+            numOnosDevices = topology_result[ 'deviceCount' ]
+            numOnosLinks = topology_result[ 'linkCount' ]
+            if ( ( main.numMNswitches == int(numOnosDevices) ) and ( main.numMNlinks >= int(numOnosLinks) ) ):
+                main.log.info("Att topology is now ready!")
+                break
+            else:
+                main.log.info("Att topology is not ready yet!")
+            checkCount = checkCount + 1
+            time.sleep(2)
+            if checkCount == 10:
+                topoFailed = main.TRUE
+        if topoFailed:
+            main.log.info("Att topology failed to start correctly")
         """
+        time.sleep(15)
+        #Don't balance master for now..
         main.step( "Balance devices across controllers" )
         for i in range( int( main.numCtrls ) ):
             balanceResult = main.ONOScli1.balanceMasters()
             # giving some breathing time for ONOS to complete re-balance
             time.sleep( 3 )
-        """
+        topology_output = main.ONOScli1.topology()
+        topology_result = main.ONOSbench.getTopology( topology_output )
         case2Result = ( switch_mastership and startStatus )
-        #time.sleep(45)
         utilities.assert_equals(
             expect=main.TRUE,
             actual=case2Result,
@@ -770,7 +789,6 @@ class OnosCHO:
         utilities.assert_equals( expect=main.TRUE, actual=case4Result,
                                  onpass="Reactive Mode Pingall test PASS",
                                  onfail="Reactive Mode Pingall test FAIL" )
-
     def CASE5( self, main ):
         """
         Compare current ONOS topology with reference data
@@ -1324,7 +1342,7 @@ class OnosCHO:
         main.step( "Verify Ping across all hosts" )
         pingResultLinkUp = main.FALSE
         time1 = time.time()
-        pingResultLinkUp = main.Mininet1.pingall()
+        pingResultLinkUp = main.Mininet1.pingall(timeout = main.pingTimeout)
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -1437,7 +1455,7 @@ class OnosCHO:
         main.step( "Verify Ping across all hosts" )
         pingResultLinkUp = main.FALSE
         time1 = time.time()
-        pingResultLinkUp = main.Mininet1.pingall()
+        pingResultLinkUp = main.Mininet1.pingall(timeout = main.pingTimeout)
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -1550,7 +1568,7 @@ class OnosCHO:
         main.step( "Verify Ping across all hosts" )
         pingResultLinkUp = main.FALSE
         time1 = time.time()
-        pingResultLinkUp = main.Mininet1.pingall()
+        pingResultLinkUp = main.Mininet1.pingall(timeout = main.pingTimeout)
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -1595,8 +1613,8 @@ class OnosCHO:
         main.randomLink2 = link2End2top[linkIndexS10]
         main.randomLink3 = random.sample(link1End2bot,1)[0]
         main.randomLink4 = random.sample(link2End2bot,1)[0]
-        main.Mininet1.link( END1=link1End1, END2=main.randomLink1, OPTION="down" )
-        main.Mininet1.link( END1=link2End1, END2=main.randomLink2, OPTION="down" )
+        # main.Mininet1.link( END1=link1End1, END2=main.randomLink1, OPTION="down" )
+        # main.Mininet1.link( END1=link2End1, END2=main.randomLink2, OPTION="down" )
         main.Mininet1.link( END1=link1End1, END2=main.randomLink3, OPTION="down" )
         main.Mininet1.link( END1=link2End1, END2=main.randomLink4, OPTION="down" )
         
@@ -1648,8 +1666,8 @@ class OnosCHO:
         main.case(
             "Host intents - Bring the core links up that are down and verify ping all" )
         
-        main.Mininet1.link( END1=link1End1, END2=main.randomLink1, OPTION="up" )
-        main.Mininet1.link( END1=link2End1, END2=main.randomLink2, OPTION="up" )
+        #main.Mininet1.link( END1=link1End1, END2=main.randomLink1, OPTION="up" )
+        #main.Mininet1.link( END1=link2End1, END2=main.randomLink2, OPTION="up" )
         main.Mininet1.link( END1=link1End1, END2=main.randomLink3, OPTION="up" )
         main.Mininet1.link( END1=link2End1, END2=main.randomLink4, OPTION="up" )
        
@@ -1670,7 +1688,7 @@ class OnosCHO:
         main.step( "Verify Ping across all hosts" )
         pingResultLinkUp = main.FALSE
         time1 = time.time()
-        pingResultLinkUp = main.Mininet1.pingall()
+        pingResultLinkUp = main.Mininet1.pingall(timeout = main.pingTimeout)
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -1814,16 +1832,20 @@ class OnosCHO:
     
     def CASE92( self ):
         """
-        Install $$$### point intents and verify ping all (Spine Topology)
+        Install 4556 point intents and verify ping all (Spine Topology)
         """
-        main.log.report( "Add $$$### point intents and verify pingall (Spine Topology)" )
+        main.log.report( "Add 4556 point intents and verify pingall (Spine Topology)" )
         main.log.report( "_______________________________________" )
         import itertools
         import time
-        main.case( "Install $$$### point intents" )
+        main.case( "Install 4556 point intents" )
         main.step( "Add point Intents" )
         intentResult = main.TRUE
-        deviceCombos = list( itertools.permutations( main.deviceDPIDs, 2 ) ) 
+        main.pingTimeout = 600 
+        for i in range(len(main.hostMACs)):
+            main.MACsDict[main.deviceDPIDs[i+10]] = main.hostMACs[i].split('/')[0]
+        print main.MACsDict
+        deviceCombos = list( itertools.permutations( main.deviceDPIDs[10:], 2 ) ) 
         
         intentIdList = []
         time1 = time.time()
@@ -1850,9 +1872,9 @@ class OnosCHO:
         intentsJson = main.ONOScli2.intents()
         getIntentStateResult = main.ONOScli1.getIntentState(intentsId = intentIdList,
                 intentsJson = intentsJson)
-        print getIntentStateResult
+        #print getIntentStateResult
         # Takes awhile for all the onos to get the intents
-        time.sleep(30)
+        time.sleep(60)
         main.step( "Verify Ping across all hosts" )
         pingResult = main.FALSE
         time1 = time.time()
@@ -1872,10 +1894,68 @@ class OnosCHO:
         utilities.assert_equals(
             expect=main.TRUE,
             actual=case92Result,
-            onpass="Install $$$### point Intents and Ping All test PASS",
-            onfail="Install $$$### point Intents and Ping All test FAIL" )
-
+            onpass="Install 4556 point Intents and Ping All test PASS",
+            onfail="Install 4556 point Intents and Ping All test FAIL" )
+     
     def CASE93( self ):
+        """
+        Install multi-single point intents and verify Ping all works
+        for att topology
+        """
+        import copy
+        import time
+        main.log.report( "Install multi-single point intents and verify Ping all" )
+        main.log.report( "___________________________________________" )
+        main.case( "Install multi-single point intents and Ping all" )
+        deviceDPIDsCopy = copy.copy(main.deviceDPIDs)
+        portIngressList = ['1']*(len(deviceDPIDsCopy) - 1)
+        intentIdList = []
+        print "MACsDict", main.MACsDict
+        time1 = time.time()
+        for i in xrange(0,len(deviceDPIDsCopy),int(main.numCtrls)):
+            pool = []
+            for cli in main.CLIs:
+                egressDevice = deviceDPIDsCopy[i]
+                ingressDeviceList = copy.copy(deviceDPIDsCopy)
+                ingressDeviceList.remove(egressDevice)
+                if i >= len( deviceDPIDsCopy ):
+                    break
+                t = main.Thread( target=cli.addMultipointToSinglepointIntent,
+                        threadID=main.threadID,
+                        name="addMultipointToSinglepointIntent",
+                        args =[ingressDeviceList,egressDevice,portIngressList,'1','IPV4','',main.MACsDict.get(egressDevice)])
+                pool.append(t)
+                #time.sleep(1)
+                t.start()
+                i = i + 1
+                main.threadID = main.threadID + 1
+            for thread in pool:
+                thread.join()
+                intentIdList.append(thread.result)
+        time2 = time.time()
+        main.log.info("Time for adding point intents: %2f seconds" %(time2-time1)) 
+        time.sleep(5)
+        main.step( "Verify Ping across all hosts" )
+        pingResult = main.FALSE
+        time1 = time.time()
+        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout)
+        time2 = time.time()
+        timeDiff = round( ( time2 - time1 ), 2 )
+        main.log.report(
+            "Time taken for Ping All: " +
+            str( timeDiff ) +
+            " seconds" )
+
+        case93Result = pingResult
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=case93Result,
+            onpass="Install 25 multi to single point Intents and Ping All test PASS",
+            onfail="Install 25 multi to single point Intents and Ping All test FAIL" )
+        
+        
+        
+    def CASE96( self ):
         """
         Install single-multi point intents and verify Ping all works
         for att topology
@@ -1943,7 +2023,7 @@ class OnosCHO:
             onpass="Ping all test after Point intents addition successful",
             onfail="Ping all test after Point intents addition failed" )
 
-    def CASE94( self ):
+    def CASE97( self ):
         """
         Install single-multi point intents and verify Ping all works
         """

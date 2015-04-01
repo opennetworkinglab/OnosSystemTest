@@ -267,6 +267,8 @@ def sdn1net():
     host3.setIP('1.168.30.2', 24, 'host3-eth3')   
     host3.cmd('sysctl net.ipv4.conf.all.arp_ignore=1')
     host3.cmd('sysctl net.ipv4.conf.all.arp_announce=1')
+    host3.cmd('ip route add default via 192.168.10.101')
+
     as2host = net.get('as2host')
     #as2host.defaultIntf().setIP('172.16.20.1/24')
     for i in range(0, 20):
@@ -291,6 +293,7 @@ def sdn1net():
     #root space
     host4.setIP('1.168.30.3', 24, 'host4-eth3')
     host4.setMAC('00:00:00:00:03:03', 'host4-eth3')
+    host4.cmd('ip route add default via 192.168.30.101')
     
     # Set up AS4
     #as4host = net.get('as4host')
@@ -323,6 +326,7 @@ def sdn1net():
     host5.setMAC('00:00:00:00:06:66', 'host5-eth2')
     host5.setIP('1.168.30.5', 24, 'host5-eth3')
     host5.setMAC('00:00:00:00:06:05', 'host5-eth3')
+    host5.cmd('ip route add default via 192.168.60.101')
 
     as6host = net.get('as6host')
     #as6host.defaultIntf().setIP('5.0.0.1/24')

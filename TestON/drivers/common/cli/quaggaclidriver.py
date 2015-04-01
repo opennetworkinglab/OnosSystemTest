@@ -381,7 +381,7 @@ class QuaggaCliDriver( CLI ):
                 self.disconnect()
             
             # waitTimer = 1.00 / routeRate
-            main.log.info("Total routes so far " + ((str) (total)) + " wait for 0 sec")
+            main.log.info("Total routes so far " + ((str) (total)))
             #time.sleep( 1 )
         if routesAdded == len( routes ):
             main.log.info( "Finished adding routes" )

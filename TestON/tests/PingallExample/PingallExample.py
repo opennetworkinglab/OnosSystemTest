@@ -54,7 +54,7 @@ class PingallExample:
 
             main.step( "Using mvn clean & install" )
             cleanInstallResult = main.TRUE
-            if gitPullResult == main.TRUE:
+            if gitPullResult == main.TRUE || gitPullResult == 3:
                 cleanInstallResult = main.ONOSbench.cleanInstall()
             else:
                 main.log.warn( "Did not pull new code so skipping mvn " +

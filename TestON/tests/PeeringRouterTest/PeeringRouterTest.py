@@ -1,11 +1,28 @@
 # from cupshelpers.config import prefix
 
-# Testing the basic functionality of SDN-IP
+# Testing the basic functionality of BgpRouter
 
 class PeeringRouterTest:
 
     def __init__( self ):
         self.default = ''
+
+    def CASE1 (self, main):
+        main.ONOSbench.handle.sendline("cd ~/onos")
+        main.ONOSbench.handle.sendline("git stash save")
+        main.step( "Git checkout and pull master" )
+        main.ONOSbench.gitCheckout( "master" )
+        gitPullResult = main.ONOSbench.gitPull()
+        main.ONOSbench.handle.sendline("git stash pop")
+
+        main.step( "Using mvn clean & installi & No Test" )
+        cleanInstallResult = main.TRUE
+        if gitPullResult == main.TRUE or gitPullResult == 3:
+            cleanInstallResult = main.ONOSbench.cleanInstallSkipTest()
+        else:
+            main.log.warn( "Did not pull new code so skipping mvn " +
+                           "clean install" )
+        main.ONOSbench.getVersion( report=True )
 
 
     def CASE6 ( self, main):
@@ -15,33 +32,32 @@ class PeeringRouterTest:
         from operator import eq
         # from datetime import datetime
         from time import localtime, strftime
-        
-        TESTCASE_ROOT_PATH = main.params[ 'ENV' ][ 'home' ]
-        TESTCASE_MININET_ROOT_PATH = TESTCASE_ROOT_PATH + "/vlan/mininet"
-	# Launch mininet topology for this case
-        MININET_TOPO_FILE = TESTCASE_MININET_ROOT_PATH + "/PeeringRouterMininetVlan.py"
-        main.step( "Launch mininet" )
-        main.Mininet.handle.sendline("sudo python " + MININET_TOPO_FILE + " " + TESTCASE_MININET_ROOT_PATH)
-        main.step("waiting 20 secs for all switches and quagga instances to comeup")
-        time.sleep(20)
-        main.step( "Test whether Mininet is started" )
 
-        #============================= Ping Test ========================
-        main.log.info("Start ping test")
-        
-        for m in range( 3, 6 ):
-            for n in range( 1, 11 ):
-                hostIp = str( m ) + ".0." + str( n ) + ".1"
-                pingTestResults = main.Mininet.pingHost(SRC="as2host", TARGET=hostIp)
-                
-        if pingTestResults:
-            main.log.info("Test succeeded")
+        cellName = main.params[ 'ENV' ][ 'cellName' ]
+        ONOS1Ip = main.params[ 'CTRL' ][ 'ip1' ]
+        main.step( "Set cell for ONOS-cli environment" )
+        main.ONOScli.setCell( cellName )
+      
+        main.ONOScli.startOnosCli( ONOS1Ip )
+
+        getRoutesResult = main.ONOScli.routes( jsonFormat=True )
+        allRoutesActual = \
+            main.QuaggaCliHost3.extractActualRoutes( getRoutesResult )
+
+        main.log.info( "allRoutes_actual = " )
+        main.log.info( allRoutesActual )
+
+        allRoutesStrExpected = []
+        allRoutesStrActual = str( allRoutesActual )
+
+        if( eq( "[]", allRoutesStrActual ) ):
+            main.log.report( "***Routes in BgpRouter after deleting correct!***" )
+            routeCheckResult2 = main.TRUE
         else:
-            main.log.info("Test failed")
-        
-        utilities.assert_equals(expect=main.TRUE,actual=pingTestResults,
-                                  onpass="Default connectivity check PASS", 
-                                  onfail="Default connectivity check FAIL") 
+            main.log.report( "***Routes in BgpRouter after deleting wrong!***" )
+            routeCheckResult2 = main.FALSE
+
+        time.sleep(10)
 
 
     def CASE4( self, main):
@@ -191,16 +207,8 @@ class PeeringRouterTest:
                 "***Routes in SDN-IP after adding routes are wrong!***" )
 
         #============================= Ping Test ========================
-        pingTestResults = main.QuaggaCliHost.pingTestAndCheckAllPass( "1.168.30.100" )
-        main.log.info("Ping test result")
-        if pingTestResults:
-            main.log.info("Test succeeded")
-        else:
-            main.log.info("Test failed")
-       
-        utilities.assert_equals(expect=main.TRUE,actual=pingTestResults,
-                                  onpass="Default connectivity check PASS",
-                                  onfail="Default connectivity check FAIL")
+
+
 
         #============================= Deleting Routes ==================
         main.step( "Check deleting routes installed" )
@@ -226,16 +234,9 @@ class PeeringRouterTest:
             main.log.report( "***Routes in SDN-IP after deleting wrong!***" )
 
         #============================= Ping Test ========================
-        pingTestResults = main.QuaggaCliHost.pingTestAndCheckAllFail( "1.168.30.100" )
-        main.log.info("Ping test result")
-        if pingTestResults:
-            main.log.info("Test succeeded")
-        else:
-            main.log.info("Test failed")
 
-        utilities.assert_equals(expect=main.TRUE,actual=pingTestResults,
-                                  onpass="disconnect check PASS",
-                                  onfail="disconnect check FAIL")
+
+
 
         main.ONOScli.logout()
         main.ONOSbench.onosStop(ONOS1Ip);
@@ -383,16 +384,15 @@ class PeeringRouterTest:
         main.log.info( allRoutesStrExpected )
         main.log.info( "Routes get from ONOS CLI:" )
         main.log.info( allRoutesStrActual )
-        utilities.assertEquals(
-            expect=allRoutesStrExpected, actual=allRoutesStrActual,
-            onpass="***Routes in SDN-IP are correct!***",
-            onfail="***Routes in SDN-IP are wrong!***" )
+
         if( eq( allRoutesStrExpected, allRoutesStrActual ) ):
             main.log.report(
-                "***Routes in SDN-IP after adding routes are correct!***" )
+                "***Routes in BgpRouter after adding routes are correct!***" )
+            routeCheckResult1 = main.TRUE
         else:
             main.log.report(
-                "***Routes in SDN-IP after adding routes are wrong!***" )
+                "***Routes in BgpRouter after adding routes are wrong!***" )
+            routeCheckResult1 = main.FALSE
 
         time.sleep(20)
 
@@ -406,9 +406,7 @@ class PeeringRouterTest:
                 if r == main.FALSE:
                     pingTestResults = main.FALSE      
 
-        utilities.assert_equals(expect=main.TRUE,actual=pingTestResults,
-                                  onpass="Router connectivity check PASS",
-                                  onfail="Router connectivity check FAIL")
+        pingTestResult1 = pingTestResults
 
         pingTestResults = main.TRUE
         for m in range( 3, 6 ):
@@ -417,11 +415,13 @@ class PeeringRouterTest:
                 r = main.Mininet.pingHost(SRC="as2host", TARGET=hostIp)
                 if r == main.FALSE:
                     pingTestResults = main.FALSE
-
-        utilities.assert_equals(expect=main.TRUE,actual=pingTestResults,
-                                  onpass="Default connectivity check PASS",
-                                  onfail="Default connectivity check FAIL")
+        pingTestResult2 = pingTestResults
         
+        if pingTestResult1 and pingTestResult2:
+            main.log.report("*** Ping test pass ***")
+        else:
+            main.log.report("*** Ping test fail ***")
+
         time.sleep(20)
         #============================= Deleting Routes ==================
         main.step( "Check deleting routes installed" )
@@ -436,15 +436,15 @@ class PeeringRouterTest:
         main.log.info( "allRoutes_actual = " )
         main.log.info( allRoutesActual )
 
-        utilities.assertEquals(
-            expect="[]", actual=str( allRoutesActual ),
-            onpass="***Route number in SDN-IP is 0, correct!***",
-            onfail="***Routes number in SDN-IP is not 0, wrong!***" )
+        allRoutesStrExpected = []
+        allRoutesStrActual = str( allRoutesActual )
 
-        if( eq( allRoutesStrExpected, allRoutesStrActual ) ):
-            main.log.report( "***Routes in SDN-IP after deleting correct!***" )
+        if( eq( "[]", allRoutesStrActual ) ):
+            main.log.report( "***Routes in BgpRouter after deleting correct!***" )
+            routeCheckResult2 = main.TRUE
         else:
-            main.log.report( "***Routes in SDN-IP after deleting wrong!***" )
+            main.log.report( "***Routes in BgpRouter after deleting wrong!***" )
+            routeCheckResult2 = main.FALSE
 
         time.sleep(10)
         #============================= Ping Test ========================
@@ -456,13 +456,21 @@ class PeeringRouterTest:
                 if r == main.TRUE:
                     pingTestResults = main.FALSE
 
-        utilities.assert_equals(expect=main.TRUE,actual=pingTestResults,
-                                  onpass="disconnect check PASS",
-                                  onfail="disconnect check FAIL")
-
+        pingTestResult3 = pingTestResults
+   
+        if pingTestResult3:
+            main.log.report("*** Ping test pass ***")
+        else:
+            main.log.report("*** Ping test fail ***")
 
         time.sleep(20);
-        
+
+        finalTestResult = pingTestResult1 and pingTestResult2 and pingTestResult3 and routeCheckResult1 and routeCheckResult2
+        utilities.assertEquals(
+            expect=main.TRUE, actual=finalTestResult,
+            onpass="*** TEST CASE 5 passed ***",
+            onfail="*** TEST CASE 5 failed ***" )
+
         main.ONOScli.logout()
         main.log.info("ONOS cli logout")
         time.sleep(20);
@@ -506,7 +514,7 @@ class PeeringRouterTest:
         main.step( "Start to generate routes for all BGP peers" )
 
         main.log.info( "Generate prefixes for host3" )
-        prefixesHost3 = main.QuaggaCliHost3.generatePrefixes( 3, 3500 )
+        prefixesHost3 = main.QuaggaCliHost3.generatePrefixes( 3, 2000 )
         main.log.info( prefixesHost3 )
         # generate route with next hop
         for prefix in prefixesHost3:
@@ -516,7 +524,7 @@ class PeeringRouterTest:
             prefixesHost3, "192.168.20.1", "00:00:00:00:02:02",
             SDNIPJSONFILEPATH )
         main.log.info( "Generate prefixes for host4" )
-        prefixesHost4 = main.QuaggaCliHost4.generatePrefixes( 4, 3500 )
+        prefixesHost4 = main.QuaggaCliHost4.generatePrefixes( 4, 2000 )
         main.log.info( prefixesHost4 )
         # generate route with next hop
         for prefix in prefixesHost4:
@@ -527,7 +535,7 @@ class PeeringRouterTest:
             SDNIPJSONFILEPATH )
 
         main.log.info( "Generate prefixes for host5" )
-        prefixesHost5 = main.QuaggaCliHost5.generatePrefixes( 5, 3500 )
+        prefixesHost5 = main.QuaggaCliHost5.generatePrefixes( 5, 2000 )
         main.log.info( prefixesHost5 )
         for prefix in prefixesHost5:
             allRoutesExpected.append( prefix + "/" + "192.168.60.2" )
@@ -602,7 +610,7 @@ class PeeringRouterTest:
         main.log.info( "Add routes to Quagga on host5" )
         main.QuaggaCliHost5.addRoutes( prefixesHost5, 1 )
 
-        time.sleep(60)
+        time.sleep(80)
 
         # get routes inside SDN-IP
         getRoutesResult = main.ONOScli.routes( jsonFormat=True )
@@ -628,16 +636,14 @@ class PeeringRouterTest:
         main.log.info( allRoutesStrExpected )
         main.log.info( "Routes get from ONOS CLI:" )
         main.log.info( allRoutesStrActual )
-        utilities.assertEquals(
-            expect=allRoutesStrExpected, actual=allRoutesStrActual,
-            onpass="***Routes in SDN-IP are correct!***",
-            onfail="***Routes in SDN-IP are wrong!***" )
         if( eq( allRoutesStrExpected, allRoutesStrActual ) ):
             main.log.report(
-                "***Routes in SDN-IP after adding routes are correct!***" )
+                "***Routes in BgpRouter after adding routes are correct!***" )
+            routeCheckResult1 = main.TRUE
         else:
             main.log.report(
-                "***Routes in SDN-IP after adding routes are wrong!***" )
+                "***Routes in BgpRouter after adding routes are wrong!***" )
+            routeCheckResult1 = main.FALSE
 
         time.sleep(20)
 
@@ -651,9 +657,18 @@ class PeeringRouterTest:
                 if r == main.FALSE:
                     pingTestResults = main.FALSE
 
-        utilities.assert_equals(expect=main.TRUE,actual=pingTestResults,
-                                  onpass="Default connectivity check PASS",
-                                  onfail="Default connectivity check FAIL")
+        pingTestResult1 = pingTestResults
+
+        if pingTestResult1 == main.TRUE:
+            main.log.report("*** Ping test pass ***")
+        else:
+            main.log.report("*** Ping test fail ***")
+
+        finalTestResult = pingTestResult1 and routeCheckResult1
+        utilities.assertEquals(
+            expect=main.TRUE, actual=finalTestResult,
+            onpass="*** TEST CASE 7 passed ***",
+            onfail="*** TEST CASE 7 failed ***" )
 
         time.sleep(10)
 
@@ -787,9 +802,12 @@ class PeeringRouterTest:
         for j in range(0, 30):
             r = main.Mininet.pingHost(SRC="as6host", TARGET="3.0.0.1")
 
-        utilities.assert_equals(expect=main.TRUE,actual=r,
-                                  onpass="Default connectivity check PASS",
-                                  onfail="Default connectivity check FAIL")
+        pingTestResult1 = r
+   
+        if pingTestResult1:
+            main.log.report("*** Ping test pass ***")
+        else:
+            main.log.report("*** Ping test fail ***")
 
         #time.sleep(20)
 
@@ -817,16 +835,14 @@ class PeeringRouterTest:
         main.log.info( allRoutesStrExpected )
         main.log.info( "Routes get from ONOS CLI:" )
         main.log.info( allRoutesStrActual )
-        utilities.assertEquals(
-            expect=allRoutesStrExpected, actual=allRoutesStrActual,
-            onpass="***Routes in SDN-IP are correct!***",
-            onfail="***Routes in SDN-IP are wrong!***" )
         if( eq( allRoutesStrExpected, allRoutesStrActual ) ):
             main.log.report(
-                "***Routes in SDN-IP after adding routes are correct!***" )
+                "***Routes in BgpRouter after adding routes are correct!***" )
+            routeCheckResult1 = main.TRUE
         else:
             main.log.report(
-                "***Routes in SDN-IP after adding routes are wrong!***" )
+                "***Routes in BgpRouter after adding routes are wrong!***" )
+            routeCheckResult1 = main.FALSE
  
         main.log.info( "Login Quagga CLI on host3" )
         main.QuaggaCliHost3.loginQuagga( "1.168.30.2" )
@@ -858,24 +874,35 @@ class PeeringRouterTest:
         allRoutesActual = \
            main.QuaggaCliHost3.extractActualRoutes( getRoutesResult )
 
-        allRoutesStrExpected = []
-        allRoutesStrActual = str( allRoutesActual ).replace( 'u', "" )
+        allRoutesStrActual = str( allRoutesActual )
         main.step( "Check routes installed" )
-        main.log.info( "Routes expected:" )
-        main.log.info( allRoutesStrExpected )
+        main.log.info( "Routes expected: []" )
         main.log.info( "Routes get from ONOS CLI:" )
         main.log.info( allRoutesStrActual )
-        utilities.assertEquals(
-            expect=allRoutesStrExpected, actual=allRoutesStrActual,
-            onpass="***Routes in SDN-IP are correct!***",
-            onfail="***Routes in SDN-IP are wrong!***" )
+        if( eq( "[]", allRoutesStrActual ) ):
+            main.log.report(
+                "***Routes in BgpRouter after deleting routes are correct!***" )
+            routeCheckResult2 = main.TRUE
+        else:
+            main.log.report(
+                "***Routes in BgpRouter after deleting routes are wrong!***" )
+            routeCheckResult2 = main.FALSE
 
         for j in range(0, 5):
             r = main.Mininet.pingHost(SRC="as6host", TARGET="3.0.0.1")
+        
+        if r == main.FALSE:
+            main.log.report("*** Ping test pass ***")
+            pingTestResult2 = main.TRUE
+        else:
+            main.log.report("*** Ping test fail ***")
+            pingTestResult2 = main.FALSE
 
-        utilities.assert_equals(expect=main.FALSE,actual=r,
-                                  onpass="disconnectivity check PASS",
-                                  onfail="disconnectivity check FAIL")
+        finalTestResult = pingTestResult1 and pingTestResult2 and routeCheckResult1 and routeCheckResult2
+        utilities.assertEquals(
+            expect=main.TRUE, actual=finalTestResult,
+            onpass="*** TEST CASE 8 passed ***",
+            onfail="*** TEST CASE 8 failed ***" )
 
         main.ONOScli.logout()
         main.log.info("ONOS cli logout")
@@ -1054,16 +1081,14 @@ class PeeringRouterTest:
         main.log.info( allRoutesStrExpected )
         main.log.info( "Routes get from ONOS CLI:" )
         main.log.info( allRoutesStrActual )
-        utilities.assertEquals(
-            expect=allRoutesStrExpected, actual=allRoutesStrActual,
-            onpass="***Routes in SDN-IP are correct!***",
-            onfail="***Routes in SDN-IP are wrong!***" )
         if( eq( allRoutesStrExpected, allRoutesStrActual ) ):
             main.log.report(
-                "***Routes in SDN-IP after adding routes are correct!***" )
+                "***Routes in BgpRouter after adding routes are correct!***" )
+            routeCheckResult1 = main.TRUE
         else:
             main.log.report(
-                "***Routes in SDN-IP after adding routes are wrong!***" )
+                "***Routes in BgpRouter after adding routes are wrong!***" )
+            routeCheckResult2 = main.FALSE
 
         #============= Flap the BGP session between QuaggaCliHost4 and ONOS ==================
         main.log.info( "Disabling bgp session and enable it 20 times very fast between QuaggaCliHost4 and 192.168.30.101:" )
@@ -1101,16 +1126,16 @@ class PeeringRouterTest:
         main.log.info( newAllRoutesStrExpected )
         main.log.info( "Routes got from ONOS CLI after convergence-1:" )
         main.log.info( newAllRoutesStrActual )
-        utilities.assertEquals(
-            expect=newAllRoutesStrExpected, actual=newAllRoutesStrActual,
-            onpass="***Routes in SDN-IP are correct after convergence!***",
-            onfail="***Routes in SDN-IP are wrong after convergence!***" )
         if( eq( newAllRoutesStrExpected, newAllRoutesStrActual ) ):
             main.log.report(
-                "***Routes in SDN-IP after convergence are correct!***" )
+                "***Routes in BgpRouter after convergence are correct!***" )
+            routeCheckResult2 = main.TRUE
         else:
             main.log.report(
-                "***Routes in SDN-IP after convergence are wrong!***" )
+                "***Routes in BgpRouter after convergence are wrong!***" )
+            routeCheckResult2 = main.FALSE
+
+        time.sleep(20)
 
         #============================= Ping Test ========================
         pingTestResults = main.TRUE
@@ -1120,10 +1145,12 @@ class PeeringRouterTest:
                 r = main.Mininet.pingHost(SRC="as2host", TARGET=hostIp)
                 if r == main.FALSE:
                     pingTestResults = main.FALSE
+        pingTestResult1 = pingTestResults
 
-        utilities.assert_equals(expect=main.TRUE,actual=pingTestResults,
-                                  onpass="Default connectivity check PASS",
-                                  onfail="Default connectivity check FAIL")
+        if pingTestResult1:
+            main.log.report("*** Ping test pass ***")
+        else:
+            main.log.report("*** Ping test fail ***")     
 
         #============= Flap the BGP session between QuaggaCliHost4 and ONOS ==================
         main.log.info( "Disabling bgp session and enable it 20 times very fast between QuaggaCliHost4 and 192.168.30.101:" )
@@ -1160,16 +1187,14 @@ class PeeringRouterTest:
         main.log.info( newAllRoutesStrExpected )
         main.log.info( "Routes got from ONOS CLI after convergence-2:" )
         main.log.info( newAllRoutesStrActual )
-        utilities.assertEquals(
-            expect=newAllRoutesStrExpected, actual=newAllRoutesStrActual,
-            onpass="***Routes in SDN-IP are correct after convergence!***",
-            onfail="***Routes in SDN-IP are wrong after convergence!***" )
         if( eq( newAllRoutesStrExpected, newAllRoutesStrActual ) ):
             main.log.report(
-                "***Routes in SDN-IP after convergence are correct!***" )
+                "***Routes in BgpRouter after convergence are correct!***" )
+            routeCheckResult3 = main.TRUE
         else:
             main.log.report(
-                "***Routes in SDN-IP after convergence are wrong!***" )
+                "***Routes in BgpRouter after convergence are wrong!***" )
+            routeCheckResult3 = main.FALSE
 
         #============================= Ping Test ========================
         pingTestResults = main.TRUE
@@ -1179,10 +1204,18 @@ class PeeringRouterTest:
                 r = main.Mininet.pingHost(SRC="as2host", TARGET=hostIp)
                 if r == main.FALSE:
                     pingTestResults = main.FALSE
+        pingTestResult2 = pingTestResults
+        
+        if pingTestResult2:
+            main.log.report("*** Ping test pass ***")
+        else:
+            main.log.report("*** Ping test fail ***")
 
-        utilities.assert_equals(expect=main.TRUE,actual=pingTestResults,
-                                  onpass="Default connectivity check PASS",
-                                  onfail="Default connectivity check FAIL")
+        finalTestResult = pingTestResult1 and pingTestResult2 and routeCheckResult1 and routeCheckResult2 and routeCheckResult3
+        utilities.assertEquals(
+            expect=main.TRUE, actual=finalTestResult,
+            onpass="*** TEST CASE 9 passed ***",
+            onfail="*** TEST CASE 9 failed ***" )
 
         main.ONOScli.logout()
         main.log.info("ONOS cli logout")
@@ -1349,16 +1382,8 @@ class PeeringRouterTest:
                 "***Routes in SDN-IP after adding routes are wrong!***" )
 
         #============================= Ping Test ========================
-        pingTestResults = main.QuaggaCliHost.pingTestAndCheckAllPass( "1.168.30.100" )
-        main.log.info("Ping test result")
-        if pingTestResults:
-            main.log.info("Test succeeded")
-        else:
-            main.log.info("Test failed")
-       
-        utilities.assert_equals(expect=main.TRUE,actual=pingTestResults,
-                                  onpass="Default connectivity check PASS",
-                                  onfail="Default connectivity check FAIL")
+
+
 
         #============= Disconnect the BGP session between QuaggaCliHost4 and ONOS ==================
         main.log.info( "Disabling bgp session between QuaggaCliHost4 and 192.168.30.101:" )
@@ -1400,16 +1425,9 @@ class PeeringRouterTest:
                 "***Routes in SDN-IP after convergence are wrong!***" )
 
         #============================= Ping Test ========================
-        pingTestResults = main.QuaggaCliHost.pingTestAndCheckAllPass( "1.168.30.100" )
-        main.log.info("Ping test result")
-        if pingTestResults:
-            main.log.info("Test succeeded")
-        else:
-            main.log.info("Test failed")
-       
-        utilities.assert_equals(expect=main.TRUE,actual=pingTestResults,
-                                  onpass="Default connectivity check PASS",
-                                  onfail="Default connectivity check FAIL")
+
+
+
 
         #============= Enabling the BGP session between QuaggaCliHost4 and ONOS ==================
         main.log.info( "Enabling bgp session between QuaggaCliHost4 and 192.168.30.101:" )
@@ -1451,16 +1469,8 @@ class PeeringRouterTest:
                 "***Routes in SDN-IP after convergence are wrong!***" )
 
         #============================= Ping Test ========================
-        pingTestResults = main.QuaggaCliHost.pingTestAndCheckAllPass( "1.168.30.100" )
-        main.log.info("Ping test result")
-        if pingTestResults:
-            main.log.info("Test succeeded")
-        else:
-            main.log.info("Test failed")
-       
-        utilities.assert_equals(expect=main.TRUE,actual=pingTestResults,
-                                  onpass="Default connectivity check PASS",
-                                  onfail="Default connectivity check FAIL")
+
+
 
         #============================= Deleting Routes ==================
         main.step( "Check deleting routes installed" )
@@ -1486,16 +1496,9 @@ class PeeringRouterTest:
             main.log.report( "***Routes in SDN-IP after deleting wrong!***" )
 
         #============================= Ping Test ========================
-        pingTestResults = main.QuaggaCliHost.pingTestAndCheckAllFail( "1.168.30.100" )
-        main.log.info("Ping test result")
-        if pingTestResults:
-            main.log.info("Test succeeded")
-        else:
-            main.log.info("Test failed")
 
-        utilities.assert_equals(expect=main.TRUE,actual=pingTestResults,
-                                  onpass="disconnect check PASS",
-                                  onfail="disconnect check FAIL")
+
+
 
         main.ONOScli.logout()
         main.ONOSbench.onosStop(ONOS1Ip);
@@ -1657,16 +1660,8 @@ class PeeringRouterTest:
                 "***Routes in SDN-IP after adding routes are wrong!***" )
 
         #============================= Ping Test ========================
-        pingTestResults = main.QuaggaCliHost.pingTestAndCheckAllPass( "1.168.30.100" )
-        main.log.info("Ping test result")
-        if pingTestResults:
-            main.log.info("Test succeeded")
-        else:
-            main.log.info("Test failed")
-       
-        utilities.assert_equals(expect=main.TRUE,actual=pingTestResults,
-                                  onpass="Default connectivity check PASS",
-                                  onfail="Default connectivity check FAIL")
+
+
 
         #============= Disconnect the BGP session between QuaggaCliHost4 and ONOS ==================
         main.log.info( "Disabling bgp session between QuaggaCliHost4 and 192.168.30.101:" )
@@ -1708,16 +1703,8 @@ class PeeringRouterTest:
                 "***Routes in SDN-IP after convergence are wrong!***" )
 
         #============================= Ping Test ========================
-        pingTestResults = main.QuaggaCliHost.pingTestAndCheckAllPass( "1.168.30.100" )
-        main.log.info("Ping test result")
-        if pingTestResults:
-            main.log.info("Test succeeded")
-        else:
-            main.log.info("Test failed")
-       
-        utilities.assert_equals(expect=main.TRUE,actual=pingTestResults,
-                                  onpass="Default connectivity check PASS",
-                                  onfail="Default connectivity check FAIL")
+
+
 
         #============= Enabling the BGP session between QuaggaCliHost4 and ONOS ==================
         main.log.info( "Enabling bgp session between QuaggaCliHost4 and 192.168.30.101:" )
@@ -1759,16 +1746,8 @@ class PeeringRouterTest:
                 "***Routes in SDN-IP after convergence are wrong!***" )
 
         #============================= Ping Test ========================
-        pingTestResults = main.QuaggaCliHost.pingTestAndCheckAllPass( "1.168.30.100" )
-        main.log.info("Ping test result")
-        if pingTestResults:
-            main.log.info("Test succeeded")
-        else:
-            main.log.info("Test failed")
-       
-        utilities.assert_equals(expect=main.TRUE,actual=pingTestResults,
-                                  onpass="Default connectivity check PASS",
-                                  onfail="Default connectivity check FAIL")
+
+
 
         #============================= Deleting Routes ==================
         main.step( "Check deleting routes installed" )
@@ -1794,16 +1773,9 @@ class PeeringRouterTest:
             main.log.report( "***Routes in SDN-IP after deleting wrong!***" )
 
         #============================= Ping Test ========================
-        pingTestResults = main.QuaggaCliHost.pingTestAndCheckAllFail( "1.168.30.100" )
-        main.log.info("Ping test result")
-        if pingTestResults:
-            main.log.info("Test succeeded")
-        else:
-            main.log.info("Test failed")
 
-        utilities.assert_equals(expect=main.TRUE,actual=pingTestResults,
-                                  onpass="disconnect check PASS",
-                                  onfail="disconnect check FAIL")
+
+
 
         main.ONOScli.logout()
         main.ONOSbench.onosStop(ONOS1Ip);
@@ -1977,16 +1949,16 @@ class PeeringRouterTest:
         main.log.info( allRoutesStrExpected )
         main.log.info( "Routes get from ONOS CLI:" )
         main.log.info( allRoutesStrActual )
-        utilities.assertEquals(
-            expect=allRoutesStrExpected, actual=allRoutesStrActual,
-            onpass="***Routes in SDN-IP are correct!***",
-            onfail="***Routes in SDN-IP are wrong!***" )
         if( eq( allRoutesStrExpected, allRoutesStrActual ) ):
             main.log.report(
-                "***Routes in SDN-IP after adding routes are correct!***" )
+                "***Routes in BgpRouter after adding routes are correct!***" )
+            routeCheckResult1 = main.TRUE
         else:
             main.log.report(
-                "***Routes in SDN-IP after adding routes are wrong!***" )
+                "***Routes in BgpRouter after adding routes are wrong!***" )
+            routeCheckResult1 = main.FALSE
+
+        time.sleep( 30)
 
         #============================= Ping Test ========================
         pingTestResults = main.TRUE
@@ -1997,10 +1969,7 @@ class PeeringRouterTest:
                 r = main.Mininet.pingHost(SRC=source, TARGET=target)
                 if r == main.FALSE:
                     pingTestResults = main.FALSE
-
-        utilities.assert_equals(expect=main.TRUE,actual=pingTestResults,
-                                  onpass="Router connectivity check PASS",
-                                  onfail="Router connectivity check FAIL")
+        pingTestResult1 = pingTestResults
 
         pingTestResults = main.TRUE
         for m in range( 3, 6 ):
@@ -2009,10 +1978,12 @@ class PeeringRouterTest:
                 r = main.Mininet.pingHost(SRC="as2host", TARGET=hostIp)
                 if r == main.FALSE:
                     pingTestResults = main.FALSE
+        pingTestResult2 = pingTestResults
 
-        utilities.assert_equals(expect=main.TRUE,actual=pingTestResults,
-                                  onpass="Default connectivity check PASS",
-                                  onfail="Default connectivity check FAIL")
+        if pingTestResult1 and pingTestResult2:
+            main.log.report("*** Ping test pass ***")
+        else:
+            main.log.report("*** Ping test fail ***")
 
         time.sleep(20)
 
@@ -2044,17 +2015,17 @@ class PeeringRouterTest:
         main.log.info( newAllRoutesStrExpected )
         main.log.info( "Routes got from ONOS CLI after convergence-1:" )
         main.log.info( newAllRoutesStrActual )
-        utilities.assertEquals(
-            expect=newAllRoutesStrExpected, actual=newAllRoutesStrActual,
-            onpass="***Routes in SDN-IP are correct after convergence!***",
-            onfail="***Routes in SDN-IP are wrong after convergence!***" )
         if( eq( newAllRoutesStrExpected, newAllRoutesStrActual ) ):
             main.log.report(
-                "***Routes in SDN-IP after convergence are correct!***" )
+                "***Routes in BgpRouter after convergence are correct!***" )
+            routeCheckResult2 = main.TRUE
         else:
             main.log.report(
-                "***Routes in SDN-IP after convergence are wrong!***" )
+                "***Routes in BgpRouter after convergence are wrong!***" )
+            routeCheckResult2 = main.FALSE
 
+        time.sleep(20)       
+ 
         #============================= Ping Test ========================
         pingTestResults = main.TRUE
         sources = ["as2host", "as3host", "as6host"]
@@ -2064,10 +2035,7 @@ class PeeringRouterTest:
                 r = main.Mininet.pingHost(SRC=source, TARGET=target)
                 if r == main.FALSE:
                     pingTestResults = main.FALSE
-
-        utilities.assert_equals(expect=main.TRUE,actual=pingTestResults,
-                                  onpass="Router connectivity check PASS",
-                                  onfail="Router connectivity check FAIL")
+        pingTestResult3 = pingTestResults
 
         pingTestResults = main.TRUE
         for m in range( 3, 6 ):
@@ -2076,10 +2044,12 @@ class PeeringRouterTest:
                 r = main.Mininet.pingHost(SRC="as2host", TARGET=hostIp)
                 if r == main.FALSE:
                     pingTestResults = main.FALSE
+        pingTestResult4 = pingTestResults
 
-        utilities.assert_equals(expect=main.TRUE,actual=pingTestResults,
-                                  onpass="Default connectivity check PASS",
-                                  onfail="Default connectivity check FAIL")
+        if pingTestResult4 and pingTestResult4:
+            main.log.report("*** Ping test pass ***")
+        else:
+            main.log.report("*** Ping test fail ***")
 
         time.sleep(20)
 
@@ -2111,28 +2081,43 @@ class PeeringRouterTest:
         main.log.info( newAllRoutesStrExpected )
         main.log.info( "Routes got from ONOS CLI after convergence-2:" )
         main.log.info( newAllRoutesStrActual )
-        utilities.assertEquals(
-            expect=newAllRoutesStrExpected, actual=newAllRoutesStrActual,
-            onpass="***Routes in SDN-IP are correct after convergence!***",
-            onfail="***Routes in SDN-IP are wrong after convergence!***" )
         if( eq( newAllRoutesStrExpected, newAllRoutesStrActual ) ):
             main.log.report(
-                "***Routes in SDN-IP after convergence are correct!***" )
+                "***Routes in BgpRouter after convergence are correct!***" )
+            routeCheckResult3 = main.TRUE
         else:
             main.log.report(
-                "***Routes in SDN-IP after convergence are wrong!***" )
+                "***Routes in BgpRouter after convergence are wrong!***" )
+            routeCheckResult3 = main.TRUE
+
+        time.sleep(20)
 
         #============================= Ping Test ========================
-        pingTestResults = main.QuaggaCliHost.pingTestAndCheckAllPass( "1.168.30.100" )
-        main.log.info("Ping test result")
-        if pingTestResults:
-            main.log.info("Test succeeded")
+        pingTestResults = main.TRUE
+        sources = ["as2host", "as3host", "as6host"]
+        targets = ["192.168.10.101", "192.168.20.101", "192.168.30.101", "192.168.60.101"]
+        for source in sources:
+            for target in targets:
+                r = main.Mininet.pingHost(SRC=source, TARGET=target)
+                if r == main.FALSE:
+                    pingTestResults = main.FALSE
+        pingTestResult5 = pingTestResults
+
+        pingTestResults = main.TRUE
+        for m in range( 3, 6 ):
+            for n in range( 1, 10 ):
+                hostIp = str( m ) + ".0." + str( n ) + ".1"
+                r = main.Mininet.pingHost(SRC="as2host", TARGET=hostIp)
+                if r == main.FALSE:
+                    pingTestResults = main.FALSE
+        pingTestResult6 = pingTestResults
+
+        if pingTestResult5 and pingTestResult6:
+            main.log.report("*** Ping test pass ***")
         else:
-            main.log.info("Test failed")
-       
-        utilities.assert_equals(expect=main.TRUE,actual=pingTestResults,
-                                  onpass="Default connectivity check PASS",
-                                  onfail="Default connectivity check FAIL")
+            main.log.report("*** Ping test fail ***")
+
+        time.sleep(20)
 
         #============================= Deleting Routes ==================
         main.step( "Check deleting routes installed" )
@@ -2146,16 +2131,14 @@ class PeeringRouterTest:
 
         main.log.info( "allRoutes_actual = " )
         main.log.info( allRoutesActual )
+        allRoutesStrActual = str ( allRoutesActual )
 
-        utilities.assertEquals(
-            expect="[]", actual=str( allRoutesActual ),
-            onpass="***Route number in SDN-IP is 0, correct!***",
-            onfail="***Routes number in SDN-IP is not 0, wrong!***" )
-
-        if( eq( allRoutesStrExpected, allRoutesStrActual ) ):
-            main.log.report( "***Routes in SDN-IP after deleting correct!***" )
+        if( eq( "[]", allRoutesStrActual ) ):
+            main.log.report( "***Routes in BgpRouter after deleting correct!***" )
+            routeCheckResult4 = main.TRUE
         else:
-            main.log.report( "***Routes in SDN-IP after deleting wrong!***" )
+            main.log.report( "***Routes in BgpRouter after deleting wrong!***" )
+            routeCheckResult4 = main.TRUE
 
         #============================= Ping Test ========================
         pingTestResults = main.TRUE
@@ -2165,10 +2148,19 @@ class PeeringRouterTest:
                 r = main.Mininet.pingHost(SRC="as2host", TARGET=hostIp)
                 if r == main.TRUE:
                     pingTestResults = main.FALSE
+        pingTestResult7 = pingTestResults
 
-        utilities.assert_equals(expect=main.TRUE,actual=pingTestResults,
-                                  onpass="disconnect check PASS",
-                                  onfail="disconnect check FAIL")
+        if pingTestResult7:
+            main.log.report("*** Ping test pass ***")
+        else:
+            main.log.report("*** Ping test fail ***")
+
+        finalTestResult = pingTestResult1 and pingTestResult2 and pingTestResult3 and pingTestResult4 and pingTestResult5 and pingTestResult6 and pingTestResult7 and routeCheckResult1 and routeCheckResult2 and routeCheckResult3 and routeCheckResult4
+
+        utilities.assertEquals(
+            expect=main.TRUE, actual=finalTestResult,
+            onpass="*** TEST CASE 31 passed ***",
+            onfail="*** TEST CASE 31 failed ***" )
 
         time.sleep(20);
 
@@ -2320,16 +2312,16 @@ class PeeringRouterTest:
         main.log.info( allRoutesStrExpected )
         main.log.info( "Routes get from ONOS CLI:" )
         main.log.info( allRoutesStrActual )
-        utilities.assertEquals(
-            expect=allRoutesStrExpected, actual=allRoutesStrActual,
-            onpass="***Routes in SDN-IP are correct!***",
-            onfail="***Routes in SDN-IP are wrong!***" )
         if( eq( allRoutesStrExpected, allRoutesStrActual ) ):
             main.log.report(
-                "***Routes in SDN-IP after adding routes are correct!***" )
+                "***Routes in BgpRouter after adding routes are correct!***" )
+            routeCheckResult1 = main.TRUE
         else:
             main.log.report(
-                "***Routes in SDN-IP after adding routes are wrong!***" )
+                "***Routes in BgpRouter after adding routes are wrong!***" )
+            routeCheckResult1 = main.FALSE
+
+        time.sleep(20)
 
         #============================= Ping Test ========================
         pingTestResults = main.TRUE
@@ -2340,10 +2332,7 @@ class PeeringRouterTest:
                 r = main.Mininet.pingHost(SRC=source, TARGET=target)
                 if r == main.FALSE:
                     pingTestResults = main.FALSE
-
-        utilities.assert_equals(expect=main.TRUE,actual=pingTestResults,
-                                  onpass="Router connectivity check PASS",
-                                  onfail="Router connectivity check FAIL")
+        pingTestResult1 = pingTestResults
 
         pingTestResults = main.TRUE
         for m in range( 3, 6 ):
@@ -2352,10 +2341,12 @@ class PeeringRouterTest:
                 r = main.Mininet.pingHost(SRC="as2host", TARGET=hostIp)
                 if r == main.FALSE:
                     pingTestResults = main.FALSE
+        pingTestResult2 = pingTestResults
 
-        utilities.assert_equals(expect=main.TRUE,actual=pingTestResults,
-                                  onpass="Default connectivity check PASS",
-                                  onfail="Default connectivity check FAIL")
+        if pingTestResult1 and pingTestResult2:
+            main.log.report("*** Ping test pass ***")
+        else:
+            main.log.report("*** Ping test fail ***")
 
         time.sleep(20)
 
@@ -2387,16 +2378,16 @@ class PeeringRouterTest:
         main.log.info( newAllRoutesStrExpected )
         main.log.info( "Routes got from ONOS CLI after convergence-1:" )
         main.log.info( newAllRoutesStrActual )
-        utilities.assertEquals(
-            expect=newAllRoutesStrExpected, actual=newAllRoutesStrActual,
-            onpass="***Routes in SDN-IP are correct after convergence!***",
-            onfail="***Routes in SDN-IP are wrong after convergence!***" )
         if( eq( newAllRoutesStrExpected, newAllRoutesStrActual ) ):
             main.log.report(
-                "***Routes in SDN-IP after convergence are correct!***" )
+                "***Routes in BgpRouter after convergence are correct!***" )
+            routeCheckResult2 = main.TRUE
         else:
             main.log.report(
-                "***Routes in SDN-IP after convergence are wrong!***" )
+                "***Routes in BgpRouter after convergence are wrong!***" )
+            routeCheckResult2 = main.FALSE
+
+        time.sleep(20)
 
         #============================= Ping Test ========================
         pingTestResults = main.TRUE
@@ -2407,10 +2398,7 @@ class PeeringRouterTest:
                 r = main.Mininet.pingHost(SRC=source, TARGET=target)
                 if r == main.FALSE:
                     pingTestResults = main.FALSE
-
-        utilities.assert_equals(expect=main.TRUE,actual=pingTestResults,
-                                  onpass="Router connectivity check PASS",
-                                  onfail="Router connectivity check FAIL")
+        pingTestResult3 = pingTestResults
 
         pingTestResults = main.TRUE
         for m in range( 3, 6 ):
@@ -2423,6 +2411,12 @@ class PeeringRouterTest:
         utilities.assert_equals(expect=main.TRUE,actual=pingTestResults,
                                   onpass="Default connectivity check PASS",
                                   onfail="Default connectivity check FAIL")
+        pingTestResult4 = pingTestResults
+
+        if pingTestResult3 and pingTestResult4:
+            main.log.report("*** Ping test pass ***")
+        else:
+            main.log.report("*** Ping test fail ***")
 
         time.sleep(20)
 
@@ -2454,16 +2448,16 @@ class PeeringRouterTest:
         main.log.info( newAllRoutesStrExpected )
         main.log.info( "Routes got from ONOS CLI after convergence-2:" )
         main.log.info( newAllRoutesStrActual )
-        utilities.assertEquals(
-            expect=newAllRoutesStrExpected, actual=newAllRoutesStrActual,
-            onpass="***Routes in SDN-IP are correct after convergence!***",
-            onfail="***Routes in SDN-IP are wrong after convergence!***" )
         if( eq( newAllRoutesStrExpected, newAllRoutesStrActual ) ):
             main.log.report(
-                "***Routes in SDN-IP after convergence are correct!***" )
+                "***Routes in BgpRouter after convergence are correct!***" )
+            routeCheckResult3 = main.TRUE
         else:
             main.log.report(
-                "***Routes in SDN-IP after convergence are wrong!***" )
+                "***Routes in BgpRouter after convergence are wrong!***" )
+            routeCheckResult3 = main.FALSE
+
+        time.sleep(20)
 
         #============================= Ping Test ========================
         pingTestResults = main.TRUE
@@ -2474,10 +2468,7 @@ class PeeringRouterTest:
                 r = main.Mininet.pingHost(SRC=source, TARGET=target)
                 if r == main.FALSE:
                     pingTestResults = main.FALSE
-
-        utilities.assert_equals(expect=main.TRUE,actual=pingTestResults,
-                                  onpass="Router connectivity check PASS",
-                                  onfail="Router connectivity check FAIL")
+        pingTestResult5 = pingTestResults
 
         pingTestResults = main.TRUE
         for m in range( 3, 6 ):
@@ -2490,6 +2481,12 @@ class PeeringRouterTest:
         utilities.assert_equals(expect=main.TRUE,actual=pingTestResults,
                                   onpass="Default connectivity check PASS",
                                   onfail="Default connectivity check FAIL")
+        pingTestResult6 = pingTestResults
+ 
+        if pingTestResult5 and pingTestResult6:
+            main.log.report("*** Ping test pass ***")
+        else:
+            main.log.report("*** Ping test fail ***")
 
         time.sleep(20)
 
@@ -2505,16 +2502,14 @@ class PeeringRouterTest:
 
         main.log.info( "allRoutes_actual = " )
         main.log.info( allRoutesActual )
+        allRoutesStrActual = str ( allRoutesActual )
 
-        utilities.assertEquals(
-            expect="[]", actual=str( allRoutesActual ),
-            onpass="***Route number in SDN-IP is 0, correct!***",
-            onfail="***Routes number in SDN-IP is not 0, wrong!***" )
-
-        if( eq( allRoutesStrExpected, allRoutesStrActual ) ):
-            main.log.report( "***Routes in SDN-IP after deleting correct!***" )
+        if( eq( "[]", allRoutesStrActual ) ):
+            main.log.report( "***Routes in BgpRouter after deleting correct!***" )
+            routeCheckResult4 = main.TRUE
         else:
-            main.log.report( "***Routes in SDN-IP after deleting wrong!***" )
+            main.log.report( "***Routes in BgpRouter after deleting wrong!***" )
+            routeCheckResult4 = main.FALSE
 
         #============================= Ping Test ========================
         pingTestResults = main.TRUE
@@ -2524,10 +2519,21 @@ class PeeringRouterTest:
                 r = main.Mininet.pingHost(SRC="as2host", TARGET=hostIp)
                 if r == main.TRUE:
                     pingTestResults = main.FALSE
+        pingTestResult7 = pingTestResults
+     
+        if pingTestResult7:
+            main.log.report("*** Ping test pass ***")
+        else:
+            main.log.report("*** Ping test fail ***")
 
-        utilities.assert_equals(expect=main.TRUE,actual=pingTestResults,
-                                  onpass="disconnect check PASS",
-                                  onfail="disconnect check FAIL")
+
+        finalTestResult = pingTestResult1 and pingTestResult2 and pingTestResult3 and pingTestResult4 and pingTestResult5 and pingTestResult6 and pingTestResult7 and routeCheckResult1 and routeCheckResult2 and routeCheckResult3 and routeCheckResult4
+
+        utilities.assertEquals(
+            expect=main.TRUE, actual=finalTestResult,
+            onpass="*** TEST CASE 32 passed ***",
+            onfail="*** TEST CASE 32 failed ***" )
+
         time.sleep(20)
 
         main.ONOScli.logout()

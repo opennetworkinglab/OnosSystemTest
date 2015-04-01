@@ -13,9 +13,9 @@ class ScaleOutTemplate:
     def __init__( self ):
         self.default = ''
 
-    def CASE1( self, main ):            #This is the initialization case
-                                        #this case will clean up all nodes 
-        import time                     #but only node 1 is started in this case
+    def CASE1( self, main ):           
+                                        
+        import time                     
         global init       
         try: 
             if type(init) is not bool: 
@@ -100,7 +100,8 @@ class ScaleOutTemplate:
 
         main.step( "verify cells" )
         verifyCellResult = main.ONOSbench.verifyCell()
-       
+      
+        main.log.report( "Initializeing " + str( clusterCount ) + " node cluster." )
         for node in range(1, clusterCount + 1):
             main.log.info("Starting ONOS " + str(node) + " at IP: " + ONOSIp[node])
             main.ONOSbench.onosInstall( ONOSIp[node])

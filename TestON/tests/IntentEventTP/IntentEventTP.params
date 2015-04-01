@@ -1,6 +1,6 @@
 <PARAMS>
 
-    <testcases>1,3,2,3,2,3,2,3</testcases>
+    <testcases>1,2,3</testcases>
     
     <debugMode></debugMode>  #nothing means false 
 
@@ -9,7 +9,7 @@
     <cellFeatures>"webconsole,onos-core,onos-api,onos-cli,onos-null,onos-gui,onos-rest,onos-app-metrics,onos-app-metrics-intent,onos-app-metrics-topology"</cellFeatures>
     </ENV>
 
-    <SCALE>2</SCALE>
+    <SCALE>6</SCALE>
     <availableNodes>7</availableNodes>
 
     <GIT>

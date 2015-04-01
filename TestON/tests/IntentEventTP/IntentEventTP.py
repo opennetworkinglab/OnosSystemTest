@@ -218,6 +218,7 @@ class IntentEventTP:
             main.log.info("Starting ONOS " + str(node) + " at IP: " + ONOSIp[node])    
             main.ONOSbench.onosInstall( ONOSIp[node])
     
+        for node in range(1, clusterCount + 1):
             for i in range( 2 ):
                 isup = main.ONOSbench.isup( ONOSIp[node] )
                 if isup:
@@ -273,19 +274,19 @@ class IntentEventTP:
         
         loadFrom = ['0']
         loadFrom.extend((main.params[ 'TEST' ][ 'loadFrom' ]).split(","))
-
+        
         for node in range(1, clusterCount+1):
             if loadFrom[node] == "1": 
                 cmd = "onos $OC" + str(node) + " feature:install onos-app-intent-perf"
                 main.ONOSbench.handle.sendline(cmd)
                 main.ONOSbench.handle.expect(":~")
-                main.log.info("Load initiated on node " + str(node))
+                main.log.info( "intent-perf feature installed on: ONOS" + str(node) )
         
-            time.sleep(5)
-            actcmd = "onos $OC" + str(node) + " intent-perf-start"
-            main.ONOSbench.handle.sendline(actcmd)
-            main.ONOSbench.handle.expect(":~")
-            main.log.info("Starting ONOS " + str(node) + "  intent-perf...")
+        time.sleep(5)
+        actcmd = "onos $OC1" + " intent-perf-start"
+        main.ONOSbench.handle.sendline(actcmd)
+        main.ONOSbench.handle.expect(":~")
+        main.log.info("Starting ONOS (all nodes)  intent-perf from $OC1" )
 
         main.log.info( "Starting test loop for " + str(testDuration) + " seconds...\n" )
         stop = time.time() + float( testDuration )

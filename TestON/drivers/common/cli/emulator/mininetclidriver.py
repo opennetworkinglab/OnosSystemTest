@@ -43,7 +43,7 @@ from math import pow
 from drivers.common.cli.emulatordriver import Emulator
 
 
-class MininetCliDriver( Emulator ):
+class MininetCliDriver2( Emulator ):
 
     """
        MininetCliDriver is the basic driver which will handle
@@ -65,7 +65,7 @@ class MininetCliDriver( Emulator ):
 
             self.name = self.options[ 'name' ]
             self.handle = super(
-                MininetCliDriver,
+                MininetCliDriver2,
                 self ).connect(
                 user_name=self.user_name,
                 ip_address=self.ip_address,
@@ -248,7 +248,7 @@ class MininetCliDriver( Emulator ):
         topoDict = self.numSwitchesN_links( *topoArgList )
         return topoDict
 
-    def pingall( self, timeout=300 ):
+    def pingall( self, timeout=300, shortCircuit = False ):
         """
            Verifies the reachability of the hosts using pingall command.
            Optional parameter timeout allows you to specify how long to
@@ -261,10 +261,35 @@ class MininetCliDriver( Emulator ):
                 self.name +
                 ": Checking reachabilty to the hosts using pingall" )
             try:
-                response = self.execute(
-                    cmd="pingall",
-                    prompt="mininet>",
-                    timeout=int( timeout ) )
+                if not shortCircuit:
+                    response = self.execute(
+                        cmd="pingall",
+                        prompt="mininet>",
+                        timeout=int( timeout ) )
+                else:
+                    self.handle.sendline( "pingall" )
+                    i = self.handle.expect( [ "mininet>","X X X",
+                                              pexpect.EOF,
+                                              pexpect.TIMEOUT ],
+                                            timeout )
+                    if i == 0:
+                        main.log.info("mininet> prompt found!")
+                        response = str(self.handle.before)
+                    if i == 1:
+                        main.log.info( self.name + ": Cannot ping some of the Host")
+                        main.log.info(str(self.handle.before))
+                        response = str(self.handle.before)
+                    if i == 2:
+                        main.log.error( self.name + ": EOF exception found" )
+                        main.log.error( self.name + ":     " + self.handle.before )
+                        main.cleanup()
+                        main.exit()
+                    if i == 3:
+                        main.log.error( self.name + ": TIMEOUT exception found" )
+                        main.log.error( self.name +
+                                        ":     " +
+                                        str( self.handle.before ) )
+
             except pexpect.EOF:
                 main.log.error( self.name + ": EOF exception found" )
                 main.log.error( self.name + ":     " + self.handle.before )
@@ -1892,4 +1917,4 @@ class MininetCliDriver( Emulator ):
 
 if __name__ != "__main__":
     import sys
-    sys.modules[ __name__ ] = MininetCliDriver()
+    sys.modules[ __name__ ] = MininetCliDriver2()

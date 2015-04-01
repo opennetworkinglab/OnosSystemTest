@@ -276,7 +276,7 @@ class OnosCHO:
         main.case(
             "Assign and Balance all Mininet switches across controllers" )
         main.step( "Stop any previous Mininet network topology" )
-        #stopStatus = main.Mininet1.stopNet(fileName = "topoChordal" )
+        stopStatus = main.Mininet1.stopNet(fileName = "topoChordal" )
         #time.sleep(10)
         main.step( "Start Mininet with Chordal topology" )
         startStatus = main.Mininet1.startNet(topoFile = main.newTopo)
@@ -350,7 +350,7 @@ class OnosCHO:
         main.case(
             "Assign and Balance all Mininet switches across controllers" )
         main.step( "Stop any previous Mininet network topology" )
-        #stopStatus = main.Mininet1.stopNet(fileName = "topoSpine" )
+        stopStatus = main.Mininet1.stopNet(fileName = "topoSpine" )
         main.step( "Start Mininet with Spine topology" )
         startStatus = main.Mininet1.startNet(topoFile = main.newTopo)
         time.sleep(20)

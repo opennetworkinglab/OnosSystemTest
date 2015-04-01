@@ -535,34 +535,28 @@ class OnosCHO:
         main.case( "Enable Reactive forwarding and Verify ping all" )
         main.step( "Enable Reactive forwarding" )
         installResult = main.TRUE
-        feature = "onos-app-fwd"
-        
+        # Activate fwd app
+        appResults = main.CLIs[0].activateApp( "org.onosproject.fwd" )
+
+        appCheck = main.TRUE
         pool = []
-        time1 = time.time()
         for cli in main.CLIs:
-            t = main.Thread( target=cli.featureInstall,
-                    threadID=main.threadID,
-                    name="featureInstall",
-                    args=['onos-app-fwd'])
-            pool.append(t)
+            t = main.Thread( target=cli.appToIDCheck,
+                             name="appToIDCheck-" + str( i ),
+                             args=[] )
+            pool.append( t )
             t.start()
-            main.threadID = main.threadID + 1
-            
-        installResult = main.TRUE
         for t in pool:
             t.join()
-            installResult = installResult and t.result
-        time2 = time.time()
-        
-        if not installResult:
-                main.log.info("Did not install onos-app-fwd feature properly")
-                #main.cleanup()
-                #main.exit()
-        else:
-            main.log.info("Successful feature:install onos-app-fwd")
-        main.log.info("Time for feature:install onos-app-fwd: %2f seconds" %(time2-time1))
-        
-        time.sleep( 5 )
+            appCheck = appCheck and t.result
+        utilities.assert_equals( expect=main.TRUE, actual=appCheck,
+                                 onpass="App Ids seem to be correct",
+                                 onfail="Something is wrong with app Ids" )
+        if appCheck != main.TRUE:
+            main.log.warn( main.CLIs[0].apps() )
+            main.log.warn( main.CLIs[0].appIDs() )
+ 
+        time.sleep( 10 )
 
         main.step( "Verify Pingall" )
         ping_result = main.FALSE
@@ -581,34 +575,31 @@ class OnosCHO:
             main.log.report( "Pingall Test in Reactive mode failed" )
 
         main.step( "Disable Reactive forwarding" )
-        uninstallResult = main.TRUE
+       
+        main.log.info( "Uninstall reactive forwarding app" )
+        appResults = appResults and main.CLIs[0].deactivateApp( "org.onosproject.fwd" )
         pool = []
-        time1 = time.time()
         for cli in main.CLIs:
-            t = main.Thread( target=cli.featureUninstall,
-                             threadID=main.threadID,
-                             name="featureUninstall",
-                             args=['onos-app-fwd'])
-            pool.append(t)
+            t = main.Thread( target=cli.appToIDCheck,
+                             name="appToIDCheck-" + str( i ),
+                             args=[] )
+            pool.append( t )
             t.start()
-            main.threadID = main.threadID + 1
+
         for t in pool:
             t.join()
-            uninstallResult = uninstallResult and t.result
-        time2 = time.time()
-        
-        if not uninstallResult:
-                main.log.info("Did not uninstall onos-app-fwd feature properly")
-                #main.cleanup()
-                #main.exit()
-        else:
-            main.log.info("Successful feature:uninstall onos-app-fwd")
-        main.log.info("Time for feature:uninstall onos-app-fwd: %2f seconds" %(time2-time1))
+            appCheck = appCheck and t.result
+        utilities.assert_equals( expect=main.TRUE, actual=appCheck,
+                                 onpass="App Ids seem to be correct",
+                                 onfail="Something is wrong with app Ids" )
+        if appCheck != main.TRUE:
+            main.log.warn( main.CLIs[0].apps() )
+            main.log.warn( main.CLIs[0].appIDs() )
 
         # Waiting for reative flows to be cleared.
-        time.sleep( 20 )
-        case4Result =  installResult and uninstallResult and ping_result
-        utilities.assert_equals( expect=main.TRUE, actual=case4Result,
+        time.sleep( 10 )
+        case40Result =  installResult and uninstallResult and ping_result
+        utilities.assert_equals( expect=main.TRUE, actual=case40Result,
                                  onpass="Reactive Mode Pingall test PASS",
                                  onfail="Reactive Mode Pingall test FAIL" )
 
@@ -624,34 +615,28 @@ class OnosCHO:
         main.case( "Enable Reactive forwarding and Verify ping all" )
         main.step( "Enable Reactive forwarding" )
         installResult = main.TRUE
-        feature = "onos-app-fwd"
-        
+        # Activate fwd app
+        appResults = main.CLIs[0].activateApp( "org.onosproject.fwd" )
+
+        appCheck = main.TRUE
         pool = []
-        time1 = time.time()
         for cli in main.CLIs:
-            t = main.Thread( target=cli.featureInstall,
-                    threadID=main.threadID,
-                    name="featureInstall",
-                    args=['onos-app-fwd'])
-            pool.append(t)
+            t = main.Thread( target=cli.appToIDCheck,
+                             name="appToIDCheck-" + str( i ),
+                             args=[] )
+            pool.append( t )
             t.start()
-            main.threadID = main.threadID + 1
-            
-        installResult = main.TRUE
         for t in pool:
             t.join()
-            installResult = installResult and t.result
-        time2 = time.time()
-        
-        if not installResult:
-                main.log.info("Did not install onos-app-fwd feature properly")
-                #main.cleanup()
-                #main.exit()
-        else:
-            main.log.info("Successful feature:install onos-app-fwd")
-        main.log.info("Time for feature:install onos-app-fwd: %2f seconds" %(time2-time1))
-        
-        time.sleep( 5 )
+            appCheck = appCheck and t.result
+        utilities.assert_equals( expect=main.TRUE, actual=appCheck,
+                                 onpass="App Ids seem to be correct",
+                                 onfail="Something is wrong with app Ids" )
+        if appCheck != main.TRUE:
+            main.log.warn( main.CLIs[0].apps() )
+            main.log.warn( main.CLIs[0].appIDs() )
+ 
+        time.sleep( 10 )
 
         main.step( "Verify Pingall" )
         ping_result = main.FALSE
@@ -670,34 +655,31 @@ class OnosCHO:
             main.log.report( "Pingall Test in Reactive mode failed" )
 
         main.step( "Disable Reactive forwarding" )
-        uninstallResult = main.TRUE
+       
+        main.log.info( "Uninstall reactive forwarding app" )
+        appResults = appResults and main.CLIs[0].deactivateApp( "org.onosproject.fwd" )
         pool = []
-        time1 = time.time()
         for cli in main.CLIs:
-            t = main.Thread( target=cli.featureUninstall,
-                             threadID=main.threadID,
-                             name="featureUninstall",
-                             args=['onos-app-fwd'])
-            pool.append(t)
+            t = main.Thread( target=cli.appToIDCheck,
+                             name="appToIDCheck-" + str( i ),
+                             args=[] )
+            pool.append( t )
             t.start()
-            main.threadID = main.threadID + 1
+
         for t in pool:
             t.join()
-            uninstallResult = uninstallResult and t.result
-        time2 = time.time()
-        
-        if not uninstallResult:
-                main.log.info("Did not uninstall onos-app-fwd feature properly")
-                #main.cleanup()
-                #main.exit()
-        else:
-            main.log.info("Successful feature:uninstall onos-app-fwd")
-        main.log.info("Time for feature:uninstall onos-app-fwd: %2f seconds" %(time2-time1))
+            appCheck = appCheck and t.result
+        utilities.assert_equals( expect=main.TRUE, actual=appCheck,
+                                 onpass="App Ids seem to be correct",
+                                 onfail="Something is wrong with app Ids" )
+        if appCheck != main.TRUE:
+            main.log.warn( main.CLIs[0].apps() )
+            main.log.warn( main.CLIs[0].appIDs() )
 
         # Waiting for reative flows to be cleared.
-        time.sleep( 20 )
-        case4Result =  installResult and uninstallResult and ping_result
-        utilities.assert_equals( expect=main.TRUE, actual=case4Result,
+        time.sleep( 10 )
+        case41Result =  installResult and uninstallResult and ping_result
+        utilities.assert_equals( expect=main.TRUE, actual=case41Result,
                                  onpass="Reactive Mode Pingall test PASS",
                                  onfail="Reactive Mode Pingall test FAIL" )
 
@@ -713,34 +695,28 @@ class OnosCHO:
         main.case( "Enable Reactive forwarding and Verify ping all" )
         main.step( "Enable Reactive forwarding" )
         installResult = main.TRUE
-        feature = "onos-app-fwd"
-        
+        # Activate fwd app
+        appResults = main.CLIs[0].activateApp( "org.onosproject.fwd" )
+
+        appCheck = main.TRUE
         pool = []
-        time1 = time.time()
         for cli in main.CLIs:
-            t = main.Thread( target=cli.featureInstall,
-                    threadID=main.threadID,
-                    name="featureInstall",
-                    args=['onos-app-fwd'])
-            pool.append(t)
+            t = main.Thread( target=cli.appToIDCheck,
+                             name="appToIDCheck-" + str( i ),
+                             args=[] )
+            pool.append( t )
             t.start()
-            main.threadID = main.threadID + 1
-            
-        installResult = main.TRUE
         for t in pool:
             t.join()
-            installResult = installResult and t.result
-        time2 = time.time()
-        
-        if not installResult:
-                main.log.info("Did not install onos-app-fwd feature properly")
-                #main.cleanup()
-                #main.exit()
-        else:
-            main.log.info("Successful feature:install onos-app-fwd")
-        main.log.info("Time for feature:install onos-app-fwd: %2f seconds" %(time2-time1))
-        
-        time.sleep( 5 )
+            appCheck = appCheck and t.result
+        utilities.assert_equals( expect=main.TRUE, actual=appCheck,
+                                 onpass="App Ids seem to be correct",
+                                 onfail="Something is wrong with app Ids" )
+        if appCheck != main.TRUE:
+            main.log.warn( main.CLIs[0].apps() )
+            main.log.warn( main.CLIs[0].appIDs() )
+ 
+        time.sleep( 10 )
 
         main.step( "Verify Pingall" )
         ping_result = main.FALSE
@@ -759,36 +735,34 @@ class OnosCHO:
             main.log.report( "Pingall Test in Reactive mode failed" )
 
         main.step( "Disable Reactive forwarding" )
-        uninstallResult = main.TRUE
+       
+        main.log.info( "Uninstall reactive forwarding app" )
+        appResults = appResults and main.CLIs[0].deactivateApp( "org.onosproject.fwd" )
         pool = []
-        time1 = time.time()
         for cli in main.CLIs:
-            t = main.Thread( target=cli.featureUninstall,
-                             threadID=main.threadID,
-                             name="featureUninstall",
-                             args=['onos-app-fwd'])
-            pool.append(t)
+            t = main.Thread( target=cli.appToIDCheck,
+                             name="appToIDCheck-" + str( i ),
+                             args=[] )
+            pool.append( t )
             t.start()
-            main.threadID = main.threadID + 1
+
         for t in pool:
             t.join()
-            uninstallResult = uninstallResult and t.result
-        time2 = time.time()
-        
-        if not uninstallResult:
-                main.log.info("Did not uninstall onos-app-fwd feature properly")
-                #main.cleanup()
-                #main.exit()
-        else:
-            main.log.info("Successful feature:uninstall onos-app-fwd")
-        main.log.info("Time for feature:uninstall onos-app-fwd: %2f seconds" %(time2-time1))
+            appCheck = appCheck and t.result
+        utilities.assert_equals( expect=main.TRUE, actual=appCheck,
+                                 onpass="App Ids seem to be correct",
+                                 onfail="Something is wrong with app Ids" )
+        if appCheck != main.TRUE:
+            main.log.warn( main.CLIs[0].apps() )
+            main.log.warn( main.CLIs[0].appIDs() )
 
         # Waiting for reative flows to be cleared.
-        time.sleep( 20 )
-        case4Result =  installResult and uninstallResult and ping_result
-        utilities.assert_equals( expect=main.TRUE, actual=case4Result,
+        time.sleep( 10 )
+        case42Result =  installResult and uninstallResult and ping_result
+        utilities.assert_equals( expect=main.TRUE, actual=case42Result,
                                  onpass="Reactive Mode Pingall test PASS",
                                  onfail="Reactive Mode Pingall test FAIL" )
+
     def CASE5( self, main ):
         """
         Compare current ONOS topology with reference data
@@ -1934,6 +1908,7 @@ class OnosCHO:
                 intentIdList.append(thread.result)
         time2 = time.time()
         main.log.info("Time for adding point intents: %2f seconds" %(time2-time1)) 
+        print intentIdList
         time.sleep(5)
         main.step( "Verify Ping across all hosts" )
         pingResult = main.FALSE
@@ -2008,8 +1983,9 @@ class OnosCHO:
             actual=case94Result,
             onpass="Install 25 multi to single point Intents and Ping All test PASS",
             onfail="Install 25 multi to single point Intents and Ping All test FAIL" )
-        
-        
+    
+    #def CASE95 multi-single point intent for Spine
+
     def CASE96( self ):
         """
         Install single-multi point intents and verify Ping all works
@@ -2019,131 +1995,106 @@ class OnosCHO:
         main.log.report( "Install single-multi point intents and verify Ping all" )
         main.log.report( "___________________________________________" )
         main.case( "Install single-multi point intents and Ping all" )
-        deviceLinksCopy = copy.copy( main.deviceLinks )
-        main.step( "Install single-multi point intents" )
-        for i in range( len( deviceLinksCopy ) ):
-            pointLink = str(
-                deviceLinksCopy[ i ] ).replace(
-                "src=",
-                "" ).replace(
-                "dst=",
-                "" ).split( ',' )
-            point1 = pointLink[ 0 ].split( '/' )
-            point2 = pointLink[ 1 ].split( '/' )
-            installResult = main.ONOScli1.addPointIntent(
-                point1[ 0 ], point2[ 0 ], int(
-                    point1[ 1 ] ), int(
-                    point2[ 1 ] ) )
-            if installResult == main.TRUE:
-                print "Installed Point intent between :", point1[ 0 ], int( point1[ 1 ] ), point2[ 0 ], int( point2[ 1 ] )
-
-        main.step( "Obtain the intent id's" )
-        intentsList = main.ONOScli1.getAllIntentIds()
-        ansi_escape = re.compile( r'\x1b[^m]*m' )
-        intentsList = ansi_escape.sub( '', intentsList )
-        intentsList = intentsList.replace(
-            " onos:intents | grep id=",
-            "" ).replace(
-            "id=",
-            "" ).replace(
-            "\r\r",
-             "" )
-        intentsList = intentsList.splitlines()
-        intentsList = intentsList[ 1: ]
+        deviceDPIDsCopy = copy.copy(main.deviceDPIDs)
+        portEgressList = ['1']*(len(deviceDPIDsCopy) - 1)
         intentIdList = []
-        for i in range( len( intentsList ) ):
-            intentsTemp = intentsList[ i ].split( ',' )
-            intentIdList.append( intentsTemp[ 0 ] )
-        print "Intent IDs: ", intentIdList
-        print "Total Intents installed: ", len( intentIdList )
-
+        print "MACsDict", main.MACsDict
+        time1 = time.time()
+        for i in xrange(0,len(deviceDPIDsCopy),int(main.numCtrls)):
+            pool = []
+            for cli in main.CLIs:
+                ingressDevice = deviceDPIDsCopy[i]
+                egressDeviceList = copy.copy(deviceDPIDsCopy)
+                egressDeviceList.remove(ingressDevice)
+                if i >= len( deviceDPIDsCopy ):
+                    break
+                t = main.Thread( target=cli.addSinglepointToMultipointIntent,
+                        threadID=main.threadID,
+                        name="addSinglepointToMultipointIntent",
+                        args =[ingressDevice,egressDeviceList,'1',portEgressList,'IPV4',main.MACsDict.get(ingressDevice)])
+                pool.append(t)
+                #time.sleep(1)
+                t.start()
+                i = i + 1
+                main.threadID = main.threadID + 1
+            for thread in pool:
+                thread.join()
+                intentIdList.append(thread.result)
+        time2 = time.time()
+        main.log.info("Time for adding point intents: %2f seconds" %(time2-time1)) 
+        time.sleep(5)
         main.step( "Verify Ping across all hosts" )
         pingResult = main.FALSE
         time1 = time.time()
-        pingResult = main.Mininet1.pingall()
+        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout)
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
             "Time taken for Ping All: " +
             str( timeDiff ) +
             " seconds" )
-        utilities.assert_equals( expect=main.TRUE, actual=pingResult,
-                                 onpass="PING ALL PASS",
-                                 onfail="PING ALL FAIL" )
 
-        case8_result = installResult and pingResult
+        case96Result = pingResult
         utilities.assert_equals(
             expect=main.TRUE,
-            actual=case8_result,
-            onpass="Ping all test after Point intents addition successful",
-            onfail="Ping all test after Point intents addition failed" )
+            actual=case96Result,
+            onpass="Install 25 single to multi point Intents and Ping All test PASS",
+            onfail="Install 25 single to multi point Intents and Ping All test FAIL" )
 
     def CASE97( self ):
         """
         Install single-multi point intents and verify Ping all works
+        for Chordal topology
         """
         import copy
         main.log.report( "Install single-multi point intents and verify Ping all" )
         main.log.report( "___________________________________________" )
         main.case( "Install single-multi point intents and Ping all" )
-        deviceLinksCopy = copy.copy( main.deviceLinks )
-        main.step( "Install single-multi point intents" )
-        for i in range( len( deviceLinksCopy ) ):
-            pointLink = str(
-                deviceLinksCopy[ i ] ).replace(
-                "src=",
-                "" ).replace(
-                "dst=",
-                "" ).split( ',' )
-            point1 = pointLink[ 0 ].split( '/' )
-            point2 = pointLink[ 1 ].split( '/' )
-            installResult = main.ONOScli1.addPointIntent(
-                point1[ 0 ], point2[ 0 ], int(
-                    point1[ 1 ] ), int(
-                    point2[ 1 ] ) )
-            if installResult == main.TRUE:
-                print "Installed Point intent between :", point1[ 0 ], int( point1[ 1 ] ), point2[ 0 ], int( point2[ 1 ] )
-
-        main.step( "Obtain the intent id's" )
-        intentsList = main.ONOScli1.getAllIntentIds()
-        ansi_escape = re.compile( r'\x1b[^m]*m' )
-        intentsList = ansi_escape.sub( '', intentsList )
-        intentsList = intentsList.replace(
-            " onos:intents | grep id=",
-            "" ).replace(
-            "id=",
-            "" ).replace(
-            "\r\r",
-             "" )
-        intentsList = intentsList.splitlines()
-        intentsList = intentsList[ 1: ]
+        deviceDPIDsCopy = copy.copy(main.deviceDPIDs)
+        portEgressList = ['1']*(len(deviceDPIDsCopy) - 1)
         intentIdList = []
-        for i in range( len( intentsList ) ):
-            intentsTemp = intentsList[ i ].split( ',' )
-            intentIdList.append( intentsTemp[ 0 ] )
-        print "Intent IDs: ", intentIdList
-        print "Total Intents installed: ", len( intentIdList )
-
+        print "MACsDict", main.MACsDict
+        time1 = time.time()
+        for i in xrange(0,len(deviceDPIDsCopy),int(main.numCtrls)):
+            pool = []
+            for cli in main.CLIs:
+                ingressDevice = deviceDPIDsCopy[i]
+                egressDeviceList = copy.copy(deviceDPIDsCopy)
+                egressDeviceList.remove(ingressDevice)
+                if i >= len( deviceDPIDsCopy ):
+                    break
+                t = main.Thread( target=cli.addSinglepointToMultipointIntent,
+                        threadID=main.threadID,
+                        name="addSinglepointToMultipointIntent",
+                        args =[ingressDevice,egressDeviceList,'1',portEgressList,'IPV4',main.MACsDict.get(ingressDevice),''])
+                pool.append(t)
+                #time.sleep(1)
+                t.start()
+                i = i + 1
+                main.threadID = main.threadID + 1
+            for thread in pool:
+                thread.join()
+                intentIdList.append(thread.result)
+        time2 = time.time()
+        main.log.info("Time for adding point intents: %2f seconds" %(time2-time1)) 
+        time.sleep(5)
         main.step( "Verify Ping across all hosts" )
         pingResult = main.FALSE
         time1 = time.time()
-        pingResult = main.Mininet1.pingall()
+        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout)
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
             "Time taken for Ping All: " +
             str( timeDiff ) +
             " seconds" )
-        utilities.assert_equals( expect=main.TRUE, actual=pingResult,
-                                 onpass="PING ALL PASS",
-                                 onfail="PING ALL FAIL" )
 
-        case8_result = installResult and pingResult
+        case97Result = pingResult
         utilities.assert_equals(
             expect=main.TRUE,
-            actual=case8_result,
-            onpass="Ping all test after Point intents addition successful",
-            onfail="Ping all test after Point intents addition failed" )
+            actual=case97Result,
+            onpass="Install 25 single to multi point Intents and Ping All test PASS",
+            onfail="Install 25 single to multi point Intents and Ping All test FAIL" )
 
     def CASE10( self ):
         import time

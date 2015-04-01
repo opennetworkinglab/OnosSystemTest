@@ -1291,7 +1291,9 @@ class OnosCliDriver( CLI ):
                         cmd += " " + \
                             str( ingressDevice ) + "/" +\
                             str( portIngress ) + " "
-
+                else:
+                    main.log.error( "Device list and port list does not have the same length" )
+                    return main.FALSE
             if "/" in egressDevice:
                 cmd += " " + str( egressDevice )
             else:
@@ -1450,6 +1452,9 @@ class OnosCliDriver( CLI ):
                         cmd += " " + \
                             str( egressDevice ) + "/" +\
                             str( portEgress )
+                else:
+                    main.log.error( "Device list and port list does not have the same length" )
+                    return main.FALSE
 
             print "cmd= ", cmd
             handle = self.sendline( cmd )

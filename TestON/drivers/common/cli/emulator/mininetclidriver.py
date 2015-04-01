@@ -273,12 +273,12 @@ class MininetCliDriver( Emulator ):
                                               pexpect.TIMEOUT ],
                                             timeout )
                     if i == 0:
-                        main.log.info("mininet> prompt found!")
-                        response = str(self.handle.before)
+                        main.log.info( "mininet> prompt found!" )
+                        response = str( self.handle.before )
                     if i == 1:
-                        main.log.info( self.name + ": Cannot ping some of the Host")
-                        main.log.info(str(self.handle.before))
-                        response = str(self.handle.before)
+                        main.log.info( self.name + ": Cannot ping some of the hosts")
+                        main.log.info( str( self.handle.before ) )
+                        response = str( self.handle.before )
                     if i == 2:
                         main.log.error( self.name + ": EOF exception found" )
                         main.log.error( self.name + ":     " + self.handle.before )

@@ -537,7 +537,6 @@ class OnosCHO:
         installResult = main.TRUE
         # Activate fwd app
         appResults = main.CLIs[0].activateApp( "org.onosproject.fwd" )
-
         appCheck = main.TRUE
         pool = []
         for cli in main.CLIs:
@@ -561,7 +560,7 @@ class OnosCHO:
         main.step( "Verify Pingall" )
         ping_result = main.FALSE
         time1 = time.time()
-        ping_result = main.Mininet1.pingall(timeout=main.pingTimeout)
+        ping_result = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=True)
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -641,7 +640,7 @@ class OnosCHO:
         main.step( "Verify Pingall" )
         ping_result = main.FALSE
         time1 = time.time()
-        ping_result = main.Mininet1.pingall(timeout=main.pingTimeout)
+        ping_result = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=True)
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -721,7 +720,7 @@ class OnosCHO:
         main.step( "Verify Pingall" )
         ping_result = main.FALSE
         time1 = time.time()
-        ping_result = main.Mininet1.pingall(timeout=main.pingTimeout)
+        ping_result = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=True)
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -902,7 +901,7 @@ class OnosCHO:
         main.step( "Verify Ping across all hosts" )
         pingResult = main.FALSE
         time1 = time.time()
-        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout)
+        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=True)
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -964,7 +963,7 @@ class OnosCHO:
         main.step( "Verify Ping across all hosts" )
         pingResult = main.FALSE
         time1 = time.time()
-        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout)
+        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=True)
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -1025,7 +1024,7 @@ class OnosCHO:
         main.step( "Verify Ping across all hosts" )
         pingResult = main.FALSE
         time1 = time.time()
-        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout)
+        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=True)
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -1107,7 +1106,7 @@ class OnosCHO:
         main.step( "Verify Ping across all hosts" )
         pingResultLinkDown = main.FALSE
         time1 = time.time()
-        pingResultLinkDown = main.Mininet1.pingall(timeout=main.pingTimeout)
+        pingResultLinkDown = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=True)
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -1251,7 +1250,7 @@ class OnosCHO:
         main.step( "Verify Ping across all hosts" )
         pingResultLinkDown = main.FALSE
         time1 = time.time()
-        pingResultLinkDown = main.Mininet1.pingall(timeout=main.pingTimeout)
+        pingResultLinkDown = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=True)
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -1374,7 +1373,7 @@ class OnosCHO:
         main.step( "Verify Ping across all hosts" )
         pingResultLinkDown = main.FALSE
         time1 = time.time()
-        pingResultLinkDown = main.Mininet1.pingall(timeout=main.pingTimeout)
+        pingResultLinkDown = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=True)
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -1487,7 +1486,7 @@ class OnosCHO:
         main.step( "Verify Ping across all hosts" )
         pingResultLinkDown = main.FALSE
         time1 = time.time()
-        pingResultLinkDown = main.Mininet1.pingall(timeout=main.pingTimeout)
+        pingResultLinkDown = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=True)
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -1609,7 +1608,7 @@ class OnosCHO:
         main.step( "Verify Ping across all hosts" )
         pingResultLinkDown = main.FALSE
         time1 = time.time()
-        pingResultLinkDown = main.Mininet1.pingall(timeout=main.pingTimeout)
+        pingResultLinkDown = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=True)
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -1722,7 +1721,7 @@ class OnosCHO:
         main.step( "Verify Ping across all hosts" )
         pingResult = main.FALSE
         time1 = time.time()
-        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout)
+        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=True)
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -1785,7 +1784,7 @@ class OnosCHO:
         main.step( "Verify Ping across all hosts" )
         pingResult = main.FALSE
         time1 = time.time()
-        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout)
+        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=True)
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -1852,7 +1851,7 @@ class OnosCHO:
         main.step( "Verify Ping across all hosts" )
         pingResult = main.FALSE
         time1 = time.time()
-        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout)
+        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=True)
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -1913,7 +1912,7 @@ class OnosCHO:
         main.step( "Verify Ping across all hosts" )
         pingResult = main.FALSE
         time1 = time.time()
-        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout)
+        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=True)
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -1969,7 +1968,7 @@ class OnosCHO:
         main.step( "Verify Ping across all hosts" )
         pingResult = main.FALSE
         time1 = time.time()
-        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout)
+        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=True)
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -2026,7 +2025,7 @@ class OnosCHO:
         main.step( "Verify Ping across all hosts" )
         pingResult = main.FALSE
         time1 = time.time()
-        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout)
+        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=True)
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -2081,7 +2080,7 @@ class OnosCHO:
         main.step( "Verify Ping across all hosts" )
         pingResult = main.FALSE
         time1 = time.time()
-        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout)
+        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=True)
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(

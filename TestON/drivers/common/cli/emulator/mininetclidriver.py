@@ -43,7 +43,7 @@ from math import pow
 from drivers.common.cli.emulatordriver import Emulator
 
 
-class MininetCliDriver2( Emulator ):
+class MininetCliDriver( Emulator ):
 
     """
        MininetCliDriver is the basic driver which will handle
@@ -65,7 +65,7 @@ class MininetCliDriver2( Emulator ):
 
             self.name = self.options[ 'name' ]
             self.handle = super(
-                MininetCliDriver2,
+                MininetCliDriver,
                 self ).connect(
                 user_name=self.user_name,
                 ip_address=self.ip_address,
@@ -1917,4 +1917,4 @@ class MininetCliDriver2( Emulator ):
 
 if __name__ != "__main__":
     import sys
-    sys.modules[ __name__ ] = MininetCliDriver2()
+    sys.modules[ __name__ ] = MininetCliDriver()

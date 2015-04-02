@@ -464,6 +464,8 @@ class OnosCHO:
             for i in xrange(1,(main.numMNswitches + 1), int( main.numCtrls ) ):
                 pool = []
                 for cli in main.CLIs:
+                    if i >= len( main.numMNswitches  ) + 1:
+                        break
                     dpid = "of:00000000000000" + format( i,'02x' )
                     t = main.Thread(target = cli.getDevicePortsEnabledCount,threadID = main.threadID, name = "getDevicePortsEnabledCount",args = [dpid])
                     t.start()
@@ -486,6 +488,8 @@ class OnosCHO:
             for i in xrange( 1,( main.numMNswitches + 1 ), int( main.numCtrls) ):
                 pool = []
                 for cli in main.CLIs:
+                    if i >= len( main.numMNswitches  ) + 1:
+                        break
                     dpid = "of:00000000000000" + format( i,'02x' )
                     t = main.Thread( target = cli.getDeviceLinksActiveCount,
                                      threadID = main.threadID,
@@ -501,7 +505,7 @@ class OnosCHO:
                     linkCountTemp = re.split( r'\t+', linkCountResult )
                     linkCount = linkCountTemp[ 1 ].replace( "\r\r\n\x1b[32m", "" )
                     main.deviceActiveLinksCount.append( linkCount )
-                print "Device Active Links Count Stored: \n", str( main.deviceActiveLinksCount )
+            print "Device Active Links Count Stored: \n", str( main.deviceActiveLinksCount )
             time2 = time.time()
             main.log.info("Time for counting all enabled links of the switches: %2f seconds" %(time2-time1))
 
@@ -1189,7 +1193,7 @@ class OnosCHO:
 
     def CASE71( self, main ):
         """
-        Randomly bring some core links down and verify ping all ( Host Intents-Att Topo)
+        Randomly bring some core links down and verify ping all ( Point Intents-Att Topo)
         """
         import random
         main.randomLink1 = []
@@ -1204,9 +1208,9 @@ class OnosCHO:
         switchLinksToToggle = main.params[ 'ATTCORELINKS' ][ 'toggleLinks' ]
         link_sleep = int( main.params[ 'timers' ][ 'LinkDiscovery' ] )
 
-        main.log.report( "Randomly bring some core links down and verify ping all (Host Intents-Att Topo)" )
+        main.log.report( "Randomly bring some core links down and verify ping all (Point Intents-Att Topo)" )
         main.log.report( "___________________________________________________________________________" )
-        main.case( "Host intents - Randomly bring some core links down and verify ping all" )
+        main.case( "Point intents - Randomly bring some core links down and verify ping all" )
         main.step( "Verify number of Switch links to toggle on each Core Switch are between 1 - 5" )
         if ( int( switchLinksToToggle ) ==
              0 or int( switchLinksToToggle ) > 5 ):
@@ -1268,7 +1272,7 @@ class OnosCHO:
 
     def CASE81( self, main ):
         """
-        Bring the core links up that are down and verify ping all ( Host Intents-Att Topo )
+        Bring the core links up that are down and verify ping all ( Point Intents-Att Topo )
         """
         import random
         link1End1 = main.params[ 'ATTCORELINKS' ][ 'linkS3a' ]
@@ -1278,11 +1282,11 @@ class OnosCHO:
         switchLinksToToggle = main.params[ 'ATTCORELINKS' ][ 'toggleLinks' ]
 
         main.log.report(
-            "Bring the core links up that are down and verify ping all (Host Intents-Att Topo" )
+            "Bring the core links up that are down and verify ping all ( Point Intents-Att Topo" )
         main.log.report(
             "__________________________________________________________________" )
         main.case(
-            "Host intents - Bring the core links up that are down and verify ping all" )
+            "Point intents - Bring the core links up that are down and verify ping all" )
         main.step( "Bring randomly cut links on Core devices up" )
         for i in range( int( switchLinksToToggle ) ):
             main.Mininet1.link(
@@ -1446,15 +1450,15 @@ class OnosCHO:
 
     def CASE73( self, main ):
         """
-        Randomly bring some links down and verify ping all ( Host Intents-Chordal Topo)
+        Randomly bring some links down and verify ping all ( Point Intents-Chordal Topo)
         """
         import random
         import itertools 
         link_sleep = int( main.params[ 'timers' ][ 'LinkDiscovery' ] )
         
-        main.log.report( "Randomly bring some core links down and verify ping all (Host Intents-Chordal Topo)" )
+        main.log.report( "Randomly bring some core links down and verify ping all ( Point Intents-Chordal Topo)" )
         main.log.report( "___________________________________________________________________________" )
-        main.case( "Host intents - Randomly bring some core links down and verify ping all" )
+        main.case( "Point intents - Randomly bring some core links down and verify ping all" )
         switches = []
         switchesComb = []
         for i in range( main.numMNswitches ):
@@ -1504,17 +1508,17 @@ class OnosCHO:
 
     def CASE83( self, main ):
         """
-        Bring the core links up that are down and verify ping all ( Host Intents Chordal Topo )
+        Bring the core links up that are down and verify ping all ( Point Intents Chordal Topo )
         """
         import random
         link_sleep = int( main.params[ 'timers' ][ 'LinkDiscovery' ] )
        
         main.log.report(
-            "Bring the core links up that are down and verify ping all (Host Intents-Chordal Topo" )
+            "Bring the core links up that are down and verify ping all ( Point Intents-Chordal Topo" )
         main.log.report(
             "__________________________________________________________________" )
         main.case(
-            "Host intents - Bring the core links up that are down and verify ping all" )
+            "Point intents - Bring the core links up that are down and verify ping all" )
         main.step( "Bring randomly cut links on devices up" )
         
         for switch in main.randomLinks:

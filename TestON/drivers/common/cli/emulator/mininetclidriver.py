@@ -248,11 +248,16 @@ class MininetCliDriver( Emulator ):
         topoDict = self.numSwitchesN_links( *topoArgList )
         return topoDict
 
-    def pingall( self, timeout=300, shortCircuit = False ):
+    def pingall( self, timeout=300, shortCircuit = False ,numFailedPings = 1):
         """
            Verifies the reachability of the hosts using pingall command.
            Optional parameter timeout allows you to specify how long to
            wait for pingall to complete
+           Optional:
+           shortCircuit - Break the pingall based on the number of failed hosts
+           ping
+           numFailedPings - initialized the number required for the pingall to
+           break defaults to 1 
            Returns:
            main.TRUE if pingall completes with no pings dropped
            otherwise main.FALSE"""
@@ -268,7 +273,7 @@ class MininetCliDriver( Emulator ):
                         timeout=int( timeout ) )
                 else:
                     self.handle.sendline( "pingall" )
-                    i = self.handle.expect( [ "mininet>","X X X",
+                    i = self.handle.expect( [ "mininet>","X",
                                               pexpect.EOF,
                                               pexpect.TIMEOUT ],
                                             timeout )
@@ -276,16 +281,52 @@ class MininetCliDriver( Emulator ):
                         main.log.info( "mininet> prompt found!" )
                         response = str( self.handle.before )
                     if i == 1:
-                        main.log.info( self.name + ": Cannot ping some of the hosts")
+                        main.log.info( self.name + 
+                                       ": Cannot ping some of the hosts")
+                        failedPings = 1
+                        main.log.info( self.name + ": failed to ping " + 
+                                str( failedPings ) + " host" )
+                        while failedPings != numFailedPings:
+                            j = self.handle.expect( [ "mininet>","X",
+                                                      pexpect.EOF,
+                                                      pexpect.TIMEOUT ],
+                                                      timeout )
+                            if j == 0:
+                                main.log.info( self.name + ": pingall finished")
+                                break
+                            if j == 1:
+                                failedPings = failedPings + 1
+                                main.log.info( self.name + ": failed to ping " 
+                                        + str( failedPings ) + " host" )
+
+                            if j == 2:
+                                main.log.error( self.name + 
+                                                ": EOF exception found" )
+                                main.log.error( self.name + ":     " +
+                                                self.handle.before )
+                                main.cleanup()
+                                main.exit()
+                            if j == 3:
+                                main.log.error( self.name + 
+                                                ": TIMEOUT exception found" )
+                                main.log.error( self.name +
+                                                ":     " +
+                                                str( self.handle.before ) )
+                                break
+                        
+                        main.log.info( self.name + ": Cannot ping " 
+                                       + str( failedPings ) +" hosts")
                         main.log.info( str( self.handle.before ) )
                         response = str( self.handle.before )
                     if i == 2:
                         main.log.error( self.name + ": EOF exception found" )
-                        main.log.error( self.name + ":     " + self.handle.before )
+                        main.log.error( self.name + ":     "
+                                        + self.handle.before )
                         main.cleanup()
                         main.exit()
                     if i == 3:
-                        main.log.error( self.name + ": TIMEOUT exception found" )
+                        main.log.error( self.name +
+                                        ": TIMEOUT exception found" )
                         main.log.error( self.name +
                                         ":     " +
                                         str( self.handle.before ) )

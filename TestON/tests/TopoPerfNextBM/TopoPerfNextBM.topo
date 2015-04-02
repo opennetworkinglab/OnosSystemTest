@@ -2,7 +2,7 @@
     <COMPONENT>
         
         <ONOSbench>
-            <host>10.254.1.200</host>
+            <host>10.128.174.10</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>OnosDriver</type>
@@ -11,7 +11,7 @@
         </ONOSbench>
 
         <ONOS1cli>
-            <host>10.254.1.200</host>
+            <host>10.128.174.10</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>OnosCliDriver</type>
@@ -20,7 +20,7 @@
         </ONOS1cli>
 
         <ONOS2cli>
-            <host>10.254.1.200</host>
+            <host>10.128.174.10</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>OnosCliDriver</type>
@@ -29,7 +29,7 @@
         </ONOS2cli>
         
         <ONOS3cli>
-            <host>10.254.1.200</host>
+            <host>10.128.174.10</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>OnosCliDriver</type>
@@ -38,7 +38,7 @@
         </ONOS3cli>
         
         <ONOS4cli>
-            <host>10.254.1.200</host>
+            <host>10.128.174.10</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>OnosCliDriver</type>
@@ -47,7 +47,7 @@
         </ONOS4cli>
         
         <ONOS5cli>
-            <host>10.254.1.200</host>
+            <host>10.128.174.10</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>OnosCliDriver</type>
@@ -56,7 +56,7 @@
         </ONOS5cli>
         
         <ONOS6cli>
-            <host>10.254.1.200</host>
+            <host>10.128.174.10</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>OnosCliDriver</type>
@@ -65,7 +65,7 @@
         </ONOS6cli>
         
         <ONOS7cli>
-            <host>10.254.1.200</host>
+            <host>10.128.174.10</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>OnosCliDriver</type>
@@ -74,7 +74,7 @@
         </ONOS7cli>
 
         <ONOS1>
-            <host>10.254.1.201</host>
+            <host>10.128.174.1</host>
             <user>sdn</user>
             <password>rocks</password>
             <type>OnosDriver</type>

@@ -685,6 +685,46 @@ class OnosDriver( CLI ):
             main.cleanup()
             main.exit()
 
+    def onosCfgSet( self, ONOSIp, configName, configParam ):
+        """
+        Uses 'onos <node-ip> cfg set' to change a parameter value of an
+        application. 
+        
+        ex)
+            onos 10.0.0.1 cfg set org.onosproject.myapp appSetting 1
+
+        ONOSIp = '10.0.0.1'
+        configName = 'org.onosproject.myapp'
+        configParam = 'appSetting 1'
+
+        """
+        try:
+            cfgStr = ( "onos "+str(ONOSIp)+" cfg set "+
+                       str(configName) + " " +
+                       str(configParam)
+                     )
+
+            self.handle.sendline( "" )
+            self.handle.expect( "\$" )
+            self.handle.sendline( cfgStr )
+            self.handle.expect( "\$" )
+        
+            # TODO: Add meaningful assertion
+            
+            return main.TRUE
+
+        except pexpect.ExceptionPexpect as e:
+            main.log.error( self.name + ": Pexpect exception found of type " +
+                            str( type( e ) ) )
+            main.log.error ( e.get_trace() )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
     def onosCli( self, ONOSIp, cmdstr ):
         """
         Uses 'onos' command to send various ONOS CLI arguments.

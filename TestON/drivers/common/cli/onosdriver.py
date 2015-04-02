@@ -560,7 +560,7 @@ class OnosDriver( CLI ):
         # That you may wish to use by default on startup.
         # Note that you  may not want certain features listed
         # on here.
-        coreFeatureString = "export ONOS_FEATURES=" + extraFeatureString
+        coreFeatureString = "export ONOS_APPS=" + extraFeatureString
         mnString = "export OCN="
         onosString = "export OC"
         tempCount = 1

@@ -1936,7 +1936,7 @@ class OnosCHO:
     def CASE94( self ):
         """
         Install multi-single point intents and verify Ping all works
-        for spine topology
+        for Chordal topology
         """
         import copy
         import time

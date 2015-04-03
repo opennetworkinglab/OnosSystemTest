@@ -1,5 +1,5 @@
 <PARAMS>
-    #CHO sequence : 1,20,[3,40,5,60,70,80,10,90,71,81,10,93,10]*50,22,[3,41,5,61,72,82,10,91,73,83,10,94,10]*50,22,[3,42,5,62,10,92,10]*50
+    # 1,20,3,[40,5,60,70,80,10,90,71,81,10,93,10]*50,22,3,[41,5,61,72,82,10,91,73,83,10,94,10]*50,22,3,[42,5,62,10,92,10]*50
     # 1. ONOS brinup Test case
     # 2. Assign and Balance all Mininet switches across controllers
     # 3. Collect reference toplogy for topo compare
@@ -11,7 +11,7 @@
     # 9. Install 300 point intents and verify ping all
     # 10. Remove all intents on ONOS
 
-    <testcases>1,20,3,93,70,80,10</testcases>
+    <testcases>1,20,3,[40,5,60,70,80,10,90,71,81,10,93,10]*50,22,3,[41,5,61,72,82,10,91,73,83,10,94,10]*50,22,3,[42,5,62,10,92,10]*50</testcases>
     <ENV>
         <cellName>choTest5</cellName>
     </ENV>
@@ -21,7 +21,7 @@
         <branch>master</branch>
     </GIT>-t
     <TOPO1>
-	<topo>~/mininet/custom/topoAtt.py</topo>t
+	<topo>~/mininet/custom/topoAtt.py</topo>
 	<numSwitches>25</numSwitches>
 	<numHosts>25</numHosts>
 	<numLinks>114</numLinks>
@@ -84,8 +84,8 @@
     </SPINECORELINKS>
 
     <timers>
-        <LinkDiscovery>5</LinkDiscovery>
-        <SwitchDiscovery>31</SwitchDiscovery>
+        <LinkDiscovery>1</LinkDiscovery>
+        <SwitchDiscovery>1</SwitchDiscovery>
     </timers>
 
 </PARAMS>

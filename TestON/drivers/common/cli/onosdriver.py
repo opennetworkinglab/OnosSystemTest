@@ -1334,13 +1334,14 @@ class OnosDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def tsharkGrep( self, grep, directory, interface='eth0' ):
+    def tsharkGrep( self, grep, directory, interface='eth0', grepOptions='' ):
         """
         Required:
             * grep string
             * directory to store results
         Optional:
             * interface - default: eth0
+            * grepOptions - options for grep 
         Description:
             Uses tshark command to grep specific group of packets
             and stores the results to specified directory.
@@ -1350,10 +1351,16 @@ class OnosDriver( CLI ):
             self.handle.sendline( "" )
             self.handle.expect( "\$" )
             self.handle.sendline( "" )
+            if grepOptions:
+                grepStr = "grep "+str(grepOptions)
+            else:
+                grepStr = "grep"
+            
             self.handle.sendline(
                 "tshark -i " +
                 str( interface ) +
-                " -t e | grep --line-buffered \"" +
+                " -t e | " +
+                grepStr + " --line-buffered \"" +
                 str(grep) +
                 "\" >" +
                 directory +

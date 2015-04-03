@@ -38,11 +38,4 @@
         <LinkDiscovery>5</LinkDiscovery>
         <SwitchDiscovery>15</SwitchDiscovery>
     </timers>
-
-    <OPTICAL>
-        <jsonfile> /home/admin/ONOS/tools/test/topos/oe-nonlinear-4.json </jsonfile>
-    </OPTICAL>    
-
-
-
 </PARAMS>

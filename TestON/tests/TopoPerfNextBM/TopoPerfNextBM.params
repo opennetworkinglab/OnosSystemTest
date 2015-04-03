@@ -3,7 +3,7 @@
 
     <ENV>
         <cellName>topo_perf_test</cellName>
-        <cellFeatures>"webconsole,onos-core,onos-api,onos-cli,onos-app-metrics,onos-app-gui,onos-openflow"</cellFeatures>
+        <cellFeatures>"org.onosproject.metrics,org.onosproject.openflow"</cellFeatures>
     </ENV>
 
     <GIT>
@@ -37,11 +37,14 @@
     </BENCH>
 
     <TSHARK>
+        # What to 'grep' for tshark outputs
+
         <ofpPortStatus>OF 1.3 146</ofpPortStatus>
         <ofpRoleReply>OF 1.3 90 of_role_reply</ofpRoleReply>
         <featureReply>OF 1.3 98 of_features_reply</featureReply>
         <roleRequest>OF 1.3 90 of_role_request</roleRequest>
         <tcpSynAck>TCP 74 6633</tcpSynAck>
+        <finAckSequence>FIN</finAckSequence>
     </TSHARK>
 
     <TEST>
@@ -61,17 +64,17 @@
         </topoConfigName>
 
         #Number of times to iterate each case
-        <numIter>35</numIter>
+        <numIter>25</numIter>
         <numSwitch>2</numSwitch>
         #Number of iterations to ignore initially
         <iterIgnore>2</iterIgnore>
 
-        <singleSwThreshold>0,1000</singleSwThreshold>
-        <portUpThreshold>0,1000</portUpThreshold>
-        <portDownThreshold>0,1000</portDownThreshold>
-        <linkUpThreshold>0,10000</linkUpThreshold>
-        <linkDownThreshold>0,10000</linkDownThreshold>
-        <swDisc100Threshold>0,10000</swDisc100Threshold>
+        <singleSwThreshold>0.0,1000</singleSwThreshold>
+        <portUpThreshold>0.0,1000</portUpThreshold>
+        <portDownThreshold>0.0,1000</portDownThreshold>
+        <linkUpThreshold>0.0,10000</linkUpThreshold>
+        <linkDownThreshold>0.0,10000</linkDownThreshold>
+        <swDisc100Threshold>0.0,10000</swDisc100Threshold>
     
         <tabletFile>tablets_3node.json</tabletFile>
    </TEST>

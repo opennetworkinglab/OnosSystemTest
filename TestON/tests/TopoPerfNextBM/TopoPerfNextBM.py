@@ -119,6 +119,7 @@ class TopoPerfNextBM:
         CLIs[0].activateApp( 'org.onosproject.openflow' )
 
         main.step( 'Configuring application parameters' )
+<<<<<<< HEAD
         configName = 'org.onosproject.net.topology.impl.DefaultTopologyProvider'
         configParam = 'maxEvents 1'
         main.ONOSbench.onosCfgSet( nodeIpList[0], configName, configParam )
@@ -127,6 +128,28 @@ class TopoPerfNextBM:
         configParam = 'maxIdleMs 0'
         main.ONOSbench.onosCfgSet( nodeIpList[0], configName, configParam )
         
+=======
+        # TODO: Check driver for this functionality
+        main.ONOSbench.handle.sendline(
+                'onos '+nodeIpList[0]+
+                ' cfg set org.onosproject.net.'+
+                'topology.impl.DefaultTopologyProvider'+
+                ' maxEvents 1')
+        main.ONOSbench.handle.expect(":~")
+        main.ONOSbench.handle.sendline(
+                'onos '+nodeIpList[0]+
+                ' cfg set org.onosproject.net.'+
+                'topology.impl.DefaultTopologyProvider'+
+                ' maxBatchMs 0')
+        main.ONOSbench.handle.expect(":~")
+        main.ONOSbench.handle.sendline(
+                'onos '+nodeIpList[0]+
+                ' cfg set org.onosproject.net.'+
+                'topology.impl.DefaultTopologyProvider'+
+                ' maxIdleMs 0')
+        main.ONOSbench.handle.expect(":~")
+
+>>>>>>> c16e983dcc6a370bcdebdf4168770cee5c619a7d
         utilities.assert_equals(expect=main.TRUE,
                 actual=cellFileResult and cellApplyResult and\
                         verifyCellResult and checkoutResult and\
@@ -217,6 +240,22 @@ class TopoPerfNextBM:
         deviceToGraphDiscLatNodeIter = numpy.zeros((clusterCount,
             int(numIter)))
 
+        # TCP Syn/Ack -> Feature Reply latency collection for each node
+        tcpToFeatureLatNodeIter = numpy.zeros((clusterCount, int(numIter)))
+        # Feature Reply -> Role Request latency collection for each node
+        featureToRoleRequestLatNodeIter = numpy.zeros((clusterCount, 
+            int(numIter)))
+        # Role Request -> Role Reply latency collection for each node
+        roleRequestToRoleReplyLatNodeIter = numpy.zeros((clusterCount,
+            int(numIter)))
+        # Role Reply -> Device Update latency collection for each node
+        roleReplyToDeviceLatNodeIter = numpy.zeros((clusterCount,
+            int(numIter)))
+        # Device Update -> Graph Update latency collection for each node
+        deviceToGraphLatNodeIter = numpy.zeros((clusterCount,
+            int(numIter)))
+
+    
         endToEndLatNodeIter = numpy.zeros((clusterCount, int(numIter)))
         ofpToGraphLatNodeIter = numpy.zeros((clusterCount, int(numIter)))
         ofpToDeviceLatNodeIter = numpy.zeros((clusterCount, int(numIter)))
@@ -349,6 +388,7 @@ class TopoPerfNextBM:
                 if jsonObj:
                     graphTimestamp = jsonObj[graphTimestampKey]['value']
                     deviceTimestamp = jsonObj[deviceTimestampKey]['value']
+<<<<<<< HEAD
                 else:
                     main.log.error( "Unexpected JSON object" )
                     # If we could not obtain the JSON object, 
@@ -374,6 +414,33 @@ class TopoPerfNextBM:
                     main.log.info("ONOS "+str(nodeNum)+ " end-to-end: "+
                             str(endToEnd) + " ms")
                 else:
+=======
+                else:
+                    main.log.error( "Unexpected JSON object" )
+                    # If we could not obtain the JSON object, 
+                    # set the timestamps to 0, which will be
+                    # excluded from the measurement later on
+                    # (realized as invalid)
+                    graphTimestamp = 0
+                    deviceTimestamp = 0
+                
+                endToEnd = int(graphTimestamp) - int(t0Tcp)
+                
+                # Below are measurement breakdowns of the end-to-end
+                # measurement. 
+                tcpToFeature = int(featureTimestamp) - int(t0Tcp)
+                featureToRole = int(roleTimestamp) - int(featureTimestamp)
+                roleToOfp = int(t0Ofp) - int(roleTimestamp)
+                ofpToDevice = int(deviceTimestamp) - int(t0Ofp)
+                deviceToGraph = float(graphTimestamp) - float(deviceTimestamp)
+                
+                if endToEnd > thresholdMin and\
+                   endToEnd < thresholdMax and i >= iterIgnore:
+                    endToEndLatNodeIter[node][i] = endToEnd 
+                    main.log.info("ONOS "+str(nodeNum)+ " end-to-end: "+
+                            str(endToEnd) + " ms")
+                else:
+>>>>>>> c16e983dcc6a370bcdebdf4168770cee5c619a7d
                     main.log.info("ONOS "+str(nodeNum)+ " end-to-end "+
                             "measurement ignored due to excess in "+
                             "threshold or premature iteration")
@@ -445,6 +512,7 @@ class TopoPerfNextBM:
             # TCP FIN/ACK -> TCP FIN
             # TCP FIN -> Device Event
             # Device Event -> Graph Event
+<<<<<<< HEAD
            
             # Capture switch down FIN / ACK packets
 
@@ -452,6 +520,8 @@ class TopoPerfNextBM:
                     grepOptions = '-A 1' )
            
             time.sleep( 5 )
+=======
+>>>>>>> c16e983dcc6a370bcdebdf4168770cee5c619a7d
 
             main.step('Remove switch from controller')
             main.Mininet1.deleteSwController('s3')
@@ -571,19 +641,28 @@ class TopoPerfNextBM:
             roleToOfpList = []
             ofpToDeviceList = []
             deviceToGraphList = []
+<<<<<<< HEAD
             finAckTransactionList = []
             ackToDeviceList = []
             deviceToGraphDiscList = []
+=======
+>>>>>>> c16e983dcc6a370bcdebdf4168770cee5c619a7d
 
             # LatNodeIter 2d arrays contain all iteration latency
             # for each node of the current scale cluster size
             
+<<<<<<< HEAD
             # Switch connection measurements
+=======
+            # TODO: Use the new breakdown latency lists
+
+>>>>>>> c16e983dcc6a370bcdebdf4168770cee5c619a7d
             for item in endToEndLatNodeIter[node]:
                 if item > 0.0:
                     endToEndList.append(item)
 
             for item in tcpToFeatureLatNodeIter[node]:
+<<<<<<< HEAD
                 if item > 0.0:
                     tcpToFeatureList.append(item)
 
@@ -596,9 +675,16 @@ class TopoPerfNextBM:
                     roleToOfpList.append(item)
 
             for item in roleReplyToDeviceLatNodeIter[node]:
+=======
                 if item > 0.0:
-                    ofpToDeviceList.append(item)
+                    tcpToFeatureList.append(item)
 
+            for item in featureToRoleRequestLatNodeIter[node]:
+>>>>>>> c16e983dcc6a370bcdebdf4168770cee5c619a7d
+                if item > 0.0:
+                    featureToRoleList.append(item)
+
+<<<<<<< HEAD
             for item in deviceToGraphLatNodeIter[node]:
                 if item > 0.0:
                     deviceToGraphList.append(item)
@@ -615,6 +701,19 @@ class TopoPerfNextBM:
             for item in deviceToGraphDiscLatNodeIter[node]:
                 if item > 0.0:
                     deviceToGraphDiscList.append(item)
+=======
+            for item in roleRequestToRoleReplyLatNodeIter[node]:
+                if item > 0.0:
+                    roleToOfpList.append(item)
+
+            for item in roleReplyToDeviceLatNodeIter[node]:
+                if item > 0.0:
+                    ofpToDeviceList.append(item)
+
+            for item in deviceToGraphLatNodeIter[node]:
+                if item > 0.0:
+                    deviceToGraphList.append(item)
+>>>>>>> c16e983dcc6a370bcdebdf4168770cee5c619a7d
 
             endToEndAvg = round(numpy.mean(endToEndList), 2)
             endToEndStdDev = round(numpy.std(endToEndList), 2)
@@ -634,6 +733,7 @@ class TopoPerfNextBM:
             deviceToGraphAvg = round(numpy.mean(deviceToGraphList), 2)
             deviceToGraphStdDev = round(numpy.std(deviceToGraphList), 2)
 
+<<<<<<< HEAD
             finAckAvg = round(numpy.mean(finAckTransactionList), 2)
             finAckStdDev = round(numpy.std(finAckTransactionList), 2)
             
@@ -643,6 +743,8 @@ class TopoPerfNextBM:
             deviceToGraphDiscAvg = round(numpy.mean(deviceToGraphDiscList), 2)
             deviceToGraphDiscStdDev = round(numpy.std(deviceToGraphDiscList), 2)
 
+=======
+>>>>>>> c16e983dcc6a370bcdebdf4168770cee5c619a7d
             main.log.report(' - Node ' + str(node + 1) + ' Summary - ')
             main.log.report(' - Switch Connection Statistics - ')
             
@@ -675,6 +777,7 @@ class TopoPerfNextBM:
             main.log.report( 'Device-to-graph Std dev: ' +
                     str(deviceToGraphStdDev) + ' ms')
             
+<<<<<<< HEAD
             main.log.report(' - Switch Disconnection Statistics - ')
             main.log.report(' Fin/Ack-to-Ack Avg: ' + str(finAckAvg) + ' ms')
             main.log.report(' Fin/Ack-to-Ack Std dev: ' +
@@ -690,6 +793,8 @@ class TopoPerfNextBM:
             main.log.report(' Device-to-graph (disconnect) Std dev: ' +
                     str(deviceToGraphDiscStdDev) + ' ms')
 
+=======
+>>>>>>> c16e983dcc6a370bcdebdf4168770cee5c619a7d
             dbCmdList.append(
                     "INSERT INTO switch_latency_tests VALUES('" +
                     timeToPost + "','switch_latency_results'," +

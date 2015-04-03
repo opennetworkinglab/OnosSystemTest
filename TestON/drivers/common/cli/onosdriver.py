@@ -725,7 +725,6 @@ class OnosDriver( CLI ):
             main.cleanup()
             main.exit()
 
-
     def onosCli( self, ONOSIp, cmdstr ):
         """
         Uses 'onos' command to send various ONOS CLI arguments.
@@ -1850,7 +1849,7 @@ class OnosDriver( CLI ):
                 else:
                     time.sleep(1)
 
-            assert ("value=" + str(numPorts)) in verification and (" value=" + fileName) in verification
+            assert ("value=" + str(numPorts)) in verification and (" value=" + devicesString) in verification
         
         except AssertionError:
             main.log.error("Incorrect Config settings: " + verification)

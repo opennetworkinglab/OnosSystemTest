@@ -141,7 +141,7 @@ class OnosCHO:
             t = main.Thread( target=main.CLIs[i].startOnosCli,
                              threadID=main.threadID,
                              name="startOnosCli",
-                             args=[ main.nodes[i].ip_address ] )
+                             args=[ main.nodes[i].ip_address, karafTimeout ] )
             pool.append(t)
             t.start()
             main.threadID = main.threadID + 1
@@ -464,7 +464,7 @@ class OnosCHO:
             for i in xrange(1,(main.numMNswitches + 1), int( main.numCtrls ) ):
                 pool = []
                 for cli in main.CLIs:
-                    if i >= len( main.numMNswitches  ) + 1:
+                    if i >=  main.numMNswitches + 1:
                         break
                     dpid = "of:00000000000000" + format( i,'02x' )
                     t = main.Thread(target = cli.getDevicePortsEnabledCount,threadID = main.threadID, name = "getDevicePortsEnabledCount",args = [dpid])
@@ -488,7 +488,7 @@ class OnosCHO:
             for i in xrange( 1,( main.numMNswitches + 1 ), int( main.numCtrls) ):
                 pool = []
                 for cli in main.CLIs:
-                    if i >= len( main.numMNswitches  ) + 1:
+                    if i >=  main.numMNswitches + 1:
                         break
                     dpid = "of:00000000000000" + format( i,'02x' )
                     t = main.Thread( target = cli.getDeviceLinksActiveCount,
@@ -788,6 +788,8 @@ class OnosCHO:
         for i in xrange( 1,(main.numMNswitches + 1), int( main.numCtrls ) ):
             pool = []
             for cli in main.CLIs:
+                if i >=  main.numMNswitches + 1:
+                    break
                 dpid = "of:00000000000000" + format( i,'02x' )
                 t = main.Thread(target = cli.getDevicePortsEnabledCount,
                         threadID = main.threadID,
@@ -1175,7 +1177,7 @@ class OnosCHO:
         main.step( "Verify Ping across all hosts" )
         pingResultLinkUp = main.FALSE
         time1 = time.time()
-        pingResultLinkUp = main.Mininet1.pingall()
+        pingResultLinkUp = main.Mininet1.pingall( timeout=main.pingTimeout,shortCircuit=True )
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -1319,7 +1321,7 @@ class OnosCHO:
         main.step( "Verify Ping across all hosts" )
         pingResultLinkUp = main.FALSE
         time1 = time.time()
-        pingResultLinkUp = main.Mininet1.pingall(timeout = main.pingTimeout)
+        pingResultLinkUp = main.Mininet1.pingall(timeout = main.pingTimeout, shortCircuit = True )
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -1432,7 +1434,7 @@ class OnosCHO:
         main.step( "Verify Ping across all hosts" )
         pingResultLinkUp = main.FALSE
         time1 = time.time()
-        pingResultLinkUp = main.Mininet1.pingall(timeout = main.pingTimeout)
+        pingResultLinkUp = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=True)
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -1545,7 +1547,7 @@ class OnosCHO:
         main.step( "Verify Ping across all hosts" )
         pingResultLinkUp = main.FALSE
         time1 = time.time()
-        pingResultLinkUp = main.Mininet1.pingall(timeout = main.pingTimeout)
+        pingResultLinkUp = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=True)
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -1665,7 +1667,7 @@ class OnosCHO:
         main.step( "Verify Ping across all hosts" )
         pingResultLinkUp = main.FALSE
         time1 = time.time()
-        pingResultLinkUp = main.Mininet1.pingall(timeout = main.pingTimeout)
+        pingResultLinkUp = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=True)
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(

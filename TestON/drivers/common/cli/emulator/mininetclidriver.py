@@ -248,16 +248,20 @@ class MininetCliDriver( Emulator ):
         topoDict = self.numSwitchesN_links( *topoArgList )
         return topoDict
 
-    def pingall( self, timeout=300, shortCircuit=False, numFailedPings=1):
+    def pingall( self, timeout=300, shortCircuit=False, acceptableFailed=0):
         """
            Verifies the reachability of the hosts using pingall command.
            Optional parameter timeout allows you to specify how long to
            wait for pingall to complete
            Optional:
+           timeout(seconds) - This is the pexpect timeout; The function will
+                              timeout if the amount of time between failed
+                              pings exceedes this time and pingall is still
+                              running
            shortCircuit - Break the pingall based on the number of failed hosts
-           ping
-           numFailedPings - initialized the number required for the pingall to
-           break defaults to 1 
+                          ping
+           acceptableFailed - Set the number of acceptable failed pings for the
+                              function to still return main.TRUE
            Returns:
            main.TRUE if pingall completes with no pings dropped
            otherwise main.FALSE"""
@@ -265,92 +269,61 @@ class MininetCliDriver( Emulator ):
             main.log.info(
                 self.name +
                 ": Checking reachabilty to the hosts using pingall" )
-            try:
-                if not shortCircuit:
-                    response = self.execute(
-                        cmd="pingall",
-                        prompt="mininet>",
-                        timeout=int( timeout ) )
-                else:
-                    response = ""
-                    self.handle.sendline( "pingall" )
-                    i = self.handle.expect( [ "mininet>","X",
-                                              pexpect.EOF,
-                                              pexpect.TIMEOUT ],
-                                            timeout )
-                    if i == 0:
-                        main.log.info( "mininet> prompt found!" )
-                        response = str( self.handle.before )
-                    if i == 1:
-                        main.log.info( self.name + 
-                                       ": Cannot ping some of the hosts")
-                        failedPings = 1
-                        while failedPings < numFailedPings:
-                            j = self.handle.expect( [ "mininet>","X",
-                                                      pexpect.EOF,
-                                                      pexpect.TIMEOUT ],
-                                                      timeout )
-                            if j == 0:
-                                main.log.info( self.name + ": pingall finished")
-                                break
-                            if j == 1:
-                                failedPings = failedPings + 1
-                            if j == 2:
-                                main.log.error( self.name + 
-                                                ": EOF exception found" )
-                                main.log.error( self.name + ":     " +
-                                                self.handle.before )
-                                main.cleanup()
-                                main.exit()
-                            if j == 3:
-                                main.log.error( self.name + 
-                                                ": TIMEOUT exception found" )
-                                main.log.error( self.name +
-                                                ":     " +
-                                                str( self.handle.before ) )
-                                break
-                        
-                        main.log.info( self.name + ": failed to ping " + 
-                                str( failedPings ) + " host" )
-                        main.log.info( str( self.handle.before ) )
-                        response = str( self.handle.before )
-                    if i == 2:
-                        main.log.error( self.name + ": EOF exception found" )
-                        main.log.error( self.name + ":     "
-                                        + self.handle.before )
-                        main.cleanup()
-                        main.exit()
-                    if i == 3:
-                        main.log.error( self.name +
-                                        ": TIMEOUT exception found" )
-                        main.log.error( self.name +
-                                        ":     " +
-                                        str( self.handle.before ) )
-
-            except pexpect.EOF:
-                main.log.error( self.name + ": EOF exception found" )
-                main.log.error( self.name + ":     " + self.handle.before )
-                main.cleanup()
-                main.exit()
-            except pexpect.TIMEOUT:
-                # We may not want to kill the test if pexpect times out
-                main.log.error( self.name + ": TIMEOUT exception found" )
-                main.log.error( self.name +
-                                ":     " +
-                                str( self.handle.before ) )
-            # NOTE: mininet's pingall rounds, so we will check the number of
-            # passed and number of failed
-            pattern = "Results\:\s0\%\sdropped\s\(" +\
-                      "(?P<passed>[\d]+)/(?P=passed)"
+            response = ""
+            failedPings = 0
+            returnValue = main.TRUE
+            self.handle.sendline( "pingall" )
+            while True:
+                i = self.handle.expect( [ "mininet>","X",
+                                          pexpect.EOF,
+                                          pexpect.TIMEOUT ],
+                                          timeout )
+                if i == 0:
+                    main.log.info( self.name + ": pingall finished")
+                    response += self.handle.before
+                    break
+                elif i == 1:
+                    response += self.handle.before + self.handle.after
+                    failedPings = failedPings + 1
+                    if failedPings >= acceptableFailed:
+                        returnValue = main.FALSE
+                        if shortCircuit:
+                            main.log.error( self.name +
+                                            ": Aborting pingall - "
+                                            + str( failedPings ) +
+                                            " pings failed" )
+                            break
+                elif i == 2:
+                    main.log.error( self.name +
+                                    ": EOF exception found" )
+                    main.log.error( self.name + ":     " +
+                                    self.handle.before )
+                    main.cleanup()
+                    main.exit()
+                elif i == 3:
+                    response += self.handle.before
+                    main.log.error( self.name +
+                                    ": TIMEOUT exception found" )
+                    main.log.error( self.name +
+                                    ":     " +
+                                    str( response ) )
+                    # NOTE: Send ctrl-c to make sure pingall is done
+                    self.handle.send( "\x03" )
+                    self.handle.expect( "Interrupt" )
+                    self.handle.send( "" )
+                    self.handle.expect( "mininet>" )
+                    break
+            pattern = "Results\:"
+            main.log.info( "Pingall output: " + str( response ) )
             if re.search( pattern, response ):
-                main.log.info( self.name + ": All hosts are reachable" )
-                return main.TRUE
+                main.log.info( self.name + ": Pingall finished with "
+                               + str( failedPings ) + " failed pings" )
+                return returnValue
             else:
-                main.log.error( self.name + ": Unable to reach all the hosts" )
-                main.log.info( "Pingall output: " + str( response ) )
                 # NOTE: Send ctrl-c to make sure pingall is done
                 self.handle.send( "\x03" )
                 self.handle.expect( "Interrupt" )
+                self.handle.send( "" )
                 self.handle.expect( "mininet>" )
                 return main.FALSE
         else:

@@ -90,7 +90,7 @@ class OnosDriver( CLI ):
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
         except ValueError:
-            main.log.exception( "Exception in discconect of " + self.name )
+            main.log.exception( "Exception in disconnect of " + self.name )
             response = main.TRUE
         except Exception:
             main.log.exception( self.name + ": Connection failed to the host" )

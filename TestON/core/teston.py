@@ -294,7 +294,8 @@ class TestON:
         for component in self.componentDictionary.keys():
             try :
                 tempObject  = vars(self)[component]
-                print "Disconnecting " + str(tempObject)
+                print "Disconnecting from " + str(tempObject.name) + ": " + \
+                      str(tempObject)
                 tempObject.disconnect()
             #tempObject.execute(cmd="exit",prompt="(.*)",timeout=120)
 

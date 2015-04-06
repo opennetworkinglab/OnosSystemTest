@@ -286,7 +286,7 @@ class MininetCliDriver( Emulator ):
                     elif i == 1:
                         response += self.handle.before + self.handle.after
                         failedPings = failedPings + 1
-                        if failedPings >= acceptableFailed:
+                        if failedPings > acceptableFailed:
                             returnValue = main.FALSE
                             if shortCircuit:
                                 main.log.error( self.name +

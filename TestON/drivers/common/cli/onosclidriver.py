@@ -321,7 +321,7 @@ class OnosCliDriver( CLI ):
                 print response
                 try:
                     print self.handle.after
-                except:
+                except TypeError:
                     pass
             # TODO: do something with i
             main.log.info( "Command '" + str( cmdStr ) + "' sent to "
@@ -2235,7 +2235,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -2263,7 +2263,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -2302,7 +2302,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -2343,7 +2343,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -2385,7 +2385,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -2451,7 +2451,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -2505,7 +2505,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -2557,7 +2557,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -2620,7 +2620,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -2655,7 +2655,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -2729,7 +2729,7 @@ class OnosCliDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()

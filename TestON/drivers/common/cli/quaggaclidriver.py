@@ -606,7 +606,7 @@ class QuaggaCliDriver( CLI ):
             self.handle.sendline( "" )
             # self.handle.expect( "config-router" )
             self.handle.expect( "config-router", timeout=5 )
-        except:
+        except Exception:
             main.log.warn( "Probably not in config-router mode!" )
             self.disconnect()
         main.log.info( "Start to disable peer" )
@@ -615,7 +615,7 @@ class QuaggaCliDriver( CLI ):
         try:
             self.handle.sendline( cmd )
             self.handle.expect( "bgpd", timeout=5 )
-        except:
+        except Exception:
             main.log.warn( "Failed to disable peer" )
             self.disconnect()
 
@@ -626,7 +626,7 @@ class QuaggaCliDriver( CLI ):
             self.handle.sendline( "" )
             # self.handle.expect( "config-router" )
             self.handle.expect( "config-router", timeout=5 )
-        except:
+        except Exception:
             main.log.warn( "Probably not in config-router mode!" )
             self.disconnect()
         main.log.info( "Start to disable peer" )
@@ -635,7 +635,7 @@ class QuaggaCliDriver( CLI ):
         try:
             self.handle.sendline( cmd )
             self.handle.expect( "bgpd", timeout=5 )
-        except:
+        except Exception:
             main.log.warn( "Failed to enable peer" )
             self.disconnect()
 

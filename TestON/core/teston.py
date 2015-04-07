@@ -248,6 +248,7 @@ class TestON:
                 self.stepCount = self.stepCount + 1
                 self.log.exception(e)
                 self.cleanup()
+                self.exit()
             return main.TRUE
         
         if cli.stop:
@@ -290,18 +291,18 @@ class TestON:
 
 
         #utilities.send_mail()
-        try :
-            for component in self.componentDictionary.keys():
+        for component in self.componentDictionary.keys():
+            try :
                 tempObject  = vars(self)[component]
-                print "Disconnecting " + str(tempObject)
+                print "Disconnecting from " + str(tempObject.name) + ": " + \
+                      str(tempObject)
                 tempObject.disconnect()
             #tempObject.execute(cmd="exit",prompt="(.*)",timeout=120)
 
-        except(Exception):
-            self.log.exception( "Exception while disconnecting from " +
-                                 str( component ) )
-            #print " There is an error with closing hanldes"
-            result = self.FALSE
+            except (Exception):
+                self.log.exception( "Exception while disconnecting from " +
+                                     str( component ) )
+                result = self.FALSE
         # Closing all the driver's session files
         for driver in self.componentDictionary.keys():
            vars(self)[driver].close_log_handles()

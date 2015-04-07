@@ -344,18 +344,50 @@ class RemoteMininetDriver( Emulator ):
             main.cleanup()
             main.exit()
 
-    def runOpticalMnScript( self ):
+    def runOpticalMnScript( self, ctrllerIP = None ):
+        import time
         """
             This function is only meant for Packet Optical.
-            It runs the python script "optical.py" to create the
-            packet layer( mn )  topology
+            It runs python script "opticalTest.py" to create the
+            packet layer( mn ) and optical topology
+            
+            TODO: If no ctrllerIP is provided, a default 
+                $OC1 can be accepted
         """
         try:
             self.handle.sendline( "" )
             self.handle.expect( "\$" )
-            self.handle.sendline( "cd ~" )
+            self.handle.sendline( "cd ~/onos/tools/test/topos" )
+            self.handle.expect( "topos\$" )
+            if ctrllerIP == None:
+                main.log.info( "You need to specify the IP" )
+                return main.FALSE
+            else:
+                cmd = "sudo -E python opticalTest.py " + ctrllerIP
+                self.handle.sendline( cmd )
+                self.handle.expect( "Press ENTER to push Topology.json" )
+                time.sleep(15)
+                self.handle.sendline( "" )
+                self.handle.expect("mininet>")
+                return main.TRUE
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            return main.FALSE
+
+    def attachLincOESession( self ):
+        """
+            Since executing opticalTest.py will give you mininet
+            prompt, you would at some point require to get onto
+            console of LincOE ((linc@onosTestBench)1>) to execute
+            commands like bring a optical port up or down on a ROADM
+            You can attach to console of Linc-OE session by a cmd:
+            sudo ~/linc-oe/rel/linc/bin/linc attach
+        """
+        try:
+            self.handle.sendline( "" )
             self.handle.expect( "\$" )
-            self.handle.sendline( "sudo python optical.py" )
+            self.handle.sendline( "sudo ~/linc-oe/rel/linc/bin/linc attach" )
             self.handle.expect( ">" )
             return main.TRUE
         except pexpect.EOF:

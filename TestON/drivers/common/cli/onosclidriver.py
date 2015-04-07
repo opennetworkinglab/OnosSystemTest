@@ -1291,7 +1291,9 @@ class OnosCliDriver( CLI ):
                         cmd += " " + \
                             str( ingressDevice ) + "/" +\
                             str( portIngress ) + " "
-
+                else:
+                    main.log.error( "Device list and port list does not have the same length" )
+                    return main.FALSE
             if "/" in egressDevice:
                 cmd += " " + str( egressDevice )
             else:
@@ -1312,10 +1314,162 @@ class OnosCliDriver( CLI ):
                                 "intent" )
                 return None
             else:
-                # TODO: print out all the options in this message?
-                main.log.info( "Multipoint-to-singlepoint intent installed" +
-                               " failed " )
+                match = re.search('id=0x([\da-f]+),', handle)
+                if match:
+                    return match.group()[3:-1]
+                else:
+                    main.log.error( "Error, intent ID not found" )
+                    return None
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
+    def addSinglepointToMultipointIntent(
+            self,
+            ingressDevice,
+            egressDeviceList,
+            portIngress="",
+            portEgressList=None,
+            ethType="",
+            ethSrc="",
+            ethDst="",
+            bandwidth="",
+            lambdaAlloc=False,
+            ipProto="",
+            ipSrc="",
+            ipDst="",
+            tcpSrc="",
+            tcpDst="",
+            setEthSrc="",
+            setEthDst="" ):
+        """
+        Note:
+            This function assumes the format of all egress devices
+            is same. That is, all egress devices include port numbers
+            with a "/" or all egress devices could specify device
+            ids and port numbers seperately.
+        Required:
+            * EgressDeviceList: List of device ids of egress device
+                ( Atleast 2 eress devices required in the list )
+            * ingressDevice: device id of ingress device
+        Optional:
+            * ethType: specify ethType
+            * ethSrc: specify ethSrc ( i.e. src mac addr )
+            * ethDst: specify ethDst ( i.e. dst mac addr )
+            * bandwidth: specify bandwidth capacity of link
+            * lambdaAlloc: if True, intent will allocate lambda
+              for the specified intent
+            * ipProto: specify ip protocol
+            * ipSrc: specify ip source address
+            * ipDst: specify ip destination address
+            * tcpSrc: specify tcp source port
+            * tcpDst: specify tcp destination port
+            * setEthSrc: action to Rewrite Source MAC Address
+            * setEthDst: action to Rewrite Destination MAC Address
+        Description:
+            Adds a singlepoint-to-multipoint intent ( uni-directional ) by
+            specifying device id's and optional fields
+        Returns:
+            A string of the intent id or None on error
+
+        NOTE: This function may change depending on the
+              options developers provide for singlepoint-to-multipoint
+              intent via cli
+        """
+        try:
+            # If there are no optional arguments
+            if not ethType and not ethSrc and not ethDst\
+                    and not bandwidth and not lambdaAlloc\
+                    and not ipProto and not ipSrc and not ipDst\
+                    and not tcpSrc and not tcpDst and not setEthSrc\
+                    and not setEthDst:
+                cmd = "add-single-to-multi-intent"
+
+            else:
+                cmd = "add-single-to-multi-intent"
+
+                if ethType:
+                    cmd += " --ethType " + str( ethType )
+                if ethSrc:
+                    cmd += " --ethSrc " + str( ethSrc )
+                if ethDst:
+                    cmd += " --ethDst " + str( ethDst )
+                if bandwidth:
+                    cmd += " --bandwidth " + str( bandwidth )
+                if lambdaAlloc:
+                    cmd += " --lambda "
+                if ipProto:
+                    cmd += " --ipProto " + str( ipProto )
+                if ipSrc:
+                    cmd += " --ipSrc " + str( ipSrc )
+                if ipDst:
+                    cmd += " --ipDst " + str( ipDst )
+                if tcpSrc:
+                    cmd += " --tcpSrc " + str( tcpSrc )
+                if tcpDst:
+                    cmd += " --tcpDst " + str( tcpDst )
+                if setEthSrc:
+                    cmd += " --setEthSrc " + str( setEthSrc )
+                if setEthDst:
+                    cmd += " --setEthDst " + str( setEthDst )
+
+            # Check whether the user appended the port
+            # or provided it as an input
+            
+            if "/" in ingressDevice:
+                cmd += " " + str( ingressDevice )
+            else:
+                if not portIngress:
+                    main.log.error( "You must specify " +
+                                    "the Ingress port" )
+                    return main.FALSE
+
+                cmd += " " +\
+                    str( ingressDevice ) + "/" +\
+                    str( portIngress )
+
+            if portEgressList is None:
+                for egressDevice in egressDeviceList:
+                    if "/" in egressDevice:
+                        cmd += " " + str( egressDevice )
+                    else:
+                        main.log.error( "You must specify " +
+                                        "the egress port" )
+                        # TODO: perhaps more meaningful return
+                        return main.FALSE
+            else:
+                if len( egressDeviceList ) == len( portEgressList ):
+                    for egressDevice, portEgress in zip( egressDeviceList, portEgressList ):
+                        cmd += " " + \
+                            str( egressDevice ) + "/" +\
+                            str( portEgress )
+                else:
+                    main.log.error( "Device list and port list does not have the same length" )
+                    return main.FALSE
+
+            print "cmd= ", cmd
+            handle = self.sendline( cmd )
+            # If error, return error message
+            if re.search( "Error", handle ):
+                main.log.error( "Error in adding singlepoint-to-multipoint " +
+                                "intent" )
                 return None
+            else:
+                match = re.search('id=0x([\da-f]+),', handle)
+                if match:
+                    return match.group()[3:-1]
+                else:
+                    main.log.error( "Error, intent ID not found" )
+                    return None
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
             return None

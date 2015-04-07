@@ -103,9 +103,9 @@ class MininetCliDriver( Emulator ):
                 main.FALSE otherwise
         """
         if self.handle:
-            main.log.info(
-                self.name +
-                ": Clearing any residual state or processes" )
+            # make sure old networks are cleaned up
+            main.log.info( self.name +
+                           ": Clearing any residual state or processes" )
             self.handle.sendline( "sudo mn -c" )
             i = self.handle.expect( [ 'password\sfor\s',
                                       'Cleanup\scomplete',
@@ -113,6 +113,7 @@ class MininetCliDriver( Emulator ):
                                       pexpect.TIMEOUT ],
                                     timeout )
             if i == 0:
+                # Sudo asking for password
                 main.log.info( self.name + ": Sending sudo password" )
                 self.handle.sendline( self.pwd )
                 i = self.handle.expect( [ '%s:' % self.user,
@@ -125,86 +126,75 @@ class MininetCliDriver( Emulator ):
             elif i == 2:
                 main.log.error( self.name + ": Connection terminated" )
             elif i == 3:  # timeout
-                main.log.error(
-                    self.name +
-                    ": Something while cleaning MN took too long... " )
-            if topoFile == '' and args == '':
-                main.log.info( self.name + ": building fresh mininet" )
-                # for reactive/PARP enabled tests
-                cmdString = "sudo mn " + self.options[ 'arg1' ] +\
-                    " " + self.options[ 'arg2' ] +\
-                    " --mac --controller " +\
-                    self.options[ 'controller' ] + " " +\
-                    self.options[ 'arg3' ]
-
-                argList = self.options[ 'arg1' ].split( "," )
-                global topoArgList
-                topoArgList = argList[ 0 ].split( " " )
-                argList = map( int, argList[ 1: ] )
-                topoArgList = topoArgList[ 1: ] + argList
-
-                self.handle.sendline( cmdString )
-                self.handle.expect( [ "sudo mn",
-                                    pexpect.EOF,
-                                    pexpect.TIMEOUT ] )
-                while True:
-                    i = self.handle.expect( [ 'mininet>',
-                                              '\*\*\*',
-                                              'Exception',
-                                              pexpect.EOF,
-                                              pexpect.TIMEOUT ],
-                                            timeout )
-                    if i == 0:
-                        main.log.info( self.name + ": mininet built" )
-                        return main.TRUE
-                    if i == 1:
-                        self.handle.expect(
-                            [ "\n", pexpect.EOF, pexpect.TIMEOUT ] )
-                        main.log.info( self.handle.before )
-                    elif i == 2:
-                        main.log.error(
-                            self.name +
-                            ": Launching mininet failed..." )
-                        return main.FALSE
-                    elif i == 3:
-                        main.log.error( self.name + ": Connection timeout" )
-                        return main.FALSE
-                    elif i == 4:  # timeout
-                        main.log.error(
-                            self.name +
-                            ": Something took too long... " )
-                        return main.FALSE
-                return main.TRUE
-            else:
-                main.log.info( "Starting topo file " + topoFile )
+                main.log.error( self.name + ": Something while cleaning " +
+                                "Mininet took too long... " )
+            # Craft the string to start mininet
+            cmdString = "sudo "
+            if topoFile is None or topoFile == '':  # If no file is given
+                main.log.info( self.name + ": building fresh Mininet" )
+                cmdString += "mn "
+                if args is None or args == '':
+                    # If no args given, use args from .topo file
+                    args = self.options[ 'arg1' ] +\
+                                 " " + self.options[ 'arg2' ] +\
+                                 " --mac --controller " +\
+                                 self.options[ 'controller' ] + " " +\
+                                 self.options[ 'arg3' ]
+                else:  # else only use given args
+                    pass
+                    # TODO: allow use of topo args and method args?
+            else:  # Use given topology file
+                main.log.info( "Starting Mininet from topo file " + topoFile )
+                cmdString += topoFile + " "
                 if args is None:
                     args = ''
-                else:
-                    main.log.info( "args = " + args)
-                self.handle.sendline( 'sudo ' + topoFile + ' ' + args)
+                    # TODO: allow use of args from .topo file?
+            cmdString += args
+            # Send the command and check if network started
+            self.handle.sendline( "" )
+            self.handle.expect( '\$' )
+            main.log.info( "Sending '" + cmdString + "' to " + self.name )
+            self.handle.sendline( cmdString )
+            while True:
                 i = self.handle.expect( [ 'mininet>',
+                                          'Exception',
+                                          '\*\*\*',
                                           pexpect.EOF,
                                           pexpect.TIMEOUT ],
-                                        timeout)
+                                        timeout )
                 if i == 0:
-                    main.log.info(self.name + ": Network started")
+                    main.log.info( self.name + ": Mininet built" )
                     return main.TRUE
                 elif i == 1:
+                    response = str( self.handle.before +
+                                    self.handle.after )
+                    self.handle.expect( '\$' )
+                    response += str( self.handle.before +
+                                    self.handle.after )
+                    main.log.error(
+                        self.name +
+                        ": Launching Mininet failed: " + response )
+                    return main.FALSE
+                elif i == 2:
+                    self.handle.expect( [ "\n",
+                                          pexpect.EOF,
+                                          pexpect.TIMEOUT ],
+                                        timeout )
+                    main.log.info( self.handle.before )
+                elif i == 3:
                     main.log.error( self.name + ": Connection timeout" )
                     return main.FALSE
-                elif i == 2:  # timeout
+                elif i == 4:  # timeout
                     main.log.error(
                         self.name +
                         ": Something took too long... " )
                     return main.FALSE
-                return main.TRUE
+            # Why did we hit this part?
+            main.log.error( "startNet did not return correctly" )
+            return main.FASLE
         else:  # if no handle
-            main.log.error(
-                self.name +
-                ": Connection failed to the host " +
-                self.user_name +
-                "@" +
-                self.ip_address )
+            main.log.error( self.name + ": Connection failed to the host " +
+                            self.user_name + "@" + self.ip_address )
             main.log.error( self.name + ": Failed to connect to the Mininet" )
             return main.FALSE
 
@@ -245,7 +235,15 @@ class MininetCliDriver( Emulator ):
         return topoDict
 
     def calculateSwAndLinks( self ):
-        topoDict = self.numSwitchesN_links( *topoArgList )
+        """
+            Calculate the number of switches and links in a topo."""
+        # TODO: combine this function and numSwitchesNlinks
+        argList = self.options[ 'arg1' ].split( "," )
+        topoArgList = argList[ 0 ].split( " " )
+        argList = map( int, argList[ 1: ] )
+        topoArgList = topoArgList[ 1: ] + argList
+
+        topoDict = self.numSwitchesNlinks( *topoArgList )
         return topoDict
 
     def pingall( self, timeout=300, shortCircuit=False, acceptableFailed=0):

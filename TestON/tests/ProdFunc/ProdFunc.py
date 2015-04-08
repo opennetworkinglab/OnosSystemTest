@@ -244,7 +244,7 @@ class ProdFunc:
         main.case( "Starting LINC-OE and other components" )
         main.step( "Starting LINC-OE and other components" )
         appInstallResult = main.ONOS2.featureInstall( "onos-app-optical" )
-        opticalMnScript = main.LincOE2.runOpticalMnScript()
+        opticalMnScript = main.LincOE2.runOpticalMnScript(ctrllerIP = main.params[ 'CTRL' ][ 'ip1' ])
 
         case21Result = opticalMnScript and appInstallResult
         utilities.assert_equals(

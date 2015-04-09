@@ -17,15 +17,34 @@ class TopoPerfNextBM:
         global clusterCount
         global timeToPost
         global runNum
+        global jenkinsBuildNumber
 
         import time
+        import os
+
         clusterCount = 1
         timeToPost = time.strftime('%Y-%m-%d %H:%M:%S')
         runNum = time.strftime('%d%H%M%S')
         cellName = main.params['ENV']['cellName']
         gitPull = main.params['GIT']['autoPull']
         checkoutBranch = main.params['GIT']['checkout']
-       
+      
+        # Get jenkins build number from environment.
+        # This environment variable will only exist when
+        # triggered by a jenkins job
+        try:
+            jenkinsBuildNumber = str(os.environ['BUILD_NUMBER'])
+            main.log.report( 'Jenkins build number: ' +
+                    jenkinsBuildNumber )
+        except KeyError:
+            # Jenkins build number is also used in posting to DB
+            # If this test is not triggered by jenkins, give 
+            # it the runNum variable instead, ensuring that 
+            # the DB post will recognize it as a non-jenkins run
+            jenkinsBuildNumber = str(runNum)
+            main.log.info( 'Job is not run by jenkins. '+
+                    'Build number set to: ' + jenkinsBuildNumber)
+
         global CLIs
         CLIs = []
         global nodes
@@ -159,7 +178,7 @@ class TopoPerfNextBM:
         import requests
         import os
         import numpy
-        
+
         ONOSUser = main.params['CTRL']['user']
         defaultSwPort = main.params['CTRL']['port1']
         numIter = main.params['TEST']['numIter']
@@ -464,6 +483,8 @@ class TopoPerfNextBM:
             # Device Event -> Graph Event
             # Capture switch down FIN / ACK packets
 
+            # The -A 1 grep option allows us to grab 1 extra line after the
+            # last tshark output grepped originally
             main.ONOS1.tsharkGrep( tsharkFinAckSequence, tsharkFinAckOutput, 
                     grepOptions = '-A 1' )
            
@@ -721,7 +742,7 @@ class TopoPerfNextBM:
             dbCmdList.append(
                     "INSERT INTO switch_latency_tests VALUES('" +
                     timeToPost + "','switch_latency_results'," +
-                    runNum + ',' + str(clusterCount) + ",'baremetal" + 
+                    jenkinsBuildNumber + ',' + str(clusterCount) + ",'baremetal" + 
                     str(node + 1) + "'," + str(endToEndAvg) + ',' +
                     str(endToEndStdDev) + ',0,0);')
 
@@ -1061,7 +1082,7 @@ class TopoPerfNextBM:
                     str(portDownLinkAvg) + ' ms')
 
             dbCmdList.append("INSERT INTO port_latency_tests VALUES('" + 
-                    timeToPost + "','port_latency_results'," + runNum +
+                    timeToPost + "','port_latency_results'," + jenkinsBuildNumber +
                     ',' + str(clusterCount) + ",'baremetal" + str(node + 1) +
                     "'," + str(portUpGraphAvg) + ',' + str(portUpStdDev) +
                     '' + str(portDownGraphAvg) + ',' + str(portDownStdDev) + ');')

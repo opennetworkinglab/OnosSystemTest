@@ -103,9 +103,9 @@ class MininetCliDriver( Emulator ):
                 main.FALSE otherwise
         """
         if self.handle:
-            main.log.info(
-                self.name +
-                ": Clearing any residual state or processes" )
+            # make sure old networks are cleaned up
+            main.log.info( self.name +
+                           ": Clearing any residual state or processes" )
             self.handle.sendline( "sudo mn -c" )
             i = self.handle.expect( [ 'password\sfor\s',
                                       'Cleanup\scomplete',
@@ -113,6 +113,7 @@ class MininetCliDriver( Emulator ):
                                       pexpect.TIMEOUT ],
                                     timeout )
             if i == 0:
+                # Sudo asking for password
                 main.log.info( self.name + ": Sending sudo password" )
                 self.handle.sendline( self.pwd )
                 i = self.handle.expect( [ '%s:' % self.user,
@@ -125,86 +126,75 @@ class MininetCliDriver( Emulator ):
             elif i == 2:
                 main.log.error( self.name + ": Connection terminated" )
             elif i == 3:  # timeout
-                main.log.error(
-                    self.name +
-                    ": Something while cleaning MN took too long... " )
-            if topoFile == '' and args == '':
-                main.log.info( self.name + ": building fresh mininet" )
-                # for reactive/PARP enabled tests
-                cmdString = "sudo mn " + self.options[ 'arg1' ] +\
-                    " " + self.options[ 'arg2' ] +\
-                    " --mac --controller " +\
-                    self.options[ 'controller' ] + " " +\
-                    self.options[ 'arg3' ]
-
-                argList = self.options[ 'arg1' ].split( "," )
-                global topoArgList
-                topoArgList = argList[ 0 ].split( " " )
-                argList = map( int, argList[ 1: ] )
-                topoArgList = topoArgList[ 1: ] + argList
-
-                self.handle.sendline( cmdString )
-                self.handle.expect( [ "sudo mn",
-                                    pexpect.EOF,
-                                    pexpect.TIMEOUT ] )
-                while True:
-                    i = self.handle.expect( [ 'mininet>',
-                                              '\*\*\*',
-                                              'Exception',
-                                              pexpect.EOF,
-                                              pexpect.TIMEOUT ],
-                                            timeout )
-                    if i == 0:
-                        main.log.info( self.name + ": mininet built" )
-                        return main.TRUE
-                    if i == 1:
-                        self.handle.expect(
-                            [ "\n", pexpect.EOF, pexpect.TIMEOUT ] )
-                        main.log.info( self.handle.before )
-                    elif i == 2:
-                        main.log.error(
-                            self.name +
-                            ": Launching mininet failed..." )
-                        return main.FALSE
-                    elif i == 3:
-                        main.log.error( self.name + ": Connection timeout" )
-                        return main.FALSE
-                    elif i == 4:  # timeout
-                        main.log.error(
-                            self.name +
-                            ": Something took too long... " )
-                        return main.FALSE
-                return main.TRUE
-            else:
-                main.log.info( "Starting topo file " + topoFile )
+                main.log.error( self.name + ": Something while cleaning " +
+                                "Mininet took too long... " )
+            # Craft the string to start mininet
+            cmdString = "sudo "
+            if topoFile is None or topoFile == '':  # If no file is given
+                main.log.info( self.name + ": building fresh Mininet" )
+                cmdString += "mn "
+                if args is None or args == '':
+                    # If no args given, use args from .topo file
+                    args = self.options[ 'arg1' ] +\
+                                 " " + self.options[ 'arg2' ] +\
+                                 " --mac --controller " +\
+                                 self.options[ 'controller' ] + " " +\
+                                 self.options[ 'arg3' ]
+                else:  # else only use given args
+                    pass
+                    # TODO: allow use of topo args and method args?
+            else:  # Use given topology file
+                main.log.info( "Starting Mininet from topo file " + topoFile )
+                cmdString += topoFile + " "
                 if args is None:
                     args = ''
-                else:
-                    main.log.info( "args = " + args)
-                self.handle.sendline( 'sudo ' + topoFile + ' ' + args)
+                    # TODO: allow use of args from .topo file?
+            cmdString += args
+            # Send the command and check if network started
+            self.handle.sendline( "" )
+            self.handle.expect( '\$' )
+            main.log.info( "Sending '" + cmdString + "' to " + self.name )
+            self.handle.sendline( cmdString )
+            while True:
                 i = self.handle.expect( [ 'mininet>',
+                                          'Exception',
+                                          '\*\*\*',
                                           pexpect.EOF,
                                           pexpect.TIMEOUT ],
-                                        timeout)
+                                        timeout )
                 if i == 0:
-                    main.log.info(self.name + ": Network started")
+                    main.log.info( self.name + ": Mininet built" )
                     return main.TRUE
                 elif i == 1:
+                    response = str( self.handle.before +
+                                    self.handle.after )
+                    self.handle.expect( '\$' )
+                    response += str( self.handle.before +
+                                    self.handle.after )
+                    main.log.error(
+                        self.name +
+                        ": Launching Mininet failed: " + response )
+                    return main.FALSE
+                elif i == 2:
+                    self.handle.expect( [ "\n",
+                                          pexpect.EOF,
+                                          pexpect.TIMEOUT ],
+                                        timeout )
+                    main.log.info( self.handle.before )
+                elif i == 3:
                     main.log.error( self.name + ": Connection timeout" )
                     return main.FALSE
-                elif i == 2:  # timeout
+                elif i == 4:  # timeout
                     main.log.error(
                         self.name +
                         ": Something took too long... " )
                     return main.FALSE
-                return main.TRUE
+            # Why did we hit this part?
+            main.log.error( "startNet did not return correctly" )
+            return main.FASLE
         else:  # if no handle
-            main.log.error(
-                self.name +
-                ": Connection failed to the host " +
-                self.user_name +
-                "@" +
-                self.ip_address )
+            main.log.error( self.name + ": Connection failed to the host " +
+                            self.user_name + "@" + self.ip_address )
             main.log.error( self.name + ": Failed to connect to the Mininet" )
             return main.FALSE
 
@@ -245,54 +235,106 @@ class MininetCliDriver( Emulator ):
         return topoDict
 
     def calculateSwAndLinks( self ):
-        topoDict = self.numSwitchesN_links( *topoArgList )
+        """
+            Calculate the number of switches and links in a topo."""
+        # TODO: combine this function and numSwitchesNlinks
+        argList = self.options[ 'arg1' ].split( "," )
+        topoArgList = argList[ 0 ].split( " " )
+        argList = map( int, argList[ 1: ] )
+        topoArgList = topoArgList[ 1: ] + argList
+
+        topoDict = self.numSwitchesNlinks( *topoArgList )
         return topoDict
 
-    def pingall( self, timeout=300 ):
+    def pingall( self, timeout=300, shortCircuit=False, acceptableFailed=0):
         """
            Verifies the reachability of the hosts using pingall command.
            Optional parameter timeout allows you to specify how long to
            wait for pingall to complete
+           Optional:
+           timeout(seconds) - This is the pexpect timeout; The function will
+                              timeout if the amount of time between failed
+                              pings exceedes this time and pingall is still
+                              running
+           shortCircuit - Break the pingall based on the number of failed hosts
+                          ping
+           acceptableFailed - Set the number of acceptable failed pings for the
+                              function to still return main.TRUE
            Returns:
            main.TRUE if pingall completes with no pings dropped
            otherwise main.FALSE"""
-        if self.handle:
-            main.log.info(
-                self.name +
-                ": Checking reachabilty to the hosts using pingall" )
-            try:
-                response = self.execute(
-                    cmd="pingall",
-                    prompt="mininet>",
-                    timeout=int( timeout ) )
-            except pexpect.EOF:
-                main.log.error( self.name + ": EOF exception found" )
-                main.log.error( self.name + ":     " + self.handle.before )
+        try:
+            if self.handle:
+                main.log.info(
+                    self.name +
+                    ": Checking reachabilty to the hosts using pingall" )
+                response = ""
+                failedPings = 0
+                returnValue = main.TRUE
+                self.handle.sendline( "pingall" )
+                while True:
+                    i = self.handle.expect( [ "mininet>","X",
+                                              pexpect.EOF,
+                                              pexpect.TIMEOUT ],
+                                              timeout )
+                    if i == 0:
+                        main.log.info( self.name + ": pingall finished")
+                        response += self.handle.before
+                        break
+                    elif i == 1:
+                        response += self.handle.before + self.handle.after
+                        failedPings = failedPings + 1
+                        if failedPings > acceptableFailed:
+                            returnValue = main.FALSE
+                            if shortCircuit:
+                                main.log.error( self.name +
+                                                ": Aborting pingall - "
+                                                + str( failedPings ) +
+                                                " pings failed" )
+                                break
+                    elif i == 2:
+                        main.log.error( self.name +
+                                        ": EOF exception found" )
+                        main.log.error( self.name + ":     " +
+                                        self.handle.before )
+                        main.cleanup()
+                        main.exit()
+                    elif i == 3:
+                        response += self.handle.before
+                        main.log.error( self.name +
+                                        ": TIMEOUT exception found" )
+                        main.log.error( self.name +
+                                        ":     " +
+                                        str( response ) )
+                        # NOTE: Send ctrl-c to make sure pingall is done
+                        self.handle.sendline( "\x03" )
+                        self.handle.expect( "Interrupt" )
+                        self.handle.expect( "mininet>" )
+                        break
+                pattern = "Results\:"
+                main.log.info( "Pingall output: " + str( response ) )
+                if re.search( pattern, response ):
+                    main.log.info( self.name + ": Pingall finished with "
+                                   + str( failedPings ) + " failed pings" )
+                    return returnValue
+                else:
+                    # NOTE: Send ctrl-c to make sure pingall is done
+                    self.handle.sendline( "\x03" )
+                    self.handle.expect( "Interrupt" )
+                    self.handle.expect( "mininet>" )
+                    return main.FALSE
+            else:
+                main.log.error( self.name + ": Connection failed to the host" )
                 main.cleanup()
                 main.exit()
-            except pexpect.TIMEOUT:
-                # We may not want to kill the test if pexpect times out
-                main.log.error( self.name + ": TIMEOUT exception found" )
-                main.log.error( self.name +
-                                ":     " +
-                                str( self.handle.before ) )
-            # NOTE: mininet's pingall rounds, so we will check the number of
-            # passed and number of failed
-            pattern = "Results\:\s0\%\sdropped\s\(" +\
-                      "(?P<passed>[\d]+)/(?P=passed)"
-            if re.search( pattern, response ):
-                main.log.info( self.name + ": All hosts are reachable" )
-                return main.TRUE
-            else:
-                main.log.error( self.name + ": Unable to reach all the hosts" )
+        except pexpect.TIMEOUT:
+            if response:
                 main.log.info( "Pingall output: " + str( response ) )
-                # NOTE: Send ctrl-c to make sure pingall is done
-                self.handle.send( "\x03" )
-                self.handle.expect( "Interrupt" )
-                self.handle.expect( "mininet>" )
-                return main.FALSE
-        else:
-            main.log.error( self.name + ": Connection failed to the host" )
+            main.log.error( self.name + ": pexpect.TIMEOUT found" )
+            return main.FALSE
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
             main.cleanup()
             main.exit()
 

@@ -90,7 +90,7 @@ class OnosDriver( CLI ):
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
         except ValueError:
-            main.log.exception( "Exception in discconect of " + self.name )
+            main.log.exception( "Exception in disconnect of " + self.name )
             response = main.TRUE
         except Exception:
             main.log.exception( self.name + ": Connection failed to the host" )
@@ -1819,7 +1819,7 @@ class OnosDriver( CLI ):
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
             return None
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -1853,8 +1853,7 @@ class OnosDriver( CLI ):
         
         except AssertionError:
             main.log.error("Incorrect Config settings: " + verification)
-
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
@@ -1888,12 +1887,10 @@ class OnosDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
-        
         except AssertionError:
             main.log.info("Settings did not post to ONOS")
             main.log.error(varification)            
-
-        except:
+        except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.log.error(varification)
             main.cleanup()

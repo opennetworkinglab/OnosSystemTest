@@ -248,7 +248,7 @@ class MultiProd:
         ONOS3Ip = main.params[ 'CTRL' ][ 'ip3' ]
 
         main.log.report(
-            "This testcase is testing if all ONOS nodes are in topologyi" +
+            "This testcase is testing if all ONOS nodes are in topology" +
             " sync with mininet and its peer ONOS nodes" )
         main.log.report( "__________________________________" )
         main.case(

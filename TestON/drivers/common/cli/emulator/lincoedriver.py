@@ -207,6 +207,26 @@ class LincOEDriver( Emulator ):
             main.cleanup()
             main.exit()
 
+    def attachLincOESession( self ):
+        """
+            Since executing opticalTest.py will give you mininet
+            prompt, you would at some point require to get onto
+            console of LincOE ((linc@onosTestBench)1>) to execute
+            commands like bring a optical port up or down on a ROADM
+            You can attach to console of Linc-OE session by a cmd:
+            sudo ~/linc-oe/rel/linc/bin/linc attach
+        """
+        try:
+            self.handle.sendline( "" )
+            self.handle.expect( "\$" )
+            self.handle.sendline( "sudo ~/linc-oe/rel/linc/bin/linc attach" )
+            self.handle.expect( ">" )
+            return main.TRUE
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            return main.FALSE
+
     def listPorts( self, swId ):
         """
         List all ports of a switch by switch id

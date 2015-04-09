@@ -225,6 +225,7 @@ class TopoPerfNextBM:
         # Device Update -> Graph Update latency collection for each node
         deviceToGraphLatNodeIter = numpy.zeros((clusterCount,
             int(numIter)))
+        endToEndLatNodeIter = numpy.zeros((clusterCount, int(numIter)))
         
         # Switch disconnect measurement lists
         # Mininet Fin / Ack -> Mininet Ack
@@ -236,30 +237,8 @@ class TopoPerfNextBM:
         # Device event -> Graph event
         deviceToGraphDiscLatNodeIter = numpy.zeros((clusterCount,
             int(numIter)))
-
-        # TCP Syn/Ack -> Feature Reply latency collection for each node
-        tcpToFeatureLatNodeIter = numpy.zeros((clusterCount, int(numIter)))
-        # Feature Reply -> Role Request latency collection for each node
-        featureToRoleRequestLatNodeIter = numpy.zeros((clusterCount, 
-            int(numIter)))
-        # Role Request -> Role Reply latency collection for each node
-        roleRequestToRoleReplyLatNodeIter = numpy.zeros((clusterCount,
-            int(numIter)))
-        # Role Reply -> Device Update latency collection for each node
-        roleReplyToDeviceLatNodeIter = numpy.zeros((clusterCount,
-            int(numIter)))
-        # Device Update -> Graph Update latency collection for each node
-        deviceToGraphLatNodeIter = numpy.zeros((clusterCount,
-            int(numIter)))
-
-    
-        endToEndLatNodeIter = numpy.zeros((clusterCount, int(numIter)))
-        ofpToGraphLatNodeIter = numpy.zeros((clusterCount, int(numIter)))
-        ofpToDeviceLatNodeIter = numpy.zeros((clusterCount, int(numIter)))
+        endToEndDiscLatNodeIter = numpy.zeros((clusterCount, int(numIter)))
         
-        tcpToOfpLatIter = []
-        tcpToFeatureLatIter = []
-        tcpToRoleLatIter = []
         assertion = main.TRUE
         localTime = time.strftime('%x %X')
         localTime = localTime.replace('/', '')
@@ -565,7 +544,20 @@ class TopoPerfNextBM:
                 finAckTransaction = int(tAck) - int(tFinAck)
                 ackToDevice = int(deviceTimestamp) - int(tAck)
                 deviceToGraph = int(graphTimestamp) - int(deviceTimestamp)
-                
+                endToEndDisc = int(graphTimestamp) - int(tFinAck)
+    
+                if endToEndDisc > thresholdMin and\
+                   endToEndDisc < thresholdMax and i >= iterIgnore:
+                    endToEndDiscLatNodeIter[node][i] = endToEndDisc
+                    main.log.info("ONOS "+str(nodeNum) + 
+                            "end-to-end disconnection: "+
+                            str(endToEndDisc) + " ms" )
+                else:
+                    main.log.info("ONOS " + str(nodeNum) + 
+                            " end-to-end disconnection "+
+                            "measurement ignored due to excess in "+
+                            "threshold or premature iteration")
+
                 if finAckTransaction > thresholdMin and\
                    finAckTransaction < thresholdMax and i >= iterIgnore:
                     finAckTransactionLatNodeIter[node][i] = finAckTransaction 
@@ -608,7 +600,6 @@ class TopoPerfNextBM:
         for node in range(0, clusterCount):
             # List of latency for each node
             endToEndList = []
-            
             tcpToFeatureList = []
             featureToRoleList = []
             roleToOfpList = []
@@ -618,7 +609,8 @@ class TopoPerfNextBM:
             finAckTransactionList = []
             ackToDeviceList = []
             deviceToGraphDiscList = []
-
+            endToEndDiscList = []
+            
             # LatNodeIter 2d arrays contain all iteration latency
             # for each node of the current scale cluster size
             # Switch connection measurements
@@ -653,6 +645,10 @@ class TopoPerfNextBM:
                     deviceToGraphList.append(item)
 
             # Switch disconnect measurements
+            for item in endToEndDiscLatNodeIter[node]:
+                if item > 0.0:
+                    endToEndDiscList.append(item)
+                    
             for item in finAckTransactionLatNodeIter[node]:
                 if item > 0.0:
                     finAckTransactionList.append(item)
@@ -682,6 +678,9 @@ class TopoPerfNextBM:
             
             deviceToGraphAvg = round(numpy.mean(deviceToGraphList), 2)
             deviceToGraphStdDev = round(numpy.std(deviceToGraphList), 2)
+
+            endToEndDiscAvg = round(numpy.mean(endToEndDiscList), 2)
+            endToEndDiscStdDev = round(numpy.std(endToEndDiscList), 2)
 
             finAckAvg = round(numpy.mean(finAckTransactionList), 2)
             finAckStdDev = round(numpy.std(finAckTransactionList), 2)
@@ -725,6 +724,10 @@ class TopoPerfNextBM:
                     str(deviceToGraphStdDev) + ' ms')
             
             main.log.report(' - Switch Disconnection Statistics - ')
+            main.log.report(' End-to-end switch disconnect Avg: ' + 
+                    str(endToEndDiscAvg) + ' ms')
+            main.log.report(' End-to-end switch disconnect Std dev: ' +
+                    str(endToEndDiscStdDev) + ' ms')
             main.log.report(' Fin/Ack-to-Ack Avg: ' + str(finAckAvg) + ' ms')
             main.log.report(' Fin/Ack-to-Ack Std dev: ' +
                     str(finAckStdDev) + ' ms')

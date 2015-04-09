@@ -195,7 +195,7 @@ class OnosCHO:
         for i in range( 1, ( main.numMNswitches + 1 ) ):  # 1 to ( num of switches +1 )
             main.Mininet1.assignSwController(
                 sw=str( i ),
-                count=int( main.numCtrls ),
+                count= 1 ,
                 ip1=main.ONOS1_ip,
                 port1=main.ONOS1_port,
                 ip2=main.ONOS2_ip,
@@ -206,7 +206,7 @@ class OnosCHO:
                 port4=main.ONOS4_port,
                 ip5=main.ONOS5_ip,
                 port5=main.ONOS5_port )
-
+            time.sleep(2)
         switch_mastership = main.TRUE
         for i in range( 1, ( main.numMNswitches + 1 ) ):
             response = main.Mininet1.getSwController( "s" + str( i ) )
@@ -242,13 +242,14 @@ class OnosCHO:
         """
         time.sleep(15)
         #Don't balance master for now..
-        main.step( "Balance devices across controllers" )
+        """main.step( "Balance devices across controllers" )
         for i in range( int( main.numCtrls ) ):
             balanceResult = main.ONOScli1.balanceMasters()
             # giving some breathing time for ONOS to complete re-balance
             time.sleep( 3 )
         topology_output = main.ONOScli1.topology()
         topology_result = main.ONOSbench.getTopology( topology_output )
+        """
         case2Result = ( switch_mastership and startStatus )
         utilities.assert_equals(
             expect=main.TRUE,
@@ -350,7 +351,7 @@ class OnosCHO:
         main.case(
             "Assign and Balance all Mininet switches across controllers" )
         main.step( "Stop any previous Mininet network topology" )
-        stopStatus = main.Mininet1.stopNet(fileName = "topoSpine" )
+        #stopStatus = main.Mininet1.stopNet(fileName = "topoSpine" )
         main.step( "Start Mininet with Spine topology" )
         startStatus = main.Mininet1.startNet(topoFile = main.newTopo)
         time.sleep(20)
@@ -564,7 +565,7 @@ class OnosCHO:
         main.step( "Verify Pingall" )
         ping_result = main.FALSE
         time1 = time.time()
-        ping_result = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=True)
+        ping_result = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=True,acceptableFailed=5)
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -644,7 +645,7 @@ class OnosCHO:
         main.step( "Verify Pingall" )
         ping_result = main.FALSE
         time1 = time.time()
-        ping_result = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=True)
+        ping_result = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=True,acceptableFailed=5)
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -724,7 +725,7 @@ class OnosCHO:
         main.step( "Verify Pingall" )
         ping_result = main.FALSE
         time1 = time.time()
-        ping_result = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=True)
+        ping_result = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=True,acceptableFailed=5)
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -901,13 +902,21 @@ class OnosCHO:
         intentsJson = main.ONOScli2.intents()
         getIntentStateResult = main.ONOScli1.getIntentState(intentsId = intentIdList,
                 intentsJson = intentsJson)
+        print "len of intent ID", str(len(intentIdList))
+        print "len of intent state results", str(len(getIntentStateResult))
         print getIntentStateResult
         # Takes awhile for all the onos to get the intents
-        time.sleep(30)
+        time.sleep( 15 )
+        """intentState = main.TRUE
+        for i in getIntentStateResult:
+            if getIntentStateResult.get( 'state' ) != 'INSTALLED':
+        """
+
+
         main.step( "Verify Ping across all hosts" )
         pingResult = main.FALSE
         time1 = time.time()
-        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=True)
+        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=True,acceptableFailed=5)
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -969,7 +978,7 @@ class OnosCHO:
         main.step( "Verify Ping across all hosts" )
         pingResult = main.FALSE
         time1 = time.time()
-        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=True)
+        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=True,acceptableFailed=5)
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -1030,7 +1039,7 @@ class OnosCHO:
         main.step( "Verify Ping across all hosts" )
         pingResult = main.FALSE
         time1 = time.time()
-        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=True)
+        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=True,acceptableFailed=5)
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -1112,7 +1121,7 @@ class OnosCHO:
         main.step( "Verify Ping across all hosts" )
         pingResultLinkDown = main.FALSE
         time1 = time.time()
-        pingResultLinkDown = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=True)
+        pingResultLinkDown = main.Mininet1.pingall(timeout=main.pingTimeout )
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -1177,7 +1186,7 @@ class OnosCHO:
         main.step( "Verify Ping across all hosts" )
         pingResultLinkUp = main.FALSE
         time1 = time.time()
-        pingResultLinkUp = main.Mininet1.pingall( timeout=main.pingTimeout,shortCircuit=True )
+        pingResultLinkUp = main.Mininet1.pingall( timeout=main.pingTimeout )
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -1256,7 +1265,7 @@ class OnosCHO:
         main.step( "Verify Ping across all hosts" )
         pingResultLinkDown = main.FALSE
         time1 = time.time()
-        pingResultLinkDown = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=True)
+        pingResultLinkDown = main.Mininet1.pingall(timeout=main.pingTimeout)
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -1321,7 +1330,7 @@ class OnosCHO:
         main.step( "Verify Ping across all hosts" )
         pingResultLinkUp = main.FALSE
         time1 = time.time()
-        pingResultLinkUp = main.Mininet1.pingall(timeout = main.pingTimeout, shortCircuit = True )
+        pingResultLinkUp = main.Mininet1.pingall(timeout = main.pingTimeout )
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -1379,7 +1388,7 @@ class OnosCHO:
         main.step( "Verify Ping across all hosts" )
         pingResultLinkDown = main.FALSE
         time1 = time.time()
-        pingResultLinkDown = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=True)
+        pingResultLinkDown = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=True,acceptableFailed=5)
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -1434,7 +1443,7 @@ class OnosCHO:
         main.step( "Verify Ping across all hosts" )
         pingResultLinkUp = main.FALSE
         time1 = time.time()
-        pingResultLinkUp = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=True)
+        pingResultLinkUp = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=True,acceptableFailed=5)
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -1492,7 +1501,7 @@ class OnosCHO:
         main.step( "Verify Ping across all hosts" )
         pingResultLinkDown = main.FALSE
         time1 = time.time()
-        pingResultLinkDown = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=True)
+        pingResultLinkDown = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=True,acceptableFailed=5)
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -1547,7 +1556,7 @@ class OnosCHO:
         main.step( "Verify Ping across all hosts" )
         pingResultLinkUp = main.FALSE
         time1 = time.time()
-        pingResultLinkUp = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=True)
+        pingResultLinkUp = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=True,acceptableFailed=5)
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -1614,7 +1623,7 @@ class OnosCHO:
         main.step( "Verify Ping across all hosts" )
         pingResultLinkDown = main.FALSE
         time1 = time.time()
-        pingResultLinkDown = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=True)
+        pingResultLinkDown = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=True,acceptableFailed=5)
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -1667,7 +1676,7 @@ class OnosCHO:
         main.step( "Verify Ping across all hosts" )
         pingResultLinkUp = main.FALSE
         time1 = time.time()
-        pingResultLinkUp = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=True)
+        pingResultLinkUp = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=True,acceptableFailed=5)
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -1727,7 +1736,7 @@ class OnosCHO:
         main.step( "Verify Ping across all hosts" )
         pingResult = main.FALSE
         time1 = time.time()
-        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=True)
+        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=True,acceptableFailed=5)
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -1790,7 +1799,7 @@ class OnosCHO:
         main.step( "Verify Ping across all hosts" )
         pingResult = main.FALSE
         time1 = time.time()
-        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=True)
+        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=True,acceptableFailed=5)
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -1820,12 +1829,11 @@ class OnosCHO:
         main.case( "Install 4556 point intents" )
         main.step( "Add point Intents" )
         intentResult = main.TRUE
-        main.pingTimeout = 600 
+        main.pingTimeout = 600
         for i in range(len(main.hostMACs)):
             main.MACsDict[main.deviceDPIDs[i+10]] = main.hostMACs[i].split('/')[0]
         print main.MACsDict
-        deviceCombos = list( itertools.permutations( main.deviceDPIDs[10:], 2 ) ) 
-        
+        deviceCombos = list( itertools.permutations( main.deviceDPIDs[10:], 2 ) )
         intentIdList = []
         time1 = time.time()
         for i in xrange( 0, len( deviceCombos ), int(main.numCtrls) ):
@@ -1857,7 +1865,7 @@ class OnosCHO:
         main.step( "Verify Ping across all hosts" )
         pingResult = main.FALSE
         time1 = time.time()
-        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=True)
+        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=True,acceptableFailed=5)
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -1912,13 +1920,26 @@ class OnosCHO:
                 thread.join()
                 intentIdList.append(thread.result)
         time2 = time.time()
-        main.log.info("Time for adding point intents: %2f seconds" %(time2-time1)) 
+        main.log.info("Time for adding point intents: %2f seconds" %(time2-time1))
+        time.sleep(30)
+        print "getting all intents ID"
+        intentIdTemp = main.ONOScli1.getAllIntentsId()
+        print intentIdTemp
+        print len(intentIdList)
         print intentIdList
-        time.sleep(5)
+        print "Checking intents state"
+        checkIntentStateResult = main.ONOScli1.checkIntentState( intentsId = intentIdList )
+        #checkIntentStateResult = main.ONOScli2.checkIntentState( intentsId = intentIdList )
+        #checkIntentStateResult = main.ONOScli3.checkIntentState( intentsId = intentIdList )
+        #checkIntentStateResult = main.ONOScli4.checkIntentState( intentsId = intentIdList )
+        #checkIntentStateResult = main.ONOScli5.checkIntentState( intentsId = intentIdList )
+        if checkIntentStateResult:
+            main.log.info( "All intents are installed correctly " )
+        time.sleep(50)
         main.step( "Verify Ping across all hosts" )
         pingResult = main.FALSE
         time1 = time.time()
-        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=True)
+        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=True,acceptableFailed=5)
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -1974,7 +1995,7 @@ class OnosCHO:
         main.step( "Verify Ping across all hosts" )
         pingResult = main.FALSE
         time1 = time.time()
-        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=True)
+        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=True,acceptableFailed=5)
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -2031,7 +2052,7 @@ class OnosCHO:
         main.step( "Verify Ping across all hosts" )
         pingResult = main.FALSE
         time1 = time.time()
-        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=True)
+        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=True,acceptableFailed=5)
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -2086,7 +2107,7 @@ class OnosCHO:
         main.step( "Verify Ping across all hosts" )
         pingResult = main.FALSE
         time1 = time.time()
-        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=True)
+        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=True,acceptableFailed=5)
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -2098,6 +2119,68 @@ class OnosCHO:
         utilities.assert_equals(
             expect=main.TRUE,
             actual=case97Result,
+            onpass="Install 25 single to multi point Intents and Ping All test PASS",
+            onfail="Install 25 single to multi point Intents and Ping All test FAIL" )
+
+    def CASE98( self ):
+        """
+        Install single-multi point intents and verify Ping all works
+        for Spine topology
+        """
+        import copy
+        main.log.report( "Install single-multi point intents and verify Ping all" )
+        main.log.report( "___________________________________________" )
+        main.case( "Install single-multi point intents and Ping all" )
+        deviceDPIDsCopy = copy.copy( main.deviceDPIDs )
+        deviceDPIDsCopy = deviceDPIDsCopy[ 10: ]
+        portEgressList = [ '1' ]*(len(deviceDPIDsCopy) - 1)
+        intentIdList = []
+        MACsDictCopy = {}
+        for i in range( len( deviceDPIDsCopy ) ):
+            MACsDictCopy[ deviceDPIDsCopy[ i ] ] = main.hostMACs[i].split( '/' )[ 0 ]
+
+        print "deviceDPIDsCopy", deviceDPIDsCopy
+        print ""
+        print "MACsDictCopy", MACsDictCopy
+        time1 = time.time()
+        for i in xrange(0,len(deviceDPIDsCopy),int(main.numCtrls)):
+            pool = []
+            for cli in main.CLIs:
+                if i >= len( deviceDPIDsCopy ):
+                    break
+                ingressDevice = deviceDPIDsCopy[i]
+                egressDeviceList = copy.copy(deviceDPIDsCopy)
+                egressDeviceList.remove(ingressDevice)
+                t = main.Thread( target=cli.addSinglepointToMultipointIntent,
+                        threadID=main.threadID,
+                        name="addSinglepointToMultipointIntent",
+                        args =[ingressDevice,egressDeviceList,'1',portEgressList,'IPV4',MACsDictCopy.get(ingressDevice),''])
+                pool.append(t)
+                #time.sleep(1)
+                t.start()
+                i = i + 1
+                main.threadID = main.threadID + 1
+            for thread in pool:
+                thread.join()
+                intentIdList.append(thread.result)
+        time2 = time.time()
+        main.log.info("Time for adding point intents: %2f seconds" %(time2-time1)) 
+        time.sleep(5)
+        main.step( "Verify Ping across all hosts" )
+        pingResult = main.FALSE
+        time1 = time.time()
+        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=True,acceptableFailed=5)
+        time2 = time.time()
+        timeDiff = round( ( time2 - time1 ), 2 )
+        main.log.report(
+            "Time taken for Ping All: " +
+            str( timeDiff ) +
+            " seconds" )
+
+        case98Result = pingResult
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=case98Result,
             onpass="Install 25 single to multi point Intents and Ping All test PASS",
             onfail="Install 25 single to multi point Intents and Ping All test FAIL" )
 
@@ -2199,7 +2282,7 @@ class OnosCHO:
                                  onpass="Intent removal test successful",
                                  onfail="Intent removal test failed" )
 
-    def CASE11( self, main ):
+    def CASE12( self, main ):
         """
         Enable onos-app-ifwd, Verify Intent based Reactive forwarding through ping all and Disable it
         """
@@ -2352,6 +2435,7 @@ class OnosCHO:
             actual=case99Result,
             onpass="Starting new Chordal topology test PASS",
             onfail="Starting new Chordal topology test FAIL" )
+
 
 
 

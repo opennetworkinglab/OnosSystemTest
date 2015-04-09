@@ -812,9 +812,6 @@ class ProdFunc:
             actual=case12Result,
             onpass = "Expected default num of flows exist",
             onfail = "Expected default num of flows do not exist")
-    
-    
-        
 
     def CASE6( self ):
         import time
@@ -940,6 +937,9 @@ class ProdFunc:
             onfail="Pingall Test after Host intents addition failed" )
 
     def CASE5( self, main ):
+        """
+            Check ONOS topology matches with mininet
+        """
         import json
         # assumes that sts is already in you PYTHONPATH
         from sts.topology.teston_topology import TestONTopology
@@ -1052,6 +1052,11 @@ class ProdFunc:
             onfail="Topology checks failed" )
 
     def CASE7( self, main ):
+        """
+            Link discovery test case. Checks if ONOS can discover a link
+            down or up properly.
+        """
+
         from sts.topology.teston_topology import TestONTopology
 
         linkSleep = int( main.params[ 'timers' ][ 'LinkDiscovery' ] )
@@ -1280,8 +1285,11 @@ class ProdFunc:
                                  onfail="Intent removal test failed" )
 
     def CASE9( self ):
+        """
+            Testing Point intents
+        """
         main.log.report(
-            "This testcase adds point intents and then does pingall" )
+            "This test case adds point intents and then does pingall" )
         main.log.report( "__________________________________" )
         main.log.info( "Adding point intents" )
         main.case(

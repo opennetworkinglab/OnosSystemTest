@@ -1609,27 +1609,27 @@ class OnosCliDriver( CLI ):
                 intentsJsonTemp = json.loads( intentsJson )
             if isinstance( intentsId, types.StringType ):
                 for intent in intentsJsonTemp:
-                    if intentsId == intent['id']:
-                        state = intent['state']
+                    if intentsId == intent[ 'id' ]:
+                        state = intent[ 'state' ]
                         return state
                 main.log.info( "Cannot find intent ID" + str( intentsId ) +
                                " on the list" )
                 return state
             elif isinstance( intentsId, types.ListType ):
                 dictList = []
-                for ID in intentsId:
+                for i in xrange( len( intentsId ) ):
                     stateDict = {}
                     for intents in intentsJsonTemp:
-                        if ID == intents['id']:
-                            stateDict['state'] = intents['state']
-                            stateDict['id'] = ID
+                        if intentsId[ i ] == intents[ 'id' ]:
+                            stateDict[ 'state' ] = intents[ 'state' ]
+                            stateDict[ 'id' ] = intentsId[ i ]
                             dictList.append( stateDict )
                             break
                 if len( intentsId ) != len( dictList ):
                     main.log.info( "Cannot find some of the intent ID state" )
                 return dictList
             else:
-                main.log.info("Invalid intents ID entry")
+                main.log.info( "Invalid intents ID entry" )
                 return None
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
@@ -1643,7 +1643,56 @@ class OnosCliDriver( CLI ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
+    
+    def checkIntentState( self, intentsId, expectedState = 'INSTALLED' ):
+        """
+        Description:
+            Check intents state
+        Required:
+            intentsId - List of intents ID to be checked
+        Optional:
+            expectedState - Check this expected state of each intents state
+                            in the list. Defaults to INSTALLED
+        Return:
+            Returns main.TRUE only if all intent are the same as expectedState,
+            , otherwise,returns main.FALSE.
+        """
+        try:
+            # Generating a dictionary: intent id as a key and state as value
+            intentsDict = self.getIntentState( intentsId )
+            print "len of intentsDict ", str( len( intentsDict ) )
+            if len( intentsId ) != len( intentsDict ):
+                main.log.info( self.name + "There is something wrong " +
+                               "getting intents state" )
+                return main.FALSE
+            returnValue = main.TRUE
+            for intents in intentsDict:
+                if intents.get( 'state' ) != expectedState:
+                    main.log.info( self.name + " : " + intents.get( 'id' ) +
+                                   " actual state = " + intents.get( 'state' )
+                                   + " does not equal expected state = "
+                                   + expectedState )
+                    returnValue = main.FALSE
+            if returnValue == main.TRUE:
+                main.log.info( self.name + ": All " +
+                               str( len( intentsDict ) ) +
+                               " intents are in " + expectedState + " state")
+            return returnValue
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+        return main.TRUE
 
+    
     def flows( self, jsonFormat=True ):
         """
         Optional:

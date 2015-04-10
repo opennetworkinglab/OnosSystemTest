@@ -299,7 +299,7 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def sendline( self, cmdStr ):
+    def sendline( self, cmdStr, debug=False ):
         """
         Send a completely user specified string to
         the onos> prompt. Use this function if you have
@@ -316,7 +316,7 @@ class OnosCliDriver( CLI ):
             response = self.handle.before
             if i == 2:
                 self.handle.sendline()
-                self.handle.expect( "\$" )
+                self.handle.expect( ["\$", pexpect.TIMEOUT] )
                 response += self.handle.before
                 print response
                 try:
@@ -326,15 +326,39 @@ class OnosCliDriver( CLI ):
             # TODO: do something with i
             main.log.info( "Command '" + str( cmdStr ) + "' sent to "
                            + self.name + "." )
-            # Remove control strings from output
+            if debug:
+                main.log.debug( "Raw output" )
+                main.log.debug( repr( response ) )
+
+            # Remove ANSI color control strings from output
             ansiEscape = re.compile( r'\x1b[^m]*m' )
             response = ansiEscape.sub( '', response )
+            if debug:
+                main.log.debug( "ansiEscape output" )
+                main.log.debug( repr( response ) )
+
             # Remove extra return chars that get added
             response = re.sub(  r"\s\r", "", response )
+            if debug:
+                main.log.debug( "Removed extra returns from output" )
+                main.log.debug( repr( response ) )
+
+            # Strip excess whitespace
             response = response.strip()
+            if debug:
+                main.log.debug( "parsed and stripped output" )
+                main.log.debug( repr( response ) )
+
             # parse for just the output, remove the cmd from response
-            output = response.split( cmdStr, 1 )[1]
-            return output
+            output = response.split( cmdStr.strip(), 1 )
+            if debug:
+                main.log.debug( "split output" )
+                for r in output:
+                    main.log.debug( repr( r ) )
+            return output[1].strip()
+        except IndexError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
             return None
@@ -399,10 +423,12 @@ class OnosCliDriver( CLI ):
 
             cmdStr = "remove-node " + str( nodeId )
             self.sendline( cmdStr )
-            # TODO: add error checking. Does ONOS give any errors?
-
-            return main.TRUE
-
+            if re.search( "Error", handle ):
+                main.log.error( "Error in removing node" )
+                main.log.error( handle )
+                return main.FALSE
+            else:
+                return main.TRUE
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
             return None
@@ -424,16 +450,11 @@ class OnosCliDriver( CLI ):
             * jsonFormat - boolean indicating if you want output in json
         """
         try:
+            cmdStr = "nodes"
             if jsonFormat:
-                cmdStr = "nodes -j"
-                output = self.sendline( cmdStr )
-                ansiEscape = re.compile( r'\r\r\n\x1b[^m]*m' )
-                parsedOutput = ansiEscape.sub( '', output )
-                return parsedOutput
-            else:
-                cmdStr = "nodes"
-                output = self.sendline( cmdStr )
-                return output
+                cmdStr += " -j"
+            output = self.sendline( cmdStr )
+            return output
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
             return None
@@ -455,10 +476,9 @@ class OnosCliDriver( CLI ):
             topology = current ONOS topology
         """
         try:
-            # either onos:topology or 'topology' will work in CLI
             cmdStr = "topology -j"
             handle = self.sendline( cmdStr )
-            main.log.info( "topology -j returned: " + str( handle ) )
+            main.log.info( cmdStr + " returned: " + str( handle ) )
             return handle
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
@@ -475,14 +495,20 @@ class OnosCliDriver( CLI ):
 
     def featureInstall( self, featureStr ):
         """
-        Installs a specified feature
-        by issuing command: 'onos> feature:install <feature_str>'
+        Installs a specified feature by issuing command:
+            'feature:install <feature_str>'
+        NOTE: This is now deprecated, you should use the activateApp method
+              instead
         """
         try:
             cmdStr = "feature:install " + str( featureStr )
-            self.sendline( cmdStr )
-            # TODO: Check for possible error responses from karaf
-            return main.TRUE
+            handle = self.sendline( cmdStr )
+            if re.search( "Error", handle ):
+                main.log.error( "Error in installing feature" )
+                main.log.error( handle )
+                return main.FALSE
+            else:
+                return main.TRUE
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
             return None
@@ -502,20 +528,28 @@ class OnosCliDriver( CLI ):
 
     def featureUninstall( self, featureStr ):
         """
-        Uninstalls a specified feature
-        by issuing command: 'onos> feature:uninstall <feature_str>'
+        Uninstalls a specified feature by issuing command:
+            'feature:uninstall <feature_str>'
+        NOTE: This is now deprecated, you should use the deactivateApp method
+              instead
         """
         try:
             cmdStr = 'feature:list -i | grep "' + featureStr + '"'
             handle = self.sendline( cmdStr )
             if handle != '':
                 cmdStr = "feature:uninstall " + str( featureStr )
-                self.sendline( cmdStr )
+                output = self.sendline( cmdStr )
                 # TODO: Check for possible error responses from karaf
             else:
                 main.log.info( "Feature needs to be installed before " +
                                "uninstalling it" )
-            return main.TRUE
+                return main.TRUE
+            if re.search( "Error", output ):
+                main.log.error( "Error in uninstalling feature" )
+                main.log.error( output )
+                return main.FALSE
+            else:
+                return main.TRUE
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
             return None
@@ -536,9 +570,14 @@ class OnosCliDriver( CLI ):
         TODO: refactor this function
         """
         try:
-            cmdStr = "device-remove "+str(deviceId)
-            self.sendline( cmdStr )
-            return main.TRUE
+            cmdStr = "device-remove " + str( deviceId )
+            handle = self.sendline( cmdStr )
+            if re.search( "Error", handle ):
+                main.log.error( "Error in removing device" )
+                main.log.error( handle )
+                return main.FALSE
+            else:
+                return main.TRUE
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
             return None
@@ -559,29 +598,11 @@ class OnosCliDriver( CLI ):
             * jsonFormat - boolean indicating if you want output in json
         """
         try:
+            cmdStr = "devices"
             if jsonFormat:
-                cmdStr = "devices -j"
-                handle = self.sendline( cmdStr )
-                """
-                handle variable here contains some ANSI escape color code
-                sequences at the end which are invisible in the print command
-                output. To make that escape sequence visible, use repr()
-                function. The repr( handle ) output when printed shows the
-                ANSI escape sequences. In json.loads( somestring ), this
-                somestring variable is actually repr( somestring ) and
-                json.loads would fail with the escape sequence. So we take off
-                that escape sequence using:
-
-                ansiEscape = re.compile( r'\r\r\n\x1b[^m]*m' )
-                handle1 = ansiEscape.sub( '', handle )
-                """
-                ansiEscape = re.compile( r'\r\r\n\x1b[^m]*m' )
-                handle1 = ansiEscape.sub( '', handle )
-                return handle1
-            else:
-                cmdStr = "devices"
-                handle = self.sendline( cmdStr )
-                return handle
+                cmdStr += " -j"
+            handle = self.sendline( cmdStr )
+            return handle
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
             return None
@@ -603,9 +624,13 @@ class OnosCliDriver( CLI ):
         """
         try:
             cmdStr = "onos:balance-masters"
-            self.sendline( cmdStr )
-            # TODO: Check for error responses from ONOS
-            return main.TRUE
+            handle = self.sendline( cmdStr )
+            if re.search( "Error", handle ):
+                main.log.error( "Error in balancing masters" )
+                main.log.error( handle )
+                return main.FALSE
+            else:
+                return main.TRUE
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
             return None
@@ -626,29 +651,11 @@ class OnosCliDriver( CLI ):
             * jsonFormat - boolean indicating if you want output in json
         """
         try:
+            cmdStr = "links"
             if jsonFormat:
-                cmdStr = "links -j"
-                handle = self.sendline( cmdStr )
-                """
-                handle variable here contains some ANSI escape color code
-                sequences at the end which are invisible in the print command
-                output. To make that escape sequence visible, use repr()
-                function. The repr( handle ) output when printed shows the ANSI
-                escape sequences. In json.loads( somestring ), this somestring
-                variable is actually repr( somestring ) and json.loads would
-                fail with the escape sequence. So we take off that escape
-                sequence using:
-
-                ansiEscape = re.compile( r'\r\r\n\x1b[^m]*m' )
-                handle1 = ansiEscape.sub( '', handle )
-                """
-                ansiEscape = re.compile( r'\r\r\n\x1b[^m]*m' )
-                handle1 = ansiEscape.sub( '', handle )
-                return handle1
-            else:
-                cmdStr = "links"
-                handle = self.sendline( cmdStr )
-                return handle
+                cmdStr += " -j"
+            handle = self.sendline( cmdStr )
+            return handle
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
             return None
@@ -669,30 +676,11 @@ class OnosCliDriver( CLI ):
             * jsonFormat - boolean indicating if you want output in json
         """
         try:
+            cmdStr = "ports"
             if jsonFormat:
-                cmdStr = "ports -j"
-                handle = self.sendline( cmdStr )
-                """
-                handle variable here contains some ANSI escape color code
-                sequences at the end which are invisible in the print command
-                output. To make that escape sequence visible, use repr()
-                function. The repr( handle ) output when printed shows the ANSI
-                escape sequences. In json.loads( somestring ), this somestring
-                variable is actually repr( somestring ) and json.loads would
-                fail with the escape sequence. So we take off that escape
-                sequence using the following commands:
-
-                ansiEscape = re.compile( r'\r\r\n\x1b[^m]*m' )
-                handle1 = ansiEscape.sub( '', handle )
-                """
-                ansiEscape = re.compile( r'\r\r\n\x1b[^m]*m' )
-                handle1 = ansiEscape.sub( '', handle )
-                return handle1
-
-            else:
-                cmdStr = "ports"
-                handle = self.sendline( cmdStr )
-                return handle
+                cmdStr += " -j"
+            handle = self.sendline( cmdStr )
+            return handle
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
             return None
@@ -713,32 +701,11 @@ class OnosCliDriver( CLI ):
             * jsonFormat - boolean indicating if you want output in json
         """
         try:
+            cmdStr = "roles"
             if jsonFormat:
-                cmdStr = "roles -j"
-                handle = self.sendline( cmdStr )
-                """
-                handle variable here contains some ANSI escape color code
-                sequences at the end which are invisible in the print command
-                output. To make that escape sequence visible, use repr()
-                function. The repr( handle ) output when printed shows the ANSI
-                escape sequences. In json.loads( somestring ), this somestring
-                variable is actually repr( somestring ) and json.loads would
-                fail with the escape sequence.
-
-                So we take off that escape sequence using the following
-                commads:
-
-                ansiEscape = re.compile( r'\r\r\n\x1b[^m]*m' )
-                handle1 = ansiEscape.sub( '', handle )
-                """
-                ansiEscape = re.compile( r'\r\r\n\x1b[^m]*m' )
-                handle1 = ansiEscape.sub( '', handle )
-                return handle1
-
-            else:
-                cmdStr = "roles"
-                handle = self.sendline( cmdStr )
-                return handle
+                cmdStr += " -j"
+            handle = self.sendline( cmdStr )
+            return handle
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
             return None
@@ -853,29 +820,11 @@ class OnosCliDriver( CLI ):
             * jsonFormat - boolean indicating if you want output in json
         """
         try:
+            cmdStr = "hosts"
             if jsonFormat:
-                cmdStr = "hosts -j"
-                handle = self.sendline( cmdStr )
-                """
-                handle variable here contains some ANSI escape color code
-                sequences at the end which are invisible in the print command
-                output. To make that escape sequence visible, use repr()
-                function. The repr( handle ) output when printed shows the ANSI
-                escape sequences. In json.loads( somestring ), this somestring
-                variable is actually repr( somestring ) and json.loads would
-                fail with the escape sequence. So we take off that escape
-                sequence using:
-
-                ansiEscape = re.compile( r'\r\r\n\x1b[^m]*m' )
-                handle1 = ansiEscape.sub( '', handle )
-                """
-                ansiEscape = re.compile( r'\r\r\n\x1b[^m]*m' )
-                handle1 = ansiEscape.sub( '', handle )
-                return handle1
-            else:
-                cmdStr = "hosts"
-                handle = self.sendline( cmdStr )
-                return handle
+                cmdStr += " -j"
+            handle = self.sendline( cmdStr )
+            return handle
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
             return None
@@ -1305,8 +1254,6 @@ class OnosCliDriver( CLI ):
                 cmd += " " +\
                     str( egressDevice ) + "/" +\
                     str( portEgress )
-
-            print "cmd= ", cmd
             handle = self.sendline( cmd )
             # If error, return error message
             if re.search( "Error", handle ):
@@ -1455,8 +1402,6 @@ class OnosCliDriver( CLI ):
                 else:
                     main.log.error( "Device list and port list does not have the same length" )
                     return main.FALSE
-
-            print "cmd= ", cmd
             handle = self.sendline( cmd )
             # If error, return error message
             if re.search( "Error", handle ):
@@ -1496,7 +1441,7 @@ class OnosCliDriver( CLI ):
             cli output otherwise
         """
         try:
-            cmdStr = "remove-intent "
+            cmdStr = "remove-intent"
             if purge:
                 cmdStr += " -p"
             if sync:
@@ -1533,14 +1478,10 @@ class OnosCliDriver( CLI ):
             Obtain all routes in the system
         """
         try:
+            cmdStr = "routes"
             if jsonFormat:
-                cmdStr = "routes -j"
-                handleTmp = self.sendline( cmdStr )
-                ansiEscape = re.compile( r'\r\r\n\x1b[^m]*m' )
-                handle = ansiEscape.sub( '', handleTmp )
-            else:
-                cmdStr = "routes"
-                handle = self.sendline( cmdStr )
+                cmdStr += " -j"
+            handle = self.sendline( cmdStr )
             return handle
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
@@ -1563,14 +1504,10 @@ class OnosCliDriver( CLI ):
             Obtain intents currently installed
         """
         try:
+            cmdStr = "intents"
             if jsonFormat:
-                cmdStr = "intents -j"
-                handle = self.sendline( cmdStr )
-                ansiEscape = re.compile( r'\r\r\n\x1b[^m]*m' )
-                handle = ansiEscape.sub( '', handle )
-            else:
-                cmdStr = "intents"
-                handle = self.sendline( cmdStr )
+                cmdStr += " -j"
+            handle = self.sendline( cmdStr )
             return handle
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
@@ -1652,14 +1589,10 @@ class OnosCliDriver( CLI ):
             Obtain flows currently installed
         """
         try:
+            cmdStr = "flows"
             if jsonFormat:
-                cmdStr = "flows -j"
-                handle = self.sendline( cmdStr )
-                ansiEscape = re.compile( r'\r\r\n\x1b[^m]*m' )
-                handle = ansiEscape.sub( '', handle )
-            else:
-                cmdStr = "flows"
-                handle = self.sendline( cmdStr )
+                cmdStr += " -j"
+            handle = self.sendline( cmdStr )
             if re.search( "Error:", handle ):
                 main.log.error( self.name + ".flows() response: " +
                                 str( handle ) )
@@ -1705,8 +1638,6 @@ class OnosCliDriver( CLI ):
                 if appId:
                     cmd += " " + str( appId )
             handle = self.sendline( cmd )
-            ansiEscape = re.compile( r'\r\r\n\x1b[^m]*m' )
-            handle = ansiEscape.sub( '', handle )
             if report:
                 latResult = []
                 main.log.info( handle )
@@ -1743,15 +1674,10 @@ class OnosCliDriver( CLI ):
             * jsonFormat: enable json formatting of output
         """
         try:
+            cmdStr = "intents-events-metrics"
             if jsonFormat:
-                cmdStr = "intents-events-metrics -j"
-                handle = self.sendline( cmdStr )
-                # Some color thing that we want to escape
-                ansiEscape = re.compile( r'\r\r\n\x1b[^m]*m' )
-                handle = ansiEscape.sub( '', handle )
-            else:
-                cmdStr = "intents-events-metrics"
-                handle = self.sendline( cmdStr )
+                cmdStr += " -j"
+            handle = self.sendline( cmdStr )
             return handle
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
@@ -1773,20 +1699,17 @@ class OnosCliDriver( CLI ):
             * jsonFormat: enable json formatting of output
         """
         try:
+            cmdStr = "topology-events-metrics"
             if jsonFormat:
-                cmdStr = "topology-events-metrics -j"
-                handle = self.sendline( cmdStr )
-                # Some color thing that we want to escape
-                ansiEscape = re.compile( r'\r\r\n\x1b[^m]*m' )
-                handle = ansiEscape.sub( '', handle )
-            else:
-                cmdStr = "topology-events-metrics"
-                handle = self.sendline( cmdStr )
+                cmdStr += " -j"
+            handle = self.sendline( cmdStr )
             if handle:
                 return handle
-            else:
+            elif jsonFormat:
                 # Return empty json
                 return '{}'
+            else:
+                return handle
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
             return None
@@ -2084,29 +2007,11 @@ class OnosCliDriver( CLI ):
             * jsonFormat - boolean indicating if you want output in json
         """
         try:
+            cmdStr = "clusters"
             if jsonFormat:
-                cmdStr = "clusters -j"
-                handle = self.sendline( cmdStr )
-                """
-                handle variable here contains some ANSI escape color code
-                sequences at the end which are invisible in the print command
-                output. To make that escape sequence visible, use repr()
-                function. The repr( handle ) output when printed shows the ANSI
-                escape sequences. In json.loads( somestring ), this somestring
-                variable is actually repr( somestring ) and json.loads would
-                fail with the escape sequence. So we take off that escape
-                sequence using:
-
-                ansiEscape = re.compile( r'\r\r\n\x1b[^m]*m' )
-                handle1 = ansiEscape.sub( '', handle )
-                """
-                ansiEscape = re.compile( r'\r\r\n\x1b[^m]*m' )
-                handle1 = ansiEscape.sub( '', handle )
-                return handle1
-            else:
-                cmdStr = "clusters"
-                handle = self.sendline( cmdStr )
-                return handle
+                cmdStr += " -j"
+            handle = self.sendline( cmdStr )
+            return handle
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
             return None
@@ -2371,16 +2276,11 @@ class OnosCliDriver( CLI ):
         #     "topic": "intent-partition-3"
         #  },
         try:
+            cmdStr = "onos:leaders"
             if jsonFormat:
-                cmdStr = "onos:leaders -j"
-                output = self.sendline( cmdStr )
-                ansiEscape = re.compile( r'\r\r\n\x1b[^m]*m' )
-                cleanedOutput = ansiEscape.sub( '', output )
-                return cleanedOutput
-            else:
-                cmdStr = "onos:leaders"
-                output = self.sendline( cmdStr )
-                return output
+                cmdStr += " -j"
+            output = self.sendline( cmdStr )
+            return output
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
             return None
@@ -2399,16 +2299,11 @@ class OnosCliDriver( CLI ):
         Returns the output of the intent Pending map.
         """
         try:
+            cmdStr = "onos:intents -p"
             if jsonFormat:
-                cmdStr = "onos:intents -p -j"
-                output = self.sendline( cmdStr )
-                ansiEscape = re.compile( r'\r\r\n\x1b[^m]*m' )
-                cleanedOutput = ansiEscape.sub( '', output )
-                return cleanedOutput
-            else:
-                cmdStr = "onos:intents -p"
-                output = self.sendline( cmdStr )
-                return output
+                cmdStr += " -j"
+            output = self.sendline( cmdStr )
+            return output
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
             return None
@@ -2438,16 +2333,11 @@ class OnosCliDriver( CLI ):
         #     "term": 3
         # },
         try:
+            cmdStr = "onos:partitions"
             if jsonFormat:
-                cmdStr = "onos:partitions -j"
-                output = self.sendline( cmdStr )
-                ansiEscape = re.compile( r'\r\r\n\x1b[^m]*m' )
-                cleanedOutput = ansiEscape.sub( '', output )
-                return cleanedOutput
-            else:
-                cmdStr = "onos:partitions"
-                output = self.sendline( cmdStr )
-                return output
+                cmdStr += " -j"
+            output = self.sendline( cmdStr )
+            return output
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
             return None
@@ -2472,18 +2362,12 @@ class OnosCliDriver( CLI ):
         # "origin":"ON.Lab","permissions":"[]","featuresRepo":"",
         # "features":"[onos-openflow]","state":"ACTIVE"}]
         try:
+            cmdStr = "onos:apps"
             if jsonFormat:
-                cmdStr = "onos:apps -j"
-                output = self.sendline( cmdStr )
-                assert "Error executing command" not in output
-                ansiEscape = re.compile( r'\r\r\n\x1b[^m]*m' )
-                cleanedOutput = ansiEscape.sub( '', output )
-                return cleanedOutput
-            else:
-                cmdStr = "onos:apps"
-                output = self.sendline( cmdStr )
-                assert "Error executing command" not in output
-                return output
+                cmdStr += " -j"
+            output = self.sendline( cmdStr )
+            assert "Error executing command" not in output
+            return output
         # FIXME: look at specific exceptions/Errors
         except AssertionError:
             main.log.error( "Error in processing onos:app command: " +
@@ -2788,15 +2672,9 @@ class OnosCliDriver( CLI ):
             cmdStr = "app-ids"
             if jsonFormat:
                 cmdStr += " -j"
-                output = self.sendline( cmdStr )
-                assert "Error executing command" not in output
-                ansiEscape = re.compile( r'\r\r\n\x1b[^m]*m' )
-                cleanedOutput = ansiEscape.sub( '', output )
-                return cleanedOutput
-            else:
-                output = self.sendline( cmdStr )
-                assert "Error executing command" not in output
-                return output
+            output = self.sendline( cmdStr )
+            assert "Error executing command" not in output
+            return output
         except AssertionError:
             main.log.error( "Error in processing onos:app-ids command: " +
                             str( output ) )

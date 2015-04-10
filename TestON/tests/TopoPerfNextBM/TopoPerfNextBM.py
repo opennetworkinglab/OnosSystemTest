@@ -157,7 +157,7 @@ class TopoPerfNextBM:
 
     def CASE2(self, main):
         """
-        Assign s1 to ONOS1 and measure latency
+        Assign s3 to ONOS1 and measure latency
         
         There are 4 levels of latency measurements to this test:
         1 ) End-to-end measurement: Complete end-to-end measurement
@@ -379,7 +379,7 @@ class TopoPerfNextBM:
                 # measurement. 
                 tcpToFeature = int(featureTimestamp) - int(t0Tcp)
                 featureToRole = int(roleTimestamp) - int(featureTimestamp)
-                roleToOfp = int(t0Ofp) - int(roleTimestamp)
+                roleToOfp = float(t0Ofp) - float(roleTimestamp)
                 ofpToDevice = int(deviceTimestamp) - int(t0Ofp)
                 deviceToGraph = float(graphTimestamp) - float(deviceTimestamp)
                 
@@ -429,7 +429,7 @@ class TopoPerfNextBM:
                     main.log.info("ONOS "+str(nodeNum)+ " reply-to-device: "+
                             str(ofpToDevice) + " ms")
                 else:
-                    main.log.info("ONOS "+str(nodeNum)+ " role-to-reply "+
+                    main.log.info("ONOS "+str(nodeNum)+ " reply-to-device "+
                             "measurement ignored due to excess in "+
                             "threshold or premature iteration")
 
@@ -500,7 +500,7 @@ class TopoPerfNextBM:
             with open(tsharkFinAckOutput, 'r') as f:
                 tempLine = f.readlines()
                 main.log.info('Object read in from FinAck capture: ' +
-                    str(tempLine))
+                    "\n".join(tempLine))
                 
                 index = 1
                 for line in tempLine:
@@ -541,7 +541,7 @@ class TopoPerfNextBM:
                     graphTimestamp = 0
                     deviceTimestamp = 0
                
-                finAckTransaction = int(tAck) - int(tFinAck)
+                finAckTransaction = float(tAck) - float(tFinAck)
                 ackToDevice = int(deviceTimestamp) - int(tAck)
                 deviceToGraph = int(graphTimestamp) - int(deviceTimestamp)
                 endToEndDisc = int(graphTimestamp) - int(tFinAck)
@@ -742,12 +742,23 @@ class TopoPerfNextBM:
             main.log.report(' Device-to-graph (disconnect) Std dev: ' +
                     str(deviceToGraphDiscStdDev) + ' ms')
 
+            # For database schema, refer to Amazon web services
             dbCmdList.append(
-                    "INSERT INTO switch_latency_tests VALUES('" +
+                    "INSERT INTO switch_latency_details VALUES('" +
                     timeToPost + "','switch_latency_results'," +
                     jenkinsBuildNumber + ',' + str(clusterCount) + ",'baremetal" + 
-                    str(node + 1) + "'," + str(endToEndAvg) + ',' +
-                    str(endToEndStdDev) + ',0,0);')
+                    str(node + 1) + "'," + 
+                    str(endToEndAvg) + ',' +
+                    str(tcpToFeatureAvg) + ',' +
+                    str(featureToRoleAvg) + ',' +
+                    str(roleToOfpAvg) + ',' +
+                    str(ofpToDeviceAvg) + ',' +
+                    str(deviceToGraphAvg) + ',' +
+                    str(endToEndDiscAvg) + ',' +
+                    str(finAckAvg) + ',' +
+                    str(ackToDeviceAvg) + ',' +
+                    str(deviceToGraphDiscAvg) + 
+                    ');')
 
         if debugMode == 'on':
             main.ONOS1.cpLogsToDir('/opt/onos/log/karaf.log',
@@ -756,9 +767,10 @@ class TopoPerfNextBM:
         for line in dbCmdList:
             if line:
                 fResult.write(line + '\n')
-
         fResult.close()
+        
         assertion = main.TRUE
+        
         utilities.assert_equals(expect=main.TRUE, actual=assertion,
                 onpass='Switch latency test successful', 
                 onfail='Switch latency test failed')
@@ -1033,6 +1045,10 @@ class TopoPerfNextBM:
             portDownDevAvg = 0
             portDownGraphAvg = 0
             portDownLinkAvg = 0
+
+            # TODO: Update for more pythonic way to get list
+            # portUpDevList = [item for item in portUpDevNodeIter[node] 
+            #        if item > 0.0] 
 
             for item in portUpDevNodeIter[node]:
                 if item > 0.0:

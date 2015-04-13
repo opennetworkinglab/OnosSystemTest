@@ -2766,3 +2766,108 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
+    def getCfg( self, component=None, propName=None, short=False,
+                jsonFormat=True ):
+        """
+        Get configuration settings from onos cli
+        Optional arguments:
+            component - Optionally only list configurations for a specific
+                        component. If None, all components with configurations
+                        are displayed. Case Sensitive string.
+            propName - If component is specified, propName option will show
+                       only this specific configuration from that component.
+                       Case Sensitive string.
+            jsonFormat - Returns output as json. Note that this will override
+                         the short option
+            short - Short, less verbose, version of configurations.
+                    This is overridden by the json option
+        returns:
+            Output from cli as a string or None on error
+        """
+        try:
+            baseStr = "cfg"
+            cmdStr = " get"
+            componentStr = ""
+            if component:
+                componentStr += " " + component
+                if propName:
+                    componentStr += " " + propName
+            if jsonFormat:
+                baseStr += " -j"
+            elif short:
+                baseStr += " -s"
+            output = self.sendline( baseStr + cmdStr + componentStr )
+            assert "Error executing command" not in output
+            return output
+        except AssertionError:
+            main.log.error( "Error in processing 'cfg get' command: " +
+                            str( output ) )
+            return None
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
+    def setCfg( self, component, propName, value=None, check=True ):
+        """
+        Set/Unset configuration settings from ONOS cli
+        Optional arguments:
+            component - The case sensitive name of the component whose
+                        property is to be set
+            propName - The case sensitive name of the property to be set/unset
+            value - The value to set the property to. If None, will unset the
+                    property and revert it to it's default value(if applicable)
+            check - Boolean, Check whether the option was successfully set this
+                    only applies when a value is given.
+        returns:
+            main.TRUE on success or main.FALSE on failure. If check is False,
+            will return main.TRUE unless there is an error
+        """
+        try:
+            baseStr = "cfg"
+            cmdStr = " set " + str( component ) + " " + str( propName )
+            if value is not None:
+                cmdStr += " " + str( value )
+            output = self.sendline( baseStr + cmdStr )
+            assert "Error executing command" not in output
+            if value and check:
+                results = self.getCfg( component=str( component ),
+                                       propName=str( propName ),
+                                       jsonFormat=True )
+                # Check if current value is what we just set
+                try:
+                    jsonOutput = json.loads( results )
+                    current = jsonOutput[ 'value' ]
+                except ( ValueError, TypeError ):
+                    main.log.exception( "Error parsing cfg output" )
+                    main.log.error( "output:" + repr( results ) )
+                    return main.FALSE
+                if current == str( value ):
+                    return main.TRUE
+                return main.FALSE
+            return main.TRUE
+        except AssertionError:
+            main.log.error( "Error in processing 'cfg set' command: " +
+                            str( output ) )
+            return main.FALSE
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return main.FALSE
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+

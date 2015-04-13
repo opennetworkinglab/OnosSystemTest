@@ -422,7 +422,7 @@ class OnosCliDriver( CLI ):
         try:
 
             cmdStr = "remove-node " + str( nodeId )
-            self.sendline( cmdStr )
+            handle = self.sendline( cmdStr )
             if re.search( "Error", handle ):
                 main.log.error( "Error in removing node" )
                 main.log.error( handle )
@@ -1236,12 +1236,14 @@ class OnosCliDriver( CLI ):
                         return main.FALSE
             else:
                 if len( ingressDeviceList ) == len( portIngressList ):
-                    for ingressDevice, portIngress in zip( ingressDeviceList, portIngressList ):
+                    for ingressDevice, portIngress in zip( ingressDeviceList,
+                                                           portIngressList ):
                         cmd += " " + \
                             str( ingressDevice ) + "/" +\
                             str( portIngress ) + " "
                 else:
-                    main.log.error( "Device list and port list does not have the same length" )
+                    main.log.error( "Device list and port list does not " +
+                                    "have the same length" )
                     return main.FALSE
             if "/" in egressDevice:
                 cmd += " " + str( egressDevice )
@@ -1371,7 +1373,7 @@ class OnosCliDriver( CLI ):
 
             # Check whether the user appended the port
             # or provided it as an input
-            
+
             if "/" in ingressDevice:
                 cmd += " " + str( ingressDevice )
             else:
@@ -1395,12 +1397,14 @@ class OnosCliDriver( CLI ):
                         return main.FALSE
             else:
                 if len( egressDeviceList ) == len( portEgressList ):
-                    for egressDevice, portEgress in zip( egressDeviceList, portEgressList ):
+                    for egressDevice, portEgress in zip( egressDeviceList,
+                                                         portEgressList ):
                         cmd += " " + \
                             str( egressDevice ) + "/" +\
                             str( portEgress )
                 else:
-                    main.log.error( "Device list and port list does not have the same length" )
+                    main.log.error( "Device list and port list does not " +
+                                    "have the same length" )
                     return main.FALSE
             handle = self.sendline( cmd )
             # If error, return error message
@@ -2242,10 +2246,10 @@ class OnosCliDriver( CLI ):
         """
         try:
             intents = self.intents( )
-            intentStates = []
+            states = []
             for intent in json.loads( intents ):
-                intentStates.append( intent.get( 'state', None ) )
-            out = [ (i, intentStates.count( i ) ) for i in set( intentStates ) ]
+                states.append( intent.get( 'state', None ) )
+            out = [ ( i, states.count( i ) ) for i in set( states ) ]
             main.log.info( dict( out ) )
             return dict( out )
         except TypeError:
@@ -2479,7 +2483,7 @@ class OnosCliDriver( CLI ):
                                 str( output ) )
             # NOTE: we may need to add more checks here
             # else: Command was successful
-            #main.log.debug( "app response: " + repr( output ) )
+            # main.log.debug( "app response: " + repr( output ) )
             return main.TRUE
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )

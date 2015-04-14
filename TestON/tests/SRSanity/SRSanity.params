@@ -1,0 +1,26 @@
+<PARAMS>
+    
+    <testcases>1,2,3</testcases>
+
+    #Environment variables
+    <ENV>
+        <cellName>spring</cellName>
+        <home>/home/admin/ONLabTest/TestON/tests/SRSanity</home>
+    </ENV>
+
+    <CTRL>
+        <ip1>127.0.0.1</ip1>
+        <port1>6633</port1>
+    </CTRL>
+
+    <GIT>
+        <autoPull>off</autoPull>
+        <checkout>master</checkout>
+    </GIT>
+
+    <JSON>
+        <prefix>prefix</prefix>
+        <nextHop>nextHop</nextHop>
+    </JSON>
+
+</PARAMS>

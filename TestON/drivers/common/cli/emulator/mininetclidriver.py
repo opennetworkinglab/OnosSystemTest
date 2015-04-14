@@ -916,6 +916,25 @@ class MininetCliDriver( Emulator ):
             main.exit()
         return main.TRUE
 
+    def yankcpqd(self,**yankargs):
+	'''
+	yank a mininet user switch (cpqd...etc) interface
+	'''
+	main.log.info('Yank the specified user switch interface')
+	args = utilities.parse_args(["SW","INTF"],**yankargs)
+	sw = args["SW"] if args["SW"] !=None else ""
+	intf = args["INTF"] if args["INTF"] != None else ""
+	#command = "py "+ str(sw) + '.detach("' + str(intf) + '")'
+	command = str(sw) + ' ifconfig ' + str(intf) + ' down'
+        try:
+            response = self.execute(cmd=command,prompt="mininet>",timeout=10)
+        except pexpect.EOF:  
+            main.log.error(self.name + ": EOF exception found")
+            main.log.error(self.name + ":     " + self.handle.before)
+            main.cleanup()
+            main.exit()
+	return main.TRUE
+
     def plug( self, **plugargs ):
         """
            plug the yanked mininet switch interface to a switch"""

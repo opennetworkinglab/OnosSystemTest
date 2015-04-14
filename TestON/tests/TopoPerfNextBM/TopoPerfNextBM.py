@@ -390,7 +390,7 @@ class TopoPerfNextBM:
                 # For now, this will be treated as 0 ms if less than 1 ms
                 deviceToGraph = int(graphTimestamp) - int(deviceTimestamp)
                 
-                if endToEnd > thresholdMin and\
+                if endToEnd >= thresholdMin and\
                    endToEnd < thresholdMax and i >= iterIgnore:
                     endToEndLatNodeIter[node][i] = endToEnd 
                     main.log.info("ONOS "+str(nodeNum)+ " end-to-end: "+
@@ -400,7 +400,7 @@ class TopoPerfNextBM:
                             "measurement ignored due to excess in "+
                             "threshold or premature iteration")
 
-                if tcpToFeature > thresholdMin and\
+                if tcpToFeature >= thresholdMin and\
                    tcpToFeature < thresholdMax and i >= iterIgnore:
                     tcpToFeatureLatNodeIter[node][i] = tcpToFeature 
                     main.log.info("ONOS "+str(nodeNum)+ " tcp-to-feature: "+
@@ -410,7 +410,7 @@ class TopoPerfNextBM:
                             "measurement ignored due to excess in "+
                             "threshold or premature iteration")
 
-                if featureToRole > thresholdMin and\
+                if featureToRole >= thresholdMin and\
                    featureToRole < thresholdMax and i >= iterIgnore:
                     featureToRoleRequestLatNodeIter[node][i] = featureToRole 
                     main.log.info("ONOS "+str(nodeNum)+ " feature-to-role: "+
@@ -420,7 +420,7 @@ class TopoPerfNextBM:
                             "measurement ignored due to excess in "+
                             "threshold or premature iteration")
 
-                if roleToOfp > thresholdMin and\
+                if roleToOfp >= thresholdMin and\
                    roleToOfp < thresholdMax and i >= iterIgnore:
                     roleRequestToRoleReplyLatNodeIter[node][i] = roleToOfp
                     main.log.info("ONOS "+str(nodeNum)+ " role-to-reply: "+
@@ -430,7 +430,7 @@ class TopoPerfNextBM:
                             "measurement ignored due to excess in "+
                             "threshold or premature iteration")
                 
-                if ofpToDevice > thresholdMin and\
+                if ofpToDevice >= thresholdMin and\
                    ofpToDevice < thresholdMax and i >= iterIgnore:
                     roleReplyToDeviceLatNodeIter[node][i] = ofpToDevice 
                     main.log.info("ONOS "+str(nodeNum)+ " reply-to-device: "+
@@ -440,7 +440,7 @@ class TopoPerfNextBM:
                             "measurement ignored due to excess in "+
                             "threshold or premature iteration")
 
-                if deviceToGraph > thresholdMin and\
+                if deviceToGraph >= thresholdMin and\
                    deviceToGraph < thresholdMax and i >= iterIgnore:
                     deviceToGraphLatNodeIter[node][i] = deviceToGraph
                     main.log.info("ONOS "+str(nodeNum)+ " device-to-graph: "+
@@ -557,11 +557,11 @@ class TopoPerfNextBM:
                     deviceTimestamp = 0
                
                 finAckTransaction = float(tAck) - float(tFinAck)
-                ackToDevice = int(deviceTimestamp) - int(tAck)
-                deviceToGraph = int(graphTimestamp) - int(deviceTimestamp)
+                ackToDevice = float(deviceTimestamp) - float(tAck)
+                deviceToGraph = float(graphTimestamp) - float(deviceTimestamp)
                 endToEndDisc = int(graphTimestamp) - int(tFinAck)
     
-                if endToEndDisc > thresholdMin and\
+                if endToEndDisc >= thresholdMin and\
                    endToEndDisc < thresholdMax and i >= iterIgnore:
                     endToEndDiscLatNodeIter[node][i] = endToEndDisc
                     main.log.info("ONOS "+str(nodeNum) + 
@@ -573,7 +573,7 @@ class TopoPerfNextBM:
                             "measurement ignored due to excess in "+
                             "threshold or premature iteration")
 
-                if finAckTransaction > thresholdMin and\
+                if finAckTransaction >= thresholdMin and\
                    finAckTransaction < thresholdMax and i >= iterIgnore:
                     finAckTransactionLatNodeIter[node][i] = finAckTransaction 
                     main.log.info("ONOS "+str(nodeNum)+
@@ -585,7 +585,7 @@ class TopoPerfNextBM:
                             "measurement ignored due to excess in "+
                             "threshold or premature iteration")
                 
-                if ackToDevice > thresholdMin and\
+                if ackToDevice >= thresholdMin and\
                    ackToDevice < thresholdMax and i >= iterIgnore:
                     ackToDeviceLatNodeIter[node][i] = ackToDevice
                     main.log.info("ONOS "+str(nodeNum)+
@@ -597,7 +597,7 @@ class TopoPerfNextBM:
                             "measurement ignored due to excess in "+
                             "threshold or premature iteration")
                 
-                if deviceToGraph > thresholdMin and\
+                if deviceToGraph >= thresholdMin and\
                    deviceToGraph < thresholdMax and i >= iterIgnore:
                     deviceToGraphDiscLatNodeIter[node][i] = deviceToGraph
                     main.log.info("ONOS "+str(nodeNum)+
@@ -799,7 +799,6 @@ class TopoPerfNextBM:
         manipulating is connected to another switch with a valid
         connection. Otherwise, graph view will not be updated.
         """
-        global timeToPost
         import time
         import subprocess
         import os
@@ -826,7 +825,6 @@ class TopoPerfNextBM:
         debugMode = main.params['TEST']['debugMode']
         postToDB = main.params['DB']['postToDB']
         resultPath = main.params['DB']['portEventResultPath']
-        timeToPost = time.strftime('%Y-%m-%d %H:%M:%S')
         localTime = time.strftime('%x %X')
         localTime = localTime.replace('/', '')
         localTime = localTime.replace(' ', '_')
@@ -839,10 +837,10 @@ class TopoPerfNextBM:
         downThresholdStr = main.params['TEST']['portDownThreshold']
         upThresholdObj = upThresholdStr.split(',')
         downThresholdObj = downThresholdStr.split(',')
-        upThresholdMin = int(upThresholdObj[0])
-        upThresholdMax = int(upThresholdObj[1])
-        downThresholdMin = int(downThresholdObj[0])
-        downThresholdMax = int(downThresholdObj[1])
+        upThresholdMin = float(upThresholdObj[0])
+        upThresholdMax = float(upThresholdObj[1])
+        downThresholdMin = float(downThresholdObj[0])
+        downThresholdMax = float(downThresholdObj[1])
         
         interfaceConfig = 's1-eth1'
         main.log.report('Port enable / disable latency')
@@ -923,11 +921,11 @@ class TopoPerfNextBM:
                     linkTimestamp = 0
 
                 ptDownEndToEnd = int(graphTimestamp) - int(timestampBeginPtDown)
-                ptDownOfpToDevice = int(deviceTimestamp) - int(timestampBeginPtDown)
-                ptDownDeviceToLink = int(linkTimestamp) - int(deviceTimestamp)
-                ptDownLinkToGraph = int(graphTimestamp) - int(linkTimestamp)
+                ptDownOfpToDevice = float(deviceTimestamp) - float(timestampBeginPtDown)
+                ptDownDeviceToLink = float(linkTimestamp) - float(deviceTimestamp)
+                ptDownLinkToGraph = float(graphTimestamp) - float(linkTimestamp)
 
-                if ptDownEndToEnd > downThresholdMin and\
+                if ptDownEndToEnd >= downThresholdMin and\
                    ptDownEndToEnd < downThresholdMax and i >= iterIgnore:
                     portDownEndToEndNodeIter[node][i] = ptDownEndToEnd
                     main.log.info("ONOS "+str(nodeNum)+ 
@@ -938,7 +936,7 @@ class TopoPerfNextBM:
                             " port down End-to-end ignored"+
                             " due to excess in threshold or premature iteration")
 
-                if ptDownOfpToDevice > downThresholdMin and\
+                if ptDownOfpToDevice >= downThresholdMin and\
                    ptDownOfpToDevice < downThresholdMax and i >= iterIgnore:
                     portDownOfpToDevNodeIter[node][i] = ptDownOfpToDevice
                     main.log.info("ONOS "+str(nodeNum)+ 
@@ -949,7 +947,7 @@ class TopoPerfNextBM:
                             " port down Ofp-to-device ignored"+
                             " due to excess in threshold or premature iteration")
 
-                if ptDownDeviceToLink > downThresholdMin and\
+                if ptDownDeviceToLink >= downThresholdMin and\
                    ptDownDeviceToLink < downThresholdMax and i >= iterIgnore:
                     portDownDevToLinkNodeIter[node][i] = ptDownDeviceToLink
                     main.log.info("ONOS "+str(nodeNum)+
@@ -960,7 +958,7 @@ class TopoPerfNextBM:
                             " port down Device-to-link ignored"+
                             " due to excess in threshold or premature iteration")
 
-                if ptDownLinkToGraph > downThresholdMin and\
+                if ptDownLinkToGraph >= downThresholdMin and\
                    ptDownLinkToGraph < downThresholdMax and i >= iterIgnore:
                     portDownLinkToGraphNodeIter[node][i] = ptDownLinkToGraph
                     main.log.info("ONOS "+str(nodeNum)+
@@ -1018,11 +1016,11 @@ class TopoPerfNextBM:
                     linkTimestamp = 0
 
                 ptUpEndToEnd = int(graphTimestamp) - int(timestampBeginPtUp)
-                ptUpOfpToDevice = int(deviceTimestamp) - int(timestampBeginPtUp)
-                ptUpDeviceToLink = int(linkTimestamp) - int(deviceTimestamp)
-                ptUpLinkToGraph = int(graphTimestamp) - int(linkTimestamp)
+                ptUpOfpToDevice = float(deviceTimestamp) - float(timestampBeginPtUp)
+                ptUpDeviceToLink = float(linkTimestamp) - float(deviceTimestamp)
+                ptUpLinkToGraph = float(graphTimestamp) - float(linkTimestamp)
 
-                if ptUpEndToEnd > upThresholdMin and\
+                if ptUpEndToEnd >= upThresholdMin and\
                    ptUpEndToEnd < upThresholdMax and i > iterIgnore:
                     portUpEndToEndNodeIter[node][i] = ptUpEndToEnd
                     main.log.info("ONOS "+str(nodeNum)+ 
@@ -1033,7 +1031,7 @@ class TopoPerfNextBM:
                             " port up End-to-end ignored"+
                             " due to excess in threshold or premature iteration")
 
-                if ptUpOfpToDevice > upThresholdMin and\
+                if ptUpOfpToDevice >= upThresholdMin and\
                    ptUpOfpToDevice < upThresholdMax and i > iterIgnore:
                     portUpOfpToDevNodeIter[node][i] = ptUpOfpToDevice
                     main.log.info("ONOS "+str(nodeNum)+ 
@@ -1044,7 +1042,7 @@ class TopoPerfNextBM:
                             " port up Ofp-to-device ignored"+
                             " due to excess in threshold or premature iteration")
 
-                if ptUpDeviceToLink > upThresholdMin and\
+                if ptUpDeviceToLink >= upThresholdMin and\
                    ptUpDeviceToLink < upThresholdMax and i > iterIgnore:
                     portUpDevToLinkNodeIter[node][i] = ptUpDeviceToLink
                     main.log.info("ONOS "+str(nodeNum)+
@@ -1055,7 +1053,7 @@ class TopoPerfNextBM:
                             " port up Device-to-link ignored"+
                             " due to excess in threshold or premature iteration")
                 
-                if ptUpLinkToGraph > upThresholdMin and\
+                if ptUpLinkToGraph >= upThresholdMin and\
                    ptUpLinkToGraph < upThresholdMax and i > iterIgnore:
                     portUpLinkToGraphNodeIter[node][i] = ptUpLinkToGraph
                     main.log.info("ONOS "+str(nodeNum)+

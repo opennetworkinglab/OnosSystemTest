@@ -264,6 +264,7 @@ class MininetCliDriver( Emulator ):
            main.TRUE if pingall completes with no pings dropped
            otherwise main.FALSE"""
         try:
+            timeout = int( timeout )
             if self.handle:
                 main.log.info(
                     self.name +

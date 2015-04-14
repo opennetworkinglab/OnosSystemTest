@@ -565,7 +565,7 @@ class OnosCHO:
         main.step( "Verify Pingall" )
         ping_result = main.FALSE
         time1 = time.time()
-        ping_result = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=True,acceptableFailed=5)
+        ping_result = main.Mininet1.pingall( timeout=main.pingTimeout )
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -645,7 +645,7 @@ class OnosCHO:
         main.step( "Verify Pingall" )
         ping_result = main.FALSE
         time1 = time.time()
-        ping_result = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=True,acceptableFailed=5)
+        ping_result = main.Mininet1.pingall( timeout=main.pingTimeout )
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -725,7 +725,7 @@ class OnosCHO:
         main.step( "Verify Pingall" )
         ping_result = main.FALSE
         time1 = time.time()
-        ping_result = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=True,acceptableFailed=5)
+        ping_result = main.Mininet1.pingall( timeout=main.pingTimeout )
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -1927,14 +1927,19 @@ class OnosCHO:
         print intentIdTemp
         print len(intentIdList)
         print intentIdList
+        checkIntentStateResult = main.TRUE
         print "Checking intents state"
-        checkIntentStateResult = main.ONOScli1.checkIntentState( intentsId = intentIdList )
-        #checkIntentStateResult = main.ONOScli2.checkIntentState( intentsId = intentIdList )
-        #checkIntentStateResult = main.ONOScli3.checkIntentState( intentsId = intentIdList )
-        #checkIntentStateResult = main.ONOScli4.checkIntentState( intentsId = intentIdList )
-        #checkIntentStateResult = main.ONOScli5.checkIntentState( intentsId = intentIdList )
+        checkIntentStateResult = main.ONOScli1.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
+        checkIntentStateResult = main.ONOScli2.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
+        checkIntentStateResult = main.ONOScli3.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
+        checkIntentStateResult = main.ONOScli4.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
+        checkIntentStateResult = main.ONOScli5.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
+        
         if checkIntentStateResult:
             main.log.info( "All intents are installed correctly " )
+
+        print "Checking flows state "
+        checkFlowsState = main.ONOScli1.checkFlowsState()
         time.sleep(50)
         main.step( "Verify Ping across all hosts" )
         pingResult = main.FALSE
@@ -1946,7 +1951,7 @@ class OnosCHO:
             "Time taken for Ping All: " +
             str( timeDiff ) +
             " seconds" )
-
+        checkFlowsState = main.ONOScli1.checkFlowsState()
         case93Result = pingResult
         utilities.assert_equals(
             expect=main.TRUE,

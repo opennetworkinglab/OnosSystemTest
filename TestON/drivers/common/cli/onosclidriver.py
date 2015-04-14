@@ -1829,9 +1829,7 @@ class OnosCliDriver( CLI ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
-        return main.TRUE
 
-    
     def flows( self, jsonFormat=True ):
         """
         Optional:
@@ -1852,6 +1850,41 @@ class OnosCliDriver( CLI ):
                 main.log.error( self.name + ".flows() response: " +
                                 str( handle ) )
             return handle
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
+    def checkFlowsState( self ):
+        """
+        Description:
+            Check the if all the current flows are in ADDED state or
+            PENDING_ADD state
+        Return:
+            returnValue - Returns main.TRUE only if all flows are in
+                          ADDED state or PENDING_ADD, return main.FALSE
+                          otherwise.
+        """
+        try:
+            tempFlows = json.loads( self.flows() )
+            returnValue = main.TRUE
+            for device in tempFlows:
+                for flow in device.get( 'flows' ):
+                    if flow.get( 'state' ) != 'ADDED' and flow.get( 'state' ) != \
+                            'PENDING_ADD':
+                        main.log.info( self.name + ": flow Id: " +
+                                       flow.get( 'flowId' ) +
+                                       " | state:" + flow.get( 'state' ) )
+                        returnValue = main.FALSE
+            return returnValue
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
             return None

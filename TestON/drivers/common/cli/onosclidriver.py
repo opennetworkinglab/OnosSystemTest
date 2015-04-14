@@ -1432,6 +1432,145 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
+    def addMplsIntent(
+            self,
+            ingressDevice,
+            egressDevice,
+            ingressPort="",
+            egressPort="",
+            ethType="",
+            ethSrc="",
+            ethDst="",
+            bandwidth="",
+            lambdaAlloc=False,
+            ipProto="",
+            ipSrc="",
+            ipDst="",
+            tcpSrc="",
+            tcpDst="",
+            ingressLabel="",
+            egressLabel="",
+            priority=""):
+        """
+        Required:
+            * ingressDevice: device id of ingress device
+            * egressDevice: device id of egress device
+        Optional:
+            * ethType: specify ethType
+            * ethSrc: specify ethSrc ( i.e. src mac addr )
+            * ethDst: specify ethDst ( i.e. dst mac addr )
+            * bandwidth: specify bandwidth capacity of link
+            * lambdaAlloc: if True, intent will allocate lambda
+              for the specified intent
+            * ipProto: specify ip protocol
+            * ipSrc: specify ip source address
+            * ipDst: specify ip destination address
+            * tcpSrc: specify tcp source port
+            * tcpDst: specify tcp destination port
+            * ingressLabel: Ingress MPLS label
+            * egressLabel: Egress MPLS label
+        Description:
+            Adds MPLS intent by
+            specifying device id's and optional fields
+        Returns:
+            A string of the intent id or None on error
+
+        NOTE: This function may change depending on the
+              options developers provide for MPLS
+              intent via cli
+        """
+        try:
+            # If there are no optional arguments
+            if not ethType and not ethSrc and not ethDst\
+                    and not bandwidth and not lambdaAlloc \
+                    and not ipProto and not ipSrc and not ipDst \
+                    and not tcpSrc and not tcpDst and not ingressLabel \
+                    and not egressLabel:
+                cmd = "add-mpls-intent"
+
+            else:
+                cmd = "add-mpls-intent"
+
+                if ethType:
+                    cmd += " --ethType " + str( ethType )
+                if ethSrc:
+                    cmd += " --ethSrc " + str( ethSrc )
+                if ethDst:
+                    cmd += " --ethDst " + str( ethDst )
+                if bandwidth:
+                    cmd += " --bandwidth " + str( bandwidth )
+                if lambdaAlloc:
+                    cmd += " --lambda "
+                if ipProto:
+                    cmd += " --ipProto " + str( ipProto )
+                if ipSrc:
+                    cmd += " --ipSrc " + str( ipSrc )
+                if ipDst:
+                    cmd += " --ipDst " + str( ipDst )
+                if tcpSrc:
+                    cmd += " --tcpSrc " + str( tcpSrc )
+                if tcpDst:
+                    cmd += " --tcpDst " + str( tcpDst )
+                if ingressLabel:
+                    cmd += " --ingressLabel " + str( ingressLabel )
+                if egressLabel:
+                    cmd += " --egressLabel " + str( egressLabel )
+                if priority:
+                    cmd += " --priority " + str( priority )
+
+            # Check whether the user appended the port
+            # or provided it as an input
+            if "/" in ingressDevice:
+                cmd += " " + str( ingressDevice )
+            else:
+                if not ingressPort:
+                    main.log.error( "You must specify the ingress port" )
+                    return None
+
+                cmd += " " + \
+                    str( ingressDevice ) + "/" +\
+                    str( ingressPort ) + " "
+
+            if "/" in egressDevice:
+                cmd += " " + str( egressDevice )
+            else:
+                if not egressPort:
+                    main.log.error( "You must specify the egress port" )
+                    return None
+
+                cmd += " " +\
+                    str( egressDevice ) + "/" +\
+                    str( egressPort )
+
+            handle = self.sendline( cmd )
+            # If error, return error message
+            if re.search( "Error", handle ):
+                main.log.error( "Error in adding mpls intent" )
+                return None
+            else:
+                # TODO: print out all the options in this message?
+                main.log.info( "MPLS intent installed between " +
+                               str( ingressDevice ) + " and " +
+                               str( egressDevice ) )
+                match = re.search('id=0x([\da-f]+),', handle)
+                if match:
+                    return match.group()[3:-1]
+                else:
+                    main.log.error( "Error, intent ID not found" )
+                    return None
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
     def removeIntent( self, intentId, app='org.onosproject.cli',
                       purge=False, sync=False ):
         """
@@ -1550,28 +1689,75 @@ class OnosCliDriver( CLI ):
                 intentsJsonTemp = json.loads( intentsJson )
             if isinstance( intentsId, types.StringType ):
                 for intent in intentsJsonTemp:
-                    if intentsId == intent['id']:
-                        state = intent['state']
+                    if intentsId == intent[ 'id' ]:
+                        state = intent[ 'state' ]
                         return state
                 main.log.info( "Cannot find intent ID" + str( intentsId ) +
                                " on the list" )
                 return state
             elif isinstance( intentsId, types.ListType ):
                 dictList = []
-                for ID in intentsId:
+                for i in xrange( len( intentsId ) ):
                     stateDict = {}
                     for intents in intentsJsonTemp:
-                        if ID == intents['id']:
-                            stateDict['state'] = intents['state']
-                            stateDict['id'] = ID
+                        if intentsId[ i ] == intents[ 'id' ]:
+                            stateDict[ 'state' ] = intents[ 'state' ]
+                            stateDict[ 'id' ] = intentsId[ i ]
                             dictList.append( stateDict )
                             break
                 if len( intentsId ) != len( dictList ):
                     main.log.info( "Cannot find some of the intent ID state" )
                 return dictList
             else:
-                main.log.info("Invalid intents ID entry")
+                main.log.info( "Invalid intents ID entry" )
                 return None
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+    
+    def checkIntentState( self, intentsId, expectedState = 'INSTALLED' ):
+        """
+        Description:
+            Check intents state
+        Required:
+            intentsId - List of intents ID to be checked
+        Optional:
+            expectedState - Check this expected state of each intents state
+                            in the list. Defaults to INSTALLED
+        Return:
+            Returns main.TRUE only if all intent are the same as expectedState,
+            , otherwise,returns main.FALSE.
+        """
+        try:
+            # Generating a dictionary: intent id as a key and state as value
+            intentsDict = self.getIntentState( intentsId )
+            print "len of intentsDict ", str( len( intentsDict ) )
+            if len( intentsId ) != len( intentsDict ):
+                main.log.info( self.name + "There is something wrong " +
+                               "getting intents state" )
+                return main.FALSE
+            returnValue = main.TRUE
+            for intents in intentsDict:
+                if intents.get( 'state' ) != expectedState:
+                    main.log.info( self.name + " : " + intents.get( 'id' ) +
+                                   " actual state = " + intents.get( 'state' )
+                                   + " does not equal expected state = "
+                                   + expectedState )
+                    returnValue = main.FALSE
+            if returnValue == main.TRUE:
+                main.log.info( self.name + ": All " +
+                               str( len( intentsDict ) ) +
+                               " intents are in " + expectedState + " state")
+            return returnValue
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
             return None
@@ -1601,6 +1787,41 @@ class OnosCliDriver( CLI ):
                 main.log.error( self.name + ".flows() response: " +
                                 str( handle ) )
             return handle
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
+    def checkFlowsState( self ):
+        """
+        Description:
+            Check the if all the current flows are in ADDED state or
+            PENDING_ADD state
+        Return:
+            returnValue - Returns main.TRUE only if all flows are in
+                          ADDED state or PENDING_ADD, return main.FALSE
+                          otherwise.
+        """
+        try:
+            tempFlows = json.loads( self.flows() )
+            returnValue = main.TRUE
+            for device in tempFlows:
+                for flow in device.get( 'flows' ):
+                    if flow.get( 'state' ) != 'ADDED' and flow.get( 'state' ) != \
+                            'PENDING_ADD':
+                        main.log.info( self.name + ": flow Id: " +
+                                       flow.get( 'flowId' ) +
+                                       " | state:" + flow.get( 'state' ) )
+                        returnValue = main.FALSE
+            return returnValue
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
             return None

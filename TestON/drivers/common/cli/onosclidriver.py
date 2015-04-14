@@ -1487,8 +1487,8 @@ class OnosCliDriver( CLI ):
             self,
             ingressDevice,
             egressDevice,
-            portIngress="",
-            portEgress="",
+            ingressPort="",
+            egressPort="",
             ethType="",
             ethSrc="",
             ethDst="",
@@ -1499,7 +1499,7 @@ class OnosCliDriver( CLI ):
             ipDst="",
             tcpSrc="",
             tcpDst="",
-	    ingressLabel="",
+            ingressLabel="",
 	    egressLabel="",
             priority=""):
         """
@@ -1574,24 +1574,24 @@ class OnosCliDriver( CLI ):
             if "/" in ingressDevice:
                 cmd += " " + str( ingressDevice )
             else:
-                if not portIngress:
+                if not ingressPort:
                     main.log.error( "You must specify the ingress port" )
                     return None
 
                 cmd += " " + \
                     str( ingressDevice ) + "/" +\
-                    str( portIngress ) + " "
+                    str( ingressPort ) + " "
 
             if "/" in egressDevice:
                 cmd += " " + str( egressDevice )
             else:
-                if not portEgress:
+                if not egressPort:
                     main.log.error( "You must specify the egress port" )
                     return None
 
                 cmd += " " +\
                     str( egressDevice ) + "/" +\
-                    str( portEgress )
+                    str( egressPort )
 
             handle = self.sendline( cmd )
             # If error, return error message

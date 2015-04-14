@@ -1500,7 +1500,7 @@ class OnosCliDriver( CLI ):
             tcpSrc="",
             tcpDst="",
             ingressLabel="",
-	    egressLabel="",
+            egressLabel="",
             priority=""):
         """
         Required:

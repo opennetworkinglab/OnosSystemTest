@@ -1858,7 +1858,7 @@ class OnosDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def configNullLink( self,fileName="/opt/onos/apache-karaf-3.0.2/etc/linkGraph.cfg", eventRate=0): 
+    def configNullLink( self,fileName="/opt/onos/apache-karaf-3.0.3/etc/linkGraph.cfg", eventRate=0): 
         '''
                 fileName default is currently the same as the default on ONOS, specify alternate file if 
                 you want to use a different topology file than linkGraph.cfg

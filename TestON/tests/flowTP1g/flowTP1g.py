@@ -44,6 +44,7 @@ class flowTP1g:
             global clusterCount             #number of nodes running
             global ONOSIp                   #list of ONOS IP addresses
             global scale
+            global commit
 
             clusterCount = 0
             ONOSIp = [ 0 ]
@@ -69,6 +70,12 @@ class flowTP1g:
                 checkoutResult = main.TRUE
                 pullResult = main.TRUE
                 main.log.info( "Skipped git checkout and pull" )
+            
+            commit = main.ONOSbench.getVersion()
+            commit = (commit.split(" "))[1]
+
+            resultsDB = open("flowTP1gDB", "w+")
+            resultsDB.close()
 
         # -- END OF INIT SECTION --#
 
@@ -166,10 +173,9 @@ class flowTP1g:
 
         ts = time.time()
         st = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
-        logFileName = "../logs/flowTPResultsLog" + str(st)
 
         #initialize log file, remove any previous data
-        resultsLog = open("flowTPResultsLog","w+")
+        resultsLog = open("flowTP1gDB","w+")
         resultsLog.close()
 
         #write file to change mem limit to 32 gigs (BAREMETAL ONLY!)
@@ -210,13 +216,17 @@ class flowTP1g:
             main.log.info(" NullLinkProvider.cfg: " + ipCSV)
             linkConfig.close()
             
-            #config null device
-            cellIp = [] 
-            for node in range(1, clusterCount + 1): 
-                cellIp.append(ONOSIp[node])
-            main.log.info(" NullDeviceProvider.cfg: " + str(cellIp))
-            main.ONOSbench.configNullDev(cellIp, switches) 
-            
+            main.ONOSbench.handle.sendline("""onos $OC1 "cfg setorg.onosproject.provider.nil.NullProviders enabled true" """)
+            main.ONOSbench.handle.expect(":~")
+            main.ONOSbench.handle.sendline("""onos $OC1 "cfg set org.onosproject.provider.nil.NullProviders deviceCount 35" """)
+            main.ONOSbench.handle.expect(":~")
+            main.ONOSbench.handle.sendline("""onos $OC1 "cfg set org.onosproject.provider.nil.NullProviders topoShape linear" """)
+            main.ONOSbench.handle.expect(":~")
+            main.ONOSbench.handle.sendline("""onos $OC1 "null-simulation start" """)
+            main.ONOSbench.handle.expect(":~")
+            main.ONOSbench.handle.sendline("""onos $OC1 "balance-masters" """)
+            main.ONOSbench.handle.expect(":~")
+        
             #devide flows
             flows = int(main.params[ 'TEST' ][ 'flows' ])
             main.log.info("Flow Target  = " + str(flows))
@@ -224,7 +234,6 @@ class flowTP1g:
             flows = (flows *max(int(n)+1,int(servers)))/((int(n) + 1)*int(servers)*(switches))
 
             main.log.info("Flows per switch = " + str(flows))
-            #main.log.info("Total flows = " + str(switches * flows))
 
             #build list of servers in "$OC1, $OC2...." format
             serverEnvVars = ""
@@ -254,7 +263,7 @@ class flowTP1g:
                 rawResult = rawResult.splitlines()
                 print(rawResult)
                 for node in range(1, clusterCount + 1):        
-                    for line in rawResult
+                    for line in rawResult:
                         if ONOSIp[node] in line and " -> " in line:
                             myLine = line.split(" ")
                             for word in myLine:
@@ -351,9 +360,13 @@ class flowTP1g:
             main.log.info("Average thoughput:  " + str(avgTP) + " Kflows/second" )
             main.log.info("Standard deviation of throughput: " + str(stdTP) + " Kflows/second") 
 
-            resultsLog = open(logFileName,"a")
-            resultsLog.write(str(main.params[ 'TEST' ][ 'flows' ]) + "," + n + "," + str(servers) + str(switches) + "," + str(warmUp))
-            resultsLog.write("," +str(sampleSize) + "," + str(avgTP) + "," + str(stdTP) + "\n")
+            resultsLog = open("flowTP1gDB","a")
+            resultsLog.write("'" + commit + "',")
+            resultsLog.write("'1gig',")
+            resultsLog.write((main.params[ 'TEST' ][ 'flows' ]) + ",")
+            resultsLog.write(str(clusterCount)+ ",")
+            resultsLog.write(str(n) + ",")
+            resultsLog.write(str(avgTP) + "," + str(stdTP) + "\n")
             resultsLog.close()
 
-            
+             

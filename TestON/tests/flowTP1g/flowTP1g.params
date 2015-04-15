@@ -3,7 +3,7 @@
     <testcases>1,2</testcases>
     
     <isOnBaremetal>False</isOnBaremetal>
-    <SCALE>7</SCALE>
+    <SCALE>3</SCALE>
     <availableNodes>7</availableNodes>
     
 
@@ -16,7 +16,7 @@
     <TEST>
         <skipCleanInstall>yes</skipCleanInstall> 
         <warmUp>4</warmUp>                              #number of runs to warm up the system
-        <sampleSize>2</sampleSize>                     #number of runs to take data from
+        <sampleSize>3</sampleSize>                     #number of runs to take data from
         <neighbors>0,a</neighbors>                      #list of number of neighbors, a = all 
         <flows>3500</flows>
         <switches>35</switches>

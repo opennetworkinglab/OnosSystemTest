@@ -1,5 +1,5 @@
 <PARAMS>
-    # 1,20,3,[40,5,60,70,80,10,90,71,81,10,93,10]*50,22,3,[41,5,61,72,82,10,91,73,83,10,94,10]*50,22,3,[42,5,62,10,92,10]*50
+    # 1,20,3,[40,5,60,73,80,10,90,71,81,10,93,10]*50,21,3,[41,5,61,72,82,10,91,73,83,10,94,10]*50,22,3,[42,5,62,10,92,10]*50
     # 1. ONOS brinup Test case
     # 2. Assign and Balance all Mininet switches across controllers
     # 3. Collect reference toplogy for topo compare
@@ -11,7 +11,7 @@
     # 9. Install 300 point intents and verify ping all
     # 10. Remove all intents on ONOS
 
-    <testcases>1,20,3,[40,5,60,70,80,10,90,71,81,10,93,10]*50,22,3,[41,5,61,72,82,10,91,73,83,10,94,10]*50,22,3,[42,5,62,10,92,10]*50</testcases>
+    <testcases>1,20,3,[40,5,60,73,80,10,90,71,81,10,93,10]*50,21,3,[41,5,61,72,82,10,91,73,83,10,94,10]*50,22,3,[42,5,62,10,92,10]*50</testcases>
     <ENV>
         <cellName>choTest5</cellName>
     </ENV>
@@ -19,7 +19,7 @@
         #autoPull 'on' or 'off'
         <autoPull>off</autoPull>
         <branch>master</branch>
-    </GIT>-t
+    </GIT>
     <TOPO1>
 	<topo>~/mininet/custom/topoAtt.py</topo>
 	<numSwitches>25</numSwitches>

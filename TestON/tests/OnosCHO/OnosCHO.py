@@ -195,7 +195,7 @@ class OnosCHO:
         for i in range( 1, ( main.numMNswitches + 1 ) ):  # 1 to ( num of switches +1 )
             main.Mininet1.assignSwController(
                 sw=str( i ),
-                count= 1 ,
+                count= 5 ,
                 ip1=main.ONOS1_ip,
                 port1=main.ONOS1_port,
                 ip2=main.ONOS2_ip,
@@ -206,7 +206,6 @@ class OnosCHO:
                 port4=main.ONOS4_port,
                 ip5=main.ONOS5_ip,
                 port5=main.ONOS5_port )
-            time.sleep(2)
         switch_mastership = main.TRUE
         for i in range( 1, ( main.numMNswitches + 1 ) ):
             response = main.Mininet1.getSwController( "s" + str( i ) )
@@ -220,26 +219,6 @@ class OnosCHO:
             main.log.report( "Controller assignment successfull" )
         else:
             main.log.report( "Controller assignment failed" )
-        
-        """topoFailed = main.FALSE
-        checkCount = 0
-        while(topoFailed  == main.FALSE):
-            topology_output = main.ONOScli1.topology()
-            topology_result = main.ONOSbench.getTopology( topology_output )
-            numOnosDevices = topology_result[ 'deviceCount' ]
-            numOnosLinks = topology_result[ 'linkCount' ]
-            if ( ( main.numMNswitches == int(numOnosDevices) ) and ( main.numMNlinks >= int(numOnosLinks) ) ):
-                main.log.info("Att topology is now ready!")
-                break
-            else:
-                main.log.info("Att topology is not ready yet!")
-            checkCount = checkCount + 1
-            time.sleep(2)
-            if checkCount == 10:
-                topoFailed = main.TRUE
-        if topoFailed:
-            main.log.info("Att topology failed to start correctly")
-        """
         time.sleep(15)
         #Don't balance master for now..
         """main.step( "Balance devices across controllers" )
@@ -277,7 +256,7 @@ class OnosCHO:
         main.case(
             "Assign and Balance all Mininet switches across controllers" )
         main.step( "Stop any previous Mininet network topology" )
-        stopStatus = main.Mininet1.stopNet(fileName = "topoChordal" )
+        #stopStatus = main.Mininet1.stopNet(fileName = "topoChordal" )
         #time.sleep(10)
         main.step( "Start Mininet with Chordal topology" )
         startStatus = main.Mininet1.startNet(topoFile = main.newTopo)
@@ -461,7 +440,6 @@ class OnosCHO:
             print "Length of Links Store", len( main.deviceLinks )
 
             main.step( "Collect and store each Device ports enabled Count" )
-            time1 = time.time()
             for i in xrange(1,(main.numMNswitches + 1), int( main.numCtrls ) ):
                 pool = []
                 for cli in main.CLIs:
@@ -480,12 +458,7 @@ class OnosCHO:
                     portCount = portTemp[ 1 ].replace( "\r\r\n\x1b[32m", "" )
                     main.devicePortsEnabledCount.append( portCount )
             print "Device Enabled Port Counts Stored: \n", str( main.devicePortsEnabledCount )
-            time2 = time.time()
-            main.log.info("Time for counting enabled ports of the switches: %2f seconds" %(time2-time1))
-
             main.step( "Collect and store each Device active links Count" )
-            time1 = time.time()
-            
             for i in xrange( 1,( main.numMNswitches + 1 ), int( main.numCtrls) ):
                 pool = []
                 for cli in main.CLIs:
@@ -507,9 +480,6 @@ class OnosCHO:
                     linkCount = linkCountTemp[ 1 ].replace( "\r\r\n\x1b[32m", "" )
                     main.deviceActiveLinksCount.append( linkCount )
             print "Device Active Links Count Stored: \n", str( main.deviceActiveLinksCount )
-            time2 = time.time()
-            main.log.info("Time for counting all enabled links of the switches: %2f seconds" %(time2-time1))
-
         else:
             main.log.info("Devices (expected): %s, Links (expected): %s" % 
                     ( str( main.numMNswitches ), str( main.numMNlinks ) ) )
@@ -785,7 +755,6 @@ class OnosCHO:
         main.case( "Compare ONOS topology with reference data" )
 
         main.step( "Compare current Device ports enabled with reference" )
-        time1 = time.time()
         for i in xrange( 1,(main.numMNswitches + 1), int( main.numCtrls ) ):
             pool = []
             for cli in main.CLIs:
@@ -807,8 +776,6 @@ class OnosCHO:
                 portCount = portTemp[ 1 ].replace( "\r\r\n\x1b[32m", "" )
                 devicePortsEnabledCountTemp.append( portCount )
         print "Device Enabled Port Counts Stored: \n", str( main.devicePortsEnabledCount )
-        time2 = time.time()
-        main.log.info("Time for counting enabled ports of the switches: %2f seconds" %(time2-time1))
         main.log.info (
             "Device Enabled ports EXPECTED: %s" % 
 	     str( main.devicePortsEnabledCount ) )
@@ -823,7 +790,6 @@ class OnosCHO:
             stepResult1 = main.FALSE
 
         main.step( "Compare Device active links with reference" )
-        time1 = time.time()
         for i in xrange( 1, ( main.numMNswitches + 1) , int( main.numCtrls ) ):
             pool = []
             for cli in main.CLIs:
@@ -843,8 +809,6 @@ class OnosCHO:
                 linkCount = linkCountTemp[ 1 ].replace( "\r\r\n\x1b[32m", "" )
                 deviceActiveLinksCountTemp.append( linkCount )
             print "Device Active Links Count Stored: \n", str( main.deviceActiveLinksCount )
-        time2 = time.time()
-        main.log.info("Time for counting all enabled links of the switches: %2f seconds" %(time2-time1))
         main.log.info (
             "Device Active links EXPECTED: %s" %
               str( main.deviceActiveLinksCount ) )
@@ -875,10 +839,8 @@ class OnosCHO:
         main.case( "Install 300 host intents" )
         main.step( "Add host Intents" )
         intentResult = main.TRUE
-        hostCombos = list( itertools.combinations( main.hostMACs, 2 ) ) 
-        
+        hostCombos = list( itertools.combinations( main.hostMACs, 2 ) )
         intentIdList = []
-        time1 = time.time()
         for i in xrange( 0, len( hostCombos ), int(main.numCtrls) ):
             pool = []
             for cli in main.CLIs:
@@ -895,9 +857,6 @@ class OnosCHO:
             for thread in pool:
                 thread.join()
                 intentIdList.append(thread.result)
-        time2 = time.time()
-        main.log.info("Time for adding host intents: %2f seconds" %(time2-time1))
-
         intentResult = main.TRUE
         intentsJson = main.ONOScli2.intents()
         getIntentStateResult = main.ONOScli1.getIntentState(intentsId = intentIdList,
@@ -906,15 +865,31 @@ class OnosCHO:
         print "len of intent state results", str(len(getIntentStateResult))
         print getIntentStateResult
         # Takes awhile for all the onos to get the intents
-        time.sleep( 15 )
-        """intentState = main.TRUE
-        for i in getIntentStateResult:
-            if getIntentStateResult.get( 'state' ) != 'INSTALLED':
-        """
-
-
-        main.step( "Verify Ping across all hosts" )
+        time.sleep( 30 )
+        print "Printing intent IDs: ", intentIdList
+        print len(intentIdList)
         pingResult = main.FALSE
+        checkIntentStateResult = main.TRUE
+        print "Checking intents state"
+        checkIntentStateResult = main.ONOScli1.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
+        checkIntentStateResult = main.ONOScli2.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
+        checkIntentStateResult = main.ONOScli3.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
+        checkIntentStateResult = main.ONOScli4.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
+        checkIntentStateResult = main.ONOScli5.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
+        if checkIntentStateResult:
+            main.log.info( "All intents are installed correctly " )
+        print "Checking flows state "
+        checkFlowsState = main.TRUE
+        checkFlowsState = main.ONOScli1.checkFlowsState() and checkFlowsState
+        checkFlowsState = main.ONOScli2.checkFlowsState() and checkFlowsState
+        checkFlowsState = main.ONOScli3.checkFlowsState() and checkFlowsState
+        checkFlowsState = main.ONOScli4.checkFlowsState() and checkFlowsState
+        checkFlowsState = main.ONOScli5.checkFlowsState() and checkFlowsState
+        if checkFlowsState:
+            main.log.info( "All flows are added correctly" )
+        else:
+            main.log.info( "There may be some flows that are being remove" )
+        main.step( "Verify Ping across all hosts" )
         time1 = time.time()
         pingResult = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=True,acceptableFailed=5)
         time2 = time.time()
@@ -946,11 +921,8 @@ class OnosCHO:
         main.case( "Install 600 host intents" )
         main.step( "Add host Intents" )
         intentResult = main.TRUE
-        hostCombos = list( itertools.combinations( main.hostMACs, 2 ) ) 
-        
+        hostCombos = list( itertools.combinations( main.hostMACs, 2 ) )
         intentIdList = []
-        time1 = time.time()
-        
         for i in xrange( 0, len( hostCombos ), int(main.numCtrls) ):
             pool = []
             for cli in main.CLIs:
@@ -967,16 +939,28 @@ class OnosCHO:
             for thread in pool:
                 thread.join()
                 intentIdList.append(thread.result)
-        time2 = time.time()
-        main.log.info("Time for adding host intents: %2f seconds" %(time2-time1))
-        intentResult = main.TRUE
-        intentsJson = main.ONOScli2.intents()
-        getIntentStateResult = main.ONOScli1.getIntentState(intentsId = intentIdList,
-                intentsJson = intentsJson)
-        print getIntentStateResult
-
         main.step( "Verify Ping across all hosts" )
         pingResult = main.FALSE
+        checkIntentStateResult = main.TRUE
+        print "Checking intents state"
+        checkIntentStateResult = main.ONOScli1.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
+        checkIntentStateResult = main.ONOScli2.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
+        checkIntentStateResult = main.ONOScli3.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
+        checkIntentStateResult = main.ONOScli4.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
+        checkIntentStateResult = main.ONOScli5.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
+        if checkIntentStateResult:
+            main.log.info( "All intents are installed correctly " )
+        print "Checking flows state "
+        checkFlowsState = main.TRUE
+        checkFlowsState = main.ONOScli1.checkFlowsState() and checkFlowsState
+        checkFlowsState = main.ONOScli2.checkFlowsState() and checkFlowsState
+        checkFlowsState = main.ONOScli3.checkFlowsState() and checkFlowsState
+        checkFlowsState = main.ONOScli4.checkFlowsState() and checkFlowsState
+        checkFlowsState = main.ONOScli5.checkFlowsState() and checkFlowsState
+        if checkFlowsState:
+            main.log.info( "All flows are added correctly" )
+        else:
+            main.log.info( "There may be some flows that are being remove" )
         time1 = time.time()
         pingResult = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=True,acceptableFailed=5)
         time2 = time.time()
@@ -1008,10 +992,9 @@ class OnosCHO:
         main.case( "Install 2278 host intents" )
         main.step( "Add host Intents" )
         intentResult = main.TRUE
-        hostCombos = list( itertools.combinations( main.hostMACs, 2 ) ) 
+        hostCombos = list( itertools.combinations( main.hostMACs, 2 ) )
         main.pingTimeout = 300
         intentIdList = []
-        time1 = time.time()
         for i in xrange( 0, len( hostCombos ), int(main.numCtrls) ):
             pool = []
             for cli in main.CLIs:
@@ -1028,16 +1011,28 @@ class OnosCHO:
             for thread in pool:
                 thread.join()
                 intentIdList.append(thread.result)
-        time2 = time.time()
-        main.log.info("Time for adding host intents: %2f seconds" %(time2-time1))
-        intentResult = main.TRUE
-        intentsJson = main.ONOScli2.intents()
-        getIntentStateResult = main.ONOScli1.getIntentState(intentsId = intentIdList,
-                intentsJson = intentsJson)
-        print getIntentStateResult
-
         main.step( "Verify Ping across all hosts" )
         pingResult = main.FALSE
+        checkIntentStateResult = main.TRUE
+        print "Checking intents state"
+        checkIntentStateResult = main.ONOScli1.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
+        checkIntentStateResult = main.ONOScli2.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
+        checkIntentStateResult = main.ONOScli3.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
+        checkIntentStateResult = main.ONOScli4.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
+        checkIntentStateResult = main.ONOScli5.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
+        if checkIntentStateResult:
+            main.log.info( "All intents are installed correctly " )
+        print "Checking flows state "
+        checkFlowsState = main.TRUE
+        checkFlowsState = main.ONOScli1.checkFlowsState() and checkFlowsState
+        checkFlowsState = main.ONOScli2.checkFlowsState() and checkFlowsState
+        checkFlowsState = main.ONOScli3.checkFlowsState() and checkFlowsState
+        checkFlowsState = main.ONOScli4.checkFlowsState() and checkFlowsState
+        checkFlowsState = main.ONOScli5.checkFlowsState() and checkFlowsState
+        if checkFlowsState:
+            main.log.info( "All flows are added correctly" )
+        else:
+            main.log.info( "There may be some flows that are being remove" )
         time1 = time.time()
         pingResult = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=True,acceptableFailed=5)
         time2 = time.time()
@@ -1703,10 +1698,8 @@ class OnosCHO:
         main.case( "Install 600 point intents" )
         main.step( "Add point Intents" )
         intentResult = main.TRUE
-        deviceCombos = list( itertools.permutations( main.deviceDPIDs, 2 ) ) 
-        
+        deviceCombos = list( itertools.permutations( main.deviceDPIDs, 2 ) )
         intentIdList = []
-        time1 = time.time()
         for i in xrange( 0, len( deviceCombos ), int(main.numCtrls) ):
             pool = []
             for cli in main.CLIs:
@@ -1724,17 +1717,30 @@ class OnosCHO:
             for thread in pool:
                 thread.join()
                 intentIdList.append(thread.result)
-        time2 = time.time()
-        main.log.info("Time for adding point intents: %2f seconds" %(time2-time1)) 
-        intentResult = main.TRUE
-        intentsJson = main.ONOScli2.intents()
-        getIntentStateResult = main.ONOScli1.getIntentState(intentsId = intentIdList,
-                intentsJson = intentsJson)
-        print getIntentStateResult
         # Takes awhile for all the onos to get the intents
         time.sleep(30)
         main.step( "Verify Ping across all hosts" )
         pingResult = main.FALSE
+        checkIntentStateResult = main.TRUE
+        print "Checking intents state"
+        checkIntentStateResult = main.ONOScli1.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
+        checkIntentStateResult = main.ONOScli2.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
+        checkIntentStateResult = main.ONOScli3.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
+        checkIntentStateResult = main.ONOScli4.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
+        checkIntentStateResult = main.ONOScli5.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
+        if checkIntentStateResult:
+            main.log.info( "All intents are installed correctly " )
+        print "Checking flows state "
+        checkFlowsState = main.TRUE
+        checkFlowsState = main.ONOScli1.checkFlowsState() and checkFlowsState
+        checkFlowsState = main.ONOScli2.checkFlowsState() and checkFlowsState
+        checkFlowsState = main.ONOScli3.checkFlowsState() and checkFlowsState
+        checkFlowsState = main.ONOScli4.checkFlowsState() and checkFlowsState
+        checkFlowsState = main.ONOScli5.checkFlowsState() and checkFlowsState
+        if checkFlowsState:
+            main.log.info( "All flows are added correctly" )
+        else:
+            main.log.info( "There may be some flows that are being remove" )
         time1 = time.time()
         pingResult = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=True,acceptableFailed=5)
         time2 = time.time()
@@ -1766,10 +1772,8 @@ class OnosCHO:
         main.case( "Install ###$$$ point intents" )
         main.step( "Add point Intents" )
         intentResult = main.TRUE
-        deviceCombos = list( itertools.permutations( main.deviceDPIDs, 2 ) ) 
-        
+        deviceCombos = list( itertools.permutations( main.deviceDPIDs, 2 ) )
         intentIdList = []
-        time1 = time.time()
         for i in xrange( 0, len( deviceCombos ), int(main.numCtrls) ):
             pool = []
             for cli in main.CLIs:
@@ -1787,17 +1791,30 @@ class OnosCHO:
             for thread in pool:
                 thread.join()
                 intentIdList.append(thread.result)
-        time2 = time.time()
-        main.log.info("Time for adding point intents: %2f seconds" %(time2-time1)) 
-        intentResult = main.TRUE
-        intentsJson = main.ONOScli2.intents()
-        getIntentStateResult = main.ONOScli1.getIntentState(intentsId = intentIdList,
-                intentsJson = intentsJson)
-        print getIntentStateResult
         # Takes awhile for all the onos to get the intents
         time.sleep(30)
         main.step( "Verify Ping across all hosts" )
         pingResult = main.FALSE
+        checkIntentStateResult = main.TRUE
+        print "Checking intents state"
+        checkIntentStateResult = main.ONOScli1.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
+        checkIntentStateResult = main.ONOScli2.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
+        checkIntentStateResult = main.ONOScli3.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
+        checkIntentStateResult = main.ONOScli4.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
+        checkIntentStateResult = main.ONOScli5.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
+        if checkIntentStateResult:
+            main.log.info( "All intents are installed correctly " )
+        print "Checking flows state "
+        checkFlowsState = main.TRUE
+        checkFlowsState = main.ONOScli1.checkFlowsState() and checkFlowsState
+        checkFlowsState = main.ONOScli2.checkFlowsState() and checkFlowsState
+        checkFlowsState = main.ONOScli3.checkFlowsState() and checkFlowsState
+        checkFlowsState = main.ONOScli4.checkFlowsState() and checkFlowsState
+        checkFlowsState = main.ONOScli5.checkFlowsState() and checkFlowsState
+        if checkFlowsState:
+            main.log.info( "All flows are added correctly" )
+        else:
+            main.log.info( "There may be some flows that are being remove" )
         time1 = time.time()
         pingResult = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=True,acceptableFailed=5)
         time2 = time.time()
@@ -1835,7 +1852,6 @@ class OnosCHO:
         print main.MACsDict
         deviceCombos = list( itertools.permutations( main.deviceDPIDs[10:], 2 ) )
         intentIdList = []
-        time1 = time.time()
         for i in xrange( 0, len( deviceCombos ), int(main.numCtrls) ):
             pool = []
             for cli in main.CLIs:
@@ -1853,17 +1869,30 @@ class OnosCHO:
             for thread in pool:
                 thread.join()
                 intentIdList.append(thread.result)
-        time2 = time.time()
-        main.log.info("Time for adding point intents: %2f seconds" %(time2-time1)) 
-        intentResult = main.TRUE
-        intentsJson = main.ONOScli2.intents()
-        getIntentStateResult = main.ONOScli1.getIntentState(intentsId = intentIdList,
-                intentsJson = intentsJson)
-        #print getIntentStateResult
         # Takes awhile for all the onos to get the intents
         time.sleep(60)
         main.step( "Verify Ping across all hosts" )
         pingResult = main.FALSE
+        checkIntentStateResult = main.TRUE
+        print "Checking intents state"
+        checkIntentStateResult = main.ONOScli1.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
+        checkIntentStateResult = main.ONOScli2.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
+        checkIntentStateResult = main.ONOScli3.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
+        checkIntentStateResult = main.ONOScli4.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
+        checkIntentStateResult = main.ONOScli5.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
+        if checkIntentStateResult:
+            main.log.info( "All intents are installed correctly " )
+        print "Checking flows state "
+        checkFlowsState = main.TRUE
+        checkFlowsState = main.ONOScli1.checkFlowsState() and checkFlowsState
+        checkFlowsState = main.ONOScli2.checkFlowsState() and checkFlowsState
+        checkFlowsState = main.ONOScli3.checkFlowsState() and checkFlowsState
+        checkFlowsState = main.ONOScli4.checkFlowsState() and checkFlowsState
+        checkFlowsState = main.ONOScli5.checkFlowsState() and checkFlowsState
+        if checkFlowsState:
+            main.log.info( "All flows are added correctly" )
+        else:
+            main.log.info( "There may be some flows that are being remove" )
         time1 = time.time()
         pingResult = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=True,acceptableFailed=5)
         time2 = time.time()
@@ -1898,7 +1927,6 @@ class OnosCHO:
         portIngressList = ['1']*(len(deviceDPIDsCopy) - 1)
         intentIdList = []
         print "MACsDict", main.MACsDict
-        time1 = time.time()
         for i in xrange(0,len(deviceDPIDsCopy),int(main.numCtrls)):
             pool = []
             for cli in main.CLIs:
@@ -1919,14 +1947,10 @@ class OnosCHO:
             for thread in pool:
                 thread.join()
                 intentIdList.append(thread.result)
-        time2 = time.time()
-        main.log.info("Time for adding point intents: %2f seconds" %(time2-time1))
         time.sleep(30)
-        print "getting all intents ID"
-        intentIdTemp = main.ONOScli1.getAllIntentsId()
-        print intentIdTemp
+        print "Printing intent IDs: ", intentIdList
         print len(intentIdList)
-        print intentIdList
+        pingResult = main.FALSE
         checkIntentStateResult = main.TRUE
         print "Checking intents state"
         checkIntentStateResult = main.ONOScli1.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
@@ -1934,15 +1958,19 @@ class OnosCHO:
         checkIntentStateResult = main.ONOScli3.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
         checkIntentStateResult = main.ONOScli4.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
         checkIntentStateResult = main.ONOScli5.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
-        
         if checkIntentStateResult:
             main.log.info( "All intents are installed correctly " )
-
         print "Checking flows state "
-        checkFlowsState = main.ONOScli1.checkFlowsState()
+        checkFlowsState = main.TRUE
+        checkFlowsState = main.ONOScli1.checkFlowsState() and checkFlowsState
+        checkFlowsState = main.ONOScli2.checkFlowsState() and checkFlowsState
+        checkFlowsState = main.ONOScli3.checkFlowsState() and checkFlowsState
+        checkFlowsState = main.ONOScli4.checkFlowsState() and checkFlowsState
+        checkFlowsState = main.ONOScli5.checkFlowsState() and checkFlowsState
+        if checkFlowsState:
+            main.log.info( "All flows are added correctly" )
         time.sleep(50)
         main.step( "Verify Ping across all hosts" )
-        pingResult = main.FALSE
         time1 = time.time()
         pingResult = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=True,acceptableFailed=5)
         time2 = time.time()
@@ -1973,7 +2001,6 @@ class OnosCHO:
         portIngressList = ['1']*(len(deviceDPIDsCopy) - 1)
         intentIdList = []
         print "MACsDict", main.MACsDict
-        time1 = time.time()
         for i in xrange(0,len(deviceDPIDsCopy),int(main.numCtrls)):
             pool = []
             for cli in main.CLIs:
@@ -1994,11 +2021,29 @@ class OnosCHO:
             for thread in pool:
                 thread.join()
                 intentIdList.append(thread.result)
-        time2 = time.time()
-        main.log.info("Time for adding point intents: %2f seconds" %(time2-time1)) 
         time.sleep(5)
         main.step( "Verify Ping across all hosts" )
         pingResult = main.FALSE
+        checkIntentStateResult = main.TRUE
+        print "Checking intents state"
+        checkIntentStateResult = main.ONOScli1.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
+        checkIntentStateResult = main.ONOScli2.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
+        checkIntentStateResult = main.ONOScli3.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
+        checkIntentStateResult = main.ONOScli4.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
+        checkIntentStateResult = main.ONOScli5.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
+        if checkIntentStateResult:
+            main.log.info( "All intents are installed correctly " )
+        print "Checking flows state "
+        checkFlowsState = main.TRUE
+        checkFlowsState = main.ONOScli1.checkFlowsState() and checkFlowsState
+        checkFlowsState = main.ONOScli2.checkFlowsState() and checkFlowsState
+        checkFlowsState = main.ONOScli3.checkFlowsState() and checkFlowsState
+        checkFlowsState = main.ONOScli4.checkFlowsState() and checkFlowsState
+        checkFlowsState = main.ONOScli5.checkFlowsState() and checkFlowsState
+        if checkFlowsState:
+            main.log.info( "All flows are added correctly" )
+        else:
+            main.log.info( "There may be some flows that are being remove" )
         time1 = time.time()
         pingResult = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=True,acceptableFailed=5)
         time2 = time.time()
@@ -2030,7 +2075,6 @@ class OnosCHO:
         portEgressList = ['1']*(len(deviceDPIDsCopy) - 1)
         intentIdList = []
         print "MACsDict", main.MACsDict
-        time1 = time.time()
         for i in xrange(0,len(deviceDPIDsCopy),int(main.numCtrls)):
             pool = []
             for cli in main.CLIs:
@@ -2051,11 +2095,29 @@ class OnosCHO:
             for thread in pool:
                 thread.join()
                 intentIdList.append(thread.result)
-        time2 = time.time()
-        main.log.info("Time for adding point intents: %2f seconds" %(time2-time1)) 
         time.sleep(5)
         main.step( "Verify Ping across all hosts" )
         pingResult = main.FALSE
+        checkIntentStateResult = main.TRUE
+        print "Checking intents state"
+        checkIntentStateResult = main.ONOScli1.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
+        checkIntentStateResult = main.ONOScli2.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
+        checkIntentStateResult = main.ONOScli3.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
+        checkIntentStateResult = main.ONOScli4.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
+        checkIntentStateResult = main.ONOScli5.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
+        if checkIntentStateResult:
+            main.log.info( "All intents are installed correctly " )
+        print "Checking flows state "
+        checkFlowsState = main.TRUE
+        checkFlowsState = main.ONOScli1.checkFlowsState() and checkFlowsState
+        checkFlowsState = main.ONOScli2.checkFlowsState() and checkFlowsState
+        checkFlowsState = main.ONOScli3.checkFlowsState() and checkFlowsState
+        checkFlowsState = main.ONOScli4.checkFlowsState() and checkFlowsState
+        checkFlowsState = main.ONOScli5.checkFlowsState() and checkFlowsState
+        if checkFlowsState:
+            main.log.info( "All flows are added correctly" )
+        else:
+            main.log.info( "There may be some flows that are being remove" )
         time1 = time.time()
         pingResult = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=True,acceptableFailed=5)
         time2 = time.time()
@@ -2085,7 +2147,6 @@ class OnosCHO:
         portEgressList = ['1']*(len(deviceDPIDsCopy) - 1)
         intentIdList = []
         print "MACsDict", main.MACsDict
-        time1 = time.time()
         for i in xrange(0,len(deviceDPIDsCopy),int(main.numCtrls)):
             pool = []
             for cli in main.CLIs:
@@ -2106,11 +2167,29 @@ class OnosCHO:
             for thread in pool:
                 thread.join()
                 intentIdList.append(thread.result)
-        time2 = time.time()
-        main.log.info("Time for adding point intents: %2f seconds" %(time2-time1)) 
-        time.sleep(5)
+        time.sleep( 30 )
         main.step( "Verify Ping across all hosts" )
         pingResult = main.FALSE
+        checkIntentStateResult = main.TRUE
+        print "Checking intents state"
+        checkIntentStateResult = main.ONOScli1.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
+        checkIntentStateResult = main.ONOScli2.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
+        checkIntentStateResult = main.ONOScli3.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
+        checkIntentStateResult = main.ONOScli4.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
+        checkIntentStateResult = main.ONOScli5.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
+        if checkIntentStateResult:
+            main.log.info( "All intents are installed correctly " )
+        print "Checking flows state "
+        checkFlowsState = main.TRUE
+        checkFlowsState = main.ONOScli1.checkFlowsState() and checkFlowsState
+        checkFlowsState = main.ONOScli2.checkFlowsState() and checkFlowsState
+        checkFlowsState = main.ONOScli3.checkFlowsState() and checkFlowsState
+        checkFlowsState = main.ONOScli4.checkFlowsState() and checkFlowsState
+        checkFlowsState = main.ONOScli5.checkFlowsState() and checkFlowsState
+        if checkFlowsState:
+            main.log.info( "All flows are added correctly" )
+        else:
+            main.log.info( "There may be some flows that are being remove" )
         time1 = time.time()
         pingResult = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=True,acceptableFailed=5)
         time2 = time.time()
@@ -2147,7 +2226,6 @@ class OnosCHO:
         print "deviceDPIDsCopy", deviceDPIDsCopy
         print ""
         print "MACsDictCopy", MACsDictCopy
-        time1 = time.time()
         for i in xrange(0,len(deviceDPIDsCopy),int(main.numCtrls)):
             pool = []
             for cli in main.CLIs:
@@ -2168,11 +2246,29 @@ class OnosCHO:
             for thread in pool:
                 thread.join()
                 intentIdList.append(thread.result)
-        time2 = time.time()
-        main.log.info("Time for adding point intents: %2f seconds" %(time2-time1)) 
         time.sleep(5)
         main.step( "Verify Ping across all hosts" )
         pingResult = main.FALSE
+        checkIntentStateResult = main.TRUE
+        print "Checking intents state"
+        checkIntentStateResult = main.ONOScli1.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
+        checkIntentStateResult = main.ONOScli2.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
+        checkIntentStateResult = main.ONOScli3.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
+        checkIntentStateResult = main.ONOScli4.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
+        checkIntentStateResult = main.ONOScli5.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
+        if checkIntentStateResult:
+            main.log.info( "All intents are installed correctly " )
+        print "Checking flows state "
+        checkFlowsState = main.TRUE
+        checkFlowsState = main.ONOScli1.checkFlowsState() and checkFlowsState
+        checkFlowsState = main.ONOScli2.checkFlowsState() and checkFlowsState
+        checkFlowsState = main.ONOScli3.checkFlowsState() and checkFlowsState
+        checkFlowsState = main.ONOScli4.checkFlowsState() and checkFlowsState
+        checkFlowsState = main.ONOScli5.checkFlowsState() and checkFlowsState
+        if checkFlowsState:
+            main.log.info( "All flows are added correctly" )
+        else:
+            main.log.info( "There may be some flows that are being remove" )
         time1 = time.time()
         pingResult = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=True,acceptableFailed=5)
         time2 = time.time()
@@ -2248,7 +2344,6 @@ class OnosCHO:
                         intentIdList1.append( intentsTemp1[ 0 ].split('=')[1] )
                     print "Leftover Intent IDs: ", intentIdList1
                     print len(intentIdList1)
-                    time1 = time.time()
                     for i in xrange( 0, len( intentIdList1 ), int(main.numCtrls) ):
                         pool = []
                         for cli in main.CLIs:
@@ -2265,8 +2360,6 @@ class OnosCHO:
                         for thread in pool:
                             thread.join()
                             intentIdList.append(thread.result)
-                    time2 = time.time()
-                    main.log.info("Time for removing host intents: %2f seconds" %(time2-time1))
                     time.sleep(10)
                 else:
                     time.sleep(15)

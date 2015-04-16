@@ -1,17 +1,18 @@
 <PARAMS>
-    # 1,20,3,[40,5,60,73,80,10,90,71,81,10,93,10]*50,21,3,[41,5,61,72,82,10,91,73,83,10,94,10]*50,22,3,[42,5,62,10,92,10]*50
-    # 1. ONOS brinup Test case
-    # 2. Assign and Balance all Mininet switches across controllers
-    # 3. Collect reference toplogy for topo compare
-    # 4. Enable Reactive forwarding, Verify ping all and disable onos-app-fwd
-    # 5. Compare curent topoology with reference
-    # 6. Install 300 host intents and verify ping all
-    # 7. Randomly bring some core links down and verify pingall
-    # 8. Bring core links Up that were down and verify pingall
-    # 9. Install 300 point intents and verify ping all
-    # 10. Remove all intents on ONOS
+    # 1,20,3,[40,5,60,70,80,10,90,71,81,10,93,10]*50,21,3,[41,5,61,72,82,10,91,73,83,10,94,10]*50,22,3,[42,5,62,10,92,10,95,10,98,10]*50
+    # 1. Starts ONOS cluster with 5 nodes
+    # 20. Starts Att Topology
+    # 21. Starts Chordal Topology
+    # 22. Starts Spine-Leaf Topology
+    # 3. Checks the consistency of ONOS and Mininet's topologies
+    # 4X. Reactive forwarding | host discovery
+    # 5. ONOS Topology verification
+    # 6X. host intents
+    # 7X. Bring random links down( Unique for each topology)
+    # 8X. Bring random links back up
+    # 9X Point,Multi-single,Single-Multi Intents
 
-    <testcases>1,20,3,[40,5,60,73,80,10,90,71,81,10,93,10]*50,21,3,[41,5,61,72,82,10,91,73,83,10,94,10]*50,22,3,[42,5,62,10,92,10]*50</testcases>
+    <testcases>1,20,3,[40,5,60,70,80,10,90,71,81,10,93,10]*1,21,3,[41,5,61,72,82,10,91,73,83,10,94,10]*1,22,3,[42,5,62,10,92,10,95,10,98,10]*1</testcases>
     <ENV>
         <cellName>choTest5</cellName>
     </ENV>

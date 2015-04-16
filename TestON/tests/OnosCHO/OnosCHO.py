@@ -1930,11 +1930,11 @@ class OnosCHO:
         for i in xrange(0,len(deviceDPIDsCopy),int(main.numCtrls)):
             pool = []
             for cli in main.CLIs:
+                if i >= len( deviceDPIDsCopy ):
+                    break
                 egressDevice = deviceDPIDsCopy[i]
                 ingressDeviceList = copy.copy(deviceDPIDsCopy)
                 ingressDeviceList.remove(egressDevice)
-                if i >= len( deviceDPIDsCopy ):
-                    break
                 t = main.Thread( target=cli.addMultipointToSinglepointIntent,
                         threadID=main.threadID,
                         name="addMultipointToSinglepointIntent",
@@ -2004,11 +2004,11 @@ class OnosCHO:
         for i in xrange(0,len(deviceDPIDsCopy),int(main.numCtrls)):
             pool = []
             for cli in main.CLIs:
+                if i >= len( deviceDPIDsCopy ):
+                    break
                 egressDevice = deviceDPIDsCopy[i]
                 ingressDeviceList = copy.copy(deviceDPIDsCopy)
                 ingressDeviceList.remove(egressDevice)
-                if i >= len( deviceDPIDsCopy ):
-                    break
                 t = main.Thread( target=cli.addMultipointToSinglepointIntent,
                         threadID=main.threadID,
                         name="addMultipointToSinglepointIntent",
@@ -2060,7 +2060,85 @@ class OnosCHO:
             onpass="Install 25 multi to single point Intents and Ping All test PASS",
             onfail="Install 25 multi to single point Intents and Ping All test FAIL" )
     
-    #def CASE95 multi-single point intent for Spine
+    def CASE95( self ):
+        """
+        Install multi-single point intents and verify Ping all works
+        for Spine topology
+        """
+        import copy
+        import time
+        main.log.report( "Install multi-single point intents and verify Ping all" )
+        main.log.report( "___________________________________________" )
+        main.case( "Install multi-single point intents and Ping all" )
+        deviceDPIDsCopy = copy.copy( main.deviceDPIDs )
+        deviceDPIDsCopy = deviceDPIDsCopy[ 10: ]
+        portIngressList = [ '1' ]*(len(deviceDPIDsCopy) - 1)
+        intentIdList = []
+        MACsDictCopy = {}
+        for i in range( len( deviceDPIDsCopy ) ):
+            MACsDictCopy[ deviceDPIDsCopy[ i ] ] = main.hostMACs[i].split( '/' )[ 0 ]
+
+        print "deviceDPIDsCopy", deviceDPIDsCopy
+        print ""
+        print "MACsDictCopy", MACsDictCopy
+        for i in xrange(0,len(deviceDPIDsCopy),int(main.numCtrls)):
+            pool = []
+            for cli in main.CLIs:
+                if i >= len( deviceDPIDsCopy ):
+                    break
+                egressDevice = deviceDPIDsCopy[i]
+                ingressDeviceList = copy.copy(deviceDPIDsCopy)
+                ingressDeviceList.remove(egressDevice)
+                t = main.Thread( target=cli.addMultipointToSinglepointIntent,
+                        threadID=main.threadID,
+                        name="addMultipointToSinglepointIntent",
+                        args =[ingressDeviceList,egressDevice,portIngressList,'1','IPV4','',MACsDictCopy.get(egressDevice)])
+                pool.append(t)
+                #time.sleep(1)
+                t.start()
+                i = i + 1
+                main.threadID = main.threadID + 1
+            for thread in pool:
+                thread.join()
+                intentIdList.append(thread.result)
+        time.sleep(5)
+        main.step( "Verify Ping across all hosts" )
+        pingResult = main.FALSE
+        checkIntentStateResult = main.TRUE
+        print "Checking intents state"
+        checkIntentStateResult = main.ONOScli1.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
+        checkIntentStateResult = main.ONOScli2.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
+        checkIntentStateResult = main.ONOScli3.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
+        checkIntentStateResult = main.ONOScli4.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
+        checkIntentStateResult = main.ONOScli5.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
+        if checkIntentStateResult:
+            main.log.info( "All intents are installed correctly " )
+        print "Checking flows state "
+        checkFlowsState = main.TRUE
+        checkFlowsState = main.ONOScli1.checkFlowsState() and checkFlowsState
+        checkFlowsState = main.ONOScli2.checkFlowsState() and checkFlowsState
+        checkFlowsState = main.ONOScli3.checkFlowsState() and checkFlowsState
+        checkFlowsState = main.ONOScli4.checkFlowsState() and checkFlowsState
+        checkFlowsState = main.ONOScli5.checkFlowsState() and checkFlowsState
+        if checkFlowsState:
+            main.log.info( "All flows are added correctly" )
+        else:
+            main.log.info( "There may be some flows that are being remove" )
+        time1 = time.time()
+        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=True,acceptableFailed=5)
+        time2 = time.time()
+        timeDiff = round( ( time2 - time1 ), 2 )
+        main.log.report(
+            "Time taken for Ping All: " +
+            str( timeDiff ) +
+            " seconds" )
+
+        case94Result = pingResult
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=case94Result,
+            onpass="Install 25 multi to single point Intents and Ping All test PASS",
+            onfail="Install 25 multi to single point Intents and Ping All test FAIL" )
 
     def CASE96( self ):
         """
@@ -2078,11 +2156,11 @@ class OnosCHO:
         for i in xrange(0,len(deviceDPIDsCopy),int(main.numCtrls)):
             pool = []
             for cli in main.CLIs:
+                if i >= len( deviceDPIDsCopy ):
+                    break
                 ingressDevice = deviceDPIDsCopy[i]
                 egressDeviceList = copy.copy(deviceDPIDsCopy)
                 egressDeviceList.remove(ingressDevice)
-                if i >= len( deviceDPIDsCopy ):
-                    break
                 t = main.Thread( target=cli.addSinglepointToMultipointIntent,
                         threadID=main.threadID,
                         name="addSinglepointToMultipointIntent",

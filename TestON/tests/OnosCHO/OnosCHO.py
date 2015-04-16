@@ -175,7 +175,7 @@ class OnosCHO:
         main.numMNswitches = int ( main.params[ 'TOPO1' ][ 'numSwitches' ] )
         main.numMNlinks = int ( main.params[ 'TOPO1' ][ 'numLinks' ] )
         main.numMNhosts = int ( main.params[ 'TOPO1' ][ 'numHosts' ] )
-        main.pingTimeout = 60 
+        main.pingTimeout = 60
         main.log.report(
             "Load Att topology and Balance all Mininet switches across controllers" )
         main.log.report(
@@ -184,9 +184,11 @@ class OnosCHO:
             "Assign and Balance all Mininet switches across controllers" )
         main.step( "Stop any previous Mininet network topology" )
         cliResult = main.TRUE
+        # stop if there is any running topology
         if main.newTopo == main.params['TOPO3']['topo']:
             stopStatus = main.Mininet1.stopNet( fileName = "topoSpine" )
-
+        elif main.newTopo == main.params['TOPO2']['topo']:
+            stopStatus = main.Mininet1.stopNet( fileName = "topoChordal" )
         main.step( "Start Mininet with Att topology" )
         main.newTopo = main.params['TOPO1']['topo']
         startStatus = main.Mininet1.startNet(topoFile = main.newTopo)
@@ -244,7 +246,6 @@ class OnosCHO:
         import time
         import copy
 
-        main.newTopo = main.params['TOPO2']['topo']
         main.numMNswitches = int ( main.params[ 'TOPO2' ][ 'numSwitches' ] )
         main.numMNlinks = int ( main.params[ 'TOPO2' ][ 'numLinks' ] )
         main.numMNhosts = int ( main.params[ 'TOPO2' ][ 'numHosts' ] )
@@ -256,8 +257,13 @@ class OnosCHO:
         main.case(
             "Assign and Balance all Mininet switches across controllers" )
         main.step( "Stop any previous Mininet network topology" )
-        #stopStatus = main.Mininet1.stopNet(fileName = "topoChordal" )
-        #time.sleep(10)
+        # stop if there is any running topology
+        if main.newTopo == main.params['TOPO1']['topo']:
+            stopStatus = main.Mininet1.stopNet( fileName = "topoAtt" )
+        elif main.newTopo == main.params['TOPO3']['topo']:
+            stopStatus = main.Mininet1.stopNet( fileName = "topoSpine" )
+        time.sleep(10)
+        main.newTopo = main.params['TOPO2']['topo']
         main.step( "Start Mininet with Chordal topology" )
         startStatus = main.Mininet1.startNet(topoFile = main.newTopo)
         time.sleep(15)
@@ -316,7 +322,6 @@ class OnosCHO:
         import time
         import copy
 
-        main.newTopo = main.params['TOPO3']['topo']
         main.numMNswitches = int ( main.params[ 'TOPO3' ][ 'numSwitches' ] )
         main.numMNlinks = int ( main.params[ 'TOPO3' ][ 'numLinks' ] )
         main.numMNhosts = int ( main.params[ 'TOPO3' ][ 'numHosts' ] )
@@ -330,7 +335,13 @@ class OnosCHO:
         main.case(
             "Assign and Balance all Mininet switches across controllers" )
         main.step( "Stop any previous Mininet network topology" )
-        #stopStatus = main.Mininet1.stopNet(fileName = "topoSpine" )
+        # stop if there is any running topology
+        if main.newTopo == main.params['TOPO1']['topo']:
+            stopStatus = main.Mininet1.stopNet( fileName = "topoAtt" )
+        elif main.newTopo == main.params['TOPO2']['topo']:
+            stopStatus = main.Mininet1.stopNet( fileName = "topoChordal" )
+        time.sleep(10)
+        main.newTopo = main.params['TOPO3']['topo']
         main.step( "Start Mininet with Spine topology" )
         startStatus = main.Mininet1.startNet(topoFile = main.newTopo)
         time.sleep(20)
@@ -529,9 +540,7 @@ class OnosCHO:
         if appCheck != main.TRUE:
             main.log.warn( main.CLIs[0].apps() )
             main.log.warn( main.CLIs[0].appIDs() )
- 
-        time.sleep( 10 )
-
+        time.sleep( 20 )
         main.step( "Verify Pingall" )
         ping_result = main.FALSE
         time1 = time.time()
@@ -1116,7 +1125,7 @@ class OnosCHO:
         main.step( "Verify Ping across all hosts" )
         pingResultLinkDown = main.FALSE
         time1 = time.time()
-        pingResultLinkDown = main.Mininet1.pingall(timeout=main.pingTimeout )
+        pingResultLinkDown = main.Mininet1.pingall(timeout=main.pingTimeout, shortCircuit=True,acceptableFailed=10 )
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -1181,7 +1190,7 @@ class OnosCHO:
         main.step( "Verify Ping across all hosts" )
         pingResultLinkUp = main.FALSE
         time1 = time.time()
-        pingResultLinkUp = main.Mininet1.pingall( timeout=main.pingTimeout )
+        pingResultLinkUp = main.Mininet1.pingall( timeout=main.pingTimeout,shortCircuit=True,acceptableFailed=10 )
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -1260,7 +1269,7 @@ class OnosCHO:
         main.step( "Verify Ping across all hosts" )
         pingResultLinkDown = main.FALSE
         time1 = time.time()
-        pingResultLinkDown = main.Mininet1.pingall(timeout=main.pingTimeout)
+        pingResultLinkDown = main.Mininet1.pingall( timeout=main.pingTimeout, shortCircuit=True,acceptableFailed=10 )
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -1325,7 +1334,7 @@ class OnosCHO:
         main.step( "Verify Ping across all hosts" )
         pingResultLinkUp = main.FALSE
         time1 = time.time()
-        pingResultLinkUp = main.Mininet1.pingall(timeout = main.pingTimeout )
+        pingResultLinkUp = main.Mininet1.pingall(timeout = main.pingTimeout,shortCircuit=True,acceptableFailed=10 )
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -1606,7 +1615,7 @@ class OnosCHO:
         topology_output = main.ONOScli2.topology()
         linkDown = main.ONOSbench.checkStatus(
             topology_output, main.numMNswitches, str(
-                int( main.numMNlinks ) - 8 ))
+                int( main.numMNlinks ) - 4 ))
         utilities.assert_equals(
             expect=main.TRUE,
             actual=linkDown,

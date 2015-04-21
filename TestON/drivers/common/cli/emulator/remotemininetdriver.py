@@ -366,7 +366,7 @@ class RemoteMininetDriver( Emulator ):
                 cmd = "sudo -E python opticalTest.py " + ctrllerIP
                 self.handle.sendline( cmd )
                 self.handle.expect( "Press ENTER to push Topology.json" )
-                time.sleep(15)
+                time.sleep(30)
                 self.handle.sendline( "" )
                 self.handle.expect("mininet>")
                 return main.TRUE

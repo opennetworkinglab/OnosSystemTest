@@ -243,7 +243,13 @@ class ProdFunc13:
         main.log.report( "_____________________________________________" )
         main.case( "Starting LINC-OE and other components" )
         main.step( "Starting LINC-OE and other components" )
-        appInstallResult = main.ONOS2.featureInstall( "onos-app-optical" )
+        main.log.info( "Activate optical app" )
+        appInstallResult = main.ONOS2.activateApp( "org.onosproject.optical" )
+        appCheck = main.ONOS2.appToIDCheck()
+        if appCheck != main.TRUE:
+            main.log.warn( main.ONOS2.apps() )
+            main.log.warn( main.ONOS2.appIDs() )
+
         opticalMnScript = main.LincOE2.runOpticalMnScript(ctrllerIP = main.params[ 'CTRL' ][ 'ip1' ])
 
         case21Result = opticalMnScript and appInstallResult
@@ -651,6 +657,13 @@ class ProdFunc13:
                     ip5=ONOS5Ip,port5=ONOS5Port )
         """
         # REACTIVE FWD test
+        main.log.info( "Activate fwd app" )
+        appInstallResult = main.ONOS2.activateApp( "org.onosproject.fwd" )
+        appCheck = main.ONOS2.appToIDCheck()
+        if appCheck != main.TRUE:
+            main.log.warn( main.ONOS2.apps() )
+            main.log.warn( main.ONOS2.appIDs() )
+        time.sleep( 10 )
 
         main.step( "Get list of hosts from Mininet" )
         hostList = main.Mininet1.getHosts()
@@ -693,8 +706,12 @@ class ProdFunc13:
         main.log.report( "__________________________________" )
         main.case( "Uninstalling reactive forwarding app" )
         # Unistall onos-app-fwd app to disable reactive forwarding
-        appUninstallResult = main.ONOS2.featureUninstall( "onos-app-fwd" )
-        main.log.info( "onos-app-fwd uninstalled" )
+        main.log.info( "deactivate reactive forwarding app" )
+        appUninstallResult = main.ONOS2.deactivateApp( "org.onosproject.fwd" )
+        appCheck = main.ONOS2.appToIDCheck()
+        if appCheck != main.TRUE:
+            main.log.warn( main.ONOS2.apps() )
+            main.log.warn( main.ONOS2.appIDs() )
 
         # After reactive forwarding is disabled, the reactive flows on
         # switches timeout in 10-15s
@@ -727,21 +744,32 @@ class ProdFunc13:
         main.step( "Moving host h9 from device s9 and attach it to s8" )
         main.Mininet1.moveHost(host = 'h9', oldSw = 's9', newSw = 's8')
 
-        time.sleep(15) #Time delay to have all the flows ready
+        main.log.info( "Activate fwd app" )
+        appInstallResult = main.ONOS2.activateApp( "org.onosproject.fwd" )
+        appCheck = main.ONOS2.appToIDCheck()
+        if appCheck != main.TRUE:
+            main.log.warn( main.ONOS2.apps() )
+            main.log.warn( main.ONOS2.appIDs() )
+
+        time.sleep( 45 ) #Time delay to have all the flows ready
         main.step( "Pingall" )
         pingResult = main.FALSE
         time1 = time.time()
-        pingResult = main.Mininet1.pingall()
+        pingResult = main.Mininet1.pingall( timeout=120,
+                                            shortCircuit=True,
+                                            acceptableFailed=10)
         time2 = time.time()
         print "Time for pingall: %2f seconds" % ( time2 - time1 )
 
         hosts = main.ONOS2.hosts( jsonFormat = False )
         main.log.info( hosts )
         
-        main.case( "Uninstalling reactive forwarding app" )
-        # Unistall onos-app-fwd app to disable reactive forwarding
-        appUninstallResult = main.ONOS2.featureUninstall( "onos-app-fwd" )
-        main.log.info( "onos-app-fwd uninstalled" )
+        main.log.info( "deactivate reactive forwarding app" )
+        appUninstallResult = main.ONOS2.deactivateApp( "org.onosproject.fwd" )
+        appCheck = main.ONOS2.appToIDCheck()
+        if appCheck != main.TRUE:
+            main.log.warn( main.ONOS2.apps() )
+            main.log.warn( main.ONOS2.appIDs() )
 
         main.step( "Add point intents between hosts on the same device")
         ptpIntentResult = main.ONOS2.addPointIntent(
@@ -812,9 +840,6 @@ class ProdFunc13:
             actual=case12Result,
             onpass = "Expected default num of flows exist",
             onfail = "Expected default num of flows do not exist")
-    
-    
-        
 
     def CASE6( self ):
         import time
@@ -940,6 +965,9 @@ class ProdFunc13:
             onfail="Pingall Test after Host intents addition failed" )
 
     def CASE5( self, main ):
+        """
+            Check ONOS topology matches with mininet
+        """
         import json
         # assumes that sts is already in you PYTHONPATH
         from sts.topology.teston_topology import TestONTopology
@@ -1052,6 +1080,11 @@ class ProdFunc13:
             onfail="Topology checks failed" )
 
     def CASE7( self, main ):
+        """
+            Link discovery test case. Checks if ONOS can discover a link
+            down or up properly.
+        """
+
         from sts.topology.teston_topology import TestONTopology
 
         linkSleep = int( main.params[ 'timers' ][ 'LinkDiscovery' ] )
@@ -1280,8 +1313,11 @@ class ProdFunc13:
                                  onfail="Intent removal test failed" )
 
     def CASE9( self ):
+        """
+            Testing Point intents
+        """
         main.log.report(
-            "This testcase adds point intents and then does pingall" )
+            "This test case adds point intents and then does pingall" )
         main.log.report( "__________________________________" )
         main.log.info( "Adding point intents" )
         main.case(

@@ -215,6 +215,14 @@ class MultiProd13:
             main.log.report( "Controller assignment successfull" )
         else:
             main.log.report( "Controller assignment failed" )
+        appInstallResult = main.TRUE
+        main.log.info( "Activating reactive forwarding app" )
+        appInstallResult = main.ONOScli1.activateApp( "org.onosproject.fwd" )
+        appCheck = main.ONOScli1.appToIDCheck()
+        if appCheck != main.TRUE:
+            main.log.warn( main.ONOScli1.apps() )
+            main.log.warn( main.ONOScli1.appIDs() )
+        time.sleep( 30 )
         # REACTIVE FWD test
         main.step( "Pingall" )
         pingResult = main.FALSE
@@ -248,7 +256,7 @@ class MultiProd13:
         ONOS3Ip = main.params[ 'CTRL' ][ 'ip3' ]
 
         main.log.report(
-            "This testcase is testing if all ONOS nodes are in topologyi" +
+            "This testcase is testing if all ONOS nodes are in topology" +
             " sync with mininet and its peer ONOS nodes" )
         main.log.report( "__________________________________" )
         main.case(
@@ -438,12 +446,11 @@ class MultiProd13:
         main.log.report( "__________________________________" )
         main.case( "Uninstalling reactive forwarding app" )
         # Unistall onos-app-fwd app to disable reactive forwarding
-        appUninstallResult1 = main.ONOScli1.featureUninstall(
-            "onos-app-fwd" )
-        appUninstallResult2 = main.ONOScli2.featureUninstall(
-            "onos-app-fwd" )
-        appUninstallResult3 = main.ONOScli3.featureUninstall(
-            "onos-app-fwd" )
+        appInstallResult = main.ONOScli1.deactivateApp( "org.onosproject.fwd" )
+        appCheck = main.ONOScli1.appToIDCheck()
+        if appCheck != main.TRUE:
+            main.log.warn( main.ONOScli1.apps() )
+            main.log.warn( main.ONOScli1.appIDs() )
         main.log.info( "onos-app-fwd uninstalled" )
 
         # After reactive forwarding is disabled,
@@ -453,9 +460,7 @@ class MultiProd13:
 
         hosts = main.ONOScli1.hosts()
         main.log.info( hosts )
-
-        case10Result = appUninstallResult1 and\
-                appUninstallResult2 and appUninstallResult3
+        case10Result = appInstallResult
         utilities.assertEquals(
             expect=main.TRUE,
             actual=case10Result,
@@ -1481,14 +1486,14 @@ class MultiProd13:
             "Installing multipoint to single point " +
             "intent with rewrite mac address" )
         main.step( "Uninstalling proxy arp app" )
-        # Unistall onos-app-proxyarp app to disable reactive forwarding
-        appUninstallResult1 = main.ONOScli1.featureUninstall(
-            "onos-app-proxyarp" )
-        appUninstallResult2 = main.ONOScli2.featureUninstall(
-            "onos-app-proxyarp" )
-        appUninstallResult3 = main.ONOScli3.featureUninstall(
-            "onos-app-proxyarp" )
-        main.log.info( "onos-app-proxyarp uninstalled" )
+        # deactivating proxyarp app
+        appInstallResult = main.ONOScli1.deactivateApp( "org.onosproject.proxyarp" )
+        appCheck = main.ONOScli1.appToIDCheck()
+        if appCheck != main.TRUE:
+            main.log.warn( main.ONOScli1.apps() )
+            main.log.warn( main.ONOScli1.appIDs() )
+        time.sleep( 30 )
+        main.log.info( "onos-app-proxyarp deactivated" )
 
         main.step( "Changing ipaddress of hosts h8,h9 and h18" )
         main.Mininet1.changeIP(

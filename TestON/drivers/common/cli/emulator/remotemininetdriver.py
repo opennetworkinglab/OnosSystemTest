@@ -344,26 +344,45 @@ class RemoteMininetDriver( Emulator ):
             main.cleanup()
             main.exit()
 
-    def runOpticalMnScript( self, ctrllerIP = None ):
+    def runOpticalMnScript( self,name = 'onos', ctrllerIP = None ):
         import time
+        import types
         """
-            This function is only meant for Packet Optical.
-            It runs python script "opticalTest.py" to create the
-            packet layer( mn ) and optical topology
-            
-            TODO: If no ctrllerIP is provided, a default 
+            Description:
+                This function is only meant for Packet Optical.
+                It runs python script "opticalTest.py" to create the
+                packet layer( mn ) and optical topology
+            Optional:
+                name - Name of onos directory. (ONOS | onos)
+            Required:
+                ctrllerIP = Controller(s) IP address
+            TODO: If no ctrllerIP is provided, a default
                 $OC1 can be accepted
         """
         try:
             self.handle.sendline( "" )
             self.handle.expect( "\$" )
-            self.handle.sendline( "cd ~/onos/tools/test/topos" )
+            self.handle.sendline( "cd ~/" + name + "/tools/test/topos" )
             self.handle.expect( "topos\$" )
             if ctrllerIP == None:
                 main.log.info( "You need to specify the IP" )
                 return main.FALSE
             else:
-                cmd = "sudo -E python opticalTest.py " + ctrllerIP
+                controller = ''
+                if isinstance( ctrllerIP, types.ListType ):
+                    for i in xrange( len( ctrllerIP ) ):
+                        controller += ctrllerIP[i] + ' '
+                    main.log.info( "Mininet topology is being loaded with " +
+                                   "controllers: " + controller )
+                elif isinstance( ctrllerIP, types.StringType ):
+                    controller = ctrllerIP
+                    main.log.info( "Mininet topology is being loaded with " +
+                                   "controller: " + controller )
+                else:
+                    main.log.info( "You need to specify a valid IP" )
+                    return main.FALSE
+                cmd = "sudo -E python opticalTest.py " + controller
+                main.log.info( self.name + ": cmd = " + cmd )
                 self.handle.sendline( cmd )
                 self.handle.expect( "Press ENTER to push Topology.json" )
                 time.sleep(30)

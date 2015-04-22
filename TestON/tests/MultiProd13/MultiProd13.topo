@@ -94,5 +94,25 @@
                 <controller> remote </controller>
             </COMPONENTS>
         </Mininet2>
+
+        <LincOE1>
+            <host>10.128.10.11</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>LincOEDriver</type>
+            <connect_order>7</connect_order>
+            <COMPONENTS>
+            </COMPONENTS>
+        </LincOE1>
+
+        <LincOE2>
+            <host>10.128.10.11</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>RemoteMininetDriver</type>
+            <connect_order>8</connect_order>
+            <COMPONENTS>
+            </COMPONENTS>
+        </LincOE2>
     </COMPONENT>
 </TOPOLOGY>

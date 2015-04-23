@@ -530,13 +530,16 @@ class TopoPerfNextBM:
                     # tshark output is lengthy)
                     if len(obj) > 2:
                         # If first index of object is like an epoch time
-                        if obj[1] > 1400000000:
-                            temp = obj[1] 
+                        if obj[0] > 1400000000:
+                            temp = obj[0] 
+                        elif obj[1] > 1400000000:
+                            temp = obj[1]
                         elif obj[2] > 1400000000:
-                            temp = obj[2]
+                            temp = obj[2] 
+                        elif obj[3] > 1400000000:
+                            temp = obj[3]
                         else:
                             temp = 0
-
                         if index == 1:
                             tFinAck = float(temp) * 1000.0
                         elif index == 3:

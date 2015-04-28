@@ -113,12 +113,39 @@ class IpOpticalMulti:
                                 onpass="Test startup successful",
                                 onfail="Test startup NOT successful" )
 
+    def CASE10( self ):
+        import time
+        main.log.report(
+            "This testcase uninstalls the reactive forwarding app" )
+        main.log.report( "__________________________________" )
+        main.case( "Uninstalling reactive forwarding app" )
+        # Unistall onos-app-fwd app to disable reactive forwarding
+        appInstallResult = main.ONOScli1.deactivateApp( "org.onosproject.fwd" )
+        appCheck = main.ONOScli1.appToIDCheck()
+        if appCheck != main.TRUE:
+            main.log.warn( main.ONOScli1.apps() )
+            main.log.warn( main.ONOScli1.appIDs() )
+        main.log.info( "onos-app-fwd uninstalled" )
+
+        # After reactive forwarding is disabled,
+        # the reactive flows on switches timeout in 10-15s
+        # So sleep for 15s
+        time.sleep( 15 )
+
+        hosts = main.ONOScli1.hosts()
+        main.log.info( hosts )
+        case10Result = appInstallResult
+        utilities.assertEquals(
+            expect=main.TRUE,
+            actual=case10Result,
+            onpass="Reactive forwarding app uninstallation successful",
+            onfail="Reactive forwarding app uninstallation failed" )
+
     def CASE20( self ):
         """
             Exit from mininet cli
             reinstall ONOS
         """
-        import time
         cellName = main.params[ 'ENV' ][ 'cellName' ]
         ONOS1Ip = main.params[ 'CTRL' ][ 'ip1' ]
         ONOS2Ip = main.params[ 'CTRL' ][ 'ip2' ]
@@ -127,61 +154,23 @@ class IpOpticalMulti:
         ONOS2Port = main.params[ 'CTRL' ][ 'port2' ]
         ONOS3Port = main.params[ 'CTRL' ][ 'port3' ]
 
-
         main.log.report( "This testcase exits the mininet cli and reinstalls" +
                          "ONOS to switch over to Packet Optical topology" )
         main.log.report( "_____________________________________________" )
         main.case( "Disconnecting mininet and restarting ONOS" )
-
         main.step( "Disconnecting mininet and restarting ONOS" )
-        step1Result = main.TRUE
         mininetDisconnect = main.Mininet1.disconnect()
         print "mininetDisconnect = ", mininetDisconnect
-        step1Result = mininetDisconnect
-        utilities.assert_equals(
-            expect=main.TRUE,
-            actual=step1Result,
-            onpass="Mininet disconnect successfully",
-            onfail="Mininet failed to disconnect")
-        """
-        main.step( "Removing raft logs before a clean installation of ONOS" )
-        step2Result = main.TRUE
-        removeRaftLogsResult = main.ONOSbench.onosRemoveRaftLogs()
-        step2Result = removeRaftLogsResult
-        utilities.assert_equals(
-            expect=main.TRUE,
-            actual=step2Result,
-            onpass="Raft logs removed successfully",
-            onfail="Failed to remove raft logs")
-        """
+
+        main.step( "Removing raft logs before a clen installation of ONOS" )
+        main.ONOSbench.onosRemoveRaftLogs()
+
         main.step( "Applying cell variable to environment" )
-        step3Result = main.TRUE
-        setCellResult = main.ONOSbench.setCell( cellName )
-        verifyCellResult = main.ONOSbench.verifyCell()
-        step3Result = setCellResult and verifyCellResult
-        utilities.assert_equals(
-            expect=main.TRUE,
-            actual=step3Result,
-            onpass="Cell applied successfully",
-            onfail="Failed to apply cell")
+        cellResult = main.ONOSbench.setCell( cellName )
+        verifyResult = main.ONOSbench.verifyCell()
 
-        main.step( "Uninstalling ONOS package" )
-        step4Result = main.TRUE
-        onos1UninstallResult = main.ONOSbench.onosUninstall( nodeIp = ONOS1Ip)
-        onos2UninstallResult = main.ONOSbench.onosUninstall( nodeIp = ONOS2Ip)
-        onos3UninstallResult = main.ONOSbench.onosUninstall( nodeIp = ONOS3Ip)
-        onosUninstallResult = onos1UninstallResult and onos2UninstallResult \
-                              and onos3UninstallResult
-        step4Result = onosUninstallResult
-        utilities.assert_equals(
-            expect=main.TRUE,
-            actual=step4Result,
-            onpass="Successfully uninstalled ONOS",
-            onfail="Failed to uninstall ONOS")
 
-        time.sleep( 5 )
         main.step( "Installing ONOS package" )
-        step5Result = main.TRUE
         onos1InstallResult = main.ONOSbench.onosInstall(
             options="-f",
             node=ONOS1Ip )
@@ -193,48 +182,32 @@ class IpOpticalMulti:
             node=ONOS3Ip )
         onosInstallResult = onos1InstallResult and onos2InstallResult and\
                 onos3InstallResult
+        if onosInstallResult == main.TRUE:
+            main.log.report( "Installing ONOS package successful" )
+        else:
+            main.log.report( "Installing ONOS package failed" )
 
         onos1Isup = main.ONOSbench.isup( ONOS1Ip )
         onos2Isup = main.ONOSbench.isup( ONOS2Ip )
         onos3Isup = main.ONOSbench.isup( ONOS3Ip )
-        onosIsUp = onos1Isup and onos2Isup and onos3Isup
-        if onosIsUp == main.TRUE:
+        onosIsup = onos1Isup and onos2Isup and onos3Isup
+        if onosIsup == main.TRUE:
             main.log.report( "ONOS instances are up and ready" )
         else:
             main.log.report( "ONOS instances may not be up" )
-        step5Result = onosInstallResult and onosIsUp
-        utilities.assert_equals(
-            expect=main.TRUE,
-            actual=step5Result,
-            onpass="Successfully installed ONOS",
-            onfail="Failed to install ONOS")
 
         main.step( "Starting ONOS service" )
-        step6Result = main.TRUE
-        startResult = main.ONOSbench.onosStart( ONOS1Ip )
-        step6Result = startResult
-        utilities.assert_equals(
-            expect=main.TRUE,
-            actual=step6Result,
-            onpass="Successfully started ONOS",
-            onfail="Failed to start ONOS")
-
-        main.step( "Starting ONOS cli" )
-        step7Result = main.TRUE
+        startResult = main.TRUE
+        # startResult = main.ONOSbench.onosStart( ONOS1Ip )
         startcli1 = main.ONOScli1.startOnosCli( ONOSIp=ONOS1Ip )
         startcli2 = main.ONOScli2.startOnosCli( ONOSIp=ONOS2Ip )
         startcli3 = main.ONOScli3.startOnosCli( ONOSIp=ONOS3Ip )
         startResult = startcli1 and startcli2 and startcli3
-        step7Result = startResult
-        utilities.assert_equals(
-            expect=main.TRUE,
-            actual=step7Result,
-            onpass="Successfully started ONOS cli",
-            onfail="Failed to start ONOS cli")
+        if startResult == main.TRUE:
+            main.log.report( "ONOS cli starts properly" )
+        case20Result = mininetDisconnect and cellResult and verifyResult \
+            and onosInstallResult and onosIsup and startResult
 
-        case20Result = step1Result and step3Result and\
-                       step4Result and step5Result and step6Result and\
-                       step7Result
         utilities.assert_equals(
             expect=main.TRUE,
             actual=case20Result,
@@ -246,46 +219,32 @@ class IpOpticalMulti:
     def CASE21( self, main ):
         """
             On ONOS bench, run this command:
-            sudo -E python ~/onos/tools/test/topos/opticalTest.py -OC1
+            sudo -E python ~/onos/tools/test/topos/opticalTest.py -OC1 <Ctrls>
             which spawns packet optical topology and copies the links
             json file to the onos instance.
             Note that in case of Packet Optical, the links are not learnt
             from the topology, instead the links are learnt
             from the json config file
         """
-        import time
         main.log.report(
             "This testcase starts the packet layer topology and REST" )
         main.log.report( "_____________________________________________" )
         main.case( "Starting LINC-OE and other components" )
-
-        main.step( "Activate optical app" )
-        step1Result = main.TRUE
-        activateOpticalResult = main.ONOScli2.activateApp( "org.onosproject.optical" )
-        step1Result = activateOpticalResult
-        utilities.assert_equals(
-            expect=main.TRUE,
-            actual=step1Result,
-            onpass="Successfully activated optical app",
-            onfail="Failed to activate optical app")
-
-        appCheck = main.ONOScli2.appToIDCheck()
+        main.step( "Starting LINC-OE and other components" )
+        main.log.info( "Activate optical app" )
+        appInstallResult = main.ONOScli1.activateApp( "org.onosproject.optical" )
+        appCheck = main.ONOScli1.appToIDCheck()
+        appCheck = appCheck and main.ONOScli2.appToIDCheck()
+        appCheck = appCheck and main.ONOScli3.appToIDCheck()
         if appCheck != main.TRUE:
-            main.log.warn( main.ONOScli2.apps() )
-            main.log.warn( main.ONOScli2.appIDs() )
+            main.log.warn( "Checking ONOS application unsuccesful" )
 
-        main.step( "Starting mininet and LINC-OE" )
-        step2Result = main.TRUE
-        time.sleep( 10 )
-        opticalMnScript = main.LincOE2.runOpticalMnScript(ctrllerIP = main.params[ 'CTRL' ][ 'ip1' ])
-        step2Result = opticalMnScript
-        utilities.assert_equals(
-            expect=main.TRUE,
-            actual=step2Result,
-            onpass="Started the topology successfully ",
-            onfail="Failed to start the topology")
-
-        case21Result = step1Result and step2Result
+        ctrllerIP = []
+        ctrllerIP.append( main.params[ 'CTRL' ][ 'ip1' ] )
+        #ctrllerIP.append( main.params[ 'CTRL' ][ 'ip2' ] )
+        #ctrllerIP.append( main.params[ 'CTRL' ][ 'ip3' ] )
+        opticalMnScript = main.LincOE2.runOpticalMnScript( ctrllerIP = ctrllerIP )
+        case21Result = opticalMnScript and appInstallResult
         utilities.assert_equals(
             expect=main.TRUE,
             actual=case21Result,
@@ -302,27 +261,14 @@ class IpOpticalMulti:
             All this is hardcoded in the testcase. If the topology changes,
             these hardcoded values need to be changed
         """
-        import time
         main.log.report(
             "This testcase compares the optical+packet topology against what" +
             " is expected" )
         main.case( "Topology comparision" )
+        main.step( "Topology comparision" )
+        devicesResult = main.ONOScli3.devices( jsonFormat=False )
 
-        main.step( "Starts new ONOS cli" )
-        step1Result = main.TRUE
-        cliResult = main.ONOScli1.startOnosCli( ONOSIp=main.params[ 'CTRL' ]\
-                                                               [ 'ip1' ] )
-        step1Result = cliResult
-        utilities.assert_equals(
-            expect=main.TRUE,
-            actual=step1Result,
-            onpass="Successfully starts a new cli",
-            onfail="Failed to start new cli" )
-
-        main.step( "Compare topology" )
-        step2Result = main.TRUE
-        devicesResult = main.ONOScli1.devices( jsonFormat=False )
-        print "devices_result :\n", devicesResult
+        print "devices_result = ", devicesResult
         devicesLinewise = devicesResult.split( "\n" )
         roadmCount = 0
         packetLayerSWCount = 0
@@ -349,6 +295,7 @@ class IpOpticalMulti:
                 str( roadmCount ) +
                 " and is wrong" )
             opticalSWResult = main.FALSE
+
         if packetLayerSWCount == 6:
             print "Number of Packet layer or mininet Switches = %d "\
                     % packetLayerSWCount + "and is correctly detected"
@@ -365,13 +312,12 @@ class IpOpticalMulti:
                 str( packetLayerSWCount ) +
                 " and is wrong" )
             packetSWResult = main.FALSE
-        # sleeps for sometime so the state of the switches will be active
-        time.sleep( 30 )
         print "_________________________________"
-        linksResult = main.ONOScli1.links( jsonFormat=False )
+
+        linksResult = main.ONOScli3.links( jsonFormat=False )
         print "links_result = ", linksResult
         print "_________________________________"
-        linkActiveCount = linksResult.count("state=ACTIVE")
+        linkActiveCount = linksResult.count("state=ACTIVE") 
         main.log.info( "linkActiveCount = " + str( linkActiveCount ))
         if linkActiveCount == 42:
             linkActiveResult = main.TRUE
@@ -381,16 +327,9 @@ class IpOpticalMulti:
             linkActiveResult = main.FALSE
             main.log.info(
                 "Number of links in ACTIVE state are wrong")
-        step2Result = opticalSWResult and packetSWResult and \
+
+        case22Result = opticalSWResult and packetSWResult and \
                         linkActiveResult
-        utilities.assert_equals(
-            expect=main.TRUE,
-            actual=step2Result,
-            onpass="Successfully loaded packet optical topology",
-            onfail="Failed to load packet optical topology" )
-
-        case22Result = step1Result and step2Result
-
         utilities.assert_equals(
             expect=main.TRUE,
             actual=case22Result,
@@ -407,65 +346,83 @@ class IpOpticalMulti:
         main.log.report(
             "This testcase adds bidirectional point intents between 2 " +
             "packet layer( mininet ) devices and ping mininet hosts" )
-        main.case( "Install point intents between 2 packet layer device and " +
-                   "ping the hosts" )
-
+        main.case( "Topology comparision" )
         main.step( "Adding point intents" )
-        step1Result = main.TRUE
-        intentsId = []
-        pIntent1 = main.ONOScli1.addPointIntent(
+        ptpIntentResult = main.ONOScli1.addPointIntent(
             "of:0000ffffffff0001/1",
             "of:0000ffffffff0005/1" )
-        pIntent2 = main.ONOScli1.addPointIntent(
+        if ptpIntentResult == main.TRUE:
+            main.ONOScli1.intents( jsonFormat=False )
+            main.log.info( "Point to point intent install successful" )
+
+        ptpIntentResult = main.ONOScli1.addPointIntent(
             "of:0000ffffffff0005/1",
             "of:0000ffffffff0001/1" )
-        intentsId.append( pIntent1 )
-        intentsId.append( pIntent2 )
-        main.log.info( "Checking intents state")
-        checkStateResult = main.ONOScli1.checkIntentState( intentsId = intentsId )
+        if ptpIntentResult == main.TRUE:
+            main.ONOScli1.intents( jsonFormat=False )
+            main.log.info( "Point to point intent install successful" )
+
         time.sleep( 30 )
-        main.log.info( "Checking flows state")
-        checkFlowResult = main.ONOScli1.checkFlowsState()
+        flowHandle = main.ONOScli1.flows()
+        main.log.info( "flows :" + flowHandle )
+
         # Sleep for 30 seconds to provide time for the intent state to change
-        time.sleep( 30 )
-        main.log.info( "Checking intents state one more time")
-        checkStateResult = main.ONOScli1.checkIntentState( intentsId = intentsId )
-        step1Result = checkStateResult and checkFlowResult
-        utilities.assert_equals(
-            expect=main.TRUE,
-            actual=step1Result,
-            onpass="Successfully added point intents",
-            onfail="Failed to add point intents")
+        time.sleep( 60 )
+        intentHandle = main.ONOScli1.intents( jsonFormat=False )
+        main.log.info( "intents :" + intentHandle )
 
-        main.step( "Ping h1 and h5" )
-        step2Result = main.TRUE
+        PingResult = main.TRUE
+        count = 1
         main.log.info( "\n\nh1 is Pinging h5" )
-        pingResult = main.LincOE2.pingHostOptical( src="h1", target="h5" )
-        step2Result = pingResult
-        utilities.assert_equals(
-            expect=main.TRUE,
-            actual=step2Result,
-            onpass="Successfully pinged h1 and h5",
-            onfail="Failed to ping between h1 and h5")
+        ping = main.LincOE2.pingHostOptical( src="h1", target="h5" )
+        # ping = main.LincOE2.pinghost()
+        if ping == main.FALSE and count < 5:
+            count += 1
+            PingResult = main.FALSE
+            main.log.info(
+                "Ping between h1 and h5  failed. Making attempt number " +
+                str( count ) +
+                " in 2 seconds" )
+            time.sleep( 2 )
+        elif ping == main.FALSE:
+            main.log.info( "All ping attempts between h1 and h5 have failed" )
+            PingResult = main.FALSE
+        elif ping == main.TRUE:
+            main.log.info( "Ping test between h1 and h5 passed!" )
+            PingResult = main.TRUE
+        else:
+            main.log.info( "Unknown error" )
+            PingResult = main.ERROR
 
-        case23Result = step1Result and step2Result
+        if PingResult == main.FALSE:
+            main.log.report(
+                "Point intents for packet optical have not ben installed" +
+                " correctly. Cleaning up" )
+        if PingResult == main.TRUE:
+            main.log.report(
+                "Point Intents for packet optical have been " +
+                "installed correctly" )
+
+        case23Result = PingResult
         utilities.assert_equals(
             expect=main.TRUE,
             actual=case23Result,
-            onpass="Point intents are installed properly",
-            onfail="Failed to install point intents" )
+            onpass= "Point intents addition for packet optical and" +
+                    "Pingall Test successful",
+            onfail= "Point intents addition for packet optical and" +
+                    "Pingall Test NOT successful" )
 
     def CASE24( self, main ):
         import time
         import json
         """
             LINC uses its own switch IDs. You can use the following
-            command on the LINC console to find the mapping between 
+            command on the LINC console to find the mapping between
             DPIDs and LINC IDs.
             rp(application:get_all_key(linc)).
-            
+
             Test Rerouting of Packet Optical by bringing a port down
-            ( port 20 ) of a switch( switchID=1, or LincOE switchID =9 ), 
+            ( port 20 ) of a switch( switchID=1, or LincOE switchID =9 ),
             so that link
             ( between switch1 port20 - switch5 port50 ) is inactive
             and do a ping test. If rerouting is successful,
@@ -474,23 +431,16 @@ class IpOpticalMulti:
         main.log.report(
             "This testcase tests rerouting and pings mininet hosts" )
         main.case( "Test rerouting and pings mininet hosts" )
-
         main.step( "Attach to the Linc-OE session" )
-        step1Result = main.TRUE
         attachConsole = main.LincOE1.attachLincOESession()
-        step1Result = attachConsole
-        utilities.assert_equals(
-            expect=main.TRUE,
-            actual=step1Result,
-            onpass="Successfully attached Linc-OE session",
-            onfail="Failed to attached Linc-OE session")
+        print "attachConsole = ", attachConsole
 
         main.step( "Bring a port down and verify the link state" )
-        step2Result = main.TRUE
         main.LincOE1.portDown( swId="9", ptId="20" )
-        linksNonjson = main.ONOScli1.links( jsonFormat=False )
+        linksNonjson = main.ONOScli3.links( jsonFormat=False )
         main.log.info( "links = " + linksNonjson )
-        linkInactiveCount = linksNonjson.count( "state=INACTIVE" )
+
+        linkInactiveCount = linksNonjson.count("state=INACTIVE")
         main.log.info( "linkInactiveCount = " + str( linkInactiveCount ))
         if linkInactiveCount == 2:
             main.log.info(
@@ -498,8 +448,10 @@ class IpOpticalMulti:
         else:
             main.log.info(
                 "Number of links in INACTIVE state are wrong")
-        links = main.ONOScli1.links()
+        
+        links = main.ONOScli3.links()
         main.log.info( "links = " + links )
+
         linksResult = json.loads( links )
         linksStateResult = main.FALSE
         for item in linksResult:
@@ -523,86 +475,45 @@ class IpOpticalMulti:
                         main.log.report(
                             "Links state is not inactive as expected" )
                         linksStateResult = main.FALSE
+
+        print "links_state_result = ", linksStateResult
         time.sleep( 10 )
-        checkFlowsState = main.ONOScli1.checkFlowsState()
-        step2Result = linksStateResult
-        utilities.assert_equals(
-            expect=main.TRUE,
-            actual=step2Result,
-            onpass="Successfuly brought down a link",
-            onfail="Failed to bring down a link")
+        flowHandle = main.ONOScli3.flows()
+        main.log.info( "flows :" + flowHandle )
 
         main.step( "Verify Rerouting by a ping test" )
-        step3Result = main.TRUE
+        PingResult = main.TRUE
+        count = 1
         main.log.info( "\n\nh1 is Pinging h5" )
-        pingResult = main.LincOE2.pingHostOptical( src="h1", target="h5" )
-        step3Result = pingResult
-        utilities.assert_equals(
-            expect=main.TRUE,
-            actual=step3Result,
-            onpass="Successfully pinged h1 and h5",
-            onfail="Failed to ping between h1 and h5")
-
-        main.step( "Bring the downed port up and verify the link state" )
-        step4Result = main.TRUE
-        main.LincOE1.portUp( swId="9", ptId="20" )
-        linksNonjson = main.ONOScli1.links( jsonFormat=False )
-        main.log.info( "links = " + linksNonjson )
-        linkInactiveCount = linksNonjson.count( "state=INACTIVE" )
-        main.log.info( "linkInactiveCount = " + str( linkInactiveCount ))
-        if linkInactiveCount == 0:
+        ping = main.LincOE2.pingHostOptical( src="h1", target="h5" )
+        # ping = main.LincOE2.pinghost()
+        if ping == main.FALSE and count < 5:
+            count += 1
+            PingResult = main.FALSE
             main.log.info(
-                "Number of links in INACTIVE state are correct")
+                "Ping between h1 and h5  failed. Making attempt number " +
+                str( count ) +
+                " in 2 seconds" )
+            time.sleep( 2 )
+        elif ping == main.FALSE:
+            main.log.info( "All ping attempts between h1 and h5 have failed" )
+            PingResult = main.FALSE
+        elif ping == main.TRUE:
+            main.log.info( "Ping test between h1 and h5 passed!" )
+            PingResult = main.TRUE
         else:
-            main.log.info(
-                "Number of links in INACTIVE state are wrong")
-            step4Result = main.FALSE
-        utilities.assert_equals(
-            expect=main.TRUE,
-            actual=step4Result,
-            onpass="Successfully brought the port up",
-            onfail="Failed to bring the port up")
+            main.log.info( "Unknown error" )
+            PingResult = main.ERROR
 
-        case24Result = step1Result and step2Result and step3Result \
-                       and step4Result
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=case24Result,
+        if PingResult == main.TRUE:
+            main.log.report( "Ping test successful " )
+        if PingResult == main.FALSE:
+            main.log.report( "Ping test failed" )
+
+        case24Result = PingResult and linksStateResult
+        utilities.assert_equals( expect=main.TRUE, actual=case24Result,
                                  onpass="Packet optical rerouting successful",
                                  onfail="Packet optical rerouting failed" )
-
-    def CASE10( self ):
-        main.log.report(
-            "This testcase uninstalls the reactive forwarding app" )
-        main.log.report( "__________________________________" )
-        main.case( "Uninstalling reactive forwarding app" )
-        main.step( "Uninstalling reactive forwarding app" )
-        step1Result = main.TRUE
-        # Unistall onos-app-fwd app to disable reactive forwarding
-        main.log.info( "deactivate reactive forwarding app" )
-        appUninstallResult = main.ONOScli2.deactivateApp( "org.onosproject.fwd" )
-        appCheck = main.ONOScli2.appToIDCheck()
-        if appCheck != main.TRUE:
-            main.log.warn( main.ONOScli2.apps() )
-            main.log.warn( main.ONOScli2.appIDs() )
-        step1Result = appUninstallResult
-        utilities.assert_equals(
-            expect=main.TRUE,
-            actual=step1Result,
-            onpass="Successfully deactivate reactive forwarding app",
-            onfail="Failed to deactivate reactive forwarding app")
-        # After reactive forwarding is disabled, the reactive flows on
-        # switches timeout in 10-15s
-        # So sleep for 15s
-        time.sleep( 15 )
-        flows = main.ONOScli2.flows()
-        main.log.info( flows )
-
-        case10Result = step1Result
-        utilities.assert_equals(
-            expect=main.TRUE,
-            actual=case10Result,
-            onpass="Reactive forwarding app uninstallation successful",
-            onfail="Reactive forwarding app uninstallation failed" )
 
     def CASE25( self ):
         """
@@ -610,11 +521,7 @@ class IpOpticalMulti:
         """
         import time
         import json
-        main.log.report( "Adding host intents between 2 optical layer host" )
-        main.case( "Test add host intents between optical layer host" )
-
-        main.step( "Discover host using arping" )
-        step1Result = main.TRUE
+        main.log.report( "Adding host intents between 2 packet layer host" )
         main.hostMACs = []
         main.hostId = []
         #Listing host MAC addresses
@@ -623,25 +530,15 @@ class IpOpticalMulti:
                                 str( hex( i )[ 2: ] ).zfill( 2 ).upper() )
         for macs in main.hostMACs:
             main.hostId.append( macs + "/-1" )
+
         host1 = main.hostId[ 0 ]
         host2 = main.hostId[ 1 ]
+        intentsId = []
         # Use arping to discover the hosts
         main.LincOE2.arping( host = "h1" )
         main.LincOE2.arping( host = "h2" )
-        time.sleep( 5 )
-        hostsDict = main.ONOScli1.hosts()
-        if not len( hostsDict ):
-            step1Result = main.FALSE
         # Adding host intent
-        utilities.assert_equals(
-            expect=main.TRUE,
-            actual=step1Result,
-            onpass="Hosts discovered",
-            onfail="Failed to discover hosts")
-
-        main.step( "Adding host intents to h1 and h2" )
-        step2Result = main.TRUE
-        intentsId = []
+        main.log.step( "Adding host intents to h1 and h2" )
         intent1 = main.ONOScli1.addHostIntent( hostIdOne = host1,
                                             hostIdTwo = host2 )
         intentsId.append( intent1 )
@@ -650,54 +547,26 @@ class IpOpticalMulti:
                                             hostIdTwo = host1 )
         intentsId.append( intent2 )
         # Checking intents state before pinging
-        main.log.info( "Checking intents state" )
-        time.sleep( 30 )
+        main.log.step( "Checking intents state" )
+        time.sleep( 10 )
         intentResult = main.ONOScli1.checkIntentState( intentsId = intentsId )
-        #check intent state again if intents are not in installed state
-        if not intentResult:
-           intentResult = main.ONOScli1.checkIntentState( intentsId = intentsId )
-        step2Result = intentResult
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=step2Result,
+        utilities.assert_equals( expect=main.TRUE, actual=intentResult,
                                  onpass="All intents are in INSTALLED state ",
                                  onfail="Some of the intents are not in " +
                                         "INSTALLED state " )
 
         # pinging h1 to h2 and then ping h2 to h1
-        main.step( "Pinging h1 and h2" )
-        step3Result = main.TRUE
+        main.log.step( "Pinging h1 and h2" )
         pingResult = main.TRUE
         pingResult = main.LincOE2.pingHostOptical( src="h1", target="h2" )
         pingResult = pingResult and main.LincOE2.pingHostOptical( src="h2",
                                                                   target="h1" )
-        step3Result = pingResult
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=step3Result,
+
+        utilities.assert_equals( expect=main.TRUE, actual=pingResult,
                                  onpass="Pinged successfully between h1 and h2",
                                  onfail="Pinged failed between h1 and h2" )
-        # Removed all added host intents
-        main.step( "Removing host intents" )
-        step4Result = main.TRUE
-        removeResult = main.TRUE
-        # Check remaining intents
-        intentsJson = json.loads( main.ONOScli1.intents() )
-        main.ONOScli1.removeIntent( intentId=intent1, purge=True )
-        main.ONOScli1.removeIntent( intentId=intent2, purge=True )
-        for intents in intentsJson:
-            main.ONOScli1.removeIntent( intentId=intents.get( 'id' ),
-                                     app='org.onosproject.optical',
-                                     purge=True )
-        print json.loads( main.ONOScli1.intents() )
-        if len( json.loads( main.ONOScli1.intents() ) ):
-            removeResult = main.FALSE
-        step4Result = removeResult
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=step4Result,
-                                 onpass="Successfully removed host intents",
-                                 onfail="Failed to remove host intents" )
-        case25Result = step1Result and step2Result and step3Result and \
-                       step4Result
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=case25Result,
+
+        case25Result = pingResult
+        utilities.assert_equals( expect=main.TRUE, actual=case25Result,
                                  onpass="Add host intent successful",
                                  onfail="Add host intent failed" )

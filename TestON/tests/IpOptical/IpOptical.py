@@ -555,7 +555,7 @@ class IpOptical:
         flows = main.ONOS2.flows()
         main.log.info( flows )
 
-        case10Result = step1Result 
+        case10Result = step1Result
         utilities.assert_equals(
             expect=main.TRUE,
             actual=case10Result,
@@ -571,7 +571,7 @@ class IpOptical:
         main.log.report( "Adding host intents between 2 optical layer host" )
         main.case( "Test add host intents between optical layer host" )
 
-        main.log.step( "Discover host using arping" )
+        main.step( "Discover host using arping" )
         step1Result = main.TRUE
         main.hostMACs = []
         main.hostId = []
@@ -597,7 +597,7 @@ class IpOptical:
             onpass="Hosts discovered",
             onfail="Failed to discover hosts")
 
-        main.log.step( "Adding host intents to h1 and h2" )
+        main.step( "Adding host intents to h1 and h2" )
         step2Result = main.TRUE
         intentsId = []
         intent1 = main.ONOS3.addHostIntent( hostIdOne = host1,
@@ -622,19 +622,40 @@ class IpOptical:
                                         "INSTALLED state " )
 
         # pinging h1 to h2 and then ping h2 to h1
-        main.log.step( "Pinging h1 and h2" )
+        main.step( "Pinging h1 and h2" )
         step3Result = main.TRUE
         pingResult = main.TRUE
         pingResult = main.LincOE2.pingHostOptical( src="h1", target="h2" )
         pingResult = pingResult and main.LincOE2.pingHostOptical( src="h2",
                                                                   target="h1" )
-        step2Result = pingResult
+        step3Result = pingResult
         utilities.assert_equals( expect=main.TRUE,
-                                 actual=step2Result,
+                                 actual=step3Result,
                                  onpass="Pinged successfully between h1 and h2",
                                  onfail="Pinged failed between h1 and h2" )
-
-        case25Result = step1Result and step2Result and step3Result
-        utilities.assert_equals( expect=main.TRUE, actual=case25Result,
+        # Removed all added host intents
+        main.step( "Removing host intents" )
+        step4Result = main.TRUE
+        removeResult = main.TRUE
+        # Check remaining intents
+        intentsJson = json.loads( main.ONOS3.intents() )
+        main.ONOS3.removeIntent( intentId=intent1, purge=True )
+        main.ONOS3.removeIntent( intentId=intent2, purge=True )
+        for intents in intentsJson:
+            main.ONOS3.removeIntent( intentId=intents.get( 'id' ),
+                                     app='org.onosproject.optical',
+                                     purge=True )
+        print json.loads( main.ONOS3.intents() )
+        if len( json.loads( main.ONOS3.intents() ) ):
+            removeResult = main.FALSE
+        step4Result = removeResult
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=step4Result,
+                                 onpass="Successfully removed host intents",
+                                 onfail="Failed to remove host intents" )
+        case25Result = step1Result and step2Result and step3Result and \
+                       step4Result
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=case25Result,
                                  onpass="Add host intent successful",
                                  onfail="Add host intent failed" )

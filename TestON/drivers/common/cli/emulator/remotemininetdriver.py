@@ -95,6 +95,31 @@ class RemoteMininetDriver( Emulator ):
             main.log.warn( outputs )
             return main.TRUE
 
+    def arping( self, host="", ip="10.128.20.211" ):
+        """
+        Description:
+            Sends arp message from mininet host for hosts discovery
+        Required:
+            host - hosts name
+        Optional:
+            ip - ip address that does not exist in the network so there would
+                 be no reply.
+        """
+        cmd = " py " + host  + ".cmd(\"arping -c 1 " + ip + "\")"
+        try:
+            main.log.warn( "Sending: " + cmd )
+            self.handle.sendline( cmd )
+            response = self.handle.before
+            self.handle.sendline( "" )
+            self.handle.expect( "mininet>" )
+            return main.TRUE
+
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            main.cleanup()
+            main.exit()
+
     def pingLong( self, **pingParams ):
         """
         Starts a continuous ping on the mininet host outputting
@@ -386,6 +411,7 @@ class RemoteMininetDriver( Emulator ):
                 self.handle.sendline( cmd )
                 self.handle.expect( "Press ENTER to push Topology.json" )
                 time.sleep(30)
+                self.handle.sendline( "" )
                 self.handle.sendline( "" )
                 self.handle.expect("mininet>")
                 return main.TRUE

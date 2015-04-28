@@ -192,7 +192,7 @@ class ProdFunc:
         main.case( "Disconnecting mininet and restarting ONOS" )
         main.step( "Disconnecting mininet and restarting ONOS" )
         mininetDisconnect = main.Mininet1.disconnect()
-        print "mininetDisconnect = ", mininetDisconnect        
+        print "mininetDisconnect = ", mininetDisconnect
 
         main.step( "Removing raft logs before a clen installation of ONOS" )
         main.ONOSbench.onosRemoveRaftLogs()
@@ -279,7 +279,6 @@ class ProdFunc:
 
         print "devices_result = ", devicesResult
         devicesLinewise = devicesResult.split( "\n" )
-        devicesLinewise = devicesLinewise[ 1: ]
         roadmCount = 0
         packetLayerSWCount = 0
         for line in devicesLinewise:

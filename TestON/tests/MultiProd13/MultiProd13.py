@@ -1765,7 +1765,6 @@ class MultiProd13:
 
         print "devices_result = ", devicesResult
         devicesLinewise = devicesResult.split( "\n" )
-        devicesLinewise = devicesLinewise[ 1: ]
         roadmCount = 0
         packetLayerSWCount = 0
         for line in devicesLinewise:

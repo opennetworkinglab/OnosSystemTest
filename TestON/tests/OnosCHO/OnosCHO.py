@@ -544,7 +544,7 @@ class OnosCHO:
         main.step( "Verify Pingall" )
         ping_result = main.FALSE
         time1 = time.time()
-        ping_result = main.Mininet1.pingall( timeout=main.pingTimeout )
+        ping_result = main.Mininet1.pingall( timeout=main.pingTimeout,shortCircuit=True,acceptableFailed=15)
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -624,7 +624,7 @@ class OnosCHO:
         main.step( "Verify Pingall" )
         ping_result = main.FALSE
         time1 = time.time()
-        ping_result = main.Mininet1.pingall( timeout=main.pingTimeout )
+        ping_result = main.Mininet1.pingall( timeout=main.pingTimeout,shortCircuit=True,acceptableFailed=15)
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -704,7 +704,7 @@ class OnosCHO:
         main.step( "Verify Pingall" )
         ping_result = main.FALSE
         time1 = time.time()
-        ping_result = main.Mininet1.pingall( timeout=main.pingTimeout )
+        ping_result = main.Mininet1.pingall( timeout=main.pingTimeout,shortCircuit=True,acceptableFailed=15)
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -1751,7 +1751,7 @@ class OnosCHO:
         else:
             main.log.info( "There may be some flows that are being remove" )
         time1 = time.time()
-        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=True,acceptableFailed=5)
+        pingResult = main.Mininet1.pingall( timeout=main.pingTimeout )
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(

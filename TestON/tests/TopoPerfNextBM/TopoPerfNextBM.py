@@ -545,9 +545,13 @@ class TopoPerfNextBM:
                             temp = 0
                         if index == 1:
                             tFinAck = float(temp) * 1000.0
+                        elif index == 2:
+                            continue
                         elif index == 3:
                             tAck = float(temp) * 1000.0
-                        
+                        else:
+                            tFinAck = 0
+                            tAck = 0
                     else:
                         main.log.error('Tshark output file for OFP' +
                             ' returned unexpected results')

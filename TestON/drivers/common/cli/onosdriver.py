@@ -101,7 +101,7 @@ class OnosDriver( CLI ):
         try:
             self.handle.sendline( "onos-package" )
             self.handle.expect( "onos-package" )
-            self.handle.expect( "tar.gz", timeout=30 )
+            self.handle.expect( "tar.gz", timeout=1200 )
             handle = str( self.handle.before )
             main.log.info( "onos-package command returned: " +
                            handle )

@@ -12,16 +12,15 @@ class SRSanity:
         import pexpect
         import time
         main.ONOSbench.handle.sendline("cd ~/onos")
-        #main.ONOSbench.handle.sendline("git stash save")
+        main.ONOSbench.handle.sendline("git stash save")
         main.step( "Git checkout and pull master" )
         main.ONOSbench.gitCheckout( "master" )
         gitPullResult = main.ONOSbench.gitPull()
         #main.ONOSbench.handle.sendline("git stash pop")
 
+        main.ONOSbench.handle.sendline("cp ~/onos/features.xml ~/onos/features/")
         main.ONOSbench.handle.sendline("cp ~/onos/org.onosproject.provider.lldp.impl.LLDPLinkProvider.cfg.sr ~/onos/tools/package/etc/org.onosproject.provider.lldp.impl.LLDPLinkProvider.cfg")
         main.ONOSbench.handle.sendline("rm ~/onos/tools/package/etc/org.onosproject.openflow.controller.impl.OpenFlowControllerImpl.cfg")
-       
-        main.ONOSbench.handle.sendline("cp ~/onos/DefaultGroupHandlerApp.java ~/onos/apps/grouphandler/src/main/java/org/onosproject/grouphandler/")
 
         main.step( "Using mvn clean & install & No Test" )
         cleanInstallResult = main.TRUE
@@ -31,13 +30,25 @@ class SRSanity:
             main.log.warn( "Did not pull new code so skipping mvn " +
                            "clean install" )
         main.ONOSbench.getVersion( report=True )	
-        main.ONOSbench.onosPackage() 
  
         cellName = main.params[ 'ENV' ][ 'cellName' ]
         ONOS1Ip = main.params[ 'CTRL' ][ 'ip1' ]
         main.step( "Set cell for ONOS-cli environment" )
+        main.ONOSbench.handle.sendline("cell spring")
         main.ONOScli.setCell( "spring" )
         verifyResult = main.ONOSbench.verifyCell()
+
+        time.sleep( 10 )
+
+#**********************************************************************************************************************************************************************************************
+# A simple test for default connectivity in a fish topology
+
+    def CASE2(self,main) :
+        import time
+ 
+        main.step("Copy the config file")
+        main.ONOSbench.handle.sendline("cp ~/TestON/tests/SRSanity/fish.conf ~/onos/tools/package/config/segmentrouting.conf")
+        main.ONOSbench.onosPackage()        
 
         main.log.report( "Removing raft logs" )
         main.ONOSbench.onosRemoveRaftLogs()
@@ -60,11 +71,6 @@ class SRSanity:
         main.ONOScli.featureInstall( "onos-app-segmentrouting" )
         time.sleep( 10 )
 
-#**********************************************************************************************************************************************************************************************
-# A simple test for default connectivity in a fish topology
-
-    def CASE2(self,main) :
-        import time
         main.log.report("Running mininet")
         main.Mininet.handle.sendline("sudo python /home/admin/TestON/tests/SRSanity/mininet/testEcmp_6sw.py")
         main.step("waiting 40 secs for switches to connect and go thru handshake")
@@ -88,6 +94,31 @@ class SRSanity:
 
     def CASE3(self,main) :
         import time
+        
+        main.ONOSbench.handle.sendline("cp ~/TestON/tests/SRSanity/fish.conf ~/onos/tools/package/config/segmentrouting.conf")
+        main.ONOSbench.onosPackage()
+
+        main.log.report( "Removing raft logs" )
+        main.ONOSbench.onosRemoveRaftLogs()
+        main.log.report( "Uninstalling ONOS" )
+        main.ONOSbench.onosUninstall( ONOS1Ip )
+
+        main.step( "Installing ONOS package" )
+        onos1InstallResult = main.ONOSbench.onosInstall(
+            options="-f", node=ONOS1Ip )
+
+        onos1Isup = main.ONOSbench.isup( ONOS1Ip )
+        if not onos1Isup:
+            main.log.report( "ONOS1 didn't start!" )
+
+        main.step( "Start ONOS-cli" )
+
+        main.ONOScli.startOnosCli( ONOS1Ip )
+
+        main.log.info( "Installing segmentrouting feature" )
+        main.ONOScli.featureInstall( "onos-app-segmentrouting" )
+        time.sleep( 10 )
+
         main.log.report("Running mininet")
         main.Mininet.connect()
         main.Mininet.handle.sendline("sudo python /home/admin/TestON/tests/SRSanity/mininet/testEcmp_6sw.py")
@@ -720,3 +751,51 @@ class SRSanity:
         main.Mininet.disconnect()
         #main.Mininet.cleanup()
         #main.Mininet.exit() 
+
+#**********************************************************************************************************************************************************************************************
+# Leaf-Spine topology : 4 x 4
+
+    def CASE50(self, main) :
+        import time
+
+        main.step("Copy the config file")
+        main.ONOSbench.handle.sendline("cp ~/TestON/tests/SRSanity/leafspine.conf ~/onos/tools/package/config/segmentrouting.conf")
+        main.ONOSbench.onosPackage()
+
+        main.log.report( "Removing raft logs" )
+        main.ONOSbench.onosRemoveRaftLogs()
+        main.log.report( "Uninstalling ONOS" )
+        main.ONOSbench.onosUninstall( ONOS1Ip )
+
+        main.step( "Installing ONOS package" )
+        onos1InstallResult = main.ONOSbench.onosInstall(
+            options="-f", node=ONOS1Ip )
+
+        onos1Isup = main.ONOSbench.isup( ONOS1Ip )
+        if not onos1Isup:
+            main.log.report( "ONOS1 didn't start!" )
+
+        main.step( "Start ONOS-cli" )
+
+        main.ONOScli.startOnosCli( ONOS1Ip )
+
+        main.log.info( "Installing segmentrouting feature" )
+        main.ONOScli.featureInstall( "onos-app-segmentrouting" )
+        time.sleep( 10 )
+
+        main.log.report("Running mininet")
+        main.Mininet.handle.sendline("sudo python /home/admin/TestON/tests/SRSanity/mininet/testLeafSpine.py")
+        main.step("waiting 40 secs for switches to connect and go thru handshake")
+        time.sleep(40)
+        main.step("verifying all to all connectivity")
+
+        p1 = main.Mininet.pingHost(SRC="h2",TARGET="h1")
+        p2 = main.Mininet.pingHost(SRC="h1",TARGET="192.168.0.4")
+        pa = main.Mininet.pingall()
+        result = p1 and p2 and pa
+        utilities.assert_equals(expect=main.TRUE,actual=result,
+                                onpass="Default connectivity check PASS",
+                                onfail="Default connectivity check FAIL")
+        #cleanup mininet
+        main.Mininet.disconnect()
+

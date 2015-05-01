@@ -9,11 +9,9 @@ class PeeringRouterTest:
 
     def CASE1 (self, main):
         main.ONOSbench.handle.sendline("cd ~/onos")
-        main.ONOSbench.handle.sendline("git stash save")
         main.step( "Git checkout and pull master" )
         main.ONOSbench.gitCheckout( "master" )
         gitPullResult = main.ONOSbench.gitPull()
-        main.ONOSbench.handle.sendline("git stash pop")
 
         main.step( "Using mvn clean & installi & No Test" )
         cleanInstallResult = main.TRUE
@@ -23,7 +21,32 @@ class PeeringRouterTest:
             main.log.warn( "Did not pull new code so skipping mvn " +
                            "clean install" )
         main.ONOSbench.getVersion( report=True )
+        main.ONOSbench.handle.sendline("cell sdnip_single_instance")
 
+        main.case("The test case is to help to setup the TestON environment \
+            and test new drivers" )
+        TESTCASE_ROOT_PATH = main.params[ 'ENV' ][ 'home' ]
+        TESTCASE_MININET_ROOT_PATH = TESTCASE_ROOT_PATH + "/vlan/mininet"
+        SDNIPJSONFILEPATH = TESTCASE_ROOT_PATH + "/vlan/sdnip.json"
+        main.log.info("sdnip.json file path: "+ SDNIPJSONFILEPATH)
+
+        main.ONOSbench.handle.sendline("cell sdnip_single_instance")
+        # Copy the json files to config dir
+        main.ONOSbench.handle.sendline("cp " + TESTCASE_ROOT_PATH + "/vlan/addresses.json ~/onos/tools/package/config/")
+        main.ONOSbench.handle.sendline("cp " + TESTCASE_ROOT_PATH + "/vlan/sdnip.json ~/onos/tools/package/config/")
+
+        cellName = main.params[ 'ENV' ][ 'cellName' ]
+        ONOS1Ip = main.params[ 'CTRL' ][ 'ip1' ]
+        main.step( "Set cell for ONOS-cli environment" )
+        main.ONOScli.setCell( cellName )
+        verifyResult = main.ONOSbench.verifyCell()
+
+        # Copy the cfg files to config dir
+        main.log.info("Copying two cfg files to onos etc folder")
+        main.ONOSbench.handle.sendline("cp " + TESTCASE_ROOT_PATH + "/org.onosproject.openflow.controller.impl.OpenFlowControllerImpl.cfg ~/onos/tools/package/etc/")
+        main.ONOSbench.handle.sendline("cp " + TESTCASE_ROOT_PATH + "/org.onosproject.provider.lldp.impl.LLDPLinkProvider.cfg  ~/onos/tools/package/etc/")
+        main.step( "Creating ONOS package" )
+        packageResult = main.ONOSbench.onosPackage()
 
     def CASE6 ( self, main):
         
@@ -78,6 +101,34 @@ class PeeringRouterTest:
         main.ONOSbench.handle.sendline("cp " + TESTCASE_ROOT_PATH + "/addresses.json ~/onos/tools/package/config/")
         main.ONOSbench.handle.sendline("cp " + TESTCASE_ROOT_PATH + "/sdnip.json ~/onos/tools/package/config/")
 
+        cellName = main.params[ 'ENV' ][ 'cellName' ]
+        ONOS1Ip = main.params[ 'CTRL' ][ 'ip1' ]
+        main.step( "Set cell for ONOS-cli environment" )
+        main.ONOScli.setCell( cellName )
+        verifyResult = main.ONOSbench.verifyCell()
+
+        main.log.report( "Removing raft logs" )
+        main.ONOSbench.onosRemoveRaftLogs()
+        main.log.report( "Uninstalling ONOS" )
+        main.ONOSbench.onosUninstall( ONOS1Ip )
+
+        main.step( "Installing ONOS package" )
+        onos1InstallResult = main.ONOSbench.onosInstall(
+            options="-f", node=ONOS1Ip )
+
+        onos1Isup = main.ONOSbench.isup( ONOS1Ip )
+        if not onos1Isup:
+            main.log.report( "ONOS1 didn't start!" )
+
+        main.step( "Start ONOS-cli" )
+
+        main.ONOScli.startOnosCli( ONOS1Ip )
+
+        #Inject the config file
+        main.ONOSbench.handle.sendline("onos-topo-cfg $OC1 bgprouter.json")
+        listResult = main.ONOScli.devices( jsonFormat=False )
+        main.log.info( listResult )
+
         # Launch mininet topology for this case
         MININET_TOPO_FILE = TESTCASE_MININET_ROOT_PATH + "/PeeringRouterMininet.py"
         main.step( "Launch mininet" )
@@ -125,29 +176,6 @@ class PeeringRouterTest:
 
         routeIntentsExpected = routeIntentsExpectedHost3 + \
             routeIntentsExpectedHost4 + routeIntentsExpectedHost5
-
-        cellName = main.params[ 'ENV' ][ 'cellName' ]
-        ONOS1Ip = main.params[ 'CTRL' ][ 'ip1' ]
-        main.step( "Set cell for ONOS-cli environment" )
-        main.ONOScli.setCell( cellName )
-        verifyResult = main.ONOSbench.verifyCell()
-
-        main.log.report( "Removing raft logs" )
-        main.ONOSbench.onosRemoveRaftLogs()
-        main.log.report( "Uninstalling ONOS" )
-        main.ONOSbench.onosUninstall( ONOS1Ip )
-
-        main.step( "Installing ONOS package" )
-        onos1InstallResult = main.ONOSbench.onosInstall(
-            options="-f", node=ONOS1Ip )
-
-        onos1Isup = main.ONOSbench.isup( ONOS1Ip )
-        if not onos1Isup:
-            main.log.report( "ONOS1 didn't start!" )
-
-        main.step( "Start ONOS-cli" )
-
-        main.ONOScli.startOnosCli( ONOS1Ip )
 
         main.step( "Get devices in the network" )
         listResult = main.ONOScli.devices( jsonFormat=False )
@@ -250,16 +278,36 @@ class PeeringRouterTest:
         # from datetime import datetime
         from time import localtime, strftime
 
-        main.case("The test case is to help to setup the TestON environment \
-            and test new drivers" )
-        TESTCASE_ROOT_PATH = main.params[ 'ENV' ][ 'home' ]
-        TESTCASE_MININET_ROOT_PATH = TESTCASE_ROOT_PATH + "/vlan/mininet"
-        SDNIPJSONFILEPATH = TESTCASE_ROOT_PATH + "/vlan/sdnip.json"
-        main.log.info("sdnip.json file path: "+ SDNIPJSONFILEPATH)
+        main.log.report( "Removing raft logs" )
+        main.ONOSbench.onosRemoveRaftLogs()
+        main.log.report( "Uninstalling ONOS" )
+        main.ONOSbench.onosUninstall( ONOS1Ip )
 
-        # Copy the json files to config dir
-        main.ONOSbench.handle.sendline("cp " + TESTCASE_ROOT_PATH + "/vlan/addresses.json ~/onos/tools/package/config/")
-        main.ONOSbench.handle.sendline("cp " + TESTCASE_ROOT_PATH + "/vlan/sdnip.json ~/onos/tools/package/config/")
+        main.step( "Installing ONOS package" )
+        onos1InstallResult = main.ONOSbench.onosInstall(
+            options="-f", node=ONOS1Ip )
+
+        onos1Isup = main.ONOSbench.isup( ONOS1Ip )
+        if not onos1Isup:
+            main.log.report( "ONOS1 didn't start!" )
+
+        main.step( "Start ONOS-cli" )
+
+        main.ONOScli.startOnosCli( ONOS1Ip )
+        main.log.info("Waiting until all modules are up")
+        time.sleep(10)
+
+        #Inject the config file
+        main.log.info("Injecting config file: bgprouter.json")
+        main.ONOSbench.handle.sendline("onos-topo-cfg $OC1 ~/TestON/tests/PeeringRouterTest/bgprouter.json")
+        listResult = main.ONOScli.devices( jsonFormat=False )
+        main.log.info( listResult )
+        time.sleep(10)
+
+        # Activate bgprouter app
+        main.log.info( "Installing bgprouter app" )
+        main.ONOScli.handle.sendline("app activate org.onosproject.bgprouter")
+        time.sleep( 10 )
 
         # Launch mininet topology for this case
         MININET_TOPO_FILE = TESTCASE_MININET_ROOT_PATH + "/PeeringRouterMininetVlan.py"
@@ -267,6 +315,7 @@ class PeeringRouterTest:
         main.Mininet.handle.sendline("sudo python " + MININET_TOPO_FILE + " " + TESTCASE_MININET_ROOT_PATH)
         main.step("waiting 20 secs for all switches and quagga instances to comeup")
         time.sleep(20)
+
         main.step( "Test whether Mininet is started" )
         main.log.info( "Login Quagga CLI on host3" )
         main.QuaggaCliHost3.loginQuagga( "1.168.30.2" )
@@ -309,42 +358,15 @@ class PeeringRouterTest:
         routeIntentsExpected = routeIntentsExpectedHost3 + \
             routeIntentsExpectedHost4 + routeIntentsExpectedHost5
 
-        cellName = main.params[ 'ENV' ][ 'cellName' ]
-        ONOS1Ip = main.params[ 'CTRL' ][ 'ip1' ]
-        main.step( "Set cell for ONOS-cli environment" )
-        main.ONOScli.setCell( cellName )
-        verifyResult = main.ONOSbench.verifyCell()
-
-        main.log.report( "Removing raft logs" )
-        main.ONOSbench.onosRemoveRaftLogs()
-        main.log.report( "Uninstalling ONOS" )
-        main.ONOSbench.onosUninstall( ONOS1Ip )
-
-        # Copy the cfg files to config dir
-        main.log.info("Copying two cfg files to onos etc folder")
-        main.ONOSbench.handle.sendline("cp " + TESTCASE_ROOT_PATH + "/org.onosproject.openflow.controller.impl.OpenFlowControllerImpl.cfg ~/onos/tools/package/etc/")
-        main.ONOSbench.handle.sendline("cp " + TESTCASE_ROOT_PATH + "/org.onosproject.openflow.controller.impl.OpenFlowControllerImpl.cfg ~/onos/tools/package/etc/")
-        main.step( "Creating ONOS package" )
-        packageResult = main.ONOSbench.onosPackage()
-
-        main.step( "Installing ONOS package" )
-        onos1InstallResult = main.ONOSbench.onosInstall(
-            options="-f", node=ONOS1Ip )
-
-        onos1Isup = main.ONOSbench.isup( ONOS1Ip )
-        if not onos1Isup:
-            main.log.report( "ONOS1 didn't start!" )
-
-        main.step( "Start ONOS-cli" )
-
+        main.log.info("Restart ONOS cli")
+        main.ONOScli.logout()
         main.ONOScli.startOnosCli( ONOS1Ip )
+
         main.step( "Get devices in the network" )
         listResult = main.ONOScli.devices( jsonFormat=False )
         main.log.info( listResult )
-        time.sleep( 10 )
-        main.log.info( "Installing bgprouter feature" )
-        main.ONOScli.featureInstall( "onos-app-bgprouter" )
-        time.sleep( 10 )
+        time.sleep( 30 )
+
         main.step( "Login all BGP peers and add routes into peers" )
 
         main.log.info( "Login Quagga CLI on host3" )
@@ -368,10 +390,12 @@ class PeeringRouterTest:
         main.log.info( "Add routes to Quagga on host5" )
         main.QuaggaCliHost5.addRoutes( prefixesHost5, 1 )
 
-        time.sleep( 30 )
+        time.sleep( 60 )
 
         # get routes inside SDN-IP
         getRoutesResult = main.ONOScli.routes( jsonFormat=True )
+
+        main.log.info(getRoutesResult)
 
         # parse routes from ONOS CLI
         allRoutesActual = \
@@ -489,16 +513,38 @@ class PeeringRouterTest:
         # from datetime import datetime
         from time import localtime, strftime
 
-        main.case("The test case is to help to setup the TestON environment \
-            and test new drivers" )
         TESTCASE_ROOT_PATH = main.params[ 'ENV' ][ 'home' ]
         TESTCASE_MININET_ROOT_PATH = TESTCASE_ROOT_PATH + "/vlan/mininet"
         SDNIPJSONFILEPATH = TESTCASE_ROOT_PATH + "/vlan/sdnip.json"
         main.log.info("sdnip.json file path: "+ SDNIPJSONFILEPATH)
 
-        # Copy the json files to config dir
-        main.ONOSbench.handle.sendline("cp " + TESTCASE_ROOT_PATH + "/vlan/addresses.json ~/onos/tools/package/config/")
-        main.ONOSbench.handle.sendline("cp " + TESTCASE_ROOT_PATH + "/vlan/sdnip.json ~/onos/tools/package/config/")
+        main.log.report( "Removing raft logs" )
+        main.ONOSbench.onosRemoveRaftLogs()
+        main.log.report( "Uninstalling ONOS" )
+        main.ONOSbench.onosUninstall( ONOS1Ip )
+
+        main.step( "Installing ONOS package" )
+        onos1InstallResult = main.ONOSbench.onosInstall(
+            options="-f", node=ONOS1Ip )
+
+        onos1Isup = main.ONOSbench.isup( ONOS1Ip )
+        if not onos1Isup:
+            main.log.report( "ONOS1 didn't start!" )
+
+        main.step( "Start ONOS-cli" )
+
+        main.ONOScli.startOnosCli( ONOS1Ip )
+
+        #Inject the config file
+        main.log.info("Injecting config file: bgprouter.json")
+        main.ONOSbench.handle.sendline("onos-topo-cfg $OC1 ~/TestON/tests/PeeringRouterTest/bgprouter.json")
+        listResult = main.ONOScli.devices( jsonFormat=False )
+        main.log.info( listResult )
+
+        # Activate bgprouter app
+        main.log.info( "Installing bgprouter app" )
+        main.ONOScli.handle.sendline("app activate org.onosproject.bgprouter")
+        time.sleep( 10 )
 
         # Launch mininet topology for this case
         MININET_TOPO_FILE = TESTCASE_MININET_ROOT_PATH + "/PeeringRouterMininetVlan.py"
@@ -547,41 +593,12 @@ class PeeringRouterTest:
         routeIntentsExpected = routeIntentsExpectedHost3 + \
             routeIntentsExpectedHost4 + routeIntentsExpectedHost5
 
-        cellName = main.params[ 'ENV' ][ 'cellName' ]
-        ONOS1Ip = main.params[ 'CTRL' ][ 'ip1' ]
-        main.step( "Set cell for ONOS-cli environment" )
-        main.ONOScli.setCell( cellName )
-        verifyResult = main.ONOSbench.verifyCell()
-
-        main.log.report( "Removing raft logs" )
-        main.ONOSbench.onosRemoveRaftLogs()
-        main.log.report( "Uninstalling ONOS" )
-        main.ONOSbench.onosUninstall( ONOS1Ip )
-
-        # Copy the cfg files to config dir
-        main.log.info("Copying two cfg files to onos etc folder")
-        main.ONOSbench.handle.sendline("cp " + TESTCASE_ROOT_PATH + "/org.onosproject.openflow.controller.impl.OpenFlowControllerImpl.cfg ~/onos/tools/package/etc/")
-        main.ONOSbench.handle.sendline("cp " + TESTCASE_ROOT_PATH + "/org.onosproject.openflow.controller.impl.OpenFlowControllerImpl.cfg ~/onos/tools/package/etc/")
-        main.step( "Creating ONOS package" )
-        packageResult = main.ONOSbench.onosPackage()
-
-        main.step( "Installing ONOS package" )
-        onos1InstallResult = main.ONOSbench.onosInstall(
-            options="-f", node=ONOS1Ip )
-
-        onos1Isup = main.ONOSbench.isup( ONOS1Ip )
-        if not onos1Isup:
-            main.log.report( "ONOS1 didn't start!" )
-
-        main.step( "Start ONOS-cli" )
-
+        main.ONOScli.logout()
         main.ONOScli.startOnosCli( ONOS1Ip )
+
         main.step( "Get devices in the network" )
         listResult = main.ONOScli.devices( jsonFormat=False )
         main.log.info( listResult )
-        time.sleep( 10 )
-        main.log.info( "Installing bgprouter feature" )
-        main.ONOScli.featureInstall( "onos-app-bgprouter" )
         time.sleep( 10 )
         main.step( "Login all BGP peers and add routes into peers" )
 
@@ -611,6 +628,9 @@ class PeeringRouterTest:
         main.QuaggaCliHost5.addRoutes( prefixesHost5, 1 )
 
         time.sleep(80)
+
+        main.ONOScli.logout()
+        main.ONOScli.startOnosCli( ONOS1Ip )
 
         # get routes inside SDN-IP
         getRoutesResult = main.ONOScli.routes( jsonFormat=True )
@@ -646,7 +666,6 @@ class PeeringRouterTest:
             routeCheckResult1 = main.FALSE
 
         time.sleep(20)
-
 
         #============================= Ping Test ========================
         pingTestResults = main.TRUE
@@ -697,9 +716,33 @@ class PeeringRouterTest:
         SDNIPJSONFILEPATH = TESTCASE_ROOT_PATH + "/vlan/sdnip.json"
         main.log.info("sdnip.json file path: "+ SDNIPJSONFILEPATH)
 
-        # Copy the json files to config dir
-        main.ONOSbench.handle.sendline("cp " + TESTCASE_ROOT_PATH + "/vlan/addresses.json ~/onos/tools/package/config/")
-        main.ONOSbench.handle.sendline("cp " + TESTCASE_ROOT_PATH + "/vlan/sdnip.json ~/onos/tools/package/config/")
+        main.log.report( "Removing raft logs" )
+        main.ONOSbench.onosRemoveRaftLogs()
+        main.log.report( "Uninstalling ONOS" )
+        main.ONOSbench.onosUninstall( ONOS1Ip )
+
+        main.step( "Installing ONOS package" )
+        onos1InstallResult = main.ONOSbench.onosInstall(
+            options="-f", node=ONOS1Ip )
+
+        onos1Isup = main.ONOSbench.isup( ONOS1Ip )
+        if not onos1Isup:
+            main.log.report( "ONOS1 didn't start!" )
+
+        main.step( "Start ONOS-cli" )
+
+        main.ONOScli.startOnosCli( ONOS1Ip )
+
+        #Inject the config file
+        main.log.info("Injecting config file: bgprouter.json")
+        main.ONOSbench.handle.sendline("onos-topo-cfg $OC1 ~/TestON/tests/PeeringRouterTest/bgprouter.json")
+        listResult = main.ONOScli.devices( jsonFormat=False )
+        main.log.info( listResult )
+
+        # Activate bgprouter app
+        main.log.info( "Installing bgprouter app" )
+        main.ONOScli.handle.sendline("app activate org.onosproject.bgprouter")
+        time.sleep( 10 )
 
         # Launch mininet topology for this case
         MININET_TOPO_FILE = TESTCASE_MININET_ROOT_PATH + "/PeeringRouterMininetVlan.py"
@@ -738,41 +781,12 @@ class PeeringRouterTest:
         routeIntentsExpected = routeIntentsExpectedHost3 + \
             routeIntentsExpectedHost5
 
-        cellName = main.params[ 'ENV' ][ 'cellName' ]
-        ONOS1Ip = main.params[ 'CTRL' ][ 'ip1' ]
-        main.step( "Set cell for ONOS-cli environment" )
-        main.ONOScli.setCell( cellName )
-        verifyResult = main.ONOSbench.verifyCell()
-
-        main.log.report( "Removing raft logs" )
-        main.ONOSbench.onosRemoveRaftLogs()
-        main.log.report( "Uninstalling ONOS" )
-        main.ONOSbench.onosUninstall( ONOS1Ip )
-
-        # Copy the cfg files to config dir
-        main.log.info("Copying two cfg files to onos etc folder")
-        main.ONOSbench.handle.sendline("cp " + TESTCASE_ROOT_PATH + "/org.onosproject.openflow.controller.impl.OpenFlowControllerImpl.cfg ~/onos/tools/package/etc/")
-        main.ONOSbench.handle.sendline("cp " + TESTCASE_ROOT_PATH + "/org.onosproject.openflow.controller.impl.OpenFlowControllerImpl.cfg ~/onos/tools/package/etc/")
-        main.step( "Creating ONOS package" )
-        packageResult = main.ONOSbench.onosPackage()
-
-        main.step( "Installing ONOS package" )
-        onos1InstallResult = main.ONOSbench.onosInstall(
-            options="-f", node=ONOS1Ip )
-
-        onos1Isup = main.ONOSbench.isup( ONOS1Ip )
-        if not onos1Isup:
-            main.log.report( "ONOS1 didn't start!" )
-
-        main.step( "Start ONOS-cli" )
-
+        main.ONOScli.logout()
         main.ONOScli.startOnosCli( ONOS1Ip )
+
         main.step( "Get devices in the network" )
         listResult = main.ONOScli.devices( jsonFormat=False )
         main.log.info( listResult )
-        time.sleep( 10 )
-        main.log.info( "Installing bgprouter feature" )
-        main.ONOScli.featureInstall( "onos-app-bgprouter" )
         time.sleep( 10 )
         main.step( "Login all BGP peers and add routes into peers" )
 
@@ -810,6 +824,9 @@ class PeeringRouterTest:
             main.log.report("*** Ping test fail ***")
 
         #time.sleep(20)
+
+        main.ONOScli.logout()
+        main.ONOScli.startOnosCli( ONOS1Ip )
 
         # get routes inside SDN-IP
         getRoutesResult = main.ONOScli.routes( jsonFormat=True )
@@ -929,9 +946,33 @@ class PeeringRouterTest:
         SDNIPJSONFILEPATH = TESTCASE_ROOT_PATH + "/vlan/sdnip.json"
         main.log.info("sdnip.json file path: "+ SDNIPJSONFILEPATH)
 
-        # Copy the json files to config dir
-        main.ONOSbench.handle.sendline("cp " + TESTCASE_ROOT_PATH + "/vlan/addresses.json ~/onos/tools/package/config/")
-        main.ONOSbench.handle.sendline("cp " + TESTCASE_ROOT_PATH + "/vlan/sdnip.json ~/onos/tools/package/config/")
+        main.log.report( "Removing raft logs" )
+        main.ONOSbench.onosRemoveRaftLogs()
+        main.log.report( "Uninstalling ONOS" )
+        main.ONOSbench.onosUninstall( ONOS1Ip )
+
+        main.step( "Installing ONOS package" )
+        onos1InstallResult = main.ONOSbench.onosInstall(
+            options="-f", node=ONOS1Ip )
+
+        onos1Isup = main.ONOSbench.isup( ONOS1Ip )
+        if not onos1Isup:
+            main.log.report( "ONOS1 didn't start!" )
+
+        main.step( "Start ONOS-cli" )
+
+        main.ONOScli.startOnosCli( ONOS1Ip )
+
+        #Inject the config file
+        main.log.info("Injecting config file: bgprouter.json")
+        main.ONOSbench.handle.sendline("onos-topo-cfg $OC1 ~/TestON/tests/PeeringRouterTest/bgprouter.json")
+        listResult = main.ONOScli.devices( jsonFormat=False )
+        main.log.info( listResult )
+
+        # Activate bgprouter app
+        main.log.info( "Installing bgprouter app" )
+        main.ONOScli.handle.sendline("app activate org.onosproject.bgprouter")
+        time.sleep( 10 )
 
         # Launch mininet topology for this case        
         MININET_TOPO_FILE = TESTCASE_MININET_ROOT_PATH + "/PeeringRouterConvergenceVlanMininet.py"
@@ -986,61 +1027,12 @@ class PeeringRouterTest:
         routeIntentsExpected = routeIntentsExpectedHost3 + \
             routeIntentsExpectedHost4 + routeIntentsExpectedHost5
 
-        cellName = main.params[ 'ENV' ][ 'cellName' ]
-        ONOS1Ip = main.params[ 'CTRL' ][ 'ip1' ]
-        main.step( "Set cell for ONOS-cli environment" )
-        main.ONOScli.setCell( cellName )
-        verifyResult = main.ONOSbench.verifyCell()
-        utilities.assert_equals(expect=main.TRUE,actual=verifyResult,onpass="Verify cell pass!",onfail="Verify cell failed...")
-
-        main.log.report( "Removing raft logs" )
-        main.ONOSbench.onosRemoveRaftLogs()
-        main.log.report( "Uninstalling ONOS" )
-        main.ONOSbench.onosUninstall( ONOS1Ip )
-
-        # Copy the cfg files to config dir
-        main.log.info("Copying two cfg files to onos etc folder")
-        main.ONOSbench.handle.sendline("cp " + TESTCASE_ROOT_PATH + "/org.onosproject.openflow.controller.impl.OpenFlowControllerImpl.cfg ~/onos/tools/package/etc/")
-        main.ONOSbench.handle.sendline("cp " + TESTCASE_ROOT_PATH + "/org.onosproject.openflow.controller.impl.OpenFlowControllerImpl.cfg ~/onos/tools/package/etc/")
-        main.step( "Creating ONOS package" )
-        packageResult = main.ONOSbench.onosPackage()
-
-        main.step( "Installing ONOS package" )
-        onos1InstallResult = main.ONOSbench.onosInstall(
-            options="-f", node=ONOS1Ip )
-        if onos1InstallResult is not main.TRUE:
-             main.log.report("ONOS is not installed...Aborting")
-             main.Mininet.stopNet()
-             main.cleanup()
-             main.exit()
-
-        onos1Isup = main.ONOSbench.isup( ONOS1Ip )
-        if onos1Isup is not main.TRUE:
-             main.log.report("ONOS1 didn't start!...Aborting" )
-             main.Mininet.stopNet()
-             main.ONOSbench.onosStop(ONOS1Ip);
-             main.cleanup()
-             main.exit()
-
-        main.step( "Start ONOS-cli" )
-
-        result = main.ONOScli.startOnosCli( ONOS1Ip )
-        utilities.assert_equals(expect=main.TRUE,actual=result,onpass="ONOS CLI is up!",onfail="ONOS CLI is not up...")
-        if result is not main.TRUE:
-             main.log.report("ONOS1 didn't start!...Aborting" )
-             main.Mininet.stopNet()
-             main.ONOScli.logout()
-             main.ONOSbench.onosStop(ONOS1Ip);
-             main.cleanup()
-             main.exit()
-
+        main.ONOScli.logout()
+        main.ONOScli.startOnosCli( ONOS1Ip )
 
         main.step( "Get devices in the network" )
         listResult = main.ONOScli.devices( jsonFormat=False )
         main.log.info( listResult )
-        time.sleep( 10 )
-        main.log.info( "Installing bgprouter feature" )
-        main.ONOScli.featureInstall( "onos-app-bgprouter" )
         time.sleep( 10 )
         main.step( "Login all BGP peers and add routes into peers" )
 
@@ -1102,7 +1094,7 @@ class PeeringRouterTest:
         main.QuaggaCliHost4.disable_bgp_peer( "192.168.30.101", "64513")            
 
         main.log.info( "Sleeping for 30 seconds for network to converge" )
-        time.sleep(30)
+        time.sleep(60)
         # get routes inside SDN-IP
         main.log.info( "Getting Routes from ONOS CLI" )
         getRoutesResult = main.ONOScli.routes( jsonFormat=True )
@@ -1135,7 +1127,8 @@ class PeeringRouterTest:
                 "***Routes in BgpRouter after convergence are wrong!***" )
             routeCheckResult2 = main.FALSE
 
-        time.sleep(20)
+        main.log.info( "Sleeping for 60 seconds for network to converge" )
+        time.sleep(60)
 
         #============================= Ping Test ========================
         pingTestResults = main.TRUE
@@ -1161,8 +1154,8 @@ class PeeringRouterTest:
             main.QuaggaCliHost4.enable_bgp_peer( "192.168.30.101", "64513" )
             time.sleep(0.1)
 
-        main.log.info( "Sleeping for 30 seconds for network to converge" )
-        time.sleep(30)
+        main.log.info( "Sleeping for 60 seconds for network to converge" )
+        time.sleep(60)
 
         # get routes inside SDN-IP
         main.log.info( "Getting Routes from ONOS CLI" )
@@ -1246,6 +1239,43 @@ class PeeringRouterTest:
         main.ONOSbench.handle.sendline("cp " + TESTCASE_ROOT_PATH + "/addresses.json ~/onos/tools/package/config/")
         main.ONOSbench.handle.sendline("cp " + TESTCASE_ROOT_PATH + "/sdnip.json ~/onos/tools/package/config/")
 
+        cellName = main.params[ 'ENV' ][ 'cellName' ]
+        ONOS1Ip = main.params[ 'CTRL' ][ 'ip1' ]
+        main.step( "Set cell for ONOS-cli environment" )
+        main.ONOScli.setCell( cellName )
+        main.ONOSbench.handle.sendline("cell sdnip_single_instance")
+        verifyResult = main.ONOSbench.verifyCell()
+
+        # Copy the cfg files to config dir
+        main.log.info("Copying two cfg files to onos etc folder")
+        main.ONOSbench.handle.sendline("cp " + TESTCASE_ROOT_PATH + "/org.onosproject.openflow.controller.impl.OpenFlowControllerImpl.cfg ~/onos/tools/package/etc/")
+        main.ONOSbench.handle.sendline("cp " + TESTCASE_ROOT_PATH + "/org.onosproject.provider.lldp.impl.LLDPLinkProvider.cfg  ~/onos/tools/package/etc/")
+        main.step( "Creating ONOS package" )
+        packageResult = main.ONOSbench.onosPackage()
+
+        main.log.report( "Removing raft logs" )
+        main.ONOSbench.onosRemoveRaftLogs()
+        main.log.report( "Uninstalling ONOS" )
+        main.ONOSbench.onosUninstall( ONOS1Ip )
+
+        main.step( "Installing ONOS package" )
+        onos1InstallResult = main.ONOSbench.onosInstall(
+            options="-f", node=ONOS1Ip )
+
+        onos1Isup = main.ONOSbench.isup( ONOS1Ip )
+        if not onos1Isup:
+            main.log.report( "ONOS1 didn't start!" )
+
+        main.step( "Start ONOS-cli" )
+
+        main.ONOScli.startOnosCli( ONOS1Ip )
+
+        #Inject the config file
+        main.log.info("Injecting config file: bgprouter.json")
+        main.ONOSbench.handle.sendline("onos-topo-cfg $OC1 ~/TestON/tests/PeeringRouterTest/bgprouter.json")
+        listResult = main.ONOScli.devices( jsonFormat=False )
+        main.log.info( listResult )
+
         # Launch mininet topology for this case        
         MININET_TOPO_FILE = TESTCASE_MININET_ROOT_PATH + "/PeeringRouterConvergenceMininet.py"
         main.step( "Launch mininet" )
@@ -1293,36 +1323,6 @@ class PeeringRouterTest:
 
         routeIntentsExpected = routeIntentsExpectedHost3 + \
             routeIntentsExpectedHost4 + routeIntentsExpectedHost5
-
-        cellName = main.params[ 'ENV' ][ 'cellName' ]
-        ONOS1Ip = main.params[ 'CTRL' ][ 'ip1' ]
-        main.step( "Set cell for ONOS-cli environment" )
-        main.ONOScli.setCell( cellName )
-        verifyResult = main.ONOSbench.verifyCell()
-
-        main.log.report( "Removing raft logs" )
-        main.ONOSbench.onosRemoveRaftLogs()
-        main.log.report( "Uninstalling ONOS" )
-        main.ONOSbench.onosUninstall( ONOS1Ip )
-
-        # Copy the cfg files to config dir
-        main.log.info("Copying two cfg files to onos etc folder")
-        main.ONOSbench.handle.sendline("cp " + TESTCASE_ROOT_PATH + "/org.onosproject.openflow.controller.impl.OpenFlowControllerImpl.cfg ~/onos/tools/package/etc/")
-        main.ONOSbench.handle.sendline("cp " + TESTCASE_ROOT_PATH + "/org.onosproject.openflow.controller.impl.OpenFlowControllerImpl.cfg ~/onos/tools/package/etc/")
-        main.step( "Creating ONOS package" )
-        packageResult = main.ONOSbench.onosPackage()
-
-        main.step( "Installing ONOS package" )
-        onos1InstallResult = main.ONOSbench.onosInstall(
-            options="-f", node=ONOS1Ip )
-
-        onos1Isup = main.ONOSbench.isup( ONOS1Ip )
-        if not onos1Isup:
-            main.log.report( "ONOS1 didn't start!" )
-
-        main.step( "Start ONOS-cli" )
-
-        main.ONOScli.startOnosCli( ONOS1Ip )
 
         main.step( "Get devices in the network" )
         listResult = main.ONOScli.devices( jsonFormat=False )
@@ -1518,11 +1518,48 @@ class PeeringRouterTest:
         TESTCASE_ROOT_PATH = main.params[ 'ENV' ][ 'home' ]
         TESTCASE_MININET_ROOT_PATH = TESTCASE_ROOT_PATH + "/routeserver/mininet"
         SDNIPJSONFILEPATH = TESTCASE_ROOT_PATH + "/routeserver/sdnip.json"
-        main.log.info("sdnip.json file path: "+ SDNIPJSONFILEPATH)
-        
+        main.log.info("sdnip.json file path: "+ SDNIPJSONFILEPATH)        
+
         # Copy the json files to config dir
         main.ONOSbench.handle.sendline("cp " + TESTCASE_ROOT_PATH + "/routeserver/addresses.json ~/onos/tools/package/config/")
         main.ONOSbench.handle.sendline("cp " + TESTCASE_ROOT_PATH + "/routeserver/sdnip.json ~/onos/tools/package/config/")
+
+        cellName = main.params[ 'ENV' ][ 'cellName' ]
+        ONOS1Ip = main.params[ 'CTRL' ][ 'ip1' ]
+        main.step( "Set cell for ONOS-cli environment" )
+        main.ONOScli.setCell( cellName )
+        main.ONOSbench.handle.sendline("cell sdnip_single_instance")
+        verifyResult = main.ONOSbench.verifyCell()
+
+        # Copy the cfg files to config dir
+        main.log.info("Copying two cfg files to onos etc folder")
+        main.ONOSbench.handle.sendline("cp " + TESTCASE_ROOT_PATH + "/org.onosproject.openflow.controller.impl.OpenFlowControllerImpl.cfg ~/onos/tools/package/etc/")
+        main.ONOSbench.handle.sendline("cp " + TESTCASE_ROOT_PATH + "/org.onosproject.provider.lldp.impl.LLDPLinkProvider.cfg  ~/onos/tools/package/etc/")
+        main.step( "Creating ONOS package" )
+        packageResult = main.ONOSbench.onosPackage()
+
+        main.log.report( "Removing raft logs" )
+        main.ONOSbench.onosRemoveRaftLogs()
+        main.log.report( "Uninstalling ONOS" )
+        main.ONOSbench.onosUninstall( ONOS1Ip )
+
+        main.step( "Installing ONOS package" )
+        onos1InstallResult = main.ONOSbench.onosInstall(
+            options="-f", node=ONOS1Ip )
+
+        onos1Isup = main.ONOSbench.isup( ONOS1Ip )
+        if not onos1Isup:
+            main.log.report( "ONOS1 didn't start!" )
+
+        main.step( "Start ONOS-cli" )
+
+        main.ONOScli.startOnosCli( ONOS1Ip )
+
+        #Inject the config file
+        main.log.info("Injecting config file: bgprouter.json")
+        main.ONOSbench.handle.sendline("onos-topo-cfg $OC1 ~/TestON/tests/PeeringRouterTest/bgprouter.json")
+        listResult = main.ONOScli.devices( jsonFormat=False )
+        main.log.info( listResult )
 
         # Launch mininet topology for this case        
         MININET_TOPO_FILE = TESTCASE_MININET_ROOT_PATH + "/PeeringRouteServerMininet.py"
@@ -1572,38 +1609,7 @@ class PeeringRouterTest:
         routeIntentsExpected = routeIntentsExpectedHost3 + \
             routeIntentsExpectedHost4 + routeIntentsExpectedHost5
 
-        cellName = main.params[ 'ENV' ][ 'cellName' ]
-        ONOS1Ip = main.params[ 'CTRL' ][ 'ip1' ]
-        main.step( "Set cell for ONOS-cli environment" )
-        main.ONOScli.setCell( cellName )
-        verifyResult = main.ONOSbench.verifyCell()
 
-        main.log.report( "Removing raft logs" )
-        main.ONOSbench.onosRemoveRaftLogs()
-        main.log.report( "Uninstalling ONOS" )
-        main.ONOSbench.onosUninstall( ONOS1Ip )
-
-        # Copy the cfg files to config dir
-        main.log.info("Copying two cfg files to onos etc folder")
-        main.ONOSbench.handle.sendline("cp " + TESTCASE_ROOT_PATH + "/org.onosproject.openflow.controller.impl.OpenFlowControllerImpl.cfg ~/onos/tools/package/etc/")
-        main.ONOSbench.handle.sendline("cp " + TESTCASE_ROOT_PATH + "/org.onosproject.openflow.controller.impl.OpenFlowControllerImpl.cfg ~/onos/tools/package/etc/")
-        main.step( "Creating ONOS package" )
-        packageResult = main.ONOSbench.onosPackage()
-
-        main.step( "Installing ONOS package" )
-        onos1InstallResult = main.ONOSbench.onosInstall(
-            options="-f", node=ONOS1Ip )
-
-        onos1Isup = main.ONOSbench.isup( ONOS1Ip )
-        if not onos1Isup:
-            main.log.report( "ONOS1 didn't start!" )
-
-        main.step( "Start ONOS-cli" )
-
-        main.ONOScli.startOnosCli( ONOS1Ip )
-
-        main.step( "Get devices in the network" )
-        listResult = main.ONOScli.devices( jsonFormat=False )
         main.log.info( listResult )
         time.sleep( 10 )
         main.log.info( "Installing gbprouter feature" )
@@ -1796,10 +1802,34 @@ class PeeringRouterTest:
         TESTCASE_MININET_ROOT_PATH = TESTCASE_ROOT_PATH + "/vlan/routeconvergence/mininet"
         SDNIPJSONFILEPATH = TESTCASE_ROOT_PATH + "/vlan/sdnip.json"
         main.log.info("sdnip.json file path: "+ SDNIPJSONFILEPATH)
-        
-        # Copy the json files to config dir
-        main.ONOSbench.handle.sendline("cp " + TESTCASE_ROOT_PATH + "/vlan/addresses.json ~/onos/tools/package/config/")
-        main.ONOSbench.handle.sendline("cp " + TESTCASE_ROOT_PATH + "/vlan/sdnip.json ~/onos/tools/package/config/")
+
+        main.log.report( "Removing raft logs" )
+        main.ONOSbench.onosRemoveRaftLogs()
+        main.log.report( "Uninstalling ONOS" )
+        main.ONOSbench.onosUninstall( ONOS1Ip )
+
+        main.step( "Installing ONOS package" )
+        onos1InstallResult = main.ONOSbench.onosInstall(
+            options="-f", node=ONOS1Ip )
+
+        onos1Isup = main.ONOSbench.isup( ONOS1Ip )
+        if not onos1Isup:
+            main.log.report( "ONOS1 didn't start!" )
+
+        main.step( "Start ONOS-cli" )
+
+        main.ONOScli.startOnosCli( ONOS1Ip )
+
+        #Inject the config file
+        main.log.info("Injecting config file: bgprouter.json")
+        main.ONOSbench.handle.sendline("onos-topo-cfg $OC1 ~/TestON/tests/PeeringRouterTest/bgprouter.json")
+        listResult = main.ONOScli.devices( jsonFormat=False )
+        main.log.info( listResult )
+
+        # Activate bgprouter app
+        main.log.info( "Installing bgprouter app" )
+        main.ONOScli.handle.sendline("app activate org.onosproject.bgprouter")
+        time.sleep( 10 )
 
         # Launch mininet topology for this case        
         MININET_TOPO_FILE = TESTCASE_MININET_ROOT_PATH + "/PeeringRouterConvergenceVlanMininet.py"
@@ -1854,61 +1884,12 @@ class PeeringRouterTest:
         routeIntentsExpected = routeIntentsExpectedHost3 + \
             routeIntentsExpectedHost4 + routeIntentsExpectedHost5
 
-        cellName = main.params[ 'ENV' ][ 'cellName' ]
-        ONOS1Ip = main.params[ 'CTRL' ][ 'ip1' ]
-        main.step( "Set cell for ONOS-cli environment" )
-        main.ONOScli.setCell( cellName )
-        verifyResult = main.ONOSbench.verifyCell()
-        utilities.assert_equals(expect=main.TRUE,actual=verifyResult,onpass="Verify cell pass!",onfail="Verify cell failed...")
-
-        main.log.report( "Removing raft logs" )
-        main.ONOSbench.onosRemoveRaftLogs()
-        main.log.report( "Uninstalling ONOS" )
-        main.ONOSbench.onosUninstall( ONOS1Ip )
-
-        # Copy the cfg files to config dir
-        main.log.info("Copying two cfg files to onos etc folder")
-        main.ONOSbench.handle.sendline("cp " + TESTCASE_ROOT_PATH + "/org.onosproject.openflow.controller.impl.OpenFlowControllerImpl.cfg ~/onos/tools/package/etc/")
-        main.ONOSbench.handle.sendline("cp " + TESTCASE_ROOT_PATH + "/org.onosproject.openflow.controller.impl.OpenFlowControllerImpl.cfg ~/onos/tools/package/etc/")
-        main.step( "Creating ONOS package" )
-        packageResult = main.ONOSbench.onosPackage()
-
-        main.step( "Installing ONOS package" )
-        onos1InstallResult = main.ONOSbench.onosInstall(
-            options="-f", node=ONOS1Ip )
-        if onos1InstallResult is not main.TRUE:
-             main.log.report("ONOS is not installed...Aborting")
-             main.Mininet.stopNet()
-             main.cleanup()
-             main.exit()
-
-        onos1Isup = main.ONOSbench.isup( ONOS1Ip )
-        if onos1Isup is not main.TRUE:
-             main.log.report("ONOS1 didn't start!...Aborting" )
-             main.Mininet.stopNet()
-             main.ONOSbench.onosStop(ONOS1Ip);
-             main.cleanup()
-             main.exit()
-
-        main.step( "Start ONOS-cli" )
-
-        result = main.ONOScli.startOnosCli( ONOS1Ip )
-        utilities.assert_equals(expect=main.TRUE,actual=result,onpass="ONOS CLI is up!",onfail="ONOS CLI is not up...")
-        if result is not main.TRUE:
-             main.log.report("ONOS1 didn't start!...Aborting" )
-             main.Mininet.stopNet()
-             main.ONOScli.logout()
-             main.ONOSbench.onosStop(ONOS1Ip);
-             main.cleanup()
-             main.exit()
-
+        main.ONOScli.logout()
+        main.ONOScli.startOnosCli( ONOS1Ip )
 
         main.step( "Get devices in the network" )
         listResult = main.ONOScli.devices( jsonFormat=False )
         main.log.info( listResult )
-        time.sleep( 10 )
-        main.log.info( "Installing bgprouter feature" )
-        main.ONOScli.featureInstall( "onos-app-bgprouter" )
         time.sleep( 10 )
         main.step( "Login all BGP peers and add routes into peers" )
 
@@ -1933,7 +1914,7 @@ class PeeringRouterTest:
         main.log.info( "Add routes to Quagga on host5" )
         main.QuaggaCliHost5.addRoutes( prefixesHost5, 1 )
 
-        time.sleep( 30 )
+        time.sleep( 60 )
 
         # get routes inside SDN-IP
         getRoutesResult = main.ONOScli.routes( jsonFormat=True )
@@ -1958,7 +1939,7 @@ class PeeringRouterTest:
                 "***Routes in BgpRouter after adding routes are wrong!***" )
             routeCheckResult1 = main.FALSE
 
-        time.sleep( 30)
+        time.sleep( 90)
 
         #============================= Ping Test ========================
         pingTestResults = main.TRUE
@@ -2024,7 +2005,7 @@ class PeeringRouterTest:
                 "***Routes in BgpRouter after convergence are wrong!***" )
             routeCheckResult2 = main.FALSE
 
-        time.sleep(20)       
+        time.sleep(120)       
  
         #============================= Ping Test ========================
         pingTestResults = main.TRUE
@@ -2090,7 +2071,7 @@ class PeeringRouterTest:
                 "***Routes in BgpRouter after convergence are wrong!***" )
             routeCheckResult3 = main.TRUE
 
-        time.sleep(20)
+        time.sleep(120)
 
         #============================= Ping Test ========================
         pingTestResults = main.TRUE
@@ -2120,10 +2101,27 @@ class PeeringRouterTest:
         time.sleep(20)
 
         #============================= Deleting Routes ==================
+        main.log.info( "Login Quagga CLI on host3" )
+        main.QuaggaCliHost3.loginQuagga( "1.168.30.2" )
+        main.log.info( "Enter configuration model of Quagga CLI on host3" )
+        main.QuaggaCliHost3.enterConfig( 64514 )
+
+        main.log.info( "Login Quagga CLI on host4" )
+        main.QuaggaCliHost4.loginQuagga( "1.168.30.3" )
+        main.log.info( "Enter configuration model of Quagga CLI on host4" )
+        main.QuaggaCliHost4.enterConfig( 64516 )
+
+        main.log.info( "Login Quagga CLI on host5" )
+        main.QuaggaCliHost5.loginQuagga( "1.168.30.5" )
+        main.log.info( "Enter configuration model of Quagga CLI on host5" )
+        main.QuaggaCliHost5.enterConfig( 64521 )
+
         main.step( "Check deleting routes installed" )
         main.QuaggaCliHost3.deleteRoutes( prefixesHost3, 1 )
         main.QuaggaCliHost4.deleteRoutes( prefixesHost4, 1 )
         main.QuaggaCliHost5.deleteRoutes( prefixesHost5, 1 )
+
+        time.sleep(60)
 
         getRoutesResult = main.ONOScli.routes( jsonFormat=True )
         allRoutesActual = \
@@ -2139,6 +2137,8 @@ class PeeringRouterTest:
         else:
             main.log.report( "***Routes in BgpRouter after deleting wrong!***" )
             routeCheckResult4 = main.TRUE
+
+        time.sleep(60)
 
         #============================= Ping Test ========================
         pingTestResults = main.TRUE
@@ -2177,16 +2177,58 @@ class PeeringRouterTest:
         # from datetime import datetime
         from time import localtime, strftime
 
+        main.ONOSbench.handle.sendline("cell sdnip_single_instance")
+
+        cleanInstallResult = main.ONOSbench.cleanInstallSkipTest()
+
         main.case("The test case is to help to setup the TestON environment \
             and test new drivers" )
         TESTCASE_ROOT_PATH = main.params[ 'ENV' ][ 'home' ]
         TESTCASE_MININET_ROOT_PATH = TESTCASE_ROOT_PATH + "/vlan/routeserver/mininet"
         SDNIPJSONFILEPATH = TESTCASE_ROOT_PATH + "/vlan/routeserver/sdnip.json"
         main.log.info("sdnip.json file path: "+ SDNIPJSONFILEPATH)
-        
+
         # Copy the json files to config dir
         main.ONOSbench.handle.sendline("cp " + TESTCASE_ROOT_PATH + "/vlan/routeserver/addresses.json ~/onos/tools/package/config/")
         main.ONOSbench.handle.sendline("cp " + TESTCASE_ROOT_PATH + "/vlan/routeserver/sdnip.json ~/onos/tools/package/config/")
+
+        cellName = main.params[ 'ENV' ][ 'cellName' ]
+        ONOS1Ip = main.params[ 'CTRL' ][ 'ip1' ]
+        main.step( "Set cell for ONOS-cli environment" )
+        main.ONOScli.setCell( cellName )
+        verifyResult = main.ONOSbench.verifyCell()
+
+        main.step( "Creating ONOS package" )
+        packageResult = main.ONOSbench.onosPackage()
+
+
+        main.log.report( "Removing raft logs" )
+        main.ONOSbench.onosRemoveRaftLogs()
+        main.log.report( "Uninstalling ONOS" )
+        main.ONOSbench.onosUninstall( ONOS1Ip )
+
+        main.step( "Installing ONOS package" )
+        onos1InstallResult = main.ONOSbench.onosInstall(
+            options="-f", node=ONOS1Ip )
+
+        onos1Isup = main.ONOSbench.isup( ONOS1Ip )
+        if not onos1Isup:
+            main.log.report( "ONOS1 didn't start!" )
+
+        main.step( "Start ONOS-cli" )
+
+        main.ONOScli.startOnosCli( ONOS1Ip )
+
+        #Inject the config file
+        main.log.info("Injecting config file: bgprouter.json")
+        main.ONOSbench.handle.sendline("onos-topo-cfg $OC1 ~/TestON/tests/PeeringRouterTest/bgprouter.json")
+        listResult = main.ONOScli.devices( jsonFormat=False )
+        main.log.info( listResult )
+
+        # Activate bgprouter app
+        main.log.info( "Installing bgprouter app" )
+        main.ONOScli.handle.sendline("app activate org.onosproject.bgprouter")
+        time.sleep( 10 )
 
         # Launch mininet topology for this case        
         MININET_TOPO_FILE = TESTCASE_MININET_ROOT_PATH + "/PeeringRouteServerVlanMininet.py"
@@ -2236,42 +2278,12 @@ class PeeringRouterTest:
         routeIntentsExpected = routeIntentsExpectedHost3 + \
             routeIntentsExpectedHost4 + routeIntentsExpectedHost5
 
-        cellName = main.params[ 'ENV' ][ 'cellName' ]
-        ONOS1Ip = main.params[ 'CTRL' ][ 'ip1' ]
-        main.step( "Set cell for ONOS-cli environment" )
-        main.ONOScli.setCell( cellName )
-        verifyResult = main.ONOSbench.verifyCell()
-
-        main.log.report( "Removing raft logs" )
-        main.ONOSbench.onosRemoveRaftLogs()
-        main.log.report( "Uninstalling ONOS" )
-        main.ONOSbench.onosUninstall( ONOS1Ip )
-
-        # Copy the cfg files to config dir
-        main.log.info("Copying two cfg files to onos etc folder")
-        main.ONOSbench.handle.sendline("cp " + TESTCASE_ROOT_PATH + "/org.onosproject.openflow.controller.impl.OpenFlowControllerImpl.cfg ~/onos/tools/package/etc/")
-        main.ONOSbench.handle.sendline("cp " + TESTCASE_ROOT_PATH + "/org.onosproject.openflow.controller.impl.OpenFlowControllerImpl.cfg ~/onos/tools/package/etc/")
-        main.step( "Creating ONOS package" )
-        packageResult = main.ONOSbench.onosPackage()
-
-        main.step( "Installing ONOS package" )
-        onos1InstallResult = main.ONOSbench.onosInstall(
-            options="-f", node=ONOS1Ip )
-
-        onos1Isup = main.ONOSbench.isup( ONOS1Ip )
-        if not onos1Isup:
-            main.log.report( "ONOS1 didn't start!" )
-
-        main.step( "Start ONOS-cli" )
-
+        main.ONOScli.logout()
         main.ONOScli.startOnosCli( ONOS1Ip )
 
         main.step( "Get devices in the network" )
         listResult = main.ONOScli.devices( jsonFormat=False )
         main.log.info( listResult )
-        time.sleep( 10 )
-        main.log.info( "Installing gbprouter feature" )
-        main.ONOScli.featureInstall( "onos-app-bgprouter" )
         time.sleep( 10 )
         main.step( "Login all BGP peers and add routes into peers" )
 
@@ -2321,7 +2333,7 @@ class PeeringRouterTest:
                 "***Routes in BgpRouter after adding routes are wrong!***" )
             routeCheckResult1 = main.FALSE
 
-        time.sleep(20)
+        time.sleep(60)
 
         #============================= Ping Test ========================
         pingTestResults = main.TRUE
@@ -2387,7 +2399,7 @@ class PeeringRouterTest:
                 "***Routes in BgpRouter after convergence are wrong!***" )
             routeCheckResult2 = main.FALSE
 
-        time.sleep(20)
+        time.sleep(120)
 
         #============================= Ping Test ========================
         pingTestResults = main.TRUE
@@ -2457,7 +2469,7 @@ class PeeringRouterTest:
                 "***Routes in BgpRouter after convergence are wrong!***" )
             routeCheckResult3 = main.FALSE
 
-        time.sleep(20)
+        time.sleep(60)
 
         #============================= Ping Test ========================
         pingTestResults = main.TRUE
@@ -2492,6 +2504,22 @@ class PeeringRouterTest:
 
         #============================= Deleting Routes ==================
         main.step( "Check deleting routes installed" )
+   
+        main.log.info( "Login Quagga CLI on host3" )
+        main.QuaggaCliHost3.loginQuagga( "1.168.30.2" )
+        main.log.info( "Enter configuration model of Quagga CLI on host3" )
+        main.QuaggaCliHost3.enterConfig( 64514 )
+
+        main.log.info( "Login Quagga CLI on host4" )
+        main.QuaggaCliHost4.loginQuagga( "1.168.30.3" )
+        main.log.info( "Enter configuration model of Quagga CLI on host4" )
+        main.QuaggaCliHost4.enterConfig( 64516 )
+
+        main.log.info( "Login Quagga CLI on host5" )
+        main.QuaggaCliHost5.loginQuagga( "1.168.30.5" )
+        main.log.info( "Enter configuration model of Quagga CLI on host5" )
+        main.QuaggaCliHost5.enterConfig( 64521 )
+   
         main.QuaggaCliHost3.deleteRoutes( prefixesHost3, 1 )
         main.QuaggaCliHost4.deleteRoutes( prefixesHost4, 1 )
         main.QuaggaCliHost5.deleteRoutes( prefixesHost5, 1 )
@@ -2510,6 +2538,8 @@ class PeeringRouterTest:
         else:
             main.log.report( "***Routes in BgpRouter after deleting wrong!***" )
             routeCheckResult4 = main.FALSE
+
+        time.sleep(20)
 
         #============================= Ping Test ========================
         pingTestResults = main.TRUE

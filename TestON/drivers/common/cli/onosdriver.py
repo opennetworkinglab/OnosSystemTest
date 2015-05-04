@@ -508,13 +508,18 @@ class OnosDriver( CLI ):
             for line in lines:
                 print line
             if report:
+                main.log.wiki( "<blockquote>" )
                 for line in lines[ 2:-1 ]:
                     # Bracket replacement is for Wiki-compliant
                     # formatting. '<' or '>' are interpreted
                     # as xml specific tags that cause errors
                     line = line.replace( "<", "[" )
                     line = line.replace( ">", "]" )
-                    main.log.report( "\t" + line )
+                    #main.log.wiki( "\t" + line )
+                    main.log.wiki( line + "<br /> " )
+                    main.log.summary( line )
+                main.log.wiki( "</blockquote>" )
+                main.log.summary("\n")
             return lines[ 2 ]
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )

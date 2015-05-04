@@ -251,7 +251,6 @@ class TestON:
             self.log.summary( self.caseExplaination )
             self.log.wiki( "<ul>" )
             for line in self.stepCache.splitlines():
-                self.log.error( repr(line) )
                 if re.search( " - PASS$", line ):
                     self.log.wiki( "<li>" + line + "  <ac:emoticon ac:name=\"tick\" /></li>\n" )
                 elif re.search( " - FAIL$", line ):
@@ -292,8 +291,7 @@ class TestON:
                 self.logger.updateCaseResults(self)
                 #WIKI results
                 self.log.wiki( "<ul>" )
-                for line in self.stepCachesplitlines():
-                    self.log.error( repr(line) )
+                for line in self.stepCache.splitlines():
                     if re.search( " - PASS$", line ):
                         self.log.wiki( "<li>" + line + "  <ac:emoticon ac:name=\"tick\" /></li>\n" )
                     elif re.search( " - FAIL$", line ):

@@ -12,23 +12,21 @@ class SRSanity:
         import pexpect
         import time
         main.ONOSbench.handle.sendline("cd ~/onos")
-        main.ONOSbench.handle.sendline("git stash save")
-        main.step( "Git checkout and pull master" )
-        main.ONOSbench.gitCheckout( "master" )
-        gitPullResult = main.ONOSbench.gitPull()
-        #main.ONOSbench.handle.sendline("git stash pop")
+        #main.step( "Git checkout and pull master" )
+        main.ONOSbench.gitCheckout( "review/unknown/route_update" )
+        #main.ONOSbench.gitCheckout( "master" )
+        #gitPullResult = main.ONOSbench.gitPull()
 
-        main.ONOSbench.handle.sendline("cp ~/onos/features.xml ~/onos/features/")
         main.ONOSbench.handle.sendline("cp ~/onos/org.onosproject.provider.lldp.impl.LLDPLinkProvider.cfg.sr ~/onos/tools/package/etc/org.onosproject.provider.lldp.impl.LLDPLinkProvider.cfg")
         main.ONOSbench.handle.sendline("rm ~/onos/tools/package/etc/org.onosproject.openflow.controller.impl.OpenFlowControllerImpl.cfg")
 
-        main.step( "Using mvn clean & install & No Test" )
-        cleanInstallResult = main.TRUE
-        if gitPullResult == main.TRUE or gitPullResult == 3:
-            cleanInstallResult = main.ONOSbench.cleanInstallSkipTest()
-        else:
-            main.log.warn( "Did not pull new code so skipping mvn " +
-                           "clean install" )
+        #main.step( "Using mvn clean & install & No Test" )
+        #cleanInstallResult = main.TRUE
+        #if gitPullResult == main.TRUE or gitPullResult == 3:
+        #    cleanInstallResult = main.ONOSbench.cleanInstallSkipTest()
+        #else:
+        #    main.log.warn( "Did not pull new code so skipping mvn " +
+        #                   "clean install" )
         main.ONOSbench.getVersion( report=True )	
  
         cellName = main.params[ 'ENV' ][ 'cellName' ]
@@ -48,6 +46,7 @@ class SRSanity:
  
         main.step("Copy the config file")
         main.ONOSbench.handle.sendline("cp ~/TestON/tests/SRSanity/fish.conf ~/onos/tools/package/config/segmentrouting.conf")
+        cleanInstallResult = main.ONOSbench.cleanInstallSkipTest()
         main.ONOSbench.onosPackage()        
 
         main.log.report( "Removing raft logs" )
@@ -67,14 +66,17 @@ class SRSanity:
 
         main.ONOScli.startOnosCli( ONOS1Ip )
 
+        time.sleep(10)
+
         main.log.info( "Installing segmentrouting feature" )
-        main.ONOScli.featureInstall( "onos-app-segmentrouting" )
+        main.ONOScli.handle.sendline( "app activate org.onosproject.segmentrouting" )
         time.sleep( 10 )
 
         main.log.report("Running mininet")
+        main.Mininet.connect()
         main.Mininet.handle.sendline("sudo python /home/admin/TestON/tests/SRSanity/mininet/testEcmp_6sw.py")
-        main.step("waiting 40 secs for switches to connect and go thru handshake")
-        time.sleep(40)
+        main.step("waiting 20 secs for switches to connect and go thru handshake")
+        time.sleep(20)
         main.step("verifying all to all connectivity")
         
         p1 = main.Mininet.pingHost(SRC="h2",TARGET="h1")
@@ -85,17 +87,21 @@ class SRSanity:
                                 onpass="Default connectivity check PASS",
                                 onfail="Default connectivity check FAIL")
         #cleanup mininet
+        main.ONOScli.logout()
+        main.ONOSbench.onosStop(ONOS1Ip);
+        main.Mininet.stopNet()
         main.Mininet.disconnect()
-        
-
+       
 
 #**********************************************************************************************************************************************************************************************
 # A simple test for verify controller's recovery functionality in a fish topology
 
     def CASE3(self,main) :
         import time
-        
+ 
+        main.step("Copy the config file")       
         main.ONOSbench.handle.sendline("cp ~/TestON/tests/SRSanity/fish.conf ~/onos/tools/package/config/segmentrouting.conf")
+        cleanInstallResult = main.ONOSbench.cleanInstallSkipTest()
         main.ONOSbench.onosPackage()
 
         main.log.report( "Removing raft logs" )
@@ -114,16 +120,17 @@ class SRSanity:
         main.step( "Start ONOS-cli" )
 
         main.ONOScli.startOnosCli( ONOS1Ip )
+        time.sleep(20)
 
         main.log.info( "Installing segmentrouting feature" )
-        main.ONOScli.featureInstall( "onos-app-segmentrouting" )
+        main.ONOScli.handle.sendline( "app activate org.onosproject.segmentrouting" )        
         time.sleep( 10 )
 
         main.log.report("Running mininet")
         main.Mininet.connect()
         main.Mininet.handle.sendline("sudo python /home/admin/TestON/tests/SRSanity/mininet/testEcmp_6sw.py")
-        main.step("waiting 40 secs for switches to connect and go thru handshake")
-        time.sleep(40)
+        main.step("waiting 30 secs for switches to connect and go thru handshake")
+        time.sleep(30)
         main.step("verifying all to all connectivity")
         
         p1 = main.Mininet.pingHost(SRC="h2",TARGET="h1")
@@ -135,11 +142,13 @@ class SRSanity:
                                   onfail="Default connectivity check FAIL")    
         #Yank the cable on switch1-intf3, switch2-intf3 and switch4-intf3
         #to force the traffic to go via s1->s2->s3->s4->s5->s6
-        main.Mininet.yankcpqd(SW="s1",INTF="s1-eth3")
-        main.Mininet.yankcpqd(SW="s2",INTF="s2-eth3")
-        main.Mininet.yankcpqd(SW="s4",INTF="s4-eth3")
-        main.step("waiting 40 secs for controller to perform recovery operations")
-        time.sleep(40)
+        main.Mininet.link(END1="s1",END2="s2",OPTION="down")
+        time.sleep(2)
+        main.Mininet.link(END1="s3",END2="s4",OPTION="down")
+        time.sleep(2)
+        main.Mininet.link(END1="s5",END2="s6",OPTION="down")
+        main.step("waiting 10 secs for controller to perform recovery operations")
+        time.sleep(10)
         main.step("verifying connectivity between hosts after link down")
         p1 = main.Mininet.pingHost(SRC="h1",TARGET="h2")
         result_during_failure = p1
@@ -153,11 +162,11 @@ class SRSanity:
         #main.Mininet.plugcpqd(SW="s1",INTF="s1-eth3")
         #main.Mininet.plugcpqd(SW="s2",INTF="s2-eth3")
         #main.Mininet.plugcpqd(SW="s4",INTF="s4-eth3")
-        main.Mininet.link(END1="s1",END2="s3",OPTION="up")
-        main.Mininet.link(END1="s2",END2="s5",OPTION="up")
-        main.Mininet.link(END1="s4",END2="s6",OPTION="up")
-        main.step("waiting 40 secs for controller to perform recovery operations")
-        time.sleep(40)
+        main.Mininet.link(END1="s1",END2="s2",OPTION="up")
+        main.Mininet.link(END1="s3",END2="s4",OPTION="up")
+        main.Mininet.link(END1="s5",END2="s6",OPTION="up")
+        main.step("waiting 10 secs for controller to perform recovery operations")
+        time.sleep(10)
         main.step("verifying connectivity between hosts after link down")
         p1 = main.Mininet.pingHost(SRC="h1",TARGET="h2")
         result_during_recovery = p1
@@ -170,10 +179,10 @@ class SRSanity:
                                 onpass="Controller recovery procedure check PASS",
                                 onfail="Controller recovery procedure check FAIL")
         #cleanup mininet
+        main.ONOScli.logout()
+        main.ONOSbench.onosStop(ONOS1Ip);
+        main.Mininet.stopNet()
         main.Mininet.disconnect()
-        #main.Mininet.cleanup()
-        #main.Mininet.exit()
- 
 
 #**********************************************************************************************************************************************************************************************
 # A simple test for verifying tunnels and policies
@@ -760,6 +769,7 @@ class SRSanity:
 
         main.step("Copy the config file")
         main.ONOSbench.handle.sendline("cp ~/TestON/tests/SRSanity/leafspine.conf ~/onos/tools/package/config/segmentrouting.conf")
+        cleanInstallResult = main.ONOSbench.cleanInstallSkipTest()
         main.ONOSbench.onosPackage()
 
         main.log.report( "Removing raft logs" )
@@ -778,12 +788,14 @@ class SRSanity:
         main.step( "Start ONOS-cli" )
 
         main.ONOScli.startOnosCli( ONOS1Ip )
+        time.sleep(20)
 
         main.log.info( "Installing segmentrouting feature" )
-        main.ONOScli.featureInstall( "onos-app-segmentrouting" )
+        main.ONOScli.handle.sendline( "app activate org.onosproject.segmentrouting" )
         time.sleep( 10 )
 
         main.log.report("Running mininet")
+        main.Mininet.connect()
         main.Mininet.handle.sendline("sudo python /home/admin/TestON/tests/SRSanity/mininet/testLeafSpine.py")
         main.step("waiting 40 secs for switches to connect and go thru handshake")
         time.sleep(40)
@@ -797,5 +809,10 @@ class SRSanity:
                                 onpass="Default connectivity check PASS",
                                 onfail="Default connectivity check FAIL")
         #cleanup mininet
+        main.ONOScli.logout()
+        main.ONOSbench.onosStop(ONOS1Ip);
+        main.Mininet.stopNet()
         main.Mininet.disconnect()
-
+        main.Mininet.cleanup()
+        main.Mininet.exit() 
+       

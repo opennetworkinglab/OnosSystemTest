@@ -1,6 +1,6 @@
 <PARAMS>
 
-    <testcases>10</testcases>
+    <testcases>10,11</testcases>
     <ENV>
         <cellName>single_func</cellName>
     </ENV>

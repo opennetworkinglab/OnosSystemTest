@@ -138,20 +138,21 @@ class SingleFunc:
         """
         Assign mastership to controllers
         """
+        import re
         main.log.report( "Assigning switches to controllers" )
         main.log.case( "Assigning swithes to controllers" )
 
         main.step( "Assigning switches to controllers" )
         assignResult = main.TRUE
-        for i in range( 1, 8 ):
+        for i in range( 1, ( main.numSwitch + 1 ) ):
             main.Mininet1.assignSwController( sw=str( i ),
                                               count=1,
-                                              ip1=ONOS1ip,
-                                              port1=ONOS1port )
-        for i in range( 1, ( main.numSwitches + 1 ) ):
+                                              ip1=main.ONOS1ip,
+                                              port1=main.ONOS1port )
+        for i in range( 1, ( main.numSwitch + 1 ) ):
             response = main.Mininet1.getSwController( "s" + str( i ) )
             print( "Response is " + str( response ) )
-            if re.search( "tcp:" + main.ONOS1cli, response ):
+            if re.search( "tcp:" + main.ONOS1ip, response ):
                 assignResult = assignResult and main.TRUE
             else:
                 assignResult = main.FALSE
@@ -162,5 +163,4 @@ class SingleFunc:
                                         "to controller",
                                  onfail="Failed to assign switches to " +
                                         "controller" )
-
 

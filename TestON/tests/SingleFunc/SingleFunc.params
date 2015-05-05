@@ -1,0 +1,20 @@
+<PARAMS>
+
+    <testcases>10</testcases>
+    <ENV>
+        <cellName>single_func</cellName>
+    </ENV>
+    <GIT>
+        <pull>False</pull>
+        <branch>master</branch>
+    </GIT>
+    <CTRL>
+        <ip1>10.128.10.21</ip1>
+        <port1>6633</port1>
+    </CTRL>
+    <MININET>
+        <switch>7</switch>
+        <topo>~/mininet/custom/newFuncTopo.py</topo>
+    </MININET>
+
+</PARAMS>

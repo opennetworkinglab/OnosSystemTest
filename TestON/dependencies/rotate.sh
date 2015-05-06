@@ -49,6 +49,6 @@ base_name=$1
 root_dir="/home/admin/packet_captures"
 timestamp=`date +%Y_%B_%d_%H_%M_%S`
 #Maybe this should be an argument? pack-and-rotate supports that
-nr_max=20
+nr_max=10
 
 pack-rotate-log ${root_dir}'/'${base_name} "${root_dir}/${base_name}*.pcap ${root_dir}/${base_name}*.log*" ${nr_max}

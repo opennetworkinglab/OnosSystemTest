@@ -133,17 +133,38 @@ class IntentEventTP:
 
         time.sleep(20)
 
-        #main.ONOSbench.handle.sendline("""onos $OC1 "cfg setorg.onosproject.provider.nil.NullProviders enabled true" """)
-        #main.ONOSbench.handle.expect(":~")
-        #print main.ONOSbench.handle.before
+
+        for i in range (0,5): 
+            main.ONOSbench.handle.sendline("""onos $OC1 "cfg set org.onosproject.provider.nil.NullProviders deviceCount """ + str(clusterCount*10) + """ " """)
+            main.ONOSbench.handle.expect(":~")
+            main.ONOSbench.handle.sendline("""onos $OC1 "cfg get org.onosproject.provider.nil.NullProviders" """)
+            main.ONOSbench.handle.expect(":~")
+            if ("value=" + str(clusterCount*10)) in main.ONOSbench.handle.before:
+                main.log.info("Device count set")
+                main.log.info("before" + main.ONOSbench.handle.before)
+                break
+            time.sleep(10)
+            main.log.info("cfg set failure, retrying")
+            main.log.info("before" + main.ONOSbench.handle.before)
         
-        main.ONOSbench.handle.sendline("""onos $OC1 "cfg set org.onosproject.provider.nil.NullProviders deviceCount """ + str(clusterCount*10) + """ " """)
-        main.ONOSbench.handle.expect(":~")
-        print main.ONOSbench.handle.before
-        time.sleep(10)
-        main.ONOSbench.handle.sendline("""onos $OC1 "cfg set org.onosproject.provider.nil.NullProviders topoShape linear" """)
-        main.ONOSbench.handle.expect(":~")
-        print main.ONOSbench.handle.before
+        x = 1
+        while True:
+            if x >= 6:
+                main.log.error("Null provider start failure, TEST INVALID")
+                break
+            main.ONOSbench.handle.sendline("""onos $OC1 "cfg set org.onosproject.provider.nil.NullProviders topoShape linear" """)
+            main.ONOSbench.handle.expect(":~")
+            main.ONOSbench.handle.sendline("""onos $OC1 "cfg get org.onosproject.provider.nil.NullProviders" """)
+            main.ONOSbench.handle.expect(":~")
+            if ("value=linear") in main.ONOSbench.handle.before:
+                main.log.info("Device count set")
+                main.log.info("before" + main.ONOSbench.handle.before)
+                break
+            time.sleep(10)
+            main.log.info("cfg set failure, retrying")
+            main.log.info("before" + main.ONOSbench.handle.before)
+            x += 1
+
         time.sleep(10)
         main.ONOSbench.handle.sendline("""onos $OC1 "null-simulation start" """)
         main.ONOSbench.handle.expect(":~")
@@ -156,9 +177,10 @@ class IntentEventTP:
         lastOutput = "--"
         origin = time.time()
         clockStarted = False
-        while True:
+        for i in range (0,8):
             main.ONOSbench.handle.sendline("onos $OC1 summary")
             main.ONOSbench.handle.expect(":~")
+            main.log.info("before" + main.ONOSbench.handle.before)
             clusterCheck = ((main.ONOSbench.handle.before).splitlines())[3]
             print("\nBefore: " + str(clusterCheck))
             if ("SCC(s)=1,") in clusterCheck:
@@ -205,7 +227,7 @@ class IntentEventTP:
         for n in neighbors:
             main.log.info("Run with " + n + " neighbors") 
             time.sleep(5)
-            main.ONOSbench.handle.sendline("onos $OC1 cfg set org.onosproject.intentperf.IntentPerfInstaller numKeys " + numKeys )
+            main.ONOSbench.handle.sendline("onos $OC1 cfg set org.onosproject.intentperf.IntentPerfInstaller numKeys " + numKeysn)
             main.ONOSbench.handle.expect(":~")
             main.ONOSbench.handle.sendline("onos $OC1 cfg set org.onosproject.intentperf.IntentPerfInstaller numNeighbors " + n ) 
             main.ONOSbench.handle.expect(":~")

@@ -6,10 +6,10 @@
 
     <ENV>
     <cellName>intentTP</cellName>
-    <cellApps>null,intentperf</cellApps>
+    <cellApps>drivers,null,intentperf</cellApps>
     </ENV>
 
-    <SCALE>1,3,5,7</SCALE>
+    <SCALE>5,7</SCALE>
     <availableNodes>7</availableNodes>
 
     <GIT>
@@ -53,11 +53,11 @@
         <loadFrom>1,1,1,1,1,1,1</loadFrom>                                     #generate load on server, 1 = generator on 
         <numSwitches>10,10,10,10,10,10,10</numSwitches>
         <skipCleanInstall>yes</skipCleanInstall>
-        <duration>30</duration>
+        <duration>900</duration>
         <log_interval>20</log_interval>
         <numKeys>5000</numKeys>
         <cyclePeriod>1000</cyclePeriod>
-        <neighbors>0,a</neighbors>           #a == all nodes (-1)
+        <neighbors>a</neighbors>           #a == all nodes (-1)
     </TEST>
 
     <METRICS>

@@ -128,21 +128,38 @@ class IntentInstallWithdrawLat:
         
         time.sleep(30)
 
-        main.ONOSbench.handle.sendline("""onos $OC1 "cfg setorg.onosproject.provider.nil.NullProviders enabled true" """)
-        main.ONOSbench.handle.expect(":~")
-        print main.ONOSbench.handle.before
         main.ONOSbench.handle.sendline("""onos $OC1 "cfg set org.onosproject.provider.nil.NullProviders deviceCount """ + str(switchCount) + """ " """)
         main.ONOSbench.handle.expect(":~")
         print main.ONOSbench.handle.before
+        time.sleep(3)
         main.ONOSbench.handle.sendline("""onos $OC1 "cfg set org.onosproject.provider.nil.NullProviders topoShape linear" """)
         main.ONOSbench.handle.expect(":~")
         print main.ONOSbench.handle.before
+        time.sleep(3)
         main.ONOSbench.handle.sendline("""onos $OC1 "null-simulation start" """)
         main.ONOSbench.handle.expect(":~")
         print main.ONOSbench.handle.before
+        time.sleep(3)
         main.ONOSbench.handle.sendline("""onos $OC1 "balance-masters" """)
         main.ONOSbench.handle.expect(":~")
         print main.ONOSbench.handle.before
+        time.sleep(3)
+
+        for i in range(0,5):
+            main.ONOSbench.handle.sendline("onos $OC1 summary")
+            main.ONOSbench.handle.expect(":~")
+            check = main.ONOSbench.handle.before
+            if "devices=7," in check: 
+                main.log.info("startup successful")
+                break 
+            else:
+                main.log.error(check)
+                main.ONOSbench.handle.sendline("""onos $OC1 "null-simulation stop" """)
+                main.ONOSbench.handle.expect(":~")
+                time.sleep(6)
+                main.ONOSbench.handle.sendline("""onos $OC1 "null-simulation start" """)
+                main.ONOSbench.handle.expect(":~")
+                time.sleep(2)
 
     def CASE2( self, main ):
          
@@ -154,14 +171,18 @@ class IntentInstallWithdrawLat:
         intentsList = (main.params[ 'TEST' ][ 'intents' ]).split(",")
         switchCount = int(main.params[ 'TEST' ][ 'switchCount' ])
         debug = main.params[ 'TEST' ][ 'switchCount' ]
+        print("0")
+
         for i in range(0,len(intentsList)):
             intentsList[i] = int(intentsList[i])
+        main.log.info("Intents list: " + str(intentsList))
 
+        print("1")
         if debug == "True":
             debug = True
         else:
             debug = False
-
+        
         linkCount = 0
         for i in range(0,10):
             main.ONOSbench.handle.sendline("onos $OC1 links|wc -l")
@@ -171,24 +192,30 @@ class IntentInstallWithdrawLat:
             if str((switchCount*2)-2) in linkCount:
                 break
             time.sleep(2)
-
         links = "--"
+        x = 0
+        print("2")
         while "=null:" not in links:
+            if x >= 20:
+                main.log.error("link check failure")
+                break
             if debug: main.log.info("top of loop")
             main.ONOSbench.handle.sendline("onos $OC1 links")
             main.ONOSbench.handle.expect(":~")
             links = main.ONOSbench.handle.before
             if debug: main.log.info(str(links))
             time.sleep(1)
+            x += 1
         links = links.splitlines()
         templinks = links
-
         tempDevices = []
         for line in links:
             temp = line.split(" ")
             temp[0].replace("src=","")
             temp[0] = (temp[0].split("/"))[0]
             tempDevices.append(temp[0])
+
+        print("3")
 
         tempDevices.sort()
         devices = []
@@ -197,42 +224,44 @@ class IntentInstallWithdrawLat:
                 devices.append(i.replace("src=", ""))
         if debug: main.log.info(str(devices))
 
+        print("4")
+
         ingress = devices[0]
         egress = devices.pop()
         if debug: main.log.info(ingress)
         if debug: main.log.info(egress)
+
+        print("5")
 
         for intentSize in intentsList:
             cmd = "onos $OC1 push-test-intents "
             cmd += ingress + "/6 "
             cmd += egress + "/5 "
             cmd += str(intentSize) + " 1"
+            main.log.info("COMMAND: " + cmd)
             installed = []
             withdrawn = []
-
             for run in range(0, (warmUp + sampleSize)):
                 if run > warmUp:
                     time.sleep(5)
-
                 myRawResult = "--"
                 while "ms" not in myRawResult:
                     main.ONOSbench.handle.sendline(cmd)
                     main.ONOSbench.handle.expect(":~")
                     myRawResult = main.ONOSbench.handle.before
-                    if debug: main.log.info(myRawResult)
+                    main.log.info(myRawResult)
 
                 if debug: main.log.info(myRawResult)
-
                 if run >= warmUp:
                     myRawResult = myRawResult.splitlines()
                     for line in myRawResult:
                         if "install" in line:
+                            print(line)
                             installed.append(int(line.split(" ")[5]))
 
                     for line in myRawResult:
                         if "withdraw" in line:
                             withdrawn.append(int(line.split(" ")[5]))
-
                     print("installed: " + str(installed))
                     print("withraw: " + str(withdrawn) + "\n")
 
@@ -252,6 +281,6 @@ class IntentInstallWithdrawLat:
             resultString += str(numpy.std(installed)) + ","
             resultString += str(numpy.mean(withdrawn)) + ","
             resultString += str(numpy.std(withdrawn)) + "\n"
-            resultsDB = open("IntentInstallWithdrawLatDB", "w+")
+            resultsDB = open("IntentInstallWithdrawLatDB", "a")
             resultsDB.write(resultString)
             resultsDB.close()

@@ -1,6 +1,6 @@
 <PARAMS>
 
-    <testcases>10,11</testcases>
+    <testcases>10,11,1000</testcases>
     <ENV>
         <cellName>single_func</cellName>
     </ENV>
@@ -14,6 +14,7 @@
     </CTRL>
     <MININET>
         <switch>7</switch>
+        <links>20</links>
         <topo>~/mininet/custom/newFuncTopo.py</topo>
     </MININET>
 

@@ -31,6 +31,7 @@ class SingleFunc:
         main.ONOS1ip = os.environ[ 'OC1' ]
         main.ONOS1port = main.params[ 'CTRL' ][ 'port1' ]
         main.numSwitch = int( main.params[ 'MININET' ][ 'switch' ] )
+        main.numLinks = int( main.params[ 'MININET' ][ 'links' ] )
         gitBranch = main.params[ 'GIT' ][ 'branch' ]
         topology = main.params[ 'MININET' ][ 'topo' ]
         PULLCODE = False
@@ -136,7 +137,7 @@ class SingleFunc:
 
     def CASE11( self, main ):
         """
-        Assign mastership to controllers
+            Assign mastership to controllers
         """
         import re
         main.log.report( "Assigning switches to controllers" )
@@ -167,106 +168,240 @@ class SingleFunc:
 
     def CASE1000( self, main ):
         """
-            Add host intents between 2 host
+            Add host intents between 2 host:
+                - Discover hosts
+                - Add host intents
+                - Check intents
+                - Check flows
+                - Ping hosts
+                - Reroute
+                    - Link down
+                    - Ping hosts
+                    - Link up
+                    - Ping hosts
+                - Remove intents
         """
         import time
         import json
+        import re
+        """
+            Create your item(s) here
+            item = { 'name': '', 'host1':
+                     { 'name': '', 'MAC': '00:00:00:00:00:0X',
+                       'id':'00:00:00:00:00:0X/-X' } , 'host2':
+                     { 'name': '', 'MAC': '00:00:00:00:00:0X',
+                       'id':'00:00:00:00:00:0X/-X'}, 'link': { 'switch1': '',
+                       'switch2': '', 'num':'' } }
+        """
+        # Local variables
+        items = []
+        ipv4 = { 'name': 'IPV4', 'host1':
+                 { 'name': 'h1', 'MAC': '00:00:00:00:00:01',
+                   'id':'00:00:00:00:00:01/-1' } , 'host2':
+                 { 'name': 'h9', 'MAC': '00:00:00:00:00:09',
+                   'id':'00:00:00:00:00:01/-1'}, 'link': { 'switch1': 's5',
+                   'switch2': 's2', 'num':'18' } }
+        dualStack1 = { 'name': 'DUALSTACK1', 'host1':
+                 { 'name': 'h3', 'MAC': '00:00:00:00:00:03',
+                   'id':'00:00:00:00:00:03/-1' } , 'host2':
+                 { 'name': '', 'MAC': '00:00:00:00:00:0B',
+                   'id':'00:00:00:00:00:0B/-1'}, 'link': { 'switch1': 's5',
+                   'switch2': 's2', 'num':'18' } }
+        items.append( ipv4 )
+        # Global variables
         
-        item = []
-        
-        ipv4 = { 'name':'', 'host1':, 'host2': }
-
         main.case( "Add host intents between 2 host" )
-
-        main.step(" Discover host using arping" )
         
+        for item in items:
+            stepResult = main.TRUE
+            h1Name = item[ 'host1' ][ 'name' ]
+            h2Name = item[ 'host2' ][ 'name' ]
+            h1Mac = item[ 'host1' ][ 'MAC' ]
+            h2Mac = item[ 'host2' ][ 'MAC' ]
+            h1Id = item[ 'host1' ][ 'id']
+            h2Id = item[ 'host2' ][ 'id']
+            # Link down/up for rerouting
+            sw1 = item[ 'link' ][ 'switch1' ]
+            sw2 = item[ 'link' ][ 'switch2' ]
+            remLink = item[ 'link' ][ 'num' ]
+            intentsId = []
+            main.step( item[ 'name' ] + ": Add host intents between " + h1Name
+                        + " and " + h2Name )
+            main.log.info( item[ 'name' ] + ": Discover host using arping" )
+            main.Mininet1.arping( host=h1Name )
+            main.Mininet1.arping( host=h2Name )
+            host1 = main.ONOScli1.getHost( mac=h1Mac )
+            host2 = main.ONOScli1.getHost( mac=h2Mac )
+            print host1
+            print host2
+            # Adding intents
+            main.log.info( item[ 'name' ] + ": Adding host intents" )
+            intent1 = main.ONOScli1.addHostIntent( hostIdOne=h1Id,
+                                                   hostIdTwo=h2Id )
+            intentsId.append( intent1 )
+            time.sleep( 5 )
+            intent2 = main.ONOScli1.addHostIntent( hostIdOne=h2Id,
+                                                   hostIdTwo=h1Id )
+            intentsId.append( intent2 )
+            # Checking intents
+            main.log.info( item[ 'name' ] + ": Check host intents state" )
+            time.sleep( 20 )
+            intentResult = main.ONOScli1.checkIntentState( intentsId=intentsId )
+            if not intentResult:
+                main.log.info( item[ 'name' ] +  ": Check host intents state" +
+                               " again")
+                intentResult = main.ONOScli1.checkIntentState(
+                                                          intentsId=intentsId )
+            # Ping hosts
+            time.sleep( 10 )
+            main.log.info( item[ 'name' ] + ": Ping " + h1Name + " and " +
+                           h2Name )
+            pingResult1 = main.Mininet1.pingHost( src=h1Name , target=h2Name )
+            if not pingResult1:
+                main.log.info( item[ 'name' ] + ": " + h1Name + " cannot ping "
+                               + h2Name )
+            pingResult2 = main.Mininet1.pingHost( src=h2Name , target=h1Name )
+            if not pingResult2:
+                main.log.info( item[ 'name' ] + ": " + h2Name + " cannot ping "
+                               + h1Name )
+            pingResult = pingResult1 and pingResult2
+            if pingResult:
+                main.log.info( item[ 'name' ] + ": Successfully pinged " +
+                               "both hosts" )
+            else:
+                main.log.info( item[ 'name' ] + ": Failed to ping " +
+                               "both hosts" )
+            # Rerouting ( link down )
+            main.log.info( item[ 'name' ] + ": Bring link down between " +
+                           sw1 + " and " + sw2 )
+            main.Mininet1.link( end1=sw1,
+                                end2=sw2,
+                                option="down" )
+            time.sleep( 5 )
 
+            # Check onos topology
+            main.log.info( item[ 'name' ] + ": Checking ONOS topology " )
+            topologyResult = main.ONOScli1.topology()
+            statusResult = main.ONOSbench.checkStatus( topologyResult,
+                                                       main.numSwitch,
+                                                       remLink )
+            if not statusResult:
+                main.log.info( item[ 'name' ] + ": Topology mismatch" )
+            else:
+                main.log.info( item[ 'name' ] + ": Topology match" )
 
-        main.step( "Discover host using arping" )
-        step1Result = main.TRUE
-        main.hostMACs = []
-        main.hostId = []
-        #Listing host MAC addresses
-        for i in range( 1 , 7 ):
-            main.hostMACs.append( "00:00:00:00:00:" +
-                                str( hex( i )[ 2: ] ).zfill( 2 ).upper() )
-        for macs in main.hostMACs:
-            main.hostId.append( macs + "/-1" )
-        host1 = main.hostId[ 0 ]
-        host2 = main.hostId[ 1 ]
-        # Use arping to discover the hosts
-        main.LincOE2.arping( host = "h1" )
-        main.LincOE2.arping( host = "h2" )
-        time.sleep( 5 )
-        hostsDict = main.ONOS3.hosts()
-        if not len( hostsDict ):
-            step1Result = main.FALSE
-        # Adding host intent
-        utilities.assert_equals(
-            expect=main.TRUE,
-            actual=step1Result,
-            onpass="Hosts discovered",
-            onfail="Failed to discover hosts")
+            # Ping hosts
+            main.log.info( item[ 'name' ] + ": Ping " + h1Name + " and " +
+                           h2Name )
+            pingResult1 = main.Mininet1.pingHost( src=h1Name , target=h2Name )
+            if not pingResult1:
+                main.log.info( item[ 'name' ] + ": " + h1Name + " cannot ping "
+                               + h2Name )
+            pingResult2 = main.Mininet1.pingHost( src=h2Name , target=h1Name )
+            if not pingResult2:
+                main.log.info( item[ 'name' ] + ": " + h2Name + " cannot ping "
+                               + h1Name )
+            pingResult = pingResult1 and pingResult2
+            if pingResult:
+                main.log.info( item[ 'name' ] + ": Successfully pinged " +
+                               "both hosts" )
+            else:
+                main.log.info( item[ 'name' ] + ": Failed to ping " +
+                               "both hosts" )
+            # link up
+            main.log.info( item[ 'name' ] + ": Bring link up between " +
+                           sw1 + " and " + sw2 )
+            main.Mininet1.link( end1=sw1,
+                                end2=sw2,
+                                option="up" )
+            time.sleep( 5 )
 
-        main.step( "Adding host intents to h1 and h2" )
-        step2Result = main.TRUE
-        intentsId = []
-        intent1 = main.ONOS3.addHostIntent( hostIdOne = host1,
-                                            hostIdTwo = host2 )
-        intentsId.append( intent1 )
-        time.sleep( 5 )
-        intent2 = main.ONOS3.addHostIntent( hostIdOne = host2,
-                                            hostIdTwo = host1 )
-        intentsId.append( intent2 )
-        # Checking intents state before pinging
-        main.log.info( "Checking intents state" )
-        time.sleep( 15 )
-        intentResult = main.ONOS3.checkIntentState( intentsId = intentsId )
-        #check intent state again if intents are not in installed state
-        if not intentResult:
-           intentResult = main.ONOS3.checkIntentState( intentsId = intentsId )
-        step2Result = intentResult
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=step2Result,
-                                 onpass="All intents are in INSTALLED state ",
-                                 onfail="Some of the intents are not in " +
-                                        "INSTALLED state " )
+            # Check onos topology
+            main.log.info( item[ 'name' ] + ": Checking ONOS topology " )
+            topologyResult = main.ONOScli1.topology()
+            statusResult = main.ONOSbench.checkStatus( topologyResult,
+                                                       main.numSwitch,
+                                                       main.numLinks )
+            if not statusResult:
+                main.log.info( item[ 'name' ] + ": Topology mismatch" )
+            else:
+                main.log.info( item[ 'name' ] + ": Topology match" )
 
-        # pinging h1 to h2 and then ping h2 to h1
-        main.step( "Pinging h1 and h2" )
-        step3Result = main.TRUE
-        pingResult = main.TRUE
-        pingResult = main.LincOE2.pingHostOptical( src="h1", target="h2" )
-        pingResult = pingResult and main.LincOE2.pingHostOptical( src="h2",
-                                                                  target="h1" )
-        step3Result = pingResult
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=step3Result,
-                                 onpass="Pinged successfully between h1 and h2",
-                                 onfail="Pinged failed between h1 and h2" )
-        # Removed all added host intents
-        main.step( "Removing host intents" )
-        step4Result = main.TRUE
-        removeResult = main.TRUE
-        # Check remaining intents
-        intentsJson = json.loads( main.ONOS3.intents() )
-        main.ONOS3.removeIntent( intentId=intent1, purge=True )
-        main.ONOS3.removeIntent( intentId=intent2, purge=True )
-        for intents in intentsJson:
-            main.ONOS3.removeIntent( intentId=intents.get( 'id' ),
-                                     app='org.onosproject.optical',
-                                     purge=True )
-        print json.loads( main.ONOS3.intents() )
-        if len( json.loads( main.ONOS3.intents() ) ):
-            removeResult = main.FALSE
-        step4Result = removeResult
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=step4Result,
-                                 onpass="Successfully removed host intents",
-                                 onfail="Failed to remove host intents" )
-        case25Result = step1Result and step2Result and step3Result and \
-                       step4Result
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=case25Result,
-                                 onpass="Add host intent successful",
-                                 onfail="Add host intent failed" )
+            # Ping hosts
+            main.log.info( item[ 'name' ] + ": Ping " + h1Name + " and " +
+                           h2Name )
+            pingResult1 = main.Mininet1.pingHost( src=h1Name , target=h2Name )
+            if not pingResult1:
+                main.log.info( item[ 'name' ] + ": " + h1Name + " cannot ping "
+                               + h2Name )
+            pingResult2 = main.Mininet1.pingHost( src=h2Name , target=h1Name )
+            if not pingResult2:
+                main.log.info( item[ 'name' ] + ": " + h2Name + " cannot ping "
+                               + h1Name )
+            pingResult = pingResult1 and pingResult2
+            if pingResult:
+                main.log.info( item[ 'name' ] + ": Successfully pinged " +
+                               "both hosts" )
+            else:
+                main.log.info( item[ 'name' ] + ": Failed to ping " +
+                               "both hosts" )
+
+            # Remove intents
+            for intent in intentsId:
+                main.ONOScli1.removeIntent( intentId=intent, purge=True )
+
+            print main.ONOScli1.intents()
+            stepResult = pingResult
+            utilities.assert_equals( expect=main.TRUE,
+                                     actual=stepResult,
+                                     onpass=item[ 'name' ] +
+                                            " host intent successful",
+                                     onfail=item[ 'name' ] +
+                                            "Add host intent failed" )
+    def CASE2000( self, main ):
+        """
+            Add point intents between 2 hosts:
+                - Get device ids
+                - Add point intents
+                - Check intents
+                - Check flows
+                - Ping hosts
+                - Reroute
+                    - Link down
+                    - Ping hosts
+                    - Link up
+                    - Ping hosts
+                - Remove intents
+        """
+
+    def CASE3000( self, main ):
+        """
+            Add single point to multi point intents
+                - Get device ids
+                - Add single point to multi point intents
+                - Check intents
+                - Check flows
+                - Ping hosts
+                - Reroute
+                    - Link down
+                    - Ping hosts
+                    - Link up
+                    - Ping hosts
+                - Remove intents
+        """
+
+    def CASE4000( self, main ):
+        """
+            Add multi point to single point intents
+                - Get device ids
+                - Add multi point to single point intents
+                - Check intents
+                - Check flows
+                - Ping hosts
+                - Reroute
+                    - Link down
+                    - Ping hosts
+                    - Link up
+                    - Ping hosts
+                - Remove intents
+        """

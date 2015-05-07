@@ -164,3 +164,109 @@ class SingleFunc:
                                  onfail="Failed to assign switches to " +
                                         "controller" )
 
+
+    def CASE1000( self, main ):
+        """
+            Add host intents between 2 host
+        """
+        import time
+        import json
+        
+        item = []
+        
+        ipv4 = { 'name':'', 'host1':, 'host2': }
+
+        main.case( "Add host intents between 2 host" )
+
+        main.step(" Discover host using arping" )
+        
+
+
+        main.step( "Discover host using arping" )
+        step1Result = main.TRUE
+        main.hostMACs = []
+        main.hostId = []
+        #Listing host MAC addresses
+        for i in range( 1 , 7 ):
+            main.hostMACs.append( "00:00:00:00:00:" +
+                                str( hex( i )[ 2: ] ).zfill( 2 ).upper() )
+        for macs in main.hostMACs:
+            main.hostId.append( macs + "/-1" )
+        host1 = main.hostId[ 0 ]
+        host2 = main.hostId[ 1 ]
+        # Use arping to discover the hosts
+        main.LincOE2.arping( host = "h1" )
+        main.LincOE2.arping( host = "h2" )
+        time.sleep( 5 )
+        hostsDict = main.ONOS3.hosts()
+        if not len( hostsDict ):
+            step1Result = main.FALSE
+        # Adding host intent
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=step1Result,
+            onpass="Hosts discovered",
+            onfail="Failed to discover hosts")
+
+        main.step( "Adding host intents to h1 and h2" )
+        step2Result = main.TRUE
+        intentsId = []
+        intent1 = main.ONOS3.addHostIntent( hostIdOne = host1,
+                                            hostIdTwo = host2 )
+        intentsId.append( intent1 )
+        time.sleep( 5 )
+        intent2 = main.ONOS3.addHostIntent( hostIdOne = host2,
+                                            hostIdTwo = host1 )
+        intentsId.append( intent2 )
+        # Checking intents state before pinging
+        main.log.info( "Checking intents state" )
+        time.sleep( 15 )
+        intentResult = main.ONOS3.checkIntentState( intentsId = intentsId )
+        #check intent state again if intents are not in installed state
+        if not intentResult:
+           intentResult = main.ONOS3.checkIntentState( intentsId = intentsId )
+        step2Result = intentResult
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=step2Result,
+                                 onpass="All intents are in INSTALLED state ",
+                                 onfail="Some of the intents are not in " +
+                                        "INSTALLED state " )
+
+        # pinging h1 to h2 and then ping h2 to h1
+        main.step( "Pinging h1 and h2" )
+        step3Result = main.TRUE
+        pingResult = main.TRUE
+        pingResult = main.LincOE2.pingHostOptical( src="h1", target="h2" )
+        pingResult = pingResult and main.LincOE2.pingHostOptical( src="h2",
+                                                                  target="h1" )
+        step3Result = pingResult
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=step3Result,
+                                 onpass="Pinged successfully between h1 and h2",
+                                 onfail="Pinged failed between h1 and h2" )
+        # Removed all added host intents
+        main.step( "Removing host intents" )
+        step4Result = main.TRUE
+        removeResult = main.TRUE
+        # Check remaining intents
+        intentsJson = json.loads( main.ONOS3.intents() )
+        main.ONOS3.removeIntent( intentId=intent1, purge=True )
+        main.ONOS3.removeIntent( intentId=intent2, purge=True )
+        for intents in intentsJson:
+            main.ONOS3.removeIntent( intentId=intents.get( 'id' ),
+                                     app='org.onosproject.optical',
+                                     purge=True )
+        print json.loads( main.ONOS3.intents() )
+        if len( json.loads( main.ONOS3.intents() ) ):
+            removeResult = main.FALSE
+        step4Result = removeResult
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=step4Result,
+                                 onpass="Successfully removed host intents",
+                                 onfail="Failed to remove host intents" )
+        case25Result = step1Result and step2Result and step3Result and \
+                       step4Result
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=case25Result,
+                                 onpass="Add host intent successful",
+                                 onfail="Add host intent failed" )

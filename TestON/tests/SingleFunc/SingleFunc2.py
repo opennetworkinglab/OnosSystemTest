@@ -8,15 +8,14 @@ import sys
 import os.path
 
 
-class ScaleOutTemplate:
+class SingleFunc:
 
     def __init__( self ):
         self.default = ''
 
-    def CASE1( self, main ):           
-                                        
-        import time                     
-        global init       
+    def CASE1( self, main ):
+        import time
+        global init
         try: 
             if type(init) is not bool: 
                 init = False  
@@ -24,15 +23,14 @@ class ScaleOutTemplate:
             init = False 
        
         #Load values from params file
-        checkoutBranch = main.params[ 'GIT' ][ 'checkout' ]
-        gitPull = main.params[ 'GIT' ][ 'autopull' ]
+        checkoutBranch = main.params[ 'GIT' ][ 'branch' ]
+        gitPull = main.params[ 'GIT' ][ 'pull' ]
         cellName = main.params[ 'ENV' ][ 'cellName' ]
         Apps = main.params[ 'ENV' ][ 'cellApps' ]
         BENCHIp = main.params[ 'BENCH' ][ 'ip1' ]
         BENCHUser = main.params[ 'BENCH' ][ 'user' ]
-        MN1Ip = main.params[ 'MN' ][ 'ip1' ]
         maxNodes = int(main.params[ 'availableNodes' ])
-        skipMvn = main.params[ 'TEST' ][ 'skipCleanInstall' ]
+        skipMvn = main.params[ 'skipCleanInstall' ]
         cellName = main.params[ 'ENV' ][ 'cellName' ]        
 
         # -- INIT SECTION, ONLY RUNS ONCE -- # 
@@ -58,7 +56,7 @@ class ScaleOutTemplate:
 
             #git
             main.step( "Git checkout and pull " + checkoutBranch )
-            if gitPull == 'on':
+            if gitPull == 'True':
                 checkoutResult = main.ONOSbench.gitCheckout( checkoutBranch )
                 pullResult = main.ONOSbench.gitPull()
 
@@ -70,7 +68,7 @@ class ScaleOutTemplate:
         # -- END OF INIT SECTION --#
          
         clusterCount = int(scale[0])
-        scale.remove(scale[0])       
+        scale.remove(scale[0])
         
         #kill off all onos processes 
         main.log.step("Safety check, killing all ONOS processes")
@@ -90,7 +88,7 @@ class ScaleOutTemplate:
         for node in range (1, clusterCount + 1):
             cellIp.append(ONOSIp[node])
 
-        main.ONOSbench.createCellFile(BENCHIp,cellName,MN1Ip,str(Apps), *cellIp)
+        main.ONOSbench.createCellFile(BENCHIp,cellName,"",str(Apps), *cellIp)
 
         main.step( "Set Cell" )
         main.ONOSbench.setCell(cellName)
@@ -101,7 +99,7 @@ class ScaleOutTemplate:
         main.step( "verify cells" )
         verifyCellResult = main.ONOSbench.verifyCell()
       
-        main.log.report( "Initializeing " + str( clusterCount ) + " node cluster." )
+        main.log.report( "Initializing " + str( clusterCount ) + " node cluster." )
         for node in range(1, clusterCount + 1):
             main.log.info("Starting ONOS " + str(node) + " at IP: " + ONOSIp[node])
             main.ONOSbench.onosInstall( ONOSIp[node])

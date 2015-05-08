@@ -562,6 +562,8 @@ class OnosDriver( CLI ):
         # on here.
         appString = "export ONOS_APPS=" + appString
         mnString = "export OCN="
+        if mnIpAddrs == "":
+            mnString = ""
         onosString = "export OC"
         tempCount = 1
 

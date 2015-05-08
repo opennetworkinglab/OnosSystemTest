@@ -26,18 +26,100 @@ class SingleFunc:
         onos-install -f
         onos-wait-for-start
         """
+        global init
+        try:
+            if type(init) is not bool:
+                init = False
+        except NameError:
+            init = False
         #Local variables
         cellName = main.params[ 'ENV' ][ 'cellName' ]
-        main.ONOS1ip = os.environ[ 'OC1' ]
+        apps = main.params[ 'ENV' ][ 'cellApps' ]
+        main.ONOS1ip = main.params[ 'CTRL' ][ 'ip1' ]
+        gitBranch = main.params[ 'GIT' ][ 'branch' ]
         main.ONOS1port = main.params[ 'CTRL' ][ 'port1' ]
+        benchIp = main.params[ 'BENCH' ][ 'ip1' ]
+        benchUser = main.params[ 'BENCH' ][ 'user' ]
         main.numSwitch = int( main.params[ 'MININET' ][ 'switch' ] )
         main.numLinks = int( main.params[ 'MININET' ][ 'links' ] )
-        gitBranch = main.params[ 'GIT' ][ 'branch' ]
+        main.numCtrls = main.params[ 'CTRL' ][ 'num' ]
         topology = main.params[ 'MININET' ][ 'topo' ]
+        maxNodes = int( main.params[ 'availableNodes' ] )
         PULLCODE = False
         if main.params[ 'GIT' ][ 'pull' ] == 'True':
             PULLCODE = True
         main.case( "Setting up test environment" )
+        main.CLIs = []
+        for i in range( 1, int( main.numCtrls ) + 1 ):
+            main.CLIs.append( getattr( main, 'ONOScli' + str( i ) ) )
+
+        # -- INIT SECTION, ONLY RUNS ONCE -- #
+        if init == False:
+            init = True
+            global nodeCount             #number of nodes running
+            global ONOSIp                   #list of ONOS IP addresses
+            global scale
+
+            ONOSIp = [ ]
+            scale = ( main.params[ 'SCALE' ] ).split( "," )
+            nodeCount = int( scale[ 0 ] )
+
+            if PULLCODE:
+                main.step( "Git checkout and pull " + gitBranch )
+                main.ONOSbench.gitCheckout( gitBranch )
+                gitPullResult = main.ONOSbench.gitPull()
+                if gitPullResult == main.ERROR:
+                    main.log.error( "Error pulling git branch" )
+                main.step( "Using mvn clean & install" )
+                cleanInstallResult = main.ONOSbench.cleanInstall()
+                stepResult = cleanInstallResult
+                utilities.assert_equals( expect=main.TRUE,
+                                         actual=stepResult,
+                                         onpass="Successfully compiled " +
+                                                "latest ONOS",
+                                         onfail="Failed to compile " +
+                                                "latest ONOS" )
+            else:
+                main.log.warn( "Did not pull new code so skipping mvn " +
+                               "clean install" )
+            # Populate ONOSIp with ips from params
+            for i in range( 1, maxNodes + 1):
+                ONOSIp.append( main.params[ 'CTRL' ][ 'ip' + str( i ) ] )
+
+        nodeCount = int( scale[ 0 ] )
+        scale.remove( scale[ 0 ] )
+        #kill off all onos processes
+        main.log.info( "Safety check, killing all ONOS processes" +
+                       " before initiating enviornment setup" )
+        for i in range( maxNodes ):
+            main.ONOSbench.onosDie( ONOSIp[ i ] )
+        """
+        main.step( "Apply cell to environment" )
+        cellResult = main.ONOSbench.setCell( cellName )
+        verifyResult = main.ONOSbench.verifyCell()
+        stepResult = cellResult and verifyResult
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="Successfully applied cell to " + \
+                                        "environment",
+                                 onfail="Failed to apply cell to environment " )
+        """
+        """main.step( "Removing raft logs" )
+        removeRaftResult = main.ONOSbench.onosRemoveRaftLogs()
+        stepResult = removeRaftResult
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="Successfully removed raft logs",
+                                 onfail="Failed to remove raft logs" )
+        """
+        print "NODE COUNT = ", nodeCount
+        main.log.info( "Creating cell file" )
+        cellIp = []
+        for i in range( nodeCount ):
+            cellIp.append( str( ONOSIp[ i ] ) )
+        print cellIp
+        main.ONOSbench.createCellFile( benchIp, cellName, "",
+                                       str( apps ), *cellIp )
 
         main.step( "Apply cell to environment" )
         cellResult = main.ONOSbench.setCell( cellName )
@@ -48,30 +130,6 @@ class SingleFunc:
                                  onpass="Successfully applied cell to " + \
                                         "environment",
                                  onfail="Failed to apply cell to environment " )
-        """main.step( "Removing raft logs" )
-        removeRaftResult = main.ONOSbench.onosRemoveRaftLogs()
-        stepResult = removeRaftResult
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="Successfully removed raft logs",
-                                 onfail="Failed to remove raft logs" )
-        """
-        if PULLCODE:
-            main.step( "Git checkout and pull " + gitBranch )
-            main.ONOSbench.gitCheckout( gitBranch )
-            gitPullResult = main.ONOSbench.gitPull()
-            if gitPullResult == main.ERROR:
-                main.log.error( "Error pulling git branch" )
-            main.step( "Using mvn clean & install" )
-            cleanInstallResult = main.ONOSbench.cleanInstall()
-            stepResult = cleanInstallResult
-            utilities.assert_equals( expect=main.TRUE,
-                                     actual=stepResult,
-                                     onpass="Successfully compiled latest ONOS",
-                                     onfail="Failed to compile latest ONOS" )
-        else:
-            main.log.warn( "Did not pull new code so skipping mvn " +
-                           "clean install" )
 
         main.step( "Creating ONOS package" )
         packageResult = main.ONOSbench.onosPackage()
@@ -82,8 +140,10 @@ class SingleFunc:
                                  onfail="Failed to create ONOS package" )
 
         main.step( "Uninstalling ONOS package" )
-        onosUninstallResult = main.ONOSbench.onosUninstall(
-                                                          nodeIp=main.ONOS1ip )
+        onosUninstallResult = main.TRUE
+        for i in range( nodeCount):
+            onosUninstallResult = onosUninstallResult and \
+                    main.ONOSbench.onosUninstall( nodeIp=ONOSIp[ i ] )
         stepResult = onosUninstallResult
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -91,44 +151,44 @@ class SingleFunc:
                                  onfail="Failed to uninstall ONOS package" )
         time.sleep( 5 )
         main.step( "Installing ONOS package" )
-        onosInstallResult = main.ONOSbench.onosInstall( node=main.ONOS1ip )
+        onosInstallResult = main.TRUE
+        for i in range( nodeCount):
+            onosInstallResult = onosInstallResult and \
+                    main.ONOSbench.onosInstall( node=ONOSIp[ i ] )
         stepResult = onosInstallResult
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
                                  onpass="Successfully installed ONOS package",
                                  onfail="Failed to install ONOS package" )
 
+        time.sleep( 5 )
         main.step( "Starting ONOS service" )
         stopResult = main.TRUE
         startResult = main.TRUE
-        onosIsUp = main.ONOSbench.isup()
+        onosIsUp = main.TRUE
+        for i in range( nodeCount ):
+            onosIsUp = onosIsUp and main.ONOSbench.isup( ONOSIp[ i ] )
         if onosIsUp == main.TRUE:
             main.log.report( "ONOS instance is up and ready" )
         else:
             main.log.report( "ONOS instance may not be up, stop and " +
                              "start ONOS again " )
-            stopResult = main.ONOSbench.onosStop( main.ONOS1ip )
-            startResult = main.ONOSbench.onosStart( main.ONOS1ip )
+            for i in range( nodeCount ):
+                stopResult = stopResult and \
+                        main.ONOSbench.onosStop( ONOSIp[ i ] )
+            for i in range( nodeCount ):
+                startResult = startResult and \
+                        main.ONOSbench.onosStart( ONOSIp[ i ] )
         stepResult = onosIsUp and stopResult and startResult
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
                                  onpass="ONOS service is ready",
                                  onfail="ONOS service did not start properly" )
-
-        main.step( "Starting Mininet Topology" )
-        topoResult = main.Mininet1.startNet( topoFile=topology )
-        stepResult = topoResult
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="Successfully loaded topology",
-                                 onfail="Failed to load topology" )
-        # Exit if topology did not load properly
-        if not topoResult:
-            main.cleanup()
-            main.exit()
-
+        
         main.step( "Start ONOS cli" )
-        cliResult =  main.ONOScli1.startOnosCli( ONOSIp=main.ONOS1ip )
+        cliResult = main.TRUE
+        for i in range( nodeCount ):
+            cliResult = cliResult and main.CLIs[i].startOnosCli( ONOSIp[ i ] )
         stepResult = cliResult
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -142,6 +202,18 @@ class SingleFunc:
         import re
         main.log.report( "Assigning switches to controllers" )
         main.log.case( "Assigning swithes to controllers" )
+
+        main.step( "Starting Mininet Topology" )
+        topoResult = main.Mininet1.startNet( topoFile=topology )
+        stepResult = topoResult
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="Successfully loaded topology",
+                                 onfail="Failed to load topology" )
+        # Exit if topology did not load properly
+        if not topoResult:
+            main.cleanup()
+            main.exit()
 
         main.step( "Assigning switches to controllers" )
         assignResult = main.TRUE
@@ -166,7 +238,7 @@ class SingleFunc:
                                         "controller" )
 
 
-    def CASE1000( self, main ):
+    def CASE1001( self, main ):
         """
             Add host intents between 2 host:
                 - Discover hosts
@@ -204,13 +276,14 @@ class SingleFunc:
         dualStack1 = { 'name': 'DUALSTACK1', 'host1':
                  { 'name': 'h3', 'MAC': '00:00:00:00:00:03',
                    'id':'00:00:00:00:00:03/-1' } , 'host2':
-                 { 'name': '', 'MAC': '00:00:00:00:00:0B',
+                 { 'name': 'h11', 'MAC': '00:00:00:00:00:0B',
                    'id':'00:00:00:00:00:0B/-1'}, 'link': { 'switch1': 's5',
                    'switch2': 's2', 'num':'18' } }
         items.append( ipv4 )
+        items.append( dualStack1 )
         # Global variables
         
-        main.case( "Add host intents between 2 host" )
+        main.log.case( "Add host intents between 2 host" )
         
         for item in items:
             stepResult = main.TRUE
@@ -358,7 +431,7 @@ class SingleFunc:
                                             " host intent successful",
                                      onfail=item[ 'name' ] +
                                             "Add host intent failed" )
-    def CASE2000( self, main ):
+    def CASE1002( self, main ):
         """
             Add point intents between 2 hosts:
                 - Get device ids
@@ -374,7 +447,7 @@ class SingleFunc:
                 - Remove intents
         """
 
-    def CASE3000( self, main ):
+    def CASE1003( self, main ):
         """
             Add single point to multi point intents
                 - Get device ids
@@ -390,7 +463,7 @@ class SingleFunc:
                 - Remove intents
         """
 
-    def CASE4000( self, main ):
+    def CASE1004( self, main ):
         """
             Add multi point to single point intents
                 - Get device ids

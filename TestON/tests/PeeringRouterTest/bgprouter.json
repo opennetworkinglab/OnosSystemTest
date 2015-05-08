@@ -1,0 +1,7 @@
+{
+  "devices": [
+    { "alias":  "s1", "uri": "of:0000000000000001", "annotations": { "driver": "ovs-corsa"}, "type": "SWITCH" },
+    { "alias":  "s2", "uri": "of:0000000000000002", "annotations": { "driver": "default"}, "type": "SWITCH" }
+  ]
+}
+

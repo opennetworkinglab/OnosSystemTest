@@ -1898,3 +1898,37 @@ class OnosDriver( CLI ):
             main.cleanup()
             main.exit()
 
+
+    def getOnosIpFromEnv(self):
+
+        import os
+
+        # returns a list of ip addresses for the onos nodes, will work with up to 7 nodes + OCN and OCI
+        # returns in format [ 'x', OC1 ip, OC2 i... ect. ... , ONN ip ]
+
+        ONOSIps = ['x']
+
+        x = 1
+        while True:
+            try:
+                temp = os.environ[ 'OC' + str(x) ]
+            except: 
+                break
+            ONOSIps.append(temp) 
+            x += 1 
+
+        try: 
+            temp = os.environ[ 'OCN' ] 
+        except: 
+            main.log.error("MISSING OCN ENVIRONMENT VARIABLE")
+
+        ONOSIps.append(temp)
+        
+        try:
+            temp = os.environ[ 'OCI' ]
+        except:
+            main.log.error("MISSING OCN ENVIRONMENT VARIABLE")
+
+        ONOSIps.append(temp)
+        return ONOSIps
+

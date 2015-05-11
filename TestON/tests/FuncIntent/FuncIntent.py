@@ -27,19 +27,20 @@ class FuncIntent:
         onos-wait-for-start
         """
         global init
+        global globalONOSip
         try:
             if type(init) is not bool:
                 init = False
         except NameError:
             init = False
+
         #Local variables
         cellName = main.params[ 'ENV' ][ 'cellName' ]
         apps = main.params[ 'ENV' ][ 'cellApps' ]
         gitBranch = main.params[ 'GIT' ][ 'branch' ]
-        benchIp = main.params[ 'BENCH' ][ 'ip1' ]
+        benchIp = os.environ[ 'OCN' ]
         benchUser = main.params[ 'BENCH' ][ 'user' ]
         topology = main.params[ 'MININET' ][ 'topo' ]
-        maxNodes = int( main.params[ 'availableNodes' ] )
         main.numSwitch = int( main.params[ 'MININET' ][ 'switch' ] )
         main.numLinks = int( main.params[ 'MININET' ][ 'links' ] )
         main.numCtrls = main.params[ 'CTRL' ][ 'num' ]
@@ -55,7 +56,6 @@ class FuncIntent:
         if init == False:
             init = True
 
-            main.ONOSip = []
             main.ONOSport = []
             main.scale = ( main.params[ 'SCALE' ] ).split( "," )
             main.numCtrls = int( main.scale[ 0 ] )
@@ -78,19 +78,26 @@ class FuncIntent:
             else:
                 main.log.warn( "Did not pull new code so skipping mvn " +
                                "clean install" )
-            # Populate main.ONOSip with ips from params
-            for i in range( 1, maxNodes + 1):
-                main.ONOSip.append( main.params[ 'CTRL' ][ 'ip' + str( i ) ] )
-                main.ONOSport.append( main.params[ 'CTRL' ][ 'port' +
-                                      str( i ) ])
+
+            globalONOSip = main.ONOSbench.getOnosIpFromEnv()
+        
+        maxNodes = ( len(globalONOSip) - 3 )
 
         main.numCtrls = int( main.scale[ 0 ] )
         main.scale.remove( main.scale[ 0 ] )
+
+        main.ONOSip = [0]
+        for i in range( 1, maxNodes + 1 ): 
+            main.ONOSip.append( globalONOSip[i] )
+
+
+        
         #kill off all onos processes
         main.log.info( "Safety check, killing all ONOS processes" +
                        " before initiating enviornment setup" )
-        for i in range( maxNodes ):
-            main.ONOSbench.onosDie( main.ONOSip[ i ] )
+        for i in range(1, maxNodes+1):
+            main.ONOSbench.onosDie( globalONOSip[ i ] )
+        
         """
         main.step( "Apply cell to environment" )
         cellResult = main.ONOSbench.setCell( cellName )
@@ -110,6 +117,7 @@ class FuncIntent:
                                  onpass="Successfully removed raft logs",
                                  onfail="Failed to remove raft logs" )
         """
+
         print "NODE COUNT = ", main.numCtrls
         main.log.info( "Creating cell file" )
         cellIp = []
@@ -139,7 +147,7 @@ class FuncIntent:
 
         main.step( "Uninstalling ONOS package" )
         onosUninstallResult = main.TRUE
-        for i in range( main.numCtrls):
+        for i in range( 1, main.numCtrls + 1):
             onosUninstallResult = onosUninstallResult and \
                     main.ONOSbench.onosUninstall( nodeIp=main.ONOSip[ i ] )
         stepResult = onosUninstallResult
@@ -150,7 +158,7 @@ class FuncIntent:
         time.sleep( 5 )
         main.step( "Installing ONOS package" )
         onosInstallResult = main.TRUE
-        for i in range( main.numCtrls):
+        for i in range( 1, main.numCtrls+1):
             onosInstallResult = onosInstallResult and \
                     main.ONOSbench.onosInstall( node=main.ONOSip[ i ] )
         stepResult = onosInstallResult
@@ -159,12 +167,12 @@ class FuncIntent:
                                  onpass="Successfully installed ONOS package",
                                  onfail="Failed to install ONOS package" )
 
-        time.sleep( 5 )
+        time.sleep( 20 )
         main.step( "Starting ONOS service" )
         stopResult = main.TRUE
         startResult = main.TRUE
         onosIsUp = main.TRUE
-        for i in range( main.numCtrls ):
+        for i in range( 1, main.numCtrls+1 ):
             onosIsUp = onosIsUp and main.ONOSbench.isup( main.ONOSip[ i ] )
         if onosIsUp == main.TRUE:
             main.log.report( "ONOS instance is up and ready" )

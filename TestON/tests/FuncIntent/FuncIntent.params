@@ -14,16 +14,16 @@
     </GIT>
     <CTRL>
         <num>3</num>
-        <ip1>10.128.10.21</ip1>
+        <ip1>OC1</ip1>
         <port1>6633</port1>
-        <ip2>10.128.10.22</ip2>
+        <ip2>OC2</ip2>
         <port2>6633</port2>
-        <ip3>10.128.10.23</ip3>
+        <ip3>OC3</ip3>
         <port3>6633</port3>
     </CTRL>
     <BENCH>
         <user>admin</user>
-        <ip1>10.128.10.20</ip1>
+        <ip1>10.128.5.55</ip1>
     </BENCH>
     <MININET>
         <switch>7</switch>

@@ -144,15 +144,15 @@ class flowTP1g:
         import datetime
         import traceback
 
-        global currentNeighbors 
-        try: 
+        global currentNeighbors
+        try:
             currentNeighbors
-        except: 
+        except:
             currentNeighbors = "0"
-        else: 
+        else:
             if currentNeighbors == "r":      #reset
                 currentNeighbors = "0"
-            else: 
+            else:
                 currentNeighbors = "a"
 
         testCMD = [ 0,0,0,0 ]
@@ -172,25 +172,21 @@ class flowTP1g:
         maxNodes = int(main.params[ 'availableNodes' ])
         homeDir = os.path.expanduser('~')
         flowRuleBackup = str(main.params[ 'TEST' ][ 'enableFlowRuleStoreBackup' ])
-        print flowRuleBackup
-
+        main.log.info("Flow Rule Backup is set to:" + flowRuleBackup)
 
         servers = str(clusterCount) 
-        #for i in range(0, len(neighborList)):
-        #    if neighborList[i] == 'a':
-        #        neighborList[i] = str(clusterCount - 1)  
         
         if clusterCount == 1: 
             neighborList = ['0']
             currentNeighbors = "r"
-        else: 
-            if currentNeighbors == "a": 
+        else:
+            if currentNeighbors == "a":
                 neighborList = [str(clusterCount-1)]
-                currentNeughbors = "r"
+                currentNeighbors = "r"
             else:
-                neighborList = ['0']
+                neighborList = ['0'] 
         
-        #main.log.info("neightborlist: " + str(neighborList))
+        main.log.info("neightborlist: " + str(neighborList))
 
         ts = time.time()
         st = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
@@ -239,10 +235,15 @@ class flowTP1g:
             main.ONOSbench.handle.sendline("""onos $OC1 "balance-masters" """)
             main.ONOSbench.handle.expect(":~")
             time.sleep(3)
-            main.ONOSbench.handle.sendline("""onos $OC1 "cfg set org.onosproject.store.flow.impl.DistributedFlowRuleStore backupEnabled """ + str(flowRuleBackup) + """ " """)
+            main.log.info("""onos $OC1 "cfg set org.onosproject.store.flow.impl.NewDistributedFlowRuleStore backupEnabled """ + flowRuleBackup + """" """)
+            main.ONOSbench.handle.sendline("""onos $OC1 "cfg set org.onosproject.store.flow.impl.NewDistributedFlowRuleStore backupEnabled """ + flowRuleBackup + """" """)
             main.ONOSbench.handle.expect(":~")
        
             main.ONOSbench.handle.sendline("onos $OC1 summary")
+            main.ONOSbench.handle.expect(":~")
+            check = main.ONOSbench.handle.before
+
+            main.ONOSbench.handle.sendline("""onos $OC1 "cfg get" """)
             main.ONOSbench.handle.expect(":~")
             check = main.ONOSbench.handle.before
             main.log.info("\nStart up check: \n" + check + "\n") 
@@ -322,8 +323,8 @@ class flowTP1g:
                     data[test-warmUp] = result
 
                 # wait for flows = 0 
-                for checkCount in range(0,3): 
-                    time.sleep(6)
+                for checkCount in range(0,5): 
+                    time.sleep(10)
                     main.ONOSbench.handle.sendline("onos $OC1 summary")
                     main.ONOSbench.handle.expect(":~")
                     flowCheck = main.ONOSbench.handle.before

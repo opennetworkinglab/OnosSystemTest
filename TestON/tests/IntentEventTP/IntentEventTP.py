@@ -35,6 +35,7 @@ class IntentEventTP:
         skipMvn = main.params[ 'TEST' ][ 'skipCleanInstall' ]
         cellName = main.params[ 'ENV' ][ 'cellName' ]        
         numSwitches = (main.params[ 'TEST' ][ 'numSwitches' ]).split(",")
+        flowRuleBU = main.params[ 'TEST' ][ 'flowRuleBUEnabled' ]
 
 
         # -- INIT SECTION, ONLY RUNS ONCE -- # 
@@ -134,7 +135,7 @@ class IntentEventTP:
         time.sleep(20)
 
 
-        for i in range (0,5): 
+        while True: 
             main.ONOSbench.handle.sendline("""onos $OC1 "cfg set org.onosproject.provider.nil.NullProviders deviceCount """ + str(clusterCount*10) + """ " """)
             main.ONOSbench.handle.expect(":~")
             main.ONOSbench.handle.sendline("""onos $OC1 "cfg get org.onosproject.provider.nil.NullProviders" """)
@@ -147,11 +148,7 @@ class IntentEventTP:
             main.log.info("cfg set failure, retrying")
             main.log.info("before" + main.ONOSbench.handle.before)
         
-        x = 1
         while True:
-            if x >= 6:
-                main.log.error("Null provider start failure, TEST INVALID")
-                break
             main.ONOSbench.handle.sendline("""onos $OC1 "cfg set org.onosproject.provider.nil.NullProviders topoShape linear" """)
             main.ONOSbench.handle.expect(":~")
             main.ONOSbench.handle.sendline("""onos $OC1 "cfg get org.onosproject.provider.nil.NullProviders" """)
@@ -163,7 +160,12 @@ class IntentEventTP:
             time.sleep(10)
             main.log.info("cfg set failure, retrying")
             main.log.info("before" + main.ONOSbench.handle.before)
-            x += 1
+
+        main.ONOSbench.handle.sendline("""onos $OC1 "cfg set org.onosproject.store.flow.impl.NewDistributedFlowRuleStore backupEnabled """ + flowRuleBU + """" """)
+        main.ONOSbench.handle.expect(":~")
+        main.ONOSbench.handle.sendline("""onos $OC1 "cfg get" """)
+        main.ONOSbench.handle.expect(":~")
+        main.log.info(main.ONOSbench.handle.before)
 
         time.sleep(10)
         main.ONOSbench.handle.sendline("""onos $OC1 "null-simulation start" """)
@@ -177,7 +179,7 @@ class IntentEventTP:
         lastOutput = "--"
         origin = time.time()
         clockStarted = False
-        for i in range (0,8):
+        while True:
             main.ONOSbench.handle.sendline("onos $OC1 summary")
             main.ONOSbench.handle.expect(":~")
             main.log.info("before" + main.ONOSbench.handle.before)
@@ -227,7 +229,7 @@ class IntentEventTP:
         for n in neighbors:
             main.log.info("Run with " + n + " neighbors") 
             time.sleep(5)
-            main.ONOSbench.handle.sendline("onos $OC1 cfg set org.onosproject.intentperf.IntentPerfInstaller numKeys " + numKeysn)
+            main.ONOSbench.handle.sendline("onos $OC1 cfg set org.onosproject.intentperf.IntentPerfInstaller numKeys " + numKeys )
             main.ONOSbench.handle.expect(":~")
             main.ONOSbench.handle.sendline("onos $OC1 cfg set org.onosproject.intentperf.IntentPerfInstaller numNeighbors " + n ) 
             main.ONOSbench.handle.expect(":~")

@@ -1901,3 +1901,68 @@ class OnosDriver( CLI ):
             main.cleanup()
             main.exit()
 
+
+    def getOnosIpFromEnv(self):
+
+        import string  
+
+        # returns a list of ip addresses for the onos nodes, will work with up to 7 nodes + OCN and OCI
+        # returns in format [ 'x', OC1 ip, OC2 i... ect. ... , ONN ip ]
+
+        self.handle.sendline("env| grep OC") 
+        self.handle.expect(":~")
+        rawOutput = self.handle.before
+        print rawOutput
+        print "-----------------------------"
+        print repr(rawOutput)
+        mpa = dict.fromkeys(range(32))
+        translated = rawOutput.translate(mpa)
+        print translated
+
+
+        # create list with only the lines that have the needed IPs 
+        unparsedIps = []
+
+        # remove preceeding or trailing lines
+        for line in rawOutput: 
+            if "OC" in line and "=" in line: 
+                unparsedIps.append(str(line)) 
+
+        # determine cluster size
+        clusterCount = 0
+        for line in unparsedIps:
+            line = str(line)
+            print line
+            temp = line.replace("OC","")
+            print("line index " + str(line.index("="))) 
+            OCindex = temp[0]
+            for i in range(0, 7):
+                if OCindex == str(i) and i > clusterCount:
+                    clusterCount == i
+                    print(clusterCount)
+        # create list to hold ips such that OC1 is at list[1] and OCN and OCI are at the end (in that order)
+        ONOSIps = ["x"] * (clusterCount + 3) 
+
+        # populate list 
+        for line in unparsedIps:
+            main.log.info(line)########## 
+            temp = str(line.replace("OC",""))
+            main.log.info(str(list(temp)))
+            OCindex = temp[0]
+            main.log.info(OCindex)############
+            if OCindex == "N":
+                ONOSIps[ clusterCount + 1 ] = temp.replace("N=","")
+    
+            if OCindex == "I":
+                ONOSIps[ clusterCount + 2 ] = temp.replace("I=","")
+
+            else:
+                ONOSIps[ int(OCindex) ] = temp.replace((OCindex + "=") ,"")
+
+        # validate 
+        for x in ONOSIps: 
+            if ONOSIps.index(x) != 0 and x == "x": 
+                main.log.error("ENV READ FAILURE, MISSING DATA: \n\n" + str(ONOSIps) + "\n\n") 
+
+        return ONOSIps
+

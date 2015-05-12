@@ -121,7 +121,7 @@ class FuncIntent:
         print "NODE COUNT = ", main.numCtrls
         main.log.info( "Creating cell file" )
         cellIp = []
-        for i in range( main.numCtrls ):
+        for i in range( 1, main.numCtrls + 1 ):
             cellIp.append( str( main.ONOSip[ i ] ) )
         print cellIp
         main.ONOSbench.createCellFile( benchIp, cellName, "",

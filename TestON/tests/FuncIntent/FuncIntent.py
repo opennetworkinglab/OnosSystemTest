@@ -193,7 +193,7 @@ class FuncIntent:
         
         main.step( "Start ONOS cli" )
         cliResult = main.TRUE
-        for i in range( main.numCtrls ):
+        for i in range( 1, main.numCtrls + 1 ):
             cliResult = cliResult and \
                         main.CLIs[i].startOnosCli( main.ONOSip[ i ] )
         stepResult = cliResult
@@ -232,12 +232,12 @@ class FuncIntent:
         for i in range( 1, ( main.numSwitch + 1 ) ):
             main.Mininet1.assignSwController( sw=str( i ),
                                               count=1,
-                                              ip1=main.ONOSip[ 0 ],
+                                              ip1=main.ONOSip[ 1 ],
                                               port1=main.ONOSport[ 0 ] )
         for i in range( 1, ( main.numSwitch + 1 ) ):
             response = main.Mininet1.getSwController( "s" + str( i ) )
             print( "Response is " + str( response ) )
-            if re.search( "tcp:" + main.ONOSip[ 0 ], response ):
+            if re.search( "tcp:" + main.ONOSip[ 1 ], response ):
                 assignResult = assignResult and main.TRUE
             else:
                 assignResult = main.FALSE

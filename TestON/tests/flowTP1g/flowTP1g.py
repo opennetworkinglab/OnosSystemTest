@@ -37,6 +37,10 @@ class flowTP1g:
     
         main.log.info("==========DEBUG VERSION 3===========")
 
+        main.exceptions = [0]*11
+        main.warnings = [0]*11
+        main.errors = [0]*11
+
         # -- INIT SECTION, ONLY RUNS ONCE -- #
         if init == False:
             init = True
@@ -131,7 +135,7 @@ class flowTP1g:
             a(ONOSIp[node])
          
         main.log.info("Startup sequence complete")
-
+        main.ONOSbench.onosErrorLog(ONOSIp[1])
         
     def CASE2( self, main ):
         #
@@ -396,4 +400,4 @@ class flowTP1g:
             
             main.log.report("Result line to file: " + resultString)
            
-            
+        main.ONOSbench.onosErrorLog(ONOSIp[1]) 

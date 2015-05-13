@@ -41,6 +41,10 @@ class IntentEventTP:
         onBaremetal = main.params['isOnBaremetal']
         homeDir = os.path.expanduser('~')
 
+        main.exceptions = [0]*11
+        main.warnings = [0]*11
+        main.errors = [0]*11
+
         # -- INIT SECTION, ONLY RUNS ONCE -- # 
         if init == False: 
             init = True
@@ -49,9 +53,6 @@ class IntentEventTP:
             global scale 
             global commit
 
-            main.exceptions = [0]*11
-            main.warnings = [0]*11
-            main.errors = [0]*11 
             clusterCount = 0
             ONOSIp = [ 0 ]
             scale = (main.params[ 'SCALE' ]).split(",")            
@@ -332,8 +333,6 @@ class IntentEventTP:
                 clusterTotal = str(numpy.sum(groupResult))
                 main.log.report("Results from this round of polling: " + str(groupResult))
                 main.log.report("Cluster Total: " + clusterTotal + "\n")
-
-                main.ONOSbench.onosErrorLog(ONOSIp[1])
 
             cmd = "onos $OC1 intent-perf-stop"
             main.ONOSbench.handle.sendline(cmd)

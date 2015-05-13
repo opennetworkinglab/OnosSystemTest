@@ -1966,3 +1966,82 @@ class OnosDriver( CLI ):
 
         return ONOSIps
 
+        
+    def onosErrorLog(self, nodeIp): 
+
+        cmd = "onos-ssh " + nodeIp + " cat /opt/onos/log/karaf.log | grep WARN"
+        self.handle.sendline(cmd) 
+        self.handle.expect(":~")
+        before = (self.handle.before).splitlines() 
+    
+        warnings = []
+
+        for line in before: 
+            if "WARN" in line and "grep" not in line: 
+                warnings.append(line) 
+                main.warnings[main.warnings[0]+1] = line
+                main.warnings[0] += 1
+                if main.warnings[0] >= 10: 
+                    main.warnings[0] = 0 
+
+        cmd = "onos-ssh " + nodeIp + " cat /opt/onos/log/karaf.log | grep ERROR"
+        self.handle.sendline(cmd)
+        self.handle.expect(":~")
+        before = (self.handle.before).splitlines()
+
+        errors = []
+
+        for line in before:
+            if "ERROR" in line and "grep" not in line:
+                errors.append(line)
+                main.errors[main.errors[0]+1] = line
+                main.errors[0] += 1
+                if main.errors[0] >= 10:
+                    main.errors[0] = 0
+
+        cmd = "onos-ssh " + nodeIp + " cat /opt/onos/log/karaf.log | grep Exept"
+        self.handle.sendline(cmd)
+        self.handle.expect(":~")
+        before = (self.handle.before).splitlines()
+
+        exceptions = []
+
+        for line in before:
+            if "Except" in line and "grep" not in line:
+                exceptions.append(line)
+                main.exceptions[main.errors[0]+1] = line
+                main.exceptions[0] += 1
+                if main.exceptions[0] >= 10:
+                    main.exceptions[0] = 0
+
+
+
+        ################################################################
+
+        msg1 = "WARNINGS: \n"
+        for i in main.warnings: 
+            if type(i) is not int: 
+                msg1 += ( i + "\n")
+
+        msg2 = "ERRORS: \n"
+        for i in main.errors:
+            if type(i) is not int:
+                msg2 += ( i + "\n")
+
+        msg3 = "EXCEPTIONS: \n"
+        for i in main.exceptions: 
+            if type(i) is not int:
+                msg3 += ( i + "\n")
+
+        main.log.info("===============================================================\n") 
+        main.log.info( "Warnings: " + str(len(warnings))) 
+        main.log.info( "Errors: " + str(len(errors))) 
+        main.log.info( "Exceptions: " + str(len(exceptions)))
+        if len(warnings) > 0:
+            main.log.info(msg1)
+        if len(errors) > 0: 
+            main.log.info(msg2)
+        if len(exceptions) > 0: 
+            main.log.info(msg3)
+        main.log.info("===============================================================\n")
+        

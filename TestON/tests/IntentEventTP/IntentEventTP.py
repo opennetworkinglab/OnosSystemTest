@@ -16,6 +16,8 @@ class IntentEventTP:
     def CASE1( self, main ):           
                                         
         import time                     
+        import os.path
+
         global init       
         try: 
             if type(init) is not bool: 
@@ -36,7 +38,8 @@ class IntentEventTP:
         cellName = main.params[ 'ENV' ][ 'cellName' ]        
         numSwitches = (main.params[ 'TEST' ][ 'numSwitches' ]).split(",")
         flowRuleBU = main.params[ 'TEST' ][ 'flowRuleBUEnabled' ]
-
+        onBaremetal = main.params['isOnBaremetal']
+        homeDir = os.path.expanduser('~')
 
         # -- INIT SECTION, ONLY RUNS ONCE -- # 
         if init == False: 
@@ -45,7 +48,10 @@ class IntentEventTP:
             global ONOSIp                   #list of ONOS IP addresses
             global scale 
             global commit
-            
+
+            main.exceptions = [0]*11
+            main.warnings = [0]*11
+            main.errors = [0]*11 
             clusterCount = 0
             ONOSIp = [ 0 ]
             scale = (main.params[ 'SCALE' ]).split(",")            
@@ -110,7 +116,24 @@ class IntentEventTP:
             myDistribution.append(numSwitches[node-1])
 
         #main.ONOSbench.createLinkGraphFile( BENCHIp,cellIp,myDistribution)
-       
+
+        if onBaremetal == "True":
+            filename = "/onos/tools/package/bin/onos-service"
+            serviceConfig = open(homeDir + filename, 'w+')
+            serviceConfig.write("#!/bin/bash\n ")
+            serviceConfig.write("#------------------------------------- \n ")
+            serviceConfig.write("# Starts ONOS Apache Karaf container\n ")
+            serviceConfig.write("#------------------------------------- \n ")
+            serviceConfig.write("#export JAVA_HOME=${JAVA_HOME:-/usr/lib/jvm/java-7-openjdk-amd64/}\n ")
+            serviceConfig.write("""export JAVA_OPTS="${JAVA_OPTS:--Xms8G -Xmx8G}" \n """)
+            serviceConfig.write("")
+            serviceConfig.write("ONOS_HOME=/opt/onos \n ")
+            serviceConfig.write("")
+            serviceConfig.write("[ -d $ONOS_HOME ] && cd $ONOS_HOME || ONOS_HOME=$(dirname $0)/..\n")
+            serviceConfig.write("""${ONOS_HOME}/apache-karaf-$KARAF_VERSION/bin/karaf "$@" \n """)
+            serviceConfig.close()
+            main.log.info("Set /onos/tools/package/bin/onos-service with 8G Xms/Xmx Options.")
+      
         main.step( "Creating ONOS package" )
         packageResult = main.ONOSbench.onosPackage()  
 
@@ -198,7 +221,7 @@ class IntentEventTP:
                     break
             lastOutput = clusterCheck
             time.sleep(5)
-
+        main.ONOSbench.onosErrorLog(ONOSIp[1])
 
     def CASE2( self, main ): 
         import time
@@ -206,6 +229,26 @@ class IntentEventTP:
         import string
         import csv
         import numpy
+        import os.path
+
+        global currentNeighbors
+        neighbors = []
+
+        try:
+            currentNeighbors
+        except:
+            currentNeighbors = "0"
+            neighbors = ['0']
+        else:
+            if currentNeighbors == "r":      #reset
+                currentNeighbors = "a"
+                neighbors = ['0']
+            else:
+                currentNeighbors = "r" 
+                neighbors = ['a']
+
+        if clusterCount == 1:
+            currentNeighbors = "r"
 
         main.log.info("Cluster Count = " + str(clusterCount))
 
@@ -217,7 +260,7 @@ class IntentEventTP:
         debug = main.params[ 'debugMode' ]
         numKeys = main.params[ 'TEST' ][ 'numKeys' ]
         cyclePeriod = main.params[ 'TEST' ][ 'cyclePeriod' ]
-        neighbors = (main.params[ 'TEST' ][ 'neighbors' ]).split(",") 
+        #neighbors = (main.params[ 'TEST' ][ 'neighbors' ]).split(",") 
         metricList = [intentsRate, intentsWithdrawn, intentsFailed]
 
         for n in range(0, len(neighbors)): 
@@ -289,7 +332,9 @@ class IntentEventTP:
                 clusterTotal = str(numpy.sum(groupResult))
                 main.log.report("Results from this round of polling: " + str(groupResult))
                 main.log.report("Cluster Total: " + clusterTotal + "\n")
-            
+
+                main.ONOSbench.onosErrorLog(ONOSIp[1])
+
             cmd = "onos $OC1 intent-perf-stop"
             main.ONOSbench.handle.sendline(cmd)
             main.ONOSbench.handle.expect(":~")
@@ -308,6 +353,7 @@ class IntentEventTP:
                 resultsDB.write(resultString)
             
             resultsDB.close() 
-
+            
+            main.ONOSbench.onosErrorLog(ONOSIp[1])
                         
 

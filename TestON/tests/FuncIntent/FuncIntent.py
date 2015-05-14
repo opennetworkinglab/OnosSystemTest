@@ -346,7 +346,10 @@ class FuncIntent:
         import re
         """
             Create your item(s) here
-            item = { 'name':'', 'ingress':'' , 'egress':'',
+            item = { 'name':'', 'host1': { 'name': '' },
+                     'host2': { 'name': '' },
+                     'ingressDevice':'' , 'egressDevice':'',
+                     'ingressPort':'', 'egressPort':'',
                      'option':{ 'ethType':'', 'ethSrc':'', 'ethDst':'' } ,
                      'link': { 'switch1': '', 'switch2':'', 'expect':'' } }
 
@@ -360,20 +363,41 @@ class FuncIntent:
         assert main.numSwitch, "Placed the total number of switch topology in \
                                 main.numSwitch"
 
-
-        ipv4 = { 'name':'IPV4', 'ingress':'0000000000000005/1' ,
-                 'egress':'0000000000000006/1', 'option':
+        ipv4 = { 'name':'IPV4', 'ingressDevice':'of:0000000000000005/1' ,
+                 'host1': { 'name': 'h1' }, 'host2': { 'name': 'h9' },
+                 'egressDevice':'of:0000000000000006/1', 'option':
                  { 'ethType':'IPV4', 'ethSrc':'00:00:00:00:00:01',
                    'ethDst':'00:00:00:00:00:09' }, 'link': { 'switch1':'s5',
                    'switch2':'s2', 'expect':'18' } }
 
-        dualStack1 = { 'name':'DUALSTACK1', 'ingress':'0000000000000005/3' ,
-                 'egress':'0000000000000006/3', 'option':
-                 { 'ethType':'IPV4', 'ethSrc':'00:00:00:00:00:03',
-                   'ethDst':'00:00:00:00:00:0B' }, 'link': { 'switch1':'s5',
-                   'switch2':'s2', 'expect':'18' } }
+        """
+        ipv4 = { 'name':'IPV4', 'ingressDevice':'of:0000000000000005/1' ,
+                 'host1': { 'name': 'h1' }, 'host2': { 'name': 'h9' },
+                 'egressDevice':'of:0000000000000006/1', 'option':
+                 { 'ethType':'IPV4', 'ethSrc':'00:00:00:00:00:01' },
+                 'link': { 'switch1':'s5', 'switch2':'s2', 'expect':'18' } }
+        """ 
+        dualStack1 = { 'name':'IPV4', 'ingressDevice':'0000000000000005/3' ,
+                       'host1': { 'name': 'h3' }, 'host2': { 'name': 'h11' },
+                       'egressDevice':'0000000000000006/3', 'option':
+                       { 'ethType':'IPV4', 'ethSrc':'00:00:00:00:00:03',
+                       'ethDst':'00:00:00:00:00:0B' }, 'link': { 'switch1':'s5',
+                       'switch2':'s2', 'expect':'18' } }
 
-        main.wrapper.addPointIntent( main, ipv4 )
+
+        main.case( "Add point intents between 2 devices" )
+
+        stepResult = main.TRUE
+        main.step( ipv4[ 'name' ] + ": Add point intents between " +
+                   ipv4[ 'host1' ][ 'name' ] + " and " +
+                   ipv4[ 'host2' ][ 'name' ]  )
+        stepResult = main.wrapper.addPointIntent( main, ipv4 )
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass=ipv4[ 'name' ] +
+                                        ": Point intent successful",
+                                 onfail=ipv4[ 'name' ] +
+                                        ": Point intent failed" )
 
     def CASE1003( self, main ):
         """

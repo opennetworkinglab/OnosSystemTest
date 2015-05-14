@@ -106,16 +106,73 @@ def addPointIntent( main, item ):
     stepResult = main.TRUE
     global itemName
     itemName = item[ 'name' ]
-    ingress = item[ 'ingress' ]
-    egress = item[ 'egress' ]
+    h1Name = item[ 'host1' ][ 'name' ]
+    h2Name = item[ 'host2' ][ 'name' ]
+    ingressDevice = item[ 'ingressDevice' ]
+    egressDevice = item[ 'egressDevice' ]
     option = item[ 'option' ]
     sw1 = item[ 'link' ][ 'switch1' ]
     sw2 = item[ 'link' ][ 'switch2' ]
     expectLink = item[ 'link' ][ 'expect' ]
     intentsId = []
+    
+    # Assign options to variables
+    ingressPort = item.get( 'ingressPort' )
+    egressPort = item.get( 'egressPort' )
+    ethType = option.get( 'ethType' )
+    ethSrc = option.get( 'ethSrc' )
+    ethDst = option.get( 'ethDst' )
+    bandwidth = option.get( 'bandwidth' )
+    lambdaAlloc = option.get( 'lambdaAlloc' )
+    ipProto = option.get( 'ipProto' )
+    ipSrc = option.get( 'ipSrc' )
+    ipDst = option.get( 'ipDst' )
+    tcpSrc = option.get( 'tcpSrc' )
+    tcpDst = option.get( 'tcpDst' )
 
-    print 'OPTIONS ', option
-    return main.TRUE
+    if ingressPort == None:
+        ingressPort = ""
+    if egressPort == None:
+        egressPort = ""
+    if ethType == None:
+        ethType = ""
+    if ethSrc == None:
+        ethSrc = ""
+    if ethDst == None:
+        ethDst = ""
+    if bandwidth == None:
+        bandwidth = ""
+    if lambdaAlloc == None:
+        lambdaAlloc = False
+    if ipProto == None:
+        ipProto = ""
+    if ipSrc == None:
+        ipSrc = ""
+    if ipDst == None:
+        ipDst = ""
+    if tcpSrc == None:
+        tcpSrc = ""
+    if tcpDst == None:
+        tcpDst = ""
+
+    """
+    print 'ethType: ', ethType
+    print 'ethSrc: ', ethSrc
+    print 'ethDst: ', ethDst
+    print 'bandwidth', bandwidth
+    print 'lambdaAlloc: ', lambdaAlloc
+    print 'ipProto: ', ipProto
+    print 'ipSrc: ', ipSrc
+    print 'ipDst:', ipDst
+    print 'tcpSrc: ', tcpSrc
+    print 'tcpDst: ', tcpDst
+    """
+    addedOption = ""
+    for i in range( len( option ) ):
+        addedOption = addedOption + option.keys()[ i ] + " = " + \
+                      option.values()[ i ] + "\n"
+    main.log.info( itemName + ": Printing added options...\n" + addedOption )
+
     pingResult = main.TRUE
     intentResult = main.TRUE
     flowResult = main.TRUE
@@ -123,21 +180,39 @@ def addPointIntent( main, item ):
     linkDownResult = main.TRUE
     linkUpResult = main.TRUE
 
-    # Discover hosts using arping
-    main.log.info( itemName + ": Discover host using arping" )
-    main.Mininet1.arping( host=h1Name )
-    main.Mininet1.arping( host=h2Name )
-    host1 = main.CLIs[ 0 ].getHost( mac=h1Mac )
-    host2 = main.CLIs[ 0 ].getHost( mac=h2Mac )
-
-    # Adding host intents
+    # Adding bidirectional point  intents
     main.log.info( itemName + ": Adding host intents" )
-    intent1 = main.CLIs[ 0 ].addHostIntent( hostIdOne=h1Id,
-                                           hostIdTwo=h2Id )
+    intent1 = main.CLIs[ 0 ].addPointIntent( ingressDevice=ingressDevice,
+                                             egressDevice=egressDevice,
+                                             portIngress=ingressPort,
+                                             portEgress=egressPort,
+                                             ethType=ethType,
+                                             ethSrc=ethSrc,
+                                             ethDst=ethDst,
+                                             bandwidth=bandwidth,
+                                             lambdaAlloc=lambdaAlloc,
+                                             ipProto=ipProto,
+                                             ipSrc=ipSrc,
+                                             ipDst=ipDst,
+                                             tcpSrc=tcpSrc,
+                                             tcpDst=tcpDst )
+
     intentsId.append( intent1 )
     time.sleep( 5 )
-    intent2 = main.CLIs[ 0 ].addHostIntent( hostIdOne=h2Id,
-                                           hostIdTwo=h1Id )
+    intent2 = main.CLIs[ 0 ].addPointIntent( ingressDevice=egressDevice,
+                                             egressDevice=ingressDevice,
+                                             portIngress=egressPort,
+                                             portEgress=ingressPort,
+                                             ethType=ethType,
+                                             ethSrc=ethDst,
+                                             ethDst=ethSrc,
+                                             bandwidth=bandwidth,
+                                             lambdaAlloc=lambdaAlloc,
+                                             ipProto=ipProto,
+                                             ipSrc=ipDst,
+                                             ipDst=ipSrc,
+                                             tcpSrc=tcpDst,
+                                             tcpDst=tcpSrc )
     intentsId.append( intent2 )
 
     # Check intents state

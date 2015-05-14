@@ -374,7 +374,6 @@ class MininetCliDriver( Emulator ):
             Acceptable pingTypes: 
                 - 'ipv4' 
                 - 'ipv6'
-                - 'udp' 
         
             Acceptable hostList:
                 - ['h1','h2','h3','h4']
@@ -389,8 +388,6 @@ class MininetCliDriver( Emulator ):
             cmd = " ping -c 1 -i 1 -W 8 " 
         elif pingType == "ipv6":
             cmd = " ping6 -c 1 -i 1 -W 8 "
-        elif pingType == "udp":
-            cmd = " ping -u -c 1 -i 1 -W 8 "
         else:
             main.log.warn( "Invalid pingType specified" )
             return

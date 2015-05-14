@@ -52,6 +52,10 @@ class FuncIntent:
         for i in range( 1, int( main.numCtrls ) + 1 ):
             main.CLIs.append( getattr( main, 'ONOScli' + str( i ) ) )
 
+        main.errors = [0]*11
+        main.warnings = [0]*11
+        main.exceptions = [0]*11
+
         # -- INIT SECTION, ONLY RUNS ONCE -- #
         if init == False:
             init = True
@@ -201,6 +205,11 @@ class FuncIntent:
                                  actual=stepResult,
                                  onpass="Successfully start ONOS cli",
                                  onfail="Failed to start ONOS cli" )
+    
+    def CASE9( self, main ): 
+        main.log.info("Error report: \n") 
+        main.ONOSbench.onosErrorLog(globalONOSip[1]) 
+
 
     def CASE11( self, main ):
         """

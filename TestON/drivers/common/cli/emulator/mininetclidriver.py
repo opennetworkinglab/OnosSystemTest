@@ -397,7 +397,9 @@ class MininetCliDriver( Emulator ):
 
         try:
             main.log.info( "Testing reachability between specified hosts" )
-            
+           
+            isReachable = main.TRUE
+
             for host in hostList:
                 listIndex = hostList.index(host)
                 # List of hosts to ping other than itself
@@ -415,9 +417,10 @@ class MininetCliDriver( Emulator ):
                     else:
                         main.log.info( str(host) + " -> X ("+str(temp)+") "
                                        " Destination Unreachable" ) 
-                        return main.FALSE
+                        # One of the host to host pair is unreachable
+                        isReachable = main.FALSE
 
-            return main.TRUE
+            return isReachable 
 
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )

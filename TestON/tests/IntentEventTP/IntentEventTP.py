@@ -16,6 +16,8 @@ class IntentEventTP:
     def CASE1( self, main ):           
                                         
         import time                     
+        import os.path
+
         global init       
         try: 
             if type(init) is not bool: 
@@ -35,12 +37,13 @@ class IntentEventTP:
         skipMvn = main.params[ 'TEST' ][ 'skipCleanInstall' ]
         cellName = main.params[ 'ENV' ][ 'cellName' ]        
         numSwitches = (main.params[ 'TEST' ][ 'numSwitches' ]).split(",")
+        flowRuleBU = main.params[ 'TEST' ][ 'flowRuleBUEnabled' ]
+        onBaremetal = main.params['isOnBaremetal']
+        homeDir = os.path.expanduser('~')
 
-
-        # ?? homeDir = os.path.expanduser('~')
-        # ?? main.ONOSbench.handle.sendline("export TERM=vt100")
-        # ?^ dump = main.ONOSbench.handle.expect(":~")        
-
+        main.exceptions = [0]*11
+        main.warnings = [0]*11
+        main.errors = [0]*11
 
         # -- INIT SECTION, ONLY RUNS ONCE -- # 
         if init == False: 
@@ -48,7 +51,8 @@ class IntentEventTP:
             global clusterCount             #number of nodes running
             global ONOSIp                   #list of ONOS IP addresses
             global scale 
-            
+            global commit
+
             clusterCount = 0
             ONOSIp = [ 0 ]
             scale = (main.params[ 'SCALE' ]).split(",")            
@@ -74,6 +78,12 @@ class IntentEventTP:
                 pullResult = main.TRUE
                 main.log.info( "Skipped git checkout and pull" )
         
+            commit = main.ONOSbench.getVersion()
+            commit = (commit.split(" "))[1]
+        
+            resultsDB = open("IntentEventTPDB", "w+")
+            resultsDB.close()
+
         # -- END OF INIT SECTION --#
          
         clusterCount = int(scale[0])
@@ -106,8 +116,25 @@ class IntentEventTP:
         for node in range (1, clusterCount + 1):
             myDistribution.append(numSwitches[node-1])
 
-        main.ONOSbench.createLinkGraphFile( BENCHIp,cellIp,myDistribution)
-       
+        #main.ONOSbench.createLinkGraphFile( BENCHIp,cellIp,myDistribution)
+
+        if onBaremetal == "True":
+            filename = "/onos/tools/package/bin/onos-service"
+            serviceConfig = open(homeDir + filename, 'w+')
+            serviceConfig.write("#!/bin/bash\n ")
+            serviceConfig.write("#------------------------------------- \n ")
+            serviceConfig.write("# Starts ONOS Apache Karaf container\n ")
+            serviceConfig.write("#------------------------------------- \n ")
+            serviceConfig.write("#export JAVA_HOME=${JAVA_HOME:-/usr/lib/jvm/java-7-openjdk-amd64/}\n ")
+            serviceConfig.write("""export JAVA_OPTS="${JAVA_OPTS:--Xms8G -Xmx8G}" \n """)
+            serviceConfig.write("")
+            serviceConfig.write("ONOS_HOME=/opt/onos \n ")
+            serviceConfig.write("")
+            serviceConfig.write("[ -d $ONOS_HOME ] && cd $ONOS_HOME || ONOS_HOME=$(dirname $0)/..\n")
+            serviceConfig.write("""${ONOS_HOME}/apache-karaf-$KARAF_VERSION/bin/karaf "$@" \n """)
+            serviceConfig.close()
+            main.log.info("Set /onos/tools/package/bin/onos-service with 8G Xms/Xmx Options.")
+      
         main.step( "Creating ONOS package" )
         packageResult = main.ONOSbench.onosPackage()  
 
@@ -129,12 +156,57 @@ class IntentEventTP:
                 main.log.report( "ONOS " + str(node) + " didn't start!" )
         main.log.info("Startup sequence complete")
 
+        time.sleep(20)
+
+
+        while True: 
+            main.ONOSbench.handle.sendline("""onos $OC1 "cfg set org.onosproject.provider.nil.NullProviders deviceCount """ + str(clusterCount*10) + """ " """)
+            main.ONOSbench.handle.expect(":~")
+            main.ONOSbench.handle.sendline("""onos $OC1 "cfg get org.onosproject.provider.nil.NullProviders" """)
+            main.ONOSbench.handle.expect(":~")
+            if ("value=" + str(clusterCount*10)) in main.ONOSbench.handle.before:
+                main.log.info("Device count set")
+                main.log.info("before" + main.ONOSbench.handle.before)
+                break
+            time.sleep(10)
+            main.log.info("cfg set failure, retrying")
+            main.log.info("before" + main.ONOSbench.handle.before)
+        
+        while True:
+            main.ONOSbench.handle.sendline("""onos $OC1 "cfg set org.onosproject.provider.nil.NullProviders topoShape linear" """)
+            main.ONOSbench.handle.expect(":~")
+            main.ONOSbench.handle.sendline("""onos $OC1 "cfg get org.onosproject.provider.nil.NullProviders" """)
+            main.ONOSbench.handle.expect(":~")
+            if ("value=linear") in main.ONOSbench.handle.before:
+                main.log.info("Device count set")
+                main.log.info("before" + main.ONOSbench.handle.before)
+                break
+            time.sleep(10)
+            main.log.info("cfg set failure, retrying")
+            main.log.info("before" + main.ONOSbench.handle.before)
+
+        main.ONOSbench.handle.sendline("""onos $OC1 "cfg set org.onosproject.store.flow.impl.NewDistributedFlowRuleStore backupEnabled """ + flowRuleBU + """" """)
+        main.ONOSbench.handle.expect(":~")
+        main.ONOSbench.handle.sendline("""onos $OC1 "cfg get" """)
+        main.ONOSbench.handle.expect(":~")
+        main.log.info(main.ONOSbench.handle.before)
+
+        time.sleep(10)
+        main.ONOSbench.handle.sendline("""onos $OC1 "null-simulation start" """)
+        main.ONOSbench.handle.expect(":~")
+        print main.ONOSbench.handle.before
+        time.sleep(10)
+        main.ONOSbench.handle.sendline("""onos $OC1 "balance-masters" """)
+        main.ONOSbench.handle.expect(":~")
+        print main.ONOSbench.handle.before
+ 
         lastOutput = "--"
         origin = time.time()
         clockStarted = False
         while True:
             main.ONOSbench.handle.sendline("onos $OC1 summary")
             main.ONOSbench.handle.expect(":~")
+            main.log.info("before" + main.ONOSbench.handle.before)
             clusterCheck = ((main.ONOSbench.handle.before).splitlines())[3]
             print("\nBefore: " + str(clusterCheck))
             if ("SCC(s)=1,") in clusterCheck:
@@ -150,8 +222,7 @@ class IntentEventTP:
                     break
             lastOutput = clusterCheck
             time.sleep(5)
-
-        main.ONOSbench.configNullDev(cellIp, myDistribution)
+        main.ONOSbench.onosErrorLog(ONOSIp[1])
 
     def CASE2( self, main ): 
         import time
@@ -159,6 +230,26 @@ class IntentEventTP:
         import string
         import csv
         import numpy
+        import os.path
+
+        global currentNeighbors
+        neighbors = []
+
+        try:
+            currentNeighbors
+        except:
+            currentNeighbors = "0"
+            neighbors = ['0']
+        else:
+            if currentNeighbors == "r":      #reset
+                currentNeighbors = "a"
+                neighbors = ['0']
+            else:
+                currentNeighbors = "r" 
+                neighbors = ['a']
+
+        if clusterCount == 1:
+            currentNeighbors = "r"
 
         main.log.info("Cluster Count = " + str(clusterCount))
 
@@ -170,14 +261,15 @@ class IntentEventTP:
         debug = main.params[ 'debugMode' ]
         numKeys = main.params[ 'TEST' ][ 'numKeys' ]
         cyclePeriod = main.params[ 'TEST' ][ 'cyclePeriod' ]
-        neighbors = (main.params[ 'TEST' ][ 'neighbors' ]).split(",") 
+        #neighbors = (main.params[ 'TEST' ][ 'neighbors' ]).split(",") 
         metricList = [intentsRate, intentsWithdrawn, intentsFailed]
 
         for n in range(0, len(neighbors)): 
             if neighbors[n] == 'a': 
                 neighbors[n] = str(clusterCount -1)
-        print str(neighbors)
-
+                if int(clusterCount) == 1:
+                    neighbors = neighbors.pop()
+ 
         for n in neighbors:
             main.log.info("Run with " + n + " neighbors") 
             time.sleep(5)
@@ -238,11 +330,29 @@ class IntentEventTP:
 
                     main.log.info("Node " + str(node) + " overall rate: " + str(myResult))
 
+                clusterTotal = str(numpy.sum(groupResult))
                 main.log.report("Results from this round of polling: " + str(groupResult))
-                main.log.report("Cluster Total: " + str(numpy.sum(groupResult)) + "\n")
-            
+                main.log.report("Cluster Total: " + clusterTotal + "\n")
+
             cmd = "onos $OC1 intent-perf-stop"
             main.ONOSbench.handle.sendline(cmd)
             main.ONOSbench.handle.expect(":~")
             main.log.info("Stopping intentperf" )
-     
+   
+            resultsDB = open("IntentEventTPDB", "a")
+            for node in groupResult: 
+
+                resultString = "'" + commit + "',"
+                resultString += "'1gig',"
+                resultString += str(clusterCount) + ","
+                resultString += "'baremetal" + str(int(groupResult.index(node)) + 1) + "',"
+                resultString += n + ","
+                resultString += str(node) + ","
+                resultString += str(0) + "\n" #no stddev
+                resultsDB.write(resultString)
+            
+            resultsDB.close() 
+            
+            main.ONOSbench.onosErrorLog(ONOSIp[1])
+                        
+

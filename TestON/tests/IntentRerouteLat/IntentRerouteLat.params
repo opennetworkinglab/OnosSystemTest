@@ -1,27 +1,28 @@
 <PARAMS>
 
-    <testcases>1,3,2,3,2,3,2,3</testcases>
+    <testcases>1,2,1,2,1,2,1,2</testcases>
 
-    <SCALE>2</SCALE>
+    <SCALE>1,3,5,7</SCALE>
     <availableNodes>7</availableNodes>
  
     <ENV>
         <cellName>intentRerouteCell</cellName>
-        <cellFeatures>webconsole,onos-core,onos-api,onos-cli,onos-null,onos-gui,onos-rest,onos-app-metrics,onos-app-metrics-intent,onos-app-metrics-topology </cellFeatures>
-        <scale1switches>8,</scale1switches>
-        <scale3switches>2,3,3</scale3switches>
-        <scale5switches>2,3,1,1,1</scale5switches>
-        <scale7switches>1,1,2,1,1,1,1</scale7switches>
-    
+        <cellApps>drivers,null,intentperf,metrics</cellApps>
     </ENV>
 
     <TEST>
         <skipCleanInstall>yes</skipCleanInstall>
-        <warmUp>4</warmUp>
-        <sampleSize>20</sampleSize>                     
+        <warmUp>5</warmUp>
+        <sampleSize>10</sampleSize>                     
         <wait></wait>
-        <intents>1,100,1000,5000</intents>                       #list format, will be split on ','
-        <debug>True</debug>                          
+        <intents>1,100,1000</intents>                       #list format, will be split on ','
+        <debug>True</debug>     
+       
+        <s1>1,1,1,1,1,1,1,1</s1>
+        <s3>2,2,1,1,3,3,3,1</s3>
+        <s5>2,2,1,1,3,4,5,3</s5>
+        <s7>2,3,1,1,5,6,7,4</s7>
+
     </TEST>
 
     <METRICS>

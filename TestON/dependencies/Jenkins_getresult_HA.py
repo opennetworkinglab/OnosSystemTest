@@ -6,6 +6,7 @@ import re
 import datetime
 import time
 import argparse
+import glob
 import shutil
 
 parser = argparse.ArgumentParser()
@@ -43,10 +44,10 @@ if any("HA" in s for s in testnames):
     ##Graphs
     graphs += '<ac:structured-macro ac:name="html">\n'
     graphs += '<ac:plain-text-body><![CDATA[\n'
-    graphs += '<iframe src="https://onos-jenkins.onlab.us/job/'+job+'/plot/getPlot?index=2&width=500&height=300" noborder="0" width="500" height="300" scrolling="yes" seamless="seamless"></iframe>\n'
-    graphs += '<iframe src="https://onos-jenkins.onlab.us/job/'+job+'/plot/getPlot?index=1&width=500&height=300" noborder="0" width="500" height="300" scrolling="yes" seamless="seamless"></iframe>\n'
-    graphs += '<iframe src="https://onos-jenkins.onlab.us/job/'+job+'/plot/getPlot?index=0&width=500&height=300" noborder="0" width="500" height="300" scrolling="yes" seamless="seamless"></iframe>\n'
-    graphs += '<iframe src="https://onos-jenkins.onlab.us/job/'+job+'/plot/getPlot?index=3&width=500&height=300" noborder="0" width="500" height="300" scrolling="yes" seamless="seamless"></iframe>\n'
+    graphs += '<iframe src="https://onos-jenkins.onlab.us/job/'+job+'/plot/Plot-HA/getPlot?index=2&width=500&height=300" noborder="0" width="500" height="300" scrolling="yes" seamless="seamless"></iframe>\n'
+    graphs += '<iframe src="https://onos-jenkins.onlab.us/job/'+job+'/plot/Plot-HA/getPlot?index=1&width=500&height=300" noborder="0" width="500" height="300" scrolling="yes" seamless="seamless"></iframe>\n'
+    graphs += '<iframe src="https://onos-jenkins.onlab.us/job/'+job+'/plot/Plot-HA/getPlot?index=0&width=500&height=300" noborder="0" width="500" height="300" scrolling="yes" seamless="seamless"></iframe>\n'
+    graphs += '<iframe src="https://onos-jenkins.onlab.us/job/'+job+'/plot/Plot-HA/getPlot?index=3&width=500&height=300" noborder="0" width="500" height="300" scrolling="yes" seamless="seamless"></iframe>\n'
     graphs += ']]></ac:plain-text-body>\n'
     graphs += '</ac:structured-macro>\n'
     header +="<p> <a href='https://wiki.onosproject.org/display/OST/Test+Plan+-+HA'>Test Plan for HA Test Cases</a></p>"
@@ -63,7 +64,8 @@ for test in testnames:
     path = "/home/admin/ONLabTest/TestON/logs/" + name + "/"
     try:
         #IF exists, move the csv file to the workspace
-        shutil.copy(path + test + ".csv", workspace)
+        for csvFile in glob.glob( path + '*.csv' ):
+            shutil.copy( csvFile, workspace )
     except IOError:
         #File probably doesn't exist
         pass

@@ -52,32 +52,34 @@ from core.Thread import Thread
 
 class TestON:
     '''
-    
-    TestON will initiate the specified test. 
-    The main tasks are : 
-    * Initiate the required Component handles for the test. 
+    TestON will initiate the specified test.
+    The main tasks are :
+    * Initiate the required Component handles for the test.
     * Create Log file  Handles.
-    
     '''
     def __init__(self,options):
         '''
            Initialise the component handles specified in the topology file of the specified test.
-          
         '''
         # Initialization of the variables.
         __builtin__.main = self
-        
         __builtin__.path = path
         __builtin__.utilities = Utilities()
         self.TRUE = 1
         self.FALSE = 0
         self.ERROR = -1
+        self.NORESULT = 2
         self.FAIL = False
         self.PASS = True
-        self.CASERESULT = self.TRUE
+        self.CASERESULT = self.ERROR
+        self.STEPRESULT = self.NORESULT
+        self.stepResults = []
         self.init_result = self.TRUE
         self.testResult = "Summary"
-        self.stepName =""
+        self.stepName = ""
+        self.stepCache = ""
+        # make this into two lists? one for step names, one for results?
+        # this way, the case result could be a true AND of these results
         self.EXPERIMENTAL_MODE = False
         self.test_target = None
         self.lastcommand = None
@@ -127,7 +129,6 @@ class TestON:
             #Ordering components based on the connect order.
             ordered_component_list =sorted(components_connect_order, key=lambda key: components_connect_order[key])
             print ordered_component_list
-            
             for component in ordered_component_list:
                 self.componentInit(component)
 
@@ -143,7 +144,7 @@ class TestON:
                 return self.configDict
             except Exception:
                 print "There is no such file to parse " + self.configFile
-                        
+
     def componentInit(self,component):
         '''
         This method will initialize specified component
@@ -157,12 +158,12 @@ class TestON:
         driver_options['name']=component
         driverName = self.componentDictionary[component]['type']
         driver_options ['type'] = driverName
-        
+
         classPath = self.getDriverPath(driverName.lower())
         driverModule = importlib.import_module(classPath)
         driverClass = getattr(driverModule, driverName)
         driverObject = driverClass()
-         
+
         connect_result = driverObject.connect(user_name = self.componentDictionary[component]['user'] if ('user' in self.componentDictionary[component].keys()) else getpass.getuser(),
                                               ip_address= self.componentDictionary[component]['host'] if ('host' in self.componentDictionary[component].keys()) else 'localhost',
                                               pwd = self.componentDictionary[component]['password'] if ('password' in self.componentDictionary[component].keys()) else 'changeme',
@@ -171,17 +172,16 @@ class TestON:
         if not connect_result:
             self.log.error("Exiting form the test execution because the connecting to the "+component+" component failed.")
             self.exit()
-            
+
         vars(self)[component] = driverObject
-                        
+
     def run(self):
         '''
-           The Execution of the test script's cases listed in the Test params file will be done here. 
-           And Update each test case result. 
-           This method will return TRUE if it executed all the test cases successfully, 
+           The Execution of the test script's cases listed in the Test params file will be done here.
+           And Update each test case result.
+           This method will return TRUE if it executed all the test cases successfully,
            else will retun FALSE
         '''
-        
         self.testCaseResult = {}
         self.TOTAL_TC = 0
         self.TOTAL_TC_RUN = 0
@@ -191,8 +191,8 @@ class TestON:
         self.TOTAL_TC_PASS = 0
         self.TEST_ITERATION = 0
         self.stepCount = 0
-        self.CASERESULT = self.TRUE
-        
+        self.CASERESULT = self.NORESULT
+
         import testparser
         testFile = self.tests_path + "/"+self.TEST + "/"+self.TEST + ".py"
         test = testparser.TestParser(testFile)
@@ -200,16 +200,20 @@ class TestON:
         self.code = test.getStepCode()
         repeat= int(self.params['repeat']) if ('repeat' in self.params) else 1
         self.TOTAL_TC_PLANNED = len(self.testcases_list)*repeat
-        
+
         result = self.TRUE
         while(repeat):
             for self.CurrentTestCaseNumber in self.testcases_list:
                 result = self.runCase(self.CurrentTestCaseNumber)
             repeat-=1
         return result
-    
+
     def runCase(self,testCaseNumber):
         self.CurrentTestCaseNumber = testCaseNumber
+        self.CurrentTestCase = ""
+        self.stepResults = []
+        self.stepName = ""
+        self.caseExplaination = ""
         result = self.TRUE
         self.stepCount = 0
         self.EXPERIMENTAL_MODE = self.FALSE
@@ -221,7 +225,7 @@ class TestON:
         except KeyError:
             self.log.error("There is no Test-Case "+ self.testCaseNumber)
             return self.FALSE
-        
+
         self.stepCount = 0
         while self.stepCount < len(self.code[self.testCaseNumber].keys()):
             result = self.runStep(self.stepList,self.code,self.testCaseNumber)
@@ -229,28 +233,78 @@ class TestON:
                 break
             elif result == self.TRUE:
                 continue
-            
         if not stopped :
+            if all( self.TRUE == i for i in self.stepResults ):
+                # ALL PASSED
+                self.CASERESULT = self.TRUE
+            elif self.FALSE in self.stepResults:
+                # AT LEAST ONE FAILED
+                self.CASERESULT = self.FALSE
+            elif self.TRUE in self.stepResults:
+                # AT LEAST ONE PASSED
+                self.CASERESULT = self.TRUE
+            else:
+                self.CASERESULT = self.NORESULT
             self.testCaseResult[str(self.CurrentTestCaseNumber)] = self.CASERESULT
             self.logger.updateCaseResults(self)
+            self.log.wiki( "<p>" + self.caseExplaination + "</p>" )
+            self.log.summary( self.caseExplaination )
+            self.log.wiki( "<ul>" )
+            for line in self.stepCache.splitlines():
+                if re.search( " - PASS$", line ):
+                    self.log.wiki( "<li>" + line + "  <ac:emoticon ac:name=\"tick\" /></li>\n" )
+                elif re.search( " - FAIL$", line ):
+                    self.log.wiki( "<li>" + line + "  <ac:emoticon ac:name=\"cross\" /></li>\n" )
+                elif re.search( " - No Result$", line ):
+                    self.log.wiki( "<li>" + line + "  <ac:emoticon ac:name=\"warning\" /></li>\n" )
+            self.log.wiki( "</ul>" )
+            self.log.summary( self.stepCache )
+            self.stepCache = ""
         return result
-    
+
     def runStep(self,stepList,code,testCaseNumber):
         if not cli.pause:
             try :
                 step = stepList[self.stepCount]
+                self.STEPRESULT = self.NORESULT
                 exec code[testCaseNumber][step] in module.__dict__
                 self.stepCount = self.stepCount + 1
+                if step > 0:
+                    self.stepCache += "\t"+str(testCaseNumber)+"."+str(step)+" "+self.stepName+" - "
+                    if self.STEPRESULT == self.TRUE:
+                        self.stepCache += "PASS\n"
+                        #self.stepCache += "PASS  <ac:emoticon ac:name=\"tick\" /></li>\n"
+                    elif self.STEPRESULT == self.FALSE:
+                        self.stepCache += "FAIL\n"
+                        #self.stepCache += "FAIL  <ac:emoticon ac:name=\"cross\" /></li>\n"
+                    else:
+                        self.stepCache += "No Result\n"
+                        #self.stepCache += "No Result  <ac:emoticon ac:name=\"warning\" /></li>\n"
+                    self.stepResults.append(self.STEPRESULT)
             except TypeError,e:
-                print "Exception in the following section of code: Test Step " +\
-                      str(testCaseNumber) + "." + str(step) + " ):"
+                print "\nException in the following section of code: " +\
+                      str(testCaseNumber) + "." + str(step) + ": " +\
+                      self.stepName
                 #print code[testCaseNumber][step]
                 self.stepCount = self.stepCount + 1
                 self.log.exception(e)
+                self.logger.updateCaseResults(self)
+                #WIKI results
+                self.log.wiki( "<ul>" )
+                for line in self.stepCache.splitlines():
+                    if re.search( " - PASS$", line ):
+                        self.log.wiki( "<li>" + line + "  <ac:emoticon ac:name=\"tick\" /></li>\n" )
+                    elif re.search( " - FAIL$", line ):
+                        self.log.wiki( "<li>" + line + "  <ac:emoticon ac:name=\"cross\" /></li>\n" )
+                    elif re.search( " - No Result$", line ):
+                        self.log.wiki( "<li>" + line + "  <ac:emoticon ac:name=\"warning\" /></li>\n" )
+                self.log.wiki( "</ul>" )
+                #summary results
+                self.log.summary( self.stepCache )
+                self.stepCache = ""
                 self.cleanup()
                 self.exit()
             return main.TRUE
-        
         if cli.stop:
             cli.stop = False
             stopped = True
@@ -259,21 +313,21 @@ class TestON:
             self.logger.updateCaseResults(self)
             result = self.cleanup()
             return main.FALSE
-        
+
     def addCaseHeader(self):
         caseHeader = "\n"+"*" * 30+"\n Result summary for Testcase"+str(self.CurrentTestCaseNumber)+"\n"+"*" * 30+"\n"
         self.log.exact(caseHeader)
         caseHeader = "\n"+"*" * 40 +"\nStart of Test Case"+str(self.CurrentTestCaseNumber)+" : "
         for driver in self.componentDictionary.keys():
             vars(self)[driver+'log'].info(caseHeader)
-    
+
     def addCaseFooter(self):
         if self.stepCount-1 > 0 :
             previousStep = " "+str(self.CurrentTestCaseNumber)+"."+str(self.stepCount-1)+": "+ str(self.stepName) + ""
             stepHeader = "\n"+"*" * 40+"\nEnd of Step "+previousStep+"\n"+"*" * 40+"\n"
-            
+
         caseFooter = "\n"+"*" * 40+"\nEnd of Test case "+str(self.CurrentTestCaseNumber)+"\n"+"*" * 40+"\n"
-            
+
         for driver in self.driversList:
             vars(self)[driver].write(stepHeader+"\n"+caseFooter)
 
@@ -288,7 +342,6 @@ class TestON:
         self.logger.testSummary(self)
 
         #self.reportFile.close()
-
 
         #utilities.send_mail()
         for component in self.componentDictionary.keys():
@@ -314,12 +367,11 @@ class TestON:
         This function will pause the test's execution, and will continue after user provide 'resume' command.
         '''
         __builtin__.testthread.pause()
-    
+
     def onfail(self,*components):
         '''
-        When test step failed, calling all the components onfail. 
+        When test step failed, calling all the components onfail.
         '''
-         
         if not components:
             try :
                 for component in self.componentDictionary.keys():
@@ -328,7 +380,6 @@ class TestON:
             except(Exception),e:
                 print str(e)
                 result = self.FALSE
-                
         else:
             try :
                 for component in components:
@@ -337,8 +388,7 @@ class TestON:
             except(Exception),e:
                 print str(e)
                 result = self.FALSE
-    
-    
+
     def getDriverPath(self,driverName):
         '''
            Based on the component 'type' specified in the params , this method will find the absolute path ,
@@ -348,23 +398,22 @@ class TestON:
 
         cmd = "find "+drivers_path+" -name "+driverName+".py"
         result = commands.getoutput(cmd)
-        
+
         result_array = str(result).split('\n')
         result_count = 0
-        
+
         for drivers_list in result_array:
             result_count = result_count+1
         if result_count > 1 :
             print "found "+driverName+" "+ str(result_count) + "  times"+str(result_array)
             self.exit()
-            
+
         result = re.sub("(.*)drivers","",result)
         result = re.sub("\.py","",result)
         result = re.sub("\.pyc","",result)
         result = re.sub("\/",".",result)
         result = "drivers"+result
         return result
-    
 
     def step(self,stepDesc):
         '''
@@ -379,16 +428,16 @@ class TestON:
                 stepName = " INIT : Initializing the test case :"+self.CurrentTestCase
         except AttributeError:
                 stepName = " INIT : Initializing the test case :"+str(self.CurrentTestCaseNumber)
-            
+
         self.log.step(stepName)
         stepHeader = ""
         if self.stepCount > 1 :
             stepHeader = "\n"+"-"*45+"\nEnd of Step "+previousStep+"\n"+"-"*45+"\n"
-        
+
         stepHeader += "\n"+"-"*45+"\nStart of Step"+stepName+"\n"+"-"*45+"\n"
         for driver in self.componentDictionary.keys():
             vars(self)[driver+'log'].info(stepHeader)
-            
+
     def case(self,testCaseName):
         '''
            Test's each test-case information will append to the logs.
@@ -399,14 +448,14 @@ class TestON:
         caseHeader = testCaseName+"\n"+"*" * 40+"\n"
         for driver in self.componentDictionary.keys():
             vars(self)[driver+'log'].info(caseHeader)
-        
+
     def testDesc(self,description):
         '''
            Test description will append to the logs.
         '''
         description = "Test Description : " + str (description) + ""
         self.log.info(description)
-        
+
     def _getTest(self):
         '''
            This method will parse the test script to find required test information.
@@ -422,17 +471,15 @@ class TestON:
             if lineMatch:
                 counter  = counter + 1
                 self.TC_PLANNED = len(self.testcases_list)
-        
-                
+
     def response_parser(self,response, return_format):
         ''' It will load the default response parser '''
         response_dict = {}
         response_dict = self.response_to_dict(response, return_format)
         return_format_string = self.dict_to_return_format(response,return_format,response_dict)
         return return_format_string
-    
+
     def response_to_dict(self,response,return_format):
-        
         response_dict = {}
         json_match = re.search('^\s*{', response)
         xml_match = re.search('^\s*\<', response)
@@ -440,12 +487,10 @@ class TestON:
         if json_match :
             self.log.info(" Response is in 'JSON' format and Converting to '"+return_format+"' format")
             # Formatting the json string
-            
             response = re.sub(r"{\s*'?(\w)", r'{"\1', response)
             response = re.sub(r",\s*'?(\w)", r',"\1', response)
             response = re.sub(r"(\w)'?\s*:", r'\1":', response)
             response = re.sub(r":\s*'(\w)'\s*([,}])", r':"\1"\2', response)
-            
             try :
                 import json
                 response_dict = json.loads(response)
@@ -453,7 +498,6 @@ class TestON:
                 self.log.exception( e )
                 self.log.error("Json Parser is unable to parse the string")
             return response_dict
-        
         elif ini_match :
             self.log.info(" Response is in 'INI' format and Converting to '"+return_format+"' format")
             from configobj import ConfigObj
@@ -462,7 +506,6 @@ class TestON:
             response_file.close()
             response_dict = ConfigObj("respnse_file.temp")
             return response_dict
-            
         elif xml_match :
             self.log.info(" Response is in 'XML' format and Converting to '"+return_format+"' format")
             try :
@@ -470,16 +513,15 @@ class TestON:
             except Exception, e:
                 self.log.exception( e )
             return response_dict
-        
+
     def dict_to_return_format(self,response,return_format,response_dict):
-        
         if return_format =='table' :
             ''' Will return in table format'''
             to_do = "Call the table output formatter"
             global response_table
             response_table = '\n'
             response_table = response_table +'\t'.join(response_dict)+"\n"
-            
+
             def get_table(value_to_convert):
                 ''' This will parse the dictionary recusrsively and print as table format'''
                 table_data = ""
@@ -490,16 +532,12 @@ class TestON:
                 else :
                     table_data = table_data + str(value_to_convert) +"\t"
                 return table_data
-            
+
             for value in response_dict.values() :
                 response_table =  response_table + get_table(value)
-                
-
-                
             # response_table = response_table + '\t'.join(response_dict.values())
-                
             return response_table
-        
+
         elif return_format =='config':
             ''' Will return in config format'''
             to_do = 'Call dict to config coverter'
@@ -511,24 +549,22 @@ class TestON:
             response_config = re.sub("}", "\n", response_config)
             response_config = re.sub(":", " =", response_config)
             return "[response]\n\t "+response_config
-            
         elif return_format == 'xml':
             ''' Will return in xml format'''
             response_xml = xmldict.dict_to_xml(response_dict)
             response_xml = re.sub(">\s*<", ">\n<", response_xml)
             return "\n"+response_xml
-        
         elif return_format == 'json':
             ''' Will return in json format'''
             to_do = 'Call dict to xml coverter'
             import json
             response_json = json.dumps(response_dict)
             return response_json
-    
+
     def get_random(self):
         self.random_order = self.random_order + 1
         return self.random_order
-        
+
     def exit(self):
         __builtin__.testthread = None
         sys.exit()
@@ -567,14 +603,14 @@ def verifyExample(options):
         main.testDir = path+'/examples/'
         main.tests_path = path+"/examples/"
         main.classPath = "examples."+main.TEST+"."+main.TEST
-               
+
 def verifyLogdir(options):
     # Verifying Log directory option
     if options.logdir:
         main.logdir = options.logdir
     else :
         main.logdir = main.FALSE
-        
+
 def verifyMail(options):
     # Checking the mailing list
     if options.mail:
@@ -611,7 +647,7 @@ def verifyTestCases(options):
         else :
             print "testcases not specifed in params, please provide in params file or 'testcases' commandline argument"
             sys.exit()
-                  
+
 def verifyTestScript(options):
     '''
     Verifyies test script.
@@ -627,7 +663,6 @@ def verifyTestScript(options):
         print "\nThere is no :\""+main.TEST+"\" test, Please Provide OpenSpeak Script/ test script"
         __builtin__.testthread = None
         main.exit()
-              
     try :
         testModule = __import__(main.classPath, globals(), locals(), [main.TEST], -1)
     except(ImportError):
@@ -639,20 +674,19 @@ def verifyTestScript(options):
     load_parser()
     main.params = main.parser.parseParams(main.classPath)
     main.topology = main.parser.parseTopology(main.classPath)
-    
+
 def verifyParams():
     try :
         main.params = main.params['PARAMS']
     except(KeyError):
         print "Error with the params file: Either the file not specified or the format is not correct"
         main.exit()
-    
     try :
         main.topology = main.topology['TOPOLOGY']
     except(KeyError):
         print "Error with the Topology file: Either the file not specified or the format is not correct"
         main.exit()
-        
+
 def load_parser() :
     '''
     It facilitates the loading customised parser for topology and params file.
@@ -674,11 +708,9 @@ def load_parser() :
                     main.parser = parsingClass()
                     #hashobj = main.parser.parseParams(main.classPath)
                     if hasattr(main.parser,"parseParams") and hasattr(main.parser,"parseTopology") and hasattr(main.parser,"parse") :
-                        
                         pass
                     else:
                         main.exit()
-
                 except ImportError:
                     print sys.exc_info()[1]
                     main.exit()
@@ -708,7 +740,6 @@ def load_defaultParser():
 
     except ImportError:
         print sys.exc_info()[1]
-
 
 def load_logger() :
     '''
@@ -772,9 +803,6 @@ def load_defaultlogger():
     except ImportError:
         print sys.exc_info()[1]
         main.exit()
-
-
-
 
 def _echo(self):
     print "THIS IS ECHO"

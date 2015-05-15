@@ -42,7 +42,8 @@ class IntentInstallWithdrawLat:
             global clusterCount             #number of nodes running
             global ONOSIp                   #list of ONOS IP addresses
             global scale 
-            
+            global commit            
+    
             clusterCount = 0
             ONOSIp = [ 0 ]
             scale = (main.params[ 'SCALE' ]).split(",")            
@@ -67,7 +68,13 @@ class IntentInstallWithdrawLat:
                 checkoutResult = main.TRUE
                 pullResult = main.TRUE
                 main.log.info( "Skipped git checkout and pull" )
-        
+       
+            commit = main.ONOSbench.getVersion()
+            commit = (commit.split(" "))[1]
+
+            resultsDB = open("IntentInstallWithdrawLatDB", "w+")
+            resultsDB.close()
+
         # -- END OF INIT SECTION --#
          
         clusterCount = int(scale[0])
@@ -96,8 +103,6 @@ class IntentInstallWithdrawLat:
         main.step( "Set Cell" )
         main.ONOSbench.setCell(cellName)
         
-        main.ONOSbench.createLinkGraphFile(BENCHIp, cellIp, switchCount)        
-
         main.step( "Creating ONOS package" )
         packageResult = main.ONOSbench.onosPackage()  
 
@@ -120,8 +125,24 @@ class IntentInstallWithdrawLat:
 
         main.ONOS1cli.startOnosCli( ONOSIp[1] )
         main.log.info("Startup sequence complete")
+        
+        time.sleep(30)
 
-        main.ONOSbench.configNullDev(cellIp, switchCount) 
+        main.ONOSbench.handle.sendline("""onos $OC1 "cfg setorg.onosproject.provider.nil.NullProviders enabled true" """)
+        main.ONOSbench.handle.expect(":~")
+        print main.ONOSbench.handle.before
+        main.ONOSbench.handle.sendline("""onos $OC1 "cfg set org.onosproject.provider.nil.NullProviders deviceCount """ + str(switchCount) + """ " """)
+        main.ONOSbench.handle.expect(":~")
+        print main.ONOSbench.handle.before
+        main.ONOSbench.handle.sendline("""onos $OC1 "cfg set org.onosproject.provider.nil.NullProviders topoShape linear" """)
+        main.ONOSbench.handle.expect(":~")
+        print main.ONOSbench.handle.before
+        main.ONOSbench.handle.sendline("""onos $OC1 "null-simulation start" """)
+        main.ONOSbench.handle.expect(":~")
+        print main.ONOSbench.handle.before
+        main.ONOSbench.handle.sendline("""onos $OC1 "balance-masters" """)
+        main.ONOSbench.handle.expect(":~")
+        print main.ONOSbench.handle.before
 
     def CASE2( self, main ):
          
@@ -224,3 +245,13 @@ class IntentInstallWithdrawLat:
             main.log.report("Withdraw standard deviation: " + str(numpy.std(withdrawn)))
             main.log.report("     ")
 
+            resultString = "'" + commit + "',"
+            resultString += str(clusterCount) + ","
+            resultString += str(intentSize) + ","
+            resultString += str(numpy.mean(installed)) + ","
+            resultString += str(numpy.std(installed)) + ","
+            resultString += str(numpy.mean(withdrawn)) + ","
+            resultString += str(numpy.std(withdrawn)) + "\n"
+            resultsDB = open("IntentInstallWithdrawLatDB", "a")
+            resultsDB.write(resultString)
+            resultsDB.close()

@@ -168,8 +168,10 @@ class TestON:
         if "OC" in self.componentDictionary[component]['host']:
             try: 
                 self.componentDictionary[component]['host'] = os.environ[str( self.componentDictionary[component]['host'])]
-            except: 
-                self.log.error("Missing OC environment variable! Check your environment setup and retry") 
+            except KeyError: 
+                self.log.error("Missing OC environment variable! Check your environment setup and retry")
+            except Exception as inst:
+                self.log.error("Uncaught exception: " + str(inst))
 
         connect_result = driverObject.connect(user_name = self.componentDictionary[component]['user'] if ('user' in self.componentDictionary[component].keys()) else getpass.getuser(),
                                               ip_address= self.componentDictionary[component]['host'] if ('host' in self.componentDictionary[component].keys()) else 'localhost',

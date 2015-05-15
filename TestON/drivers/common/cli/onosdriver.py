@@ -1899,114 +1899,151 @@ class OnosDriver( CLI ):
             main.exit()
 
 
-    def getOnosIpFromEnv(self):
+    def getOnosIps(self):
 
         import os
 
-        # returns a list of ip addresses for the onos nodes, will work with up to 7 nodes + OCN and OCI
-        # returns in format [ 'x', OC1 ip, OC2 i... ect. ... , ONN ip ]
+        # reads env for OC variables, also saves file with OC variables. If file and env conflict 
+        # priority goes to env. If file has OCs that are not in the env, the file OCs are used. 
+        # In other words, if the env is set, the test will use those values. 
 
-        ONOSIps = ['x']
+        # returns a list of ip addresses for the onos nodes, will work with up to 7 nodes + OCN and OCI
+        # returns in format [ OC1 ip, OC2 ...ect. , OCN, OCI ]
+
+        envONOSIps = {}
 
         x = 1
         while True:
             try:
                 temp = os.environ[ 'OC' + str(x) ]
-            except: 
+            except KeyError: 
                 break
-            ONOSIps.append(temp) 
+            envONOSIps[ ("OC" + str(x)) ] = temp 
             x += 1 
 
         try: 
             temp = os.environ[ 'OCN' ] 
-        except: 
-            main.log.error("MISSING OCN ENVIRONMENT VARIABLE")
+            envONOSIps[ "OCN" ] = temp
+        except KeyError: 
+            main.log.info("OCN not set in env")
 
-        ONOSIps.append(temp)
-        
         try:
             temp = os.environ[ 'OCI' ]
+            envONOSIps[ "OCI" ] = temp
         except:
-            main.log.error("MISSING OCN ENVIRONMENT VARIABLE")
+            main.log.error("OCI not set in env")
 
-        ONOSIps.append(temp)
-        return ONOSIps
+        print(str(envONOSIps))
+
+        order = [ "OC1", "OC2", "OC3","OC4","OC5","OC6","OC7","OCN","OCI" ]
+        ONOSIps = []
+
+        try: 
+            ipFile = open("myIps","r+")
+            fileONOSIps = ipFile.readlines()
+            ipFile.close()
+
+            print str(fileONOSIps)
+            
+            if str(fileONOSIps) == "[]": 
+                ipFile = open("myIps","w+")
+                for key in envONOSIps:
+                    ipFile.write(key+ "=" + envONOSIps[key] + "\n")
+                ipFile.close()
+                for i in order: 
+                    if i in envONOSIps: 
+                        ONOSIps.append(envONOSIps[i])
+                
+                return ONOSIps 
+
+            else: 
+                fileDict = {}
+                for line in fileONOSIps: 
+                    line = line.replace("\n","")
+                    line = line.split("=") 
+                    key = line[0]
+                    value = line[1]
+                    fileDict[key] = value 
+
+                for x in envONOSIps: 
+                    if x in fileDict: 
+                        if envONOSIps[x] == fileDict[x]: 
+                            continue
+                        else: 
+                            fileDict[x] = envONOSIps[x]
+                    else: 
+                        fileDict[x] = envONOSIps[x]
+
+                ipFile = open("myIps","w+")
+                for key in order: 
+                    if key in fileDict: 
+                        ipFile.write(key + "=" + fileDict[key] + "\n")
+                        ONOSIps.append(fileDict[key]) 
+                ipFile.close()
+
+                return ONOSIps 
+
+        except IOError as a:
+            main.log.error(a) 
+
+        except Exception: 
+            main.log.error(a) 
 
 
-    def onosErrorLog(self, nodeIp):
+    def logReport(self, nodeIp, searchTerms, outputMode="s"):
+        '''
+            - accepts either a list or a string for "searchTerms" these
+              terms will be searched for in the log and have their 
+              instances counted 
 
-        cmd = "onos-ssh " + nodeIp + " cat /opt/onos/log/karaf.log | grep WARN"
-        self.handle.sendline(cmd)
-        self.handle.expect(":~")
-        before = (self.handle.before).splitlines()
+            - nodeIp is the ip of the node whos log is to be scanned 
 
-        warnings = []
+            - output modes: 
+                "s" -   Simple. Quiet output mode that just prints 
+                        the occurances of each search term 
 
-        for line in before:
-            if "WARN" in line and "grep" not in line:
-                warnings.append(line)
-                main.warnings[main.warnings[0]+1] = line
-                main.warnings[0] += 1
-                if main.warnings[0] >= 10:
-                    main.warnings[0] = 0
+                "d" -   Detailed. Prints occurances as well as the entire
+                        line for each of the last 5 occurances 
+        '''
+        main.log.info("========================== Log Report ===========================\n")
 
-        cmd = "onos-ssh " + nodeIp + " cat /opt/onos/log/karaf.log | grep ERROR"
-        self.handle.sendline(cmd)
-        self.handle.expect(":~")
-        before = (self.handle.before).splitlines()
+        if type(searchTerms) is str: 
+            searchTerms = [searchTerms]
 
-        errors = []
+        logLines = [ [" "] for i in range(len(searchTerms)) ]
 
-        for line in before:
-            if "ERROR" in line and "grep" not in line:
-                errors.append(line)
-                main.errors[main.errors[0]+1] = line
-                main.errors[0] += 1
-                if main.errors[0] >= 10:
-                    main.errors[0] = 0
+        for term in range(len(searchTerms)): 
+            logLines[term][0] = searchTerms[term]
 
-        cmd = "onos-ssh " + nodeIp + " cat /opt/onos/log/karaf.log | grep Exept"
-        self.handle.sendline(cmd)
-        self.handle.expect(":~")
-        before = (self.handle.before).splitlines()
 
-        exceptions = []
+        for term in range(len(searchTerms)): 
+            cmd = "onos-ssh " + nodeIp + " cat /opt/onos/log/karaf.log | grep " + searchTerms[term] 
+            self.handle.sendline(cmd)
+            self.handle.expect(":~")
+            before = (self.handle.before).splitlines()
 
-        for line in before:
-            if "Except" in line and "grep" not in line:
-                exceptions.append(line)
-                main.exceptions[main.errors[0]+1] = line
-                main.exceptions[0] += 1
-                if main.exceptions[0] >= 10:
-                    main.exceptions[0] = 0
+            count = [searchTerms[term],0]
 
-        ################################################################
+            for line in before:
+                if searchTerms[term] in line and "grep" not in line:
+                    count[1] += 1 
+                    if before.index(line) > ( len(before) - 7 ):
+                        logLines[term].append(line)
 
-        msg1 = "WARNINGS: \n"
-        for i in main.warnings:
-            if type(i) is not int:
-                msg1 += ( i + "\n")
-
-        msg2 = "ERRORS: \n"
-        for i in main.errors:
-            if type(i) is not int:
-                msg2 += ( i + "\n")
-
-        msg3 = "EXCEPTIONS: \n"
-        for i in main.exceptions:
-            if type(i) is not int:
-                msg3 += ( i + "\n")
-
-        main.log.info("===============================================================\n")
-        main.log.info( "Warnings: " + str(len(warnings)))
-        main.log.info( "Errors: " + str(len(errors)))
-        main.log.info( "Exceptions: " + str(len(exceptions)) + "\n" )
-        if len(warnings) > 0:
-            main.log.info(msg1)
-        if len(errors) > 0:
-            main.log.info(msg2)
-        if len(exceptions) > 0:
-            main.log.info(msg3)
-        main.log.info("===============================================================\n")
+            main.log.info( str(count[0]) + ": " + str(count[1]) )
+            if term == len(searchTerms)-1: 
+                print("\n")
+            
+        if outputMode != "s" and outputMode != "S":        
+            outputString = ""
+            for i in logLines:
+                outputString = i[0] + ": \n" 
+                for x in range(1,len(i)): 
+                    outputString += ( i[x] + "\n" )    
+                
+                if outputString != (i[0] + ": \n"):
+                    main.log.info(outputString) 
+                
+        main.log.info("================================================================\n")
     
 

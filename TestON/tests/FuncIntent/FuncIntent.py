@@ -83,15 +83,15 @@ class FuncIntent:
                 main.log.warn( "Did not pull new code so skipping mvn " +
                                "clean install" )
 
-            globalONOSip = main.ONOSbench.getOnosIpFromEnv()
+            globalONOSip = main.ONOSbench.getOnosIps()
         
-        maxNodes = ( len(globalONOSip) - 3 )
+        maxNodes = ( len(globalONOSip) - 2 )
 
         main.numCtrls = int( main.scale[ 0 ] )
         main.scale.remove( main.scale[ 0 ] )
 
-        main.ONOSip = [0]
-        for i in range( 1, maxNodes + 1 ): 
+        main.ONOSip = []
+        for i in range( maxNodes ): 
             main.ONOSip.append( globalONOSip[i] )
 
 
@@ -99,7 +99,7 @@ class FuncIntent:
         #kill off all onos processes
         main.log.info( "Safety check, killing all ONOS processes" +
                        " before initiating enviornment setup" )
-        for i in range(1, maxNodes+1):
+        for i in range( maxNodes ):
             main.ONOSbench.onosDie( globalONOSip[ i ] )
         
         """
@@ -125,7 +125,7 @@ class FuncIntent:
         print "NODE COUNT = ", main.numCtrls
         main.log.info( "Creating cell file" )
         cellIp = []
-        for i in range( 1, main.numCtrls + 1 ):
+        for i in range( main.numCtrls ):
             cellIp.append( str( main.ONOSip[ i ] ) )
         print cellIp
         main.ONOSbench.createCellFile( benchIp, cellName, "",
@@ -151,7 +151,7 @@ class FuncIntent:
 
         main.step( "Uninstalling ONOS package" )
         onosUninstallResult = main.TRUE
-        for i in range( 1, main.numCtrls + 1):
+        for i in range( main.numCtrls ):
             onosUninstallResult = onosUninstallResult and \
                     main.ONOSbench.onosUninstall( nodeIp=main.ONOSip[ i ] )
         stepResult = onosUninstallResult
@@ -162,7 +162,7 @@ class FuncIntent:
         time.sleep( 5 )
         main.step( "Installing ONOS package" )
         onosInstallResult = main.TRUE
-        for i in range( 1, main.numCtrls+1):
+        for i in range( main.numCtrls ):
             onosInstallResult = onosInstallResult and \
                     main.ONOSbench.onosInstall( node=main.ONOSip[ i ] )
         stepResult = onosInstallResult
@@ -176,7 +176,7 @@ class FuncIntent:
         stopResult = main.TRUE
         startResult = main.TRUE
         onosIsUp = main.TRUE
-        for i in range( 1, main.numCtrls+1 ):
+        for i in range( main.numCtrls ):
             onosIsUp = onosIsUp and main.ONOSbench.isup( main.ONOSip[ i ] )
         if onosIsUp == main.TRUE:
             main.log.report( "ONOS instance is up and ready" )
@@ -197,7 +197,7 @@ class FuncIntent:
         
         main.step( "Start ONOS cli" )
         cliResult = main.TRUE
-        for i in range( 1, main.numCtrls + 1 ):
+        for i in range( main.numCtrls ):
             cliResult = cliResult and \
                         main.CLIs[i].startOnosCli( main.ONOSip[ i ] )
         stepResult = cliResult
@@ -208,7 +208,7 @@ class FuncIntent:
     
     def CASE9( self, main ): 
         main.log.info("Error report: \n") 
-        main.ONOSbench.onosErrorLog(globalONOSip[1]) 
+        main.ONOSbench.logReport(globalONOSip[0],["WARN","ERROR","stuff"],"d") 
 
 
     def CASE11( self, main ):
@@ -238,15 +238,15 @@ class FuncIntent:
 
         main.step( "Assigning switches to controllers" )
         assignResult = main.TRUE
-        for i in range( 1, ( main.numSwitch + 1 ) ):
+        for i in range( main.numSwitch ):
             main.Mininet1.assignSwController( sw=str( i ),
                                               count=1,
-                                              ip1=main.ONOSip[ 1 ],
+                                              ip1=main.ONOSip[ 0 ],
                                               port1=main.ONOSport[ 0 ] )
-        for i in range( 1, ( main.numSwitch + 1 ) ):
+        for i in range( main.numSwitch ):
             response = main.Mininet1.getSwController( "s" + str( i ) )
             print( "Response is " + str( response ) )
-            if re.search( "tcp:" + main.ONOSip[ 1 ], response ):
+            if re.search( "tcp:" + main.ONOSip[ 0 ], response ):
                 assignResult = assignResult and main.TRUE
             else:
                 assignResult = main.FALSE

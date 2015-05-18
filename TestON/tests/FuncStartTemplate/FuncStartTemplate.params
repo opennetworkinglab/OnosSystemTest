@@ -1,7 +1,7 @@
 <PARAMS>
 
     <testcases>10,9,10,9</testcases>
-    
+
     <SCALE>3,1</SCALE>
     <availableNodes>3</availableNodes>
     <ENV>
@@ -23,7 +23,7 @@
     </CTRL>
     <BENCH>
         <user>admin</user>
-        <ip1>10.128.5.55</ip1>
+        <ip1>OCN</ip1>
     </BENCH>
     <MININET>
         <switch>7</switch>

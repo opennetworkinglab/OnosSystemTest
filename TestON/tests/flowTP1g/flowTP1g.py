@@ -34,9 +34,12 @@ class flowTP1g:
         maxNodes = int(main.params[ 'availableNodes' ])
         skipMvn = main.params[ 'TEST' ][ 'skipCleanInstall' ]
         cellName = main.params[ 'ENV' ][ 'cellName' ]       
- 
-        #----do i need this line?
-        #main.ONOSbench.handle.sendline("export TERM=vt100")
+    
+        main.log.info("==========DEBUG VERSION 3===========")
+
+        main.exceptions = [0]*11
+        main.warnings = [0]*11
+        main.errors = [0]*11
 
         # -- INIT SECTION, ONLY RUNS ONCE -- #
         if init == False:
@@ -132,7 +135,7 @@ class flowTP1g:
             a(ONOSIp[node])
          
         main.log.info("Startup sequence complete")
-
+        main.ONOSbench.onosErrorLog(ONOSIp[1])
         
     def CASE2( self, main ):
         #
@@ -145,6 +148,17 @@ class flowTP1g:
         import datetime
         import traceback
 
+        global currentNeighbors
+        try:
+            currentNeighbors
+        except:
+            currentNeighbors = "0"
+        else:
+            if currentNeighbors == "r":      #reset
+                currentNeighbors = "0"
+            else:
+                currentNeighbors = "a"
+
         testCMD = [ 0,0,0,0 ]
         warmUp = int(main.params[ 'TEST' ][ 'warmUp' ])
         sampleSize = int(main.params[ 'TEST' ][ 'sampleSize' ])
@@ -154,29 +168,32 @@ class flowTP1g:
         testCMD[1] = main.params[ 'TEST' ][ 'testCMD1' ]
         maxNodes = main.params[ 'availableNodes' ]
         onBaremetal = main.params['isOnBaremetal']
-
+        cooldown = main.params[ 'TEST' ][ 'cooldown' ]
         cellName = main.params[ 'ENV' ][ 'cellName' ]
         BENCHIp = main.params[ 'BENCH' ][ 'ip1' ]
         BENCHUser = main.params[ 'BENCH' ][ 'user' ]
         MN1Ip = main.params[ 'MN' ][ 'ip1' ]
         maxNodes = int(main.params[ 'availableNodes' ])
         homeDir = os.path.expanduser('~')
-  
+        flowRuleBackup = str(main.params[ 'TEST' ][ 'enableFlowRuleStoreBackup' ])
+        main.log.info("Flow Rule Backup is set to:" + flowRuleBackup)
+
         servers = str(clusterCount) 
-        for i in range(0, len(neighborList)):
-            if neighborList[i] == 'a':
-                neighborList[i] = str(clusterCount - 1)  
         
         if clusterCount == 1: 
             neighborList = ['0']
+            currentNeighbors = "r"
+        else:
+            if currentNeighbors == "a":
+                neighborList = [str(clusterCount-1)]
+                currentNeighbors = "r"
+            else:
+                neighborList = ['0'] 
+        
         main.log.info("neightborlist: " + str(neighborList))
 
         ts = time.time()
         st = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
-
-        #initialize log file, remove any previous data
-        resultsLog = open("flowTP1gDB","w+")
-        resultsLog.close()
 
         #write file to change mem limit to 32 gigs (BAREMETAL ONLY!)
         if onBaremetal == "true":
@@ -208,25 +225,33 @@ class flowTP1g:
                 ipCSV += main.params[ 'CTRL' ][ tempstr ] 
                 if i < int(maxNodes):
                     ipCSV +=","
-            
-            filename = "/onos/tools/package/etc/org.onosproject.provider.nil.link.impl.NullLinkProvider.cfg"
-            linkConfig = open(homeDir + filename,'w+')
-            linkConfig.write("# eventRate = 2000\n")
-            linkConfig.write("neighbors = "  + ipCSV)
-            main.log.info(" NullLinkProvider.cfg: " + ipCSV)
-            linkConfig.close()
-            
-            main.ONOSbench.handle.sendline("""onos $OC1 "cfg setorg.onosproject.provider.nil.NullProviders enabled true" """)
-            main.ONOSbench.handle.expect(":~")
+           
+
             main.ONOSbench.handle.sendline("""onos $OC1 "cfg set org.onosproject.provider.nil.NullProviders deviceCount 35" """)
             main.ONOSbench.handle.expect(":~")
+            time.sleep(3)
             main.ONOSbench.handle.sendline("""onos $OC1 "cfg set org.onosproject.provider.nil.NullProviders topoShape linear" """)
             main.ONOSbench.handle.expect(":~")
+            time.sleep(3)
             main.ONOSbench.handle.sendline("""onos $OC1 "null-simulation start" """)
             main.ONOSbench.handle.expect(":~")
+            time.sleep(3)
             main.ONOSbench.handle.sendline("""onos $OC1 "balance-masters" """)
             main.ONOSbench.handle.expect(":~")
-        
+            time.sleep(3)
+            main.log.info("""onos $OC1 "cfg set org.onosproject.store.flow.impl.NewDistributedFlowRuleStore backupEnabled """ + flowRuleBackup + """" """)
+            main.ONOSbench.handle.sendline("""onos $OC1 "cfg set org.onosproject.store.flow.impl.NewDistributedFlowRuleStore backupEnabled """ + flowRuleBackup + """" """)
+            main.ONOSbench.handle.expect(":~")
+       
+            main.ONOSbench.handle.sendline("onos $OC1 summary")
+            main.ONOSbench.handle.expect(":~")
+            check = main.ONOSbench.handle.before
+
+            main.ONOSbench.handle.sendline("""onos $OC1 "cfg get" """)
+            main.ONOSbench.handle.expect(":~")
+            check = main.ONOSbench.handle.before
+            main.log.info("\nStart up check: \n" + check + "\n") 
+
             #devide flows
             flows = int(main.params[ 'TEST' ][ 'flows' ])
             main.log.info("Flow Target  = " + str(flows))
@@ -243,35 +268,51 @@ class flowTP1g:
             data = [[""]*int(servers)]*int(sampleSize)
             maxes = [""]*int(sampleSize)
 
-            for test in range(0, (warmUp + sampleSize)): 
-                flowCMD = "python3 " + homeDir + "/onos/tools/test/bin/"
-                flowCMD += testCMD[0] + " " + str(flows) + " " + testCMD[1] 
-                flowCMD += " " + str(n) + " " + str(serverEnvVars)
-                print("\n")                    
-                main.log.info("COMMAND: " + flowCMD)
-                main.log.info("Executing command") 
-                
-                for i in range(0,15):
-                    main.ONOSbench.handle.sendline(flowCMD)
-                    time.sleep(1)
-                    main.ONOSbench.handle.expect(":~")
-                    rawResult = main.ONOSbench.handle.before
-                    if " -> " in rawResult:
-                        break
+            flowCMD = "python3 " + homeDir + "/onos/tools/test/bin/"
+            flowCMD += testCMD[0] + " " + str(flows) + " " + testCMD[1]
+            flowCMD += " " + str(n) + " " + str(serverEnvVars) + "-j" 
 
+            main.log.info(flowCMD)
+            #time.sleep(60)
+            
+            for test in range(0, warmUp + sampleSize): 
+                if test < warmUp: 
+                    main.log.info("Warm up " + str(test + 1) + " of " + str(warmUp))
+                else: 
+                     main.log.info("====== Test run: " + str(test-warmUp+1) + " ======") 
+
+                main.ONOSbench.handle.sendline(flowCMD)
+                main.ONOSbench.handle.expect(":~")
+                rawResult = main.ONOSbench.handle.before
+                main.log.info("Raw results: \n" + rawResult + "\n")
+
+                if "failed" in rawResult: 
+                    main.log.report("FLOW_TESTER.PY FAILURE")
+                    main.log.report( " \n" + rawResult + " \n") 
+                    break
+            
+            ########################################################################################
                 result = [""]*(clusterCount)
                 rawResult = rawResult.splitlines()
-                print(rawResult)
+
                 for node in range(1, clusterCount + 1):        
                     for line in rawResult:
-                        if ONOSIp[node] in line and " -> " in line:
-                            myLine = line.split(" ")
-                            for word in myLine:
-                                if "ms" in word:
-                                    result[node-1] = int(word.replace("ms",""))
-                                    main.log.info("Parsed result: " + str(result[node-1]))
-                                    break
-                            break
+                        #print("line: " + line) 
+                        if ONOSIp[node] in line and "server" in line:
+                            temp = line.split(" ") 
+                            for word in temp:
+                                #print ("word: " + word) 
+                                if "elapsed" in repr(word): 
+                                    #print("in elapsed ==========")
+                                    index = temp.index(word) + 1
+                                    #print ("index: " + str(index)) 
+                                    #print ("temp[index]: " + temp[index])
+                                    myParsed = (temp[index]).replace(",","")
+                                    myParsed = myParsed.replace("}","")
+                                    myParsed = int(myParsed)
+                                    result[node-1] = myParsed
+                                    main.log.info( ONOSIp[node] + " : " + str(myParsed))
+                                    break 
 
                 if test >= warmUp:
                     for i in result: 
@@ -283,40 +324,27 @@ class flowTP1g:
                     main.log.info("Data collection iteration: " + str(test-warmUp) + " of " + str(sampleSize))
                     main.log.info("Throughput time: " + str(maxes[test-warmUp]) + "(ms)")                
 
-                if test >= warmUp:
                     data[test-warmUp] = result
 
                 # wait for flows = 0 
-                removedFlows = False
-                repeat = 0
-                time.sleep(3)
-                while ( removedFlows == False and repeat <= 10 ):
-                    main.ONOSbench.handle.sendline("onos $OC1 summary| cut -d ' ' -f6")
-                    main.ONOSbench.handle.expect("~")
-                    before = main.ONOSbench.handle.before
-                    parseTest = before.splitlines()
-                    flowsummary = ""
-                    for line in parseTest:
-                        if "flow" in str(line):
-                            flowsummary = line 
-                            break
-                    currentflow = ""
-                    for word in flowsummary.split(" "): 
-                        if "flow" in str(word):
-                            currentflow = str(word)
-                    currentflow = currentflow.replace(",","")
-                    currentflow = currentflow.replace("\n","")
-                    #main.log.info(currentflow)
+                for checkCount in range(0,5): 
+                    time.sleep(10)
+                    main.ONOSbench.handle.sendline("onos $OC1 summary")
+                    main.ONOSbench.handle.expect(":~")
+                    flowCheck = main.ONOSbench.handle.before
+                    if "flows=0," in flowCheck: 
+                        main.log.info("Flows removed")
+                        break
+                    else: 
+                        for line in flowCheck.splitlines(): 
+                            if "flows=" in line: 
+                                main.log.info("Current Summary: " + line) 
+                    if checkCount == 2: 
+                        main.log.info("Flows are stuck, moving on ")
 
-                    zeroFlow = "flows=0"                
-                    if zeroFlow in before:
-                        removedFlows = True 
-                        main.log.info("\t Wait 5 sec of cool down...")
-                        time.sleep(5)
 
-                    time.sleep(5)
-                    repeat +=1
-     
+                time.sleep(5)
+                
             main.log.info("raw data: " + str(data))
             main.log.info("maxes:" + str(maxes))
 
@@ -361,12 +389,15 @@ class flowTP1g:
             main.log.info("Standard deviation of throughput: " + str(stdTP) + " Kflows/second") 
 
             resultsLog = open("flowTP1gDB","a")
-            resultsLog.write("'" + commit + "',")
-            resultsLog.write("'1gig',")
-            resultsLog.write((main.params[ 'TEST' ][ 'flows' ]) + ",")
-            resultsLog.write(str(clusterCount)+ ",")
-            resultsLog.write(str(n) + ",")
-            resultsLog.write(str(avgTP) + "," + str(stdTP) + "\n")
+            resultString = ("'" + commit + "',")
+            resultString += ("'1gig',")
+            resultString += ((main.params[ 'TEST' ][ 'flows' ]) + ",")
+            resultString += (str(clusterCount) + ",")
+            resultString += (str(n) + ",")
+            resultString += (str(avgTP) + "," + str(stdTP) + "\n")
+            resultsLog.write(resultString) 
             resultsLog.close()
-
-             
+            
+            main.log.report("Result line to file: " + resultString)
+           
+        main.ONOSbench.onosErrorLog(ONOSIp[1]) 

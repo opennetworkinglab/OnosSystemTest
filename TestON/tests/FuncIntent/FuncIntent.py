@@ -28,6 +28,7 @@ class FuncIntent:
         onos-wait-for-start
         """
         global init
+        global globalONOSip
         try:
             if type(init) is not bool:
                 init = False
@@ -37,10 +38,13 @@ class FuncIntent:
         cellName = main.params[ 'ENV' ][ 'cellName' ]
         apps = main.params[ 'ENV' ][ 'cellApps' ]
         gitBranch = main.params[ 'GIT' ][ 'branch' ]
-        benchIp = main.params[ 'BENCH' ][ 'ip1' ]
+        benchIp = os.environ[ 'OCN' ]
         benchUser = main.params[ 'BENCH' ][ 'user' ]
         topology = main.params[ 'MININET' ][ 'topo' ]
-        maxNodes = int( main.params[ 'availableNodes' ] )
+        #benchIp = main.params[ 'BENCH' ][ 'ip1' ]
+        benchUser = main.params[ 'BENCH' ][ 'user' ]
+        topology = main.params[ 'MININET' ][ 'topo' ]
+        #maxNodes = int( main.params[ 'availableNodes' ] )
         main.numSwitch = int( main.params[ 'MININET' ][ 'switch' ] )
         main.numLinks = int( main.params[ 'MININET' ][ 'links' ] )
         main.numCtrls = main.params[ 'CTRL' ][ 'num' ]
@@ -57,12 +61,16 @@ class FuncIntent:
         for i in range( 1, int( main.numCtrls ) + 1 ):
             main.CLIs.append( getattr( main, 'ONOScli' + str( i ) ) )
 
+        main.errors = [0]*11
+        main.warnings = [0]*11
+        main.exceptions = [0]*11
+
         # -- INIT SECTION, ONLY RUNS ONCE -- #
         if init == False:
             init = True
             main.MNisUp = main.FALSE
 
-            main.ONOSip = []
+            #main.ONOSip = []
             main.ONOSport = []
             main.scale = ( main.params[ 'SCALE' ] ).split( "," )
             main.numCtrls = int( main.scale[ 0 ] )
@@ -85,11 +93,24 @@ class FuncIntent:
             else:
                 main.log.warn( "Did not pull new code so skipping mvn " +
                                "clean install" )
+            globalONOSip = main.ONOSbench.getOnosIps()
+
+        maxNodes = ( len(globalONOSip) - 2 )
+
+        main.numCtrls = int( main.scale[ 0 ] )
+        main.scale.remove( main.scale[ 0 ] )
+
+        main.ONOSip = []
+        for i in range( maxNodes ):
+            main.ONOSip.append( globalONOSip[i] )
+
             # Populate main.ONOSip with ips from params
-            for i in range( 1, maxNodes + 1):
-                main.ONOSip.append( main.params[ 'CTRL' ][ 'ip' + str( i ) ] )
-                main.ONOSport.append( main.params[ 'CTRL' ][ 'port' +
-                                      str( i ) ])
+            #for i in range( 1, maxNodes + 1):
+            #    main.ONOSip.append( main.params[ 'CTRL' ][ 'ip' + str( i ) ] )
+            #    main.ONOSport.append( main.params[ 'CTRL' ][ 'port' +
+            #                          str( i ) ])
+            ONOSip = main.ONOSbench.getOnosIpFromEnv()
+            main.log.info("\t\t CLUSTER IPs: \n\n" + str(ONOSip) + "\n\n")
 
         main.numCtrls = int( main.scale[ 0 ] )
         main.scale.remove( main.scale[ 0 ] )
@@ -135,7 +156,7 @@ class FuncIntent:
 
         main.step( "Uninstalling ONOS package" )
         onosUninstallResult = main.TRUE
-        for i in range( main.numCtrls):
+        for i in range( main.numCtrls ):
             onosUninstallResult = onosUninstallResult and \
                     main.ONOSbench.onosUninstall( nodeIp=main.ONOSip[ i ] )
         stepResult = onosUninstallResult
@@ -146,7 +167,7 @@ class FuncIntent:
         time.sleep( 5 )
         main.step( "Installing ONOS package" )
         onosInstallResult = main.TRUE
-        for i in range( main.numCtrls):
+        for i in range( main.numCtrls ):
             onosInstallResult = onosInstallResult and \
                     main.ONOSbench.onosInstall( node=main.ONOSip[ i ] )
         stepResult = onosInstallResult
@@ -155,7 +176,7 @@ class FuncIntent:
                                  onpass="Successfully installed ONOS package",
                                  onfail="Failed to install ONOS package" )
 
-        time.sleep( 5 )
+        time.sleep( 20 )
         main.step( "Starting ONOS service" )
         stopResult = main.TRUE
         startResult = main.TRUE
@@ -189,6 +210,10 @@ class FuncIntent:
                                  actual=stepResult,
                                  onpass="Successfully start ONOS cli",
                                  onfail="Failed to start ONOS cli" )
+
+    def CASE9( self, main ):
+        main.log.info("Error report: \n")
+        main.ONOSbench.logReport(globalONOSip[0],["WARN","ERROR","stuff"],"d")
 
     def CASE11( self, main ):
         """

@@ -39,9 +39,9 @@ class TopoPerfNextBM:
         except KeyError:
             # Jenkins build number is also used in posting to DB
             # If this test is not triggered by jenkins, give 
-            # it the runNum variable instead, ensuring that 
+            # it 0 instead, ensuring that 
             # the DB post will recognize it as a non-jenkins run
-            jenkinsBuildNumber = str(runNum)
+            jenkinsBuildNumber = str(0)
             main.log.info( 'Job is not run by jenkins. '+
                     'Build number set to: ' + jenkinsBuildNumber)
 
@@ -272,10 +272,10 @@ class TopoPerfNextBM:
                 metricsSwUp = CLIs[node].topologyEventsMetrics()
                 jsonStr.append(metricsSwUp)
            
-            time.sleep(1)
-            
             main.log.info('Stopping all Tshark processes')
             main.ONOS1.tsharkStop()
+           
+            time.sleep(5)
             
             main.log.info('Copying over tshark files')
             os.system('scp ' + ONOSUser + '@' + nodeIpList[0] +
@@ -288,7 +288,8 @@ class TopoPerfNextBM:
                       nodeIpList[0] + ':' + tsharkOfOutput + ' /tmp/')
            
             # Get tcp syn / ack output
-            # time.sleep(1)
+            time.sleep(1)
+
             tcpFile = open(tsharkTcpOutput, 'r')
             tempText = tcpFile.readline()
             tempText = tempText.split(' ')
@@ -347,7 +348,13 @@ class TopoPerfNextBM:
             if len(tempText) > 1:
                 main.log.info('Object read in from feature reply capture: '+
                         str(tempText))
-                featureTimestamp = float(tempText[1]) * 1000.0
+                if tempText[1] != ' ' and float(tempText[1]) > 1400000000.0:
+                    temp = tempText[1]
+                elif tempText[2] != ' ' and float(tempText[2]) > 1400000000.0:
+                    temp = tempText[2]
+                else:
+                    temp = 0 
+                featureTimestamp = float(temp) * 1000.0
             else:
                 main.log.error('Tshark output file for feature reply' +
                         ' returned unexpected results')
@@ -494,22 +501,21 @@ class TopoPerfNextBM:
             main.step('Remove switch from controller')
             main.Mininet1.deleteSwController('s3')
             firstDevice = deviceList[0] 
-            main.log.info( "Removing device " +str(firstDevice)+
-                    " from ONOS" )
             
-            time.sleep( 5 )
-           
             # We need to get metrics before removing
             # device from the store below.
             for node in range(0, clusterCount):
                 metricsSwDown = CLIs[node].topologyEventsMetrics
                 jsonStr = metricsSwDown()
                 removeJsonList.append( json.loads(jsonStr) ) 
-            
-            #if deviceId:
-            main.ONOS1cli.deviceRemove(firstDevice)
            
             main.ONOS1.tsharkStop()
+            
+            main.log.info( "Removing device " +str(firstDevice)+
+                    " from ONOS" )
+           
+            #if deviceId:
+            main.ONOS1cli.deviceRemove(firstDevice)
 
             main.log.info('Copying over tshark files')
             os.system('scp ' + ONOSUser + '@' + nodeIpList[0] +
@@ -530,21 +536,23 @@ class TopoPerfNextBM:
                     # tshark output is lengthy)
                     if len(obj) > 2:
                         # If first index of object is like an epoch time
-                        if obj[0] > 1400000000:
-                            temp = obj[0] 
-                        elif obj[1] > 1400000000:
-                            temp = obj[1]
-                        elif obj[2] > 1400000000:
-                            temp = obj[2] 
-                        elif obj[3] > 1400000000:
+                        if obj[1] != ' ' and float(obj[1]) > 1400000000.0:
+                            temp = obj[1] 
+                        elif obj[2] != ' 'and float(obj[2]) > 1400000000.0:
+                            temp = obj[2]
+                        elif obj[3] != ' 'and float(obj[3]) > 1400000000.0:
                             temp = obj[3]
                         else:
                             temp = 0
                         if index == 1:
                             tFinAck = float(temp) * 1000.0
+                        elif index == 2:
+                            continue
                         elif index == 3:
                             tAck = float(temp) * 1000.0
-                        
+                        else:
+                            tFinAck = 0
+                            tAck = 0
                     else:
                         main.log.error('Tshark output file for OFP' +
                             ' returned unexpected results')

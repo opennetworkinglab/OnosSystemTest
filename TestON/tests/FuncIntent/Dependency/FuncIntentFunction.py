@@ -52,9 +52,13 @@ def hostIntent( main,
             h1Mac = main.hostsData[ h1Name ][ 'mac' ]
         if not h2Mac:
             h2Mac = main.hostsData[ h2Name ][ 'mac' ]
+        print '1', main.hostsData[ h1Name ]
+        print '2', main.hostsData[ h2Name ]
         if main.hostsData[ h1Name ][ 'vlan' ] != '-1':
+            print 'vlan1', main.hostsData[ h1Name ][ 'vlan' ]
             vlan1 = main.hostsData[ h1Name ][ 'vlan' ]
         if main.hostsData[ h2Name ][ 'vlan' ] != '-1':
+            print 'vlan2', main.hostsData[ h2Name ][ 'vlan' ]
             vlan2 = main.hostsData[ h2Name ][ 'vlan' ]
         if not h1Id:
             h1Id = main.hostsData[ h1Name ][ 'id' ]
@@ -265,12 +269,158 @@ def pointIntent( main,
 
     return stepResult
 
+def singleToMultiIntent( main,
+                         name="",
+                         hostNames=None,
+                         devices=None,
+                         ports=None,
+                         ethType="",
+                         macs=None,
+                         bandwidth="",
+                         lambdaAlloc=False,
+                         ipProto="",
+                         ipAddresses="",
+                         tcp="",
+                         sw1="",
+                         sw2="",
+                         expectedLink=0 ):
+    """
+        Add Single to Multi Point intents
+    """
+    import time
+    assert main, "There is no main variable"
+    assert name, "variable name is empty"
+    assert hostNames, "You must specify hosts"
+    assert devices or main.hostsData, "You must specify devices"
+
+    global itemName
+    itemName = name
+    h1Name = host1
+    h2Name = host2
+    intentsId = []
+
+    if devices and ports:
+        if len( devices ) and len( ports ):
+            main.log.info( itemName +
+                           ": devices and ports are not the same lenght " +
+                           "devices - " + str( len( devices ) ) + "  ports - "
+                           + str( len( ports ) ) )
+
+
+
+    pingResult = main.TRUE
+    intentResult = main.TRUE
+    flowResult = main.TRUE
+    topoResult = main.TRUE
+    linkDownResult = main.TRUE
+    linkUpResult = main.TRUE
+
+    # Adding bidirectional point  intents
+    main.log.info( itemName + ": Adding host intents" )
+    intent1 = main.CLIs[ 0 ].addPointIntent( ingressDevice=deviceId1,
+                                             egressDevice=deviceId2,
+                                             portIngress=port1,
+                                             portEgress=port2,
+                                             ethType=ethType,
+                                             ethSrc=mac1,
+                                             ethDst=mac2,
+                                             bandwidth=bandwidth,
+                                             lambdaAlloc=lambdaAlloc,
+                                             ipProto=ipProto,
+                                             ipSrc=ip1,
+                                             ipDst=ip2,
+                                             tcpSrc=tcp1,
+                                             tcpDst=tcp2 )
+
+    intentsId.append( intent1 )
+    time.sleep( 5 )
+    intent2 = main.CLIs[ 0 ].addPointIntent( ingressDevice=deviceId2,
+                                             egressDevice=deviceId1,
+                                             portIngress=port2,
+                                             portEgress=port1,
+                                             ethType=ethType,
+                                             ethSrc=mac2,
+                                             ethDst=mac1,
+                                             bandwidth=bandwidth,
+                                             lambdaAlloc=lambdaAlloc,
+                                             ipProto=ipProto,
+                                             ipSrc=ip2,
+                                             ipDst=ip1,
+                                             tcpSrc=tcp2,
+                                             tcpDst=tcp1 )
+    intentsId.append( intent2 )
+
+    # Check intents state
+    time.sleep( 50 )
+    intentResult = checkIntentState( main, intentsId )
+
+    # Verify flows
+    checkFlowsState( main )
+
+    # Ping hosts
+    pingHost( main, h1Name, h2Name )
+    # Ping hosts again...
+    pingResult = pingHost( main, h1Name, h2Name )
+    time.sleep( 5 )
+
+    if sw1 and sw2 and expectedLink:
+        # link down
+        link( main, sw1, sw2, "down" )
+        intentResult = intentResult and checkIntentState( main, intentsId )
+
+        # Verify flows
+        checkFlowsState( main )
+
+        # Check OnosTopology
+        topoResult = checkTopology( main, expectedLink )
+
+        # Ping hosts
+        pingResult = pingResult and pingHost( main, h1Name, h2Name )
+
+        intentResult = checkIntentState( main, intentsId )
+
+        # link up
+        link( main, sw1, sw2, "up" )
+        time.sleep( 5 )
+
+        # Verify flows
+        checkFlowsState( main )
+
+        # Check OnosTopology
+        topoResult = checkTopology( main, expectedLink )
+
+        # Ping hosts
+        pingResult = pingResult and pingHost( main, h1Name, h2Name )
+
+    # Remove intents
+    for intent in intentsId:
+        main.CLIs[ 0 ].removeIntent( intentId=intent, purge=True )
+
+    print main.CLIs[ 0 ].intents()
+    stepResult = pingResult and linkDownResult and linkUpResult \
+                 and intentResult
+
+    return stepResult
+
 def link( main, sw1, sw2, option):
 
     # link down
     main.log.info( itemName + ": Bring link " + option + "between " +
                    sw1 + " and " + sw2 )
     main.Mininet1.link( end1=sw1, end2=sw2, option=option )
+
+def pingAllHost( main, hosts ):
+    # Ping all host in the hosts list variable
+    import itertools
+
+    main.log.info( itemName + ": Ping host list - " + hosts )
+    hostCombination = itertools.permutation( hosts, 2 )
+    pingResult = main.TRUE
+    for hostPair in hostCombination:
+        pingResult = pingResult and main.Mininet.pingHost(
+                                                    src=hostPair[ 0 ],
+                                                    target=hostPair[ 1 ] )
+    return pingResult
 
 def pingHost( main, h1Name, h2Name ):
 
@@ -319,7 +469,8 @@ def getHostsData( main ):
     hosts = main.Mininet1.getHosts()
     for host in hosts:
         main.hostsData[ host ] = {}
-        main.hostsData[ host ][ 'mac' ] =  main.Mininet1.getMacAddress( host )
+        main.hostsData[ host ][ 'mac' ] =  \
+            main.Mininet1.getMacAddress( host ).upper()
         for hostj in hostsJson:
             if main.hostsData[ host ][ 'mac' ] == hostj[ 'mac' ]:
                 main.hostsData[ host ][ 'id' ] = hostj[ 'id' ]
@@ -329,6 +480,8 @@ def getHostsData( main ):
                             hostj[ 'location' ][ 'port' ]
                 main.hostsData[ host ][ 'ipAddresses' ] = hostj[ 'ipAddresses' ]
 
+    main.log.info( "Deactivating reactive forwarding app " )
+    activateResult = main.CLIs[ 0 ].deactivateApp( "org.onosproject.fwd" )
     print main.hostsData
     return pingResult
 

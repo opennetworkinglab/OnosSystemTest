@@ -5,30 +5,66 @@
 def __init__( self ):
     self.default = ''
 
-def addHostIntent( main, item ):
+def hostIntent( main,
+                name="",
+                host1="",
+                host2="",
+                host1Id="",
+                host2Id="",
+                mac1="",
+                mac2="",
+                vlan1="-1",
+                vlan2="-1",
+                sw1="",
+                sw2="",
+                expectedLink=0 ):
     """
         Add host intents
     """
     import time
-    stepResult = main.TRUE
+
+    # Assert variables
+    assert main, "There is no main variable"
+    assert name, "variable name is empty"
+    assert host1 and host2, "You must specify hosts"
+
     global itemName
-    itemName = item[ 'name' ]
-    h1Name = item[ 'host1' ][ 'name' ]
-    h2Name = item[ 'host2' ][ 'name' ]
-    h1Mac = item[ 'host1' ][ 'MAC' ]
-    h2Mac = item[ 'host2' ][ 'MAC' ]
-    h1Id = item[ 'host1' ][ 'id']
-    h2Id = item[ 'host2' ][ 'id']
-    sw1 = item[ 'link' ][ 'switch1' ]
-    sw2 = item[ 'link' ][ 'switch2' ]
-    expectLink = item[ 'link' ][ 'expect' ]
+    itemName = name
+    h1Name = host1
+    h2Name = host2
+    h1Id = host1Id
+    h2Id = host2Id
+    h1Mac = mac1
+    h2Mac = mac2
+    vlan1 = vlan1
+    vlan2 = vlan2
     intentsId = []
+    stepResult = main.TRUE
     pingResult = main.TRUE
     intentResult = main.TRUE
     flowResult = main.TRUE
     topoResult = main.TRUE
     linkDownResult = main.TRUE
     linkUpResult = main.TRUE
+
+    if main.hostsData:
+        if not h1Mac:
+            h1Mac = main.hostsData[ h1Name ][ 'mac' ]
+        if not h2Mac:
+            h2Mac = main.hostsData[ h2Name ][ 'mac' ]
+        if main.hostsData[ h1Name ][ 'vlan' ] != '-1':
+            vlan1 = main.hostsData[ h1Name ][ 'vlan' ]
+        if main.hostsData[ h2Name ][ 'vlan' ] != '-1':
+            vlan2 = main.hostsData[ h2Name ][ 'vlan' ]
+        if not h1Id:
+            h1Id = main.hostsData[ h1Name ][ 'id' ]
+        if not h2Id:
+            h2Id = main.hostsData[ h2Name ][ 'id' ]
+
+    assert h1Id and h2Id, "You must specify host IDs"
+    if not ( h1Id and h2Id ):
+        main.log.info( "There are no host IDs" )
+        return main.FALSE
 
     # Discover hosts using arping
     main.log.info( itemName + ": Discover host using arping" )
@@ -60,33 +96,35 @@ def addHostIntent( main, item ):
     pingResult = pingHost( main, h1Name, h2Name )
     time.sleep( 5 )
 
-    # link down
-    link( main, sw1, sw2, "down" )
-    intentResult = intentResult and checkIntentState( main, intentsId )
+    # Test rerouting if these variables exist
+    if sw1 and sw2 and expectedLink:
+        # link down
+        link( main, sw1, sw2, "down" )
+        intentResult = intentResult and checkIntentState( main, intentsId )
 
-    # Verify flows
-    checkFlowsState( main )
+        # Verify flows
+        checkFlowsState( main )
 
-    # Check OnosTopology
-    topoResult = checkTopology( main, expectLink )
+        # Check OnosTopology
+        topoResult = checkTopology( main, expectedLink )
 
-    # Ping hosts
-    pingResult = pingResult and pingHost( main, h1Name, h2Name )
+        # Ping hosts
+        pingResult = pingResult and pingHost( main, h1Name, h2Name )
 
-    intentResult = checkIntentState( main, intentsId )
+        intentResult = checkIntentState( main, intentsId )
 
-    # link up
-    link( main, sw1, sw2, "up" )
-    time.sleep( 5 )
+        # link up
+        link( main, sw1, sw2, "up" )
+        time.sleep( 5 )
 
-    # Verify flows
-    checkFlowsState( main )
+        # Verify flows
+        checkFlowsState( main )
 
-    # Check OnosTopology
-    topoResult = checkTopology( main, expectLink )
+        # Check OnosTopology
+        topoResult = checkTopology( main, expectedLink )
 
-    # Ping hosts
-    pingResult = pingResult and pingHost( main, h1Name, h2Name )
+        # Ping hosts
+        pingResult = pingResult and pingHost( main, h1Name, h2Name )
 
     # Remove intents
     for intent in intentsId:
@@ -98,80 +136,40 @@ def addHostIntent( main, item ):
 
     return stepResult
 
-def addPointIntent( main, item ):
+def pointIntent( main,
+                 name="",
+                 host1="",
+                 host2="",
+                 deviceId1="",
+                 deviceId2="",
+                 port1="",
+                 port2="",
+                 ethType="",
+                 mac1="",
+                 mac2="",
+                 bandwidth="",
+                 lambdaAlloc=False,
+                 ipProto="",
+                 ip1="",
+                 ip2="",
+                 tcp1="",
+                 tcp2="",
+                 sw1="",
+                 sw2="",
+                 expectedLink=0 ):
     """
         Add Point intents
     """
     import time
-    stepResult = main.TRUE
+    assert main, "There is no main variable"
+    assert name, "variable name is empty"
+    assert host1 and host2, "You must specify hosts"
+
     global itemName
-    itemName = item[ 'name' ]
-    h1Name = item[ 'host1' ][ 'name' ]
-    h2Name = item[ 'host2' ][ 'name' ]
-    ingressDevice = item[ 'ingressDevice' ]
-    egressDevice = item[ 'egressDevice' ]
-    option = item[ 'option' ]
-    sw1 = item[ 'link' ][ 'switch1' ]
-    sw2 = item[ 'link' ][ 'switch2' ]
-    expectLink = item[ 'link' ][ 'expect' ]
+    itemName = name
+    h1Name = host1
+    h2Name = host2
     intentsId = []
-    
-    # Assign options to variables
-    ingressPort = item.get( 'ingressPort' )
-    egressPort = item.get( 'egressPort' )
-    ethType = option.get( 'ethType' )
-    ethSrc = option.get( 'ethSrc' )
-    ethDst = option.get( 'ethDst' )
-    bandwidth = option.get( 'bandwidth' )
-    lambdaAlloc = option.get( 'lambdaAlloc' )
-    ipProto = option.get( 'ipProto' )
-    ipSrc = option.get( 'ipSrc' )
-    ipDst = option.get( 'ipDst' )
-    tcpSrc = option.get( 'tcpSrc' )
-    tcpDst = option.get( 'tcpDst' )
-
-    if ingressPort == None:
-        ingressPort = ""
-    if egressPort == None:
-        egressPort = ""
-    if ethType == None:
-        ethType = ""
-    if ethSrc == None:
-        ethSrc = ""
-    if ethDst == None:
-        ethDst = ""
-    if bandwidth == None:
-        bandwidth = ""
-    if lambdaAlloc == None:
-        lambdaAlloc = False
-    if ipProto == None:
-        ipProto = ""
-    if ipSrc == None:
-        ipSrc = ""
-    if ipDst == None:
-        ipDst = ""
-    if tcpSrc == None:
-        tcpSrc = ""
-    if tcpDst == None:
-        tcpDst = ""
-
-    """
-    print 'ethType: ', ethType
-    print 'ethSrc: ', ethSrc
-    print 'ethDst: ', ethDst
-    print 'bandwidth', bandwidth
-    print 'lambdaAlloc: ', lambdaAlloc
-    print 'ipProto: ', ipProto
-    print 'ipSrc: ', ipSrc
-    print 'ipDst:', ipDst
-    print 'tcpSrc: ', tcpSrc
-    print 'tcpDst: ', tcpDst
-    """
-    addedOption = ""
-    for i in range( len( option ) ):
-        addedOption = addedOption + option.keys()[ i ] + " = " + \
-                      option.values()[ i ] + "\n"
-    main.log.info( itemName + ": Printing added options...\n" + addedOption )
 
     pingResult = main.TRUE
     intentResult = main.TRUE
@@ -182,37 +180,37 @@ def addPointIntent( main, item ):
 
     # Adding bidirectional point  intents
     main.log.info( itemName + ": Adding host intents" )
-    intent1 = main.CLIs[ 0 ].addPointIntent( ingressDevice=ingressDevice,
-                                             egressDevice=egressDevice,
-                                             portIngress=ingressPort,
-                                             portEgress=egressPort,
+    intent1 = main.CLIs[ 0 ].addPointIntent( ingressDevice=deviceId1,
+                                             egressDevice=deviceId2,
+                                             portIngress=port1,
+                                             portEgress=port2,
                                              ethType=ethType,
-                                             ethSrc=ethSrc,
-                                             ethDst=ethDst,
+                                             ethSrc=mac1,
+                                             ethDst=mac2,
                                              bandwidth=bandwidth,
                                              lambdaAlloc=lambdaAlloc,
                                              ipProto=ipProto,
-                                             ipSrc=ipSrc,
-                                             ipDst=ipDst,
-                                             tcpSrc=tcpSrc,
-                                             tcpDst=tcpDst )
+                                             ipSrc=ip1,
+                                             ipDst=ip2,
+                                             tcpSrc=tcp1,
+                                             tcpDst=tcp2 )
 
     intentsId.append( intent1 )
     time.sleep( 5 )
-    intent2 = main.CLIs[ 0 ].addPointIntent( ingressDevice=egressDevice,
-                                             egressDevice=ingressDevice,
-                                             portIngress=egressPort,
-                                             portEgress=ingressPort,
+    intent2 = main.CLIs[ 0 ].addPointIntent( ingressDevice=deviceId2,
+                                             egressDevice=deviceId1,
+                                             portIngress=port2,
+                                             portEgress=port1,
                                              ethType=ethType,
-                                             ethSrc=ethDst,
-                                             ethDst=ethSrc,
+                                             ethSrc=mac2,
+                                             ethDst=mac1,
                                              bandwidth=bandwidth,
                                              lambdaAlloc=lambdaAlloc,
                                              ipProto=ipProto,
-                                             ipSrc=ipDst,
-                                             ipDst=ipSrc,
-                                             tcpSrc=tcpDst,
-                                             tcpDst=tcpSrc )
+                                             ipSrc=ip2,
+                                             ipDst=ip1,
+                                             tcpSrc=tcp2,
+                                             tcpDst=tcp1 )
     intentsId.append( intent2 )
 
     # Check intents state
@@ -228,33 +226,34 @@ def addPointIntent( main, item ):
     pingResult = pingHost( main, h1Name, h2Name )
     time.sleep( 5 )
 
-    # link down
-    link( main, sw1, sw2, "down" )
-    intentResult = intentResult and checkIntentState( main, intentsId )
+    if sw1 and sw2 and expectedLink:
+        # link down
+        link( main, sw1, sw2, "down" )
+        intentResult = intentResult and checkIntentState( main, intentsId )
 
-    # Verify flows
-    checkFlowsState( main )
+        # Verify flows
+        checkFlowsState( main )
 
-    # Check OnosTopology
-    topoResult = checkTopology( main, expectLink )
+        # Check OnosTopology
+        topoResult = checkTopology( main, expectedLink )
 
-    # Ping hosts
-    pingResult = pingResult and pingHost( main, h1Name, h2Name )
+        # Ping hosts
+        pingResult = pingResult and pingHost( main, h1Name, h2Name )
 
-    intentResult = checkIntentState( main, intentsId )
+        intentResult = checkIntentState( main, intentsId )
 
-    # link up
-    link( main, sw1, sw2, "up" )
-    time.sleep( 5 )
+        # link up
+        link( main, sw1, sw2, "up" )
+        time.sleep( 5 )
 
-    # Verify flows
-    checkFlowsState( main )
+        # Verify flows
+        checkFlowsState( main )
 
-    # Check OnosTopology
-    topoResult = checkTopology( main, expectLink )
+        # Check OnosTopology
+        topoResult = checkTopology( main, expectedLink )
 
-    # Ping hosts
-    pingResult = pingResult and pingHost( main, h1Name, h2Name )
+        # Ping hosts
+        pingResult = pingResult and pingHost( main, h1Name, h2Name )
 
     # Remove intents
     for intent in intentsId:
@@ -295,10 +294,43 @@ def pingHost( main, h1Name, h2Name ):
                        "both hosts" )
     return pingResult
 
-def checkItem( item ):
+def getHostsData( main ):
     """
-        Checks the dictionary
+        Use fwd app and pingall to discover all the hosts
     """
+    """
+        hosts json format:
+    """
+    import json
+    activateResult = main.TRUE
+    appCheck = main.TRUE
+    main.log.info( "Activating reactive forwarding app " )
+    activateResult = main.CLIs[ 0 ].activateApp( "org.onosproject.fwd" )
+
+    for i in range( main.numCtrls ):
+        appCheck = appCheck and main.CLIs[ i ].appToIDCheck()
+
+    if appCheck != main.TRUE:
+        main.log.warn( main.CLIs[ 0 ].apps() )
+        main.log.warn( main.CLIs[ 0 ].appIDs() )
+
+    pingResult = main.Mininet1.pingall()
+    hostsJson = json.loads( main.CLIs[ 0 ].hosts() )
+    hosts = main.Mininet1.getHosts()
+    for host in hosts:
+        main.hostsData[ host ] = {}
+        main.hostsData[ host ][ 'mac' ] =  main.Mininet1.getMacAddress( host )
+        for hostj in hostsJson:
+            if main.hostsData[ host ][ 'mac' ] == hostj[ 'mac' ]:
+                main.hostsData[ host ][ 'id' ] = hostj[ 'id' ]
+                main.hostsData[ host ][ 'vlan' ] = hostj[ 'vlan' ]
+                main.hostsData[ host ][ 'location' ] = \
+                            hostj[ 'location' ][ 'elementId' ] + '/' + \
+                            hostj[ 'location' ][ 'port' ]
+                main.hostsData[ host ][ 'ipAddresses' ] = hostj[ 'ipAddresses' ]
+
+    print main.hostsData
+    return pingResult
 
 def checkTopology( main, expectedLink ):
     statusResult = main.TRUE

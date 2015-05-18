@@ -1915,6 +1915,7 @@ class MininetCliDriver( Emulator ):
         hostStr = handlePy.replace( "]", "" )
         hostStr = hostStr.replace( "'", "" )
         hostStr = hostStr.replace( "[", "" )
+        hostStr = hostStr.replace( " ", "" )
         hostList = hostStr.split( "," )
 
         return hostList

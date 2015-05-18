@@ -52,6 +52,7 @@ class FuncIntent:
         if main.params[ 'GIT' ][ 'pull' ] == 'True':
             PULLCODE = True
         main.case( "Setting up test environment" )
+        main.hostsData = {}
         main.CLIs = []
         for i in range( 1, int( main.numCtrls ) + 1 ):
             main.CLIs.append( getattr( main, 'ONOScli' + str( i ) ) )
@@ -241,6 +242,19 @@ class FuncIntent:
                                         "to controller",
                                  onfail="Failed to assign switches to " +
                                         "controller" )
+    def CASE13( self, main ):
+        """
+            Discover all hosts and store its data to a dictionary
+        """
+        main.case( "Discover all hosts" )
+
+        stepResult = main.TRUE
+        main.step( "IPV4: Add host intents between h1 and h9" )
+        stepResult = main.wrapper.getHostsData( main )
+        utilities.assert_equals( expect=main.FALSE,
+                                 actual=stepResult,
+                                 onpass="Successfully discovered hosts",
+                                 onfail="Failed to discover hosts" )
 
     def CASE1001( self, main ):
         """
@@ -282,45 +296,41 @@ class FuncIntent:
         assert main.numSwitch, "Placed the total number of switch topology in \
                                 main.numSwitch"
 
-        # Local variables
-        ipv4 = { 'name':'IPV4', 'host1':
-                 { 'name': 'h1', 'MAC':'00:00:00:00:00:01',
-                   'id':'00:00:00:00:00:01/-1' } , 'host2':
-                 { 'name':'h9', 'MAC':'00:00:00:00:00:09',
-                   'id':'00:00:00:00:00:09/-1'}, 'link': { 'switch1':'s5',
-                   'switch2':'s2', 'expect':'18' } }
-        dualStack1 = { 'name':'DUALSTACK1', 'host1':
-                 { 'name':'h3', 'MAC':'00:00:00:00:00:03',
-                   'id':'00:00:00:00:00:03/-1' } , 'host2':
-                 { 'name':'h11', 'MAC':'00:00:00:00:00:0B',
-                   'id':'00:00:00:00:00:0B/-1'}, 'link': { 'switch1':'s5',
-                   'switch2':'s2', 'expect':'18' } }
-
         main.case( "Add host intents between 2 host" )
 
         stepResult = main.TRUE
-        main.step( ipv4[ 'name' ] + ": Add host intents between " +
-                   ipv4[ 'host1' ][ 'name' ] + " and " +
-                   ipv4[ 'host2' ][ 'name' ]  )
-        stepResult = main.wrapper.addHostIntent( main, ipv4 )
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass=ipv4[ 'name' ] +
-                                        ": Add host intent successful",
-                                 onfail=ipv4[ 'name' ] +
-                                        ": Add host intent failed" )
+        main.step( "IPV4: Add host intents between h1 and h9" )
+        stepResult = main.wrapper.hostIntent( main,
+                                              name='IPV4',
+                                              host1='h1',
+                                              host2='h9',
+                                              host1Id='00:00:00:00:00:01/-1',
+                                              host2Id='00:00:00:00:00:09/-1',
+                                              sw1='s5',
+                                              sw2='s2',
+                                              expectedLink=18 )
 
-        stepResult = main.TRUE
-        main.step( dualStack1[ 'name' ] + ": Add host intents between " +
-                   dualStack1[ 'host1' ][ 'name' ] + " and " +
-                   dualStack1[ 'host2' ][ 'name' ]  )
-        stepResult = main.wrapper.addHostIntent( main, dualStack1 )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
-                                 onpass=dualStack1[ 'name' ] +
-                                        ": Add host intent successful",
-                                 onfail=dualStack1[ 'name' ] +
-                                        ": Add host intent failed" )
+                                 onpass="IPV4: Add host intent successful",
+                                 onfail="IPV4: Add host intent failed" )
+        stepResult = main.TRUE
+
+        main.step( "DUALSTACK: Add host intents between h3 and h11" )
+        stepResult = main.wrapper.hostIntent( main,
+                                              name='DUALSTACK',
+                                              host1='h3',
+                                              host2='h11',
+                                              host1Id='00:00:00:00:00:03/-1',
+                                              host2Id='00:00:00:00:00:011/-1',
+                                              sw1='s5',
+                                              sw2='s2',
+                                              expectedLink=18 )
+
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="DUALSTACK: Add host intent successful",
+                                 onfail="DUALSTACK: Add host intent failed" )
 
     def CASE1002( self, main ):
         """
@@ -368,7 +378,7 @@ class FuncIntent:
                  'egressDevice':'of:0000000000000006/1', 'option':
                  { 'ethType':'IPV4', 'ethSrc':'00:00:00:00:00:01',
                    'ethDst':'00:00:00:00:00:09' }, 'link': { 'switch1':'s5',
-                   'switch2':'s2', 'expect':'18' } }
+                 'switch2':'s2', 'expect':'18' } }
 
         """
         ipv4 = { 'name':'IPV4', 'ingressDevice':'of:0000000000000005/1' ,
@@ -376,7 +386,7 @@ class FuncIntent:
                  'egressDevice':'of:0000000000000006/1', 'option':
                  { 'ethType':'IPV4', 'ethSrc':'00:00:00:00:00:01' },
                  'link': { 'switch1':'s5', 'switch2':'s2', 'expect':'18' } }
-        """ 
+        """
         dualStack1 = { 'name':'IPV4', 'ingressDevice':'0000000000000005/3' ,
                        'host1': { 'name': 'h3' }, 'host2': { 'name': 'h11' },
                        'egressDevice':'0000000000000006/3', 'option':
@@ -384,20 +394,37 @@ class FuncIntent:
                        'ethDst':'00:00:00:00:00:0B' }, 'link': { 'switch1':'s5',
                        'switch2':'s2', 'expect':'18' } }
 
-
         main.case( "Add point intents between 2 devices" )
 
         stepResult = main.TRUE
-        main.step( ipv4[ 'name' ] + ": Add point intents between " +
-                   ipv4[ 'host1' ][ 'name' ] + " and " +
-                   ipv4[ 'host2' ][ 'name' ]  )
-        stepResult = main.wrapper.addPointIntent( main, ipv4 )
+        main.step( "IPV4: Add point intents between h1 and h9" )
+        stepResult = main.wrapper.pointIntent(
+                                       main,
+                                       name="IPV4",
+                                       host1="h1",
+                                       host2="h9",
+                                       deviceId1="of:0000000000000005/1",
+                                       deviceId2="of:0000000000000006/1",
+                                       port1="",
+                                       port2="",
+                                       ethType="IPV4",
+                                       mac1="00:00:00:00:00:01",
+                                       mac2="00:00:00:00:00:09",
+                                       bandwidth="",
+                                       lambdaAlloc=False,
+                                       ipProto="",
+                                       ip1="",
+                                       ip2="",
+                                       tcp1="",
+                                       tcp2="",
+                                       sw1="s5",
+                                       sw2="s2",
+                                       expectedLink=18 )
+
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
-                                 onpass=ipv4[ 'name' ] +
-                                        ": Point intent successful",
-                                 onfail=ipv4[ 'name' ] +
-                                        ": Point intent failed" )
+                                 onpass="IPV4: Add point intent successful",
+                                 onfail="IPV4: Add point intent failed" )
 
     def CASE1003( self, main ):
         """

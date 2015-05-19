@@ -1557,7 +1557,7 @@ class MininetCliDriver( Emulator ):
         if switchesJson == "":  # if rest call fails
             main.log.error(
                 self.name +
-                ".compare_switches(): Empty JSON object given from ONOS" )
+                ".compareSwitches(): Empty JSON object given from ONOS" )
             return main.FALSE
         onos = switchesJson
         onosDPIDs = []
@@ -1866,7 +1866,7 @@ class MininetCliDriver( Emulator ):
                     if onosMAC == mnIntf[ 'hw_addr' ].lower() :
                         match = True
                         for ip in mnIntf[ 'ips' ]:
-                            if ip in onosHost[ 'ips' ]:
+                            if ip in onosHost[ 'ipAddresses' ]:
                                 pass  # all is well
                             else:
                                 # misssing ip

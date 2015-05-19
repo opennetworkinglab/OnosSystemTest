@@ -92,7 +92,7 @@ class RemoteMininetDriver( Emulator ):
             return main.ERROR
         else:
             main.log.error( "Error, unexpected output in the ping file" )
-            main.log.warn( outputs )
+            #main.log.warn( outputs )
             return main.TRUE
 
     def pingLong( self, **pingParams ):

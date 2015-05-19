@@ -78,8 +78,6 @@ class TestON:
         self.testResult = "Summary"
         self.stepName = ""
         self.stepCache = ""
-        # make this into two lists? one for step names, one for results?
-        # this way, the case result could be a true AND of these results
         self.EXPERIMENTAL_MODE = False
         self.test_target = None
         self.lastcommand = None

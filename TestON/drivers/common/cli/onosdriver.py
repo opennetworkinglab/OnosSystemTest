@@ -926,7 +926,7 @@ class OnosDriver( CLI ):
         """
         try:
             self.handle.sendline( "" )
-            self.handle.expect( "\$" )
+            self.handle.expect( "\$", timeout=60 )
             self.handle.sendline( "onos-uninstall " + str( nodeIp ) )
             self.handle.expect( "\$" )
 
@@ -935,6 +935,9 @@ class OnosDriver( CLI ):
             # onos-uninstall command does not return any text
             return main.TRUE
 
+        except pexpect.TIMEOUT:
+            main.log.exception( self.name + ": Timeout in onosUninstall" )
+            return main.FALSE
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )

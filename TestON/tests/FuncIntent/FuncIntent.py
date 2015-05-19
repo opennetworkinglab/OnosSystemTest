@@ -34,6 +34,11 @@ class FuncIntent:
                 init = False
         except NameError:
             init = False
+
+        main.wrapper = imp.load_source( 'FuncIntentFunction',
+                                    '/home/admin/ONLabTest/TestON/tests/' +
+                                    'FuncIntent/Dependency/' +
+                                    'FuncIntentFunction.py' )
         #Local variables
         cellName = main.params[ 'ENV' ][ 'cellName' ]
         apps = main.params[ 'ENV' ][ 'cellApps' ]
@@ -41,37 +46,24 @@ class FuncIntent:
         benchIp = os.environ[ 'OCN' ]
         benchUser = main.params[ 'BENCH' ][ 'user' ]
         topology = main.params[ 'MININET' ][ 'topo' ]
-        #benchIp = main.params[ 'BENCH' ][ 'ip1' ]
-        benchUser = main.params[ 'BENCH' ][ 'user' ]
-        topology = main.params[ 'MININET' ][ 'topo' ]
-        #maxNodes = int( main.params[ 'availableNodes' ] )
         main.numSwitch = int( main.params[ 'MININET' ][ 'switch' ] )
         main.numLinks = int( main.params[ 'MININET' ][ 'links' ] )
         main.numCtrls = main.params[ 'CTRL' ][ 'num' ]
-        main.wrapper = imp.load_source( 'FuncIntentFunction',
-                                    '/home/admin/ONLabTest/TestON/tests/' +
-                                    'FuncIntent/Dependency/' +
-                                    'FuncIntentFunction.py' )
+        main.ONOSport = []
+        main.hostsData = {}
         PULLCODE = False
         if main.params[ 'GIT' ][ 'pull' ] == 'True':
             PULLCODE = True
         main.case( "Setting up test environment" )
-        main.hostsData = {}
         main.CLIs = []
         for i in range( 1, int( main.numCtrls ) + 1 ):
             main.CLIs.append( getattr( main, 'ONOScli' + str( i ) ) )
-
-        main.errors = [0]*11
-        main.warnings = [0]*11
-        main.exceptions = [0]*11
+            main.ONOSport.append( main.params[ 'CTRL' ][ 'port' + str( i ) ] )
 
         # -- INIT SECTION, ONLY RUNS ONCE -- #
         if init == False:
             init = True
-            main.MNisUp = main.FALSE
 
-            #main.ONOSip = []
-            main.ONOSport = []
             main.scale = ( main.params[ 'SCALE' ] ).split( "," )
             main.numCtrls = int( main.scale[ 0 ] )
 
@@ -93,6 +85,7 @@ class FuncIntent:
             else:
                 main.log.warn( "Did not pull new code so skipping mvn " +
                                "clean install" )
+
             globalONOSip = main.ONOSbench.getOnosIps()
 
         maxNodes = ( len(globalONOSip) - 2 )
@@ -104,29 +97,12 @@ class FuncIntent:
         for i in range( maxNodes ):
             main.ONOSip.append( globalONOSip[i] )
 
-            # Populate main.ONOSip with ips from params
-            #for i in range( 1, maxNodes + 1):
-            #    main.ONOSip.append( main.params[ 'CTRL' ][ 'ip' + str( i ) ] )
-            #    main.ONOSport.append( main.params[ 'CTRL' ][ 'port' +
-            #                          str( i ) ])
-            ONOSip = main.ONOSbench.getOnosIpFromEnv()
-            main.log.info("\t\t CLUSTER IPs: \n\n" + str(ONOSip) + "\n\n")
-
-        main.numCtrls = int( main.scale[ 0 ] )
-        main.scale.remove( main.scale[ 0 ] )
         #kill off all onos processes
         main.log.info( "Safety check, killing all ONOS processes" +
                        " before initiating enviornment setup" )
-        for i in range( maxNodes ):
-            main.ONOSbench.onosDie( main.ONOSip[ i ] )
-        """main.step( "Removing raft logs" )
-        removeRaftResult = main.ONOSbench.onosRemoveRaftLogs()
-        stepResult = removeRaftResult
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="Successfully removed raft logs",
-                                 onfail="Failed to remove raft logs" )
-        """
+        for i in range(maxNodes):
+            main.ONOSbench.onosDie( globalONOSip[ i ] )
+
         print "NODE COUNT = ", main.numCtrls
         main.log.info( "Creating cell file" )
         cellIp = []
@@ -212,21 +188,22 @@ class FuncIntent:
                                  onfail="Failed to start ONOS cli" )
 
     def CASE9( self, main ):
-        main.log.info("Error report: \n")
-        main.ONOSbench.logReport(globalONOSip[0],["WARN","ERROR","stuff"],"d")
+        '''
+            Report errors/warnings/exceptions
+        '''
+        main.log.info( "Error report: \n" )
+        main.ONOSbench.logReport( globalONOSip[0],
+                [ "INFO", "FOLLOWER", "WARN", "flow", "ERROR" , "Except" ],
+                "s" )
+        #main.ONOSbench.logReport( globalONOSip[1], [ "INFO" ], "d" )
 
     def CASE11( self, main ):
         """
             Start mininet
         """
-        import time
         main.log.report( "Start Mininet topology" )
-        main.case( "Start Mininet topology" )
-        if not main.MNisUp:
-            main.MNisUp = main.TRUE
-        else:
-            main.Mininet1.stopNet()
-            time.sleep( 30 )
+        main.log.case( "Start Mininet topology" )
+
         main.step( "Starting Mininet Topology" )
         topoResult = main.Mininet1.startNet( topoFile=topology )
         stepResult = topoResult
@@ -274,7 +251,7 @@ class FuncIntent:
         main.case( "Discover all hosts" )
 
         stepResult = main.TRUE
-        main.step( "IPV4: Add host intents between h1 and h9" )
+        main.step( "Discover all hosts using pingall " )
         stepResult = main.wrapper.getHostsData( main )
         utilities.assert_equals( expect=main.FALSE,
                                  actual=stepResult,
@@ -347,7 +324,7 @@ class FuncIntent:
                                               host1='h3',
                                               host2='h11',
                                               host1Id='00:00:00:00:00:03/-1',
-                                              host2Id='00:00:00:00:00:011/-1',
+                                              host2Id='00:00:00:00:00:0B/-1',
                                               sw1='s5',
                                               sw2='s2',
                                               expectedLink=18 )

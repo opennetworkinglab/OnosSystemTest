@@ -40,7 +40,7 @@
         </ONOScli3>
 
         <Mininet1>
-            <host>10.128.10.20</host>
+            <host>OCN</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>MininetCliDriver</type>

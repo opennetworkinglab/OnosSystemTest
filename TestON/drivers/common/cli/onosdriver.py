@@ -508,13 +508,18 @@ class OnosDriver( CLI ):
             for line in lines:
                 print line
             if report:
+                main.log.wiki( "<blockquote>" )
                 for line in lines[ 2:-1 ]:
                     # Bracket replacement is for Wiki-compliant
                     # formatting. '<' or '>' are interpreted
                     # as xml specific tags that cause errors
                     line = line.replace( "<", "[" )
                     line = line.replace( ">", "]" )
-                    main.log.report( "\t" + line )
+                    #main.log.wiki( "\t" + line )
+                    main.log.wiki( line + "<br /> " )
+                    main.log.summary( line )
+                main.log.wiki( "</blockquote>" )
+                main.log.summary("\n")
             return lines[ 2 ]
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
@@ -1236,8 +1241,8 @@ class OnosDriver( CLI ):
                 return main.ERROR
             output = ""
             # Is the number of switches is what we expected
-            devices = topology.get( 'deviceCount', False )
-            links = topology.get( 'linkCount', False )
+            devices = topology.get( 'devices', False )
+            links = topology.get( 'links', False )
             if not devices or not links:
                 return main.ERROR
             switchCheck = ( int( devices ) == int( numoswitch ) )
@@ -1898,11 +1903,10 @@ class OnosDriver( CLI ):
             main.cleanup()
             main.exit()
 
-
     def getOnosIps(self):
 
         import os
-
+        
         # reads env for OC variables, also saves file with OC variables. If file and env conflict 
         # priority goes to env. If file has OCs that are not in the env, the file OCs are used. 
         # In other words, if the env is set, the test will use those values. 
@@ -1990,7 +1994,7 @@ class OnosDriver( CLI ):
         except IOError as a:
             main.log.error(a) 
 
-        except Exception: 
+        except Exception as a:
             main.log.error(a) 
 
 
@@ -2053,3 +2057,146 @@ class OnosDriver( CLI ):
                 
         main.log.info("================================================================\n")
         return totalHits 
+
+    def getOnosIpFromEnv(self):
+
+        import string  
+
+        # returns a list of ip addresses for the onos nodes, will work with up to 7 nodes + OCN and OCI
+        # returns in format [ 'x', OC1 ip, OC2 i... ect. ... , ONN ip ]
+
+        self.handle.sendline("env| grep OC") 
+        self.handle.expect(":~")
+        rawOutput = self.handle.before
+        print rawOutput
+        print "-----------------------------"
+        print repr(rawOutput)
+        mpa = dict.fromkeys(range(32))
+        translated = rawOutput.translate(mpa)
+        print translated
+
+
+        # create list with only the lines that have the needed IPs 
+        unparsedIps = []
+
+        # remove preceeding or trailing lines
+        for line in rawOutput: 
+            if "OC" in line and "=" in line: 
+                unparsedIps.append(str(line)) 
+
+        # determine cluster size
+        clusterCount = 0
+        for line in unparsedIps:
+            line = str(line)
+            print line
+            temp = line.replace("OC","")
+            print("line index " + str(line.index("="))) 
+            OCindex = temp[0]
+            for i in range(0, 7):
+                if OCindex == str(i) and i > clusterCount:
+                    clusterCount == i
+                    print(clusterCount)
+        # create list to hold ips such that OC1 is at list[1] and OCN and OCI are at the end (in that order)
+        ONOSIps = ["x"] * (clusterCount + 3) 
+
+        # populate list 
+        for line in unparsedIps:
+            main.log.info(line)########## 
+            temp = str(line.replace("OC",""))
+            main.log.info(str(list(temp)))
+            OCindex = temp[0]
+            main.log.info(OCindex)############
+            if OCindex == "N":
+                ONOSIps[ clusterCount + 1 ] = temp.replace("N=","")
+    
+            if OCindex == "I":
+                ONOSIps[ clusterCount + 2 ] = temp.replace("I=","")
+
+            else:
+                ONOSIps[ int(OCindex) ] = temp.replace((OCindex + "=") ,"")
+
+        # validate 
+        for x in ONOSIps: 
+            if ONOSIps.index(x) != 0 and x == "x": 
+                main.log.error("ENV READ FAILURE, MISSING DATA: \n\n" + str(ONOSIps) + "\n\n") 
+
+        return ONOSIps
+
+
+    def onosErrorLog(self, nodeIp): 
+
+        cmd = "onos-ssh " + nodeIp + " cat /opt/onos/log/karaf.log | grep WARN"
+        self.handle.sendline(cmd) 
+        self.handle.expect(":~")
+        before = (self.handle.before).splitlines() 
+
+        warnings = []
+
+        for line in before: 
+            if "WARN" in line and "grep" not in line: 
+                warnings.append(line) 
+                main.warnings[main.warnings[0]+1] = line
+                main.warnings[0] += 1
+                if main.warnings[0] >= 10: 
+                    main.warnings[0] = 0 
+
+        cmd = "onos-ssh " + nodeIp + " cat /opt/onos/log/karaf.log | grep ERROR"
+        self.handle.sendline(cmd)
+        self.handle.expect(":~")
+        before = (self.handle.before).splitlines()
+
+        errors = []
+
+        for line in before:
+            if "ERROR" in line and "grep" not in line:
+                errors.append(line)
+                main.errors[main.errors[0]+1] = line
+                main.errors[0] += 1
+                if main.errors[0] >= 10:
+                    main.errors[0] = 0
+
+        cmd = "onos-ssh " + nodeIp + " cat /opt/onos/log/karaf.log | grep Exept"
+        self.handle.sendline(cmd)
+        self.handle.expect(":~")
+        before = (self.handle.before).splitlines()
+
+        exceptions = []
+
+        for line in before:
+            if "Except" in line and "grep" not in line:
+                exceptions.append(line)
+                main.exceptions[main.errors[0]+1] = line
+                main.exceptions[0] += 1
+                if main.exceptions[0] >= 10:
+                    main.exceptions[0] = 0
+
+
+
+        ################################################################
+
+        msg1 = "WARNINGS: \n"
+        for i in main.warnings: 
+            if type(i) is not int: 
+                msg1 += ( i + "\n")
+
+        msg2 = "ERRORS: \n"
+        for i in main.errors:
+            if type(i) is not int:
+                msg2 += ( i + "\n")
+
+        msg3 = "EXCEPTIONS: \n"
+        for i in main.exceptions: 
+            if type(i) is not int:
+                msg3 += ( i + "\n")
+
+        main.log.info("===============================================================\n") 
+        main.log.info( "Warnings: " + str(len(warnings))) 
+        main.log.info( "Errors: " + str(len(errors))) 
+        main.log.info( "Exceptions: " + str(len(exceptions)))
+        if len(warnings) > 0:
+            main.log.info(msg1)
+        if len(errors) > 0: 
+            main.log.info(msg2)
+        if len(exceptions) > 0: 
+            main.log.info(msg3)
+        main.log.info("===============================================================\n")

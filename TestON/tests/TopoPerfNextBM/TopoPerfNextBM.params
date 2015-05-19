@@ -3,7 +3,7 @@
 
     <ENV>
         <cellName>topo_perf_test</cellName>
-        <cellFeatures>"org.onosproject.metrics,org.onosproject.openflow"</cellFeatures>
+        <cellFeatures>"drivers,metrics,openflow"</cellFeatures>
     </ENV>
 
     <GIT>
@@ -13,7 +13,7 @@
     </GIT>
 
     <CTRL>
-        <user>sdn</user>
+        <user>admin</user>
         <ip1>10.254.1.201</ip1>
         <port1>6633</port1>
         <ip2>10.254.1.202</ip2>
@@ -62,7 +62,7 @@
         </topoConfigName>
 
         #Number of times to iterate each case
-        <numIter>35</numIter>
+        <numIter>13</numIter>
         <numSwitch>2</numSwitch>
         #Number of iterations to ignore initially
         <iterIgnore>2</iterIgnore>

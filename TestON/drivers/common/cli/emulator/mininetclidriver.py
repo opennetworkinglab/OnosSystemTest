@@ -252,17 +252,16 @@ class MininetCliDriver( Emulator ):
            Optional parameter timeout allows you to specify how long to
            wait for pingall to complete
            Optional:
-           timeout(seconds) - This is the pexpect timeout; The function will
-                              timeout if the amount of time between failed
-                              pings exceedes this time and pingall is still
-                              running
+           timeout(seconds) - How long to wait before breaking the pingall
            shortCircuit - Break the pingall based on the number of failed hosts
                           ping
            acceptableFailed - Set the number of acceptable failed pings for the
                               function to still return main.TRUE
            Returns:
            main.TRUE if pingall completes with no pings dropped
-           otherwise main.FALSE"""
+           otherwise main.FALSE
+        """
+        import time
         try:
             timeout = int( timeout )
             if self.handle:
@@ -273,6 +272,7 @@ class MininetCliDriver( Emulator ):
                 failedPings = 0
                 returnValue = main.TRUE
                 self.handle.sendline( "pingall" )
+                startTime = time.time()
                 while True:
                     i = self.handle.expect( [ "mininet>","X",
                                               pexpect.EOF,
@@ -293,6 +293,12 @@ class MininetCliDriver( Emulator ):
                                                 + str( failedPings ) +
                                                 " pings failed" )
                                 break
+                        if ( time.time() - startTime ) > timeout:
+                            returnValue = main.FALSE
+                            main.log.error( self.name +
+                                            ": Aborting pingall - " +
+                                            "Function took too long " )
+                            break
                     elif i == 2:
                         main.log.error( self.name +
                                         ": EOF exception found" )
@@ -1304,11 +1310,11 @@ class MininetCliDriver( Emulator ):
         self.handle.sendline('')
         i = self.handle.expect( [ 'mininet>', pexpect.EOF, pexpect.TIMEOUT ],
                                 timeout=2)
+        response = main.TRUE
         if i == 0:
-            self.stopNet()
+            response = self.stopNet()
         elif i == 1:
             return main.TRUE
-        response = main.TRUE
         # print "Disconnecting Mininet"
         if self.handle:
             self.handle.sendline( "exit" )
@@ -1915,6 +1921,7 @@ class MininetCliDriver( Emulator ):
         hostStr = handlePy.replace( "]", "" )
         hostStr = hostStr.replace( "'", "" )
         hostStr = hostStr.replace( "[", "" )
+        hostStr = hostStr.replace( " ", "" )
         hostList = hostStr.split( "," )
 
         return hostList

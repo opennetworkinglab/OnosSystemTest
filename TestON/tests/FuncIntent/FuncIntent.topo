@@ -8,7 +8,7 @@
             <type>OnosDriver</type>
             <connect_order>1</connect_order>
             <COMPONENTS>
-                <home>~/onos</home>
+                <home>~/ONOS</home>
             </COMPONENTS>
         </ONOSbench>
 
@@ -40,7 +40,7 @@
         </ONOScli3>
 
         <Mininet1>
-            <host>10.128.10.20</host>
+            <host>OCN</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>MininetCliDriver</type>

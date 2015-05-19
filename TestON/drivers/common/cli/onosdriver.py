@@ -1241,8 +1241,8 @@ class OnosDriver( CLI ):
                 return main.ERROR
             output = ""
             # Is the number of switches is what we expected
-            devices = topology.get( 'deviceCount', False )
-            links = topology.get( 'linkCount', False )
+            devices = topology.get( 'devices', False )
+            links = topology.get( 'links', False )
             if not devices or not links:
                 return main.ERROR
             switchCheck = ( int( devices ) == int( numoswitch ) )

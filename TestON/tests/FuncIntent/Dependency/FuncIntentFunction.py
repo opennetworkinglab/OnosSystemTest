@@ -271,8 +271,8 @@ def pointIntent( main,
 
 def singleToMultiIntent( main,
                          name="",
-                         hostNames=None,
-                         devices=None,
+                         hostNames="",
+                         devices="",
                          ports=None,
                          ethType="",
                          macs=None,
@@ -286,6 +286,12 @@ def singleToMultiIntent( main,
                          expectedLink=0 ):
     """
         Add Single to Multi Point intents
+        If main.hostsData is not defined, variables data should be passed in the
+        same order index wise.
+        eg. hostName = [ 'h1', 'h2' ,..  ]
+            devices = [ 'of:0000000000000001', 'of:0000000000000002', ...]
+            ports = [ '1', '1', ..]
+            ...
     """
     import time
     assert main, "There is no main variable"
@@ -295,18 +301,27 @@ def singleToMultiIntent( main,
 
     global itemName
     itemName = name
-    h1Name = host1
-    h2Name = host2
+    tempHostsData = {}
     intentsId = []
 
-    if devices and ports:
-        if len( devices ) and len( ports ):
-            main.log.info( itemName +
-                           ": devices and ports are not the same lenght " +
-                           "devices - " + str( len( devices ) ) + "  ports - "
-                           + str( len( ports ) ) )
-
-
+    if hostNames and devices:
+        if len( hostNames ) != len( devices ):
+            main.log.error( "hosts and devices does not have the same length" )
+            print "hostNames = ", len( hostNames )
+            print "devices = ", len( devices )
+            return main.FALSE
+        if ports:
+            if len( ports ) != len( devices ):
+                main.log.error( "Ports and devices does " +
+                                "not have the same length" )
+                print "devices = ", len( devices )
+                print "ports = ", len( ports )
+                return main.FALSE
+        else:
+            main.log.info( "Device Ports are not specified" )
+    elif hostNames and not devices and main.hostsData:
+        main.log.info( "singleToMultiIntent function is using main.hostsData" ) 
+        print main.hostsData
 
     pingResult = main.TRUE
     intentResult = main.TRUE
@@ -317,20 +332,21 @@ def singleToMultiIntent( main,
 
     # Adding bidirectional point  intents
     main.log.info( itemName + ": Adding host intents" )
-    intent1 = main.CLIs[ 0 ].addPointIntent( ingressDevice=deviceId1,
-                                             egressDevice=deviceId2,
-                                             portIngress=port1,
-                                             portEgress=port2,
-                                             ethType=ethType,
-                                             ethSrc=mac1,
-                                             ethDst=mac2,
-                                             bandwidth=bandwidth,
-                                             lambdaAlloc=lambdaAlloc,
-                                             ipProto=ipProto,
-                                             ipSrc=ip1,
-                                             ipDst=ip2,
-                                             tcpSrc=tcp1,
-                                             tcpDst=tcp2 )
+    intent1 = main.CLIs[ 0 ].addSinglepointToMultipointIntent(
+                                            ingressDevice=deviceId1,
+                                            egressDevice=deviceId2,
+                                            portIngress=port1,
+                                            portEgress=port2,
+                                            ethType=ethType,
+                                            ethSrc=mac1,
+                                            ethDst=mac2,
+                                            bandwidth=bandwidth,
+                                            lambdaAlloc=lambdaAlloc,
+                                            ipProto=ipProto,
+                                            ipSrc=ip1,
+                                            ipDst=ip2,
+                                            tcpSrc=tcp1,
+                                            tcpDst=tcp2 )
 
     intentsId.append( intent1 )
     time.sleep( 5 )

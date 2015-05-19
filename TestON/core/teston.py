@@ -32,6 +32,7 @@ import __builtin__
 import new
 import xmldict
 import importlib
+import os
 module = new.module("test")
 import openspeak
 global path, drivers_path, core_path, tests_path,logs_path
@@ -164,11 +165,19 @@ class TestON:
         driverClass = getattr(driverModule, driverName)
         driverObject = driverClass()
 
+        try:
+            self.componentDictionary[component]['host'] = os.environ[str( self.componentDictionary[component]['host'])]
+        except KeyError:
+            self.log.info("Missing OC environment variable! Using stored IPs")
+        except Exception as inst:
+            self.log.error("Uncaught exception: " + str(inst))
+
         connect_result = driverObject.connect(user_name = self.componentDictionary[component]['user'] if ('user' in self.componentDictionary[component].keys()) else getpass.getuser(),
                                               ip_address= self.componentDictionary[component]['host'] if ('host' in self.componentDictionary[component].keys()) else 'localhost',
                                               pwd = self.componentDictionary[component]['password'] if ('password' in self.componentDictionary[component].keys()) else 'changeme',
                                               port = self.componentDictionary[component]['port'] if ('port' in self.componentDictionary[component].keys()) else None,
                                               options = driver_options)
+
         if not connect_result:
             self.log.error("Exiting form the test execution because the connecting to the "+component+" component failed.")
             self.exit()

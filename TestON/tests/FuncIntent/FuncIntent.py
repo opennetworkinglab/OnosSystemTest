@@ -15,6 +15,7 @@ class FuncIntent:
     def CASE10( self, main ):
         import time
         import os
+        import imp
         """
         Startup sequence:
         cell <name>
@@ -27,22 +28,29 @@ class FuncIntent:
         onos-wait-for-start
         """
         global init
+        global globalONOSip
         try:
             if type(init) is not bool:
                 init = False
         except NameError:
             init = False
+
+        main.wrapper = imp.load_source( 'FuncIntentFunction',
+                                    '/home/admin/ONLabTest/TestON/tests/' +
+                                    'FuncIntent/Dependency/' +
+                                    'FuncIntentFunction.py' )
         #Local variables
         cellName = main.params[ 'ENV' ][ 'cellName' ]
         apps = main.params[ 'ENV' ][ 'cellApps' ]
         gitBranch = main.params[ 'GIT' ][ 'branch' ]
-        #benchIp = main.params[ 'BENCH' ][ 'ip1' ]
+        benchIp = os.environ[ 'OCN' ]
         benchUser = main.params[ 'BENCH' ][ 'user' ]
         topology = main.params[ 'MININET' ][ 'topo' ]
-        #maxNodes = int( main.params[ 'availableNodes' ] )
         main.numSwitch = int( main.params[ 'MININET' ][ 'switch' ] )
         main.numLinks = int( main.params[ 'MININET' ][ 'links' ] )
         main.numCtrls = main.params[ 'CTRL' ][ 'num' ]
+        main.ONOSport = []
+        main.hostsData = {}
         PULLCODE = False
         if main.params[ 'GIT' ][ 'pull' ] == 'True':
             PULLCODE = True
@@ -50,13 +58,12 @@ class FuncIntent:
         main.CLIs = []
         for i in range( 1, int( main.numCtrls ) + 1 ):
             main.CLIs.append( getattr( main, 'ONOScli' + str( i ) ) )
+            main.ONOSport.append( main.params[ 'CTRL' ][ 'port' + str( i ) ] )
 
         # -- INIT SECTION, ONLY RUNS ONCE -- #
         if init == False:
             init = True
 
-            #main.ONOSip = []
-            main.ONOSport = []
             main.scale = ( main.params[ 'SCALE' ] ).split( "," )
             main.numCtrls = int( main.scale[ 0 ] )
 
@@ -78,42 +85,24 @@ class FuncIntent:
             else:
                 main.log.warn( "Did not pull new code so skipping mvn " +
                                "clean install" )
-            # Populate main.ONOSip with ips from params
-            #for i in range( 1, maxNodes + 1):
-            #    main.ONOSip.append( main.params[ 'CTRL' ][ 'ip' + str( i ) ] )
-            #    main.ONOSport.append( main.params[ 'CTRL' ][ 'port' +
-            #                          str( i ) ])
-        
-            ONOSip = main.ONOSbench.getOnosIpFromEnv()
-            main.log.info("\t\t CLUSTER IPs: \n\n" + str(ONOSip) + "\n\n") 
+
+            globalONOSip = main.ONOSbench.getOnosIps()
+
+        maxNodes = ( len(globalONOSip) - 2 )
 
         main.numCtrls = int( main.scale[ 0 ] )
         main.scale.remove( main.scale[ 0 ] )
-        
+
+        main.ONOSip = []
+        for i in range( maxNodes ):
+            main.ONOSip.append( globalONOSip[i] )
+
         #kill off all onos processes
         main.log.info( "Safety check, killing all ONOS processes" +
                        " before initiating enviornment setup" )
-        for i in range( maxNodes ):
-            main.ONOSbench.onosDie( main.ONOSip[ i ] )
-        """
-        main.step( "Apply cell to environment" )
-        cellResult = main.ONOSbench.setCell( cellName )
-        verifyResult = main.ONOSbench.verifyCell()
-        stepResult = cellResult and verifyResult
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="Successfully applied cell to " + \
-                                        "environment",
-                                 onfail="Failed to apply cell to environment " )
-        """
-        """main.step( "Removing raft logs" )
-        removeRaftResult = main.ONOSbench.onosRemoveRaftLogs()
-        stepResult = removeRaftResult
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="Successfully removed raft logs",
-                                 onfail="Failed to remove raft logs" )
-        """
+        for i in range(maxNodes):
+            main.ONOSbench.onosDie( globalONOSip[ i ] )
+
         print "NODE COUNT = ", main.numCtrls
         main.log.info( "Creating cell file" )
         cellIp = []
@@ -143,7 +132,7 @@ class FuncIntent:
 
         main.step( "Uninstalling ONOS package" )
         onosUninstallResult = main.TRUE
-        for i in range( main.numCtrls):
+        for i in range( main.numCtrls ):
             onosUninstallResult = onosUninstallResult and \
                     main.ONOSbench.onosUninstall( nodeIp=main.ONOSip[ i ] )
         stepResult = onosUninstallResult
@@ -154,7 +143,7 @@ class FuncIntent:
         time.sleep( 5 )
         main.step( "Installing ONOS package" )
         onosInstallResult = main.TRUE
-        for i in range( main.numCtrls):
+        for i in range( main.numCtrls ):
             onosInstallResult = onosInstallResult and \
                     main.ONOSbench.onosInstall( node=main.ONOSip[ i ] )
         stepResult = onosInstallResult
@@ -163,7 +152,7 @@ class FuncIntent:
                                  onpass="Successfully installed ONOS package",
                                  onfail="Failed to install ONOS package" )
 
-        time.sleep( 5 )
+        time.sleep( 20 )
         main.step( "Starting ONOS service" )
         stopResult = main.TRUE
         startResult = main.TRUE
@@ -186,7 +175,7 @@ class FuncIntent:
                                  actual=stepResult,
                                  onpass="ONOS service is ready",
                                  onfail="ONOS service did not start properly" )
-        
+
         main.step( "Start ONOS cli" )
         cliResult = main.TRUE
         for i in range( main.numCtrls ):
@@ -197,6 +186,16 @@ class FuncIntent:
                                  actual=stepResult,
                                  onpass="Successfully start ONOS cli",
                                  onfail="Failed to start ONOS cli" )
+
+    def CASE9( self, main ):
+        '''
+            Report errors/warnings/exceptions
+        '''
+        main.log.info( "Error report: \n" )
+        main.ONOSbench.logReport( globalONOSip[0],
+                [ "INFO", "FOLLOWER", "WARN", "flow", "ERROR" , "Except" ],
+                "s" )
+        #main.ONOSbench.logReport( globalONOSip[1], [ "INFO" ], "d" )
 
     def CASE11( self, main ):
         """
@@ -223,6 +222,7 @@ class FuncIntent:
         """
         import re
 
+        main.case( "Assign switches to controllers" )
         main.step( "Assigning switches to controllers" )
         assignResult = main.TRUE
         for i in range( 1, ( main.numSwitch + 1 ) ):
@@ -244,6 +244,19 @@ class FuncIntent:
                                         "to controller",
                                  onfail="Failed to assign switches to " +
                                         "controller" )
+    def CASE13( self, main ):
+        """
+            Discover all hosts and store its data to a dictionary
+        """
+        main.case( "Discover all hosts" )
+
+        stepResult = main.TRUE
+        main.step( "Discover all hosts using pingall " )
+        stepResult = main.wrapper.getHostsData( main )
+        utilities.assert_equals( expect=main.FALSE,
+                                 actual=stepResult,
+                                 onpass="Successfully discovered hosts",
+                                 onfail="Failed to discover hosts" )
 
     def CASE1001( self, main ):
         """
@@ -251,12 +264,16 @@ class FuncIntent:
                 - Discover hosts
                 - Add host intents
                 - Check intents
-                - Check flows
+                - Verify flows
                 - Ping hosts
                 - Reroute
                     - Link down
+                    - Verify flows
+                    - Check topology
                     - Ping hosts
                     - Link up
+                    - Verify flows
+                    - Check topology
                     - Ping hosts
                 - Remove intents
         """
@@ -270,203 +287,146 @@ class FuncIntent:
                        'id':'00:00:00:00:00:0X/-X' } , 'host2':
                      { 'name': '', 'MAC': '00:00:00:00:00:0X',
                        'id':'00:00:00:00:00:0X/-X'}, 'link': { 'switch1': '',
-                       'switch2': '', 'num':'' } }
+                       'switch2': '', 'expect':'' } }
         """
-        # Local variables
-        items = []
-        ipv4 = { 'name': 'IPV4', 'host1':
-                 { 'name': 'h1', 'MAC': '00:00:00:00:00:01',
-                   'id':'00:00:00:00:00:01/-1' } , 'host2':
-                 { 'name': 'h9', 'MAC': '00:00:00:00:00:09',
-                   'id':'00:00:00:00:00:09/-1'}, 'link': { 'switch1': 's5',
-                   'switch2': 's2', 'num':'18' } }
-        dualStack1 = { 'name': 'DUALSTACK1', 'host1':
-                 { 'name': 'h3', 'MAC': '00:00:00:00:00:03',
-                   'id':'00:00:00:00:00:03/-1' } , 'host2':
-                 { 'name': 'h11', 'MAC': '00:00:00:00:00:0B',
-                   'id':'00:00:00:00:00:0B/-1'}, 'link': { 'switch1': 's5',
-                   'switch2': 's2', 'num':'18' } }
-        items.append( ipv4 )
-        items.append( dualStack1 )
-        # Global variables
-        
-        main.log.case( "Add host intents between 2 host" )
-        
-        for item in items:
-            stepResult = main.TRUE
-            itemName = item[ 'name' ]
-            h1Name = item[ 'host1' ][ 'name' ]
-            h2Name = item[ 'host2' ][ 'name' ]
-            h1Mac = item[ 'host1' ][ 'MAC' ]
-            h2Mac = item[ 'host2' ][ 'MAC' ]
-            h1Id = item[ 'host1' ][ 'id']
-            h2Id = item[ 'host2' ][ 'id']
-            # Link down/up for rerouting
-            sw1 = item[ 'link' ][ 'switch1' ]
-            sw2 = item[ 'link' ][ 'switch2' ]
-            remLink = item[ 'link' ][ 'num' ]
-            pingResult = main.TRUE
-            statusResult = main.TRUE
-            linkDownResult = main.TRUE
-            linkUpResult = main.TRUE
-            intentsId = []
-            main.step( itemName + ": Add host intents between " + h1Name
-                        + " and " + h2Name )
-            main.log.info( itemName + ": Discover host using arping" )
-            main.Mininet1.arping( host=h1Name )
-            main.Mininet1.arping( host=h2Name )
-            host1 = main.CLIs[ 0 ].getHost( mac=h1Mac )
-            host2 = main.CLIs[ 0 ].getHost( mac=h2Mac )
-            print host1
-            print host2
-            # Adding intents
-            main.log.info( itemName + ": Adding host intents" )
-            intent1 = main.CLIs[ 0 ].addHostIntent( hostIdOne=h1Id,
-                                                   hostIdTwo=h2Id )
-            intentsId.append( intent1 )
-            time.sleep( 5 )
-            intent2 = main.CLIs[ 0 ].addHostIntent( hostIdOne=h2Id,
-                                                   hostIdTwo=h1Id )
-            intentsId.append( intent2 )
-            # Checking intents
-            main.log.info( itemName + ": Check host intents state" )
-            time.sleep( 30 )
-            for i in range( main.numCtrls ):
-                intentResult = main.CLIs[ i ].checkIntentState(
-                                                          intentsId=intentsId )
-            if not intentResult:
-                main.log.info( itemName +  ": Check host intents state" +
-                               " again")
-                for i in range( main.numCtrls ):
-                    intentResult = main.CLIs[ i ].checkIntentState(
-                                                          intentsId=intentsId )
-            # Ping hosts
-            time.sleep( 10 )
-            main.log.info( itemName + ": Ping " + h1Name + " and " +
-                           h2Name )
-            pingResult1 = main.Mininet1.pingHost( src=h1Name , target=h2Name )
-            if not pingResult1:
-                main.log.info( itemName + ": " + h1Name + " cannot ping "
-                               + h2Name )
-            pingResult2 = main.Mininet1.pingHost( src=h2Name , target=h1Name )
-            if not pingResult2:
-                main.log.info( itemName + ": " + h2Name + " cannot ping "
-                               + h1Name )
-            pingResult = pingResult1 and pingResult2
-            if pingResult:
-                main.log.info( itemName + ": Successfully pinged " +
-                               "both hosts" )
-            else:
-                main.log.info( itemName + ": Failed to ping " +
-                               "both hosts" )
-            # Rerouting ( link down )
-            main.log.info( itemName + ": Bring link down between " +
-                           sw1 + " and " + sw2 )
-            main.Mininet1.link( end1=sw1,
-                                end2=sw2,
-                                option="down" )
-            time.sleep( 5 )
 
-            # Check onos topology
-            main.log.info( itemName + ": Checking ONOS topology " )
+        # Assert variables - These variable's name|format must be followed
+        # if you want to use the wrapper function
+        assert main, "There is no main"
+        assert main.CLIs, "There is no main.CLIs"
+        assert main.Mininet1, "Mininet handle should be named Mininet1"
+        assert main.numSwitch, "Placed the total number of switch topology in \
+                                main.numSwitch"
 
-            for i in range( main.numCtrls ):
-                topologyResult = main.CLIs[ i ].topology()
-                linkDownResult = main.ONOSbench.checkStatus( topologyResult,
-                                                           main.numSwitch,
-                                                           remLink )\
-                               and linkDownResult
-            if not linkDownResult:
-                main.log.info( itemName + ": Topology mismatch" )
-            else:
-                main.log.info( itemName + ": Topology match" )
+        main.case( "Add host intents between 2 host" )
 
-            # Ping hosts
-            main.log.info( itemName + ": Ping " + h1Name + " and " +
-                           h2Name )
-            pingResult1 = main.Mininet1.pingHost( src=h1Name , target=h2Name )
-            if not pingResult1:
-                main.log.info( itemName + ": " + h1Name + " cannot ping "
-                               + h2Name )
-            pingResult2 = main.Mininet1.pingHost( src=h2Name , target=h1Name )
-            if not pingResult2:
-                main.log.info( itemName + ": " + h2Name + " cannot ping "
-                               + h1Name )
-            pingResult = pingResult1 and pingResult2
-            if pingResult:
-                main.log.info( itemName + ": Successfully pinged " +
-                               "both hosts" )
-            else:
-                main.log.info( itemName + ": Failed to ping " +
-                               "both hosts" )
-            # link up
-            main.log.info( itemName + ": Bring link up between " +
-                           sw1 + " and " + sw2 )
-            main.Mininet1.link( end1=sw1,
-                                end2=sw2,
-                                option="up" )
-            time.sleep( 5 )
+        stepResult = main.TRUE
+        main.step( "IPV4: Add host intents between h1 and h9" )
+        stepResult = main.wrapper.hostIntent( main,
+                                              name='IPV4',
+                                              host1='h1',
+                                              host2='h9',
+                                              host1Id='00:00:00:00:00:01/-1',
+                                              host2Id='00:00:00:00:00:09/-1',
+                                              sw1='s5',
+                                              sw2='s2',
+                                              expectedLink=18 )
 
-            # Check onos topology
-            main.log.info( itemName + ": Checking ONOS topology " )
-            for i in range( main.numCtrls ):
-                topologyResult = main.CLIs[ i ].topology()
-                linkUpResult = main.ONOSbench.checkStatus( topologyResult,
-                                                           main.numSwitch,
-                                                           main.numLinks )\
-                               and linkUpResult
-            if not linkUpResult:
-                main.log.info( itemName + ": Topology mismatch" )
-            else:
-                main.log.info( itemName + ": Topology match" )
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="IPV4: Add host intent successful",
+                                 onfail="IPV4: Add host intent failed" )
+        stepResult = main.TRUE
 
-            # Ping hosts
-            main.log.info( itemName + ": Ping " + h1Name + " and " +
-                           h2Name )
-            pingResult1 = main.Mininet1.pingHost( src=h1Name , target=h2Name )
-            if not pingResult1:
-                main.log.info( itemName + ": " + h1Name + " cannot ping "
-                               + h2Name )
-            pingResult2 = main.Mininet1.pingHost( src=h2Name , target=h1Name )
-            if not pingResult2:
-                main.log.info( itemName + ": " + h2Name + " cannot ping "
-                               + h1Name )
-            pingResult = pingResult1 and pingResult2
-            if pingResult:
-                main.log.info( itemName + ": Successfully pinged " +
-                               "both hosts" )
-            else:
-                main.log.info( itemName + ": Failed to ping " +
-                               "both hosts" )
+        main.step( "DUALSTACK: Add host intents between h3 and h11" )
+        stepResult = main.wrapper.hostIntent( main,
+                                              name='DUALSTACK',
+                                              host1='h3',
+                                              host2='h11',
+                                              host1Id='00:00:00:00:00:03/-1',
+                                              host2Id='00:00:00:00:00:0B/-1',
+                                              sw1='s5',
+                                              sw2='s2',
+                                              expectedLink=18 )
 
-            # Remove intents
-            for intent in intentsId:
-                main.CLIs[ 0 ].removeIntent( intentId=intent, purge=True )
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="DUALSTACK: Add host intent successful",
+                                 onfail="DUALSTACK: Add host intent failed" )
 
-            print main.CLIs[ 0 ].intents()
-            stepResult = pingResult and linkDownResult and linkUpResult \
-                         and intentResult
-            utilities.assert_equals( expect=main.TRUE,
-                                     actual=stepResult,
-                                     onpass=itemName +
-                                            ": host intent successful",
-                                     onfail=itemName +
-                                            ": Add host intent failed" )
     def CASE1002( self, main ):
         """
             Add point intents between 2 hosts:
-                - Get device ids
+                - Get device ids | ports
                 - Add point intents
                 - Check intents
-                - Check flows
+                - Verify flows
                 - Ping hosts
                 - Reroute
                     - Link down
+                    - Verify flows
+                    - Check topology
                     - Ping hosts
                     - Link up
+                    - Verify flows
+                    - Check topology
                     - Ping hosts
                 - Remove intents
         """
+        import time
+        import json
+        import re
+        """
+            Create your item(s) here
+            item = { 'name':'', 'host1': { 'name': '' },
+                     'host2': { 'name': '' },
+                     'ingressDevice':'' , 'egressDevice':'',
+                     'ingressPort':'', 'egressPort':'',
+                     'option':{ 'ethType':'', 'ethSrc':'', 'ethDst':'' } ,
+                     'link': { 'switch1': '', 'switch2':'', 'expect':'' } }
+
+        """
+
+        # Assert variables - These variable's name|format must be followed
+        # if you want to use the wrapper function
+        assert main, "There is no main"
+        assert main.CLIs, "There is no main.CLIs"
+        assert main.Mininet1, "Mininet handle should be named Mininet1"
+        assert main.numSwitch, "Placed the total number of switch topology in \
+                                main.numSwitch"
+
+        ipv4 = { 'name':'IPV4', 'ingressDevice':'of:0000000000000005/1' ,
+                 'host1': { 'name': 'h1' }, 'host2': { 'name': 'h9' },
+                 'egressDevice':'of:0000000000000006/1', 'option':
+                 { 'ethType':'IPV4', 'ethSrc':'00:00:00:00:00:01',
+                   'ethDst':'00:00:00:00:00:09' }, 'link': { 'switch1':'s5',
+                 'switch2':'s2', 'expect':'18' } }
+
+        """
+        ipv4 = { 'name':'IPV4', 'ingressDevice':'of:0000000000000005/1' ,
+                 'host1': { 'name': 'h1' }, 'host2': { 'name': 'h9' },
+                 'egressDevice':'of:0000000000000006/1', 'option':
+                 { 'ethType':'IPV4', 'ethSrc':'00:00:00:00:00:01' },
+                 'link': { 'switch1':'s5', 'switch2':'s2', 'expect':'18' } }
+        """
+        dualStack1 = { 'name':'IPV4', 'ingressDevice':'0000000000000005/3' ,
+                       'host1': { 'name': 'h3' }, 'host2': { 'name': 'h11' },
+                       'egressDevice':'0000000000000006/3', 'option':
+                       { 'ethType':'IPV4', 'ethSrc':'00:00:00:00:00:03',
+                       'ethDst':'00:00:00:00:00:0B' }, 'link': { 'switch1':'s5',
+                       'switch2':'s2', 'expect':'18' } }
+
+        main.case( "Add point intents between 2 devices" )
+
+        stepResult = main.TRUE
+        main.step( "IPV4: Add point intents between h1 and h9" )
+        stepResult = main.wrapper.pointIntent(
+                                       main,
+                                       name="IPV4",
+                                       host1="h1",
+                                       host2="h9",
+                                       deviceId1="of:0000000000000005/1",
+                                       deviceId2="of:0000000000000006/1",
+                                       port1="",
+                                       port2="",
+                                       ethType="IPV4",
+                                       mac1="00:00:00:00:00:01",
+                                       mac2="00:00:00:00:00:09",
+                                       bandwidth="",
+                                       lambdaAlloc=False,
+                                       ipProto="",
+                                       ip1="",
+                                       ip2="",
+                                       tcp1="",
+                                       tcp2="",
+                                       sw1="s5",
+                                       sw2="s2",
+                                       expectedLink=18 )
+
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="IPV4: Add point intent successful",
+                                 onfail="IPV4: Add point intent failed" )
 
     def CASE1003( self, main ):
         """
@@ -474,12 +434,16 @@ class FuncIntent:
                 - Get device ids
                 - Add single point to multi point intents
                 - Check intents
-                - Check flows
+                - Verify flows
                 - Ping hosts
                 - Reroute
                     - Link down
+                    - Verify flows
+                    - Check topology
                     - Ping hosts
                     - Link up
+                    - Verify flows
+                    - Check topology
                     - Ping hosts
                 - Remove intents
         """
@@ -490,12 +454,16 @@ class FuncIntent:
                 - Get device ids
                 - Add multi point to single point intents
                 - Check intents
-                - Check flows
+                - Verify flows
                 - Ping hosts
                 - Reroute
                     - Link down
+                    - Verify flows
+                    - Check topology
                     - Ping hosts
                     - Link up
+                    - Verify flows
+                    - Check topology
                     - Ping hosts
                 - Remove intents
         """

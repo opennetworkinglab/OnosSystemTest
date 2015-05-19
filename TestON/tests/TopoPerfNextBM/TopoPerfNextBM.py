@@ -272,10 +272,10 @@ class TopoPerfNextBM:
                 metricsSwUp = CLIs[node].topologyEventsMetrics()
                 jsonStr.append(metricsSwUp)
            
-            time.sleep(1)
-            
             main.log.info('Stopping all Tshark processes')
             main.ONOS1.tsharkStop()
+           
+            time.sleep(5)
             
             main.log.info('Copying over tshark files')
             os.system('scp ' + ONOSUser + '@' + nodeIpList[0] +
@@ -288,7 +288,8 @@ class TopoPerfNextBM:
                       nodeIpList[0] + ':' + tsharkOfOutput + ' /tmp/')
            
             # Get tcp syn / ack output
-            # time.sleep(1)
+            time.sleep(1)
+
             tcpFile = open(tsharkTcpOutput, 'r')
             tempText = tcpFile.readline()
             tempText = tempText.split(' ')

@@ -68,13 +68,16 @@ class TestON:
         self.TRUE = 1
         self.FALSE = 0
         self.ERROR = -1
+        self.NORESULT = 2
         self.FAIL = False
         self.PASS = True
-        self.CASERESULT = self.TRUE
+        self.CASERESULT = self.ERROR
+        self.STEPRESULT = self.NORESULT
+        self.stepResults = []
         self.init_result = self.TRUE
         self.testResult = "Summary"
         self.stepName = ""
-        self.wikiCache = ""
+        self.stepCache = ""
         # make this into two lists? one for step names, one for results?
         # this way, the case result could be a true AND of these results
         self.EXPERIMENTAL_MODE = False
@@ -188,7 +191,7 @@ class TestON:
         self.TOTAL_TC_PASS = 0
         self.TEST_ITERATION = 0
         self.stepCount = 0
-        self.CASERESULT = self.TRUE
+        self.CASERESULT = self.NORESULT
 
         import testparser
         testFile = self.tests_path + "/"+self.TEST + "/"+self.TEST + ".py"
@@ -208,7 +211,9 @@ class TestON:
     def runCase(self,testCaseNumber):
         self.CurrentTestCaseNumber = testCaseNumber
         self.CurrentTestCase = ""
+        self.stepResults = []
         self.stepName = ""
+        self.caseExplaination = ""
         result = self.TRUE
         self.stepCount = 0
         self.EXPERIMENTAL_MODE = self.FALSE
@@ -229,44 +234,76 @@ class TestON:
             elif result == self.TRUE:
                 continue
         if not stopped :
+            if all( self.TRUE == i for i in self.stepResults ):
+                # ALL PASSED
+                self.CASERESULT = self.TRUE
+            elif self.FALSE in self.stepResults:
+                # AT LEAST ONE FAILED
+                self.CASERESULT = self.FALSE
+            elif self.TRUE in self.stepResults:
+                # AT LEAST ONE PASSED
+                self.CASERESULT = self.TRUE
+            else:
+                self.CASERESULT = self.NORESULT
             self.testCaseResult[str(self.CurrentTestCaseNumber)] = self.CASERESULT
             self.logger.updateCaseResults(self)
-            self.log.wiki(self.wikiCache)
-            self.wikiCache = ""
+            self.log.wiki( "<p>" + self.caseExplaination + "</p>" )
+            self.log.summary( self.caseExplaination )
+            self.log.wiki( "<ul>" )
+            for line in self.stepCache.splitlines():
+                self.log.error( repr(line) )
+                if re.search( " - PASS$", line ):
+                    self.log.wiki( "<li>" + line + "  <ac:emoticon ac:name=\"tick\" /></li>\n" )
+                elif re.search( " - FAIL$", line ):
+                    self.log.wiki( "<li>" + line + "  <ac:emoticon ac:name=\"cross\" /></li>\n" )
+                elif re.search( " - No Result$", line ):
+                    self.log.wiki( "<li>" + line + "  <ac:emoticon ac:name=\"warning\" /></li>\n" )
+            self.log.wiki( "</ul>" )
+            self.log.summary( self.stepCache )
+            self.stepCache = ""
         return result
 
     def runStep(self,stepList,code,testCaseNumber):
         if not cli.pause:
             try :
                 step = stepList[self.stepCount]
+                self.STEPRESULT = self.NORESULT
                 exec code[testCaseNumber][step] in module.__dict__
                 self.stepCount = self.stepCount + 1
-                if step > 0:  # FIXME: step 0 is from previous case - Why is it doing this?
-                    #FIXME are we losing results because of this?
-                    #       Maybe we should be updating stepName sooner?
-                    self.wikiCache += "\t"+str(testCaseNumber)+"."+str(step)+" "+self.stepName+" - "
-                    if self.CASERESULT == self.TRUE:
-                        self.wikiCache += "PASSED\n"
-                    elif self.CASERESULT == self.FALSE:
-                        self.wikiCache += "FAILED\n"
+                if step > 0:
+                    self.stepCache += "\t"+str(testCaseNumber)+"."+str(step)+" "+self.stepName+" - "
+                    if self.STEPRESULT == self.TRUE:
+                        self.stepCache += "PASS\n"
+                        #self.stepCache += "PASS  <ac:emoticon ac:name=\"tick\" /></li>\n"
+                    elif self.STEPRESULT == self.FALSE:
+                        self.stepCache += "FAIL\n"
+                        #self.stepCache += "FAIL  <ac:emoticon ac:name=\"cross\" /></li>\n"
                     else:
-                        self.wikiCache += "No Result\n"
-                '''
-                else:  # FIXME : DEBUG
-                    self.wikiCache += "DEBUG\t"+str(testCaseNumber)+"."+str(step)+" "+self.stepName+" - "
-                    if self.CASERESULT == self.TRUE:
-                        self.wikiCache += "PASSED\n"
-                    elif self.CASERESULT == self.FALSE:
-                        self.wikiCache += "FAILED\n"
-                    else:
-                        self.wikiCache += "No Result\n"
-                '''
+                        self.stepCache += "No Result\n"
+                        #self.stepCache += "No Result  <ac:emoticon ac:name=\"warning\" /></li>\n"
+                    self.stepResults.append(self.STEPRESULT)
             except TypeError,e:
-                print "Exception in the following section of code: Test Step " +\
-                      str(testCaseNumber) + "." + str(step) + " ):"
+                print "\nException in the following section of code: " +\
+                      str(testCaseNumber) + "." + str(step) + ": " +\
+                      self.stepName
                 #print code[testCaseNumber][step]
                 self.stepCount = self.stepCount + 1
                 self.log.exception(e)
+                self.logger.updateCaseResults(self)
+                #WIKI results
+                self.log.wiki( "<ul>" )
+                for line in self.stepCachesplitlines():
+                    self.log.error( repr(line) )
+                    if re.search( " - PASS$", line ):
+                        self.log.wiki( "<li>" + line + "  <ac:emoticon ac:name=\"tick\" /></li>\n" )
+                    elif re.search( " - FAIL$", line ):
+                        self.log.wiki( "<li>" + line + "  <ac:emoticon ac:name=\"cross\" /></li>\n" )
+                    elif re.search( " - No Result$", line ):
+                        self.log.wiki( "<li>" + line + "  <ac:emoticon ac:name=\"warning\" /></li>\n" )
+                self.log.wiki( "</ul>" )
+                #summary results
+                self.log.summary( self.stepCache )
+                self.stepCache = ""
                 self.cleanup()
                 self.exit()
             return main.TRUE

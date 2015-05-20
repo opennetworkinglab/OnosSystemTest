@@ -49,7 +49,7 @@ class IpOptical:
         main.log.info( "git_pull_result = " + str( gitPullResult ))
         main.ONOSbench.getVersion( report=True )
 
-        if gitPullResult == 1:
+        if gitPullResult == 100:
             main.step( "Using mvn clean & install" )
             main.ONOSbench.cleanInstall()
         elif gitPullResult == 0:
@@ -88,14 +88,6 @@ class IpOptical:
         main.ONOS2.startOnosCli( ONOSIp=main.params[ 'CTRL' ][ 'ip1' ] )
         main.step( "Starting Mininet CLI..." )
         
-        case1Result = ( packageResult and
-                        cellResult and verifyResult
-                        and onosInstallResult and
-                        onos1Isup and startResult )
-        utilities.assert_equals( expect=main.TRUE, actual=case1Result,
-                                 onpass="Test startup successful",
-                                 onfail="Test startup NOT successful" )
-
     def CASE20( self ):
         """
             Exit from mininet cli
@@ -190,17 +182,6 @@ class IpOptical:
             onpass="Successfully started ONOS cli",
             onfail="Failed to start ONOS cli")
 
-        case20Result = step1Result and step3Result and\
-                       step4Result and step5Result and step6Result and\
-                       step7Result
-        utilities.assert_equals(
-            expect=main.TRUE,
-            actual=case20Result,
-            onpass= "Exiting functionality mininet topology and reinstalling" +
-                    " ONOS successful",
-            onfail= "Exiting functionality mininet topology and reinstalling" +
-                    " ONOS failed" )
-
     def CASE21( self, main ):
         """
             On ONOS bench, run this command:
@@ -243,20 +224,13 @@ class IpOptical:
             onpass="Started the topology successfully ",
             onfail="Failed to start the topology")
 
-        case21Result = step1Result and step2Result
-        utilities.assert_equals(
-            expect=main.TRUE,
-            actual=case21Result,
-            onpass="Packet optical topology spawned successsfully",
-            onfail="Packet optical topology spawning failed" )
-
     def CASE22( self, main ):
         """
             Curretly we use, 10 optical switches(ROADM's) and
             6 packet layer mininet switches each with one host.
             Therefore, the roadmCount variable = 10,
             packetLayerSWCount variable = 6, hostCount=6 and
-            links=42.
+            links=46.
             All this is hardcoded in the testcase. If the topology changes,
             these hardcoded values need to be changed
         """
@@ -331,7 +305,7 @@ class IpOptical:
         print "_________________________________"
         linkActiveCount = linksResult.count("state=ACTIVE")
         main.log.info( "linkActiveCount = " + str( linkActiveCount ))
-        if linkActiveCount == 42:
+        if linkActiveCount == 46:
             linkActiveResult = main.TRUE
             main.log.info(
                 "Number of links in ACTIVE state are correct")
@@ -346,14 +320,6 @@ class IpOptical:
             actual=step2Result,
             onpass="Successfully loaded packet optical topology",
             onfail="Failed to load packet optical topology" )
-
-        case22Result = step1Result and step2Result
-
-        utilities.assert_equals(
-            expect=main.TRUE,
-            actual=case22Result,
-            onpass="Packet optical topology discovery successful",
-            onfail="Packet optical topology discovery failed" )
 
     def CASE23( self, main ):
         import time
@@ -370,24 +336,27 @@ class IpOptical:
 
         main.step( "Adding point intents" )
         step1Result = main.TRUE
-        intentsId = []
+        main.pIntentsId = []
         pIntent1 = main.ONOS3.addPointIntent(
             "of:0000ffffffff0001/1",
             "of:0000ffffffff0005/1" )
         pIntent2 = main.ONOS3.addPointIntent(
             "of:0000ffffffff0005/1",
             "of:0000ffffffff0001/1" )
-        intentsId.append( pIntent1 )
-        intentsId.append( pIntent2 )
+        main.pIntentsId.append( pIntent1 )
+        main.pIntentsId.append( pIntent2 )
+        time.sleep( 10 )
         main.log.info( "Checking intents state")
-        checkStateResult = main.ONOS3.checkIntentState( intentsId = intentsId )
-        time.sleep( 30 )
+        checkStateResult = main.ONOS3.checkIntentState(
+                                                  intentsId = main.pIntentsId )
+        time.sleep( 10 )
         main.log.info( "Checking flows state")
         checkFlowResult = main.ONOS3.checkFlowsState()
         # Sleep for 30 seconds to provide time for the intent state to change
-        time.sleep( 30 )
+        time.sleep( 10 )
         main.log.info( "Checking intents state one more time")
-        checkStateResult = main.ONOS3.checkIntentState( intentsId = intentsId )
+        checkStateResult = main.ONOS3.checkIntentState(
+                                                  intentsId = main.pIntentsId )
         step1Result = checkStateResult and checkFlowResult
         utilities.assert_equals(
             expect=main.TRUE,
@@ -405,14 +374,7 @@ class IpOptical:
             actual=step2Result,
             onpass="Successfully pinged h1 and h5",
             onfail="Failed to ping between h1 and h5")
-
-        case23Result = step1Result and step2Result
-        utilities.assert_equals(
-            expect=main.TRUE,
-            actual=case23Result,
-            onpass="Point intents are installed properly",
-            onfail="Failed to install point intents" )
-
+        time.sleep(120)
     def CASE24( self, main ):
         import time
         import json
@@ -520,14 +482,27 @@ class IpOptical:
             actual=step4Result,
             onpass="Successfully brought the port up",
             onfail="Failed to bring the port up")
-
-        case24Result = step1Result and step2Result and step3Result \
-                       and step4Result
+        """
+        main.step( "Removing host intents" )
+        step5Result = main.TRUE
+        removeResult = main.TRUE
+        # Check remaining intents
+        intentsJson = json.loads( main.ONOS3.intents() )
+        main.ONOS3.removeIntent( intentId=intent1, purge=True )
+        main.ONOS3.removeIntent( intentId=intent2, purge=True )
+        for intents in intentsJson:
+            main.ONOS3.removeIntent( intentId=intents.get( 'id' ),
+                                     app='org.onosproject.optical',
+                                     purge=True )
+        print json.loads( main.ONOS3.intents() )
+        if len( json.loads( main.ONOS3.intents() ) ):
+            removeResult = main.FALSE
+        step5Result = removeResult
         utilities.assert_equals( expect=main.TRUE,
-                                 actual=case24Result,
-                                 onpass="Packet optical rerouting successful",
-                                 onfail="Packet optical rerouting failed" )
-
+                                 actual=step5Result,
+                                 onpass="Successfully removed host intents",
+                                 onfail="Failed to remove host intents" )
+        """
     def CASE10( self ):
         main.log.report(
             "This testcase uninstalls the reactive forwarding app" )
@@ -554,13 +529,6 @@ class IpOptical:
         time.sleep( 15 )
         flows = main.ONOS2.flows()
         main.log.info( flows )
-
-        case10Result = step1Result
-        utilities.assert_equals(
-            expect=main.TRUE,
-            actual=case10Result,
-            onpass="Reactive forwarding app uninstallation successful",
-            onfail="Reactive forwarding app uninstallation failed" )
 
     def CASE25( self ):
         """
@@ -653,9 +621,3 @@ class IpOptical:
                                  actual=step4Result,
                                  onpass="Successfully removed host intents",
                                  onfail="Failed to remove host intents" )
-        case25Result = step1Result and step2Result and step3Result and \
-                       step4Result
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=case25Result,
-                                 onpass="Add host intent successful",
-                                 onfail="Add host intent failed" )

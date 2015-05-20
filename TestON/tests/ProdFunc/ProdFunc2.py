@@ -11,7 +11,7 @@ import json
 time.sleep( 1 )
 
 
-class ProdFunc13:
+class ProdFunc:
 
     def __init__( self ):
         self.default = ''
@@ -41,13 +41,16 @@ class ProdFunc13:
         cellResult = main.ONOSbench.setCell( cellName )
         verifyResult = main.ONOSbench.verifyCell()
 
+        main.step( "Removing raft logs before a clen installation of ONOS" )
+        main.ONOSbench.onosRemoveRaftLogs()
+
         main.step( "Git checkout and get version" )
-        main.ONOSbench.gitCheckout( "master" )
+        #main.ONOSbench.gitCheckout( "master" )
         gitPullResult = main.ONOSbench.gitPull()
         main.log.info( "git_pull_result = " + str( gitPullResult ))
         main.ONOSbench.getVersion( report=True )
 
-        if gitPullResult == 100:
+        if gitPullResult == 1:
             main.step( "Using mvn clean & install" )
             main.ONOSbench.cleanInstall()
         elif gitPullResult == 0:
@@ -189,7 +192,7 @@ class ProdFunc13:
         main.case( "Disconnecting mininet and restarting ONOS" )
         main.step( "Disconnecting mininet and restarting ONOS" )
         mininetDisconnect = main.Mininet1.disconnect()
-        print "mininetDisconnect = ", mininetDisconnect
+        print "mininetDisconnect = ", mininetDisconnect        
 
         main.step( "Removing raft logs before a clen installation of ONOS" )
         main.ONOSbench.onosRemoveRaftLogs()
@@ -240,14 +243,8 @@ class ProdFunc13:
         main.log.report( "_____________________________________________" )
         main.case( "Starting LINC-OE and other components" )
         main.step( "Starting LINC-OE and other components" )
-        main.log.info( "Activate optical app" )
-        appInstallResult = main.ONOS2.activateApp( "org.onosproject.optical" )
-        appCheck = main.ONOS2.appToIDCheck()
-        if appCheck != main.TRUE:
-            main.log.warn( main.ONOS2.apps() )
-            main.log.warn( main.ONOS2.appIDs() )
-
-        opticalMnScript = main.LincOE2.runOpticalMnScript(ctrllerIP = main.params[ 'CTRL' ][ 'ip1' ])
+        appInstallResult = main.ONOS2.featureInstall( "onos-app-optical" )
+        opticalMnScript = main.LincOE2.runOpticalMnScript()
 
         case21Result = opticalMnScript and appInstallResult
         utilities.assert_equals(
@@ -276,6 +273,7 @@ class ProdFunc13:
 
         print "devices_result = ", devicesResult
         devicesLinewise = devicesResult.split( "\n" )
+        devicesLinewise = devicesLinewise[ 1: ]
         roadmCount = 0
         packetLayerSWCount = 0
         for line in devicesLinewise:
@@ -555,7 +553,6 @@ class ProdFunc13:
                          " all the switches to all the controllers and" +
                          " discovering the hosts in reactive mode" )
         main.log.report( "__________________________________" )
-
         main.case( "Pingall Test" )
         main.step( "Assigning switches to controllers" )
         ONOS1Ip = main.params[ 'CTRL' ][ 'ip1' ]
@@ -654,13 +651,6 @@ class ProdFunc13:
                     ip5=ONOS5Ip,port5=ONOS5Port )
         """
         # REACTIVE FWD test
-        main.log.info( "Activate fwd app" )
-        appInstallResult = main.ONOS2.activateApp( "org.onosproject.fwd" )
-        appCheck = main.ONOS2.appToIDCheck()
-        if appCheck != main.TRUE:
-            main.log.warn( main.ONOS2.apps() )
-            main.log.warn( main.ONOS2.appIDs() )
-        time.sleep( 10 )
 
         main.step( "Get list of hosts from Mininet" )
         hostList = main.Mininet1.getHosts()
@@ -703,12 +693,8 @@ class ProdFunc13:
         main.log.report( "__________________________________" )
         main.case( "Uninstalling reactive forwarding app" )
         # Unistall onos-app-fwd app to disable reactive forwarding
-        main.log.info( "deactivate reactive forwarding app" )
-        appUninstallResult = main.ONOS2.deactivateApp( "org.onosproject.fwd" )
-        appCheck = main.ONOS2.appToIDCheck()
-        if appCheck != main.TRUE:
-            main.log.warn( main.ONOS2.apps() )
-            main.log.warn( main.ONOS2.appIDs() )
+        appUninstallResult = main.ONOS2.featureUninstall( "onos-app-fwd" )
+        main.log.info( "onos-app-fwd uninstalled" )
 
         # After reactive forwarding is disabled, the reactive flows on
         # switches timeout in 10-15s
@@ -741,32 +727,21 @@ class ProdFunc13:
         main.step( "Moving host h9 from device s9 and attach it to s8" )
         main.Mininet1.moveHost(host = 'h9', oldSw = 's9', newSw = 's8')
 
-        main.log.info( "Activate fwd app" )
-        appInstallResult = main.ONOS2.activateApp( "org.onosproject.fwd" )
-        appCheck = main.ONOS2.appToIDCheck()
-        if appCheck != main.TRUE:
-            main.log.warn( main.ONOS2.apps() )
-            main.log.warn( main.ONOS2.appIDs() )
-
-        time.sleep(25) #Time delay to have all the flows ready
+        time.sleep(15) #Time delay to have all the flows ready
         main.step( "Pingall" )
         pingResult = main.FALSE
         time1 = time.time()
-        pingResult = main.Mininet1.pingall( timeout=120,
-                                            shortCircuit=True,
-                                            acceptableFailed=20 )
+        pingResult = main.Mininet1.pingall()
         time2 = time.time()
         print "Time for pingall: %2f seconds" % ( time2 - time1 )
 
         hosts = main.ONOS2.hosts( jsonFormat = False )
         main.log.info( hosts )
         
-        main.log.info( "deactivate reactive forwarding app" )
-        appUninstallResult = main.ONOS2.deactivateApp( "org.onosproject.fwd" )
-        appCheck = main.ONOS2.appToIDCheck()
-        if appCheck != main.TRUE:
-            main.log.warn( main.ONOS2.apps() )
-            main.log.warn( main.ONOS2.appIDs() )
+        main.case( "Uninstalling reactive forwarding app" )
+        # Unistall onos-app-fwd app to disable reactive forwarding
+        appUninstallResult = main.ONOS2.featureUninstall( "onos-app-fwd" )
+        main.log.info( "onos-app-fwd uninstalled" )
 
         main.step( "Add point intents between hosts on the same device")
         ptpIntentResult = main.ONOS2.addPointIntent(
@@ -804,7 +779,7 @@ class ProdFunc13:
                 "Point intents for hosts on same devices" +
                 "installed correctly. Cleaning up" )
 
-        case11Result = ping
+        case11Result = ping and pingResult
         utilities.assert_equals(
             expect = main.TRUE,
             actual = case11Result,
@@ -837,6 +812,9 @@ class ProdFunc13:
             actual=case12Result,
             onpass = "Expected default num of flows exist",
             onfail = "Expected default num of flows do not exist")
+    
+    
+        
 
     def CASE6( self ):
         import time
@@ -962,9 +940,6 @@ class ProdFunc13:
             onfail="Pingall Test after Host intents addition failed" )
 
     def CASE5( self, main ):
-        """
-            Check ONOS topology matches with mininet
-        """
         import json
         # assumes that sts is already in you PYTHONPATH
         from sts.topology.teston_topology import TestONTopology
@@ -1077,11 +1052,6 @@ class ProdFunc13:
             onfail="Topology checks failed" )
 
     def CASE7( self, main ):
-        """
-            Link discovery test case. Checks if ONOS can discover a link
-            down or up properly.
-        """
-
         from sts.topology.teston_topology import TestONTopology
 
         linkSleep = int( main.params[ 'timers' ][ 'LinkDiscovery' ] )
@@ -1130,8 +1100,8 @@ class ProdFunc13:
         main.step( "Determine the current number of switches and links" )
         topologyOutput = main.ONOS2.topology()
         topologyResult = main.ONOS1.getTopology( topologyOutput )
-        activeSwitches = topologyResult[ 'devices' ]
-        links = topologyResult[ 'links' ]
+        activeSwitches = topologyResult[ 'deviceCount' ]
+        links = topologyResult[ 'linkCount' ]
         print "activeSwitches = ", type( activeSwitches )
         print "links = ", type( links )
         main.log.info(
@@ -1248,7 +1218,7 @@ class ProdFunc13:
         main.step(
             "Iterate through the intentids list and remove each intent" )
         for id in intentids:
-            main.ONOS2.removeIntent( intentId=id ,purge=True)
+            main.ONOS2.removeIntent( intentId=id )
 
         intentResult = main.ONOS2.intents( jsonFormat=False )
         main.log.info( "intent_result = " + intentResult )
@@ -1310,39 +1280,29 @@ class ProdFunc13:
                                  onfail="Intent removal test failed" )
 
     def CASE9( self ):
-        """
-            Testing Point intents
-        """
         main.log.report(
-            "This test case adds point intents and then does pingall" )
+            "This testcase adds point intents and then does pingall" )
         main.log.report( "__________________________________" )
         main.log.info( "Adding point intents" )
         main.case(
             "Adding bidirectional point for mn hosts" +
             "( h8-h18, h9-h19, h10-h20, h11-h21, h12-h22, " +
             "h13-h23, h14-h24, h15-h25, h16-h26, h17-h27 )" )
-        macsDict = {}
-        for i in range( 1,29 ):
-            macsDict[ 'h' + str( i ) ]= main.Mininet1.getMacAddress( host='h'+ str( i ) )
-        print macsDict
+
         main.step( "Add point intents for mn hosts h8 and h18 or" +
                    "ONOS hosts h8 and h12" )
         # main.step(var1)
         ptpIntentResult = main.ONOS2.addPointIntent(
-            ingressDevice="of:0000000000003008/1",
-            egressDevice="of:0000000000006018/1",
-            ethType='IPV4',
-            ethSrc=macsDict.get( 'h8' ))
+            "of:0000000000003008/1",
+            "of:0000000000006018/1" )
         if ptpIntentResult == main.TRUE:
             getIntentResult = main.ONOS2.intents()
             main.log.info( "Point to point intent install successful" )
             # main.log.info( getIntentResult )
 
         ptpIntentResult = main.ONOS2.addPointIntent(
-            ingressDevice="of:0000000000006018/1",
-            egressDevice="of:0000000000003008/1",
-            ethType='IPV4',
-            ethSrc=macsDict.get( 'h18' ))
+            "of:0000000000006018/1",
+            "of:0000000000003008/1" )
         if ptpIntentResult == main.TRUE:
             getIntentResult = main.ONOS2.intents()
             main.log.info( "Point to point intent install successful" )
@@ -1352,9 +1312,7 @@ class ProdFunc13:
         main.step(var2)
         ptpIntentResult = main.ONOS2.addPointIntent(
             "of:0000000000003009/1",
-            "of:0000000000006019/1",
-            ethType='IPV4',
-            ethSrc=macsDict.get( 'h9' ))
+            "of:0000000000006019/1" )
         if ptpIntentResult == main.TRUE:
             getIntentResult = main.ONOS2.intents()
             main.log.info( "Point to point intent install successful" )
@@ -1362,9 +1320,7 @@ class ProdFunc13:
 
         ptpIntentResult = main.ONOS2.addPointIntent(
             "of:0000000000006019/1",
-            "of:0000000000003009/1",
-            ethType='IPV4',
-            ethSrc=macsDict.get( 'h19' ))
+            "of:0000000000003009/1" )
         if ptpIntentResult == main.TRUE:
             getIntentResult = main.ONOS2.intents()
             main.log.info( "Point to point intent install successful" )
@@ -1374,10 +1330,7 @@ class ProdFunc13:
         main.step(var3)
         ptpIntentResult = main.ONOS2.addPointIntent(
             "of:0000000000003010/1",
-            "of:0000000000006020/1",
-            ethType='IPV4',
-            ethSrc=macsDict.get( 'h10' ))
-
+            "of:0000000000006020/1" )
         if ptpIntentResult == main.TRUE:
             getIntentResult = main.ONOS2.intents()
             main.log.info( "Point to point intent install successful" )
@@ -1385,10 +1338,7 @@ class ProdFunc13:
 
         ptpIntentResult = main.ONOS2.addPointIntent(
             "of:0000000000006020/1",
-            "of:0000000000003010/1",
-            ethType='IPV4',
-            ethSrc=macsDict.get( 'h20' ))
-
+            "of:0000000000003010/1" )
         if ptpIntentResult == main.TRUE:
             getIntentResult = main.ONOS2.intents()
             main.log.info( "Point to point intent install successful" )
@@ -1399,10 +1349,7 @@ class ProdFunc13:
         main.case(var4)
         ptpIntentResult = main.ONOS2.addPointIntent(
             "of:0000000000003011/1",
-            "of:0000000000006021/1",
-            ethType='IPV4',
-            ethSrc=macsDict.get( 'h11' ))
-
+            "of:0000000000006021/1" )
         if ptpIntentResult == main.TRUE:
             getIntentResult = main.ONOS2.intents()
             main.log.info( "Point to point intent install successful" )
@@ -1410,10 +1357,7 @@ class ProdFunc13:
 
         ptpIntentResult = main.ONOS2.addPointIntent(
             "of:0000000000006021/1",
-            "of:0000000000003011/1",
-            ethType='IPV4',
-            ethSrc=macsDict.get( 'h21' ))
-
+            "of:0000000000003011/1" )
         if ptpIntentResult == main.TRUE:
             getIntentResult = main.ONOS2.intents()
             main.log.info( "Point to point intent install successful" )
@@ -1424,10 +1368,7 @@ class ProdFunc13:
         main.case(var5)
         ptpIntentResult = main.ONOS2.addPointIntent(
             "of:0000000000003012/1",
-            "of:0000000000006022/1",
-            ethType='IPV4',
-            ethSrc=macsDict.get( 'h12' ))
-
+            "of:0000000000006022/1" )
         if ptpIntentResult == main.TRUE:
             getIntentResult = main.ONOS2.intents()
             main.log.info( "Point to point intent install successful" )
@@ -1435,10 +1376,7 @@ class ProdFunc13:
 
         ptpIntentResult = main.ONOS2.addPointIntent(
             "of:0000000000006022/1",
-            "of:0000000000003012/1",
-            ethType='IPV4',
-            ethSrc=macsDict.get( 'h22' ))
-
+            "of:0000000000003012/1" )
         if ptpIntentResult == main.TRUE:
             getIntentResult = main.ONOS2.intents()
             main.log.info( "Point to point intent install successful" )
@@ -1449,10 +1387,7 @@ class ProdFunc13:
         main.case(var6)
         ptpIntentResult = main.ONOS2.addPointIntent(
             "of:0000000000003013/1",
-            "of:0000000000006023/1",
-            ethType='IPV4',
-            ethSrc=macsDict.get( 'h13' ))
-
+            "of:0000000000006023/1" )
         if ptpIntentResult == main.TRUE:
             getIntentResult = main.ONOS2.intents()
             main.log.info( "Point to point intent install successful" )
@@ -1460,10 +1395,7 @@ class ProdFunc13:
 
         ptpIntentResult = main.ONOS2.addPointIntent(
             "of:0000000000006023/1",
-            "of:0000000000003013/1",
-            ethType='IPV4',
-            ethSrc=macsDict.get( 'h23' ))
-
+            "of:0000000000003013/1" )
         if ptpIntentResult == main.TRUE:
             getIntentResult = main.ONOS2.intents()
             main.log.info( "Point to point intent install successful" )
@@ -1474,10 +1406,7 @@ class ProdFunc13:
         main.case(var7)
         ptpIntentResult = main.ONOS2.addPointIntent(
             "of:0000000000003014/1",
-            "of:0000000000006024/1",
-            ethType='IPV4',
-            ethSrc=macsDict.get( 'h14' ))
-
+            "of:0000000000006024/1" )
         if ptpIntentResult == main.TRUE:
             getIntentResult = main.ONOS2.intents()
             main.log.info( "Point to point intent install successful" )
@@ -1485,10 +1414,7 @@ class ProdFunc13:
 
         ptpIntentResult = main.ONOS2.addPointIntent(
             "of:0000000000006024/1",
-            "of:0000000000003014/1",
-            ethType='IPV4',
-            ethSrc=macsDict.get( 'h24' ))
-
+            "of:0000000000003014/1" )
         if ptpIntentResult == main.TRUE:
             getIntentResult = main.ONOS2.intents()
             main.log.info( "Point to point intent install successful" )
@@ -1499,10 +1425,7 @@ class ProdFunc13:
         main.case(var8)
         ptpIntentResult = main.ONOS2.addPointIntent(
             "of:0000000000003015/1",
-            "of:0000000000006025/1",
-            ethType='IPV4',
-            ethSrc=macsDict.get( 'h15' ))
-
+            "of:0000000000006025/1" )
         if ptpIntentResult == main.TRUE:
             getIntentResult = main.ONOS2.intents()
             main.log.info( "Point to point intent install successful" )
@@ -1510,10 +1433,7 @@ class ProdFunc13:
 
         ptpIntentResult = main.ONOS2.addPointIntent(
             "of:0000000000006025/1",
-            "of:0000000000003015/1",
-            ethType='IPV4',
-            ethSrc=macsDict.get( 'h25' ))
-
+            "of:0000000000003015/1" )
         if ptpIntentResult == main.TRUE:
             getIntentResult = main.ONOS2.intents()
             main.log.info( "Point to point intent install successful" )
@@ -1524,10 +1444,7 @@ class ProdFunc13:
         main.case(var9)
         ptpIntentResult = main.ONOS2.addPointIntent(
             "of:0000000000003016/1",
-            "of:0000000000006026/1",
-            ethType='IPV4',
-            ethSrc=macsDict.get( 'h16' ))
-
+            "of:0000000000006026/1" )
         if ptpIntentResult == main.TRUE:
             getIntentResult = main.ONOS2.intents()
             main.log.info( "Point to point intent install successful" )
@@ -1535,10 +1452,7 @@ class ProdFunc13:
 
         ptpIntentResult = main.ONOS2.addPointIntent(
             "of:0000000000006026/1",
-            "of:0000000000003016/1",
-            ethType='IPV4',
-            ethSrc=macsDict.get( 'h26' ))
-
+            "of:0000000000003016/1" )
         if ptpIntentResult == main.TRUE:
             getIntentResult = main.ONOS2.intents()
             main.log.info( "Point to point intent install successful" )
@@ -1549,10 +1463,7 @@ class ProdFunc13:
         main.case(var10)
         ptpIntentResult = main.ONOS2.addPointIntent(
             "of:0000000000003017/1",
-            "of:0000000000006027/1",
-            ethType='IPV4',
-            ethSrc=macsDict.get( 'h17' ))
-
+            "of:0000000000006027/1" )
         if ptpIntentResult == main.TRUE:
             getIntentResult = main.ONOS2.intents()
             main.log.info( "Point to point intent install successful" )
@@ -1560,10 +1471,7 @@ class ProdFunc13:
 
         ptpIntentResult = main.ONOS2.addPointIntent(
             "of:0000000000006027/1",
-            "of:0000000000003017/1",
-            ethType='IPV4',
-            ethSrc=macsDict.get( 'h27' ))
-
+            "of:0000000000003017/1" )
         if ptpIntentResult == main.TRUE:
             getIntentResult = main.ONOS2.intents()
             main.log.info( "Point to point intent install successful" )

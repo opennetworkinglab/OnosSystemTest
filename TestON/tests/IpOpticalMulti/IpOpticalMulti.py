@@ -58,7 +58,7 @@ class IpOpticalMulti:
         main.log.info( "git_pull_result = " + str( gitPullResult ))
         versionResult = main.ONOSbench.getVersion( report=True )
 
-        if gitPullResult == 1:
+        if gitPullResult == 100:
             main.step( "Using mvn clean & install" )
             cleanInstallResult = main.ONOSbench.cleanInstall()
             # cleanInstallResult = main.TRUE
@@ -298,7 +298,7 @@ class IpOpticalMulti:
             6 packet layer mininet switches each with one host.
             Therefore, the roadmCount variable = 10,
             packetLayerSWCount variable = 6, hostCount=6 and
-            links=42.
+            links=46.
             All this is hardcoded in the testcase. If the topology changes,
             these hardcoded values need to be changed
         """
@@ -373,7 +373,7 @@ class IpOpticalMulti:
         print "_________________________________"
         linkActiveCount = linksResult.count("state=ACTIVE")
         main.log.info( "linkActiveCount = " + str( linkActiveCount ))
-        if linkActiveCount == 42:
+        if linkActiveCount == 46:
             linkActiveResult = main.TRUE
             main.log.info(
                 "Number of links in ACTIVE state are correct")

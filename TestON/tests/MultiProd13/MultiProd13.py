@@ -53,12 +53,12 @@ class MultiProd13:
         removeLogResult = main.ONOSbench.onosRemoveRaftLogs()
 
         main.step( "Git checkout, pull and get version" )
-        #main.ONOSbench.gitCheckout( "master" )
+        main.ONOSbench.gitCheckout( "master" )
         gitPullResult = main.ONOSbench.gitPull()
         main.log.info( "git_pull_result = " + str( gitPullResult ))
         versionResult = main.ONOSbench.getVersion( report=True )
 
-        if gitPullResult == 1:
+        if gitPullResult == 100:
             main.step( "Using mvn clean & install" )
             cleanInstallResult = main.ONOSbench.cleanInstall()
             # cleanInstallResult = main.TRUE
@@ -643,8 +643,8 @@ class MultiProd13:
         main.step( "Determine the current number of switches and links" )
         topologyOutput = main.ONOScli1.topology()
         topologyResult = main.ONOSbench.getTopology( topologyOutput )
-        activeSwitches = topologyResult[ 'deviceCount' ]
-        links = topologyResult[ 'linkCount' ]
+        activeSwitches = topologyResult[ 'devices' ]
+        links = topologyResult[ 'links' ]
         main.log.info(
             "Currently there are %s switches and %s links" %
             ( str( activeSwitches ), str( links ) ) )
@@ -887,7 +887,7 @@ class MultiProd13:
         main.step(
             "Iterate through the intentids list and remove each intent" )
         for id in intentids:
-            main.ONOScli1.removeIntent( intentId=id )
+            main.ONOScli1.removeIntent( intentId=id ,purge=True )
 
         intentResult = main.ONOScli1.intents( jsonFormat=False )
         main.log.info( "intent_result = " + intentResult )
@@ -909,7 +909,6 @@ class MultiProd13:
             else:
                 main.log.info( "Unknown error" )
                 PingResult = main.ERROR
-
         # Note: If the ping result failed, that means the intents have been
         # withdrawn correctly.
         if PingResult == main.TRUE:
@@ -947,28 +946,38 @@ class MultiProd13:
         main.step(
             "Add point-to-point intents for mininet hosts" +
             " h8 and h18 or ONOS hosts h8 and h12" )
+        macsDict = {}
+        for i in range( 1,29 ):
+            macsDict[ 'h' + str( i ) ]= main.Mininet1.getMacAddress( host='h'+ str( i ) )
+        print macsDict
+        # main.step(var1)
         ptpIntentResult = main.ONOScli1.addPointIntent(
-            "of:0000000000003008/1",
-            "of:0000000000006018/1" )
+            ingressDevice="of:0000000000003008/1",
+            egressDevice="of:0000000000006018/1",
+            ethType='IPV4',
+            ethSrc=macsDict.get( 'h8' ))
         if ptpIntentResult == main.TRUE:
             getIntentResult = main.ONOScli1.intents()
             main.log.info( "Point to point intent install successful" )
             # main.log.info( getIntentResult )
 
         ptpIntentResult = main.ONOScli1.addPointIntent(
-            "of:0000000000006018/1",
-            "of:0000000000003008/1" )
+            ingressDevice="of:0000000000006018/1",
+            egressDevice="of:0000000000003008/1",
+            ethType='IPV4',
+            ethSrc=macsDict.get( 'h18' ))
         if ptpIntentResult == main.TRUE:
             getIntentResult = main.ONOScli1.intents()
             main.log.info( "Point to point intent install successful" )
             # main.log.info( getIntentResult )
 
-        main.step(
-            "Add point-to-point intents for mininet hosts" +
-            " h9 and h19 or ONOS hosts h9 and h13" )
+        var2 = "Add point intents for mn hosts h9&h19 or ONOS hosts h9&h13"
+        main.step(var2)
         ptpIntentResult = main.ONOScli1.addPointIntent(
             "of:0000000000003009/1",
-            "of:0000000000006019/1" )
+            "of:0000000000006019/1",
+            ethType='IPV4',
+            ethSrc=macsDict.get( 'h9' ))
         if ptpIntentResult == main.TRUE:
             getIntentResult = main.ONOScli1.intents()
             main.log.info( "Point to point intent install successful" )
@@ -976,18 +985,22 @@ class MultiProd13:
 
         ptpIntentResult = main.ONOScli1.addPointIntent(
             "of:0000000000006019/1",
-            "of:0000000000003009/1" )
+            "of:0000000000003009/1",
+            ethType='IPV4',
+            ethSrc=macsDict.get( 'h19' ))
         if ptpIntentResult == main.TRUE:
             getIntentResult = main.ONOScli1.intents()
             main.log.info( "Point to point intent install successful" )
             # main.log.info( getIntentResult )
 
-        main.step(
-            "Add point-to-point intents for mininet" +
-            " hosts h10 and h20 or ONOS hosts hA and h14" )
+        var3 = "Add point intents for MN hosts h10&h20 or ONOS hosts hA&h14"
+        main.step(var3)
         ptpIntentResult = main.ONOScli1.addPointIntent(
             "of:0000000000003010/1",
-            "of:0000000000006020/1" )
+            "of:0000000000006020/1",
+            ethType='IPV4',
+            ethSrc=macsDict.get( 'h10' ))
+
         if ptpIntentResult == main.TRUE:
             getIntentResult = main.ONOScli1.intents()
             main.log.info( "Point to point intent install successful" )
@@ -995,18 +1008,24 @@ class MultiProd13:
 
         ptpIntentResult = main.ONOScli1.addPointIntent(
             "of:0000000000006020/1",
-            "of:0000000000003010/1" )
+            "of:0000000000003010/1",
+            ethType='IPV4',
+            ethSrc=macsDict.get( 'h20' ))
+
         if ptpIntentResult == main.TRUE:
             getIntentResult = main.ONOScli1.intents()
             main.log.info( "Point to point intent install successful" )
             # main.log.info( getIntentResult )
 
-        main.step(
-            "Add point-to-point intents for mininet" +
-            " hosts h11 and h21 or ONOS hosts hB and h15" )
+        var4 = "Add point intents for mininet hosts h11 and h21 or" +\
+               " ONOS hosts hB and h15"
+        main.case(var4)
         ptpIntentResult = main.ONOScli1.addPointIntent(
             "of:0000000000003011/1",
-            "of:0000000000006021/1" )
+            "of:0000000000006021/1",
+            ethType='IPV4',
+            ethSrc=macsDict.get( 'h11' ))
+
         if ptpIntentResult == main.TRUE:
             getIntentResult = main.ONOScli1.intents()
             main.log.info( "Point to point intent install successful" )
@@ -1014,18 +1033,24 @@ class MultiProd13:
 
         ptpIntentResult = main.ONOScli1.addPointIntent(
             "of:0000000000006021/1",
-            "of:0000000000003011/1" )
+            "of:0000000000003011/1",
+            ethType='IPV4',
+            ethSrc=macsDict.get( 'h21' ))
+
         if ptpIntentResult == main.TRUE:
             getIntentResult = main.ONOScli1.intents()
             main.log.info( "Point to point intent install successful" )
             # main.log.info( getIntentResult )
 
-        main.step(
-            "Add point-to-point intents for mininet" +
-            " hosts h12 and h22 or ONOS hosts hC and h16" )
+        var5 = "Add point intents for mininet hosts h12 and h22 " +\
+               "ONOS hosts hC and h16"
+        main.case(var5)
         ptpIntentResult = main.ONOScli1.addPointIntent(
             "of:0000000000003012/1",
-            "of:0000000000006022/1" )
+            "of:0000000000006022/1",
+            ethType='IPV4',
+            ethSrc=macsDict.get( 'h12' ))
+
         if ptpIntentResult == main.TRUE:
             getIntentResult = main.ONOScli1.intents()
             main.log.info( "Point to point intent install successful" )
@@ -1033,18 +1058,24 @@ class MultiProd13:
 
         ptpIntentResult = main.ONOScli1.addPointIntent(
             "of:0000000000006022/1",
-            "of:0000000000003012/1" )
+            "of:0000000000003012/1",
+            ethType='IPV4',
+            ethSrc=macsDict.get( 'h22' ))
+
         if ptpIntentResult == main.TRUE:
             getIntentResult = main.ONOScli1.intents()
             main.log.info( "Point to point intent install successful" )
             # main.log.info( getIntentResult )
 
-        main.step(
-            "Add point-to-point intents for mininet " +
-            "hosts h13 and h23 or ONOS hosts hD and h17" )
+        var6 = "Add point intents for mininet hosts h13 and h23 or" +\
+               " ONOS hosts hD and h17"
+        main.case(var6)
         ptpIntentResult = main.ONOScli1.addPointIntent(
             "of:0000000000003013/1",
-            "of:0000000000006023/1" )
+            "of:0000000000006023/1",
+            ethType='IPV4',
+            ethSrc=macsDict.get( 'h13' ))
+
         if ptpIntentResult == main.TRUE:
             getIntentResult = main.ONOScli1.intents()
             main.log.info( "Point to point intent install successful" )
@@ -1052,18 +1083,24 @@ class MultiProd13:
 
         ptpIntentResult = main.ONOScli1.addPointIntent(
             "of:0000000000006023/1",
-            "of:0000000000003013/1" )
+            "of:0000000000003013/1",
+            ethType='IPV4',
+            ethSrc=macsDict.get( 'h23' ))
+
         if ptpIntentResult == main.TRUE:
             getIntentResult = main.ONOScli1.intents()
             main.log.info( "Point to point intent install successful" )
             # main.log.info( getIntentResult )
 
-        main.step(
-            "Add point-to-point intents for mininet hosts" +
-            " h14 and h24 or ONOS hosts hE and h18" )
+        var7 = "Add point intents for mininet hosts h14 and h24 or" +\
+               " ONOS hosts hE and h18"
+        main.case(var7)
         ptpIntentResult = main.ONOScli1.addPointIntent(
             "of:0000000000003014/1",
-            "of:0000000000006024/1" )
+            "of:0000000000006024/1",
+            ethType='IPV4',
+            ethSrc=macsDict.get( 'h14' ))
+
         if ptpIntentResult == main.TRUE:
             getIntentResult = main.ONOScli1.intents()
             main.log.info( "Point to point intent install successful" )
@@ -1071,18 +1108,24 @@ class MultiProd13:
 
         ptpIntentResult = main.ONOScli1.addPointIntent(
             "of:0000000000006024/1",
-            "of:0000000000003014/1" )
+            "of:0000000000003014/1",
+            ethType='IPV4',
+            ethSrc=macsDict.get( 'h24' ))
+
         if ptpIntentResult == main.TRUE:
             getIntentResult = main.ONOScli1.intents()
             main.log.info( "Point to point intent install successful" )
             # main.log.info( getIntentResult )
 
-        main.step(
-            "Add point-to-point intents for mininet hosts" +
-            " h15 and h25 or ONOS hosts hF and h19" )
+        var8 = "Add point intents for mininet hosts h15 and h25 or" +\
+               " ONOS hosts hF and h19"
+        main.case(var8)
         ptpIntentResult = main.ONOScli1.addPointIntent(
             "of:0000000000003015/1",
-            "of:0000000000006025/1" )
+            "of:0000000000006025/1",
+            ethType='IPV4',
+            ethSrc=macsDict.get( 'h15' ))
+
         if ptpIntentResult == main.TRUE:
             getIntentResult = main.ONOScli1.intents()
             main.log.info( "Point to point intent install successful" )
@@ -1090,18 +1133,24 @@ class MultiProd13:
 
         ptpIntentResult = main.ONOScli1.addPointIntent(
             "of:0000000000006025/1",
-            "of:0000000000003015/1" )
+            "of:0000000000003015/1",
+            ethType='IPV4',
+            ethSrc=macsDict.get( 'h25' ))
+
         if ptpIntentResult == main.TRUE:
             getIntentResult = main.ONOScli1.intents()
             main.log.info( "Point to point intent install successful" )
             # main.log.info( getIntentResult )
 
-        main.step(
-            "Add point-to-point intents for mininet hosts" +
-            " h16 and h26 or ONOS hosts h10 and h1A" )
+        var9 = "Add intents for mininet hosts h16 and h26 or" +\
+               " ONOS hosts h10 and h1A"
+        main.case(var9)
         ptpIntentResult = main.ONOScli1.addPointIntent(
             "of:0000000000003016/1",
-            "of:0000000000006026/1" )
+            "of:0000000000006026/1",
+            ethType='IPV4',
+            ethSrc=macsDict.get( 'h16' ))
+
         if ptpIntentResult == main.TRUE:
             getIntentResult = main.ONOScli1.intents()
             main.log.info( "Point to point intent install successful" )
@@ -1109,30 +1158,34 @@ class MultiProd13:
 
         ptpIntentResult = main.ONOScli1.addPointIntent(
             "of:0000000000006026/1",
-            "of:0000000000003016/1" )
+            "of:0000000000003016/1",
+            ethType='IPV4',
+            ethSrc=macsDict.get( 'h26' ))
+
         if ptpIntentResult == main.TRUE:
             getIntentResult = main.ONOScli1.intents()
             main.log.info( "Point to point intent install successful" )
             # main.log.info( getIntentResult )
 
-        main.step(
-            "Add point-to-point intents for mininet hosts h17" +
-            " and h27 or ONOS hosts h11 and h1B" )
+        var10 = "Add point intents for mininet hosts h17 and h27 or" +\
+                " ONOS hosts h11 and h1B"
+        main.case(var10)
         ptpIntentResult = main.ONOScli1.addPointIntent(
             "of:0000000000003017/1",
-            "of:0000000000006027/1" )
+            "of:0000000000006027/1",
+            ethType='IPV4',
+            ethSrc=macsDict.get( 'h17' ))
+
         if ptpIntentResult == main.TRUE:
             getIntentResult = main.ONOScli1.intents()
             main.log.info( "Point to point intent install successful" )
-            # main.log.info( getIntentResult )
+            #main.log.info( getIntentResult )
 
         ptpIntentResult = main.ONOScli1.addPointIntent(
             "of:0000000000006027/1",
-            "of:0000000000003017/1" )
-        if ptpIntentResult == main.TRUE:
-            getIntentResult = main.ONOScli1.intents()
-            main.log.info( "Point to point intent install successful" )
-            # main.log.info( getIntentResult )
+            "of:0000000000003017/1",
+            ethType='IPV4',
+            ethSrc=macsDict.get( 'h27' ))
 
         print(
             "_______________________________________________________" +
@@ -1232,13 +1285,13 @@ class MultiProd13:
             host2Id = main.ONOScli1.getHost( host2 )[ 'id' ]
             for host in hostsJson:
                 if host[ 'id' ] == host1Id:
-                    ip1 = host[ 'ips' ][ 0 ]
+                    ip1 = host[ 'ipAddresses' ][ 0 ]
                     ip1 = str( ip1 + "/32" )
-                    device1 = host[ 'location' ][ 'device' ]
+                    device1 = host[ 'location' ][ 'elementId' ]
                     device1 = str( device1 + "/1" )
                 elif host[ 'id' ] == host2Id:
-                    ip2 = str( host[ 'ips' ][ 0 ] ) + "/32"
-                    device2 = host[ 'location' ][ "device" ]
+                    ip2 = str( host[ 'ipAddresses' ][ 0 ] ) + "/32"
+                    device2 = host[ 'location' ][ 'elementId' ]
                     device2 = str( device2 + "/1" )
 
             pIntentResult1 = main.ONOScli1.addPointIntent(
@@ -1247,7 +1300,7 @@ class MultiProd13:
                 ipSrc=ip1,
                 ipDst=ip2,
                 ethType=main.params[ 'SDNIP' ][ 'ethType' ],
-                ipProto=main.params[ 'SDNIP' ][ 'icmpProto' ] )
+                ipProto=main.params[ 'SDNIP' ][ 'icmpProto' ], )
 
             getIntentResult = main.ONOScli1.intents( jsonFormat=False )
             main.log.info( getIntentResult )
@@ -1262,7 +1315,7 @@ class MultiProd13:
 
             getIntentResult = main.ONOScli1.intents( jsonFormat=False )
             main.log.info( getIntentResult )
-            if ( pIntentResult1 and pIntentResult2 ) == main.TRUE:
+            if ( pIntentResult1 and pIntentResult2 ) :
                 # getIntentResult = main.ONOScli1.intents()
                 # main.log.info( getIntentResult )
                 main.log.info(
@@ -1328,7 +1381,7 @@ class MultiProd13:
                 "Ping all test after Point intents related to" +
                 " SDN-IP matching on ICMP successful" )
 
-        case31Result = PingResult and pIntentResult1 and pIntentResult2
+        case31Result = PingResult
         utilities.assertEquals(
             expect=main.TRUE,
             actual=case31Result,
@@ -1384,13 +1437,13 @@ class MultiProd13:
             host2Id = main.ONOScli1.getHost( host2 )[ 'id' ]
             for host in hostsJson:
                 if host[ 'id' ] == host1Id:
-                    ip1 = host[ 'ips' ][ 0 ]
+                    ip1 = host[ 'ipAddresses' ][ 0 ]
                     ip1 = str( ip1 + "/32" )
-                    device1 = host[ 'location' ][ 'device' ]
+                    device1 = host[ 'location' ][ 'elementId' ]
                     device1 = str( device1 + "/1" )
                 elif host[ 'id' ] == host2Id:
-                    ip2 = str( host[ 'ips' ][ 0 ] ) + "/32"
-                    device2 = host[ 'location' ][ "device" ]
+                    ip2 = str( host[ 'ipAddresses' ][ 0 ] ) + "/32"
+                    device2 = host[ 'location' ][ 'elementId' ]
                     device2 = str( device2 + "/1" )
 
             pIntentResult1 = main.ONOScli1.addPointIntent(
@@ -1609,7 +1662,7 @@ class MultiProd13:
                            " and h" +
                            str( i +
                                 2 ) +
-                           "passed!" )
+                           " passed!" )
                 PingResult = main.TRUE
             else:
                 main.log.info( "Unknown error" )
@@ -1641,6 +1694,7 @@ class MultiProd13:
             Exit from mininet cli
             reinstall ONOS
         """
+        import time
         cellName = main.params[ 'ENV' ][ 'cellName' ]
         ONOS1Ip = main.params[ 'CTRL' ][ 'ip1' ]
         ONOS2Ip = main.params[ 'CTRL' ][ 'ip2' ]
@@ -1664,7 +1718,14 @@ class MultiProd13:
         cellResult = main.ONOSbench.setCell( cellName )
         verifyResult = main.ONOSbench.verifyCell()
 
-
+        time.sleep( 5 )
+        main.step( "Uninstalling ONOS package" )
+        onos1UninstallResult = main.ONOSbench.onosUninstall( nodeIp = ONOS1Ip)
+        onos2UninstallResult = main.ONOSbench.onosUninstall( nodeIp = ONOS2Ip)
+        onos3UninstallResult = main.ONOSbench.onosUninstall( nodeIp = ONOS3Ip)
+        onosUninstallResult = onos1UninstallResult and onos2UninstallResult \
+                              and onos3UninstallResult
+        time.sleep( 15 )
         main.step( "Installing ONOS package" )
         onos1InstallResult = main.ONOSbench.onosInstall(
             options="-f",
@@ -1682,6 +1743,7 @@ class MultiProd13:
         else:
             main.log.report( "Installing ONOS package failed" )
 
+        time.sleep( 10 )
         onos1Isup = main.ONOSbench.isup( ONOS1Ip )
         onos2Isup = main.ONOSbench.isup( ONOS2Ip )
         onos3Isup = main.ONOSbench.isup( ONOS3Ip )
@@ -1692,6 +1754,7 @@ class MultiProd13:
             main.log.report( "ONOS instances may not be up" )
 
         main.step( "Starting ONOS service" )
+        time.sleep( 10 )
         startResult = main.TRUE
         # startResult = main.ONOSbench.onosStart( ONOS1Ip )
         startcli1 = main.ONOScli1.startOnosCli( ONOSIp=ONOS1Ip )
@@ -1756,13 +1819,14 @@ class MultiProd13:
             All this is hardcoded in the testcase. If the topology changes,
             these hardcoded values need to be changed
         """
+        import time
         main.log.report(
             "This testcase compares the optical+packet topology against what" +
             " is expected" )
         main.case( "Topology comparision" )
         main.step( "Topology comparision" )
         devicesResult = main.ONOScli3.devices( jsonFormat=False )
-
+        time.sleep( 15 )
         print "devices_result = ", devicesResult
         devicesLinewise = devicesResult.split( "\n" )
         roadmCount = 0

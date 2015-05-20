@@ -1517,13 +1517,15 @@ class OnosDriver( CLI ):
         except Exception:
             main.log.exception( "Copying files failed" )
 
-    def checkLogs( self, onosIp ):
+    def checkLogs( self, onosIp, restart=False):
         """
         runs onos-check-logs on the given onos node
         returns the response
         """
         try:
             cmd = "onos-check-logs " + str( onosIp )
+            if restart:
+                cmd += " old"
             self.handle.sendline( cmd )
             self.handle.expect( cmd )
             self.handle.expect( "\$" )

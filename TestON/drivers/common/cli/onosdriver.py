@@ -1942,10 +1942,10 @@ class OnosDriver( CLI ):
         order = [ "OC1", "OC2", "OC3","OC4","OC5","OC6","OC7","OCN","OCI" ]
         ONOSIps = []
 
-        try:
+        try: 
             if os.path.exists("myIps"):
                 ipFile = open("myIps","r+")
-            else:
+            else: 
                 ipFile = open("myIps","w+")
 
             fileONOSIps = ipFile.readlines()
@@ -2008,10 +2008,12 @@ class OnosDriver( CLI ):
 
             - output modes: 
                 "s" -   Simple. Quiet output mode that just prints 
-                        the occurances of each search term 
+                        the occurences of each search term 
 
-                "d" -   Detailed. Prints occurances as well as the entire
-                        line for each of the last 5 occurances 
+                "d" -   Detailed. Prints number of occurences as well as the entire
+                        line for each of the last 5 occurences 
+
+            - returns total of the number of instances of all search terms
         '''
         main.log.info("========================== Log Report ===========================\n")
 
@@ -2023,7 +2025,7 @@ class OnosDriver( CLI ):
         for term in range(len(searchTerms)): 
             logLines[term][0] = searchTerms[term]
 
-
+        totalHits = 0 
         for term in range(len(searchTerms)): 
             cmd = "onos-ssh " + nodeIp + " cat /opt/onos/log/karaf.log | grep " + searchTerms[term] 
             self.handle.sendline(cmd)
@@ -2041,7 +2043,8 @@ class OnosDriver( CLI ):
             main.log.info( str(count[0]) + ": " + str(count[1]) )
             if term == len(searchTerms)-1: 
                 print("\n")
-            
+            totalHits += int(count[1]) 
+
         if outputMode != "s" and outputMode != "S":        
             outputString = ""
             for i in logLines:
@@ -2053,6 +2056,7 @@ class OnosDriver( CLI ):
                     main.log.info(outputString) 
                 
         main.log.info("================================================================\n")
+        return totalHits 
 
     def getOnosIpFromEnv(self):
 

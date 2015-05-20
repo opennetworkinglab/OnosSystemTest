@@ -48,13 +48,13 @@ class SdnIpTest:
 #         else:
 #             main.log.warn( "Did not pull new code so skipping mvn " +
 #                             "clean install" )
-        cleanInstallResult = main.ONOSbench.cleanInstall()
+        cleanInstallResult = main.ONOSbench.cleanInstall( mciTimeout= 1000 )
         main.ONOSbench.getVersion( report=True )
 
         #cellResult = main.ONOSbench.setCell( cellName )
         #verifyResult = main.ONOSbench.verifyCell()
         main.step( "Creating ONOS package" )
-        packageResult = main.ONOSbench.onosPackage()
+        packageResult = main.ONOSbench.onosPackage( opTimeout=500 )
 
         main.step( "Installing ONOS package" )
         onos1InstallResult = main.ONOSbench.onosInstall( options="-f",
@@ -63,13 +63,14 @@ class SdnIpTest:
         main.step( "Checking if ONOS is up yet" )
         #time.sleep( 300 )
         for i in range( 2 ):
-            onos1Isup = main.ONOSbench.isup( ONOS1Ip )
+            onos1Isup = main.ONOSbench.isup( ONOS1Ip, onosWaitStartTimeout=420 )
             if onos1Isup:
                 break
         if not onos1Isup:
             main.log.report( "ONOS1 didn't start!" )
 
-        cliResult = main.ONOScli.startOnosCli( ONOS1Ip )
+        cliResult = main.ONOScli.startOnosCli( ONOS1Ip,
+                commandlineTimeout=100, onosStartTimeout=600)
 
         case1Result = ( cleanInstallResult and packageResult and
                         cellResult and verifyResult and

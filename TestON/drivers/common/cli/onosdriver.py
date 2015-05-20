@@ -92,7 +92,7 @@ class OnosDriver( CLI ):
             response = main.FALSE
         return response
 
-    def onosPackage( self ):
+    def onosPackage( self, opTimeout=30 ):
         """
         Produce a self-contained tar.gz file that can be deployed
         and executed on any platform with Java 7 JRE.
@@ -100,7 +100,7 @@ class OnosDriver( CLI ):
         try:
             self.handle.sendline( "onos-package" )
             self.handle.expect( "onos-package" )
-            self.handle.expect( "tar.gz", timeout=30 )
+            self.handle.expect( "tar.gz", opTimeout )
             handle = str( self.handle.before )
             main.log.info( "onos-package command returned: " +
                            handle )
@@ -147,7 +147,7 @@ class OnosDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def cleanInstall( self ):
+    def cleanInstall( self, mciTimeout=600 ):
         """
         Runs mvn clean install in the root of the ONOS directory.
         This will clean all ONOS artifacts then compile each module
@@ -173,7 +173,7 @@ class OnosDriver( CLI ):
                     'BUILD\sFAILURE',
                     'BUILD\sSUCCESS',
                     'ONOS\$',
-                    pexpect.TIMEOUT ], timeout=600 )
+                    pexpect.TIMEOUT ], mciTimeout )
                 if i == 0:
                     main.log.error( self.name + ":There is insufficient memory \
                             for the Java Runtime Environment to continue." )
@@ -1045,7 +1045,7 @@ class OnosDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def isup( self, node="" ):
+    def isup( self, node="", onosWaitStartTimeout=120 ):
         """
         Run's onos-wait-for-start which only returns once ONOS is at run
         level 100( ready for use )
@@ -1056,7 +1056,8 @@ class OnosDriver( CLI ):
             self.handle.sendline( "onos-wait-for-start " + node )
             self.handle.expect( "onos-wait-for-start" )
             # NOTE: this timeout is arbitrary"
-            i = self.handle.expect( [ "\$", pexpect.TIMEOUT ], timeout=120 )
+            i = self.handle.expect( [ "\$", pexpect.TIMEOUT ],
+                    onosWaitStartTimeout )
             if i == 0:
                 main.log.info( self.name + ": " + node + " is up" )
                 return main.TRUE

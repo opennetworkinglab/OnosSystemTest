@@ -251,7 +251,7 @@ class FuncIntent:
         stepResult = main.TRUE
         main.step( "Discover all hosts using pingall " )
         stepResult = main.wrapper.getHostsData( main )
-        utilities.assert_equals( expect=main.FALSE,
+        utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
                                  onpass="Successfully discovered hosts",
                                  onfail="Failed to discover hosts" )
@@ -421,7 +421,7 @@ class FuncIntent:
         macs = [ '00:00:00:00:00:08', '00:00:00:00:00:10', '00:00:00:00:00:18' ]
         stepResult = main.wrapper.singleToMultiIntent(
                                          main,
-                                         name="",
+                                         name="IPV4",
                                          hostNames=hostNames,
                                          devices=devices,
                                          ports=None,
@@ -432,15 +432,34 @@ class FuncIntent:
                                          ipProto="",
                                          ipAddresses="",
                                          tcp="",
-                                         sw1="",
-                                         sw2="",
-                                         expectedLink=0 )
+                                         sw1="s5",
+                                         sw2="s2",
+                                         expectedLink=18 )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
                                  onpass="IPV4: Successfully added single point"
                                         + " to multi point intents",
                                  onfail="IPV4: Failed to add single point" +
+                                        " to multi point intents" )
+
+        main.step( "IPV4_2: Add single point to multi point intents" )
+        hostNames = [ 'h8', 'h16', 'h24' ]
+        devices = [ 'of:0000000000000005/8', 'of:0000000000000006/8', \
+                    'of:0000000000000007/8' ]
+        macs = [ '00:00:00:00:00:08', '00:00:00:00:00:10', '00:00:00:00:00:18' ]
+        stepResult = main.wrapper.singleToMultiIntent(
+                                         main,
+                                         name="IPV4",
+                                         hostNames=hostNames,
+                                         ethType="IPV4",
+                                         lambdaAlloc=False )
+
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="IPV4_2: Successfully added single point"
+                                        + " to multi point intents",
+                                 onfail="IPV4_2: Failed to add single point" +
                                         " to multi point intents" )
     def CASE1004( self, main ):
         """

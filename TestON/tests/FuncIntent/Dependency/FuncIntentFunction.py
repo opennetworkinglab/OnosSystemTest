@@ -30,14 +30,13 @@ def hostIntent( main,
 
     global itemName
     itemName = name
-    h1Name = host1
-    h2Name = host2
     h1Id = host1Id
     h2Id = host2Id
     h1Mac = mac1
     h2Mac = mac2
     vlan1 = vlan1
     vlan2 = vlan2
+    hostNames = [ host1 , host2 ]
     intentsId = []
     stepResult = main.TRUE
     pingResult = main.TRUE
@@ -50,17 +49,17 @@ def hostIntent( main,
 
     if main.hostsData:
         if not h1Mac:
-            h1Mac = main.hostsData[ h1Name ][ 'mac' ]
+            h1Mac = main.hostsData[ host1 ][ 'mac' ]
         if not h2Mac:
-            h2Mac = main.hostsData[ h2Name ][ 'mac' ]
-        if main.hostsData[ h1Name ][ 'vlan' ] != '-1':
-            vlan1 = main.hostsData[ h1Name ][ 'vlan' ]
-        if main.hostsData[ h2Name ][ 'vlan' ] != '-1':
-            vlan2 = main.hostsData[ h2Name ][ 'vlan' ]
+            h2Mac = main.hostsData[ host2 ][ 'mac' ]
+        if main.hostsData[ host1 ][ 'vlan' ] != '-1':
+            vlan1 = main.hostsData[ host1 ][ 'vlan' ]
+        if main.hostsData[ host2 ][ 'vlan' ] != '-1':
+            vlan2 = main.hostsData[ host2 ][ 'vlan' ]
         if not h1Id:
-            h1Id = main.hostsData[ h1Name ][ 'id' ]
+            h1Id = main.hostsData[ host1 ][ 'id' ]
         if not h2Id:
-            h2Id = main.hostsData[ h2Name ][ 'id' ]
+            h2Id = main.hostsData[ host2 ][ 'id' ]
 
     assert h1Id and h2Id, "You must specify host IDs"
     if not ( h1Id and h2Id ):
@@ -69,8 +68,8 @@ def hostIntent( main,
 
     # Discover hosts using arping
     main.log.info( itemName + ": Discover host using arping" )
-    main.Mininet1.arping( host=h1Name )
-    main.Mininet1.arping( host=h2Name )
+    main.Mininet1.arping( host=host1 )
+    main.Mininet1.arping( host=host2 )
     host1 = main.CLIs[ 0 ].getHost( mac=h1Mac )
     host2 = main.CLIs[ 0 ].getHost( mac=h2Mac )
 
@@ -89,13 +88,13 @@ def hostIntent( main,
     checkFlowsState( main )
 
     # Ping hosts
-    firstPingResult = pingHost( main, h1Name, h2Name )
+    firstPingResult = pingallHosts( main, hostNames )
     if not firstPingResult:
-        main.log.info( "First ping failed, there must be" +
+        main.log.debug( "First ping failed, there must be" +
                        " something wrong with ONOS performance" )
 
     # Ping hosts again...
-    pingResult = pingHost( main, h1Name, h2Name )
+    pingResult = pingResult and pingallHosts( main, hostNames )
     time.sleep( 5 )
 
     # Test rerouting if these variables exist
@@ -111,7 +110,7 @@ def hostIntent( main,
         topoResult = checkTopology( main, expectedLink )
 
         # Ping hosts
-        pingResult = pingResult and  pingHost( main, h1Name, h2Name )
+        pingResult = pingResult and pingallHosts( main, hostNames )
 
         intentResult = checkIntentState( main, intentsId )
 
@@ -119,7 +118,7 @@ def hostIntent( main,
         if linkDownResult and topoResult and pingResult and intentResult:
             main.log.info( itemName + ": Successfully brought link down" )
         else:
-            main.log.info( itemName + ": Failed to bring link down" )
+            main.log.error( itemName + ": Failed to bring link down" )
 
         # link up
         linkUpResult = link( main, sw1, sw2, "up" )
@@ -132,7 +131,7 @@ def hostIntent( main,
         topoResult = checkTopology( main, main.numLinks )
 
         # Ping hosts
-        pingResult = pingResult and pingHost( main, h1Name, h2Name )
+        pingResult = pingResult and pingallHosts( main, hostNames )
 
         intentResult = checkIntentState( main, intentsId )
 
@@ -140,7 +139,7 @@ def hostIntent( main,
         if linkUpResult and topoResult and pingResult and intentResult:
             main.log.info( itemName + ": Successfully brought link back up" )
         else:
-            main.log.info( itemName + ": Failed to bring link back up" )
+            main.log.error( itemName + ": Failed to bring link back up" )
 
     # Remove all intents
     removeIntentResult = removeAllIntents( main, intentsId )
@@ -181,8 +180,9 @@ def pointIntent( main,
 
     global itemName
     itemName = name
-    h1Name = host1
-    h2Name = host2
+    host1 = host1
+    host2 = host2
+    hostNames = [ host1, host2 ]
     intentsId = []
 
     pingResult = main.TRUE
@@ -236,13 +236,13 @@ def pointIntent( main,
     checkFlowsState( main )
 
     # Ping hosts
-    firstPingResult = pingHost( main, h1Name, h2Name )
+    firstPingResult = pingallHosts( main, hostNames )
     if not firstPingResult:
-        main.log.info( "First ping failed, there must be" +
+        main.log.debug( "First ping failed, there must be" +
                        " something wrong with ONOS performance" )
 
     # Ping hosts again...
-    pingResult = pingHost( main, h1Name, h2Name )
+    pingResult = pingResult and pingallHosts( main, hostNames )
     time.sleep( 5 )
 
     # Test rerouting if these variables exist
@@ -258,7 +258,7 @@ def pointIntent( main,
         topoResult = checkTopology( main, expectedLink )
 
         # Ping hosts
-        pingResult = pingResult and  pingHost( main, h1Name, h2Name )
+        pingResult = pingResult and pingallHosts( main, hostNames )
 
         intentResult = checkIntentState( main, intentsId )
 
@@ -266,7 +266,7 @@ def pointIntent( main,
         if linkDownResult and topoResult and pingResult and intentResult:
             main.log.info( itemName + ": Successfully brought link down" )
         else:
-            main.log.info( itemName + ": Failed to bring link down" )
+            main.log.error( itemName + ": Failed to bring link down" )
 
         # link up
         linkUpResult = link( main, sw1, sw2, "up" )
@@ -279,7 +279,7 @@ def pointIntent( main,
         topoResult = checkTopology( main, main.numLinks )
 
         # Ping hosts
-        pingResult = pingResult and pingHost( main, h1Name, h2Name )
+        pingResult = pingResult and pingallHosts( main, hostNames )
 
         intentResult = checkIntentState( main, intentsId )
 
@@ -287,7 +287,7 @@ def pointIntent( main,
         if linkUpResult and topoResult and pingResult and intentResult:
             main.log.info( itemName + ": Successfully brought link back up" )
         else:
-            main.log.info( itemName + ": Failed to bring link back up" )
+            main.log.error( itemName + ": Failed to bring link back up" )
 
     # Remove all intents
     removeIntentResult = removeAllIntents( main, intentsId )
@@ -333,31 +333,41 @@ def singleToMultiIntent( main,
     tempHostsData = {}
     intentsId = []
 
+    macsDict = {}
+    ipDict = {}
     if hostNames and devices:
         if len( hostNames ) != len( devices ):
-            main.log.error( "hosts and devices does not have the same length" )
-            print "len hostNames = ", len( hostNames )
-            print "len devices = ", len( devices )
+            main.log.debug( "hosts and devices does not have the same length" )
+            #print "len hostNames = ", len( hostNames )
+            #print "len devices = ", len( devices )
             return main.FALSE
         if ports:
             if len( ports ) != len( devices ):
                 main.log.error( "Ports and devices does " +
                                 "not have the same length" )
-                print "len devices = ", len( devices )
-                print "len ports = ", len( ports )
+                #print "len devices = ", len( devices )
+                #print "len ports = ", len( ports )
                 return main.FALSE
+        for i in range( len( devices ) ):
+            macsDict[ devices[ i ] ] = macs[ i ]
         else:
             main.log.info( "Device Ports are not specified" )
     elif hostNames and not devices and main.hostsData:
+        devices = []
         main.log.info( "singleToMultiIntent function is using main.hostsData" ) 
+        for host in hostNames:
+               print main.hostsData.get( host ).get( 'location' )
+               devices.append( main.hostsData.get( host ).get( 'location' ) )
+               macsDict[ main.hostsData.get( host ).get( 'location' ) ] = \
+                           main.hostsData.get( host ).get( 'mac' )
+               ipDict[ main.hostsData.get( host ).get( 'location' ) ] = \
+                           main.hostsData.get( host ).get( 'ipAddresses' )
         print main.hostsData
 
-    print 'host names = ', hostNames
-    print 'devices = ', devices
 
-    macsDict = {}
-    for i in range( len( devices ) ):
-        macsDict[ devices[ i ] ] = macs[ i ]
+    print 'host names = ', hostNames
+
+    print 'devices = ', devices
 
     print "macsDict = ", macsDict
 
@@ -385,13 +395,20 @@ def singleToMultiIntent( main,
         else:
             portIngress = ""
             portEgressList = None
+        if not macsDict:
+            srcMac = ""
+        else:
+            srcMac = macsDict[ ingressDevice ]
+            if srcMac == None:
+                srcMac = ""
+
         intentsId.append( main.CLIs[ 0 ].addSinglepointToMultipointIntent(
                                             ingressDevice=ingressDevice,
                                             egressDeviceList=egressDeviceList,
                                             portIngress=portIngress,
                                             portEgressList=portEgressList,
                                             ethType=ethType,
-                                            ethSrc="",
+                                            ethSrc=srcMac,
                                             bandwidth=bandwidth,
                                             lambdaAlloc=lambdaAlloc,
                                             ipProto=ipProto,
@@ -400,13 +417,7 @@ def singleToMultiIntent( main,
                                             tcpSrc="",
                                             tcpDst="" ) )
 
-    pingHost( main, hostNames[ 0 ], hostNames[ 1 ] )
-    pingHost( main, hostNames[ 0 ], hostNames[ 2 ] )
-    pingHost( main, hostNames[ 1 ], hostNames[ 2 ] )
-    pingHost( main, hostNames[ 1 ], hostNames[ 0 ] )
-    pingHost( main, hostNames[ 2 ], hostNames[ 1 ] )
-    pingHost( main, hostNames[ 2 ], hostNames[ 0 ] )
-    return main.TRUE
+    pingResult = pingallHosts( main, hostNames )
 
     # Check intents state
     time.sleep( 30 )
@@ -416,9 +427,9 @@ def singleToMultiIntent( main,
     checkFlowsState( main )
 
     # Ping hosts
-    pingHost( main, h1Name, h2Name )
+    pingResult = pingResult and pingallHosts( main, hostNames )
     # Ping hosts again...
-    pingResult = pingHost( main, h1Name, h2Name )
+    pingResult = pingResult and pingallHosts( main, hostNames )
     time.sleep( 5 )
 
     # Test rerouting if these variables exist
@@ -434,7 +445,7 @@ def singleToMultiIntent( main,
         topoResult = checkTopology( main, expectedLink )
 
         # Ping hosts
-        pingResult = pingResult and  pingHost( main, h1Name, h2Name )
+        pingResult = pingResult and pingallHosts( main, hostNames )
 
         intentResult = checkIntentState( main, intentsId )
 
@@ -442,7 +453,7 @@ def singleToMultiIntent( main,
         if linkDownResult and topoResult and pingResult and intentResult:
             main.log.info( itemName + ": Successfully brought link down" )
         else:
-            main.log.info( itemName + ": Failed to bring link down" )
+            main.log.error( itemName + ": Failed to bring link down" )
 
         # link up
         linkUpResult = link( main, sw1, sw2, "up" )
@@ -455,7 +466,7 @@ def singleToMultiIntent( main,
         topoResult = checkTopology( main, main.numLinks )
 
         # Ping hosts
-        pingResult = pingResult and pingHost( main, h1Name, h2Name )
+        pingResult = pingResult and pingallHosts( main, hostNames )
 
         intentResult = checkIntentState( main, intentsId )
 
@@ -463,7 +474,7 @@ def singleToMultiIntent( main,
         if linkUpResult and topoResult and pingResult and intentResult:
             main.log.info( itemName + ": Successfully brought link back up" )
         else:
-            main.log.info( itemName + ": Failed to bring link back up" )
+            main.log.error( itemName + ": Failed to bring link back up" )
 
     # Remove all intents
     removeIntentResult = removeAllIntents( main, intentsId )
@@ -473,40 +484,12 @@ def singleToMultiIntent( main,
 
     return stepResult
 
-def pingHost( main, h1Name, h2Name ):
-
-    # Ping hosts
-    main.log.info( itemName + ": Ping " + h1Name + " and " +
-                   h2Name )
-    pingResult1 = main.Mininet1.pingHost( src=h1Name , target=h2Name )
-    if not pingResult1:
-        main.log.info( itemName + ": " + h1Name + " cannot ping "
-                       + h2Name )
-    pingResult2 = main.Mininet1.pingHost( src=h2Name , target=h1Name )
-    if not pingResult2:
-        main.log.info( itemName + ": " + h2Name + " cannot ping "
-                       + h1Name )
-    pingResult = pingResult1 and pingResult2
-    if pingResult:
-        main.log.info( itemName + ": Successfully pinged " +
-                       "both hosts" )
-    else:
-        main.log.info( itemName + ": Failed to ping " +
-                       "both hosts" )
-    return pingResult
-
-def pingAllHost( main, hosts ):
+def pingallHosts( main, hostList, pingType="ipv4" ):
     # Ping all host in the hosts list variable
-    import itertools
-    print "Pinging : ", hosts
-    hostCombination = itertools.permutations( hosts, 2 )
+    print "Pinging : ", hostList
     pingResult = main.TRUE
-    for hostPair in hostCombination:
-        pingResult = pingResult and main.Mininet.pingHost(
-                                                       src=hostPair[ 0 ],
-                                                       target=hostPair[ 1 ] )
+    pingResult = main.Mininet1.pingallHosts( hostList, pingType )
     return pingResult
-
 
 def getHostsData( main ):
     """
@@ -518,14 +501,15 @@ def getHostsData( main ):
     import json
     activateResult = main.TRUE
     appCheck = main.TRUE
+    getDataResult = main.TRUE
     main.log.info( "Activating reactive forwarding app " )
     activateResult = main.CLIs[ 0 ].activateApp( "org.onosproject.fwd" )
 
     for i in range( main.numCtrls ):
         appCheck = appCheck and main.CLIs[ i ].appToIDCheck()
         if appCheck != main.TRUE:
-            main.log.warn( main.CLIs[ 0 ].apps() )
-            main.log.warn( main.CLIs[ 0 ].appIDs() )
+            main.log.warn( main.CLIs[ i ].apps() )
+            main.log.warn( main.CLIs[ i ].appIDs() )
 
     pingResult = main.Mininet1.pingall()
     hostsJson = json.loads( main.CLIs[ 0 ].hosts() )
@@ -545,14 +529,16 @@ def getHostsData( main ):
 
     main.log.info( "Deactivating reactive forwarding app " )
     deactivateResult = main.CLIs[ 0 ].deactivateApp( "org.onosproject.fwd" )
-    if activateResult and deactivateResult and pingResult:
+    if activateResult and deactivateResult and main.hostsData:
         main.log.info( "Successfully used fwd app to discover hosts " )
+        getDataResult = main.TRUE
     else:
         main.log.info( "Failed to use fwd app to discover hosts " )
+        getDataResult = main.FALSE
 
-    main.log.info( "Hosts data:\n "+ main.hostsData )
+    print main.hostsData
 
-    return pingResult
+    return getDataResult
 
 def checkTopology( main, expectedLink ):
     statusResult = main.TRUE
@@ -611,13 +597,13 @@ def removeAllIntents( main, intentsId ):
     time.sleep( 5 )
     # Checks if there is remaining intents using intents()
     intentsRemaining = main.CLIs[ 0 ].intents()
-    print intentsRemaining
     # If there is remianing intents then remove intents should fail
-    if not intentsRemaining:
+    if intentsRemaining == []:
         main.log.info( itemName + ": There are " +
                        str( len( intentsRemaining ) ) + " intents remaining, "
                        + "failed to remove all the intents " )
         removeIntentResult = main.FALSE
+        main.log.info( intentsRemaining )
     else:
         main.log.info( itemName + ": There are no intents remaining, " +
                        "successfully removed all the intents." )

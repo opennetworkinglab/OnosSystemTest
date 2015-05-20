@@ -1377,7 +1377,7 @@ class MininetCliDriver( Emulator ):
             response = main.FALSE
         return response
 
-    def arping( self, host="", ip="10.128.20.211" ):
+    def arping( self, host="", ip="10.128.20.211", ethDevice="" ):
         """
         Description:
             Sends arp message from mininet host for hosts discovery
@@ -1387,7 +1387,9 @@ class MininetCliDriver( Emulator ):
             ip - ip address that does not exist in the network so there would
                  be no reply.
         """
-        cmd = " py " + host  + ".cmd(\"arping -c 1 " + ip + "\")"
+        if ethDevice:
+            ethDevice = '-I ' + ethDevice + ' '
+        cmd = " py " + host  + ".cmd(\"arping -c 1 " + ethDevice + ip + "\")"
         try:
             main.log.warn( "Sending: " + cmd )
             self.handle.sendline( cmd )

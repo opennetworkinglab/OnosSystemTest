@@ -5,8 +5,6 @@
 import time
 import json
 
-time.sleep( 1 )
-
 class FuncIntent:
 
     def __init__( self ):
@@ -280,15 +278,6 @@ class FuncIntent:
         import time
         import json
         import re
-        """
-            Create your item(s) here
-            item = { 'name': '', 'host1':
-                     { 'name': '', 'MAC': '00:00:00:00:00:0X',
-                       'id':'00:00:00:00:00:0X/-X' } , 'host2':
-                     { 'name': '', 'MAC': '00:00:00:00:00:0X',
-                       'id':'00:00:00:00:00:0X/-X'}, 'link': { 'switch1': '',
-                       'switch2': '', 'expect':'' } }
-        """
 
         # Assert variables - These variable's name|format must be followed
         # if you want to use the wrapper function
@@ -356,16 +345,6 @@ class FuncIntent:
         import time
         import json
         import re
-        """
-            Create your item(s) here
-            item = { 'name':'', 'host1': { 'name': '' },
-                     'host2': { 'name': '' },
-                     'ingressDevice':'' , 'egressDevice':'',
-                     'ingressPort':'', 'egressPort':'',
-                     'option':{ 'ethType':'', 'ethSrc':'', 'ethDst':'' } ,
-                     'link': { 'switch1': '', 'switch2':'', 'expect':'' } }
-
-        """
 
         # Assert variables - These variable's name|format must be followed
         # if you want to use the wrapper function
@@ -374,27 +353,6 @@ class FuncIntent:
         assert main.Mininet1, "Mininet handle should be named Mininet1"
         assert main.numSwitch, "Placed the total number of switch topology in \
                                 main.numSwitch"
-
-        ipv4 = { 'name':'IPV4', 'ingressDevice':'of:0000000000000005/1' ,
-                 'host1': { 'name': 'h1' }, 'host2': { 'name': 'h9' },
-                 'egressDevice':'of:0000000000000006/1', 'option':
-                 { 'ethType':'IPV4', 'ethSrc':'00:00:00:00:00:01',
-                   'ethDst':'00:00:00:00:00:09' }, 'link': { 'switch1':'s5',
-                 'switch2':'s2', 'expect':'18' } }
-
-        """
-        ipv4 = { 'name':'IPV4', 'ingressDevice':'of:0000000000000005/1' ,
-                 'host1': { 'name': 'h1' }, 'host2': { 'name': 'h9' },
-                 'egressDevice':'of:0000000000000006/1', 'option':
-                 { 'ethType':'IPV4', 'ethSrc':'00:00:00:00:00:01' },
-                 'link': { 'switch1':'s5', 'switch2':'s2', 'expect':'18' } }
-        """
-        dualStack1 = { 'name':'IPV4', 'ingressDevice':'0000000000000005/3' ,
-                       'host1': { 'name': 'h3' }, 'host2': { 'name': 'h11' },
-                       'egressDevice':'0000000000000006/3', 'option':
-                       { 'ethType':'IPV4', 'ethSrc':'00:00:00:00:00:03',
-                       'ethDst':'00:00:00:00:00:0B' }, 'link': { 'switch1':'s5',
-                       'switch2':'s2', 'expect':'18' } }
 
         main.case( "Add point intents between 2 devices" )
 
@@ -447,7 +405,43 @@ class FuncIntent:
                     - Ping hosts
                 - Remove intents
         """
+        assert main, "There is no main"
+        assert main.CLIs, "There is no main.CLIs"
+        assert main.Mininet1, "Mininet handle should be named Mininet1"
+        assert main.numSwitch, "Placed the total number of switch topology in \
+                                main.numSwitch"
 
+        main.case( "Add single point to multi point intents between devices" )
+
+        stepResult = main.TRUE
+        main.step( "IPV4: Add single point to multi point intents" )
+        hostNames = [ 'h8', 'h16', 'h24' ]
+        devices = [ 'of:0000000000000005/8', 'of:0000000000000006/8', \
+                    'of:0000000000000007/8' ]
+        macs = [ '00:00:00:00:00:08', '00:00:00:00:00:10', '00:00:00:00:00:18' ]
+        stepResult = main.wrapper.singleToMultiIntent(
+                                         main,
+                                         name="",
+                                         hostNames=hostNames,
+                                         devices=devices,
+                                         ports=None,
+                                         ethType="IPV4",
+                                         macs=macs,
+                                         bandwidth="",
+                                         lambdaAlloc=False,
+                                         ipProto="",
+                                         ipAddresses="",
+                                         tcp="",
+                                         sw1="",
+                                         sw2="",
+                                         expectedLink=0 )
+
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="IPV4: Successfully added single point"
+                                        + " to multi point intents",
+                                 onfail="IPV4: Failed to add single point" +
+                                        " to multi point intents" )
     def CASE1004( self, main ):
         """
             Add multi point to single point intents

@@ -1,6 +1,6 @@
 <PARAMS>
 
-    <testcases>10,11,12,13,1001,1002</testcases>
+    <testcases>10,11,12,1001,1002,1003</testcases>
 
     <SCALE>1,3</SCALE>
     <availableNodes>3</availableNodes>

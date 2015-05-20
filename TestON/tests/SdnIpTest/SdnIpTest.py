@@ -19,6 +19,7 @@ class SdnIpTest:
            onos-install -f
            onos-wait-for-start
         """
+        import time
         main.case( "Setting up test environment" )
 
         cellName = main.params[ 'ENV' ][ 'cellName' ]
@@ -60,6 +61,7 @@ class SdnIpTest:
                                                            node=ONOS1Ip )
 
         main.step( "Checking if ONOS is up yet" )
+        #time.sleep( 300 )
         for i in range( 2 ):
             onos1Isup = main.ONOSbench.isup( ONOS1Ip )
             if onos1Isup:
@@ -199,15 +201,18 @@ class SdnIpTest:
         getRoutesResult = main.ONOScli.routes( jsonFormat=True )
 
         # parse routes from ONOS CLI
-        if branchName == "master":
-            allRoutesActual = \
+        #if branchName == "master":
+        #    allRoutesActual = \
+        #    main.QuaggaCliHost3.extractActualRoutesMaster( getRoutesResult )
+        #elif branchName == "onos-1.0":
+        #    allRoutesActual = \
+        #    main.QuaggaCliHost3.extractActualRoutesOneDotZero( getRoutesResult )
+        #else:
+        #    main.log("ONOS is on wrong branch")
+        #    exit
+
+        allRoutesActual = \
             main.QuaggaCliHost3.extractActualRoutesMaster( getRoutesResult )
-        elif branchName == "onos-1.0":
-            allRoutesActual = \
-            main.QuaggaCliHost3.extractActualRoutesOneDotZero( getRoutesResult )
-        else:
-            main.log("ONOS is on wrong branch")
-            exit
 
         allRoutesStrExpected = str( sorted( allRoutesExpected ) )
         allRoutesStrActual = str( allRoutesActual ).replace( 'u', "" )

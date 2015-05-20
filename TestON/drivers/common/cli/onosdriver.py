@@ -20,6 +20,7 @@ import sys
 import time
 import pexpect
 import os.path
+from requests.models import Response
 sys.path.append( "../" )
 from drivers.common.clidriver import CLI
 
@@ -483,6 +484,22 @@ class OnosDriver( CLI ):
             main.cleanup()
             main.exit()
 
+    def getBranchName( self ):
+        self.handle.sendline( "cd " + self.home )
+        self.handle.expect( "ONOS\$" )
+        self.handle.sendline( "git name-rev --name-only HEAD" )
+        self.handle.expect( "git name-rev --name-only HEAD" )
+        self.handle.expect( "\$" )
+
+        lines =  self.handle.before.splitlines()
+        if lines[1] == "master":
+            return "master"
+        elif lines[1] == "onos-1.0":
+            return "onos-1.0"
+        else:
+            main.log.info( lines[1] )
+            return "unexpected ONOS branch for SDN-IP test"
+
     def getVersion( self, report=False ):
         """
         Writes the COMMIT number to the report to be parsed
@@ -928,7 +945,7 @@ class OnosDriver( CLI ):
         """
         try:
             self.handle.sendline( "" )
-            self.handle.expect( "\$" )
+            self.handle.expect( "\$", timeout=60 )
             self.handle.sendline( "onos-uninstall " + str( nodeIp ) )
             self.handle.expect( "\$" )
 
@@ -937,6 +954,9 @@ class OnosDriver( CLI ):
             # onos-uninstall command does not return any text
             return main.TRUE
 
+        except pexpect.TIMEOUT:
+            main.log.exception( self.name + ": Timeout in onosUninstall" )
+            return main.FALSE
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )

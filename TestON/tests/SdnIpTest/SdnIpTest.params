@@ -16,7 +16,7 @@
     <GIT>
         <autoPull>on</autoPull>
         <branch1>master</branch1>
-        <branch2>onos-1.0</branch2>
+        <branch2>onos-1.1</branch2>
     </GIT>
 
     <JSON>

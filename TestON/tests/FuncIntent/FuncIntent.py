@@ -307,7 +307,7 @@ class FuncIntent:
                                  onfail="IPV4: Add host intent failed" )
         stepResult = main.TRUE
 
-        main.step( "DUALSTACK: Add host intents between h3 and h11" )
+        main.step( "DUALSTACK1: Add host intents between h3 and h11" )
         stepResult = main.wrapper.hostIntent( main,
                                               name='DUALSTACK',
                                               host1='h3',
@@ -320,8 +320,25 @@ class FuncIntent:
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
-                                 onpass="DUALSTACK: Add host intent successful",
-                                 onfail="DUALSTACK: Add host intent failed" )
+                                 onpass="DUALSTACK1: Add host intent" +
+                                        " successful",
+                                 onfail="DUALSTACK1: Add host intent failed" )
+
+        stepResult = main.TRUE
+        main.step( "DUALSTACK2: Add host intents between h1 and h9" )
+        stepResult = main.wrapper.hostIntent( main,
+                                              name='DUALSTACK2',
+                                              host1='h1',
+                                              host2='h11',
+                                              sw1='s5',
+                                              sw2='s2',
+                                              expectedLink=18 )
+
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="DUALSTACK2: Add host intent" +
+                                        " successful",
+                                 onfail="DUALSTACK2: Add host intent failed" )
 
     def CASE1002( self, main ):
         """
@@ -386,6 +403,36 @@ class FuncIntent:
                                  onpass="IPV4: Add point intent successful",
                                  onfail="IPV4: Add point intent failed" )
 
+        stepResult = main.TRUE
+        main.step( "DUALSTACK1: Add point intents between h1 and h9" )
+        stepResult = main.wrapper.pointIntent(
+                                       main,
+                                       name="DUALSTACK1",
+                                       host1="h3",
+                                       host2="h11",
+                                       deviceId1="of:0000000000000005",
+                                       deviceId2="of:0000000000000006",
+                                       port1="3",
+                                       port2="3",
+                                       ethType="IPV4",
+                                       mac1="00:00:00:00:00:03",
+                                       mac2="00:00:00:00:00:0B",
+                                       bandwidth="",
+                                       lambdaAlloc=False,
+                                       ipProto="",
+                                       ip1="",
+                                       ip2="",
+                                       tcp1="",
+                                       tcp2="",
+                                       sw1="s5",
+                                       sw2="s2",
+                                       expectedLink=18 )
+
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="DUALSTACK1: Add point intent" +
+                                        " successful",
+                                 onfail="DUALSTACK1: Add point intent failed" )
     def CASE1003( self, main ):
         """
             Add single point to multi point intents

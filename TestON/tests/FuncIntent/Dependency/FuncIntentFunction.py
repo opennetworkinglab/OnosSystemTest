@@ -1,6 +1,7 @@
 """
     Wrapper functions for FuncIntent
     This functions include Onosclidriver and Mininetclidriver driver functions
+    Author: kelvin@onlab.us
 """
 def __init__( self ):
     self.default = ''
@@ -19,7 +20,40 @@ def hostIntent( main,
                 sw2="",
                 expectedLink=0 ):
     """
-        Add host intents
+        Description:
+            Verify add-host-intent
+        Steps:
+            - Discover hosts
+            - Add host intents
+            - Check intents
+            - Verify flows
+            - Ping hosts
+            - Reroute
+                - Link down
+                - Verify flows
+                - Check topology
+                - Ping hosts
+                - Link up
+                - Verify flows
+                - Check topology
+                - Ping hosts
+            - Remove intents
+        Required:
+            name - Type of host intent to add eg. IPV4 | VLAN | Dualstack
+            host1 - Name of first host
+            host2 - Name of second host
+        Optional:
+            host1Id - ONOS id of the first host eg. 00:00:00:00:00:01/-1
+            host2Id - ONOS id of the second host
+            mac1 - Mac address of first host
+            mac2 - Mac address of the second host
+            vlan1 - Vlan tag of first host, defaults to -1
+            vlan2 - Vlan tag of second host, defaults to -1
+            sw1 - First switch to bring down & up for rerouting purpose
+            sw2 - Second switch to bring down & up for rerouting purpose
+            expectedLink - Expected link when the switches are down, it should
+                           be two links lower than the links before the two
+                           switches are down
     """
     import time
 
@@ -83,6 +117,10 @@ def hostIntent( main,
     # Check intents state
     time.sleep( 30 )
     intentResult = checkIntentState( main, intentsId )
+
+    # Check intents state again if first check fails...
+    if not intentResult:
+        intentResult = checkIntentState( main, intentsId )
 
     # Verify flows
     checkFlowsState( main )
@@ -153,8 +191,8 @@ def pointIntent( main,
                  name,
                  host1,
                  host2,
-                 deviceId1,
-                 deviceId2,
+                 deviceId1="",
+                 deviceId2="",
                  port1="",
                  port2="",
                  ethType="",
@@ -170,9 +208,54 @@ def pointIntent( main,
                  sw1="",
                  sw2="",
                  expectedLink=0 ):
+
     """
-        Add Point intents
+        Description:
+            Verify add-point-intent
+        Steps:
+            - Get device ids | ports
+            - Add point intents
+            - Check intents
+            - Verify flows
+            - Ping hosts
+            - Reroute
+                - Link down
+                - Verify flows
+                - Check topology
+                - Ping hosts
+                - Link up
+                - Verify flows
+                - Check topology
+                - Ping hosts
+            - Remove intents
+        Required:
+            name - Type of point intent to add eg. IPV4 | VLAN | Dualstack
+            host1 - Name of first host
+            host2 - Name of second host
+        Optional:
+            deviceId1 - ONOS device id of the first switch, the same as the
+                        location of the first host eg. of:0000000000000001/1,
+                        located at device 1 port 1
+            deviceId2 - ONOS device id of the second switch
+            port1 - The port number where the first host is attached
+            port2 - The port number where the second host is attached
+            ethType - Ethernet type eg. IPV4, IPV6
+            mac1 - Mac address of first host
+            mac2 - Mac address of the second host
+            bandwidth - Bandwidth capacity
+            lambdaAlloc - Allocate lambda, defaults to False
+            ipProto - IP protocol
+            ip1 - IP address of first host
+            ip2 - IP address of second host
+            tcp1 - TCP port of first host
+            tcp2 - TCP port of second host
+            sw1 - First switch to bring down & up for rerouting purpose
+            sw2 - Second switch to bring down & up for rerouting purpose
+            expectedLink - Expected link when the switches are down, it should
+                           be two links lower than the links before the two
+                           switches are down
     """
+
     import time
     assert main, "There is no main variable"
     assert name, "variable name is empty"
@@ -231,6 +314,10 @@ def pointIntent( main,
     # Check intents state
     time.sleep( 30 )
     intentResult = checkIntentState( main, intentsId )
+
+    # Check intents state again if first check fails...
+    if not intentResult:
+        intentResult = checkIntentState( main, intentsId )
 
     # Verify flows
     checkFlowsState( main )
@@ -313,15 +400,56 @@ def singleToMultiIntent( main,
                          sw2="",
                          expectedLink=0 ):
     """
-        Add Single to Multi Point intents
-        If main.hostsData is not defined, variables data should be passed in the
+        Verify Single to Multi Point intents
+        NOTE:If main.hostsData is not defined, variables data should be passed in the
         same order index wise. All devices in the list should have the same
         format, either all the devices have its port or it doesn't.
         eg. hostName = [ 'h1', 'h2' ,..  ]
             devices = [ 'of:0000000000000001', 'of:0000000000000002', ...]
             ports = [ '1', '1', ..]
             ...
+        Description:
+            Verify add-single-to-multi-intent
+        Steps:
+            - Get device ids | ports
+            - Add single to multi point intents
+            - Check intents
+            - Verify flows
+            - Ping hosts
+            - Reroute
+                - Link down
+                - Verify flows
+                - Check topology
+                - Ping hosts
+                - Link up
+                - Verify flows
+                - Check topology
+                - Ping hosts
+            - Remove intents
+        Required:
+            name - Type of point intent to add eg. IPV4 | VLAN | Dualstack
+            hostNames - List of host names
+        Optional:
+            devices - List of device ids in the same order as the hosts
+                      in hostNames
+            ports - List of port numbers in the same order as the device in
+                    devices
+            ethType - Ethernet type eg. IPV4, IPV6
+            macs - List of hosts mac address in the same order as the hosts in
+                   hostNames
+            bandwidth - Bandwidth capacity
+            lambdaAlloc - Allocate lambda, defaults to False
+            ipProto - IP protocol
+            ipAddresses - IP addresses of host in the same order as the hosts in
+                          hostNames
+            tcp - TCP ports in the same order as the hosts in hostNames
+            sw1 - First switch to bring down & up for rerouting purpose
+            sw2 - Second switch to bring down & up for rerouting purpose
+            expectedLink - Expected link when the switches are down, it should
+                           be two links lower than the links before the two
+                           switches are down
     """
+
     import time
     import copy
     assert main, "There is no main variable"
@@ -356,20 +484,16 @@ def singleToMultiIntent( main,
         devices = []
         main.log.info( "singleToMultiIntent function is using main.hostsData" ) 
         for host in hostNames:
-               print main.hostsData.get( host ).get( 'location' )
                devices.append( main.hostsData.get( host ).get( 'location' ) )
                macsDict[ main.hostsData.get( host ).get( 'location' ) ] = \
                            main.hostsData.get( host ).get( 'mac' )
                ipDict[ main.hostsData.get( host ).get( 'location' ) ] = \
                            main.hostsData.get( host ).get( 'ipAddresses' )
-        print main.hostsData
+        #print main.hostsData
 
-
-    print 'host names = ', hostNames
-
-    print 'devices = ', devices
-
-    print "macsDict = ", macsDict
+    #print 'host names = ', hostNames
+    #print 'devices = ', devices
+    #print "macsDict = ", macsDict
 
     pingResult = main.TRUE
     intentResult = main.TRUE
@@ -422,6 +546,10 @@ def singleToMultiIntent( main,
     # Check intents state
     time.sleep( 30 )
     intentResult = checkIntentState( main, intentsId )
+
+    # Check intents state again if first check fails...
+    if not intentResult:
+        intentResult = checkIntentState( main, intentsId )
 
     # Verify flows
     checkFlowsState( main )
@@ -495,9 +623,6 @@ def getHostsData( main ):
     """
         Use fwd app and pingall to discover all the hosts
     """
-    """
-        hosts json format:
-    """
     import json
     activateResult = main.TRUE
     appCheck = main.TRUE
@@ -552,21 +677,20 @@ def checkTopology( main, expectedLink ):
                                                    expectedLink )\
                        and statusResult
     if not statusResult:
-        main.log.info( itemName + ": Topology mismatch" )
+        main.log.error( itemName + ": Topology mismatch" )
     else:
         main.log.info( itemName + ": Topology match" )
     return statusResult
 
 def checkIntentState( main, intentsId ):
 
-    main.log.info( itemName + ": Check host intents state" )
+    intentResult = main.TRUE
+
+    main.log.info( itemName + ": Checking intents state" )
     for i in range( main.numCtrls ):
-        intentResult = main.CLIs[ i ].checkIntentState( intentsId=intentsId )
-    if not intentResult:
-        main.log.info( itemName +  ": Check host intents state again")
-        for i in range( main.numCtrls ):
-            intentResult = main.CLIs[ i ].checkIntentState(
-                                                          intentsId=intentsId )
+        intentResult = intentResult and \
+                main.CLIs[ i ].checkIntentState( intentsId=intentsId )
+
     return intentResult
 
 def checkFlowsState( main ):

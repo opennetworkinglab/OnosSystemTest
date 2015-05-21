@@ -433,6 +433,7 @@ class FuncIntent:
                                  onpass="DUALSTACK1: Add point intent" +
                                         " successful",
                                  onfail="DUALSTACK1: Add point intent failed" )
+
     def CASE1003( self, main ):
         """
             Add single point to multi point intents
@@ -492,9 +493,6 @@ class FuncIntent:
 
         main.step( "IPV4_2: Add single point to multi point intents" )
         hostNames = [ 'h8', 'h16', 'h24' ]
-        devices = [ 'of:0000000000000005/8', 'of:0000000000000006/8', \
-                    'of:0000000000000007/8' ]
-        macs = [ '00:00:00:00:00:08', '00:00:00:00:00:10', '00:00:00:00:00:18' ]
         stepResult = main.wrapper.singleToMultiIntent(
                                          main,
                                          name="IPV4",
@@ -527,3 +525,56 @@ class FuncIntent:
                     - Ping hosts
                 - Remove intents
         """
+        assert main, "There is no main"
+        assert main.CLIs, "There is no main.CLIs"
+        assert main.Mininet1, "Mininet handle should be named Mininet1"
+        assert main.numSwitch, "Placed the total number of switch topology in \
+                                main.numSwitch"
+
+        main.case( "Add multi point to single point intents between devices" )
+
+        stepResult = main.TRUE
+        main.step( "IPV4: Add multi point to single point intents" )
+        hostNames = [ 'h8', 'h16', 'h24' ]
+        devices = [ 'of:0000000000000005/8', 'of:0000000000000006/8', \
+                    'of:0000000000000007/8' ]
+        macs = [ '00:00:00:00:00:08', '00:00:00:00:00:10', '00:00:00:00:00:18' ]
+        stepResult = main.wrapper.multiToSingleIntent(
+                                         main,
+                                         name="IPV4",
+                                         hostNames=hostNames,
+                                         devices=devices,
+                                         ports=None,
+                                         ethType="IPV4",
+                                         macs=macs,
+                                         bandwidth="",
+                                         lambdaAlloc=False,
+                                         ipProto="",
+                                         ipAddresses="",
+                                         tcp="",
+                                         sw1="s5",
+                                         sw2="s2",
+                                         expectedLink=18 )
+
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="IPV4: Successfully added multi point"
+                                        + " to single point intents",
+                                 onfail="IPV4: Failed to add multi point" +
+                                        " to single point intents" )
+
+        main.step( "IPV4_2: Add multi point to single point intents" )
+        hostNames = [ 'h8', 'h16', 'h24' ]
+        stepResult = main.wrapper.multiToSingleIntent(
+                                         main,
+                                         name="IPV4",
+                                         hostNames=hostNames,
+                                         ethType="IPV4",
+                                         lambdaAlloc=False )
+
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="IPV4_2: Successfully added multi point"
+                                        + " to single point intents",
+                                 onfail="IPV4_2: Failed to add multi point" +
+                                        " to single point intents" )

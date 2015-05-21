@@ -98,7 +98,7 @@ class OnosDriver( CLI ):
             response = main.FALSE
         return response
 
-    def onosPackage( self ):
+    def onosPackage( self, opTimeout=30 ):
         """
         Produce a self-contained tar.gz file that can be deployed
         and executed on any platform with Java 7 JRE.
@@ -106,7 +106,7 @@ class OnosDriver( CLI ):
         try:
             self.handle.sendline( "onos-package" )
             self.handle.expect( "onos-package" )
-            self.handle.expect( "tar.gz", timeout=30 )
+            self.handle.expect( "tar.gz", opTimeout )
             handle = str( self.handle.before )
             main.log.info( "onos-package command returned: " +
                            handle )
@@ -153,7 +153,7 @@ class OnosDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def cleanInstall( self ):
+    def cleanInstall( self, mciTimeout=600 ):
         """
         Runs mvn clean install in the root of the ONOS directory.
         This will clean all ONOS artifacts then compile each module
@@ -180,7 +180,7 @@ class OnosDriver( CLI ):
                     'BUILD\sSUCCESS',
                     'onos\$',  #TODO: fix this to be more generic?
                     'ONOS\$',
-                    pexpect.TIMEOUT ], timeout=600 )
+                    pexpect.TIMEOUT ], mciTimeout )
                 if i == 0:
                     main.log.error( self.name + ":There is insufficient memory \
                             for the Java Runtime Environment to continue." )

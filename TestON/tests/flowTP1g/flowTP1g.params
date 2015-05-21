@@ -1,0 +1,73 @@
+<PARAMS>
+
+    <testcases>1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2</testcases>
+    
+    <isOnBaremetal>False</isOnBaremetal>
+    <SCALE>1,3,3,5,5,7,7</SCALE>
+    <availableNodes>7</availableNodes>
+    
+
+
+    <ENV>
+        <cellName>flowTP</cellName>
+        <cellApps>drivers,null,demo</cellApps>
+    </ENV>
+
+    <TEST>
+        <enableFlowRuleStoreBackup>true</enableFlowRuleStoreBackup>
+        <skipCleanInstall>yes</skipCleanInstall> 
+        <warmUp>5</warmUp>                              #number of runs to warm up the system
+        <sampleSize>20</sampleSize>                     #number of runs to take data from
+        <neighbors>0,a</neighbors>                      #list of number of neighbors, a = all 
+        <flows>122500</flows>
+        <switches>35</switches>
+        <cooldown>10</cooldown>
+        <testCMD0>flow-tester.py -f</testCMD0>          #base command 
+        <testCMD1> -n </testCMD1>                       #neighbors 
+        
+    </TEST>
+
+    <GIT>
+        <autopull>on</autopull>
+        <checkout>master</checkout>
+    </GIT>
+
+    <CTRL>
+        <USER>admin</USER>
+        
+        <ip1>10.128.5.51</ip1>
+        <port1>6633</port1>
+        
+        <ip2>10.128.5.52</ip2>
+        <port2>6633</port2>
+        
+        <ip3>10.128.5.53</ip3>
+        <port3>6633</port3>
+        
+        <ip4>10.128.5.54</ip4>
+        <port4>6633</port4>
+        
+        <ip5>10.128.5.55</ip5>
+        <port5>6633</port5>
+        
+        <ip6>10.128.5.56</ip6>
+        <port6>6633</port6> 
+       
+        <ip7>10.128.5.57</ip7>
+        <port7>6633</port7>
+
+    </CTRL>
+
+    <MN>
+        <ip1>10.128.5.59</ip1>
+    </MN>
+
+    <BENCH>
+        <user>admin</user>
+        <ip1>10.128.5.50</ip1>
+    </BENCH>
+
+    <JSON>
+    </JSON>
+
+</PARAMS>

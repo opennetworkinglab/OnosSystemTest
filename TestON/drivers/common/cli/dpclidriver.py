@@ -1,16 +1,8 @@
 """
 Driver for blank dataplane VMs. Created for SDNIP test.
 """
-import time
 import pexpect
-import struct
-import fcntl
-import os
 import sys
-import signal
-import sys
-import re
-import json
 sys.path.append( "../" )
 from drivers.common.clidriver import CLI
 
@@ -26,9 +18,9 @@ class DPCliDriver( CLI ):
 
         self.name = self.options[ 'name' ]
         self.handle = super( DPCliDriver, self ).connect( user_name=self.user_name,
-         		ip_address=self.ip_address,
-         		port=self.port,
-         		pwd=self.pwd )
+                        ip_address=self.ip_address,
+                        port=self.port,
+                        pwd=self.pwd )
 
         if self.handle:
             return self.handle
@@ -38,11 +30,17 @@ class DPCliDriver( CLI ):
 
     def create_interfaces( self, net, number, start ):
         """
-        Creates a number,specified by 'number,' of subinterfaces on eth0. Ip addresses start at 'net'.'start'.1.1 with a 24 bit netmask. Addresses increment sequentially in the third quad,
-        therefore all interfaces are in different subnets on the same machine. When the third quad reaches 255, it is reset to 1 and the second quad is incremented.
-        Every single ip address is placed in a file in /tmp titled 'ip_table{net}.txt'
-        The file is used by 'pingall_interfaces()' as a fping argument
-        This method returns true if all interfaces are created without a hitch, and false if a single interface has issues
+        Creates a number,specified by 'number,' of subinterfaces on eth0.
+        Ip addresses start at 'net'.'start'.1.1 with a 24 bit netmask.
+        Addresses increment sequentially in the third quad, therefore all
+        interfaces are in different subnets on the same machine. When the
+        third quad reaches 255, it is reset to 1 and the second quad is
+        incremented. Every single ip address is placed in a file in /tmp
+        titled 'ip_table{net}.txt'. The file is used by 'pingall_interfaces()'
+        as a fping argument
+
+        This method returns true if all interfaces are created without a hitch,
+        and false if a single interface has issues
         """
         self.handle.sendline( "" )
         self.handle.expect( "\$" )
@@ -68,11 +66,11 @@ class DPCliDriver( CLI ):
                     intf ) + " " + ip + " netmask 255.255.255.0" )
 
             i = self.handle.expect( [
-				    "\$",
+                                    "\$",
                                     "password",
                                     pexpect.TIMEOUT,
                                     pexpect.EOF ],
-                		    timeout=120 )
+                                    timeout=120 )
 
             if i == 0:
                 self.handle.sendline(
@@ -88,22 +86,27 @@ class DPCliDriver( CLI ):
 
     def pingall_interfaces( self, netsrc, netstrt, netdst, destlogin, destip ):
         """
-        Copies the /tmp/ip_table{ net }.txt file from the machine you wish to ping, then runs fping with a source address of { netsrc }.{ netstrt }.1.1 on the copied file.
-        Check every single response for reachable or unreachable. If all are reachable, function returns true. If a SINGLE host is unreachable, then the function stops and returns false
-        If fping is not installed, this function will install fping then run the same command
+        Copies the /tmp/ip_table{ net }.txt file from the machine you wish to
+        ping, then runs fping with a source address of
+        { netsrc }.{ netstrt }.1.1 on the copied file.
+        Check every single response for reachable or unreachable. If all are
+        reachable, function returns true. If a SINGLE host is unreachable,
+        then the function stops and returns false. If fping is not installed,
+        this function will install fping then run the same command
         """
         self.handle.sendline( "" )
         self.handle.expect( "\$" )
 
-        self.handle.sendline( "scp " + str( destlogin ) + "@" + 
-			      str( destip ) + ":/tmp/local_ip.txt /tmp/ip_table" +
-			      str( net ) + ".txt" )
-        
-	i = self.handle.expect( [
-				"100%",
+        self.handle.sendline( "scp " + str( destlogin ) + "@" +
+                              str( destip ) +
+                              ":/tmp/local_ip.txt /tmp/ip_table" +
+                              str( netsrc ) + ".txt" )
+
+        i = self.handle.expect( [
+                                "100%",
                                 "password",
                                 pexpect.TIMEOUT ],
-		                timeout=30 )
+                                timeout=30 )
 
         if i == 0:
             main.log.info( "Copied ping file successfully" )
@@ -120,20 +123,20 @@ class DPCliDriver( CLI ):
         self.handle.expect( "\$" )
 
         main.log.info( "Pinging interfaces on the " + str( netdst ) +
-		       " network from " + str( netsrc ) + "." + 
-		       str( netstrt ) + ".1.1" )
+                       " network from " + str( netsrc ) + "." +
+                       str( netstrt ) + ".1.1" )
         self.handle.sendline( "sudo fping -S " + str( netsrc ) + "." +
-			      str( netstrt ) + ".1.1 -f /tmp/ip_table" + 
-			      str( netdst ) + ".txt" )
+                              str( netstrt ) + ".1.1 -f /tmp/ip_table" +
+                              str( netdst ) + ".txt" )
         while 1:
             i = self.handle.expect( [
-				    "reachable",
+                                    "reachable",
                                     "unreachable",
                                     "\$",
                                     "password",
                                     pexpect.TIMEOUT,
                                     "not installed" ],
-				    timeout=45 )
+                                    timeout=45 )
             if i == 0:
                 result = main.TRUE
             elif i == 1:
@@ -142,6 +145,7 @@ class DPCliDriver( CLI ):
                 return result
             elif i == 2:
                 main.log.info( "All interfaces reachable" )
+                result = main.FALSE
                 return result
             elif i == 3:
                 self.handle.sendline( self.pwd )
@@ -152,11 +156,10 @@ class DPCliDriver( CLI ):
             elif i == 5:
                 main.log.info( "fping not installed, installing fping" )
                 self.handle.sendline( "sudo apt-get install fping" )
-                i = self.handle.expect(
-                    [ "password",
-                                      "\$",
-                                      pexpect.TIMEOUT ],
-                    timeout=60 )
+                i = self.handle.expect( [ "password",
+                                          "\$",
+                                          pexpect.TIMEOUT ],
+                                        timeout=60 )
                 if i == 0:
                     self.handle.sendline( self.pwd )
                     self.handle.expect( "\$", timeout=30 )
@@ -183,8 +186,8 @@ class DPCliDriver( CLI ):
         try:
             self.handle.sendline( "exit" )
             self.handle.expect( "closed" )
-        except:
-            main.log.error( "Connection failed to the host" )
+        except pexpect.ExceptionPexpect:
+            main.log.exception( "Connection failed to the host" )
             response = main.FALSE
         return response
 

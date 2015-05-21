@@ -17,6 +17,7 @@ class ProdFunc:
         self.default = ''
 
     def CASE1( self, main ):
+        import time
         """
         Startup sequence:
         cell <name>
@@ -46,7 +47,7 @@ class ProdFunc:
         main.step( "Git checkout and get version" )
         #main.ONOSbench.gitCheckout( "master" )
         gitPullResult = main.ONOSbench.gitPull()
-        main.log.info( "git_pull_result = " + gitPullResult )
+        main.log.info( "git_pull_result = " + str( gitPullResult ))
         main.ONOSbench.getVersion( report=True )
 
         if gitPullResult == 1:
@@ -78,7 +79,14 @@ class ProdFunc:
         startResult = main.ONOSbench.onosStart( ONOS1Ip )
 
         main.ONOS2.startOnosCli( ONOSIp=main.params[ 'CTRL' ][ 'ip1' ] )
-
+        main.step( "Starting Mininet CLI..." )
+        
+        # Starting the mininet using the old way
+        main.step( "Starting Mininet ..." )
+        netIsUp = main.Mininet1.startNet()
+        if netIsUp:
+            main.log.info("Mininet CLI is up")
+        
         case1Result = ( packageResult and
                         cellResult and verifyResult
                         and onosInstallResult and
@@ -125,7 +133,7 @@ class ProdFunc:
                                  onpass="Switch down discovery successful",
                                  onfail="Switch down discovery failed" )
 
-    def CASE11( self, main ):
+    def CASE101( self, main ):
         """
         Cleanup sequence:
         onos-service <nodeIp> stop
@@ -184,6 +192,7 @@ class ProdFunc:
         main.case( "Disconnecting mininet and restarting ONOS" )
         main.step( "Disconnecting mininet and restarting ONOS" )
         mininetDisconnect = main.Mininet1.disconnect()
+        print "mininetDisconnect = ", mininetDisconnect        
 
         main.step( "Removing raft logs before a clen installation of ONOS" )
         main.ONOSbench.onosRemoveRaftLogs()
@@ -222,8 +231,8 @@ class ProdFunc:
     def CASE21( self, main ):
         """
             On ONOS bench, run this command:
-             ./~/ONOS/tools/test/bin/onos-topo-cfg
-            which starts the rest and copies the links
+            sudo -E python ~/onos/tools/test/topos/opticalTest.py -OC1
+            which spawns packet optical topology and copies the links
             json file to the onos instance.
             Note that in case of Packet Optical, the links are not learnt
             from the topology, instead the links are learnt
@@ -234,18 +243,10 @@ class ProdFunc:
         main.log.report( "_____________________________________________" )
         main.case( "Starting LINC-OE and other components" )
         main.step( "Starting LINC-OE and other components" )
-        startConsoleResult = main.LincOE1.startConsole()
-        opticalMnScript = main.LincOE2.runOpticalMnScript()
-        onosTopoCfgResult = main.ONOSbench.runOnosTopoCfg(
-            instanceName=main.params[ 'CTRL' ][ 'ip1' ],
-            jsonFile=main.params[ 'OPTICAL' ][ 'jsonfile' ] )
+        appInstallResult = main.ONOS2.featureInstall( "onos-app-optical" )
+        opticalMnScript = main.LincOE2.runOpticalMnScript(ctrllerIP = main.params[ 'CTRL' ][ 'ip1' ])
 
-        print "start_console_result =", startConsoleResult
-        print "optical_mn_script = ", opticalMnScript
-        print "onos_topo_cfg_result =", onosTopoCfgResult
-
-        case21Result = startConsoleResult and opticalMnScript and \
-            onosTopoCfgResult
+        case21Result = opticalMnScript and appInstallResult
         utilities.assert_equals(
             expect=main.TRUE,
             actual=case21Result,
@@ -254,11 +255,12 @@ class ProdFunc:
 
     def CASE22( self, main ):
         """
-            Curretly we use, 4 linear switch optical topology and
-            2 packet layer mininet switches each with one host.
-            Therefore, the roadmCount variable = 4,
-            packetLayerSWCount variable = 2 and hostCount = 2
-            and this is hardcoded in the testcase. If the topology changes,
+            Curretly we use, 10 optical switches(ROADM's) and
+            6 packet layer mininet switches each with one host.
+            Therefore, the roadmCount variable = 10,
+            packetLayerSWCount variable = 6, hostCount=6 and
+            links=42.
+            All this is hardcoded in the testcase. If the topology changes,
             these hardcoded values need to be changed
         """
         main.log.report(
@@ -271,7 +273,7 @@ class ProdFunc:
 
         print "devices_result = ", devicesResult
         devicesLinewise = devicesResult.split( "\n" )
-        devicesLinewise = devicesLinewise[ 1:-1 ]
+        devicesLinewise = devicesLinewise[ 1: ]
         roadmCount = 0
         packetLayerSWCount = 0
         for line in devicesLinewise:
@@ -282,7 +284,7 @@ class ProdFunc:
                 roadmCount += 1
             elif availability == 'true' and type == 'SWITCH':
                 packetLayerSWCount += 1
-        if roadmCount == 4:
+        if roadmCount == 10:
             print "Number of Optical Switches = %d and is" % roadmCount +\
                   " correctly detected"
             main.log.info(
@@ -298,7 +300,7 @@ class ProdFunc:
                 " and is wrong" )
             opticalSWResult = main.FALSE
 
-        if packetLayerSWCount == 2:
+        if packetLayerSWCount == 6:
             print "Number of Packet layer or mininet Switches = %d "\
                     % packetLayerSWCount + "and is correctly detected"
             main.log.info(
@@ -319,6 +321,16 @@ class ProdFunc:
         linksResult = main.ONOS3.links( jsonFormat=False )
         print "links_result = ", linksResult
         print "_________________________________"
+        linkActiveCount = linksResult.count("state=ACTIVE") 
+        main.log.info( "linkActiveCount = " + str( linkActiveCount ))
+        if linkActiveCount == 42:
+            linkActiveResult = main.TRUE
+            main.log.info(
+                "Number of links in ACTIVE state are correct")
+        else:
+            linkActiveResult = main.FALSE
+            main.log.info(
+                "Number of links in ACTIVE state are wrong")
 
         # NOTE:Since only point intents are added, there is no
         # requirement to discover the hosts
@@ -347,7 +359,8 @@ class ProdFunc:
                             is wrong" )
             hostDiscovery = main.FALSE
         """
-        case22Result = opticalSWResult and packetSWResult
+        case22Result = opticalSWResult and packetSWResult and \
+                        linkActiveResult
         utilities.assert_equals(
             expect=main.TRUE,
             actual=case22Result,
@@ -368,45 +381,45 @@ class ProdFunc:
         main.step( "Adding point intents" )
         ptpIntentResult = main.ONOS3.addPointIntent(
             "of:0000ffffffff0001/1",
-            "of:0000ffffffff0002/1" )
+            "of:0000ffffffff0005/1" )
         if ptpIntentResult == main.TRUE:
             main.ONOS3.intents( jsonFormat=False )
             main.log.info( "Point to point intent install successful" )
 
         ptpIntentResult = main.ONOS3.addPointIntent(
-            "of:0000ffffffff0002/1",
+            "of:0000ffffffff0005/1",
             "of:0000ffffffff0001/1" )
         if ptpIntentResult == main.TRUE:
             main.ONOS3.intents( jsonFormat=False )
             main.log.info( "Point to point intent install successful" )
 
-        time.sleep( 10 )
+        time.sleep( 30 )
         flowHandle = main.ONOS3.flows()
         main.log.info( "flows :" + flowHandle )
 
         # Sleep for 30 seconds to provide time for the intent state to change
-        time.sleep( 30 )
+        time.sleep( 60 )
         intentHandle = main.ONOS3.intents( jsonFormat=False )
         main.log.info( "intents :" + intentHandle )
 
         PingResult = main.TRUE
         count = 1
-        main.log.info( "\n\nh1 is Pinging h2" )
-        ping = main.LincOE2.pingHostOptical( src="h1", target="h2" )
+        main.log.info( "\n\nh1 is Pinging h5" )
+        ping = main.LincOE2.pingHostOptical( src="h1", target="h5" )
         # ping = main.LincOE2.pinghost()
         if ping == main.FALSE and count < 5:
             count += 1
             PingResult = main.FALSE
             main.log.info(
-                "Ping between h1 and h2  failed. Making attempt number " +
+                "Ping between h1 and h5  failed. Making attempt number " +
                 str( count ) +
                 " in 2 seconds" )
             time.sleep( 2 )
         elif ping == main.FALSE:
-            main.log.info( "All ping attempts between h1 and h2 have failed" )
+            main.log.info( "All ping attempts between h1 and h5 have failed" )
             PingResult = main.FALSE
         elif ping == main.TRUE:
-            main.log.info( "Ping test between h1 and h2 passed!" )
+            main.log.info( "Ping test between h1 and h5 passed!" )
             PingResult = main.TRUE
         else:
             main.log.info( "Unknown error" )
@@ -434,20 +447,39 @@ class ProdFunc:
         import time
         import json
         """
+            LINC uses its own switch IDs. You can use the following
+            command on the LINC console to find the mapping between 
+            DPIDs and LINC IDs.
+            rp(application:get_all_key(linc)).
+            
             Test Rerouting of Packet Optical by bringing a port down
-            ( port 22 ) of a switch( switchID=1 ), so that link
-            ( between switch1 port22 - switch4-port30 ) is inactive
+            ( port 20 ) of a switch( switchID=1, or LincOE switchID =9 ), 
+            so that link
+            ( between switch1 port20 - switch5 port50 ) is inactive
             and do a ping test. If rerouting is successful,
             ping should pass. also check the flows
         """
         main.log.report(
             "This testcase tests rerouting and pings mininet hosts" )
         main.case( "Test rerouting and pings mininet hosts" )
+        main.step( "Attach to the Linc-OE session" )
+        attachConsole = main.LincOE1.attachLincOESession() 
+        print "attachConsole = ", attachConsole
+
         main.step( "Bring a port down and verify the link state" )
-        main.LincOE1.portDown( swId="1", ptId="22" )
+        main.LincOE1.portDown( swId="9", ptId="20" )
         linksNonjson = main.ONOS3.links( jsonFormat=False )
         main.log.info( "links = " + linksNonjson )
 
+        linkInactiveCount = linksNonjson.count("state=INACTIVE")
+        main.log.info( "linkInactiveCount = " + str( linkInactiveCount ))
+        if linkInactiveCount == 2:
+            main.log.info(
+                "Number of links in INACTIVE state are correct")
+        else:
+            main.log.info(
+                "Number of links in INACTIVE state are wrong")
+        
         links = main.ONOS3.links()
         main.log.info( "links = " + links )
 
@@ -455,9 +487,9 @@ class ProdFunc:
         linksStateResult = main.FALSE
         for item in linksResult:
             if item[ 'src' ][ 'device' ] == "of:0000ffffffffff01" and item[
-                    'src' ][ 'port' ] == "22":
-                if item[ 'dst' ][ 'device' ] == "of:0000ffffffffff04" and item[
-                        'dst' ][ 'port' ] == "30":
+                    'src' ][ 'port' ] == "20":
+                if item[ 'dst' ][ 'device' ] == "of:0000ffffffffff05" and item[
+                        'dst' ][ 'port' ] == "50":
                     linksState = item[ 'state' ]
                     if linksState == "INACTIVE":
                         main.log.info(
@@ -483,22 +515,22 @@ class ProdFunc:
         main.step( "Verify Rerouting by a ping test" )
         PingResult = main.TRUE
         count = 1
-        main.log.info( "\n\nh1 is Pinging h2" )
-        ping = main.LincOE2.pingHostOptical( src="h1", target="h2" )
+        main.log.info( "\n\nh1 is Pinging h5" )
+        ping = main.LincOE2.pingHostOptical( src="h1", target="h5" )
         # ping = main.LincOE2.pinghost()
         if ping == main.FALSE and count < 5:
             count += 1
             PingResult = main.FALSE
             main.log.info(
-                "Ping between h1 and h2  failed. Making attempt number " +
+                "Ping between h1 and h5  failed. Making attempt number " +
                 str( count ) +
                 " in 2 seconds" )
             time.sleep( 2 )
         elif ping == main.FALSE:
-            main.log.info( "All ping attempts between h1 and h2 have failed" )
+            main.log.info( "All ping attempts between h1 and h5 have failed" )
             PingResult = main.FALSE
         elif ping == main.TRUE:
-            main.log.info( "Ping test between h1 and h2 passed!" )
+            main.log.info( "Ping test between h1 and h5 passed!" )
             PingResult = main.TRUE
         else:
             main.log.info( "Unknown error" )
@@ -519,7 +551,7 @@ class ProdFunc:
         import time
         main.log.report( "This testcase is testing the assignment of" +
                          " all the switches to all the controllers and" +
-                         " discovering the hists in reactive mode" )
+                         " discovering the hosts in reactive mode" )
         main.log.report( "__________________________________" )
         main.case( "Pingall Test" )
         main.step( "Assigning switches to controllers" )
@@ -631,11 +663,10 @@ class ProdFunc:
 
         main.step( "Pingall" )
         pingResult = main.FALSE
-        while pingResult == main.FALSE:
-            time1 = time.time()
-            pingResult = main.Mininet1.pingall()
-            time2 = time.time()
-            print "Time for pingall: %2f seconds" % ( time2 - time1 )
+        time1 = time.time()
+        pingResult = main.Mininet1.pingall()
+        time2 = time.time()
+        print "Time for pingall: %2f seconds" % ( time2 - time1 )
 
         # Start onos cli again because u might have dropped out of
         # onos prompt to the shell prompt
@@ -680,7 +711,110 @@ class ProdFunc:
             onpass="Reactive forwarding app uninstallation successful",
             onfail="Reactive forwarding app uninstallation failed" )
 
+
+    def CASE11( self ):
+        # NOTE: This testcase require reactive forwarding mode enabled
+        # NOTE: in the beginning and then uninstall it before adding 
+        # NOTE: point intents. Again the app is installed so that 
+        # NOTE: testcase 10 can be ran successively
+        import time
+        main.log.report(
+            "This testcase moves a host from one switch to another to add" +
+            "point intents between them and then perform ping" )
+        main.log.report( "__________________________________" )
+        main.log.info( "Moving host from one switch to another" )
+        main.case( "Moving host from a device and attach it to another device" )
+        main.step( "Moving host h9 from device s9 and attach it to s8" )
+        main.Mininet1.moveHost(host = 'h9', oldSw = 's9', newSw = 's8')
+
+        time.sleep(15) #Time delay to have all the flows ready
+        main.step( "Pingall" )
+        pingResult = main.FALSE
+        time1 = time.time()
+        pingResult = main.Mininet1.pingall()
+        time2 = time.time()
+        print "Time for pingall: %2f seconds" % ( time2 - time1 )
+
+        hosts = main.ONOS2.hosts( jsonFormat = False )
+        main.log.info( hosts )
+        
+        main.case( "Uninstalling reactive forwarding app" )
+        # Unistall onos-app-fwd app to disable reactive forwarding
+        appUninstallResult = main.ONOS2.featureUninstall( "onos-app-fwd" )
+        main.log.info( "onos-app-fwd uninstalled" )
+
+        main.step( "Add point intents between hosts on the same device")
+        ptpIntentResult = main.ONOS2.addPointIntent(
+            "of:0000000000003008/1",
+            "of:0000000000003008/3" )
+        if ptpIntentResult == main.TRUE:
+            getIntentResult = main.ONOS2.intents()
+            main.log.info( "Point to point intent install successful" )
+            # main.log.info( getIntentResult )
+
+        ptpIntentResult = main.ONOS2.addPointIntent(
+            "of:0000000000003008/3",
+            "of:0000000000003008/1" )
+        if ptpIntentResult == main.TRUE:
+            getIntentResult = main.ONOS2.intents()
+            main.log.info( "Point to point intent install successful" )
+            # main.log.info( getIntentResult )
+
+        main.case( "Ping hosts on the same devices" )
+        ping = main.Mininet1.pingHost( src = 'h8', target = 'h9' )
+
+        '''
+        main.case( "Installing reactive forwarding app" )
+        # Install onos-app-fwd app to enable reactive forwarding
+        appUninstallResult = main.ONOS2.featureInstall( "onos-app-fwd" )
+        main.log.info( "onos-app-fwd installed" )
+        '''
+
+        if ping == main.FALSE:
+            main.log.report(
+                "Point intents for hosts on same devices haven't" +
+                " been installed correctly. Cleaning up" )
+        if ping == main.TRUE:
+            main.log.report(
+                "Point intents for hosts on same devices" +
+                "installed correctly. Cleaning up" )
+
+        case11Result = ping and pingResult
+        utilities.assert_equals(
+            expect = main.TRUE,
+            actual = case11Result,
+            onpass = "Point intents for hosts on same devices" +
+                    "Ping Test successful",
+            onfail = "Point intents for hosts on same devices" +
+                    "Ping Test NOT successful" )
+
+
+    def CASE12( self ):
+        """
+        Verify the default flows on each switch in proactive mode
+        """
+        main.log.report( "This testcase is verifying num of default" +
+                         " flows on each switch" )
+        main.log.report( "__________________________________" )
+        main.case( "Verify num of default flows on each switch" )
+        main.step( "Obtaining the device id's and flowrule count on them" )
+
+        case12Result = main.TRUE
+        idList = main.ONOS2.getAllDevicesId()
+        for id in idList:
+            count = main.ONOS2.FlowAddedCount( id )
+            main.log.info("count = " +count)
+            if int(count) != 3:
+                case12Result = main.FALSE
+                break
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=case12Result,
+            onpass = "Expected default num of flows exist",
+            onfail = "Expected default num of flows do not exist")
+
     def CASE6( self ):
+        import time
         main.log.report( "This testcase is testing the addition of" +
                          " host intents and then does pingall" )
         main.log.report( "__________________________________" )
@@ -730,15 +864,18 @@ class ProdFunc:
             host2 = "00:00:00:00:00:" + \
                 str( hex( i + 10 )[ 2: ] ).zfill( 2 ).upper()
             # NOTE: get host can return None
-            # TODO: handle this
-            host1Id = main.ONOS2.getHost( host1 )[ 'id' ]
-            host2Id = main.ONOS2.getHost( host2 )[ 'id' ]
-            main.ONOS2.addHostIntent( host1Id, host2Id )
+            if host1:
+                host1Id = main.ONOS2.getHost( host1 )[ 'id' ]
+            if host2:
+                host2Id = main.ONOS2.getHost( host2 )[ 'id' ]
+            if host1Id and host2Id:
+                main.ONOS2.addHostIntent( host1Id, host2Id )
 
         time.sleep( 10 )
         hIntents = main.ONOS2.intents( jsonFormat=False )
         main.log.info( "intents:" + hIntents )
-        main.ONOS2.flows()
+        flows = main.ONOS2.flows()
+        main.log.info( "flows:" + flows )     
 
         count = 1
         i = 8
@@ -800,6 +937,9 @@ class ProdFunc:
             onfail="Pingall Test after Host intents addition failed" )
 
     def CASE5( self, main ):
+        """
+            Check ONOS topology matches with mininet
+        """
         import json
         # assumes that sts is already in you PYTHONPATH
         from sts.topology.teston_topology import TestONTopology
@@ -912,6 +1052,11 @@ class ProdFunc:
             onfail="Topology checks failed" )
 
     def CASE7( self, main ):
+        """
+            Link discovery test case. Checks if ONOS can discover a link
+            down or up properly.
+        """
+
         from sts.topology.teston_topology import TestONTopology
 
         linkSleep = int( main.params[ 'timers' ][ 'LinkDiscovery' ] )
@@ -960,8 +1105,8 @@ class ProdFunc:
         main.step( "Determine the current number of switches and links" )
         topologyOutput = main.ONOS2.topology()
         topologyResult = main.ONOS1.getTopology( topologyOutput )
-        activeSwitches = topologyResult[ 'devices' ]
-        links = topologyResult[ 'links' ]
+        activeSwitches = topologyResult[ 'deviceCount' ]
+        links = topologyResult[ 'linkCount' ]
         print "activeSwitches = ", type( activeSwitches )
         print "links = ", type( links )
         main.log.info(
@@ -1055,26 +1200,23 @@ class ProdFunc:
 
     def CASE8( self ):
         """
-        Host intents removal
+        Intent removal
         """
+        import time
         main.log.report( "This testcase removes any previously added intents" +
-                         " before adding the same intents or point intents" )
+                         " before adding any new set of intents" )
         main.log.report( "__________________________________" )
-        main.log.info( "Host intents removal" )
-        main.case( "Removing host intents" )
+        main.log.info( "intent removal" )
+        main.case( "Removing installed intents" )
         main.step( "Obtain the intent id's" )
         intentResult = main.ONOS2.intents( jsonFormat=False )
         main.log.info( "intent_result = " + intentResult )
-
         intentLinewise = intentResult.split( "\n" )
-        intentList = []
-        for line in intentLinewise:
-            if line.startswith( "id=" ):
-                intentList.append( line )
 
-        intentids = []
-        for line in intentList:
-            intentids.append( line.split( "," )[ 0 ].split( "=" )[ 1 ] )
+        intentList = [line for line in intentLinewise \
+            if line.startswith( "id=")]
+        intentids = [line.split( "," )[ 0 ].split( "=" )[ 1 ] for line in \
+            intentList]
         for id in intentids:
             print "id = ", id
 
@@ -1085,8 +1227,20 @@ class ProdFunc:
 
         intentResult = main.ONOS2.intents( jsonFormat=False )
         main.log.info( "intent_result = " + intentResult )
-
-        case8Result = main.TRUE
+        
+        intentList = [line for line in intentResult.split( "\n" ) \
+            if line.startswith( "id=")]
+        intentState = [line.split( "," )[ 1 ].split( "=" )[ 1 ] for line in \
+            intentList]
+        for state in intentState:
+            print state
+        
+        case8Result = main.TRUE        
+        for state in intentState:
+            if state != 'WITHDRAWN':
+                case8Result = main.FALSE
+                break
+                
         if case8Result == main.TRUE:
             main.log.report( "Intent removal successful" )
         else:
@@ -1113,11 +1267,11 @@ class ProdFunc:
             # Note: If the ping result failed, that means the intents have been
             # withdrawn correctly.
         if PingResult == main.TRUE:
-            main.log.report( "Host intents have not been withdrawn correctly" )
+            main.log.report( "Installed intents have not been withdrawn correctly" )
             # main.cleanup()
             # main.exit()
         if PingResult == main.FALSE:
-            main.log.report( "Host intents have been withdrawn correctly" )
+            main.log.report( "Installed intents have been withdrawn correctly" )
 
         case8Result = case8Result and PingResult
 
@@ -1131,8 +1285,11 @@ class ProdFunc:
                                  onfail="Intent removal test failed" )
 
     def CASE9( self ):
+        """
+            Testing Point intents
+        """
         main.log.report(
-            "This testcase adds point intents and then does pingall" )
+            "This test case adds point intents and then does pingall" )
         main.log.report( "__________________________________" )
         main.log.info( "Adding point intents" )
         main.case(
@@ -1318,7 +1475,7 @@ class ProdFunc:
         if ptpIntentResult == main.TRUE:
             getIntentResult = main.ONOS2.intents()
             main.log.info( "Point to point intent install successful" )
-            main.log.info( getIntentResult )
+            #main.log.info( getIntentResult )
 
         ptpIntentResult = main.ONOS2.addPointIntent(
             "of:0000000000006027/1",
@@ -1326,14 +1483,13 @@ class ProdFunc:
         if ptpIntentResult == main.TRUE:
             getIntentResult = main.ONOS2.intents()
             main.log.info( "Point to point intent install successful" )
-            main.log.info( getIntentResult )
+            #main.log.info( getIntentResult )
 
         print(
             "___________________________________________________________" )
 
         flowHandle = main.ONOS2.flows()
-        # print "flowHandle = ", flowHandle
-        main.log.info( "flows :" + flowHandle )
+        #main.log.info( "flows :" + flowHandle )
 
         count = 1
         i = 8

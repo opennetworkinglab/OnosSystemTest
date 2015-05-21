@@ -29,11 +29,9 @@ Utilities will take care about the basic functions like :
 '''
 import re
 from configobj import ConfigObj
-import pydoc
 from core import ast as ast
 import smtplib
 
-import mimetypes
 import email
 import os
 import email.mime.application
@@ -70,28 +68,22 @@ class Utilities:
                         operators = matchVar.group(2)
                     elif matchVar.group(1) == "_" and matchVar.group(2):
                         operators = matchVar.group(2)
-                        
                 except AttributeError:
                     if matchVar==None and nameVar:
                         operators ='equals'
-                        
-                result = self._assert(NOT=notVar,operator=operators,**kwargs) 
+                result = self._assert(NOT=notVar,operator=operators,**kwargs)
                 if result == main.TRUE:
                     main.log.info("Assertion Passed")
-                    main.CASERESULT = main.TRUE
+                    main.STEPRESULT = main.TRUE
                 elif result == main.FALSE:
                     main.log.warn("Assertion Failed")
-                    main.CASERESULT = main.FALSE
-                    
-                else :
+                    main.STEPRESULT = main.FALSE
+                else:
                     main.log.error("There is an Error in Assertion")
-                    main.CASERESULT = main.ERROR
-                    
+                    main.STEPRESULT = main.ERROR
                 return result
-            
             return assertHandling
-        
-    
+
     def _assert (self,**assertParam):  
         '''
         It will take the arguments :
@@ -265,7 +257,7 @@ class Utilities:
             try :
                 parsedInfo = ConfigObj(self.fileName)
                 return parsedInfo
-            except :
+            except Exception:
                 print "There is no such file to parse "+fileName 
         else:
             return 0   

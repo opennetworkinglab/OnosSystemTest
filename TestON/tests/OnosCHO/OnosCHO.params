@@ -1,5 +1,5 @@
 <PARAMS>
-    #CHO sequence : 1,2,3,[4,5,6,5,7,8,5,10,5,9,5,7,8,5,10,5]*2
+    # 1,20,3,[40,5,60,70,80,10,90,71,81,10,93,10]*50,22,3,[41,5,61,72,82,10,91,73,83,10,94,10]*50,22,3,[42,5,62,10,92,10]*50
     # 1. ONOS brinup Test case
     # 2. Assign and Balance all Mininet switches across controllers
     # 3. Collect reference toplogy for topo compare
@@ -8,44 +8,57 @@
     # 6. Install 300 host intents and verify ping all
     # 7. Randomly bring some core links down and verify pingall
     # 8. Bring core links Up that were down and verify pingall
-    # 9. Install 114 point intents and verify ping all
+    # 9. Install 300 point intents and verify ping all
     # 10. Remove all intents on ONOS
-    # 1,2,3,[4,5,6,5,7,8,5,10,5,9,5,7,8,5,10,5]*2
 
-    <testcases>1,2,3,[4,5,6,5,70,80,5,10,5,9,5,71,81,5,10,5]*100</testcases>
+    <testcases>1,20,3,[40,5,60,70,80,10,90,71,81,10,93,10]*50,22,3,[41,5,61,72,82,10,91,73,83,10,94,10]*50,22,3,[42,5,62,10,92,10]*50</testcases>
     <ENV>
         <cellName>choTest5</cellName>
     </ENV>
     <GIT>
         #autoPull 'on' or 'off'
-        <autoPull>on</autoPull>
+        <autoPull>off</autoPull>
         <branch>master</branch>
-    </GIT>
+    </GIT>-t
+    <TOPO1>
+	<topo>~/mininet/custom/topoAtt.py</topo>
+	<numSwitches>25</numSwitches>
+	<numHosts>25</numHosts>
+	<numLinks>114</numLinks>
+	<numPaths>1</numPaths>
+    </TOPO1>
+    <TOPO2>
+	<topo>~/mininet/custom/topoChordal.py</topo>
+	<numSwitches>25</numSwitches>
+	<numHosts>25</numHosts>
+	<numLinks>600</numLinks>
+	<numPaths>1</numPaths>
+    </TOPO2>
+    <TOPO3>
+	<topo>~/mininet/custom/topoSpine.py</topo>
+	<numSwitches>78</numSwitches>
+	<numHosts>68</numHosts>
+	<numLinks>284</numLinks>
+	<numPaths>1</numPaths>
+    </TOPO3>
     <CTRL>
 	<numCtrl>5</numCtrl>
-        <ip1>10.128.40.41</ip1>
+        <ip1>10.128.10.21</ip1>
 	<port1>6633</port1>
-	<ip2>10.128.40.42</ip2>
+	<ip2>10.128.10.22</ip2>
 	<port2>6633</port2>
-	<ip3>10.128.40.43</ip3>
+	<ip3>10.128.10.23</ip3>
 	<port3>6633</port3>
-        <ip4>10.128.40.44</ip4>
+        <ip4>10.128.10.24</ip4>
 	<port4>6633</port4>
-	<ip5>10.128.40.45</ip5>
+	<ip5>10.128.10.25</ip5>
 	<port5>6633</port5>
     </CTRL>
     <HOSTS>
 	<startMAC>00:00:00:00:00:01</startMAC>
 	<endMAC>00:00:00:00:00:19</endMAC>
     </HOSTS>
-    <ONOSTOPO>
-	<numDevices>25</numDevices>
-	<numLinks>114</numLinks>
-	<numHosts>25</numHosts>
-	<numIntents>300</numIntents>
-	<numPaths>1360</numPaths>
-    </ONOSTOPO>
-    <CORELINKS>
+    <ATTCORELINKS>
         <toggleLinks>3</toggleLinks>
 	
 	<linkS3a>s3</linkS3a>
@@ -59,11 +72,20 @@
 	<linkS18a>s18</linkS18a>
 	<linkS18b>s14,s16,s17,s19,s20,s21,s22,s23</linkS18b>
 	#######s3,s14,s16,s17,s19,s20,s21,s22,s23########
-    </CORELINKS>
+    </ATTCORELINKS>
+    
+    <SPINECORELINKS>
+        <linkS9>s9</linkS9>
+        <linkS9top>s1,s3,s5,s7</linkS9top>
+        <linkS9bot>s11,s12</linkS9bot>
+        <linkS10>s10</linkS10>
+        <linkS10top>s2,s4,s6,s8</linkS10top>
+        <linkS10bot>s13,s14</linkS10bot>
+    </SPINECORELINKS>
 
     <timers>
-        <LinkDiscovery>5</LinkDiscovery>
-        <SwitchDiscovery>31</SwitchDiscovery>
+        <LinkDiscovery>1</LinkDiscovery>
+        <SwitchDiscovery>1</SwitchDiscovery>
     </timers>
 
 </PARAMS>

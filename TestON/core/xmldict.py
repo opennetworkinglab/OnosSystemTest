@@ -37,7 +37,7 @@ def xml_to_dict(root_or_str, strict=True):
         root = ElementTree.XML(root_or_str)
     try :
         return {root.tag: _from_xml(root, strict)}
-    except :
+    except Exception:
         return None
 
 def dict_to_xml(dict_xml):

@@ -2,13 +2,7 @@
 
 import time
 import pexpect
-import struct
-import fcntl
-import os
 import sys
-import signal
-import sys
-import re
 import json
 sys.path.append( "../" )
 from drivers.common.clidriver import CLI
@@ -23,7 +17,20 @@ class QuaggaCliDriver( CLI ):
     def connect( self, **connectargs ):
         for key in connectargs:
             vars( self )[ key ] = connectargs[ key ]
+        self.name = self.options[ 'name' ]
+        self.handle = super( QuaggaCliDriver, self ).connect(
+                user_name=self.user_name,
+                ip_address="127.0.0.1",
+                port=self.port,
+                pwd=self.pwd )
+        if self.handle:
+            return self.handle
+        else:
+            main.log.info( "NO HANDLE" )
+            return main.FALSE
+            
 
+    def connectQuagga( self ):
         self.name = self.options[ 'name' ]
         # self.handle = super( QuaggaCliDriver,self ).connect(
         # user_name=self.user_name, ip_address=self.ip_address,port=self.port,
@@ -87,7 +94,7 @@ class QuaggaCliDriver( CLI ):
         try:
             self.handle.sendline( "" )
             self.handle.expect( "bgpd#" )
-        except:
+        except Exception:
             main.log.warn( "Probably not currently in enable mode!" )
             self.disconnect()
             return main.FALSE
@@ -98,7 +105,7 @@ class QuaggaCliDriver( CLI ):
             self.handle.sendline( routerAS )
             self.handle.expect( "config-router", timeout=5 )
             return main.TRUE
-        except:
+        except Exception:
             return main.FALSE
 
     def generatePrefixes( self, net, numRoutes ):
@@ -183,11 +190,12 @@ class QuaggaCliDriver( CLI ):
         routesJsonObj = json.loads( getRoutesResult )
 
         allRoutesActual = []
-        for route in routesJsonObj:
-            if route[ 'prefix' ] == '172.16.10.0/24':
-                continue
-            allRoutesActual.append(
-                route[ 'prefix' ] + "/" + route[ 'nextHop' ] )
+        for route in routesJsonObj['routes4']:
+            if 'prefix' in route:
+                if route[ 'prefix' ] == '172.16.10.0/24':
+                    continue
+                allRoutesActual.append(
+                    route[ 'prefix' ] + "/" + route[ 'nextHop' ] )
 
         return sorted( allRoutesActual )
 
@@ -347,21 +355,40 @@ class QuaggaCliDriver( CLI ):
             self.handle.sendline( "" )
             # self.handle.expect( "config-router" )
             self.handle.expect( "config-router", timeout=5 )
-        except:
+        except Exception:
             main.log.warn( "Probably not in config-router mode!" )
             self.disconnect()
         main.log.info( "Start to add routes" )
 
-        for i in range( 0, len( routes ) ):
-            routeCmd = "network " + routes[ i ]
+        chunk_size = 20
+
+        if len(routes) > chunk_size:
+            num_iter = (int) (len(routes) / chunk_size) 
+        else:
+            num_iter = 1;
+
+        total = 0
+        for n in range( 0, num_iter + 1):
+            routeCmd = ""
+            if (len( routes ) - (n * chunk_size)) >= chunk_size:
+                m = (n + 1) * chunk_size
+            else:
+                m = len( routes )
+            for i in range( n * chunk_size, m ):
+                routeCmd = routeCmd + "network " + routes[ i ] + "\n"
+                total = total + 1
+
+            main.log.info(routeCmd)
             try:
                 self.handle.sendline( routeCmd )
                 self.handle.expect( "bgpd", timeout=5 )
-            except:
+            except Exception:
                 main.log.warn( "Failed to add route" )
                 self.disconnect()
+            
             # waitTimer = 1.00 / routeRate
-            # time.sleep( waitTimer )
+            main.log.info("Total routes so far " + ((str) (total)) + " wait for 0 sec")
+            #time.sleep( 1 )
         if routesAdded == len( routes ):
             main.log.info( "Finished adding routes" )
             return main.TRUE
@@ -375,7 +402,7 @@ class QuaggaCliDriver( CLI ):
             self.handle.sendline( "" )
             # self.handle.expect( "config-router" )
             self.handle.expect( "config-router", timeout=5 )
-        except:
+        except Exception:
             main.log.warn( "Probably not in config-router mode!" )
             self.disconnect()
         main.log.info( "Start to delete routes" )
@@ -385,7 +412,7 @@ class QuaggaCliDriver( CLI ):
             try:
                 self.handle.sendline( routeCmd )
                 self.handle.expect( "bgpd", timeout=5 )
-            except:
+            except Exception:
                 main.log.warn( "Failed to delete route" )
                 self.disconnect()
             # waitTimer = 1.00 / routeRate
@@ -424,12 +451,13 @@ class QuaggaCliDriver( CLI ):
             main.log.info( "NO HANDLE" )
             return main.FALSE
 
+
     # Please use the generateRoutes plus addRoutes instead of this one!
     def addRoute( self, net, numRoutes, routeRate ):
         try:
             self.handle.sendline( "" )
             self.handle.expect( "config-router" )
-        except:
+        except Exception:
             main.log.warn( "Probably not in config-router mode!" )
             self.disconnect()
         main.log.info( "Adding Routes" )
@@ -450,7 +478,7 @@ class QuaggaCliDriver( CLI ):
                 try:
                     self.handle.sendline( routeCmd )
                     self.handle.expect( "bgpd" )
-                except:
+                except Exception:
                     main.log.warn( "failed to add route" )
                     self.disconnect()
                 waitTimer = 1.00 / routeRate
@@ -464,9 +492,9 @@ class QuaggaCliDriver( CLI ):
                 try:
                     self.handle.sendline( routeCmd )
                     self.handle.expect( "bgpd" )
-                except:
+                except Exception:
                     main.log.warn( "failed to add route" )
-                    self.disconnect
+                    self.disconnect()
                 waitTimer = 1.00 / routeRate
                 time.sleep( waitTimer )
                 routesAdded = routesAdded + 1
@@ -479,7 +507,7 @@ class QuaggaCliDriver( CLI ):
         try:
             self.handle.sendline( "" )
             self.handle.expect( "config-router" )
-        except:
+        except Exception:
             main.log.warn( "Probably not in config-router mode!" )
             self.disconnect()
         main.log.info( "Deleting Routes" )
@@ -500,7 +528,7 @@ class QuaggaCliDriver( CLI ):
                 try:
                     self.handle.sendline( routeCmd )
                     self.handle.expect( "bgpd" )
-                except:
+                except Exception:
                     main.log.warn( "Failed to delete route" )
                     self.disconnect()
                 waitTimer = 1.00 / routeRate
@@ -514,7 +542,7 @@ class QuaggaCliDriver( CLI ):
                 try:
                     self.handle.sendline( routeCmd )
                     self.handle.expect( "bgpd" )
-                except:
+                except Exception:
                     main.log.warn( "Failed to delete route" )
                     self.disconnect()
                 waitTimer = 1.00 / routeRate
@@ -583,6 +611,46 @@ class QuaggaCliDriver( CLI ):
             # elif brand  == "cisco" or brand == "CISCO":
             #    cisco( ip,user,passwd )
 
+    def disable_bgp_peer( self, peer, peer_as ):
+        main.log.info( "I am in disconnect_peer_session method!" )
+
+        try:
+            self.handle.sendline( "" )
+            # self.handle.expect( "config-router" )
+            self.handle.expect( "config-router", timeout=5 )
+        except Exception:
+            main.log.warn( "Probably not in config-router mode!" )
+            self.disconnect()
+        main.log.info( "Start to disable peer" )
+
+        cmd = "no neighbor " + peer + " remote-as " + peer_as
+        try:
+            self.handle.sendline( cmd )
+            self.handle.expect( "bgpd", timeout=5 )
+        except Exception:
+            main.log.warn( "Failed to disable peer" )
+            self.disconnect()
+
+    def enable_bgp_peer( self, peer, peer_as ):
+        main.log.info( "I am in enable_bgp_peer method!" )
+
+        try:
+            self.handle.sendline( "" )
+            # self.handle.expect( "config-router" )
+            self.handle.expect( "config-router", timeout=5 )
+        except Exception:
+            main.log.warn( "Probably not in config-router mode!" )
+            self.disconnect()
+        main.log.info( "Start to disable peer" )
+
+        cmd = "neighbor " + peer + " remote-as " + peer_as
+        try:
+            self.handle.sendline( cmd )
+            self.handle.expect( "bgpd", timeout=5 )
+        except Exception:
+            main.log.warn( "Failed to enable peer" )
+            self.disconnect()
+
     def disconnect( self ):
         """
         Called when Test is complete to disconnect the Quagga handle.
@@ -590,7 +658,7 @@ class QuaggaCliDriver( CLI ):
         response = ''
         try:
             self.handle.close()
-        except:
+        except Exception:
             main.log.error( "Connection failed to the host" )
             response = main.FALSE
         return response

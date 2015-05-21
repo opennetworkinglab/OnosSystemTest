@@ -409,7 +409,8 @@ def singleToMultiIntent( main,
             ports = [ '1', '1', ..]
             ...
         Description:
-            Verify add-single-to-multi-intent
+            Verify add-single-to-multi-intent iterates through the list of given
+            host | devices and add intents
         Steps:
             - Get device ids | ports
             - Add single to multi point intents
@@ -720,9 +721,10 @@ def removeAllIntents( main, intentsId ):
 
     time.sleep( 5 )
     # Checks if there is remaining intents using intents()
-    intentsRemaining = main.CLIs[ 0 ].intents()
+    intentsRemaining = main.CLIs[ 0 ].intents( jsonFormat=False )
     # If there is remianing intents then remove intents should fail
-    if intentsRemaining == []:
+
+    if intentsRemaining:
         main.log.info( itemName + ": There are " +
                        str( len( intentsRemaining ) ) + " intents remaining, "
                        + "failed to remove all the intents " )

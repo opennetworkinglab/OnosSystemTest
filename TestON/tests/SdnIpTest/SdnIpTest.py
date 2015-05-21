@@ -63,7 +63,7 @@ class SdnIpTest:
         main.step( "Checking if ONOS is up yet" )
         #time.sleep( 300 )
         for i in range( 2 ):
-            onos1Isup = main.ONOSbench.isup( ONOS1Ip, onosWaitStartTimeout=420 )
+            onos1Isup = main.ONOSbench.isup( ONOS1Ip, timeout=420 )
             if onos1Isup:
                 break
         if not onos1Isup:

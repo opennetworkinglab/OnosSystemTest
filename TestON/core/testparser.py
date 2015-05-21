@@ -16,7 +16,7 @@ Created on 26-Dec-2012
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with TestON.  If not, see <http://www.gnu.org/licenses/>.		
+    along with TestON.  If not, see <http://www.gnu.org/licenses/>.
 
 
 '''
@@ -26,21 +26,21 @@ class TestParser:
     def __init__(self,testFile):
         try :
             testFileHandler = open(testFile, 'r')
-        except IOError: 
+        except IOError:
             print "No such file "+testFile
             sys.exit(0)
- 
+
         testFileList = testFileHandler.readlines()
-        self.testscript = testFileList              
+        self.testscript = testFileList
         self.caseCode = {}
         self.caseBlock = ''
         self.statementsList = []
-        index = 0 
+        index = 0
         self.statementsList = []
         #initialSpaces = len(line) -len(line.lstrip())
         while index < len(testFileList):
             testFileList[index] = re.sub("^\s{8}|^\s{4}", "", testFileList[index])
-            # Skip multiline comments 
+            # Skip multiline comments
             if re.match('^(\'\'\')|^(\"\"\")',testFileList[index],0) :
                 index = index + 1
                 try :
@@ -48,16 +48,15 @@ class TestParser:
                         index = index + 1
                 except IndexError,e:
                     print ''
-                    
 
-            # skip empty lines and single line comments 
+            # skip empty lines and single line comments
             elif not re.match('#|^\s*$',testFileList[index],0):
                 self.statementsList.append(testFileList[index])
             index = index + 1
-    
+
     def case_code(self):
-        index = 0 
-        statementsList = self.statementsList       
+        index = 0
+        statementsList = self.statementsList
         while index < len(statementsList):
             #print statementsList[index]
             m= re.match('def\s+CASE(\d+)',statementsList[index],0)
@@ -76,18 +75,16 @@ class TestParser:
                 except IndexError,e:
                     #print 'IndexError'
                     print ''
-    
                 self.caseCode [str(m.group(1))] = self.caseBlock
                 #print "Case CODE "+self.caseCode [str(m.group(1))]
             index = index + 1
-        
-        return self.caseCode 
-    
+        return self.caseCode
+
     def step_code(self,caseStatements):
         index = 0
-        step = 0 
-        stepCode = {}  
-        step_flag = False    
+        step = 0
+        stepCode = {}
+        step_flag = False
         while index < len(caseStatements):
             m= re.match('main\.step',caseStatements[index],0)
             stepBlock = ''
@@ -99,13 +96,13 @@ class TestParser:
                     while i < index :
                         block += caseStatements[i]
                         i = i + 1
-                    stepCode[step] = block   
+                    stepCode[step] = block
                     step = step + 1
-                stepBlock= stepBlock + caseStatements[index]
+                stepBlock = stepBlock + caseStatements[index]
                 index = index + 1
                 try :
                     while not re.match('main\.step',caseStatements[index],0) :
-                        stepBlock= stepBlock + caseStatements[index]
+                        stepBlock = stepBlock + caseStatements[index]
                         if index < len(caseStatements)-1:
                             index = index + 1
                         else :
@@ -121,11 +118,10 @@ class TestParser:
         if not step_flag :
             stepCode[step] = "".join(caseStatements)
         return stepCode
-    
+
     def getStepCode(self):
         case_step_code = {}
         case_block = self.case_code()
-        
         for case in case_block :
             case_step_code[case] = {}
             step_block = self.step_code(case_block[case])

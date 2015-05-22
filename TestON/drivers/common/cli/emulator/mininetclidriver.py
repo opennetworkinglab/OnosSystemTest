@@ -1435,20 +1435,32 @@ class MininetCliDriver( Emulator ):
             response = main.FALSE
         return response
 
-    def arping( self, src, dest, destmac ):
-        self.handle.sendline( '' )
-        self.handle.expect( [ "mininet", pexpect.EOF, pexpect.TIMEOUT ] )
-
-        self.handle.sendline( src + ' arping ' + dest )
+    def arping( self, host="", ip="10.128.20.211", ethDevice="" ):
+        """
+        Description:
+            Sends arp message from mininet host for hosts discovery
+        Required:
+            host - hosts name
+        Optional:
+            ip - ip address that does not exist in the network so there would
+                 be no reply.
+        """
+        if ethDevice:
+            ethDevice = '-I ' + ethDevice + ' '
+        cmd = " py " + host  + ".cmd(\"arping -c 1 " + ethDevice + ip + "\")"
         try:
-            self.handle.expect( [ destmac, pexpect.EOF, pexpect.TIMEOUT ] )
-            main.log.info( self.name + ": ARP successful" )
-            self.handle.expect( [ "mininet", pexpect.EOF, pexpect.TIMEOUT ] )
+            main.log.warn( "Sending: " + cmd )
+            self.handle.sendline( cmd )
+            response = self.handle.before
+            self.handle.sendline( "" )
+            self.handle.expect( "mininet>" )
             return main.TRUE
-        except Exception:
-            main.log.warn( self.name + ": ARP FAILURE" )
-            self.handle.expect( [ "mininet", pexpect.EOF, pexpect.TIMEOUT ] )
-            return main.FALSE
+
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            main.cleanup()
+            main.exit()
 
     def decToHex( self, num ):
         return hex( num ).split( 'x' )[ 1 ]
@@ -1969,6 +1981,7 @@ class MininetCliDriver( Emulator ):
         hostStr = handlePy.replace( "]", "" )
         hostStr = hostStr.replace( "'", "" )
         hostStr = hostStr.replace( "[", "" )
+        hostStr = hostStr.replace( " ", "" )
         hostList = hostStr.split( "," )
 
         return hostList

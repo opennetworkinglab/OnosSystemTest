@@ -584,6 +584,8 @@ class OnosDriver( CLI ):
         # on here.
         appString = "export ONOS_APPS=" + appString
         mnString = "export OCN="
+        if mnIpAddrs == "":
+            mnString = ""
         onosString = "export OC"
         tempCount = 1
 
@@ -1259,8 +1261,8 @@ class OnosDriver( CLI ):
                 return main.ERROR
             output = ""
             # Is the number of switches is what we expected
-            devices = topology.get( 'deviceCount', False )
-            links = topology.get( 'linkCount', False )
+            devices = topology.get( 'devices', False )
+            links = topology.get( 'links', False )
             if not devices or not links:
                 return main.ERROR
             switchCheck = ( int( devices ) == int( numoswitch ) )
@@ -1921,6 +1923,160 @@ class OnosDriver( CLI ):
             main.cleanup()
             main.exit()
 
+    def getOnosIps(self):
+
+        import os
+        
+        # reads env for OC variables, also saves file with OC variables. If file and env conflict 
+        # priority goes to env. If file has OCs that are not in the env, the file OCs are used. 
+        # In other words, if the env is set, the test will use those values. 
+
+        # returns a list of ip addresses for the onos nodes, will work with up to 7 nodes + OCN and OCI
+        # returns in format [ OC1 ip, OC2 ...ect. , OCN, OCI ]
+
+        envONOSIps = {}
+
+        x = 1
+        while True:
+            try:
+                temp = os.environ[ 'OC' + str(x) ]
+            except KeyError: 
+                break
+            envONOSIps[ ("OC" + str(x)) ] = temp 
+            x += 1 
+
+        try: 
+            temp = os.environ[ 'OCN' ] 
+            envONOSIps[ "OCN" ] = temp
+        except KeyError: 
+            main.log.info("OCN not set in env")
+
+        try:
+            temp = os.environ[ 'OCI' ]
+            envONOSIps[ "OCI" ] = temp
+        except:
+            main.log.error("OCI not set in env")
+
+        print(str(envONOSIps))
+
+        order = [ "OC1", "OC2", "OC3","OC4","OC5","OC6","OC7","OCN","OCI" ]
+        ONOSIps = []
+
+        try: 
+            if os.path.exists("myIps"):
+                ipFile = open("myIps","r+")
+            else: 
+                ipFile = open("myIps","w+")
+
+            fileONOSIps = ipFile.readlines()
+            ipFile.close()
+
+            print str(fileONOSIps)
+            
+            if str(fileONOSIps) == "[]": 
+                ipFile = open("myIps","w+")
+                for key in envONOSIps:
+                    ipFile.write(key+ "=" + envONOSIps[key] + "\n")
+                ipFile.close()
+                for i in order: 
+                    if i in envONOSIps: 
+                        ONOSIps.append(envONOSIps[i])
+                
+                return ONOSIps 
+
+            else: 
+                fileDict = {}
+                for line in fileONOSIps: 
+                    line = line.replace("\n","")
+                    line = line.split("=") 
+                    key = line[0]
+                    value = line[1]
+                    fileDict[key] = value 
+
+                for x in envONOSIps: 
+                    if x in fileDict: 
+                        if envONOSIps[x] == fileDict[x]: 
+                            continue
+                        else: 
+                            fileDict[x] = envONOSIps[x]
+                    else: 
+                        fileDict[x] = envONOSIps[x]
+
+                ipFile = open("myIps","w+")
+                for key in order: 
+                    if key in fileDict: 
+                        ipFile.write(key + "=" + fileDict[key] + "\n")
+                        ONOSIps.append(fileDict[key]) 
+                ipFile.close()
+
+                return ONOSIps 
+
+        except IOError as a:
+            main.log.error(a) 
+
+        except Exception as a:
+            main.log.error(a) 
+
+
+    def logReport(self, nodeIp, searchTerms, outputMode="s"):
+        '''
+            - accepts either a list or a string for "searchTerms" these
+              terms will be searched for in the log and have their 
+              instances counted 
+
+            - nodeIp is the ip of the node whos log is to be scanned 
+
+            - output modes: 
+                "s" -   Simple. Quiet output mode that just prints 
+                        the occurences of each search term 
+
+                "d" -   Detailed. Prints number of occurences as well as the entire
+                        line for each of the last 5 occurences 
+
+            - returns total of the number of instances of all search terms
+        '''
+        main.log.info("========================== Log Report ===========================\n")
+
+        if type(searchTerms) is str: 
+            searchTerms = [searchTerms]
+
+        logLines = [ [" "] for i in range(len(searchTerms)) ]
+
+        for term in range(len(searchTerms)): 
+            logLines[term][0] = searchTerms[term]
+
+        totalHits = 0 
+        for term in range(len(searchTerms)): 
+            cmd = "onos-ssh " + nodeIp + " cat /opt/onos/log/karaf.log | grep " + searchTerms[term] 
+            self.handle.sendline(cmd)
+            self.handle.expect(":~")
+            before = (self.handle.before).splitlines()
+
+            count = [searchTerms[term],0]
+
+            for line in before:
+                if searchTerms[term] in line and "grep" not in line:
+                    count[1] += 1 
+                    if before.index(line) > ( len(before) - 7 ):
+                        logLines[term].append(line)
+
+            main.log.info( str(count[0]) + ": " + str(count[1]) )
+            if term == len(searchTerms)-1: 
+                print("\n")
+            totalHits += int(count[1]) 
+
+        if outputMode != "s" and outputMode != "S":        
+            outputString = ""
+            for i in logLines:
+                outputString = i[0] + ": \n" 
+                for x in range(1,len(i)): 
+                    outputString += ( i[x] + "\n" )    
+                
+                if outputString != (i[0] + ": \n"):
+                    main.log.info(outputString) 
+                
+        main.log.info("================================================================\n")
+        return totalHits 
 
     def getOnosIpFromEnv(self):
 
@@ -1986,14 +2142,14 @@ class OnosDriver( CLI ):
 
         return ONOSIps
 
-        
+
     def onosErrorLog(self, nodeIp): 
 
         cmd = "onos-ssh " + nodeIp + " cat /opt/onos/log/karaf.log | grep WARN"
         self.handle.sendline(cmd) 
         self.handle.expect(":~")
         before = (self.handle.before).splitlines() 
-    
+
         warnings = []
 
         for line in before: 
@@ -2064,4 +2220,3 @@ class OnosDriver( CLI ):
         if len(exceptions) > 0: 
             main.log.info(msg3)
         main.log.info("===============================================================\n")
-        

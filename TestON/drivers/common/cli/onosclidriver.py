@@ -1815,15 +1815,18 @@ class OnosCliDriver( CLI ):
         """
         try:
             tempFlows = json.loads( self.flows() )
+            #print tempFlows[0]
             returnValue = main.TRUE
+
             for device in tempFlows:
                 for flow in device.get( 'flows' ):
                     if flow.get( 'state' ) != 'ADDED' and flow.get( 'state' ) != \
                             'PENDING_ADD':
                         main.log.info( self.name + ": flow Id: " +
-                                       flow.get( 'id' ) +
+                                       flow.get( 'groupId' ) +
                                        " | state:" + flow.get( 'state' ) )
                         returnValue = main.FALSE
+
             return returnValue
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )

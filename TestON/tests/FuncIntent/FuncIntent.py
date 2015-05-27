@@ -340,6 +340,39 @@ class FuncIntent:
                                         " successful",
                                  onfail="DUALSTACK2: Add host intent failed" )
 
+        stepResult = main.TRUE
+        main.step( "VLAN1: Add vlan host intents between h4 and h12" )
+        stepResult = main.wrapper.hostIntent( main,
+                                              name='VLAN1',
+                                              host1='h4',
+                                              host2='h12',
+                                              host1Id='00:00:00:00:00:04/100',
+                                              host2Id='00:00:00:00:00:0C/100',
+                                              sw1='s5',
+                                              sw2='s2',
+                                              expectedLink=18 )
+
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="VLAN1: Add vlan host intent successful",
+                                 onfail="VLAN1: Add vlan host intent failed" )
+        stepResult = main.TRUE
+        main.step( "VLAN2: Add inter vlan host intents between h13 and h20" )
+        stepResult = main.wrapper.hostIntent( main,
+                                              name='VLAN2',
+                                              host1='h13',
+                                              host2='h20',
+                                              host1Id='',
+                                              host2Id='',
+                                              sw1='s5',
+                                              sw2='s2',
+                                              expectedLink=18 )
+
+        utilities.assert_equals( expect=main.FALSE,
+                                 actual=stepResult,
+                                 onpass="VLAN2: Add inter vlan host intent successful",
+                                 onfail="VLAN2: Add inter vlan host intent failed" )
+
     def CASE1002( self, main ):
         """
             Add point intents between 2 hosts:

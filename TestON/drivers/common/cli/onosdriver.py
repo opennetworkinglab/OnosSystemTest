@@ -1520,6 +1520,9 @@ class OnosDriver( CLI ):
     def checkLogs( self, onosIp, restart=False):
         """
         runs onos-check-logs on the given onos node
+        If restart is True, use the old version of onos-check-logs which
+            does not print the full stacktrace, but shows the entire log file,
+            including across restarts
         returns the response
         """
         try:

@@ -20,6 +20,7 @@ import sys
 import time
 import pexpect
 import os.path
+from requests.models import Response
 sys.path.append( "../" )
 from drivers.common.clidriver import CLI
 
@@ -483,6 +484,22 @@ class OnosDriver( CLI ):
             main.cleanup()
             main.exit()
 
+    def getBranchName( self ):
+        self.handle.sendline( "cd " + self.home )
+        self.handle.expect( "ONOS\$" )
+        self.handle.sendline( "git name-rev --name-only HEAD" )
+        self.handle.expect( "git name-rev --name-only HEAD" )
+        self.handle.expect( "\$" )
+
+        lines =  self.handle.before.splitlines()
+        if lines[1] == "master":
+            return "master"
+        elif lines[1] == "onos-1.0":
+            return "onos-1.0"
+        else:
+            main.log.info( lines[1] )
+            return "unexpected ONOS branch for SDN-IP test"
+
     def getVersion( self, report=False ):
         """
         Writes the COMMIT number to the report to be parsed
@@ -928,7 +945,7 @@ class OnosDriver( CLI ):
         """
         try:
             self.handle.sendline( "" )
-            self.handle.expect( "\$" )
+            self.handle.expect( "\$", timeout=60 )
             self.handle.sendline( "onos-uninstall " + str( nodeIp ) )
             self.handle.expect( "\$" )
 
@@ -937,6 +954,9 @@ class OnosDriver( CLI ):
             # onos-uninstall command does not return any text
             return main.TRUE
 
+        except pexpect.TIMEOUT:
+            main.log.exception( self.name + ": Timeout in onosUninstall" )
+            return main.FALSE
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
@@ -1942,10 +1962,10 @@ class OnosDriver( CLI ):
         order = [ "OC1", "OC2", "OC3","OC4","OC5","OC6","OC7","OCN","OCI" ]
         ONOSIps = []
 
-        try:
+        try: 
             if os.path.exists("myIps"):
                 ipFile = open("myIps","r+")
-            else:
+            else: 
                 ipFile = open("myIps","w+")
 
             fileONOSIps = ipFile.readlines()
@@ -2008,10 +2028,12 @@ class OnosDriver( CLI ):
 
             - output modes: 
                 "s" -   Simple. Quiet output mode that just prints 
-                        the occurances of each search term 
+                        the occurences of each search term 
 
-                "d" -   Detailed. Prints occurances as well as the entire
-                        line for each of the last 5 occurances 
+                "d" -   Detailed. Prints number of occurences as well as the entire
+                        line for each of the last 5 occurences 
+
+            - returns total of the number of instances of all search terms
         '''
         main.log.info("========================== Log Report ===========================\n")
 
@@ -2023,7 +2045,7 @@ class OnosDriver( CLI ):
         for term in range(len(searchTerms)): 
             logLines[term][0] = searchTerms[term]
 
-
+        totalHits = 0 
         for term in range(len(searchTerms)): 
             cmd = "onos-ssh " + nodeIp + " cat /opt/onos/log/karaf.log | grep " + searchTerms[term] 
             self.handle.sendline(cmd)
@@ -2041,7 +2063,8 @@ class OnosDriver( CLI ):
             main.log.info( str(count[0]) + ": " + str(count[1]) )
             if term == len(searchTerms)-1: 
                 print("\n")
-            
+            totalHits += int(count[1]) 
+
         if outputMode != "s" and outputMode != "S":        
             outputString = ""
             for i in logLines:
@@ -2053,6 +2076,7 @@ class OnosDriver( CLI ):
                     main.log.info(outputString) 
                 
         main.log.info("================================================================\n")
+        return totalHits 
 
     def getOnosIpFromEnv(self):
 

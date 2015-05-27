@@ -88,10 +88,16 @@ class Logger:
         main.reportFile.write(logmsg)
         main.reportFile.close()
 
+        #Sumamry file header
+        currentTime = str( main.STARTTIME.strftime("%d %b %Y %H:%M:%S") )
+        main.summaryFile = open( main.SummaryFileName, "w+" )
+        main.summaryFile.write( main.TEST + " at " + currentTime + "\n" )
+        main.summaryFile.close()
+
         #wiki file header
         currentTime = str( main.STARTTIME.strftime("%d %b %Y %H:%M:%S") )
         main.wikiFile = open( main.WikiFileName, "w+" )
-        main.wikiFile.write( main.TEST + " at " + currentTime + "\n" )
+        main.wikiFile.write( main.TEST + " at " + currentTime + "<p></p>\n" )
         main.wikiFile.close()
 
     def initlog(self,main):
@@ -111,7 +117,8 @@ class Logger:
 
         main.LogFileName = main.logdir + "/" + main.TEST + "_" +str(currentTime) + ".log"
         main.ReportFileName = main.logdir + "/" + main.TEST + "_" + str(currentTime) + ".rpt"
-        main.WikiFileName = main.logdir + "/" + main.TEST + ".txt"
+        main.WikiFileName = main.logdir + "/" + main.TEST + "Wiki.txt"
+        main.SummaryFileName = main.logdir + "/" + main.TEST + "Summary.txt"
         main.JenkinsCSV = main.logdir + "/" + main.TEST + ".csv"
 
         #### Add log-level - Report
@@ -134,6 +141,17 @@ class Logger:
             main.reportFile.close()
 
         main.log.report = report
+
+        def summary( msg ):
+            '''
+                Will append the message to the txt file for the summary.
+            '''
+            main.log._log(6,msg,"OpenFlowAutoMattion","OFAutoMation")
+            main.summaryFile = open(main.SummaryFileName,"a+")
+            main.summaryFile.write(msg+"\n")
+            main.summaryFile.close()
+
+        main.log.summary = summary
 
         def wiki( msg ):
             '''
@@ -280,20 +298,27 @@ class Logger:
             Update the case result based on the steps execution and asserting each step in the test-case
         '''
         case = str(main.CurrentTestCaseNumber)
+        currentResult = main.testCaseResult.get(case, 2)
 
-        if main.testCaseResult[case] == 2:
+        if currentResult == 2:
             main.TOTAL_TC_RUN  = main.TOTAL_TC_RUN + 1
             main.TOTAL_TC_NORESULT = main.TOTAL_TC_NORESULT + 1
             main.log.exact("\n "+"*" * 29+"\n" + "\n Result: No Assertion Called \n"+"*" * 29+"\n")
-            main.log.wiki("Case "+case+": "+main.CurrentTestCase+" - No Result")
-        elif main.testCaseResult[case] == 1:
+            line = "Case "+case+": "+main.CurrentTestCase+" - No Result"
+        elif currentResult == 1:
             main.TOTAL_TC_RUN  = main.TOTAL_TC_RUN  + 1
             main.TOTAL_TC_PASS =  main.TOTAL_TC_PASS + 1
             main.log.exact("\n"+"*" * 29+"\n Result: Pass \n"+"*" * 29+"\n")
-            main.log.wiki("Case "+case+": "+main.CurrentTestCase+" - PASSED")
-        elif main.testCaseResult[case] == 0:
+            line = "Case "+case+": "+main.CurrentTestCase+" - PASS"
+        elif currentResult == 0:
             main.TOTAL_TC_RUN  = main.TOTAL_TC_RUN  + 1
             main.TOTAL_TC_FAIL = main.TOTAL_TC_FAIL + 1
             main.log.exact("\n"+"*" * 29+"\n Result: Failed \n"+"*" * 29+"\n")
-            main.log.wiki("Case "+case+": "+main.CurrentTestCase+" - FAILED")
+            line = "Case "+case+": "+main.CurrentTestCase+" - FAIL"
+        else:
+            main.log.error( " Unknown result of case " + case +
+                            ". Result was: " + currentResult )
+            line = "Case "+case+": "+main.CurrentTestCase+" - ERROR"
+        main.log.wiki( "<h3>" + line + "</h3>" )
+        main.log.summary( line )
 

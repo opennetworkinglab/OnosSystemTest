@@ -58,13 +58,14 @@ class MultiProd:
         main.log.info( "git_pull_result = " + str( gitPullResult ))
         versionResult = main.ONOSbench.getVersion( report=True )
 
+        packageResult = main.TRUE
         if gitPullResult == 100:
             main.step( "Using mvn clean & install" )
             cleanInstallResult = main.ONOSbench.cleanInstall()
+            main.step( "Creating ONOS package" )
+            packageResult = main.ONOSbench.onosPackage()
             # cleanInstallResult = main.TRUE
 
-        main.step( "Creating ONOS package" )
-        packageResult = main.ONOSbench.onosPackage()
 
         # main.step( "Creating a cell" )
         # cellCreateResult = main.ONOSbench.createCellFile( **************
@@ -510,6 +511,7 @@ class MultiProd:
         hthIntentResult = main.ONOScli1.addHostIntent( "00:00:00:00:00:11/-1",
         "00:00:00:00:00:1B/-1" )
         """
+        intentsId = []
         for i in range( 8, 18 ):
             main.log.info(
                 "Adding host intent between h" + str( i ) +
@@ -523,8 +525,14 @@ class MultiProd:
             host1Id = main.ONOScli1.getHost( host1 )[ 'id' ]
             host2Id = main.ONOScli1.getHost( host2 )[ 'id' ]
             tmpResult = main.ONOScli1.addHostIntent( host1Id, host2Id )
+            intentsId.append( tmpResult )
+
+        checkIntent1 = main.ONOScli1.checkIntentState( intentsId )
+        checkIntent2 = main.ONOScli2.checkIntentState( intentsId )
+        checkIntent3 = main.ONOScli3.checkIntentState( intentsId )
 
         flowHandle = main.ONOScli1.flows()
+
         main.log.info( "flows:" + flowHandle )
 
         count = 1
@@ -576,6 +584,10 @@ class MultiProd:
             # main.exit()
         if PingResult == main.TRUE:
             main.log.report( "Host intents have been installed correctly" )
+
+        checkIntent1 = main.ONOScli1.checkIntentState( intentsId )
+        checkIntent2 = main.ONOScli2.checkIntentState( intentsId )
+        checkIntent3 = main.ONOScli3.checkIntentState( intentsId )
 
         case6Result = PingResult
         utilities.assertEquals(
@@ -889,12 +901,18 @@ class MultiProd:
         for id in intentids:
             main.ONOScli1.removeIntent( intentId=id ,purge=True )
 
-        intentResult = main.ONOScli1.intents( jsonFormat=False )
-        main.log.info( "intent_result = " + intentResult )
-        case8Result = main.TRUE
+        remainingIntent = main.ONOScli1.intents( jsonFormat=False )
+        main.log.info( "Remaining intents  " + remainingIntent )
 
+        case8Result = main.TRUE
+        intentResult = main.TRUE
+        if remainingIntent:
+            main.log.error( "There are still remaining intent" )
+            intentResult = main.FALSE
         i = 8
+
         PingResult = main.TRUE
+        """
         while i < 18:
             main.log.info(
                 "\n\nh" + str( i ) + " is Pinging h" + str( i + 10 ) )
@@ -917,17 +935,17 @@ class MultiProd:
             # main.exit()
         if PingResult == main.FALSE:
             main.log.report( "Host intents have been withdrawn correctly" )
+        """
+        case8Result = intentResult
 
-        case8Result = case8Result and PingResult
-
-        if case8Result == main.FALSE:
+        if case8Result == main.TRUE:
             main.log.report( "Intent removal successful" )
         else:
             main.log.report( "Intent removal failed" )
 
-        utilities.assertEquals( expect=main.FALSE, actual=case8Result,
-                                onpass="Intent removal test failed",
-                                onfail="Intent removal test successful" )
+        utilities.assertEquals( expect=main.TRUE, actual=case8Result,
+                                onpass="Intent removal test successful",
+                                onfail="Intent removal test failed" )
 
     def CASE9( self ):
         """
@@ -1480,11 +1498,10 @@ class MultiProd:
                 ipProto=main.params[ 'SDNIP' ][ 'tcpProto' ],
                 tcpSrc=main.params[ 'SDNIP' ][ 'srcPort' ] )
 
-            pIntentResult = pIntentResult1 and pIntentResult2 and\
-                    pIntentResult3 and pIntentResult4
-            if pIntentResult == main.TRUE:
-                getIntentResult = main.ONOScli1.intents( jsonFormat=False )
-                main.log.info( getIntentResult )
+            getIntentResult = main.ONOScli1.intents( jsonFormat=False )
+            main.log.info( getIntentResult )
+            pIntentResult = main.TRUE
+            if getIntentResult:
                 main.log.report(
                     "Point intent related to SDN-IP matching" +
                     " on TCP install successful" )
@@ -1492,6 +1509,7 @@ class MultiProd:
                 main.log.report(
                     "Point intent related to SDN-IP matching" +
                     " on TCP install failed" )
+                pIntentResult = main.FALSE
 
         iperfResult = main.Mininet1.iperf( 'h8', 'h18' )
         if iperfResult == main.TRUE:

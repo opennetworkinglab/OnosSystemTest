@@ -374,7 +374,7 @@ class IpOptical:
             actual=step2Result,
             onpass="Successfully pinged h1 and h5",
             onfail="Failed to ping between h1 and h5")
-        time.sleep(120)
+
     def CASE24( self, main ):
         import time
         import json

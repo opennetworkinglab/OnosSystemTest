@@ -1,3 +1,4 @@
+
 #!/usr/bin/env python
 """
 Created on 26-Oct-2012
@@ -1189,7 +1190,7 @@ class MininetCliDriver( Emulator ):
                 return main.TRUE
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
-            main.log.error( self.name + ":     " + self.handle.before )
+            main.log.error(self.name + ":     " + self.handle.before )
             main.cleanup()
             main.exit()
 
@@ -2010,6 +2011,64 @@ class MininetCliDriver( Emulator ):
             main.cleanup()
             main.exit()
 
+    def assignVLAN( self, host, intf, vlan):
+        """
+           Add vlan tag to a host.
+           Dependencies:
+               This class depends on the "vlan" package
+               $ sudo apt-get install vlan
+           Configuration:
+               Load the 8021q module into the kernel
+               $sudo modprobe 8021q
+
+               To make this setup permanent:
+               $ sudo su -c 'echo "8021q" >> /etc/modules'
+           """
+        if self.handle:
+            try:
+		# get the ip address of the host
+		main.log.info("Get the ip address of the host")
+		ipaddr = self.getIPAddress(host)
+		print repr(ipaddr)
+	
+		# remove IP from interface intf
+		# Ex: h1 ifconfig h1-eth0 inet 0
+		main.log.info("Remove IP from interface ")
+		cmd2 = host + " ifconfig " + intf + " " + " inet 0 "
+		self.handle.sendline( cmd2 )
+		self.handle.expect( "mininet>" ) 
+		response = self.handle.before
+		main.log.info ( "====> %s ", response)
+
+		
+		# create VLAN interface
+		# Ex: h1 vconfig add h1-eth0 100
+		main.log.info("Create Vlan")
+		cmd3 = host + " vconfig add " + intf + " " + vlan
+		self.handle.sendline( cmd3 )
+		self.handle.expect( "mininet>" ) 
+		response = self.handle.before
+		main.log.info( "====> %s ", response )
+
+		# assign the host's IP to the VLAN interface
+		# Ex: h1 ifconfig h1-eth0.100 inet 10.0.0.1
+		main.log.info("Assign the host IP to the vlan interface")
+		vintf = intf + "." + vlan
+		cmd4 = host + " ifconfig " + vintf + " " + " inet " + ipaddr
+		self.handle.sendline( cmd4 )
+		self.handle.expect( "mininet>" ) 
+		response = self.handle.before
+		main.log.info ( "====> %s ", response)
+
+
+                return main.TRUE
+            except pexpect.EOF:
+                main.log.error( self.name + ": EOF exception found" )
+                main.log.error( self.name + ":     " + self.handle.before )
+                return main.FALSE
+
 if __name__ != "__main__":
     import sys
     sys.modules[ __name__ ] = MininetCliDriver()
+
+

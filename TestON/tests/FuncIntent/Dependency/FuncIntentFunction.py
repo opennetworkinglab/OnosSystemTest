@@ -477,10 +477,12 @@ def singleToMultiIntent( main,
                 #print "len devices = ", len( devices )
                 #print "len ports = ", len( ports )
                 return main.FALSE
-        for i in range( len( devices ) ):
-            macsDict[ devices[ i ] ] = macs[ i ]
         else:
             main.log.info( "Device Ports are not specified" )
+        if macs:
+            for i in range( len( devices ) ):
+                macsDict[ devices[ i ] ] = macs[ i ]
+
     elif hostNames and not devices and main.hostsData:
         devices = []
         main.log.info( "singleToMultiIntent function is using main.hostsData" ) 
@@ -706,10 +708,11 @@ def multiToSingleIntent( main,
                 #print "len devices = ", len( devices )
                 #print "len ports = ", len( ports )
                 return main.FALSE
-        for i in range( len( devices ) ):
-            macsDict[ devices[ i ] ] = macs[ i ]
         else:
             main.log.info( "Device Ports are not specified" )
+        if macs:
+            for i in range( len( devices ) ):
+                macsDict[ devices[ i ] ] = macs[ i ]
     elif hostNames and not devices and main.hostsData:
         devices = []
         main.log.info( "multiToSingleIntent function is using main.hostsData" ) 

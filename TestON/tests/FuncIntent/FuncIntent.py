@@ -325,7 +325,7 @@ class FuncIntent:
                                  onfail="DUALSTACK1: Add host intent failed" )
 
         stepResult = main.TRUE
-        main.step( "DUALSTACK2: Add host intents between h1 and h9" )
+        main.step( "DUALSTACK2: Add host intents between h1 and h11" )
         stepResult = main.wrapper.hostIntent( main,
                                               name='DUALSTACK2',
                                               host1='h1',
@@ -339,6 +339,20 @@ class FuncIntent:
                                  onpass="DUALSTACK2: Add host intent" +
                                         " successful",
                                  onfail="DUALSTACK2: Add host intent failed" )
+
+        stepResult = main.TRUE
+        main.step( "1HOP: Add host intents between h1 and h3" )
+        stepResult = main.wrapper.hostIntent( main,
+                                              name='1HOP',
+                                              host1='h1',
+                                              host2='h3' )
+
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="1HOP: Add host intent" +
+                                        " successful",
+                                 onfail="1HOP: Add host intent failed" )
+
 
     def CASE1002( self, main ):
         """
@@ -374,7 +388,26 @@ class FuncIntent:
         main.case( "Add point intents between 2 devices" )
 
         stepResult = main.TRUE
-        main.step( "IPV4: Add point intents between h1 and h9" )
+        # No option point intents
+        main.step( "NOOPTION: Add point intents between h1 and h9" )
+        stepResult = main.wrapper.pointIntent(
+                                       main,
+                                       name="NOOPTION",
+                                       host1="h1",
+                                       host2="h9",
+                                       deviceId1="of:0000000000000005/1",
+                                       deviceId2="of:0000000000000006/1",
+                                       sw1="s5",
+                                       sw2="s2",
+                                       expectedLink=18 )
+
+        stepResult = main.TRUE
+        main.step( "NOOPTION: Add point intents between h1 and h9" )
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="NOOPTION: Add point intent successful",
+                                 onfail="NOOPTION: Add point intent failed" )
+
         stepResult = main.wrapper.pointIntent(
                                        main,
                                        name="IPV4",
@@ -434,6 +467,19 @@ class FuncIntent:
                                         " successful",
                                  onfail="DUALSTACK1: Add point intent failed" )
 
+        stepResult = main.TRUE
+        main.step( "1HOP: Add point intents between h1 and h3" )
+        stepResult = main.wrapper.hostIntent( main,
+                                              name='1HOP',
+                                              host1='h1',
+                                              host2='h3' )
+
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="1HOP: Add point intent" +
+                                        " successful",
+                                 onfail="1HOP: Add point intent failed" )
+
     def CASE1003( self, main ):
         """
             Add single point to multi point intents
@@ -462,11 +508,31 @@ class FuncIntent:
         main.case( "Add single point to multi point intents between devices" )
 
         stepResult = main.TRUE
-        main.step( "IPV4: Add single point to multi point intents" )
         hostNames = [ 'h8', 'h16', 'h24' ]
         devices = [ 'of:0000000000000005/8', 'of:0000000000000006/8', \
                     'of:0000000000000007/8' ]
         macs = [ '00:00:00:00:00:08', '00:00:00:00:00:10', '00:00:00:00:00:18' ]
+
+        main.step( "NOOPTION: Add single point to multi point intents" )
+        stepResult = main.wrapper.singleToMultiIntent(
+                                         main,
+                                         name="NOOPTION",
+                                         hostNames=hostNames,
+                                         devices=devices,
+                                         sw1="s5",
+                                         sw2="s2",
+                                         expectedLink=18 )
+
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="NOOPTION: Successfully added single "
+                                        + " point to multi point intents",
+                                 onfail="NOOPTION: Failed to add single point" +
+                                        " to multi point intents" )
+
+
+
+        main.step( "IPV4: Add single point to multi point intents" )
         stepResult = main.wrapper.singleToMultiIntent(
                                          main,
                                          name="IPV4",
@@ -502,8 +568,8 @@ class FuncIntent:
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
-                                 onpass="IPV4_2: Successfully added single point"
-                                        + " to multi point intents",
+                                 onpass="IPV4_2: Successfully added single "
+                                        + " point to multi point intents",
                                  onfail="IPV4_2: Failed to add single point" +
                                         " to multi point intents" )
     def CASE1004( self, main ):
@@ -534,11 +600,30 @@ class FuncIntent:
         main.case( "Add multi point to single point intents between devices" )
 
         stepResult = main.TRUE
-        main.step( "IPV4: Add multi point to single point intents" )
         hostNames = [ 'h8', 'h16', 'h24' ]
         devices = [ 'of:0000000000000005/8', 'of:0000000000000006/8', \
                     'of:0000000000000007/8' ]
         macs = [ '00:00:00:00:00:08', '00:00:00:00:00:10', '00:00:00:00:00:18' ]
+
+        main.step( "NOOPTION: Add multi point to single point intents" )
+        stepResult = main.wrapper.multiToSingleIntent(
+                                         main,
+                                         name="NOOPTION",
+                                         hostNames=hostNames,
+                                         devices=devices,
+                                         sw1="s5",
+                                         sw2="s2",
+                                         expectedLink=18 )
+
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="NOOPTION: Successfully added multi "
+                                        + " point to single point intents",
+                                 onfail="NOOPTION: Failed to add multi point" +
+                                        " to single point intents" )
+
+
+        main.step( "IPV4: Add multi point to single point intents" )
         stepResult = main.wrapper.multiToSingleIntent(
                                          main,
                                          name="IPV4",

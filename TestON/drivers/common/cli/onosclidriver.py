@@ -1821,9 +1821,11 @@ class OnosCliDriver( CLI ):
                 for flow in device.get( 'flows' ):
                     if flow.get( 'state' ) != 'ADDED' and flow.get( 'state' ) != \
                             'PENDING_ADD':
+
                         main.log.info( self.name + ": flow Id: " +
-                                       flow.get( 'groupId' ) +
-                                       " | state:" + flow.get( 'state' ) )
+                                       str( flow.get( 'groupId' ) ) +
+                                       " | state:" +
+                                       str( flow.get( 'state' ) ) )
                         returnValue = main.FALSE
 
             return returnValue

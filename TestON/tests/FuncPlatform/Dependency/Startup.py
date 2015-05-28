@@ -8,6 +8,7 @@ Guidelines:
     * Return main.TRUE on success or comprehensive error message 
       on failure (TBD)
 """
+import time
 
 def __init__( self ):
     self.ip = '127.0.0.1' 
@@ -35,17 +36,41 @@ def gitPullAndMci( branchName, commitLog=False ):
         # TODO: Comprehensive error message
         return 'git pull and mci failed'
 
-def initOnosStartupSequence( cellName, appsStr, benchIp, onosIps ):
+def initOnosStartupSequence( cellName, appStr, benchIp, mnIp, onosIps ):
     """
     Startup sequence includes the following:
-        * 
+        * Create cell file
+        * Set cell variables on ONOS bench
+        * Verify cell
+        * Create ONOS package
+        * Force install ONOS package
+        * Start ONOS service
+        * Start ONOS cli
     """
-    main.log.info( 'Initiating ONOS startup sequence' )
 
-def isOnosNormal( onosIps ):
-    """
-    Quick and comprehensive check for 'normality'
+    # NOTE: leave out create cell file until bug addressed
+    #cf = main.ONOSbench.createCellFile( benchIp, cellName, mnIp, 
+    #        str(appStr), *onosIps )
+    numNodes = len(onosIps) 
 
-    Definition of function TBD
-    """
-    main.log.info( 'isOnosNormal' )
+    sc = main.ONOSbench.setCell( cellName )
+    vc = main.ONOSbench.verifyCell()
+    op = main.ONOSbench.onosPackage()
+    for addr in onosIps:
+        oi = main.ONOSbench.onosInstall( node = addr )
+    
+    time.sleep( 5 )
+   
+    iu = main.TRUE
+    for node in onosIps:
+        iu = iu and main.ONOSbench.isup( node )
+   
+    cli = main.TRUE
+    for node in range( 0, numNodes ):
+        cli = cli and main.CLIs[node].startOnosCli( onosIps[node] )
+
+    if sc and vc and op and oi and iu and cli == main.TRUE:
+        return main.TRUE
+    else:
+        return main.FALSE
+

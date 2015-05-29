@@ -41,7 +41,7 @@ def activate( apps, nodeToActivateFrom=0 ):
                 main.appList[app] ) 
         except KeyError:
             main.log.error( 'There was an error with the key '+
-                    str(app) )
+                    str(app) + '. Check the appList dictionary' )
             return main.FALSE
 
     return main.TRUE

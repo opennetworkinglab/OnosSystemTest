@@ -1,9 +1,8 @@
 
-
 def __init__( self ):
     self.ip = '127.0.0.1'
 
-def getOnosLog( nodeIp, option='grep \'ERROR\'',
+def getOnosLog( nodeIp, option='grep \'ERROR\' \| \'WARN\'',
         outputType=0):
     """
     Specify grep command to listen for in onos log

@@ -19,6 +19,10 @@ For example:
         3. Activate application Y
         4. Deactivate application X
 
+The ideal platform test script should have incredible
+robustness to possible exceptions and report the most
+useful error messages. 
+
 contributers to contact for help:
 andrew@onlab.us
 """
@@ -30,8 +34,9 @@ class FuncPlatform:
     def CASE1( self, main ):
         """
         Main scope initialization case
+        Must include to run any other test cases
         """   
-        # NOTE: Application name subject to change
+        # NOTE: Hardcoded application name subject to change
         #       closely monitor and make changes when necessary
         #       (or implement ways to dynamically get names)
         main.appList = { 

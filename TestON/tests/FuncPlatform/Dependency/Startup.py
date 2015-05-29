@@ -9,6 +9,7 @@ Guidelines:
       on failure (TBD)
 """
 import time
+import json
 
 def __init__( self ):
     self.ip = '127.0.0.1' 
@@ -69,8 +70,33 @@ def initOnosStartupSequence( cellName, appStr, benchIp, mnIp, onosIps ):
     for node in range( 0, numNodes ):
         cli = cli and main.CLIs[node].startOnosCli( onosIps[node] )
 
-    if sc and vc and op and oi and iu and cli == main.TRUE:
+    # Check if all nodes are discovered correctly using
+    # 'nodes' command in Onos Cli
+    na = main.TRUE
+    try:
+        nodeCmdJson = json.loads( main.CLIs[0].nodes() )
+        for node in nodeCmdJson:
+            if node['state'] != 'ACTIVE':
+                main.log.warn( str( node['id'] ) + 
+                        ' Node is not in ACTIVE state.' )
+                na = main.FALSE
+        if na != main.FALSE:
+            main.log.info( 'All nodes discovered successfully' )
+    except Exception:
+        main.log.error( 'nodes command did not execute properly' )
+        return main.FALSE
+
+    if sc and vc and op and oi and iu and cli and na == main.TRUE:
         return main.TRUE
     else:
         return main.FALSE
+
+def addAndStartOnosNode( nodeIps ):
+    """
+    A scale-out scenario that adds specified list of 
+    nodes and starts those instances.
+
+    Ex) nodeIps = ['10.0.0.2', '10.0.0.3', 10.0.0.4']
+    """
+    main.log.info( 'addAndStartOnosNode implement me!' )
 

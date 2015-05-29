@@ -14,7 +14,7 @@
             <host>10.128.174.1</host>
             <user>admin</user>
             <password></password>
-            <type>OnosCliDriver</type>
+            <type>OnosDriver</type>
             <connect_order>3</connect_order>
             <COMPONENTS> </COMPONENTS>
         </ONOS1>
@@ -23,7 +23,7 @@
             <host>10.128.174.2</host>
             <user>admin</user>
             <password></password>
-            <type>OnosCliDriver</type>
+            <type>OnosDriver</type>
             <connect_order>4</connect_order>
             <COMPONENTS> </COMPONENTS>
         </ONOS2>
@@ -32,7 +32,7 @@
             <host>10.128.174.3</host>
             <user>admin</user>
             <password></password>
-            <type>OnosCliDriver</type>
+            <type>OnosDriver</type>
             <connect_order>5</connect_order>
             <COMPONENTS> </COMPONENTS>
         </ONOS3>

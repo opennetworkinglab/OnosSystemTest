@@ -133,6 +133,17 @@ class FuncPlatform:
                     str(startupClassName) + " from " + str(startupSrc) )
             main.cleanup()
             main.exit()
+       
+        # NOTE: Test only
+        # Unceremoniously kill onos 2 
+        main.ONOSbench.onosDie( '10.128.174.2' )
+        
+        time.sleep( 30 )
+
+        main.step( 'Sample Onos log check' )
+        logResult = onosLog.checkOnosLog( main.ONOSips[0] )
+        main.log.info( logResult )
+        # TODO: Define assertion pass / fail criteria
 
         # Sample app activation
         main.step( 'Activating applications metrics and fwd' ) 
@@ -143,9 +154,5 @@ class FuncPlatform:
                 onpass= 'App activation of ' + str(appList) + ' successful',
                 onfail= 'App activation failed ' + str(appResult) )
 
-        main.step( 'Sample Onos log check' )
-        logResult = onosLog.getOnosLog( main.ONOSips[0] )
-        main.log.info( logResult )
-        # TODO: Define assertion pass / fail criteria
 
 

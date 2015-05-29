@@ -256,6 +256,25 @@ class FuncIntent:
                                  onpass="Successfully discovered hosts",
                                  onfail="Failed to discover hosts" )
 
+    def CASE14( self, main ):
+        """
+            Stop mininet
+        """
+        main.log.report( "Stop Mininet topology" )
+        main.log.case( "Stop Mininet topology" )
+
+        main.step( "Stopping Mininet Topology" )
+        topoResult = main.Mininet1.stopNet( )
+        stepResult = topoResult
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="Successfully stop mininet",
+                                 onfail="Failed to stop mininet" )
+        # Exit if topology did not load properly
+        if not topoResult:
+            main.cleanup()
+            main.exit()
+
     def CASE1001( self, main ):
         """
             Add host intents between 2 host:
@@ -366,24 +385,23 @@ class FuncIntent:
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
-                                 onpass="VLAN1: Add vlan host intent successful",
+                                 onpass="VLAN1: Add vlan host" +
+                                        " intent successful",
                                  onfail="VLAN1: Add vlan host intent failed" )
+
         stepResult = main.TRUE
         main.step( "VLAN2: Add inter vlan host intents between h13 and h20" )
         stepResult = main.wrapper.hostIntent( main,
                                               name='VLAN2',
                                               host1='h13',
-                                              host2='h20',
-                                              host1Id='',
-                                              host2Id='',
-                                              sw1='s5',
-                                              sw2='s2',
-                                              expectedLink=18 )
+                                              host2='h20' )
 
         utilities.assert_equals( expect=main.FALSE,
                                  actual=stepResult,
-                                 onpass="VLAN2: Add inter vlan host intent successful",
-                                 onfail="VLAN2: Add inter vlan host intent failed" )
+                                 onpass="VLAN2: Add inter vlan host" +
+                                        " intent successful",
+                                 onfail="VLAN2: Add inter vlan host" +
+                                        " intent failed" )
 
     def CASE1002( self, main ):
         """

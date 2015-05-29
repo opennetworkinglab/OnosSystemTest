@@ -370,23 +370,23 @@ class MininetCliDriver( Emulator ):
 
     def pingallHosts( self, hostList, pingType='ipv4' ):
         """
-            Ping all specified hosts with a specific ping type 
-            
-            Acceptable pingTypes: 
-                - 'ipv4' 
+            Ping all specified hosts with a specific ping type
+
+            Acceptable pingTypes:
+                - 'ipv4'
                 - 'ipv6'
-        
+
             Acceptable hostList:
                 - ['h1','h2','h3','h4']
-                
-            Returns main.TRUE if all hosts specified can reach 
+
+            Returns main.TRUE if all hosts specified can reach
             each other
-            
+
             Returns main.FALSE if one or more of hosts specified
             cannot reach each other"""
-            
+
         if pingType == "ipv4":
-            cmd = " ping -c 1 -i 1 -W 8 " 
+            cmd = " ping -c 1 -i 1 -W 8 "
         elif pingType == "ipv6":
             cmd = " ping6 -c 1 -i 1 -W 8 "
         else:
@@ -395,17 +395,17 @@ class MininetCliDriver( Emulator ):
 
         try:
             main.log.info( "Testing reachability between specified hosts" )
-           
+
             isReachable = main.TRUE
 
             for host in hostList:
                 listIndex = hostList.index(host)
                 # List of hosts to ping other than itself
                 pingList = hostList[:listIndex] + hostList[(listIndex+1):]
-                
+
                 for temp in pingList:
                     # Current host pings all other hosts specified
-                    pingCmd = str(host) + cmd + str(temp) 
+                    pingCmd = str(host) + cmd + str(temp)
                     self.handle.sendline( pingCmd )
                     i = self.handle.expect( [ pingCmd, pexpect.TIMEOUT ] )
                     j = self.handle.expect( [ "mininet>", pexpect.TIMEOUT ] )
@@ -414,11 +414,11 @@ class MininetCliDriver( Emulator ):
                         main.log.info( str(host) + " -> " + str(temp) )
                     else:
                         main.log.info( str(host) + " -> X ("+str(temp)+") "
-                                       " Destination Unreachable" ) 
+                                       " Destination Unreachable" )
                         # One of the host to host pair is unreachable
                         isReachable = main.FALSE
 
-            return isReachable 
+            return isReachable
 
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )

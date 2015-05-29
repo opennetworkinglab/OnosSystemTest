@@ -10,6 +10,7 @@ def hostIntent( main,
                 name,
                 host1,
                 host2,
+                onosNode=0,
                 host1Id="",
                 host2Id="",
                 mac1="",
@@ -101,15 +102,16 @@ def hostIntent( main,
         return main.FALSE
 
     # Discover hosts using arping
-    main.log.info( itemName + ": Discover host using arping" )
-    main.Mininet1.arping( host=host1 )
-    main.Mininet1.arping( host=host2 )
-    host1 = main.CLIs[ 0 ].getHost( mac=h1Mac )
-    host2 = main.CLIs[ 0 ].getHost( mac=h2Mac )
+    if not main.hostsData:
+        main.log.info( itemName + ": Discover host using arping" )
+        main.Mininet1.arping( host=host1 )
+        main.Mininet1.arping( host=host2 )
+        host1 = main.CLIs[ 0 ].getHost( mac=h1Mac )
+        host2 = main.CLIs[ 0 ].getHost( mac=h2Mac )
 
     # Adding host intents
     main.log.info( itemName + ": Adding host intents" )
-    intent1 = main.CLIs[ 0 ].addHostIntent( hostIdOne=h1Id,
+    intent1 = main.CLIs[ onosNode ].addHostIntent( hostIdOne=h1Id,
                                            hostIdTwo=h2Id )
     intentsId.append( intent1 )
     time.sleep( 5 )
@@ -191,6 +193,7 @@ def pointIntent( main,
                  name,
                  host1,
                  host2,
+                 onosNode=0,
                  deviceId1="",
                  deviceId2="",
                  port1="",
@@ -278,7 +281,7 @@ def pointIntent( main,
 
     # Adding bidirectional point  intents
     main.log.info( itemName + ": Adding point intents" )
-    intent1 = main.CLIs[ 0 ].addPointIntent( ingressDevice=deviceId1,
+    intent1 = main.CLIs[ onosNode ].addPointIntent( ingressDevice=deviceId1,
                                              egressDevice=deviceId2,
                                              portIngress=port1,
                                              portEgress=port2,
@@ -295,7 +298,7 @@ def pointIntent( main,
 
     intentsId.append( intent1 )
     time.sleep( 5 )
-    intent2 = main.CLIs[ 0 ].addPointIntent( ingressDevice=deviceId2,
+    intent2 = main.CLIs[ onosNode ].addPointIntent( ingressDevice=deviceId2,
                                              egressDevice=deviceId1,
                                              portIngress=port2,
                                              portEgress=port1,
@@ -387,6 +390,7 @@ def pointIntent( main,
 def singleToMultiIntent( main,
                          name,
                          hostNames,
+                         onosNode=0,
                          devices="",
                          ports=None,
                          ethType="",
@@ -530,7 +534,8 @@ def singleToMultiIntent( main,
                 main.log.debug( "There is no MAC in device - " + ingressDevice )
                 srcMac = ""
 
-        intentsId.append( main.CLIs[ 0 ].addSinglepointToMultipointIntent(
+        intentsId.append(
+                        main.CLIs[ onosNode ].addSinglepointToMultipointIntent(
                                             ingressDevice=ingressDevice,
                                             egressDeviceList=egressDeviceList,
                                             portIngress=portIngress,
@@ -545,6 +550,7 @@ def singleToMultiIntent( main,
                                             tcpSrc="",
                                             tcpDst="" ) )
 
+    time.sleep( 10 )
     pingResult = pingallHosts( main, hostNames )
 
     # Check intents state
@@ -619,6 +625,7 @@ def singleToMultiIntent( main,
 def multiToSingleIntent( main,
                          name,
                          hostNames,
+                         onosNode=0,
                          devices="",
                          ports=None,
                          ethType="",
@@ -760,7 +767,8 @@ def multiToSingleIntent( main,
                 main.log.debug( "There is no MAC in device - " + egressDevice )
                 dstMac = ""
 
-        intentsId.append( main.CLIs[ 0 ].addMultipointToSinglepointIntent(
+        intentsId.append(
+                        main.CLIs[ onosNode ].addMultipointToSinglepointIntent(
                                             ingressDeviceList=ingressDeviceList,
                                             egressDevice=egressDevice,
                                             portIngressList=portIngressList,
@@ -919,11 +927,17 @@ def checkTopology( main, expectedLink ):
 def checkIntentState( main, intentsId ):
 
     intentResult = main.TRUE
+    results = []
 
     main.log.info( itemName + ": Checking intents state" )
     for i in range( main.numCtrls ):
-        intentResult = intentResult and \
-                main.CLIs[ i ].checkIntentState( intentsId=intentsId )
+        intentResult = main.CLIs[ i ].checkIntentState( intentsId=intentsId )
+        results.append( intentResult )
+
+    if all( result == main.TRUE for result in results ):
+        main.log.info( itemName + ": Intents are installed correctly" )
+    else:
+        main.log.error( itemName + ": Intents are NOT installed correctly" )
 
     return intentResult
 

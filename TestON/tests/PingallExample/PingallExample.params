@@ -1,61 +1,12 @@
 <PARAMS>
-    <testcases>1,2,25,26</testcases>
+    <testcases>1,2,3</testcases>
     <ENV>
-        <cellName>test1</cellName>
+        <cellName>SingleHA</cellName>
     </ENV>
-    <Git>False</Git>
+    <Git>xe</Git>
 
     <CTRL>
-        <ip1>10.128.40.70</ip1>
+        <ip1>10.128.30.11</ip1>
         <port1>6633</port1>
     </CTRL>
-
-    <VPING>
-        <source1V1>
-            <vhost>h1</vhost>
-            <vintf>eth0</vintf>
-        </source1V1>
-        <source1V2>
-            <vhost>h3</vhost>
-            <vintf>eth0</vintf>
-        </source1V2>
-        <source1Vnone>
-            <vhost>h4</vhost>
-            <vintf>eth0</vintf>
-        </source1Vnone>
-        <source1V1Int>
-            <vhost>h6</vhost>
-            <vintf>eth0</vintf>
-        </source1V1Int>
-
-        <target1V1>
-            <vhost>h7</vhost>
-            <vintf>eth0</vintf>
-        </target1V1>
-        <target2V1>
-            <vhost>h8</vhost>
-            <vintf>eth0</vintf>
-        </target2V1>
-        <target1V2>
-            <vhost>h9</vhost>
-            <vintf>eth0</vintf>
-        </target1V2>
-
-        <target1Vnone>
-            <vhost>h11</vhost>
-            <vintf>eth0</vintf>
-        </target1Vnone>
-        <target1V1Int>
-            <vhost>h14</vhost>
-            <vintf>eth0</vintf>
-        </target1V1Int>
-
-    </VPING>
-    <VTAGS>
-        <tag1>100</tag1>
-        <tag2>200</tag2>
-        <tag3>300</tag3>
-        <tag4>400</tag4>
-    </VTAGS>
-
 </PARAMS>

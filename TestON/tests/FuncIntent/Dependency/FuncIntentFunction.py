@@ -477,10 +477,12 @@ def singleToMultiIntent( main,
                 #print "len devices = ", len( devices )
                 #print "len ports = ", len( ports )
                 return main.FALSE
-        for i in range( len( devices ) ):
-            macsDict[ devices[ i ] ] = macs[ i ]
         else:
             main.log.info( "Device Ports are not specified" )
+        if macs:
+            for i in range( len( devices ) ):
+                macsDict[ devices[ i ] ] = macs[ i ]
+
     elif hostNames and not devices and main.hostsData:
         devices = []
         main.log.info( "singleToMultiIntent function is using main.hostsData" ) 
@@ -642,7 +644,7 @@ def multiToSingleIntent( main,
             Verify add-multi-to-single-intent
         Steps:
             - Get device ids | ports
-            - Add single to multi point intents
+            - Add multi to single point intents
             - Check intents
             - Verify flows
             - Ping hosts
@@ -706,13 +708,14 @@ def multiToSingleIntent( main,
                 #print "len devices = ", len( devices )
                 #print "len ports = ", len( ports )
                 return main.FALSE
-        for i in range( len( devices ) ):
-            macsDict[ devices[ i ] ] = macs[ i ]
         else:
             main.log.info( "Device Ports are not specified" )
+        if macs:
+            for i in range( len( devices ) ):
+                macsDict[ devices[ i ] ] = macs[ i ]
     elif hostNames and not devices and main.hostsData:
         devices = []
-        main.log.info( "singleToMultiIntent function is using main.hostsData" ) 
+        main.log.info( "multiToSingleIntent function is using main.hostsData" ) 
         for host in hostNames:
                devices.append( main.hostsData.get( host ).get( 'location' ) )
                macsDict[ main.hostsData.get( host ).get( 'location' ) ] = \
@@ -736,7 +739,7 @@ def multiToSingleIntent( main,
     devicesCopy = copy.copy( devices )
     if ports:
         portsCopy = copy.copy( ports )
-    main.log.info( itemName + ": Adding single point to multi point intents" )
+    main.log.info( itemName + ": Adding multi point to single point intents" )
     # Adding bidirectional point  intents
     for i in range( len( devices ) ):
         egressDevice = devicesCopy[ i ]

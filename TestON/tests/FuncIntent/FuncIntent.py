@@ -662,8 +662,8 @@ class FuncIntent:
                                  onfail="VLAN: Failed to add single point" +
                                         " to multi point intents" ) 
 
-        def CASE1004( self, main ):
-            """
+    def CASE1004( self, main ):
+        """
             Add multi point to single point intents
                 - Get device ids
                 - Add multi point to single point intents

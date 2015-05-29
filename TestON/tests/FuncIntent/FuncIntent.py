@@ -465,7 +465,36 @@ class FuncIntent:
                                  actual=stepResult,
                                  onpass="DUALSTACK1: Add point intent" +
                                         " successful",
-                                 onfail="DUALSTACK1: Add point intent failed" )
+                                 onfail="DUALSTACK1: Add point intent failed" ) 
+        stepResult = main.TRUE
+        main.step( "VLAN: Add point intents between h5 and h21" )
+        stepResult = main.wrapper.pointIntent(
+                                       main,
+                                       name="VLAN",
+                                       host1="h5",
+                                       host2="h21",
+                                       deviceId1="of:0000000000000005/5",
+                                       deviceId2="of:0000000000000007/5",
+                                       port1="",
+                                       port2="",
+                                       ethType="IPV4",
+                                       mac1="00:00:00:00:00:05",
+                                       mac2="00:00:00:00:00:15",
+                                       bandwidth="",
+                                       lambdaAlloc=False,
+                                       ipProto="",
+                                       ip1="",
+                                       ip2="",
+                                       tcp1="",
+                                       tcp2="",
+                                       sw1="s5",
+                                       sw2="s2",
+                                       expectedLink=18 )
+
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="VLAN: Add point intent successful",
+                                 onfail="VLAN: Add point intent failed" )
 
     def CASE1003( self, main ):
         """
@@ -539,8 +568,38 @@ class FuncIntent:
                                         + " to multi point intents",
                                  onfail="IPV4_2: Failed to add single point" +
                                         " to multi point intents" )
-    def CASE1004( self, main ):
-        """
+        stepResult = main.TRUE
+        main.step( "VLAN: Add single point to multi point intents" )
+        hostNames = [ 'h4', 'h12', 'h20' ]
+        devices = [ 'of:0000000000000005/4', 'of:0000000000000006/4', \
+                    'of:0000000000000007/4' ]
+        macs = [ '00:00:00:00:00:04', '00:00:00:00:00:0C', '00:00:00:00:00:14' ]
+        stepResult = main.wrapper.singleToMultiIntent(
+                                         main,
+                                         name="VLAN",
+                                         hostNames=hostNames,
+                                         devices=devices,
+                                         ports=None,
+                                         ethType="IPV4",
+                                         macs=macs,
+                                         bandwidth="",
+                                         lambdaAlloc=False,
+                                         ipProto="",
+                                         ipAddresses="",
+                                         tcp="",
+                                         sw1="s5",
+                                         sw2="s2",
+                                         expectedLink=18 )
+
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="VLAN: Successfully added single point"
+                                        + " to multi point intents",
+                                 onfail="VLAN: Failed to add single point" +
+                                        " to multi point intents" ) 
+
+        def CASE1004( self, main ):
+            """
             Add multi point to single point intents
                 - Get device ids
                 - Add multi point to single point intents
@@ -556,7 +615,7 @@ class FuncIntent:
                     - Verify flows
                     - Check topology
                     - Ping hosts
-                - Remove intents
+             - Remove intents
         """
         assert main, "There is no main"
         assert main.CLIs, "There is no main.CLIs"
@@ -610,4 +669,34 @@ class FuncIntent:
                                  onpass="IPV4_2: Successfully added multi point"
                                         + " to single point intents",
                                  onfail="IPV4_2: Failed to add multi point" +
+                                        " to single point intents" )
+
+        stepResult = main.TRUE
+        main.step( "VLAN: Add multi point to single point intents" )
+        hostNames = [ 'h5', 'h13', 'h21' ]
+        devices = [ 'of:0000000000000005/5', 'of:0000000000000006/5', \
+                    'of:0000000000000007/5' ]
+        macs = [ '00:00:00:00:00:05', '00:00:00:00:00:0D', '00:00:00:00:00:15' ]
+        stepResult = main.wrapper.multiToSingleIntent(
+                                         main,
+                                         name="VLAN",
+                                         hostNames=hostNames,
+                                         devices=devices,
+                                         ports=None,
+                                         ethType="IPV4",
+                                         macs=macs,
+                                         bandwidth="",
+                                         lambdaAlloc=False,
+                                         ipProto="",
+                                         ipAddresses="",
+                                         tcp="",
+                                         sw1="s5",
+                                         sw2="s2",
+                                         expectedLink=18 )
+
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="VLAN: Successfully added multi point"
+                                        + " to single point intents",
+                                 onfail="VLAN: Failed to add multi point" +
                                         " to single point intents" )

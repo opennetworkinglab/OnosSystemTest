@@ -14,6 +14,13 @@
         <appClassName>
             App
         </appClassName>
+    
+        <logSrc>
+            /home/admin/ONLabTest/TestON/tests/FuncPlatform/Dependency/Logger.py
+        </logSrc>
+        <logClassName>
+            Log
+        </logClassName>
     </DEP> 
 
     <CTRL>

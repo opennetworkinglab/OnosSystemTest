@@ -31,6 +31,9 @@ class FuncPlatform:
         """
         Main scope initialization case
         """   
+        # NOTE: Application name subject to change
+        #       closely monitor and make changes when necessary
+        #       (or implement ways to dynamically get names)
         main.appList = { 
             'bgprouter' : 'org.onosproject.bgprouter',
             'config' : 'org.onosproject.config',
@@ -51,12 +54,15 @@ class FuncPlatform:
         # List of ONOS ip's specififed in params
         main.ONOSips = [] 
         main.CLIs = []
+        main.ONOSnode = []
 
         for node in range( 0, int(main.params['CTRL']['num']) ):
             main.ONOSips.append( main.params['CTRL']['ip'+str(node+1)] )
             main.CLIs.append(
                     getattr( main, 'ONOS' + str(node+1) + 'cli' ) )
-       
+            main.ONOSnode.append(
+                    getattr( main, 'ONOS' + str(node+1) ) )
+
     def CASE2( self, main ):
         import time
         import imp
@@ -110,9 +116,13 @@ class FuncPlatform:
         appClassName = main.params['DEP']['appClassName']
         appSrc = main.params['DEP']['appSrc']
 
+        logClassName = main.params['DEP']['logClassName']
+        logSrc = main.params['DEP']['logSrc']
+
         # Import application file to use its methods
         try:
             app = imp.load_source( appClassName, appSrc )
+            onosLog = imp.load_source( logClassName, logSrc )
         except ImportError:
             main.log.error( "Error importing class " +
                     str(startupClassName) + " from " + str(startupSrc) )
@@ -128,5 +138,9 @@ class FuncPlatform:
                 onpass= 'App activation of ' + str(appList) + ' successful',
                 onfail= 'App activation failed ' + str(appResult) )
 
+        main.step( 'Sample Onos log check' )
+        logResult = onosLog.getOnosLog( main.ONOSips[0] )
+        main.log.info( logResult )
+        # TODO: Define assertion pass / fail criteria
 
 

@@ -488,7 +488,7 @@ class OnosDriver( CLI ):
         main.log.info( "self.home = " )
         main.log.info( self.home )
         self.handle.sendline( "cd " + self.home )
-        self.handle.expect( "onos\$" )
+        self.handle.expect( self.home + "\$" )
         self.handle.sendline( "git name-rev --name-only HEAD" )
         self.handle.expect( "git name-rev --name-only HEAD" )
         self.handle.expect( "\$" )

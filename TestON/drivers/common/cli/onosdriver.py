@@ -485,8 +485,10 @@ class OnosDriver( CLI ):
             main.exit()
 
     def getBranchName( self ):
+        main.log.info( "self.home = " )
+        main.log.info( self.home )
         self.handle.sendline( "cd " + self.home )
-        self.handle.expect( "ONOS\$" )
+        self.handle.expect( self.home + "\$" )
         self.handle.sendline( "git name-rev --name-only HEAD" )
         self.handle.expect( "git name-rev --name-only HEAD" )
         self.handle.expect( "\$" )

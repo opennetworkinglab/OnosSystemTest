@@ -219,8 +219,8 @@ class QuaggaCliDriver( CLI ):
         intentsJsonObj = json.loads( getIntentsResult )
 
         for intent in intentsJsonObj:
-            if intent[ 'appId' ] != "org.onosproject.sdnip":
-                continue
+            #if intent[ 'appId' ] != "org.onosproject.sdnip":
+            #    continue
             if intent[ 'type' ] == "MultiPointToSinglePointIntent" \
             and intent[ 'state' ] == 'INSTALLED':
                 egress = str( intent[ 'egress' ][ 'device' ] ) + ":" \
@@ -242,6 +242,26 @@ class QuaggaCliDriver( CLI ):
                 intents.append( intent )
         return sorted( intents )
 
+    # This method calculates the MultiPointToSinglePointIntent number installed
+    def extractActualRouteIntentNum( self, getIntentsResult ):
+        intentsJsonObj = json.loads( getIntentsResult )
+        num = 0
+        for intent in intentsJsonObj:
+            if intent[ 'type' ] == "MultiPointToSinglePointIntent" \
+            and intent[ 'state' ] == 'INSTALLED':
+                num = num + 1
+        return num
+
+    # This method calculates the PointToPointIntent number installed
+    def extractActualBgpIntentNum( self, getIntentsResult ):
+        intentsJsonObj = json.loads( getIntentsResult )
+        num = 0
+        for intent in intentsJsonObj:
+            if intent[ 'type' ] == "PointToPointIntent" \
+            and intent[ 'state' ] == 'INSTALLED':
+                num = num + 1
+        return num
+
     # This method extracts all actual BGP intents from ONOS CLI
     def extractActualBgpIntents( self, getIntentsResult ):
         intents = []
@@ -250,8 +270,8 @@ class QuaggaCliDriver( CLI ):
         intentsJsonObj = json.loads( getIntentsResult )
 
         for intent in intentsJsonObj:
-            if intent[ 'appId' ] != "org.onosproject.sdnip":
-                continue
+            #if intent[ 'appId' ] != "org.onosproject.sdnip":
+            #    continue
             if intent[ 'type' ] == "PointToPointIntent" \
             and "protocol=6" in str( intent[ 'selector' ] ):
                 ingress = str( intent[ 'ingress' ][ 'device' ] ) + ":" \

@@ -1750,11 +1750,19 @@ class OnosCliDriver( CLI ):
             returnValue = main.TRUE
             for intents in intentsDict:
                 if intents.get( 'state' ) != expectedState:
-                    main.log.info( self.name + " : " + intents.get( 'id' ) +
-                                   " actual state = " + intents.get( 'state' )
-                                   + " does not equal expected state = "
-                                   + expectedState )
-                    returnValue = main.FALSE
+                    if intents.get( 'state' ) == "INSTALLING":
+                        main.log.debug( self.name + " : Intent ID - " +
+                                        intents.get( 'id' ) +
+                                        " is in INSTALLING state" )
+                        returnValue = main.TRUE
+                    else:
+                        main.log.info( self.name + " : Intent ID - " +
+                                       intents.get( 'id' ) +
+                                       " actual state = " +
+                                       intents.get( 'state' )
+                                       + " does not equal expected state = "
+                                       + expectedState )
+                        returnValue = main.FALSE
             if returnValue == main.TRUE:
                 main.log.info( self.name + ": All " +
                                str( len( intentsDict ) ) +
@@ -1786,7 +1794,7 @@ class OnosCliDriver( CLI ):
                 cmdStr += " -j"
             handle = self.sendline( cmdStr )
             if re.search( "Error:", handle ):
-                main.log.error( self.name + ".flows() response: " +
+                main.log.error( self.name + ": flows() response: " +
                                 str( handle ) )
             return handle
         except TypeError:
@@ -3554,3 +3562,36 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
+    def summary( self, jsonFormat=True ):
+        """
+        Description: Execute summary command in onos
+        Returns: json object ( summary -j ), returns main.FALSE if there is
+        no output
+
+        """
+        try:
+            cmdStr = "summary"
+            if jsonFormat:
+                cmdStr += " -j"
+            handle = self.sendline( cmdStr )
+
+            if re.search( "Error:", handle ):
+                main.log.error( self.name + ": summary() response: " +
+                                str( handle ) )
+            if not handle:
+                main.log.error( self.name + ": There is no output in " +
+                                "summary command" )
+                return main.FALSE
+            return handle
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()

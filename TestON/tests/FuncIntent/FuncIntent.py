@@ -311,6 +311,7 @@ class FuncIntent:
         stepResult = main.TRUE
         main.step( "IPV4: Add host intents between h1 and h9" )
         stepResult = main.wrapper.hostIntent( main,
+                                              onosNode='0',
                                               name='IPV4',
                                               host1='h1',
                                               host2='h9',
@@ -324,8 +325,8 @@ class FuncIntent:
                                  actual=stepResult,
                                  onpass="IPV4: Add host intent successful",
                                  onfail="IPV4: Add host intent failed" )
-        stepResult = main.TRUE
 
+        stepResult = main.TRUE
         main.step( "DUALSTACK1: Add host intents between h3 and h11" )
         stepResult = main.wrapper.hostIntent( main,
                                               name='DUALSTACK',
@@ -372,6 +373,7 @@ class FuncIntent:
                                         " successful",
                                  onfail="1HOP: Add host intent failed" )
 
+        stepResult = main.TRUE
         main.step( "VLAN1: Add vlan host intents between h4 and h12" )
         stepResult = main.wrapper.hostIntent( main,
                                               name='VLAN1',
@@ -457,6 +459,7 @@ class FuncIntent:
                                  onpass="NOOPTION: Add point intent successful",
                                  onfail="NOOPTION: Add point intent failed" )
 
+        stepResult = main.TRUE
         stepResult = main.wrapper.pointIntent(
                                        main,
                                        name="IPV4",
@@ -484,6 +487,28 @@ class FuncIntent:
                                  actual=stepResult,
                                  onpass="IPV4: Add point intent successful",
                                  onfail="IPV4: Add point intent failed" )
+
+        stepResult = main.TRUE
+        stepResult = main.wrapper.pointIntent(
+                                       main,
+                                       name="IPV4_2",
+                                       host1="h1",
+                                       host2="h9",
+                                       deviceId1="of:0000000000000005/1",
+                                       deviceId2="of:0000000000000006/1",
+                                       ipProto=1,
+                                       ip1="",
+                                       ip2="",
+                                       tcp1="",
+                                       tcp2="",
+                                       sw1="s5",
+                                       sw2="s2",
+                                       expectedLink=18 )
+
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="IPV4_2: Add point intent successful",
+                                 onfail="IPV4_2: Add point intent failed" )
 
         stepResult = main.TRUE
         main.step( "DUALSTACK1: Add point intents between h1 and h9" )
@@ -608,8 +633,7 @@ class FuncIntent:
                                  onfail="NOOPTION: Failed to add single point" +
                                         " to multi point intents" )
 
-
-
+        stepResult = main.TRUE
         main.step( "IPV4: Add single point to multi point intents" )
         stepResult = main.wrapper.singleToMultiIntent(
                                          main,
@@ -635,6 +659,7 @@ class FuncIntent:
                                  onfail="IPV4: Failed to add single point" +
                                         " to multi point intents" )
 
+        stepResult = main.TRUE
         main.step( "IPV4_2: Add single point to multi point intents" )
         hostNames = [ 'h8', 'h16', 'h24' ]
         stepResult = main.wrapper.singleToMultiIntent(
@@ -730,7 +755,7 @@ class FuncIntent:
                                  onfail="NOOPTION: Failed to add multi point" +
                                         " to single point intents" )
 
-
+        stepResult = main.TRUE
         main.step( "IPV4: Add multi point to single point intents" )
         stepResult = main.wrapper.multiToSingleIntent(
                                          main,
@@ -756,6 +781,7 @@ class FuncIntent:
                                  onfail="IPV4: Failed to add multi point" +
                                         " to single point intents" )
 
+        stepResult = main.TRUE
         main.step( "IPV4_2: Add multi point to single point intents" )
         hostNames = [ 'h8', 'h16', 'h24' ]
         stepResult = main.wrapper.multiToSingleIntent(

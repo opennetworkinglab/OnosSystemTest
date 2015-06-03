@@ -46,7 +46,7 @@ class HATestSingleInstanceRestart:
         start cli sessions
         start tcpdump
         """
-        main.log.report( "ONOS Single node cluster restart " +
+        main.log.info( "ONOS Single node cluster restart " +
                          "HA test - initialization" )
         main.case( "Setting up test environment" )
         main.caseExplaination = "Setup the test environment including " +\
@@ -126,15 +126,15 @@ class HATestSingleInstanceRestart:
             utilities.assert_lesser( expect=0, actual=gitPullResult,
                                       onpass="Git pull successful",
                                       onfail="Git pull failed" )
-        else:
-            main.log.warn( "Did not pull new code so skipping mvn " +
-                           "clean install" )
         main.ONOSbench.getVersion( report=True )
 
         main.step( "Using mvn clean install" )
         cleanInstallResult = main.TRUE
-        if gitPullResult == main.TRUE:
+        if PULLCODE and gitPullResult == main.TRUE:
             cleanInstallResult = main.ONOSbench.cleanInstall()
+        else:
+            main.log.warn( "Did not pull new code so skipping mvn " +
+                           "clean install" )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=cleanInstallResult,
                                  onpass="MCI successful",
@@ -145,10 +145,12 @@ class HATestSingleInstanceRestart:
         #       Plot Name = Plot-HA, only can be used if multiple plots
         #       index = The number of the graph under plot name
         job = "HASingleInstanceRestart"
+        plotName = "Plot-HA"
         graphs = '<ac:structured-macro ac:name="html">\n'
         graphs += '<ac:plain-text-body><![CDATA[\n'
         graphs += '<iframe src="https://onos-jenkins.onlab.us/job/' + job +\
-                  '/plot/getPlot?index=0&width=500&height=300"' +\
+                  '/plot/' + plotName + '/getPlot?index=0' +\
+                  '&width=500&height=300"' +\
                   'noborder="0" width="500" height="300" scrolling="yes" ' +\
                   'seamless="seamless"></iframe>\n'
         graphs += ']]></ac:plain-text-body>\n'
@@ -185,12 +187,13 @@ class HATestSingleInstanceRestart:
                                  onpass="ONOS cli startup successful",
                                  onfail="ONOS cli startup failed" )
 
-        main.step( "Start Packet Capture MN" )
-        main.Mininet2.startTcpdump(
-            str( main.params[ 'MNtcpdump' ][ 'folder' ] ) + str( main.TEST )
-            + "-MN.pcap",
-            intf=main.params[ 'MNtcpdump' ][ 'intf' ],
-            port=main.params[ 'MNtcpdump' ][ 'port' ] )
+        if main.params[ 'tcpdump' ].lower() == "true":
+            main.step( "Start Packet Capture MN" )
+            main.Mininet2.startTcpdump(
+                str( main.params[ 'MNtcpdump' ][ 'folder' ] ) + str( main.TEST )
+                + "-MN.pcap",
+                intf=main.params[ 'MNtcpdump' ][ 'intf' ],
+                port=main.params[ 'MNtcpdump' ][ 'port' ] )
 
         main.step( "App Ids check" )
         appCheck = main.ONOScli1.appToIDCheck()
@@ -681,7 +684,7 @@ class HATestSingleInstanceRestart:
                 main.log.info( "Ping test passed!" )
                 # Don't set PingResult or you'd override failures
         if PingResult == main.FALSE:
-            main.log.report(
+            main.log.error(
                 "Intents have not been installed correctly, pings failed." )
             # TODO: pretty print
             main.log.warn( "ONOS1 intents: " )
@@ -693,9 +696,6 @@ class HATestSingleInstanceRestart:
                                            separators=( ',', ': ' ) ) )
             except ( ValueError, TypeError ):
                 main.log.warn( repr( tmpIntents ) )
-        if PingResult == main.TRUE:
-            main.log.info(
-                "Intents have been installed correctly and verified by pings" )
         utilities.assert_equals(
             expect=main.TRUE,
             actual=PingResult,
@@ -727,7 +727,7 @@ class HATestSingleInstanceRestart:
                            ( str( count ), str( i ), str( s ) ) )
         utilities.assert_equals( expect=True, actual=installedCheck,
                                  onpass="Intents are all INSTALLED",
-                                 onfail="Intents are not all in " +\
+                                 onfail="Intents are not all in " +
                                         "INSTALLED state" )
 
         main.step( "Check leadership of topics" )
@@ -878,9 +878,10 @@ class HATestSingleInstanceRestart:
             except ( ValueError, TypeError ):
                 main.log.exception( "Error parsing pending map" )
                 main.log.error( repr( pendingMap ) )
-            main.log.debug( main.ONOScli1.flows( jsonFormat=False ) )
-
+        # Print flowrules
+        main.log.debug( CLIs[0].flows( jsonFormat=False ) )
         main.step( "Wait a minute then ping again" )
+        # the wait is above
         PingResult = main.TRUE
         for i in range( 8, 18 ):
             ping = main.Mininet1.pingHost( src="h" + str( i ),
@@ -893,7 +894,7 @@ class HATestSingleInstanceRestart:
                 main.log.info( "Ping test passed!" )
                 # Don't set PingResult or you'd override failures
         if PingResult == main.FALSE:
-            main.log.report(
+            main.log.error(
                 "Intents have not been installed correctly, pings failed." )
             # TODO: pretty print
             main.log.warn( "ONOS1 intents: " )
@@ -943,7 +944,7 @@ class HATestSingleInstanceRestart:
         ONOS1Mastership = main.ONOScli1.roles()
         # TODO: Make this a meaningful check
         if "Error" in ONOS1Mastership or not ONOS1Mastership:
-            main.log.report( "Error in getting ONOS roles" )
+            main.log.error( "Error in getting ONOS roles" )
             main.log.warn(
                 "ONOS1 mastership response: " +
                 repr( ONOS1Mastership ) )
@@ -958,7 +959,7 @@ class HATestSingleInstanceRestart:
         ONOS1Intents = main.ONOScli1.intents( jsonFormat=True )
         intentCheck = main.FALSE
         if "Error" in ONOS1Intents or not ONOS1Intents:
-            main.log.report( "Error in getting ONOS intents" )
+            main.log.error( "Error in getting ONOS intents" )
             main.log.warn( "ONOS1 intents response: " + repr( ONOS1Intents ) )
         else:
             intentCheck = main.TRUE
@@ -969,7 +970,7 @@ class HATestSingleInstanceRestart:
         flowCheck = main.FALSE
         ONOS1Flows = main.ONOScli1.flows( jsonFormat=True )
         if "Error" in ONOS1Flows or not ONOS1Flows:
-            main.log.report( "Error in getting ONOS flows" )
+            main.log.error( "Error in getting ONOS flows" )
             main.log.warn( "ONOS1 flows repsponse: " + ONOS1Flows )
         else:
             # TODO: Do a better check, maybe compare flows on switches?
@@ -1121,7 +1122,6 @@ class HATestSingleInstanceRestart:
             main.log.error( "iCounterValue not defined, setting to 0" )
             iCounterValue = 0
 
-        main.log.report( "Restart ONOS node" )
         main.case( "Restart ONOS node" )
         main.caseExplaination = "Killing ONOS process and restart cli " +\
                                 "sessions once onos is up."
@@ -1154,6 +1154,9 @@ class HATestSingleInstanceRestart:
         if elapsed:
             main.log.info( "ESTIMATE: ONOS took %s seconds to restart" %
                            str( elapsed ) )
+            main.restartTime = elapsed
+        else:
+            main.restartTime = -1
         time.sleep( 5 )
         # rerun on election apps
         main.ONOScli1.electionTestRun()
@@ -1180,14 +1183,12 @@ class HATestSingleInstanceRestart:
         ONOS1Mastership = main.ONOScli1.roles()
         # FIXME: Refactor this whole case for single instance
         if "Error" in ONOS1Mastership or not ONOS1Mastership:
-            main.log.report( "Error in getting ONOS mastership" )
+            main.log.error( "Error in getting ONOS mastership" )
             main.log.warn( "ONOS1 mastership response: " +
                            repr( ONOS1Mastership ) )
             consistentMastership = main.FALSE
         else:
             consistentMastership = main.TRUE
-            main.log.report(
-                "Switch roles are consistent across all ONOS nodes" )
         utilities.assert_equals(
             expect=main.TRUE,
             actual=consistentMastership,
@@ -1224,11 +1225,11 @@ class HATestSingleInstanceRestart:
         ONOS1Intents = main.ONOScli1.intents( jsonFormat=True )
         intentCheck = main.FALSE
         if "Error" in ONOS1Intents or not ONOS1Intents:
-            main.log.report( "Error in getting ONOS intents" )
+            main.log.error( "Error in getting ONOS intents" )
             main.log.warn( "ONOS1 intents response: " + repr( ONOS1Intents ) )
         else:
             intentCheck = main.TRUE
-            main.log.report( "Intents are consistent across all ONOS nodes" )
+            main.log.error( "Intents are consistent across all ONOS nodes" )
         utilities.assert_equals(
             expect=main.TRUE,
             actual=intentCheck,
@@ -1253,21 +1254,41 @@ class HATestSingleInstanceRestart:
         main.step( "Compare current intents with intents before the failure" )
         # NOTE: this requires case 5 to pass for intentState to be set.
         #      maybe we should stop the test if that fails?
-        sameIntents = main.TRUE
-        if intentState and intentState == ONOS1Intents:
+        sameIntents = main.FALSE
+        if intentState and intentState == ONOSIntents[ 0 ]:
             sameIntents = main.TRUE
             main.log.info( "Intents are consistent with before failure" )
         # TODO: possibly the states have changed? we may need to figure out
         #       what the acceptable states are
-        else:
+        elif len( intentState ) == len( ONOSIntents[ 0 ] ):
+            sameIntents = main.TRUE
             try:
-                main.log.warn( "ONOS1 intents: " )
-                print json.dumps( json.loads( ONOS1Intents ),
-                                  sort_keys=True, indent=4,
-                                  separators=( ',', ': ' ) )
-            except Exception:
-                pass
-            sameIntents = main.FALSE
+                before = json.loads( intentState )
+                after = json.loads( ONOSIntents[ 0 ] )
+                for intent in before:
+                    if intent not in after:
+                        sameIntents = main.FALSE
+                        main.log.debug( "Intent is not currently in ONOS " +\
+                                        "(at least in the same form):" )
+                        main.log.debug( json.dumps( intent ) )
+            except ( ValueError, TypeError ):
+                main.log.exception( "Exception printing intents" )
+                main.log.debug( repr( ONOSIntents[0] ) )
+                main.log.debug( repr( intentState ) )
+        if sameIntents == main.FALSE:
+            try:
+                main.log.debug( "ONOS intents before: " )
+                main.log.debug( json.dumps( json.loads( intentState ),
+                                            sort_keys=True, indent=4,
+                                            separators=( ',', ': ' ) ) )
+                main.log.debug( "Current ONOS intents: " )
+                main.log.debug( json.dumps( json.loads( ONOSIntents[ 0 ] ),
+                                            sort_keys=True, indent=4,
+                                            separators=( ',', ': ' ) ) )
+            except ( ValueError, TypeError ):
+                main.log.exception( "Exception printing intents" )
+                main.log.debug( repr( ONOSIntents[0] ) )
+                main.log.debug( repr( intentState ) )
         utilities.assert_equals(
             expect=main.TRUE,
             actual=sameIntents,
@@ -1313,13 +1334,13 @@ class HATestSingleInstanceRestart:
                 pass
             elif leaderN == main.FALSE:
                 # error in response
-                main.log.report( "Something is wrong with " +
+                main.log.error( "Something is wrong with " +
                                  "electionTestLeader function, check the" +
                                  " error logs" )
                 leaderResult = main.FALSE
             elif leader != leaderN:
                 leaderResult = main.FALSE
-                main.log.report( "ONOS" + str( controller ) + " sees " +
+                main.log.error( "ONOS" + str( controller ) + " sees " +
                                  str( leaderN ) +
                                  " as the leader of the election app. " +
                                  "Leader should be " + str( leader ) )
@@ -1504,7 +1525,6 @@ class HATestSingleInstanceRestart:
 
         description = "Turn off a link to ensure that Link Discovery " +\
                       "is working properly"
-        main.log.report( description )
         main.case( description )
 
         main.step( "Kill Link between s3 and s28" )
@@ -1531,7 +1551,6 @@ class HATestSingleInstanceRestart:
 
         description = "Restore a link to ensure that Link Discovery is " + \
                       "working properly"
-        main.log.report( description )
         main.case( description )
 
         main.step( "Bring link between s3 and s28 back up" )
@@ -1557,14 +1576,13 @@ class HATestSingleInstanceRestart:
         switchSleep = float( main.params[ 'timers' ][ 'SwitchDiscovery' ] )
 
         description = "Killing a switch to ensure it is discovered correctly"
-        main.log.report( description )
         main.case( description )
         switch = main.params[ 'kill' ][ 'switch' ]
         switchDPID = main.params[ 'kill' ][ 'dpid' ]
 
         # TODO: Make this switch parameterizable
         main.step( "Kill " + switch )
-        main.log.report( "Deleting " + switch )
+        main.log.info( "Deleting " + switch )
         main.Mininet1.delSwitch( switch )
         main.log.info( "Waiting " + str( switchSleep ) +
                        " seconds for switch down to be discovered" )
@@ -1601,11 +1619,9 @@ class HATestSingleInstanceRestart:
         switchDPID = main.params[ 'kill' ][ 'dpid' ]
         links = main.params[ 'kill' ][ 'links' ].split()
         description = "Adding a switch to ensure it is discovered correctly"
-        main.log.report( description )
         main.case( description )
 
         main.step( "Add back " + switch )
-        main.log.report( "Adding back " + switch )
         main.Mininet1.addSwitch( switch, dpid=switchDPID )
         for peer in links:
             main.Mininet1.addLink( switch, peer )
@@ -1638,9 +1654,7 @@ class HATestSingleInstanceRestart:
         colors = { 'cyan': '\033[96m', 'purple': '\033[95m',
                    'blue': '\033[94m', 'green': '\033[92m',
                    'yellow': '\033[93m', 'red': '\033[91m', 'end': '\033[0m' }
-        description = "Test Cleanup"
-        main.log.report( description )
-        main.case( description )
+        main.case( "Test Cleanup" )
         main.step( "Killing tcpdumps" )
         main.Mininet2.stopTcpdump()
 
@@ -1691,10 +1705,20 @@ class HATestSingleInstanceRestart:
         main.step( "Checking ONOS Logs for errors" )
         print colors[ 'purple' ] + "Checking logs for errors on ONOS1:" + \
             colors[ 'end' ]
-        print main.ONOSbench.checkLogs( ONOS1Ip )
+        print main.ONOSbench.checkLogs( ONOS1Ip, restart=True )
 
         main.step( "Packing and rotating pcap archives" )
         os.system( "~/TestON/dependencies/rotate.sh " + str( testname ) )
+
+        try:
+            timerLog = open( main.logdir + "/Timers.csv", 'w')
+            # Overwrite with empty line and close
+            labels = "Gossip Intents, Restart"
+            data = str( gossipTime ) + ", " + str( main.restartTime )
+            timerLog.write( labels + "\n" + data )
+            timerLog.close()
+        except NameError, e:
+            main.log.exception(e)
 
     def CASE14( self, main ):
         """
@@ -1754,7 +1778,6 @@ class HATestSingleInstanceRestart:
         assert utilities.assert_equals, "utilities.assert_equals not defined"
         leaderResult = main.TRUE
         description = "Check that Leadership Election is still functional"
-        main.log.report( description )
         main.case( description )
         main.step( "Find current leader and withdraw" )
         leader = main.ONOScli1.electionTestLeader()
@@ -1763,7 +1786,7 @@ class HATestSingleInstanceRestart:
         if leader == ONOS1Ip:
             oldLeader = getattr( main, "ONOScli1" )
         elif leader is None or leader == main.FALSE:
-            main.log.report(
+            main.log.error(
                 "Leader for the election app should be an ONOS node," +
                 "instead got '" + str( leader ) + "'" )
             leaderResult = main.FALSE
@@ -1783,14 +1806,14 @@ class HATestSingleInstanceRestart:
         main.step( "Make sure new leader is elected" )
         leaderN = main.ONOScli1.electionTestLeader()
         if leaderN == leader:
-            main.log.report( "ONOS still sees " + str( leaderN ) +
+            main.log.error( "ONOS still sees " + str( leaderN ) +
                              " as leader after they withdrew" )
             leaderResult = main.FALSE
         elif leaderN == main.FALSE:
             # error in  response
             # TODO: add check for "Command not found:" in the driver, this
             # means the app isn't loaded
-            main.log.report( "Something is wrong with electionTestLeader " +
+            main.log.error( "Something is wrong with electionTestLeader " +
                              "function, check the error logs" )
             leaderResult = main.FALSE
         elif leaderN is None:
@@ -1868,6 +1891,7 @@ class HATestSingleInstanceRestart:
         """
         Check for basic functionality with distributed primitives
         """
+        import json
         # Make sure variables are defined/set
         assert numControllers, "numControllers not defined"
         assert main, "main not defined"
@@ -1922,7 +1946,7 @@ class HATestSingleInstanceRestart:
         # Check that counter incremented numController times
         pCounterResults = True
         for i in addedPValues:
-            tmpResult = i  in pCounters
+            tmpResult = i in pCounters
             pCounterResults = pCounterResults and tmpResult
             if not tmpResult:
                 main.log.error( str( i ) + " is not in partitioned "
@@ -1992,27 +2016,40 @@ class HATestSingleInstanceRestart:
         main.step( "Counters we added have the correct values" )
         correctResults = main.TRUE
         for i in range( numControllers ):
-            current = onosCounters[i]
+            current = json.loads( onosCounters[i] )
+            pValue = None
+            iValue = None
             try:
-                pValue = current.get( pCounterName )
-                iValue = current.get( iCounterName )
-                if pValue == pCounterValue:
-                    main.log.info( "Partitioned counter value is correct" )
-                else:
-                    main.log.error( "Partitioned counter value is incorrect," +
-                                    " expected value: " + str( pCounterValue )
-                                    + " current value: " + str( pValue ) )
-                    correctResults = main.FALSE
-                if iValue == iCounterValue:
-                    main.log.info( "In memory counter value is correct" )
-                else:
-                    main.log.error( "In memory counter value is incorrect, " +
-                                    "expected value: " + str( iCounterValue ) +
-                                    " current value: " + str( iValue ) )
-                    correctResults = main.FALSE
+                for database in current:
+                    partitioned = database.get( 'partitionedDatabaseCounters' )
+                    if partitioned:
+                        for value in partitioned:
+                            if value.get( 'name' ) == pCounterName:
+                                pValue = value.get( 'value' )
+                                break
+                    inMemory = database.get( 'inMemoryDatabaseCounters' )
+                    if inMemory:
+                        for value in inMemory:
+                            if value.get( 'name' ) == iCounterName:
+                                iValue = value.get( 'value' )
+                                break
             except AttributeError, e:
                 main.log.error( "ONOS" + str( i + 1 ) + " counters result " +
                                 "is not as expected" )
+                correctResults = main.FALSE
+            if pValue == pCounterValue:
+                main.log.info( "Partitioned counter value is correct" )
+            else:
+                main.log.error( "Partitioned counter value is incorrect," +
+                                " expected value: " + str( pCounterValue )
+                                + " current value: " + str( pValue ) )
+                correctResults = main.FALSE
+            if iValue == iCounterValue:
+                main.log.info( "In memory counter value is correct" )
+            else:
+                main.log.error( "In memory counter value is incorrect, " +
+                                "expected value: " + str( iCounterValue ) +
+                                " current value: " + str( iValue ) )
                 correctResults = main.FALSE
         utilities.assert_equals( expect=main.TRUE,
                                  actual=correctResults,

@@ -279,13 +279,12 @@ class TestON:
                         self.stepCache += "No Result\n"
                         #self.stepCache += "No Result  <ac:emoticon ac:name=\"warning\" /></li>\n"
                     self.stepResults.append(self.STEPRESULT)
-            except TypeError,e:
-                print "\nException in the following section of code: " +\
-                      str(testCaseNumber) + "." + str(step) + ": " +\
-                      self.stepName
+            except StandardError as e:
+                self.log.exception( "\nException in the following section of" +
+                                    " code: " + str(testCaseNumber) + "." +
+                                    str(step) + ": " + self.stepName )
                 #print code[testCaseNumber][step]
                 self.stepCount = self.stepCount + 1
-                self.log.exception(e)
                 self.logger.updateCaseResults(self)
                 #WIKI results
                 self.log.wiki( "<ul>" )

@@ -453,7 +453,6 @@ class FuncIntent:
                                        expectedLink=18 )
 
         stepResult = main.TRUE
-        main.step( "NOOPTION: Add point intents between h1 and h9" )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
                                  onpass="NOOPTION: Add point intent successful",

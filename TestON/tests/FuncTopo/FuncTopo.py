@@ -13,6 +13,7 @@ class FuncTopo:
     def CASE10( self, main ):
         import time
         import os
+        import imp
         """
         Startup sequence:
         cell <name>
@@ -32,6 +33,10 @@ class FuncTopo:
         except NameError:
             init = False
 
+        main.wrapper = imp.load_source( 'FuncTopoFunction', '/home/admin/' +
+                                        'TestON/tests/FuncTopo/Dependency/' +
+                                        'FuncTopoFunction.py')
+
         #Local variables
         cellName = main.params[ 'ENV' ][ 'cellName' ]
         apps = main.params[ 'ENV' ][ 'cellApps' ]
@@ -42,13 +47,16 @@ class FuncTopo:
         main.numSwitch = int( main.params[ 'MININET' ][ 'switch' ] )
         main.numLinks = int( main.params[ 'MININET' ][ 'links' ] )
         main.numCtrls = main.params[ 'CTRL' ][ 'num' ]
+        main.hostsData = {}
         PULLCODE = False
         if main.params[ 'GIT' ][ 'pull' ] == 'True':
             PULLCODE = True
         main.case( "Setting up test environment" )
         main.CLIs = []
+        main.nodes = []
         for i in range( 1, int( main.numCtrls ) + 1 ):
             main.CLIs.append( getattr( main, 'ONOScli' + str( i ) ) )
+            main.nodes.append( getattr( main, 'ONOS' + str( i ) ) )
 
         # -- INIT SECTION, ONLY RUNS ONCE -- #
         if init == False:
@@ -188,7 +196,32 @@ class FuncTopo:
                                   "s" )
         #main.ONOSbench.logReport( globalONOSip[1], [ "INFO" ], "d" )
 
-    def CASE1001( self, main )
-    """
-        Test topology discovery
-    """
+    def CASE1001( self, main ):
+        """
+            Test topology discovery
+        """
+        main.case( "Topology discovery test" )
+        main.topoName = ""
+
+        stepResult = main.TRUE
+        main.step( "Tree 3-3 topology" )
+        mnCmd = "mn --topo=tree,3,3 --controller=remote,ip=$OC1 --mac"
+        stepResult = main.wrapper.testTopology( main,
+                                                mnCmd=mnCmd,
+                                                clean=False )
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="Tree 3-3 topology successful",
+                                 onfail="Tree 3-3 topology failed" )
+
+        """
+        main.step( "Tree 4-3 topology" )
+        mnCmd = "mn --topo=tree,4,3 --controller=remote,ip=$OC1 --mac"
+        stepResult = main.wrapper.testTopology( main,
+                                                mnCmd=mnCmd,
+                                                clean=True)
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="Tree 4-3 topology successful",
+                                 onfail="Tree 4-3 topology failed" )
+        """

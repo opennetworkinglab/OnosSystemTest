@@ -96,7 +96,7 @@ class MininetCliDriver( Emulator ):
             main.cleanup()
             main.exit()
 
-    def startNet( self, topoFile='', args='', timeout=120 ):
+    def startNet( self, topoFile='', args='', mnCmd='', timeout=120 ):
         """
         Starts Mininet accepts a topology(.py) file and/or an optional
         argument ,to start the mininet, as a parameter.
@@ -131,26 +131,31 @@ class MininetCliDriver( Emulator ):
                                 "Mininet took too long... " )
             # Craft the string to start mininet
             cmdString = "sudo "
-            if topoFile is None or topoFile == '':  # If no file is given
-                main.log.info( self.name + ": building fresh Mininet" )
-                cmdString += "mn "
-                if args is None or args == '':
-                    # If no args given, use args from .topo file
-                    args = self.options[ 'arg1' ] +\
-                                 " " + self.options[ 'arg2' ] +\
-                                 " --mac --controller " +\
-                                 self.options[ 'controller' ] + " " +\
-                                 self.options[ 'arg3' ]
-                else:  # else only use given args
-                    pass
-                    # TODO: allow use of topo args and method args?
-            else:  # Use given topology file
-                main.log.info( "Starting Mininet from topo file " + topoFile )
-                cmdString += topoFile + " "
-                if args is None:
-                    args = ''
-                    # TODO: allow use of args from .topo file?
-            cmdString += args
+            if not mnCmd:
+                if topoFile is None or topoFile == '':  # If no file is given
+                    main.log.info( self.name + ": building fresh Mininet" )
+                    cmdString += "mn "
+                    if args is None or args == '':
+                        # If no args given, use args from .topo file
+                        args = self.options[ 'arg1' ] +\
+                                     " " + self.options[ 'arg2' ] +\
+                                     " --mac --controller " +\
+                                     self.options[ 'controller' ] + " " +\
+                                     self.options[ 'arg3' ]
+                    else:  # else only use given args
+                        pass
+                        # TODO: allow use of topo args and method args?
+                else:  # Use given topology file
+                    main.log.info( "Starting Mininet from topo file " + topoFile )
+                    cmdString += topoFile + " "
+                    if args is None:
+                        args = ''
+                        # TODO: allow use of args from .topo file?
+                cmdString += args
+            else:
+                main.log.info( "Starting Mininet topology using '" + mnCmd +
+                               "' command" )
+                cmdString += mnCmd
             # Send the command and check if network started
             self.handle.sendline( "" )
             self.handle.expect( '\$' )

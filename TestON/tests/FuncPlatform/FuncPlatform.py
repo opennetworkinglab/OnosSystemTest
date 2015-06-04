@@ -154,5 +154,50 @@ class FuncPlatform:
                 onpass= 'App activation of ' + str(appList) + ' successful',
                 onfail= 'App activation failed ' + str(appResult) )
 
+    def CASE4( self, main ):
+        """
+        Download ONOS tar.gz built from latest nightly
+        (following tutorial on wiki) and run ONOS directly on the
+        instance
+        """
+        import imp
+
+        targz = main.params['DEP']['targz']
+        clusterCount = main.params['CTRL']['num']
+       
+        startClassName = main.params['DEP']['startupClassName']
+        startSrc = main.params['DEP']['startupSrc']
+
+        shutdownClassName = main.params['DEP']['shutdownClassName']
+        shutdownSrc = main.params['DEP']['shutdownSrc']
+
+        # Import files to use its methods
+        try:
+            startup = imp.load_source( startClassName, startSrc )
+            shutdown = imp.load_source( shutdownClassName, shutdownSrc )
+        except ImportError:
+            main.log.error( "Error importing class " +
+                    str(startupClassName) + " from " + str(startupSrc) )
+            main.cleanup()
+            main.exit()
+
+        main.case( 'Install ONOS from onos.tar.gz file' )
+
+        main.step( 'Killing all ONOS instances previous started' )
+        killResult = shutdown.killOnosNodes( main.ONOSips )
+        utilities.assert_equals( expect=main.TRUE,
+                actual = killResult,
+                onpass = 'All Onos nodes successfully killed',
+                onfail = 'Onos nodes were not successfully killed' )
+
+        main.step( 'Starting ONOS using tar.gz on all nodes' )
+        installResult = startup.installOnosFromTar( targz, main.ONOSips )
+        utilities.assert_equals( expect=main.TRUE,
+                actual = installResult,
+                onpass= 'Onos tar.gz installation successful',
+                onfail= 'Onos tar.gz installation failed' )
+
+
+
 
 

@@ -4,9 +4,10 @@ Startup related methods for ONOS
 
 Guidelines:
     * Group sequential functionalities together
-    * Methods should not prohibit cross platform execution
+    * Methods should not be dependent on platform
     * Return main.TRUE on success or comprehensive error message 
       on failure (TBD)
+    * All methods should be consistent in expected behavior
 """
 import time
 import json
@@ -47,6 +48,10 @@ def initOnosStartupSequence( cellName, appStr, benchIp, mnIp, onosIps ):
         * Force install ONOS package
         * Start ONOS service
         * Start ONOS cli
+    
+    Also verifies that Onos is up and running by 
+    'isup' driver function which executs 
+    'onos-wait-for-start'
     """
 
     # NOTE: leave out create cell file until bug addressed
@@ -91,6 +96,52 @@ def initOnosStartupSequence( cellName, appStr, benchIp, mnIp, onosIps ):
     else:
         return main.FALSE
 
+def installOnosFromTar( wgetAddr, nodeIps ):
+    """
+    Install Onos directly from tar.gz file.
+    Due to the nature of the specific steps required 
+    to startup Onos in this fashion, all commands
+    required to start Onos from tar.gz will be
+    grouped in this method. 
+
+    1) wget latest onos tar.gz on onos node
+    2) untar package
+    3) specify onos-config cluster
+    4) start onos via onos-service
+    5) form onos cluster using onos-form-cluster
+    6) check for successful startup
+
+    Specify the download link for the tar.gz.
+    Provide a list of nodeIps
+
+    Ex) wgetAddr = 'https://mytargzdownload.com/file.tar.gz'
+        nodeIps = ['10.0.0.1', '10.0.0.2']
+    """
+    if isinstance( nodeIps, ( int, basestring ) ):
+        main.log.error( 'Please pass in a list of string nodes' )
+        return main.FALSE
+
+    clusterCount = len( nodeIps )
+
+    main.log.info( 'Initiating Onos installation sequence ' +
+            'using tar.gz ... This may take a few minutes' )
+
+    for node in range( 0, clusterCount ):
+        try:
+            main.ONOSnode[node].handle.sendline( 'wget ' + wgetAddr )
+            main.ONOSnode[node].handle.expect( 'saved' )
+            main.ONOSnode[node].handle.expect( '\$' )
+            main.log.info( 'Successfully downloaded tar.gz ' +
+                    'on node: ' + str( main.ONOSips[node] ) ) 
+        except Exception:
+            # NOTE: Additional exception may be appropriate 
+            main.log.error( 'Uncaught exception while ' +
+                    'downloading Onos tar.gz: ' + 
+                    main.ONOSnode[node].handle.before )
+            return main.FALSE
+
+    return main.TRUE
+    
 def addAndStartOnosNode( nodeIps ):
     """
     A scale-out scenario that adds specified list of 
@@ -99,4 +150,3 @@ def addAndStartOnosNode( nodeIps ):
     Ex) nodeIps = ['10.0.0.2', '10.0.0.3', 10.0.0.4']
     """
     main.log.info( 'addAndStartOnosNode implement me!' )
-

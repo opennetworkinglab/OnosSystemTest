@@ -201,7 +201,7 @@ class FuncTopo:
             Test topology discovery
         """
         main.case( "Topology discovery test" )
-        main.topoName = ""
+        main.topoName = "TREE3-3"
 
         stepResult = main.TRUE
         main.step( "Tree 3-3 topology" )

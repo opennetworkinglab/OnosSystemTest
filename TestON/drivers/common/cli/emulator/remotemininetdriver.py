@@ -91,8 +91,9 @@ class RemoteMininetDriver( Emulator ):
         elif re.search( "found multiple mininet", outputs ):
             return main.ERROR
         else:
+            # TODO: Parse for failed pings, give some truncated output
             main.log.error( "Error, unexpected output in the ping file" )
-            #main.log.warn( outputs )
+            main.log.warn( outputs )
             return main.TRUE
 
     def arping( self, host="", ip="10.128.20.211" ):

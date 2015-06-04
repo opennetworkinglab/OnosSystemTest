@@ -485,8 +485,10 @@ class OnosDriver( CLI ):
             main.exit()
 
     def getBranchName( self ):
+        main.log.info( "self.home = " )
+        main.log.info( self.home )
         self.handle.sendline( "cd " + self.home )
-        self.handle.expect( "ONOS\$" )
+        self.handle.expect( self.home + "\$" )
         self.handle.sendline( "git name-rev --name-only HEAD" )
         self.handle.expect( "git name-rev --name-only HEAD" )
         self.handle.expect( "\$" )
@@ -1519,13 +1521,18 @@ class OnosDriver( CLI ):
         except Exception:
             main.log.exception( "Copying files failed" )
 
-    def checkLogs( self, onosIp ):
+    def checkLogs( self, onosIp, restart=False):
         """
         runs onos-check-logs on the given onos node
+        If restart is True, use the old version of onos-check-logs which
+            does not print the full stacktrace, but shows the entire log file,
+            including across restarts
         returns the response
         """
         try:
             cmd = "onos-check-logs " + str( onosIp )
+            if restart:
+                cmd += " old"
             self.handle.sendline( cmd )
             self.handle.expect( cmd )
             self.handle.expect( "\$" )

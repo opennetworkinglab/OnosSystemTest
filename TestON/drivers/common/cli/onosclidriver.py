@@ -281,7 +281,11 @@ class OnosCliDriver( CLI ):
                 lvlStr = "--level=" + level
 
             self.handle.sendline( "" )
-            self.handle.expect( "onos>" )
+            i = self.handle.expect( [ "onos>", pexpect.TIMEOUT ] )
+            # TODO: look for bash prompt as well
+            if i == 1:
+                self.handle.sendline( "" )
+                self.handle.expect( "onos>" )
             self.handle.sendline( "log:log " + lvlStr + " " + cmdStr )
             self.handle.expect( "log:log" )
             self.handle.expect( "onos>" )
@@ -290,7 +294,10 @@ class OnosCliDriver( CLI ):
             if re.search( "Error", response ):
                 return main.FALSE
             return main.TRUE
-
+        except pexpect.TIMEOUT:
+            main.log.exception( self.name + ": TIMEOUT exception found" )
+            main.cleanup()
+            main.exit()
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
@@ -3158,7 +3165,6 @@ class OnosCliDriver( CLI ):
             else:
                 main.log.error( self.name + ": setTestAdd did not" +
                                 " match expected output" )
-                main.log.debug( self.name + " expected: " + pattern )
                 main.log.debug( self.name + " actual: " + repr( output ) )
                 return main.ERROR
         except AssertionError:
@@ -3446,42 +3452,31 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def counters( self ):
+    def counters( self, jsonFormat=True ):
         """
         Command to list the various counters in the system.
         returns:
-            A dict containing the counters in the system with the counter
-                names being the keys and the value of the counters being the
-                values OR
+            if jsonFormat, a string of the json object returned by the cli
+            command
+            if not jsonFormat, the normal string output of the cli command
             None on error
         """
-        #FIXME: JSON FORMAT
         try:
             counters = {}
             cmdStr = "counters"
+            if jsonFormat:
+                cmdStr += " -j"
             output = self.sendline( cmdStr )
             assert "Error executing command" not in output
             main.log.info( self.name + ": " + output )
-            for line in output.splitlines():
-                match = re.search( "name=(\S+) value=(\d+)", line )
-                if match:
-                    key = match.group( 1 )
-                    value = int( match.group( 2 ) )
-                    counters[key] = value
-                else:
-                    main.log.error( self.name + ": counters did not match " +
-                                    "expected output" )
-                    main.log.debug( self.name + " expected: " + pattern )
-                    main.log.debug( self.name + " actual: " + repr( output ) )
-                    return None
-            return counters
+            return output
         except AssertionError:
             main.log.error( "Error in processing 'counters' command: " +
                             str( output ) )
-            return main.ERROR
+            return None
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
-            return main.ERROR
+            return None
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )

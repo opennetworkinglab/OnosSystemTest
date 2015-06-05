@@ -1,5 +1,5 @@
 <PARAMS>
-    <testcases>1,2,3</testcases>
+    <testcases>1,2,3,4</testcases>
     <DEP>
         <startupSrc>
             /home/admin/ONLabTest/TestON/tests/FuncPlatform/Dependency/Startup.py
@@ -14,6 +14,24 @@
         <appClassName>
             App
         </appClassName>
+    
+        <logSrc>
+            /home/admin/ONLabTest/TestON/tests/FuncPlatform/Dependency/Logger.py
+        </logSrc>
+        <logClassName>
+            Log
+        </logClassName>
+   
+        <shutdownSrc>
+            /home/admin/ONLabTest/TestON/tests/FuncPlatform/Dependency/Shutdown.py
+        </shutdownSrc>
+        <shutdownClassName>
+            Shutdown
+        </shutdownClassName>
+
+        <targz>
+        http://downloads.onosproject.org/nightly/onos-1.2.0.latest-NIGHTLY.tar.gz
+        </targz>
     </DEP> 
 
     <CTRL>

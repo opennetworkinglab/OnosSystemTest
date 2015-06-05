@@ -98,6 +98,27 @@ class OnosDriver( CLI ):
             response = main.FALSE
         return response
 
+    def getEpochMs( self ):
+        """
+        Returns milliseconds since epoch
+        
+        When checking multiple nodes in a for loop, 
+        around a hundred milliseconds of difference (ascending) is 
+        generally acceptable due to calltime of the function. 
+        Few seconds, however, is not and it means clocks 
+        are off sync. 
+        """
+        try:
+            self.handle.sendline( 'date +%s.%N' )
+            self.handle.expect( 'date \+\%s\.\%N' )
+            self.handle.expect( '\$' )
+            epochMs = self.handle.before
+            return epochMs
+        except Exception:
+            main.log.exception( 'Uncaught exception getting epoch time' )
+            main.cleanup()
+            main.exit()
+
     def onosPackage( self, opTimeout=30 ):
         """
         Produce a self-contained tar.gz file that can be deployed

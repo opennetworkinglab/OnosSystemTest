@@ -280,13 +280,11 @@ class TestON:
                     self.stepCache += "\t"+str(testCaseNumber)+"."+str(step)+" "+self.stepName+" - "
                     if self.STEPRESULT == self.TRUE:
                         self.stepCache += "PASS\n"
-                        #self.stepCache += "PASS  <ac:emoticon ac:name=\"tick\" /></li>\n"
                     elif self.STEPRESULT == self.FALSE:
                         self.stepCache += "FAIL\n"
-                        #self.stepCache += "FAIL  <ac:emoticon ac:name=\"cross\" /></li>\n"
+                        # TODO: Print the on-fail statement here
                     else:
                         self.stepCache += "No Result\n"
-                        #self.stepCache += "No Result  <ac:emoticon ac:name=\"warning\" /></li>\n"
                     self.stepResults.append(self.STEPRESULT)
             except StandardError as e:
                 self.log.exception( "\nException in the following section of" +

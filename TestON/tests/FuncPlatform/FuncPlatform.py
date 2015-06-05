@@ -36,6 +36,8 @@ class FuncPlatform:
         Main scope initialization case
         Must include to run any other test cases
         """   
+        import imp 
+
         # NOTE: Hardcoded application name subject to change
         #       closely monitor and make changes when necessary
         #       (or implement ways to dynamically get names)
@@ -54,7 +56,15 @@ class FuncPlatform:
             'mobility' : 'org.onosproject.mobility',
             'netconf' : 'org.onosproject.netconf', 
             'null' : 'org.onosproject.null',
-            'optical' : 'org.onosproject.optical'
+            'optical' : 'org.onosproject.optical',
+            'pcep' : 'org.onosproject.pcep',
+            'proxyarp' : 'org.onosproject.proxyarp',
+            'reactive.routing' : 'org.onosproject.reactive.routing',
+            'sdnip' : 'org.onosproject.sdnip',
+            'segmentrouting' : 'org.onosproject.segmentrouting',
+            'tunnel' : 'org.onosproject.tunnel',
+            'virtualbng' : 'org.onosproject.virtualbng',
+            'xosintegration' : 'org.onosproject.xosintegration'
             } 
         # List of ONOS ip's specififed in params
         main.ONOSips = [] 
@@ -67,13 +77,38 @@ class FuncPlatform:
                     getattr( main, 'ONOS' + str(node+1) + 'cli' ) )
             main.ONOSnode.append(
                     getattr( main, 'ONOS' + str(node+1) ) )
+       
+        # Application source and name definitions
+        startupSrc = main.params['DEP']['startupSrc']
+        startupClassName = main.params['DEP']['startupClassName']
+        
+        appClassName = main.params['DEP']['appClassName']
+        appSrc = main.params['DEP']['appSrc']
+
+        logClassName = main.params['DEP']['logClassName']
+        logSrc = main.params['DEP']['logSrc']
+
+        shutdownClassName = main.params['DEP']['shutdownClassName']
+        shutdownSrc = main.params['DEP']['shutdownSrc']
+
+        # Importing dependency class(es)
+        # Refer to source files in Dependency folder to
+        # make changes to its respective methods
+        # Be weary of naming collisions
+        try:
+            main.startup = imp.load_source( startupClassName, startupSrc )
+            main.app = imp.load_source( appClassName, appSrc )
+            main.onosLog = imp.load_source( logClassName, logSrc )
+            main.shutdown = imp.load_source( shutdownClassName, shutdownSrc )
+        except ImportError:
+            main.log.error( 'Error importing class file(s). Please ' +
+                    'check file location' )
+            main.cleanup()
+            main.exit()
 
     def CASE2( self, main ):
         import time
-        import imp
 
-        startupSrc = main.params['DEP']['startupSrc']
-        startupClassName = main.params['DEP']['startupClassName']
         cellName = main.params['CELL']['name']
         appStr = main.params['CELL']['appStr']
         benchIp = main.params['BENCH']['ip']
@@ -81,21 +116,10 @@ class FuncPlatform:
         gitPull = main.params['GIT']['pull']
         mnIp = main.params['MN']['ip']
 
-        # importing dependency class(es)
-        # Refer to source files in Dependency folder to
-        # make changes to its respective methods
-        try:
-            startup = imp.load_source( startupClassName, startupSrc )
-        except ImportError:
-            main.log.error( "Error importing class " +
-                    str(startupClassName) + " from " + str(startupSrc) )
-            main.cleanup()
-            main.exit()
-
         main.case( 'Setup environment and install ONOS' )
         if gitPull == 'on': 
             main.step( 'Git pull and clean install' )
-            gitPullResult = startup.gitPullAndMci( branchName )
+            gitPullResult = main.startup.gitPullAndMci( branchName )
             utilities.assert_equals( expect=main.TRUE,
                         actual=gitPullResult,
                         onpass='Git pull and install successful',
@@ -103,7 +127,7 @@ class FuncPlatform:
                             str(gitPullResult) )
         
         main.step( 'Initiate ONOS startup sequence' )    
-        startupResult = startup.initOnosStartupSequence(
+        startupResult = main.startup.initOnosStartupSequence(
                 cellName, appStr, benchIp, mnIp, main.ONOSips )
         utilities.assert_equals( expect=main.TRUE,
                         actual=startupResult,
@@ -113,26 +137,8 @@ class FuncPlatform:
         
     def CASE3( self, main ):
         import time
-        import imp
 
         main.case( 'Activate applications and check installation' )
-        # Activate applications and check consistency 
-        # across clusters
-        appClassName = main.params['DEP']['appClassName']
-        appSrc = main.params['DEP']['appSrc']
-
-        logClassName = main.params['DEP']['logClassName']
-        logSrc = main.params['DEP']['logSrc']
-
-        # Import application file to use its methods
-        try:
-            app = imp.load_source( appClassName, appSrc )
-            onosLog = imp.load_source( logClassName, logSrc )
-        except ImportError:
-            main.log.error( "Error importing class " +
-                    str(startupClassName) + " from " + str(startupSrc) )
-            main.cleanup()
-            main.exit()
        
         # NOTE: Test only
         # Unceremoniously kill onos 2 
@@ -141,14 +147,18 @@ class FuncPlatform:
         time.sleep( 30 )
 
         main.step( 'Sample Onos log check' )
-        logResult = onosLog.checkOnosLog( main.ONOSips[0] )
+        logResult = main.onosLog.checkOnosLog( main.ONOSips[0] )
         main.log.info( logResult )
-        # TODO: Define assertion pass / fail criteria
+        # TODO: Define pass criteria
+        utilities.assert_equals( expect=main.TRUE,
+                actual=main.TRUE,
+                onpass= 'Logging successful',
+                onfail= 'Logging failed ' )
 
         # Sample app activation
         main.step( 'Activating applications metrics and fwd' ) 
         appList = ['metrics', 'fwd']
-        appResult = app.activate( appList ) 
+        appResult = main.app.activate( appList ) 
         utilities.assert_equals( expect=main.TRUE,
                 actual=appResult,
                 onpass= 'App activation of ' + str(appList) + ' successful',
@@ -165,39 +175,20 @@ class FuncPlatform:
         targz = main.params['DEP']['targz']
         clusterCount = main.params['CTRL']['num']
        
-        startClassName = main.params['DEP']['startupClassName']
-        startSrc = main.params['DEP']['startupSrc']
-
-        shutdownClassName = main.params['DEP']['shutdownClassName']
-        shutdownSrc = main.params['DEP']['shutdownSrc']
-
-        # Import files to use its methods
-        try:
-            startup = imp.load_source( startClassName, startSrc )
-            shutdown = imp.load_source( shutdownClassName, shutdownSrc )
-        except ImportError:
-            main.log.error( "Error importing class " +
-                    str(startupClassName) + " from " + str(startupSrc) )
-            main.cleanup()
-            main.exit()
-
         main.case( 'Install ONOS from onos.tar.gz file' )
 
         main.step( 'Killing all ONOS instances previous started' )
-        killResult = shutdown.killOnosNodes( main.ONOSips )
+        killResult = main.shutdown.killOnosNodes( main.ONOSips )
         utilities.assert_equals( expect=main.TRUE,
                 actual = killResult,
                 onpass = 'All Onos nodes successfully killed',
                 onfail = 'Onos nodes were not successfully killed' )
 
         main.step( 'Starting ONOS using tar.gz on all nodes' )
-        installResult = startup.installOnosFromTar( targz, main.ONOSips )
+        installResult = main.startup.installOnosFromTar( targz, main.ONOSips )
         utilities.assert_equals( expect=main.TRUE,
                 actual = installResult,
                 onpass= 'Onos tar.gz installation successful',
                 onfail= 'Onos tar.gz installation failed' )
-
-
-
 
 

@@ -43,6 +43,10 @@ def activate( apps, nodeToActivateFrom=0 ):
             main.log.error( 'There was an error with the key '+
                     str(app) + '. Check the appList dictionary' )
             return main.FALSE
+        except Exception:
+            main.log.error( 'Uncaught exception error while ' +
+                    'activating applications: ' + str(app) )
+            return main.FALSE
 
     return main.TRUE
 

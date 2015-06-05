@@ -199,9 +199,15 @@ def installOnosFromTar( wgetAddr, nodeIps ):
                     'onos-service server command ' + 
                     str( main.ONOSnode[node].handle.before ) )
             return main.FALSE
+    
+    iu = main.TRUE
+    for node in nodeIps:
+        iu = iu and main.ONOSbench.isup( node )
 
-    # TODO: Check for startup (isup)
-    return main.TRUE
+    if iu == main.TRUE: 
+        return main.TRUE
+    else:
+        return main.FALSE
     
 def addAndStartOnosNode( nodeIps ):
     """

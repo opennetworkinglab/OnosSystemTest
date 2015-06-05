@@ -121,12 +121,22 @@ def installOnosFromTar( wgetAddr, nodeIps ):
         main.log.error( 'Please pass in a list of string nodes' )
         return main.FALSE
 
+    # Obtain filename from provided address
+    # assumes that filename is separated by '/' character
+    f_name = ''
+    addr = str( wgetAddr ).split('/')
+    for phrase in addr:
+        if 'tar.gz' in phrase:
+            f_name = str( phrase )
+            main.log.info( 'Using ' + f_name + ' as file' ) 
+
     clusterCount = len( nodeIps )
 
     main.log.info( 'Initiating Onos installation sequence ' +
             'using tar.gz ... This may take a few minutes' )
 
     for node in range( 0, clusterCount ):
+        # Use the wgetAddr to download a new tar.gz from server
         try:
             main.ONOSnode[node].handle.sendline( 'wget ' + wgetAddr )
             main.ONOSnode[node].handle.expect( 'saved' )
@@ -140,6 +150,57 @@ def installOnosFromTar( wgetAddr, nodeIps ):
                     main.ONOSnode[node].handle.before )
             return main.FALSE
 
+    for node in range( 0, clusterCount ):
+        # Untar files on all nodes, then enter the 
+        # newly created directory
+        try:
+            main.ONOSnode[node].handle.sendline( 'tar zxvf ' + f_name )
+            # Verbose output of tar will contain some onos returns
+            main.ONOSnode[node].handle.expect( 'onos' )
+            main.ONOSnode[node].handle.expect( '\$' )
+            # NOTE: Making an assumption here: 
+            #       the directory created by tar file has a name that
+            #       starts with 'onos-' followed by version number
+            #       '1.2.0'. If this is NOT true, this method must
+            #       be changed to enter the correct directory.
+            #       The directory name is currently dynamic 
+            #       and depends on the day at which you downloaded
+            #       the tar file
+            # Enter onos- wildcard to disregard its version / date 
+            #       suffix
+            main.ONOSnode[node].handle.sendline( 'cd onos-*' )
+            main.ONOSnode[node].handle.expect( '\$' )
+            
+            main.ONOSnode[node].handle.sendline( 'pwd' )
+            main.ONOSnode[node].handle.expect( 'pwd' )
+            main.ONOSnode[node].handle.expect( '\$' )
+            pwd = main.ONOSnode[node].handle.before 
+            if 'onos' in str(pwd):
+                main.log.info( 'tar zxvf ' + f_name + ' successful ' +
+                        'on node ' + str( main.ONOSips[node] ) )
+
+        except Exception:
+            main.log.error( 'Uncaught exception while executing ' +
+                    'tar zxvf of ' + f_name + ': ' +
+                    main.ONOSnode[node].handle.before +
+                    main.ONOSnode[node].handle.after)
+            return main.FALSE
+
+    for node in range( 0, clusterCount ):
+        try:
+            main.ONOSnode[node].handle.sendline( 'bin/onos-service '+
+                    'server &' )
+            # Send some extra characters to run the process
+            main.ONOSnode[node].handle.sendline( '' )
+            main.ONOSnode[node].handle.sendline( '' )
+            main.ONOSnode[node].handle.expect( '\$' )
+        except Exception:
+            main.log.error( 'Uncaught exception while executing ' +
+                    'onos-service server command ' + 
+                    str( main.ONOSnode[node].handle.before ) )
+            return main.FALSE
+
+    # TODO: Check for startup (isup)
     return main.TRUE
     
 def addAndStartOnosNode( nodeIps ):

@@ -201,27 +201,13 @@ class FuncTopo:
             Test topology discovery
         """
         main.case( "Topology discovery test" )
-        main.topoName = "TREE3-3"
-
-        stepResult = main.TRUE
-        main.step( "Tree 3-3 topology" )
-        mnCmd = "mn --topo=tree,3,3 --controller=remote,ip=$OC1 --mac"
+        main.step( "Torus 5-5 topology" )
+        main.topoName = "TORUS5-5"
+        mnCmd = "mn --topo=torus,5,5 --controller=remote,ip=$OC1 --mac"
         stepResult = main.wrapper.testTopology( main,
                                                 mnCmd=mnCmd,
-                                                clean=False )
+                                                clean=False)
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
-                                 onpass="Tree 3-3 topology successful",
-                                 onfail="Tree 3-3 topology failed" )
-
-        """
-        main.step( "Tree 4-3 topology" )
-        mnCmd = "mn --topo=tree,4,3 --controller=remote,ip=$OC1 --mac"
-        stepResult = main.wrapper.testTopology( main,
-                                                mnCmd=mnCmd,
-                                                clean=True)
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="Tree 4-3 topology successful",
-                                 onfail="Tree 4-3 topology failed" )
-        """
+                                 onpass="Torus 5-5 topology successful",
+                                 onfail="Torus 5-5 topology failed" )

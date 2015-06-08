@@ -160,6 +160,15 @@ class OnosCHO:
         case1Result = installResult and uninstallResult and statusResult and startCliResult
         
         main.log.info("Time for connecting to CLI: %2f seconds" %(time2-time1))
+
+        time.sleep( 15 )
+        logResult = main.TRUE
+        logStr = "log:set TRACE org.onosproject.net.intent.impl"
+        for i in range( int( main.numCtrls ) ):
+            logResult = main.CLIs[ i ].sendline( cmdStr=logStr )
+
+        cfgStr = "cfg set org.onosproject.net.intent.impl.IntentCleanup enabled false"
+        main.CLIs[ 0 ].sendline( cmdStr=cfgStr )
         utilities.assert_equals( expect=main.TRUE, actual=case1Result,
                                  onpass="Set up test environment PASS",
                                  onfail="Set up test environment FAIL" )
@@ -418,8 +427,8 @@ class OnosCHO:
         main.step( "Collect and store current number of switches and links" )
         topology_output = main.ONOScli1.topology()
         topology_result = main.ONOSbench.getTopology( topology_output )
-        numOnosDevices = topology_result[ 'deviceCount' ]
-        numOnosLinks = topology_result[ 'linkCount' ]
+        numOnosDevices = topology_result[ 'devices' ]
+        numOnosLinks = topology_result[ 'links' ]
         topoResult = main.TRUE
 
         if ( ( main.numMNswitches == int(numOnosDevices) ) and ( main.numMNlinks >= int(numOnosLinks) ) ):
@@ -545,6 +554,9 @@ class OnosCHO:
         ping_result = main.FALSE
         time1 = time.time()
         ping_result = main.Mininet1.pingall( timeout=main.pingTimeout,shortCircuit=True,acceptableFailed=15)
+        if not ping_result:
+            main.log.debug( "Pinging all again..." )
+            ping_result = main.Mininet1.pingall( timeout=main.pingTimeout,shortCircuit=True,acceptableFailed=15)
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -557,8 +569,12 @@ class OnosCHO:
         else:
             main.log.report( "Pingall Test in Reactive mode failed" )
 
+        main.attHosts = []
+        for i in range( 25 ):
+            main.attHosts.append( 'h' + str( i + 1 ) )
+        print main.attHosts
+
         main.step( "Disable Reactive forwarding" )
-       
         main.log.info( "Uninstall reactive forwarding app" )
         appResults = appResults and main.CLIs[0].deactivateApp( "org.onosproject.fwd" )
         pool = []
@@ -618,7 +634,7 @@ class OnosCHO:
         if appCheck != main.TRUE:
             main.log.warn( main.CLIs[0].apps() )
             main.log.warn( main.CLIs[0].appIDs() )
- 
+
         time.sleep( 10 )
 
         main.step( "Verify Pingall" )
@@ -883,8 +899,6 @@ class OnosCHO:
         checkIntentStateResult = main.ONOScli1.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
         checkIntentStateResult = main.ONOScli2.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
         checkIntentStateResult = main.ONOScli3.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
-        checkIntentStateResult = main.ONOScli4.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
-        checkIntentStateResult = main.ONOScli5.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
         if checkIntentStateResult:
             main.log.info( "All intents are installed correctly " )
         print "Checking flows state "
@@ -892,8 +906,6 @@ class OnosCHO:
         checkFlowsState = main.ONOScli1.checkFlowsState() and checkFlowsState
         checkFlowsState = main.ONOScli2.checkFlowsState() and checkFlowsState
         checkFlowsState = main.ONOScli3.checkFlowsState() and checkFlowsState
-        checkFlowsState = main.ONOScli4.checkFlowsState() and checkFlowsState
-        checkFlowsState = main.ONOScli5.checkFlowsState() and checkFlowsState
         if checkFlowsState:
             main.log.info( "All flows are added correctly" )
         else:
@@ -910,6 +922,10 @@ class OnosCHO:
         utilities.assert_equals( expect=main.TRUE, actual=pingResult,
                                  onpass="PING ALL PASS",
                                  onfail="PING ALL FAIL" )
+
+        pingallHostsResult = main.TRUE
+        if not pingResult:
+            pingallHostsResult = main.Mininet1.pingallHosts( main.attHosts )
 
         case60Result = ( intentResult and pingResult )
         
@@ -955,8 +971,6 @@ class OnosCHO:
         checkIntentStateResult = main.ONOScli1.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
         checkIntentStateResult = main.ONOScli2.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
         checkIntentStateResult = main.ONOScli3.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
-        checkIntentStateResult = main.ONOScli4.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
-        checkIntentStateResult = main.ONOScli5.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
         if checkIntentStateResult:
             main.log.info( "All intents are installed correctly " )
         print "Checking flows state "
@@ -964,8 +978,6 @@ class OnosCHO:
         checkFlowsState = main.ONOScli1.checkFlowsState() and checkFlowsState
         checkFlowsState = main.ONOScli2.checkFlowsState() and checkFlowsState
         checkFlowsState = main.ONOScli3.checkFlowsState() and checkFlowsState
-        checkFlowsState = main.ONOScli4.checkFlowsState() and checkFlowsState
-        checkFlowsState = main.ONOScli5.checkFlowsState() and checkFlowsState
         if checkFlowsState:
             main.log.info( "All flows are added correctly" )
         else:
@@ -1027,8 +1039,6 @@ class OnosCHO:
         checkIntentStateResult = main.ONOScli1.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
         checkIntentStateResult = main.ONOScli2.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
         checkIntentStateResult = main.ONOScli3.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
-        checkIntentStateResult = main.ONOScli4.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
-        checkIntentStateResult = main.ONOScli5.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
         if checkIntentStateResult:
             main.log.info( "All intents are installed correctly " )
         print "Checking flows state "
@@ -1036,8 +1046,6 @@ class OnosCHO:
         checkFlowsState = main.ONOScli1.checkFlowsState() and checkFlowsState
         checkFlowsState = main.ONOScli2.checkFlowsState() and checkFlowsState
         checkFlowsState = main.ONOScli3.checkFlowsState() and checkFlowsState
-        checkFlowsState = main.ONOScli4.checkFlowsState() and checkFlowsState
-        checkFlowsState = main.ONOScli5.checkFlowsState() and checkFlowsState
         if checkFlowsState:
             main.log.info( "All flows are added correctly" )
         else:
@@ -1100,14 +1108,17 @@ class OnosCHO:
                 END1=link1End1,
                 END2=main.randomLink1[ i ],
                 OPTION="down" )
+            time.sleep( 5 )
             main.Mininet1.link(
                 END1=link2End1,
                 END2=main.randomLink2[ i ],
                 OPTION="down" )
+            time.sleep( 5 )
             main.Mininet1.link(
                 END1=link3End1,
                 END2=main.randomLink3[ i ],
                 OPTION="down" )
+            time.sleep( 5 )
         time.sleep( link_sleep )
 
         topology_output = main.ONOScli2.topology()
@@ -1132,6 +1143,11 @@ class OnosCHO:
             "Time taken for Ping All: " +
             str( timeDiff ) +
             " seconds" )
+
+        pingallHostsResult = main.TRUE
+        if not pingResultLinkDown:
+            pingallHostsResult = main.Mininet1.pingallHosts( main.attHosts )
+
         utilities.assert_equals( expect=main.TRUE, actual=pingResultLinkDown,
                                  onpass="PING ALL PASS",
                                  onfail="PING ALL FAIL" )
@@ -1197,6 +1213,7 @@ class OnosCHO:
             "Time taken for Ping All: " +
             str( timeDiff ) +
             " seconds" )
+
         utilities.assert_equals( expect=main.TRUE, actual=pingResultLinkUp,
                                  onpass="PING ALL PASS",
                                  onfail="PING ALL FAIL" )
@@ -1244,14 +1261,17 @@ class OnosCHO:
                 END1=link1End1,
                 END2=main.randomLink1[ i ],
                 OPTION="down" )
+            time.sleep( 5 )
             main.Mininet1.link(
                 END1=link2End1,
                 END2=main.randomLink2[ i ],
                 OPTION="down" )
+            time.sleep( 5 )
             main.Mininet1.link(
                 END1=link3End1,
                 END2=main.randomLink3[ i ],
                 OPTION="down" )
+            time.sleep( 5 )
         time.sleep( link_sleep )
 
         topology_output = main.ONOScli2.topology()
@@ -1276,6 +1296,11 @@ class OnosCHO:
             "Time taken for Ping All: " +
             str( timeDiff ) +
             " seconds" )
+
+        pingallHostsResult = main.TRUE
+        if not pingResultLinkDown:
+            pingallHostsResult = main.Mininet1.pingallHosts( main.attHosts )
+
         utilities.assert_equals( expect=main.TRUE, actual=pingResultLinkDown,
                                  onpass="PING ALL PASS",
                                  onfail="PING ALL FAIL" )
@@ -1341,6 +1366,7 @@ class OnosCHO:
             "Time taken for Ping All: " +
             str( timeDiff ) +
             " seconds" )
+
         utilities.assert_equals( expect=main.TRUE, actual=pingResultLinkUp,
                                  onpass="PING ALL PASS",
                                  onfail="PING ALL FAIL" )
@@ -1717,7 +1743,7 @@ class OnosCHO:
                 t = main.Thread( target=cli.addPointIntent,
                         threadID=main.threadID,
                         name="addPointIntent",
-                        args=[deviceCombos[i][0],deviceCombos[i][1],1,1,"IPV4","",main.MACsDict.get(deviceCombos[i][1])])
+                        args=[deviceCombos[i][0],deviceCombos[i][1],1,1,"IPV4",main.MACsDict.get(deviceCombos[i][0]),main.MACsDict.get(deviceCombos[i][1])])
                 pool.append(t)
                 #time.sleep(1)
                 t.start()
@@ -1735,8 +1761,6 @@ class OnosCHO:
         checkIntentStateResult = main.ONOScli1.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
         checkIntentStateResult = main.ONOScli2.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
         checkIntentStateResult = main.ONOScli3.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
-        checkIntentStateResult = main.ONOScli4.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
-        checkIntentStateResult = main.ONOScli5.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
         if checkIntentStateResult:
             main.log.info( "All intents are installed correctly " )
         print "Checking flows state "
@@ -1744,14 +1768,12 @@ class OnosCHO:
         checkFlowsState = main.ONOScli1.checkFlowsState() and checkFlowsState
         checkFlowsState = main.ONOScli2.checkFlowsState() and checkFlowsState
         checkFlowsState = main.ONOScli3.checkFlowsState() and checkFlowsState
-        checkFlowsState = main.ONOScli4.checkFlowsState() and checkFlowsState
-        checkFlowsState = main.ONOScli5.checkFlowsState() and checkFlowsState
         if checkFlowsState:
             main.log.info( "All flows are added correctly" )
         else:
             main.log.info( "There may be some flows that are being remove" )
         time1 = time.time()
-        pingResult = main.Mininet1.pingall( timeout=main.pingTimeout )
+        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=True,acceptableFailed=5)
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -1761,6 +1783,10 @@ class OnosCHO:
         utilities.assert_equals( expect=main.TRUE, actual=pingResult,
                                  onpass="PING ALL PASS",
                                  onfail="PING ALL FAIL" )
+
+        pingallHostsResult = main.TRUE
+        if not pingResult:
+            pingallHostsResult = main.Mininet1.pingallHosts( main.attHosts )
 
         case90Result = ( intentResult and pingResult )
         
@@ -1809,8 +1835,6 @@ class OnosCHO:
         checkIntentStateResult = main.ONOScli1.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
         checkIntentStateResult = main.ONOScli2.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
         checkIntentStateResult = main.ONOScli3.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
-        checkIntentStateResult = main.ONOScli4.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
-        checkIntentStateResult = main.ONOScli5.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
         if checkIntentStateResult:
             main.log.info( "All intents are installed correctly " )
         print "Checking flows state "
@@ -1818,8 +1842,6 @@ class OnosCHO:
         checkFlowsState = main.ONOScli1.checkFlowsState() and checkFlowsState
         checkFlowsState = main.ONOScli2.checkFlowsState() and checkFlowsState
         checkFlowsState = main.ONOScli3.checkFlowsState() and checkFlowsState
-        checkFlowsState = main.ONOScli4.checkFlowsState() and checkFlowsState
-        checkFlowsState = main.ONOScli5.checkFlowsState() and checkFlowsState
         if checkFlowsState:
             main.log.info( "All flows are added correctly" )
         else:
@@ -1887,8 +1909,6 @@ class OnosCHO:
         checkIntentStateResult = main.ONOScli1.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
         checkIntentStateResult = main.ONOScli2.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
         checkIntentStateResult = main.ONOScli3.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
-        checkIntentStateResult = main.ONOScli4.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
-        checkIntentStateResult = main.ONOScli5.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
         if checkIntentStateResult:
             main.log.info( "All intents are installed correctly " )
         print "Checking flows state "
@@ -1896,8 +1916,6 @@ class OnosCHO:
         checkFlowsState = main.ONOScli1.checkFlowsState() and checkFlowsState
         checkFlowsState = main.ONOScli2.checkFlowsState() and checkFlowsState
         checkFlowsState = main.ONOScli3.checkFlowsState() and checkFlowsState
-        checkFlowsState = main.ONOScli4.checkFlowsState() and checkFlowsState
-        checkFlowsState = main.ONOScli5.checkFlowsState() and checkFlowsState
         if checkFlowsState:
             main.log.info( "All flows are added correctly" )
         else:
@@ -1965,8 +1983,6 @@ class OnosCHO:
         checkIntentStateResult = main.ONOScli1.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
         checkIntentStateResult = main.ONOScli2.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
         checkIntentStateResult = main.ONOScli3.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
-        checkIntentStateResult = main.ONOScli4.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
-        checkIntentStateResult = main.ONOScli5.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
         if checkIntentStateResult:
             main.log.info( "All intents are installed correctly " )
         print "Checking flows state "
@@ -1974,8 +1990,6 @@ class OnosCHO:
         checkFlowsState = main.ONOScli1.checkFlowsState() and checkFlowsState
         checkFlowsState = main.ONOScli2.checkFlowsState() and checkFlowsState
         checkFlowsState = main.ONOScli3.checkFlowsState() and checkFlowsState
-        checkFlowsState = main.ONOScli4.checkFlowsState() and checkFlowsState
-        checkFlowsState = main.ONOScli5.checkFlowsState() and checkFlowsState
         if checkFlowsState:
             main.log.info( "All flows are added correctly" )
         time.sleep(50)
@@ -2038,8 +2052,6 @@ class OnosCHO:
         checkIntentStateResult = main.ONOScli1.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
         checkIntentStateResult = main.ONOScli2.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
         checkIntentStateResult = main.ONOScli3.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
-        checkIntentStateResult = main.ONOScli4.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
-        checkIntentStateResult = main.ONOScli5.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
         if checkIntentStateResult:
             main.log.info( "All intents are installed correctly " )
         print "Checking flows state "
@@ -2047,8 +2059,6 @@ class OnosCHO:
         checkFlowsState = main.ONOScli1.checkFlowsState() and checkFlowsState
         checkFlowsState = main.ONOScli2.checkFlowsState() and checkFlowsState
         checkFlowsState = main.ONOScli3.checkFlowsState() and checkFlowsState
-        checkFlowsState = main.ONOScli4.checkFlowsState() and checkFlowsState
-        checkFlowsState = main.ONOScli5.checkFlowsState() and checkFlowsState
         if checkFlowsState:
             main.log.info( "All flows are added correctly" )
         else:
@@ -2118,8 +2128,6 @@ class OnosCHO:
         checkIntentStateResult = main.ONOScli1.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
         checkIntentStateResult = main.ONOScli2.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
         checkIntentStateResult = main.ONOScli3.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
-        checkIntentStateResult = main.ONOScli4.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
-        checkIntentStateResult = main.ONOScli5.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
         if checkIntentStateResult:
             main.log.info( "All intents are installed correctly " )
         print "Checking flows state "
@@ -2127,8 +2135,6 @@ class OnosCHO:
         checkFlowsState = main.ONOScli1.checkFlowsState() and checkFlowsState
         checkFlowsState = main.ONOScli2.checkFlowsState() and checkFlowsState
         checkFlowsState = main.ONOScli3.checkFlowsState() and checkFlowsState
-        checkFlowsState = main.ONOScli4.checkFlowsState() and checkFlowsState
-        checkFlowsState = main.ONOScli5.checkFlowsState() and checkFlowsState
         if checkFlowsState:
             main.log.info( "All flows are added correctly" )
         else:
@@ -2190,8 +2196,6 @@ class OnosCHO:
         checkIntentStateResult = main.ONOScli1.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
         checkIntentStateResult = main.ONOScli2.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
         checkIntentStateResult = main.ONOScli3.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
-        checkIntentStateResult = main.ONOScli4.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
-        checkIntentStateResult = main.ONOScli5.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
         if checkIntentStateResult:
             main.log.info( "All intents are installed correctly " )
         print "Checking flows state "
@@ -2199,8 +2203,6 @@ class OnosCHO:
         checkFlowsState = main.ONOScli1.checkFlowsState() and checkFlowsState
         checkFlowsState = main.ONOScli2.checkFlowsState() and checkFlowsState
         checkFlowsState = main.ONOScli3.checkFlowsState() and checkFlowsState
-        checkFlowsState = main.ONOScli4.checkFlowsState() and checkFlowsState
-        checkFlowsState = main.ONOScli5.checkFlowsState() and checkFlowsState
         if checkFlowsState:
             main.log.info( "All flows are added correctly" )
         else:
@@ -2262,8 +2264,6 @@ class OnosCHO:
         checkIntentStateResult = main.ONOScli1.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
         checkIntentStateResult = main.ONOScli2.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
         checkIntentStateResult = main.ONOScli3.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
-        checkIntentStateResult = main.ONOScli4.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
-        checkIntentStateResult = main.ONOScli5.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
         if checkIntentStateResult:
             main.log.info( "All intents are installed correctly " )
         print "Checking flows state "
@@ -2271,8 +2271,6 @@ class OnosCHO:
         checkFlowsState = main.ONOScli1.checkFlowsState() and checkFlowsState
         checkFlowsState = main.ONOScli2.checkFlowsState() and checkFlowsState
         checkFlowsState = main.ONOScli3.checkFlowsState() and checkFlowsState
-        checkFlowsState = main.ONOScli4.checkFlowsState() and checkFlowsState
-        checkFlowsState = main.ONOScli5.checkFlowsState() and checkFlowsState
         if checkFlowsState:
             main.log.info( "All flows are added correctly" )
         else:
@@ -2341,8 +2339,6 @@ class OnosCHO:
         checkIntentStateResult = main.ONOScli1.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
         checkIntentStateResult = main.ONOScli2.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
         checkIntentStateResult = main.ONOScli3.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
-        checkIntentStateResult = main.ONOScli4.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
-        checkIntentStateResult = main.ONOScli5.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
         if checkIntentStateResult:
             main.log.info( "All intents are installed correctly " )
         print "Checking flows state "
@@ -2350,8 +2346,6 @@ class OnosCHO:
         checkFlowsState = main.ONOScli1.checkFlowsState() and checkFlowsState
         checkFlowsState = main.ONOScli2.checkFlowsState() and checkFlowsState
         checkFlowsState = main.ONOScli3.checkFlowsState() and checkFlowsState
-        checkFlowsState = main.ONOScli4.checkFlowsState() and checkFlowsState
-        checkFlowsState = main.ONOScli5.checkFlowsState() and checkFlowsState
         if checkFlowsState:
             main.log.info( "All flows are added correctly" )
         else:
@@ -2447,7 +2441,7 @@ class OnosCHO:
                         for thread in pool:
                             thread.join()
                             intentIdList.append(thread.result)
-                    time.sleep(10)
+                    time.sleep(15)
                 else:
                     time.sleep(15)
                     if len( main.ONOScli1.intents()):
@@ -2461,7 +2455,11 @@ class OnosCHO:
             print "No Intent IDs found in Intents list: ", intentsList
             step1Result = main.FALSE
 
-        print main.ONOScli1.intents()
+        main.log.info( "Printing flows after intents are remove" )
+        main.log.debug( main.ONOScli1.flows() )
+
+        time.sleep( 30 )
+
         caseResult10 = step1Result
         utilities.assert_equals( expect=main.TRUE, actual=caseResult10,
                                  onpass="Intent removal test successful",

@@ -47,7 +47,7 @@ class HATestSanity:
         start cli sessions
         start tcpdump
         """
-        main.log.report( "ONOS HA Sanity test - initialization" )
+        main.log.info( "ONOS HA Sanity test - initialization" )
         main.case( "Setting up test environment" )
         main.caseExplaination = "Setup the test environment including " +\
                                 "installing ONOS, starting Mininet and ONOS" +\
@@ -95,15 +95,15 @@ class HATestSanity:
         verifyResult = main.ONOSbench.verifyCell()
 
         # FIXME:this is short term fix
-        main.log.report( "Removing raft logs" )
+        main.log.info( "Removing raft logs" )
         main.ONOSbench.onosRemoveRaftLogs()
 
-        main.log.report( "Uninstalling ONOS" )
+        main.log.info( "Uninstalling ONOS" )
         for node in nodes:
             main.ONOSbench.onosUninstall( node.ip_address )
 
         # Make sure ONOS is DEAD
-        main.log.report( "Killing any ONOS processes" )
+        main.log.info( "Killing any ONOS processes" )
         killResults = main.TRUE
         for node in nodes:
             killed = main.ONOSbench.onosKill( node.ip_address )
@@ -126,15 +126,15 @@ class HATestSanity:
             utilities.assert_lesser( expect=0, actual=gitPullResult,
                                       onpass="Git pull successful",
                                       onfail="Git pull failed" )
-        else:
-            main.log.warn( "Did not pull new code so skipping mvn " +
-                           "clean install" )
         main.ONOSbench.getVersion( report=True )
 
         main.step( "Using mvn clean install" )
         cleanInstallResult = main.TRUE
-        if gitPullResult == main.TRUE:
+        if PULLCODE and gitPullResult == main.TRUE:
             cleanInstallResult = main.ONOSbench.cleanInstall()
+        else:
+            main.log.warn( "Did not pull new code so skipping mvn " +
+                           "clean install" )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=cleanInstallResult,
                                  onpass="MCI successful",
@@ -179,7 +179,7 @@ class HATestSanity:
             for node in nodes:
                 started = main.ONOSbench.isup( node.ip_address )
                 if not started:
-                    main.log.report( node.name + " didn't start!" )
+                    main.log.error( node.name + " didn't start!" )
                     main.ONOSbench.onosStop( node.ip_address )
                     main.ONOSbench.onosStart( node.ip_address )
                 onosIsupResult = onosIsupResult and started
@@ -206,12 +206,13 @@ class HATestSanity:
                                  onpass="ONOS cli startup successful",
                                  onfail="ONOS cli startup failed" )
 
-        main.step( "Start Packet Capture MN" )
-        main.Mininet2.startTcpdump(
-            str( main.params[ 'MNtcpdump' ][ 'folder' ] ) + str( main.TEST )
-            + "-MN.pcap",
-            intf=main.params[ 'MNtcpdump' ][ 'intf' ],
-            port=main.params[ 'MNtcpdump' ][ 'port' ] )
+        if main.params[ 'tcpdump' ].lower() == "true":
+            main.step( "Start Packet Capture MN" )
+            main.Mininet2.startTcpdump(
+                str( main.params[ 'MNtcpdump' ][ 'folder' ] ) + str( main.TEST )
+                + "-MN.pcap",
+                intf=main.params[ 'MNtcpdump' ][ 'intf' ],
+                port=main.params[ 'MNtcpdump' ][ 'port' ] )
 
         main.step( "App Ids check" )
         appCheck = main.TRUE
@@ -294,13 +295,12 @@ class HATestSanity:
                                     "not in the list of controllers s" +
                                     str( i ) + " is connecting to." )
                     mastershipCheck = main.FALSE
-        if mastershipCheck == main.TRUE:
-            main.log.report( "Switch mastership assigned correctly" )
         utilities.assert_equals(
             expect=main.TRUE,
             actual=mastershipCheck,
             onpass="Switch mastership assigned correctly",
             onfail="Switches not assigned correctly to controllers" )
+        # FIXME: Check topo here
 
         main.step( "Assign mastership of switches to specific controllers" )
         # Manually assign mastership to the controller we want
@@ -634,7 +634,7 @@ class HATestSanity:
             main.log.error( "Error in pushing host intents to ONOS" )
 
         main.step( "Intent Anti-Entropy dispersion" )
-        for i in range(100):
+        for i in range(80):
             correct = True
             main.log.info( "Submitted intents: " + str( sorted( intentIds ) ) )
             for cli in CLIs:
@@ -644,11 +644,19 @@ class HATestSanity:
                 main.log.debug( "Intents in " + cli.name + ": " +
                                 str( sorted( onosIds ) ) )
                 if sorted( ids ) != sorted( intentIds ):
+                    main.log.debug( "Set of intent IDs doesn't match" )
                     correct = False
+                    break
+                else:
+                    intents = json.loads( cli.intents() )
+                    for intent in intents:
+                        if intent[ 'state' ] != "INSTALLED":
+                            main.log.warn( "Intent " + intent[ 'id' ] +
+                                           " is " + intent[ 'state' ] )
+                            correct = False
+                            break
             if correct:
                 break
-            else:
-                time.sleep(1)
         if not intentStop:
             intentStop = time.time()
         global gossipTime
@@ -782,7 +790,7 @@ class HATestSanity:
                 main.log.info( "Ping test passed!" )
                 # Don't set PingResult or you'd override failures
         if PingResult == main.FALSE:
-            main.log.report(
+            main.log.error(
                 "Intents have not been installed correctly, pings failed." )
             # TODO: pretty print
             main.log.warn( "ONOS1 intents: " )
@@ -794,9 +802,6 @@ class HATestSanity:
                                            separators=( ',', ': ' ) ) )
             except ( ValueError, TypeError ):
                 main.log.warn( repr( tmpIntents ) )
-        if PingResult == main.TRUE:
-            main.log.report(
-                "Intents have been installed correctly and verified by pings" )
         utilities.assert_equals(
             expect=main.TRUE,
             actual=PingResult,
@@ -804,31 +809,37 @@ class HATestSanity:
             onfail="Intents have not been installed correctly, pings failed." )
 
         main.step( "Check Intent state" )
-        installedCheck = True
-        # Print the intent states
-        intents = main.ONOScli1.intents()
-        intentStates = []
-        main.log.info( "%-6s%-15s%-15s" % ( 'Count', 'ID', 'State' ) )
+        installedCheck = False
         count = 0
-        # Iter through intents of a node
-        try:
-            for intent in json.loads( intents ):
-                state = intent.get( 'state', None )
-                if "INSTALLED" not in state:
-                    installedCheck = False
-                intentId = intent.get( 'id', None )
-                intentStates.append( ( intentId, state ) )
-        except ( ValueError, TypeError ):
-            main.log.exception( "Error parsing intents." )
-        # Print states
-        intentStates.sort()
-        for i, s in intentStates:
-            count += 1
-            main.log.info( "%-6s%-15s%-15s" %
-                           ( str( count ), str( i ), str( s ) ) )
+        while not installedCheck and count < 40:
+            installedCheck = True
+            # Print the intent states
+            intents = main.ONOScli1.intents()
+            intentStates = []
+            main.log.info( "%-6s%-15s%-15s" % ( 'Count', 'ID', 'State' ) )
+            count = 0
+            # Iter through intents of a node
+            try:
+                for intent in json.loads( intents ):
+                    state = intent.get( 'state', None )
+                    if "INSTALLED" not in state:
+                        installedCheck = False
+                    intentId = intent.get( 'id', None )
+                    intentStates.append( ( intentId, state ) )
+            except ( ValueError, TypeError ):
+                main.log.exception( "Error parsing intents." )
+            # Print states
+            intentStates.sort()
+            for i, s in intentStates:
+                count += 1
+                main.log.info( "%-6s%-15s%-15s" %
+                               ( str( count ), str( i ), str( s ) ) )
+            if not installedCheck:
+                time.sleep( 1 )
+                count += 1
         utilities.assert_equals( expect=True, actual=installedCheck,
                                  onpass="Intents are all INSTALLED",
-                                 onfail="Intents are not all in " +\
+                                 onfail="Intents are not all in " +
                                         "INSTALLED state" )
 
         main.step( "Check leadership of topics" )
@@ -979,9 +990,10 @@ class HATestSanity:
             except ( ValueError, TypeError ):
                 main.log.exception( "Error parsing pending map" )
                 main.log.error( repr( pendingMap ) )
-            main.log.debug( CLIs[0].flows( jsonFormat=False ) )
-
+        # Print flowrules
+        main.log.debug( CLIs[0].flows( jsonFormat=False ) )
         main.step( "Wait a minute then ping again" )
+        # the wait is above
         PingResult = main.TRUE
         for i in range( 8, 18 ):
             ping = main.Mininet1.pingHost( src="h" + str( i ),
@@ -994,7 +1006,7 @@ class HATestSanity:
                 main.log.info( "Ping test passed!" )
                 # Don't set PingResult or you'd override failures
         if PingResult == main.FALSE:
-            main.log.report(
+            main.log.error(
                 "Intents have not been installed correctly, pings failed." )
             # TODO: pretty print
             main.log.warn( "ONOS1 intents: " )
@@ -1011,15 +1023,6 @@ class HATestSanity:
             actual=PingResult,
             onpass="Intents have been installed correctly and pings work",
             onfail="Intents have not been installed correctly, pings failed." )
-        
-        
-        
-        '''
-        #DEBUG
-        if PingResult == main.FALSE:
-            import time
-            time.sleep( 100000 )
-        '''
 
     def CASE5( self, main ):
         """
@@ -1082,7 +1085,7 @@ class HATestSanity:
 
         for i in range( numControllers ):
             if not ONOSMastership[i] or "Error" in ONOSMastership[i]:
-                main.log.report( "Error in getting ONOS" + str( i + 1 ) +
+                main.log.error( "Error in getting ONOS" + str( i + 1 ) +
                                  " roles" )
                 main.log.warn(
                     "ONOS" + str( i + 1 ) + " mastership response: " +
@@ -1096,7 +1099,7 @@ class HATestSanity:
 
         main.step( "Check for consistency in roles from each controller" )
         if all([ i == ONOSMastership[ 0 ] for i in ONOSMastership ] ):
-            main.log.report(
+            main.log.info(
                 "Switch roles are consistent across all ONOS nodes" )
         else:
             consistentMastership = False
@@ -1144,7 +1147,7 @@ class HATestSanity:
 
         for i in range( numControllers ):
             if not ONOSIntents[ i ] or "Error" in ONOSIntents[ i ]:
-                main.log.report( "Error in getting ONOS" + str( i + 1 ) +
+                main.log.error( "Error in getting ONOS" + str( i + 1 ) +
                                  " intents" )
                 main.log.warn( "ONOS" + str( i + 1 ) + " intents response: " +
                                repr( ONOSIntents[ i ] ) )
@@ -1157,11 +1160,11 @@ class HATestSanity:
 
         main.step( "Check for consistency in Intents from each controller" )
         if all([ sorted( i ) == sorted( ONOSIntents[ 0 ] ) for i in ONOSIntents ] ):
-            main.log.report( "Intents are consistent across all ONOS " +
+            main.log.info( "Intents are consistent across all ONOS " +
                              "nodes" )
         else:
             consistentIntents = False
-            main.log.report( "Intents not consistent" )
+            main.log.error( "Intents not consistent" )
         utilities.assert_equals(
             expect=True,
             actual=consistentIntents,
@@ -1179,22 +1182,27 @@ class HATestSanity:
             for n in range( numControllers ):
                 title += " " * 10 + "ONOS" + str( n + 1 )
             main.log.warn( title )
-            # get all intent keys in the cluster
             keys = []
-            for nodeStr in ONOSIntents:
-                node = json.loads( nodeStr )
-                for intent in node:
-                    keys.append( intent.get( 'id' ) )
-            keys = set( keys )
-            for key in keys:
-                row = "%-13s" % key
+            try:
+                # Get the set of all intent keys
                 for nodeStr in ONOSIntents:
                     node = json.loads( nodeStr )
                     for intent in node:
-                        if intent.get( 'id', "Error" ) == key:
-                            row += "%-15s" % intent.get( 'state' )
-                main.log.warn( row )
-            # End table view
+                        keys.append( intent.get( 'id' ) )
+                keys = set( keys )
+                # For each intent key, print the state on each node
+                for key in keys:
+                    row = "%-13s" % key
+                    for nodeStr in ONOSIntents:
+                        node = json.loads( nodeStr )
+                        for intent in node:
+                            if intent.get( 'id', "Error" ) == key:
+                                row += "%-15s" % intent.get( 'state' )
+                    main.log.warn( row )
+                # End of intent state table
+            except ValueError as e:
+                main.log.exception( e )
+                main.log.debug( "nodeStr was: " + repr( nodeStr ) )
 
         if intentsResults and not consistentIntents:
             # print the json objects
@@ -1245,7 +1253,7 @@ class HATestSanity:
         for i in range( numControllers ):
             num = str( i + 1 )
             if not ONOSFlows[ i ] or "Error" in ONOSFlows[ i ]:
-                main.log.report( "Error in getting ONOS" + num + " flows" )
+                main.log.error( "Error in getting ONOS" + num + " flows" )
                 main.log.warn( "ONOS" + num + " flows response: " +
                                repr( ONOSFlows[ i ] ) )
                 flowsResults = False
@@ -1269,7 +1277,7 @@ class HATestSanity:
         main.step( "Check for consistency in Flows from each controller" )
         tmp = [ len( i ) == len( ONOSFlowsJson[ 0 ] ) for i in ONOSFlowsJson ]
         if all( tmp ):
-            main.log.report( "Flow count is consistent across all ONOS nodes" )
+            main.log.info( "Flow count is consistent across all ONOS nodes" )
         else:
             consistentFlows = False
         utilities.assert_equals(
@@ -1432,14 +1440,14 @@ class HATestSanity:
                 if hosts[ controller ] == hosts[ 0 ]:
                     continue
                 else:  # hosts not consistent
-                    main.log.report( "hosts from ONOS" +
+                    main.log.error( "hosts from ONOS" +
                                      controllerStr +
                                      " is inconsistent with ONOS1" )
                     main.log.warn( repr( hosts[ controller ] ) )
                     consistentHostsResult = main.FALSE
 
             else:
-                main.log.report( "Error in getting ONOS hosts from ONOS" +
+                main.log.error( "Error in getting ONOS hosts from ONOS" +
                                  controllerStr )
                 consistentHostsResult = main.FALSE
                 main.log.warn( "ONOS" + controllerStr +
@@ -1475,12 +1483,12 @@ class HATestSanity:
                 if clusters[ controller ] == clusters[ 0 ]:
                     continue
                 else:  # clusters not consistent
-                    main.log.report( "clusters from ONOS" + controllerStr +
+                    main.log.error( "clusters from ONOS" + controllerStr +
                                      " is inconsistent with ONOS1" )
                     consistentClustersResult = main.FALSE
 
             else:
-                main.log.report( "Error in getting dataplane clusters " +
+                main.log.error( "Error in getting dataplane clusters " +
                                  "from ONOS" + controllerStr )
                 consistentClustersResult = main.FALSE
                 main.log.warn( "ONOS" + controllerStr +
@@ -1632,7 +1640,7 @@ class HATestSanity:
 
         for i in range( numControllers ):
             if not ONOSMastership[i] or "Error" in ONOSMastership[i]:
-                main.log.report( "Error in getting ONOS" + str( i + 1 ) +
+                main.log.error( "Error in getting ONOS" + str( i + 1 ) +
                                  " roles" )
                 main.log.warn(
                     "ONOS" + str( i + 1 ) + " mastership response: " +
@@ -1646,7 +1654,7 @@ class HATestSanity:
 
         main.step( "Check for consistency in roles from each controller" )
         if all([ i == ONOSMastership[ 0 ] for i in ONOSMastership ] ):
-            main.log.report(
+            main.log.info(
                 "Switch roles are consistent across all ONOS nodes" )
         else:
             consistentMastership = False
@@ -1720,7 +1728,7 @@ class HATestSanity:
 
         for i in range( numControllers ):
             if not ONOSIntents[ i ] or "Error" in ONOSIntents[ i ]:
-                main.log.report( "Error in getting ONOS" + str( i + 1 ) +
+                main.log.error( "Error in getting ONOS" + str( i + 1 ) +
                                  " intents" )
                 main.log.warn( "ONOS" + str( i + 1 ) + " intents response: " +
                                repr( ONOSIntents[ i ] ) )
@@ -1733,7 +1741,7 @@ class HATestSanity:
 
         main.step( "Check for consistency in Intents from each controller" )
         if all([ sorted( i ) == sorted( ONOSIntents[ 0 ] ) for i in ONOSIntents ] ):
-            main.log.report( "Intents are consistent across all ONOS " +
+            main.log.info( "Intents are consistent across all ONOS " +
                              "nodes" )
         else:
             consistentIntents = False
@@ -1800,22 +1808,41 @@ class HATestSanity:
         main.step( "Compare current intents with intents before the failure" )
         # NOTE: this requires case 5 to pass for intentState to be set.
         #      maybe we should stop the test if that fails?
-        sameIntents = main.TRUE
+        sameIntents = main.FALSE
         if intentState and intentState == ONOSIntents[ 0 ]:
             sameIntents = main.TRUE
             main.log.info( "Intents are consistent with before failure" )
         # TODO: possibly the states have changed? we may need to figure out
         #       what the acceptable states are
-        else:
+        elif len( intentState ) == len( ONOSIntents[ 0 ] ):
+            sameIntents = main.TRUE
             try:
-                main.log.warn( "ONOS intents: " )
-                main.log.warn( json.dumps( json.loads( ONOSIntents[ 0 ] ),
-                                           sort_keys=True, indent=4,
-                                           separators=( ',', ': ' ) ) )
+                before = json.loads( intentState )
+                after = json.loads( ONOSIntents[ 0 ] )
+                for intent in before:
+                    if intent not in after:
+                        sameIntents = main.FALSE
+                        main.log.debug( "Intent is not currently in ONOS " +\
+                                        "(at least in the same form):" )
+                        main.log.debug( json.dumps( intent ) )
             except ( ValueError, TypeError ):
                 main.log.exception( "Exception printing intents" )
-                main.log.warn( repr( ONOSIntents[0] ) )
-            sameIntents = main.FALSE
+                main.log.debug( repr( ONOSIntents[0] ) )
+                main.log.debug( repr( intentState ) )
+        if sameIntents == main.FALSE:
+            try:
+                main.log.debug( "ONOS intents before: " )
+                main.log.debug( json.dumps( json.loads( intentState ),
+                                            sort_keys=True, indent=4,
+                                            separators=( ',', ': ' ) ) )
+                main.log.debug( "Current ONOS intents: " )
+                main.log.debug( json.dumps( json.loads( ONOSIntents[ 0 ] ),
+                                            sort_keys=True, indent=4,
+                                            separators=( ',', ': ' ) ) )
+            except ( ValueError, TypeError ):
+                main.log.exception( "Exception printing intents" )
+                main.log.debug( repr( ONOSIntents[0] ) )
+                main.log.debug( repr( intentState ) )
         utilities.assert_equals(
             expect=main.TRUE,
             actual=sameIntents,
@@ -1863,7 +1890,7 @@ class HATestSanity:
             main.log.info( "There are multiple mininet process running" )
         elif LossInPings == main.FALSE:
             main.log.info( "No Loss in the pings" )
-            main.log.report( "No loss of dataplane connectivity" )
+            main.log.info( "No loss of dataplane connectivity" )
         utilities.assert_equals(
             expect=main.FALSE,
             actual=LossInPings,
@@ -1886,13 +1913,13 @@ class HATestSanity:
                 pass
             elif leaderN == main.FALSE:
                 # error in response
-                main.log.report( "Something is wrong with " +
+                main.log.error( "Something is wrong with " +
                                  "electionTestLeader function, check the" +
                                  " error logs" )
                 leaderResult = main.FALSE
             elif leader != leaderN:
                 leaderResult = main.FALSE
-                main.log.report( cli.name + " sees " + str( leaderN ) +
+                main.log.error( cli.name + " sees " + str( leaderN ) +
                                  " as the leader of the election app. " +
                                  "Leader should be " + str( leader ) )
         utilities.assert_equals(
@@ -1988,7 +2015,7 @@ class HATestSanity:
                 for host in hosts[ controller ]:
                     if host is None or host.get( 'ipAddresses', [] ) == []:
                         main.log.error(
-                            "DEBUG:Error with host ips on controller" +
+                            "DEBUG:Error with host ipAddresses on controller" +
                             controllerStr + ": " + str( host ) )
                         ipResult = main.FALSE
             ports = []
@@ -2102,13 +2129,13 @@ class HATestSanity:
                     if hosts[ controller ] == hosts[ 0 ]:
                         continue
                     else:  # hosts not consistent
-                        main.log.report( "hosts from ONOS" + controllerStr +
+                        main.log.error( "hosts from ONOS" + controllerStr +
                                          " is inconsistent with ONOS1" )
                         main.log.warn( repr( hosts[ controller ] ) )
                         consistentHostsResult = main.FALSE
 
                 else:
-                    main.log.report( "Error in getting ONOS hosts from ONOS" +
+                    main.log.error( "Error in getting ONOS hosts from ONOS" +
                                      controllerStr )
                     consistentHostsResult = main.FALSE
                     main.log.warn( "ONOS" + controllerStr +
@@ -2129,13 +2156,13 @@ class HATestSanity:
                     if clusters[ controller ] == clusters[ 0 ]:
                         continue
                     else:  # clusters not consistent
-                        main.log.report( "clusters from ONOS" +
+                        main.log.error( "clusters from ONOS" +
                                          controllerStr +
                                          " is inconsistent with ONOS1" )
                         consistentClustersResult = main.FALSE
 
                 else:
-                    main.log.report( "Error in getting dataplane clusters " +
+                    main.log.error( "Error in getting dataplane clusters " +
                                      "from ONOS" + controllerStr )
                     consistentClustersResult = main.FALSE
                     main.log.warn( "ONOS" + controllerStr +
@@ -2236,7 +2263,6 @@ class HATestSanity:
 
         description = "Turn off a link to ensure that Link Discovery " +\
                       "is working properly"
-        main.log.report( description )
         main.case( description )
 
         main.step( "Kill Link between s3 and s28" )
@@ -2265,7 +2291,6 @@ class HATestSanity:
 
         description = "Restore a link to ensure that Link Discovery is " + \
                       "working properly"
-        main.log.report( description )
         main.case( description )
 
         main.step( "Bring link between s3 and s28 back up" )
@@ -2293,14 +2318,13 @@ class HATestSanity:
         switchSleep = float( main.params[ 'timers' ][ 'SwitchDiscovery' ] )
 
         description = "Killing a switch to ensure it is discovered correctly"
-        main.log.report( description )
         main.case( description )
         switch = main.params[ 'kill' ][ 'switch' ]
         switchDPID = main.params[ 'kill' ][ 'dpid' ]
 
         # TODO: Make this switch parameterizable
         main.step( "Kill " + switch )
-        main.log.report( "Deleting " + switch )
+        main.log.info( "Deleting " + switch )
         main.Mininet1.delSwitch( switch )
         main.log.info( "Waiting " + str( switchSleep ) +
                        " seconds for switch down to be discovered" )
@@ -2339,11 +2363,9 @@ class HATestSanity:
         switchDPID = main.params[ 'kill' ][ 'dpid' ]
         links = main.params[ 'kill' ][ 'links' ].split()
         description = "Adding a switch to ensure it is discovered correctly"
-        main.log.report( description )
         main.case( description )
 
         main.step( "Add back " + switch )
-        main.log.report( "Adding back " + switch )
         main.Mininet1.addSwitch( switch, dpid=switchDPID )
         for peer in links:
             main.Mininet1.addLink( switch, peer )
@@ -2392,9 +2414,7 @@ class HATestSanity:
         colors = { 'cyan': '\033[96m', 'purple': '\033[95m',
                    'blue': '\033[94m', 'green': '\033[92m',
                    'yellow': '\033[93m', 'red': '\033[91m', 'end': '\033[0m' }
-        description = "Test Cleanup"
-        main.log.report( description )
-        main.case( description )
+        main.case( "Test Cleanup" )
         main.step( "Killing tcpdumps" )
         main.Mininet2.stopTcpdump()
 
@@ -2458,8 +2478,9 @@ class HATestSanity:
         try:
             timerLog = open( main.logdir + "/Timers.csv", 'w')
             # Overwrite with empty line and close
-            timerLog.write( "Gossip Intents\n" )
-            timerLog.write( str( gossipTime ) )
+            labels = "Gossip Intents"
+            data = str( gossipTime )
+            timerLog.write( labels + "\n" + data )
             timerLog.close()
         except NameError, e:
             main.log.exception(e)
@@ -2491,7 +2512,7 @@ class HATestSanity:
         for cli in CLIs:
             leader = cli.electionTestLeader()
             if leader is None or leader == main.FALSE:
-                main.log.report( cli.name + ": Leader for the election app " +
+                main.log.error( cli.name + ": Leader for the election app " +
                                  "should be an ONOS node, instead got '" +
                                  str( leader ) + "'" )
                 leaderResult = main.FALSE
@@ -2527,7 +2548,6 @@ class HATestSanity:
 
         leaderResult = main.TRUE
         description = "Check that Leadership Election is still functional"
-        main.log.report( description )
         main.case( description )
 
         main.step( "Check that each node shows the same leader" )
@@ -2577,14 +2597,14 @@ class HATestSanity:
             leaderN = cli.electionTestLeader()
             leaderList.append( leaderN )
             if leaderN == leader:
-                main.log.report(  cli.name + " still sees " + str( leader ) +
+                main.log.error(  cli.name + " still sees " + str( leader ) +
                                   " as leader after they withdrew" )
                 leaderResult = main.FALSE
             elif leaderN == main.FALSE:
                 # error in  response
                 # TODO: add check for "Command not found:" in the driver, this
                 #       means the app isn't loaded
-                main.log.report( "Something is wrong with " +
+                main.log.error( "Something is wrong with " +
                                  "electionTestLeader function, " +
                                  "check the error logs" )
                 leaderResult = main.FALSE
@@ -2601,10 +2621,10 @@ class HATestSanity:
                            "' as the leader" )
             consistentLeader = main.TRUE
         else:
-            main.log.report(
+            main.log.error(
                 "Inconsistent responses for leader of Election-app:" )
             for n in range( len( leaderList ) ):
-                main.log.report( "ONOS" + str( n + 1 ) + " response: " +
+                main.log.error( "ONOS" + str( n + 1 ) + " response: " +
                                  str( leaderList[ n ] ) )
         leaderResult = leaderResult and consistentLeader
         utilities.assert_equals(
@@ -2644,6 +2664,7 @@ class HATestSanity:
         """
         Install Distributed Primitives app
         """
+        import time
         assert numControllers, "numControllers not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
@@ -2673,7 +2694,7 @@ class HATestSanity:
                                  actual=appResults,
                                  onpass="Primitives app activated",
                                  onfail="Primitives app not activated" )
-        time.sleep (5 )  # To allow all nodes to activate
+        time.sleep( 5 )  # To allow all nodes to activate
 
     def CASE17( self, main ):
         """
@@ -2733,7 +2754,7 @@ class HATestSanity:
         # Check that counter incremented numController times
         pCounterResults = True
         for i in addedPValues:
-            tmpResult = i  in pCounters
+            tmpResult = i in pCounters
             pCounterResults = pCounterResults and tmpResult
             if not tmpResult:
                 main.log.error( str( i ) + " is not in partitioned "
@@ -2803,27 +2824,40 @@ class HATestSanity:
         main.step( "Counters we added have the correct values" )
         correctResults = main.TRUE
         for i in range( numControllers ):
-            current = onosCounters[i]
+            current = json.loads( onosCounters[i] )
+            pValue = None
+            iValue = None
             try:
-                pValue = current.get( pCounterName )
-                iValue = current.get( iCounterName )
-                if pValue == pCounterValue:
-                    main.log.info( "Partitioned counter value is correct" )
-                else:
-                    main.log.error( "Partitioned counter value is incorrect," +
-                                    " expected value: " + str( pCounterValue )
-                                    + " current value: " + str( pValue ) )
-                    correctResults = main.FALSE
-                if iValue == iCounterValue:
-                    main.log.info( "In memory counter value is correct" )
-                else:
-                    main.log.error( "In memory counter value is incorrect, " +
-                                    "expected value: " + str( iCounterValue ) +
-                                    " current value: " + str( iValue ) )
-                    correctResults = main.FALSE
+                for database in current:
+                    partitioned = database.get( 'partitionedDatabaseCounters' )
+                    if partitioned:
+                        for value in partitioned:
+                            if value.get( 'name' ) == pCounterName:
+                                pValue = value.get( 'value' )
+                                break
+                    inMemory = database.get( 'inMemoryDatabaseCounters' )
+                    if inMemory:
+                        for value in inMemory:
+                            if value.get( 'name' ) == iCounterName:
+                                iValue = value.get( 'value' )
+                                break
             except AttributeError, e:
                 main.log.error( "ONOS" + str( i + 1 ) + " counters result " +
                                 "is not as expected" )
+                correctResults = main.FALSE
+            if pValue == pCounterValue:
+                main.log.info( "Partitioned counter value is correct" )
+            else:
+                main.log.error( "Partitioned counter value is incorrect," +
+                                " expected value: " + str( pCounterValue )
+                                + " current value: " + str( pValue ) )
+                correctResults = main.FALSE
+            if iValue == iCounterValue:
+                main.log.info( "In memory counter value is correct" )
+            else:
+                main.log.error( "In memory counter value is incorrect, " +
+                                "expected value: " + str( iCounterValue ) +
+                                " current value: " + str( iValue ) )
                 correctResults = main.FALSE
         utilities.assert_equals( expect=main.TRUE,
                                  actual=correctResults,

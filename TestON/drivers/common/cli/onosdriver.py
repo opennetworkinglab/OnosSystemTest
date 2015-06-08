@@ -98,7 +98,28 @@ class OnosDriver( CLI ):
             response = main.FALSE
         return response
 
-    def onosPackage( self ):
+    def getEpochMs( self ):
+        """
+        Returns milliseconds since epoch
+        
+        When checking multiple nodes in a for loop, 
+        around a hundred milliseconds of difference (ascending) is 
+        generally acceptable due to calltime of the function. 
+        Few seconds, however, is not and it means clocks 
+        are off sync. 
+        """
+        try:
+            self.handle.sendline( 'date +%s.%N' )
+            self.handle.expect( 'date \+\%s\.\%N' )
+            self.handle.expect( '\$' )
+            epochMs = self.handle.before
+            return epochMs
+        except Exception:
+            main.log.exception( 'Uncaught exception getting epoch time' )
+            main.cleanup()
+            main.exit()
+
+    def onosPackage( self, opTimeout=30 ):
         """
         Produce a self-contained tar.gz file that can be deployed
         and executed on any platform with Java 7 JRE.
@@ -106,7 +127,7 @@ class OnosDriver( CLI ):
         try:
             self.handle.sendline( "onos-package" )
             self.handle.expect( "onos-package" )
-            self.handle.expect( "tar.gz", timeout=30 )
+            self.handle.expect( "tar.gz", opTimeout )
             handle = str( self.handle.before )
             main.log.info( "onos-package command returned: " +
                            handle )
@@ -153,7 +174,7 @@ class OnosDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def cleanInstall( self ):
+    def cleanInstall( self, mciTimeout=600 ):
         """
         Runs mvn clean install in the root of the ONOS directory.
         This will clean all ONOS artifacts then compile each module
@@ -180,7 +201,7 @@ class OnosDriver( CLI ):
                     'BUILD\sSUCCESS',
                     'onos\$',  #TODO: fix this to be more generic?
                     'ONOS\$',
-                    pexpect.TIMEOUT ], timeout=600 )
+                    pexpect.TIMEOUT ], mciTimeout )
                 if i == 0:
                     main.log.error( self.name + ":There is insufficient memory \
                             for the Java Runtime Environment to continue." )
@@ -485,8 +506,10 @@ class OnosDriver( CLI ):
             main.exit()
 
     def getBranchName( self ):
+        main.log.info( "self.home = " )
+        main.log.info( self.home )
         self.handle.sendline( "cd " + self.home )
-        self.handle.expect( "ONOS\$" )
+        self.handle.expect( self.home + "\$" )
         self.handle.sendline( "git name-rev --name-only HEAD" )
         self.handle.expect( "git name-rev --name-only HEAD" )
         self.handle.expect( "\$" )
@@ -1519,13 +1542,18 @@ class OnosDriver( CLI ):
         except Exception:
             main.log.exception( "Copying files failed" )
 
-    def checkLogs( self, onosIp ):
+    def checkLogs( self, onosIp, restart=False):
         """
         runs onos-check-logs on the given onos node
+        If restart is True, use the old version of onos-check-logs which
+            does not print the full stacktrace, but shows the entire log file,
+            including across restarts
         returns the response
         """
         try:
             cmd = "onos-check-logs " + str( onosIp )
+            if restart:
+                cmd += " old"
             self.handle.sendline( cmd )
             self.handle.expect( cmd )
             self.handle.expect( "\$" )

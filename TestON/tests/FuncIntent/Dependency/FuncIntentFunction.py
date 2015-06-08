@@ -10,6 +10,7 @@ def hostIntent( main,
                 name,
                 host1,
                 host2,
+                onosNode=0,
                 host1Id="",
                 host2Id="",
                 mac1="",
@@ -80,6 +81,7 @@ def hostIntent( main,
     topoResult = main.TRUE
     linkDownResult = main.TRUE
     linkUpResult = main.TRUE
+    onosNode = int( onosNode )
 
     if main.hostsData:
         if not h1Mac:
@@ -101,15 +103,29 @@ def hostIntent( main,
         return main.FALSE
 
     # Discover hosts using arping
-    main.log.info( itemName + ": Discover host using arping" )
-    main.Mininet1.arping( host=host1 )
-    main.Mininet1.arping( host=host2 )
-    host1 = main.CLIs[ 0 ].getHost( mac=h1Mac )
-    host2 = main.CLIs[ 0 ].getHost( mac=h2Mac )
+    if not main.hostsData:
+        main.log.info( itemName + ": Discover host using arping" )
+        main.Mininet1.arping( host=host1 )
+        main.Mininet1.arping( host=host2 )
+        host1 = main.CLIs[ 0 ].getHost( mac=h1Mac )
+        host2 = main.CLIs[ 0 ].getHost( mac=h2Mac )
+
+    # Check flows count in each node
+    checkFlowsCount( main )
+
+    # Checking connectivity before installing intents
+    main.log.info( itemName + ": Check hosts connection before adding intents" )
+    checkPing = pingallHosts( main, hostNames )
+    if not checkPing:
+        main.log.info( itemName + ": Ping did not go through " +
+                       "before adding intents" )
+    else:
+        main.log.debug( itemName + ": Pinged successful before adding " +
+                        "intents,please check fwd app if it is activated" )
 
     # Adding host intents
     main.log.info( itemName + ": Adding host intents" )
-    intent1 = main.CLIs[ 0 ].addHostIntent( hostIdOne=h1Id,
+    intent1 = main.CLIs[ onosNode ].addHostIntent( hostIdOne=h1Id,
                                            hostIdTwo=h2Id )
     intentsId.append( intent1 )
     time.sleep( 5 )
@@ -117,11 +133,14 @@ def hostIntent( main,
     # Check intents state
     time.sleep( 30 )
     intentResult = checkIntentState( main, intentsId )
+    checkFlowsCount( main )
 
     # Check intents state again if first check fails...
     if not intentResult:
         intentResult = checkIntentState( main, intentsId )
 
+    # Check flows count in each node
+    checkFlowsCount( main )
     # Verify flows
     checkFlowsState( main )
 
@@ -141,6 +160,8 @@ def hostIntent( main,
         linkDownResult = link( main, sw1, sw2, "down" )
         intentResult = intentResult and checkIntentState( main, intentsId )
 
+        # Check flows count in each node
+        checkFlowsCount( main )
         # Verify flows
         checkFlowsState( main )
 
@@ -162,6 +183,8 @@ def hostIntent( main,
         linkUpResult = link( main, sw1, sw2, "up" )
         time.sleep( 5 )
 
+        # Check flows count in each node
+        checkFlowsCount( main )
         # Verify flows
         checkFlowsState( main )
 
@@ -191,6 +214,7 @@ def pointIntent( main,
                  name,
                  host1,
                  host2,
+                 onosNode=0,
                  deviceId1="",
                  deviceId2="",
                  port1="",
@@ -275,10 +299,21 @@ def pointIntent( main,
     topoResult = main.TRUE
     linkDownResult = main.TRUE
     linkUpResult = main.TRUE
+    onosNode = int( onosNode )
+
+    # Checking connectivity before installing intents
+    main.log.info( itemName + ": Check hosts connection before adding intents" )
+    checkPing = pingallHosts( main, hostNames )
+    if not checkPing:
+        main.log.info( itemName + ": Ping did not go through " +
+                       "before adding intents" )
+    else:
+        main.log.debug( itemName + ": Pinged successful before adding " +
+                        "intents,please check fwd app if it is activated" )
 
     # Adding bidirectional point  intents
     main.log.info( itemName + ": Adding point intents" )
-    intent1 = main.CLIs[ 0 ].addPointIntent( ingressDevice=deviceId1,
+    intent1 = main.CLIs[ onosNode ].addPointIntent( ingressDevice=deviceId1,
                                              egressDevice=deviceId2,
                                              portIngress=port1,
                                              portEgress=port2,
@@ -295,7 +330,7 @@ def pointIntent( main,
 
     intentsId.append( intent1 )
     time.sleep( 5 )
-    intent2 = main.CLIs[ 0 ].addPointIntent( ingressDevice=deviceId2,
+    intent2 = main.CLIs[ onosNode ].addPointIntent( ingressDevice=deviceId2,
                                              egressDevice=deviceId1,
                                              portIngress=port2,
                                              portEgress=port1,
@@ -314,11 +349,15 @@ def pointIntent( main,
     # Check intents state
     time.sleep( 30 )
     intentResult = checkIntentState( main, intentsId )
+    # Check flows count in each node
+    checkFlowsCount( main )
 
     # Check intents state again if first check fails...
     if not intentResult:
         intentResult = checkIntentState( main, intentsId )
 
+    # Check flows count in each node
+    checkFlowsCount( main )
     # Verify flows
     checkFlowsState( main )
 
@@ -338,6 +377,8 @@ def pointIntent( main,
         linkDownResult = link( main, sw1, sw2, "down" )
         intentResult = intentResult and checkIntentState( main, intentsId )
 
+        # Check flows count in each node
+        checkFlowsCount( main )
         # Verify flows
         checkFlowsState( main )
 
@@ -359,6 +400,8 @@ def pointIntent( main,
         linkUpResult = link( main, sw1, sw2, "up" )
         time.sleep( 5 )
 
+        # Check flows count in each node
+        checkFlowsCount( main )
         # Verify flows
         checkFlowsState( main )
 
@@ -387,6 +430,7 @@ def pointIntent( main,
 def singleToMultiIntent( main,
                          name,
                          hostNames,
+                         onosNode=0,
                          devices="",
                          ports=None,
                          ethType="",
@@ -461,6 +505,7 @@ def singleToMultiIntent( main,
     itemName = name
     tempHostsData = {}
     intentsId = []
+    onosNode = int( onosNode )
 
     macsDict = {}
     ipDict = {}
@@ -477,10 +522,12 @@ def singleToMultiIntent( main,
                 #print "len devices = ", len( devices )
                 #print "len ports = ", len( ports )
                 return main.FALSE
-        for i in range( len( devices ) ):
-            macsDict[ devices[ i ] ] = macs[ i ]
         else:
             main.log.info( "Device Ports are not specified" )
+        if macs:
+            for i in range( len( devices ) ):
+                macsDict[ devices[ i ] ] = macs[ i ]
+
     elif hostNames and not devices and main.hostsData:
         devices = []
         main.log.info( "singleToMultiIntent function is using main.hostsData" ) 
@@ -508,6 +555,20 @@ def singleToMultiIntent( main,
     if ports:
         portsCopy = copy.copy( ports )
     main.log.info( itemName + ": Adding single point to multi point intents" )
+
+    # Check flows count in each node
+    checkFlowsCount( main )
+
+    # Checking connectivity before installing intents
+    main.log.info( itemName + ": Check hosts connection before adding intents" )
+    checkPing = pingallHosts( main, hostNames )
+    if not checkPing:
+        main.log.info( itemName + ": Ping did not go through " +
+                       "before adding intents" )
+    else:
+        main.log.debug( itemName + ": Pinged successful before adding " +
+                        "intents,please check fwd app if it is activated" )
+
     # Adding bidirectional point  intents
     for i in range( len( devices ) ):
         ingressDevice = devicesCopy[ i ]
@@ -528,7 +589,8 @@ def singleToMultiIntent( main,
                 main.log.debug( "There is no MAC in device - " + ingressDevice )
                 srcMac = ""
 
-        intentsId.append( main.CLIs[ 0 ].addSinglepointToMultipointIntent(
+        intentsId.append(
+                        main.CLIs[ onosNode ].addSinglepointToMultipointIntent(
                                             ingressDevice=ingressDevice,
                                             egressDeviceList=egressDeviceList,
                                             portIngress=portIngress,
@@ -543,6 +605,8 @@ def singleToMultiIntent( main,
                                             tcpSrc="",
                                             tcpDst="" ) )
 
+    # Wait some time for the flow to go through when using multi instance
+    time.sleep( 10 )
     pingResult = pingallHosts( main, hostNames )
 
     # Check intents state
@@ -553,6 +617,8 @@ def singleToMultiIntent( main,
     if not intentResult:
         intentResult = checkIntentState( main, intentsId )
 
+    # Check flows count in each node
+    checkFlowsCount( main )
     # Verify flows
     checkFlowsState( main )
 
@@ -568,6 +634,8 @@ def singleToMultiIntent( main,
         linkDownResult = link( main, sw1, sw2, "down" )
         intentResult = intentResult and checkIntentState( main, intentsId )
 
+        # Check flows count in each node
+        checkFlowsCount( main )
         # Verify flows
         checkFlowsState( main )
 
@@ -589,6 +657,8 @@ def singleToMultiIntent( main,
         linkUpResult = link( main, sw1, sw2, "up" )
         time.sleep( 5 )
 
+        # Check flows count in each node
+        checkFlowsCount( main )
         # Verify flows
         checkFlowsState( main )
 
@@ -617,6 +687,7 @@ def singleToMultiIntent( main,
 def multiToSingleIntent( main,
                          name,
                          hostNames,
+                         onosNode=0,
                          devices="",
                          ports=None,
                          ethType="",
@@ -642,7 +713,7 @@ def multiToSingleIntent( main,
             Verify add-multi-to-single-intent
         Steps:
             - Get device ids | ports
-            - Add single to multi point intents
+            - Add multi to single point intents
             - Check intents
             - Verify flows
             - Ping hosts
@@ -690,6 +761,7 @@ def multiToSingleIntent( main,
     itemName = name
     tempHostsData = {}
     intentsId = []
+    onosNode = int( onosNode )
 
     macsDict = {}
     ipDict = {}
@@ -706,13 +778,14 @@ def multiToSingleIntent( main,
                 #print "len devices = ", len( devices )
                 #print "len ports = ", len( ports )
                 return main.FALSE
-        for i in range( len( devices ) ):
-            macsDict[ devices[ i ] ] = macs[ i ]
         else:
             main.log.info( "Device Ports are not specified" )
+        if macs:
+            for i in range( len( devices ) ):
+                macsDict[ devices[ i ] ] = macs[ i ]
     elif hostNames and not devices and main.hostsData:
         devices = []
-        main.log.info( "singleToMultiIntent function is using main.hostsData" ) 
+        main.log.info( "multiToSingleIntent function is using main.hostsData" ) 
         for host in hostNames:
                devices.append( main.hostsData.get( host ).get( 'location' ) )
                macsDict[ main.hostsData.get( host ).get( 'location' ) ] = \
@@ -736,7 +809,21 @@ def multiToSingleIntent( main,
     devicesCopy = copy.copy( devices )
     if ports:
         portsCopy = copy.copy( ports )
-    main.log.info( itemName + ": Adding single point to multi point intents" )
+    main.log.info( itemName + ": Adding multi point to single point intents" )
+
+    # Check flows count in each node
+    checkFlowsCount( main )
+
+    # Checking connectivity before installing intents
+    main.log.info( itemName + ": Check hosts connection before adding intents" )
+    checkPing = pingallHosts( main, hostNames )
+    if not checkPing:
+        main.log.info( itemName + ": Ping did not go through " +
+                       "before adding intents" )
+    else:
+        main.log.debug( itemName + ": Pinged successful before adding " +
+                        "intents,please check fwd app if it is activated" )
+
     # Adding bidirectional point  intents
     for i in range( len( devices ) ):
         egressDevice = devicesCopy[ i ]
@@ -757,7 +844,8 @@ def multiToSingleIntent( main,
                 main.log.debug( "There is no MAC in device - " + egressDevice )
                 dstMac = ""
 
-        intentsId.append( main.CLIs[ 0 ].addMultipointToSinglepointIntent(
+        intentsId.append(
+                        main.CLIs[ onosNode ].addMultipointToSinglepointIntent(
                                             ingressDeviceList=ingressDeviceList,
                                             egressDevice=egressDevice,
                                             portIngressList=portIngressList,
@@ -782,6 +870,8 @@ def multiToSingleIntent( main,
     if not intentResult:
         intentResult = checkIntentState( main, intentsId )
 
+    # Check flows count in each node
+    checkFlowsCount( main )
     # Verify flows
     checkFlowsState( main )
 
@@ -797,6 +887,8 @@ def multiToSingleIntent( main,
         linkDownResult = link( main, sw1, sw2, "down" )
         intentResult = intentResult and checkIntentState( main, intentsId )
 
+        # Check flows count in each node
+        checkFlowsCount( main )
         # Verify flows
         checkFlowsState( main )
 
@@ -818,6 +910,8 @@ def multiToSingleIntent( main,
         linkUpResult = link( main, sw1, sw2, "up" )
         time.sleep( 5 )
 
+        # Check flows count in each node
+        checkFlowsCount( main )
         # Verify flows
         checkFlowsState( main )
 
@@ -916,11 +1010,17 @@ def checkTopology( main, expectedLink ):
 def checkIntentState( main, intentsId ):
 
     intentResult = main.TRUE
+    results = []
 
     main.log.info( itemName + ": Checking intents state" )
     for i in range( main.numCtrls ):
-        intentResult = intentResult and \
-                main.CLIs[ i ].checkIntentState( intentsId=intentsId )
+        intentResult = main.CLIs[ i ].checkIntentState( intentsId=intentsId )
+        results.append( intentResult )
+
+    if all( result == main.TRUE for result in results ):
+        main.log.info( itemName + ": Intents are installed correctly" )
+    else:
+        main.log.error( itemName + ": Intents are NOT installed correctly" )
 
     return intentResult
 
@@ -965,3 +1065,36 @@ def removeAllIntents( main, intentsId ):
                        "successfully removed all the intents." )
         removeIntentResult = main.TRUE
     return removeIntentResult
+
+def checkFlowsCount( main ):
+    """
+        Check flows count in each node
+    """
+    import json
+
+    flowsCount = []
+    main.log.info( itemName + ": Checking flows count in each ONOS node" )
+    for i in range( main.numCtrls ):
+        summaryResult = main.CLIs[ i ].summary()
+        if not summaryResult:
+            main.log.error( itemName + ": There is something wrong with " +
+                            "summary command" )
+            return main.FALSE
+        else:
+            summaryJson = json.loads( summaryResult )
+            flowsCount.append( summaryJson.get( 'flows' ) )
+
+    if flowsCount:
+        if all( flows==flowsCount[ 0 ] for flows in flowsCount ):
+            main.log.info( itemName + ": There are " + str( flowsCount[ 0 ] ) +
+                           " flows in all ONOS node" )
+        else:
+            for i in range( main.numCtrls ):
+                main.log.debug( itemName + ": ONOS node " + str( i ) + " has " +
+                                flowsCount[ i ] + " flows" )
+    else:
+        main.log.error( "Checking flows count failed, check summary command" )
+        return main.FALSE
+
+    return main.TRUE
+

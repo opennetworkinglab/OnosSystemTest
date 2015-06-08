@@ -1,3 +1,4 @@
+
 #!/usr/bin/env python
 """
 Created on 26-Oct-2012
@@ -95,7 +96,7 @@ class MininetCliDriver( Emulator ):
             main.cleanup()
             main.exit()
 
-    def startNet( self, topoFile='', args='', timeout=120 ):
+    def startNet( self, topoFile='', args='', mnCmd='', timeout=120 ):
         """
         Starts Mininet accepts a topology(.py) file and/or an optional
         argument ,to start the mininet, as a parameter.
@@ -130,26 +131,31 @@ class MininetCliDriver( Emulator ):
                                 "Mininet took too long... " )
             # Craft the string to start mininet
             cmdString = "sudo "
-            if topoFile is None or topoFile == '':  # If no file is given
-                main.log.info( self.name + ": building fresh Mininet" )
-                cmdString += "mn "
-                if args is None or args == '':
-                    # If no args given, use args from .topo file
-                    args = self.options[ 'arg1' ] +\
-                                 " " + self.options[ 'arg2' ] +\
-                                 " --mac --controller " +\
-                                 self.options[ 'controller' ] + " " +\
-                                 self.options[ 'arg3' ]
-                else:  # else only use given args
-                    pass
-                    # TODO: allow use of topo args and method args?
-            else:  # Use given topology file
-                main.log.info( "Starting Mininet from topo file " + topoFile )
-                cmdString += topoFile + " "
-                if args is None:
-                    args = ''
-                    # TODO: allow use of args from .topo file?
-            cmdString += args
+            if not mnCmd:
+                if topoFile is None or topoFile == '':  # If no file is given
+                    main.log.info( self.name + ": building fresh Mininet" )
+                    cmdString += "mn "
+                    if args is None or args == '':
+                        # If no args given, use args from .topo file
+                        args = self.options[ 'arg1' ] +\
+                                     " " + self.options[ 'arg2' ] +\
+                                     " --mac --controller " +\
+                                     self.options[ 'controller' ] + " " +\
+                                     self.options[ 'arg3' ]
+                    else:  # else only use given args
+                        pass
+                        # TODO: allow use of topo args and method args?
+                else:  # Use given topology file
+                    main.log.info( "Starting Mininet from topo file " + topoFile )
+                    cmdString += topoFile + " "
+                    if args is None:
+                        args = ''
+                        # TODO: allow use of args from .topo file?
+                cmdString += args
+            else:
+                main.log.info( "Starting Mininet topology using '" + mnCmd +
+                               "' command" )
+                cmdString += mnCmd
             # Send the command and check if network started
             self.handle.sendline( "" )
             self.handle.expect( '\$' )
@@ -369,23 +375,23 @@ class MininetCliDriver( Emulator ):
 
     def pingallHosts( self, hostList, pingType='ipv4' ):
         """
-            Ping all specified hosts with a specific ping type 
-            
-            Acceptable pingTypes: 
-                - 'ipv4' 
+            Ping all specified hosts with a specific ping type
+
+            Acceptable pingTypes:
+                - 'ipv4'
                 - 'ipv6'
-        
+
             Acceptable hostList:
                 - ['h1','h2','h3','h4']
-                
-            Returns main.TRUE if all hosts specified can reach 
+
+            Returns main.TRUE if all hosts specified can reach
             each other
-            
+
             Returns main.FALSE if one or more of hosts specified
             cannot reach each other"""
-            
+
         if pingType == "ipv4":
-            cmd = " ping -c 1 -i 1 -W 8 " 
+            cmd = " ping -c 1 -i 1 -W 8 "
         elif pingType == "ipv6":
             cmd = " ping6 -c 1 -i 1 -W 8 "
         else:
@@ -394,17 +400,17 @@ class MininetCliDriver( Emulator ):
 
         try:
             main.log.info( "Testing reachability between specified hosts" )
-           
+
             isReachable = main.TRUE
 
             for host in hostList:
                 listIndex = hostList.index(host)
                 # List of hosts to ping other than itself
                 pingList = hostList[:listIndex] + hostList[(listIndex+1):]
-                
+
                 for temp in pingList:
                     # Current host pings all other hosts specified
-                    pingCmd = str(host) + cmd + str(temp) 
+                    pingCmd = str(host) + cmd + str(temp)
                     self.handle.sendline( pingCmd )
                     i = self.handle.expect( [ pingCmd, pexpect.TIMEOUT ] )
                     j = self.handle.expect( [ "mininet>", pexpect.TIMEOUT ] )
@@ -413,11 +419,11 @@ class MininetCliDriver( Emulator ):
                         main.log.info( str(host) + " -> " + str(temp) )
                     else:
                         main.log.info( str(host) + " -> X ("+str(temp)+") "
-                                       " Destination Unreachable" ) 
+                                       " Destination Unreachable" )
                         # One of the host to host pair is unreachable
                         isReachable = main.FALSE
 
-            return isReachable 
+            return isReachable
 
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
@@ -1189,7 +1195,7 @@ class MininetCliDriver( Emulator ):
                 return main.TRUE
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
-            main.log.error( self.name + ":     " + self.handle.before )
+            main.log.error(self.name + ":     " + self.handle.before )
             main.cleanup()
             main.exit()
 
@@ -2010,6 +2016,64 @@ class MininetCliDriver( Emulator ):
             main.cleanup()
             main.exit()
 
+    def assignVLAN( self, host, intf, vlan):
+        """
+           Add vlan tag to a host.
+           Dependencies:
+               This class depends on the "vlan" package
+               $ sudo apt-get install vlan
+           Configuration:
+               Load the 8021q module into the kernel
+               $sudo modprobe 8021q
+
+               To make this setup permanent:
+               $ sudo su -c 'echo "8021q" >> /etc/modules'
+           """
+        if self.handle:
+            try:
+		# get the ip address of the host
+		main.log.info("Get the ip address of the host")
+		ipaddr = self.getIPAddress(host)
+		print repr(ipaddr)
+	
+		# remove IP from interface intf
+		# Ex: h1 ifconfig h1-eth0 inet 0
+		main.log.info("Remove IP from interface ")
+		cmd2 = host + " ifconfig " + intf + " " + " inet 0 "
+		self.handle.sendline( cmd2 )
+		self.handle.expect( "mininet>" ) 
+		response = self.handle.before
+		main.log.info ( "====> %s ", response)
+
+		
+		# create VLAN interface
+		# Ex: h1 vconfig add h1-eth0 100
+		main.log.info("Create Vlan")
+		cmd3 = host + " vconfig add " + intf + " " + vlan
+		self.handle.sendline( cmd3 )
+		self.handle.expect( "mininet>" ) 
+		response = self.handle.before
+		main.log.info( "====> %s ", response )
+
+		# assign the host's IP to the VLAN interface
+		# Ex: h1 ifconfig h1-eth0.100 inet 10.0.0.1
+		main.log.info("Assign the host IP to the vlan interface")
+		vintf = intf + "." + vlan
+		cmd4 = host + " ifconfig " + vintf + " " + " inet " + ipaddr
+		self.handle.sendline( cmd4 )
+		self.handle.expect( "mininet>" ) 
+		response = self.handle.before
+		main.log.info ( "====> %s ", response)
+
+
+                return main.TRUE
+            except pexpect.EOF:
+                main.log.error( self.name + ": EOF exception found" )
+                main.log.error( self.name + ":     " + self.handle.before )
+                return main.FALSE
+
 if __name__ != "__main__":
     import sys
     sys.modules[ __name__ ] = MininetCliDriver()
+
+

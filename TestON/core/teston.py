@@ -264,6 +264,8 @@ class TestON:
                     self.log.wiki( "<li>" + line + "  <ac:emoticon ac:name=\"cross\" /></li>\n" )
                 elif re.search( " - No Result$", line ):
                     self.log.wiki( "<li>" + line + "  <ac:emoticon ac:name=\"warning\" /></li>\n" )
+                else:  # Should only be on fail message
+                    self.log.wiki( "<ul><li>" + line + "</li></ul>\n" )
             self.log.wiki( "</ul>" )
             self.log.summary( self.stepCache )
             self.stepCache = ""
@@ -274,6 +276,7 @@ class TestON:
             try :
                 step = stepList[self.stepCount]
                 self.STEPRESULT = self.NORESULT
+                self.onFailMsg = "\t\tNo on fail message given"
                 exec code[testCaseNumber][step] in module.__dict__
                 self.stepCount = self.stepCount + 1
                 if step > 0:
@@ -283,6 +286,7 @@ class TestON:
                     elif self.STEPRESULT == self.FALSE:
                         self.stepCache += "FAIL\n"
                         # TODO: Print the on-fail statement here
+                        self.stepCache += "\t\t" + self.onFailMsg + "\n"
                     else:
                         self.stepCache += "No Result\n"
                     self.stepResults.append(self.STEPRESULT)
@@ -302,6 +306,8 @@ class TestON:
                         self.log.wiki( "<li>" + line + "  <ac:emoticon ac:name=\"cross\" /></li>\n" )
                     elif re.search( " - No Result$", line ):
                         self.log.wiki( "<li>" + line + "  <ac:emoticon ac:name=\"warning\" /></li>\n" )
+                    else:  # Should only be on fail message
+                        self.log.wiki( "<ul><li>" + line + "</li></ul>\n" )
                 self.log.wiki( "</ul>" )
                 #summary results
                 self.log.summary( self.stepCache )

@@ -172,6 +172,7 @@ class Utilities:
             else :
                 main.log.error(arguments["ONFAIL"])
                 main.log.report(arguments["ONFAIL"])
+                main.onFailMsg = arguments[ 'ONFAIL' ]
 
         msg = arguments["ON" + str(resultString)]
 

@@ -178,7 +178,7 @@ class FuncTopo:
         cliResult = main.TRUE
         for i in range( main.numCtrls ):
             cliResult = cliResult and \
-                        main.CLIs[i].startOnosCli( main.ONOSip[ i ] )
+                        main.CLIs[ i ].startOnosCli( main.ONOSip[ i ] )
         stepResult = cliResult
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -201,13 +201,27 @@ class FuncTopo:
             Test topology discovery
         """
         main.case( "Topology discovery test" )
+
+        main.topoName = "TREE3-3"
+        stepResult = main.TRUE
+        main.step( "Tree 3-3 topology" )
+        mnCmd = "mn --topo=tree,3,3 --controller=remote,ip=$OC1 --mac"
+        stepResult = main.wrapper.testTopology( main,
+                                                mnCmd=mnCmd,
+                                                clean=False )
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="Tree 3-3 topology successful",
+                                 onfail="Tree 3-3 topology failed" )
+
         main.step( "Torus 5-5 topology" )
         main.topoName = "TORUS5-5"
         mnCmd = "mn --topo=torus,5,5 --controller=remote,ip=$OC1 --mac"
         stepResult = main.wrapper.testTopology( main,
                                                 mnCmd=mnCmd,
-                                                clean=False)
+                                                clean=True )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
                                  onpass="Torus 5-5 topology successful",
                                  onfail="Torus 5-5 topology failed" )
+

@@ -1734,47 +1734,60 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def checkIntentState( self, intentsId, expectedState = 'INSTALLED' ):
+    def checkIntentState( self, intentsId, expectedState='INSTALLED' ):
         """
         Description:
             Check intents state
         Required:
             intentsId - List of intents ID to be checked
         Optional:
-            expectedState - Check this expected state of each intents state
-                            in the list. Defaults to INSTALLED
+            expectedState - Check the expected state(s) of each intents
+                            state in the list.
+                            *NOTE: You can pass in a list of expected state,
+                            Eg: expectedState = [ 'INSTALLED' , 'INSTALLING' ]
         Return:
-            Returns main.TRUE only if all intent are the same as expectedState,
-            , otherwise,returns main.FALSE.
+            Returns main.TRUE only if all intent are the same as expected states
+            , otherwise, returns main.FALSE.
         """
         try:
             # Generating a dictionary: intent id as a key and state as value
+            returnValue = main.TRUE
             intentsDict = self.getIntentState( intentsId )
+
             #print "len of intentsDict ", str( len( intentsDict ) )
             if len( intentsId ) != len( intentsDict ):
                 main.log.info( self.name + "There is something wrong " +
                                "getting intents state" )
                 return main.FALSE
-            returnValue = main.TRUE
-            for intents in intentsDict:
-                if intents.get( 'state' ) != expectedState:
-                    if intents.get( 'state' ) == "INSTALLING":
+
+            if isinstance( expectedState, types.StringType ):
+                for intents in intentsDict:
+                    if intents.get( 'state' ) != expectedState:
                         main.log.debug( self.name + " : Intent ID - " +
                                         intents.get( 'id' ) +
-                                        " is in INSTALLING state" )
-                        returnValue = main.TRUE
-                    else:
-                        main.log.info( self.name + " : Intent ID - " +
-                                       intents.get( 'id' ) +
-                                       " actual state = " +
-                                       intents.get( 'state' )
-                                       + " does not equal expected state = "
-                                       + expectedState )
+                                        " actual state = " +
+                                        intents.get( 'state' )
+                                        + " does not equal expected state = "
+                                        + expectedState )
                         returnValue = main.FALSE
+
+            elif isinstance( expectedState, types.ListType ):
+                for intents in intentsDict:
+                    if not any( state == intents.get( 'state' ) for state in
+                                expectedState ):
+                        main.log.debug( self.name + " : Intent ID - " +
+                                        intents.get( 'id' ) +
+                                        " actual state = " +
+                                        intents.get( 'state' ) +
+                                        " does not equal expected states = "
+                                        + str( expectedState ) )
+                        returnValue = main.FALSE
+
             if returnValue == main.TRUE:
                 main.log.info( self.name + ": All " +
                                str( len( intentsDict ) ) +
-                               " intents are in " + expectedState + " state")
+                               " intents are in " + str( expectedState ) +
+                               " state" )
             return returnValue
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )

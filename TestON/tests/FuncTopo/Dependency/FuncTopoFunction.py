@@ -48,6 +48,9 @@ def testTopology( main, topoFile='', args='', mnCmd='', clean=True ):
     testTopoResult = startResult and topoObjectResult and \
                      compareTopoResult and getHostsResult
 
+    # Restart ONOS to clear hosts test new mininet topology
+    restartResult = restartONOS( main )
+
     return testTopoResult
 
 def startNewTopology( main, topoFile='', args='', mnCmd='', clean=True ):
@@ -250,3 +253,51 @@ def getHostsData( main ):
     print main.hostsData
 
     return getDataResult
+
+def restartONOS( main ):
+    """
+    Description:
+        Stop and start ONOS that clears hosts,devices etc. in order to test
+        new mininet topology
+    Return:
+        Retruns main.TRUE for a successful restart, main.FALSE otherwise.
+    """
+    stopResult = []
+    startResult = []
+    restartResult = main.TRUE
+
+    main.log.info( main.topoName + ": Stopping ONOS cluster" )
+    for node in main.nodes:
+        startResult.append( main.ONOSbench.onosStop( nodeIp=node.ip_address ) )
+
+    if all( result == main.TRUE for result in stopResult ):
+        main.log.info( main.topoName + ": Successfully stopped ONOS cluster" )
+    else:
+        restartResult = main.FALSE
+        main.log.error( main.topoName + ": Failed to stop ONOS cluster" )
+
+    time.sleep( 15 )
+
+    main.log.info( main.topoName + ": Starting ONOS cluster" )
+    for node in main.nodes:
+        startResult.append( main.ONOSbench.onosStart( nodeIp=node.ip_address ) )
+
+    if all( result == main.TRUE for result in startResult ):
+        main.log.info( main.topoName + ": Successfully start ONOS cluster" )
+    else:
+        restartResult = main.FALSE
+        main.log.error( main.topoName + ": Failed to start ONOS cluster" )
+
+    # Start ONOS CLIs again
+    main.log.info( main.topoName + ": Starting ONOS CLI" )
+    cliResult = main.TRUE
+    for i in range( main.numCtrls ):
+        cliResult = cliResult and \
+                    main.CLIs[ i ].startOnosCli( main.ONOSip[ i ] )
+
+    time.sleep( 15 )
+
+    return restartResult
+
+
+

@@ -98,10 +98,18 @@ class MininetCliDriver( Emulator ):
 
     def startNet( self, topoFile='', args='', mnCmd='', timeout=120 ):
         """
-        Starts Mininet accepts a topology(.py) file and/or an optional
-        argument ,to start the mininet, as a parameter.
-        Returns main.TRUE if the mininet starts successfully and
-                main.FALSE otherwise
+        Description:
+            Starts Mininet accepts a topology(.py) file and/or an optional
+            argument, to start the mininet, as a parameter.
+            Can also send regular mininet command to load up desired topology.
+            Eg. Pass in a string 'sudo mn --topo=tree,3,3' to mnCmd
+        Options:
+            topoFile = file path for topology file (.py)
+            args = extra option added when starting the topology from the file
+            mnCmd = Mininet command use to start topology
+        Returns:
+                main.TRUE if the mininet starts successfully, main.FALSE
+                otherwise
         """
         if self.handle:
             # make sure old networks are cleaned up

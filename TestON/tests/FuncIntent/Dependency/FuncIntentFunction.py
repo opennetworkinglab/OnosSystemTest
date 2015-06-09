@@ -1008,19 +1008,39 @@ def checkTopology( main, expectedLink ):
     return statusResult
 
 def checkIntentState( main, intentsId ):
+    """
+        This function will check intent state to make sure all the intents
+        are in INSTALLED state
+    """
 
     intentResult = main.TRUE
     results = []
 
     main.log.info( itemName + ": Checking intents state" )
+    # First check of intents
     for i in range( main.numCtrls ):
-        intentResult = main.CLIs[ i ].checkIntentState( intentsId=intentsId )
-        results.append( intentResult )
+        tempResult = main.CLIs[ i ].checkIntentState( intentsId=intentsId )
+        results.append( tempResult )
+
+    expectedState = [ 'INSTALLED', 'INSTALLING' ]
 
     if all( result == main.TRUE for result in results ):
         main.log.info( itemName + ": Intents are installed correctly" )
     else:
-        main.log.error( itemName + ": Intents are NOT installed correctly" )
+        # Wait for at least 5 second before checking the intents again
+        time.sleep( 5 )
+        results = []
+        # Second check of intents since some of the intents may be in
+        # INSTALLING state, they should be in INSTALLED at this time
+        for i in range( main.numCtrls ):
+            tempResult = main.CLIs[ i ].checkIntentState(
+                                                        intentsId=intentsId )
+            results.append( tempResult )
+        if all( result == main.TRUE for result in results ):
+            main.log.info( itemName + ": Intents are installed correctly" )
+        else:
+            main.log.error( itemName + ": Intents are NOT installed correctly" )
+            intentResult = main.FALSE
 
     return intentResult
 

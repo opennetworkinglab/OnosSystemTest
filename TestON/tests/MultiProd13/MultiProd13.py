@@ -35,6 +35,7 @@ class MultiProd13:
         ONOS1Port = main.params[ 'CTRL' ][ 'port1' ]
         ONOS2Port = main.params[ 'CTRL' ][ 'port2' ]
         ONOS3Port = main.params[ 'CTRL' ][ 'port3' ]
+        gitPull = main.params[ 'GIT' ][ 'pull' ]
 
         main.case( "Setting up test environment" )
         main.log.report(
@@ -52,20 +53,25 @@ class MultiProd13:
         main.step( "Removing raft logs before a clen installation of ONOS" )
         removeLogResult = main.ONOSbench.onosRemoveRaftLogs()
 
-        main.step( "Git checkout, pull and get version" )
+        main.step( "Git checkout and get version" )
         main.ONOSbench.gitCheckout( "master" )
-        gitPullResult = main.ONOSbench.gitPull()
-        main.log.info( "git_pull_result = " + str( gitPullResult ))
-        versionResult = main.ONOSbench.getVersion( report=True )
-
+        if gitPull == 'True':
+            gitPullResult = main.ONOSbench.gitPull()
+            if gitPullResult == 1:
+                main.step( "Using mvn clean & install" )
+                main.ONOSbench.cleanInstall()
+                main.step( "Creating ONOS package" )
+                packageResult = main.ONOSbench.onosPackage()
+            elif gitPullResult == 0:
+                main.log.report(
+                    "Git Pull Failed, look into logs for detailed reason" )
+                main.cleanup()
+                main.exit()
+            main.log.info( "git_pull_result = " + str( gitPullResult ))
+        else:
+            main.log.info( "Skipping git pull" )
+        main.ONOSbench.getVersion( report=True )
         packageResult = main.TRUE
-        if gitPullResult == 100:
-            main.step( "Using mvn clean & install" )
-            cleanInstallResult = main.ONOSbench.cleanInstall()
-            main.step( "Creating ONOS package" )
-            packageResult = main.ONOSbench.onosPackage()
-            # cleanInstallResult = main.TRUE
-
 
         # main.step( "Creating a cell" )
         # cellCreateResult = main.ONOSbench.createCellFile( **************

@@ -31,6 +31,7 @@ class ProdFunc13:
         """
         cellName = main.params[ 'ENV' ][ 'cellName' ]
         ONOS1Ip = main.params[ 'CTRL' ][ 'ip1' ]
+        gitPull = main.params[ 'GIT' ][ 'pull' ]
 
         main.case( "Setting up test environment" )
         main.log.report(
@@ -43,22 +44,23 @@ class ProdFunc13:
 
         main.step( "Git checkout and get version" )
         main.ONOSbench.gitCheckout( "master" )
-        gitPullResult = main.ONOSbench.gitPull()
-        main.log.info( "git_pull_result = " + str( gitPullResult ))
+        if gitPull == 'True':
+            gitPullResult = main.ONOSbench.gitPull()
+            if gitPullResult == 1:
+                main.step( "Using mvn clean & install" )
+                main.ONOSbench.cleanInstall()
+                main.step( "Creating ONOS package" )
+                packageResult = main.ONOSbench.onosPackage()
+            elif gitPullResult == 0:
+                main.log.report(
+                    "Git Pull Failed, look into logs for detailed reason" )
+                main.cleanup()
+                main.exit()
+            main.log.info( "git_pull_result = " + str( gitPullResult ))
+        else:
+            main.log.info( "Skipping git pull" )
         main.ONOSbench.getVersion( report=True )
-
         packageResult = main.TRUE
-        if gitPullResult == 100:
-            main.step( "Using mvn clean & install" )
-            main.ONOSbench.cleanInstall()
-            main.step( "Creating ONOS package" )
-            packageResult = main.ONOSbench.onosPackage()
-        elif gitPullResult == 0:
-            main.log.report(
-                "Git Pull Failed, look into logs for detailed reason" )
-            main.cleanup()
-            main.exit()
-
 
         main.step( "Uninstalling ONOS package" )
         onosInstallResult = main.ONOSbench.onosUninstall( ONOS1Ip )
@@ -67,6 +69,7 @@ class ProdFunc13:
         else:
             main.log.report( "Uninstalling ONOS package failed" )
 
+        time.sleep( 20 )
         main.step( "Installing ONOS package" )
         onosInstallResult = main.ONOSbench.onosInstall( ONOS1Ip )
         print onosInstallResult
@@ -75,6 +78,7 @@ class ProdFunc13:
         else:
             main.log.report( "Installing ONOS package failed" )
 
+        time.sleep( 20 )
         onos1Isup = main.ONOSbench.isup()
         if onos1Isup == main.TRUE:
             main.log.report( "ONOS instance is up and ready" )
@@ -1201,8 +1205,8 @@ class ProdFunc13:
         result2 = main.Mininet1.compareLinks(
             MNTopo,
             json.loads( linksJson ) )
-        result3 = main.Mininet1.comparePorts( MNTopo, json.loads( portsJson ) )
 
+        result3 = main.Mininet1.comparePorts( MNTopo, json.loads( portsJson ) )
         # result = result1 and result2 and result3
         result = result1 and result2
 

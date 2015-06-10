@@ -5,7 +5,9 @@
     <ENV>
         <cellName>driver_test</cellName>
     </ENV>
-
+    <GIT>
+        <pull>True</pull>
+    </GIT>
     <CTRL>
         <ip1>10.128.20.11</ip1>
         <port1>6633</port1>

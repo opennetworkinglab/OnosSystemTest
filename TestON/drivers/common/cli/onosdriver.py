@@ -422,7 +422,7 @@ class OnosDriver( CLI ):
                 [ 'fatal',
                   'Username for (.*): ',
                   'Already on \'',
-                  'Switched to branch \'' + str( branch ),
+                  'Switched to (a new )?branch \'' + str( branch ),
                   pexpect.TIMEOUT,
                   'error: Your local changes to the following files' +
                   'would be overwritten by checkout:',

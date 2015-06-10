@@ -174,11 +174,14 @@ class OnosDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def cleanInstall( self, mciTimeout=600 ):
+    def cleanInstall( self, skipTest=False, mciTimeout=600 ):
         """
         Runs mvn clean install in the root of the ONOS directory.
         This will clean all ONOS artifacts then compile each module
-
+        Optional:
+            skipTest - Does "-DskipTests -Dcheckstyle.skip -U -T 1C" which
+                       skip the test. This will make the building faster.
+                       Disregarding the credibility of the build
         Returns: main.TRUE on success
         On Failure, exits the test
         """
@@ -191,8 +194,15 @@ class OnosDriver( CLI ):
 
             self.handle.sendline( "" )
             self.handle.expect( "\$" )
-            self.handle.sendline( "mvn clean install -DskipTests -Dcheckstyle.skip -U -T 1C" )
-            #self.handle.expect( "mvn clean install" )
+
+            if not skipTest:
+                self.handle.sendline( "mvn clean install" )
+                self.handle.expect( "mvn clean install" )
+            else:
+                self.handle.sendline( "mvn clean install -DskipTests" +
+                                      " -Dcheckstyle.skip -U -T 1C" )
+                self.handle.expect( "mvn clean install -DskipTests" +
+                                      " -Dcheckstyle.skip -U -T 1C" )
             while True:
                 i = self.handle.expect( [
                     'There\sis\sinsufficient\smemory\sfor\sthe\sJava\s' +

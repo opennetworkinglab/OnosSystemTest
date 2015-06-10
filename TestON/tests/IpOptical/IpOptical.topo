@@ -10,72 +10,45 @@
             <COMPONENTS> </COMPONENTS>
         </ONOSbench>
 
-        <ONOScli1>
+        <ONOS1>
             <host>10.128.10.11</host>
-            <user>admin</user>
-            <password>onos_test</password>
-            <type>OnosCliDriver</type>
+            <user>sdn</user>
+            <password>sdn</password>
+            <type>OnosDriver</type>
             <connect_order>2</connect_order>
             <COMPONENTS> </COMPONENTS>
-        </ONOScli1>
+        </ONOS1>
 
-	 <ONOScli2>
+        <ONOS2>
             <host>10.128.10.11</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>OnosCliDriver</type>
             <connect_order>3</connect_order>
             <COMPONENTS> </COMPONENTS>
-        </ONOScli2>
+        </ONOS2>
 
-	 <ONOScli3>
+         <ONOS3>
             <host>10.128.10.11</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>OnosCliDriver</type>
             <connect_order>4</connect_order>
             <COMPONENTS> </COMPONENTS>
-        </ONOScli3>
-
-        <ONOS1>
-            <host>10.128.10.11</host>
-            <user>sdn</user>
-            <password>sdn</password>
-            <type>OnosCliDriver</type>
-            <connect_order>5</connect_order>
-            <COMPONENTS> </COMPONENTS>
-        </ONOS1>
-
-	<ONOS2>
-            <host>10.128.10.11</host>
-            <user>sdn</user>
-            <password>sdn</password>
-            <type>OnosCliDriver</type>
-            <connect_order>6</connect_order>
-            <COMPONENTS> </COMPONENTS>
-        </ONOS2>
-	
-	<ONOS3>
-            <host>10.128.10.11</host>
-            <user>sdn</user>
-            <password>sdn</password>
-            <type>OnosCliDriver</type>
-            <connect_order>7</connect_order>
-            <COMPONENTS> </COMPONENTS>
         </ONOS3>
+       
 
-	
         <Mininet1>
             <host>10.128.10.11</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>MininetCliDriver</type>
-            <connect_order>8</connect_order>
+            <connect_order>5</connect_order>
             <COMPONENTS>
                 #Specify the Option for mininet
                 <arg1> --custom ~/mininet/custom/topo-HA.py </arg1>
                 <arg2> --topo mytopo </arg2>
-                <arg3> --switch ovs,protocols=OpenFlow10 </arg3>
+                <arg3> --switch ovs,protocols=OpenFlow13 </arg3>
                 <controller> remote </controller>
             </COMPONENTS>
         </Mininet1>
@@ -85,12 +58,12 @@
             <user>admin</user>
             <password>onos_test</password>
             <type>RemoteMininetDriver</type>
-            <connect_order>9</connect_order>
+            <connect_order>6</connect_order>
             <COMPONENTS>
                 #Specify the Option for mininet
                 <arg1> --custom ~/mininet/custom/topo-HA.py </arg1>
                 <arg2> --topo mytopo </arg2>
-                <arg3> --switch ovs,protocols=OpenFlow10 </arg3>
+                <arg3> --switch ovs,protocols=OpenFlow13 </arg3>
                 <controller> remote </controller>
             </COMPONENTS>
         </Mininet2>
@@ -114,5 +87,6 @@
             <COMPONENTS>
             </COMPONENTS>
         </LincOE2>
+
     </COMPONENT>
 </TOPOLOGY>

@@ -1,15 +1,37 @@
 <PARAMS>
-    #1,4,10,5,6,7,8,9,8,11,8,20,21,22,10,23,24
-    <testcases>1,4,10,5,6,7,8,9,8,11,8,2,20,21,22,10,23,24</testcases>
+    
+    <testcases>20,21,22,10,25,23,24</testcases>
     #Environment variables
     <ENV>
-        <cellName>driver_test</cellName>
+        <cellName>multi_test</cellName>
     </ENV>
 
     <CTRL>
         <ip1>10.128.20.11</ip1>
+        <ip2>10.128.20.12</ip2>
+        <ip3>10.128.20.13</ip3>
         <port1>6633</port1>
+        <port2>6633</port2>
+        <port3>6633</port3>
     </CTRL>
+
+    <SDNIP>
+        <ethType>IPV4</ethType>
+        <tcpProto>6</tcpProto>
+        <icmpProto>1</icmpProto>
+        <srcPort>5001</srcPort>
+        <dstPort>5001</dstPort>
+    </SDNIP>
+
+    <MULTIPOINT_INTENT>
+        <device1>of:0000000000003008/1 </device1>
+        <device2>of:0000000000003009/1 </device2>
+        <device3>of:0000000000003010/1 </device3>
+        <mac1>00:00:00:00:00:0A </mac1>
+        <mac2>00:00:00:00:00:08 </mac2>
+        <ip1>10.0.3.0/24 </ip1>
+        <ip2>10.0.1.0/24 </ip2>
+    </MULTIPOINT_INTENT>
 
     <PING>
         <source1>h8</source1>
@@ -36,6 +58,7 @@
 
     <timers>
         <LinkDiscovery>5</LinkDiscovery>
-        <SwitchDiscovery>15</SwitchDiscovery>
+        <SwitchDiscovery>31</SwitchDiscovery>
     </timers>
+
 </PARAMS>

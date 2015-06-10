@@ -31,6 +31,7 @@ class ProdFunc:
         """
         cellName = main.params[ 'ENV' ][ 'cellName' ]
         ONOS1Ip = main.params[ 'CTRL' ][ 'ip1' ]
+        gitPull = main.params[ 'GIT' ][ 'pull' ]
 
         main.case( "Setting up test environment" )
         main.log.report(
@@ -43,22 +44,23 @@ class ProdFunc:
 
         main.step( "Git checkout and get version" )
         main.ONOSbench.gitCheckout( "master" )
-        gitPullResult = main.ONOSbench.gitPull()
-        main.log.info( "git_pull_result = " + str( gitPullResult ))
+        if gitPull == 'True':
+            gitPullResult = main.ONOSbench.gitPull()
+            if gitPullResult == 1:
+                main.step( "Using mvn clean & install" )
+                main.ONOSbench.cleanInstall()
+                main.step( "Creating ONOS package" )
+                packageResult = main.ONOSbench.onosPackage()
+            elif gitPullResult == 0:
+                main.log.report(
+                    "Git Pull Failed, look into logs for detailed reason" )
+                main.cleanup()
+                main.exit()
+            main.log.info( "git_pull_result = " + str( gitPullResult ))
+        else:
+            main.log.info( "Skipping git pull" )
         main.ONOSbench.getVersion( report=True )
-
         packageResult = main.TRUE
-        if gitPullResult == 1:
-            main.step( "Using mvn clean & install" )
-            main.ONOSbench.cleanInstall()
-            main.step( "Creating ONOS package" )
-            packageResult = main.ONOSbench.onosPackage()
-        elif gitPullResult == 0:
-            main.log.report(
-                "Git Pull Failed, look into logs for detailed reason" )
-            main.cleanup()
-            main.exit()
-
 
         main.step( "Uninstalling ONOS package" )
         onosInstallResult = main.ONOSbench.onosUninstall( ONOS1Ip )

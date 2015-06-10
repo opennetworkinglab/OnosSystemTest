@@ -281,9 +281,12 @@ class OnosCliDriver( CLI ):
                 lvlStr = "--level=" + level
 
             self.handle.sendline( "" )
-            i = self.handle.expect( [ "onos>", pexpect.TIMEOUT ] )
-            # TODO: look for bash prompt as well
+            i = self.handle.expect( [ "onos>","\$", pexpect.TIMEOUT ] )
             if i == 1:
+                main.log.error( self.name + ": onos cli session closed." )
+                main.cleanup()
+                main.exit()
+            if i == 2:
                 self.handle.sendline( "" )
                 self.handle.expect( "onos>" )
             self.handle.sendline( "log:log " + lvlStr + " " + cmdStr )

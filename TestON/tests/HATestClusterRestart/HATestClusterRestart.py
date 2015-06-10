@@ -4,7 +4,8 @@ Description: This test is to determine if ONOS can handle
 
 List of test cases:
 CASE1: Compile ONOS and push it to the test machines
-CASE2: Assign mastership to controllers
+CASE2: Assign devices to controllers
+CASE21: Assign mastership to controllers
 CASE3: Assign intents
 CASE4: Ping across added host intents
 CASE5: Reading state of ONOS
@@ -70,6 +71,11 @@ class HATestClusterRestart:
         global ONOS6Port
         global ONOS7Port
         global numControllers
+        # These are for csv plotting in jenkins
+        global labels
+        global data
+        labels = []
+        data = []
         numControllers = int( main.params[ 'num_controllers' ] )
 
         # FIXME: just get controller port from params?
@@ -241,7 +247,7 @@ class HATestClusterRestart:
 
     def CASE2( self, main ):
         """
-        Assign mastership to controllers
+        Assign devices to controllers
         """
         import re
         import time
@@ -258,12 +264,10 @@ class HATestClusterRestart:
         assert ONOS6Port, "ONOS6Port not defined"
         assert ONOS7Port, "ONOS7Port not defined"
 
-        main.case( "Assigning Controllers" )
+        main.case( "Assigning devices to controllers" )
         main.caseExplaination = "Assign switches to ONOS using 'ovs-vsctl' " +\
                                 "and check that an ONOS node becomes the " +\
-                                "master of the device. Then manually assign" +\
-                                " mastership to specific ONOS nodes using" +\
-                                " 'device-role'"
+                                "master of the device."
         main.step( "Assign switches to controllers" )
 
         # TODO: rewrite this function to take lists of ips and ports?
@@ -301,6 +305,30 @@ class HATestClusterRestart:
             onpass="Switch mastership assigned correctly",
             onfail="Switches not assigned correctly to controllers" )
 
+    def CASE21( self, main ):
+        """
+        Assign mastership to controllers
+        """
+        import re
+        import time
+        assert numControllers, "numControllers not defined"
+        assert main, "main not defined"
+        assert utilities.assert_equals, "utilities.assert_equals not defined"
+        assert CLIs, "CLIs not defined"
+        assert nodes, "nodes not defined"
+        assert ONOS1Port, "ONOS1Port not defined"
+        assert ONOS2Port, "ONOS2Port not defined"
+        assert ONOS3Port, "ONOS3Port not defined"
+        assert ONOS4Port, "ONOS4Port not defined"
+        assert ONOS5Port, "ONOS5Port not defined"
+        assert ONOS6Port, "ONOS6Port not defined"
+        assert ONOS7Port, "ONOS7Port not defined"
+
+        main.case( "Assigning Controller roles for switches" )
+        main.caseExplaination = "Check that ONOS is connected to each " +\
+                                "device. Then manually assign" +\
+                                " mastership to specific ONOS nodes using" +\
+                                " 'device-role'"
         main.step( "Assign mastership of switches to specific controllers" )
         # Manually assign mastership to the controller we want
         roleCall = main.TRUE
@@ -345,6 +373,7 @@ class HATestClusterRestart:
                 else:
                     main.log.error( "You didn't write an else statement for " +
                                     "switch s" + str( i ) )
+                    roleCall = main.FALSE
                 # Assign switch
                 assert deviceId, "No device id for s" + str( i ) + " in ONOS"
                 # TODO: make this controller dynamic
@@ -385,11 +414,6 @@ class HATestClusterRestart:
             onpass="Switches were successfully reassigned to designated " +
                    "controller",
             onfail="Switches were not successfully reassigned" )
-        mastershipCheck = mastershipCheck and roleCall and roleCheck
-        utilities.assert_equals( expect=main.TRUE, actual=mastershipCheck,
-                                 onpass="Switch mastership correctly assigned",
-                                 onfail="Error in (re)assigning switch" +
-                                 " mastership" )
 
     def CASE3( self, main ):
         """
@@ -402,6 +426,16 @@ class HATestClusterRestart:
         assert utilities.assert_equals, "utilities.assert_equals not defined"
         assert CLIs, "CLIs not defined"
         assert nodes, "nodes not defined"
+        try:
+            labels
+        except NameError:
+            main.log.error( "labels not defined, setting to []" )
+            labels = []
+        try:
+            data
+        except NameError:
+            main.log.error( "data not defined, setting to []" )
+            data = []
         # NOTE: we must reinstall intents until we have a persistant intent
         #        datastore!
         main.case( "Adding host Intents" )
@@ -572,6 +606,7 @@ class HATestClusterRestart:
                            ( str( count ), str( i ), str( s ) ) )
         leaders = main.ONOScli1.leaders()
         try:
+            missing = False
             if leaders:
                 parsedLeaders = json.loads( leaders )
                 main.log.warn( json.dumps( parsedLeaders,
@@ -588,11 +623,19 @@ class HATestClusterRestart:
                     if topic not in ONOStopics:
                         main.log.error( "Error: " + topic +
                                         " not in leaders" )
+                        missing = True
             else:
                 main.log.error( "leaders() returned None" )
         except ( ValueError, TypeError ):
             main.log.exception( "Error parsing leaders" )
             main.log.error( repr( leaders ) )
+        # Check all nodes
+        if missing:
+            for node in CLIs:
+                response = node.leaders( jsonFormat=False)
+                main.log.warn( str( node.name ) + " leaders output: \n" +
+                               str( response ) )
+
         partitions = main.ONOScli1.partitions()
         try:
             if partitions :
@@ -639,13 +682,15 @@ class HATestClusterRestart:
                 main.log.debug( "Intents in " + cli.name + ": " +
                                 str( sorted( onosIds ) ) )
                 if sorted( ids ) != sorted( intentIds ):
-                    # IF intents are missing
+                    main.log.debug( "Set of intent IDs doesn't match" )
                     correct = False
                     break
                 else:
                     intents = json.loads( cli.intents() )
                     for intent in intents:
                         if intent[ 'state' ] != "INSTALLED":
+                            main.log.warn( "Intent " + intent[ 'id' ] +
+                                           " is " + intent[ 'state' ] )
                             correct = False
                             break
             if correct:
@@ -658,6 +703,17 @@ class HATestClusterRestart:
         gossipTime = intentStop - intentStart
         main.log.info( "It took about " + str( gossipTime ) +
                         " seconds for all intents to appear in each node" )
+        append = False
+        title = "Gossip Intents"
+        count = 1
+        while append is False:
+            curTitle = title + str( count )
+            if curTitle not in labels:
+                labels.append( curTitle )
+                data.append( str( gossipTime ) )
+                append = True
+            else:
+                count += 1
         # FIXME: make this time configurable/calculate based off of number of
         #        nodes and gossip rounds
         utilities.assert_greater_equals(
@@ -703,6 +759,7 @@ class HATestClusterRestart:
                                ( str( count ), str( i ), str( s ) ) )
             leaders = main.ONOScli1.leaders()
             try:
+                missing = False
                 if leaders:
                     parsedLeaders = json.loads( leaders )
                     main.log.warn( json.dumps( parsedLeaders,
@@ -722,11 +779,19 @@ class HATestClusterRestart:
                         if topic not in ONOStopics:
                             main.log.error( "Error: " + topic +
                                             " not in leaders" )
+                            missing = True
                 else:
                     main.log.error( "leaders() returned None" )
             except ( ValueError, TypeError ):
                 main.log.exception( "Error parsing leaders" )
                 main.log.error( repr( leaders ) )
+            # Check all nodes
+            if missing:
+                for node in CLIs:
+                    response = node.leaders( jsonFormat=False)
+                    main.log.warn( str( node.name ) + " leaders output: \n" +
+                                   str( response ) )
+
             partitions = main.ONOScli1.partitions()
             try:
                 if partitions :
@@ -805,14 +870,13 @@ class HATestClusterRestart:
 
         main.step( "Check Intent state" )
         installedCheck = False
-        count = 0
-        while not installedCheck and count < 40:
+        loopCount = 0
+        while not installedCheck and loopCount < 40:
             installedCheck = True
             # Print the intent states
             intents = main.ONOScli1.intents()
             intentStates = []
             main.log.info( "%-6s%-15s%-15s" % ( 'Count', 'ID', 'State' ) )
-            count = 0
             # Iter through intents of a node
             try:
                 for intent in json.loads( intents ):
@@ -831,7 +895,7 @@ class HATestClusterRestart:
                                ( str( count ), str( i ), str( s ) ) )
             if not installedCheck:
                 time.sleep( 1 )
-                count += 1
+                loopCount += 1
         utilities.assert_equals( expect=True, actual=installedCheck,
                                  onpass="Intents are all INSTALLED",
                                  onfail="Intents are not all in " +
@@ -871,6 +935,13 @@ class HATestClusterRestart:
             main.log.exception( "Error parsing leaders" )
             main.log.error( repr( leaders ) )
             # TODO: Check for a leader of these topics
+        # Check all nodes
+        if topicCheck:
+            for node in CLIs:
+                response = node.leaders( jsonFormat=False)
+                main.log.warn( str( node.name ) + " leaders output: \n" +
+                               str( response ) )
+
         utilities.assert_equals( expect=main.TRUE, actual=topicCheck,
                                  onpass="intent Partitions is in leaders",
                                  onfail="Some topics were lost " )
@@ -905,10 +976,11 @@ class HATestClusterRestart:
         except ( ValueError, TypeError ):
             main.log.exception( "Error parsing pending map" )
             main.log.error( repr( pendingMap ) )
-        main.log.info( "Waiting 60 seconds to see if the state of " +
-                       "intents change" )
-        time.sleep( 60 )
+
         if not installedCheck:
+            main.log.info( "Waiting 60 seconds to see if the state of " +
+                           "intents change" )
+            time.sleep( 60 )
             # Print the intent states
             intents = main.ONOScli1.intents()
             intentStates = []
@@ -931,6 +1003,7 @@ class HATestClusterRestart:
                                ( str( count ), str( i ), str( s ) ) )
             leaders = main.ONOScli1.leaders()
             try:
+                missing = False
                 if leaders:
                     parsedLeaders = json.loads( leaders )
                     main.log.warn( json.dumps( parsedLeaders,
@@ -950,11 +1023,18 @@ class HATestClusterRestart:
                         if topic not in ONOStopics:
                             main.log.error( "Error: " + topic +
                                             " not in leaders" )
+                            missing = True
                 else:
                     main.log.error( "leaders() returned None" )
             except ( ValueError, TypeError ):
                 main.log.exception( "Error parsing leaders" )
                 main.log.error( repr( leaders ) )
+            if missing:
+                for node in CLIs:
+                    response = node.leaders( jsonFormat=False)
+                    main.log.warn( str( node.name ) + " leaders output: \n" +
+                                   str( response ) )
+
             partitions = main.ONOScli1.partitions()
             try:
                 if partitions :
@@ -1394,14 +1474,6 @@ class HATestClusterRestart:
         for t in threads:
             t.join()
             ports.append( t.result )
-            try:
-                # FIXME: DEBUG
-                main.log.debug( json.dumps( json.loads( t.result ),
-                                            sort_keys=True,
-                                            indent=4,
-                                            separators=( ',', ': ' ) ) )
-            except:
-                main.log.debug( repr( t.result ) )
         links = []
         threads = []
         for i in range( numControllers ):
@@ -1578,7 +1650,18 @@ class HATestClusterRestart:
         assert utilities.assert_equals, "utilities.assert_equals not defined"
         assert CLIs, "CLIs not defined"
         assert nodes, "nodes not defined"
-
+        try:
+            labels
+        except NameError:
+            main.log.error( "labels not defined, setting to []" )
+            global labels
+            labels = []
+        try:
+            data
+        except NameError:
+            main.log.error( "data not defined, setting to []" )
+            global data
+            data = []
         # Reset non-persistent variables
         try:
             iCounterValue = 0
@@ -1587,14 +1670,6 @@ class HATestClusterRestart:
             iCounterValue = 0
 
         main.case( "Restart entire ONOS cluster" )
-        # FIXME: DEBUG
-        main.step( "Start Packet Capture MN" )
-        main.Mininet2.startTcpdump(
-            str( main.params[ 'MNtcpdump' ][ 'folder' ] ) + str( main.TEST )
-            + "-MN.pcap",
-            intf=main.params[ 'MNtcpdump' ][ 'intf' ],
-            port=main.params[ 'MNtcpdump' ][ 'port' ] )
-        # FIXME: DEBUG
 
         main.step( "Killing ONOS nodes" )
         killResults = main.TRUE
@@ -1641,6 +1716,8 @@ class HATestClusterRestart:
         # protocol has had time to work
         main.restartTime = time.time() - killTime
         main.log.debug( "Restart time: " + str( main.restartTime ) )
+        labels.append( "Restart" )
+        data.append( str( main.restartTime ) )
 
         # FIXME: revisit test plan for election with madan
         # Rerun for election on restarted nodes
@@ -1896,7 +1973,7 @@ class HATestClusterRestart:
                 for intent in before:
                     if intent not in after:
                         sameIntents = main.FALSE
-                        main.log.debug( "Intent is not currently in ONOS " +\
+                        main.log.debug( "Intent is not currently in ONOS " +
                                         "(at least in the same form):" )
                         main.log.debug( json.dumps( intent ) )
             except ( ValueError, TypeError ):
@@ -2044,18 +2121,18 @@ class HATestClusterRestart:
         portsResults = main.TRUE
         linksResults = main.TRUE
         hostsResults = main.TRUE
+        hostAttachmentResults = True
         topoResult = main.FALSE
         elapsed = 0
         count = 0
         main.step( "Collecting topology information from ONOS" )
         startTime = time.time()
         # Give time for Gossip to work
-        while topoResult == main.FALSE and elapsed < 120:
+        while topoResult == main.FALSE and elapsed < 60:
             count += 1
             if count > 1:
                 # TODO: Deprecate STS usage
                 MNTopo = TestONTopology( main.Mininet1, ctrls )
-                time.sleep( 1 )
             cliStart = time.time()
             devices = []
             threads = []
@@ -2106,14 +2183,6 @@ class HATestClusterRestart:
             for t in threads:
                 t.join()
                 ports.append( t.result )
-                try:
-                    # FIXME: DEBUG
-                    main.log.debug( json.dumps( json.loads( t.result ),
-                                                sort_keys=True,
-                                                indent=4,
-                                                separators=( ',', ': ' ) ) )
-                except:
-                    main.log.debug( repr( t.result ) )
             links = []
             threads = []
             for i in range( numControllers ):
@@ -2197,88 +2266,188 @@ class HATestClusterRestart:
                                          " hosts exist in Mininet",
                                          onfail="ONOS" + controllerStr +
                                          " hosts don't match Mininet" )
+                # CHECKING HOST ATTACHMENT POINTS
+                hostAttachment = True
+                zeroHosts = False
+                # FIXME: topo-HA/obelisk specific mappings:
+                # key is mac and value is dpid
+                mappings = {}
+                for i in range( 1, 29 ):  # hosts 1 through 28
+                    # set up correct variables:
+                    macId = "00:" * 5 + hex( i ).split( "0x" )[1].upper().zfill(2)
+                    if i == 1:
+                        deviceId = "1000".zfill(16)
+                    elif i == 2:
+                        deviceId = "2000".zfill(16)
+                    elif i == 3:
+                        deviceId = "3000".zfill(16)
+                    elif i == 4:
+                        deviceId = "3004".zfill(16)
+                    elif i == 5:
+                        deviceId = "5000".zfill(16)
+                    elif i == 6:
+                        deviceId = "6000".zfill(16)
+                    elif i == 7:
+                        deviceId = "6007".zfill(16)
+                    elif i >= 8 and i <= 17:
+                        dpid = '3' + str( i ).zfill( 3 )
+                        deviceId = dpid.zfill(16)
+                    elif i >= 18 and i <= 27:
+                        dpid = '6' + str( i ).zfill( 3 )
+                        deviceId = dpid.zfill(16)
+                    elif i == 28:
+                        deviceId = "2800".zfill(16)
+                    mappings[ macId ] = deviceId
+                if hosts[ controller ] or "Error" not in hosts[ controller ]:
+                    if hosts[ controller ] == []:
+                        main.log.warn( "There are no hosts discovered" )
+                        zeroHosts = True
+                    else:
+                        for host in hosts[ controller ]:
+                            mac = None
+                            location = None
+                            device = None
+                            port = None
+                            try:
+                                mac = host.get( 'mac' )
+                                assert mac, "mac field could not be found for this host object"
 
+                                location = host.get( 'location' )
+                                assert location, "location field could not be found for this host object"
+
+                                # Trim the protocol identifier off deviceId
+                                device = str( location.get( 'elementId' ) ).split(':')[1]
+                                assert device, "elementId field could not be found for this host location object"
+
+                                port = location.get( 'port' )
+                                assert port, "port field could not be found for this host location object"
+
+                                # Now check if this matches where they should be
+                                if mac and device and port:
+                                    if str( port ) != "1":
+                                        main.log.error( "The attachment port is incorrect for " +
+                                                        "host " + str( mac ) +
+                                                        ". Expected: 1 Actual: " + str( port) )
+                                        hostAttachment = False
+                                    if device != mappings[ str( mac ) ]:
+                                        main.log.error( "The attachment device is incorrect for " +
+                                                        "host " + str( mac ) +
+                                                        ". Expected: " + mappings[ str( mac ) ] +
+                                                        " Actual: " + device )
+                                        hostAttachment = False
+                                else:
+                                    hostAttachment = False
+                            except AssertionError:
+                                main.log.exception( "Json object not as expected" )
+                                main.log.error( repr( host ) )
+                                hostAttachment = False
+                else:
+                    main.log.error( "No hosts json output or \"Error\"" +
+                                    " in output. hosts = " +
+                                    repr( hosts[ controller ] ) )
+                if zeroHosts:
+                    # TODO: Find a way to know if there should be hosts in a
+                    #       given point of the test
+                    hostAttachment = True
+
+                # END CHECKING HOST ATTACHMENT POINTS
                 devicesResults = devicesResults and currentDevicesResult
                 portsResults = portsResults and currentPortsResult
                 linksResults = linksResults and currentLinksResult
                 hostsResults = hostsResults and currentHostsResult
+                hostAttachmentResults = hostAttachmentResults and hostAttachment
 
-            # Compare json objects for hosts and dataplane clusters
+        # Compare json objects for hosts and dataplane clusters
 
-            # hosts
-            main.step( "Hosts view is consistent across all ONOS nodes" )
-            consistentHostsResult = main.TRUE
-            for controller in range( len( hosts ) ):
-                controllerStr = str( controller + 1 )
-                if "Error" not in hosts[ controller ]:
-                    if hosts[ controller ] == hosts[ 0 ]:
-                        continue
-                    else:  # hosts not consistent
-                        main.log.error( "hosts from ONOS" + controllerStr +
-                                         " is inconsistent with ONOS1" )
-                        main.log.warn( repr( hosts[ controller ] ) )
-                        consistentHostsResult = main.FALSE
-
-                else:
-                    main.log.error( "Error in getting ONOS hosts from ONOS" +
-                                     controllerStr )
+        # hosts
+        main.step( "Hosts view is consistent across all ONOS nodes" )
+        consistentHostsResult = main.TRUE
+        for controller in range( len( hosts ) ):
+            controllerStr = str( controller + 1 )
+            if "Error" not in hosts[ controller ]:
+                if hosts[ controller ] == hosts[ 0 ]:
+                    continue
+                else:  # hosts not consistent
+                    main.log.error( "hosts from ONOS" + controllerStr +
+                                     " is inconsistent with ONOS1" )
+                    main.log.warn( repr( hosts[ controller ] ) )
                     consistentHostsResult = main.FALSE
-                    main.log.warn( "ONOS" + controllerStr +
-                                   " hosts response: " +
-                                   repr( hosts[ controller ] ) )
-            utilities.assert_equals(
-                expect=main.TRUE,
-                actual=consistentHostsResult,
-                onpass="Hosts view is consistent across all ONOS nodes",
-                onfail="ONOS nodes have different views of hosts" )
 
-            # Strongly connected clusters of devices
-            main.step( "Clusters view is consistent across all ONOS nodes" )
-            consistentClustersResult = main.TRUE
-            for controller in range( len( clusters ) ):
-                controllerStr = str( controller + 1 )
-                if "Error" not in clusters[ controller ]:
-                    if clusters[ controller ] == clusters[ 0 ]:
-                        continue
-                    else:  # clusters not consistent
-                        main.log.error( "clusters from ONOS" +
-                                         controllerStr +
-                                         " is inconsistent with ONOS1" )
-                        consistentClustersResult = main.FALSE
+            else:
+                main.log.error( "Error in getting ONOS hosts from ONOS" +
+                                 controllerStr )
+                consistentHostsResult = main.FALSE
+                main.log.warn( "ONOS" + controllerStr +
+                               " hosts response: " +
+                               repr( hosts[ controller ] ) )
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=consistentHostsResult,
+            onpass="Hosts view is consistent across all ONOS nodes",
+            onfail="ONOS nodes have different views of hosts" )
 
-                else:
-                    main.log.error( "Error in getting dataplane clusters " +
-                                     "from ONOS" + controllerStr )
+        main.step( "Hosts information is correct" )
+        hostsResults = hostsResults and ipResult
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=hostsResults,
+            onpass="Host information is correct",
+            onfail="Host information is incorrect" )
+
+        main.step( "Host attachment points to the network" )
+        utilities.assert_equals(
+            expect=True,
+            actual=hostAttachmentResults,
+            onpass="Hosts are correctly attached to the network",
+            onfail="ONOS did not correctly attach hosts to the network" )
+
+        # Strongly connected clusters of devices
+        main.step( "Clusters view is consistent across all ONOS nodes" )
+        consistentClustersResult = main.TRUE
+        for controller in range( len( clusters ) ):
+            controllerStr = str( controller + 1 )
+            if "Error" not in clusters[ controller ]:
+                if clusters[ controller ] == clusters[ 0 ]:
+                    continue
+                else:  # clusters not consistent
+                    main.log.error( "clusters from ONOS" +
+                                     controllerStr +
+                                     " is inconsistent with ONOS1" )
                     consistentClustersResult = main.FALSE
-                    main.log.warn( "ONOS" + controllerStr +
-                                   " clusters response: " +
-                                   repr( clusters[ controller ] ) )
-            utilities.assert_equals(
-                expect=main.TRUE,
-                actual=consistentClustersResult,
-                onpass="Clusters view is consistent across all ONOS nodes",
-                onfail="ONOS nodes have different views of clusters" )
-            # there should always only be one cluster
-            main.step( "Topology view is correct and consistent across all " +
-                       "ONOS nodes" )
-            try:
-                numClusters = len( json.loads( clusters[ 0 ] ) )
-            except ( ValueError, TypeError ):
-                main.log.exception( "Error parsing clusters[0]: " +
-                                    repr( clusters[0] ) )
-            clusterResults = main.FALSE
-            if numClusters == 1:
-                clusterResults = main.TRUE
-            utilities.assert_equals(
-                expect=1,
-                actual=numClusters,
-                onpass="ONOS shows 1 SCC",
-                onfail="ONOS shows " + str( numClusters ) + " SCCs" )
 
-            topoResult = ( devicesResults and portsResults and linksResults
-                           and hostsResults and consistentHostsResult
-                           and consistentClustersResult and clusterResults
-                           and ipResult )
+            else:
+                main.log.error( "Error in getting dataplane clusters " +
+                                 "from ONOS" + controllerStr )
+                consistentClustersResult = main.FALSE
+                main.log.warn( "ONOS" + controllerStr +
+                               " clusters response: " +
+                               repr( clusters[ controller ] ) )
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=consistentClustersResult,
+            onpass="Clusters view is consistent across all ONOS nodes",
+            onfail="ONOS nodes have different views of clusters" )
+
+        main.step( "There is only one SCC" )
+        # there should always only be one cluster
+        try:
+            numClusters = len( json.loads( clusters[ 0 ] ) )
+        except ( ValueError, TypeError ):
+            main.log.exception( "Error parsing clusters[0]: " +
+                                repr( clusters[0] ) )
+        clusterResults = main.FALSE
+        if numClusters == 1:
+            clusterResults = main.TRUE
+        utilities.assert_equals(
+            expect=1,
+            actual=numClusters,
+            onpass="ONOS shows 1 SCC",
+            onfail="ONOS shows " + str( numClusters ) + " SCCs" )
+
+        topoResult = ( devicesResults and portsResults and linksResults
+                       and hostsResults and consistentHostsResult
+                       and consistentClustersResult and clusterResults
+                       and ipResult and hostAttachmentResults )
 
         topoResult = topoResult and int( count <= 2 )
         note = "note it takes about " + str( int( cliTime ) ) + \
@@ -2288,9 +2457,27 @@ class HATestClusterRestart:
             "Very crass estimate for topology discovery/convergence( " +
             str( note ) + " ): " + str( elapsed ) + " seconds, " +
             str( count ) + " tries" )
-        utilities.assert_equals( expect=main.TRUE, actual=topoResult,
-                                 onpass="Topology Check Test successful",
-                                 onfail="Topology Check Test NOT successful" )
+
+        main.step( "Device information is correct" )
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=devicesResults,
+            onpass="Device information is correct",
+            onfail="Device information is incorrect" )
+
+        main.step( "Port information is correct" )
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=portsResults,
+            onpass="Port information is correct",
+            onfail="Port information is incorrect" )
+
+        main.step( "Links are correct" )
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=linksResults,
+            onpass="Link are correct",
+            onfail="Links are incorrect" )
 
         # FIXME: move this to an ONOS state case
         main.step( "Checking ONOS nodes" )
@@ -2562,10 +2749,8 @@ class HATestClusterRestart:
 
         try:
             timerLog = open( main.logdir + "/Timers.csv", 'w')
-            # Overwrite with empty line and close
-            labels = "Gossip Intents, Restart"
-            data = str( gossipTime ) + ", " + str( main.restartTime )
-            timerLog.write( labels + "\n" + data )
+            main.log.error( ", ".join( labels ) + "\n" + ", ".join( data ) )
+            timerLog.write( ", ".join( labels ) + "\n" + ", ".join( data ) )
             timerLog.close()
         except NameError, e:
             main.log.exception(e)
@@ -2800,6 +2985,7 @@ class HATestClusterRestart:
         """
         Check for basic functionality with distributed primitives
         """
+        import json
         # Make sure variables are defined/set
         assert numControllers, "numControllers not defined"
         assert main, "main not defined"

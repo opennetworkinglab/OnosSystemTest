@@ -335,11 +335,13 @@ class IpOptical:
                    "ping the hosts" )
 
         main.step( "Adding point intents" )
+        checkFlowResult = main.TRUE
         step1Result = main.TRUE
         main.pIntentsId = []
         pIntent1 = main.ONOS3.addPointIntent(
             "of:0000ffffffff0001/1",
             "of:0000ffffffff0005/1" )
+        time.sleep( 10 )
         pIntent2 = main.ONOS3.addPointIntent(
             "of:0000ffffffff0005/1",
             "of:0000ffffffff0001/1" )
@@ -363,6 +365,8 @@ class IpOptical:
             actual=step1Result,
             onpass="Successfully added point intents",
             onfail="Failed to add point intents")
+
+        print main.ONOS3.intents()
 
         main.step( "Ping h1 and h5" )
         step2Result = main.TRUE
@@ -444,7 +448,7 @@ class IpOptical:
                             "Links state is not inactive as expected" )
                         linksStateResult = main.FALSE
         time.sleep( 10 )
-        checkFlowsState = main.ONOS3.checkFlowsState()
+        #checkFlowsState = main.ONOS3.checkFlowsState()
         step2Result = linksStateResult
         utilities.assert_equals(
             expect=main.TRUE,
@@ -469,6 +473,7 @@ class IpOptical:
         linksNonjson = main.ONOS3.links( jsonFormat=False )
         main.log.info( "links = " + linksNonjson )
         linkInactiveCount = linksNonjson.count( "state=INACTIVE" )
+        time.sleep( 30 )
         main.log.info( "linkInactiveCount = " + str( linkInactiveCount ))
         if linkInactiveCount == 0:
             main.log.info(
@@ -571,15 +576,17 @@ class IpOptical:
         intent1 = main.ONOS3.addHostIntent( hostIdOne = host1,
                                             hostIdTwo = host2 )
         intentsId.append( intent1 )
-        time.sleep( 5 )
+        """
         intent2 = main.ONOS3.addHostIntent( hostIdOne = host2,
                                             hostIdTwo = host1 )
         intentsId.append( intent2 )
+        """
         # Checking intents state before pinging
         main.log.info( "Checking intents state" )
         time.sleep( 15 )
         intentResult = main.ONOS3.checkIntentState( intentsId = intentsId )
         #check intent state again if intents are not in installed state
+        print main.ONOS3.intents()
         if not intentResult:
            intentResult = main.ONOS3.checkIntentState( intentsId = intentsId )
         step2Result = intentResult
@@ -608,7 +615,7 @@ class IpOptical:
         # Check remaining intents
         intentsJson = json.loads( main.ONOS3.intents() )
         main.ONOS3.removeIntent( intentId=intent1, purge=True )
-        main.ONOS3.removeIntent( intentId=intent2, purge=True )
+        #main.ONOS3.removeIntent( intentId=intent2, purge=True )
         for intents in intentsJson:
             main.ONOS3.removeIntent( intentId=intents.get( 'id' ),
                                      app='org.onosproject.optical',

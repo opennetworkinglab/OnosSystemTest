@@ -380,7 +380,6 @@ class MultiProd13:
                                 onpass="ONOS3 Switches view is correct",
                                 onfail="ONOS3 Switches view is incorrect" )
 
-        """
         portsResults1 =  main.Mininet1.comparePorts( MNTopo,
         json.loads( ports1 ) )
         utilities.assertEquals( expect=main.TRUE, actual=portsResults1,
@@ -398,7 +397,7 @@ class MultiProd13:
         utilities.assertEquals( expect=main.TRUE, actual=portsResults3,
                 onpass="ONOS3 Ports view is correct",
                 onfail="ONOS3 Ports view is incorrect" )
-        """
+
         linksResults1 = main.Mininet1.compareLinks(
             MNTopo,
             json.loads( links1 ) )
@@ -1210,7 +1209,7 @@ class MultiProd13:
             "________________________________" )
 
         flowHandle = main.ONOScli1.flows()
-        # print "flowHandle = ", flowHandle
+        print "flowHandle = ", flowHandle
         main.log.info( "flows :" + flowHandle )
 
         count = 1
@@ -1940,8 +1939,8 @@ class MultiProd13:
             main.log.info( "Point to point intent install successful" )
 
         time.sleep( 30 )
-        flowHandle = main.ONOScli1.flows()
-        main.log.info( "flows :" + flowHandle )
+        #flowHandle = main.ONOScli1.flows()
+        #main.log.info( "flows :" + flowHandle )
 
         # Sleep for 30 seconds to provide time for the intent state to change
         time.sleep( 60 )
@@ -2055,8 +2054,8 @@ class MultiProd13:
 
         print "links_state_result = ", linksStateResult
         time.sleep( 10 )
-        flowHandle = main.ONOScli3.flows()
-        main.log.info( "flows :" + flowHandle )
+        #flowHandle = main.ONOScli3.flows()
+        #main.log.info( "flows :" + flowHandle )
 
         main.step( "Verify Rerouting by a ping test" )
         PingResult = main.TRUE

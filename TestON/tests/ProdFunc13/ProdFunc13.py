@@ -432,6 +432,7 @@ class ProdFunc13:
                    "ping the hosts" )
 
         main.step( "Adding point intents" )
+        checkFlowResult = main.TRUE
         step1Result = main.TRUE
         main.pIntentsId = []
         pIntent1 = main.ONOS3.addPointIntent(
@@ -1192,7 +1193,7 @@ class ProdFunc13:
         main.step( "Compare ONOS Topology to MN Topology" )
         devicesJson = main.ONOS2.devices()
         linksJson = main.ONOS2.links()
-        # portsJson = main.ONOS2.ports()
+        portsJson = main.ONOS2.ports()
 
         result1 = main.Mininet1.compareSwitches(
             MNTopo,
@@ -1200,8 +1201,7 @@ class ProdFunc13:
         result2 = main.Mininet1.compareLinks(
             MNTopo,
             json.loads( linksJson ) )
-        # result3 = main.Mininet1.comparePorts(
-        # MNTopo, json.loads( portsJson ) )
+        result3 = main.Mininet1.comparePorts( MNTopo, json.loads( portsJson ) )
 
         # result = result1 and result2 and result3
         result = result1 and result2
@@ -1345,8 +1345,7 @@ class ProdFunc13:
         result2 = main.Mininet1.compareLinks(
             MNTopo,
             json.loads( linksJson ) )
-        # result3 = main.Mininet1.comparePorts(
-        # MNTopo, json.loads( portsJson ) )
+        result3 = main.Mininet1.comparePorts( MNTopo, json.loads( portsJson ) )
 
         # result = result1 and result2 and result3
         result = result1 and result2

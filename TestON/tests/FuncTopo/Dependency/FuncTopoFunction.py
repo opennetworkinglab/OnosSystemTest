@@ -10,30 +10,40 @@ def __init__( self ):
 
 def testTopology( main, topoFile='', args='', mnCmd='', clean=True ):
     """
-        Description:
+    Description:
         This function combines different wrapper functions in this module
         to simulate a topology test
-        Test Steps:
-            - Load topology
-            - Discover topology
-            - Compare topology
-            - pingall
-            - Bring links down
-            - Compare topology
-            - pingall
-            - Bring links up
-            - Compare topology
-            - pingall
-
-        Returns:
-            Returns main.TRUE if the test is successful, main.FALSE otherwise
+    Test Steps:
+        - Load topology
+        - Discover topology
+        - Compare topology
+        - pingall
+        - Bring links down
+        - Compare topology
+        - pingall
+        - Bring links up
+        - Compare topology
+        - pingall
+    Options:
+        clean: Does sudo mn -c to clean mininet residue
+        Please read mininetclidriver.py >> startNet( .. ) function for details
+    Returns:
+        Returns main.TRUE if the test is successful, main.FALSE otherwise
     """
     testTopoResult = main.TRUE
     compareTopoResult = main.TRUE
     topoObjectResult = main.TRUE
+    stopResult = main.TRUE
+
+    if clean:
+        # Cleans minient
+        stopResult = stopMininet( main )
+
+    # Restart ONOS to clear hosts test new mininet topology
+    restartONOSResult = restartONOS( main )
 
     # Starts topology
-    startResult = startNewTopology( main, topoFile, args, mnCmd, clean )
+    startResult = startNewTopology( main, topoFile, args, mnCmd )
 
     # Create topology object using sts
     topoObjectResult = createTopoObject( main )
@@ -48,18 +58,15 @@ def testTopology( main, topoFile='', args='', mnCmd='', clean=True ):
     testTopoResult = startResult and topoObjectResult and \
                      compareTopoResult and getHostsResult
 
-    # Restart ONOS to clear hosts test new mininet topology
-    restartResult = restartONOS( main )
 
     return testTopoResult
 
-def startNewTopology( main, topoFile='', args='', mnCmd='', clean=True ):
+def startNewTopology( main, topoFile='', args='', mnCmd='' ):
     """
     Description:
         This wrapper function starts new topology
-    Optional:
-        clean - Stops current topology and execute mn -c basically triggers
-                stopNet in mininetclidrivers
+    Options:
+        Please read mininetclidriver.py >> startNet( .. ) function for details
     Return:
         Returns main.TRUE if topology is successfully created by mininet,
         main.FALSE otherwise
@@ -86,17 +93,27 @@ def startNewTopology( main, topoFile='', args='', mnCmd='', clean=True ):
         main.log.info( main.topoName + ": Starting topology with '" +
                        mnCmd + "' Mininet command" )
 
-    if clean:
-        main.Mininet1.stopNet()
-        time.sleep( 30 )
-    else:
-        main.log.info(  main.topoName + ": Did not stop Mininet topology" )
 
     result = main.Mininet1.startNet( topoFile=topoFile,
                                      args=args,
                                      mnCmd=mnCmd )
 
     return result
+
+def stopMininet( main ):
+    """
+        Stops current topology and execute mn -c basically triggers
+        stopNet in mininetclidrivers
+
+        NOTE: Mininet should be running when issuing this command other wise
+        the this function will cause the test to stop
+    """
+    stopResult = main.TRUE
+    stopResult = main.Mininet1.stopNet()
+    time.sleep( 30 )
+    if not stopResult:
+        main.log.info(  main.topoName + ": Did not stop Mininet topology" )
+    return stopResult
 
 def createTopoObject( main ):
     """

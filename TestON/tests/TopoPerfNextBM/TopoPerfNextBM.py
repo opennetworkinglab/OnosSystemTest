@@ -39,9 +39,9 @@ class TopoPerfNextBM:
         except KeyError:
             # Jenkins build number is also used in posting to DB
             # If this test is not triggered by jenkins, give 
-            # it the runNum variable instead, ensuring that 
+            # it 0 instead, ensuring that 
             # the DB post will recognize it as a non-jenkins run
-            jenkinsBuildNumber = str(runNum)
+            jenkinsBuildNumber = str(0)
             main.log.info( 'Job is not run by jenkins. '+
                     'Build number set to: ' + jenkinsBuildNumber)
 
@@ -192,8 +192,8 @@ class TopoPerfNextBM:
         resultPath = main.params['DB']['switchEventResultPath']
         thresholdStr = main.params['TEST']['singleSwThreshold']
         thresholdObj = thresholdStr.split(',')
-        thresholdMin = float(thresholdObj[0])
-        thresholdMax = float(thresholdObj[1])
+        thresholdMin = int(thresholdObj[0])
+        thresholdMax = int(thresholdObj[1])
        
         # Look for 'role-request' messages,
         # which replaces the 'vendor' messages previously seen
@@ -266,11 +266,16 @@ class TopoPerfNextBM:
             main.log.info('Assigning s3 to controller')
             main.Mininet1.assignSwController(sw='3',
                     ip1=nodeIpList[0], port1=defaultSwPort)
-            
-            time.sleep(10)
-            
+               
+            jsonStr = []
+            for node in range (0, clusterCount): 
+                metricsSwUp = CLIs[node].topologyEventsMetrics()
+                jsonStr.append(metricsSwUp)
+           
             main.log.info('Stopping all Tshark processes')
             main.ONOS1.tsharkStop()
+           
+            time.sleep(5)
             
             main.log.info('Copying over tshark files')
             os.system('scp ' + ONOSUser + '@' + nodeIpList[0] +
@@ -283,7 +288,8 @@ class TopoPerfNextBM:
                       nodeIpList[0] + ':' + tsharkOfOutput + ' /tmp/')
            
             # Get tcp syn / ack output
-            time.sleep(5)
+            time.sleep(1)
+
             tcpFile = open(tsharkTcpOutput, 'r')
             tempText = tcpFile.readline()
             tempText = tempText.split(' ')
@@ -300,7 +306,6 @@ class TopoPerfNextBM:
             tcpFile.close()
            
             # Get Role reply output
-            time.sleep(5)
             ofFile = open(tsharkOfOutput, 'r')
             lineOfp = ''
             while True:
@@ -343,7 +348,13 @@ class TopoPerfNextBM:
             if len(tempText) > 1:
                 main.log.info('Object read in from feature reply capture: '+
                         str(tempText))
-                featureTimestamp = float(tempText[1]) * 1000.0
+                if tempText[1] != ' ' and float(tempText[1]) > 1400000000.0:
+                    temp = tempText[1]
+                elif tempText[2] != ' ' and float(tempText[2]) > 1400000000.0:
+                    temp = tempText[2]
+                else:
+                    temp = 0 
+                featureTimestamp = float(temp) * 1000.0
             else:
                 main.log.error('Tshark output file for feature reply' +
                         ' returned unexpected results')
@@ -351,16 +362,11 @@ class TopoPerfNextBM:
                 assertion = main.FALSE
             featureFile.close()
 
-            # TODO: calculate feature reply, role request times
-            # stack measurements correctly and report
-
-            #TODO: Refactor in progress
-
             for node in range(0, clusterCount):
                 nodeNum = node+1
-                metricsSwUp = CLIs[node].topologyEventsMetrics
-                jsonStr = metricsSwUp()
-                jsonObj = json.loads(jsonStr)
+                #metricsSwUp = CLIs[node].topologyEventsMetrics
+                #jsonStr = metricsSwUp()
+                jsonObj = json.loads(jsonStr[node])
                 if jsonObj:
                     graphTimestamp = jsonObj[graphTimestampKey]['value']
                     deviceTimestamp = jsonObj[deviceTimestampKey]['value']
@@ -398,8 +404,9 @@ class TopoPerfNextBM:
                 else:
                     main.log.info("ONOS "+str(nodeNum)+ " end-to-end "+
                             "measurement ignored due to excess in "+
-                            "threshold or premature iteration")
-
+                            "threshold or premature iteration: ")
+                    main.log.info(str(endToEnd))
+                        
                 if tcpToFeature >= thresholdMin and\
                    tcpToFeature < thresholdMax and i >= iterIgnore:
                     tcpToFeatureLatNodeIter[node][i] = tcpToFeature 
@@ -408,7 +415,8 @@ class TopoPerfNextBM:
                 else:
                     main.log.info("ONOS "+str(nodeNum)+ " tcp-to-feature "+
                             "measurement ignored due to excess in "+
-                            "threshold or premature iteration")
+                            "threshold or premature iteration: ")
+                    main.log.info(str(tcpToFeature))
 
                 if featureToRole >= thresholdMin and\
                    featureToRole < thresholdMax and i >= iterIgnore:
@@ -418,7 +426,8 @@ class TopoPerfNextBM:
                 else:
                     main.log.info("ONOS "+str(nodeNum)+ " feature-to-role "+
                             "measurement ignored due to excess in "+
-                            "threshold or premature iteration")
+                            "threshold or premature iteration: ")
+                    main.log.info(str(featureToRole))
 
                 if roleToOfp >= thresholdMin and\
                    roleToOfp < thresholdMax and i >= iterIgnore:
@@ -428,7 +437,8 @@ class TopoPerfNextBM:
                 else:
                     main.log.info("ONOS "+str(nodeNum)+ " role-to-reply "+
                             "measurement ignored due to excess in "+
-                            "threshold or premature iteration")
+                            "threshold or premature iteration: ")
+                    main.log.info(str(roleToOfp))
                 
                 if ofpToDevice >= thresholdMin and\
                    ofpToDevice < thresholdMax and i >= iterIgnore:
@@ -438,7 +448,8 @@ class TopoPerfNextBM:
                 else:
                     main.log.info("ONOS "+str(nodeNum)+ " reply-to-device "+
                             "measurement ignored due to excess in "+
-                            "threshold or premature iteration")
+                            "threshold or premature iteration: ")
+                    main.log.info(str(ofpToDevice))
 
                 if deviceToGraph >= thresholdMin and\
                    deviceToGraph < thresholdMax and i >= iterIgnore:
@@ -451,13 +462,14 @@ class TopoPerfNextBM:
                         main.log.info("ONOS "+str(nodeNum) +
                             " device-to-graph measurement "+
                             "was set to 0 ms because of precision "+
-                            "uncertainty")
+                            "uncertainty. ")
                     else:
                         main.log.info("ONOS "+str(nodeNum)+ 
                             " device-to-graph "+
                             "measurement ignored due to excess in "+
-                            "threshold or premature iteration")
-                                
+                            "threshold or premature iteration: ")
+                        main.log.info(str(deviceToGraph))   
+                            
             # ********************
             time.sleep(5)
         
@@ -489,22 +501,21 @@ class TopoPerfNextBM:
             main.step('Remove switch from controller')
             main.Mininet1.deleteSwController('s3')
             firstDevice = deviceList[0] 
-            main.log.info( "Removing device " +str(firstDevice)+
-                    " from ONOS" )
             
-            time.sleep( 5 )
-           
             # We need to get metrics before removing
             # device from the store below.
             for node in range(0, clusterCount):
                 metricsSwDown = CLIs[node].topologyEventsMetrics
                 jsonStr = metricsSwDown()
                 removeJsonList.append( json.loads(jsonStr) ) 
-            
-            #if deviceId:
-            main.ONOS1cli.deviceRemove(firstDevice)
            
             main.ONOS1.tsharkStop()
+            
+            main.log.info( "Removing device " +str(firstDevice)+
+                    " from ONOS" )
+           
+            #if deviceId:
+            main.ONOS1cli.deviceRemove(firstDevice)
 
             main.log.info('Copying over tshark files')
             os.system('scp ' + ONOSUser + '@' + nodeIpList[0] +
@@ -520,12 +531,28 @@ class TopoPerfNextBM:
                 index = 1
                 for line in tempLine:
                     obj = line.split(' ')
-            
-                    if len(obj) > 1:
+           
+                    # There are at least 3 objects in field (valid 
+                    # tshark output is lengthy)
+                    if len(obj) > 2:
+                        # If first index of object is like an epoch time
+                        if obj[1] != ' ' and float(obj[1]) > 1400000000.0:
+                            temp = obj[1] 
+                        elif obj[2] != ' 'and float(obj[2]) > 1400000000.0:
+                            temp = obj[2]
+                        elif obj[3] != ' 'and float(obj[3]) > 1400000000.0:
+                            temp = obj[3]
+                        else:
+                            temp = 0
                         if index == 1:
-                            tFinAck = float(obj[1]) * 1000.0
+                            tFinAck = float(temp) * 1000.0
+                        elif index == 2:
+                            continue
                         elif index == 3:
-                            tAck = float(obj[1]) * 1000.0
+                            tAck = float(temp) * 1000.0
+                        else:
+                            tFinAck = 0
+                            tAck = 0
                     else:
                         main.log.error('Tshark output file for OFP' +
                             ' returned unexpected results')
@@ -571,7 +598,8 @@ class TopoPerfNextBM:
                     main.log.info("ONOS " + str(nodeNum) + 
                             " end-to-end disconnection "+
                             "measurement ignored due to excess in "+
-                            "threshold or premature iteration")
+                            "threshold or premature iteration: ")
+                    main.log.info(str(endToEndDisc))
 
                 if finAckTransaction >= thresholdMin and\
                    finAckTransaction < thresholdMax and i >= iterIgnore:
@@ -583,8 +611,9 @@ class TopoPerfNextBM:
                     main.log.info("ONOS "+str(nodeNum)+
                             " fin/ack transaction "+
                             "measurement ignored due to excess in "+
-                            "threshold or premature iteration")
-                
+                            "threshold or premature iteration: ")
+                    main.log.info(str(finAckTransaction))
+
                 if ackToDevice >= thresholdMin and\
                    ackToDevice < thresholdMax and i >= iterIgnore:
                     ackToDeviceLatNodeIter[node][i] = ackToDevice
@@ -595,8 +624,9 @@ class TopoPerfNextBM:
                     main.log.info("ONOS "+str(nodeNum)+
                             " ack-to-device "+
                             "measurement ignored due to excess in "+
-                            "threshold or premature iteration")
-                
+                            "threshold or premature iteration: ")
+                    main.log.info(str(ackToDevice))
+
                 if deviceToGraph >= thresholdMin and\
                    deviceToGraph < thresholdMax and i >= iterIgnore:
                     deviceToGraphDiscLatNodeIter[node][i] = deviceToGraph
@@ -607,7 +637,8 @@ class TopoPerfNextBM:
                     main.log.info("ONOS "+str(nodeNum)+
                             " device-to-graph disconnect "+
                             "measurement ignored due to excess in "+
-                            "threshold or premature iteration")
+                            "threshold or premature iteration: ")
+                    main.log.info(str(deviceToGraph))
 
         endToEndAvg = 0
         ofpToGraphAvg = 0
@@ -648,15 +679,15 @@ class TopoPerfNextBM:
                     roleToOfpList.append(item)
 
             for item in roleReplyToDeviceLatNodeIter[node]:
-                if item > 0.0:
-                    tcpToFeatureList.append(item)
-
+                if item >= 0.0:
+                    ofpToDeviceList.append(item)
+            
             for item in featureToRoleRequestLatNodeIter[node]:
                 if item > 0.0:
                     featureToRoleList.append(item)
 
             for item in deviceToGraphLatNodeIter[node]:
-                if item > 0.0:
+                if item >= 0.0:
                     deviceToGraphList.append(item)
 
             # Switch disconnect measurements
@@ -673,9 +704,9 @@ class TopoPerfNextBM:
                     ackToDeviceList.append(item)
 
             for item in deviceToGraphDiscLatNodeIter[node]:
-                if item > 0.0:
+                if item >= 0.0:
                     deviceToGraphDiscList.append(item)
-            
+
             endToEndAvg = round(numpy.mean(endToEndList), 2)
             endToEndStdDev = round(numpy.std(endToEndList), 2)
 
@@ -837,10 +868,10 @@ class TopoPerfNextBM:
         downThresholdStr = main.params['TEST']['portDownThreshold']
         upThresholdObj = upThresholdStr.split(',')
         downThresholdObj = downThresholdStr.split(',')
-        upThresholdMin = float(upThresholdObj[0])
-        upThresholdMax = float(upThresholdObj[1])
-        downThresholdMin = float(downThresholdObj[0])
-        downThresholdMax = float(downThresholdObj[1])
+        upThresholdMin = int(upThresholdObj[0])
+        upThresholdMax = int(upThresholdObj[1])
+        downThresholdMin = int(downThresholdObj[0])
+        downThresholdMax = int(downThresholdObj[1])
         
         interfaceConfig = 's1-eth1'
         main.log.report('Port enable / disable latency')
@@ -876,6 +907,11 @@ class TopoPerfNextBM:
                     interfaceConfig + ' down')
             main.Mininet1.handle.expect('mininet>')
             
+            jsonStrPtDown = []
+            for node in range (0, clusterCount): 
+                metricsPortDown = CLIs[node].topologyEventsMetrics()
+                jsonStrPtDown.append(metricsPortDown)
+            
             time.sleep(3)
             
             main.ONOS1.tsharkStop()
@@ -906,9 +942,9 @@ class TopoPerfNextBM:
           
             for node in range(0, clusterCount):
                 nodeNum = node+1
-                metricsDown = CLIs[node].topologyEventsMetrics
-                jsonStrDown = metricsDown()
-                jsonObj = json.loads(jsonStrDown)
+                # metricsDown = CLIs[node].topologyEventsMetrics
+                #jsonStrPtDown[node] = metricsDown()
+                jsonObj = json.loads(jsonStrPtDown[node])
                 
                 if jsonObj:
                     graphTimestamp = jsonObj[graphTimestampKey]['value']
@@ -979,6 +1015,11 @@ class TopoPerfNextBM:
             main.Mininet1.handle.sendline('sh ifconfig ' + interfaceConfig + ' up')
             main.Mininet1.handle.expect('mininet>')
             
+            jsonStrPtUp = []
+            for node in range (0, clusterCount): 
+                metricsPortUp = CLIs[node].topologyEventsMetrics()
+                jsonStrPtUp.append(metricsPortUp)
+            
             time.sleep(5)
             main.ONOS1.tsharkStop()
             
@@ -1001,9 +1042,9 @@ class TopoPerfNextBM:
             
             for node in range(0, clusterCount):
                 nodeNum = node+1
-                metricsUp = CLIs[node].topologyEventsMetrics
-                jsonStrUp = metricsUp()
-                jsonObj = json.loads(jsonStrUp)
+                #metricsUp = CLIs[node].topologyEventsMetrics
+                #jsonStrUp = metricsUp()
+                jsonObj = json.loads(jsonStrPtUp[node])
                
                 if jsonObj:
                     graphTimestamp = jsonObj[graphTimestampKey]['value']
@@ -1102,9 +1143,8 @@ class TopoPerfNextBM:
                     portUpDevToLinkList.append(item)
 
             for item in portUpLinkToGraphNodeIter[node]:
-                if item > 0.0:
+                if item >= 0.0:
                     portUpLinkToGraphList.append(item)
-
 
             for item in portDownEndToEndNodeIter[node]:
                 if item > 0.0:
@@ -1115,11 +1155,11 @@ class TopoPerfNextBM:
                     portDownOfpToDevList.append(item)
 
             for item in portDownDevToLinkNodeIter[node]:
-                if item > 0.0:
+                if item >= 0.0:
                     portDownDevToLinkList.append(item)
 
             for item in portDownLinkToGraphNodeIter[node]:
-                if item > 0.0:
+                if item >= 0.0:
                     portDownLinkToGraphList.append(item)
 
             portUpEndToEndAvg = round(numpy.mean(portUpEndToEndList), 2)
@@ -1149,7 +1189,7 @@ class TopoPerfNextBM:
                     str(round(portDownEndToEndAvg, 2)) + ' ms')
             main.log.report(' Port down Ofp-to-device ' +
                     str(portDownOfpToDevAvg) + ' ms')
-            main.log.report(' Port down Device-to-link' +
+            main.log.report(' Port down Device-to-link ' +
                     str(portDownDevToLinkAvg) + ' ms')
             main.log.report(' Port down Link-to-graph' +
                     str(portDownLinkToGraphAvg) + ' ms')

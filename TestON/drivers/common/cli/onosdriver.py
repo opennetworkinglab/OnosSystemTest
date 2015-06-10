@@ -20,6 +20,7 @@ import sys
 import time
 import pexpect
 import os.path
+from requests.models import Response
 sys.path.append( "../" )
 from drivers.common.clidriver import CLI
 
@@ -97,7 +98,28 @@ class OnosDriver( CLI ):
             response = main.FALSE
         return response
 
-    def onosPackage( self ):
+    def getEpochMs( self ):
+        """
+        Returns milliseconds since epoch
+        
+        When checking multiple nodes in a for loop, 
+        around a hundred milliseconds of difference (ascending) is 
+        generally acceptable due to calltime of the function. 
+        Few seconds, however, is not and it means clocks 
+        are off sync. 
+        """
+        try:
+            self.handle.sendline( 'date +%s.%N' )
+            self.handle.expect( 'date \+\%s\.\%N' )
+            self.handle.expect( '\$' )
+            epochMs = self.handle.before
+            return epochMs
+        except Exception:
+            main.log.exception( 'Uncaught exception getting epoch time' )
+            main.cleanup()
+            main.exit()
+
+    def onosPackage( self, opTimeout=30 ):
         """
         Produce a self-contained tar.gz file that can be deployed
         and executed on any platform with Java 7 JRE.
@@ -105,7 +127,7 @@ class OnosDriver( CLI ):
         try:
             self.handle.sendline( "onos-package" )
             self.handle.expect( "onos-package" )
-            self.handle.expect( "tar.gz", timeout=30 )
+            self.handle.expect( "tar.gz", opTimeout )
             handle = str( self.handle.before )
             main.log.info( "onos-package command returned: " +
                            handle )
@@ -152,7 +174,7 @@ class OnosDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def cleanInstall( self ):
+    def cleanInstall( self, mciTimeout=600 ):
         """
         Runs mvn clean install in the root of the ONOS directory.
         This will clean all ONOS artifacts then compile each module
@@ -179,7 +201,7 @@ class OnosDriver( CLI ):
                     'BUILD\sSUCCESS',
                     'onos\$',  #TODO: fix this to be more generic?
                     'ONOS\$',
-                    pexpect.TIMEOUT ], timeout=600 )
+                    pexpect.TIMEOUT ], mciTimeout )
                 if i == 0:
                     main.log.error( self.name + ":There is insufficient memory \
                             for the Java Runtime Environment to continue." )
@@ -483,6 +505,24 @@ class OnosDriver( CLI ):
             main.cleanup()
             main.exit()
 
+    def getBranchName( self ):
+        main.log.info( "self.home = " )
+        main.log.info( self.home )
+        self.handle.sendline( "cd " + self.home )
+        self.handle.expect( self.home + "\$" )
+        self.handle.sendline( "git name-rev --name-only HEAD" )
+        self.handle.expect( "git name-rev --name-only HEAD" )
+        self.handle.expect( "\$" )
+
+        lines =  self.handle.before.splitlines()
+        if lines[1] == "master":
+            return "master"
+        elif lines[1] == "onos-1.0":
+            return "onos-1.0"
+        else:
+            main.log.info( lines[1] )
+            return "unexpected ONOS branch for SDN-IP test"
+
     def getVersion( self, report=False ):
         """
         Writes the COMMIT number to the report to be parsed
@@ -508,13 +548,18 @@ class OnosDriver( CLI ):
             for line in lines:
                 print line
             if report:
+                main.log.wiki( "<blockquote>" )
                 for line in lines[ 2:-1 ]:
                     # Bracket replacement is for Wiki-compliant
                     # formatting. '<' or '>' are interpreted
                     # as xml specific tags that cause errors
                     line = line.replace( "<", "[" )
                     line = line.replace( ">", "]" )
-                    main.log.report( "\t" + line )
+                    #main.log.wiki( "\t" + line )
+                    main.log.wiki( line + "<br /> " )
+                    main.log.summary( line )
+                main.log.wiki( "</blockquote>" )
+                main.log.summary("\n")
             return lines[ 2 ]
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
@@ -562,6 +607,8 @@ class OnosDriver( CLI ):
         # on here.
         appString = "export ONOS_APPS=" + appString
         mnString = "export OCN="
+        if mnIpAddrs == "":
+            mnString = ""
         onosString = "export OC"
         tempCount = 1
 
@@ -921,7 +968,7 @@ class OnosDriver( CLI ):
         """
         try:
             self.handle.sendline( "" )
-            self.handle.expect( "\$" )
+            self.handle.expect( "\$", timeout=60 )
             self.handle.sendline( "onos-uninstall " + str( nodeIp ) )
             self.handle.expect( "\$" )
 
@@ -930,6 +977,9 @@ class OnosDriver( CLI ):
             # onos-uninstall command does not return any text
             return main.TRUE
 
+        except pexpect.TIMEOUT:
+            main.log.exception( self.name + ": Timeout in onosUninstall" )
+            return main.FALSE
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
@@ -1492,13 +1542,18 @@ class OnosDriver( CLI ):
         except Exception:
             main.log.exception( "Copying files failed" )
 
-    def checkLogs( self, onosIp ):
+    def checkLogs( self, onosIp, restart=False):
         """
         runs onos-check-logs on the given onos node
+        If restart is True, use the old version of onos-check-logs which
+            does not print the full stacktrace, but shows the entire log file,
+            including across restarts
         returns the response
         """
         try:
             cmd = "onos-check-logs " + str( onosIp )
+            if restart:
+                cmd += " old"
             self.handle.sendline( cmd )
             self.handle.expect( cmd )
             self.handle.expect( "\$" )
@@ -1896,3 +1951,300 @@ class OnosDriver( CLI ):
             main.cleanup()
             main.exit()
 
+    def getOnosIps(self):
+
+        import os
+        
+        # reads env for OC variables, also saves file with OC variables. If file and env conflict 
+        # priority goes to env. If file has OCs that are not in the env, the file OCs are used. 
+        # In other words, if the env is set, the test will use those values. 
+
+        # returns a list of ip addresses for the onos nodes, will work with up to 7 nodes + OCN and OCI
+        # returns in format [ OC1 ip, OC2 ...ect. , OCN, OCI ]
+
+        envONOSIps = {}
+
+        x = 1
+        while True:
+            try:
+                temp = os.environ[ 'OC' + str(x) ]
+            except KeyError: 
+                break
+            envONOSIps[ ("OC" + str(x)) ] = temp 
+            x += 1 
+
+        try: 
+            temp = os.environ[ 'OCN' ] 
+            envONOSIps[ "OCN" ] = temp
+        except KeyError: 
+            main.log.info("OCN not set in env")
+
+        try:
+            temp = os.environ[ 'OCI' ]
+            envONOSIps[ "OCI" ] = temp
+        except:
+            main.log.error("OCI not set in env")
+
+        print(str(envONOSIps))
+
+        order = [ "OC1", "OC2", "OC3","OC4","OC5","OC6","OC7","OCN","OCI" ]
+        ONOSIps = []
+
+        try: 
+            if os.path.exists("myIps"):
+                ipFile = open("myIps","r+")
+            else: 
+                ipFile = open("myIps","w+")
+
+            fileONOSIps = ipFile.readlines()
+            ipFile.close()
+
+            print str(fileONOSIps)
+            
+            if str(fileONOSIps) == "[]": 
+                ipFile = open("myIps","w+")
+                for key in envONOSIps:
+                    ipFile.write(key+ "=" + envONOSIps[key] + "\n")
+                ipFile.close()
+                for i in order: 
+                    if i in envONOSIps: 
+                        ONOSIps.append(envONOSIps[i])
+                
+                return ONOSIps 
+
+            else: 
+                fileDict = {}
+                for line in fileONOSIps: 
+                    line = line.replace("\n","")
+                    line = line.split("=") 
+                    key = line[0]
+                    value = line[1]
+                    fileDict[key] = value 
+
+                for x in envONOSIps: 
+                    if x in fileDict: 
+                        if envONOSIps[x] == fileDict[x]: 
+                            continue
+                        else: 
+                            fileDict[x] = envONOSIps[x]
+                    else: 
+                        fileDict[x] = envONOSIps[x]
+
+                ipFile = open("myIps","w+")
+                for key in order: 
+                    if key in fileDict: 
+                        ipFile.write(key + "=" + fileDict[key] + "\n")
+                        ONOSIps.append(fileDict[key]) 
+                ipFile.close()
+
+                return ONOSIps 
+
+        except IOError as a:
+            main.log.error(a) 
+
+        except Exception as a:
+            main.log.error(a) 
+
+
+    def logReport(self, nodeIp, searchTerms, outputMode="s"):
+        '''
+            - accepts either a list or a string for "searchTerms" these
+              terms will be searched for in the log and have their 
+              instances counted 
+
+            - nodeIp is the ip of the node whos log is to be scanned 
+
+            - output modes: 
+                "s" -   Simple. Quiet output mode that just prints 
+                        the occurences of each search term 
+
+                "d" -   Detailed. Prints number of occurences as well as the entire
+                        line for each of the last 5 occurences 
+
+            - returns total of the number of instances of all search terms
+        '''
+        main.log.info("========================== Log Report ===========================\n")
+
+        if type(searchTerms) is str: 
+            searchTerms = [searchTerms]
+
+        logLines = [ [" "] for i in range(len(searchTerms)) ]
+
+        for term in range(len(searchTerms)): 
+            logLines[term][0] = searchTerms[term]
+
+        totalHits = 0 
+        for term in range(len(searchTerms)): 
+            cmd = "onos-ssh " + nodeIp + " cat /opt/onos/log/karaf.log | grep " + searchTerms[term] 
+            self.handle.sendline(cmd)
+            self.handle.expect(":~")
+            before = (self.handle.before).splitlines()
+
+            count = [searchTerms[term],0]
+
+            for line in before:
+                if searchTerms[term] in line and "grep" not in line:
+                    count[1] += 1 
+                    if before.index(line) > ( len(before) - 7 ):
+                        logLines[term].append(line)
+
+            main.log.info( str(count[0]) + ": " + str(count[1]) )
+            if term == len(searchTerms)-1: 
+                print("\n")
+            totalHits += int(count[1]) 
+
+        if outputMode != "s" and outputMode != "S":        
+            outputString = ""
+            for i in logLines:
+                outputString = i[0] + ": \n" 
+                for x in range(1,len(i)): 
+                    outputString += ( i[x] + "\n" )    
+                
+                if outputString != (i[0] + ": \n"):
+                    main.log.info(outputString) 
+                
+        main.log.info("================================================================\n")
+        return totalHits 
+
+    def getOnosIpFromEnv(self):
+
+        import string  
+
+        # returns a list of ip addresses for the onos nodes, will work with up to 7 nodes + OCN and OCI
+        # returns in format [ 'x', OC1 ip, OC2 i... ect. ... , ONN ip ]
+
+        self.handle.sendline("env| grep OC") 
+        self.handle.expect(":~")
+        rawOutput = self.handle.before
+        print rawOutput
+        print "-----------------------------"
+        print repr(rawOutput)
+        mpa = dict.fromkeys(range(32))
+        translated = rawOutput.translate(mpa)
+        print translated
+
+
+        # create list with only the lines that have the needed IPs 
+        unparsedIps = []
+
+        # remove preceeding or trailing lines
+        for line in rawOutput: 
+            if "OC" in line and "=" in line: 
+                unparsedIps.append(str(line)) 
+
+        # determine cluster size
+        clusterCount = 0
+        for line in unparsedIps:
+            line = str(line)
+            print line
+            temp = line.replace("OC","")
+            print("line index " + str(line.index("="))) 
+            OCindex = temp[0]
+            for i in range(0, 7):
+                if OCindex == str(i) and i > clusterCount:
+                    clusterCount == i
+                    print(clusterCount)
+        # create list to hold ips such that OC1 is at list[1] and OCN and OCI are at the end (in that order)
+        ONOSIps = ["x"] * (clusterCount + 3) 
+
+        # populate list 
+        for line in unparsedIps:
+            main.log.info(line)########## 
+            temp = str(line.replace("OC",""))
+            main.log.info(str(list(temp)))
+            OCindex = temp[0]
+            main.log.info(OCindex)############
+            if OCindex == "N":
+                ONOSIps[ clusterCount + 1 ] = temp.replace("N=","")
+    
+            if OCindex == "I":
+                ONOSIps[ clusterCount + 2 ] = temp.replace("I=","")
+
+            else:
+                ONOSIps[ int(OCindex) ] = temp.replace((OCindex + "=") ,"")
+
+        # validate 
+        for x in ONOSIps: 
+            if ONOSIps.index(x) != 0 and x == "x": 
+                main.log.error("ENV READ FAILURE, MISSING DATA: \n\n" + str(ONOSIps) + "\n\n") 
+
+        return ONOSIps
+
+
+    def onosErrorLog(self, nodeIp): 
+
+        cmd = "onos-ssh " + nodeIp + " cat /opt/onos/log/karaf.log | grep WARN"
+        self.handle.sendline(cmd) 
+        self.handle.expect(":~")
+        before = (self.handle.before).splitlines() 
+
+        warnings = []
+
+        for line in before: 
+            if "WARN" in line and "grep" not in line: 
+                warnings.append(line) 
+                main.warnings[main.warnings[0]+1] = line
+                main.warnings[0] += 1
+                if main.warnings[0] >= 10: 
+                    main.warnings[0] = 0 
+
+        cmd = "onos-ssh " + nodeIp + " cat /opt/onos/log/karaf.log | grep ERROR"
+        self.handle.sendline(cmd)
+        self.handle.expect(":~")
+        before = (self.handle.before).splitlines()
+
+        errors = []
+
+        for line in before:
+            if "ERROR" in line and "grep" not in line:
+                errors.append(line)
+                main.errors[main.errors[0]+1] = line
+                main.errors[0] += 1
+                if main.errors[0] >= 10:
+                    main.errors[0] = 0
+
+        cmd = "onos-ssh " + nodeIp + " cat /opt/onos/log/karaf.log | grep Exept"
+        self.handle.sendline(cmd)
+        self.handle.expect(":~")
+        before = (self.handle.before).splitlines()
+
+        exceptions = []
+
+        for line in before:
+            if "Except" in line and "grep" not in line:
+                exceptions.append(line)
+                main.exceptions[main.errors[0]+1] = line
+                main.exceptions[0] += 1
+                if main.exceptions[0] >= 10:
+                    main.exceptions[0] = 0
+
+
+
+        ################################################################
+
+        msg1 = "WARNINGS: \n"
+        for i in main.warnings: 
+            if type(i) is not int: 
+                msg1 += ( i + "\n")
+
+        msg2 = "ERRORS: \n"
+        for i in main.errors:
+            if type(i) is not int:
+                msg2 += ( i + "\n")
+
+        msg3 = "EXCEPTIONS: \n"
+        for i in main.exceptions: 
+            if type(i) is not int:
+                msg3 += ( i + "\n")
+
+        main.log.info("===============================================================\n") 
+        main.log.info( "Warnings: " + str(len(warnings))) 
+        main.log.info( "Errors: " + str(len(errors))) 
+        main.log.info( "Exceptions: " + str(len(exceptions)))
+        if len(warnings) > 0:
+            main.log.info(msg1)
+        if len(errors) > 0: 
+            main.log.info(msg2)
+        if len(exceptions) > 0: 
+            main.log.info(msg3)
+        main.log.info("===============================================================\n")

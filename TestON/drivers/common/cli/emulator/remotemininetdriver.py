@@ -91,6 +91,7 @@ class RemoteMininetDriver( Emulator ):
         elif re.search( "found multiple mininet", outputs ):
             return main.ERROR
         else:
+            # TODO: Parse for failed pings, give some truncated output
             main.log.error( "Error, unexpected output in the ping file" )
             main.log.warn( outputs )
             return main.TRUE
@@ -409,7 +410,6 @@ class RemoteMininetDriver( Emulator ):
                 cmd = "sudo -E python opticalTest.py " + controller
                 main.log.info( self.name + ": cmd = " + cmd )
                 self.handle.sendline( cmd )
-                #self.handle.expect( "Press ENTER to push Topology.json" )
                 time.sleep(30)
                 self.handle.sendline( "" )
                 self.handle.sendline( "" )
@@ -448,8 +448,8 @@ class RemoteMininetDriver( Emulator ):
             # Close the ssh connection
             self.handle.sendline( "" )
             # self.handle.expect( "\$" )
-            i = self.handle.expect( [ '\$', 'mininet>', pexpect.TIMEOUT ],
-                                    timeout=2)
+            i = self.handle.expect( [ '\$', 'mininet>', pexpect.TIMEOUT,
+                                      pexpect.EOF ], timeout=2 )
             if i == 0:
                 self.handle.sendline( "exit" )
                 self.handle.expect( "closed" )
@@ -460,7 +460,6 @@ class RemoteMininetDriver( Emulator ):
                 self.handle.sendline( "exit" )
                 self.handle.expect( "exit" )
                 self.handle.expect( "closed" )
-                
         else:
             main.log.error( "Connection failed to the host" )
         return main.TRUE

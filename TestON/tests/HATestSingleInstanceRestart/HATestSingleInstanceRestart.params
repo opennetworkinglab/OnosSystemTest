@@ -16,13 +16,14 @@
     #CASE15: Check that Leadership Election is still functional
     #1,2,8,3,4,5,14,[6],8,3,7,4,15,9,8,4,10,8,4,11,8,4,12,8,4,13
     #extra hosts test 1,2,8,11,8,12,8
-    <testcases>1,2,8,3,4,5,14,[6],8,3,7,4,15,9,8,4,10,8,4,11,8,4,12,8,4,13</testcases>
+    <testcases>1,2,8,3,4,5,14,15,16,17,[6],8,3,7,4,15,17,9,8,4,10,8,4,11,8,4,12,8,4,13</testcases>
     <ENV>
         <cellName>HA</cellName>
     </ENV>
     <Git>False</Git>
     <branch> master </branch>
     <num_controllers> 1 </num_controllers>
+    <tcpdump> False </tcpdump>
 
     <CTRL>
         <ip1>10.128.30.11</ip1>

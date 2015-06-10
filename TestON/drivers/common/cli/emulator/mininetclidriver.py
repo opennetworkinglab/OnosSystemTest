@@ -252,17 +252,16 @@ class MininetCliDriver( Emulator ):
            Optional parameter timeout allows you to specify how long to
            wait for pingall to complete
            Optional:
-           timeout(seconds) - This is the pexpect timeout; The function will
-                              timeout if the amount of time between failed
-                              pings exceedes this time and pingall is still
-                              running
+           timeout(seconds) - How long to wait before breaking the pingall
            shortCircuit - Break the pingall based on the number of failed hosts
                           ping
            acceptableFailed - Set the number of acceptable failed pings for the
                               function to still return main.TRUE
            Returns:
            main.TRUE if pingall completes with no pings dropped
-           otherwise main.FALSE"""
+           otherwise main.FALSE
+        """
+        import time
         try:
             timeout = int( timeout )
             if self.handle:
@@ -273,6 +272,7 @@ class MininetCliDriver( Emulator ):
                 failedPings = 0
                 returnValue = main.TRUE
                 self.handle.sendline( "pingall" )
+                startTime = time.time()
                 while True:
                     i = self.handle.expect( [ "mininet>","X",
                                               pexpect.EOF,
@@ -293,6 +293,12 @@ class MininetCliDriver( Emulator ):
                                                 + str( failedPings ) +
                                                 " pings failed" )
                                 break
+                        if ( time.time() - startTime ) > timeout:
+                            returnValue = main.FALSE
+                            main.log.error( self.name +
+                                            ": Aborting pingall - " +
+                                            "Function took too long " )
+                            break
                     elif i == 2:
                         main.log.error( self.name +
                                         ": EOF exception found" )
@@ -360,6 +366,64 @@ class MininetCliDriver( Emulator ):
         main.log.info( self.name + ": Install fping on mininet machine... " )
         main.log.info( self.name + ": \n---\n" + response )
         return main.FALSE
+
+    def pingallHosts( self, hostList, pingType='ipv4' ):
+        """
+            Ping all specified hosts with a specific ping type 
+            
+            Acceptable pingTypes: 
+                - 'ipv4' 
+                - 'ipv6'
+        
+            Acceptable hostList:
+                - ['h1','h2','h3','h4']
+                
+            Returns main.TRUE if all hosts specified can reach 
+            each other
+            
+            Returns main.FALSE if one or more of hosts specified
+            cannot reach each other"""
+            
+        if pingType == "ipv4":
+            cmd = " ping -c 1 -i 1 -W 8 " 
+        elif pingType == "ipv6":
+            cmd = " ping6 -c 1 -i 1 -W 8 "
+        else:
+            main.log.warn( "Invalid pingType specified" )
+            return
+
+        try:
+            main.log.info( "Testing reachability between specified hosts" )
+           
+            isReachable = main.TRUE
+
+            for host in hostList:
+                listIndex = hostList.index(host)
+                # List of hosts to ping other than itself
+                pingList = hostList[:listIndex] + hostList[(listIndex+1):]
+                
+                for temp in pingList:
+                    # Current host pings all other hosts specified
+                    pingCmd = str(host) + cmd + str(temp) 
+                    self.handle.sendline( pingCmd )
+                    i = self.handle.expect( [ pingCmd, pexpect.TIMEOUT ] )
+                    j = self.handle.expect( [ "mininet>", pexpect.TIMEOUT ] )
+                    response = self.handle.before
+                    if re.search( ',\s0\%\spacket\sloss', response ):
+                        main.log.info( str(host) + " -> " + str(temp) )
+                    else:
+                        main.log.info( str(host) + " -> X ("+str(temp)+") "
+                                       " Destination Unreachable" ) 
+                        # One of the host to host pair is unreachable
+                        isReachable = main.FALSE
+
+            return isReachable 
+
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            main.cleanup()
+            main.exit()
 
     def pingHost( self, **pingParams ):
         """
@@ -1304,11 +1368,11 @@ class MininetCliDriver( Emulator ):
         self.handle.sendline('')
         i = self.handle.expect( [ 'mininet>', pexpect.EOF, pexpect.TIMEOUT ],
                                 timeout=2)
+        response = main.TRUE
         if i == 0:
-            self.stopNet()
+            response = self.stopNet()
         elif i == 1:
             return main.TRUE
-        response = main.TRUE
         # print "Disconnecting Mininet"
         if self.handle:
             self.handle.sendline( "exit" )
@@ -1371,20 +1435,32 @@ class MininetCliDriver( Emulator ):
             response = main.FALSE
         return response
 
-    def arping( self, src, dest, destmac ):
-        self.handle.sendline( '' )
-        self.handle.expect( [ "mininet", pexpect.EOF, pexpect.TIMEOUT ] )
-
-        self.handle.sendline( src + ' arping ' + dest )
+    def arping( self, host="", ip="10.128.20.211", ethDevice="" ):
+        """
+        Description:
+            Sends arp message from mininet host for hosts discovery
+        Required:
+            host - hosts name
+        Optional:
+            ip - ip address that does not exist in the network so there would
+                 be no reply.
+        """
+        if ethDevice:
+            ethDevice = '-I ' + ethDevice + ' '
+        cmd = " py " + host  + ".cmd(\"arping -c 1 " + ethDevice + ip + "\")"
         try:
-            self.handle.expect( [ destmac, pexpect.EOF, pexpect.TIMEOUT ] )
-            main.log.info( self.name + ": ARP successful" )
-            self.handle.expect( [ "mininet", pexpect.EOF, pexpect.TIMEOUT ] )
+            main.log.warn( "Sending: " + cmd )
+            self.handle.sendline( cmd )
+            response = self.handle.before
+            self.handle.sendline( "" )
+            self.handle.expect( "mininet>" )
             return main.TRUE
-        except Exception:
-            main.log.warn( self.name + ": ARP FAILURE" )
-            self.handle.expect( [ "mininet", pexpect.EOF, pexpect.TIMEOUT ] )
-            return main.FALSE
+
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            main.cleanup()
+            main.exit()
 
     def decToHex( self, num ):
         return hex( num ).split( 'x' )[ 1 ]
@@ -1551,7 +1627,7 @@ class MininetCliDriver( Emulator ):
         if switchesJson == "":  # if rest call fails
             main.log.error(
                 self.name +
-                ".compare_switches(): Empty JSON object given from ONOS" )
+                ".compareSwitches(): Empty JSON object given from ONOS" )
             return main.FALSE
         onos = switchesJson
         onosDPIDs = []
@@ -1860,7 +1936,7 @@ class MininetCliDriver( Emulator ):
                     if onosMAC == mnIntf[ 'hw_addr' ].lower() :
                         match = True
                         for ip in mnIntf[ 'ips' ]:
-                            if ip in onosHost[ 'ips' ]:
+                            if ip in onosHost[ 'ipAddresses' ]:
                                 pass  # all is well
                             else:
                                 # misssing ip
@@ -1905,6 +1981,7 @@ class MininetCliDriver( Emulator ):
         hostStr = handlePy.replace( "]", "" )
         hostStr = hostStr.replace( "'", "" )
         hostStr = hostStr.replace( "[", "" )
+        hostStr = hostStr.replace( " ", "" )
         hostList = hostStr.split( "," )
 
         return hostList

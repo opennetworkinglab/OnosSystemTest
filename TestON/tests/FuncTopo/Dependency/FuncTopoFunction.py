@@ -45,15 +45,18 @@ def testTopology( main, topoFile='', args='', mnCmd='', clean=True ):
     # Starts topology
     startResult = startNewTopology( main, topoFile, args, mnCmd )
 
+    # Gets list of switches in mininet
+    assignSwitch( main )
+
+    # This function activates fwd app then does pingall as well as store
+    # hosts data in a variable main.hostsData
+    getHostsResult = getHostsData( main )
+
     # Create topology object using sts
     topoObjectResult = createTopoObject( main )
 
     # Compare Topology
     compareTopoResult = compareTopo( main )
-
-    # This function activates fwd app then does pingall as well as store
-    # hosts data in a variable main.hostsData
-    getHostsResult = getHostsData( main )
 
     testTopoResult = startResult and topoObjectResult and \
                      compareTopoResult and getHostsResult
@@ -223,6 +226,14 @@ def compareTopo( main ):
         compareTopoResult = main.FALSE
 
     return compareTopoResult
+
+def assignSwitch( main ):
+    """
+        Returns switch list using getSwitch in Mininet driver
+    """
+    switchList =  main.Mininet1.getSwitch()
+    print switchList
+    return switchList
 
 def getHostsData( main ):
     """

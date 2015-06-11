@@ -223,11 +223,19 @@ class FuncIntent:
         main.case( "Assign switches to controllers" )
         main.step( "Assigning switches to controllers" )
         assignResult = main.TRUE
+        switchList = []
+
+        # Creates a list switch name, use getSwitch() function later...
         for i in range( 1, ( main.numSwitch + 1 ) ):
-            main.Mininet1.assignSwController( sw=str( i ),
-                                              count=1,
-                                              ip1=main.ONOSip[ 0 ],
-                                              port1=main.ONOSport[ 0 ] )
+            switchList.append( 's' + str( i ) )
+
+        assignResult = main.Mininet1.assignSwController( sw=switchList,
+                                                         ip=main.ONOSip,
+                                                         port=main.ONOSport )
+        if not assignResult:
+            main.cleanup()
+            main.exit()
+
         for i in range( 1, ( main.numSwitch + 1 ) ):
             response = main.Mininet1.getSwController( "s" + str( i ) )
             print( "Response is " + str( response ) )

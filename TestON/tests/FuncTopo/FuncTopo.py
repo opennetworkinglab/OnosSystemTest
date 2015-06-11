@@ -48,6 +48,7 @@ class FuncTopo:
         main.numLinks = int( main.params[ 'MININET' ][ 'links' ] )
         main.numCtrls = main.params[ 'CTRL' ][ 'num' ]
         main.hostsData = {}
+        main.topoName = " "
         PULLCODE = False
         if main.params[ 'GIT' ][ 'pull' ] == 'True':
             PULLCODE = True
@@ -150,7 +151,7 @@ class FuncTopo:
                                  onpass="Successfully installed ONOS package",
                                  onfail="Failed to install ONOS package" )
 
-        time.sleep( 20 )
+        time.sleep( 10 )
         main.step( "Starting ONOS service" )
         stopResult = main.TRUE
         startResult = main.TRUE
@@ -173,17 +174,6 @@ class FuncTopo:
                                  actual=stepResult,
                                  onpass="ONOS service is ready",
                                  onfail="ONOS service did not start properly" )
-
-        main.step( "Start ONOS cli" )
-        cliResult = main.TRUE
-        for i in range( main.numCtrls ):
-            cliResult = cliResult and \
-                        main.CLIs[ i ].startOnosCli( main.ONOSip[ i ] )
-        stepResult = cliResult
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="Successfully start ONOS cli",
-                                 onfail="Failed to start ONOS cli" )
 
     def CASE9( self, main ):
         '''

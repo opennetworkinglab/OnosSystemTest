@@ -39,6 +39,7 @@ changed when switching branches."""
 import pexpect
 import re
 import sys
+import types
 sys.path.append( "../" )
 from math import pow
 from drivers.common.cli.emulatordriver import Emulator
@@ -1106,53 +1107,135 @@ class MininetCliDriver( Emulator ):
             main.cleanup()
             main.exit()
 
-    def assignSwController( self, **kwargs ):
+    def assignSwController( self, sw, ip, port="6633", ptcp="" ):
         """
-           count is only needed if there is more than 1 controller"""
-        args = utilities.parse_args( [ "COUNT" ], **kwargs )
-        count = args[ "COUNT" ] if args != {} else 1
+        Description:
+            Assign switches to the controllers ( for ovs use only )
+        Required:
+            sw - Name of the switch. This can be a list or a string.
+            ip - Ip addresses of controllers. This can be a list or a string.
+        Optional:
+            port - ONOS use port 6633, if no list of ports is passed, then
+                   the all the controller will use 6633 as their port number
+            ptcp - ptcp number, This can be a string or a list that has
+                   the same length as switch. This is optional and not required
+                   when using ovs switches.
+        NOTE: If switches and ptcp are given in a list type they should have the
+              same length and should be in the same order, Eg. sw=[ 's1' ... n ]
+              ptcp=[ '6637' ... n ], s1 has ptcp number 6637 and so on.
 
-        argstring = "SW"
-        for j in range( count ):
-            argstring = argstring + ",IP" + \
-                str( j + 1 ) + ",PORT" + str( j + 1 )
-        args = utilities.parse_args( argstring.split( "," ), **kwargs )
+        Return:
+            Returns main.TRUE if mininet correctly assigned switches to
+            controllers, otherwise it will return main.FALSE or an appropriate
+            exception(s)
+        """
+        assignResult = main.TRUE
+        # Initial ovs command
+        command = "sh ovs-vsctl set-controller "
+        onosIp = ""
 
-        sw = args[ "SW" ] if args[ "SW" ] is not None else ""
-        ptcpA = int( args[ "PORT1" ] ) + \
-            int( sw ) if args[ "PORT1" ] is not None else ""
-        ptcpB = "ptcp:" + str( ptcpA ) if ptcpA != "" else ""
+        if isinstance( ip, types.StringType ):
+            onosIp = "tcp:" + ip + ":"
+            if isinstance( port, types.StringType ):
+                onosIp += port
+            elif isinstance( port, types.ListType ):
+                main.log.error( self.name + ": Only one controller " +
+                                "assigned and a list of ports has" +
+                                " been passed" )
+                return main.FALSE
+            else:
+                main.log.error( self.name + ": Invalid controller port " +
+                                "number. Please specify correct " +
+                                "controller port" )
+                return main.FALSE
 
-        command = "sh ovs-vsctl set-controller s" + \
-            str( sw ) + " " + ptcpB + " "
-        for j in range( count ):
-            i = j + 1
-            args = utilities.parse_args(
-                [ "IP" + str( i ), "PORT" + str( i ) ], **kwargs )
-            ip = args[
-                "IP" +
-                str( i ) ] if args[
-                "IP" +
-                str( i ) ] is not None else ""
-            port = args[
-                "PORT" +
-                str( i ) ] if args[
-                "PORT" +
-                str( i ) ] is not None else ""
-            tcp = "tcp:" + str( ip ) + ":" + str( port ) + \
-                " " if ip != "" else ""
-            command = command + tcp
-        try:
-            self.execute( cmd=command, prompt="mininet>", timeout=5 )
-        except pexpect.EOF:
-            main.log.error( self.name + ": EOF exception found" )
-            main.log.error( self.name + ":     " + self.handle.before )
-            main.cleanup()
-            main.exit()
-        except Exception:
-            main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+        elif isinstance( ip, types.ListType ):
+            if isinstance( port, types.StringType ):
+                for ipAddress in ip:
+                    onosIp = "tcp:" + ipAddress + ":" + port + " "
+            elif isinstance( port, types.ListType ):
+                if ( len( ip ) != len( port ) ):
+                    main.log.error( self.name + ": Port list = " +
+                                    str( len( port ) ) +
+                                    "should be the same as controller" +
+                                    " ip list = " + str( len( ip ) ) )
+                    return main.FALSE
+                onosIp = ""
+                for ipAddress, portNum in zip( ip, port ):
+                    onosIp += "tcp:" + ipAddress + ":" + portNum + " "
+            else:
+                main.log.error( self.name + ": Invalid controller port " +
+                                "number. Please specify correct " +
+                                "controller port" )
+                return main.FALSE
+
+        if isinstance( sw, types.StringType ):
+            command += sw + " "
+            if ptcp:
+                if isinstance( ptcp, types.StringType ):
+                    command += "ptcp:" + ptcp + " "
+                elif isinstance( ptcp, types.ListType ):
+                    main.log.error( self.name + ": Only one switch is " +
+                                    "being set and multiple PTCP is " +
+                                    "being passed " )
+                else:
+                    main.log.error( self.name + ": Invalid PTCP" )
+                    ptcp = ""
+            command += onosIp
+            try:
+                self.execute( cmd=command, prompt="mininet>", timeout=5 )
+                return main.TRUE
+            except pexpect.EOF:
+                main.log.error( self.name + ": EOF exception found" )
+                main.log.error( self.name + ":     " + self.handle.before )
+                main.cleanup()
+                main.exit()
+            except Exception:
+                main.log.exception( self.name + ": Uncaught exception!" )
+                main.cleanup()
+                main.exit()
+
+        elif isinstance( sw, types.ListType ):
+            commandList = []
+            tempCmdList = []
+            if ptcp:
+                if isinstance( ptcp, types.ListType ):
+                    if len( ptcp ) != len( sw ):
+                        main.log.error( self.name + ": PTCP length = " +
+                                        str( len( ptcp ) ) +
+                                        " is not the same as switch length = " +
+                                        str( len( sw ) ) )
+                        return main.FALSE
+                    for switch, ptcpNum in zip( sw, ptcp ):
+                        tempCmd = "sh ovs-vsctl set-controller "
+                        tempCmd += switch + " ptcp:" + ptcpNum + " "
+                        tempCmdList.append( tempCmd )
+                else:
+                    main.log.error( self.name + ": Invalid PTCP" )
+                    return main.FALSE
+            else:
+                for switch in sw:
+                    tempCmd = "sh ovs-vsctl set-controller "
+                    tempCmd += switch + " "
+                    tempCmdList.append( tempCmd )
+
+            for cmd in tempCmdList:
+                cmd += onosIp
+                commandList.append( cmd )
+
+            try:
+                for cmd in commandList:
+                    self.execute( cmd=cmd, prompt="mininet>", timeout=5 )
+                return main.TRUE
+            except pexpect.EOF:
+                main.log.error( self.name + ": EOF exception found" )
+                main.log.error( self.name + ":     " + self.handle.before )
+                main.cleanup()
+                main.exit()
+            except Exception:
+                main.log.exception( self.name + ": Uncaught exception!" )
+                main.cleanup()
+                main.exit()
 
     def deleteSwController( self, sw ):
         """
@@ -1999,6 +2082,72 @@ class MininetCliDriver( Emulator ):
         hostList = hostStr.split( "," )
 
         return hostList
+
+    def getHosts( self ):
+        """
+           Returns a list of all hosts
+           Don't ask questions just use it"""
+        self.handle.sendline( "" )
+        self.handle.expect( "mininet>" )
+
+        self.handle.sendline( "py [ host.name for host in net.hosts ]" )
+        self.handle.expect( "mininet>" )
+
+        handlePy = self.handle.before
+        handlePy = handlePy.split( "]\r\n", 1 )[ 1 ]
+        handlePy = handlePy.rstrip()
+
+        self.handle.sendline( "" )
+        self.handle.expect( "mininet>" )
+
+        hostStr = handlePy.replace( "]", "" )
+        hostStr = hostStr.replace( "'", "" )
+        hostStr = hostStr.replace( "[", "" )
+        hostStr = hostStr.replace( " ", "" )
+        hostList = hostStr.split( "," )
+
+        return hostList
+
+    def getSwitch( self ):
+        """
+            Returns a list of all switches
+            Again, don't ask question just use it...
+        """
+        # get host list...
+        hostList = self.getHosts()
+        # Make host set
+        hostSet = set( hostList )
+
+        # Getting all the nodes in mininet
+        self.handle.sendline( "" )
+        self.handle.expect( "mininet>" )
+
+        self.handle.sendline( "py [ node.name for node in net.values() ]" )
+        self.handle.expect( "mininet>" )
+
+        handlePy = self.handle.before
+        handlePy = handlePy.split( "]\r\n", 1 )[ 1 ]
+        handlePy = handlePy.rstrip()
+
+        self.handle.sendline( "" )
+        self.handle.expect( "mininet>" )
+
+        nodesStr = handlePy.replace( "]", "" )
+        nodesStr = nodesStr.replace( "'", "" )
+        nodesStr = nodesStr.replace( "[", "" )
+        nodesStr = nodesStr.replace( " ", "" )
+        nodesList = nodesStr.split( "," )
+
+        nodesSet = set( nodesList )
+        # discarding default controller(s) node
+        nodesSet.discard( 'c0' )
+        nodesSet.discard( 'c1' )
+        nodesSet.discard( 'c2' )
+
+        switchSet = nodesSet - hostSet
+        switchList = list( switchSet )
+
+        return switchList
 
     def update( self ):
         """

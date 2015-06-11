@@ -1131,111 +1131,105 @@ class MininetCliDriver( Emulator ):
         """
         assignResult = main.TRUE
         # Initial ovs command
+        commandList = []
         command = "sh ovs-vsctl set-controller "
         onosIp = ""
-
-        if isinstance( ip, types.StringType ):
-            onosIp = "tcp:" + ip + ":"
-            if isinstance( port, types.StringType ):
-                onosIp += port
-            elif isinstance( port, types.ListType ):
-                main.log.error( self.name + ": Only one controller " +
-                                "assigned and a list of ports has" +
-                                " been passed" )
-                return main.FALSE
-            else:
-                main.log.error( self.name + ": Invalid controller port " +
-                                "number. Please specify correct " +
-                                "controller port" )
-                return main.FALSE
-
-        elif isinstance( ip, types.ListType ):
-            if isinstance( port, types.StringType ):
-                for ipAddress in ip:
-                    onosIp = "tcp:" + ipAddress + ":" + port + " "
-            elif isinstance( port, types.ListType ):
-                if ( len( ip ) != len( port ) ):
-                    main.log.error( self.name + ": Port list = " +
-                                    str( len( port ) ) +
-                                    "should be the same as controller" +
-                                    " ip list = " + str( len( ip ) ) )
+        try:
+            if isinstance( ip, types.StringType ):
+                onosIp = "tcp:" + ip + ":"
+                if isinstance( port, types.StringType ):
+                    onosIp += port
+                elif isinstance( port, types.ListType ):
+                    main.log.error( self.name + ": Only one controller " +
+                                    "assigned and a list of ports has" +
+                                    " been passed" )
                     return main.FALSE
-                onosIp = ""
-                for ipAddress, portNum in zip( ip, port ):
-                    onosIp += "tcp:" + ipAddress + ":" + portNum + " "
-            else:
-                main.log.error( self.name + ": Invalid controller port " +
-                                "number. Please specify correct " +
-                                "controller port" )
-                return main.FALSE
-
-        if isinstance( sw, types.StringType ):
-            command += sw + " "
-            if ptcp:
-                if isinstance( ptcp, types.StringType ):
-                    command += "ptcp:" + ptcp + " "
-                elif isinstance( ptcp, types.ListType ):
-                    main.log.error( self.name + ": Only one switch is " +
-                                    "being set and multiple PTCP is " +
-                                    "being passed " )
                 else:
-                    main.log.error( self.name + ": Invalid PTCP" )
-                    ptcp = ""
-            command += onosIp
-            try:
-                self.execute( cmd=command, prompt="mininet>", timeout=5 )
-                return main.TRUE
-            except pexpect.EOF:
-                main.log.error( self.name + ": EOF exception found" )
-                main.log.error( self.name + ":     " + self.handle.before )
-                main.cleanup()
-                main.exit()
-            except Exception:
-                main.log.exception( self.name + ": Uncaught exception!" )
-                main.cleanup()
-                main.exit()
+                    main.log.error( self.name + ": Invalid controller port " +
+                                    "number. Please specify correct " +
+                                    "controller port" )
+                    return main.FALSE
 
-        elif isinstance( sw, types.ListType ):
-            commandList = []
-            tempCmdList = []
-            if ptcp:
-                if isinstance( ptcp, types.ListType ):
-                    if len( ptcp ) != len( sw ):
-                        main.log.error( self.name + ": PTCP length = " +
-                                        str( len( ptcp ) ) +
-                                        " is not the same as switch length = " +
-                                        str( len( sw ) ) )
+            elif isinstance( ip, types.ListType ):
+                if isinstance( port, types.StringType ):
+                    for ipAddress in ip:
+                        onosIp += "tcp:" + ipAddress + ":" + port + " "
+                elif isinstance( port, types.ListType ):
+                    if ( len( ip ) != len( port ) ):
+                        main.log.error( self.name + ": Port list = " +
+                                        str( len( port ) ) +
+                                        "should be the same as controller" +
+                                        " ip list = " + str( len( ip ) ) )
                         return main.FALSE
-                    for switch, ptcpNum in zip( sw, ptcp ):
-                        tempCmd = "sh ovs-vsctl set-controller "
-                        tempCmd += switch + " ptcp:" + ptcpNum + " "
-                        tempCmdList.append( tempCmd )
+                    else:
+                        onosIp = ""
+                        for ipAddress, portNum in zip( ip, port ):
+                            onosIp += "tcp:" + ipAddress + ":" + portNum + " "
                 else:
-                    main.log.error( self.name + ": Invalid PTCP" )
+                    main.log.error( self.name + ": Invalid controller port " +
+                                    "number. Please specify correct " +
+                                    "controller port" )
                     return main.FALSE
+
+            if isinstance( sw, types.StringType ):
+                command += sw + " "
+                if ptcp:
+                    if isinstance( ptcp, types.StringType ):
+                        command += "ptcp:" + ptcp + " "
+                    elif isinstance( ptcp, types.ListType ):
+                        main.log.error( self.name + ": Only one switch is " +
+                                        "being set and multiple PTCP is " +
+                                        "being passed " )
+                    else:
+                        main.log.error( self.name + ": Invalid PTCP" )
+                        ptcp = ""
+                command += onosIp
+                commandList.append( command )
+
+            elif isinstance( sw, types.ListType ):
+                if ptcp:
+                    if isinstance( ptcp, types.ListType ):
+                        if len( ptcp ) != len( sw ):
+                            main.log.error( self.name + ": PTCP length = " +
+                                            str( len( ptcp ) ) +
+                                            " is not the same as switch" +
+                                            " length = " +
+                                            str( len( sw ) ) )
+                            return main.FALSE
+                        else:
+                            for switch, ptcpNum in zip( sw, ptcp ):
+                                tempCmd = "sh ovs-vsctl set-controller "
+                                tempCmd += switch + " ptcp:" + ptcpNum + " "
+                                tempCmd += onosIp
+                                commandList.append( tempCmd )
+                    else:
+                        main.log.error( self.name + ": Invalid PTCP" )
+                        return main.FALSE
+                else:
+                    for switch in sw:
+                        tempCmd = "sh ovs-vsctl set-controller "
+                        tempCmd += switch + " " + onosIp
+                        commandList.append( tempCmd )
             else:
-                for switch in sw:
-                    tempCmd = "sh ovs-vsctl set-controller "
-                    tempCmd += switch + " "
-                    tempCmdList.append( tempCmd )
+                main.log.error( self.name + ": Invalid switch type " )
+                return main.FALSE
 
-            for cmd in tempCmdList:
-                cmd += onosIp
-                commandList.append( cmd )
-
-            try:
-                for cmd in commandList:
+            for cmd in commandList:
+                try:
                     self.execute( cmd=cmd, prompt="mininet>", timeout=5 )
-                return main.TRUE
-            except pexpect.EOF:
-                main.log.error( self.name + ": EOF exception found" )
-                main.log.error( self.name + ":     " + self.handle.before )
-                main.cleanup()
-                main.exit()
-            except Exception:
-                main.log.exception( self.name + ": Uncaught exception!" )
-                main.cleanup()
-                main.exit()
+                except pexpect.TIMEOUT:
+                    main.log.error( self.name + ": pexpect.TIMEOUT found" )
+                    return main.FALSE
+                except pexpect.EOF:
+                    main.log.error( self.name + ": EOF exception found" )
+                    main.log.error( self.name + ":     " + self.handle.before )
+                    main.cleanup()
+                    main.exit()
+            return main.TRUE
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
 
     def deleteSwController( self, sw ):
         """

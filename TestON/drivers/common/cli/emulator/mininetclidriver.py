@@ -1136,9 +1136,9 @@ class MininetCliDriver( Emulator ):
         onosIp = ""
         try:
             if isinstance( ip, types.StringType ):
-                onosIp = "tcp:" + ip + ":"
+                onosIp = "tcp:" + str( ip ) + ":"
                 if isinstance( port, types.StringType ):
-                    onosIp += port
+                    onosIp += str( port )
                 elif isinstance( port, types.ListType ):
                     main.log.error( self.name + ": Only one controller " +
                                     "assigned and a list of ports has" +
@@ -1153,7 +1153,8 @@ class MininetCliDriver( Emulator ):
             elif isinstance( ip, types.ListType ):
                 if isinstance( port, types.StringType ):
                     for ipAddress in ip:
-                        onosIp += "tcp:" + ipAddress + ":" + port + " "
+                        onosIp += "tcp:" + str( ipAddress ) + ":" + \
+                                  str( port ) + " "
                 elif isinstance( port, types.ListType ):
                     if ( len( ip ) != len( port ) ):
                         main.log.error( self.name + ": Port list = " +
@@ -1164,7 +1165,8 @@ class MininetCliDriver( Emulator ):
                     else:
                         onosIp = ""
                         for ipAddress, portNum in zip( ip, port ):
-                            onosIp += "tcp:" + ipAddress + ":" + portNum + " "
+                            onosIp += "tcp:" + str( ipAddress ) + ":" + \
+                                      str( portNum ) + " "
                 else:
                     main.log.error( self.name + ": Invalid controller port " +
                                     "number. Please specify correct " +
@@ -1175,7 +1177,7 @@ class MininetCliDriver( Emulator ):
                 command += sw + " "
                 if ptcp:
                     if isinstance( ptcp, types.StringType ):
-                        command += "ptcp:" + ptcp + " "
+                        command += "ptcp:" + str( ptcp ) + " "
                     elif isinstance( ptcp, types.ListType ):
                         main.log.error( self.name + ": Only one switch is " +
                                         "being set and multiple PTCP is " +
@@ -1199,7 +1201,8 @@ class MininetCliDriver( Emulator ):
                         else:
                             for switch, ptcpNum in zip( sw, ptcp ):
                                 tempCmd = "sh ovs-vsctl set-controller "
-                                tempCmd += switch + " ptcp:" + ptcpNum + " "
+                                tempCmd += switch + " ptcp:" + \
+                                           str( ptcpNum ) + " "
                                 tempCmd += onosIp
                                 commandList.append( tempCmd )
                     else:

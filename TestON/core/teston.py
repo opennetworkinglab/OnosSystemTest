@@ -32,7 +32,7 @@ import __builtin__
 import new
 import xmldict
 import importlib
-import os
+import threading
 module = new.module("test")
 import openspeak
 global path, drivers_path, core_path, tests_path,logs_path
@@ -91,6 +91,8 @@ class TestON:
         self.logs_path = logs_path
         self.driver = ''
         self.Thread = Thread
+        self.cleanupFlag = False
+        self.cleanupLock = threading.Lock()
 
         self.configparser()
         verifyOptions(options)
@@ -290,7 +292,7 @@ class TestON:
                     else:
                         self.stepCache += "No Result\n"
                     self.stepResults.append(self.STEPRESULT)
-            except StandardError as e:
+            except StandardError:
                 self.log.exception( "\nException in the following section of" +
                                     " code: " + str(testCaseNumber) + "." +
                                     str(step) + ": " + self.stepName )
@@ -343,33 +345,51 @@ class TestON:
 
     def cleanup(self):
         '''
-           Release all the component handles and the close opened file handles.
-           This will return TRUE if all the component handles and log handles closed properly,
-           else return FALSE
+        Print a summary of the current test's results then attempt to release
+        all the component handles and the close opened file handles.
 
+        This function shouldbe threadsafe such that cleanup will only be
+        executed once per test.
+
+        This will return TRUE if all the component handles and log handles
+        closed properly, else return FALSE.
         '''
         result = self.TRUE
-        self.logger.testSummary(self)
-
-        #self.reportFile.close()
-
-        #utilities.send_mail()
-        for component in self.componentDictionary.keys():
-            try :
-                tempObject  = vars(self)[component]
-                print "Disconnecting from " + str(tempObject.name) + ": " + \
-                      str(tempObject)
-                tempObject.disconnect()
-            #tempObject.execute(cmd="exit",prompt="(.*)",timeout=120)
-
-            except (Exception):
-                self.log.exception( "Exception while disconnecting from " +
-                                     str( component ) )
-                result = self.FALSE
-        # Closing all the driver's session files
-        for driver in self.componentDictionary.keys():
-           vars(self)[driver].close_log_handles()
-
+        lock = self.cleanupLock
+        if lock.acquire( False ):
+            try:
+                if self.cleanupFlag is False:  # First thread to run this
+                    self.cleanupFlag = True
+                    self.logger.testSummary(self)
+                    for component in self.componentDictionary.keys():
+                        try :
+                            tempObject  = vars(self)[component]
+                            print "Disconnecting from " + str(tempObject.name) + ": " + \
+                                  str(tempObject)
+                            tempObject.disconnect()
+                        except Exception:
+                            self.log.exception( "Exception while disconnecting from " +
+                                                 str( component ) )
+                            result = self.FALSE
+                    # Closing all the driver's session files
+                    for driver in self.componentDictionary.keys():
+                        try:
+                            vars(self)[driver].close_log_handles()
+                        except Exception:
+                            self.log.exception( "Exception while closing log files for " +
+                                                 str( driver ) )
+                            result = self.FALSE
+                else:
+                    pass  # Someone else already ran through this function
+            finally:
+                lock.release()
+        else:  # Someone already has a lock
+            # NOTE: This could cause problems if we don't release the lock
+            #       correctly
+            lock.acquire()  # Wait for the other thread to finish
+            # NOTE: If we don't wait, exit could be called while the thread
+            #       with the lock is still cleaning up
+            lock.release()
         return result
 
     def pause(self):
@@ -577,6 +597,12 @@ class TestON:
 
     def exit(self):
         __builtin__.testthread = None
+        for thread in threading.enumerate():
+            if thread.isAlive():
+                try:
+                    thread._Thread__stop()
+                except:
+                    print(str(thread.getName()) + ' could not be terminated' )
         sys.exit()
 
 def verifyOptions(options):
@@ -606,7 +632,7 @@ def verifyTest(options):
         main.classPath = "examples."+main.TEST+"."+main.TEST
     else :
         print "Test or Example not specified please specify the --test <test name > or --example <example name>"
-        self.exit()
+        main.exit()
 
 def verifyExample(options):
     if options.example:
@@ -781,22 +807,6 @@ def load_logger() :
             load_defaultlogger()
     else:
         load_defaultlogger()
-
-def load_defaultlogger():
-    '''
-    It will load the default parser which is xml parser to parse the params and topology file.
-    '''
-    moduleList = main.loggerPath.split("/")
-    newModule = ".".join([moduleList[len(moduleList) - 2],moduleList[len(moduleList) - 1]])
-    try :
-        loggerClass = main.loggerClass
-        loggerModule = __import__(newModule, globals(), locals(), [loggerClass], -1)
-        loggerClass = getattr(loggerModule, loggerClass)
-        main.logger = loggerClass()
-
-    except ImportError:
-        print sys.exc_info()[1]
-        main.exit()
 
 def load_defaultlogger():
     '''

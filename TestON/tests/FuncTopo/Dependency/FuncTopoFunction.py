@@ -4,6 +4,7 @@
 """
 import time
 import json
+import re
 
 def __init__( self ):
     self.default = ''
@@ -168,7 +169,7 @@ def compareTopo( main ):
         tempResult = main.Mininet1.compareSwitches( MNTopo, devices[ i ] )
         switchResult.append( tempResult )
         if tempResult == main.FALSE:
-            main.log.error( main.topoName + ": ONOS-" + str( i ) +
+            main.log.error( main.topoName + ": ONOS-" + str( i + 1 ) +
                             " switch view is incorrect " )
 
     if all( result == main.TRUE for result in switchResult ):
@@ -184,7 +185,7 @@ def compareTopo( main ):
         tempResult = main.Mininet1.comparePorts( MNTopo, ports[ i ] )
         portsResult.append( tempResult )
         if tempResult == main.FALSE:
-            main.log.error( main.topoName + ": ONOS-" + str( i ) +
+            main.log.error( main.topoName + ": ONOS-" + str( i + 1 ) +
                             " ports view are incorrect " )
 
     if all( result == main.TRUE for result in portsResult ):
@@ -200,7 +201,7 @@ def compareTopo( main ):
         tempResult = main.Mininet1.compareLinks( MNTopo, links[ i ] )
         linksResult.append( tempResult )
         if tempResult == main.FALSE:
-            main.log.error( main.topoName + ": ONOS-" + str( i ) +
+            main.log.error( main.topoName + ": ONOS-" + str( i + 1 ) +
                             " links view are incorrect " )
 
     if all( result == main.TRUE for result in linksResult ):
@@ -216,7 +217,7 @@ def compareTopo( main ):
         tempResult = main.Mininet1.compareHosts( MNTopo, hosts[ i ] )
         hostsResult.append( tempResult )
         if tempResult == main.FALSE:
-            main.log.error( main.topoName + ": ONOS-" + str( i ) +
+            main.log.error( main.topoName + ": ONOS-" + str( i + 1 ) +
                             " hosts view are incorrect " )
 
     if all( result == main.TRUE for result in hostsResult ):
@@ -231,8 +232,20 @@ def assignSwitch( main ):
     """
         Returns switch list using getSwitch in Mininet driver
     """
+    switchList = []
+    assignResult = main.TRUE
     switchList =  main.Mininet1.getSwitch()
-    print switchList
+    assignResult = main.Mininet1.assignSwController( sw=switchList,
+                                                     ip=main.ONOSip,
+                                                     port=6633 )
+
+    for sw in switchList:
+        response = main.Mininet1.getSwController( sw )
+        if re.search( "tcp:" + main.ONOSip[ 0 ], response ):
+            assignResult = assignResult and main.TRUE
+        else:
+            assignResult = main.FALSE
+
     return switchList
 
 def getHostsData( main ):

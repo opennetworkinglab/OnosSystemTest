@@ -1137,7 +1137,8 @@ class MininetCliDriver( Emulator ):
         try:
             if isinstance( ip, types.StringType ):
                 onosIp = "tcp:" + str( ip ) + ":"
-                if isinstance( port, types.StringType ):
+                if isinstance( port, types.StringType ) or \
+                   isinstance( port, types.IntType ):
                     onosIp += str( port )
                 elif isinstance( port, types.ListType ):
                     main.log.error( self.name + ": Only one controller " +
@@ -1151,7 +1152,8 @@ class MininetCliDriver( Emulator ):
                     return main.FALSE
 
             elif isinstance( ip, types.ListType ):
-                if isinstance( port, types.StringType ):
+                if isinstance( port, types.StringType ) or \
+                   isinstance( port, types.IntType ):
                     for ipAddress in ip:
                         onosIp += "tcp:" + str( ipAddress ) + ":" + \
                                   str( port ) + " "

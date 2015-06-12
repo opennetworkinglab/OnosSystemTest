@@ -47,6 +47,7 @@ class FuncTopo:
         main.numSwitch = int( main.params[ 'MININET' ][ 'switch' ] )
         main.numLinks = int( main.params[ 'MININET' ][ 'links' ] )
         main.numCtrls = main.params[ 'CTRL' ][ 'num' ]
+        main.ONOSport = []
         main.hostsData = {}
         main.topoName = " "
         PULLCODE = False
@@ -58,12 +59,12 @@ class FuncTopo:
         for i in range( 1, int( main.numCtrls ) + 1 ):
             main.CLIs.append( getattr( main, 'ONOScli' + str( i ) ) )
             main.nodes.append( getattr( main, 'ONOS' + str( i ) ) )
+            main.ONOSport.append( main.params[ 'CTRL' ][ 'port' + str( i ) ] )
 
         # -- INIT SECTION, ONLY RUNS ONCE -- #
         if init == False:
             init = True
 
-            main.ONOSport = []
             main.scale = ( main.params[ 'SCALE' ] ).split( "," )
             main.numCtrls = int( main.scale[ 0 ] )
 
@@ -195,7 +196,7 @@ class FuncTopo:
         main.topoName = "TREE3-3"
         stepResult = main.TRUE
         main.step( "Tree 3-3 topology" )
-        mnCmd = "mn --topo=tree,3,3 --controller=remote,ip=$OC1 --mac"
+        mnCmd = "mn --topo=tree,3,3 --mac"
         stepResult = main.wrapper.testTopology( main,
                                                 mnCmd=mnCmd,
                                                 clean=False )
@@ -206,7 +207,7 @@ class FuncTopo:
 
         main.step( "Torus 5-5 topology" )
         main.topoName = "TORUS5-5"
-        mnCmd = "mn --topo=torus,5,5 --controller=remote,ip=$OC1 --mac"
+        mnCmd = "mn --topo=torus,5,5 --mac"
         stepResult = main.wrapper.testTopology( main,
                                                 mnCmd=mnCmd,
                                                 clean=True )

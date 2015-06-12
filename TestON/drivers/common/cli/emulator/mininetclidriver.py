@@ -1174,6 +1174,9 @@ class MininetCliDriver( Emulator ):
                                     "number. Please specify correct " +
                                     "controller port" )
                     return main.FALSE
+            else:
+                main.log.error( self.name + ": Invalid ip address" )
+                return main.FALSE
 
             if isinstance( sw, types.StringType ):
                 command += sw + " "

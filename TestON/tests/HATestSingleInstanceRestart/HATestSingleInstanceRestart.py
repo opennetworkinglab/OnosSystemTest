@@ -975,8 +975,6 @@ class HATestSingleInstanceRestart:
         assert numControllers, "numControllers not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
-        # assumes that sts is already in you PYTHONPATH
-        from sts.topology.teston_topology import TestONTopology
 
         main.case( "Setting up and gathering data for current state" )
         # The general idea for this test case is to pull the state of
@@ -1409,11 +1407,6 @@ class HATestSingleInstanceRestart:
         """
         Compare topo
         """
-        import sys
-        # FIXME add this path to params
-        sys.path.append( "/home/admin/sts" )
-        # assumes that sts is already in you PYTHONPATH
-        from sts.topology.teston_topology import TestONTopology
         import json
         import time
         assert numControllers, "numControllers not defined"

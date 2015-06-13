@@ -255,9 +255,6 @@ class MultiProd:
 
     def CASE5( self, main ):
         import json
-        from subprocess import Popen, PIPE
-        # assumes that sts is already in you PYTHONPATH
-        from sts.topology.teston_topology import TestONTopology
         ONOS1Ip = main.params[ 'CTRL' ][ 'ip1' ]
         ONOS2Ip = main.params[ 'CTRL' ][ 'ip2' ]
         ONOS3Ip = main.params[ 'CTRL' ][ 'ip3' ]
@@ -294,6 +291,8 @@ class MultiProd:
         # print "links1 = ", links1
         # print "links2 = ", links2
         # print "links3 = ", links3
+        mnSwitches = main.Mininet1.getSwitches()
+        mnLinks = main.Mininet1.getLinks()
 
         print "**************"
 
@@ -339,96 +338,45 @@ class MultiProd:
             target=main.params[ 'PING' ][ 'target10' ],
             pingTime=500 )
 
-        main.step( "Create TestONTopology object" )
-        global ctrls
-        ctrls = []
-        count = 1
-        while True:
-            temp = ()
-            if ( 'ip' + str( count ) ) in main.params[ 'CTRL' ]:
-                temp = temp + ( getattr( main, ( 'ONOS' + str( count ) ) ), )
-                temp = temp + ( "ONOS" + str( count ), )
-                temp = temp + ( main.params[ 'CTRL' ][ 'ip' + str( count ) ], )
-                temp = temp + \
-                    ( eval( main.params[ 'CTRL' ][ 'port' + str( count ) ] ), )
-                ctrls.append( temp )
-                count = count + 1
-            else:
-                break
-        global MNTopo
-        Topo = TestONTopology(
-            main.Mininet1,
-            ctrls )  # can also add Intent API info for intent operations
-        MNTopo = Topo
-
         TopologyCheck = main.TRUE
         main.step( "Compare ONOS Topology to MN Topology" )
 
         switchesResults1 = main.Mininet1.compareSwitches(
-            MNTopo,
-            json.loads( devices1 ) )
+            mnSwitches, json.loads( devices1 ), json.loads( ports1 ) )
         print "switches_Result1 = ", switchesResults1
         utilities.assertEquals( expect=main.TRUE, actual=switchesResults1,
                                 onpass="ONOS1 Switches view is correct",
                                 onfail="ONOS1 Switches view is incorrect" )
 
         switchesResults2 = main.Mininet1.compareSwitches(
-            MNTopo,
-            json.loads( devices2 ) )
+            mnSwitches, json.loads( devices2 ), json.loads( ports2 ) )
         utilities.assertEquals( expect=main.TRUE, actual=switchesResults2,
                                 onpass="ONOS2 Switches view is correct",
                                 onfail="ONOS2 Switches view is incorrect" )
 
         switchesResults3 = main.Mininet1.compareSwitches(
-            MNTopo,
-            json.loads( devices3 ) )
+            mnSwitches, json.loads( devices3 ), json.loads( ports3 ) )
         utilities.assertEquals( expect=main.TRUE, actual=switchesResults3,
                                 onpass="ONOS3 Switches view is correct",
                                 onfail="ONOS3 Switches view is incorrect" )
 
-        portsResults1 =  main.Mininet1.comparePorts( MNTopo,
-        json.loads( ports1 ) )
-        utilities.assertEquals( expect=main.TRUE, actual=portsResults1,
-                onpass="ONOS1 Ports view is correct",
-                onfail="ONOS1 Ports view is incorrect" )
-
-        portsResults2 =  main.Mininet1.comparePorts( MNTopo,
-        json.loads( ports2 ) )
-        utilities.assertEquals( expect=main.TRUE, actual=portsResults2,
-                onpass="ONOS2 Ports view is correct",
-                onfail="ONOS2 Ports view is incorrect" )
-
-        portsResults3 =  main.Mininet1.comparePorts( MNTopo,
-        json.loads( ports3 ) )
-        utilities.assertEquals( expect=main.TRUE, actual=portsResults3,
-                onpass="ONOS3 Ports view is correct",
-                onfail="ONOS3 Ports view is incorrect" )
-
         linksResults1 = main.Mininet1.compareLinks(
-            MNTopo,
-            json.loads( links1 ) )
+            mnSwitches, mnLinks, json.loads( links1 ) )
         utilities.assertEquals( expect=main.TRUE, actual=linksResults1,
                                 onpass="ONOS1 Links view is correct",
                                 onfail="ONOS1 Links view is incorrect" )
 
         linksResults2 = main.Mininet1.compareLinks(
-            MNTopo,
-            json.loads( links2 ) )
+            mnSwitches, mnLinks, json.loads( links2 ) )
         utilities.assertEquals( expect=main.TRUE, actual=linksResults2,
                                 onpass="ONOS2 Links view is correct",
                                 onfail="ONOS2 Links view is incorrect" )
 
         linksResults3 = main.Mininet1.compareLinks(
-            MNTopo,
-            json.loads( links3 ) )
+            mnSwitches, mnLinks, json.loads( links3 ) )
         utilities.assertEquals( expect=main.TRUE, actual=linksResults3,
                                 onpass="ONOS2 Links view is correct",
                                 onfail="ONOS2 Links view is incorrect" )
-
-        # topoResult = switchesResults1 and switchesResults2
-        # and switchesResults3\
-        # and portsResults1 and portsResults2 and portsResults3\
-        # and linksResults1 and linksResults2 and linksResults3
 
         topoResult = switchesResults1 and switchesResults2 and\
                      switchesResults3 and linksResults1 and linksResults2 and\
@@ -730,6 +678,8 @@ class MultiProd:
         # print "links1 = ", links1
         # print "links2 = ", links2
         # print "links3 = ", links3
+        mnSwitches = main.Mininet1.getSwitches()
+        mnLinks = main.Mininet1.getLinks()
 
         print "**************"
 
@@ -775,97 +725,46 @@ class MultiProd:
             target=main.params[ 'PING' ][ 'target10' ],
             pingTime=500 )
 
-        main.step( "Create TestONTopology object" )
-        global ctrls
-        ctrls = []
-        count = 1
-        while True:
-            temp = ()
-            if ( 'ip' + str( count ) ) in main.params[ 'CTRL' ]:
-                temp = temp + ( getattr( main, ( 'ONOS' + str( count ) ) ), )
-                temp = temp + ( "ONOS" + str( count ), )
-                temp = temp + ( main.params[ 'CTRL' ][ 'ip' + str( count ) ], )
-                temp = temp + \
-                    ( eval( main.params[ 'CTRL' ][ 'port' + str( count ) ] ), )
-                ctrls.append( temp )
-                count = count + 1
-            else:
-                break
-        global MNTopo
-        Topo = TestONTopology(
-            main.Mininet1,
-            ctrls )  # can also add Intent API info for intent operations
-        MNTopo = Topo
-
-        TopologyCheck = main.TRUE
         main.step( "Compare ONOS Topology to MN Topology" )
 
         switchesResults1 = main.Mininet1.compareSwitches(
-            MNTopo,
-            json.loads( devices1 ) )
+            mnSwitches, json.loads( devices1 ), json.loads( ports1 ) )
         print "switches_Result1 = ", switchesResults1
         utilities.assertEquals( expect=main.TRUE, actual=switchesResults1,
                                 onpass="ONOS1 Switches view is correct",
                                 onfail="ONOS1 Switches view is incorrect" )
 
         switchesResults2 = main.Mininet1.compareSwitches(
-            MNTopo,
-            json.loads( devices2 ) )
+            mnSwitches, json.loads( devices2 ), json.loads( ports2 ) )
         utilities.assertEquals( expect=main.TRUE, actual=switchesResults2,
                                 onpass="ONOS2 Switches view is correct",
                                 onfail="ONOS2 Switches view is incorrect" )
 
         switchesResults3 = main.Mininet1.compareSwitches(
-            MNTopo,
-            json.loads( devices3 ) )
+            mnSwitches, json.loads( devices3 ), json.loads( ports3 ) )
         utilities.assertEquals( expect=main.TRUE, actual=switchesResults3,
                                 onpass="ONOS3 Switches view is correct",
                                 onfail="ONOS3 Switches view is incorrect" )
 
-        """
-        portsResults1 =  main.Mininet1.comparePorts( MNTopo,
-        json.loads( ports1 ) )
-        utilities.assertEquals( expect=main.TRUE, actual=portsResults1,
-                onpass="ONOS1 Ports view is correct",
-                onfail="ONOS1 Ports view is incorrect" )
-
-        portsResults2 =  main.Mininet1.comparePorts( MNTopo,
-        json.loads( ports2 ) )
-        utilities.assertEquals( expect=main.TRUE, actual=portsResults2,
-                onpass="ONOS2 Ports view is correct",
-                onfail="ONOS2 Ports view is incorrect" )
-
-        portsResults3 =  main.Mininet1.comparePorts( MNTopo,
-        json.loads( ports3 ) )
-        utilities.assertEquals( expect=main.TRUE, actual=portsResults3,
-                onpass="ONOS3 Ports view is correct",
-                onfail="ONOS3 Ports view is incorrect" )
-        """
         linksResults1 = main.Mininet1.compareLinks(
-            MNTopo,
-            json.loads( links1 ) )
+            mnSwitches, mnLinks, json.loads( links1 ) )
         utilities.assertEquals( expect=main.TRUE, actual=linksResults1,
                                 onpass="ONOS1 Links view is correct",
                                 onfail="ONOS1 Links view is incorrect" )
 
         linksResults2 = main.Mininet1.compareLinks(
-            MNTopo,
-            json.loads( links2 ) )
+            mnSwitches, mnLinks, json.loads( links2 ) )
+
         utilities.assertEquals( expect=main.TRUE, actual=linksResults2,
                                 onpass="ONOS2 Links view is correct",
                                 onfail="ONOS2 Links view is incorrect" )
 
         linksResults3 = main.Mininet1.compareLinks(
-            MNTopo,
-            json.loads( links3 ) )
+            mnSwitches, mnLinks, json.loads( links3 ) )
+
         utilities.assertEquals( expect=main.TRUE, actual=linksResults3,
                                 onpass="ONOS2 Links view is correct",
                                 onfail="ONOS2 Links view is incorrect" )
-
-        # topoResult = switchesResults1 and switchesResults2
-        # and switchesResults3\
-        # and portsResults1 and portsResults2 and portsResults3\
-        # and linksResults1 and linksResults2 and linksResults3
 
         topoResult = switchesResults1 and switchesResults2\
                 and switchesResults3 and linksResults1 and\

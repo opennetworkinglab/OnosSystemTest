@@ -18,11 +18,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with TestON.  If not, see <http://www.gnu.org/licenses/>.
 
-
 MininetCliDriver is the basic driver which will handle the Mininet functions
-
-Some functions rely on STS module. To install this,
-    git clone https://github.com/jhall11/sts.git
 
 Some functions rely on a modified version of Mininet. These functions
 should all be noted in the comments. To get this MN version run these commands
@@ -1689,7 +1685,7 @@ class MininetCliDriver( Emulator ):
         self.update()
         # Get mininet dump
         dump = self.dump().split( "\n" )
-        hosts = []
+        hosts = {}
         for line in dump:
             if line.startswith( "<Host" ):
                 result = re.search( hostRE, line )
@@ -1725,9 +1721,7 @@ class MininetCliDriver( Emulator ):
                             "ips": ips,
                             "mac": str( mac ),
                             "isUp": isUp } )
-                hosts.append( {
-                    "name": name,
-                    "interfaces": interfaces  } )
+                hosts[ name ] = { "interfaces": interfaces }
         return hosts
 
     def getLinks( self ):

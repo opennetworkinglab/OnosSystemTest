@@ -51,11 +51,7 @@ Dependencies
 
     $ sudo pip install numpy
 
-4. STS  - This can be installed by:
-
-    $ git clone https://github.com/jhall11/sts.git
-
-5. Linc-OE - Some testcases use this to emulate optical devices
+4. Linc-OE - Some testcases use this to emulate optical devices
 
     Requirements:
 

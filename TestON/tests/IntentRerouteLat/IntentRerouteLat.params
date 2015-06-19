@@ -13,7 +13,7 @@
     <TEST>
         <skipCleanInstall>yes</skipCleanInstall>
         <warmUp>5</warmUp>
-        <sampleSize>10</sampleSize>                     
+        <sampleSize>20</sampleSize>                     
         <wait></wait>
         <intents>1,100,1000</intents>                       #list format, will be split on ','
         <debug>True</debug>     
@@ -34,7 +34,7 @@
     </METRICS>
 
     <GIT>
-        <autopull>on</autopull>
+        <autopull>off</autopull>
         <checkout>master</checkout>
     </GIT>
 

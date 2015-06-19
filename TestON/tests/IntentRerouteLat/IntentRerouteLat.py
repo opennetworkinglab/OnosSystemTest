@@ -176,6 +176,7 @@ class IntentRerouteLat:
                     break
             index += 1
 
+            main.ONOSbench.logReport(ONOSIp[1], ["ERROR", "WARNING", "EXCEPT"])
 
     def CASE2( self, main ):
          
@@ -250,6 +251,7 @@ class IntentRerouteLat:
                 cmd = """onos $OC1 null-link "null:0000000000000004/1 null:0000000000000003/2 down" """
                 if debug: main.log.info("COMMAND: " + str(cmd))
                 main.ONOSbench.handle.sendline(cmd)
+                main.ONOSbench.handle.expect(":~")
 
                 cmd = "onos-ssh $OC1 cat /opt/onos/log/karaf.log | grep TopologyManager| tail -1"
                 for i in range(0,10):
@@ -344,11 +346,17 @@ class IntentRerouteLat:
                             if debug: main.log.info("last node: " + str(myResult[run-warmUp][1]))
 
                 cmd = """ onos $OC1 null-link "null:0000000000000004/1 null:0000000000000003/2 up" """
-
-                #wait for intent withdraw
                 if debug: main.log.info(cmd)
                 main.ONOSbench.handle.sendline(cmd)
                 main.ONOSbench.handle.expect(":~")
+                
+                
+                
+                #wait for intent withdraw
+                main.ONOSbench.handle.sendline(withdrawCmd)
+                main.log.info(withdrawCmd) 
+                main.ONOSbench.handle.expect(":~")
+                if debug: main.log.info(main.ONOSbench.handle.before) 
                 main.ONOSbench.handle.sendline("onos $OC1 intents|grep WITHDRAWN|wc -l")
                 main.ONOSbench.handle.expect(":~")
                 intentWithdrawCheck = main.ONOSbench.handle.before
@@ -407,4 +415,6 @@ class IntentRerouteLat:
             resultsDB.write(str(average) + ",")
             resultsDB.write(str(stdDev) + "\n")
             resultsDB.close()
+
+            main.ONOSbench.logReport(ONOSIp[1], ["ERROR", "WARNING", "EXCEPT"])
 

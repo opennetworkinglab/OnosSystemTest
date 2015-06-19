@@ -152,7 +152,7 @@ class flowTP1g:
         try:
             currentNeighbors
         except:
-            currentNeighbors = "0"
+            currentNeighbors = (main.params[ 'TEST' ][ 'neighbors' ]).split(",")[0]
         else:
             if currentNeighbors == "r":      #reset
                 currentNeighbors = "0"
@@ -189,7 +189,7 @@ class flowTP1g:
                 currentNeighbors = "r"
             else:
                 neighborList = ['0'] 
-        
+
         main.log.info("neightborlist: " + str(neighborList))
 
         ts = time.time()
@@ -226,31 +226,35 @@ class flowTP1g:
                 if i < int(maxNodes):
                     ipCSV +=","
            
+            for i in range(5): 
+                main.ONOSbench.handle.sendline("""onos $OC1 "cfg set org.onosproject.provider.nil.NullProviders deviceCount 35" """)
+                main.ONOSbench.handle.expect(":~")
+                time.sleep(3)
+                main.ONOSbench.handle.sendline("""onos $OC1 "cfg set org.onosproject.provider.nil.NullProviders topoShape linear" """)
+                main.ONOSbench.handle.expect(":~")
+                time.sleep(3)
+                main.ONOSbench.handle.sendline("""onos $OC1 "null-simulation start" """)
+                main.ONOSbench.handle.expect(":~")
+                time.sleep(3)
+                main.ONOSbench.handle.sendline("""onos $OC1 "balance-masters" """)
+                main.ONOSbench.handle.expect(":~")
+                time.sleep(3)
+                main.log.info("""onos $OC1 "cfg set org.onosproject.store.flow.impl.NewDistributedFlowRuleStore backupEnabled """ + flowRuleBackup + """" """)
+                main.ONOSbench.handle.sendline("""onos $OC1 "cfg set org.onosproject.store.flow.impl.NewDistributedFlowRuleStore backupEnabled """ + flowRuleBackup + """" """)
+                main.ONOSbench.handle.expect(":~")
 
-            main.ONOSbench.handle.sendline("""onos $OC1 "cfg set org.onosproject.provider.nil.NullProviders deviceCount 35" """)
-            main.ONOSbench.handle.expect(":~")
-            time.sleep(3)
-            main.ONOSbench.handle.sendline("""onos $OC1 "cfg set org.onosproject.provider.nil.NullProviders topoShape linear" """)
-            main.ONOSbench.handle.expect(":~")
-            time.sleep(3)
-            main.ONOSbench.handle.sendline("""onos $OC1 "null-simulation start" """)
-            main.ONOSbench.handle.expect(":~")
-            time.sleep(3)
-            main.ONOSbench.handle.sendline("""onos $OC1 "balance-masters" """)
-            main.ONOSbench.handle.expect(":~")
-            time.sleep(3)
-            main.log.info("""onos $OC1 "cfg set org.onosproject.store.flow.impl.NewDistributedFlowRuleStore backupEnabled """ + flowRuleBackup + """" """)
-            main.ONOSbench.handle.sendline("""onos $OC1 "cfg set org.onosproject.store.flow.impl.NewDistributedFlowRuleStore backupEnabled """ + flowRuleBackup + """" """)
-            main.ONOSbench.handle.expect(":~")
-       
-            main.ONOSbench.handle.sendline("onos $OC1 summary")
-            main.ONOSbench.handle.expect(":~")
-            check = main.ONOSbench.handle.before
+                main.ONOSbench.handle.sendline("""onos $OC1 "cfg get" """)
+                main.ONOSbench.handle.expect(":~")
+                main.log.info(main.ONOSbench.handle.before)
 
-            main.ONOSbench.handle.sendline("""onos $OC1 "cfg get" """)
-            main.ONOSbench.handle.expect(":~")
-            check = main.ONOSbench.handle.before
-            main.log.info("\nStart up check: \n" + check + "\n") 
+                time.sleep(3)
+                main.ONOSbench.handle.sendline("onos $OC1 summary")
+                main.ONOSbench.handle.expect(":~")
+                check = main.ONOSbench.handle.before
+                main.log.info("\nStart up check: \n" + check + "\n") 
+                if "SCC(s)=1," in check: 
+                    break 
+                time.sleep(5)
 
             #devide flows
             flows = int(main.params[ 'TEST' ][ 'flows' ])
@@ -288,7 +292,15 @@ class flowTP1g:
 
                 if "failed" in rawResult: 
                     main.log.report("FLOW_TESTER.PY FAILURE")
-                    main.log.report( " \n" + rawResult + " \n") 
+                    main.log.report( " \n" + rawResult + " \n")
+                    for i in range(clusterCount):
+                        main.log.report("=======================================================")
+                        main.log.report(" ONOS " + str(i) + "LOG REPORT") 
+                        main.ONOSbench.logReport(ONOSIp[i], ["ERROR", "WARNING", "EXCEPT"], outputMode="d")
+                    main.ONOSbench.handle.sendline("onos $OC1 flows") 
+                    main.ONOSbench.handle.expect(":~") 
+                    main.log.info(main.ONOSbench.handle.before)
+
                     break
             
             ########################################################################################
@@ -303,10 +315,7 @@ class flowTP1g:
                             for word in temp:
                                 #print ("word: " + word) 
                                 if "elapsed" in repr(word): 
-                                    #print("in elapsed ==========")
                                     index = temp.index(word) + 1
-                                    #print ("index: " + str(index)) 
-                                    #print ("temp[index]: " + temp[index])
                                     myParsed = (temp[index]).replace(",","")
                                     myParsed = myParsed.replace("}","")
                                     myParsed = int(myParsed)
@@ -400,4 +409,4 @@ class flowTP1g:
             
             main.log.report("Result line to file: " + resultString)
            
-        main.ONOSbench.onosErrorLog(ONOSIp[1]) 
+        main.ONOSbench.logReport(ONOSIp[1], ["ERROR", "WARNING", "EXCEPT"], outputMode="d") 

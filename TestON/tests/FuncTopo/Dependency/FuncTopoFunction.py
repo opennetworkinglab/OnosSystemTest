@@ -236,7 +236,7 @@ def assignSwitch( main ):
     assignResult = main.TRUE
     switchList =  main.Mininet1.getSwitch()
     assignResult = main.Mininet1.assignSwController( sw=switchList,
-                                                     ip=main.ONOSip,
+                                                     ip=main.ONOSip[ 0 ],
                                                      port=6633 )
 
     for sw in switchList:

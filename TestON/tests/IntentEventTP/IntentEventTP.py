@@ -159,7 +159,7 @@ class IntentEventTP:
         time.sleep(20)
 
 
-        while True: 
+        for i in range(5): 
             main.ONOSbench.handle.sendline("""onos $OC1 "cfg set org.onosproject.provider.nil.NullProviders deviceCount """ + str(clusterCount*10) + """ " """)
             main.ONOSbench.handle.expect(":~")
             main.ONOSbench.handle.sendline("""onos $OC1 "cfg get org.onosproject.provider.nil.NullProviders" """)
@@ -172,7 +172,7 @@ class IntentEventTP:
             main.log.info("cfg set failure, retrying")
             main.log.info("before" + main.ONOSbench.handle.before)
         
-        while True:
+        for i in range(5): 
             main.ONOSbench.handle.sendline("""onos $OC1 "cfg set org.onosproject.provider.nil.NullProviders topoShape linear" """)
             main.ONOSbench.handle.expect(":~")
             main.ONOSbench.handle.sendline("""onos $OC1 "cfg get org.onosproject.provider.nil.NullProviders" """)
@@ -222,8 +222,7 @@ class IntentEventTP:
                     break
             lastOutput = clusterCheck
             time.sleep(5)
-        main.ONOSbench.onosErrorLog(ONOSIp[1])
-
+        main.ONOSbench.logReport(ONOSIp[1], ["ERROR", "WARNING", "EXCEPT"])
     def CASE2( self, main ): 
         import time
         import json
@@ -300,6 +299,7 @@ class IntentEventTP:
                     x = 0
                     while True:
                         main.ONOSbench.handle.sendline(cmd)
+                        time.sleep(6)
                         main.ONOSbench.handle.expect(":~")
                         raw = main.ONOSbench.handle.before
                         if "OVERALL=" in raw:
@@ -353,6 +353,5 @@ class IntentEventTP:
             
             resultsDB.close() 
             
-            main.ONOSbench.onosErrorLog(ONOSIp[1])
-                        
+            main.ONOSbench.logReport(ONOSIp[1], ["ERROR", "WARNING", "EXCEPT"])            
 

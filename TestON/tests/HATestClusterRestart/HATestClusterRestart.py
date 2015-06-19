@@ -4,7 +4,8 @@ Description: This test is to determine if ONOS can handle
 
 List of test cases:
 CASE1: Compile ONOS and push it to the test machines
-CASE2: Assign mastership to controllers
+CASE2: Assign devices to controllers
+CASE21: Assign mastership to controllers
 CASE3: Assign intents
 CASE4: Ping across added host intents
 CASE5: Reading state of ONOS
@@ -46,9 +47,12 @@ class HATestClusterRestart:
         start cli sessions
         start tcpdump
         """
-        main.log.report( "ONOS HA test: Restart all ONOS nodes - " +
+        main.log.info( "ONOS HA test: Restart all ONOS nodes - " +
                          "initialization" )
         main.case( "Setting up test environment" )
+        main.caseExplaination = "Setup the test environment including " +\
+                                "installing ONOS, starting Mininet and ONOS" +\
+                                "cli sessions."
         # TODO: save all the timers and output them for plotting
 
         # load some variables from the params file
@@ -67,6 +71,11 @@ class HATestClusterRestart:
         global ONOS6Port
         global ONOS7Port
         global numControllers
+        # These are for csv plotting in jenkins
+        global labels
+        global data
+        labels = []
+        data = []
         numControllers = int( main.params[ 'num_controllers' ] )
 
         # FIXME: just get controller port from params?
@@ -92,15 +101,15 @@ class HATestClusterRestart:
         verifyResult = main.ONOSbench.verifyCell()
 
         # FIXME:this is short term fix
-        main.log.report( "Removing raft logs" )
+        main.log.info( "Removing raft logs" )
         main.ONOSbench.onosRemoveRaftLogs()
 
-        main.log.report( "Uninstalling ONOS" )
+        main.log.info( "Uninstalling ONOS" )
         for node in nodes:
             main.ONOSbench.onosUninstall( node.ip_address )
 
         # Make sure ONOS is DEAD
-        main.log.report( "Killing any ONOS processes" )
+        main.log.info( "Killing any ONOS processes" )
         killResults = main.TRUE
         for node in nodes:
             killed = main.ONOSbench.onosKill( node.ip_address )
@@ -115,36 +124,39 @@ class HATestClusterRestart:
                                  onpass="Mininet Started",
                                  onfail="Error starting Mininet" )
 
-        main.step( "Compiling the latest version of ONOS" )
+        main.step( "Git checkout and pull " + gitBranch )
         if PULLCODE:
-            main.step( "Git checkout and pull " + gitBranch )
             main.ONOSbench.gitCheckout( gitBranch )
             gitPullResult = main.ONOSbench.gitPull()
             # values of 1 or 3 are good
             utilities.assert_lesser( expect=0, actual=gitPullResult,
                                       onpass="Git pull successful",
                                       onfail="Git pull failed" )
+        main.ONOSbench.getVersion( report=True )
 
-            main.step( "Using mvn clean and install" )
+        main.step( "Using mvn clean install" )
+        cleanInstallResult = main.TRUE
+        if PULLCODE and gitPullResult == main.TRUE:
             cleanInstallResult = main.ONOSbench.cleanInstall()
-            utilities.assert_equals( expect=main.TRUE,
-                                     actual=cleanInstallResult,
-                                     onpass="MCI successful",
-                                     onfail="MCI failed" )
         else:
             main.log.warn( "Did not pull new code so skipping mvn " +
                            "clean install" )
-        main.ONOSbench.getVersion( report=True )
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=cleanInstallResult,
+                                 onpass="MCI successful",
+                                 onfail="MCI failed" )
         # GRAPHS
         # NOTE: important params here:
         #       job = name of Jenkins job
         #       Plot Name = Plot-HA, only can be used if multiple plots
         #       index = The number of the graph under plot name
         job = "HAClusterRestart"
+        plotName = "Plot-HA"
         graphs = '<ac:structured-macro ac:name="html">\n'
         graphs += '<ac:plain-text-body><![CDATA[\n'
         graphs += '<iframe src="https://onos-jenkins.onlab.us/job/' + job +\
-                  '/plot/getPlot?index=0&width=500&height=300"' +\
+                  '/plot/' + plotName + '/getPlot?index=0' +\
+                  '&width=500&height=300"' +\
                   'noborder="0" width="500" height="300" scrolling="yes" ' +\
                   'seamless="seamless"></iframe>\n'
         graphs += ']]></ac:plain-text-body>\n'
@@ -173,7 +185,7 @@ class HATestClusterRestart:
             for node in nodes:
                 started = main.ONOSbench.isup( node.ip_address )
                 if not started:
-                    main.log.report( node.name + " didn't start!" )
+                    main.log.error( node.name + " didn't start!" )
                     main.ONOSbench.onosStop( node.ip_address )
                     main.ONOSbench.onosStart( node.ip_address )
                 onosIsupResult = onosIsupResult and started
@@ -200,12 +212,13 @@ class HATestClusterRestart:
                                  onpass="ONOS cli startup successful",
                                  onfail="ONOS cli startup failed" )
 
-        main.step( "Start Packet Capture MN" )
-        main.Mininet2.startTcpdump(
-            str( main.params[ 'MNtcpdump' ][ 'folder' ] ) + str( main.TEST )
-            + "-MN.pcap",
-            intf=main.params[ 'MNtcpdump' ][ 'intf' ],
-            port=main.params[ 'MNtcpdump' ][ 'port' ] )
+        if main.params[ 'tcpdump' ].lower() == "true":
+            main.step( "Start Packet Capture MN" )
+            main.Mininet2.startTcpdump(
+                str( main.params[ 'MNtcpdump' ][ 'folder' ] ) + str( main.TEST )
+                + "-MN.pcap",
+                intf=main.params[ 'MNtcpdump' ][ 'intf' ],
+                port=main.params[ 'MNtcpdump' ][ 'port' ] )
 
         main.step( "App Ids check" )
         appCheck = main.TRUE
@@ -227,16 +240,14 @@ class HATestClusterRestart:
                                  onpass="App Ids seem to be correct",
                                  onfail="Something is wrong with app Ids" )
 
-        case1Result = ( cleanInstallResult and packageResult and
-                        cellResult and verifyResult and onosInstallResult
-                        and onosIsupResult and cliResults )
-        if case1Result == main.FALSE:
+        if cliResults == main.FALSE:
+            main.log.error( "Failed to start ONOS, stopping test" )
             main.cleanup()
             main.exit()
 
     def CASE2( self, main ):
         """
-        Assign mastership to controllers
+        Assign devices to controllers
         """
         import re
         import time
@@ -253,8 +264,10 @@ class HATestClusterRestart:
         assert ONOS6Port, "ONOS6Port not defined"
         assert ONOS7Port, "ONOS7Port not defined"
 
-        main.log.report( "Assigning switches to controllers" )
-        main.case( "Assigning Controllers" )
+        main.case( "Assigning devices to controllers" )
+        main.caseExplaination = "Assign switches to ONOS using 'ovs-vsctl' " +\
+                                "and check that an ONOS node becomes the " +\
+                                "master of the device."
         main.step( "Assign switches to controllers" )
 
         # TODO: rewrite this function to take lists of ips and ports?
@@ -286,14 +299,36 @@ class HATestClusterRestart:
                                     "not in the list of controllers s" +
                                     str( i ) + " is connecting to." )
                     mastershipCheck = main.FALSE
-        if mastershipCheck == main.TRUE:
-            main.log.report( "Switch mastership assigned correctly" )
         utilities.assert_equals(
             expect=main.TRUE,
             actual=mastershipCheck,
             onpass="Switch mastership assigned correctly",
             onfail="Switches not assigned correctly to controllers" )
 
+    def CASE21( self, main ):
+        """
+        Assign mastership to controllers
+        """
+        import re
+        import time
+        assert numControllers, "numControllers not defined"
+        assert main, "main not defined"
+        assert utilities.assert_equals, "utilities.assert_equals not defined"
+        assert CLIs, "CLIs not defined"
+        assert nodes, "nodes not defined"
+        assert ONOS1Port, "ONOS1Port not defined"
+        assert ONOS2Port, "ONOS2Port not defined"
+        assert ONOS3Port, "ONOS3Port not defined"
+        assert ONOS4Port, "ONOS4Port not defined"
+        assert ONOS5Port, "ONOS5Port not defined"
+        assert ONOS6Port, "ONOS6Port not defined"
+        assert ONOS7Port, "ONOS7Port not defined"
+
+        main.case( "Assigning Controller roles for switches" )
+        main.caseExplaination = "Check that ONOS is connected to each " +\
+                                "device. Then manually assign" +\
+                                " mastership to specific ONOS nodes using" +\
+                                " 'device-role'"
         main.step( "Assign mastership of switches to specific controllers" )
         # Manually assign mastership to the controller we want
         roleCall = main.TRUE
@@ -338,6 +373,7 @@ class HATestClusterRestart:
                 else:
                     main.log.error( "You didn't write an else statement for " +
                                     "switch s" + str( i ) )
+                    roleCall = main.FALSE
                 # Assign switch
                 assert deviceId, "No device id for s" + str( i ) + " in ONOS"
                 # TODO: make this controller dynamic
@@ -378,18 +414,11 @@ class HATestClusterRestart:
             onpass="Switches were successfully reassigned to designated " +
                    "controller",
             onfail="Switches were not successfully reassigned" )
-        mastershipCheck = mastershipCheck and roleCall and roleCheck
-        utilities.assert_equals( expect=main.TRUE, actual=mastershipCheck,
-                                 onpass="Switch mastership correctly assigned",
-                                 onfail="Error in (re)assigning switch" +
-                                 " mastership" )
 
     def CASE3( self, main ):
         """
         Assign intents
         """
-        # FIXME: we must reinstall intents until we have a persistant
-        # datastore!
         import time
         import json
         assert numControllers, "numControllers not defined"
@@ -397,11 +426,24 @@ class HATestClusterRestart:
         assert utilities.assert_equals, "utilities.assert_equals not defined"
         assert CLIs, "CLIs not defined"
         assert nodes, "nodes not defined"
-        main.log.report( "Adding host intents" )
+        try:
+            labels
+        except NameError:
+            main.log.error( "labels not defined, setting to []" )
+            labels = []
+        try:
+            data
+        except NameError:
+            main.log.error( "data not defined, setting to []" )
+            data = []
+        # NOTE: we must reinstall intents until we have a persistant intent
+        #        datastore!
         main.case( "Adding host Intents" )
-
-        main.step( "Discovering Hosts( Via pingall for now )" )
-        # FIXME: Once we have a host discovery mechanism, use that instead
+        main.caseExplaination = "Discover hosts by using pingall then " +\
+                                "assign predetermined host-to-host intents." +\
+                                " After installation, check that the intent" +\
+                                " is distributed to all nodes and the state" +\
+                                " is INSTALLED"
 
         # install onos-app-fwd
         main.step( "Install reactive forwarding app" )
@@ -410,6 +452,7 @@ class HATestClusterRestart:
                                  onpass="Install fwd successful",
                                  onfail="Install fwd failed" )
 
+        main.step( "Check app ids" )
         appCheck = main.TRUE
         threads = []
         for i in range( numControllers ):
@@ -429,6 +472,8 @@ class HATestClusterRestart:
                                  onpass="App Ids seem to be correct",
                                  onfail="Something is wrong with app Ids" )
 
+        main.step( "Discovering Hosts( Via pingall for now )" )
+        # FIXME: Once we have a host discovery mechanism, use that instead
         # REACTIVE FWD test
         pingResult = main.FALSE
         for i in range(2):  # Retry if pingall fails first time
@@ -451,8 +496,10 @@ class HATestClusterRestart:
         utilities.assert_equals( expect=main.TRUE, actual=uninstallResult,
                                  onpass="Uninstall fwd successful",
                                  onfail="Uninstall fwd failed" )
-        main.step( "Check app ids check" )
+
+        main.step( "Check app ids" )
         threads = []
+        appCheck2 = main.TRUE
         for i in range( numControllers ):
             t = main.Thread( target=CLIs[i].appToIDCheck,
                              name="appToIDCheck-" + str( i ),
@@ -462,15 +509,15 @@ class HATestClusterRestart:
 
         for t in threads:
             t.join()
-            appCheck = appCheck and t.result
-        if appCheck != main.TRUE:
+            appCheck2 = appCheck2 and t.result
+        if appCheck2 != main.TRUE:
             main.log.warn( CLIs[0].apps() )
             main.log.warn( CLIs[0].appIDs() )
-        utilities.assert_equals( expect=main.TRUE, actual=appCheck,
+        utilities.assert_equals( expect=main.TRUE, actual=appCheck2,
                                  onpass="App Ids seem to be correct",
                                  onfail="Something is wrong with app Ids" )
 
-        main.step( "Add host intents" )
+        main.step( "Add host intents via cli" )
         intentIds = []
         # TODO:  move the host numbers to params
         #        Maybe look at all the paths we ping?
@@ -513,7 +560,10 @@ class HATestClusterRestart:
                 except ( ValueError, TypeError ):
                     main.log.warn( repr( hosts ) )
                 hostResult = main.FALSE
-        # FIXME: DEBUG
+        utilities.assert_equals( expect=main.TRUE, actual=hostResult,
+                                 onpass="Found a host id for each host",
+                                 onfail="Error looking up host ids" )
+
         intentStart = time.time()
         onosIds = main.ONOScli1.getAllIntentsId()
         main.log.info( "Submitted intents: " + str( intentIds ) )
@@ -523,7 +573,6 @@ class HATestClusterRestart:
                 pass  # intent submitted is in onos
             else:
                 intentAddResult = False
-        # FIXME: DEBUG
         if intentAddResult:
             intentStop = time.time()
         else:
@@ -557,6 +606,7 @@ class HATestClusterRestart:
                            ( str( count ), str( i ), str( s ) ) )
         leaders = main.ONOScli1.leaders()
         try:
+            missing = False
             if leaders:
                 parsedLeaders = json.loads( leaders )
                 main.log.warn( json.dumps( parsedLeaders,
@@ -573,11 +623,19 @@ class HATestClusterRestart:
                     if topic not in ONOStopics:
                         main.log.error( "Error: " + topic +
                                         " not in leaders" )
+                        missing = True
             else:
                 main.log.error( "leaders() returned None" )
         except ( ValueError, TypeError ):
             main.log.exception( "Error parsing leaders" )
             main.log.error( repr( leaders ) )
+        # Check all nodes
+        if missing:
+            for node in CLIs:
+                response = node.leaders( jsonFormat=False)
+                main.log.warn( str( node.name ) + " leaders output: \n" +
+                               str( response ) )
+
         partitions = main.ONOScli1.partitions()
         try:
             if partitions :
@@ -608,13 +666,11 @@ class HATestClusterRestart:
             main.log.exception( "Error parsing pending map" )
             main.log.error( repr( pendingMap ) )
 
-        intentAddResult = bool( pingResult and hostResult and intentAddResult
-                                and not missingIntents and installedCheck )
-        utilities.assert_equals(
-            expect=True,
-            actual=intentAddResult,
-            onpass="Pushed host intents to ONOS",
-            onfail="Error in pushing host intents to ONOS" )
+        intentAddResult = bool( intentAddResult and not missingIntents and
+                                installedCheck )
+        if not intentAddResult:
+            main.log.error( "Error in pushing host intents to ONOS" )
+
         main.step( "Intent Anti-Entropy dispersion" )
         for i in range(100):
             correct = True
@@ -626,7 +682,17 @@ class HATestClusterRestart:
                 main.log.debug( "Intents in " + cli.name + ": " +
                                 str( sorted( onosIds ) ) )
                 if sorted( ids ) != sorted( intentIds ):
+                    main.log.debug( "Set of intent IDs doesn't match" )
                     correct = False
+                    break
+                else:
+                    intents = json.loads( cli.intents() )
+                    for intent in intents:
+                        if intent[ 'state' ] != "INSTALLED":
+                            main.log.warn( "Intent " + intent[ 'id' ] +
+                                           " is " + intent[ 'state' ] )
+                            correct = False
+                            break
             if correct:
                 break
             else:
@@ -637,6 +703,17 @@ class HATestClusterRestart:
         gossipTime = intentStop - intentStart
         main.log.info( "It took about " + str( gossipTime ) +
                         " seconds for all intents to appear in each node" )
+        append = False
+        title = "Gossip Intents"
+        count = 1
+        while append is False:
+            curTitle = title + str( count )
+            if curTitle not in labels:
+                labels.append( curTitle )
+                data.append( str( gossipTime ) )
+                append = True
+            else:
+                count += 1
         # FIXME: make this time configurable/calculate based off of number of
         #        nodes and gossip rounds
         utilities.assert_greater_equals(
@@ -682,6 +759,7 @@ class HATestClusterRestart:
                                ( str( count ), str( i ), str( s ) ) )
             leaders = main.ONOScli1.leaders()
             try:
+                missing = False
                 if leaders:
                     parsedLeaders = json.loads( leaders )
                     main.log.warn( json.dumps( parsedLeaders,
@@ -701,11 +779,19 @@ class HATestClusterRestart:
                         if topic not in ONOStopics:
                             main.log.error( "Error: " + topic +
                                             " not in leaders" )
+                            missing = True
                 else:
                     main.log.error( "leaders() returned None" )
             except ( ValueError, TypeError ):
                 main.log.exception( "Error parsing leaders" )
                 main.log.error( repr( leaders ) )
+            # Check all nodes
+            if missing:
+                for node in CLIs:
+                    response = node.leaders( jsonFormat=False)
+                    main.log.warn( str( node.name ) + " leaders output: \n" +
+                                   str( response ) )
+
             partitions = main.ONOScli1.partitions()
             try:
                 if partitions :
@@ -747,9 +833,11 @@ class HATestClusterRestart:
         assert utilities.assert_equals, "utilities.assert_equals not defined"
         assert CLIs, "CLIs not defined"
         assert nodes, "nodes not defined"
-        description = " Ping across added host intents"
-        main.log.report( description )
-        main.case( description )
+        main.case( "Verify connectivity by sendind traffic across Intents" )
+        main.caseExplaination = "Ping across added host intents to check " +\
+                                "functionality and check the state of " +\
+                                "the intent"
+        main.step( "Ping across added host intents" )
         PingResult = main.TRUE
         for i in range( 8, 18 ):
             ping = main.Mininet1.pingHost( src="h" + str( i ),
@@ -762,7 +850,7 @@ class HATestClusterRestart:
                 main.log.info( "Ping test passed!" )
                 # Don't set PingResult or you'd override failures
         if PingResult == main.FALSE:
-            main.log.report(
+            main.log.error(
                 "Intents have not been installed correctly, pings failed." )
             # TODO: pretty print
             main.log.warn( "ONOS1 intents: " )
@@ -774,22 +862,21 @@ class HATestClusterRestart:
                                            separators=( ',', ': ' ) ) )
             except ( ValueError, TypeError ):
                 main.log.warn( repr( tmpIntents ) )
-        if PingResult == main.TRUE:
-            main.log.report(
-                "Intents have been installed correctly and verified by pings" )
         utilities.assert_equals(
             expect=main.TRUE,
             actual=PingResult,
             onpass="Intents have been installed correctly and pings work",
             onfail="Intents have not been installed correctly, pings failed." )
 
-        installedCheck = True
-        if PingResult is not main.TRUE:
+        main.step( "Check Intent state" )
+        installedCheck = False
+        loopCount = 0
+        while not installedCheck and loopCount < 40:
+            installedCheck = True
             # Print the intent states
             intents = main.ONOScli1.intents()
             intentStates = []
             main.log.info( "%-6s%-15s%-15s" % ( 'Count', 'ID', 'State' ) )
-            count = 0
             # Iter through intents of a node
             try:
                 for intent in json.loads( intents ):
@@ -800,66 +887,95 @@ class HATestClusterRestart:
                     intentStates.append( ( intentId, state ) )
             except ( ValueError, TypeError ):
                 main.log.exception( "Error parsing intents." )
+            # Print states
             intentStates.sort()
             for i, s in intentStates:
                 count += 1
                 main.log.info( "%-6s%-15s%-15s" %
                                ( str( count ), str( i ), str( s ) ) )
-            leaders = main.ONOScli1.leaders()
-            try:
-                if leaders:
-                    parsedLeaders = json.loads( leaders )
-                    main.log.warn( json.dumps( parsedLeaders,
-                                               sort_keys=True,
-                                               indent=4,
-                                               separators=( ',', ': ' ) ) )
-                    # check for all intent partitions
-                    # check for election
-                    topics = []
-                    for i in range( 14 ):
-                        topics.append( "intent-partition-" + str( i ) )
-                    # FIXME: this should only be after we start the app
-                    topics.append( "org.onosproject.election" )
-                    main.log.debug( topics )
-                    ONOStopics = [ j['topic'] for j in parsedLeaders ]
-                    for topic in topics:
-                        if topic not in ONOStopics:
-                            main.log.error( "Error: " + topic +
-                                            " not in leaders" )
-                else:
-                    main.log.error( "leaders() returned None" )
-            except ( ValueError, TypeError ):
-                main.log.exception( "Error parsing leaders" )
-                main.log.error( repr( leaders ) )
-            partitions = main.ONOScli1.partitions()
-            try:
-                if partitions :
-                    parsedPartitions = json.loads( partitions )
-                    main.log.warn( json.dumps( parsedPartitions,
-                                               sort_keys=True,
-                                               indent=4,
-                                               separators=( ',', ': ' ) ) )
-                    # TODO check for a leader in all paritions
-                    # TODO check for consistency among nodes
-                else:
-                    main.log.error( "partitions() returned None" )
-            except ( ValueError, TypeError ):
-                main.log.exception( "Error parsing partitions" )
-                main.log.error( repr( partitions ) )
-            pendingMap = main.ONOScli1.pendingMap()
-            try:
-                if pendingMap :
-                    parsedPending = json.loads( pendingMap )
-                    main.log.warn( json.dumps( parsedPending,
-                                               sort_keys=True,
-                                               indent=4,
-                                               separators=( ',', ': ' ) ) )
-                    # TODO check something here?
-                else:
-                    main.log.error( "pendingMap() returned None" )
-            except ( ValueError, TypeError ):
-                main.log.exception( "Error parsing pending map" )
-                main.log.error( repr( pendingMap ) )
+            if not installedCheck:
+                time.sleep( 1 )
+                loopCount += 1
+        utilities.assert_equals( expect=True, actual=installedCheck,
+                                 onpass="Intents are all INSTALLED",
+                                 onfail="Intents are not all in " +
+                                        "INSTALLED state" )
+
+        main.step( "Check leadership of topics" )
+        leaders = main.ONOScli1.leaders()
+        topicCheck = main.TRUE
+        try:
+            if leaders:
+                parsedLeaders = json.loads( leaders )
+                main.log.warn( json.dumps( parsedLeaders,
+                                           sort_keys=True,
+                                           indent=4,
+                                           separators=( ',', ': ' ) ) )
+                # check for all intent partitions
+                # check for election
+                # TODO: Look at Devices as topics now that it uses this system
+                topics = []
+                for i in range( 14 ):
+                    topics.append( "intent-partition-" + str( i ) )
+                # FIXME: this should only be after we start the app
+                # FIXME: topics.append( "org.onosproject.election" )
+                # Print leaders output
+                main.log.debug( topics )
+                ONOStopics = [ j['topic'] for j in parsedLeaders ]
+                for topic in topics:
+                    if topic not in ONOStopics:
+                        main.log.error( "Error: " + topic +
+                                        " not in leaders" )
+                        topicCheck = main.FALSE
+            else:
+                main.log.error( "leaders() returned None" )
+                topicCheck = main.FALSE
+        except ( ValueError, TypeError ):
+            topicCheck = main.FALSE
+            main.log.exception( "Error parsing leaders" )
+            main.log.error( repr( leaders ) )
+            # TODO: Check for a leader of these topics
+        # Check all nodes
+        if topicCheck:
+            for node in CLIs:
+                response = node.leaders( jsonFormat=False)
+                main.log.warn( str( node.name ) + " leaders output: \n" +
+                               str( response ) )
+
+        utilities.assert_equals( expect=main.TRUE, actual=topicCheck,
+                                 onpass="intent Partitions is in leaders",
+                                 onfail="Some topics were lost " )
+        # Print partitions
+        partitions = main.ONOScli1.partitions()
+        try:
+            if partitions :
+                parsedPartitions = json.loads( partitions )
+                main.log.warn( json.dumps( parsedPartitions,
+                                           sort_keys=True,
+                                           indent=4,
+                                           separators=( ',', ': ' ) ) )
+                # TODO check for a leader in all paritions
+                # TODO check for consistency among nodes
+            else:
+                main.log.error( "partitions() returned None" )
+        except ( ValueError, TypeError ):
+            main.log.exception( "Error parsing partitions" )
+            main.log.error( repr( partitions ) )
+        # Print Pending Map
+        pendingMap = main.ONOScli1.pendingMap()
+        try:
+            if pendingMap :
+                parsedPending = json.loads( pendingMap )
+                main.log.warn( json.dumps( parsedPending,
+                                           sort_keys=True,
+                                           indent=4,
+                                           separators=( ',', ': ' ) ) )
+                # TODO check something here?
+            else:
+                main.log.error( "pendingMap() returned None" )
+        except ( ValueError, TypeError ):
+            main.log.exception( "Error parsing pending map" )
+            main.log.error( repr( pendingMap ) )
 
         if not installedCheck:
             main.log.info( "Waiting 60 seconds to see if the state of " +
@@ -887,6 +1003,7 @@ class HATestClusterRestart:
                                ( str( count ), str( i ), str( s ) ) )
             leaders = main.ONOScli1.leaders()
             try:
+                missing = False
                 if leaders:
                     parsedLeaders = json.loads( leaders )
                     main.log.warn( json.dumps( parsedLeaders,
@@ -906,11 +1023,18 @@ class HATestClusterRestart:
                         if topic not in ONOStopics:
                             main.log.error( "Error: " + topic +
                                             " not in leaders" )
+                            missing = True
                 else:
                     main.log.error( "leaders() returned None" )
             except ( ValueError, TypeError ):
                 main.log.exception( "Error parsing leaders" )
                 main.log.error( repr( leaders ) )
+            if missing:
+                for node in CLIs:
+                    response = node.leaders( jsonFormat=False)
+                    main.log.warn( str( node.name ) + " leaders output: \n" +
+                                   str( response ) )
+
             partitions = main.ONOScli1.partitions()
             try:
                 if partitions :
@@ -940,7 +1064,39 @@ class HATestClusterRestart:
             except ( ValueError, TypeError ):
                 main.log.exception( "Error parsing pending map" )
                 main.log.error( repr( pendingMap ) )
-            main.log.debug( CLIs[0].flows( jsonFormat=False ) )
+        # Print flowrules
+        main.log.debug( CLIs[0].flows( jsonFormat=False ) )
+        main.step( "Wait a minute then ping again" )
+        # the wait is above
+        PingResult = main.TRUE
+        for i in range( 8, 18 ):
+            ping = main.Mininet1.pingHost( src="h" + str( i ),
+                                           target="h" + str( i + 10 ) )
+            PingResult = PingResult and ping
+            if ping == main.FALSE:
+                main.log.warn( "Ping failed between h" + str( i ) +
+                               " and h" + str( i + 10 ) )
+            elif ping == main.TRUE:
+                main.log.info( "Ping test passed!" )
+                # Don't set PingResult or you'd override failures
+        if PingResult == main.FALSE:
+            main.log.error(
+                "Intents have not been installed correctly, pings failed." )
+            # TODO: pretty print
+            main.log.warn( "ONOS1 intents: " )
+            try:
+                tmpIntents = main.ONOScli1.intents()
+                main.log.warn( json.dumps( json.loads( tmpIntents ),
+                                           sort_keys=True,
+                                           indent=4,
+                                           separators=( ',', ': ' ) ) )
+            except ( ValueError, TypeError ):
+                main.log.warn( repr( tmpIntents ) )
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=PingResult,
+            onpass="Intents have been installed correctly and pings work",
+            onfail="Intents have not been installed correctly, pings failed." )
 
     def CASE5( self, main ):
         """
@@ -956,7 +1112,6 @@ class HATestClusterRestart:
         # assumes that sts is already in you PYTHONPATH
         from sts.topology.teston_topology import TestONTopology
 
-        main.log.report( "Setting up and gathering data for current state" )
         main.case( "Setting up and gathering data for current state" )
         # The general idea for this test case is to pull the state of
         # ( intents,flows, topology,... ) from each ONOS node
@@ -1004,7 +1159,7 @@ class HATestClusterRestart:
 
         for i in range( numControllers ):
             if not ONOSMastership[i] or "Error" in ONOSMastership[i]:
-                main.log.report( "Error in getting ONOS" + str( i + 1 ) +
+                main.log.error( "Error in getting ONOS" + str( i + 1 ) +
                                  " roles" )
                 main.log.warn(
                     "ONOS" + str( i + 1 ) + " mastership response: " +
@@ -1018,7 +1173,7 @@ class HATestClusterRestart:
 
         main.step( "Check for consistency in roles from each controller" )
         if all([ i == ONOSMastership[ 0 ] for i in ONOSMastership ] ):
-            main.log.report(
+            main.log.info(
                 "Switch roles are consistent across all ONOS nodes" )
         else:
             consistentMastership = False
@@ -1066,7 +1221,7 @@ class HATestClusterRestart:
 
         for i in range( numControllers ):
             if not ONOSIntents[ i ] or "Error" in ONOSIntents[ i ]:
-                main.log.report( "Error in getting ONOS" + str( i + 1 ) +
+                main.log.error( "Error in getting ONOS" + str( i + 1 ) +
                                  " intents" )
                 main.log.warn( "ONOS" + str( i + 1 ) + " intents response: " +
                                repr( ONOSIntents[ i ] ) )
@@ -1079,11 +1234,11 @@ class HATestClusterRestart:
 
         main.step( "Check for consistency in Intents from each controller" )
         if all([ sorted( i ) == sorted( ONOSIntents[ 0 ] ) for i in ONOSIntents ] ):
-            main.log.report( "Intents are consistent across all ONOS " +
+            main.log.info( "Intents are consistent across all ONOS " +
                              "nodes" )
         else:
             consistentIntents = False
-            main.log.report( "Intents not consistent" )
+            main.log.error( "Intents not consistent" )
         utilities.assert_equals(
             expect=True,
             actual=consistentIntents,
@@ -1167,7 +1322,7 @@ class HATestClusterRestart:
         for i in range( numControllers ):
             num = str( i + 1 )
             if not ONOSFlows[ i ] or "Error" in ONOSFlows[ i ]:
-                main.log.report( "Error in getting ONOS" + num + " flows" )
+                main.log.error( "Error in getting ONOS" + num + " flows" )
                 main.log.warn( "ONOS" + num + " flows response: " +
                                repr( ONOSFlows[ i ] ) )
                 flowsResults = False
@@ -1191,7 +1346,7 @@ class HATestClusterRestart:
         main.step( "Check for consistency in Flows from each controller" )
         tmp = [ len( i ) == len( ONOSFlowsJson[ 0 ] ) for i in ONOSFlowsJson ]
         if all( tmp ):
-            main.log.report( "Flow count is consistent across all ONOS nodes" )
+            main.log.info( "Flow count is consistent across all ONOS nodes" )
         else:
             consistentFlows = False
         utilities.assert_equals(
@@ -1354,14 +1509,14 @@ class HATestClusterRestart:
                 if hosts[ controller ] == hosts[ 0 ]:
                     continue
                 else:  # hosts not consistent
-                    main.log.report( "hosts from ONOS" +
+                    main.log.error( "hosts from ONOS" +
                                      controllerStr +
                                      " is inconsistent with ONOS1" )
                     main.log.warn( repr( hosts[ controller ] ) )
                     consistentHostsResult = main.FALSE
 
             else:
-                main.log.report( "Error in getting ONOS hosts from ONOS" +
+                main.log.error( "Error in getting ONOS hosts from ONOS" +
                                  controllerStr )
                 consistentHostsResult = main.FALSE
                 main.log.warn( "ONOS" + controllerStr +
@@ -1378,7 +1533,7 @@ class HATestClusterRestart:
         for controller in range( 0, len( hosts ) ):
             controllerStr = str( controller + 1 )
             for host in hosts[ controller ]:
-                if not host.get( 'ips', [ ] ):
+                if not host.get( 'ipAddresses', [ ] ):
                     main.log.error( "DEBUG:Error with host ips on controller" +
                                     controllerStr + ": " + str( host ) )
                     ipResult = main.FALSE
@@ -1397,12 +1552,12 @@ class HATestClusterRestart:
                 if clusters[ controller ] == clusters[ 0 ]:
                     continue
                 else:  # clusters not consistent
-                    main.log.report( "clusters from ONOS" + controllerStr +
+                    main.log.error( "clusters from ONOS" + controllerStr +
                                      " is inconsistent with ONOS1" )
                     consistentClustersResult = main.FALSE
 
             else:
-                main.log.report( "Error in getting dataplane clusters " +
+                main.log.error( "Error in getting dataplane clusters " +
                                  "from ONOS" + controllerStr )
                 consistentClustersResult = main.FALSE
                 main.log.warn( "ONOS" + controllerStr +
@@ -1489,12 +1644,24 @@ class HATestClusterRestart:
         """
         The Failure case.
         """
+        import time
         assert numControllers, "numControllers not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
         assert CLIs, "CLIs not defined"
         assert nodes, "nodes not defined"
-
+        try:
+            labels
+        except NameError:
+            main.log.error( "labels not defined, setting to []" )
+            global labels
+            labels = []
+        try:
+            data
+        except NameError:
+            main.log.error( "data not defined, setting to []" )
+            global data
+            data = []
         # Reset non-persistent variables
         try:
             iCounterValue = 0
@@ -1503,8 +1670,10 @@ class HATestClusterRestart:
             iCounterValue = 0
 
         main.case( "Restart entire ONOS cluster" )
+
         main.step( "Killing ONOS nodes" )
         killResults = main.TRUE
+        killTime = time.time()
         for node in nodes:
             killed = main.ONOSbench.onosKill( node.ip_address )
             killResults = killResults and killed
@@ -1518,7 +1687,7 @@ class HATestClusterRestart:
             for node in nodes:
                 started = main.ONOSbench.isup( node.ip_address )
                 if not started:
-                    main.log.report( node.name + " didn't start!" )
+                    main.log.error( node.name + " didn't start!" )
                 onosIsupResult = onosIsupResult and started
             if onosIsupResult == main.TRUE:
                 break
@@ -1542,6 +1711,31 @@ class HATestClusterRestart:
         utilities.assert_equals( expect=main.TRUE, actual=cliResults,
                                  onpass="ONOS cli started",
                                  onfail="ONOS clis did not restart" )
+
+        # Grab the time of restart so we chan check how long the gossip
+        # protocol has had time to work
+        main.restartTime = time.time() - killTime
+        main.log.debug( "Restart time: " + str( main.restartTime ) )
+        labels.append( "Restart" )
+        data.append( str( main.restartTime ) )
+
+        # FIXME: revisit test plan for election with madan
+        # Rerun for election on restarted nodes
+        runResults = main.TRUE
+        for cli in CLIs:
+            run = CLIs[0].electionTestRun()
+            if run != main.TRUE:
+                main.log.error( "Error running for election on " + cli.name )
+            runResults = runResults and run
+        utilities.assert_equals( expect=main.TRUE, actual=runResults,
+                                 onpass="Reran for election",
+                                 onfail="Failed to rerun for election" )
+
+        # TODO: Make this configurable
+        time.sleep( 60 )
+        main.log.debug( CLIs[0].nodes( jsonFormat=False ) )
+        main.log.debug( CLIs[0].leaders( jsonFormat=False ) )
+        main.log.debug( CLIs[0].partitions( jsonFormat=False ) )
 
     def CASE7( self, main ):
         """
@@ -1594,7 +1788,7 @@ class HATestClusterRestart:
 
         for i in range( numControllers ):
             if not ONOSMastership[i] or "Error" in ONOSMastership[i]:
-                main.log.report( "Error in getting ONOS" + str( i + 1 ) +
+                main.log.error( "Error in getting ONOS" + str( i + 1 ) +
                                  " roles" )
                 main.log.warn(
                     "ONOS" + str( i + 1 ) + " mastership response: " +
@@ -1608,7 +1802,7 @@ class HATestClusterRestart:
 
         main.step( "Check for consistency in roles from each controller" )
         if all([ i == ONOSMastership[ 0 ] for i in ONOSMastership ] ):
-            main.log.report(
+            main.log.info(
                 "Switch roles are consistent across all ONOS nodes" )
         else:
             consistentMastership = False
@@ -1630,6 +1824,7 @@ class HATestClusterRestart:
         elif rolesResults and not consistentMastership:
             mastershipCheck = main.TRUE
 
+        '''
         description2 = "Compare switch roles from before failure"
         main.step( description2 )
         try:
@@ -1655,15 +1850,13 @@ class HATestClusterRestart:
             else:
                 main.log.warn( "Mastership of switch %s changed" % switchDPID )
                 mastershipCheck = main.FALSE
-        if mastershipCheck == main.TRUE:
-            main.log.report( "Mastership of Switches was not changed" )
         utilities.assert_equals(
             expect=main.TRUE,
             actual=mastershipCheck,
             onpass="Mastership of Switches was not changed",
             onfail="Mastership of some switches changed" )
+        '''
         # NOTE: we expect mastership to change on controller failure
-        mastershipCheck = mastershipCheck and consistentMastership
 
         main.step( "Get the intents and compare across all nodes" )
         ONOSIntents = []
@@ -1685,7 +1878,7 @@ class HATestClusterRestart:
 
         for i in range( numControllers ):
             if not ONOSIntents[ i ] or "Error" in ONOSIntents[ i ]:
-                main.log.report( "Error in getting ONOS" + str( i + 1 ) +
+                main.log.error( "Error in getting ONOS" + str( i + 1 ) +
                                  " intents" )
                 main.log.warn( "ONOS" + str( i + 1 ) + " intents response: " +
                                repr( ONOSIntents[ i ] ) )
@@ -1698,7 +1891,7 @@ class HATestClusterRestart:
 
         main.step( "Check for consistency in Intents from each controller" )
         if all([ sorted( i ) == sorted( ONOSIntents[ 0 ] ) for i in ONOSIntents ] ):
-            main.log.report( "Intents are consistent across all ONOS " +
+            main.log.info( "Intents are consistent across all ONOS " +
                              "nodes" )
         else:
             consistentIntents = False
@@ -1766,22 +1959,41 @@ class HATestClusterRestart:
         main.step( "Compare current intents with intents before the failure" )
         # NOTE: this requires case 5 to pass for intentState to be set.
         #      maybe we should stop the test if that fails?
-        sameIntents = main.TRUE
+        sameIntents = main.FALSE
         if intentState and intentState == ONOSIntents[ 0 ]:
             sameIntents = main.TRUE
-            main.log.report( "Intents are consistent with before failure" )
+            main.log.info( "Intents are consistent with before failure" )
         # TODO: possibly the states have changed? we may need to figure out
         #       what the acceptable states are
-        else:
+        elif len( intentState ) == len( ONOSIntents[ 0 ] ):
+            sameIntents = main.TRUE
             try:
-                main.log.warn( "ONOS intents: " )
-                main.log.warn( json.dumps( json.loads( ONOSIntents[ 0 ] ),
-                                           sort_keys=True, indent=4,
-                                           separators=( ',', ': ' ) ) )
+                before = json.loads( intentState )
+                after = json.loads( ONOSIntents[ 0 ] )
+                for intent in before:
+                    if intent not in after:
+                        sameIntents = main.FALSE
+                        main.log.debug( "Intent is not currently in ONOS " +
+                                        "(at least in the same form):" )
+                        main.log.debug( json.dumps( intent ) )
             except ( ValueError, TypeError ):
                 main.log.exception( "Exception printing intents" )
-                main.log.warn( repr( ONOSIntents[0] ) )
-            sameIntents = main.FALSE
+                main.log.debug( repr( ONOSIntents[0] ) )
+                main.log.debug( repr( intentState ) )
+        if sameIntents == main.FALSE:
+            try:
+                main.log.debug( "ONOS intents before: " )
+                main.log.debug( json.dumps( json.loads( intentState ),
+                                            sort_keys=True, indent=4,
+                                            separators=( ',', ': ' ) ) )
+                main.log.debug( "Current ONOS intents: " )
+                main.log.debug( json.dumps( json.loads( ONOSIntents[ 0 ] ),
+                                            sort_keys=True, indent=4,
+                                            separators=( ',', ': ' ) ) )
+            except ( ValueError, TypeError ):
+                main.log.exception( "Exception printing intents" )
+                main.log.debug( repr( ONOSIntents[0] ) )
+                main.log.debug( repr( intentState ) )
         utilities.assert_equals(
             expect=main.TRUE,
             actual=sameIntents,
@@ -1804,16 +2016,14 @@ class HATestClusterRestart:
             if FlowTables == main.FALSE:
                 main.log.info( "Differences in flow table for switch: s" +
                                str( i + 1 ) )
-        if FlowTables == main.TRUE:
-            main.log.report( "No changes were found in the flow tables" )
         utilities.assert_equals(
             expect=main.TRUE,
             actual=FlowTables,
             onpass="No changes were found in the flow tables",
             onfail="Changes were found in the flow tables" )
 
-        main.step( "Check the continuous pings to ensure that no packets " +
-                   "were dropped during component failure" )
+        # main.step( "Check the continuous pings to ensure that no packets " +
+        #            "were dropped during component failure" )
         main.Mininet2.pingKill( main.params[ 'TESTONUSER' ],
                                 main.params[ 'TESTONIP' ] )
         LossInPings = main.FALSE
@@ -1831,12 +2041,13 @@ class HATestClusterRestart:
             main.log.info( "There are multiple mininet process running" )
         elif LossInPings == main.FALSE:
             main.log.info( "No Loss in the pings" )
-            main.log.report( "No loss of dataplane connectivity" )
-        utilities.assert_equals(
-            expect=main.FALSE,
-            actual=LossInPings,
-            onpass="No Loss of connectivity",
-            onfail="Loss of dataplane connectivity detected" )
+            main.log.info( "No loss of dataplane connectivity" )
+        # utilities.assert_equals(
+        #     expect=main.FALSE,
+        #     actual=LossInPings,
+        #     onpass="No Loss of connectivity",
+        #     onfail="Loss of dataplane connectivity detected" )
+
         # NOTE: Since intents are not persisted with IntnentStore,
         #       we expect loss in dataplane connectivity
         LossInPings = main.FALSE
@@ -1849,25 +2060,20 @@ class HATestClusterRestart:
             leaderN = cli.electionTestLeader()
             leaderList.append( leaderN )
             if leaderN == main.FALSE:
-                # error in  response
-                main.log.report( "Something is wrong with " +
+                # error in response
+                main.log.error( "Something is wrong with " +
                                  "electionTestLeader function, check the" +
                                  " error logs" )
                 leaderResult = main.FALSE
             elif leaderN is None:
-                main.log.report( cli.name +
-                                 " shows no leader for the election-app was" +
-                                 " elected after the old one died" )
+                main.log.error( cli.name +
+                                 " shows no leader for the election-app." )
                 leaderResult = main.FALSE
         if len( set( leaderList ) ) != 1:
             leaderResult = main.FALSE
             main.log.error(
                 "Inconsistent view of leader for the election test app" )
             # TODO: print the list
-        if leaderResult:
-            main.log.report( "Leadership election tests passed( consistent " +
-                             "view of leader across listeners and a new " +
-                             "leader was re-elected if applicable )" )
         utilities.assert_equals(
             expect=main.TRUE,
             actual=leaderResult,
@@ -1891,20 +2097,31 @@ class HATestClusterRestart:
         assert CLIs, "CLIs not defined"
         assert nodes, "nodes not defined"
 
-        description = "Compare ONOS Topology view to Mininet topology"
-        main.case( description )
-        main.log.report( description )
+        main.case( "Compare ONOS Topology view to Mininet topology" )
+        main.caseExplaination = "Compare topology objects between Mininet" +\
+                                " and ONOS"
         main.step( "Create TestONTopology object" )
-        ctrls = []
-        for node in nodes:
-            temp = ( node, node.name, node.ip_address, 6633 )
-            ctrls.append( temp )
-        MNTopo = TestONTopology( main.Mininet1, ctrls )
+        try:
+            ctrls = []
+            for node in nodes:
+                temp = ( node, node.name, node.ip_address, 6633 )
+                ctrls.append( temp )
+            MNTopo = TestONTopology( main.Mininet1, ctrls )
+        except Exception:
+            objResult = main.FALSE
+        else:
+            objResult = main.TRUE
+        utilities.assert_equals( expect=main.TRUE, actual=objResult,
+                                 onpass="Created TestONTopology object",
+                                 onfail="Exception while creating " +
+                                        "TestONTopology object" )
 
+        main.step( "Comparing ONOS topology to MN" )
         devicesResults = main.TRUE
         portsResults = main.TRUE
         linksResults = main.TRUE
         hostsResults = main.TRUE
+        hostAttachmentResults = True
         topoResult = main.FALSE
         elapsed = 0
         count = 0
@@ -1949,9 +2166,9 @@ class HATestClusterRestart:
             for controller in range( 0, len( hosts ) ):
                 controllerStr = str( controller + 1 )
                 for host in hosts[ controller ]:
-                    if host is None or host.get( 'ips', [] ) == []:
+                    if host is None or host.get( 'ipAddresses', [] ) == []:
                         main.log.error(
-                            "DEBUG:Error with host ips on controller" +
+                            "DEBUG:Error with host ipAddresses on controller" +
                             controllerStr + ": " + str( host ) )
                         ipResult = main.FALSE
             ports = []
@@ -1993,6 +2210,7 @@ class HATestClusterRestart:
 
             elapsed = time.time() - startTime
             cliTime = time.time() - cliStart
+            print "Elapsed time: " + str( elapsed )
             print "CLI time: " + str( cliTime )
 
             for controller in range( numControllers ):
@@ -2048,88 +2266,188 @@ class HATestClusterRestart:
                                          " hosts exist in Mininet",
                                          onfail="ONOS" + controllerStr +
                                          " hosts don't match Mininet" )
+                # CHECKING HOST ATTACHMENT POINTS
+                hostAttachment = True
+                zeroHosts = False
+                # FIXME: topo-HA/obelisk specific mappings:
+                # key is mac and value is dpid
+                mappings = {}
+                for i in range( 1, 29 ):  # hosts 1 through 28
+                    # set up correct variables:
+                    macId = "00:" * 5 + hex( i ).split( "0x" )[1].upper().zfill(2)
+                    if i == 1:
+                        deviceId = "1000".zfill(16)
+                    elif i == 2:
+                        deviceId = "2000".zfill(16)
+                    elif i == 3:
+                        deviceId = "3000".zfill(16)
+                    elif i == 4:
+                        deviceId = "3004".zfill(16)
+                    elif i == 5:
+                        deviceId = "5000".zfill(16)
+                    elif i == 6:
+                        deviceId = "6000".zfill(16)
+                    elif i == 7:
+                        deviceId = "6007".zfill(16)
+                    elif i >= 8 and i <= 17:
+                        dpid = '3' + str( i ).zfill( 3 )
+                        deviceId = dpid.zfill(16)
+                    elif i >= 18 and i <= 27:
+                        dpid = '6' + str( i ).zfill( 3 )
+                        deviceId = dpid.zfill(16)
+                    elif i == 28:
+                        deviceId = "2800".zfill(16)
+                    mappings[ macId ] = deviceId
+                if hosts[ controller ] or "Error" not in hosts[ controller ]:
+                    if hosts[ controller ] == []:
+                        main.log.warn( "There are no hosts discovered" )
+                        zeroHosts = True
+                    else:
+                        for host in hosts[ controller ]:
+                            mac = None
+                            location = None
+                            device = None
+                            port = None
+                            try:
+                                mac = host.get( 'mac' )
+                                assert mac, "mac field could not be found for this host object"
 
+                                location = host.get( 'location' )
+                                assert location, "location field could not be found for this host object"
+
+                                # Trim the protocol identifier off deviceId
+                                device = str( location.get( 'elementId' ) ).split(':')[1]
+                                assert device, "elementId field could not be found for this host location object"
+
+                                port = location.get( 'port' )
+                                assert port, "port field could not be found for this host location object"
+
+                                # Now check if this matches where they should be
+                                if mac and device and port:
+                                    if str( port ) != "1":
+                                        main.log.error( "The attachment port is incorrect for " +
+                                                        "host " + str( mac ) +
+                                                        ". Expected: 1 Actual: " + str( port) )
+                                        hostAttachment = False
+                                    if device != mappings[ str( mac ) ]:
+                                        main.log.error( "The attachment device is incorrect for " +
+                                                        "host " + str( mac ) +
+                                                        ". Expected: " + mappings[ str( mac ) ] +
+                                                        " Actual: " + device )
+                                        hostAttachment = False
+                                else:
+                                    hostAttachment = False
+                            except AssertionError:
+                                main.log.exception( "Json object not as expected" )
+                                main.log.error( repr( host ) )
+                                hostAttachment = False
+                else:
+                    main.log.error( "No hosts json output or \"Error\"" +
+                                    " in output. hosts = " +
+                                    repr( hosts[ controller ] ) )
+                if zeroHosts:
+                    # TODO: Find a way to know if there should be hosts in a
+                    #       given point of the test
+                    hostAttachment = True
+
+                # END CHECKING HOST ATTACHMENT POINTS
                 devicesResults = devicesResults and currentDevicesResult
                 portsResults = portsResults and currentPortsResult
                 linksResults = linksResults and currentLinksResult
                 hostsResults = hostsResults and currentHostsResult
+                hostAttachmentResults = hostAttachmentResults and hostAttachment
 
-            # Compare json objects for hosts and dataplane clusters
+        # Compare json objects for hosts and dataplane clusters
 
-            # hosts
-            main.step( "Hosts view is consistent across all ONOS nodes" )
-            consistentHostsResult = main.TRUE
-            for controller in range( len( hosts ) ):
-                controllerStr = str( controller + 1 )
-                if "Error" not in hosts[ controller ]:
-                    if hosts[ controller ] == hosts[ 0 ]:
-                        continue
-                    else:  # hosts not consistent
-                        main.log.report( "hosts from ONOS" + controllerStr +
-                                         " is inconsistent with ONOS1" )
-                        main.log.warn( repr( hosts[ controller ] ) )
-                        consistentHostsResult = main.FALSE
-
-                else:
-                    main.log.report( "Error in getting ONOS hosts from ONOS" +
-                                     controllerStr )
+        # hosts
+        main.step( "Hosts view is consistent across all ONOS nodes" )
+        consistentHostsResult = main.TRUE
+        for controller in range( len( hosts ) ):
+            controllerStr = str( controller + 1 )
+            if "Error" not in hosts[ controller ]:
+                if hosts[ controller ] == hosts[ 0 ]:
+                    continue
+                else:  # hosts not consistent
+                    main.log.error( "hosts from ONOS" + controllerStr +
+                                     " is inconsistent with ONOS1" )
+                    main.log.warn( repr( hosts[ controller ] ) )
                     consistentHostsResult = main.FALSE
-                    main.log.warn( "ONOS" + controllerStr +
-                                   " hosts response: " +
-                                   repr( hosts[ controller ] ) )
-            utilities.assert_equals(
-                expect=main.TRUE,
-                actual=consistentHostsResult,
-                onpass="Hosts view is consistent across all ONOS nodes",
-                onfail="ONOS nodes have different views of hosts" )
 
-            # Strongly connected clusters of devices
-            main.step( "Clusters view is consistent across all ONOS nodes" )
-            consistentClustersResult = main.TRUE
-            for controller in range( len( clusters ) ):
-                controllerStr = str( controller + 1 )
-                if "Error" not in clusters[ controller ]:
-                    if clusters[ controller ] == clusters[ 0 ]:
-                        continue
-                    else:  # clusters not consistent
-                        main.log.report( "clusters from ONOS" +
-                                         controllerStr +
-                                         " is inconsistent with ONOS1" )
-                        consistentClustersResult = main.FALSE
+            else:
+                main.log.error( "Error in getting ONOS hosts from ONOS" +
+                                 controllerStr )
+                consistentHostsResult = main.FALSE
+                main.log.warn( "ONOS" + controllerStr +
+                               " hosts response: " +
+                               repr( hosts[ controller ] ) )
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=consistentHostsResult,
+            onpass="Hosts view is consistent across all ONOS nodes",
+            onfail="ONOS nodes have different views of hosts" )
 
-                else:
-                    main.log.report( "Error in getting dataplane clusters " +
-                                     "from ONOS" + controllerStr )
+        main.step( "Hosts information is correct" )
+        hostsResults = hostsResults and ipResult
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=hostsResults,
+            onpass="Host information is correct",
+            onfail="Host information is incorrect" )
+
+        main.step( "Host attachment points to the network" )
+        utilities.assert_equals(
+            expect=True,
+            actual=hostAttachmentResults,
+            onpass="Hosts are correctly attached to the network",
+            onfail="ONOS did not correctly attach hosts to the network" )
+
+        # Strongly connected clusters of devices
+        main.step( "Clusters view is consistent across all ONOS nodes" )
+        consistentClustersResult = main.TRUE
+        for controller in range( len( clusters ) ):
+            controllerStr = str( controller + 1 )
+            if "Error" not in clusters[ controller ]:
+                if clusters[ controller ] == clusters[ 0 ]:
+                    continue
+                else:  # clusters not consistent
+                    main.log.error( "clusters from ONOS" +
+                                     controllerStr +
+                                     " is inconsistent with ONOS1" )
                     consistentClustersResult = main.FALSE
-                    main.log.warn( "ONOS" + controllerStr +
-                                   " clusters response: " +
-                                   repr( clusters[ controller ] ) )
-            utilities.assert_equals(
-                expect=main.TRUE,
-                actual=consistentClustersResult,
-                onpass="Clusters view is consistent across all ONOS nodes",
-                onfail="ONOS nodes have different views of clusters" )
-            # there should always only be one cluster
-            main.step( "Topology view is correct and consistent across all " +
-                       "ONOS nodes" )
-            try:
-                numClusters = len( json.loads( clusters[ 0 ] ) )
-            except ( ValueError, TypeError ):
-                main.log.exception( "Error parsing clusters[0]: " +
-                                    repr( clusters[0] ) )
-            clusterResults = main.FALSE
-            if numClusters == 1:
-                clusterResults = main.TRUE
-            utilities.assert_equals(
-                expect=1,
-                actual=numClusters,
-                onpass="ONOS shows 1 SCC",
-                onfail="ONOS shows " + str( numClusters ) + " SCCs" )
 
-            topoResult = ( devicesResults and portsResults and linksResults
-                           and hostsResults and consistentHostsResult
-                           and consistentClustersResult and clusterResults
-                           and ipResult )
+            else:
+                main.log.error( "Error in getting dataplane clusters " +
+                                 "from ONOS" + controllerStr )
+                consistentClustersResult = main.FALSE
+                main.log.warn( "ONOS" + controllerStr +
+                               " clusters response: " +
+                               repr( clusters[ controller ] ) )
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=consistentClustersResult,
+            onpass="Clusters view is consistent across all ONOS nodes",
+            onfail="ONOS nodes have different views of clusters" )
+
+        main.step( "There is only one SCC" )
+        # there should always only be one cluster
+        try:
+            numClusters = len( json.loads( clusters[ 0 ] ) )
+        except ( ValueError, TypeError ):
+            main.log.exception( "Error parsing clusters[0]: " +
+                                repr( clusters[0] ) )
+        clusterResults = main.FALSE
+        if numClusters == 1:
+            clusterResults = main.TRUE
+        utilities.assert_equals(
+            expect=1,
+            actual=numClusters,
+            onpass="ONOS shows 1 SCC",
+            onfail="ONOS shows " + str( numClusters ) + " SCCs" )
+
+        topoResult = ( devicesResults and portsResults and linksResults
+                       and hostsResults and consistentHostsResult
+                       and consistentClustersResult and clusterResults
+                       and ipResult and hostAttachmentResults )
 
         topoResult = topoResult and int( count <= 2 )
         note = "note it takes about " + str( int( cliTime ) ) + \
@@ -2139,11 +2457,27 @@ class HATestClusterRestart:
             "Very crass estimate for topology discovery/convergence( " +
             str( note ) + " ): " + str( elapsed ) + " seconds, " +
             str( count ) + " tries" )
-        utilities.assert_equals( expect=main.TRUE, actual=topoResult,
-                                 onpass="Topology Check Test successful",
-                                 onfail="Topology Check Test NOT successful" )
-        if topoResult == main.TRUE:
-            main.log.report( "ONOS topology view matches Mininet topology" )
+
+        main.step( "Device information is correct" )
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=devicesResults,
+            onpass="Device information is correct",
+            onfail="Device information is incorrect" )
+
+        main.step( "Port information is correct" )
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=portsResults,
+            onpass="Port information is correct",
+            onfail="Port information is incorrect" )
+
+        main.step( "Links are correct" )
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=linksResults,
+            onpass="Link are correct",
+            onfail="Links are incorrect" )
 
         # FIXME: move this to an ONOS state case
         main.step( "Checking ONOS nodes" )
@@ -2201,7 +2535,6 @@ class HATestClusterRestart:
 
         description = "Turn off a link to ensure that Link Discovery " +\
                       "is working properly"
-        main.log.report( description )
         main.case( description )
 
         main.step( "Kill Link between s3 and s28" )
@@ -2230,7 +2563,6 @@ class HATestClusterRestart:
 
         description = "Restore a link to ensure that Link Discovery is " + \
                       "working properly"
-        main.log.report( description )
         main.case( description )
 
         main.step( "Bring link between s3 and s28 back up" )
@@ -2258,14 +2590,13 @@ class HATestClusterRestart:
         switchSleep = float( main.params[ 'timers' ][ 'SwitchDiscovery' ] )
 
         description = "Killing a switch to ensure it is discovered correctly"
-        main.log.report( description )
         main.case( description )
         switch = main.params[ 'kill' ][ 'switch' ]
         switchDPID = main.params[ 'kill' ][ 'dpid' ]
 
         # TODO: Make this switch parameterizable
         main.step( "Kill " + switch )
-        main.log.report( "Deleting " + switch )
+        main.log.info( "Deleting " + switch )
         main.Mininet1.delSwitch( switch )
         main.log.info( "Waiting " + str( switchSleep ) +
                        " seconds for switch down to be discovered" )
@@ -2304,11 +2635,9 @@ class HATestClusterRestart:
         switchDPID = main.params[ 'kill' ][ 'dpid' ]
         links = main.params[ 'kill' ][ 'links' ].split()
         description = "Adding a switch to ensure it is discovered correctly"
-        main.log.report( description )
         main.case( description )
 
         main.step( "Add back " + switch )
-        main.log.report( "Adding back " + switch )
         main.Mininet1.addSwitch( switch, dpid=switchDPID )
         for peer in links:
             main.Mininet1.addLink( switch, peer )
@@ -2357,9 +2686,7 @@ class HATestClusterRestart:
         colors = { 'cyan': '\033[96m', 'purple': '\033[95m',
                    'blue': '\033[94m', 'green': '\033[92m',
                    'yellow': '\033[93m', 'red': '\033[91m', 'end': '\033[0m' }
-        description = "Test Cleanup"
-        main.log.report( description )
-        main.case( description )
+        main.case( "Test Cleanup" )
         main.step( "Killing tcpdumps" )
         main.Mininet2.stopTcpdump()
 
@@ -2415,10 +2742,18 @@ class HATestClusterRestart:
         for node in nodes:
             print colors[ 'purple' ] + "Checking logs for errors on " + \
                 node.name + ":" + colors[ 'end' ]
-            print main.ONOSbench.checkLogs( node.ip_address )
+            print main.ONOSbench.checkLogs( node.ip_address, restart=True )
 
         main.step( "Packing and rotating pcap archives" )
         os.system( "~/TestON/dependencies/rotate.sh " + str( testname ) )
+
+        try:
+            timerLog = open( main.logdir + "/Timers.csv", 'w')
+            main.log.error( ", ".join( labels ) + "\n" + ", ".join( data ) )
+            timerLog.write( ", ".join( labels ) + "\n" + ", ".join( data ) )
+            timerLog.close()
+        except NameError, e:
+            main.log.exception(e)
 
     def CASE14( self, main ):
         """
@@ -2430,34 +2765,45 @@ class HATestClusterRestart:
         assert CLIs, "CLIs not defined"
         assert nodes, "nodes not defined"
 
-        leaderResult = main.TRUE
         main.case("Start Leadership Election app")
         main.step( "Install leadership election app" )
-        main.ONOScli1.activateApp( "org.onosproject.election" )
+        appResult = main.ONOScli1.activateApp( "org.onosproject.election" )
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=appResult,
+            onpass="Election app installed",
+            onfail="Something went wrong with installing Leadership election" )
+
+        main.step( "Run for election on each node" )
+        leaderResult = main.TRUE
         leaders = []
         for cli in CLIs:
             cli.electionTestRun()
         for cli in CLIs:
             leader = cli.electionTestLeader()
             if leader is None or leader == main.FALSE:
-                main.log.report( cli.name + ": Leader for the election app " +
+                main.log.error( cli.name + ": Leader for the election app " +
                                  "should be an ONOS node, instead got '" +
                                  str( leader ) + "'" )
                 leaderResult = main.FALSE
             leaders.append( leader )
-        if len( set( leaders ) ) != 1:
-            leaderResult = main.FALSE
-            main.log.error( "Results of electionTestLeader is order of CLIs:" +
-                            str( leaders ) )
-        if leaderResult:
-            main.log.report( "Leadership election tests passed( consistent " +
-                             "view of leader across listeners and a leader " +
-                             "was elected )" )
         utilities.assert_equals(
             expect=main.TRUE,
             actual=leaderResult,
-            onpass="Leadership election passed",
-            onfail="Something went wrong with Leadership election" )
+            onpass="Successfully ran for leadership",
+            onfail="Failed to run for leadership" )
+
+        main.step( "Check that each node shows the same leader" )
+        sameLeader = main.TRUE
+        if len( set( leaders ) ) != 1:
+            sameLeader = main.FALSE
+            main.log.error( "Results of electionTestLeader is order of CLIs:" +
+                            str( leaders ) )
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=sameLeader,
+            onpass="Leadership is consistent for the election topic",
+            onfail="Nodes have different leaders" )
 
     def CASE15( self, main ):
         """
@@ -2472,14 +2818,45 @@ class HATestClusterRestart:
 
         leaderResult = main.TRUE
         description = "Check that Leadership Election is still functional"
-        main.log.report( description )
         main.case( description )
+        # NOTE: Need to re-run since being a canidate is not persistant
+        main.step( "Run for election on each node" )
+        leaderResult = main.TRUE
+        leaders = []
+        for cli in CLIs:
+            cli.electionTestRun()
+        for cli in CLIs:
+            leader = cli.electionTestLeader()
+            if leader is None or leader == main.FALSE:
+                main.log.error( cli.name + ": Leader for the election app " +
+                                 "should be an ONOS node, instead got '" +
+                                 str( leader ) + "'" )
+                leaderResult = main.FALSE
+            leaders.append( leader )
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=leaderResult,
+            onpass="Successfully ran for leadership",
+            onfail="Failed to run for leadership" )
+
+        main.step( "Check that each node shows the same leader" )
+        sameLeader = main.TRUE
+        if len( set( leaders ) ) != 1:
+            sameLeader = main.FALSE
+            main.log.error( "Results of electionTestLeader is order of CLIs:" +
+                            str( leaders ) )
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=sameLeader,
+            onpass="Leadership is consistent for the election topic",
+            onfail="Nodes have different leaders" )
+
         main.step( "Find current leader and withdraw" )
         leader = main.ONOScli1.electionTestLeader()
         # do some sanity checking on leader before using it
         withdrawResult = main.FALSE
         if leader is None or leader == main.FALSE:
-            main.log.report(
+            main.log.error(
                 "Leader for the election app should be an ONOS node," +
                 "instead got '" + str( leader ) + "'" )
             leaderResult = main.FALSE
@@ -2495,8 +2872,8 @@ class HATestClusterRestart:
         utilities.assert_equals(
             expect=main.TRUE,
             actual=withdrawResult,
-            onpass="App was withdrawn from election",
-            onfail="App was not withdrawn from election" )
+            onpass="Node was withdrawn from election",
+            onfail="Node was not withdrawn from election" )
 
         main.step( "Make sure new leader is elected" )
         # FIXME: use threads
@@ -2505,14 +2882,14 @@ class HATestClusterRestart:
             leaderN = cli.electionTestLeader()
             leaderList.append( leaderN )
             if leaderN == leader:
-                main.log.report(  cli.name + " still sees " + str( leader ) +
+                main.log.error(  cli.name + " still sees " + str( leader ) +
                                   " as leader after they withdrew" )
                 leaderResult = main.FALSE
             elif leaderN == main.FALSE:
                 # error in  response
                 # TODO: add check for "Command not found:" in the driver, this
                 #       means the app isn't loaded
-                main.log.report( "Something is wrong with " +
+                main.log.error( "Something is wrong with " +
                                  "electionTestLeader function, " +
                                  "check the error logs" )
                 leaderResult = main.FALSE
@@ -2529,17 +2906,12 @@ class HATestClusterRestart:
                            "' as the leader" )
             consistentLeader = main.TRUE
         else:
-            main.log.report(
+            main.log.error(
                 "Inconsistent responses for leader of Election-app:" )
             for n in range( len( leaderList ) ):
-                main.log.report( "ONOS" + str( n + 1 ) + " response: " +
+                main.log.error( "ONOS" + str( n + 1 ) + " response: " +
                                  str( leaderList[ n ] ) )
         leaderResult = leaderResult and consistentLeader
-        if leaderResult:
-            main.log.report( "Leadership election tests passed( consistent " +
-                             "view of leader across listeners and a new " +
-                             "leader was elected when the old leader " +
-                             "resigned )" )
         utilities.assert_equals(
             expect=main.TRUE,
             actual=leaderResult,
@@ -2558,6 +2930,7 @@ class HATestClusterRestart:
             onpass="App re-ran for election",
             onfail="App failed to run for election" )
 
+        main.step( "Leader did not change when old leader re-ran" )
         afterRun = main.ONOScli1.electionTestLeader()
         # verify leader didn't just change
         if afterRun == leaderList[ 0 ]:
@@ -2572,18 +2945,11 @@ class HATestClusterRestart:
             onfail="Something went wrong with Leadership election after " +
                    "the old leader re-ran for election" )
 
-        case15Result = withdrawResult and leaderResult and runResult and\
-                       afterResult
-        utilities.assert_equals(
-            expect=main.TRUE,
-            actual=case15Result,
-            onpass="Leadership election is still functional",
-            onfail="Leadership Election is no longer functional" )
-
     def CASE16( self, main ):
         """
         Install Distributed Primitives app
         """
+        import time
         assert numControllers, "numControllers not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
@@ -2613,11 +2979,13 @@ class HATestClusterRestart:
                                  actual=appResults,
                                  onpass="Primitives app activated",
                                  onfail="Primitives app not activated" )
+        time.sleep( 5 )  # To allow all nodes to activate
 
     def CASE17( self, main ):
         """
         Check for basic functionality with distributed primitives
         """
+        import json
         # Make sure variables are defined/set
         assert numControllers, "numControllers not defined"
         assert main, "main not defined"
@@ -2656,11 +3024,13 @@ class HATestClusterRestart:
         main.step( "Increment and get a default counter on each node" )
         pCounters = []
         threads = []
+        addedPValues = []
         for i in range( numControllers ):
             t = main.Thread( target=CLIs[i].counterTestIncrement,
                              name="counterIncrement-" + str( i ),
                              args=[ pCounterName ] )
             pCounterValue += 1
+            addedPValues.append( pCounterValue )
             threads.append( t )
             t.start()
 
@@ -2669,8 +3039,12 @@ class HATestClusterRestart:
             pCounters.append( t.result )
         # Check that counter incremented numController times
         pCounterResults = True
-        for i in range( numControllers ):
-            pCounterResults and ( i + 1 ) in pCounters
+        for i in addedPValues:
+            tmpResult = i in pCounters
+            pCounterResults = pCounterResults and tmpResult
+            if not tmpResult:
+                main.log.error( str( i ) + " is not in partitioned "
+                                "counter incremented results" )
         utilities.assert_equals( expect=True,
                                  actual=pCounterResults,
                                  onpass="Default counter incremented",
@@ -2679,6 +3053,7 @@ class HATestClusterRestart:
 
         main.step( "Increment and get an in memory counter on each node" )
         iCounters = []
+        addedIValues = []
         threads = []
         for i in range( numControllers ):
             t = main.Thread( target=CLIs[i].counterTestIncrement,
@@ -2686,6 +3061,7 @@ class HATestClusterRestart:
                              args=[ iCounterName ],
                              kwargs={ "inMemory": True } )
             iCounterValue += 1
+            addedIValues.append( iCounterValue )
             threads.append( t )
             t.start()
 
@@ -2694,8 +3070,12 @@ class HATestClusterRestart:
             iCounters.append( t.result )
         # Check that counter incremented numController times
         iCounterResults = True
-        for i in range( numControllers ):
-            iCounterResults and ( i + 1 ) in iCounters
+        for i in addedIValues:
+            tmpResult = i in iCounters
+            iCounterResults = iCounterResults and tmpResult
+            if not tmpResult:
+                main.log.error( str( i ) + " is not in the in-memory "
+                                "counter incremented results" )
         utilities.assert_equals( expect=True,
                                  actual=iCounterResults,
                                  onpass="In memory counter incremented",
@@ -2730,27 +3110,40 @@ class HATestClusterRestart:
         main.step( "Counters we added have the correct values" )
         correctResults = main.TRUE
         for i in range( numControllers ):
-            current = onosCounters[i]
+            current = json.loads( onosCounters[i] )
+            pValue = None
+            iValue = None
             try:
-                pValue = current.get( pCounterName )
-                iValue = current.get( iCounterName )
-                if pValue == pCounterValue:
-                    main.log.info( "Partitioned counter value is correct" )
-                else:
-                    main.log.error( "Partitioned counter value is incorrect," +
-                                    " expected value: " + str( pCounterValue )
-                                    + " current value: " + str( pValue ) )
-                    correctResults = main.FALSE
-                if iValue == iCounterValue:
-                    main.log.info( "In memory counter value is correct" )
-                else:
-                    main.log.error( "In memory counter value is incorrect, " +
-                                    "expected value: " + str( iCounterValue ) +
-                                    " current value: " + str( iValue ) )
-                    correctResults = main.FALSE
+                for database in current:
+                    partitioned = database.get( 'partitionedDatabaseCounters' )
+                    if partitioned:
+                        for value in partitioned:
+                            if value.get( 'name' ) == pCounterName:
+                                pValue = value.get( 'value' )
+                                break
+                    inMemory = database.get( 'inMemoryDatabaseCounters' )
+                    if inMemory:
+                        for value in inMemory:
+                            if value.get( 'name' ) == iCounterName:
+                                iValue = value.get( 'value' )
+                                break
             except AttributeError, e:
                 main.log.error( "ONOS" + str( i + 1 ) + " counters result " +
                                 "is not as expected" )
+                correctResults = main.FALSE
+            if pValue == pCounterValue:
+                main.log.info( "Partitioned counter value is correct" )
+            else:
+                main.log.error( "Partitioned counter value is incorrect," +
+                                " expected value: " + str( pCounterValue )
+                                + " current value: " + str( pValue ) )
+                correctResults = main.FALSE
+            if iValue == iCounterValue:
+                main.log.info( "In memory counter value is correct" )
+            else:
+                main.log.error( "In memory counter value is incorrect, " +
+                                "expected value: " + str( iCounterValue ) +
+                                " current value: " + str( iValue ) )
                 correctResults = main.FALSE
         utilities.assert_equals( expect=main.TRUE,
                                  actual=correctResults,

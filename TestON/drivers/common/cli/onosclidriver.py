@@ -188,7 +188,8 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def startOnosCli( self, ONOSIp, karafTimeout="" ):
+    def startOnosCli( self, ONOSIp, karafTimeout="",
+            commandlineTimeout=10, onosStartTimeout=60 ):
         """
         karafTimeout is an optional argument. karafTimeout value passed
         by user would be used to set the current karaf shell idle timeout.
@@ -206,7 +207,7 @@ class OnosCliDriver( CLI ):
         try:
             self.handle.sendline( "" )
             x = self.handle.expect( [
-                "\$", "onos>" ], timeout=10 )
+                "\$", "onos>" ], commandlineTimeout)
 
             if x == 1:
                 main.log.info( "ONOS cli is already running" )
@@ -216,7 +217,7 @@ class OnosCliDriver( CLI ):
             self.handle.sendline( "onos -w " + str( ONOSIp ) )
             i = self.handle.expect( [
                 "onos>",
-                pexpect.TIMEOUT ], timeout=60 )
+                pexpect.TIMEOUT ], onosStartTimeout )
 
             if i == 0:
                 main.log.info( str( ONOSIp ) + " CLI Started successfully" )
@@ -280,7 +281,14 @@ class OnosCliDriver( CLI ):
                 lvlStr = "--level=" + level
 
             self.handle.sendline( "" )
-            self.handle.expect( "onos>" )
+            i = self.handle.expect( [ "onos>","\$", pexpect.TIMEOUT ] )
+            if i == 1:
+                main.log.error( self.name + ": onos cli session closed." )
+                main.cleanup()
+                main.exit()
+            if i == 2:
+                self.handle.sendline( "" )
+                self.handle.expect( "onos>" )
             self.handle.sendline( "log:log " + lvlStr + " " + cmdStr )
             self.handle.expect( "log:log" )
             self.handle.expect( "onos>" )
@@ -289,7 +297,10 @@ class OnosCliDriver( CLI ):
             if re.search( "Error", response ):
                 return main.FALSE
             return main.TRUE
-
+        except pexpect.TIMEOUT:
+            main.log.exception( self.name + ": TIMEOUT exception found" )
+            main.cleanup()
+            main.exit()
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
@@ -1814,15 +1825,18 @@ class OnosCliDriver( CLI ):
         """
         try:
             tempFlows = json.loads( self.flows() )
+            #print tempFlows[0]
             returnValue = main.TRUE
+
             for device in tempFlows:
                 for flow in device.get( 'flows' ):
                     if flow.get( 'state' ) != 'ADDED' and flow.get( 'state' ) != \
                             'PENDING_ADD':
                         main.log.info( self.name + ": flow Id: " +
-                                       flow.get( 'flowId' ) +
+                                       flow.get( 'groupId' ) +
                                        " | state:" + flow.get( 'state' ) )
                         returnValue = main.FALSE
+
             return returnValue
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
@@ -3129,6 +3143,20 @@ class OnosCliDriver( CLI ):
         try:
             cmdStr = "set-test-add " + str( setName ) + " " + str( values )
             output = self.sendline( cmdStr )
+            try:
+                # TODO: Maybe make this less hardcoded
+                # ConsistentMap Exceptions
+                assert "org.onosproject.store.service" not in output
+                # Node not leader
+                assert "java.lang.IllegalStateException" not in output
+            except AssertionError:
+                main.log.error( "Error in processing 'set-test-add' " +
+                                "command: " + str( output ) )
+                retryTime = 30  # Conservative time, given by Madan
+                main.log.info( "Waiting " + str( retryTime ) +
+                               "seconds before retrying." )
+                time.sleep( retryTime )  # Due to change in mastership
+                output = self.sendline( cmdStr )
             assert "Error executing command" not in output
             positiveMatch = "\[(.*)\] was added to the set " + str( setName )
             negativeMatch = "\[(.*)\] was already in set " + str( setName )
@@ -3140,7 +3168,6 @@ class OnosCliDriver( CLI ):
             else:
                 main.log.error( self.name + ": setTestAdd did not" +
                                 " match expected output" )
-                main.log.debug( self.name + " expected: " + pattern )
                 main.log.debug( self.name + " actual: " + repr( output ) )
                 return main.ERROR
         except AssertionError:
@@ -3184,6 +3211,20 @@ class OnosCliDriver( CLI ):
             else:
                 cmdStr += str( setName ) + " " + str( values )
             output = self.sendline( cmdStr )
+            try:
+                # TODO: Maybe make this less hardcoded
+                # ConsistentMap Exceptions
+                assert "org.onosproject.store.service" not in output
+                # Node not leader
+                assert "java.lang.IllegalStateException" not in output
+            except AssertionError:
+                main.log.error( "Error in processing 'set-test-add' " +
+                                "command: " + str( output ) )
+                retryTime = 30  # Conservative time, given by Madan
+                main.log.info( "Waiting " + str( retryTime ) +
+                               "seconds before retrying." )
+                time.sleep( retryTime )  # Due to change in mastership
+                output = self.sendline( cmdStr )
             assert "Error executing command" not in output
             main.log.info( self.name + ": " + output )
             if clear:
@@ -3269,6 +3310,20 @@ class OnosCliDriver( CLI ):
             cmdStr = "set-test-get "
             cmdStr += setName + " " + values
             output = self.sendline( cmdStr )
+            try:
+                # TODO: Maybe make this less hardcoded
+                # ConsistentMap Exceptions
+                assert "org.onosproject.store.service" not in output
+                # Node not leader
+                assert "java.lang.IllegalStateException" not in output
+            except AssertionError:
+                main.log.error( "Error in processing 'set-test-add' " +
+                                "command: " + str( output ) )
+                retryTime = 30  # Conservative time, given by Madan
+                main.log.info( "Waiting " + str( retryTime ) +
+                               "seconds before retrying." )
+                time.sleep( retryTime )  # Due to change in mastership
+                output = self.sendline( cmdStr )
             assert "Error executing command" not in output
             main.log.info( self.name + ": " + output )
 
@@ -3334,7 +3389,7 @@ class OnosCliDriver( CLI ):
         Required arguments:
             setName - The name of the set to remove from.
         returns:
-            The integer value of the size returned or 
+            The integer value of the size returned or
             None on error
         """
         try:
@@ -3348,6 +3403,20 @@ class OnosCliDriver( CLI ):
             cmdStr = "set-test-get -s "
             cmdStr += setName
             output = self.sendline( cmdStr )
+            try:
+                # TODO: Maybe make this less hardcoded
+                # ConsistentMap Exceptions
+                assert "org.onosproject.store.service" not in output
+                # Node not leader
+                assert "java.lang.IllegalStateException" not in output
+            except AssertionError:
+                main.log.error( "Error in processing 'set-test-add' " +
+                                "command: " + str( output ) )
+                retryTime = 30  # Conservative time, given by Madan
+                main.log.info( "Waiting " + str( retryTime ) +
+                               "seconds before retrying." )
+                time.sleep( retryTime )  # Due to change in mastership
+                output = self.sendline( cmdStr )
             assert "Error executing command" not in output
             main.log.info( self.name + ": " + output )
             match = re.search( pattern, output )
@@ -3386,42 +3455,31 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def counters( self ):
+    def counters( self, jsonFormat=True ):
         """
         Command to list the various counters in the system.
         returns:
-            A dict containing the counters in the system with the counter
-                names being the keys and the value of the counters being the
-                values OR
+            if jsonFormat, a string of the json object returned by the cli
+            command
+            if not jsonFormat, the normal string output of the cli command
             None on error
         """
-        #FIXME: JSON FORMAT
         try:
             counters = {}
             cmdStr = "counters"
+            if jsonFormat:
+                cmdStr += " -j"
             output = self.sendline( cmdStr )
             assert "Error executing command" not in output
             main.log.info( self.name + ": " + output )
-            for line in output.splitlines():
-                match = re.search( "name=(\S+) value=(\d+)", line )
-                if match:
-                    key = match.group( 1 )
-                    value = int( match.group( 2 ) )
-                    counters[key] = value
-                else:
-                    main.log.error( self.name + ": counters did not match " +
-                                    "expected output" )
-                    main.log.debug( self.name + " expected: " + pattern )
-                    main.log.debug( self.name + " actual: " + repr( output ) )
-                    return None
-            return counters
+            return output
         except AssertionError:
             main.log.error( "Error in processing 'counters' command: " +
                             str( output ) )
-            return main.ERROR
+            return None
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
-            return main.ERROR
+            return None
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
@@ -3450,6 +3508,20 @@ class OnosCliDriver( CLI ):
                 cmdStr += "-i "
             cmdStr += counter
             output = self.sendline( cmdStr )
+            try:
+                # TODO: Maybe make this less hardcoded
+                # ConsistentMap Exceptions
+                assert "org.onosproject.store.service" not in output
+                # Node not leader
+                assert "java.lang.IllegalStateException" not in output
+            except AssertionError:
+                main.log.error( "Error in processing 'set-test-add' " +
+                                "command: " + str( output ) )
+                retryTime = 30  # Conservative time, given by Madan
+                main.log.info( "Waiting " + str( retryTime ) +
+                               "seconds before retrying." )
+                time.sleep( retryTime )  # Due to change in mastership
+                output = self.sendline( cmdStr )
             assert "Error executing command" not in output
             main.log.info( self.name + ": " + output )
             pattern = counter + " was incremented to (\d+)"

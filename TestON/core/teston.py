@@ -32,6 +32,7 @@ import __builtin__
 import new
 import xmldict
 import importlib
+import os
 module = new.module("test")
 import openspeak
 global path, drivers_path, core_path, tests_path,logs_path
@@ -78,8 +79,6 @@ class TestON:
         self.testResult = "Summary"
         self.stepName = ""
         self.stepCache = ""
-        # make this into two lists? one for step names, one for results?
-        # this way, the case result could be a true AND of these results
         self.EXPERIMENTAL_MODE = False
         self.test_target = None
         self.lastcommand = None
@@ -164,11 +163,19 @@ class TestON:
         driverClass = getattr(driverModule, driverName)
         driverObject = driverClass()
 
+        try:
+            self.componentDictionary[component]['host'] = os.environ[str( self.componentDictionary[component]['host'])]
+        except KeyError:
+            self.log.info("Missing OC environment variable! Using stored IPs")
+        except Exception as inst:
+            self.log.error("Uncaught exception: " + str(inst))
+
         connect_result = driverObject.connect(user_name = self.componentDictionary[component]['user'] if ('user' in self.componentDictionary[component].keys()) else getpass.getuser(),
                                               ip_address= self.componentDictionary[component]['host'] if ('host' in self.componentDictionary[component].keys()) else 'localhost',
                                               pwd = self.componentDictionary[component]['password'] if ('password' in self.componentDictionary[component].keys()) else 'changeme',
                                               port = self.componentDictionary[component]['port'] if ('port' in self.componentDictionary[component].keys()) else None,
                                               options = driver_options)
+
         if not connect_result:
             self.log.error("Exiting form the test execution because the connecting to the "+component+" component failed.")
             self.exit()
@@ -257,6 +264,8 @@ class TestON:
                     self.log.wiki( "<li>" + line + "  <ac:emoticon ac:name=\"cross\" /></li>\n" )
                 elif re.search( " - No Result$", line ):
                     self.log.wiki( "<li>" + line + "  <ac:emoticon ac:name=\"warning\" /></li>\n" )
+                else:  # Should only be on fail message
+                    self.log.wiki( "<ul><li>" + line + "</li></ul>\n" )
             self.log.wiki( "</ul>" )
             self.log.summary( self.stepCache )
             self.stepCache = ""
@@ -267,27 +276,26 @@ class TestON:
             try :
                 step = stepList[self.stepCount]
                 self.STEPRESULT = self.NORESULT
+                self.onFailMsg = "\t\tNo on fail message given"
                 exec code[testCaseNumber][step] in module.__dict__
                 self.stepCount = self.stepCount + 1
                 if step > 0:
                     self.stepCache += "\t"+str(testCaseNumber)+"."+str(step)+" "+self.stepName+" - "
                     if self.STEPRESULT == self.TRUE:
                         self.stepCache += "PASS\n"
-                        #self.stepCache += "PASS  <ac:emoticon ac:name=\"tick\" /></li>\n"
                     elif self.STEPRESULT == self.FALSE:
                         self.stepCache += "FAIL\n"
-                        #self.stepCache += "FAIL  <ac:emoticon ac:name=\"cross\" /></li>\n"
+                        # TODO: Print the on-fail statement here
+                        self.stepCache += "\t\t" + self.onFailMsg + "\n"
                     else:
                         self.stepCache += "No Result\n"
-                        #self.stepCache += "No Result  <ac:emoticon ac:name=\"warning\" /></li>\n"
                     self.stepResults.append(self.STEPRESULT)
-            except TypeError,e:
-                print "\nException in the following section of code: " +\
-                      str(testCaseNumber) + "." + str(step) + ": " +\
-                      self.stepName
+            except StandardError as e:
+                self.log.exception( "\nException in the following section of" +
+                                    " code: " + str(testCaseNumber) + "." +
+                                    str(step) + ": " + self.stepName )
                 #print code[testCaseNumber][step]
                 self.stepCount = self.stepCount + 1
-                self.log.exception(e)
                 self.logger.updateCaseResults(self)
                 #WIKI results
                 self.log.wiki( "<ul>" )
@@ -298,6 +306,8 @@ class TestON:
                         self.log.wiki( "<li>" + line + "  <ac:emoticon ac:name=\"cross\" /></li>\n" )
                     elif re.search( " - No Result$", line ):
                         self.log.wiki( "<li>" + line + "  <ac:emoticon ac:name=\"warning\" /></li>\n" )
+                    else:  # Should only be on fail message
+                        self.log.wiki( "<ul><li>" + line + "</li></ul>\n" )
                 self.log.wiki( "</ul>" )
                 #summary results
                 self.log.summary( self.stepCache )

@@ -91,9 +91,35 @@ class RemoteMininetDriver( Emulator ):
         elif re.search( "found multiple mininet", outputs ):
             return main.ERROR
         else:
+            # TODO: Parse for failed pings, give some truncated output
             main.log.error( "Error, unexpected output in the ping file" )
             main.log.warn( outputs )
             return main.TRUE
+
+    def arping( self, host="", ip="10.128.20.211" ):
+        """
+        Description:
+            Sends arp message from mininet host for hosts discovery
+        Required:
+            host - hosts name
+        Optional:
+            ip - ip address that does not exist in the network so there would
+                 be no reply.
+        """
+        cmd = " py " + host  + ".cmd(\"arping -c 1 " + ip + "\")"
+        try:
+            main.log.warn( "Sending: " + cmd )
+            self.handle.sendline( cmd )
+            response = self.handle.before
+            self.handle.sendline( "" )
+            self.handle.expect( "mininet>" )
+            return main.TRUE
+
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            main.cleanup()
+            main.exit()
 
     def pingLong( self, **pingParams ):
         """
@@ -344,29 +370,48 @@ class RemoteMininetDriver( Emulator ):
             main.cleanup()
             main.exit()
 
-    def runOpticalMnScript( self, ctrllerIP = None ):
+    def runOpticalMnScript( self,name = 'onos', ctrllerIP = None ):
         import time
+        import types
         """
-            This function is only meant for Packet Optical.
-            It runs python script "opticalTest.py" to create the
-            packet layer( mn ) and optical topology
-            
-            TODO: If no ctrllerIP is provided, a default 
+            Description:
+                This function is only meant for Packet Optical.
+                It runs python script "opticalTest.py" to create the
+                packet layer( mn ) and optical topology
+            Optional:
+                name - Name of onos directory. (ONOS | onos)
+            Required:
+                ctrllerIP = Controller(s) IP address
+            TODO: If no ctrllerIP is provided, a default
                 $OC1 can be accepted
         """
         try:
             self.handle.sendline( "" )
             self.handle.expect( "\$" )
-            self.handle.sendline( "cd ~/onos/tools/test/topos" )
+            self.handle.sendline( "cd ~/" + name + "/tools/test/topos" )
             self.handle.expect( "topos\$" )
             if ctrllerIP == None:
                 main.log.info( "You need to specify the IP" )
                 return main.FALSE
             else:
-                cmd = "sudo -E python opticalTest.py " + ctrllerIP
+                controller = ''
+                if isinstance( ctrllerIP, types.ListType ):
+                    for i in xrange( len( ctrllerIP ) ):
+                        controller += ctrllerIP[i] + ' '
+                    main.log.info( "Mininet topology is being loaded with " +
+                                   "controllers: " + controller )
+                elif isinstance( ctrllerIP, types.StringType ):
+                    controller = ctrllerIP
+                    main.log.info( "Mininet topology is being loaded with " +
+                                   "controller: " + controller )
+                else:
+                    main.log.info( "You need to specify a valid IP" )
+                    return main.FALSE
+                cmd = "sudo -E python opticalTest.py " + controller
+                main.log.info( self.name + ": cmd = " + cmd )
                 self.handle.sendline( cmd )
-                self.handle.expect( "Press ENTER to push Topology.json" )
-                time.sleep(15)
+                time.sleep(30)
+                self.handle.sendline( "" )
                 self.handle.sendline( "" )
                 self.handle.expect("mininet>")
                 return main.TRUE

@@ -120,12 +120,27 @@ class HATestNetworkPartition:
             main.ONOSbench.gitCheckout( gitBranch )
             gitPullResult = main.ONOSbench.gitPull()
 
-            main.step( "Using mvn clean & install" )
+            main.step( "Using mvn clean and install" )
             cleanInstallResult = main.ONOSbench.cleanInstall()
         else:
             main.log.warn( "Did not pull new code so skipping mvn " +
                            "clean install" )
         main.ONOSbench.getVersion( report=True )
+        # GRAPHS
+        # NOTE: important params here:
+        #       job = name of Jenkins job
+        #       Plot Name = Plot-HA, only can be used if multiple plots
+        #       index = The number of the graph under plot name
+        job = "HANetworkPartition"
+        graphs = '<ac:structured-macro ac:name="html">\n'
+        graphs += '<ac:plain-text-body><![CDATA[\n'
+        graphs += '<iframe src="https://onos-jenkins.onlab.us/job/' + job +\
+                  '/plot/getPlot?index=0&width=500&height=300"' +\
+                  'noborder="0" width="500" height="300" scrolling="yes" '+\
+                  'seamless="seamless"></iframe>\n'
+        graphs += ']]></ac:plain-text-body>\n'
+        graphs += '</ac:structured-macro>\n'
+        main.log.wiki(graphs)
 
         main.step( "Creating ONOS package" )
         packageResult = main.ONOSbench.onosPackage()
@@ -202,12 +217,13 @@ class HATestNetworkPartition:
         cliResults = cliResult1 and cliResult2 and cliResult3 and\
             cliResult4 and cliResult5 and cliResult6 and cliResult7
 
-        main.step( "Start Packet Capture MN" )
-        main.Mininet2.startTcpdump(
-            str( main.params[ 'MNtcpdump' ][ 'folder' ] ) + str( main.TEST )
-            + "-MN.pcap",
-            intf=main.params[ 'MNtcpdump' ][ 'intf' ],
-            port=main.params[ 'MNtcpdump' ][ 'port' ] )
+        if main.params[ 'tcpdump' ].lower() == "true":
+            main.step( "Start Packet Capture MN" )
+            main.Mininet2.startTcpdump(
+                str( main.params[ 'MNtcpdump' ][ 'folder' ] ) + str( main.TEST )
+                + "-MN.pcap",
+                intf=main.params[ 'MNtcpdump' ][ 'intf' ],
+                port=main.params[ 'MNtcpdump' ][ 'port' ] )
 
         case1Result = ( cleanInstallResult and packageResult and
                         cellResult and verifyResult and onosInstallResult
@@ -218,6 +234,7 @@ class HATestNetworkPartition:
                                  onfail="Test startup NOT successful" )
 
         if case1Result == main.FALSE:
+            main.log.error( "Failed to start ONOS, stopping test" )
             main.cleanup()
             main.exit()
 
@@ -1414,7 +1431,7 @@ class HATestNetworkPartition:
             for controller in range( 0, len( hosts ) ):
                 controllerStr = str( controller + 1 )
                 for host in hosts[ controller ]:
-                    if host[ 'ips' ] == []:
+                    if host[ 'ipAddresses' ] == []:
                         main.log.error(
                             "DEBUG:Error with host ips on controller" +
                             controllerStr + ": " + str( host ) )

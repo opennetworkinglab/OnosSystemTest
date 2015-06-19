@@ -128,27 +128,40 @@ class IntentInstallWithdrawLat:
         
         time.sleep(30)
 
-        main.ONOSbench.handle.sendline("""onos $OC1 "cfg setorg.onosproject.provider.nil.NullProviders enabled true" """)
-        main.ONOSbench.handle.expect(":~")
-        print main.ONOSbench.handle.before
-        main.ONOSbench.handle.sendline("""onos $OC1 "cfg set org.onosproject.provider.nil.NullProviders deviceCount """ + str(switchCount) + """ " """)
-        main.ONOSbench.handle.expect(":~")
-        print main.ONOSbench.handle.before
-        main.ONOSbench.handle.sendline("""onos $OC1 "cfg set org.onosproject.provider.nil.NullProviders topoShape linear" """)
-        main.ONOSbench.handle.expect(":~")
-        print main.ONOSbench.handle.before
-        main.ONOSbench.handle.sendline("""onos $OC1 "null-simulation start" """)
-        main.ONOSbench.handle.expect(":~")
-        print main.ONOSbench.handle.before
-        main.ONOSbench.handle.sendline("""onos $OC1 "balance-masters" """)
-        main.ONOSbench.handle.expect(":~")
-        print main.ONOSbench.handle.before
+        for i in range(5):
+            main.ONOSbench.handle.sendline("""onos $OC1 "cfg setorg.onosproject.provider.nil.NullProviders enabled true" """)
+            main.ONOSbench.handle.expect(":~")
+            print main.ONOSbench.handle.before
+            main.ONOSbench.handle.sendline("""onos $OC1 "cfg set org.onosproject.provider.nil.NullProviders deviceCount """ + str(switchCount) + """ " """)
+            main.ONOSbench.handle.expect(":~")
+            print main.ONOSbench.handle.before
+            main.ONOSbench.handle.sendline("""onos $OC1 "cfg set org.onosproject.provider.nil.NullProviders topoShape linear" """)
+            main.ONOSbench.handle.expect(":~")
+            print main.ONOSbench.handle.before
+            main.ONOSbench.handle.sendline("""onos $OC1 "null-simulation start" """)
+            main.ONOSbench.handle.expect(":~")
+            print main.ONOSbench.handle.before
+            main.ONOSbench.handle.sendline("""onos $OC1 "balance-masters" """)
+            main.ONOSbench.handle.expect(":~")
+            print main.ONOSbench.handle.before
+            
+            main.ONOSbench.handle.sendline("onos $OC1 summary")
+            main.ONOSbench.handle.expect(":~")
+            check = main.ONOSbench.handle.before
+            main.log.info(check)
+            if "SSC(s)=1," in check: 
+                break 
+
+
+
+        main.ONOSbench.logReport(ONOSIp[1], ["ERROR", "WARNING", "EXCEPT"])
 
     def CASE2( self, main ):
          
         import time
         import numpy
 
+        testStatus = "pass"
         sampleSize = int(main.params[ 'TEST' ][ 'sampleSize' ])
         warmUp = int(main.params[ 'TEST' ][ 'warmUp' ])
         intentsList = (main.params[ 'TEST' ][ 'intents' ]).split(",")
@@ -157,10 +170,11 @@ class IntentInstallWithdrawLat:
         for i in range(0,len(intentsList)):
             intentsList[i] = int(intentsList[i])
 
-        if debug == "True":
-            debug = True
-        else:
-            debug = False
+        #if debug == "True":
+        #    debug = True
+        #else:
+        #    debug = False
+        debug = True
 
         linkCount = 0
         for i in range(0,10):
@@ -233,9 +247,21 @@ class IntentInstallWithdrawLat:
                         if "withdraw" in line:
                             withdrawn.append(int(line.split(" ")[5]))
 
+                    for line in myRawResult: 
+                        if "Failure:" in line: 
+                            main.log.error("INTENT TEST FAILURE, ABORTING TESTCASE")
+                            testStatus = "fail"
+                if testStatus == "fail": 
+                    break 
+                            
                     print("installed: " + str(installed))
                     print("withraw: " + str(withdrawn) + "\n")
+                    if withdrawn[len(withdrawn) -1] > 1000 or installed[len(installed) -1] > 1000: 
+                        main.log.info("ABNORMAL VALUE, CHECKING LOG")
+                        main.ONOSbench.logReport(ONOSIp[1], ["ERROR", "WARNING", "EXCEPT"], outputMode="d")
 
+            if testStatus == "fail": 
+                break 
             main.log.report("----------------------------------------------------")
             main.log.report("Scale: " + str(clusterCount) + "\tIntent batch size: " + str(intentSize))
             main.log.report("Data samples: " + str(sampleSize) + "\tWarm up tests: " + str(warmUp))
@@ -255,3 +281,5 @@ class IntentInstallWithdrawLat:
             resultsDB = open("IntentInstallWithdrawLatDB", "a")
             resultsDB.write(resultString)
             resultsDB.close()
+
+            main.ONOSbench.logReport(ONOSIp[1], ["ERROR", "WARNING", "EXCEPT"])

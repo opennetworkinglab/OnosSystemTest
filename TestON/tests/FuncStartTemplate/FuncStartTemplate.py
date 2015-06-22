@@ -15,12 +15,13 @@ class FuncStartTemplate:
     def CASE10( self, main ):
         import time
         import os
+        import imp
         """
         Startup sequence:
+        git pull
         cell <name>
         onos-verify-cell
         onos-remove-raft-log
-        git pull
         mvn clean install
         onos-package
         onos-install -f
@@ -44,6 +45,8 @@ class FuncStartTemplate:
         main.numSwitch = int( main.params[ 'MININET' ][ 'switch' ] )
         main.numLinks = int( main.params[ 'MININET' ][ 'links' ] )
         main.numCtrls = main.params[ 'CTRL' ][ 'num' ]
+        main.ONOSport = []
+        main.hostsData = {}
         PULLCODE = False
         if main.params[ 'GIT' ][ 'pull' ] == 'True':
             PULLCODE = True
@@ -51,12 +54,12 @@ class FuncStartTemplate:
         main.CLIs = []
         for i in range( 1, int( main.numCtrls ) + 1 ):
             main.CLIs.append( getattr( main, 'ONOScli' + str( i ) ) )
+            main.ONOSport.append( main.params[ 'CTRL' ][ 'port' + str( i ) ] )
 
         # -- INIT SECTION, ONLY RUNS ONCE -- #
         if init == False:
             init = True
 
-            main.ONOSport = []
             main.scale = ( main.params[ 'SCALE' ] ).split( "," )
             main.numCtrls = int( main.scale[ 0 ] )
 
@@ -80,43 +83,21 @@ class FuncStartTemplate:
                                "clean install" )
 
             globalONOSip = main.ONOSbench.getOnosIps()
-        
+
         maxNodes = ( len(globalONOSip) - 2 )
 
         main.numCtrls = int( main.scale[ 0 ] )
         main.scale.remove( main.scale[ 0 ] )
 
         main.ONOSip = []
-        for i in range( maxNodes ): 
-            main.ONOSip.append( globalONOSip[i] )
+        for i in range( maxNodes ):
+            main.ONOSip.append( globalONOSip[ i ] )
 
-
-        
         #kill off all onos processes
         main.log.info( "Safety check, killing all ONOS processes" +
                        " before initiating enviornment setup" )
         for i in range(maxNodes):
             main.ONOSbench.onosDie( globalONOSip[ i ] )
-        
-        """
-        main.step( "Apply cell to environment" )
-        cellResult = main.ONOSbench.setCell( cellName )
-        verifyResult = main.ONOSbench.verifyCell()
-        stepResult = cellResult and verifyResult
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="Successfully applied cell to " + \
-                                        "environment",
-                                 onfail="Failed to apply cell to environment " )
-        """
-        """main.step( "Removing raft logs" )
-        removeRaftResult = main.ONOSbench.onosRemoveRaftLogs()
-        stepResult = removeRaftResult
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="Successfully removed raft logs",
-                                 onfail="Failed to remove raft logs" )
-        """
 
         print "NODE COUNT = ", main.numCtrls
         main.log.info( "Creating cell file" )
@@ -190,24 +171,31 @@ class FuncStartTemplate:
                                  actual=stepResult,
                                  onpass="ONOS service is ready",
                                  onfail="ONOS service did not start properly" )
-        
+
         main.step( "Start ONOS cli" )
         cliResult = main.TRUE
         for i in range( main.numCtrls ):
             cliResult = cliResult and \
-                        main.CLIs[i].startOnosCli( main.ONOSip[ i ] )
+                        main.CLIs[ i ].startOnosCli( main.ONOSip[ i ] )
         stepResult = cliResult
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
                                  onpass="Successfully start ONOS cli",
                                  onfail="Failed to start ONOS cli" )
-    
-    def CASE9( self, main ): 
+
+    def CASE9( self, main ):
         '''
-            Report errors/warnings/exceptions 
+            Report errors/warnings/exceptions
         '''
-        main.log.info("Error report: \n") 
-        main.ONOSbench.logReport( globalONOSip[0], [ "INFO","FOLLOWER","WARN","flow","ERROR","Except" ], "s" )  
+        main.log.info("Error report: \n" )
+        main.ONOSbench.logReport( globalONOSip[ 0 ],
+                                  [ "INFO",
+                                    "FOLLOWER",
+                                    "WARN",
+                                    "flow",
+                                    "ERROR",
+                                    "Except" ],
+                                  "s" )
         #main.ONOSbench.logReport( globalONOSip[1], [ "INFO" ], "d" )
 
     def CASE11( self, main ):

@@ -193,26 +193,26 @@ class FuncTopo:
         """
         main.case( "Topology discovery test" )
 
-        main.topoName = "TREE3-3"
-        stepResult = main.TRUE
-        main.step( "Tree 3-3 topology" )
-        mnCmd = "mn --topo=tree,3,3 --mac"
-        stepResult = main.wrapper.testTopology( main,
-                                                mnCmd=mnCmd,
-                                                clean=False )
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="Tree 3-3 topology successful",
-                                 onfail="Tree 3-3 topology failed" )
 
         main.step( "Torus 5-5 topology" )
         main.topoName = "TORUS5-5"
         mnCmd = "mn --topo=torus,5,5 --mac"
         stepResult = main.wrapper.testTopology( main,
                                                 mnCmd=mnCmd,
-                                                clean=True )
+                                                clean=False )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
                                  onpass="Torus 5-5 topology successful",
                                  onfail="Torus 5-5 topology failed" )
 
+        main.topoName = "TREE3-3"
+        stepResult = main.TRUE
+        main.step( "Tree 3-3 topology" )
+        mnCmd = "mn --topo=tree,3,3 --mac"
+        stepResult = main.wrapper.testTopology( main,
+                                                mnCmd=mnCmd,
+                                                clean=True )
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="Tree 3-3 topology successful",
+                                 onfail="Tree 3-3 topology failed" )

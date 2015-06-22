@@ -1,11 +1,10 @@
 <PARAMS>
-
     <testcases>10,9,10,9</testcases>
 
     <SCALE>3,1</SCALE>
     <availableNodes>3</availableNodes>
     <ENV>
-        <cellName>single_func</cellName>
+        <cellName>functionality</cellName>
         <cellApps>drivers,openflow,proxyarp,mobility</cellApps>
     </ENV>
     <GIT>

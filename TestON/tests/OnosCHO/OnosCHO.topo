@@ -7,7 +7,9 @@
             <password>onos_test</password>
             <type>OnosDriver</type>
             <connect_order>1</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <home>~/ONOS</home>
+            </COMPONENTS>
         </ONOSbench>
 
         <ONOScli1>
@@ -36,27 +38,9 @@
             <connect_order>4</connect_order>
             <COMPONENTS> </COMPONENTS>
         </ONOScli3>
-
-        <ONOScli4>
-            <host>10.128.40.40</host>
-            <user>admin</user>
-            <password>onos_test</password>
-            <type>OnosCliDriver</type>
-            <connect_order>5</connect_order>
-            <COMPONENTS> </COMPONENTS>
-        </ONOScli4>
-
-	 <ONOScli5>
-            <host>10.128.40.40</host>
-            <user>admin</user>
-            <password>onos_test</password>
-            <type>OnosCliDriver</type>
-            <connect_order>6</connect_order>
-            <COMPONENTS> </COMPONENTS>
-        </ONOScli5>
 	
         <ONOS1>
-            <host>10.128.40.40</host>
+            <host>10.128.40.41</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>OnosCliDriver</type>
@@ -65,7 +49,7 @@
         </ONOS1>
 
 	<ONOS2>
-            <host>10.128.40.40</host>
+            <host>10.128.40.42</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>OnosCliDriver</type>
@@ -74,31 +58,13 @@
         </ONOS2>
 	
 	<ONOS3>
-            <host>10.128.40.40</host>
+            <host>10.128.40.43</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>OnosCliDriver</type>
             <connect_order>9</connect_order>
             <COMPONENTS> </COMPONENTS>
         </ONOS3>
-
-        <ONOS4>
-            <host>10.128.40.40</host>
-            <user>admin</user>
-            <password>onos_test</password>
-            <type>OnosCliDriver</type>
-            <connect_order>10</connect_order>
-            <COMPONENTS> </COMPONENTS>
-        </ONOS4>
-
-	<ONOS5>
-            <host>10.128.40.40</host>
-            <user>admin</user>
-            <password>onos_test</password>
-            <type>OnosCliDriver</type>
-            <connect_order>11</connect_order>
-            <COMPONENTS> </COMPONENTS>
-        </ONOS5>
 	
         <Mininet1>
             <host>10.128.40.50</host>

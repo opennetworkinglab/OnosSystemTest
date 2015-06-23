@@ -84,7 +84,7 @@ class FuncStartTemplate:
 
             globalONOSip = main.ONOSbench.getOnosIps()
 
-        maxNodes = ( len(globalONOSip) - 2 )
+        maxNodes = ( len( globalONOSip ) - 2 )
 
         main.numCtrls = int( main.scale[ 0 ] )
         main.scale.remove( main.scale[ 0 ] )
@@ -96,7 +96,7 @@ class FuncStartTemplate:
         #kill off all onos processes
         main.log.info( "Safety check, killing all ONOS processes" +
                        " before initiating enviornment setup" )
-        for i in range(maxNodes):
+        for i in range( maxNodes ):
             main.ONOSbench.onosDie( globalONOSip[ i ] )
 
         print "NODE COUNT = ", main.numCtrls

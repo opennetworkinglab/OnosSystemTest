@@ -1,17 +1,17 @@
 <PARAMS>
 
-    <testcases>1,2,1,2,1,2,1,2</testcases>
+    <testcases>1,2</testcases>
 
-    <SCALE>1,3,5,7</SCALE>
+    <SCALE>1</SCALE>
     <availableNodes>7</availableNodes>
- 
+
     <ENV>
-        <cellName>defaultCell</cellName>
-        <cellApps></cellApps>
+    <cellName>CbenchBMcell</cellName>
     </ENV>
 
     <TEST>
         <skipCleanInstall>yes</skipCleanInstall>
+        <mode>t</mode>                     #t throughput
     </TEST>
 
     <GIT>
@@ -22,36 +22,36 @@
     <CTRL>
         <USER>admin</USER>
         
-        <ip1>OC1</ip1>
+        <ip1>10.254.1.207</ip1>
         <port1>6633</port1>
         
-        <ip2>OC2</ip2>
+        <ip2>10.254.1.202</ip2>
         <port2>6633</port2>
         
-        <ip3>OC3</ip3>
+        <ip3>10.254.1.203</ip3>
         <port3>6633</port3>
         
-        <ip4>OC4</ip4>
+        <ip4>10.254.1.204</ip4>
         <port4>6633</port4>
         
-        <ip5>OC5</ip5>
+        <ip5>10.128.5.205</ip5>
         <port5>6633</port5>
         
-        <ip6>OC6</ip6>
+        <ip6>10.128.5.206</ip6>
         <port6>6633</port6> 
        
-         <ip7>OC7</ip7>
+        <ip7>10.128.5.201</ip7>
         <port7>6633</port7>
 
     </CTRL>
 
     <MN>
-        <ip1>OCN</ip1>
+        <ip1>10.254.1.200</ip1>
     </MN>
 
     <BENCH>
         <user>admin</user>
-        <ip1>OCN</ip1>
+        <ip1>10.254.1.200</ip1>
     </BENCH>
 
     <JSON>

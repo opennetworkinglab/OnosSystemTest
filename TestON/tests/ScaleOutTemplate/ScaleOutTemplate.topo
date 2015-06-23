@@ -3,25 +3,25 @@
     <COMPONENT>
 
         <ONOSbench>
-            <host>10.128.5.55</host>
+            <host>OCN</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>OnosDriver</type>
             <connect_order>1</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS><home>~/onos</home></COMPONENTS>
         </ONOSbench>
 
         <ONOS1cli>
-            <host>10.128.5.55</host>
+            <host>OCN</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>OnosCliDriver</type>
             <connect_order>2</connect_order>
             <COMPONENTS> </COMPONENTS>
         </ONOS1cli>
-        
+
         <ONOS2cli>
-            <host>10.128.5.55</host>
+            <host>OCN</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>OnosCliDriver</type>
@@ -30,16 +30,52 @@
         </ONOS2cli>
 
         <ONOS3cli>
-            <host>10.128.5.55</host>
+            <host>OCN</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>OnosCliDriver</type>
             <connect_order>4</connect_order>
             <COMPONENTS> </COMPONENTS>
         </ONOS3cli>
-       
+
+        <ONOS4cli>
+            <host>OCN</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>OnosCliDriver</type>
+            <connect_order>5</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </ONOS4cli>
+
+        <ONOS5cli>
+            <host>OCN</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>OnosCliDriver</type>
+            <connect_order>6</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </ONOS5cli>
+
+        <ONOS6cli>
+            <host>OCN</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>OnosCliDriver</type>
+            <connect_order>7</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </ONOS6cli>
+
+        <ONOS7cli>
+            <host>OCN</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>OnosCliDriver</type>
+            <connect_order>8</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </ONOS7cli>
+
         <ONOS1>
-            <host>10.128.5.51</host>
+            <host>OC1</host>
             <user>sdn</user>
             <password>rocks</password>
             <type>OnosDriver</type>
@@ -48,7 +84,7 @@
         </ONOS1>
 
         <ONOS2>
-            <host>10.128.5.52</host>
+            <host>OC2</host>
             <user>sdn</user>
             <password>rocks</password>
             <type>OnosDriver</type>
@@ -57,7 +93,7 @@
         </ONOS2>
 
         <ONOS3>
-            <host>10.128.5.53</host>
+            <host>OC3</host>
             <user>sdn</user>
             <password>rocks</password>
             <type>OnosDriver</type>
@@ -65,21 +101,44 @@
             <COMPONENTS> </COMPONENTS>
         </ONOS3>
 
-        <Mininet1>
-            <host>10.128.5.55</host>
-            <user>admin</user>
-            <password>onos_test</password>
-            <type>MininetCliDriver</type>
-            <connect_order>16</connect_order>
-            <COMPONENTS>
-                <arg1> --custom ~/mininet/custom/topo-2sw-2host.py </arg1>
-                <arg2> --arp --mac --topo mytopo</arg2>
-                <arg3> </arg3>
-                <controller> remote </controller>
-            </COMPONENTS>
-        </Mininet1>
+        <ONOS4>
+            <host>OC4</host>
+            <user>sdn</user>
+            <password>rocks</password>
+            <type>OnosDriver</type>
+            <connect_order>12</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </ONOS4>
+
+    
+        <ONOS5>
+            <host>OC5</host>
+            <user>sdn</user>
+            <password>rocks</password>
+            <type>OnosDriver</type>
+            <connect_order>13</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </ONOS5>
+
+        <ONOS6>
+            <host>OC6</host>
+            <user>sdn</user>
+            <password>rocks</password>
+            <type>OnosDriver</type>
+            <connect_order>14</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </ONOS6>
+
+        <ONOS7>
+            <host>OC7</host>
+            <user>sdn</user>
+            <password>rocks</password>
+            <type>OnosDriver</type>
+            <connect_order>15</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </ONOS7>
 
     </COMPONENT>
 
 </TOPOLOGY>
-
+ 

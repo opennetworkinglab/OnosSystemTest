@@ -28,9 +28,7 @@ class IntentRerouteLat:
         gitPull = main.params[ 'GIT' ][ 'autopull' ]
         cellName = main.params[ 'ENV' ][ 'cellName' ]
         Apps = main.params[ 'ENV' ][ 'cellApps' ]
-        BENCHIp = main.params[ 'BENCH' ][ 'ip1' ]
         BENCHUser = main.params[ 'BENCH' ][ 'user' ]
-        MN1Ip = main.params[ 'MN' ][ 'ip1' ]
         maxNodes = int(main.params[ 'availableNodes' ])
         skipMvn = main.params[ 'TEST' ][ 'skipCleanInstall' ]
         cellName = main.params[ 'ENV' ][ 'cellName' ]        
@@ -49,10 +47,12 @@ class IntentRerouteLat:
             clusterCount = int(scale[0])
 
             #Populate ONOSIp with ips from params 
-            for i in range(1, maxNodes + 1): 
-                ipString = 'ip' + str(i) 
-                ONOSIp.append(main.params[ 'CTRL' ][ ipString ])   
-            
+            ONOSIp = [0]
+            ONOSIp.extend(main.ONOSbench.getOnosIps())
+            MN1Ip = ONOSIp[len(ONOSIp)-1]
+            BENCHIp = ONOSIp[len(ONOSIp)-2]
+
+            print("-----------------" + str(ONOSIp))
             #mvn clean install, for debugging set param 'skipCleanInstall' to yes to speed up test
             if skipMvn != "yes":
                 mvnResult = main.ONOSbench.cleanInstall()
@@ -96,6 +96,12 @@ class IntentRerouteLat:
         cellIp = []
         for node in range (1, clusterCount + 1):
             cellIp.append(ONOSIp[node])
+        
+        print "Cell ip" + str(cellIp)
+        print cellName
+        print MN1Ip
+        print Apps
+
 
         main.ONOSbench.createCellFile(BENCHIp,cellName,MN1Ip,str(Apps), *cellIp)
 
@@ -176,6 +182,7 @@ class IntentRerouteLat:
                     break
             index += 1
 
+            main.ONOSbench.logReport(ONOSIp[1], ["ERROR", "WARNING", "EXCEPT"])
 
     def CASE2( self, main ):
          
@@ -250,6 +257,7 @@ class IntentRerouteLat:
                 cmd = """onos $OC1 null-link "null:0000000000000004/1 null:0000000000000003/2 down" """
                 if debug: main.log.info("COMMAND: " + str(cmd))
                 main.ONOSbench.handle.sendline(cmd)
+                main.ONOSbench.handle.expect(":~")
 
                 cmd = "onos-ssh $OC1 cat /opt/onos/log/karaf.log | grep TopologyManager| tail -1"
                 for i in range(0,10):
@@ -344,11 +352,17 @@ class IntentRerouteLat:
                             if debug: main.log.info("last node: " + str(myResult[run-warmUp][1]))
 
                 cmd = """ onos $OC1 null-link "null:0000000000000004/1 null:0000000000000003/2 up" """
-
-                #wait for intent withdraw
                 if debug: main.log.info(cmd)
                 main.ONOSbench.handle.sendline(cmd)
                 main.ONOSbench.handle.expect(":~")
+                
+                
+                
+                #wait for intent withdraw
+                main.ONOSbench.handle.sendline(withdrawCmd)
+                main.log.info(withdrawCmd) 
+                main.ONOSbench.handle.expect(":~")
+                if debug: main.log.info(main.ONOSbench.handle.before) 
                 main.ONOSbench.handle.sendline("onos $OC1 intents|grep WITHDRAWN|wc -l")
                 main.ONOSbench.handle.expect(":~")
                 intentWithdrawCheck = main.ONOSbench.handle.before
@@ -407,4 +421,6 @@ class IntentRerouteLat:
             resultsDB.write(str(average) + ",")
             resultsDB.write(str(stdDev) + "\n")
             resultsDB.close()
+
+            main.ONOSbench.logReport(ONOSIp[1], ["ERROR", "WARNING", "EXCEPT"])
 

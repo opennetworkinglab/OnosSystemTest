@@ -81,7 +81,7 @@ class CLI( Component ):
         while i == 5:
             i = self.handle.expect( [
 				    ssh_newkey,
-                                    'password:',
+                                    'password:|Password:',
                                     pexpect.EOF,
                                     pexpect.TIMEOUT,
                                     refused,

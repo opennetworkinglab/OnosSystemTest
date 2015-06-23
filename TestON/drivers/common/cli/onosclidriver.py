@@ -281,9 +281,12 @@ class OnosCliDriver( CLI ):
                 lvlStr = "--level=" + level
 
             self.handle.sendline( "" )
-            i = self.handle.expect( [ "onos>", pexpect.TIMEOUT ] )
-            # TODO: look for bash prompt as well
+            i = self.handle.expect( [ "onos>","\$", pexpect.TIMEOUT ] )
             if i == 1:
+                main.log.error( self.name + ": onos cli session closed." )
+                main.cleanup()
+                main.exit()
+            if i == 2:
                 self.handle.sendline( "" )
                 self.handle.expect( "onos>" )
             self.handle.sendline( "log:log " + lvlStr + " " + cmdStr )
@@ -1608,6 +1611,31 @@ class OnosCliDriver( CLI ):
             else:
                 # TODO: Should this be main.TRUE
                 return handle
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
+    def purgeIntents( self ):
+        """
+        Purges all WITHDRAWN Intents
+        """
+        try:
+            cmdStr = "purge-intents"
+            handle = self.sendline( cmdStr )
+            if re.search( "Error", handle ):
+                main.log.error( "Error in purging intents" )
+                return main.FALSE
+            else:
+                return main.TRUE
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
             return None

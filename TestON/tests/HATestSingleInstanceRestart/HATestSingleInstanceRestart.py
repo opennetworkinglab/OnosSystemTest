@@ -4,11 +4,12 @@ Description: This test is to determine if a single
 
 List of test cases:
 CASE1: Compile ONOS and push it to the test machines
-CASE2: Assign mastership to controllers
+CASE2: Assign devices to controllers
+CASE21: Assign mastership to controllers
 CASE3: Assign intents
 CASE4: Ping across added host intents
 CASE5: Reading state of ONOS
-CASE6: The Failure case. Since this is the Sanity test, we do nothing.
+CASE6: The Failure case.
 CASE7: Check state after control plane failure
 CASE8: Compare topo
 CASE9: Link s3-s28 down
@@ -211,9 +212,10 @@ class HATestSingleInstanceRestart:
 
     def CASE2( self, main ):
         """
-        Assign mastership to controllers
+        Assign devices to controllers
         """
         import re
+        import time
         assert numControllers, "numControllers not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
@@ -225,7 +227,7 @@ class HATestSingleInstanceRestart:
         assert ONOS6Port, "ONOS6Port not defined"
         assert ONOS7Port, "ONOS7Port not defined"
 
-        main.case( "Assigning Controllers" )
+        main.case( "Assigning devices to controllers" )
         main.caseExplaination = "Assign switches to ONOS using 'ovs-vsctl' " +\
                                 "and check that an ONOS node becomes the " +\
                                 "master of the device."
@@ -255,6 +257,30 @@ class HATestSingleInstanceRestart:
             onpass="Switch mastership assigned correctly",
             onfail="Switches not assigned correctly to controllers" )
 
+    def CASE21( self, main ):
+        """
+        Assign mastership to controllers
+        """
+        import re
+        import time
+        assert numControllers, "numControllers not defined"
+        assert main, "main not defined"
+        assert utilities.assert_equals, "utilities.assert_equals not defined"
+        assert CLIs, "CLIs not defined"
+        assert nodes, "nodes not defined"
+        assert ONOS1Port, "ONOS1Port not defined"
+        assert ONOS2Port, "ONOS2Port not defined"
+        assert ONOS3Port, "ONOS3Port not defined"
+        assert ONOS4Port, "ONOS4Port not defined"
+        assert ONOS5Port, "ONOS5Port not defined"
+        assert ONOS6Port, "ONOS6Port not defined"
+        assert ONOS7Port, "ONOS7Port not defined"
+
+        main.case( "Assigning Controller roles for switches" )
+        main.caseExplaination = "Check that ONOS is connected to each " +\
+                                "device. Then manually assign" +\
+                                " mastership to specific ONOS nodes using" +\
+                                " 'device-role'"
         main.step( "Assign mastership of switches to specific controllers" )
         roleCall = main.TRUE
         roleCheck = main.TRUE
@@ -318,11 +344,6 @@ class HATestSingleInstanceRestart:
             onpass="Switches were successfully reassigned to designated " +
                    "controller",
             onfail="Switches were not successfully reassigned" )
-        mastershipCheck = mastershipCheck and roleCall and roleCheck
-        utilities.assert_equals( expect=main.TRUE, actual=mastershipCheck,
-                                 onpass="Switch mastership correctly assigned",
-                                 onfail="Error in (re)assigning switch" +
-                                 " mastership" )
 
     def CASE3( self, main ):
         """
@@ -1268,7 +1289,7 @@ class HATestSingleInstanceRestart:
                 for intent in before:
                     if intent not in after:
                         sameIntents = main.FALSE
-                        main.log.debug( "Intent is not currently in ONOS " +\
+                        main.log.debug( "Intent is not currently in ONOS " +
                                         "(at least in the same form):" )
                         main.log.debug( json.dumps( intent ) )
             except ( ValueError, TypeError ):

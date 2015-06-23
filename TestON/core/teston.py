@@ -163,12 +163,20 @@ class TestON:
         driverClass = getattr(driverModule, driverName)
         driverObject = driverClass()
 
-        try:
-            self.componentDictionary[component]['host'] = os.environ[str( self.componentDictionary[component]['host'])]
-        except KeyError:
-            self.log.info("Missing OC environment variable! Using stored IPs")
-        except Exception as inst:
-            self.log.error("Uncaught exception: " + str(inst))
+        if "OC" in self.componentDictionary[component]['host']:
+            try:
+                self.componentDictionary[component]['host'] = os.environ[str( self.componentDictionary[component]['host'])]
+            except KeyError:
+                self.log.info("Missing OC environment variable! Using stored IPs")
+                f = open("myIps","r")
+                ips = f.readlines()
+                for line in ips: 
+                    if self.componentDictionary[component]['host'] in line: 
+                        line = line.split("=")
+                        myIp = line[1]
+                self.componentDictionary[component]['host'] = myIp
+            except Exception as inst:
+                self.log.error("Uncaught exception: " + str(inst))
 
         connect_result = driverObject.connect(user_name = self.componentDictionary[component]['user'] if ('user' in self.componentDictionary[component].keys()) else getpass.getuser(),
                                               ip_address= self.componentDictionary[component]['host'] if ('host' in self.componentDictionary[component].keys()) else 'localhost',
@@ -264,6 +272,8 @@ class TestON:
                     self.log.wiki( "<li>" + line + "  <ac:emoticon ac:name=\"cross\" /></li>\n" )
                 elif re.search( " - No Result$", line ):
                     self.log.wiki( "<li>" + line + "  <ac:emoticon ac:name=\"warning\" /></li>\n" )
+                else:  # Should only be on fail message
+                    self.log.wiki( "<ul><li>" + line + "</li></ul>\n" )
             self.log.wiki( "</ul>" )
             self.log.summary( self.stepCache )
             self.stepCache = ""
@@ -274,19 +284,19 @@ class TestON:
             try :
                 step = stepList[self.stepCount]
                 self.STEPRESULT = self.NORESULT
+                self.onFailMsg = "\t\tNo on fail message given"
                 exec code[testCaseNumber][step] in module.__dict__
                 self.stepCount = self.stepCount + 1
                 if step > 0:
                     self.stepCache += "\t"+str(testCaseNumber)+"."+str(step)+" "+self.stepName+" - "
                     if self.STEPRESULT == self.TRUE:
                         self.stepCache += "PASS\n"
-                        #self.stepCache += "PASS  <ac:emoticon ac:name=\"tick\" /></li>\n"
                     elif self.STEPRESULT == self.FALSE:
                         self.stepCache += "FAIL\n"
-                        #self.stepCache += "FAIL  <ac:emoticon ac:name=\"cross\" /></li>\n"
+                        # TODO: Print the on-fail statement here
+                        self.stepCache += "\t\t" + self.onFailMsg + "\n"
                     else:
                         self.stepCache += "No Result\n"
-                        #self.stepCache += "No Result  <ac:emoticon ac:name=\"warning\" /></li>\n"
                     self.stepResults.append(self.STEPRESULT)
             except StandardError as e:
                 self.log.exception( "\nException in the following section of" +
@@ -304,6 +314,8 @@ class TestON:
                         self.log.wiki( "<li>" + line + "  <ac:emoticon ac:name=\"cross\" /></li>\n" )
                     elif re.search( " - No Result$", line ):
                         self.log.wiki( "<li>" + line + "  <ac:emoticon ac:name=\"warning\" /></li>\n" )
+                    else:  # Should only be on fail message
+                        self.log.wiki( "<ul><li>" + line + "</li></ul>\n" )
                 self.log.wiki( "</ul>" )
                 #summary results
                 self.log.summary( self.stepCache )

@@ -47,6 +47,12 @@
         <intfs>s3-eth2</intfs>
     </TEST>
 
+    <DB>
+        <intentFilePath>
+        /home/admin/ONLabTest/TestON/tests/IntentPerfNext/intentLatencyResultDb.log
+        </intentFilePath>
+    </DB>
+
     <JSON>
         <submittedTime>intentSubmittedTimestamp</submittedTime>
         <installedTime>intentInstalledTimestamp</installedTime>

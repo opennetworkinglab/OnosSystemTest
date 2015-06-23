@@ -94,7 +94,7 @@ class PingallExample:
         if case1Result == main.FALSE:
             main.cleanup()
             main.exit()
-        
+
         # Starting the mininet using the old way
         main.step( "Starting Mininet ..." )
         netIsUp = main.Mininet1.startNet()
@@ -127,7 +127,7 @@ class PingallExample:
             response = main.Mininet1.getSwController( "s" + str( i ) )
             try:
                 main.log.info( str( response ) )
-            except:
+            except Exception:
                 main.log.info( repr( response ) )
             if re.search( "tcp:" + ONOS1Ip, response ):
                 mastershipCheck = mastershipCheck and main.TRUE
@@ -143,7 +143,7 @@ class PingallExample:
 
     def CASE3( self, main ):
         """
-           Assign intents
+           Install forwarding app, Pingall and unistall the app
         """
         import time
 
@@ -151,10 +151,11 @@ class PingallExample:
         main.case( "Run Pingall" )
 
         # install onos-app-fwd
-        main.log.info( "Install reactive forwarding app" )
-        main.ONOScli1.featureInstall( "onos-app-fwd" )
+        main.step( "Activate reactive forwarding app" )
+        main.ONOScli1.activateApp( "org.onosproject.fwd" )
 
         # REACTIVE FWD test
+        main.step( "Run the pingall command in Mininet" )
         pingResult = main.FALSE
         time1 = time.time()
         pingResult = main.Mininet1.pingall()
@@ -162,8 +163,8 @@ class PingallExample:
         main.log.info( "Time for pingall: %2f seconds" % ( time2 - time1 ) )
 
         # uninstall onos-app-fwd
-        main.log.info( "Uninstall reactive forwarding app" )
-        main.ONOScli1.featureUninstall( "onos-app-fwd" )
+        main.step( "Deactivate reactive forwarding app" )
+        main.ONOScli1.deactivateApp( "org.onosproject.fwd" )
 
         utilities.assert_equals( expect=main.TRUE, actual=pingResult,
                                  onpass="All hosts are reachable",

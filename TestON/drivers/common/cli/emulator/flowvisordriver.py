@@ -21,17 +21,10 @@ author:: Anil Kumar ( anilkumar.s@paxterrasolutions.com )
 
 FlowVisorDriver is the basic driver which will handle the Mininet functions
 """
-import pexpect
-import struct
-import fcntl
-import os
-import signal
 import re
 import sys
-import core.teston
 sys.path.append( "../" )
 from drivers.common.cli.emulatordriver import Emulator
-from drivers.common.clidriver import CLI
 
 
 class FlowVisorDriver( Emulator ):
@@ -147,15 +140,15 @@ class FlowVisorDriver( Emulator ):
         try :
             if self.dl_src and self.nw_dst:
                 flowspace = "any 100 dl_type=0x806,dl_src="+self.dl_src+",nw_dst="+self.nw_dst+" Slice:"+self.Slice+"=4"
-        except :
+        except Exception:
             try :
                 if self.nw_src and self.tp_dst:
                     flowspace = "any 100 dl_type=0x800,nw_proto=6,nw_src="+self.nw_src+",tp_dst="+self.tp_dst+" Slice:"+self.Slice+"=4"
-            except :
+            except Exception:
                 try :
                     if self.nw_src and self.tp_src:
                         flowspace = "any 100 dl_type=0x800,nw_proto=6,nw_src="+self.nw_src+",tp_src="+self.tp_dst+" Slice:"+self.Slice+"=4"
-                except :
+                except Exception:
                     main.log.error( "Please specify flowspace properly" )
         """
         # self.execute( cmd="clear",prompt="\$",timeout=10 )

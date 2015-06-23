@@ -3,7 +3,7 @@
     <COMPONENT>
 
         <ONOSbench>
-            <host>localhost</host>
+            <host>10.254.1.200</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>OnosDriver</type>
@@ -15,7 +15,7 @@
         </ONOSbench>
 
         <ONOS1cli>
-            <host>localhost</host>
+            <host>10.254.1.200</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>OnosCliDriver</type>
@@ -24,7 +24,7 @@
         </ONOS1cli>
 
         <ONOS2cli>
-            <host>localhost</host>
+            <host>10.254.1.200</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>OnosCliDriver</type>
@@ -33,7 +33,7 @@
         </ONOS2cli>
 
         <ONOS3cli>
-            <host>localhost</host>
+            <host>10.254.1.200</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>OnosCliDriver</type>
@@ -42,7 +42,7 @@
         </ONOS3cli>
 
         <ONOS4cli>
-            <host>localhost</host>
+            <host>10.254.1.200</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>OnosCliDriver</type>
@@ -51,7 +51,7 @@
         </ONOS4cli>
 
         <ONOS5cli>
-            <host>localhost</host>
+            <host>10.254.1.200</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>OnosCliDriver</type>
@@ -60,7 +60,7 @@
         </ONOS5cli>
 
 	<ONOS6cli>
-            <host>localhost</host>
+            <host>10.254.1.200</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>OnosCliDriver</type>
@@ -69,7 +69,7 @@
         </ONOS6cli>
 
         <ONOS7cli>
-            <host>localhost</host>
+            <host>10.254.1.200</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>OnosCliDriver</type>

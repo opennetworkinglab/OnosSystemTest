@@ -29,11 +29,9 @@ Utilities will take care about the basic functions like :
 '''
 import re
 from configobj import ConfigObj
-import pydoc
 from core import ast as ast
 import smtplib
 
-import mimetypes
 import email
 import os
 import email.mime.application
@@ -70,49 +68,43 @@ class Utilities:
                         operators = matchVar.group(2)
                     elif matchVar.group(1) == "_" and matchVar.group(2):
                         operators = matchVar.group(2)
-                        
                 except AttributeError:
                     if matchVar==None and nameVar:
                         operators ='equals'
-                        
-                result = self._assert(NOT=notVar,operator=operators,**kwargs) 
+                result = self._assert(NOT=notVar,operator=operators,**kwargs)
                 if result == main.TRUE:
                     main.log.info("Assertion Passed")
-                    main.CASERESULT = main.TRUE
+                    main.STEPRESULT = main.TRUE
                 elif result == main.FALSE:
                     main.log.warn("Assertion Failed")
-                    main.CASERESULT = main.FALSE
-                    
-                else :
+                    main.STEPRESULT = main.FALSE
+                else:
                     main.log.error("There is an Error in Assertion")
-                    main.CASERESULT = main.ERROR
-                    
+                    main.STEPRESULT = main.ERROR
                 return result
-            
             return assertHandling
-        
-    
-    def _assert (self,**assertParam):  
+
+    def _assert (self,**assertParam):
         '''
         It will take the arguments :
-        expect:'Expected output' 
-        actual:'Actual output' 
+        expect:'Expected output'
+        actual:'Actual output'
         onpass:'Action or string to be triggered or displayed respectively when the assert passed'
         onfail:'Action or string to be triggered or displayed respectively when the assert failed'
         not:'optional argument to specify the negation of the each assertion type'
         operator:'assertion type will be defined by using operator. Like equal , greater, lesser, matches.'
-        
+
         It will return the assertion result.
-                
+
         '''
-              
+
         arguments = self.parse_args(["EXPECT","ACTUAL","ONPASS","ONFAIL","NOT","OPERATOR"],**assertParam)
-        
+
         result = 0
         valuetype = ''
         operation = "not "+ str(arguments["OPERATOR"]) if arguments['NOT'] and arguments['NOT'] == 1 else arguments["OPERATOR"]
         operators = {'equals':{'STR':'==','NUM':'=='}, 'matches' : '=~', 'greater':'>' ,'lesser':'<'}
-           
+
         expectMatch = re.match('^\s*[+-]?0(e0)?\s*$', str(arguments["EXPECT"]), re.I+re.M)
         if not ((not expectMatch) and (arguments["EXPECT"]==0)):
             valuetype = 'NUM'
@@ -120,31 +112,30 @@ class Utilities:
             if arguments["OPERATOR"] == 'greater' or arguments["OPERATOR"] == 'lesser':
                 main.log.error("Numeric comparison on strings is not possibele")
                 return main.ERROR
-            
+
         valuetype = 'STR'
         arguments["ACTUAL"] = str(arguments["ACTUAL"])
         if arguments["OPERATOR"] != 'matches':
             arguments["EXPECT"] = str(arguments["EXPECT"])
- 
+
         try :
             opcode = operators[str(arguments["OPERATOR"])][valuetype] if arguments["OPERATOR"] == 'equals' else operators[str(arguments["OPERATOR"])]
-            
+
         except KeyError:
             print "Key Error in assertion"
             return main.FALSE
-        
+
         if opcode == '=~':
             try:
                 assert re.search(str(arguments["EXPECT"]),str(arguments["ACTUAL"]))
                 result = main.TRUE
             except AssertionError:
                 try :
-                    assert re.match(str(arguments["EXPECT"]),str(arguments["ACTUAL"])) 
+                    assert re.match(str(arguments["EXPECT"]),str(arguments["ACTUAL"]))
                     result = main.TRUE
                 except AssertionError:
                     main.log.error("Assertion Failed")
                     result = main.FALSE
-                    
         else :
             try:
                 if str(opcode)=="==":
@@ -153,27 +144,21 @@ class Utilities:
                         result = main.TRUE
                     else :
                         result = main.FALSE
-                        
                 elif str(opcode) == ">":
                     main.log.info("Verifying the Expected is Greater than the actual or not using assert_greater")
                     if (ast.literal_eval(arguments["EXPECT"]) > ast.literal_eval(arguments["ACTUAL"])) :
                         result = main.TRUE
                     else :
                         result = main.FALSE
-                        
                 elif str(opcode) == "<":
                     main.log.info("Verifying the Expected is Lesser than the actual or not using assert_lesser")
                     if (ast.literal_eval(arguments["EXPECT"]) < ast.literal_eval(arguments["ACTUAL"])):
                         result = main.TRUE
                     else :
                         result = main.FALSE
-                    
-                    
             except AssertionError:
                 main.log.error("Assertion Failed")
                 result = main.FALSE
-                
-        
         result = result if result else 0
         result = not result if arguments["NOT"] and arguments["NOT"] == 1 else result
         resultString = ""
@@ -187,7 +172,8 @@ class Utilities:
             else :
                 main.log.error(arguments["ONFAIL"])
                 main.log.report(arguments["ONFAIL"])
-             
+                main.onFailMsg = arguments[ 'ONFAIL' ]
+
         msg = arguments["ON" + str(resultString)]
 
         if not isinstance(msg,str):
@@ -198,8 +184,7 @@ class Utilities:
 
         main.last_result = result
         return result
-    
-    
+
     def parse_args(self,args, **kwargs):
         '''
         It will accept the (key,value) pair and will return the (key,value) pairs with keys in uppercase.
@@ -265,7 +250,7 @@ class Utilities:
             try :
                 parsedInfo = ConfigObj(self.fileName)
                 return parsedInfo
-            except :
+            except Exception:
                 print "There is no such file to parse "+fileName 
         else:
             return 0   

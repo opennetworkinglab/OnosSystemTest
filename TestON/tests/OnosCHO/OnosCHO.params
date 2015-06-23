@@ -12,7 +12,11 @@
     # 8X. Bring random links back up
     # 9X Point,Multi-single,Single-Multi Intents
 
+<<<<<<< HEAD
     <testcases>1,21,3,[41,5,61,72,82,10,91,73,83,10]*50,22,3,[42,5,62,74,84,10,92,10]*50</testcases>
+=======
+    <testcases>1,20,3,[40,5,60,70,80,10,90,71,81,10]*50,21,3,[41,5,61,72,82,10,91,73,83,10]*50,22,3,[42,5,62,74,84,10,92,10]*50</testcases>
+>>>>>>> master
     <ENV>
         <cellName>choTest3</cellName>
     </ENV>

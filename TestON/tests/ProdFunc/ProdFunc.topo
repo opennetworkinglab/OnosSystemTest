@@ -63,31 +63,29 @@
                 #Specify the Option for mininet
                 <arg1> --custom ~/mininet/custom/topo-HA.py </arg1>
                 <arg2> --topo mytopo </arg2>
-                <arg3> --switch ovs,protocols=OpenFlow13 </arg3>
+                <arg3> --switch ovs,protocols=OpenFlow10 </arg3>
+                <arg4> --mac </arg4>
                 <controller> remote </controller>
             </COMPONENTS>
         </Mininet2>
 
         <LincOE1>
-            <host>10.128.20.30</host>
+            <host>10.128.10.11</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>LincOEDriver</type>
             <connect_order>7</connect_order>
             <COMPONENTS>
-                <arg1> </arg1>
             </COMPONENTS>
         </LincOE1>
 
         <LincOE2>
-            <host>10.128.20.30</host>
+            <host>10.128.10.11</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>RemoteMininetDriver</type>
             <connect_order>8</connect_order>
             <COMPONENTS>
-                <arg1> sudo python /home/admin/optical.py </arg1>
-                <arg2> </arg2>
             </COMPONENTS>
         </LincOE2>
 

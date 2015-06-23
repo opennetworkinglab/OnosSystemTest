@@ -21,7 +21,6 @@ author:: Anil Kumar ( anilkumar.s@paxterrasolutions.com )
 
 MininetCliDriver is the basic driver which will handle the Mininet functions
 """
-import traceback
 import pexpect
 import re
 import sys
@@ -40,6 +39,7 @@ class RemoteMininetDriver( Emulator ):
     def __init__( self ):
         super( Emulator, self ).__init__()
         self.handle = self
+        self.name = None
         self.wrapped = sys.modules[ __name__ ]
         self.flag = 0
 
@@ -58,8 +58,6 @@ class RemoteMininetDriver( Emulator ):
             ip_address=self.ip_address,
             port=None,
             pwd=self.pwd )
-
-        self.sshHandle = self.handle
 
         # Copying the readme file to process the
         if self.handle:
@@ -93,13 +91,39 @@ class RemoteMininetDriver( Emulator ):
         elif re.search( "found multiple mininet", outputs ):
             return main.ERROR
         else:
+            # TODO: Parse for failed pings, give some truncated output
             main.log.error( "Error, unexpected output in the ping file" )
             main.log.warn( outputs )
             return main.TRUE
 
+    def arping( self, host="", ip="10.128.20.211" ):
+        """
+        Description:
+            Sends arp message from mininet host for hosts discovery
+        Required:
+            host - hosts name
+        Optional:
+            ip - ip address that does not exist in the network so there would
+                 be no reply.
+        """
+        cmd = " py " + host  + ".cmd(\"arping -c 1 " + ip + "\")"
+        try:
+            main.log.warn( "Sending: " + cmd )
+            self.handle.sendline( cmd )
+            response = self.handle.before
+            self.handle.sendline( "" )
+            self.handle.expect( "mininet>" )
+            return main.TRUE
+
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            main.cleanup()
+            main.exit()
+
     def pingLong( self, **pingParams ):
         """
-        Starts a continuous ping on the mininet host outputing
+        Starts a continuous ping on the mininet host outputting
         to a file in the /tmp dir.
         """
         self.handle.sendline( "" )
@@ -109,8 +133,9 @@ class RemoteMininetDriver( Emulator ):
         precmd = "sudo rm /tmp/ping." + args[ "SRC" ]
         self.execute( cmd=precmd, prompt="(.*)", timeout=10 )
         command = "sudo mininet/util/m " + args[ "SRC" ] + " ping " +\
-                args[ "TARGET" ] + " -i .2 -w " + str( args[ 'PINGTIME' ] ) +\
-                " -D > /tmp/ping." + args[ "SRC" ] + " &"
+                  args[ "TARGET" ] + " -i .2 -w " +\
+                  str( args[ 'PINGTIME' ] ) + " -D > /tmp/ping." +\
+                  args[ "SRC" ] + " &"
         main.log.info( command )
         self.execute( cmd=command, prompt="(.*)", timeout=10 )
         self.handle.sendline( "" )
@@ -182,7 +207,7 @@ class RemoteMininetDriver( Emulator ):
 
     def pingHostOptical( self, **pingParams ):
         """
-        This function is only for Packey Optical related ping
+        This function is only for Packet Optical related ping
         Use the next pingHost() function for all normal scenarios )
         Ping from one mininet host to another
         Currently the only supported Params: SRC and TARGET
@@ -281,7 +306,7 @@ class RemoteMininetDriver( Emulator ):
             port="port 6633",
             user="admin" ):
         """
-        Runs tpdump on an intferface and saves the file
+        Runs tcpdump on an interface and saves the file
         intf can be specified, or the default eth0 is used
         """
         try:
@@ -300,7 +325,7 @@ class RemoteMininetDriver( Emulator ):
             self.handle.sendline( "" )
             i = self.handle.expect( [ 'No\ssuch\device', 'listening\son',
                                     pexpect.TIMEOUT, "\$" ], timeout=10 )
-            main.log.warn( self.handle.before + self.handle.after )
+            main.log.info( self.handle.before + self.handle.after )
             if i == 0:
                 main.log.error( self.name + ": tcpdump - No such device exists.\
                         tcpdump attempted on: " + intf )
@@ -323,16 +348,14 @@ class RemoteMininetDriver( Emulator ):
             main.log.error( self.name + ":     " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
-            main.log.info(
-                    self.name + ":" * 60 )
-            main.log.error( traceback.print_exc() )
-            main.log.info( ":" * 80 )
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
     def stopTcpdump( self ):
-        "pkills tcpdump"
+        """
+            pkills tcpdump"""
         try:
             self.handle.sendline( "sudo pkill tcpdump" )
             self.handle.sendline( "" )
@@ -342,26 +365,74 @@ class RemoteMininetDriver( Emulator ):
             main.log.error( self.name + ":     " + self.handle.before )
             main.cleanup()
             main.exit()
-        except:
-            main.log.info(
-                    self.name + ":" * 60 )
-            main.log.error( traceback.print_exc() )
-            main.log.info( ":" * 80 )
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
-    def runOpticalMnScript( self ):
+    def runOpticalMnScript( self,name = 'onos', ctrllerIP = None ):
+        import time
+        import types
         """
-            This function is only meant for Packet Optical.
-            It runs the python script "optical.py" to create the
-            packet layer( mn )  topology
+            Description:
+                This function is only meant for Packet Optical.
+                It runs python script "opticalTest.py" to create the
+                packet layer( mn ) and optical topology
+            Optional:
+                name - Name of onos directory. (ONOS | onos)
+            Required:
+                ctrllerIP = Controller(s) IP address
+            TODO: If no ctrllerIP is provided, a default
+                $OC1 can be accepted
         """
         try:
             self.handle.sendline( "" )
             self.handle.expect( "\$" )
-            self.handle.sendline( "cd ~" )
+            self.handle.sendline( "cd ~/" + name + "/tools/test/topos" )
+            self.handle.expect( "topos\$" )
+            if ctrllerIP == None:
+                main.log.info( "You need to specify the IP" )
+                return main.FALSE
+            else:
+                controller = ''
+                if isinstance( ctrllerIP, types.ListType ):
+                    for i in xrange( len( ctrllerIP ) ):
+                        controller += ctrllerIP[i] + ' '
+                    main.log.info( "Mininet topology is being loaded with " +
+                                   "controllers: " + controller )
+                elif isinstance( ctrllerIP, types.StringType ):
+                    controller = ctrllerIP
+                    main.log.info( "Mininet topology is being loaded with " +
+                                   "controller: " + controller )
+                else:
+                    main.log.info( "You need to specify a valid IP" )
+                    return main.FALSE
+                cmd = "sudo -E python opticalTest.py " + controller
+                main.log.info( self.name + ": cmd = " + cmd )
+                self.handle.sendline( cmd )
+                time.sleep(30)
+                self.handle.sendline( "" )
+                self.handle.sendline( "" )
+                self.handle.expect("mininet>")
+                return main.TRUE
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            return main.FALSE
+
+    def attachLincOESession( self ):
+        """
+            Since executing opticalTest.py will give you mininet
+            prompt, you would at some point require to get onto
+            console of LincOE ((linc@onosTestBench)1>) to execute
+            commands like bring a optical port up or down on a ROADM
+            You can attach to console of Linc-OE session by a cmd:
+            sudo ~/linc-oe/rel/linc/bin/linc attach
+        """
+        try:
+            self.handle.sendline( "" )
             self.handle.expect( "\$" )
-            self.handle.sendline( "sudo python optical.py" )
+            self.handle.sendline( "sudo ~/linc-oe/rel/linc/bin/linc attach" )
             self.handle.expect( ">" )
             return main.TRUE
         except pexpect.EOF:
@@ -376,9 +447,19 @@ class RemoteMininetDriver( Emulator ):
         if self.handle:
             # Close the ssh connection
             self.handle.sendline( "" )
-            self.handle.expect( "\$" )
-            self.handle.sendline( "exit" )
-            self.handle.expect( "closed" )
+            # self.handle.expect( "\$" )
+            i = self.handle.expect( [ '\$', 'mininet>', pexpect.TIMEOUT,
+                                      pexpect.EOF ], timeout=2 )
+            if i == 0:
+                self.handle.sendline( "exit" )
+                self.handle.expect( "closed" )
+            elif i == 1:
+                self.handle.sendline( "exit" )
+                self.handle.expect( "exit" )
+                self.handle.expect('\$')
+                self.handle.sendline( "exit" )
+                self.handle.expect( "exit" )
+                self.handle.expect( "closed" )
         else:
             main.log.error( "Connection failed to the host" )
         return main.TRUE
@@ -386,7 +467,7 @@ class RemoteMininetDriver( Emulator ):
     def getFlowTable( self, protoVersion, sw ):
         """
          TODO document usage
-         TODO add option to look at cookies. ignoreing them for now
+         TODO add option to look at cookies. ignoring them for now
 
          print "get_flowTable(" + str( protoVersion ) +" " + str( sw ) +")"
          NOTE: Use format to force consistent flow table output across
@@ -559,7 +640,7 @@ class RemoteMininetDriver( Emulator ):
                             str( rule ) )
 
                         infoString = "Rules added to " + str( self.name )
-                        infoString += "iptable rule added to block IP: " + \
+                        infoString += "iptables rule added to block IP: " + \
                             str( dstIp )
                         infoString += "Port: " + \
                             str( dstPort ) + " Rule: " + str( rule )
@@ -572,8 +653,9 @@ class RemoteMininetDriver( Emulator ):
                         main.log.error(
                             self.name +
                             ": Timeout exception in setIpTables function" )
-                    except:
-                        main.log.error( traceback.print_exc() )
+                    except Exception:
+                        main.log.exception( self.name +
+                                            ": Uncaught exception!" )
                         main.cleanup()
                         main.exit()
                 else:
@@ -615,8 +697,9 @@ class RemoteMininetDriver( Emulator ):
                         main.log.error(
                             self.name +
                             ": Timeout exception in setIpTables function" )
-                    except:
-                        main.log.error( traceback.print_exc() )
+                    except Exception:
+                        main.log.exception( self.name +
+                                            ": Uncaught exception!" )
                         main.cleanup()
                         main.exit()
                 else:

@@ -3,7 +3,7 @@
     <COMPONENT>
 
         <ONOSbench>
-            <host>10.254.1.200</host>
+            <host>OCN</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>OnosDriver</type>
@@ -12,7 +12,7 @@
         </ONOSbench>
 
         <ONOS1cli>
-            <host>10.254.1.200</host>
+            <host>OCN</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>OnosCliDriver</type>
@@ -21,7 +21,7 @@
         </ONOS1cli>
 
         <ONOS2cli>
-            <host>10.254.1.200</host>
+            <host>OCN</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>OnosCliDriver</type>
@@ -30,7 +30,7 @@
         </ONOS2cli>
 
         <ONOS3cli>
-            <host>10.254.1.200</host>
+            <host>OCN</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>OnosCliDriver</type>
@@ -39,7 +39,7 @@
         </ONOS3cli>
 
         <ONOS4cli>
-            <host>10.254.1.200</host>
+            <host>OCN</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>OnosCliDriver</type>
@@ -48,7 +48,7 @@
         </ONOS4cli>
 
         <ONOS5cli>
-            <host>10.254.1.200</host>
+            <host>OCN</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>OnosCliDriver</type>
@@ -57,7 +57,7 @@
         </ONOS5cli>
 
         <ONOS6cli>
-            <host>10.254.1.200</host>
+            <host>OCN</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>OnosCliDriver</type>
@@ -66,7 +66,7 @@
         </ONOS6cli>
 
         <ONOS7cli>
-            <host>10.254.1.200</host>
+            <host>OCN</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>OnosCliDriver</type>
@@ -75,7 +75,7 @@
         </ONOS7cli>
 
         <ONOS1>
-            <host>10.254.1.201</host>
+            <host>OC1</host>
             <user>sdn</user>
             <password>rocks</password>
             <type>OnosDriver</type>
@@ -84,7 +84,7 @@
         </ONOS1>
 
         <ONOS2>
-            <host>10.254.1.202</host>
+            <host>OC2</host>
             <user>sdn</user>
             <password>rocks</password>
             <type>OnosDriver</type>
@@ -93,7 +93,7 @@
         </ONOS2>
 
         <ONOS3>
-            <host>10.254.1.203</host>
+            <host>OC3</host>
             <user>sdn</user>
             <password>rocks</password>
             <type>OnosDriver</type>
@@ -102,7 +102,7 @@
         </ONOS3>
 
         <ONOS4>
-            <host>10.254.1.204</host>
+            <host>OC4</host>
             <user>sdn</user>
             <password>rocks</password>
             <type>OnosDriver</type>
@@ -112,7 +112,7 @@
 
     
         <ONOS5>
-            <host>10.254.1.205</host>
+            <host>OC5</host>
             <user>sdn</user>
             <password>rocks</password>
             <type>OnosDriver</type>
@@ -121,7 +121,7 @@
         </ONOS5>
 
         <ONOS6>
-            <host>10.254.1.206</host>
+            <host>OC6</host>
             <user>sdn</user>
             <password>rocks</password>
             <type>OnosDriver</type>
@@ -130,7 +130,7 @@
         </ONOS6>
 
         <ONOS7>
-            <host>10.254.1.207</host>
+            <host>OC7</host>
             <user>sdn</user>
             <password>rocks</password>
             <type>OnosDriver</type>
@@ -141,6 +141,4 @@
     </COMPONENT>
 
 </TOPOLOGY>
-
-
-    
+ 

@@ -28,9 +28,7 @@ class flowTP1g:
         gitPull = main.params[ 'GIT' ][ 'autopull' ]
         cellName = main.params[ 'ENV' ][ 'cellName' ]
         Apps = main.params[ 'ENV' ][ 'cellApps' ]
-        BENCHIp = main.params[ 'BENCH' ][ 'ip1' ]
         BENCHUser = main.params[ 'BENCH' ][ 'user' ]
-        MN1Ip = main.params[ 'MN' ][ 'ip1' ]
         maxNodes = int(main.params[ 'availableNodes' ])
         skipMvn = main.params[ 'TEST' ][ 'skipCleanInstall' ]
         cellName = main.params[ 'ENV' ][ 'cellName' ]       
@@ -58,6 +56,11 @@ class flowTP1g:
             for i in range(1, maxNodes + 1):
                 ipString = 'ip' + str(i)
                 ONOSIp.append(main.params[ 'CTRL' ][ ipString ])
+
+            ONOSIp = [0]
+            ONOSIp.extend(main.ONOSbench.getOnosIps())
+            MN1Ip = ONOSIp[len(ONOSIp)-1]
+            BENCHIp = ONOSIp[len(ONOSIp)-2]
 
             #mvn clean install, for debugging set param 'skipCleanInstall' to yes to speed up test
             if skipMvn != "yes":

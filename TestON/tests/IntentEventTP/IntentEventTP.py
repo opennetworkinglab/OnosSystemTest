@@ -59,10 +59,11 @@ class IntentEventTP:
             clusterCount = int(scale[0])
 
             #Populate ONOSIp with ips from params 
-            for i in range(1, maxNodes + 1): 
-                ipString = 'ip' + str(i) 
-                ONOSIp.append(main.params[ 'CTRL' ][ ipString ])   
-            
+            ONOSIp = [0]
+            ONOSIp.extend(main.ONOSbench.getOnosIps())
+            MN1Ip = ONOSIp[len(ONOSIp) -1]
+            BENCHIp = ONOSIp[len(ONOSIp) -2]
+
             #mvn clean install, for debugging set param 'skipCleanInstall' to yes to speed up test
             if skipMvn != "yes":
                 mvnResult = main.ONOSbench.cleanInstall()

@@ -170,11 +170,9 @@ class IntentInstallWithdrawLat:
         for i in range(0,len(intentsList)):
             intentsList[i] = int(intentsList[i])
 
-        #if debug == "True":
-        #    debug = True
-        #else:
-        #    debug = False
+        ######################
         debug = True
+        ######################
 
         linkCount = 0
         for i in range(0,10):
@@ -187,13 +185,20 @@ class IntentInstallWithdrawLat:
             time.sleep(2)
 
         links = "--"
-        while "=null:" not in links:
+        for i in range(8): 
             if debug: main.log.info("top of loop")
             main.ONOSbench.handle.sendline("onos $OC1 links")
             main.ONOSbench.handle.expect(":~")
             links = main.ONOSbench.handle.before
+            if "=null:" in links:
+                break 
             if debug: main.log.info(str(links))
-            time.sleep(1)
+            if i > 3: 
+                main.ONOSbench.logReport(ONOSIp[1], ["ERROR", "WARNING", "EXCEPT"], "d")  
+            if i == 7: 
+                main.log.error("link data missing") 
+            time.sleep(3)
+
         links = links.splitlines()
         templinks = links
 
@@ -283,3 +288,4 @@ class IntentInstallWithdrawLat:
             resultsDB.close()
 
             main.ONOSbench.logReport(ONOSIp[1], ["ERROR", "WARNING", "EXCEPT"])
+            time.sleep(20)

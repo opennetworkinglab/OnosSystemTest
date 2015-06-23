@@ -1624,6 +1624,31 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
+    def purgeIntents( self ):
+        """
+        Purges all WITHDRAWN Intents
+        """
+        try:
+            cmdStr = "purge-intents"
+            handle = self.sendline( cmdStr )
+            if re.search( "Error", handle ):
+                main.log.error( "Error in purging intents" )
+                return main.FALSE
+            else:
+                return main.TRUE
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
     def routes( self, jsonFormat=False ):
         """
         NOTE: This method should be used after installing application:

@@ -89,7 +89,10 @@ class IntentEventTP:
          
         clusterCount = int(scale[0])
         scale.remove(scale[0])       
-        
+       
+        MN1Ip = ONOSIp[len(ONOSIp) -1]
+        BENCHIp = ONOSIp[len(ONOSIp) -2]
+ 
         #kill off all onos processes 
         main.log.step("Safety check, killing all ONOS processes")
         main.log.step("before initiating enviornment setup")
@@ -107,7 +110,7 @@ class IntentEventTP:
         cellIp = []
         for node in range (1, clusterCount + 1):
             cellIp.append(ONOSIp[node])
-
+         
         main.ONOSbench.createCellFile(BENCHIp,cellName,MN1Ip,str(Apps), *cellIp)
 
         main.step( "Set Cell" )

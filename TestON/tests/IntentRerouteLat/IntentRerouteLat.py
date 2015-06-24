@@ -49,8 +49,6 @@ class IntentRerouteLat:
             #Populate ONOSIp with ips from params 
             ONOSIp = [0]
             ONOSIp.extend(main.ONOSbench.getOnosIps())
-            MN1Ip = ONOSIp[len(ONOSIp)-1]
-            BENCHIp = ONOSIp[len(ONOSIp)-2]
 
             print("-----------------" + str(ONOSIp))
             #mvn clean install, for debugging set param 'skipCleanInstall' to yes to speed up test
@@ -78,6 +76,9 @@ class IntentRerouteLat:
          
         clusterCount = int(scale[0])
         scale.remove(scale[0])       
+
+        MN1Ip = ONOSIp[len(ONOSIp)-1]
+        BENCHIp = ONOSIp[len(ONOSIp)-2]
        
         #kill off all onos processes 
         main.log.step("Safety check, killing all ONOS processes")

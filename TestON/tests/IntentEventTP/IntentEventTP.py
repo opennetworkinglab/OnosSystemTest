@@ -61,8 +61,6 @@ class IntentEventTP:
             #Populate ONOSIp with ips from params 
             ONOSIp = [0]
             ONOSIp.extend(main.ONOSbench.getOnosIps())
-            MN1Ip = ONOSIp[len(ONOSIp) -1]
-            BENCHIp = ONOSIp[len(ONOSIp) -2]
 
             #mvn clean install, for debugging set param 'skipCleanInstall' to yes to speed up test
             if skipMvn != "yes":
@@ -95,7 +93,10 @@ class IntentEventTP:
         main.log.step("before initiating enviornment setup")
         for node in range(1, maxNodes + 1):
             main.ONOSbench.onosDie(ONOSIp[node])
-        
+       
+        MN1Ip = ONOSIp[len(ONOSIp) -1]
+        BENCHIp = ONOSIp[len(ONOSIp) -2]
+
         #Uninstall everywhere
         main.log.step( "Cleaning Enviornment..." )
         for i in range(1, maxNodes + 1):

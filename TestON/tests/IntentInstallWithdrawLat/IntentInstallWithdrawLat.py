@@ -52,8 +52,6 @@ class IntentInstallWithdrawLat:
             #Populate ONOSIp with ips from params 
             ONOSIp = [0]
             ONOSIp.extend(main.ONOSbench.getOnosIps())
-            MN1Ip = ONOSIps[len(ONOSIp)-1]
-            BENCHIp = ONOSIps[len(ONOSIp)-2]
 
             #mvn clean install, for debugging set param 'skipCleanInstall' to yes to speed up test
             if skipMvn != "yes":
@@ -80,7 +78,10 @@ class IntentInstallWithdrawLat:
          
         clusterCount = int(scale[0])
         scale.remove(scale[0])       
-        
+
+        MN1Ip = ONOSIps[len(ONOSIp)-1]
+        BENCHIp = ONOSIps[len(ONOSIp)-2]
+
         #kill off all onos processes 
         main.log.step("Safety check, killing all ONOS processes")
         main.log.step("before initiating enviornment setup")

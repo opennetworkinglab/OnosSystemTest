@@ -2257,18 +2257,7 @@ class OnosCHO:
                     main.log.info("Time for removing host intents: %2f seconds" %(time2-time1))
                     time.sleep(10)
                     main.log.info("Purging WITHDRAWN Intents")
-                    purgeResult  = main.TRUE
-                    for i in range( int( main.numCtrls) ):
-                        t = main.Thread( target=main.CLIs[i].purgeIntents,
-                             threadID=main.threadID,
-                             name="purgeIntents",
-                             args=[ ] )
-                        pool.append(t)
-                        t.start()
-                        main.threadID = main.threadID + 1
-                    for t in pool:
-                        t.join()
-                        purgeResult = purgeResult and t.result        
+                    purgeResult  = main.ONOScli2.purgeIntents()
                 else:
                     time.sleep(10)
                     if len( main.ONOScli1.intents()):

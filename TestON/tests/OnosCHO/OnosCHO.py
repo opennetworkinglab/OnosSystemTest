@@ -272,13 +272,8 @@ class OnosCHO:
         main.case(
             "Assign and Balance all Mininet switches across controllers" )
         main.step( "Stop any previous Mininet network topology" )
-<<<<<<< HEAD
-        #stopStatus = main.Mininet1.stopNet(fileName = "topoAtt" )
-        #time.sleep(10)
-=======
         stopStatus = main.Mininet1.stopNet(fileName = "topoAtt" )
         time.sleep(10)
->>>>>>> master
         main.step( "Start Mininet with Chordal topology" )
         startStatus = main.Mininet1.startNet(topoFile = main.newTopo)
         time.sleep(15)
@@ -2212,13 +2207,8 @@ class OnosCHO:
             results = main.TRUE
             main.log.info("Removing intent...")
             while moreIntents:
-<<<<<<< HEAD
-			#This is a work around for a major issue. We cycle through intents removal for up to 15 times.
-                if removeIntentCount == 20:
-=======
 			#This is a work around for a major issue. We cycle through intents removal for up to 5 times.
                 if removeIntentCount == 5:
->>>>>>> master
                     break
                 removeIntentCount = removeIntentCount + 1
                 intentsList1 = main.ONOScli1.getAllIntentIds()
@@ -2254,11 +2244,7 @@ class OnosCHO:
                             t = main.Thread( target=cli.removeIntent,
                                     threadID=main.threadID,
                                     name="removeIntent",
-<<<<<<< HEAD
-                                    args=[intentIdList1[i],'org.onosproject.cli',True,False])
-=======
                                     args=[intentIdList1[i],'org.onosproject.cli',False,False])
->>>>>>> master
                             pool.append(t)
                             t.start()
                             i = i + 1
@@ -2269,14 +2255,6 @@ class OnosCHO:
                         #time.sleep(2)
                     time2 = time.time()
                     main.log.info("Time for removing host intents: %2f seconds" %(time2-time1))
-<<<<<<< HEAD
-                else:
-                    time.sleep(20)
-                    if len( main.ONOScli1.intents()):
-                        continue
-                    break
-                time.sleep(15)
-=======
                     time.sleep(10)
                     main.log.info("Purging WITHDRAWN Intents")
                     purgeResult  = main.TRUE
@@ -2297,7 +2275,6 @@ class OnosCHO:
                         continue
                     break
                 time.sleep(10)
->>>>>>> master
             else:
                 print "Removed %d intents" %(intentsCount)
                 step1Result = main.TRUE

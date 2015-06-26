@@ -257,7 +257,6 @@ class OnosDriver( CLI ):
             main.cleanup()
             main.exit()
 
-<<<<<<< HEAD
     def mvnCleanCompile( self ):
         """
         Runs mvn clean compile the root of the ONOS directory.
@@ -332,10 +331,7 @@ class OnosDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def gitPull( self, comp1="" ):
-=======
     def gitPull( self, comp1="", fastForward=True ):
->>>>>>> master
         """
         Assumes that "git pull" works without login
 
@@ -1630,11 +1626,7 @@ class OnosDriver( CLI ):
         except Exception:
             main.log.exception( "Copying files failed" )
 
-<<<<<<< HEAD
-    def onosCheckLogs( self, onosIp ):
-=======
     def checkLogs( self, onosIp, restart=False):
->>>>>>> master
         """
         runs onos-check-logs on the given onos node
         If restart is True, use the old version of onos-check-logs which
@@ -2198,71 +2190,6 @@ class OnosDriver( CLI ):
         main.log.info("================================================================\n")
         return totalHits 
 
-    def getOnosIpFromEnv(self):
-
-        import string  
-
-        # returns a list of ip addresses for the onos nodes, will work with up to 7 nodes + OCN and OCI
-        # returns in format [ 'x', OC1 ip, OC2 i... ect. ... , ONN ip ]
-
-        self.handle.sendline("env| grep OC") 
-        self.handle.expect(":~")
-        rawOutput = self.handle.before
-        print rawOutput
-        print "-----------------------------"
-        print repr(rawOutput)
-        mpa = dict.fromkeys(range(32))
-        translated = rawOutput.translate(mpa)
-        print translated
-
-
-        # create list with only the lines that have the needed IPs 
-        unparsedIps = []
-
-        # remove preceeding or trailing lines
-        for line in rawOutput: 
-            if "OC" in line and "=" in line: 
-                unparsedIps.append(str(line)) 
-
-        # determine cluster size
-        clusterCount = 0
-        for line in unparsedIps:
-            line = str(line)
-            print line
-            temp = line.replace("OC","")
-            print("line index " + str(line.index("="))) 
-            OCindex = temp[0]
-            for i in range(0, 7):
-                if OCindex == str(i) and i > clusterCount:
-                    clusterCount == i
-                    print(clusterCount)
-        # create list to hold ips such that OC1 is at list[1] and OCN and OCI are at the end (in that order)
-        ONOSIps = ["x"] * (clusterCount + 3) 
-
-        # populate list 
-        for line in unparsedIps:
-            main.log.info(line)########## 
-            temp = str(line.replace("OC",""))
-            main.log.info(str(list(temp)))
-            OCindex = temp[0]
-            main.log.info(OCindex)############
-            if OCindex == "N":
-                ONOSIps[ clusterCount + 1 ] = temp.replace("N=","")
-    
-            if OCindex == "I":
-                ONOSIps[ clusterCount + 2 ] = temp.replace("I=","")
-
-            else:
-                ONOSIps[ int(OCindex) ] = temp.replace((OCindex + "=") ,"")
-
-        # validate 
-        for x in ONOSIps: 
-            if ONOSIps.index(x) != 0 and x == "x": 
-                main.log.error("ENV READ FAILURE, MISSING DATA: \n\n" + str(ONOSIps) + "\n\n") 
-
-        return ONOSIps
-
-
     def onosErrorLog(self, nodeIp): 
 
         cmd = "onos-ssh " + nodeIp + " cat /opt/onos/log/karaf.log | grep WARN"
@@ -2340,3 +2267,46 @@ class OnosDriver( CLI ):
         if len(exceptions) > 0: 
             main.log.info(msg3)
         main.log.info("===============================================================\n")
+
+    def getOnosIPfromCell(self):
+        '''
+            Returns the ONOS node names and their IP addresses as defined in the cell and applied to shell environment
+			Example output return: [['OC1', '10.128.40.41'], ['OC2', '10.128.40.42'], ['OC3', '10.128.40.43']]
+        ''' 
+        import re
+        try:
+            # Clean handle by sending empty and expecting $
+            self.handle.sendline( "" )
+            self.handle.expect( "\$" )
+            self.handle.sendline( "cell" )
+            self.handle.expect( "\$" )
+            handleBefore = self.handle.before
+            handleAfter = self.handle.after
+            # Get the rest of the handle
+            self.handle.sendline( "" )
+            self.handle.expect( "\$" )
+            handleMore = self.handle.before
+            ipList = []
+            cellOutput = handleBefore + handleAfter + handleMore
+            cellOutput = cellOutput.replace("\r\r","")
+            cellOutput = cellOutput.splitlines()
+            for i in range( len(cellOutput) ):
+                if( re.match( "OC", cellOutput[i] ) ):
+                    if( re.match( "OCI", cellOutput[i] ) or re.match( "OCN", cellOutput[i] ) ):
+                        continue
+                    else:
+                        onosIP = cellOutput[i].split("=")
+						# below step could me changed to return only IP if node name is not needed.
+                        ipList.append(onosIP)
+            return ipList
+        except pexpect.ExceptionPexpect as e:
+            main.log.error( self.name + ": Pexpect exception found of type " +
+                            str( type( e ) ) )
+            main.log.error ( e.get_trace() )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()

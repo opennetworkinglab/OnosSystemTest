@@ -2258,3 +2258,38 @@ class OnosDriver( CLI ):
         if len(exceptions) > 0: 
             main.log.info(msg3)
         main.log.info("===============================================================\n")
+
+
+    def jvmSet(self, memory=8):
+        
+        import os
+
+        homeDir = os.path.expanduser('~')
+        filename = "/onos/tools/package/bin/onos-service"
+
+        serviceConfig = open(homeDir + filename, 'w+')
+        serviceConfig.write("#!/bin/bash\n ")
+        serviceConfig.write("#------------------------------------- \n ")
+        serviceConfig.write("# Starts ONOS Apache Karaf container\n ")
+        serviceConfig.write("#------------------------------------- \n ")
+        serviceConfig.write("#export JAVA_HOME=${JAVA_HOME:-/usr/lib/jvm/java-7-openjdk-amd64/}\n ")
+        serviceConfig.write("""export JAVA_OPTS="${JAVA_OPTS:--Xms""" + str(memory) + "G -Xmx" + str(memory) + """G}" \n """)
+        serviceConfig.write("[ -d $ONOS_HOME ] && cd $ONOS_HOME || ONOS_HOME=$(dirname $0)/..\n")
+        serviceConfig.write("""${ONOS_HOME}/apache-karaf-$KARAF_VERSION/bin/karaf "$@" \n """)
+        serviceConfig.close()
+
+    def createDBFile(self, testData):
+        
+        filename = main.TEST + "DB"
+        DBString = ""
+        
+        for item in testData:
+            if type(item) is string: 
+                item = "'" + item + "'"
+            if testData.index(item) < len(testData-1):
+                item += ","
+            DBString += str(item) 
+
+        DBFile = open(filename, "a")
+        DBFile.write(DBString)
+        DBFile.close()

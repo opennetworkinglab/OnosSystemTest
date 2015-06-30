@@ -8,7 +8,7 @@
             <type>OnosDriver</type>
             <connect_order>1</connect_order>
             <COMPONENTS>
-                <home>~/onos</home>
+                <home>~/ONOS</home>
             </COMPONENTS>
         </ONOSbench>
 

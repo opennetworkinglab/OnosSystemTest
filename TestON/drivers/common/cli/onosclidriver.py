@@ -1762,39 +1762,60 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def checkIntentState( self, intentsId, expectedState = 'INSTALLED' ):
+    def checkIntentState( self, intentsId, expectedState='INSTALLED' ):
         """
         Description:
             Check intents state
         Required:
             intentsId - List of intents ID to be checked
         Optional:
-            expectedState - Check this expected state of each intents state
-                            in the list. Defaults to INSTALLED
+            expectedState - Check the expected state(s) of each intents
+                            state in the list.
+                            *NOTE: You can pass in a list of expected state,
+                            Eg: expectedState = [ 'INSTALLED' , 'INSTALLING' ]
         Return:
-            Returns main.TRUE only if all intent are the same as expectedState,
-            , otherwise,returns main.FALSE.
+            Returns main.TRUE only if all intent are the same as expected states
+            , otherwise, returns main.FALSE.
         """
         try:
             # Generating a dictionary: intent id as a key and state as value
+            returnValue = main.TRUE
             intentsDict = self.getIntentState( intentsId )
+
             #print "len of intentsDict ", str( len( intentsDict ) )
             if len( intentsId ) != len( intentsDict ):
                 main.log.info( self.name + "There is something wrong " +
                                "getting intents state" )
                 return main.FALSE
-            returnValue = main.TRUE
-            for intents in intentsDict:
-                if intents.get( 'state' ) != expectedState:
-                    main.log.info( self.name + " : " + intents.get( 'id' ) +
-                                   " actual state = " + intents.get( 'state' )
-                                   + " does not equal expected state = "
-                                   + expectedState )
-                    returnValue = main.FALSE
+
+            if isinstance( expectedState, types.StringType ):
+                for intents in intentsDict:
+                    if intents.get( 'state' ) != expectedState:
+                        main.log.debug( self.name + " : Intent ID - " +
+                                        intents.get( 'id' ) +
+                                        " actual state = " +
+                                        intents.get( 'state' )
+                                        + " does not equal expected state = "
+                                        + expectedState )
+                        returnValue = main.FALSE
+
+            elif isinstance( expectedState, types.ListType ):
+                for intents in intentsDict:
+                    if not any( state == intents.get( 'state' ) for state in
+                                expectedState ):
+                        main.log.debug( self.name + " : Intent ID - " +
+                                        intents.get( 'id' ) +
+                                        " actual state = " +
+                                        intents.get( 'state' ) +
+                                        " does not equal expected states = "
+                                        + str( expectedState ) )
+                        returnValue = main.FALSE
+
             if returnValue == main.TRUE:
                 main.log.info( self.name + ": All " +
                                str( len( intentsDict ) ) +
-                               " intents are in " + expectedState + " state")
+                               " intents are in " + str( expectedState ) +
+                               " state" )
             return returnValue
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
@@ -1822,7 +1843,7 @@ class OnosCliDriver( CLI ):
                 cmdStr += " -j"
             handle = self.sendline( cmdStr )
             if re.search( "Error:", handle ):
-                main.log.error( self.name + ".flows() response: " +
+                main.log.error( self.name + ": flows() response: " +
                                 str( handle ) )
             return handle
         except TypeError:
@@ -1857,9 +1878,11 @@ class OnosCliDriver( CLI ):
                 for flow in device.get( 'flows' ):
                     if flow.get( 'state' ) != 'ADDED' and flow.get( 'state' ) != \
                             'PENDING_ADD':
+
                         main.log.info( self.name + ": flow Id: " +
-                                       flow.get( 'groupId' ) +
-                                       " | state:" + flow.get( 'state' ) )
+                                       str( flow.get( 'groupId' ) ) +
+                                       " | state:" +
+                                       str( flow.get( 'state' ) ) )
                         returnValue = main.FALSE
 
             return returnValue
@@ -3576,3 +3599,36 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
+    def summary( self, jsonFormat=True ):
+        """
+        Description: Execute summary command in onos
+        Returns: json object ( summary -j ), returns main.FALSE if there is
+        no output
+
+        """
+        try:
+            cmdStr = "summary"
+            if jsonFormat:
+                cmdStr += " -j"
+            handle = self.sendline( cmdStr )
+
+            if re.search( "Error:", handle ):
+                main.log.error( self.name + ": summary() response: " +
+                                str( handle ) )
+            if not handle:
+                main.log.error( self.name + ": There is no output in " +
+                                "summary command" )
+                return main.FALSE
+            return handle
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()

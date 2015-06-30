@@ -5,9 +5,7 @@
 import time
 import json
 
-time.sleep( 1 )
-
-class FuncStartTemplate:
+class FuncTopo:
 
     def __init__( self ):
         self.default = ''
@@ -18,10 +16,10 @@ class FuncStartTemplate:
         import imp
         """
         Startup sequence:
-        git pull
         cell <name>
         onos-verify-cell
         onos-remove-raft-log
+        git pull
         mvn clean install
         onos-package
         onos-install -f
@@ -35,6 +33,10 @@ class FuncStartTemplate:
         except NameError:
             init = False
 
+        main.wrapper = imp.load_source( 'FuncTopoFunction', '/home/admin/' +
+                                        'TestON/tests/FuncTopo/Dependency/' +
+                                        'FuncTopoFunction.py')
+
         #Local variables
         cellName = main.params[ 'ENV' ][ 'cellName' ]
         apps = main.params[ 'ENV' ][ 'cellApps' ]
@@ -47,13 +49,16 @@ class FuncStartTemplate:
         main.numCtrls = main.params[ 'CTRL' ][ 'num' ]
         main.ONOSport = []
         main.hostsData = {}
+        main.topoName = " "
         PULLCODE = False
         if main.params[ 'GIT' ][ 'pull' ] == 'True':
             PULLCODE = True
         main.case( "Setting up test environment" )
         main.CLIs = []
+        main.nodes = []
         for i in range( 1, int( main.numCtrls ) + 1 ):
             main.CLIs.append( getattr( main, 'ONOScli' + str( i ) ) )
+            main.nodes.append( getattr( main, 'ONOS' + str( i ) ) )
             main.ONOSport.append( main.params[ 'CTRL' ][ 'port' + str( i ) ] )
 
         # -- INIT SECTION, ONLY RUNS ONCE -- #
@@ -83,20 +88,19 @@ class FuncStartTemplate:
                                "clean install" )
 
             globalONOSip = main.ONOSbench.getOnosIps()
-
-        maxNodes = ( len( globalONOSip ) - 2 )
+        maxNodes = ( len(globalONOSip) - 2 )
 
         main.numCtrls = int( main.scale[ 0 ] )
         main.scale.remove( main.scale[ 0 ] )
 
         main.ONOSip = []
         for i in range( maxNodes ):
-            main.ONOSip.append( globalONOSip[ i ] )
+            main.ONOSip.append( globalONOSip[i] )
 
         #kill off all onos processes
         main.log.info( "Safety check, killing all ONOS processes" +
                        " before initiating enviornment setup" )
-        for i in range( maxNodes ):
+        for i in range(maxNodes):
             main.ONOSbench.onosDie( globalONOSip[ i ] )
 
         print "NODE COUNT = ", main.numCtrls
@@ -148,7 +152,7 @@ class FuncStartTemplate:
                                  onpass="Successfully installed ONOS package",
                                  onfail="Failed to install ONOS package" )
 
-        time.sleep( 20 )
+        time.sleep( 10 )
         main.step( "Starting ONOS service" )
         stopResult = main.TRUE
         startResult = main.TRUE
@@ -172,48 +176,43 @@ class FuncStartTemplate:
                                  onpass="ONOS service is ready",
                                  onfail="ONOS service did not start properly" )
 
-        main.step( "Start ONOS cli" )
-        cliResult = main.TRUE
-        for i in range( main.numCtrls ):
-            cliResult = cliResult and \
-                        main.CLIs[ i ].startOnosCli( main.ONOSip[ i ] )
-        stepResult = cliResult
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="Successfully start ONOS cli",
-                                 onfail="Failed to start ONOS cli" )
-
     def CASE9( self, main ):
         '''
             Report errors/warnings/exceptions
         '''
-        main.log.info("Error report: \n" )
-        main.ONOSbench.logReport( globalONOSip[ 0 ],
-                                  [ "INFO",
-                                    "FOLLOWER",
-                                    "WARN",
-                                    "flow",
-                                    "ERROR",
-                                    "Except" ],
+        main.log.info("Error report: \n")
+        main.ONOSbench.logReport( globalONOSip[0],
+                                  [ "INFO","FOLLOWER","WARN",
+                                    "flow","ERROR","Except" ],
                                   "s" )
         #main.ONOSbench.logReport( globalONOSip[1], [ "INFO" ], "d" )
 
-    def CASE11( self, main ):
+    def CASE1001( self, main ):
         """
-            Start mininet
+            Test topology discovery
         """
-        main.log.report( "Start Mininet topology" )
-        main.log.case( "Start Mininet topology" )
+        main.case( "Topology discovery test" )
 
-        main.step( "Starting Mininet Topology" )
-        topoResult = main.Mininet1.startNet( topoFile=topology )
-        stepResult = topoResult
+
+        main.step( "Torus 5-5 topology" )
+        main.topoName = "TORUS5-5"
+        mnCmd = "mn --topo=torus,5,5 --mac"
+        stepResult = main.wrapper.testTopology( main,
+                                                mnCmd=mnCmd,
+                                                clean=False )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
-                                 onpass="Successfully loaded topology",
-                                 onfail="Failed to load topology" )
-        # Exit if topology did not load properly
-        if not topoResult:
-            main.cleanup()
-            main.exit()
+                                 onpass="Torus 5-5 topology successful",
+                                 onfail="Torus 5-5 topology failed" )
 
+        main.topoName = "TREE3-3"
+        stepResult = main.TRUE
+        main.step( "Tree 3-3 topology" )
+        mnCmd = "mn --topo=tree,3,3 --mac"
+        stepResult = main.wrapper.testTopology( main,
+                                                mnCmd=mnCmd,
+                                                clean=True )
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="Tree 3-3 topology successful",
+                                 onfail="Tree 3-3 topology failed" )

@@ -80,7 +80,7 @@ class CLI( Component ):
         i = 5
         while i == 5:
             i = self.handle.expect( [
-				    ssh_newkey,
+                                    ssh_newkey,
                                     'password:|Password:',
                                     pexpect.EOF,
                                     pexpect.TIMEOUT,
@@ -88,11 +88,11 @@ class CLI( Component ):
                                     'teston>',
                                     '>|#|\$' ],
                 		    120 )
-            if i == 0:
+            if i == 0:  # Accept key, then expect either a password prompt or access
                 main.log.info( "ssh key confirmation received, send yes" )
                 self.handle.sendline( 'yes' )
-                i = self.handle.expect(
-                    [ ssh_newkey, 'password:', pexpect.EOF ] )
+                i = 5  # Run the loop again
+                continue 
             if i == 1:
                 if self.pwd:
                     main.log.info(

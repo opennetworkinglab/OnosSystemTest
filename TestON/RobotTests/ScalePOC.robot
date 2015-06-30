@@ -1,7 +1,7 @@
 *** Settings ***
 Documentation     ONOS Sanity Test Suite
-Suite Setup       ONOS Suite Setup    ${CONTROLLER_IP}    ${CONTROLLER_USER}
-Suite Teardown    ONOS Suite Teardown
+Suite Setup       ONOS Suite Setup    ${CONTROLLER_IP}    ${CONTROLLER_USER} ##Things to be done prior to running tests
+Suite Teardown    ONOS Suite Teardown ##Things to be done after test suite is finished. 
 Library           SSHLibrary
 Library           Collections
 Library           OperatingSystem
@@ -10,20 +10,25 @@ Library           RequestsLibrary
 Library           HttpLibrary.HTTP
 
 *** Variables ***
+##Grab the environment variables sources from your "cell"
 ${CONTROLLER_IP}    %{OC1}
 ${MININET_IP}    %{OCN}
 ${CONTROLLER_USER}    %{ONOS_USER}
 ${MININET_USER}    %{ONOS_USER}
+##USER_HOME used for public key
 ${USER_HOME}    /home/fedora
+##ONOS_HOME is where the onos dist will be deployed on the controller vm
 ${ONOS_HOME}    /opt/onos
 ${RESTCONFPORT}    8181
 ${LINUX_PROMPT}    $
+##SWITCHES_RESULT_FILE and JENKINS_WORKSPACE can be configurable...read overriding variables in README
 ${SWITCHES_RESULT_FILE}    ${USER_HOME}/workspace/tools/switches.csv
 ${JENKINS_WORKSPACE}    ${USER_HOME}/workspace/ONOS-Stable/
 ${prompt_timeout}    30s
 ${start}    10
 ${end}    100
 ${increments}    10
+##Number of nodes in cluster. To add more nodes, create CONTROLLER_IP2/3/4 etc. variables above and change this cluster variable
 ${cluster}    1
 
 *** Test Cases ***

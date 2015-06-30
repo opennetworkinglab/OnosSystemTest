@@ -88,10 +88,10 @@ class CLI( Component ):
                                     'teston>',
                                     '>|#|\$' ],
                 		    120 )
-            if i == 0:  #Accept key, then expect either a password prompt or access 
+            if i == 0:  # Accept key, then expect either a password prompt or access
                 main.log.info( "ssh key confirmation received, send yes" )
                 self.handle.sendline( 'yes' )
-                i = 5  #Run the loop again 
+                i = 5  # Run the loop again
                 continue 
             if i == 1:
                 if self.pwd:

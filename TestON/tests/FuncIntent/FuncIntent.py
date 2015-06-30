@@ -150,7 +150,7 @@ class FuncIntent:
                                  onpass="Successfully installed ONOS package",
                                  onfail="Failed to install ONOS package" )
 
-        time.sleep( 20 )
+        time.sleep( 60 )
         main.step( "Starting ONOS service" )
         stopResult = main.TRUE
         startResult = main.TRUE

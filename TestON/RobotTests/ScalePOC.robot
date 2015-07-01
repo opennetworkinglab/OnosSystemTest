@@ -1,5 +1,5 @@
 *** Settings ***
-Documentation     ONOS Sanity Test Suite
+Documentation     ONOS Switch Scale Test
 Suite Setup       ONOS Suite Setup    ${CONTROLLER_IP}    ${CONTROLLER_USER}
 Suite Teardown    ONOS Suite Teardown
 Library           SSHLibrary
@@ -22,6 +22,7 @@ ${ONOS_HOME}    /opt/onos
 ${RESTCONFPORT}    8181
 ${LINUX_PROMPT}    $
 ##SWITCHES_RESULT_FILE and JENKINS_WORKSPACE can be configurable...read overriding variables in README
+##SWITCHES_RESULT_FILE is used to plot data. you can use a jenkins post job for this or do it manually
 ${SWITCHES_RESULT_FILE}    ${USER_HOME}/workspace/tools/switches.csv
 ${JENKINS_WORKSPACE}    ${USER_HOME}/workspace/ONOS-Stable/
 ${prompt_timeout}    30s

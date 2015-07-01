@@ -755,32 +755,54 @@ class OnosDriver( CLI ):
         configParam = 'appSetting 1'
 
         """
-        try:
-            cfgStr = ( "onos "+str(ONOSIp)+" cfg set "+
-                       str(configName) + " " +
-                       str(configParam)
-                     )
+        for i in range(5):
+            try:
+                cfgStr = ( "onos "+str(ONOSIp)+" cfg set "+
+                           str(configName) + " " +
+                           str(configParam)
+                         )
 
-            self.handle.sendline( "" )
-            self.handle.expect( "\$" )
-            self.handle.sendline( cfgStr )
-            self.handle.expect( "\$" )
-        
-            # TODO: Add meaningful assertion
+                self.handle.sendline( "" )
+                self.handle.expect( "\$" )
+                self.handle.sendline( cfgStr )
+                self.handle.expect( "\$" )
             
-            return main.TRUE
+                # meaningful assertion
+                # command syntax? 
+                checkStr = ( "onos " + str(ONOSIp) + """ cfg get """"+ str(configName) + """ " """)
 
-        except pexpect.ExceptionPexpect as e:
-            main.log.error( self.name + ": Pexpect exception found of type " +
-                            str( type( e ) ) )
-            main.log.error ( e.get_trace() )
-            main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
-        except Exception:
-            main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+                self.handle.sendline( checkStr )
+                self.handle.expect( "\$" )
+                paramValue = configParam.split(" ")[1]
+                print self.handle.before
+
+                if "value=" + paramValue + "," in self.handle.before:
+                    print self.handle.before
+                    main.log.info("cfg " + configName + "successfully set to " + configParam)    
+                    return main.TRUE
+
+            except pexpect.ExceptionPexpect as e:
+                main.log.error( self.name + ": Pexpect exception found of type " +
+                                str( type( e ) ) )
+                main.log.error ( e.get_trace() )
+                main.log.error( self.name + ":    " + self.handle.before )
+                main.cleanup()
+                main.exit()
+            except Exception:
+                main.log.exception( self.name + ": Uncaught exception!" )
+                main.cleanup()
+                main.exit()
+            
+            time.sleep(5)
+
+        main.log.error("CFG SET FAILURE: " + configName + " " + configParam )
+        main.ONOSbench.handle.sendline("onos $OC1 cfg get") 
+        main.ONOSbench.handle.expect("\$")
+        print main.ONOSbench.handle.before
+        main.ONOSbench.logReport( ONOSIp, ["ERROR","WARN","EXCEPT"], "d")
+        return main.FALSE
+
+
 
     def onosCli( self, ONOSIp, cmdstr ):
         """
@@ -2085,7 +2107,7 @@ class OnosDriver( CLI ):
 
         totalHits = 0 
         for term in range(len(searchTerms)): 
-            cmd = "onos-ssh " + nodeIp + " cat /opt/onos/log/karaf.log | grep " + searchTerms[term] 
+            cmd = "onos-ssh " + str(nodeIp) + " cat /opt/onos/log/karaf.log | grep " + str(searchTerms[term]) 
             self.handle.sendline(cmd)
             self.handle.expect(":~")
             before = (self.handle.before).splitlines()

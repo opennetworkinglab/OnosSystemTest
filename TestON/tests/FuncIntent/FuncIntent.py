@@ -24,6 +24,9 @@ class FuncIntent:
         onos-package
         onos-install -f
         onos-wait-for-start
+        onos-isup
+        ...
+        onos $OC1..
         """
         global init
         global globalONOSip
@@ -229,9 +232,13 @@ class FuncIntent:
         for i in range( 1, ( main.numSwitch + 1 ) ):
             switchList.append( 's' + str( i ) )
 
+        tempONOSip = []
+        for i in range( main.numCtrls ):
+            tempONOSip.append( main.ONOSip[ i ] )
+
         assignResult = main.Mininet1.assignSwController( sw=switchList,
-                                                         ip=main.ONOSip,
-                                                         port=main.ONOSport )
+                                                         ip=tempONOSip,
+                                                         port='6633' )
         if not assignResult:
             main.cleanup()
             main.exit()

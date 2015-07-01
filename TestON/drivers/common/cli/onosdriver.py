@@ -20,6 +20,7 @@ import sys
 import time
 import pexpect
 import os.path
+import os
 from requests.models import Response
 sys.path.append( "../" )
 from drivers.common.clidriver import CLI
@@ -50,6 +51,16 @@ class OnosDriver( CLI ):
                     break
             if self.home is None or self.home == "":
                 self.home = "~/onos"
+
+            try:
+                if os.getenv( str( self.ip_address ) ) != None:
+                    self.ip_address = os.getenv( str( self.ip_address ) )
+
+            except KeyError:
+                self.log.info("Invalid host name, connecting to local host instead")
+                self.ip_address = 'localhost'
+            except Exception as inst:
+                self.log.error("Uncaught exception: " + str( inst ) )
 
             self.name = self.options[ 'name' ]
             self.handle = super( OnosDriver, self ).connect(
@@ -1310,7 +1321,8 @@ class OnosDriver( CLI ):
                 output = output + \
                     "The number of links and switches does not match " + \
                     "what was expected"
-                result = main.FALSE
+                main.log.error( output )
+                return main.FALSE
             output = output + "\n ONOS sees %i devices" % int( devices )
             output = output + " (%i expected) " % int( numoswitch )
             output = output + "and %i links " % int( links )

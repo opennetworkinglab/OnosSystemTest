@@ -3,11 +3,11 @@
     <testcases>20,21,22,10,25,23,24</testcases>
     #Environment variables
     <ENV>
-        <cellName>driver_test</cellName>
+        <cellName>choTest1</cellName>
     </ENV>
 
     <CTRL>
-        <ip1>10.128.20.11</ip1>
+        <ip1>10.128.10.21</ip1>
         <port1>6633</port1>
     </CTRL>
 

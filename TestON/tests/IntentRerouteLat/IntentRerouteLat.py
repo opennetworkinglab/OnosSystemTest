@@ -133,6 +133,9 @@ class IntentRerouteLat:
         deviceMastership = (main.params[ 'TEST' ][ "s" + str(clusterCount) ]).split(",")
         print("Device mastership list: " + str(deviceMastership))
 
+
+
+        '''
         main.ONOSbench.handle.sendline("""onos $OC1 "cfg set org.onosproject.provider.nil.NullProviders deviceCount 8 " """)
         main.ONOSbench.handle.expect(":~")
         print repr(main.ONOSbench.handle.before)
@@ -141,6 +144,8 @@ class IntentRerouteLat:
         main.ONOSbench.handle.expect(":~")
         print repr(main.ONOSbench.handle.before)
         time.sleep(3)
+        main.ONOSbench.handle.sendline("""onos $OC1 "cfg set org.onosproject.provider.nil.NullProviders enabled true" """)
+        main.ONOSbench.handle.expect(":~")
 
         time.sleep(10)
 
@@ -163,6 +168,22 @@ class IntentRerouteLat:
                 main.ONOSbench.handle.sendline("""onos $OC1 "cfg set org.onosproject.provider.nil.NullProviders enabled true" """)
                 main.ONOSbench.handle.expect(":~")
                 time.sleep(8) 
+        '''
+
+        main.ONOSbench.onosCfgSet( ONOSIp[1], "org.onosproject.store.flow.impl.NewDistributedFlowRuleStore", "backupEnabled false")
+
+        main.log.step("Setting up null provider")
+        for i in range(3):
+            main.ONOSbench.onosCfgSet( ONOSIp[1], "org.onosproject.provider.nil.NullProviders", "deviceCount 8")
+            main.ONOSbench.onosCfgSet( ONOSIp[1], "org.onosproject.provider.nil.NullProviders", "topoShape reroute")
+            main.ONOSbench.onosCfgSet( ONOSIp[1], "org.onosproject.provider.nil.NullProviders", "enabled true")
+            time.sleep(5)
+            main.ONOSbench.handle.sendline("onos $OC1 summary")
+            main.ONOSbench.handle.expect(":~")
+            x = main.ONOSbench.handle.before
+            if "devices=8" in x and "links=16," in x:
+                break
+
 
         index = 1
         for node in deviceMastership:
@@ -252,7 +273,13 @@ class IntentRerouteLat:
                         break
                     if i == 39:
                         main.log.error("Flow/link count incorrect, data invalid."+ linkCheck)
-
+                        main.ONOSbench.logReport(ONOSIp[1], ["ERROR", "WARNING", "EXCEPT"], "d")
+                        #main.ONOSbench.logReport(ONOSIp[(clusterCount-1)], ["ERROR", "WARNING", "EXCEPT"], "d")
+                        main.ONOSbench.sendline("onos $OC1 summary")
+                        main.ONOSbench.sendline("onos $OC1 devices")
+                        main.ONOSbench.sendline("onos $OC1 links") 
+                        main.ONOSbench.expect(":~")
+                        main.log.info(main.ONOSbench.before)
 
                 #collect timestamp from link cut
                 cmd = """onos $OC1 null-link "null:0000000000000004/1 null:0000000000000003/2 down" """
@@ -294,7 +321,8 @@ class IntentRerouteLat:
                         break
                     if i == 39:
                         main.log.error("Link or flow count incorrect, data invalid." + linkCheck)
-                
+                        main.ONOSbench.logReport(ONOSIp[1], ["ERROR", "WARNING", "EXCEPT"], "d")
+
                 time.sleep(5) #trying to avoid negative values 
 
                 #intents events metrics installed timestamp

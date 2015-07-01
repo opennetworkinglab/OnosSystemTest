@@ -1,7 +1,7 @@
 *** Settings ***
 Documentation     ONOS Sanity Test Suite
-Suite Setup       ONOS Suite Setup    ${CONTROLLER_IP}    ${CONTROLLER_USER} ##Things to be done prior to running tests
-Suite Teardown    ONOS Suite Teardown ##Things to be done after test suite is finished. 
+Suite Setup       ONOS Suite Setup    ${CONTROLLER_IP}    ${CONTROLLER_USER}
+Suite Teardown    ONOS Suite Teardown
 Library           SSHLibrary
 Library           Collections
 Library           OperatingSystem

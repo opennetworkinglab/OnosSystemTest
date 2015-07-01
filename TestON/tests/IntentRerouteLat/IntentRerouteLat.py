@@ -133,43 +133,6 @@ class IntentRerouteLat:
         deviceMastership = (main.params[ 'TEST' ][ "s" + str(clusterCount) ]).split(",")
         print("Device mastership list: " + str(deviceMastership))
 
-
-
-        '''
-        main.ONOSbench.handle.sendline("""onos $OC1 "cfg set org.onosproject.provider.nil.NullProviders deviceCount 8 " """)
-        main.ONOSbench.handle.expect(":~")
-        print repr(main.ONOSbench.handle.before)
-        time.sleep(3)
-        main.ONOSbench.handle.sendline("""onos $OC1 "cfg set org.onosproject.provider.nil.NullProviders topoShape reroute" """)
-        main.ONOSbench.handle.expect(":~")
-        print repr(main.ONOSbench.handle.before)
-        time.sleep(3)
-        main.ONOSbench.handle.sendline("""onos $OC1 "cfg set org.onosproject.provider.nil.NullProviders enabled true" """)
-        main.ONOSbench.handle.expect(":~")
-
-        time.sleep(10)
-
-        once = True
-        for attempt in range(0,10): 
-            main.ONOSbench.handle.sendline("onos $OC1 summary")
-            main.ONOSbench.handle.expect(":~")
-            x = main.ONOSbench.handle.before
-            main.log.info("Initial setup. ONOS summary response: \n" + x + "\n")
-
-            if "devices=8" in x and "links=16," in x: 
-                break
-            else:                
-                if once == False:
-                    main.log.error("Null provider start failed, retrying..")
-                once = False
-                main.ONOSbench.handle.sendline("""onos $OC1 "cfg set org.onosproject.provider.nil.NullProviders enabled false" """)
-                main.ONOSbench.handle.expect(":~")
-                time.sleep(3)
-                main.ONOSbench.handle.sendline("""onos $OC1 "cfg set org.onosproject.provider.nil.NullProviders enabled true" """)
-                main.ONOSbench.handle.expect(":~")
-                time.sleep(8) 
-        '''
-
         main.ONOSbench.onosCfgSet( ONOSIp[1], "org.onosproject.store.flow.impl.NewDistributedFlowRuleStore", "backupEnabled false")
 
         main.log.step("Setting up null provider")
@@ -183,7 +146,6 @@ class IntentRerouteLat:
             x = main.ONOSbench.handle.before
             if "devices=8" in x and "links=16," in x:
                 break
-
 
         index = 1
         for node in deviceMastership:

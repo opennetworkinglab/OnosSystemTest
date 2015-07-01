@@ -2,7 +2,7 @@ This is a scale test find the max number of switches that can connect to one ONO
 
 Pre-conditions to running this test is Robot Framework + external robot libraries:
 
-pip install pybot
+pip install robotframework
 pip install robotframework-ride
 pip install robotframework-requests
 pip install robotframework-sshlibrary

@@ -16,13 +16,14 @@ ${MININET_IP}    %{OCN}
 ${CONTROLLER_USER}    %{ONOS_USER}
 ${MININET_USER}    %{ONOS_USER}
 ##USER_HOME used for public key
-${USER_HOME}    /home/fedora
+${USER_HOME}    %{HOME}
 ##ONOS_HOME is where the onos dist will be deployed on the controller vm
 ${ONOS_HOME}    /opt/onos
 ${RESTCONFPORT}    8181
 ${LINUX_PROMPT}    $
 ##SWITCHES_RESULT_FILE and JENKINS_WORKSPACE can be configurable...read overriding variables in README
 ##SWITCHES_RESULT_FILE is used to plot data. you can use a jenkins post job for this or do it manually
+##NOTE: This file must exist otherwise the test will fail when trying to write to this file
 ${SWITCHES_RESULT_FILE}    ${USER_HOME}/workspace/tools/switches.csv
 ${JENKINS_WORKSPACE}    ${USER_HOME}/workspace/ONOS-Stable/
 ${prompt_timeout}    30s

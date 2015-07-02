@@ -494,10 +494,9 @@ class OnosCHO:
                     ( numOnosDevices , numOnosLinks ) )
             main.log.info("Topology does not match, exiting CHO test...")
             topoResult = main.FALSE
-            
-            #time.sleep(300)
-            #main.cleanup()
-            #main.exit()
+            # It's better exit here from running the test            
+            main.cleanup()
+            main.exit()
 
         # just returning TRUE for now as this one just collects data
         case3Result = topoResult
@@ -2257,18 +2256,7 @@ class OnosCHO:
                     main.log.info("Time for removing host intents: %2f seconds" %(time2-time1))
                     time.sleep(10)
                     main.log.info("Purging WITHDRAWN Intents")
-                    purgeResult  = main.TRUE
-                    for i in range( int( main.numCtrls) ):
-                        t = main.Thread( target=main.CLIs[i].purgeIntents,
-                             threadID=main.threadID,
-                             name="purgeIntents",
-                             args=[ ] )
-                        pool.append(t)
-                        t.start()
-                        main.threadID = main.threadID + 1
-                    for t in pool:
-                        t.join()
-                        purgeResult = purgeResult and t.result        
+                    purgeResult  = main.ONOScli2.purgeIntents()
                 else:
                     time.sleep(10)
                     if len( main.ONOScli1.intents()):

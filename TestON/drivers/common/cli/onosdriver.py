@@ -1321,8 +1321,7 @@ class OnosDriver( CLI ):
                 output = output + \
                     "The number of links and switches does not match " + \
                     "what was expected"
-                main.log.error( output )
-                return main.FALSE
+                result = main.FALSE
             output = output + "\n ONOS sees %i devices" % int( devices )
             output = output + " (%i expected) " % int( numoswitch )
             output = output + "and %i links " % int( links )
@@ -1332,7 +1331,10 @@ class OnosDriver( CLI ):
             elif logLevel == "warn":
                 main.log.warn( output )
             else:
-                main.log.info( output )
+                if switchCheck and linkCheck:
+                    main.log.info( output )
+                else:
+                    main.log.error( output )
             return result
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )

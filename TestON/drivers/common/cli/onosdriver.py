@@ -2287,7 +2287,7 @@ class OnosDriver( CLI ):
                         continue
                     else:
                         onosIP = cellOutput[i].split("=")
-						# below step could me changed to return only IP if node name is not needed.
+						# below step could be changed to return only IP if node name is not needed.
                         ipList.append(onosIP)
             return ipList
         except pexpect.ExceptionPexpect as e:

@@ -5,13 +5,13 @@
     <SCALE>1,3</SCALE>
 
     <DEPENDENCY>
-        <path>/home/admin/ONLabTest/TestON/tests/FUNCintent/Dependency/</path>
+        <path>/tests/FUNCintent/Dependency/</path>
         <wrapper>FuncIntentFunction</wrapper>
-        <topology>newFuncIntent.py</topology>
+        <topology>newFuncTopo.py</topology>
     </DEPENDENCY>
 
     <ENV>
-        <cellName>functionality</cellName>
+        <cellName>productionCell</cellName>
         <cellApps>drivers,openflow,proxyarp,mobility</cellApps>
     </ENV>
     <GIT>

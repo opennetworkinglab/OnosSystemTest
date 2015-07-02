@@ -12,7 +12,7 @@ from mininet.link import TCLink
 from mininet.cli import CLI
 from mininet.log import setLogLevel
 from mininet.util import dumpNodeConnections
-from mininet.node import ( UserSwitch, OVSSwitch, OVSLegacyKernelSwitch, IVSSwitch )
+from mininet.node import ( UserSwitch, OVSSwitch, IVSSwitch )
 
 class VLANHost( Host ):
     def config( self, vlan=100, **params ):

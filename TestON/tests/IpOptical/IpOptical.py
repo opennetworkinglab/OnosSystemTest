@@ -68,7 +68,7 @@ class IpOptical:
             main.log.report( "Uninstalling ONOS package successful" )
         else:
             main.log.report( "Uninstalled ONOS package unsucessful" )
-        time.sleep( 5 )
+        time.sleep( 15 )
         main.step( "Installing ONOS package" )
         onosInstallResult = main.ONOSbench.onosInstall( node = ONOSip1 )
         if onosInstallResult == main.TRUE:
@@ -76,18 +76,16 @@ class IpOptical:
         else:
             main.log.report( "Installing ONOS package failed" )
 
+        time.sleep( 35 )
         onos1Isup = main.ONOSbench.isup()
         if onos1Isup == main.TRUE:
             main.log.report( "ONOS instance is up and ready" )
         else:
             main.log.report( "ONOS instance may not be up" )
 
-        main.step( "Starting ONOS service" )
-        startResult = main.ONOSbench.onosStart( ONOS1Ip )
-
         main.ONOS2.startOnosCli( ONOSIp=main.params[ 'CTRL' ][ 'ip1' ] )
         main.step( "Starting Mininet CLI..." )
-        
+
     def CASE20( self ):
         """
             Exit from mininet cli
@@ -145,7 +143,7 @@ class IpOptical:
             onpass="Successfully uninstalled ONOS",
             onfail="Failed to uninstall ONOS")
 
-        time.sleep( 5 )
+        time.sleep( 15 )
         main.step( "Installing ONOS package" )
         step5Result = main.TRUE
         onosInstallResult = main.ONOSbench.onosInstall( node = ONOSip1 )
@@ -156,22 +154,14 @@ class IpOptical:
             onpass="Successfully installed ONOS",
             onfail="Failed to install ONOS")
 
+        time.sleep( 30 )
         onos1Isup = main.ONOSbench.isup()
         if onos1Isup == main.TRUE:
             main.log.report( "ONOS instance is up and ready" )
         else:
             main.log.report( "ONOS instance may not be up" )
 
-        main.step( "Starting ONOS service" )
-        step6Result = main.TRUE
-        startResult = main.ONOSbench.onosStart( ONOS1Ip )
-        step6Result = startResult
-        utilities.assert_equals(
-            expect=main.TRUE,
-            actual=step6Result,
-            onpass="Successfully started ONOS",
-            onfail="Failed to start ONOS")
-
+        time.sleep( 15 )
         main.step( "Starting ONOS cli" )
         step7Result = main.TRUE
         cliResult = main.ONOS2.startOnosCli( ONOSIp=main.params[ 'CTRL' ][ 'ip1' ] )
@@ -216,7 +206,7 @@ class IpOptical:
         main.step( "Starting mininet and LINC-OE" )
         step2Result = main.TRUE
         time.sleep( 10 )
-        opticalMnScript = main.LincOE2.runOpticalMnScript(ctrllerIP = main.params[ 'CTRL' ][ 'ip1' ])
+        opticalMnScript = main.LincOE2.runOpticalMnScript(name= 'ONOS',ctrllerIP = main.params[ 'CTRL' ][ 'ip1' ])
         step2Result = opticalMnScript
         utilities.assert_equals(
             expect=main.TRUE,

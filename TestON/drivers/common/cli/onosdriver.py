@@ -20,6 +20,7 @@ import sys
 import time
 import pexpect
 import os.path
+import os
 from requests.models import Response
 sys.path.append( "../" )
 from drivers.common.clidriver import CLI
@@ -50,6 +51,16 @@ class OnosDriver( CLI ):
                     break
             if self.home is None or self.home == "":
                 self.home = "~/onos"
+
+            try:
+                if os.getenv( str( self.ip_address ) ) != None:
+                    self.ip_address = os.getenv( str( self.ip_address ) )
+
+            except KeyError:
+                self.log.info("Invalid host name, connecting to local host instead")
+                self.ip_address = 'localhost'
+            except Exception as inst:
+                self.log.error("Uncaught exception: " + str( inst ) )
 
             self.name = self.options[ 'name' ]
             self.handle = super( OnosDriver, self ).connect(
@@ -1320,7 +1331,10 @@ class OnosDriver( CLI ):
             elif logLevel == "warn":
                 main.log.warn( output )
             else:
-                main.log.info( output )
+                if switchCheck and linkCheck:
+                    main.log.info( output )
+                else:
+                    main.log.error( output )
             return result
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )

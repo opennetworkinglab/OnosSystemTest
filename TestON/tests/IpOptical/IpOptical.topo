@@ -2,7 +2,7 @@
     <COMPONENT>
 
         <ONOSbench>
-            <host>10.128.10.11</host>
+            <host>localhost</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>OnosDriver</type>
@@ -11,16 +11,16 @@
         </ONOSbench>
 
         <ONOS1>
-            <host>10.128.10.11</host>
-            <user>sdn</user>
-            <password>sdn</password>
+            <host>localhost</host>
+            <user>admin</user>
+            <password>onos_test</password>
             <type>OnosDriver</type>
             <connect_order>2</connect_order>
             <COMPONENTS> </COMPONENTS>
         </ONOS1>
 
         <ONOS2>
-            <host>10.128.10.11</host>
+            <host>localhost</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>OnosCliDriver</type>
@@ -29,7 +29,7 @@
         </ONOS2>
 
          <ONOS3>
-            <host>10.128.10.11</host>
+            <host>localhost</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>OnosCliDriver</type>
@@ -39,7 +39,7 @@
        
 
         <Mininet1>
-            <host>10.128.10.11</host>
+            <host>localhost</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>MininetCliDriver</type>
@@ -54,7 +54,7 @@
         </Mininet1>
 
         <Mininet2>
-            <host>10.128.10.11</host>
+            <host>localhost</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>RemoteMininetDriver</type>
@@ -69,7 +69,7 @@
         </Mininet2>
 
         <LincOE1>
-            <host>10.128.10.11</host>
+            <host>localhost</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>LincOEDriver</type>
@@ -79,7 +79,7 @@
         </LincOE1>
 
         <LincOE2>
-            <host>10.128.10.11</host>
+            <host>localhost</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>RemoteMininetDriver</type>

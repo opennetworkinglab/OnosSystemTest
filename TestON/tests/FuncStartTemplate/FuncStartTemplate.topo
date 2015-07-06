@@ -2,7 +2,7 @@
     <COMPONENT>
 
         <ONOSbench>
-            <host>OCN</host>
+            <host>localhost</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>OnosDriver</type>
@@ -13,7 +13,7 @@
         </ONOSbench>
 
         <ONOScli1>
-            <host>OCN</host>
+            <host>localhost</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>OnosCliDriver</type>
@@ -22,7 +22,7 @@
         </ONOScli1>
 
         <ONOScli2>
-            <host>OCN</host>
+            <host>localhost</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>OnosCliDriver</type>
@@ -31,7 +31,7 @@
         </ONOScli2>
 
          <ONOScli3>
-            <host>OCN</host>
+            <host>localhost</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>OnosCliDriver</type>
@@ -40,7 +40,7 @@
         </ONOScli3>
 
         <Mininet1>
-            <host>OCN</host>
+            <host>localhost</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>MininetCliDriver</type>

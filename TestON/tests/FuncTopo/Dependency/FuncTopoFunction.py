@@ -317,7 +317,7 @@ def restartONOS( main ):
         restartResult = main.FALSE
         main.log.error( main.topoName + ": Failed to stop ONOS cluster" )
 
-    time.sleep( 15 )
+    time.sleep( 25 )
 
     main.log.info( main.topoName + ": Starting ONOS cluster" )
     for node in main.nodes:

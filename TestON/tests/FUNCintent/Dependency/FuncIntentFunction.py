@@ -3,6 +3,10 @@
     This functions include Onosclidriver and Mininetclidriver driver functions
     Author: kelvin@onlab.us
 """
+import time
+import copy
+import json
+
 def __init__( self ):
     self.default = ''
 
@@ -56,7 +60,6 @@ def hostIntent( main,
                            be two links lower than the links before the two
                            switches are down
     """
-    import time
 
     # Assert variables
     assert main, "There is no main variable"
@@ -280,7 +283,6 @@ def pointIntent( main,
                            switches are down
     """
 
-    import time
     assert main, "There is no main variable"
     assert name, "variable name is empty"
     assert host1 and host2, "You must specify hosts"
@@ -495,8 +497,6 @@ def singleToMultiIntent( main,
                            switches are down
     """
 
-    import time
-    import copy
     assert main, "There is no main variable"
     assert hostNames, "You must specify hosts"
     assert devices or main.hostsData, "You must specify devices"
@@ -751,8 +751,6 @@ def multiToSingleIntent( main,
                            switches are down
     """
 
-    import time
-    import copy
     assert main, "There is no main variable"
     assert hostNames, "You must specify hosts"
     assert devices or main.hostsData, "You must specify devices"
@@ -948,7 +946,7 @@ def getHostsData( main ):
     """
         Use fwd app and pingall to discover all the hosts
     """
-    import json
+
     activateResult = main.TRUE
     appCheck = main.TRUE
     getDataResult = main.TRUE
@@ -961,7 +959,7 @@ def getHostsData( main ):
             main.log.warn( main.CLIs[ i ].apps() )
             main.log.warn( main.CLIs[ i ].appIDs() )
 
-    pingResult = main.Mininet1.pingall()
+    pingResult = main.Mininet1.pingall( timeout = 600 )
     hostsJson = json.loads( main.CLIs[ 0 ].hosts() )
     hosts = main.Mininet1.getHosts()
     for host in hosts:
@@ -1062,7 +1060,7 @@ def removeAllIntents( main, intentsId ):
     """
         Remove all intents in the intentsId
     """
-    import time
+
     intentsRemaining = []
     removeIntentResult = main.TRUE
     # Remove intents
@@ -1090,7 +1088,6 @@ def checkFlowsCount( main ):
     """
         Check flows count in each node
     """
-    import json
 
     flowsCount = []
     main.log.info( itemName + ": Checking flows count in each ONOS node" )

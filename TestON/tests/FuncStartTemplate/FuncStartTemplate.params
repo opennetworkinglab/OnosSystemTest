@@ -1,5 +1,5 @@
 <PARAMS>
-    <testcases>10,9,10,9</testcases>
+    <testcases>1,9,1,9</testcases>
 
     <SCALE>1,3</SCALE>
     <availableNodes>3</availableNodes>
@@ -20,10 +20,6 @@
         <ip3>OC3</ip3>
         <port3>6633</port3>
     </CTRL>
-    <BENCH>
-        <user>admin</user>
-        <ip1>OCN</ip1>
-    </BENCH>
     <MININET>
         <switch>7</switch>
         <links>20</links>

@@ -5,7 +5,7 @@
 import time
 import json
 
-class FuncIntent:
+class FUNCintent:
 
     def __init__( self ):
         self.default = ''
@@ -24,6 +24,9 @@ class FuncIntent:
         onos-package
         onos-install -f
         onos-wait-for-start
+        onos-isup
+        ...
+        onos $OC1..
         """
         global init
         global globalONOSip
@@ -33,15 +36,14 @@ class FuncIntent:
         except NameError:
             init = False
 
-        main.wrapper = imp.load_source( 'FuncIntentFunction',
-                                    '/home/admin/ONLabTest/TestON/tests/' +
-                                    'FuncIntent/Dependency/' +
-                                    'FuncIntentFunction.py' )
         #Local variables
         cellName = main.params[ 'ENV' ][ 'cellName' ]
         apps = main.params[ 'ENV' ][ 'cellApps' ]
         gitBranch = main.params[ 'GIT' ][ 'branch' ]
-        benchIp = os.environ[ 'OCN' ]
+        dependencyPath = main.params[ 'DEPENDENCY' ][ 'path' ]
+        wrapperFile = main.params[ 'DEPENDENCY' ][ 'wrapper' ]
+        topology = main.params[ 'DEPENDENCY' ][ 'topology' ]
+        benchIp = main.params[ 'BENCH' ][ 'ip' ]
         benchUser = main.params[ 'BENCH' ][ 'user' ]
         topology = main.params[ 'MININET' ][ 'topo' ]
         main.numSwitch = int( main.params[ 'MININET' ][ 'switch' ] )
@@ -57,6 +59,10 @@ class FuncIntent:
         for i in range( 1, int( main.numCtrls ) + 1 ):
             main.CLIs.append( getattr( main, 'ONOScli' + str( i ) ) )
             main.ONOSport.append( main.params[ 'CTRL' ][ 'port' + str( i ) ] )
+
+
+        main.wrapper = imp.load_source( wrapperFile,
+                                        dependencyPath + wrapperFile + ".py" )
 
         # -- INIT SECTION, ONLY RUNS ONCE -- #
         if init == False:
@@ -150,7 +156,7 @@ class FuncIntent:
                                  onpass="Successfully installed ONOS package",
                                  onfail="Failed to install ONOS package" )
 
-        time.sleep( 20 )
+        time.sleep( 60 )
         main.step( "Starting ONOS service" )
         stopResult = main.TRUE
         startResult = main.TRUE
@@ -229,9 +235,13 @@ class FuncIntent:
         for i in range( 1, ( main.numSwitch + 1 ) ):
             switchList.append( 's' + str( i ) )
 
+        tempONOSip = []
+        for i in range( main.numCtrls ):
+            tempONOSip.append( main.ONOSip[ i ] )
+
         assignResult = main.Mininet1.assignSwController( sw=switchList,
-                                                         ip=main.ONOSip,
-                                                         port=main.ONOSport )
+                                                         ip=tempONOSip,
+                                                         port='6633' )
         if not assignResult:
             main.cleanup()
             main.exit()

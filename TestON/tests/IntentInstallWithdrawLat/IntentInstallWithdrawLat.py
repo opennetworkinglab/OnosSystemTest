@@ -129,9 +129,10 @@ class IntentInstallWithdrawLat:
         main.log.info("Startup sequence complete")
         
         time.sleep(30)
-
+        
+        '''
         for i in range(5):
-            main.ONOSbench.handle.sendline("""onos $OC1 "cfg setorg.onosproject.provider.nil.NullProviders enabled true" """)
+            main.ONOSbench.handle.sendline("""onos $OC1 "cfg set org.onosproject.provider.nil.NullProviders enabled true" """)
             main.ONOSbench.handle.expect(":~")
             print main.ONOSbench.handle.before
             main.ONOSbench.handle.sendline("""onos $OC1 "cfg set org.onosproject.provider.nil.NullProviders deviceCount """ + str(switchCount) + """ " """)
@@ -153,9 +154,19 @@ class IntentInstallWithdrawLat:
             main.log.info(check)
             if "SSC(s)=1," in check: 
                 break 
+        '''
+        
+        for i in range(3):
+            main.ONOSbench.onosCfgSet( ONOSIp[1], "org.onosproject.provider.nil.NullProviders", ("deviceCount " + str(switchCount)) ) 
+            main.ONOSbench.onosCfgSet( ONOSIp[1], "org.onosproject.provider.nil.NullProviders", "topoShape linear")
+            main.ONOSbench.onosCfgSet( ONOSIp[1], "org.onosproject.provider.nil.NullProviders", "enabled true")
+            if main.ONOSbench.verifySummary(ONOSIp[1], switchCount):
+                break
+            else: 
+                print "Failed- looping" 
 
-
-
+        main.ONOSbench.handle.sendline("""onos $OC1 "balance-masters" """)
+        main.ONOSbench.handle.expect(":~")
         main.ONOSbench.logReport(ONOSIp[1], ["ERROR", "WARNING", "EXCEPT"])
 
     def CASE2( self, main ):

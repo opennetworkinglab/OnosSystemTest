@@ -763,22 +763,21 @@ class OnosDriver( CLI ):
                          )
 
                 self.handle.sendline( "" )
-                self.handle.expect( "\$" )
+                self.handle.expect( ":~" )
                 self.handle.sendline( cfgStr )
-                self.handle.expect( "\$" )
+                self.handle.expect("cfg set") 
+                self.handle.expect( ":~" )
             
-                # meaningful assertion
-                # command syntax? 
-                checkStr = ( "onos " + str(ONOSIp) + """ cfg get """"+ str(configName) + """ " """)
+                paramValue = configParam.split(" ")[1]
+                paramName = configParam.split(" ")[0]
+                
+                checkStr = ( "onos " + str(ONOSIp) + """ cfg get " """ + str(configName) + " " + paramName + """ " """)
 
                 self.handle.sendline( checkStr )
-                self.handle.expect( "\$" )
-                paramValue = configParam.split(" ")[1]
-                print self.handle.before
+                self.handle.expect( ":~" )
 
                 if "value=" + paramValue + "," in self.handle.before:
-                    print self.handle.before
-                    main.log.info("cfg " + configName + "successfully set to " + configParam)    
+                    main.log.info("cfg " + configName + " successfully set to " + configParam)    
                     return main.TRUE
 
             except pexpect.ExceptionPexpect as e:
@@ -2315,3 +2314,41 @@ class OnosDriver( CLI ):
         DBFile = open(filename, "a")
         DBFile.write(DBString)
         DBFile.close()
+
+    def verifySummary(self, ONOSIp,*deviceCount): 
+
+        self.handle.sendline("onos " + ONOSIp  + " summary")
+        self.handle.expect(":~")
+
+        summaryStr = self.handle.before
+        print "\nSummary\n==============\n" + summaryStr + "\n\n"
+
+        #passed = "SCC(s)=1" in summaryStr
+        #if deviceCount:
+        #    passed = "devices=" + str(deviceCount) + "," not in summaryStr
+
+           
+        if "SCC(s)=1," in summaryStr:
+            passed = True
+            print("Summary is verifed")
+        else: 
+            print("Summary failed") 
+
+        if deviceCount:
+            print" ============================="
+            checkStr = "devices=" + str(deviceCount[0]) + ","
+            print "Checkstr: " + checkStr
+            if checkStr not in summaryStr:
+                passed = False
+                print("Device count failed") 
+            else: 
+                print "device count verified" 
+
+        return passed
+
+
+
+
+
+
+

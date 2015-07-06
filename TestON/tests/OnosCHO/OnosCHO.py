@@ -192,16 +192,21 @@ class OnosCHO:
         startStatus = main.Mininet1.startNet(topoFile = main.newTopo)
         time.sleep(45)
         main.step( "Assign switches to controllers" )
+        onosIps = []
+        onosPort = []
+        onosIps.append( ONOS1_ip )
+        onosIps.append( ONOS2_ip )
+        onosIps.append( ONOS3_ip )
+        onosPort.append( ONOS1_port )
+        onosPort.append( ONOS2_port )
+        onosPort.append( ONOS3_port )
+
         for i in range( 1, ( main.numMNswitches + 1 ) ):  # 1 to ( num of switches +1 )
             main.Mininet1.assignSwController(
-                sw=str( i ),
+                sw="s" + str( i ),
                 count=int( main.numCtrls ),
-                ip1=main.ONOS1_ip,
-                port1=main.ONOS1_port,
-                ip2=main.ONOS2_ip,
-                port2=main.ONOS2_port,
-                ip3=main.ONOS3_ip,
-                port3=main.ONOS3_port )
+                ip=onosIps,
+                port=onosPort )
 
         switch_mastership = main.TRUE
         for i in range( 1, ( main.numMNswitches + 1 ) ):
@@ -278,16 +283,21 @@ class OnosCHO:
         startStatus = main.Mininet1.startNet(topoFile = main.newTopo)
         time.sleep(15)
         main.step( "Assign switches to controllers" )
+        onosIps = []
+        onosPort = []
+        onosIps.append( ONOS1_ip )
+        onosIps.append( ONOS2_ip )
+        onosIps.append( ONOS3_ip )
+        onosPort.append( ONOS1_port )
+        onosPort.append( ONOS2_port )
+        onosPort.append( ONOS3_port )
+
         for i in range( 1, ( main.numMNswitches + 1 ) ):  # 1 to ( num of switches +1 )
             main.Mininet1.assignSwController(
-                sw=str( i ),
+                sw="s" + str( i ),
                 count=int( main.numCtrls ),
-                ip1=main.ONOS1_ip,
-                port1=main.ONOS1_port,
-                ip2=main.ONOS2_ip,
-                port2=main.ONOS2_port,
-                ip3=main.ONOS3_ip,
-                port3=main.ONOS3_port )
+                ip=onosIps,
+                port=onosPort )
 
         switch_mastership = main.TRUE
         for i in range( 1, ( main.numMNswitches + 1 ) ):
@@ -345,16 +355,21 @@ class OnosCHO:
         startStatus = main.Mininet1.startNet(topoFile = main.newTopo)
         time.sleep(60)
         main.step( "Assign switches to controllers" )
+        onosIps = []
+        onosPort = []
+        onosIps.append( ONOS1_ip )
+        onosIps.append( ONOS2_ip )
+        onosIps.append( ONOS3_ip )
+        onosPort.append( ONOS1_port )
+        onosPort.append( ONOS2_port )
+        onosPort.append( ONOS3_port )
+
         for i in range( 1, ( main.numMNswitches + 1 ) ):  # 1 to ( num of switches +1 )
             main.Mininet1.assignSwController(
-                sw=str( i ),
-                count=int( main.numCtrls ), 
-                ip1=main.ONOS1_ip,
-                port1=main.ONOS1_port,
-                ip2=main.ONOS2_ip,
-                port2=main.ONOS2_port,
-                ip3=main.ONOS3_ip,
-                port3=main.ONOS3_port )
+                sw="s" + str( i ),
+                count=int( main.numCtrls ),
+                ip=onosIps,
+                port=onosPort )
 
         switch_mastership = main.TRUE
         for i in range( 1, ( main.numMNswitches + 1 ) ):

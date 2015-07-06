@@ -118,9 +118,9 @@ class PingallExample:
 
         for i in range( 1, 14 ):
             main.Mininet1.assignSwController(
-                sw=str( i ),
-                ip1=ONOS1Ip,
-                port1=ONOS1Port )
+                sw="s" + str( i ),
+                ip=ONOS1Ip,
+                port=ONOS1Port )
 
         mastershipCheck = main.TRUE
         for i in range( 1, 14 ):

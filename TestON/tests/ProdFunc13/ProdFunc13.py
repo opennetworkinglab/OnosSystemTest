@@ -839,7 +839,7 @@ class ProdFunc13:
         time.sleep( 10 )
 
         main.step( "Get list of hosts from Mininet" )
-        hostList = main.Mininet1.getHosts().keys()
+        hostList = main.Mininet1.getHosts()
         main.log.info( hostList )
 
         main.step( "Get host list in ONOS format" )
@@ -1122,6 +1122,9 @@ class ProdFunc13:
             Check ONOS topology matches with mininet
         """
         import json
+        # assumes that sts is already in you PYTHONPATH
+        from sts.topology.teston_topology import TestONTopology
+        # main.ONOS2.startOnosCli( ONOSIp=main.params[ 'CTRL' ][ 'ip1' ] )
         main.log.report( "This testcase is testing if all ONOS nodes" +
                          " are in topology sync with mininet" )
         main.log.report( "__________________________________" )
@@ -1168,19 +1171,43 @@ class ProdFunc13:
             target=main.params[ 'PING' ][ 'target10' ],
             pingTime=500 )
 
+        main.step( "Create TestONTopology object" )
+        global ctrls
+        ctrls = []
+        count = 1
+        while True:
+            temp = ()
+            if ( 'ip' + str( count ) ) in main.params[ 'CTRL' ]:
+                temp = temp + ( getattr( main, ( 'ONOS' + str( count ) ) ), )
+                temp = temp + ( "ONOS" + str( count ), )
+                temp = temp + ( main.params[ 'CTRL' ][ 'ip' + str( count ) ], )
+                temp = temp + \
+                    ( eval( main.params[ 'CTRL' ][ 'port' + str( count ) ] ), )
+                ctrls.append( temp )
+                count = count + 1
+            else:
+                break
+        global MNTopo
+        Topo = TestONTopology(
+            main.Mininet1,
+            ctrls )  # can also add Intent API info for intent operations
+        MNTopo = Topo
+
         TopologyCheck = main.TRUE
         main.step( "Compare ONOS Topology to MN Topology" )
         devicesJson = main.ONOS2.devices()
         linksJson = main.ONOS2.links()
         portsJson = main.ONOS2.ports()
-        mnSwitches = main.Mininet1.getSwitches()
-        mnLinks = main.Mininet1.getLinks()
 
         result1 = main.Mininet1.compareSwitches(
-            mnSwitches, json.loads( devicesJson ), json.loads( portsJson ) )
+            MNTopo,
+            json.loads( devicesJson ) )
         result2 = main.Mininet1.compareLinks(
-            mnSwitches, mnLinks, json.loads( linksJson ) )
+            MNTopo,
+            json.loads( linksJson ) )
 
+        result3 = main.Mininet1.comparePorts( MNTopo, json.loads( portsJson ) )
+        # result = result1 and result2 and result3
         result = result1 and result2
 
         print "***********************"
@@ -1209,6 +1236,9 @@ class ProdFunc13:
             Link discovery test case. Checks if ONOS can discover a link
             down or up properly.
         """
+
+        from sts.topology.teston_topology import TestONTopology
+
         linkSleep = int( main.params[ 'timers' ][ 'LinkDiscovery' ] )
 
         main.log.report( "This testscase is killing a link to ensure that" +
@@ -1303,19 +1333,25 @@ class ProdFunc13:
         # NOTE Check ping result here..add code for it
 
         main.step( "Compare ONOS Topology to MN Topology" )
+        Topo = TestONTopology(
+            main.Mininet1,
+            ctrls )  # can also add Intent API info for intent operations
+        MNTopo = Topo
         TopologyCheck = main.TRUE
 
         devicesJson = main.ONOS2.devices()
         linksJson = main.ONOS2.links()
         portsJson = main.ONOS2.ports()
-        mnSwitches = main.Mininet1.getSwitches()
-        mnLinks = main.Mininet1.getLinks()
 
         result1 = main.Mininet1.compareSwitches(
-            mnSwitches, json.loads( devicesJson ), json.loads( portsJson ) )
+            MNTopo,
+            json.loads( devicesJson ) )
         result2 = main.Mininet1.compareLinks(
-            mnSwitches, mnLinks, json.loads( linksJson ) )
+            MNTopo,
+            json.loads( linksJson ) )
+        result3 = main.Mininet1.comparePorts( MNTopo, json.loads( portsJson ) )
 
+        # result = result1 and result2 and result3
         result = result1 and result2
         print "***********************"
 

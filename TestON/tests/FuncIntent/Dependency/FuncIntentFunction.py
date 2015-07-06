@@ -963,8 +963,7 @@ def getHostsData( main ):
 
     pingResult = main.Mininet1.pingall()
     hostsJson = json.loads( main.CLIs[ 0 ].hosts() )
-    hosts = main.Mininet1.getHosts().keys()
-    # TODO: Make better use of new getHosts function
+    hosts = main.Mininet1.getHosts()
     for host in hosts:
         main.hostsData[ host ] = {}
         main.hostsData[ host ][ 'mac' ] =  \

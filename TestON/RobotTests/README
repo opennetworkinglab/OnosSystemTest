@@ -1,0 +1,16 @@
+This is a scale test find the max number of switches that can connect to one ONOS Controller. The test script does not create a cluster of nodes, but that can be easily implemented.
+
+Pre-conditions to running this test is Robot Framework + external robot libraries:
+
+pip install robotframework
+pip install robotframework-ride
+pip install robotframework-requests
+pip install robotframework-sshlibrary
+pip install robotframework-httplibrary
+pip install robotframework-archivelibrary
+
+Also, you must have a "test cell" as this test leverages the bash scripts that are used to install the controller.
+To override any variables used in the suite, you can do so from the command line. eg "-v ONOS_HOME:/opt/onos"
+Usage eg. "pybot -v USER_HOME:/home/fedora -v ONOS_HOME:/opt/onos -v start:10 -v end:30 -v increments:10 ScalePOC.robot"
+
+After the test complete, three files will be generate from where you issued the "pybot" command. The "report.html" file will be your results!

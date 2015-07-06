@@ -144,8 +144,9 @@ class IntentPerfNext:
         for i in range( 1, 9 ):
             if clusterCount == 1:
                 main.Mininet1.assignSwController(
-                    sw=str( i ), ip1=ONOSIpList[ 0 ],
-                    port1=defaultSwPort
+                    sw="s" + str( i ),
+                    ip=ONOSIpList[ 0 ],
+                    port=defaultSwPort
                 )
             elif clusterCount == 3:
                 if i < 3:
@@ -155,8 +156,9 @@ class IntentPerfNext:
                 else:
                     index = 2
                 main.Mininet1.assignSwController(
-                    sw=str( i ), ip1=ONOSIpList[ index ],
-                    port1=defaultSwPort
+                    sw="s" + str( i ),
+                    ip=ONOSIpList[ index ],
+                    port=defaultSwPort
                 )
             elif clusterCount == 5:
                 if i < 3:
@@ -170,8 +172,9 @@ class IntentPerfNext:
                 else:
                     index = 4
                 main.Mininet1.assignSwController(
-                    sw=str( i ), ip1=ONOSIpList[ index ],
-                    port1=defaultSwPort
+                    sw="s" + str( i ),
+                    ip=ONOSIpList[ index ],
+                    port=defaultSwPort
                 )
             elif clusterCount == 7:
                 if i < 6:
@@ -179,8 +182,9 @@ class IntentPerfNext:
                 else:
                     index = 6
                 main.Mininet1.assignSwController(
-                    sw=str( i ), ip1=ONOSIpList[ index ],
-                    port1=defaultSwPort
+                    sw="s" + str( i ),
+                    ip=ONOSIpList[ index ],
+                    port=defaultSwPort
                 )
 
         time.sleep( 10 )
@@ -400,8 +404,9 @@ class IntentPerfNext:
         for i in range( 1, 9 ):
             if clusterCount == 1:
                 main.Mininet1.assignSwController(
-                    sw=str( i ), ip1=ONOSIpList[ 0 ],
-                    port1=defaultSwPort
+                    sw="s" + str( i ),
+                    ip=ONOSIpList[ 0 ],
+                    port=defaultSwPort
                 )
             elif clusterCount == 3:
                 if i < 3:
@@ -411,8 +416,9 @@ class IntentPerfNext:
                 else:
                     index = 2
                 main.Mininet1.assignSwController(
-                    sw=str( i ), ip1=ONOSIpList[ index ],
-                    port1=defaultSwPort
+                    sw="s" + str( i ),
+                    ip=ONOSIpList[ index ],
+                    port=defaultSwPort
                 )
             elif clusterCount == 5:
                 if i < 3:
@@ -426,8 +432,9 @@ class IntentPerfNext:
                 else:
                     index = 4
                 main.Mininet1.assignSwController(
-                    sw=str( i ), ip1=ONOSIpList[ index ],
-                    port1=defaultSwPort
+                    sw="s" + str( i ),
+                    ip=ONOSIpList[ index ],
+                    port=defaultSwPort
                 )
             elif clusterCount == 7:
                 if i < 6:
@@ -435,8 +442,9 @@ class IntentPerfNext:
                 else:
                     index = 6
                 main.Mininet1.assignSwController(
-                    sw=str( i ), ip1=ONOSIpList[ index ],
-                    port1=defaultSwPort
+                    sw="s" + str( i ),
+                    ip=ONOSIpList[ index ],
+                    port=defaultSwPort
                 )
 
         time.sleep(10)
@@ -653,64 +661,64 @@ class IntentPerfNext:
         if clusterCount == 1:
             for i in range( 1, numSwitch + 1 ):
                 main.Mininet1.assignSwController(
-                    sw=str( i ),
-                    ip1=ONOS1Ip,
-                    port1=defaultSwPort )
+                    sw="s" + str( i ),
+                    ip=ONOS1Ip,
+                    port=defaultSwPort )
         if clusterCount == 3:
             for i in range( 1, 3 ):
                 main.Mininet1.assignSwController(
-                    sw=str( i ),
-                    ip1=ONOS1Ip,
-                    port1=defaultSwPort )
+                    sw="s" + str( i ),
+                    ip=ONOS1Ip,
+                    port=defaultSwPort )
             for i in range( 3, 6 ):
                 main.Mininet1.assignSwController(
-                    sw=str( i ),
-                    ip1=ONOS2Ip,
-                    port1=defaultSwPort )
+                    sw="s" + str( i ),
+                    ip=ONOS2Ip,
+                    port=defaultSwPort )
             for i in range( 6, 9 ):
                 main.Mininet1.assignSwController(
-                    sw=str( i ),
-                    ip1=ONOS3Ip,
-                    port1=defaultSwPort )
+                    sw="s" + str( i ),
+                    ip=ONOS3Ip,
+                    port=defaultSwPort )
         if clusterCount == 5:
             main.Mininet1.assignSwController(
-                sw="1",
-                ip1=ONOS1Ip,
-                port1=defaultSwPort )
+                sw="s1",
+                ip=ONOS1Ip,
+                port=defaultSwPort )
             main.Mininet1.assignSwController(
-                sw="2",
-                ip1=ONOS2Ip,
-                port1=defaultSwPort )
+                sw="s2",
+                ip=ONOS1Ip,
+                port=defaultSwPort )
             for i in range( 3, 6 ):
                 main.Mininet1.assignSwController(
-                    sw=str( i ),
-                    ip1=ONOS3Ip,
-                    port1=defaultSwPort )
+                    sw="s" + str( i ),
+                    ip=ONOS3Ip,
+                    port=defaultSwPort )
             main.Mininet1.assignSwController(
-                sw="6",
-                ip1=ONOS4Ip,
-                port1=defaultSwPort )
+                sw="s6",
+                ip=ONOS4Ip,
+                port=defaultSwPort )
             main.Mininet1.assignSwController(
-                sw="7",
-                ip1=ONOS5Ip,
-                port1=defaultSwPort )
+                sw="s7",
+                ip=ONOS5Ip,
+                port=defaultSwPort )
             main.Mininet1.assignSwController(
-                sw="8",
-                ip1=ONOS5Ip,
-                port1=defaultSwPort )
+                sw="s8",
+                ip=ONOS5Ip,
+                port=defaultSwPort )
 
         if clusterCount == 7:
             for i in range( 1, 9 ):
                 if i < 8:
                     main.Mininet1.assignSwController(
-                        sw=str( i ),
-                        ip1=ONOSIpList[ i - 1 ],
-                        port1=defaultSwPort )
+                        sw="s" + str( i ),
+                        ip=ONOSIpList[ i - 1 ],
+                        port=defaultSwPort )
                 elif i >= 8:
                     main.Mininet1.assignSwController(
-                        sw=str( i ),
-                        ip1=ONOSIpList[ 6 ],
-                        port1=defaultSwPort )
+                        sw="s" + str( i ),
+                        ip=ONOSIpList[ 6 ],
+                        port=defaultSwPort )
 
         time.sleep( 20 )
 

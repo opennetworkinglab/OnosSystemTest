@@ -682,7 +682,7 @@ class HATestClusterRestart:
                 main.log.debug( "Intents in " + cli.name + ": " +
                                 str( sorted( onosIds ) ) )
                 if sorted( ids ) != sorted( intentIds ):
-                    main.log.debug( "Set of intent IDs doesn't match" )
+                    main.log.warn( "Set of intent IDs doesn't match" )
                     correct = False
                     break
                 else:
@@ -1109,8 +1109,6 @@ class HATestClusterRestart:
         assert utilities.assert_equals, "utilities.assert_equals not defined"
         assert CLIs, "CLIs not defined"
         assert nodes, "nodes not defined"
-        # assumes that sts is already in you PYTHONPATH
-        from sts.topology.teston_topology import TestONTopology
 
         main.case( "Setting up and gathering data for current state" )
         # The general idea for this test case is to pull the state of
@@ -1422,13 +1420,6 @@ class HATestClusterRestart:
             target=main.params[ 'PING' ][ 'target10' ],
             pingTime=500 )
 
-        main.step( "Create TestONTopology object" )
-        ctrls = []
-        for node in nodes:
-            temp = ( node, node.name, node.ip_address, 6633 )
-            ctrls.append( temp )
-        MNTopo = TestONTopology( main.Mininet1, ctrls )
-
         main.step( "Collecting topology information from ONOS" )
         devices = []
         threads = []
@@ -1586,14 +1577,21 @@ class HATestClusterRestart:
 
         main.step( "Comparing ONOS topology to MN" )
         devicesResults = main.TRUE
-        portsResults = main.TRUE
         linksResults = main.TRUE
+        hostsResults = main.TRUE
+        mnSwitches = main.Mininet1.getSwitches()
+        mnLinks = main.Mininet1.getLinks()
+        mnHosts = main.Mininet1.getHosts()
         for controller in range( numControllers ):
             controllerStr = str( controller + 1 )
-            if devices[ controller ] or "Error" not in devices[ controller ]:
+            if devices[ controller ] and ports[ controller ] and\
+                "Error" not in devices[ controller ] and\
+                "Error" not in ports[ controller ]:
+
                 currentDevicesResult = main.Mininet1.compareSwitches(
-                    MNTopo,
-                    json.loads( devices[ controller ] ) )
+                        mnSwitches,
+                        json.loads( devices[ controller ] ),
+                        json.loads( ports[ controller ] ) )
             else:
                 currentDevicesResult = main.FALSE
             utilities.assert_equals( expect=main.TRUE,
@@ -1602,24 +1600,10 @@ class HATestClusterRestart:
                                      " Switches view is correct",
                                      onfail="ONOS" + controllerStr +
                                      " Switches view is incorrect" )
-
-            if ports[ controller ] or "Error" not in ports[ controller ]:
-                currentPortsResult = main.Mininet1.comparePorts(
-                    MNTopo,
-                    json.loads( ports[ controller ] ) )
-            else:
-                currentPortsResult = main.FALSE
-            utilities.assert_equals( expect=main.TRUE,
-                                     actual=currentPortsResult,
-                                     onpass="ONOS" + controllerStr +
-                                     " ports view is correct",
-                                     onfail="ONOS" + controllerStr +
-                                     " ports view is incorrect" )
-
-            if links[ controller ] or "Error" not in links[ controller ]:
+            if links[ controller ] and "Error" not in links[ controller ]:
                 currentLinksResult = main.Mininet1.compareLinks(
-                    MNTopo,
-                    json.loads( links[ controller ] ) )
+                        mnSwitches, mnLinks,
+                        json.loads( links[ controller ] ) )
             else:
                 currentLinksResult = main.FALSE
             utilities.assert_equals( expect=main.TRUE,
@@ -1629,16 +1613,43 @@ class HATestClusterRestart:
                                      onfail="ONOS" + controllerStr +
                                      " links view is incorrect" )
 
-            devicesResults = devicesResults and currentDevicesResult
-            portsResults = portsResults and currentPortsResult
-            linksResults = linksResults and currentLinksResult
+            if hosts[ controller ] or "Error" not in hosts[ controller ]:
+                currentHostsResult = main.Mininet1.compareHosts(
+                        mnHosts,
+                        hosts[ controller ] )
+            else:
+                currentHostsResult = main.FALSE
+            utilities.assert_equals( expect=main.TRUE,
+                                     actual=currentHostsResult,
+                                     onpass="ONOS" + controllerStr +
+                                     " hosts exist in Mininet",
+                                     onfail="ONOS" + controllerStr +
+                                     " hosts don't match Mininet" )
 
-        topoResult = ( devicesResults and portsResults and linksResults
-                       and consistentHostsResult and consistentClustersResult
-                       and clusterResults and ipResult )
-        utilities.assert_equals( expect=main.TRUE, actual=topoResult,
-                                 onpass="Topology Check Test successful",
-                                 onfail="Topology Check Test NOT successful" )
+            devicesResults = devicesResults and currentDevicesResult
+            linksResults = linksResults and currentLinksResult
+            hostsResults = hostsResults and currentHostsResult
+
+        main.step( "Device information is correct" )
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=devicesResults,
+            onpass="Device information is correct",
+            onfail="Device information is incorrect" )
+
+        main.step( "Links are correct" )
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=linksResults,
+            onpass="Link are correct",
+            onfail="Links are incorrect" )
+
+        main.step( "Hosts are correct" )
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=hostsResults,
+            onpass="Hosts are correct",
+            onfail="Hosts are incorrect" )
 
     def CASE6( self, main ):
         """
@@ -2084,11 +2095,6 @@ class HATestClusterRestart:
         """
         Compare topo
         """
-        import sys
-        # FIXME add this path to params
-        sys.path.append( "/home/admin/sts" )
-        # assumes that sts is already in you PYTHONPATH
-        from sts.topology.teston_topology import TestONTopology
         import json
         import time
         assert numControllers, "numControllers not defined"
@@ -2100,25 +2106,9 @@ class HATestClusterRestart:
         main.case( "Compare ONOS Topology view to Mininet topology" )
         main.caseExplaination = "Compare topology objects between Mininet" +\
                                 " and ONOS"
-        main.step( "Create TestONTopology object" )
-        try:
-            ctrls = []
-            for node in nodes:
-                temp = ( node, node.name, node.ip_address, 6633 )
-                ctrls.append( temp )
-            MNTopo = TestONTopology( main.Mininet1, ctrls )
-        except Exception:
-            objResult = main.FALSE
-        else:
-            objResult = main.TRUE
-        utilities.assert_equals( expect=main.TRUE, actual=objResult,
-                                 onpass="Created TestONTopology object",
-                                 onfail="Exception while creating " +
-                                        "TestONTopology object" )
 
         main.step( "Comparing ONOS topology to MN" )
         devicesResults = main.TRUE
-        portsResults = main.TRUE
         linksResults = main.TRUE
         hostsResults = main.TRUE
         hostAttachmentResults = True
@@ -2130,9 +2120,6 @@ class HATestClusterRestart:
         # Give time for Gossip to work
         while topoResult == main.FALSE and elapsed < 60:
             count += 1
-            if count > 1:
-                # TODO: Deprecate STS usage
-                MNTopo = TestONTopology( main.Mininet1, ctrls )
             cliStart = time.time()
             devices = []
             threads = []
@@ -2213,13 +2200,19 @@ class HATestClusterRestart:
             print "Elapsed time: " + str( elapsed )
             print "CLI time: " + str( cliTime )
 
+            mnSwitches = main.Mininet1.getSwitches()
+            mnLinks = main.Mininet1.getLinks()
+            mnHosts = main.Mininet1.getHosts()
             for controller in range( numControllers ):
                 controllerStr = str( controller + 1 )
-                if devices[ controller ] or "Error" not in devices[
-                        controller ]:
+                if devices[ controller ] and ports[ controller ] and\
+                    "Error" not in devices[ controller ] and\
+                    "Error" not in ports[ controller ]:
+
                     currentDevicesResult = main.Mininet1.compareSwitches(
-                        MNTopo,
-                        json.loads( devices[ controller ] ) )
+                            mnSwitches,
+                            json.loads( devices[ controller ] ),
+                            json.loads( ports[ controller ] ) )
                 else:
                     currentDevicesResult = main.FALSE
                 utilities.assert_equals( expect=main.TRUE,
@@ -2229,23 +2222,10 @@ class HATestClusterRestart:
                                          onfail="ONOS" + controllerStr +
                                          " Switches view is incorrect" )
 
-                if ports[ controller ] or "Error" not in ports[ controller ]:
-                    currentPortsResult = main.Mininet1.comparePorts(
-                        MNTopo,
-                        json.loads( ports[ controller ] ) )
-                else:
-                    currentPortsResult = main.FALSE
-                utilities.assert_equals( expect=main.TRUE,
-                                         actual=currentPortsResult,
-                                         onpass="ONOS" + controllerStr +
-                                         " ports view is correct",
-                                         onfail="ONOS" + controllerStr +
-                                         " ports view is incorrect" )
-
-                if links[ controller ] or "Error" not in links[ controller ]:
+                if links[ controller ] and "Error" not in links[ controller ]:
                     currentLinksResult = main.Mininet1.compareLinks(
-                        MNTopo,
-                        json.loads( links[ controller ] ) )
+                            mnSwitches, mnLinks,
+                            json.loads( links[ controller ] ) )
                 else:
                     currentLinksResult = main.FALSE
                 utilities.assert_equals( expect=main.TRUE,
@@ -2257,7 +2237,8 @@ class HATestClusterRestart:
 
                 if hosts[ controller ] or "Error" not in hosts[ controller ]:
                     currentHostsResult = main.Mininet1.compareHosts(
-                        MNTopo, hosts[ controller ] )
+                            mnHosts,
+                            hosts[ controller ] )
                 else:
                     currentHostsResult = main.FALSE
                 utilities.assert_equals( expect=main.TRUE,
@@ -2352,10 +2333,13 @@ class HATestClusterRestart:
 
                 # END CHECKING HOST ATTACHMENT POINTS
                 devicesResults = devicesResults and currentDevicesResult
-                portsResults = portsResults and currentPortsResult
                 linksResults = linksResults and currentLinksResult
                 hostsResults = hostsResults and currentHostsResult
-                hostAttachmentResults = hostAttachmentResults and hostAttachment
+                hostAttachmentResults = hostAttachmentResults and\
+                                        hostAttachment
+                topoResult = ( devicesResults and linksResults
+                               and hostsResults and ipResult and
+                               hostAttachmentResults )
 
         # Compare json objects for hosts and dataplane clusters
 
@@ -2444,7 +2428,7 @@ class HATestClusterRestart:
             onpass="ONOS shows 1 SCC",
             onfail="ONOS shows " + str( numClusters ) + " SCCs" )
 
-        topoResult = ( devicesResults and portsResults and linksResults
+        topoResult = ( devicesResults and linksResults
                        and hostsResults and consistentHostsResult
                        and consistentClustersResult and clusterResults
                        and ipResult and hostAttachmentResults )
@@ -2464,13 +2448,6 @@ class HATestClusterRestart:
             actual=devicesResults,
             onpass="Device information is correct",
             onfail="Device information is incorrect" )
-
-        main.step( "Port information is correct" )
-        utilities.assert_equals(
-            expect=main.TRUE,
-            actual=portsResults,
-            onpass="Port information is correct",
-            onfail="Port information is incorrect" )
 
         main.step( "Links are correct" )
         utilities.assert_equals(

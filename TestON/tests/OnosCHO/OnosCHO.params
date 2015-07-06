@@ -18,7 +18,7 @@
     </ENV>
     <GIT>         
         #autoPull 'on' or 'off'
-        <autoPull>off</autoPull>
+        <autoPull>on</autoPull>
         <branch>master</branch>
     </GIT>
     <TOPO1>

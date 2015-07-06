@@ -1624,7 +1624,7 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def purgeIntents( self ):
+    def purgeWithdrawnIntents( self ):
         """
         Purges all WITHDRAWN Intents
         """

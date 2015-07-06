@@ -1,4 +1,3 @@
-
 #!/usr/bin/env python
 """
 Created on 26-Oct-2012
@@ -143,15 +142,17 @@ class MininetCliDriver( Emulator ):
                     if args is None or args == '':
                         # If no args given, use args from .topo file
                         args = self.options[ 'arg1' ] +\
-                                     " " + self.options[ 'arg2' ] +\
-                                     " --mac --controller " +\
-                                     self.options[ 'controller' ] + " " +\
-                                     self.options[ 'arg3' ]
+                                " " + self.options[ 'arg2' ] +\
+                                " --mac --controller " +\
+                                self.options[ 'controller' ] + " " +\
+                                self.options[ 'arg3' ]
                     else:  # else only use given args
                         pass
                         # TODO: allow use of topo args and method args?
                 else:  # Use given topology file
-                    main.log.info( "Starting Mininet from topo file " + topoFile )
+                    main.log.info(
+                        "Starting Mininet from topo file " +
+                        topoFile )
                     cmdString += topoFile + " "
                     if args is None:
                         args = ''
@@ -181,7 +182,7 @@ class MininetCliDriver( Emulator ):
                                     self.handle.after )
                     self.handle.expect( '\$' )
                     response += str( self.handle.before +
-                                    self.handle.after )
+                                     self.handle.after )
                     main.log.error(
                         self.name +
                         ": Launching Mininet failed: " + response )
@@ -257,13 +258,13 @@ class MininetCliDriver( Emulator ):
         topoDict = self.numSwitchesNlinks( *topoArgList )
         return topoDict
 
-    def pingall( self, timeout=300, shortCircuit=False, acceptableFailed=0):
+    def pingall( self, timeout=300, shortCircuit=False, acceptableFailed=0 ):
         """
            Verifies the reachability of the hosts using pingall command.
            Optional parameter timeout allows you to specify how long to
            wait for pingall to complete
            Optional:
-           timeout(seconds) - How long to wait before breaking the pingall
+           timeout( seconds ) - How long to wait before breaking the pingall
            shortCircuit - Break the pingall based on the number of failed hosts
                           ping
            acceptableFailed - Set the number of acceptable failed pings for the
@@ -285,12 +286,12 @@ class MininetCliDriver( Emulator ):
                 self.handle.sendline( "pingall" )
                 startTime = time.time()
                 while True:
-                    i = self.handle.expect( [ "mininet>","X",
+                    i = self.handle.expect( [ "mininet>", "X",
                                               pexpect.EOF,
                                               pexpect.TIMEOUT ],
-                                              timeout )
+                                            timeout )
                     if i == 0:
-                        main.log.info( self.name + ": pingall finished")
+                        main.log.info( self.name + ": pingall finished" )
                         response += self.handle.before
                         break
                     elif i == 1:
@@ -387,14 +388,13 @@ class MininetCliDriver( Emulator ):
                 - 'ipv6'
 
             Acceptable hostList:
-                - ['h1','h2','h3','h4']
+                - [ 'h1','h2','h3','h4' ]
 
             Returns main.TRUE if all hosts specified can reach
             each other
 
             Returns main.FALSE if one or more of hosts specified
             cannot reach each other"""
-
         if pingType == "ipv4":
             cmd = " ping -c 1 -i 1 -W 8 "
         elif pingType == "ipv6":
@@ -409,22 +409,24 @@ class MininetCliDriver( Emulator ):
             isReachable = main.TRUE
 
             for host in hostList:
-                listIndex = hostList.index(host)
+                listIndex = hostList.index( host )
                 # List of hosts to ping other than itself
-                pingList = hostList[:listIndex] + hostList[(listIndex+1):]
+                pingList = hostList[ :listIndex ] + \
+                    hostList[ ( listIndex + 1 ): ]
 
                 for temp in pingList:
                     # Current host pings all other hosts specified
-                    pingCmd = str(host) + cmd + str(temp)
+                    pingCmd = str( host ) + cmd + str( temp )
                     self.handle.sendline( pingCmd )
                     i = self.handle.expect( [ pingCmd, pexpect.TIMEOUT ] )
                     j = self.handle.expect( [ "mininet>", pexpect.TIMEOUT ] )
                     response = self.handle.before
                     if re.search( ',\s0\%\spacket\sloss', response ):
-                        main.log.info( str(host) + " -> " + str(temp) )
+                        main.log.info( str( host ) + " -> " + str( temp ) )
                     else:
-                        main.log.info( str(host) + " -> X ("+str(temp)+") "
-                                       " Destination Unreachable" )
+                        main.log.info(
+                            str( host ) + " -> X (" + str( temp ) + ") "
+                            " Destination Unreachable" )
                         # One of the host to host pair is unreachable
                         isReachable = main.FALSE
 
@@ -544,13 +546,13 @@ class MininetCliDriver( Emulator ):
            Note: The intf between host and oldSw when detached
                 using detach(), will still show up in the 'net'
                 cmd, because switch.detach() doesn't affect switch.intfs[]
-                (which is correct behavior since the interfaces
-                haven't moved).
+                ( which is correct behavior since the interfaces
+                haven't moved ).
         """
         if self.handle:
             try:
                 # Bring link between oldSw-host down
-                cmd = "py net.configLinkStatus('" + oldSw + "'," + "'"+ host +\
+                cmd = "py net.configLinkStatus('" + oldSw + "'," + "'" + host +\
                       "'," + "'down')"
                 print "cmd1= ", cmd
                 response = self.execute( cmd=cmd,
@@ -1081,7 +1083,7 @@ class MininetCliDriver( Emulator ):
         return main.TRUE
 
     def getVersion( self ):
-        #FIXME: What uses this? This should be refactored to get
+        # FIXME: What uses this? This should be refactored to get
         #       version from MN and not some other file
         fileInput = path + '/lib/Mininet/INSTALL'
         version = super( Mininet, self ).getVersion()
@@ -1215,7 +1217,7 @@ class MininetCliDriver( Emulator ):
                             for switch, ptcpNum in zip( sw, ptcp ):
                                 tempCmd = "sh ovs-vsctl set-controller "
                                 tempCmd += switch + " ptcp:" + \
-                                           str( ptcpNum ) + " "
+                                    str( ptcpNum ) + " "
                                 tempCmd += onosIp
                                 commandList.append( tempCmd )
                     else:
@@ -1296,7 +1298,7 @@ class MininetCliDriver( Emulator ):
                 return main.TRUE
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
-            main.log.error(self.name + ":     " + self.handle.before )
+            main.log.error( self.name + ":     " + self.handle.before )
             main.cleanup()
             main.exit()
 
@@ -1472,9 +1474,9 @@ class MininetCliDriver( Emulator ):
         Called at the end of the test to stop the mininet and
         disconnect the handle.
         """
-        self.handle.sendline('')
+        self.handle.sendline( '' )
         i = self.handle.expect( [ 'mininet>', pexpect.EOF, pexpect.TIMEOUT ],
-                                timeout=2)
+                                timeout=2 )
         response = main.TRUE
         if i == 0:
             response = self.stopNet()
@@ -1489,7 +1491,7 @@ class MininetCliDriver( Emulator ):
             main.log.error( "Connection failed to the host" )
         return response
 
-    def stopNet( self, fileName = "", timeout=5):
+    def stopNet( self, fileName="", timeout=5 ):
         """
         Stops mininet.
         Returns main.TRUE if the mininet successfully stops and
@@ -1497,12 +1499,11 @@ class MininetCliDriver( Emulator ):
 
         Will cleanup and exit the test if mininet fails to stop
         """
-
         main.log.info( self.name + ": Stopping mininet..." )
         response = ''
         if self.handle:
             try:
-                self.handle.sendline("")
+                self.handle.sendline( "" )
                 i = self.handle.expect( [ 'mininet>',
                                           '\$',
                                           pexpect.EOF,
@@ -1514,7 +1515,7 @@ class MininetCliDriver( Emulator ):
                     cmd="exit",
                     prompt="(.*)",
                     timeout=120 )
-                main.log.info( self.name + ": Stopped")
+                main.log.info( self.name + ": Stopped" )
                 self.handle.sendline( "sudo mn -c" )
                 response = main.TRUE
 
@@ -1528,9 +1529,12 @@ class MininetCliDriver( Emulator ):
                                     "TIMEOUT" )
 
                 if fileName:
-                    self.handle.sendline("")
-                    self.handle.expect('\$')
-                    self.handle.sendline("sudo kill -9 \`ps -ef | grep \""+ fileName +"\" | grep -v grep | awk '{print $2}'\`")
+                    self.handle.sendline( "" )
+                    self.handle.expect( '\$' )
+                    self.handle.sendline(
+                        "sudo kill -9 \`ps -ef | grep \"" +
+                        fileName +
+                        "\" | grep -v grep | awk '{print $2}'\`" )
             except pexpect.EOF:
                 main.log.error( self.name + ": EOF exception found" )
                 main.log.error( self.name + ":     " + self.handle.before )
@@ -1553,7 +1557,7 @@ class MininetCliDriver( Emulator ):
         """
         if ethDevice:
             ethDevice = '-I ' + ethDevice + ' '
-        cmd = " py " + host  + ".cmd(\"arping -c 1 " + ethDevice + ip + "\")"
+        cmd = " py " + host + ".cmd(\"arping -c 1 " + ethDevice + ip + "\")"
         try:
             main.log.warn( "Sending: " + cmd )
             self.handle.sendline( cmd )
@@ -1690,7 +1694,7 @@ class MininetCliDriver( Emulator ):
             main.cleanup()
             main.exit()
 
-    def getPorts(self, nodeName, verbose=False ):
+    def getPorts( self, nodeName, verbose=False ):
         """
         Read ports from a Mininet switch.
 
@@ -1713,7 +1717,7 @@ class MininetCliDriver( Emulator ):
                 main.log.info( "Reading switch port %s(%s)" %
                                ( portVars[ 'name' ], portVars[ 'mac' ] ) )
             mac = portVars[ 'mac' ]
-            if mac== 'None':
+            if mac == 'None':
                 mac = None
             ips = []
             ip = portVars[ 'ip' ]
@@ -1735,7 +1739,7 @@ class MininetCliDriver( Emulator ):
                             'enabled': isUp } )
         return ports
 
-    def getSwitches(self, verbose=False ):
+    def getSwitches( self, verbose=False ):
         """
         Read switches from Mininet.
 
@@ -1747,12 +1751,12 @@ class MininetCliDriver( Emulator ):
         # Regex patterns to parse dump output
         # Example Switch:
         # <OVSSwitch s1: lo:127.0.0.1,s1-eth1:None,s1-eth2:None,s1-eth3:None pid=5238>
-        # <OVSSwitch{'protocols': 'OpenFlow10'} s1: lo:127.0.0.1,s1-eth1:None,s1-eth2:None pid=25974>
+        # <OVSSwitch{ 'protocols': 'OpenFlow10' } s1: lo:127.0.0.1,s1-eth1:None,s1-eth2:None pid=25974>
         swRE = r"<OVSSwitch(\{.*\})?\s(?P<name>[^:]+)\:\s" +\
                "(?P<ports>([^,]+,)*[^,\s]+)"
         # Update mn port info
         self.update()
-        output = { }
+        output = {}
         dump = self.dump().split( "\n" )
         for line in dump:
             if line.startswith( "<OVSSwitch" ):
@@ -1765,7 +1769,7 @@ class MininetCliDriver( Emulator ):
                 output[ name ] = { "dpid": dpid, "ports": ports }
         return output
 
-    def getHosts(self, verbose=False):
+    def getHosts( self, verbose=False ):
         """
         Read hosts from Mininet.
 
@@ -1779,7 +1783,7 @@ class MininetCliDriver( Emulator ):
         #       <Host h2: h2-eth0:10.0.0.2,h2-eth1:10.0.1.2 pid=14386>
         # FIXME: Fix that
         hostRE = r"<Host\s(?P<name>[^:]+)\:((\s(?P<ifname>[^:]+)\:" +\
-                  "(?P<ip>[^\s]+))|(\s)\spid=(?P<pid>[^>]+))"
+            "(?P<ip>[^\s]+))|(\s)\spid=(?P<pid>[^>]+))"
         # update mn port info
         self.update()
         # Get mininet dump
@@ -1805,7 +1809,7 @@ class MininetCliDriver( Emulator ):
                                            ( portVars[ 'name' ],
                                              portVars[ 'mac' ] ) )
                         mac = portVars[ 'mac' ]
-                        if mac== 'None':
+                        if mac == 'None':
                             mac = None
                         ips = []
                         ip = portVars[ 'ip' ]
@@ -1831,10 +1835,10 @@ class MininetCliDriver( Emulator ):
         Returns a list of dictionaries with link endpoints.
 
         The dictionary structure is:
-            { 'node1': str(node1 name)
-              'node2': str(node2 name)
-              'port1': str(port1 of_port)
-              'port2': str(port2 of_port) }
+            { 'node1': str( node1 name )
+              'node2': str( node2 name )
+              'port1': str( port1 of_port )
+              'port2': str( port2 of_port ) }
         Note: The port number returned is the eth#, not necessarily the of_port
               number. In Mininet, for OVS switch, these should be the same. For
               hosts, this is just the eth#.
@@ -1884,8 +1888,12 @@ class MininetCliDriver( Emulator ):
         onosDPIDs = []
         for switch in onos:
             if switch[ 'available' ]:
-                onosDPIDs.append( switch[ 'id' ].replace( ":", ''
-                                  ).replace( "of", '' ).lower() )
+                onosDPIDs.append(
+                    switch[ 'id' ].replace(
+                        ":",
+                        '' ).replace(
+                        "of",
+                        '' ).lower() )
         onosDPIDs.sort()
 
         if mnDPIDs != onosDPIDs:
@@ -1914,8 +1922,11 @@ class MininetCliDriver( Emulator ):
                     mnPorts.append( int( port[ 'of_port' ] ) )
             for onosSwitch in portsJson:
                 if onosSwitch[ 'device' ][ 'available' ]:
-                    if onosSwitch[ 'device' ][ 'id' ].replace( ':',''
-                            ).replace( "of", '' ) == mnSwitch[ 'dpid' ]:
+                    if onosSwitch[ 'device' ][ 'id' ].replace(
+                            ':',
+                            '' ).replace(
+                            "of",
+                            '' ) == mnSwitch[ 'dpid' ]:
                         for port in onosSwitch[ 'ports' ]:
                             if port[ 'isEnabled' ]:
                                 if port[ 'port' ] == 'local':
@@ -1978,7 +1989,7 @@ class MininetCliDriver( Emulator ):
         #        ONOS has what is in MN
         onos = linksJson
 
-        mnLinks = [ ]
+        mnLinks = []
         for l in links:
             try:
                 node1 = switches[ l[ 'node1' ] ]
@@ -1988,7 +1999,7 @@ class MininetCliDriver( Emulator ):
                     if port[ 'of_port' ] == l[ 'port1' ]:
                         enabled = enabled and port[ 'enabled' ]
                 for port in node2[ 'ports' ]:
-                    if port[ 'of_port' ] == l[ 'port2']:
+                    if port[ 'of_port' ] == l[ 'port2' ]:
                         enabled = enabled and port[ 'enabled' ]
                 if enabled:
                     mnLinks.append( l )
@@ -2097,25 +2108,27 @@ class MininetCliDriver( Emulator ):
         for onosHost in hostsJson:
             onosMAC = onosHost[ 'mac' ].lower()
             match = False
-            for mnHost in hosts:
-                for mnIntf in mnHost[ 'interfaces' ]:
-                    if onosMAC == mnIntf[ 'mac' ].lower() :
+            for mnHost, info in hosts.iteritems():
+                for mnIntf in info[ 'interfaces' ]:
+                    if onosMAC == mnIntf[ 'mac' ].lower():
                         match = True
                         for ip in mnIntf[ 'ips' ]:
                             if ip in onosHost[ 'ipAddresses' ]:
                                 pass  # all is well
                             else:
                                 # misssing ip
-                                main.log.error( "ONOS host " + onosHost[ 'id' ]
-                                                + " has a different IP(" +
+                                main.log.error( "ONOS host " +
+                                                onosHost[ 'id' ] +
+                                                " has a different IP(" +
                                                 str( onosHost[ 'ipAddresses' ] ) +
                                                 ") than the Mininet host(" +
-                                                str( ip ) + ")." )
+                                                str( ip ) +
+                                                ")." )
                                 output = json.dumps(
-                                                    onosHost,
-                                                    sort_keys=True,
-                                                    indent=4,
-                                                    separators=( ',', ': ' ) )
+                                    onosHost,
+                                    sort_keys=True,
+                                    indent=4,
+                                    separators=( ',', ': ' ) )
                                 main.log.info( output )
                                 hostResults = main.FALSE
             if not match:
@@ -2130,31 +2143,6 @@ class MininetCliDriver( Emulator ):
         return hostResults
 
     def getHostsOld( self ):
-        """
-           Returns a list of all hosts
-           Don't ask questions just use it"""
-        self.handle.sendline( "" )
-        self.handle.expect( "mininet>" )
-
-        self.handle.sendline( "py [ host.name for host in net.hosts ]" )
-        self.handle.expect( "mininet>" )
-
-        handlePy = self.handle.before
-        handlePy = handlePy.split( "]\r\n", 1 )[ 1 ]
-        handlePy = handlePy.rstrip()
-
-        self.handle.sendline( "" )
-        self.handle.expect( "mininet>" )
-
-        hostStr = handlePy.replace( "]", "" )
-        hostStr = hostStr.replace( "'", "" )
-        hostStr = hostStr.replace( "[", "" )
-        hostStr = hostStr.replace( " ", "" )
-        hostList = hostStr.split( "," )
-
-        return hostList
-
-    def getHosts( self ):
         """
            Returns a list of all hosts
            Don't ask questions just use it"""
@@ -2244,7 +2232,7 @@ class MininetCliDriver( Emulator ):
             main.cleanup()
             main.exit()
 
-    def assignVLAN( self, host, intf, vlan):
+    def assignVLAN( self, host, intf, vlan ):
         """
            Add vlan tag to a host.
            Dependencies:
@@ -2259,40 +2247,38 @@ class MininetCliDriver( Emulator ):
            """
         if self.handle:
             try:
-		# get the ip address of the host
-		main.log.info("Get the ip address of the host")
-		ipaddr = self.getIPAddress(host)
-		print repr(ipaddr)
-	
-		# remove IP from interface intf
-		# Ex: h1 ifconfig h1-eth0 inet 0
-		main.log.info("Remove IP from interface ")
-		cmd2 = host + " ifconfig " + intf + " " + " inet 0 "
-		self.handle.sendline( cmd2 )
-		self.handle.expect( "mininet>" ) 
-		response = self.handle.before
-		main.log.info ( "====> %s ", response)
+                # get the ip address of the host
+                main.log.info( "Get the ip address of the host" )
+                ipaddr = self.getIPAddress( host )
+                print repr( ipaddr )
 
-		
-		# create VLAN interface
-		# Ex: h1 vconfig add h1-eth0 100
-		main.log.info("Create Vlan")
-		cmd3 = host + " vconfig add " + intf + " " + vlan
-		self.handle.sendline( cmd3 )
-		self.handle.expect( "mininet>" ) 
-		response = self.handle.before
-		main.log.info( "====> %s ", response )
+                # remove IP from interface intf
+                # Ex: h1 ifconfig h1-eth0 inet 0
+                main.log.info( "Remove IP from interface " )
+                cmd2 = host + " ifconfig " + intf + " " + " inet 0 "
+                self.handle.sendline( cmd2 )
+                self.handle.expect( "mininet>" )
+                response = self.handle.before
+                main.log.info( "====> %s ", response )
 
-		# assign the host's IP to the VLAN interface
-		# Ex: h1 ifconfig h1-eth0.100 inet 10.0.0.1
-		main.log.info("Assign the host IP to the vlan interface")
-		vintf = intf + "." + vlan
-		cmd4 = host + " ifconfig " + vintf + " " + " inet " + ipaddr
-		self.handle.sendline( cmd4 )
-		self.handle.expect( "mininet>" ) 
-		response = self.handle.before
-		main.log.info ( "====> %s ", response)
+                # create VLAN interface
+                # Ex: h1 vconfig add h1-eth0 100
+                main.log.info( "Create Vlan" )
+                cmd3 = host + " vconfig add " + intf + " " + vlan
+                self.handle.sendline( cmd3 )
+                self.handle.expect( "mininet>" )
+                response = self.handle.before
+                main.log.info( "====> %s ", response )
 
+                # assign the host's IP to the VLAN interface
+                # Ex: h1 ifconfig h1-eth0.100 inet 10.0.0.1
+                main.log.info( "Assign the host IP to the vlan interface" )
+                vintf = intf + "." + vlan
+                cmd4 = host + " ifconfig " + vintf + " " + " inet " + ipaddr
+                self.handle.sendline( cmd4 )
+                self.handle.expect( "mininet>" )
+                response = self.handle.before
+                main.log.info( "====> %s ", response )
 
                 return main.TRUE
             except pexpect.EOF:
@@ -2303,5 +2289,3 @@ class MininetCliDriver( Emulator ):
 if __name__ != "__main__":
     import sys
     sys.modules[ __name__ ] = MininetCliDriver()
-
-

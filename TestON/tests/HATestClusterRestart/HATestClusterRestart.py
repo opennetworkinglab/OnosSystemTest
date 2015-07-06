@@ -270,19 +270,13 @@ class HATestClusterRestart:
                                 "master of the device."
         main.step( "Assign switches to controllers" )
 
-        # TODO: rewrite this function to take lists of ips and ports?
-        #       or list of tuples?
+        ipList = []
+        for i in range( numControllers ):
+            ipList.append( nodes[ i ].ip_address )
+        swList = []
         for i in range( 1, 29 ):
-            main.Mininet1.assignSwController(
-                sw=str( i ),
-                count=numControllers,
-                ip1=nodes[ 0 ].ip_address, port1=ONOS1Port,
-                ip2=nodes[ 1 ].ip_address, port2=ONOS2Port,
-                ip3=nodes[ 2 ].ip_address, port3=ONOS3Port,
-                ip4=nodes[ 3 ].ip_address, port4=ONOS4Port,
-                ip5=nodes[ 4 ].ip_address, port5=ONOS5Port,
-                ip6=nodes[ 5 ].ip_address, port6=ONOS6Port,
-                ip7=nodes[ 6 ].ip_address, port7=ONOS7Port )
+            swList.append( "s" + str( i ) )
+        main.Mininet1.assignSwController( sw=swList, ip=ipList )
 
         mastershipCheck = main.TRUE
         for i in range( 1, 29 ):
@@ -479,12 +473,13 @@ class HATestClusterRestart:
         for i in range(2):  # Retry if pingall fails first time
             time1 = time.time()
             pingResult = main.Mininet1.pingall()
-            utilities.assert_equals(
-                expect=main.TRUE,
-                actual=pingResult,
-                onpass="Reactive Pingall test passed",
-                onfail="Reactive Pingall failed, " +
-                       "one or more ping pairs failed" )
+            if i == 0:
+                utilities.assert_equals(
+                    expect=main.TRUE,
+                    actual=pingResult,
+                    onpass="Reactive Pingall test passed",
+                    onfail="Reactive Pingall failed, " +
+                           "one or more ping pairs failed" )
             time2 = time.time()
             main.log.info( "Time for pingall: %2f seconds" %
                            ( time2 - time1 ) )
@@ -2249,7 +2244,7 @@ class HATestClusterRestart:
                                          " hosts don't match Mininet" )
                 # CHECKING HOST ATTACHMENT POINTS
                 hostAttachment = True
-                zeroHosts = False
+                noHosts = False
                 # FIXME: topo-HA/obelisk specific mappings:
                 # key is mac and value is dpid
                 mappings = {}
@@ -2282,7 +2277,7 @@ class HATestClusterRestart:
                 if hosts[ controller ] or "Error" not in hosts[ controller ]:
                     if hosts[ controller ] == []:
                         main.log.warn( "There are no hosts discovered" )
-                        zeroHosts = True
+                        noHosts = True
                     else:
                         for host in hosts[ controller ]:
                             mac = None
@@ -2326,7 +2321,7 @@ class HATestClusterRestart:
                     main.log.error( "No hosts json output or \"Error\"" +
                                     " in output. hosts = " +
                                     repr( hosts[ controller ] ) )
-                if zeroHosts:
+                if noHosts is False:
                     # TODO: Find a way to know if there should be hosts in a
                     #       given point of the test
                     hostAttachment = True
@@ -2618,22 +2613,10 @@ class HATestClusterRestart:
         main.Mininet1.addSwitch( switch, dpid=switchDPID )
         for peer in links:
             main.Mininet1.addLink( switch, peer )
-        main.Mininet1.assignSwController( sw=switch.split( 's' )[ 1 ],
-                                          count=numControllers,
-                                          ip1=nodes[ 0 ].ip_address,
-                                          port1=ONOS1Port,
-                                          ip2=nodes[ 1 ].ip_address,
-                                          port2=ONOS2Port,
-                                          ip3=nodes[ 2 ].ip_address,
-                                          port3=ONOS3Port,
-                                          ip4=nodes[ 3 ].ip_address,
-                                          port4=ONOS4Port,
-                                          ip5=nodes[ 4 ].ip_address,
-                                          port5=ONOS5Port,
-                                          ip6=nodes[ 5 ].ip_address,
-                                          port6=ONOS6Port,
-                                          ip7=nodes[ 6 ].ip_address,
-                                          port7=ONOS7Port )
+        ipList = []
+        for i in range( numControllers ):
+            ipList.append( nodes[ i ].ip_address )
+        main.Mininet1.assignSwController( sw=switch, ip=ipList )
         main.log.info( "Waiting " + str( switchSleep ) +
                        " seconds for switch up to be discovered" )
         time.sleep( switchSleep )

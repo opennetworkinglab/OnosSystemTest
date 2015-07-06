@@ -233,10 +233,13 @@ class HATestSingleInstanceRestart:
                                 "master of the device."
         main.step( "Assign switches to controllers" )
 
+        ipList = []
+        for i in range( numControllers ):
+            ipList.append( nodes[ i ].ip_address )
+        swList = []
         for i in range( 1, 29 ):
-            main.Mininet1.assignSwController(
-                sw=str( i ),
-                ip1=ONOS1Ip, port1=ONOS1Port )
+            swList.append( "s" + str( i ) )
+        main.Mininet1.assignSwController( sw=swList, ip=ipList )
 
         mastershipCheck = main.TRUE
         for i in range( 1, 29 ):
@@ -386,12 +389,13 @@ class HATestSingleInstanceRestart:
         for i in range(2):  # Retry if pingall fails first time
             time1 = time.time()
             pingResult = main.Mininet1.pingall()
-            utilities.assert_equals(
-                expect=main.TRUE,
-                actual=pingResult,
-                onpass="Reactive Pingall test passed",
-                onfail="Reactive Pingall failed, " +
-                       "one or more ping pairs failed" )
+            if i == 0:
+                utilities.assert_equals(
+                    expect=main.TRUE,
+                    actual=pingResult,
+                    onpass="Reactive Pingall test passed",
+                    onfail="Reactive Pingall failed, " +
+                           "one or more ping pairs failed" )
             time2 = time.time()
             main.log.info( "Time for pingall: %2f seconds" %
                            ( time2 - time1 ) )
@@ -1729,9 +1733,10 @@ class HATestSingleInstanceRestart:
         main.Mininet1.addSwitch( switch, dpid=switchDPID )
         for peer in links:
             main.Mininet1.addLink( switch, peer )
-        main.Mininet1.assignSwController( sw=switch.split( 's' )[ 1 ],
-                                          ip1=ONOS1Ip,
-                                          port1=ONOS1Port )
+        ipList = []
+        for i in range( numControllers ):
+            ipList.append( nodes[ i ].ip_address )
+        main.Mininet1.assignSwController( sw=switch, ip=ipList )
         main.log.info( "Waiting " + str( switchSleep ) +
                        " seconds for switch up to be discovered" )
         time.sleep( switchSleep )

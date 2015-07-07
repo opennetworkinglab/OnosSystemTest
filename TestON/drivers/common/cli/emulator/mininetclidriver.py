@@ -73,7 +73,7 @@ class MininetCliDriver( Emulator ):
                     self.ip_address = os.getenv( str( self.ip_address ) )
                 else:
                     main.log.info( self.name +
-                                   "Trying to connect to" +
+                                   ": Trying to connect to " +
                                    self.ip_address )
 
             except KeyError:

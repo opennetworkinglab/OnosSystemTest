@@ -13,16 +13,17 @@ class IntentRerouteLat:
     def __init__( self ):
         self.default = ''
 
-    def CASE1( self, main ):           
-                                        
-        import time                     
-        global init       
-        try: 
-            if type(init) is not bool: 
-                init = False  
-        except NameError: 
-            init = False 
-       
+    def CASE1( self, main ):
+
+        import time
+
+        global init
+        try:
+            if type(init) is not bool:
+                init = False
+        except NameError:
+            init = False
+
         #Load values from params file
         checkoutBranch = main.params[ 'GIT' ][ 'checkout' ]
         gitPull = main.params[ 'GIT' ][ 'autopull' ]
@@ -31,7 +32,7 @@ class IntentRerouteLat:
         BENCHUser = main.params[ 'BENCH' ][ 'user' ]
         maxNodes = int(main.params[ 'availableNodes' ])
         skipMvn = main.params[ 'TEST' ][ 'skipCleanInstall' ]
-        cellName = main.params[ 'ENV' ][ 'cellName' ]        
+        cellName = main.params[ 'ENV' ][ 'cellName' ]
 
         # -- INIT SECTION, ONLY RUNS ONCE -- # 
         if init == False: 

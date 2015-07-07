@@ -229,7 +229,7 @@ class flowTP1g:
                 ipCSV += main.params[ 'CTRL' ][ tempstr ] 
                 if i < int(maxNodes):
                     ipCSV +=","
-           
+            ''' 
             for i in range(5): 
                 main.ONOSbench.handle.sendline("""onos $OC1 "cfg set org.onosproject.provider.nil.NullProviders deviceCount 35" """)
                 main.ONOSbench.handle.expect(":~")
@@ -250,8 +250,13 @@ class flowTP1g:
                 main.ONOSbench.handle.sendline("""onos $OC1 "cfg get" """)
                 main.ONOSbench.handle.expect(":~")
                 main.log.info(main.ONOSbench.handle.before)
+            '''
+            for i in range(3):
+                main.ONOSbench.onosCfgSet(ONOSIp[1], "org.onosproject.provider.nil.NullProviders", "deviceCount 35")
+                main.ONOSbench.onosCfgSet(ONOSIp[1], "org.onosproject.provider.nil.NullProviders", "topoShape linear")
+                main.ONOSbench.onosCfgSet(ONOSIp[1], "org.onosproject.provider.nil.NullProviders", "enabled true") 
 
-                time.sleep(3)
+                time.sleep(5)
                 main.ONOSbench.handle.sendline("onos $OC1 summary")
                 main.ONOSbench.handle.expect(":~")
                 check = main.ONOSbench.handle.before
@@ -259,7 +264,7 @@ class flowTP1g:
                 if "SCC(s)=1," in check: 
                     break 
                 time.sleep(5)
-
+                
             #devide flows
             flows = int(main.params[ 'TEST' ][ 'flows' ])
             main.log.info("Flow Target  = " + str(flows))

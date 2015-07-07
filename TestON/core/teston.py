@@ -154,7 +154,7 @@ class TestON:
         self.log.info("Creating component Handle: "+component)
         driver_options = {}
         if 'COMPONENTS' in self.componentDictionary[component].keys():
-            driver_options = dict(self.componentDictionary[component]['COMPONENTS'])
+            driver_options =dict(self.componentDictionary[component]['COMPONENTS'])
 
         driver_options['name']=component
         driverName = self.componentDictionary[component]['type']
@@ -164,6 +164,21 @@ class TestON:
         driverModule = importlib.import_module(classPath)
         driverClass = getattr(driverModule, driverName)
         driverObject = driverClass()
+
+        if "OC" in self.componentDictionary[component]['host']:
+            try:
+                self.componentDictionary[component]['host'] = os.environ[str( self.componentDictionary[component]['host'])]
+            except KeyError:
+                self.log.info("Missing OC environment variable! Using stored IPs")
+                f = open("myIps","r")
+                ips = f.readlines()
+                for line in ips: 
+                    if self.componentDictionary[component]['host'] in line: 
+                        line = line.split("=")
+                        myIp = line[1]
+                self.componentDictionary[component]['host'] = myIp
+            except Exception as inst:
+                self.log.error("Uncaught exception: " + str(inst))
 
         connect_result = driverObject.connect(user_name = self.componentDictionary[component]['user'] if ('user' in self.componentDictionary[component].keys()) else getpass.getuser(),
                                               ip_address= self.componentDictionary[component]['host'] if ('host' in self.componentDictionary[component].keys()) else 'localhost',

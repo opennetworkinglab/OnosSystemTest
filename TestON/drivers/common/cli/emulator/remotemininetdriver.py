@@ -50,16 +50,23 @@ class RemoteMininetDriver( Emulator ):
          handles."""
         for key in connectargs:
             vars( self )[ key ] = connectargs[ key ]
+        
 
         try:
             if os.getenv( str( self.ip_address ) ) != None:
                 self.ip_address = os.getenv( str( self.ip_address ) )
+            else:
+                main.log.info( self.name +
+                               "Trying to connect to" +
+                               self.ip_address )
 
         except KeyError:
-            self.log.info("Invalid host name, connecting to local host instead")
+            main.log.info( "Invalid host name," +
+                           " connecting to local host instead" )
             self.ip_address = 'localhost'
         except Exception as inst:
-            self.log.error("Uncaught exception: " + str( inst ) )
+            main.log.error( "Uncaught exception: " + str( inst ) )
+
 
         self.name = self.options[ 'name' ]
         self.handle = super(

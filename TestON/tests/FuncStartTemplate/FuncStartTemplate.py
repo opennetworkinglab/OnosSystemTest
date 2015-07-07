@@ -12,7 +12,7 @@ class FuncStartTemplate:
     def __init__( self ):
         self.default = ''
 
-    def CASE10( self, main ):
+    def CASE1( self, main ):
         import time
         import os
         import imp
@@ -39,12 +39,11 @@ class FuncStartTemplate:
         cellName = main.params[ 'ENV' ][ 'cellName' ]
         apps = main.params[ 'ENV' ][ 'cellApps' ]
         gitBranch = main.params[ 'GIT' ][ 'branch' ]
-        benchIp = os.environ[ 'OCN' ]
-        benchUser = main.params[ 'BENCH' ][ 'user' ]
         topology = main.params[ 'MININET' ][ 'topo' ]
         main.numSwitch = int( main.params[ 'MININET' ][ 'switch' ] )
         main.numLinks = int( main.params[ 'MININET' ][ 'links' ] )
         main.numCtrls = main.params[ 'CTRL' ][ 'num' ]
+        benchIp = 'localhost'
         main.ONOSport = []
         main.hostsData = {}
         PULLCODE = False
@@ -62,6 +61,7 @@ class FuncStartTemplate:
 
             main.scale = ( main.params[ 'SCALE' ] ).split( "," )
             main.numCtrls = int( main.scale[ 0 ] )
+            globalONOSip = main.ONOSbench.getOnosIps()
 
             if PULLCODE:
                 main.step( "Git checkout and pull " + gitBranch )
@@ -81,8 +81,6 @@ class FuncStartTemplate:
             else:
                 main.log.warn( "Did not pull new code so skipping mvn " +
                                "clean install" )
-
-            globalONOSip = main.ONOSbench.getOnosIps()
 
         maxNodes = ( len( globalONOSip ) - 2 )
 
@@ -105,11 +103,11 @@ class FuncStartTemplate:
         for i in range( main.numCtrls ):
             cellIp.append( str( main.ONOSip[ i ] ) )
         print cellIp
-        main.ONOSbench.createCellFile( benchIp, cellName, "",
+        main.ONOSbench.createCellFile( benchIp, "tempCell", "",
                                        str( apps ), *cellIp )
 
         main.step( "Apply cell to environment" )
-        cellResult = main.ONOSbench.setCell( cellName )
+        cellResult = main.ONOSbench.setCell( "tempCell" )
         verifyResult = main.ONOSbench.verifyCell()
         stepResult = cellResult and verifyResult
         utilities.assert_equals( expect=main.TRUE,

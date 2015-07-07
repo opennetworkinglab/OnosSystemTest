@@ -233,10 +233,11 @@ class IntentEventTP:
 
             main.ONOSbench.handle.sendline("onos $OC1 summary")
             main.ONOSbench.handle.expect(":~")
-            #main.log.info("before" + main.ONOSbench.handle.before)
-            #clusterCheck = ((main.ONOSbench.handle.before).splitlines())[3]
-            #print("\nBefore: " + str(clusterCheck))
-            if ("SCC(s)=1,") in main.ONOSbench.handle.before:
+            
+            main.log.info("before" + main.ONOSbench.handle.before)
+            clusterCheck = main.ONOSbench.handle.before
+            print("\nBefore: " + str(clusterCheck))
+            if ("SCC(s)=1,") in clusterCheck:
                 break
             if clusterCheck != lastOutput:
                 sameOutput = False

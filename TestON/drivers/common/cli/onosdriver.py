@@ -39,6 +39,11 @@ class OnosDriver( CLI ):
     def connect( self, **connectargs ):
         """
         Creates ssh handle for ONOS "bench".
+        NOTE:
+        The ip_address would come from the topo file using the host tag, the
+        value can be an environment variable as well as a "localhost" to get
+        the ip address needed to ssh to the "bench"
+
         """
         try:
             for key in connectargs:
@@ -2274,7 +2279,6 @@ class OnosDriver( CLI ):
             main.log.info(msg3)
         main.log.info("===============================================================\n")
 
-<<<<<<< HEAD
     def copyMininetFile( self, fileName, path, userName, ip,
                          mnPath='~/mininet/custom/', timeout = 60 ):
         """
@@ -2331,7 +2335,7 @@ class OnosDriver( CLI ):
             main.log.error( self.name + ":     " + self.handle.before )
             main.cleanup()
             main.exit()
-=======
+
     def getOnosIPfromCell(self):
         '''
             Returns the ONOS node names and their IP addresses as defined in the cell and applied to shell environment
@@ -2370,12 +2374,7 @@ class OnosDriver( CLI ):
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
->>>>>>> e18d44f4075bd13381dbff0f87c30b83ea3b2f2f
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
-<<<<<<< HEAD
-
-=======
->>>>>>> e18d44f4075bd13381dbff0f87c30b83ea3b2f2f

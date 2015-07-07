@@ -45,9 +45,15 @@ class RemoteMininetDriver( Emulator ):
         self.flag = 0
 
     def connect( self, **connectargs ):
-        """,user_name, ip_address, pwd,options ):
-         Here the main is the TestON instance after creating all the log
-         handles."""
+        """
+        ( user_name, ip_address, pwd,options ):
+        Here the main is the TestON instance after creating all the log
+        handles.
+        NOTE:
+        The ip_address would come from the topo file using the host tag, the
+        value can be an environment variable as well as a "localhost" to get
+        the ip address needed to ssh to the "bench"
+        """
         for key in connectargs:
             vars( self )[ key ] = connectargs[ key ]
 

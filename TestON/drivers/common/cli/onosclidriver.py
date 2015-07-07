@@ -41,6 +41,10 @@ class OnosCliDriver( CLI ):
     def connect( self, **connectargs ):
         """
         Creates ssh handle for ONOS cli.
+        NOTE:
+        The ip_address would come from the topo file using the host tag, the
+        value can be an environment variable as well as a "localhost" to get
+        the ip address needed to ssh to the "bench"
         """
         try:
             for key in connectargs:

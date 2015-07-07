@@ -159,7 +159,8 @@ class FUNCintent:
                                  actual=stepResult,
                                  onpass="Successfully installed ONOS package",
                                  onfail="Failed to install ONOS package" )
-
+        #ONOS does not start that quickly putting a 60 second timeout
+        #Please make this a parameter
         time.sleep( 60 )
         main.step( "Starting ONOS service" )
         stopResult = main.TRUE

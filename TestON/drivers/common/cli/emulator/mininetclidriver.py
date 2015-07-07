@@ -1,4 +1,3 @@
-
 #!/usr/bin/env python
 """
 Created on 26-Oct-2012
@@ -19,11 +18,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with TestON.  If not, see <http://www.gnu.org/licenses/>.
 
-
 MininetCliDriver is the basic driver which will handle the Mininet functions
-
-Some functions rely on STS module. To install this,
-    git clone https://github.com/jhall11/sts.git
 
 Some functions rely on a modified version of Mininet. These functions
 should all be noted in the comments. To get this MN version run these commands
@@ -164,15 +159,17 @@ class MininetCliDriver( Emulator ):
                     if args is None or args == '':
                         # If no args given, use args from .topo file
                         args = self.options[ 'arg1' ] +\
-                                     " " + self.options[ 'arg2' ] +\
-                                     " --mac --controller " +\
-                                     self.options[ 'controller' ] + " " +\
-                                     self.options[ 'arg3' ]
+                                " " + self.options[ 'arg2' ] +\
+                                " --mac --controller " +\
+                                self.options[ 'controller' ] + " " +\
+                                self.options[ 'arg3' ]
                     else:  # else only use given args
                         pass
                         # TODO: allow use of topo args and method args?
                 else:  # Use given topology file
-                    main.log.info( "Starting Mininet from topo file " + topoFile )
+                    main.log.info(
+                        "Starting Mininet from topo file " +
+                        topoFile )
                     cmdString += topoFile + " "
                     if args is None:
                         args = ''
@@ -202,7 +199,7 @@ class MininetCliDriver( Emulator ):
                                     self.handle.after )
                     self.handle.expect( '\$' )
                     response += str( self.handle.before +
-                                    self.handle.after )
+                                     self.handle.after )
                     main.log.error(
                         self.name +
                         ": Launching Mininet failed: " + response )
@@ -278,13 +275,13 @@ class MininetCliDriver( Emulator ):
         topoDict = self.numSwitchesNlinks( *topoArgList )
         return topoDict
 
-    def pingall( self, timeout=300, shortCircuit=False, acceptableFailed=0):
+    def pingall( self, timeout=300, shortCircuit=False, acceptableFailed=0 ):
         """
            Verifies the reachability of the hosts using pingall command.
            Optional parameter timeout allows you to specify how long to
            wait for pingall to complete
            Optional:
-           timeout(seconds) - How long to wait before breaking the pingall
+           timeout( seconds ) - How long to wait before breaking the pingall
            shortCircuit - Break the pingall based on the number of failed hosts
                           ping
            acceptableFailed - Set the number of acceptable failed pings for the
@@ -306,12 +303,12 @@ class MininetCliDriver( Emulator ):
                 self.handle.sendline( "pingall" )
                 startTime = time.time()
                 while True:
-                    i = self.handle.expect( [ "mininet>","X",
+                    i = self.handle.expect( [ "mininet>", "X",
                                               pexpect.EOF,
                                               pexpect.TIMEOUT ],
-                                              timeout )
+                                            timeout )
                     if i == 0:
-                        main.log.info( self.name + ": pingall finished")
+                        main.log.info( self.name + ": pingall finished" )
                         response += self.handle.before
                         break
                     elif i == 1:
@@ -408,14 +405,13 @@ class MininetCliDriver( Emulator ):
                 - 'ipv6'
 
             Acceptable hostList:
-                - ['h1','h2','h3','h4']
+                - [ 'h1','h2','h3','h4' ]
 
             Returns main.TRUE if all hosts specified can reach
             each other
 
             Returns main.FALSE if one or more of hosts specified
             cannot reach each other"""
-
         if pingType == "ipv4":
             cmd = " ping -c 1 -i 1 -W 8 "
         elif pingType == "ipv6":
@@ -430,22 +426,24 @@ class MininetCliDriver( Emulator ):
             isReachable = main.TRUE
 
             for host in hostList:
-                listIndex = hostList.index(host)
+                listIndex = hostList.index( host )
                 # List of hosts to ping other than itself
-                pingList = hostList[:listIndex] + hostList[(listIndex+1):]
+                pingList = hostList[ :listIndex ] + \
+                    hostList[ ( listIndex + 1 ): ]
 
                 for temp in pingList:
                     # Current host pings all other hosts specified
-                    pingCmd = str(host) + cmd + str(temp)
+                    pingCmd = str( host ) + cmd + str( temp )
                     self.handle.sendline( pingCmd )
                     i = self.handle.expect( [ pingCmd, pexpect.TIMEOUT ] )
                     j = self.handle.expect( [ "mininet>", pexpect.TIMEOUT ] )
                     response = self.handle.before
                     if re.search( ',\s0\%\spacket\sloss', response ):
-                        main.log.info( str(host) + " -> " + str(temp) )
+                        main.log.info( str( host ) + " -> " + str( temp ) )
                     else:
-                        main.log.info( str(host) + " -> X ("+str(temp)+") "
-                                       " Destination Unreachable" )
+                        main.log.info(
+                            str( host ) + " -> X (" + str( temp ) + ") "
+                            " Destination Unreachable" )
                         # One of the host to host pair is unreachable
                         isReachable = main.FALSE
 
@@ -565,19 +563,19 @@ class MininetCliDriver( Emulator ):
            Note: The intf between host and oldSw when detached
                 using detach(), will still show up in the 'net'
                 cmd, because switch.detach() doesn't affect switch.intfs[]
-                (which is correct behavior since the interfaces 
-                haven't moved).
+                ( which is correct behavior since the interfaces
+                haven't moved ).
         """
         if self.handle:
             try:
                 # Bring link between oldSw-host down
-                cmd = "py net.configLinkStatus('" + oldSw + "'," + "'"+ host +\
+                cmd = "py net.configLinkStatus('" + oldSw + "'," + "'" + host +\
                       "'," + "'down')"
                 print "cmd1= ", cmd
                 response = self.execute( cmd=cmd,
                                          prompt="mininet>",
                                          timeout=10 )
-     
+
                 # Determine hostintf and Oldswitchintf
                 cmd = "px hintf,sintf = " + host + ".connectionsTo(" + oldSw +\
                       ")[0]"
@@ -595,7 +593,7 @@ class MininetCliDriver( Emulator ):
                 print "cmd3= ", cmd
                 self.handle.sendline( cmd )
                 self.handle.expect( "mininet>" )
-                
+
                 # Detach interface between oldSw-host
                 cmd = "px " + oldSw + ".detach( sintf )"
                 print "cmd4= ", cmd
@@ -607,20 +605,20 @@ class MininetCliDriver( Emulator ):
                 print "cmd5= ", cmd
                 self.handle.sendline( cmd )
                 self.handle.expect( "mininet>" )
- 
+
                 # Determine hostintf and Newswitchintf
                 cmd = "px hintf,sintf = " + host + ".connectionsTo(" + newSw +\
                       ")[0]"
                 print "cmd6= ", cmd
                 self.handle.sendline( cmd )
-                self.handle.expect( "mininet>" )                 
+                self.handle.expect( "mininet>" )
 
                 # Attach interface between newSw-host
                 cmd = "px " + newSw + ".attach( sintf )"
                 print "cmd3= ", cmd
                 self.handle.sendline( cmd )
                 self.handle.expect( "mininet>" )
-                
+
                 # Set ipaddress of the host-newSw interface
                 cmd = "px " + host + ".setIP( ip = ipaddr, intf = hintf)"
                 print "cmd7 = ", cmd
@@ -632,7 +630,7 @@ class MininetCliDriver( Emulator ):
                 print "cmd8 = ", cmd
                 self.handle.sendline( cmd )
                 self.handle.expect( "mininet>" )
-                
+
                 cmd = "net"
                 print "cmd9 = ", cmd
                 self.handle.sendline( cmd )
@@ -645,7 +643,7 @@ class MininetCliDriver( Emulator ):
                 self.handle.sendline( cmd )
                 self.handle.expect( "mininet>" )
                 print "ifconfig o/p = ", self.handle.before
-                
+
                 return main.TRUE
             except pexpect.EOF:
                 main.log.error( self.name + ": EOF exception found" )
@@ -928,6 +926,18 @@ class MininetCliDriver( Emulator ):
             main.exit()
         return response
 
+    def links( self ):
+        main.log.info( self.name + ": List network links" )
+        try:
+            response = self.execute( cmd='links', prompt='mininet>',
+                                     timeout=10 )
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        return response
+
     def iperf( self, host1, host2 ):
         main.log.info(
             self.name +
@@ -1090,7 +1100,7 @@ class MininetCliDriver( Emulator ):
         return main.TRUE
 
     def getVersion( self ):
-        #FIXME: What uses this? This should be refactored to get
+        # FIXME: What uses this? This should be refactored to get
         #       version from MN and not some other file
         fileInput = path + '/lib/Mininet/INSTALL'
         version = super( Mininet, self ).getVersion()
@@ -1224,7 +1234,7 @@ class MininetCliDriver( Emulator ):
                             for switch, ptcpNum in zip( sw, ptcp ):
                                 tempCmd = "sh ovs-vsctl set-controller "
                                 tempCmd += switch + " ptcp:" + \
-                                           str( ptcpNum ) + " "
+                                    str( ptcpNum ) + " "
                                 tempCmd += onosIp
                                 commandList.append( tempCmd )
                     else:
@@ -1305,7 +1315,7 @@ class MininetCliDriver( Emulator ):
                 return main.TRUE
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
-            main.log.error(self.name + ":     " + self.handle.before )
+            main.log.error( self.name + ":     " + self.handle.before )
             main.cleanup()
             main.exit()
 
@@ -1481,9 +1491,9 @@ class MininetCliDriver( Emulator ):
         Called at the end of the test to stop the mininet and
         disconnect the handle.
         """
-        self.handle.sendline('')
+        self.handle.sendline( '' )
         i = self.handle.expect( [ 'mininet>', pexpect.EOF, pexpect.TIMEOUT ],
-                                timeout=2)
+                                timeout=2 )
         response = main.TRUE
         if i == 0:
             response = self.stopNet()
@@ -1498,7 +1508,7 @@ class MininetCliDriver( Emulator ):
             main.log.error( "Connection failed to the host" )
         return response
 
-    def stopNet( self, fileName = "", timeout=5):
+    def stopNet( self, fileName="", timeout=5 ):
         """
         Stops mininet.
         Returns main.TRUE if the mininet successfully stops and
@@ -1506,12 +1516,11 @@ class MininetCliDriver( Emulator ):
 
         Will cleanup and exit the test if mininet fails to stop
         """
-
         main.log.info( self.name + ": Stopping mininet..." )
         response = ''
         if self.handle:
             try:
-                self.handle.sendline("")
+                self.handle.sendline( "" )
                 i = self.handle.expect( [ 'mininet>',
                                           '\$',
                                           pexpect.EOF,
@@ -1519,15 +1528,14 @@ class MininetCliDriver( Emulator ):
                                         timeout )
                 if i == 0:
                     main.log.info( "Exiting mininet..." )
-               
                 response = self.execute(
                     cmd="exit",
                     prompt="(.*)",
                     timeout=120 )
-                main.log.info( self.name + ": Stopped")
+                main.log.info( self.name + ": Stopped" )
                 self.handle.sendline( "sudo mn -c" )
                 response = main.TRUE
-                
+
                 if i == 1:
                     main.log.info( " Mininet trying to exit while not " +
                                    "in the mininet prompt" )
@@ -1536,11 +1544,14 @@ class MininetCliDriver( Emulator ):
                 elif i == 3:  # timeout
                     main.log.error( "Something went wrong exiting mininet " +
                                     "TIMEOUT" )
-                
+
                 if fileName:
-                    self.handle.sendline("")
-                    self.handle.expect('\$')
-                    self.handle.sendline("sudo kill -9 \`ps -ef | grep \""+ fileName +"\" | grep -v grep | awk '{print $2}'\`")
+                    self.handle.sendline( "" )
+                    self.handle.expect( '\$' )
+                    self.handle.sendline(
+                        "sudo kill -9 \`ps -ef | grep \"" +
+                        fileName +
+                        "\" | grep -v grep | awk '{print $2}'\`" )
             except pexpect.EOF:
                 main.log.error( self.name + ": EOF exception found" )
                 main.log.error( self.name + ":     " + self.handle.before )
@@ -1563,7 +1574,7 @@ class MininetCliDriver( Emulator ):
         """
         if ethDevice:
             ethDevice = '-I ' + ethDevice + ' '
-        cmd = " py " + host  + ".cmd(\"arping -c 1 " + ethDevice + ip + "\")"
+        cmd = " py " + host + ".cmd(\"arping -c 1 " + ethDevice + ip + "\")"
         try:
             main.log.warn( "Sending: " + cmd )
             self.handle.sendline( cmd )
@@ -1700,46 +1711,191 @@ class MininetCliDriver( Emulator ):
             main.cleanup()
             main.exit()
 
-    def compareSwitches( self, topo, switchesJson ):
+    def getPorts( self, nodeName, verbose=False ):
+        """
+        Read ports from a Mininet switch.
+
+        Returns a json structure containing information about the
+        ports of the given switch.
+        """
+        response = self.getInterfaces( nodeName )
+        # TODO: Sanity check on response. log if no such switch exists
+        ports = []
+        for line in response.split( "\n" ):
+            if not line.startswith( "name=" ):
+                continue
+            portVars = {}
+            for var in line.split( "," ):
+                key, value = var.split( "=" )
+                portVars[ key ] = value
+            isUp = portVars.pop( 'enabled', "True" )
+            isUp = "True" in isUp
+            if verbose:
+                main.log.info( "Reading switch port %s(%s)" %
+                               ( portVars[ 'name' ], portVars[ 'mac' ] ) )
+            mac = portVars[ 'mac' ]
+            if mac == 'None':
+                mac = None
+            ips = []
+            ip = portVars[ 'ip' ]
+            if ip == 'None':
+                ip = None
+            ips.append( ip )
+            name = portVars[ 'name' ]
+            if name == 'None':
+                name = None
+            portRe = r'[^\-]\d\-eth(?P<port>\d+)'
+            if name == 'lo':
+                portNo = 0xfffe  # TODO: 1.0 value - Should we just return lo?
+            else:
+                portNo = re.search( portRe, name ).group( 'port' )
+            ports.append( { 'of_port': portNo,
+                            'mac': str( mac ).replace( '\'', '' ),
+                            'name': name,
+                            'ips': ips,
+                            'enabled': isUp } )
+        return ports
+
+    def getSwitches( self, verbose=False ):
+        """
+        Read switches from Mininet.
+
+        Returns a dictionary whose keys are the switch names and the value is
+        a dictionary containing information about the switch.
+        """
+        # FIXME: This currently only works with OVS Switches
+
+        # Regex patterns to parse dump output
+        # Example Switch:
+        # <OVSSwitch s1: lo:127.0.0.1,s1-eth1:None,s1-eth2:None,s1-eth3:None pid=5238>
+        # <OVSSwitch{ 'protocols': 'OpenFlow10' } s1: lo:127.0.0.1,s1-eth1:None,s1-eth2:None pid=25974>
+        swRE = r"<OVSSwitch(\{.*\})?\s(?P<name>[^:]+)\:\s" +\
+               "(?P<ports>([^,]+,)*[^,\s]+)"
+        # Update mn port info
+        self.update()
+        output = {}
+        dump = self.dump().split( "\n" )
+        for line in dump:
+            if line.startswith( "<OVSSwitch" ):
+                result = re.search( swRE, line, re.I )
+                name = result.group( 'name' )
+                dpid = str( self.getSwitchDPID( name ) ).zfill( 16 )
+                if verbose:
+                    main.log.info( "Reading switch %s(%s)" % ( name, dpid ) )
+                ports = self.getPorts( name )
+                output[ name ] = { "dpid": dpid, "ports": ports }
+        return output
+
+    def getHosts( self, verbose=False ):
+        """
+        Read hosts from Mininet.
+
+        Returns a dictionary whose keys are the host names and the value is
+        a dictionary containing information about the host.
+        """
+        # Regex patterns to parse dump output
+        # Example host: <Host h1: h1-eth0:10.0.0.1 pid=5227>
+        #            or <Host h1:  pid=12725>
+        # NOTE: Does not correctly match hosts with multi-links
+        #       <Host h2: h2-eth0:10.0.0.2,h2-eth1:10.0.1.2 pid=14386>
+        # FIXME: Fix that
+        hostRE = r"<Host\s(?P<name>[^:]+)\:((\s(?P<ifname>[^:]+)\:" +\
+            "(?P<ip>[^\s]+))|(\s)\spid=(?P<pid>[^>]+))"
+        # update mn port info
+        self.update()
+        # Get mininet dump
+        dump = self.dump().split( "\n" )
+        hosts = {}
+        for line in dump:
+            if line.startswith( "<Host" ):
+                result = re.search( hostRE, line )
+                name = result.group( 'name' )
+                interfaces = []
+                response = self.getInterfaces( name )
+                # Populate interface info
+                for line in response.split( "\n" ):
+                    if line.startswith( "name=" ):
+                        portVars = {}
+                        for var in line.split( "," ):
+                            key, value = var.split( "=" )
+                            portVars[ key ] = value
+                        isUp = portVars.pop( 'enabled', "True" )
+                        isUp = "True" in isUp
+                        if verbose:
+                            main.log.info( "Reading host port %s(%s)" %
+                                           ( portVars[ 'name' ],
+                                             portVars[ 'mac' ] ) )
+                        mac = portVars[ 'mac' ]
+                        if mac == 'None':
+                            mac = None
+                        ips = []
+                        ip = portVars[ 'ip' ]
+                        if ip == 'None':
+                            ip = None
+                        ips.append( ip )
+                        intfName = portVars[ 'name' ]
+                        if name == 'None':
+                            name = None
+                        interfaces.append( {
+                            "name": intfName,
+                            "ips": ips,
+                            "mac": str( mac ),
+                            "isUp": isUp } )
+                hosts[ name ] = { "interfaces": interfaces }
+        return hosts
+
+    def getLinks( self ):
+        """
+        Gathers information about current Mininet links. These links may not
+        be up if one of the ports is down.
+
+        Returns a list of dictionaries with link endpoints.
+
+        The dictionary structure is:
+            { 'node1': str( node1 name )
+              'node2': str( node2 name )
+              'port1': str( port1 of_port )
+              'port2': str( port2 of_port ) }
+        Note: The port number returned is the eth#, not necessarily the of_port
+              number. In Mininet, for OVS switch, these should be the same. For
+              hosts, this is just the eth#.
+        """
+        self.update()
+        response = self.links().split( '\n' )
+
+        # Examples:
+        # s1-eth3<->s2-eth1 (OK OK)
+        # s13-eth3<->h27-eth0 (OK OK)
+        linkRE = "(?P<node1>[\w]+)\-eth(?P<port1>[\d]+)\<\-\>" +\
+                 "(?P<node2>[\w]+)\-eth(?P<port2>[\d]+)"
+        links = []
+        for line in response:
+            match = re.search( linkRE, line )
+            if match:
+                node1 = match.group( 'node1' )
+                node2 = match.group( 'node2' )
+                port1 = match.group( 'port1' )
+                port2 = match.group( 'port2' )
+                links.append( { 'node1': node1,
+                                'node2': node2,
+                                'port1': port1,
+                                'port2': port2 } )
+        return links
+
+    def compareSwitches( self, switches, switchesJson, portsJson ):
         """
            Compare mn and onos switches
-           topo: sts TestONTopology object
-            switchesJson: parsed json object from the onos devices api
+           switchesJson: parsed json object from the onos devices api
 
-           This uses the sts TestONTopology object"""
-        # main.log.debug( "Switches_json string: ", switchesJson )
-        output = { "switches": [] }
-        # iterate through the MN topology and pull out switches and and port
-        # info
-        for switch in topo.graph.switches:
-            ports = []
-            for port in switch.ports.values():
-                ports.append( { 'of_port': port.port_no,
-                                'mac': str( port.hw_addr ).replace( '\'', '' ),
-                                'name': port.name } )
-            output[ 'switches' ].append( {
-                "name": switch.name,
-                "dpid": str( switch.dpid ).zfill( 16 ),
-                "ports": ports } )
-
-        # print "mn"
-        # print json.dumps( output,
-        #                   sort_keys=True,
-        #                   indent=4,
-        #                   separators=( ',', ': ' ) )
-        # print "onos"
-        # print json.dumps( switchesJson,
-        #                   sort_keys=True,
-        #                   indent=4,
-        #                   separators=( ',', ': ' ) )
-
+        Dependencies:
+            1. numpy - "sudo pip install numpy"
+        """
+        from numpy import uint64
         # created sorted list of dpid's in MN and ONOS for comparison
         mnDPIDs = []
-        for switch in output[ 'switches' ]:
+        for swName, switch in switches.iteritems():
             mnDPIDs.append( switch[ 'dpid' ].lower() )
         mnDPIDs.sort()
-        # print "List of Mininet switch DPID's"
-        # print mnDPIDs
         if switchesJson == "":  # if rest call fails
             main.log.error(
                 self.name +
@@ -1755,70 +1911,33 @@ class MininetCliDriver( Emulator ):
                         '' ).replace(
                         "of",
                         '' ).lower() )
-            # else:
-                # print "Switch is unavailable:"
-                # print switch
         onosDPIDs.sort()
-        # print "List of ONOS switch DPID's"
-        # print onosDPIDs
 
         if mnDPIDs != onosDPIDs:
             switchResults = main.FALSE
-            main.log.report( "Switches in MN but not in ONOS:" )
+            main.log.error( "Switches in MN but not in ONOS:" )
             list1 = [ switch for switch in mnDPIDs if switch not in onosDPIDs ]
-            main.log.report( str( list1 ) )
-            main.log.report( "Switches in ONOS but not in MN:" )
+            main.log.error( str( list1 ) )
+            main.log.error( "Switches in ONOS but not in MN:" )
             list2 = [ switch for switch in onosDPIDs if switch not in mnDPIDs ]
-            main.log.report( str( list2 ) )
+            main.log.error( str( list2 ) )
         else:  # list of dpid's match in onos and mn
             switchResults = main.TRUE
-        return switchResults
+        finalResults = switchResults
 
-    def comparePorts( self, topo, portsJson ):
-        """
-        Compare mn and onos ports
-        topo: sts TestONTopology object
-        portsJson: parsed json object from the onos ports api
-
-        Dependencies:
-            1. This uses the sts TestONTopology object
-            2. numpy - "sudo pip install numpy"
-
-        """
         # FIXME: this does not look for extra ports in ONOS, only checks that
         # ONOS has what is in MN
-        from numpy import uint64
         portsResults = main.TRUE
-        output = { "switches": [] }
-        # iterate through the MN topology and pull out switches and and port
-        # info
-        for switch in topo.graph.switches:
-            ports = []
-            for port in switch.ports.values():
-                # print port.hw_addr.toStr( separator='' )
-                tmpPort = { 'of_port': port.port_no,
-                            'mac': str( port.hw_addr ).replace( '\'', '' ),
-                            'name': port.name,
-                            'enabled': port.enabled }
-
-                ports.append( tmpPort )
-            tmpSwitch = { 'name': switch.name,
-                          'dpid': str( switch.dpid ).zfill( 16 ),
-                          'ports': ports }
-
-            output[ 'switches' ].append( tmpSwitch )
 
         # PORTS
-        for mnSwitch in output[ 'switches' ]:
+        for name, mnSwitch in switches.iteritems():
             mnPorts = []
             onosPorts = []
             switchResult = main.TRUE
             for port in mnSwitch[ 'ports' ]:
                 if port[ 'enabled' ]:
-                    mnPorts.append( port[ 'of_port' ] )
+                    mnPorts.append( int( port[ 'of_port' ] ) )
             for onosSwitch in portsJson:
-                # print "Iterating through a new switch as seen by ONOS"
-                # print onosSwitch
                 if onosSwitch[ 'device' ][ 'available' ]:
                     if onosSwitch[ 'device' ][ 'id' ].replace(
                             ':',
@@ -1835,9 +1954,7 @@ class MininetCliDriver( Emulator ):
                         break
             mnPorts.sort( key=float )
             onosPorts.sort( key=float )
-            # print "\nPorts for Switch %s:" % ( mnSwitch[ 'name' ] )
-            # print "\tmn_ports[] = ", mnPorts
-            # print "\tonos_ports[] = ", onosPorts
+
             mnPortsLog = mnPorts
             onosPortsLog = onosPorts
             mnPorts = [ x for x in mnPorts ]
@@ -1853,6 +1970,7 @@ class MininetCliDriver( Emulator ):
                     # many checks and it might override a failure
                     mnPorts.remove( mnPort )
                     onosPorts.remove( mnPort )
+
                 # NOTE: OVS reports this as down since there is no link
                 #      So ignoring these for now
                 # TODO: Come up with a better way of handling these
@@ -1869,62 +1987,53 @@ class MininetCliDriver( Emulator ):
                     "Ports in ONOS but not MN: " +
                     str( onosPorts ) )
             if switchResult == main.FALSE:
-                main.log.report(
+                main.log.error(
                     "The list of ports for switch %s(%s) does not match:" %
-                    ( mnSwitch[ 'name' ], mnSwitch[ 'dpid' ] ) )
+                    ( name, mnSwitch[ 'dpid' ] ) )
                 main.log.warn( "mn_ports[]  =  " + str( mnPortsLog ) )
                 main.log.warn( "onos_ports[] = " + str( onosPortsLog ) )
             portsResults = portsResults and switchResult
-        return portsResults
+        finalResults = finalResults and portsResults
+        return finalResults
 
-    def compareLinks( self, topo, linksJson ):
+    def compareLinks( self, switches, links, linksJson ):
         """
            Compare mn and onos links
-           topo: sts TestONTopology object
            linksJson: parsed json object from the onos links api
 
-           This uses the sts TestONTopology object"""
+        """
         # FIXME: this does not look for extra links in ONOS, only checks that
         #        ONOS has what is in MN
-        output = { "switches": [] }
         onos = linksJson
-        # iterate through the MN topology and pull out switches and and port
-        # info
-        for switch in topo.graph.switches:
-            # print "Iterating though switches as seen by Mininet"
-            # print switch
-            ports = []
-            for port in switch.ports.values():
-                # print port.hw_addr.toStr( separator='' )
-                ports.append( { 'of_port': port.port_no,
-                                'mac': str( port.hw_addr ).replace( '\'', '' ),
-                                'name': port.name } )
-            output[ 'switches' ].append( {
-                "name": switch.name,
-                "dpid": str( switch.dpid ).zfill( 16 ),
-                "ports": ports } )
-        # LINKS
 
-        mnLinks = [
-            link for link in topo.patch_panel.network_links if (
-                link.port1.enabled and link.port2.enabled ) ]
+        mnLinks = []
+        for l in links:
+            try:
+                node1 = switches[ l[ 'node1' ] ]
+                node2 = switches[ l[ 'node2' ] ]
+                enabled = True
+                for port in node1[ 'ports' ]:
+                    if port[ 'of_port' ] == l[ 'port1' ]:
+                        enabled = enabled and port[ 'enabled' ]
+                for port in node2[ 'ports' ]:
+                    if port[ 'of_port' ] == l[ 'port2' ]:
+                        enabled = enabled and port[ 'enabled' ]
+                if enabled:
+                    mnLinks.append( l )
+            except KeyError:
+                pass
         if 2 * len( mnLinks ) == len( onos ):
             linkResults = main.TRUE
         else:
             linkResults = main.FALSE
-            main.log.report(
+            main.log.error(
                 "Mininet has " + str( len( mnLinks ) ) +
                 " bidirectional links and ONOS has " +
                 str( len( onos ) ) + " unidirectional links" )
 
         # iterate through MN links and check if an ONOS link exists in
         # both directions
-        # NOTE: Will currently only show mn links as down if they are
-        #       cut through STS. We can either do everything through STS or
-        #       wait for upNetworkLinks and downNetworkLinks to be
-        #       fully implemented.
         for link in mnLinks:
-            # print "Link: %s" % link
             # TODO: Find a more efficient search method
             node1 = None
             port1 = None
@@ -1932,34 +2041,27 @@ class MininetCliDriver( Emulator ):
             port2 = None
             firstDir = main.FALSE
             secondDir = main.FALSE
-            for switch in output[ 'switches' ]:
-                # print "Switch: %s" % switch[ 'name' ]
-                if switch[ 'name' ] == link.node1.name:
+            for swName, switch in switches.iteritems():
+                if swName == link[ 'node1' ]:
                     node1 = switch[ 'dpid' ]
                     for port in switch[ 'ports' ]:
-                        if str( port[ 'name' ] ) == str( link.port1 ):
+                        if str( port[ 'of_port' ] ) == str( link[ 'port1' ] ):
                             port1 = port[ 'of_port' ]
                     if node1 is not None and node2 is not None:
                         break
-                if switch[ 'name' ] == link.node2.name:
+                if swName == link[ 'node2' ]:
                     node2 = switch[ 'dpid' ]
                     for port in switch[ 'ports' ]:
-                        if str( port[ 'name' ] ) == str( link.port2 ):
+                        if str( port[ 'of_port' ] ) == str( link[ 'port2' ] ):
                             port2 = port[ 'of_port' ]
                     if node1 is not None and node2 is not None:
                         break
 
             for onosLink in onos:
                 onosNode1 = onosLink[ 'src' ][ 'device' ].replace(
-                    ":",
-                    '' ).replace(
-                    "of",
-                    '' )
+                    ":", '' ).replace( "of", '' )
                 onosNode2 = onosLink[ 'dst' ][ 'device' ].replace(
-                    ":",
-                    '' ).replace(
-                    "of",
-                    '' )
+                    ":", '' ).replace( "of", '' )
                 onosPort1 = onosLink[ 'src' ][ 'port' ]
                 onosPort2 = onosLink[ 'dst' ][ 'port' ]
 
@@ -1975,15 +2077,9 @@ class MininetCliDriver( Emulator ):
                             str( link ) +
                             ' between ONOS and MN. When checking ONOS for ' +
                             'link %s/%s -> %s/%s' %
-                            ( node1,
-                              port1,
-                              node2,
-                              port2 ) +
+                            ( node1, port1, node2, port2 ) +
                             ' ONOS has the values %s/%s -> %s/%s' %
-                            ( onosNode1,
-                              onosPort1,
-                              onosNode2,
-                              onosPort2 ) )
+                            ( onosNode1, onosPort1, onosNode2, onosPort2 ) )
 
                 # check onos link from node2 to node1
                 elif ( str( onosNode1 ) == str( node2 ) and
@@ -1997,73 +2093,59 @@ class MininetCliDriver( Emulator ):
                             str( link ) +
                             ' between ONOS and MN. When checking ONOS for ' +
                             'link %s/%s -> %s/%s' %
-                            ( node2,
-                              port2,
-                              node1,
-                              port1 ) +
+                            ( node1, port1, node2, port2 ) +
                             ' ONOS has the values %s/%s -> %s/%s' %
-                            ( onosNode2,
-                              onosPort2,
-                              onosNode1,
-                              onosPort1 ) )
+                            ( onosNode2, onosPort2, onosNode1, onosPort1 ) )
                 else:  # this is not the link you're looking for
                     pass
             if not firstDir:
-                main.log.report(
+                main.log.error(
                     'ONOS does not have the link %s/%s -> %s/%s' %
                     ( node1, port1, node2, port2 ) )
             if not secondDir:
-                main.log.report(
+                main.log.error(
                     'ONOS does not have the link %s/%s -> %s/%s' %
                     ( node2, port2, node1, port1 ) )
             linkResults = linkResults and firstDir and secondDir
         return linkResults
 
-    def compareHosts( self, topo, hostsJson ):
+    def compareHosts( self, hosts, hostsJson ):
         """
-           Compare mn and onos Hosts.
-           Since Mininet hosts are quiet, ONOS will only know of them when they
-           speak. For this reason, we will only check that the hosts in ONOS
-           stores are in Mininet, and not vice versa.
-           topo: sts TestONTopology object
-           hostsJson: parsed json object from the onos hosts api
+        Compare mn and onos Hosts.
+        Since Mininet hosts are quiet, ONOS will only know of them when they
+        speak. For this reason, we will only check that the hosts in ONOS
+        stores are in Mininet, and not vice versa.
 
-           This uses the sts TestONTopology object"""
+        Arguments:
+            hostsJson: parsed json object from the onos hosts api
+        Returns:
+        """
         import json
         hostResults = main.TRUE
-        hosts = []
-        # iterate through the MN topology and pull out hosts
-        for mnHost in topo.graph.hosts:
-            interfaces = []
-            for intf in mnHost.interfaces:
-                interfaces.append( {
-                    "name": intf.name,  # str
-                    "ips": [ str( ip ) for ip in intf.ips ],  # list of IPAddrs
-                    # hw_addr is of type EthAddr, Not JSON serializable
-                    "hw_addr": str( intf.hw_addr ) } )
-            hosts.append( {
-                "name": mnHost.name,  # str
-                "interfaces": interfaces  } )  # list
         for onosHost in hostsJson:
             onosMAC = onosHost[ 'mac' ].lower()
             match = False
-            for mnHost in hosts:
-                for mnIntf in mnHost[ 'interfaces' ]:
-                    if onosMAC == mnIntf[ 'hw_addr' ].lower() :
+            for mnHost, info in hosts.iteritems():
+                for mnIntf in info[ 'interfaces' ]:
+                    if onosMAC == mnIntf[ 'mac' ].lower():
                         match = True
                         for ip in mnIntf[ 'ips' ]:
                             if ip in onosHost[ 'ipAddresses' ]:
                                 pass  # all is well
                             else:
                                 # misssing ip
-                                main.log.error( "ONOS host " + onosHost[ 'id' ]
-                                                + " has a different IP than " +
-                                                "the Mininet host." )
+                                main.log.error( "ONOS host " +
+                                                onosHost[ 'id' ] +
+                                                " has a different IP(" +
+                                                str( onosHost[ 'ipAddresses' ] ) +
+                                                ") than the Mininet host(" +
+                                                str( ip ) +
+                                                ")." )
                                 output = json.dumps(
-                                                    onosHost,
-                                                    sort_keys=True,
-                                                    indent=4,
-                                                    separators=( ',', ': ' ) )
+                                    onosHost,
+                                    sort_keys=True,
+                                    indent=4,
+                                    separators=( ',', ': ' ) )
                                 main.log.info( output )
                                 hostResults = main.FALSE
             if not match:
@@ -2077,32 +2159,7 @@ class MininetCliDriver( Emulator ):
                 main.log.info( output )
         return hostResults
 
-    def getHosts( self ):
-        """
-           Returns a list of all hosts
-           Don't ask questions just use it"""
-        self.handle.sendline( "" )
-        self.handle.expect( "mininet>" )
-
-        self.handle.sendline( "py [ host.name for host in net.hosts ]" )
-        self.handle.expect( "mininet>" )
-
-        handlePy = self.handle.before
-        handlePy = handlePy.split( "]\r\n", 1 )[ 1 ]
-        handlePy = handlePy.rstrip()
-
-        self.handle.sendline( "" )
-        self.handle.expect( "mininet>" )
-
-        hostStr = handlePy.replace( "]", "" )
-        hostStr = hostStr.replace( "'", "" )
-        hostStr = hostStr.replace( "[", "" )
-        hostStr = hostStr.replace( " ", "" )
-        hostList = hostStr.split( "," )
-
-        return hostList
-
-    def getHosts( self ):
+    def getHostsOld( self ):
         """
            Returns a list of all hosts
            Don't ask questions just use it"""
@@ -2192,7 +2249,7 @@ class MininetCliDriver( Emulator ):
             main.cleanup()
             main.exit()
 
-    def assignVLAN( self, host, intf, vlan):
+    def assignVLAN( self, host, intf, vlan ):
         """
            Add vlan tag to a host.
            Dependencies:
@@ -2207,40 +2264,38 @@ class MininetCliDriver( Emulator ):
            """
         if self.handle:
             try:
-		# get the ip address of the host
-		main.log.info("Get the ip address of the host")
-		ipaddr = self.getIPAddress(host)
-		print repr(ipaddr)
-	
-		# remove IP from interface intf
-		# Ex: h1 ifconfig h1-eth0 inet 0
-		main.log.info("Remove IP from interface ")
-		cmd2 = host + " ifconfig " + intf + " " + " inet 0 "
-		self.handle.sendline( cmd2 )
-		self.handle.expect( "mininet>" ) 
-		response = self.handle.before
-		main.log.info ( "====> %s ", response)
+                # get the ip address of the host
+                main.log.info( "Get the ip address of the host" )
+                ipaddr = self.getIPAddress( host )
+                print repr( ipaddr )
 
-		
-		# create VLAN interface
-		# Ex: h1 vconfig add h1-eth0 100
-		main.log.info("Create Vlan")
-		cmd3 = host + " vconfig add " + intf + " " + vlan
-		self.handle.sendline( cmd3 )
-		self.handle.expect( "mininet>" ) 
-		response = self.handle.before
-		main.log.info( "====> %s ", response )
+                # remove IP from interface intf
+                # Ex: h1 ifconfig h1-eth0 inet 0
+                main.log.info( "Remove IP from interface " )
+                cmd2 = host + " ifconfig " + intf + " " + " inet 0 "
+                self.handle.sendline( cmd2 )
+                self.handle.expect( "mininet>" )
+                response = self.handle.before
+                main.log.info( "====> %s ", response )
 
-		# assign the host's IP to the VLAN interface
-		# Ex: h1 ifconfig h1-eth0.100 inet 10.0.0.1
-		main.log.info("Assign the host IP to the vlan interface")
-		vintf = intf + "." + vlan
-		cmd4 = host + " ifconfig " + vintf + " " + " inet " + ipaddr
-		self.handle.sendline( cmd4 )
-		self.handle.expect( "mininet>" ) 
-		response = self.handle.before
-		main.log.info ( "====> %s ", response)
+                # create VLAN interface
+                # Ex: h1 vconfig add h1-eth0 100
+                main.log.info( "Create Vlan" )
+                cmd3 = host + " vconfig add " + intf + " " + vlan
+                self.handle.sendline( cmd3 )
+                self.handle.expect( "mininet>" )
+                response = self.handle.before
+                main.log.info( "====> %s ", response )
 
+                # assign the host's IP to the VLAN interface
+                # Ex: h1 ifconfig h1-eth0.100 inet 10.0.0.1
+                main.log.info( "Assign the host IP to the vlan interface" )
+                vintf = intf + "." + vlan
+                cmd4 = host + " ifconfig " + vintf + " " + " inet " + ipaddr
+                self.handle.sendline( cmd4 )
+                self.handle.expect( "mininet>" )
+                response = self.handle.before
+                main.log.info( "====> %s ", response )
 
                 return main.TRUE
             except pexpect.EOF:
@@ -2251,5 +2306,3 @@ class MininetCliDriver( Emulator ):
 if __name__ != "__main__":
     import sys
     sys.modules[ __name__ ] = MininetCliDriver()
-
-

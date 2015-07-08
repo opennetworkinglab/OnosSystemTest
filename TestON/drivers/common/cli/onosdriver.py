@@ -39,6 +39,11 @@ class OnosDriver( CLI ):
     def connect( self, **connectargs ):
         """
         Creates ssh handle for ONOS "bench".
+        NOTE:
+        The ip_address would come from the topo file using the host tag, the
+        value can be an environment variable as well as a "localhost" to get
+        the ip address needed to ssh to the "bench"
+
         """
         try:
             for key in connectargs:
@@ -50,8 +55,23 @@ class OnosDriver( CLI ):
                     break
             if self.home is None or self.home == "":
                 self.home = "~/onos"
-
             self.name = self.options[ 'name' ]
+
+            try:
+                if os.getenv( str( self.ip_address ) ) != None:
+                    self.ip_address = os.getenv( str( self.ip_address ) )
+                else:
+                    main.log.info( self.name +
+                                   ": Trying to connect to " +
+                                   self.ip_address )
+
+            except KeyError:
+                main.log.info( "Invalid host name," +
+                               " connecting to local host instead" )
+                self.ip_address = 'localhost'
+            except Exception as inst:
+                main.log.error( "Uncaught exception: " + str( inst ) )
+
             self.handle = super( OnosDriver, self ).connect(
                 user_name=self.user_name,
                 ip_address=self.ip_address,
@@ -2258,6 +2278,63 @@ class OnosDriver( CLI ):
         if len(exceptions) > 0: 
             main.log.info(msg3)
         main.log.info("===============================================================\n")
+
+    def copyMininetFile( self, fileName, path, userName, ip,
+                         mnPath='~/mininet/custom/', timeout = 60 ):
+        """
+        Description:
+            Copy mininet topology file from dependency folder in the test folder
+            and paste it to the mininet machine's mininet/custom folder
+        Required:
+            fileName - Name of the topology file to copy
+            path - File path of the mininet topology file
+            userName - User name of the mininet machine to send the file to
+            ip - Ip address of the mininet machine
+        Optional:
+            mnPath - of the mininet directory to send the file to
+        Return:
+            Return main.TRUE if successfullu copied the file otherwise
+            return main.FALSE
+        """
+
+        try:
+            self.handle.sendline( "" )
+            self.handle.expect( "\$" )
+            main.log.info( self.name + ": Execute: scp " + path + fileName +
+                           " " + userName + "@" +
+                           str( ip ) + ":" + mnPath + fileName )
+            self.handle.sendline( "scp " + path + fileName +
+                                  " " + userName + "@" +
+                                  str( ip ) + ":" + mnPath + fileName )
+
+            i = self.handle.expect( [ 'No such file',
+                                      "100%",
+                                      pexpect.TIMEOUT ],
+                                    timeout )
+            if i == 0:
+                main.log.error( self.name + ": File " + fileName +
+                                " does not exist!" )
+                return main.FALSE
+
+            if i == 1:
+                main.log.info( self.name + ": File " + fileName +
+                                " has been copied!" )
+                self.handle.sendline( "" )
+                self.handle.expect( "\$" )
+                return main.TRUE
+
+            return main.TRUE
+
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except pexpect.TIMEOUT:
+            main.log.error( self.name + ": TIMEOUT exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            main.cleanup()
+            main.exit()
 
     def getOnosIPfromCell(self):
         '''

@@ -34,6 +34,7 @@ changed when switching branches."""
 import pexpect
 import re
 import sys
+import os
 import types
 sys.path.append( "../" )
 from math import pow
@@ -54,13 +55,34 @@ class MininetCliDriver( Emulator ):
 
     def connect( self, **connectargs ):
         """
-           Here the main is the TestON instance after creating
-           all the log handles."""
+        Here the main is the TestON instance after creating
+        all the log handles.
+        NOTE:
+        The ip_address would come from the topo file using the host tag, the
+        value can be an environment variable as well as a "localhost" to get
+        the ip address needed to ssh to the "bench"
+        """
         try:
             for key in connectargs:
                 vars( self )[ key ] = connectargs[ key ]
 
             self.name = self.options[ 'name' ]
+
+            try:
+                if os.getenv( str( self.ip_address ) ) != None:
+                    self.ip_address = os.getenv( str( self.ip_address ) )
+                else:
+                    main.log.info( self.name +
+                                   ": Trying to connect to " +
+                                   self.ip_address )
+
+            except KeyError:
+                main.log.info( "Invalid host name," +
+                               " connecting to local host instead" )
+                self.ip_address = 'localhost'
+            except Exception as inst:
+                main.log.error( "Uncaught exception: " + str( inst ) )
+
             self.handle = super(
                 MininetCliDriver,
                 self ).connect(

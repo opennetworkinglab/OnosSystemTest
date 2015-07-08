@@ -1,0 +1,40 @@
+<PARAMS>
+
+    <testcases>1,2</testcases>
+
+    <SCALE>1</SCALE>
+    <availableNodes>1</availableNodes>
+
+    <ENV>
+    <cellName>Cbenchcell</cellName>
+    </ENV>
+
+    <TEST>
+        <skipCleanInstall>yes</skipCleanInstall>
+        <mode>t</mode>                     #t throughput
+    </TEST>
+
+    <GIT>
+        <autopull>off</autopull>
+        <checkout>master</checkout>
+    </GIT>
+
+    <CTRL>
+        <USER>admin</USER>
+        <ip1>OC1</ip1>
+        <port1>6633</port1>
+    </CTRL>
+
+    <MN>
+        <ip1>OC1</ip1>
+    </MN>
+
+    <BENCH>
+        <user>admin</user>
+        <ip1>localhost</ip1>
+    </BENCH>
+
+    <JSON>
+    </JSON>
+
+</PARAMS>

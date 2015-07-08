@@ -604,7 +604,7 @@ class OnosDriver( CLI ):
             ~/<self.home>/tools/test/cells/
         """
         # Variable initialization
-        cellDirectory = self.home + "/tools/test/cells/"
+        cellDirectory = os.environ["ONOS_ROOT"] + "/tools/test/cells/"
         # We want to create the cell file in the dependencies directory
         # of TestON first, then copy over to ONOS bench
         tempDirectory = "/tmp/"

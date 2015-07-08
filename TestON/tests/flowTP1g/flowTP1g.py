@@ -314,6 +314,9 @@ class flowTP1g:
             
             ########################################################################################
                 result = [""]*(clusterCount)
+        
+                #print("rawResult: " + rawResult)
+
                 rawResult = rawResult.splitlines()
 
                 for node in range(1, clusterCount + 1):        

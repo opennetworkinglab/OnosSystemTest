@@ -2,7 +2,7 @@
 
     <testcases>1,2,1,2,1,2,1,2,1,2,1,2,1,2</testcases>
     
-    <isOnBaremetal>True</isOnBaremetal>
+    <isOnBaremetal></isOnBaremetal>
     <debugMode></debugMode>  #nothing means false 
 
     <ENV>

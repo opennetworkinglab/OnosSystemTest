@@ -105,7 +105,11 @@ class SCPFintentEventTP:
         for i in range(maxNodes):
             main.log.info(" Uninstalling ONOS " + str(i) )
             main.ONOSbench.onosUninstall( ONOSIp[i] )
-       
+        main.log.info("Sleep 10 second for uninstall to settle...")
+        time.sleep(10)
+        main.ONOSbench.handle.sendline(" ")
+        main.ONOSbench.handle.expect(":~")
+        
         #construct the cell file
         main.log.info("Creating cell file")
         cellIp = []

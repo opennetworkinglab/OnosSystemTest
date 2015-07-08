@@ -124,6 +124,7 @@ class IntentEventTP:
         #main.ONOSbench.createLinkGraphFile( BENCHIp,cellIp,myDistribution)
 
         if onBaremetal == "True":
+            '''
             filename = "/onos/tools/package/bin/onos-service"
             serviceConfig = open(homeDir + filename, 'w+')
             serviceConfig.write("#!/bin/bash\n ")
@@ -139,7 +140,9 @@ class IntentEventTP:
             serviceConfig.write("""${ONOS_HOME}/apache-karaf-$KARAF_VERSION/bin/karaf "$@" \n """)
             serviceConfig.close()
             main.log.info("Set /onos/tools/package/bin/onos-service with 8G Xms/Xmx Options.")
-      
+            '''
+            main.ONOSbench.jvmSet(8)
+
         main.step( "Creating ONOS package" )
         packageResult = main.ONOSbench.onosPackage()  
 

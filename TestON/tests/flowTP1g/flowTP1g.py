@@ -201,6 +201,7 @@ class flowTP1g:
 
         #write file to change mem limit to 32 gigs (BAREMETAL ONLY!)
         if onBaremetal == "true":
+            '''
             filename = "/onos/tools/package/bin/onos-service"
             serviceConfig = open(homeDir + filename, 'w+')
             serviceConfig.write("#!/bin/bash\n ")
@@ -215,6 +216,8 @@ class flowTP1g:
             serviceConfig.write("[ -d $ONOS_HOME ] && cd $ONOS_HOME || ONOS_HOME=$(dirname $0)/..\n")
             serviceConfig.write("""${ONOS_HOME}/apache-karaf-$KARAF_VERSION/bin/karaf "$@" \n """)
             serviceConfig.close()
+            '''
+            main.ONOSbench.jvmSet(8)
 
         for n in neighborList:
             main.log.step("\tSTARTING TEST")

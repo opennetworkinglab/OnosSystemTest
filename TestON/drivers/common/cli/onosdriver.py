@@ -2301,3 +2301,60 @@ class OnosDriver( CLI ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
+
+    def copyMininetFile( self, fileName, path, userName, ip,
+                         mnPath='~/mininet/custom/', timeout = 60 ):
+        """
+        Description:
+            Copy mininet topology file from dependency folder in the test folder
+            and paste it to the mininet machine's mininet/custom folder
+        Required:
+            fileName - Name of the topology file to copy
+            path - File path of the mininet topology file
+            userName - User name of the mininet machine to send the file to
+            ip - Ip address of the mininet machine
+        Optional:
+            mnPath - of the mininet directory to send the file to
+        Return:
+            Return main.TRUE if successfullu copied the file otherwise
+            return main.FALSE
+        """
+
+        try:
+            self.handle.sendline( "" )
+            self.handle.expect( "\$" )
+            main.log.info( self.name + ": Execute: scp " + path + fileName +
+                           " " + userName + "@" +
+                           str( ip ) + ":" + mnPath + fileName )
+            self.handle.sendline( "scp " + path + fileName +
+                                  " " + userName + "@" +
+                                  str( ip ) + ":" + mnPath + fileName )
+
+            i = self.handle.expect( [ 'No such file',
+                                      "100%",
+                                      pexpect.TIMEOUT ],
+                                    timeout )
+            if i == 0:
+                main.log.error( self.name + ": File " + fileName +
+                                " does not exist!" )
+                return main.FALSE
+
+            if i == 1:
+                main.log.info( self.name + ": File " + fileName +
+                                " has been copied!" )
+                self.handle.sendline( "" )
+                self.handle.expect( "\$" )
+                return main.TRUE
+
+            return main.TRUE
+
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except pexpect.TIMEOUT:
+            main.log.error( self.name + ": TIMEOUT exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            main.cleanup()
+            main.exit()

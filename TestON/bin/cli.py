@@ -50,9 +50,8 @@ __builtin__.testthread = False
 introduction = "TestON is the testing framework \nDeveloped by Paxterra Solutions (www.paxterrasolutions.com)"
 __builtin__.COLORS = False
 
-path = re.sub("teston$", "", os.getcwd())
-sys.path.append(path+"/Core")
-sys.path.append("../")
+path = re.sub( "/bin$", "", sys.path[0] )
+sys.path.insert( 1, path )
 from core.teston import *
 
 class CLI( threading.Thread,Cmd,object ):

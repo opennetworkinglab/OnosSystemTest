@@ -6,25 +6,26 @@
 
 import sys
 import os.path
+import time
 
 
-class SCPFintentEventTp:
+class SCPFintentEventTP:
 
     def __init__( self ):
         self.default = ''
 
-    def CASE1( self, main ):           
-                                        
-        import time                     
+    def CASE1( self, main ):
+        import sys
         import os.path
+        import time
 
-        global init       
-        try: 
-            if type(init) is not bool: 
-                init = False  
-        except NameError: 
-            init = False 
-       
+        global init
+        try:
+            if type(init) is not bool:
+                init = Fals
+        except NameError:
+            init = False
+
         #Load values from params file
         checkoutBranch = main.params[ 'GIT' ][ 'checkout' ]
         gitPull = main.params[ 'GIT' ][ 'autopull' ]
@@ -35,7 +36,7 @@ class SCPFintentEventTp:
         MN1Ip = main.params[ 'MN' ][ 'ip1' ]
         maxNodes = int(main.params[ 'availableNodes' ])
         skipMvn = main.params[ 'TEST' ][ 'skipCleanInstall' ]
-        cellName = main.params[ 'ENV' ][ 'cellName' ]        
+        cellName = main.params[ 'ENV' ][ 'cellName' ]
         numSwitches = (main.params[ 'TEST' ][ 'numSwitches' ]).split(",")
         flowRuleBU = main.params[ 'TEST' ][ 'flowRuleBUEnabled' ]
         onBaremetal = main.params['isOnBaremetal']
@@ -54,12 +55,11 @@ class SCPFintentEventTp:
             global commit
 
             clusterCount = 0
-            ONOSIp = [ 0 ]
+            ONOSIp = []
             scale = (main.params[ 'SCALE' ]).split(",")            
             clusterCount = int(scale[0])
 
             #Populate ONOSIp with ips from params 
-            ONOSIp = [0]
             ONOSIp.extend(main.ONOSbench.getOnosIps())
 
             #mvn clean install, for debugging set param 'skipCleanInstall' to yes to speed up test
@@ -94,7 +94,7 @@ class SCPFintentEventTp:
         #kill off all onos processes 
         main.log.step("Safety check, killing all ONOS processes")
         main.log.step("before initiating enviornment setup")
-        for node in range(1, maxNodes + 1):
+        for node in range(maxNodes):
             main.ONOSbench.onosDie(ONOSIp[node])
        
         MN1Ip = ONOSIp[len(ONOSIp) -1]
@@ -102,14 +102,14 @@ class SCPFintentEventTp:
 
         #Uninstall everywhere
         main.log.step( "Cleaning Enviornment..." )
-        for i in range(1, maxNodes + 1):
+        for i in range(maxNodes):
             main.log.info(" Uninstalling ONOS " + str(i) )
             main.ONOSbench.onosUninstall( ONOSIp[i] )
        
         #construct the cell file
         main.log.info("Creating cell file")
         cellIp = []
-        for node in range (1, clusterCount + 1):
+        for node in range (clusterCount):
             cellIp.append(ONOSIp[node])
          
         main.ONOSbench.createCellFile(BENCHIp,cellName,MN1Ip,str(Apps), *cellIp)
@@ -118,8 +118,8 @@ class SCPFintentEventTp:
         main.ONOSbench.setCell(cellName)
 
         myDistribution = []
-        for node in range (1, clusterCount + 1):
-            myDistribution.append(numSwitches[node-1])
+        for node in range (clusterCount):
+            myDistribution.append(numSwitches[node])
 
         #main.ONOSbench.createLinkGraphFile( BENCHIp,cellIp,myDistribution)
 
@@ -147,11 +147,11 @@ class SCPFintentEventTp:
         verifyCellResult = main.ONOSbench.verifyCell()
       
         main.log.report( "Initializeing " + str( clusterCount ) + " node cluster." )
-        for node in range(1, clusterCount + 1):
+        for node in range(clusterCount):
             main.log.info("Starting ONOS " + str(node) + " at IP: " + ONOSIp[node])
             main.ONOSbench.onosInstall( ONOSIp[node])
 
-        for node in range(1, clusterCount + 1):
+        for node in range(clusterCount):
             for i in range( 2 ):
                 isup = main.ONOSbench.isup( ONOSIp[node] )
                 if isup:
@@ -163,54 +163,37 @@ class SCPFintentEventTp:
 
         time.sleep(20)
 
+        main.ONOSbench.onosCfgSet( ONOSIp[0], "org.onosproject.store.flow.impl.NewDistributedFlowRuleStore", "backupEnabled false")
 
-        for i in range(5): 
-            main.ONOSbench.handle.sendline("""onos $OC1 "cfg set org.onosproject.provider.nil.NullProviders deviceCount """ + str(clusterCount*10) + """ " """)
+        main.log.step("Setting up null provider")
+        for i in range(3):
+            main.ONOSbench.onosCfgSet( ONOSIp[0], "org.onosproject.provider.nil.NullProviders", "deviceCount 8")
+            main.ONOSbench.onosCfgSet( ONOSIp[0], "org.onosproject.provider.nil.NullProviders", "topoShape linear")
+            main.ONOSbench.onosCfgSet( ONOSIp[0], "org.onosproject.provider.nil.NullProviders", "enabled true")
+            time.sleep(5)
+
+            main.ONOSbench.handle.sendline("onos $OC1 summary")
             main.ONOSbench.handle.expect(":~")
-            main.ONOSbench.handle.sendline("""onos $OC1 "cfg get org.onosproject.provider.nil.NullProviders" """)
-            main.ONOSbench.handle.expect(":~")
-            if ("value=" + str(clusterCount*10)) in main.ONOSbench.handle.before:
-                main.log.info("Device count set")
-                main.log.info("before" + main.ONOSbench.handle.before)
+
+            before = main.ONOSbench.handle.before
+            if "devices=8" in before and "links=14" in before:
                 break
-            time.sleep(10)
-            main.log.info("cfg set failure, retrying")
-            main.log.info("before" + main.ONOSbench.handle.before)
-        
-        for i in range(5): 
-            main.ONOSbench.handle.sendline("""onos $OC1 "cfg set org.onosproject.provider.nil.NullProviders topoShape linear" """)
-            main.ONOSbench.handle.expect(":~")
-            main.ONOSbench.handle.sendline("""onos $OC1 "cfg get org.onosproject.provider.nil.NullProviders" """)
-            main.ONOSbench.handle.expect(":~")
-            if ("value=linear") in main.ONOSbench.handle.before:
-                main.log.info("Device count set")
-                main.log.info("before" + main.ONOSbench.handle.before)
-                break
-            time.sleep(10)
-            main.log.info("cfg set failure, retrying")
-            main.log.info("before" + main.ONOSbench.handle.before)
 
-        main.ONOSbench.handle.sendline("""onos $OC1 "cfg set org.onosproject.store.flow.impl.NewDistributedFlowRuleStore backupEnabled """ + flowRuleBU + """" """)
-        main.ONOSbench.handle.expect(":~")
-        main.ONOSbench.handle.sendline("""onos $OC1 "cfg get" """)
-        main.ONOSbench.handle.expect(":~")
-        main.log.info(main.ONOSbench.handle.before)
-
-        time.sleep(10)
-        main.ONOSbench.handle.sendline("""onos $OC1 "null-simulation start" """)
-        main.ONOSbench.handle.expect(":~")
-        print main.ONOSbench.handle.before
-        time.sleep(10)
         main.ONOSbench.handle.sendline("""onos $OC1 "balance-masters" """)
         main.ONOSbench.handle.expect(":~")
         print main.ONOSbench.handle.before
- 
+
         lastOutput = "--"
         origin = time.time()
         clockStarted = False
         while True:
+
+            main.ONOSbench.handle.sendline("")
+            main.ONOSbench.handle.expect(":~")
+
             main.ONOSbench.handle.sendline("onos $OC1 summary")
             main.ONOSbench.handle.expect(":~")
+            
             main.log.info("before" + main.ONOSbench.handle.before)
             clusterCheck = main.ONOSbench.handle.before
             print("\nBefore: " + str(clusterCheck))
@@ -222,7 +205,7 @@ class SCPFintentEventTp:
                 if clockStarted == False:
                     start = time.time()
                     clockStarted = True
-                if time.time() > (start + 10):
+                if time.time() > (start + 30):
                     main.log.error("TIMEOUT EXCEEDED: Clusters have not converged, continuing anyway...")
                     break
             lastOutput = clusterCheck

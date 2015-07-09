@@ -2137,7 +2137,9 @@ class OnosDriver( CLI ):
     def getOnosIPfromCell(self):
         '''
             Returns the ONOS node names and their IP addresses as defined in the cell and applied to shell environment
-			Example output return: [['OC1', '10.128.40.41'], ['OC2', '10.128.40.42'], ['OC3', '10.128.40.43']]
+			Example output return: ['10.128.40.41','10.128.40.42','10.128.40.43']. This will work even if the Mininet is
+			not part of the cell definition and also if there are multiple mininets, just by using static hostname  
+			in TOPO file.
         ''' 
         import re
         try:
@@ -2162,8 +2164,7 @@ class OnosDriver( CLI ):
                         continue
                     else:
                         onosIP = cellOutput[i].split("=")
-						# below step could be changed to return only IP if node name is not needed.
-                        ipList.append(onosIP)
+                        ipList.append(onosIP[1])
             return ipList
         except pexpect.ExceptionPexpect as e:
             main.log.error( self.name + ": Pexpect exception found of type " +

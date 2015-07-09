@@ -35,10 +35,6 @@ class SCPFflowTp1g:
     
         main.log.info("==========DEBUG VERSION 3===========")
 
-        main.exceptions = [0]*11
-        main.warnings = [0]*11
-        main.errors = [0]*11
-
         # -- INIT SECTION, ONLY RUNS ONCE -- #
         if init == False:
             init = True
@@ -317,8 +313,7 @@ class SCPFflowTp1g:
                 if test >= warmUp:
                     for i in result: 
                         if i == "": 
-                            main.log.error("Missing data point, critical failure incoming")
-
+                            main.ONOSbench.logReport(ONOSIp[1], ["ERROR", "WARNING", "EXCEPT"])
                     print result
                     maxes[test-warmUp] = max(result)
                     main.log.info("Data collection iteration: " + str(test-warmUp) + " of " + str(sampleSize))

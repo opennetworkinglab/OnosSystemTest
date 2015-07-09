@@ -749,39 +749,57 @@ class OnosDriver( CLI ):
         
         ex)
             onos 10.0.0.1 cfg set org.onosproject.myapp appSetting 1
-
         ONOSIp = '10.0.0.1'
         configName = 'org.onosproject.myapp'
         configParam = 'appSetting 1'
-
         """
-        try:
-            cfgStr = ( "onos "+str(ONOSIp)+" cfg set "+
-                       str(configName) + " " +
-                       str(configParam)
-                     )
+        for i in range(5):
+            try:
+                cfgStr = ( "onos "+str(ONOSIp)+" cfg set "+
+                           str(configName) + " " +
+                           str(configParam)
+                         )
 
-            self.handle.sendline( "" )
-            self.handle.expect( "\$" )
-            self.handle.sendline( cfgStr )
-            self.handle.expect( "\$" )
-        
-            # TODO: Add meaningful assertion
+                self.handle.sendline( "" )
+                self.handle.expect( ":~" )
+                self.handle.sendline( cfgStr )
+                self.handle.expect("cfg set") 
+                self.handle.expect( ":~" )
             
-            return main.TRUE
+                paramValue = configParam.split(" ")[1]
+                paramName = configParam.split(" ")[0]
+                
+                checkStr = ( "onos " + str(ONOSIp) + """ cfg get " """ + str(configName) + " " + paramName + """ " """)
 
-        except pexpect.ExceptionPexpect as e:
-            main.log.error( self.name + ": Pexpect exception found of type " +
-                            str( type( e ) ) )
-            main.log.error ( e.get_trace() )
-            main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
-        except Exception:
-            main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
+                self.handle.sendline( checkStr )
+                self.handle.expect( ":~" )
 
+                if "value=" + paramValue + "," in self.handle.before:
+                    main.log.info("cfg " + configName + " successfully set to " + configParam)    
+                    return main.TRUE
+
+            except pexpect.ExceptionPexpect as e:
+                main.log.error( self.name + ": Pexpect exception found of type " +
+                                str( type( e ) ) )
+                main.log.error ( e.get_trace() )
+                main.log.error( self.name + ":    " + self.handle.before )
+                main.cleanup()
+                main.exit()
+            except Exception:
+                main.log.exception( self.name + ": Uncaught exception!" )
+                main.cleanup()
+                main.exit()
+            
+            time.sleep(5)
+
+        main.log.error("CFG SET FAILURE: " + configName + " " + configParam )
+        main.ONOSbench.handle.sendline("onos $OC1 cfg get") 
+        main.ONOSbench.handle.expect("\$")
+        print main.ONOSbench.handle.before
+        main.ONOSbench.logReport( ONOSIp, ["ERROR","WARN","EXCEPT"], "d")
+        return main.FALSE
+
+        
     def onosCli( self, ONOSIp, cmdstr ):
         """
         Uses 'onos' command to send various ONOS CLI arguments.
@@ -2116,149 +2134,6 @@ class OnosDriver( CLI ):
         main.log.info("================================================================\n")
         return totalHits 
 
-    def getOnosIpFromEnv(self):
-
-        import string  
-
-        # returns a list of ip addresses for the onos nodes, will work with up to 7 nodes + OCN and OCI
-        # returns in format [ 'x', OC1 ip, OC2 i... ect. ... , ONN ip ]
-
-        self.handle.sendline("env| grep OC") 
-        self.handle.expect(":~")
-        rawOutput = self.handle.before
-        print rawOutput
-        print "-----------------------------"
-        print repr(rawOutput)
-        mpa = dict.fromkeys(range(32))
-        translated = rawOutput.translate(mpa)
-        print translated
-
-
-        # create list with only the lines that have the needed IPs 
-        unparsedIps = []
-
-        # remove preceeding or trailing lines
-        for line in rawOutput: 
-            if "OC" in line and "=" in line: 
-                unparsedIps.append(str(line)) 
-
-        # determine cluster size
-        clusterCount = 0
-        for line in unparsedIps:
-            line = str(line)
-            print line
-            temp = line.replace("OC","")
-            print("line index " + str(line.index("="))) 
-            OCindex = temp[0]
-            for i in range(0, 7):
-                if OCindex == str(i) and i > clusterCount:
-                    clusterCount == i
-                    print(clusterCount)
-        # create list to hold ips such that OC1 is at list[1] and OCN and OCI are at the end (in that order)
-        ONOSIps = ["x"] * (clusterCount + 3) 
-
-        # populate list 
-        for line in unparsedIps:
-            main.log.info(line)########## 
-            temp = str(line.replace("OC",""))
-            main.log.info(str(list(temp)))
-            OCindex = temp[0]
-            main.log.info(OCindex)############
-            if OCindex == "N":
-                ONOSIps[ clusterCount + 1 ] = temp.replace("N=","")
-    
-            if OCindex == "I":
-                ONOSIps[ clusterCount + 2 ] = temp.replace("I=","")
-
-            else:
-                ONOSIps[ int(OCindex) ] = temp.replace((OCindex + "=") ,"")
-
-        # validate 
-        for x in ONOSIps: 
-            if ONOSIps.index(x) != 0 and x == "x": 
-                main.log.error("ENV READ FAILURE, MISSING DATA: \n\n" + str(ONOSIps) + "\n\n") 
-
-        return ONOSIps
-
-
-    def onosErrorLog(self, nodeIp): 
-
-        cmd = "onos-ssh " + nodeIp + " cat /opt/onos/log/karaf.log | grep WARN"
-        self.handle.sendline(cmd) 
-        self.handle.expect(":~")
-        before = (self.handle.before).splitlines() 
-
-        warnings = []
-
-        for line in before: 
-            if "WARN" in line and "grep" not in line: 
-                warnings.append(line) 
-                main.warnings[main.warnings[0]+1] = line
-                main.warnings[0] += 1
-                if main.warnings[0] >= 10: 
-                    main.warnings[0] = 0 
-
-        cmd = "onos-ssh " + nodeIp + " cat /opt/onos/log/karaf.log | grep ERROR"
-        self.handle.sendline(cmd)
-        self.handle.expect(":~")
-        before = (self.handle.before).splitlines()
-
-        errors = []
-
-        for line in before:
-            if "ERROR" in line and "grep" not in line:
-                errors.append(line)
-                main.errors[main.errors[0]+1] = line
-                main.errors[0] += 1
-                if main.errors[0] >= 10:
-                    main.errors[0] = 0
-
-        cmd = "onos-ssh " + nodeIp + " cat /opt/onos/log/karaf.log | grep Exept"
-        self.handle.sendline(cmd)
-        self.handle.expect(":~")
-        before = (self.handle.before).splitlines()
-
-        exceptions = []
-
-        for line in before:
-            if "Except" in line and "grep" not in line:
-                exceptions.append(line)
-                main.exceptions[main.errors[0]+1] = line
-                main.exceptions[0] += 1
-                if main.exceptions[0] >= 10:
-                    main.exceptions[0] = 0
-
-
-
-        ################################################################
-
-        msg1 = "WARNINGS: \n"
-        for i in main.warnings: 
-            if type(i) is not int: 
-                msg1 += ( i + "\n")
-
-        msg2 = "ERRORS: \n"
-        for i in main.errors:
-            if type(i) is not int:
-                msg2 += ( i + "\n")
-
-        msg3 = "EXCEPTIONS: \n"
-        for i in main.exceptions: 
-            if type(i) is not int:
-                msg3 += ( i + "\n")
-
-        main.log.info("===============================================================\n") 
-        main.log.info( "Warnings: " + str(len(warnings))) 
-        main.log.info( "Errors: " + str(len(errors))) 
-        main.log.info( "Exceptions: " + str(len(exceptions)))
-        if len(warnings) > 0:
-            main.log.info(msg1)
-        if len(errors) > 0: 
-            main.log.info(msg2)
-        if len(exceptions) > 0: 
-            main.log.info(msg3)
-        main.log.info("===============================================================\n")
-
     def getOnosIPfromCell(self):
         '''
             Returns the ONOS node names and their IP addresses as defined in the cell and applied to shell environment
@@ -2357,3 +2232,68 @@ class OnosDriver( CLI ):
             main.log.error( self.name + ":     " + self.handle.before )
             main.cleanup()
             main.exit()
+
+    def jvmSet(self, memory=8):
+        
+        import os
+
+        homeDir = os.path.expanduser('~')
+        filename = "/onos/tools/package/bin/onos-service"
+
+        serviceConfig = open(homeDir + filename, 'w+')
+        serviceConfig.write("#!/bin/bash\n ")
+        serviceConfig.write("#------------------------------------- \n ")
+        serviceConfig.write("# Starts ONOS Apache Karaf container\n ")
+        serviceConfig.write("#------------------------------------- \n ")
+        serviceConfig.write("#export JAVA_HOME=${JAVA_HOME:-/usr/lib/jvm/java-7-openjdk-amd64/}\n ")
+        serviceConfig.write("""export JAVA_OPTS="${JAVA_OPTS:--Xms""" + str(memory) + "G -Xmx" + str(memory) + """G}" \n """)
+        serviceConfig.write("[ -d $ONOS_HOME ] && cd $ONOS_HOME || ONOS_HOME=$(dirname $0)/..\n")
+        serviceConfig.write("""${ONOS_HOME}/apache-karaf-$KARAF_VERSION/bin/karaf "$@" \n """)
+        serviceConfig.close()
+
+    def createDBFile(self, testData):
+        
+        filename = main.TEST + "DB"
+        DBString = ""
+        
+        for item in testData:
+            if type(item) is string: 
+                item = "'" + item + "'"
+            if testData.index(item) < len(testData-1):
+                item += ","
+            DBString += str(item) 
+
+        DBFile = open(filename, "a")
+        DBFile.write(DBString)
+        DBFile.close()
+
+    def verifySummary(self, ONOSIp,*deviceCount): 
+
+        self.handle.sendline("onos " + ONOSIp  + " summary")
+        self.handle.expect(":~")
+
+        summaryStr = self.handle.before
+        print "\nSummary\n==============\n" + summaryStr + "\n\n"
+
+        #passed = "SCC(s)=1" in summaryStr
+        #if deviceCount:
+        #    passed = "devices=" + str(deviceCount) + "," not in summaryStr
+
+           
+        if "SCC(s)=1," in summaryStr:
+            passed = True
+            print("Summary is verifed")
+        else: 
+            print("Summary failed") 
+
+        if deviceCount:
+            print" ============================="
+            checkStr = "devices=" + str(deviceCount[0]) + ","
+            print "Checkstr: " + checkStr
+            if checkStr not in summaryStr:
+                passed = False
+                print("Device count failed") 
+            else: 
+                print "device count verified" 
+
+        return passed

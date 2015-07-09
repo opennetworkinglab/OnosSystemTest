@@ -9,7 +9,7 @@ import os.path
 import time
 
 
-class SCPFintentEventTP:
+class SCPFintentEventTp:
 
     def __init__( self ):
         self.default = ''

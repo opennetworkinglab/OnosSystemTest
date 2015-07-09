@@ -22,6 +22,7 @@ import re
 import json
 import types
 import time
+import os
 sys.path.append( "../" )
 from drivers.common.clidriver import CLI
 
@@ -52,7 +53,28 @@ class OnosCliDriver( CLI ):
             if self.home is None or self.home == "":
                 self.home = "~/onos"
 
+            for key in self.options:
+                if key == 'onosIp':
+                    self.onosIp = self.options[ 'onosIp' ]
+                    break
+
             self.name = self.options[ 'name' ]
+
+            try:
+                if os.getenv( str( self.ip_address ) ) != None:
+                    self.ip_address = os.getenv( str( self.ip_address ) )
+                else:
+                    main.log.info( self.name +
+                                   ": Trying to connect to " +
+                                   self.ip_address )
+
+            except KeyError:
+                main.log.info( "Invalid host name," +
+                               " connecting to local host instead" )
+                self.ip_address = 'localhost'
+            except Exception as inst:
+                main.log.error( "Uncaught exception: " + str( inst ) )
+
             self.handle = super( OnosCliDriver, self ).connect(
                 user_name=self.user_name,
                 ip_address=self.ip_address,

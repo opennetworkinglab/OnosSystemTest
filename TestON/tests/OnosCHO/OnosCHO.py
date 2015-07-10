@@ -32,14 +32,13 @@ class OnosCHO:
         cell_name = main.params[ 'ENV' ][ 'cellName' ]
         git_pull = main.params[ 'GIT' ][ 'autoPull' ]
         git_branch = main.params[ 'GIT' ][ 'branch' ]
+        karafTimeout = main.params['CTRL']['karafCliTimeout']
         main.newTopo = ""
         main.CLIs = []
         main.onosIPs = []
-        main.onosPorts = []
 
         for i in range( 1, int(main.numCtrls) + 1 ):
             main.CLIs.append( getattr( main, 'ONOScli' + str( i ) ) )
-            main.onosPorts.append( main.params[ 'CTRL' ][ 'port' + str( i ) ] )
 
         main.case( "Set up test environment" )
         main.log.report( "Set up test environment" )
@@ -117,7 +116,6 @@ class OnosCHO:
         
         main.step( "Start ONOS CLI on all nodes" )
         cliResult = main.TRUE
-        karafTimeout = "3600000"
         main.log.step(" Start ONOS cli using thread ")
         startCliResult  = main.TRUE
         pool = []
@@ -181,8 +179,7 @@ class OnosCHO:
         for i in range( 1, ( main.numMNswitches + 1 ) ):  # 1 to ( num of switches +1 )
             main.Mininet1.assignSwController(
                 sw="s" + str( i ),
-                ip=main.onosIPs,
-                port=main.onosPorts )
+                ip=main.onosIPs )
 
         switch_mastership = main.TRUE
         for i in range( 1, ( main.numMNswitches + 1 ) ):
@@ -245,8 +242,7 @@ class OnosCHO:
         for i in range( 1, ( main.numMNswitches + 1 ) ):  # 1 to ( num of switches +1 )
             main.Mininet1.assignSwController(
                 sw="s" + str( i ),
-                ip=main.onosIPs,
-                port=main.onosPorts )
+                ip=main.onosIPs )
 
         switch_mastership = main.TRUE
         for i in range( 1, ( main.numMNswitches + 1 ) ):
@@ -305,8 +301,7 @@ class OnosCHO:
         for i in range( 1, ( main.numMNswitches + 1 ) ):  # 1 to ( num of switches +1 )
             main.Mininet1.assignSwController(
                 sw="s" + str( i ),
-                ip=main.onosIPs,
-                port=main.onosPorts )
+                ip=main.onosIPs )
 
         switch_mastership = main.TRUE
         for i in range( 1, ( main.numMNswitches + 1 ) ):

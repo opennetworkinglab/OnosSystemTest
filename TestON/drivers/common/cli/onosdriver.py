@@ -674,6 +674,7 @@ class OnosDriver( CLI ):
         """
         Calls 'cell <name>' to set the environment variables on ONOSbench
         """
+        import re
         try:
             if not cellname:
                 main.log.error( "Must define cellname" )
@@ -692,9 +693,13 @@ class OnosDriver( CLI ):
                 self.handle.expect("\$")
                 handleMore = self.handle.before
 
-                main.log.info( "Cell call returned: " + handleBefore +
+                cell_result = handleBefore + handleAfter + handleMore
+                print cell_result
+                if( re.search( "No such cell", cell_result ) ):
+                    main.log.error( "Cell call returned: " + handleBefore +
                                handleAfter + handleMore )
-
+                    main.cleanup()
+                    main.exit()
                 return main.TRUE
 
         except pexpect.EOF:

@@ -628,6 +628,7 @@ def verifyOptions(options):
     verifyLogdir(options)
     verifyMail(options)
     verifyTestCases(options)
+    verifyOnosCell(options)
 
 def verifyTest(options):
     if options.testname:
@@ -691,6 +692,13 @@ def verifyTestCases(options):
         else :
             print "testcases not specifed in params, please provide in params file or 'testcases' commandline argument"
             sys.exit()
+
+def verifyOnosCell(options):
+    # Verifying onoscell option. This could be extended to do even more from here.
+    if options.onoscell:
+        main.onoscell = options.onoscell
+    else :
+        main.onoscell = main.FALSE
 
 def verifyTestScript(options):
     '''

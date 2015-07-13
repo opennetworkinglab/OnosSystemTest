@@ -30,7 +30,9 @@ class SCPFintentRerouteLat:
         cellName = main.params[ 'ENV' ][ 'cellName' ]
         Apps = main.params[ 'ENV' ][ 'cellApps' ]
         BENCHUser = main.params[ 'BENCH' ][ 'user' ]
-        maxNodes = int(main.params[ 'availableNodes' ])
+        BENCHIp = main.params[ 'BENCH' ][ 'ip1' ]
+        MN1Ip = main.params[ 'MN' ][ 'ip1' ]
+        main.maxNodes = int(main.params[ 'max' ])
         skipMvn = main.params[ 'TEST' ][ 'skipCleanInstall' ]
         cellName = main.params[ 'ENV' ][ 'cellName' ]
 
@@ -78,18 +80,15 @@ class SCPFintentRerouteLat:
         clusterCount = int(scale[0])
         scale.remove(scale[0])       
       
-        MN1Ip = ONOSIp[len(ONOSIp)-1]
-        BENCHIp = ONOSIp[len(ONOSIp)-2]
-
         #kill off all onos processes 
         main.log.step("Safety check, killing all ONOS processes")
         main.log.step("before initiating enviornment setup")
-        for node in range(1, maxNodes + 1):
+        for node in range(1, main.maxNodes + 1):
             main.ONOSbench.onosDie(ONOSIp[node])
         
         #Uninstall everywhere
         main.log.step( "Cleaning Enviornment..." )
-        for i in range(1, maxNodes + 1):
+        for i in range(1, main.maxNodes + 1):
             main.log.info(" Uninstalling ONOS " + str(i) )
             main.ONOSbench.onosUninstall( ONOSIp[i] )
        
@@ -98,8 +97,8 @@ class SCPFintentRerouteLat:
         cellIp = []
         for node in range (1, clusterCount + 1):
             cellIp.append(ONOSIp[node])
-        
-        main.ONOSbench.createCellFile(BENCHIp,cellName,MN1Ip,str(Apps), *cellIp)
+
+        main.ONOSbench.createCellFile(BENCHIp,cellName,MN1Ip,str(Apps), cellIp)
 
         main.step( "Set Cell" )
         main.ONOSbench.setCell(cellName)
@@ -341,8 +340,6 @@ class SCPFintentRerouteLat:
                 if debug: main.log.info(cmd)
                 main.ONOSbench.handle.sendline(cmd)
                 main.ONOSbench.handle.expect(":~")
-                
-                
                 
                 #wait for intent withdraw
                 main.ONOSbench.handle.sendline(withdrawCmd)

@@ -7,104 +7,122 @@ class SAMPstartTemplate:
     def __init__( self ):
         self.default = ''
 
-    def CASE10( self, main ):
+    def CASE1( self, main ):
         import time
         import os
         import imp
-        """
-        Startup sequence:
-        git pull
-        cell <name>
-        onos-verify-cell
-        onos-remove-raft-log
-        mvn clean install
-        onos-package
-        onos-install -f
-        onos-wait-for-start
-        """
-        global init
-        global globalONOSip
-        try:
-            if type(init) is not bool:
-                init = False
-        except NameError:
-            init = False
 
-        #Local variables
-        cellName = main.params[ 'ENV' ][ 'cellName' ]
-        apps = main.params[ 'ENV' ][ 'cellApps' ]
+        """
+        - Construct tests variables
+        - GIT ( optional )
+            - Checkout ONOS master branch
+            - Pull latest ONOS code
+        - Building ONOS ( optional )
+            - Install ONOS package
+            - Build ONOS package
+        """
+
+        main.case( "Constructing test variables and building ONOS package" )
+        main.step( "Constructing test variables" )
+        stepResult = main.FALSE
+
+        # Test variables
+        main.testOnDirectory = os.path.dirname( os.getcwd ( ) )
+        main.cellName = main.params[ 'ENV' ][ 'cellName' ]
+        main.apps = main.params[ 'ENV' ][ 'cellApps' ]
         gitBranch = main.params[ 'GIT' ][ 'branch' ]
-        benchIp = os.environ[ 'OCN' ]
-        benchUser = main.params[ 'BENCH' ][ 'user' ]
-        topology = main.params[ 'MININET' ][ 'topo' ]
-        main.numSwitch = int( main.params[ 'MININET' ][ 'switch' ] )
-        main.numLinks = int( main.params[ 'MININET' ][ 'links' ] )
-        main.numCtrls = main.params[ 'CTRL' ][ 'num' ]
-        main.ONOSport = []
-        main.hostsData = {}
-        PULLCODE = False
-        if main.params[ 'GIT' ][ 'pull' ] == 'True':
-            PULLCODE = True
-        main.case( "Setting up test environment" )
+        main.dependencyPath = main.testOnDirectory + \
+                              main.params[ 'DEPENDENCY' ][ 'path' ]
+        main.topology = main.params[ 'DEPENDENCY' ][ 'topology' ]
+        main.scale = ( main.params[ 'SCALE' ][ 'size' ] ).split( "," )
+        main.maxNodes = int( main.params[ 'SCALE' ][ 'max' ] )
+        main.ONOSport = main.params[ 'CTRL' ][ 'port' ]
+        wrapperFile1 = main.params[ 'DEPENDENCY' ][ 'wrapper1' ]
+        main.startUpSleep = int( main.params[ 'SLEEP' ][ 'startup' ] )
+        gitPull = main.params[ 'GIT' ][ 'pull' ]
+        main.cellData = {} # for creating cell file
         main.CLIs = []
-        for i in range( 1, int( main.numCtrls ) + 1 ):
+        main.ONOSip = []
+
+        main.ONOSip = main.ONOSbench.getOnosIps()
+        print main.ONOSip
+
+        # Assigning ONOS cli handles to a list
+        for i in range( 1,  main.maxNodes + 1 ):
             main.CLIs.append( getattr( main, 'ONOScli' + str( i ) ) )
-            main.ONOSport.append( main.params[ 'CTRL' ][ 'port' + str( i ) ] )
 
         # -- INIT SECTION, ONLY RUNS ONCE -- #
-        if init == False:
-            init = True
+        main.startUp = imp.load_source( wrapperFile1,
+                                        main.dependencyPath +
+                                        wrapperFile1 +
+                                        ".py" )
 
-            main.scale = ( main.params[ 'SCALE' ] ).split( "," )
-            main.numCtrls = int( main.scale[ 0 ] )
+        copyResult = main.ONOSbench.copyMininetFile( main.topology,
+                                                     main.dependencyPath,
+                                                     main.Mininet1.user_name,
+                                                     main.Mininet1.ip_address )
+        if main.CLIs:
+            stepResult = main.TRUE
+        else:
+            main.log.error( "Did not properly created list of ONOS CLI handle" )
+            stepResult = main.FALSE
 
-            if PULLCODE:
-                main.step( "Git checkout and pull " + gitBranch )
-                main.ONOSbench.gitCheckout( gitBranch )
-                gitPullResult = main.ONOSbench.gitPull()
-                if gitPullResult == main.ERROR:
-                    main.log.error( "Error pulling git branch" )
-                main.step( "Using mvn clean & install" )
-                cleanInstallResult = main.ONOSbench.cleanInstall()
-                stepResult = cleanInstallResult
-                utilities.assert_equals( expect=main.TRUE,
-                                         actual=stepResult,
-                                         onpass="Successfully compiled " +
-                                                "latest ONOS",
-                                         onfail="Failed to compile " +
-                                                "latest ONOS" )
-            else:
-                main.log.warn( "Did not pull new code so skipping mvn " +
-                               "clean install" )
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="Successfully construct " +
+                                        "test variables ",
+                                 onfail="Failed to construct test variables" )
 
-            globalONOSip = main.ONOSbench.getOnosIps()
+        if gitPull == 'True':
+            main.step( "Building ONOS in " + gitBranch + " branch" )
+            onosBuildResult = main.startUp.onosBuild( main, gitBranch )
+            stepResult = onosBuildResult
+            utilities.assert_equals( expect=main.TRUE,
+                                     actual=stepResult,
+                                     onpass="Successfully compiled " +
+                                            "latest ONOS",
+                                     onfail="Failed to compile " +
+                                            "latest ONOS" )
+        else:
+            main.log.warn( "Did not pull new code so skipping mvn " +
+                           "clean install" )
 
-        maxNodes = ( len( globalONOSip ) - 2 )
+    def CASE2( self, main ):
+        """
+        - Set up cell
+            - Create cell file
+            - Set cell file
+            - Verify cell file
+        - Kill ONOS process
+        - Uninstall ONOS cluster
+        - Verify ONOS start up
+        - Install ONOS cluster
+        - Connect to cli
+        """
 
+        # main.scale[ 0 ] determines the current number of ONOS controller
         main.numCtrls = int( main.scale[ 0 ] )
-        main.scale.remove( main.scale[ 0 ] )
 
-        main.ONOSip = []
-        for i in range( maxNodes ):
-            main.ONOSip.append( globalONOSip[ i ] )
+        main.case( "Starting up " + str( main.numCtrls ) +
+                   " node(s) ONOS cluster" )
 
         #kill off all onos processes
         main.log.info( "Safety check, killing all ONOS processes" +
                        " before initiating enviornment setup" )
-        for i in range( maxNodes ):
-            main.ONOSbench.onosDie( globalONOSip[ i ] )
+
+        for i in range( main.maxNodes ):
+            main.ONOSbench.onosDie( main.ONOSip[ i ] )
 
         print "NODE COUNT = ", main.numCtrls
-        main.log.info( "Creating cell file" )
-        cellIp = []
+
+        tempOnosIp = []
         for i in range( main.numCtrls ):
-            cellIp.append( str( main.ONOSip[ i ] ) )
-        print cellIp
-        main.ONOSbench.createCellFile( benchIp, cellName, "",
-                                       str( apps ), *cellIp )
+            tempOnosIp.append( main.ONOSip[i] )
+
+        main.ONOSbench.createCellFile( main.ONOSbench.ip_address, "temp", main.Mininet1.ip_address, main.apps, tempOnosIp )
 
         main.step( "Apply cell to environment" )
-        cellResult = main.ONOSbench.setCell( cellName )
+        cellResult = main.ONOSbench.setCell( "temp" )
         verifyResult = main.ONOSbench.verifyCell()
         stepResult = cellResult and verifyResult
         utilities.assert_equals( expect=main.TRUE,
@@ -121,6 +139,7 @@ class SAMPstartTemplate:
                                  onpass="Successfully created ONOS package",
                                  onfail="Failed to create ONOS package" )
 
+        time.sleep( main.startUpSleep )
         main.step( "Uninstalling ONOS package" )
         onosUninstallResult = main.TRUE
         for i in range( main.numCtrls ):
@@ -131,7 +150,8 @@ class SAMPstartTemplate:
                                  actual=stepResult,
                                  onpass="Successfully uninstalled ONOS package",
                                  onfail="Failed to uninstall ONOS package" )
-        time.sleep( 5 )
+
+        time.sleep( main.startUpSleep )
         main.step( "Installing ONOS package" )
         onosInstallResult = main.TRUE
         for i in range( main.numCtrls ):
@@ -143,11 +163,12 @@ class SAMPstartTemplate:
                                  onpass="Successfully installed ONOS package",
                                  onfail="Failed to install ONOS package" )
 
-        time.sleep( 20 )
+        time.sleep( main.startUpSleep )
         main.step( "Starting ONOS service" )
         stopResult = main.TRUE
         startResult = main.TRUE
         onosIsUp = main.TRUE
+
         for i in range( main.numCtrls ):
             onosIsUp = onosIsUp and main.ONOSbench.isup( main.ONOSip[ i ] )
         if onosIsUp == main.TRUE:
@@ -178,12 +199,15 @@ class SAMPstartTemplate:
                                  onpass="Successfully start ONOS cli",
                                  onfail="Failed to start ONOS cli" )
 
+        # Remove the first element in main.scale list
+        main.scale.remove( main.scale[ 0 ] )
+
     def CASE9( self, main ):
         '''
             Report errors/warnings/exceptions
         '''
         main.log.info("Error report: \n" )
-        main.ONOSbench.logReport( globalONOSip[ 0 ],
+        main.ONOSbench.logReport( main.ONOSip[ 0 ],
                                   [ "INFO",
                                     "FOLLOWER",
                                     "WARN",
@@ -191,7 +215,6 @@ class SAMPstartTemplate:
                                     "ERROR",
                                     "Except" ],
                                   "s" )
-        #main.ONOSbench.logReport( globalONOSip[1], [ "INFO" ], "d" )
 
     def CASE11( self, main ):
         """
@@ -211,4 +234,12 @@ class SAMPstartTemplate:
         if not topoResult:
             main.cleanup()
             main.exit()
+
+    def CASE12( self, main ):
+        """
+            Test random ONOS command
+        """
+
+        main.CLIs[ 0 ].startOnosCli( main.ONOSip[ 0 ] )
+        print main.CLIs[ 0 ].leaders()
 

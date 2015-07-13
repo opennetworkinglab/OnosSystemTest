@@ -5,8 +5,8 @@
             <host>localhost</host>
             <user>admin</user>
             <password></password>
-            <type>OnosDriver</type>
-            <connect_order>1</connect_order>
+			<type>OnosDriver</type>
+			<connect_order>1</connect_order>
             <COMPONENTS>
                 <home>~/ONOS</home>
             </COMPONENTS>
@@ -21,7 +21,7 @@
             <COMPONENTS> </COMPONENTS>
         </ONOScli1>
 
-		<ONOScli2>
+        <ONOScli2>
             <host>localhost</host>
             <user>admin</user>
             <password></password>
@@ -30,15 +30,15 @@
             <COMPONENTS> </COMPONENTS>
         </ONOScli2>
 
-		<ONOScli3>
+        <ONOScli3>
             <host>localhost</host>
             <user>admin</user>
             <password></password>
             <type>OnosCliDriver</type>
             <connect_order>4</connect_order>
             <COMPONENTS> </COMPONENTS>
-		</ONOScli3>
-	
+        </ONOScli3>
+
         <Mininet1>
             <host>chONOS-MN</host>
             <user>admin</user>

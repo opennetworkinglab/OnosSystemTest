@@ -33,6 +33,10 @@
         <user>admin</user>
         <ip1>localhost</ip1>
     </BENCH>
+    
+    <CBENCH>
+        <user>sdn</user>
+    </CBENCH>
 
     <JSON>
     </JSON>

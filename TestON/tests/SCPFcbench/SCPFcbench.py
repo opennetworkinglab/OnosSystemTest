@@ -30,6 +30,7 @@ class SCPFcbench:
         gitPull = main.params[ 'GIT' ][ 'autopull' ]
         BENCHIp = main.params[ 'BENCH' ][ 'ip1' ]
         BENCHUser = main.params[ 'BENCH' ][ 'user' ]
+        CBENCHuser = main.params[ 'CBENCH'][ 'user' ]
         MN1Ip = main.params[ 'MN' ][ 'ip1' ]
         maxNodes = int(main.params[ 'availableNodes' ])
         skipMvn = main.params[ 'TEST' ][ 'skipCleanInstall' ]
@@ -91,7 +92,7 @@ class SCPFcbench:
 
 
         print "Cellname is: "+ cellName + "ONOS IP is: " + str(ONOSIp)
-        main.ONOSbench.createCellFile(BENCHIp,cellName,MN1Ip,"drivers,openflow,fwd",ONOSIp[1])
+        main.ONOSbench.createCellFile(BENCHIp,cellName,MN1Ip,"drivers,openflow,fwd",[ONOSIp[1]])
  
         main.step( "Set Cell" )
         main.ONOSbench.setCell(cellName)
@@ -145,7 +146,7 @@ class SCPFcbench:
         if mode != "t":
             mode = " " 
 
-        runCbench = ( "ssh admin@" + ONOSIp[1] + " cbench -c localhost -p 6633 -m 1000 -l 25 -s 16 -M 100000 -w 15 -D 10000 -" + mode )
+        runCbench = ( "ssh " + CBENCHuser + "@" + ONOSIp[1] + " cbench -c localhost -p 6633 -m 1000 -l 25 -s 16 -M 100000 -w 15 -D 10000 -" + mode )
         main.ONOSbench.handle.sendline(runCbench)
         time.sleep(30)
         main.ONOSbench.handle.expect(":~") 
@@ -158,37 +159,39 @@ class SCPFcbench:
                 print line
                 break 
         
-        resultLine = line.split(" ") 
-        for word in resultLine:
-            if word == "min/max/avg/stdev": 
-                resultsIndex = resultLine.index(word)
-                print resultsIndex
-                break
+        try:
+            resultLine = line.split(" ") 
+            for word in resultLine:
+                if word == "min/max/avg/stdev": 
+                    resultsIndex = resultLine.index(word)
+                    print resultsIndex
+                    break
 
-        finalDataString = resultLine[resultsIndex + 2]
-        print finalDataString
-        finalDataList = finalDataString.split("/")
-        avg = finalDataList[2]
-        stdev = finalDataList[3]
+            finalDataString = resultLine[resultsIndex + 2]
+            print finalDataString
+            finalDataList = finalDataString.split("/")
+            avg = finalDataList[2]
+            stdev = finalDataList[3]
                                                      
-        main.log.info("Average: \t\t\t" + avg) 
-        main.log.info("Standard Deviation: \t" + stdev) 
+            main.log.info("Average: \t\t\t" + avg) 
+            main.log.info("Standard Deviation: \t" + stdev) 
 
-        if mode == " ": 
-            mode = "l"
+            if mode == " ": 
+                mode = "l"
 
-        commit = main.ONOSbench.getVersion()
-        commit = (commit.split(" "))[1]
+            commit = main.ONOSbench.getVersion()
+            commit = (commit.split(" "))[1]
 
-        dbfile = open("CbenchDB", "w+") 
-        temp = "'" + commit + "'," 
-        temp += "'" + mode + "'," 
-        temp += "'" + avg + "',"
-        temp += "'" + stdev + "'\n" 
-        dbfile.write(temp)
-        dbfile.close()
-        main.ONOSbench.logReport(ONOSIp[1], ["ERROR", "WARNING", "EXCEPT"], outputMode="d") 
-
+            dbfile = open("CbenchDB", "w+") 
+            temp = "'" + commit + "'," 
+            temp += "'" + mode + "'," 
+            temp += "'" + avg + "',"
+            temp += "'" + stdev + "'\n" 
+            dbfile.write(temp)
+            dbfile.close()
+            main.ONOSbench.logReport(ONOSIp[1], ["ERROR", "WARNING", "EXCEPT"], outputMode="d") 
+        except:
+            main.log.warn("Cbench test produced no valid results!!!")
 
 
 

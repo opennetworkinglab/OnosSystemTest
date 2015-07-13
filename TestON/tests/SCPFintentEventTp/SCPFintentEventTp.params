@@ -11,7 +11,7 @@
     </ENV>
 
     <SCALE>1,3,3,5,5,7,7</SCALE>
-    <availableNodes>7</availableNodes>
+    <max>7</max>
 
     <GIT>
         <autopull>off</autopull>

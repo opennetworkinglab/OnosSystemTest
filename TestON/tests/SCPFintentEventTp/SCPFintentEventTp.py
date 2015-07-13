@@ -34,7 +34,8 @@ class SCPFintentEventTp:
         BENCHIp = main.params[ 'BENCH' ][ 'ip1' ]
         BENCHUser = main.params[ 'BENCH' ][ 'user' ]
         MN1Ip = main.params[ 'MN' ][ 'ip1' ]
-        maxNodes = int(main.params[ 'availableNodes' ])
+        maxNodes = int(main.params[ 'max' ])
+        main.maxNodes = maxNodes 
         skipMvn = main.params[ 'TEST' ][ 'skipCleanInstall' ]
         cellName = main.params[ 'ENV' ][ 'cellName' ]
         numSwitches = (main.params[ 'TEST' ][ 'numSwitches' ]).split(",")
@@ -55,7 +56,10 @@ class SCPFintentEventTp:
             global commit
 
             clusterCount = 0
-            ONOSIp = []
+            ONOSIp = main.ONOSbench.getOnosIps()
+            print ONOSIp
+            print main.ONOSbench.onosIps.values()
+
             scale = (main.params[ 'SCALE' ]).split(",")            
             clusterCount = int(scale[0])
 
@@ -76,15 +80,20 @@ class SCPFintentEventTp:
                 checkoutResult = main.TRUE
                 pullResult = main.TRUE
                 main.log.info( "Skipped git checkout and pull" )
-        
+
+            main.log.step("Grabbing commit number") 
             commit = main.ONOSbench.getVersion()
             commit = (commit.split(" "))[1]
         
+            main.log.step("Creating results file") 
             resultsDB = open("IntentEventTPDB", "w+")
             resultsDB.close()
 
         # -- END OF INIT SECTION --#
-         
+
+        main.log.step("Adjusting scale") 
+        print str(scale) 
+        print str(ONOSIp)
         clusterCount = int(scale[0])
         scale.remove(scale[0])       
        
@@ -116,7 +125,7 @@ class SCPFintentEventTp:
         for node in range (clusterCount):
             cellIp.append(ONOSIp[node])
          
-        main.ONOSbench.createCellFile(BENCHIp,cellName,MN1Ip,str(Apps), *cellIp)
+        main.ONOSbench.createCellFile("localhost",cellName,MN1Ip,str(Apps), cellIp)
 
         main.step( "Set Cell" )
         main.ONOSbench.setCell(cellName)

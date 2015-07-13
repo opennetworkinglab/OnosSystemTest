@@ -1799,7 +1799,7 @@ class MininetCliDriver( Emulator ):
         # NOTE: Does not correctly match hosts with multi-links
         #       <Host h2: h2-eth0:10.0.0.2,h2-eth1:10.0.1.2 pid=14386>
         # FIXME: Fix that
-        hostRE = r"<Host\s(?P<name>[^:]+)\:((\s(?P<ifname>[^:]+)\:" +\
+        hostRE = r"Host\s(?P<name>[^:]+)\:((\s(?P<ifname>[^:]+)\:" +\
             "(?P<ip>[^\s]+))|(\s)\spid=(?P<pid>[^>]+))"
         # update mn port info
         self.update()
@@ -1807,7 +1807,7 @@ class MininetCliDriver( Emulator ):
         dump = self.dump().split( "\n" )
         hosts = {}
         for line in dump:
-            if line.startswith( "<Host" ):
+            if "Host" in line :
                 result = re.search( hostRE, line )
                 name = result.group( 'name' )
                 interfaces = []

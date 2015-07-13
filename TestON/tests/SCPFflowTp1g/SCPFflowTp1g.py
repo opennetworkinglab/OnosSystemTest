@@ -29,7 +29,8 @@ class SCPFflowTp1g:
         cellName = main.params[ 'ENV' ][ 'cellName' ]
         Apps = main.params[ 'ENV' ][ 'cellApps' ]
         BENCHUser = main.params[ 'BENCH' ][ 'user' ]
-        maxNodes = int(main.params[ 'availableNodes' ])
+        BENCHIp = main.params[ 'BENCH' ][ 'ip1' ]
+        main.maxNodes = int(main.params[ 'max' ])
         skipMvn = main.params[ 'TEST' ][ 'skipCleanInstall' ]
         cellName = main.params[ 'ENV' ][ 'cellName' ]       
     
@@ -49,7 +50,7 @@ class SCPFflowTp1g:
             clusterCount = int(scale[0])
 
             #Populate ONOSIp with ips from params
-            for i in range(1, maxNodes + 1):
+            for i in range(1, main.maxNodes + 1):
                 ipString = 'ip' + str(i)
                 ONOSIp.append(main.params[ 'CTRL' ][ ipString ])
 
@@ -83,18 +84,15 @@ class SCPFflowTp1g:
         scale.remove(scale[0])
         main.log.info("CLUSTER COUNT: " + str(clusterCount))
 
-        MN1Ip = ONOSIp[len(ONOSIp)-1]
-        BENCHIp = ONOSIp[len(ONOSIp)-2]
-
         #kill off all onos processes 
         main.log.step("Safety check, killing all ONOS processes")
         main.log.step("before initiating enviornment setup")
-        for node in range(1, maxNodes + 1):
+        for node in range(1, main.maxNodes + 1):
             main.ONOSbench.onosDie(ONOSIp[node])
 
         #Uninstall everywhere
         main.log.step( "Cleaning Enviornment..." )
-        for i in range(1, maxNodes + 1):
+        for i in range(1, main.maxNodes + 1):
             main.log.info(" Uninstalling ONOS " + str(i) )
             main.ONOSbench.onosUninstall( ONOSIp[i] )
 
@@ -104,7 +102,7 @@ class SCPFflowTp1g:
         for node in range (1, clusterCount + 1):
             cellIp.append(ONOSIp[node])        
         
-        main.ONOSbench.createCellFile(BENCHIp,cellName,MN1Ip,str(Apps), *cellIp)
+        main.ONOSbench.createCellFile(BENCHIp,cellName,"localhost",str(Apps), cellIp)
         main.log.info("Cell Ip list: " + str(cellIp))
         
         main.step( "Set Cell" )
@@ -135,8 +133,7 @@ class SCPFflowTp1g:
             a(ONOSIp[node])
          
         main.log.info("Startup sequence complete")
-        main.ONOSbench.onosErrorLog(ONOSIp[1])
-        
+        main.ONOSbench.logReport(ONOSIp[1], ["ERROR", "WARNING", "EXCEPT"], outputMode="d") 
     def CASE2( self, main ):
         #
         # This is the flow TP test 
@@ -166,14 +163,13 @@ class SCPFflowTp1g:
         neighborList = (main.params[ 'TEST' ][ 'neighbors' ]).split(",")
         testCMD[0] = main.params[ 'TEST' ][ 'testCMD0' ]
         testCMD[1] = main.params[ 'TEST' ][ 'testCMD1' ]
-        maxNodes = main.params[ 'availableNodes' ]
+        main.maxNodes = main.params[ 'max' ]
         onBaremetal = main.params['isOnBaremetal']
         cooldown = main.params[ 'TEST' ][ 'cooldown' ]
         cellName = main.params[ 'ENV' ][ 'cellName' ]
         BENCHIp = main.params[ 'BENCH' ][ 'ip1' ]
         BENCHUser = main.params[ 'BENCH' ][ 'user' ]
         MN1Ip = main.params[ 'MN' ][ 'ip1' ]
-        maxNodes = int(main.params[ 'availableNodes' ])
         homeDir = os.path.expanduser('~')
         flowRuleBackup = str(main.params[ 'TEST' ][ 'enableFlowRuleStoreBackup' ])
         main.log.info("Flow Rule Backup is set to:" + flowRuleBackup)
@@ -197,20 +193,7 @@ class SCPFflowTp1g:
 
         #write file to change mem limit to 32 gigs (BAREMETAL ONLY!)
         if onBaremetal == "true":
-            filename = "/onos/tools/package/bin/onos-service"
-            serviceConfig = open(homeDir + filename, 'w+')
-            serviceConfig.write("#!/bin/bash\n ")
-            serviceConfig.write("#------------------------------------- \n ")
-            serviceConfig.write("# Starts ONOS Apache Karaf container\n ")
-            serviceConfig.write("#------------------------------------- \n ")
-            serviceConfig.write("#export JAVA_HOME=${JAVA_HOME:-/usr/lib/jvm/java-7-openjdk-amd64/}\n ")
-            serviceConfig.write("""export JAVA_OPTS="${JAVA_OPTS:--Xms8G -Xmx8G}" \n """)
-            serviceConfig.write("")
-            serviceConfig.write("ONOS_HOME=/opt/onos \n ")
-            serviceConfig.write("")
-            serviceConfig.write("[ -d $ONOS_HOME ] && cd $ONOS_HOME || ONOS_HOME=$(dirname $0)/..\n")
-            serviceConfig.write("""${ONOS_HOME}/apache-karaf-$KARAF_VERSION/bin/karaf "$@" \n """)
-            serviceConfig.close()
+            main.ONOSbench.jvmSet()
 
         for n in neighborList:
             main.log.step("\tSTARTING TEST")
@@ -220,10 +203,10 @@ class SCPFflowTp1g:
             main.log.info("=============================================================")
             #write file to configure nil link
             ipCSV = ""
-            for i in range (1, int(maxNodes) + 1):
+            for i in range (1, int(main.maxNodes) + 1):
                 tempstr = "ip" + str(i)
                 ipCSV += main.params[ 'CTRL' ][ tempstr ] 
-                if i < int(maxNodes):
+                if i < int(main.maxNodes):
                     ipCSV +=","
             
             for i in range(3):
@@ -313,7 +296,8 @@ class SCPFflowTp1g:
                 if test >= warmUp:
                     for i in result: 
                         if i == "": 
-                            main.ONOSbench.logReport(ONOSIp[1], ["ERROR", "WARNING", "EXCEPT"])
+                            main.log.error("Missing data point, critical failure incoming")
+
                     print result
                     maxes[test-warmUp] = max(result)
                     main.log.info("Data collection iteration: " + str(test-warmUp) + " of " + str(sampleSize))

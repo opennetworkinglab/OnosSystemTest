@@ -22,6 +22,11 @@
         <branch>master</branch>
     </GIT>
 
+    <CTRL>
+        <numCtrl>3</numCtrl>
+        <karafCliTimeout>3600000</karafCliTimeout>
+    </CTRL>
+
     <TOPO1>
         <topo>~/mininet/custom/topoAtt.py</topo>
         <numSwitches>25</numSwitches>
@@ -45,16 +50,6 @@
         <numLinks>284</numLinks>
         <numPaths>1</numPaths>
     </TOPO3>
-
-    <CTRL>
-        <numCtrl>3</numCtrl>
-        <ip1>OC1</ip1>
-        <port1>6633</port1>
-        <ip2>OC2</ip2>
-        <port2>6633</port2>
-        <ip3>OC3</ip3>
-        <port3>6633</port3>
-    </CTRL>
 
     <HOSTS>
         <startMAC>00:00:00:00:00:01</startMAC>

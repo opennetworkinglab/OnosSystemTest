@@ -255,7 +255,7 @@ class CLI( threading.Thread,Cmd,object ):
         try :
             for index, option in enumerate(args):
                 if index > 0 :
-                    if re.match("logdir|mail|example|testdir|testcases", option, flags = 0):
+                    if re.match("logdir|mail|example|testdir|testcases|onoscell", option, flags = 0):
                         index = index+1
                         options[option] = args[index]
                         options = self.testcasesInRange(index,option,args,options)
@@ -275,6 +275,7 @@ class CLI( threading.Thread,Cmd,object ):
         options['example'] = None
         options['testdir'] = None
         options['testcases'] = None
+        options['onoscell'] = None
         return options   
     
     def testcasesInRange(self,index,option,args,options):

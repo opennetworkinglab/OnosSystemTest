@@ -1,0 +1,94 @@
+<PARAMS>
+    # 1,20,3,[40,5,60,70,80,10,90,71,81,10,93,10]*50,21,3,[41,5,61,72,82,10,91,73,83,10,94,10]*50,22,3,[42,5,62,10,92,10,95,10,98,10]*50
+    # 1. Starts ONOS cluster with 5 nodes
+    # 20. Starts Att Topology
+    # 21. Starts Chordal Topology
+    # 22. Starts Spine-Leaf Topology
+    # 3. Checks the consistency of ONOS and Mininet's topologies
+    # 4X. Reactive forwarding | host discovery
+    # 5. ONOS Topology verification
+    # 6X. host intents
+    # 7X. Bring random links down( Unique for each topology)
+    # 8X. Bring random links back up
+    # 9X Point,Multi-single,Single-Multi Intents
+
+    <testcases>1,20,3,40,5,60</testcases>
+    <ENV>
+        <cellName>choTest3</cellName>
+		<debugWait>300</debugWait>
+    </ENV>
+    <GIT>         
+        #autoPull 'on' or 'off'
+        <autoPull>off</autoPull>
+        <branch>master</branch>
+    </GIT>
+    <TOPO1>
+	<topo>~/mininet/custom/topoAtt.py</topo>
+	<numSwitches>25</numSwitches>
+	<numHosts>25</numHosts>
+	<numLinks>114</numLinks>
+	<numPaths>1</numPaths>
+    </TOPO1>
+    
+	<TOPO2>
+	<topo>~/mininet/custom/topoChordal.py</topo>
+	<numSwitches>25</numSwitches>
+	<numHosts>25</numHosts>
+	<numLinks>600</numLinks>
+	<numPaths>1</numPaths>
+    </TOPO2>
+    
+	<TOPO3>
+	<topo>~/mininet/custom/topoSpine.py</topo>
+	<numSwitches>78</numSwitches>
+	<numHosts>68</numHosts>
+	<numLinks>284</numLinks>
+	<numPaths>1</numPaths>
+    </TOPO3>
+    
+	<CTRL>
+    <numCtrl>3</numCtrl>
+    <ip1>OC1</ip1>
+    <port1>6633</port1>
+    <ip2>OC2</ip2>
+    <port2>6633</port2>
+    <ip3>OC3</ip3>
+    <port3>6633</port3>
+    </CTRL>
+    
+	<HOSTS>
+	<startMAC>00:00:00:00:00:01</startMAC>
+	<endMAC>00:00:00:00:00:19</endMAC>
+    </HOSTS>
+    
+	<ATTCORELINKS>
+	<toggleLinks>1</toggleLinks>
+	
+	<linkS3a>s3</linkS3a>
+	<linkS3b>s1,s4,s7,s10,s16,s17,s18,s21,s22</linkS3b>
+	#######s1,s4,s7,s10,s16,s17,s18,s21,s22########
+	
+	<linkS14a>s14</linkS14a>
+	<linkS14b>s6,s9,s10,s11,s12,s13,s16,s17,s23</linkS14b>
+	########s6,s9,s10,s11,s12,s13,s16,s17,s18,s23########
+	
+	<linkS18a>s18</linkS18a>
+	<linkS18b>s14,s16,s17,s19,s20,s21,s22,s23</linkS18b>
+	#######s3,s14,s16,s17,s19,s20,s21,s22,s23########
+    </ATTCORELINKS>
+    
+    <SPINECORELINKS>
+        <linkS9>s9</linkS9>
+        <linkS9top>s1,s3,s5,s7</linkS9top>
+        <linkS9bot>s11,s12</linkS9bot>
+        <linkS10>s10</linkS10>
+        <linkS10top>s2,s4,s6,s8</linkS10top>
+        <linkS10bot>s13,s14</linkS10bot>
+    </SPINECORELINKS>
+
+    <timers>
+        <LinkDiscovery>10</LinkDiscovery>
+        <SwitchDiscovery>10</SwitchDiscovery>
+    </timers>
+
+</PARAMS>

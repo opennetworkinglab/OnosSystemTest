@@ -115,15 +115,13 @@ class OnosDriver( CLI ):
                 pwd=self.pwd,
                 home=self.home )
 
-            self.handle.sendline( "cd " + self.home )
-            self.handle.expect( "\$" )
-
             if self.handle:
+                self.handle.sendline( "cd " + self.home )
+                self.handle.expect( "\$" )
                 return self.handle
             else:
-                main.log.info( "NO ONOS HANDLE" )
+                main.log.info( "Failed to create ONOS handle" )
                 return main.FALSE
-
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )

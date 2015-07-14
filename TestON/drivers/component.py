@@ -45,9 +45,8 @@ class Component( object ):
             return getattr( self.wrapped, name )
         except AttributeError as error:
             # NOTE: The first time we load a driver module we get this error
-            if "'module' object has no attribute '__path__'" in error\
-                    and self.count == 0:
-                self.count += 1
+            if "'module' object has no attribute '__path__'" in error:
+                pass
             else:
                 main.log.error( str(error.__class__) + " " + str(error) )
             try:

@@ -93,6 +93,7 @@ class TestON:
         self.Thread = Thread
         self.cleanupFlag = False
         self.cleanupLock = threading.Lock()
+        self.initiated = False
 
         self.configparser()
         verifyOptions(options)
@@ -151,6 +152,7 @@ class TestON:
         This method will initialize specified component
         '''
         global driver_options
+        self.initiated = False
         self.log.info("Creating component Handle: "+component)
         driver_options = {}
         if 'COMPONENTS' in self.componentDictionary[component].keys():
@@ -176,6 +178,7 @@ class TestON:
             self.exit()
 
         vars(self)[component] = driverObject
+        self.initiated = True
 
     def run(self):
         '''
@@ -353,7 +356,8 @@ class TestON:
             try:
                 if self.cleanupFlag is False:  # First thread to run this
                     self.cleanupFlag = True
-                    self.logger.testSummary(self)
+                    if self.initiated:
+                        self.logger.testSummary(self)
                     for component in self.componentDictionary.keys():
                         try :
                             tempObject  = vars(self)[component]

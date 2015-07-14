@@ -58,26 +58,36 @@ class OnosDriver( CLI ):
 
             self.name = self.options[ 'name' ]
 
+            # The 'nodes' tag is optional and it is not required in .topo file
             for key in self.options:
                 if key == "nodes":
-                    # Maximum number of ONOS nodes to run
+                    # Maximum number of ONOS nodes to run, if there is any
                     self.maxNodes = int( self.options[ 'nodes' ] )
                     break
                 self.maxNodes = None
 
+            if self.maxNodes == None or self.maxNodes == "":
+                self.maxNodes = 100
 
-            # Grabs all OC environment variables
+
+            # Grabs all OC environment variables based on max number of nodes
             self.onosIps = {}  # Dictionary of all possible ONOS ip
 
             try:
                 if self.maxNodes:
-                    main.log.info( self.name + ": Creating cluster data with " +
-                                   str( self.maxNodes ) + " maximum number" +
-                                   " of nodes" )
-
                     for i in range( self.maxNodes ):
                         envString = "OC" + str( i + 1 )
-                        self.onosIps[ envString ] = os.getenv( envString )
+                        # If there is no more OC# then break the loop
+                        if os.getenv( envString ):
+                            self.onosIps[ envString ] = os.getenv( envString )
+                        else:
+                            self.maxNodes = len( self.onosIps )
+                            main.log.info( self.name +
+                                           ": Created cluster data with " +
+                                           str( self.maxNodes ) +
+                                           " maximum number" +
+                                           " of nodes" )
+                            break
 
                     if not self.onosIps:
                         main.log.info( "Could not read any environment variable"
@@ -87,7 +97,6 @@ class OnosDriver( CLI ):
                         main.log.info( self.name + ": Found " +
                                        str( self.onosIps.values() ) +
                                        " ONOS IPs" )
-
             except KeyError:
                 main.log.info( "Invalid environment variable" )
             except Exception as inst:
@@ -100,7 +109,6 @@ class OnosDriver( CLI ):
                     main.log.info( self.name +
                                    ": Trying to connect to " +
                                    self.ip_address )
-
             except KeyError:
                 main.log.info( "Invalid host name," +
                                " connecting to local host instead" )
@@ -711,8 +719,8 @@ class OnosDriver( CLI ):
             # Note that even if TestON is located on the same cluster
             # as ONOS bench, you must setup passwordless ssh
             # between TestON and ONOS bench in order to automate the test.
-            os.system( "scp " + tempDirectory + fileName +
-                       " admin@" + benchIp + ":" + cellDirectory )
+            os.system( "scp " + tempDirectory + fileName + " " +
+                       self.user_name + "@" + self.ip_address + ":" + cellDirectory )
 
             return main.TRUE
 
@@ -1917,7 +1925,7 @@ class OnosDriver( CLI ):
         linkGraph.close()
 
         #SCP
-        os.system( "scp " + tempFile + " admin@" + benchIp + ":" + linkGraphPath)        
+        os.system( "scp " + tempFile + " " + self.user_name + "@" + benchIp + ":" + linkGraphPath)        
         main.log.info("linkGraph.cfg creation complete")
 
     def configNullDev( self, ONOSIpList, deviceCount, numPorts=10):

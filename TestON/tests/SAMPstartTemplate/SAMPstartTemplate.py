@@ -1,6 +1,6 @@
 
-# Testing the basic functionality of ONOS Next
-# For sanity and driver functionality excercises only.
+# This is a sample template that starts up ONOS cluster, this template
+# is used as a starting script for creating functionality and performance test
 
 class SAMPstartTemplate:
 

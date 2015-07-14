@@ -86,7 +86,7 @@ class SCPFintentEventTp:
             commit = (commit.split(" "))[1]
         
             main.log.step("Creating results file") 
-            resultsDB = open("IntentEventTPDB", "w+")
+            resultsDB = open("/tmp/IntentEventTPDB", "w+")
             resultsDB.close()
 
         # -- END OF INIT SECTION --#

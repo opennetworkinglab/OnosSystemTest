@@ -367,7 +367,7 @@ class SCPFflowTp1g:
             main.log.info("Average thoughput:  " + str(avgTP) + " Kflows/second" )
             main.log.info("Standard deviation of throughput: " + str(stdTP) + " Kflows/second") 
 
-            resultsLog = open("flowTP1gDB","a")
+            resultsLog = open("/tmp/flowTP1gDB","a")
             resultString = ("'" + commit + "',")
             resultString += ("'1gig',")
             resultString += ((main.params[ 'TEST' ][ 'flows' ]) + ",")

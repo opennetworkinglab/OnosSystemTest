@@ -71,7 +71,7 @@ class SCPFintentInstallWithdrawLat:
             commit = main.ONOSbench.getVersion()
             commit = (commit.split(" "))[1]
 
-            resultsDB = open("IntentInstallWithdrawLatDB", "w+")
+            resultsDB = open("/tmp/IntentInstallWithdrawLatDB", "w+")
             resultsDB.close()
 
         # -- END OF INIT SECTION --#

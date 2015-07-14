@@ -31,7 +31,7 @@ class SCPFcbench:
         BENCHIp = main.params[ 'BENCH' ][ 'ip1' ]
         BENCHUser = main.params[ 'BENCH' ][ 'user' ]
         CBENCHuser = main.params[ 'CBENCH'][ 'user' ]
-        MN1Ip = main.params[ 'MN' ][ 'ip1' ]
+        MN1Ip = os.environ[ main.params[ 'MN' ][ 'ip1' ] ]
         maxNodes = int(main.params[ 'availableNodes' ])
         skipMvn = main.params[ 'TEST' ][ 'skipCleanInstall' ]
         cellName = main.params[ 'ENV' ][ 'cellName' ]        

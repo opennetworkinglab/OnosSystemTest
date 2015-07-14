@@ -19,6 +19,8 @@ class SCPFcbench:
         import time 
         import os                    
         global init       
+        main.case("pre-condition for cbench test.")
+
         try: 
             if type(init) is not bool: 
                 init = False  
@@ -107,7 +109,7 @@ class SCPFcbench:
         main.step( "verify cells" )
         verifyCellResult = main.ONOSbench.verifyCell()
       
-        main.log.report( "Initializeing " + str( clusterCount ) + " node cluster." )
+        main.log.report( "Initializing " + str( clusterCount ) + " node cluster." )
         for node in range(1, clusterCount + 1):
             main.log.info("Starting ONOS " + str(node) + " at IP: " + ONOSIp[node])
             main.ONOSbench.onosInstall( ONOSIp[node])
@@ -130,18 +132,26 @@ class SCPFcbench:
             check = main.ONOSbench.handle.before
             if "value=true" in check:
                 main.log.info("cfg set successful") 
+                stepResult = main.TRUE
                 break 
             if i == 4: 
-                main.log.info("Cfg set failed") 
+                main.log.info("Cfg set failed")
+                stepResult = main.FALSE
             else: 
                 time.sleep(5)
-                
+
+        utilities.assert_equals( expect=main.TRUE, 
+                                 actual=stepResult, 
+                                 onpass="Successfully configure onos for cbench test ", 
+                                 onfail="Failed to configure onos for cbench test" )
             
 
         
  
     def CASE2( self, main ):
-         
+        main.case("Running Cbench")
+        main.step("Issuing cbench commands and grab returned results")
+        validFlag = False
         mode = main.params[ 'TEST' ][ 'mode' ]
         if mode != "t":
             mode = " " 
@@ -155,45 +165,52 @@ class SCPFcbench:
 
         output = output.splitlines()
         for line in output: 
-            if "RESULT: " in line: 
+            if "RESULT: " in line:
+                validFlag = True
                 print line
-                break 
-        
-        try:
-            resultLine = line.split(" ") 
-            for word in resultLine:
-                if word == "min/max/avg/stdev": 
-                    resultsIndex = resultLine.index(word)
-                    print resultsIndex
-                    break
+                resultLine = line.split(" ") 
+                for word in resultLine:
+                    if word == "min/max/avg/stdev": 
+                        resultsIndex = resultLine.index(word)
+                        print resultsIndex
+                        break
 
-            finalDataString = resultLine[resultsIndex + 2]
-            print finalDataString
-            finalDataList = finalDataString.split("/")
-            avg = finalDataList[2]
-            stdev = finalDataList[3]
+                finalDataString = resultLine[resultsIndex + 2]
+                print finalDataString
+                finalDataList = finalDataString.split("/")
+                avg = finalDataList[2]
+                stdev = finalDataList[3]
                                                      
-            main.log.info("Average: \t\t\t" + avg) 
-            main.log.info("Standard Deviation: \t" + stdev) 
+                main.log.info("Average: \t\t\t" + avg) 
+                main.log.info("Standard Deviation: \t" + stdev) 
+            
 
-            if mode == " ": 
-                mode = "l"
+                commit = main.ONOSbench.getVersion()
+                commit = (commit.split(" "))[1]
 
-            commit = main.ONOSbench.getVersion()
-            commit = (commit.split(" "))[1]
+                try:
+                    dbFileName="/tmp/CbenchDB"
+                    dbfile = open(dbFileName, "w+") 
+                    temp = "'" + commit + "'," 
+                    temp += "'" + mode + "'," 
+                    temp += "'" + avg + "',"
+                    temp += "'" + stdev + "'\n" 
+                    dbfile.write(temp)
+                    dbfile.close()
+                    main.ONOSbench.logReport(ONOSIp[1], ["ERROR", "WARNING", "EXCEPT"], outputMode="d") 
+                except IOError:
+                    main.log.warn("Error opening " + dbFileName + " to write results.")
+                
+                stepResult = main.TRUE
+                break
+        if ( validFlag == False ):
+            main.log.warn("Cbench Test produced no valid results!!!!")
+            stepResult = main.FALSE
 
-            dbfile = open("CbenchDB", "w+") 
-            temp = "'" + commit + "'," 
-            temp += "'" + mode + "'," 
-            temp += "'" + avg + "',"
-            temp += "'" + stdev + "'\n" 
-            dbfile.write(temp)
-            dbfile.close()
-            main.ONOSbench.logReport(ONOSIp[1], ["ERROR", "WARNING", "EXCEPT"], outputMode="d") 
-        except:
-            main.log.warn("Cbench test produced no valid results!!!")
-
-
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="Successfully tested onos for cbench. ",
+                                 onfail="Failed to obtain valid onos cbench result!" )
 
 
 

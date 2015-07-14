@@ -5,7 +5,7 @@
         <ONOSbench>
             <host>localhost</host>
             <user>admin</user>
-            <password>onos_test</password>
+            <password></password>
             <type>OnosDriver</type>
             <connect_order>1</connect_order>
             <COMPONENTS>
@@ -17,7 +17,7 @@
         <ONOS1>
             <host>OC1</host>
             <user>sdn</user>
-            <password>rocks</password>
+            <password></password>
             <type>OnosDriver</type>
             <connect_order>9</connect_order>
             <COMPONENTS> </COMPONENTS>

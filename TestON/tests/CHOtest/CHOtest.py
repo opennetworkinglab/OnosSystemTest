@@ -6,7 +6,7 @@ import json
 import itertools
 
 
-class OnosCHO:
+class CHOtest:
 
     def __init__( self ):
         self.default = ''
@@ -14,13 +14,13 @@ class OnosCHO:
     def CASE1( self, main ):
         """
         Startup sequence:
+        apply cell <name>
         git pull
         mvn clean install
         onos-package
-        apply cell <name>
         onos-verify-cell
         onos-uninstall
-		onos-install
+        onos-install
         onos-start-cli
         """
         import time
@@ -29,7 +29,6 @@ class OnosCHO:
         main.threadID = 0
         main.pingTimeout = 300
         main.numCtrls = main.params[ 'CTRL' ][ 'numCtrl' ]
-        cell_name = main.params[ 'ENV' ][ 'cellName' ]
         git_pull = main.params[ 'GIT' ][ 'autoPull' ]
         git_branch = main.params[ 'GIT' ][ 'branch' ]
         karafTimeout = main.params['CTRL']['karafCliTimeout']
@@ -43,6 +42,21 @@ class OnosCHO:
         main.case( "Set up test environment" )
         main.log.report( "Set up test environment" )
         main.log.report( "_______________________" )
+
+        main.step( "Apply Cell environment for ONOS" )
+        if ( main.onoscell ):
+            cellName = main.onoscell
+            cell_result = main.ONOSbench.setCell( cellName )
+            onosNodes = main.ONOSbench.getOnosIPfromCell()
+            main.onosIPs = onosNodes
+            utilities.assert_equals( expect=main.TRUE, actual=cell_result,
+                                 onpass="Test step PASS",
+                                 onfail="Test step FAIL" )
+        else:
+            main.log.error( "Please provide onoscell option at TestON CLI to run CHO tests" )
+            main.log.error( "Example: ~/TestON/bin/cli.py run OnosCHO onoscell <cellName>" )
+            main.clean()
+            main.exit()
 
         main.step( "Git checkout and pull " + git_branch )
         if git_pull == 'on':
@@ -69,14 +83,6 @@ class OnosCHO:
             main.log.info("Skipped mvn clean install as git pull is disabled in params file")
 
         main.ONOSbench.getVersion( report=True )
-
-        main.step( "Apply Cell environment for ONOS" )
-        cell_result = main.ONOSbench.setCell( cell_name )
-        onosNodes = main.ONOSbench.getOnosIPfromCell()
-        main.onosIPs = onosNodes
-        utilities.assert_equals( expect=main.TRUE, actual=cell_result,
-                                 onpass="Test step PASS",
-                                 onfail="Test step FAIL" )
 
         main.step( "Create ONOS package" )
         packageResult = main.ONOSbench.onosPackage()
@@ -820,7 +826,7 @@ class OnosCHO:
         main.log.info("Time for adding host intents: %2f seconds" %(time2-time1))
 
         intentResult = main.TRUE
-        intentsJson = main.ONOScli2.intents()
+        intentsJson = main.ONOScli1.intents()
         getIntentStateResult = main.ONOScli1.getIntentState(intentsId = intentIdList,
                 intentsJson = intentsJson)
         print "len of intent ID", str(len(intentIdList))
@@ -849,8 +855,6 @@ class OnosCHO:
                                  onfail="PING ALL FAIL" )
 
         case60Result = ( intentResult and pingResult )
-        waitForDebug = int (main.params[ 'ENV' ][ 'debugWait' ])
-        time.sleep(waitForDebug)
         utilities.assert_equals(
             expect=main.TRUE,
             actual=case60Result,
@@ -892,7 +896,7 @@ class OnosCHO:
         time2 = time.time()
         main.log.info("Time for adding host intents: %2f seconds" %(time2-time1))
         intentResult = main.TRUE
-        intentsJson = main.ONOScli2.intents()
+        intentsJson = main.ONOScli1.intents()
         getIntentStateResult = main.ONOScli1.getIntentState(intentsId = intentIdList,
                 intentsJson = intentsJson)
         print getIntentStateResult
@@ -953,7 +957,7 @@ class OnosCHO:
         time2 = time.time()
         main.log.info("Time for adding host intents: %2f seconds" %(time2-time1))
         intentResult = main.TRUE
-        intentsJson = main.ONOScli2.intents()
+        intentsJson = main.ONOScli1.intents()
         getIntentStateResult = main.ONOScli1.getIntentState(intentsId = intentIdList,
                 intentsJson = intentsJson)
         print getIntentStateResult
@@ -1030,7 +1034,7 @@ class OnosCHO:
                 OPTION="down" )
             time.sleep( link_sleep )
 
-        topology_output = main.ONOScli2.topology()
+        topology_output = main.ONOScli1.topology()
         linkDown = main.ONOSbench.checkStatus(
             topology_output, main.numMNswitches, str(
                 int( main.numMNlinks ) - int( switchLinksToToggle ) * 6 ) )
@@ -1096,7 +1100,7 @@ class OnosCHO:
                 OPTION="up" )
             time.sleep( link_sleep )
 
-        topology_output = main.ONOScli2.topology()
+        topology_output = main.ONOScli1.topology()
         linkUp = main.ONOSbench.checkStatus(
             topology_output,
             main.numMNswitches,
@@ -1178,7 +1182,7 @@ class OnosCHO:
                 OPTION="down" )
             time.sleep( link_sleep )
 
-        topology_output = main.ONOScli2.topology()
+        topology_output = main.ONOScli1.topology()
         linkDown = main.ONOSbench.checkStatus(
             topology_output, main.numMNswitches, str(
                 int( main.numMNlinks ) - int( switchLinksToToggle ) * 6 ) )
@@ -1244,7 +1248,7 @@ class OnosCHO:
                 OPTION="up" )
             time.sleep( link_sleep )
 
-        topology_output = main.ONOScli2.topology()
+        topology_output = main.ONOScli1.topology()
         linkUp = main.ONOSbench.checkStatus(
             topology_output,
             main.numMNswitches,
@@ -1303,7 +1307,7 @@ class OnosCHO:
                 OPTION="down")
             time.sleep( link_sleep )
 
-        topology_output = main.ONOScli2.topology()
+        topology_output = main.ONOScli1.topology()
         linkDown = main.ONOSbench.checkStatus(
             topology_output, main.numMNswitches, str(
                 int( main.numMNlinks ) - 5 * 2 ) )
@@ -1356,7 +1360,7 @@ class OnosCHO:
                 OPTION="up")
             time.sleep( link_sleep )
 
-        topology_output = main.ONOScli2.topology()
+        topology_output = main.ONOScli1.topology()
         linkUp = main.ONOSbench.checkStatus(
             topology_output,
             main.numMNswitches,
@@ -1415,7 +1419,7 @@ class OnosCHO:
                 OPTION="down")
             time.sleep( link_sleep )
 
-        topology_output = main.ONOScli2.topology()
+        topology_output = main.ONOScli1.topology()
         linkDown = main.ONOSbench.checkStatus(
             topology_output, main.numMNswitches, str(
                 int( main.numMNlinks ) - 5 * 2 ) )
@@ -1468,7 +1472,7 @@ class OnosCHO:
                 OPTION="up")
             time.sleep( link_sleep )
 
-        topology_output = main.ONOScli2.topology()
+        topology_output = main.ONOScli1.topology()
         linkUp = main.ONOSbench.checkStatus(
             topology_output,
             main.numMNswitches,
@@ -1522,13 +1526,15 @@ class OnosCHO:
         main.log.report( "___________________________________________________________________________" )
         
         linkIndex = range(4)
-        linkIndexS9 = random.sample(linkIndex,1)[0] 
+        linkIndexS9 = random.sample(linkIndex,1)[0]
         linkIndex.remove(linkIndexS9)
         linkIndexS10 = random.sample(linkIndex,1)[0]
         main.randomLink1 = link1End2top[linkIndexS9]
         main.randomLink2 = link2End2top[linkIndexS10]
         main.randomLink3 = random.sample(link1End2bot,1)[0]
         main.randomLink4 = random.sample(link2End2bot,1)[0]
+
+        # Work around for link state propagation delay. Added some sleep time.
         # main.Mininet1.link( END1=link1End1, END2=main.randomLink1, OPTION="down" )
         # main.Mininet1.link( END1=link2End1, END2=main.randomLink2, OPTION="down" )
         main.Mininet1.link( END1=link1End1, END2=main.randomLink3, OPTION="down" )
@@ -1536,7 +1542,7 @@ class OnosCHO:
         main.Mininet1.link( END1=link2End1, END2=main.randomLink4, OPTION="down" )
         time.sleep( link_sleep )
 
-        topology_output = main.ONOScli2.topology()
+        topology_output = main.ONOScli1.topology()
         linkDown = main.ONOSbench.checkStatus(
             topology_output, main.numMNswitches, str(
                 int( main.numMNlinks ) - 8 ))
@@ -1581,15 +1587,16 @@ class OnosCHO:
             "__________________________________________________________________" )
         main.case(
             "Host intents - Bring the core links up that are down and verify ping all" )
-        
-        #main.Mininet1.link( END1=link1End1, END2=main.randomLink1, OPTION="up" )
-        #main.Mininet1.link( END1=link2End1, END2=main.randomLink2, OPTION="up" )
+
+        # Work around for link state propagation delay. Added some sleep time.
+        # main.Mininet1.link( END1=link1End1, END2=main.randomLink1, OPTION="up" )
+        # main.Mininet1.link( END1=link2End1, END2=main.randomLink2, OPTION="up" )
         main.Mininet1.link( END1=link1End1, END2=main.randomLink3, OPTION="up" )
         time.sleep( link_sleep )
         main.Mininet1.link( END1=link2End1, END2=main.randomLink4, OPTION="up" )
         time.sleep( link_sleep )
 
-        topology_output = main.ONOScli2.topology()
+        topology_output = main.ONOScli1.topology()
         linkUp = main.ONOSbench.checkStatus(
             topology_output,
             main.numMNswitches,
@@ -1646,7 +1653,6 @@ class OnosCHO:
                         name="addPointIntent",
                         args=[deviceCombos[i][0],deviceCombos[i][1],1,1,"IPV4",main.MACsDict.get(deviceCombos[i][0]),main.MACsDict.get(deviceCombos[i][1])])
                 pool.append(t)
-                #time.sleep(1)
                 t.start()
                 i = i + 1
                 main.threadID = main.threadID + 1
@@ -1654,9 +1660,9 @@ class OnosCHO:
                 thread.join()
                 intentIdList.append(thread.result)
         time2 = time.time()
-        main.log.info("Time for adding point intents: %2f seconds" %(time2-time1)) 
+        main.log.info("Time for adding point intents: %2f seconds" %(time2-time1))
         intentResult = main.TRUE
-        intentsJson = main.ONOScli2.intents()
+        intentsJson = main.ONOScli1.intents()
         getIntentStateResult = main.ONOScli1.getIntentState(intentsId = intentIdList,
                 intentsJson = intentsJson)
         print getIntentStateResult
@@ -1717,9 +1723,9 @@ class OnosCHO:
                 thread.join()
                 intentIdList.append(thread.result)
         time2 = time.time()
-        main.log.info("Time for adding point intents: %2f seconds" %(time2-time1)) 
+        main.log.info( "Time for adding point intents: %2f seconds" %(time2-time1) )
         intentResult = main.TRUE
-        intentsJson = main.ONOScli2.intents()
+        intentsJson = main.ONOScli1.intents()
         getIntentStateResult = main.ONOScli1.getIntentState(intentsId = intentIdList,
                 intentsJson = intentsJson)
         print getIntentStateResult
@@ -1783,9 +1789,9 @@ class OnosCHO:
                 thread.join()
                 intentIdList.append(thread.result)
         time2 = time.time()
-        main.log.info("Time for adding point intents: %2f seconds" %(time2-time1)) 
+        main.log.info("Time for adding point intents: %2f seconds" %(time2-time1))
         intentResult = main.TRUE
-        intentsJson = main.ONOScli2.intents()
+        intentsJson = main.ONOScli1.intents()
         getIntentStateResult = main.ONOScli1.getIntentState(intentsId = intentIdList,
                 intentsJson = intentsJson)
         #print getIntentStateResult
@@ -2139,7 +2145,6 @@ class OnosCHO:
             "\r\r",
              "" )
         intentsList = intentsList.splitlines()
-        #intentsList = intentsList[ 1: ]
         intentIdList = []
         step1Result = main.TRUE
         moreIntents = main.TRUE
@@ -2150,7 +2155,7 @@ class OnosCHO:
             results = main.TRUE
             main.log.info("Removing intent...")
             while moreIntents:
-			#This is a work around for a major issue. We cycle through intents removal for up to 5 times.
+            # This is a work around only: cycle through intents removal for up to 5 times.
                 if removeIntentCount == 5:
                     break
                 removeIntentCount = removeIntentCount + 1
@@ -2167,7 +2172,6 @@ class OnosCHO:
                     "\r\r",
                     "" )
                 intentsList1 = intentsList1.splitlines()
-                #intentsList1 = intentsList1[ 1: ]
                 main.log.info ( "Round %d intents to remove: " %(removeIntentCount) )
                 print intentsList1
                 intentIdList1 = []
@@ -2200,7 +2204,7 @@ class OnosCHO:
                     main.log.info("Time for removing host intents: %2f seconds" %(time2-time1))
                     time.sleep(10)
                     main.log.info("Purging WITHDRAWN Intents")
-                    purgeResult  = main.ONOScli2.purgeWithdrawnIntents()
+                    purgeResult  = main.ONOScli1.purgeWithdrawnIntents()
                 else:
                     time.sleep(10)
                     if len( main.ONOScli1.intents()):
@@ -2228,7 +2232,6 @@ class OnosCHO:
         import copy
         import time
 
-        Thread = imp.load_source('Thread','/home/admin/ONLabTest/TestON/tests/OnosCHO/Thread.py')
         threadID = 0
 
         main.log.report( "Enable Intent based Reactive forwarding and Verify ping all" )
@@ -2237,7 +2240,7 @@ class OnosCHO:
         main.step( "Enable intent based Reactive forwarding" )
         installResult = main.FALSE
         feature = "onos-app-ifwd"
-        
+
         pool = []
         time1 = time.time()
         for cli,feature in main.CLIs:
@@ -2313,63 +2316,3 @@ class OnosCHO:
         utilities.assert_equals( expect=main.TRUE, actual=case11Result,
                                  onpass="Intent based Reactive forwarding Pingall test PASS",
                                  onfail="Intent based Reactive forwarding Pingall test FAIL" )
-
-    def CASE99(self):
-        import time
-        # WORK AROUND FOR ONOS-581. STOP ONOS BEFORE ASSIGNING CONTROLLERS AT MININET & START ONCE DONE
-        main.step( "Stop ONOS on all Nodes" )
-        stopResult = main.TRUE
-        for i in range( 1, int( main.numCtrls ) + 1 ):
-            ONOS_ip = main.params[ 'CTRL' ][ 'ip' + str( i ) ]
-            main.log.info( "Stopping ONOS Node IP: " + ONOS_ip )
-            sresult = main.ONOSbench.onosStop( ONOS_ip )
-            utilities.assert_equals( expect=main.TRUE, actual=sresult,
-                                     onpass="Test step PASS",
-                                     onfail="Test step FAIL" )
-            stopResult = ( stopResult and sresult )
-
-        main.step( "Start ONOS on all Nodes" )
-        startResult = main.TRUE
-        for i in range( 1, int( main.numCtrls ) + 1 ):
-            ONOS_ip = main.params[ 'CTRL' ][ 'ip' + str( i ) ]
-            main.log.info( "Starting ONOS Node IP: " + ONOS_ip )
-            sresult = main.ONOSbench.onosStart( ONOS_ip )
-            utilities.assert_equals( expect=main.TRUE, actual=sresult,
-                                     onpass="Test step PASS",
-                                     onfail="Test step FAIL" )
-            startResult = ( startResult and sresult )
-    
-        main.step( "Start ONOS CLI on all nodes" )
-        cliResult = main.TRUE
-        time.sleep( 30 )
-        main.log.step(" Start ONOS cli using thread ")
-        pool = []
-        time1 = time.time()
-        for i in range( int( main.numCtrls ) ):
-            t = main.Thread(target=main.CLIs[i].startOnosCli,
-                    threadID=main.threadID,
-                    name="startOnosCli",
-                    args=main.onosIPs[i])
-            pool.append(t)
-            t.start()
-            main.threadID = main.threadID + 1
-        for t in pool:
-            t.join()
-            cliResult = cliResult and t.result
-        time2 = time.time()
-        
-        if not cliResult:
-                main.log.info("ONOS CLI did not start up properly")
-                #main.cleanup()
-                #main.exit()
-        else:
-            main.log.info("Successful CLI startup")
-        main.log.info("Time for connecting to CLI: %2f seconds" %(time2-time1))
-
-        case99Result = ( startResult and cliResult )
-        time.sleep(30)
-        utilities.assert_equals(
-            expect=main.TRUE,
-            actual=case99Result,
-            onpass="Starting new Chordal topology test PASS",
-            onfail="Starting new Chordal topology test FAIL" )

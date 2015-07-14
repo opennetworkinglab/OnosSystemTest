@@ -1,0 +1,4 @@
+Summary: This is a performance test suite to test onos single instance with Cbench TP mode.
+Pre-requisites: OC1 - is the single onos cell also has cbench pre-installed for all users; 
+                this env variable is required on the TestStation. Passwordless login is set
+                from TestStation "admin" root user.

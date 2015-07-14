@@ -2578,20 +2578,69 @@ class OnosCliDriver( CLI ):
         Optional argument:
             * jsonFormat - boolean indicating if you want output in json
         """
-        # FIXME: add json output
-        # Sample JSON
-        # {
-        #     "electedTime": "13m ago",
-        #     "epoch": 4,
-        #     "leader": "10.128.30.17",
-        #     "topic": "intent-partition-3"
-        #  },
         try:
             cmdStr = "onos:leaders"
             if jsonFormat:
                 cmdStr += " -j"
             output = self.sendline( cmdStr )
             return output
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
+    def leaderCandidates( self, jsonFormat=True ):
+        """
+        Returns the output of the leaders -c command.
+        Optional argument:
+            * jsonFormat - boolean indicating if you want output in json
+        """
+        try:
+            cmdStr = "onos:leaders -c"
+            if jsonFormat:
+                cmdStr += " -j"
+            output = self.sendline( cmdStr )
+            return output
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
+    def specificLeaderCandidate(self,topic):
+        """
+        Returns a list in format [leader,candidate1,candidate2,...] for a given
+        topic parameter and an empty list if the topic doesn't exist
+        If no leader is elected leader in the returned list will be "none"
+        Returns None if there is a type error processing the json object
+        """
+        try:
+            cmdStr = "onos:leaders -c -j"
+            output = self.sendline( cmdStr )
+            output = json.loads(output)
+            results = []
+            for dict in output:
+                if dict["topic"] == topic:
+                    leader = dict["leader"]
+                    candidates = re.split(", ",dict["candidates"][1:-1])
+                    results.append(leader)
+                    results.extend(candidates)
+            return results
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
             return None
@@ -3511,7 +3560,7 @@ class OnosCliDriver( CLI ):
         except AssertionError:
             main.log.error( "Error in processing 'set-test-get' command: " +
                             str( output ) )
-            return None 
+            return None
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
             return None

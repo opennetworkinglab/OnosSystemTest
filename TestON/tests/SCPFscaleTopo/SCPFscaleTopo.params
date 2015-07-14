@@ -1,0 +1,35 @@
+<PARAMS>
+
+    <testcases>1,2,1001</testcases>
+
+    <SCALE>
+        <size>1,2,3</size>
+        <max>3</max>
+    </SCALE>
+
+    <DEPENDENCY>
+        <path>/tests/SCPFscaleTopo/Dependency/</path>
+        <wrapper1>startUp</wrapper1>
+        <wrapper2>scaleTopoFunction</wrapper2>
+        <topology>newFuncTopo.py</topology>
+    </DEPENDENCY>
+
+    <ENV>
+        <cellApps>drivers,openflow,proxyarp,mobility</cellApps>
+    </ENV>
+
+    <GIT>
+        <pull>False</pull>
+        <branch>master</branch>
+    </GIT>
+
+    <CTRL>
+        <port>6633</port>
+    </CTRL>
+
+    <SLEEP>
+        <startup>15</startup>
+        <fwd>10</fwd>
+    </SLEEP>
+
+</PARAMS>

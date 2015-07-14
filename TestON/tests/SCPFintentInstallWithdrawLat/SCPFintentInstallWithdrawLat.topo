@@ -3,16 +3,19 @@
     <COMPONENT>
 
         <ONOSbench>
-            <host>OCN</host>
+            <host>localhost</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>OnosDriver</type>
             <connect_order>1</connect_order>
-            <COMPONENTS><home>~/onos</home></COMPONENTS>
+            <COMPONENTS>
+                <home>~/onos</home>
+                <nodes>7</nodes> 
+            </COMPONENTS>
         </ONOSbench>
 
         <ONOS1cli>
-            <host>OCN</host>
+            <host>localhost</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>OnosCliDriver</type>
@@ -21,7 +24,7 @@
         </ONOS1cli>
 
         <ONOS2cli>
-            <host>OCN</host>
+            <host>localhost</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>OnosCliDriver</type>
@@ -30,7 +33,7 @@
         </ONOS2cli>
 
         <ONOS3cli>
-            <host>OCN</host>
+            <host>localhost</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>OnosCliDriver</type>
@@ -39,7 +42,7 @@
         </ONOS3cli>
 
         <ONOS4cli>
-            <host>OCN</host>
+            <host>localhost</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>OnosCliDriver</type>
@@ -48,7 +51,7 @@
         </ONOS4cli>
 
         <ONOS5cli>
-            <host>OCN</host>
+            <host>localhost</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>OnosCliDriver</type>
@@ -57,7 +60,7 @@
         </ONOS5cli>
 
         <ONOS6cli>
-            <host>OCN</host>
+            <host>localhost</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>OnosCliDriver</type>
@@ -66,7 +69,7 @@
         </ONOS6cli>
 
         <ONOS7cli>
-            <host>OCN</host>
+            <host>localhost</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>OnosCliDriver</type>

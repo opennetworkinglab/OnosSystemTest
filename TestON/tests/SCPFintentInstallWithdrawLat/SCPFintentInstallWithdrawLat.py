@@ -31,7 +31,7 @@ class SCPFintentInstallWithdrawLat:
         BENCHIp = main.params[ 'BENCH' ][ 'ip1' ]
         BENCHUser = main.params[ 'BENCH' ][ 'user' ]
         MN1Ip = main.params[ 'MN' ][ 'ip1' ]
-        maxNodes = int(main.params[ 'availableNodes' ])
+        main.maxNodes = int(main.params[ 'max' ])
         skipMvn = main.params[ 'TEST' ][ 'skipCleanInstall' ]
         cellName = main.params[ 'ENV' ][ 'cellName' ]        
         switchCount = main.params[ 'TEST' ][ 'switchCount' ]
@@ -79,18 +79,15 @@ class SCPFintentInstallWithdrawLat:
         clusterCount = int(scale[0])
         scale.remove(scale[0])       
 
-        MN1Ip = ONOSIp[len(ONOSIp)-1]
-        BENCHIp = ONOSIp[len(ONOSIp)-2]
-
         #kill off all onos processes 
         main.log.step("Safety check, killing all ONOS processes")
         main.log.step("before initiating enviornment setup")
-        for node in range(1, maxNodes + 1):
+        for node in range(1, main.maxNodes + 1):
             main.ONOSbench.onosDie(ONOSIp[node])
         
         #Uninstall everywhere
         main.log.step( "Cleaning Enviornment..." )
-        for i in range(1, maxNodes + 1):
+        for i in range(1, main.maxNodes + 1):
             main.log.info(" Uninstalling ONOS " + str(i) )
             main.ONOSbench.onosUninstall( ONOSIp[i] )
        
@@ -100,7 +97,7 @@ class SCPFintentInstallWithdrawLat:
         for node in range (1, clusterCount + 1):
             cellIp.append(ONOSIp[node])
 
-        main.ONOSbench.createCellFile(BENCHIp,cellName,MN1Ip,str(Apps), *cellIp)
+        main.ONOSbench.createCellFile(BENCHIp,cellName,MN1Ip,str(Apps), cellIp)
 
         main.step( "Set Cell" )
         main.ONOSbench.setCell(cellName)

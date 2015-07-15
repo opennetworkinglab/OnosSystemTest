@@ -87,24 +87,31 @@ class CLI( Component ):
                                     refused,
                                     'teston>',
                                     '>|#|\$' ],
-                		    120 )
+                            120 )
             if i == 0:  # Accept key, then expect either a password prompt or access
                 main.log.info( "ssh key confirmation received, send yes" )
                 self.handle.sendline( 'yes' )
                 i = 5  # Run the loop again
-                continue 
-            if i == 1:
+                continue
+            if i == 1:  # Password required
                 if self.pwd:
                     main.log.info(
-                        "ssh connection asked for password, gave password" )
-                    self.handle.sendline( self.pwd )
-                    self.handle.expect( '>|#|\$' )
+                    "ssh connection asked for password, gave password" )
                 else:
-                    # FIXME: TestON does not support a username having no
-                    #        password
-                    main.log.error( "Server asked for password, but none was "
-                                    "given in the .topo file" )
-                    main.exit()
+                    main.log.info( "Server asked for password, but none was "
+                                    "given in the .topo file. Trying "
+                                    "no password.")
+                    self.pwd = ""
+                self.handle.sendline( self.pwd )
+                j = self.handle.expect( [
+                                        '>|#|\$',
+                                        'password:|Password:',
+                                        pexpect.EOF,
+                                        pexpect.TIMEOUT ],
+                                        120 )
+                if j != 0:
+                    main.log.error( "Incorrect Password" )
+                    return main.FALSE
             elif i == 2:
                 main.log.error( "Connection timeout" )
                 return main.FALSE
@@ -146,11 +153,11 @@ class CLI( Component ):
         result = super( CLI, self ).execute( self )
         defaultPrompt = '.*[$>\#]'
         args = utilities.parse_args( [
-				     "CMD",
+                     "CMD",
                                      "TIMEOUT",
                                      "PROMPT",
                                      "MORE" ],
-            			     **execparams )
+                             **execparams )
 
         expectPrompt = args[ "PROMPT" ] if args[ "PROMPT" ] else defaultPrompt
         self.LASTRSP = ""
@@ -165,12 +172,12 @@ class CLI( Component ):
         self.handle.sendline( cmd )
         self.lastCommand = cmd
         index = self.handle.expect( [
-				    expectPrompt,
+                    expectPrompt,
                                     "--More--",
                                     'Command not found.',
                                     pexpect.TIMEOUT,
                                     "^:$" ],
-            			    timeout=timeoutVar )
+                            timeout=timeoutVar )
         if index == 0:
             self.LASTRSP = self.LASTRSP + \
                 self.handle.before + self.handle.after
@@ -264,19 +271,19 @@ class CLI( Component ):
         ssh_newkey = 'Are you sure you want to continue connecting'
         refused = "ssh: connect to host " + \
             ip_address + " port 22: Connection refused"
-        
-	cmd = 'scp ' + str( user_name ) + '@' + str( ip_address ) + ':' + \
-	      str( filepath ) + ' ' + str(dst_path )
+
+        cmd = 'scp ' + str( user_name ) + '@' + str( ip_address ) + ':' + \
+          str( filepath ) + ' ' + str(dst_path )
 
         main.log.info( "Sending: " + cmd )
         self.handle = pexpect.spawn( cmd )
         i = self.handle.expect( [
-				ssh_newkey,
-                              	'password:',
-                              	pexpect.EOF,
-                              	pexpect.TIMEOUT,
-                              	refused ],
-            			120 )
+                            ssh_newkey,
+                            'password:',
+                            pexpect.EOF,
+                            pexpect.TIMEOUT,
+                            refused ],
+                            120 )
 
         if i == 0:
             main.log.info( "ssh key confirmation received, send yes" )
@@ -309,4 +316,3 @@ class CLI( Component ):
         print self.handle.before
 
         return self.handle
-

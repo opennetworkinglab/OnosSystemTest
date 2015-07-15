@@ -18,6 +18,7 @@ OCT 9 2014
 """
 import sys
 import time
+import types
 import pexpect
 import os
 import os.path
@@ -668,12 +669,14 @@ class OnosDriver( CLI ):
             ~/<self.home>/tools/test/cells/
         """
         # Variable initialization
-        cellDirectory = os.environ["ONOS_ROOT"] + "/tools/test/cells/"
+        cellDirectory = self.home + "/tools/test/cells/"
         # We want to create the cell file in the dependencies directory
         # of TestON first, then copy over to ONOS bench
         tempDirectory = "/tmp/"
         # Create the cell file in the directory for writing ( w+ )
         cellFile = open( tempDirectory + fileName, 'w+' )
+        if isinstance( onosIpAddrs, types.StringType ):
+            onosIpAddrs = [ onosIpAddrs ]
 
         # App string is hardcoded environment variables
         # That you may wish to use by default on startup.

@@ -72,7 +72,7 @@ class SCPFintentRerouteLat:
             commit = main.ONOSbench.getVersion()
             commit = (commit.split(" "))[1]
 
-            resultsDB = open("IntentRerouteLatDB", "w+")
+            resultsDB = open("/tmp/IntentRerouteLatDB", "w+")
             resultsDB.close()
 
         # -- END OF INIT SECTION --#

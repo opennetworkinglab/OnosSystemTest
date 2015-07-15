@@ -35,6 +35,7 @@ import importlib
 import threading
 module = new.module("test")
 import openspeak
+import subprocess
 global path, drivers_path, core_path, tests_path,logs_path
 path = re.sub("(core|bin)$", "", os.getcwd())
 drivers_path = path+"drivers/"
@@ -166,6 +167,9 @@ class TestON:
         driverModule = importlib.import_module(classPath)
         driverClass = getattr(driverModule, driverName)
         driverObject = driverClass()
+
+        if ( "OCN" in self.componentDictionary[component]['host'] and main.onoscell ):
+            self.componentDictionary[component]['host'] = main.mnIP
 
         connect_result = driverObject.connect(user_name = self.componentDictionary[component]['user'] if ('user' in self.componentDictionary[component].keys()) else getpass.getuser(),
                                               ip_address= self.componentDictionary[component]['host'] if ('host' in self.componentDictionary[component].keys()) else 'localhost',
@@ -683,9 +687,22 @@ def verifyTestCases(options):
             sys.exit()
 
 def verifyOnosCell(options):
-    # Verifying onoscell option. This could be extended to do even more from here.
+    # Verifying onoscell option
     if options.onoscell:
         main.onoscell = options.onoscell
+        main.onosIPs = []
+        main.mnIP = ""
+        cellCMD = ". ~/.profile; cell "+main.onoscell
+        output=subprocess.check_output( ["bash", '-c', cellCMD] )
+        splitOutput = output.splitlines()
+        for i in range( len(splitOutput) ):
+            if( re.match( "OCN", splitOutput[i] ) ):
+                mnNode=splitOutput[i].split("=")
+                main.mnIP = mnNode[1]
+            # cell already sorts OC variables in bash, so no need to sort in TestON
+            if( re.match( "OC[1-9]", splitOutput[i] ) ):
+                onosNodes = splitOutput[i].split("=")
+                main.onosIPs.append( onosNodes[1] )
     else :
         main.onoscell = main.FALSE
 

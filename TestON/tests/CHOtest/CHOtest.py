@@ -34,7 +34,6 @@ class CHOtest:
         karafTimeout = main.params['CTRL']['karafCliTimeout']
         main.newTopo = ""
         main.CLIs = []
-        main.onosIPs = []
 
         for i in range( 1, int(main.numCtrls) + 1 ):
             main.CLIs.append( getattr( main, 'ONOScli' + str( i ) ) )
@@ -47,8 +46,6 @@ class CHOtest:
         if ( main.onoscell ):
             cellName = main.onoscell
             cell_result = main.ONOSbench.setCell( cellName )
-            onosNodes = main.ONOSbench.getOnosIPfromCell()
-            main.onosIPs = onosNodes
             utilities.assert_equals( expect=main.TRUE, actual=cell_result,
                                  onpass="Test step PASS",
                                  onfail="Test step FAIL" )

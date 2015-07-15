@@ -1795,7 +1795,10 @@ class MininetCliDriver( Emulator ):
         """
         # Regex patterns to parse dump output
         # Example host: <Host h1: h1-eth0:10.0.0.1 pid=5227>
-        #            or <Host h1:  pid=12725>
+        #               <Host h1:  pid=12725>
+        #               <VLANHost h12: h12-eth0.100.100.100:100.1.0.3 pid=30186>
+        #               <dualStackHost h19: h19-eth0:10.1.0.9 pid=30200>
+        #               <IPv6Host h18: h18-eth0:10.0.0.18 pid=30198>
         # NOTE: Does not correctly match hosts with multi-links
         #       <Host h2: h2-eth0:10.0.0.2,h2-eth1:10.0.1.2 pid=14386>
         # FIXME: Fix that

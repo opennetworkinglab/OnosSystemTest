@@ -267,7 +267,7 @@ class SCPFintentInstallWithdrawLat:
             resultString += str(numpy.std(installed)) + ","
             resultString += str(numpy.mean(withdrawn)) + ","
             resultString += str(numpy.std(withdrawn)) + "\n"
-            resultsDB = open("IntentInstallWithdrawLatDB", "a")
+            resultsDB = open("/tmp/IntentInstallWithdrawLatDB", "a")
             resultsDB.write(resultString)
             resultsDB.close()
 

@@ -397,7 +397,7 @@ class SCPFintentRerouteLat:
             main.log.report("Mode of last node to respond:..." + str(nodeMode))
             main.log.report("________________________________________________________")
 
-            resultsDB = open("IntentRerouteLatDB", "a")
+            resultsDB = open("/tmp/IntentRerouteLatDB", "a")
             resultsDB.write("'" + commit + "',") 
             resultsDB.write(str(clusterCount) + ",")
             resultsDB.write(str(intents) + ",")

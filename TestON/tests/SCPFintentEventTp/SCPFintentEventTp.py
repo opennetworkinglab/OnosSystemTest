@@ -340,7 +340,7 @@ class SCPFintentEventTp:
             main.ONOSbench.handle.expect(":~")
             main.log.info("Stopping intentperf" )
    
-            resultsDB = open("IntentEventTPDB", "a")
+            resultsDB = open("/tmp/IntentEventTPDB", "a")
             for node in groupResult: 
 
                 resultString = "'" + commit + "',"

@@ -75,7 +75,7 @@ class SCPFflowTp1g:
             commit = main.ONOSbench.getVersion()
             commit = (commit.split(" "))[1]
 
-            resultsDB = open("flowTP1gDB", "w+")
+            resultsDB = open("/tmp/flowTP1gDB", "w+")
             resultsDB.close()
 
         # -- END OF INIT SECTION --#

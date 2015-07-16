@@ -1,4 +1,5 @@
 <PARAMS>
+    #List of test cases:
     #CASE1: Compile ONOS and push it to the test machines
     #CASE2: Assign mastership to controllers
     #CASE3: Assign intents
@@ -14,18 +15,27 @@
     #CASE13: Clean up
     #CASE14: start election app on all onos nodes
     #CASE15: Check that Leadership Election is still functional
-    <testcases>1,2,8,3,4,5,14,15,16,17,[6],8,3,7,4,15,17,9,8,4,10,8,4,11,8,4,12,8,4,13</testcases>
+    #CASE16: Install Distributed Primitives app
+    #CASE17: Check for basic functionality with distributed primitives
+    #1,2,8,3,4,5,14,16,17,[6],8,7,4,15,17,9,8,4,10,8,4,11,8,4,12,8,4,13
+    <testcases>1,2,8,21,8,3,4,5,14,16,17,[6],8,7,4,15,17,9,8,4,10,8,4,11,8,4,12,8,4,13</testcases>
     <ENV>
         <cellName>HA</cellName>
         <appString>drivers,openflow,proxyarp,mobility</appString>
     </ENV>
     <Git> False </Git>
     <branch> master </branch>
-    <num_controllers> 1 </num_controllers>
+    <num_controllers> 7 </num_controllers>
     <tcpdump> False </tcpdump>
 
     <CTRL>
         <port1>6633</port1>
+        <port2>6633</port2>
+        <port3>6633</port3>
+        <port4>6633</port4>
+        <port5>6633</port5>
+        <port6>6633</port6>
+        <port7>6633</port7>
     </CTRL>
     <BACKUP>
         <ENABLED> False </ENABLED>

@@ -316,7 +316,7 @@ class FUNCintent:
             main.cleanup()
             main.exit()
 
-    def CASE1001( self, main ):
+    def CASE1000( self, main ):
         """
             Add host intents between 2 host:
                 - Discover hosts
@@ -349,8 +349,8 @@ class FUNCintent:
 
         main.case( "Add host intents between 2 host" )
 
-        stepResult = main.TRUE
         main.step( "IPV4: Add host intents between h1 and h9" )
+        stepResult = main.TRUE
         stepResult = main.intentFunction.hostIntent( main,
                                               onosNode='0',
                                               name='IPV4',
@@ -367,8 +367,8 @@ class FUNCintent:
                                  onpass="IPV4: Add host intent successful",
                                  onfail="IPV4: Add host intent failed" )
 
-        stepResult = main.TRUE
         main.step( "DUALSTACK1: Add host intents between h3 and h11" )
+        stepResult = main.TRUE
         stepResult = main.intentFunction.hostIntent( main,
                                               name='DUALSTACK',
                                               host1='h3',
@@ -385,8 +385,8 @@ class FUNCintent:
                                         " successful",
                                  onfail="DUALSTACK1: Add host intent failed" )
 
-        stepResult = main.TRUE
         main.step( "DUALSTACK2: Add host intents between h1 and h11" )
+        stepResult = main.TRUE
         stepResult = main.intentFunction.hostIntent( main,
                                               name='DUALSTACK2',
                                               host1='h1',
@@ -401,8 +401,8 @@ class FUNCintent:
                                         " successful",
                                  onfail="DUALSTACK2: Add host intent failed" )
 
-        stepResult = main.TRUE
         main.step( "1HOP: Add host intents between h1 and h3" )
+        stepResult = main.TRUE
         stepResult = main.intentFunction.hostIntent( main,
                                               name='1HOP',
                                               host1='h1',
@@ -414,8 +414,8 @@ class FUNCintent:
                                         " successful",
                                  onfail="1HOP: Add host intent failed" )
 
-        stepResult = main.TRUE
         main.step( "VLAN1: Add vlan host intents between h4 and h12" )
+        stepResult = main.TRUE
         stepResult = main.intentFunction.hostIntent( main,
                                               name='VLAN1',
                                               host1='h4',
@@ -432,8 +432,8 @@ class FUNCintent:
                                         " intent successful",
                                  onfail="VLAN1: Add vlan host intent failed" )
 
-        stepResult = main.TRUE
         main.step( "VLAN2: Add inter vlan host intents between h13 and h20" )
+        stepResult = main.TRUE
         stepResult = main.intentFunction.hostIntent( main,
                                               name='VLAN2',
                                               host1='h13',
@@ -446,7 +446,7 @@ class FUNCintent:
                                  onfail="VLAN2: Add inter vlan host" +
                                         " intent failed" )
 
-    def CASE1002( self, main ):
+    def CASE2000( self, main ):
         """
             Add point intents between 2 hosts:
                 - Get device ids | ports
@@ -479,9 +479,9 @@ class FUNCintent:
 
         main.case( "Add point intents between 2 devices" )
 
-        stepResult = main.TRUE
         # No option point intents
         main.step( "NOOPTION: Add point intents between h1 and h9" )
+        stepResult = main.TRUE
         stepResult = main.intentFunction.pointIntent(
                                        main,
                                        name="NOOPTION",
@@ -493,13 +493,13 @@ class FUNCintent:
                                        sw2="s2",
                                        expectedLink=18 )
 
-        stepResult = main.TRUE
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
                                  onpass="NOOPTION: Add point intent successful",
                                  onfail="NOOPTION: Add point intent failed" )
 
         stepResult = main.TRUE
+        main.step( "IPV4: Add point intents between h1 and h9" )
         stepResult = main.intentFunction.pointIntent(
                                        main,
                                        name="IPV4",
@@ -528,6 +528,7 @@ class FUNCintent:
                                  onpass="IPV4: Add point intent successful",
                                  onfail="IPV4: Add point intent failed" )
 
+        main.step( "IPV4_2: Add point intents between h1 and h9" )
         stepResult = main.TRUE
         stepResult = main.intentFunction.pointIntent(
                                        main,
@@ -536,7 +537,7 @@ class FUNCintent:
                                        host2="h9",
                                        deviceId1="of:0000000000000005/1",
                                        deviceId2="of:0000000000000006/1",
-                                       ipProto=1,
+                                       ipProto="",
                                        ip1="",
                                        ip2="",
                                        tcp1="",
@@ -550,8 +551,66 @@ class FUNCintent:
                                  onpass="IPV4_2: Add point intent successful",
                                  onfail="IPV4_2: Add point intent failed" )
 
+        main.step( "SDNIP-TCP: Add point intents between h1 and h9" )
         stepResult = main.TRUE
+        mac1 = main.hostsData[ 'h1' ][ 'mac' ]
+        mac2 = main.hostsData[ 'h9' ][ 'mac' ]
+        ip1 = str( main.hostsData[ 'h1' ][ 'ipAddresses' ][ 0 ] ) + "/24"
+        ip2 = str( main.hostsData[ 'h9' ][ 'ipAddresses' ][ 0 ] ) + "/24"
+        ipProto = main.params[ 'SDNIP' ][ 'icmpProto' ]
+        tcp1 = main.params[ 'SDNIP' ][ 'srcPort' ]
+        tcp2 = main.params[ 'SDNIP' ][ 'dstPort' ]
+
+        stepResult = main.intentFunction.pointIntent(
+                                           main,
+                                           name="SDNIP-TCP",
+                                           host1="h1",
+                                           host2="h9",
+                                           deviceId1="of:0000000000000005/1",
+                                           deviceId2="of:0000000000000006/1",
+                                           mac1=mac1,
+                                           mac2=mac2,
+                                           ethType="IPV4",
+                                           ipProto=ipProto,
+                                           ip1=ip1,
+                                           ip2=ip2,
+                                           tcp1=tcp1,
+                                           tcp2=tcp2 )
+
+        utilities.assert_equals( expect=main.TRUE,
+                             actual=stepResult,
+                             onpass="SDNIP-TCP: Add point intent successful",
+                             onfail="SDNIP-TCP: Add point intent failed" )
+
+        main.step( "SDNIP-ICMP: Add point intents between h1 and h9" )
+        stepResult = main.TRUE
+        mac1 = main.hostsData[ 'h1' ][ 'mac' ]
+        mac2 = main.hostsData[ 'h9' ][ 'mac' ]
+        ip1 = str( main.hostsData[ 'h1' ][ 'ipAddresses' ][ 0 ] ) + "/24"
+        ip2 = str( main.hostsData[ 'h9' ][ 'ipAddresses' ][ 0 ] ) + "/24"
+        ipProto = main.params[ 'SDNIP' ][ 'tcpProto' ]
+        tcp1 = main.params[ 'SDNIP' ][ 'srcPort' ]
+        tcp2 = main.params[ 'SDNIP' ][ 'dstPort' ]
+
+        stepResult = main.intentFunction.pointIntent(
+                                           main,
+                                           name="SDNIP-ICMP",
+                                           host1="h1",
+                                           host2="h9",
+                                           deviceId1="of:0000000000000005/1",
+                                           deviceId2="of:0000000000000006/1",
+                                           mac1=mac1,
+                                           mac2=mac2,
+                                           ethType="IPV4",
+                                           ipProto=ipProto )
+
+        utilities.assert_equals( expect=main.TRUE,
+                             actual=stepResult,
+                             onpass="SDNIP-ICMP: Add point intent successful",
+                             onfail="SDNIP-ICMP: Add point intent failed" )
+
         main.step( "DUALSTACK1: Add point intents between h1 and h9" )
+        stepResult = main.TRUE
         stepResult = main.intentFunction.pointIntent(
                                        main,
                                        name="DUALSTACK1",
@@ -580,8 +639,9 @@ class FUNCintent:
                                  onpass="DUALSTACK1: Add point intent" +
                                         " successful",
                                  onfail="DUALSTACK1: Add point intent failed" ) 
-        stepResult = main.TRUE
+
         main.step( "VLAN: Add point intents between h5 and h21" )
+        stepResult = main.TRUE
         stepResult = main.intentFunction.pointIntent(
                                        main,
                                        name="VLAN",
@@ -610,8 +670,8 @@ class FUNCintent:
                                  onpass="VLAN: Add point intent successful",
                                  onfail="VLAN: Add point intent failed" )
 
-        stepResult = main.TRUE
         main.step( "1HOP: Add point intents between h1 and h3" )
+        stepResult = main.TRUE
         stepResult = main.intentFunction.hostIntent( main,
                                               name='1HOP',
                                               host1='h1',
@@ -623,7 +683,7 @@ class FUNCintent:
                                         " successful",
                                  onfail="1HOP: Add point intent failed" )
 
-    def CASE1003( self, main ):
+    def CASE3000( self, main ):
         """
             Add single point to multi point intents
                 - Get device ids
@@ -650,13 +710,12 @@ class FUNCintent:
 
         main.case( "Add single point to multi point intents between devices" )
 
+        main.step( "NOOPTION: Add single point to multi point intents" )
         stepResult = main.TRUE
         hostNames = [ 'h8', 'h16', 'h24' ]
         devices = [ 'of:0000000000000005/8', 'of:0000000000000006/8', \
                     'of:0000000000000007/8' ]
         macs = [ '00:00:00:00:00:08', '00:00:00:00:00:10', '00:00:00:00:00:18' ]
-
-        main.step( "NOOPTION: Add single point to multi point intents" )
         stepResult = main.intentFunction.singleToMultiIntent(
                                          main,
                                          name="NOOPTION",
@@ -673,8 +732,8 @@ class FUNCintent:
                                  onfail="NOOPTION: Failed to add single point" +
                                         " to multi point intents" )
 
-        stepResult = main.TRUE
         main.step( "IPV4: Add single point to multi point intents" )
+        stepResult = main.TRUE
         stepResult = main.intentFunction.singleToMultiIntent(
                                          main,
                                          name="IPV4",
@@ -699,8 +758,8 @@ class FUNCintent:
                                  onfail="IPV4: Failed to add single point" +
                                         " to multi point intents" )
 
-        stepResult = main.TRUE
         main.step( "IPV4_2: Add single point to multi point intents" )
+        stepResult = main.TRUE
         hostNames = [ 'h8', 'h16', 'h24' ]
         stepResult = main.intentFunction.singleToMultiIntent(
                                          main,
@@ -715,8 +774,9 @@ class FUNCintent:
                                         + " point to multi point intents",
                                  onfail="IPV4_2: Failed to add single point" +
                                         " to multi point intents" )
-        stepResult = main.TRUE
+
         main.step( "VLAN: Add single point to multi point intents" )
+        stepResult = main.TRUE
         hostNames = [ 'h4', 'h12', 'h20' ]
         devices = [ 'of:0000000000000005/4', 'of:0000000000000006/4', \
                     'of:0000000000000007/4' ]
@@ -745,7 +805,7 @@ class FUNCintent:
                                  onfail="VLAN: Failed to add single point" +
                                         " to multi point intents" ) 
 
-    def CASE1004( self, main ):
+    def CASE4000( self, main ):
         """
             Add multi point to single point intents
                 - Get device ids
@@ -772,13 +832,12 @@ class FUNCintent:
 
         main.case( "Add multi point to single point intents between devices" )
 
+        main.step( "NOOPTION: Add multi point to single point intents" )
         stepResult = main.TRUE
         hostNames = [ 'h8', 'h16', 'h24' ]
         devices = [ 'of:0000000000000005/8', 'of:0000000000000006/8', \
                     'of:0000000000000007/8' ]
         macs = [ '00:00:00:00:00:08', '00:00:00:00:00:10', '00:00:00:00:00:18' ]
-
-        main.step( "NOOPTION: Add multi point to single point intents" )
         stepResult = main.intentFunction.multiToSingleIntent(
                                          main,
                                          name="NOOPTION",
@@ -795,8 +854,8 @@ class FUNCintent:
                                  onfail="NOOPTION: Failed to add multi point" +
                                         " to single point intents" )
 
-        stepResult = main.TRUE
         main.step( "IPV4: Add multi point to single point intents" )
+        stepResult = main.TRUE
         stepResult = main.intentFunction.multiToSingleIntent(
                                          main,
                                          name="IPV4",
@@ -821,8 +880,8 @@ class FUNCintent:
                                  onfail="IPV4: Failed to add multi point" +
                                         " to single point intents" )
 
-        stepResult = main.TRUE
         main.step( "IPV4_2: Add multi point to single point intents" )
+        stepResult = main.TRUE
         hostNames = [ 'h8', 'h16', 'h24' ]
         stepResult = main.intentFunction.multiToSingleIntent(
                                          main,
@@ -838,8 +897,8 @@ class FUNCintent:
                                  onfail="IPV4_2: Failed to add multi point" +
                                         " to single point intents" )
 
-        stepResult = main.TRUE
         main.step( "VLAN: Add multi point to single point intents" )
+        stepResult = main.TRUE
         hostNames = [ 'h5', 'h13', 'h21' ]
         devices = [ 'of:0000000000000005/5', 'of:0000000000000006/5', \
                     'of:0000000000000007/5' ]

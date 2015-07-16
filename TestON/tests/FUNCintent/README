@@ -1,0 +1,39 @@
+Summary:
+        This test suite consist of basic intent functionality testing.
+        The following is an overview of how host intents is being tested.
+        Steps:
+            - Discover hosts
+            - Add host intents
+            - Check intents
+            - Verify flows
+            - Ping hosts
+            - Reroute
+                - Link down
+                - Verify flows
+                - Check topology
+                - Ping hosts
+                - Link up
+                - Verify flows
+                - Check topology
+                - Ping hosts
+            - Remove intents
+        This test suite includes testing of different types of intents such as
+        host, point, single-to-multi and multi-to-single ( More intent types to
+        add later ). The same steps above is being performed to other type of
+        intents.
+
+Required:
+        This test requires Mininet topology file newFuncIntent.py that is in the
+        Dependency folder. You should run the topology file to check for any
+        missing packages. The mininet topology file has different type of hosts
+        including VLAN hosts. Therefore you need to install VLAN module to build
+        the topology correctly.
+
+VLAN configuration:
+        Execute command:
+            $ sudo apt-get install vlan
+        Configuration:
+            $ sudo modprobe 8021q
+        NOTE:To make this configuration permanent
+            $ sudo su -c 'echo "8021q" >> /etc/modules'
+

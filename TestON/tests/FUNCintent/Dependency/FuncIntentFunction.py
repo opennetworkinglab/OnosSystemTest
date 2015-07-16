@@ -48,6 +48,9 @@ def hostIntent( main,
             host1 - Name of first host
             host2 - Name of second host
         Optional:
+            onosNode - ONOS node to install the intents in main.CLIs[ ]
+                       0 by default so that it will always use the first
+                       ONOS node
             host1Id - ONOS id of the first host eg. 00:00:00:00:00:01/-1
             host2Id - ONOS id of the second host
             mac1 - Mac address of first host
@@ -258,6 +261,9 @@ def pointIntent( main,
             host1 - Name of first host
             host2 - Name of second host
         Optional:
+            onosNode - ONOS node to install the intents in main.CLIs[ ]
+                       0 by default so that it will always use the first
+                       ONOS node
             deviceId1 - ONOS device id of the first switch, the same as the
                         location of the first host eg. of:0000000000000001/1,
                         located at device 1 port 1
@@ -473,6 +479,9 @@ def singleToMultiIntent( main,
             name - Type of point intent to add eg. IPV4 | VLAN | Dualstack
             hostNames - List of host names
         Optional:
+            onosNode - ONOS node to install the intents in main.CLIs[ ]
+                       0 by default so that it will always use the first
+                       ONOS node
             devices - List of device ids in the same order as the hosts
                       in hostNames
             ports - List of port numbers in the same order as the device in
@@ -722,6 +731,9 @@ def multiToSingleIntent( main,
             name - Type of point intent to add eg. IPV4 | VLAN | Dualstack
             hostNames - List of host names
         Optional:
+            onosNode - ONOS node to install the intents in main.CLIs[ ]
+                       0 by default so that it will always use the first
+                       ONOS node
             devices - List of device ids in the same order as the hosts
                       in hostNames
             ports - List of port numbers in the same order as the device in

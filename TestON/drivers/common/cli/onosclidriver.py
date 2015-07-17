@@ -3643,7 +3643,7 @@ class OnosCliDriver( CLI ):
                 output = self.sendline( cmdStr )
             assert "Error executing command" not in output
             main.log.info( self.name + ": " + output )
-            pattern = counter + " was incremented to (\d+)"
+            pattern = counter + " was updated to (\d+)"
             match = re.search( pattern, output )
             if match:
                 return int( match.group( 1 ) )

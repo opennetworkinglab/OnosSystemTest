@@ -347,6 +347,8 @@ class FUNCintent:
         assert main.numSwitch, "Placed the total number of switch topology in \
                                 main.numSwitch"
 
+        intentLeadersOld = main.CLIs[ 0 ].leaderCandidates()
+
         main.case( "Add host intents between 2 host" )
 
         main.step( "IPV4: Add host intents between h1 and h9" )
@@ -445,6 +447,11 @@ class FUNCintent:
                                         " intent successful",
                                  onfail="VLAN2: Add inter vlan host" +
                                         " intent failed" )
+
+
+        intentLeadersNew = main.CLIs[ 0 ].leaderCandidates()
+        main.intentFunction.checkLeaderChange( intentLeadersOld,
+                                                intentLeadersNew )
 
     def CASE2000( self, main ):
         """
@@ -638,7 +645,7 @@ class FUNCintent:
                                  actual=stepResult,
                                  onpass="DUALSTACK1: Add point intent" +
                                         " successful",
-                                 onfail="DUALSTACK1: Add point intent failed" ) 
+                                 onfail="DUALSTACK1: Add point intent failed" )
 
         main.step( "VLAN: Add point intents between h5 and h21" )
         stepResult = main.TRUE
@@ -803,7 +810,7 @@ class FUNCintent:
                                  onpass="VLAN: Successfully added single point"
                                         + " to multi point intents",
                                  onfail="VLAN: Failed to add single point" +
-                                        " to multi point intents" ) 
+                                        " to multi point intents" )
 
     def CASE4000( self, main ):
         """

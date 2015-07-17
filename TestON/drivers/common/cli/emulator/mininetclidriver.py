@@ -939,62 +939,62 @@ class MininetCliDriver( Emulator ):
         return response
 
     def iperftcpAll(self, hosts, timeout=6):
-    '''
-    Runs the iperftcp function with a given set of hosts and specified timeout.
+        '''
+        Runs the iperftcp function with a given set of hosts and specified timeout.
 
-    @parm:
-        timeout: The defualt timeout is 6 sec to allow enough time for a successful test to complete,
-         and short enough to stop an unsuccessful test from quiting and cleaning up mininet.
-    '''
-    for host1 in hosts:
-        for host2 in hosts:
-            if host1 != host2:
-                if self.iperftcp(host1, host2, timeout) == main.FALSE:
-                    main.log.error(self.name + ": iperftcp test failed for " + host1 + " and " + host2)
+        @parm:
+            timeout: The defualt timeout is 6 sec to allow enough time for a successful test to complete,
+             and short enough to stop an unsuccessful test from quiting and cleaning up mininet.
+        '''
+        for host1 in hosts:
+            for host2 in hosts:
+                if host1 != host2:
+                    if self.iperftcp(host1, host2, timeout) == main.FALSE:
+                        main.log.error(self.name + ": iperftcp test failed for " + host1 + " and " + host2)
 
     def iperftcp(self, host1="h1", host2="h2", timeout=6):
-    '''
-    Creates an iperf TCP test between two hosts. Returns main.TRUE if test results
-    are valid.
+        '''
+        Creates an iperf TCP test between two hosts. Returns main.TRUE if test results
+        are valid.
 
-    @parm:
-        timeout: The defualt timeout is 6 sec to allow enough time for a successful test to complete,
-         and short enough to stop an unsuccessful test from quiting and cleaning up mininet.
-    '''
-    main.log.info( self.name + ": Simple iperf TCP test between two hosts" )
-    try:
-        # Setup the mininet command
-        cmd1 = 'iperf ' + host1 + " " + host2
-        self.handle.sendline( cmd1 )
-        outcome = self.handle.expect( "mininet>", timeout )
-        response = self.handle.before
+        @parm:
+            timeout: The defualt timeout is 6 sec to allow enough time for a successful test to complete,
+             and short enough to stop an unsuccessful test from quiting and cleaning up mininet.
+        '''
+        main.log.info( self.name + ": Simple iperf TCP test between two hosts" )
+        try:
+            # Setup the mininet command
+            cmd1 = 'iperf ' + host1 + " " + host2
+            self.handle.sendline( cmd1 )
+            outcome = self.handle.expect( "mininet>", timeout )
+            response = self.handle.before
 
-        # checks if there are results in the mininet response
-        if "Results:" in response:
-            main.log.report(self.name +  ": iperf test completed")
-            # parse the mn results
-            response = response.split("\r\n")
-            response = response[len(response)-2]
-            response = response.split(": ")
-            response = response[len(response)-1]
-            response = response.replace("[", "")
-            response = response.replace("]", "")
-            response = response.replace("\'", "")
+            # checks if there are results in the mininet response
+            if "Results:" in response:
+                main.log.report(self.name +  ": iperf test completed")
+                # parse the mn results
+                response = response.split("\r\n")
+                response = response[len(response)-2]
+                response = response.split(": ")
+                response = response[len(response)-1]
+                response = response.replace("[", "")
+                response = response.replace("]", "")
+                response = response.replace("\'", "")
 
-            # this is the bandwith two and from the two hosts
-            bandwidth = response.split(", ")
+                # this is the bandwith two and from the two hosts
+                bandwidth = response.split(", ")
 
-            # there should be two elements in the bandwidth list
-            # ['host1 to host2', 'host2 to host1"]
-            if len(bandwidth) == 2:
-                main.log.report(self.name + ": iperf test successful")
-                return main.TRUE
+                # there should be two elements in the bandwidth list
+                # ['host1 to host2', 'host2 to host1"]
+                if len(bandwidth) == 2:
+                    main.log.report(self.name + ": iperf test successful")
+                    return main.TRUE
+                else:
+                    main.log.error(self.name + ": invalid iperf results")
+                    return main.FALSE
             else:
-                main.log.error(self.name + ": invalid iperf results")
+                main.log.error( self.name + ": iperf test failed" )
                 return main.FALSE
-        else:
-            main.log.error( self.name + ": iperf test failed" )
-            return main.FALSE
 
         except pexpect.TIMEOUT:
             main.log.error( self.name + ": TIMEOUT exception found")
@@ -1005,13 +1005,13 @@ class MininetCliDriver( Emulator ):
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
             main.cleanup()
-            main.exit() 
+            main.exit()
 
     def iperfudpAll(self, hosts, bandwidth="10M"):
         '''
         Runs the iperfudp function with a given set of hosts and specified
         bandwidth
-        
+
         @param:
             bandwidth: the targeted bandwidth, in megabits ('M')
         '''
@@ -1023,56 +1023,56 @@ class MininetCliDriver( Emulator ):
 
     def iperfudp( self, bandwidth="10M", host1="h1", host2="h2"):
 
-    '''
-    Creates an iperf UDP test with a specific bandwidth.
-    Returns true if results are valid.
+        '''
+        Creates an iperf UDP test with a specific bandwidth.
+        Returns true if results are valid.
 
-    @param:
-        bandwidth: the targeted bandwidth, in megabits ('M'), to run the test
-    '''
-    main.log.info(self.name + ": Simple iperf UDP test between two hosts")
-    try:
-        # setup the mininet command
-        cmd = 'iperfudp ' + bandwidth + " " + host1 + " " + host2
-        self.handle.sendline(cmd)
-        self.handle.expect("mininet>")
-        response = self.handle.before
+        @param:
+            bandwidth: the targeted bandwidth, in megabits ('M'), to run the test
+        '''
+        main.log.info(self.name + ": Simple iperf UDP test between two hosts")
+        try:
+            # setup the mininet command
+            cmd = 'iperfudp ' + bandwidth + " " + host1 + " " + host2
+            self.handle.sendline(cmd)
+            self.handle.expect("mininet>")
+            response = self.handle.before
 
-        # check if there are in results in the mininet response
-        if "Results:" in response:
-            main.log.report(self.name +  ": iperfudp test completed")
-            # parse the results
-            response = response.split("\r\n")
-            response = response[len(response)-2]
-            response = response.split(": ")
-            response = response[len(response)-1]
-            response = response.replace("[", "")
-            response = response.replace("]", "")
-            response = response.replace("\'", "")
+            # check if there are in results in the mininet response
+            if "Results:" in response:
+                main.log.report(self.name +  ": iperfudp test completed")
+                # parse the results
+                response = response.split("\r\n")
+                response = response[len(response)-2]
+                response = response.split(": ")
+                response = response[len(response)-1]
+                response = response.replace("[", "")
+                response = response.replace("]", "")
+                response = response.replace("\'", "")
 
-            mnBandwidth = response.split(", ")
+                mnBandwidth = response.split(", ")
 
-            # check to see if there are at least three entries
-            # ['bandwidth', 'host1 to host2', 'host2 to host1']
-            if len(mnBandwidth) == 3:
-                # if one entry is blank then something is wrong
-                for item in mnBandwidth:
-                    if item == "":
-                        main.log.error(self.name + ": Could not parse iperf output")
-                        main.log.error(self.name + ": invalid iperfudp results")
-                        return main.FALSE
-                # otherwise results are vaild
-                main.log.report(self.name + ": iperfudp test successful")
-                return main.TRUE
-            else:
-                main.log.error(self.name + ": invalid iperfudp results")
-                return main.FALSE
+                # check to see if there are at least three entries
+                # ['bandwidth', 'host1 to host2', 'host2 to host1']
+                if len(mnBandwidth) == 3:
+                    # if one entry is blank then something is wrong
+                    for item in mnBandwidth:
+                        if item == "":
+                            main.log.error(self.name + ": Could not parse iperf output")
+                            main.log.error(self.name + ": invalid iperfudp results")
+                            return main.FALSE
+                    # otherwise results are vaild
+                    main.log.report(self.name + ": iperfudp test successful")
+                    return main.TRUE
+                else:
+                    main.log.error(self.name + ": invalid iperfudp results")
+                    return main.FALSE
 
-    except pexpect.EOF:
-        main.log.error( self.name + ": EOF exception found" )
-        main.log.error( self.name + ":     " + self.handle.before )
-        main.cleanup()
-        main.exit()
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            main.cleanup()
+            main.exit()
 
     def nodes( self ):
         main.log.info( self.name + ": List all nodes." )

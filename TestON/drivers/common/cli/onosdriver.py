@@ -94,6 +94,7 @@ class OnosDriver( CLI ):
                         main.log.info( "Could not read any environment variable"
                                        + " please load a cell file with all" +
                                         " onos IP" )
+                        self.maxNodes = None
                     else:
                         main.log.info( self.name + ": Found " +
                                        str( self.onosIps.values() ) +

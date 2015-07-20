@@ -1064,27 +1064,31 @@ def removeAllIntents( main, intentsId ):
         Remove all intents in the intentsId
     """
 
-    intentsRemaining = []
+    onosSummary = []
     removeIntentResult = main.TRUE
     # Remove intents
     for intent in intentsId:
         main.CLIs[ 0 ].removeIntent( intentId=intent, purge=True )
 
     time.sleep( 5 )
-    # Checks if there is remaining intents using intents()
-    intentsRemaining = main.CLIs[ 0 ].intents( jsonFormat=False )
-    # If there is remianing intents then remove intents should fail
 
-    if intentsRemaining:
-        main.log.info( itemName + ": There are " +
-                       str( len( intentsRemaining ) ) + " intents remaining, "
-                       + "failed to remove all the intents " )
-        removeIntentResult = main.FALSE
-        main.log.info( intentsRemaining )
-    else:
-        main.log.info( itemName + ": There are no intents remaining, " +
+    # If there is remianing intents then remove intents should fail
+    for i in range( main.numCtrls ):
+        onosSummary.append( json.loads( main.CLIs[ i ].summary() ) )
+
+    for summary in onosSummary:
+        if summary.get( 'intents' ) != 0:
+            main.log.warn( itemName + ": There are " +
+                           str( summary.get( 'intents' ) ) +
+                           " intents remaining in node " +
+                           str( summary.get( 'node' ) ) +
+                           ", failed to remove all the intents " )
+            removeIntentResult = main.FALSE
+
+    if removeIntentResult:
+        main.log.info( itemName + ": There are no more intents remaining, " +
                        "successfully removed all the intents." )
-        removeIntentResult = main.TRUE
+
     return removeIntentResult
 
 def checkFlowsCount( main ):

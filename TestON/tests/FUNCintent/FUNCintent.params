@@ -1,4 +1,16 @@
 <PARAMS>
+    # CASE - Description
+    # 1 - Variable initialization and optional pull and build ONOS package
+    # 2 - Install ONOS
+    # 9 - Report logs
+    # 11 - Start Mininet
+    # 12 - Assign switch to controller
+    # 13 - Create a data of hosts information
+    # 14 - Stop Mininet
+    # 1000 - Test host intents
+    # 2000 - Test point intents
+    # 3000 - Test single to multi point intents
+    # 4000 - Test multi to single point intents
 
     <testcases>1,2,11,12,13,1000,2000,3000,4000</testcases>
 

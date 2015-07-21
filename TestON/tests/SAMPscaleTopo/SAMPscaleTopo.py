@@ -2,7 +2,7 @@
 # Testing network scalability, this test suite scales up a network topology
 # using mininet and verifies ONOS stability
 
-class SCPFscaleTopo:
+class SAMPscaleTopo:
 
     def __init__( self ):
         self.default = ''

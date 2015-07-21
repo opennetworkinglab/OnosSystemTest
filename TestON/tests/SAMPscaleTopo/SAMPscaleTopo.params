@@ -8,7 +8,7 @@
     </SCALE>
 
     <DEPENDENCY>
-        <path>/tests/SCPFscaleTopo/Dependency/</path>
+        <path>/tests/SAMPscaleTopo/Dependency/</path>
         <wrapper1>startUp</wrapper1>
         <wrapper2>scaleTopoFunction</wrapper2>
         <topology>newFuncTopo.py</topology>

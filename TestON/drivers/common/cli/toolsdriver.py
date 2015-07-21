@@ -19,14 +19,6 @@ author:: Raghav Kashyap( raghavkashyap@paxterrasolutions.com )
 
 
 """
-import pexpect
-import struct
-import fcntl
-import os
-import sys
-import signal
-import sys
-sys.path.append( "../" )
 from drivers.common.clidriver import CLI
 
 

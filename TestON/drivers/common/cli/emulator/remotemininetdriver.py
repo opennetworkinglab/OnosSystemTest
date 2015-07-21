@@ -25,7 +25,6 @@ import pexpect
 import re
 import sys
 import os
-sys.path.append( "../" )
 from drivers.common.cli.emulatordriver import Emulator
 
 

@@ -22,19 +22,8 @@ author:: Raghav Kashyap( raghavkashyap@paxterrasolutions.com )
 
 DPCTL driver class provides the basic functions of DPCTL controller
 """
-import pexpect
-import struct
-import fcntl
-import os
-import sys
-import signal
 import sys
 from drivers.common.cli.toolsdriver import Tools
-import pydoc
-from drivers.common.clidriver import CLI
-import re
-import os
-import sys
 
 
 class DpctlCliDriver( Tools ):
@@ -54,7 +43,7 @@ class DpctlCliDriver( Tools ):
 
         self.name = self.options[ 'name' ]
 
-        self.handle = super( 
+        self.handle = super(
 		      DpctlCliDriver, self ).connect( user_name=self.user_name,
          	      ip_address=self.ip_address,
          	      port=None,

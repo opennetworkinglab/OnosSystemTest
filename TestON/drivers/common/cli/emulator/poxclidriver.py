@@ -25,7 +25,6 @@ import pexpect
 import struct
 import fcntl
 import os
-import sys
 import signal
 import sys
 from drivers.common.cli.emulatordriver import Emulator

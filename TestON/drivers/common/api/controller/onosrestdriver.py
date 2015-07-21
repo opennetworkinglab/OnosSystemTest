@@ -19,9 +19,7 @@ Created on 07-08-2015
 import json
 import os
 import requests
-import sys
 
-sys.path.append( "../" )
 from drivers.common.api.controllerdriver import Controller
 
 

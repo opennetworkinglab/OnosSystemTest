@@ -8,7 +8,6 @@
 # This software is licensed under the terms of the BSD license.
 # http://www.voidspace.org.uk/python/license.shtml
 
-import sys
 from distutils.core import setup
 from configobj import __version__ as VERSION
 

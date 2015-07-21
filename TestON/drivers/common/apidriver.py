@@ -20,15 +20,6 @@ author:: Anil Kumar ( anilkumar.s@paxterrasolutions.com )
 
 
 """
-import struct
-import fcntl
-import os
-import sys
-import signal
-import sys
-import re
-sys.path.append( "../" )
-
 from drivers.component import Component
 
 

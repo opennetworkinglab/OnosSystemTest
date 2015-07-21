@@ -22,15 +22,6 @@ author:: Anil Kumar ( anilkumar.s@paxterrasolutions.com )
 RemoteVMDriver is the basic driver which will handle the Mininet functions
 """
 import pexpect
-import struct
-import fcntl
-import os
-import signal
-import re
-import sys
-import time
-
-sys.path.append( "../" )
 
 from drivers.common.cli.remotetestbeddriver import RemoteTestBedDriver
 

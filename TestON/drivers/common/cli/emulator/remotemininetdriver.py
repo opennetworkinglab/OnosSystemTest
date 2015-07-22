@@ -497,7 +497,7 @@ class RemoteMininetDriver( Emulator ):
                     " -F OpenFlow10-table_id | awk '{OFS=\",\" ; print $1  $3  $6 \
                     $7  $8}' | cut -d ',' -f 2- | sort -n -k1 -r"
                 self.handle.sendline( command )
-                self.handle.expect( "k1 -r" )
+                self.handle.expect( "sort" )
                 self.handle.expect( "OFPST_FLOW" )
                 response = self.handle.before
                 # print "response=", response
@@ -507,7 +507,7 @@ class RemoteMininetDriver( Emulator ):
                     " -O OpenFlow13  | awk '{OFS=\",\" ; print $1  $3  $6  $7}'\
                     | cut -d ',' -f 2- | sort -n -k1 -r"
                 self.handle.sendline( command )
-                self.handle.expect( "k1 -r" )
+                self.handle.expect( "sort" )
                 self.handle.expect( "OFPST_FLOW" )
                 response = self.handle.before
                 # print "response=", response

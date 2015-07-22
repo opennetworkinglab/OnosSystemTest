@@ -224,7 +224,7 @@ class FUNCintent:
                 "s" )
         #main.ONOSbench.logReport( globalONOSip[1], [ "INFO" ], "d" )
 
-    def CASE11( self, main ):
+    def CASE10( self, main ):
         """
             Start mininet
         """
@@ -234,6 +234,28 @@ class FUNCintent:
         main.step( "Starting Mininet Topology" )
         topoResult = main.Mininet1.startNet( topoFile=main.dependencyPath +
                                                       main.topology )
+        stepResult = topoResult
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="Successfully loaded topology",
+                                 onfail="Failed to load topology" )
+        # Exit if topology did not load properly
+        if not topoResult:
+            main.cleanup()
+            main.exit()
+
+    def CASE11( self, main ):
+        """
+            Start mininet
+        """
+        main.log.report( "Start Mininet topology with OF 1.3 switches" )
+        main.log.case( "Start Mininet topology with OF 1.3 switches" )
+
+        main.step( "Start Mininet topology with OF 1.3 switches" )
+        args = "--switch ovs,protocols=OpenFlow13"
+        topoResult = main.Mininet1.startNet( topoFile=main.dependencyPath +
+                                                      main.topology,
+                                             args=args )
         stepResult = topoResult
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,

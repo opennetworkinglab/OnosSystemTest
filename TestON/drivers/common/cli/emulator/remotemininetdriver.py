@@ -487,39 +487,44 @@ class RemoteMininetDriver( Emulator ):
 
          print "get_flowTable(" + str( protoVersion ) +" " + str( sw ) +")"
          NOTE: Use format to force consistent flow table output across
-         versions"""
-        self.handle.sendline( "cd" )
-        self.handle.expect( [ "\$", pexpect.EOF, pexpect.TIMEOUT ] )
-        if protoVersion == 1.0:
-            command = "sudo ovs-ofctl dump-flows " + sw + \
-                " -F OpenFlow10-table_id | awk '{OFS=\",\" ; print $1  $3  $6 \
-                $7  $8}' | cut -d ',' -f 2- | sort -n -k1 -r"
-            self.handle.sendline( command )
-            self.handle.expect( [ "k1 -r", pexpect.EOF, pexpect.TIMEOUT ] )
-            self.handle.expect(
-                [ "OFPST_FLOW", pexpect.EOF, pexpect.TIMEOUT ] )
-            response = self.handle.before
-            # print "response=", response
-            return response
-        elif protoVersion == 1.3:
-            command = "sudo ovs-ofctl dump-flows " + sw + \
-                " -O OpenFlow13  | awk '{OFS=\",\" ; print $1  $3  $6  $7}'\
-                | cut -d ',' -f 2- | sort -n -k1 -r"
-            self.handle.sendline( command )
-            self.handle.expect( [ "k1 -r", pexpect.EOF, pexpect.TIMEOUT ] )
-            self.handle.expect(
-                [ "OFPST_FLOW", pexpect.EOF, pexpect.TIMEOUT ] )
-            response = self.handle.before
-            # print "response=", response
-            return response
-        else:
-            main.log.error(
-                "Unknown  protoVersion in get_flowTable(). given: (" +
-                str(
-                    type( protoVersion ) ) +
-                ") '" +
-                str( protoVersion ) +
-                "'" )
+         versions
+        """
+        try:
+            self.handle.sendline( "cd" )
+            self.handle.expect( "\$" )
+            if protoVersion == 1.0:
+                command = "sudo ovs-ofctl dump-flows " + sw + \
+                    " -F OpenFlow10-table_id | awk '{OFS=\",\" ; print $1  $3  $6 \
+                    $7  $8}' | cut -d ',' -f 2- | sort -n -k1 -r"
+                self.handle.sendline( command )
+                self.handle.expect( "k1 -r" )
+                self.handle.expect( "OFPST_FLOW" )
+                response = self.handle.before
+                # print "response=", response
+                return response
+            elif protoVersion == 1.3:
+                command = "sudo ovs-ofctl dump-flows " + sw + \
+                    " -O OpenFlow13  | awk '{OFS=\",\" ; print $1  $3  $6  $7}'\
+                    | cut -d ',' -f 2- | sort -n -k1 -r"
+                self.handle.sendline( command )
+                self.handle.expect( "k1 -r" )
+                self.handle.expect( "OFPST_FLOW" )
+                response = self.handle.before
+                # print "response=", response
+                return response
+            else:
+                main.log.error(
+                    "Unknown  protoVersion in get_flowTable(). given: (" +
+                    str( type( protoVersion ) ) +
+                    ") '" + str( protoVersion ) + "'" )
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except pexpect.TIMEOUT:
+            main.log.exception( self.name + ": Timeout exception: " )
+            return None
 
     def flowComp( self, flow1, flow2 ):
         if flow1 == flow2:

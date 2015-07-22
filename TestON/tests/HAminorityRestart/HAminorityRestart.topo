@@ -151,7 +151,7 @@
                 #Specify the Option for mininet
                 <arg1> --custom ~/mininet/custom/obelisk.py </arg1>
                 <arg2> --topo obelisk </arg2>
-                <arg3> </arg3>
+                <arg3> --switch ovs,protocols=OpenFlow13 </arg3>
                 <controller> none </controller>
             </COMPONENTS>
         </Mininet1>

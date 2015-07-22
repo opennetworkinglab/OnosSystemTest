@@ -1122,3 +1122,39 @@ def checkFlowsCount( main ):
 
     return main.TRUE
 
+def checkLeaderChange( leaders1 , leaders2 ):
+    """
+        Checks for a change in intent partition leadership.
+
+        Takes the output of leaders -c in json string format before and after
+        a potential change as input
+
+        Returns main.TRUE if no mismatches are detected
+        Returns main.FALSE if there is a mismatch or on error loading the input
+    """
+    try:
+        leaders1 = json.loads( leaders1 )
+        leaders2 = json.loads( leaders2 )
+    except ( AttributeError, TypeError):
+        main.log.exception( self.name + ": Object not as expected" )
+        return main.FALSE
+    except Exception:
+        main.log.exception( self.name + ": Uncaught exception!" )
+        main.cleanup()
+        main.exit()
+    main.log.info( "Checking Intent Paritions for Change in Leadership" )
+    mismatch = False
+    for dict1 in leaders1:
+        if "intent" in dict1.get( "topic", [] ):
+            for dict2 in leaders2:
+                if dict1.get( "topic", 0 ) == dict2.get( "topic", 0 ) and \
+                    dict1.get( "leader", 0 ) != dict2.get( "leader", 0 ):
+                    mismatch = True
+                    main.log.error( "{0} changed leader from {1} to {2}".\
+                        format( dict1.get( "topic", "no-topic" ),\
+                            dict1.get( "leader", "no-leader" ),\
+                            dict2.get( "leader", "no-leader" ) ) )
+    if mismatch:
+        return main.FALSE
+    else:
+        return main.TRUE

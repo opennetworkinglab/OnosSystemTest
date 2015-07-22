@@ -226,14 +226,16 @@ class FUNCintent:
 
     def CASE10( self, main ):
         """
-            Start mininet
+            Start Mininet topology with OF 1.0 switches
         """
-        main.log.report( "Start Mininet topology" )
-        main.log.case( "Start Mininet topology" )
+        main.log.report( "Start Mininet topology with OF 1.0 switches" )
+        main.log.case( "Start Mininet topology with OF 1.0 switches" )
 
-        main.step( "Starting Mininet Topology" )
+        main.step( "Start Mininet topology with OF 1.0 switches" )
+        args = "--switch ovs,protocols=OpenFlow10"
         topoResult = main.Mininet1.startNet( topoFile=main.dependencyPath +
-                                                      main.topology )
+                                                      main.topology,
+                                             args=args )
         stepResult = topoResult
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -246,7 +248,7 @@ class FUNCintent:
 
     def CASE11( self, main ):
         """
-            Start mininet
+            Start Mininet topology with OF 1.3 switches
         """
         main.log.report( "Start Mininet topology with OF 1.3 switches" )
         main.log.case( "Start Mininet topology with OF 1.3 switches" )

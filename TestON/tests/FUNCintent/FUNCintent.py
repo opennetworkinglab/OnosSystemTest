@@ -97,6 +97,7 @@ class FUNCintent:
         else:
             main.log.warn( "Did not pull new code so skipping mvn " +
                            "clean install" )
+        main.ONOSbench.getVersion( report=True )
 
     def CASE2( self, main ):
         """

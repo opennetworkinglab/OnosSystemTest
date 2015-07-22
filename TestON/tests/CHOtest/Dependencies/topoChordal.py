@@ -10,7 +10,7 @@ from mininet.link import TCLink
 from mininet.cli import CLI
 from mininet.log import setLogLevel
 from mininet.util import dumpNodeConnections
-from mininet.node import ( UserSwitch, OVSSwitch, OVSLegacyKernelSwitch, IVSSwitch )
+from mininet.node import ( UserSwitch, OVSSwitch, IVSSwitch )
 
 class chordalTopo( Topo ):
 

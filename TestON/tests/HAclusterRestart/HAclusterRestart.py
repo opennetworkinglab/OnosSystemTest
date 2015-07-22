@@ -47,6 +47,7 @@ class HAclusterRestart:
         start cli sessions
         start tcpdump
         """
+        import imp
         main.log.info( "ONOS HA test: Restart all ONOS nodes - " +
                          "initialization" )
         main.case( "Setting up test environment" )
@@ -62,12 +63,11 @@ class HAclusterRestart:
         gitBranch = main.params[ 'branch' ]
         cellName = main.params[ 'ENV' ][ 'cellName' ]
 
-        # set global variables
-        global numControllers
-        numControllers = int( main.params[ 'num_controllers' ] )
+        main.numCtrls = int( main.params[ 'num_controllers' ] )
         if main.ONOSbench.maxNodes:
-            if main.ONOSbench.maxNodes < numControllers:
-                numControllers = int( main.ONOSbench.maxNodes )
+            if main.ONOSbench.maxNodes < main.numCtrls:
+                main.numCtrls = int( main.ONOSbench.maxNodes )
+        # set global variables
         global ONOS1Port
         global ONOS2Port
         global ONOS3Port
@@ -91,15 +91,26 @@ class HAclusterRestart:
         ONOS6Port = main.params[ 'CTRL' ][ 'port6' ]
         ONOS7Port = main.params[ 'CTRL' ][ 'port7' ]
 
-        global CLIs
-        CLIs = []
-        global nodes
-        nodes = []
+        try:
+            fileName = "Counters"
+            path = main.params[ 'imports' ][ 'path' ]
+            main.Counters = imp.load_source( fileName,
+                                             path + fileName + ".py" )
+        except Exception as e:
+            main.log.exception( e )
+            main.cleanup()
+            main.exit()
+
+        main.CLIs = []
+        main.nodes = []
         ipList = []
-        for i in range( 1, numControllers + 1 ):
-            CLIs.append( getattr( main, 'ONOScli' + str( i ) ) )
-            nodes.append( getattr( main, 'ONOS' + str( i ) ) )
-            ipList.append( nodes[ -1 ].ip_address )
+        for i in range( 1, main.numCtrls + 1 ):
+            try:
+                main.CLIs.append( getattr( main, 'ONOScli' + str( i ) ) )
+                main.nodes.append( getattr( main, 'ONOS' + str( i ) ) )
+                ipList.append( main.nodes[ -1 ].ip_address )
+            except AttributeError:
+                break
 
         main.step( "Create cell file" )
         cellAppString = main.params[ 'ENV' ][ 'appString' ]
@@ -115,13 +126,13 @@ class HAclusterRestart:
         main.ONOSbench.onosRemoveRaftLogs()
 
         main.log.info( "Uninstalling ONOS" )
-        for node in nodes:
+        for node in main.nodes:
             main.ONOSbench.onosUninstall( node.ip_address )
 
         # Make sure ONOS is DEAD
         main.log.info( "Killing any ONOS processes" )
         killResults = main.TRUE
-        for node in nodes:
+        for node in main.nodes:
             killed = main.ONOSbench.onosKill( node.ip_address )
             killResults = killResults and killed
 
@@ -188,7 +199,7 @@ class HAclusterRestart:
 
         main.step( "Installing ONOS package" )
         onosInstallResult = main.TRUE
-        for node in nodes:
+        for node in main.nodes:
             tmpResult = main.ONOSbench.onosInstall( options="-f",
                                                     node=node.ip_address )
             onosInstallResult = onosInstallResult and tmpResult
@@ -199,7 +210,7 @@ class HAclusterRestart:
         main.step( "Checking if ONOS is up yet" )
         for i in range( 2 ):
             onosIsupResult = main.TRUE
-            for node in nodes:
+            for node in main.nodes:
                 started = main.ONOSbench.isup( node.ip_address )
                 if not started:
                     main.log.error( node.name + " didn't start!" )
@@ -215,10 +226,10 @@ class HAclusterRestart:
         main.log.step( "Starting ONOS CLI sessions" )
         cliResults = main.TRUE
         threads = []
-        for i in range( numControllers ):
-            t = main.Thread( target=CLIs[i].startOnosCli,
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].startOnosCli,
                              name="startOnosCli-" + str( i ),
-                             args=[nodes[i].ip_address] )
+                             args=[main.nodes[i].ip_address] )
             threads.append( t )
             t.start()
 
@@ -240,8 +251,8 @@ class HAclusterRestart:
         main.step( "App Ids check" )
         appCheck = main.TRUE
         threads = []
-        for i in range( numControllers ):
-            t = main.Thread( target=CLIs[i].appToIDCheck,
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].appToIDCheck,
                              name="appToIDCheck-" + str( i ),
                              args=[] )
             threads.append( t )
@@ -251,8 +262,8 @@ class HAclusterRestart:
             t.join()
             appCheck = appCheck and t.result
         if appCheck != main.TRUE:
-            main.log.warn( CLIs[0].apps() )
-            main.log.warn( CLIs[0].appIDs() )
+            main.log.warn( main.CLIs[0].apps() )
+            main.log.warn( main.CLIs[0].appIDs() )
         utilities.assert_equals( expect=main.TRUE, actual=appCheck,
                                  onpass="App Ids seem to be correct",
                                  onfail="Something is wrong with app Ids" )
@@ -267,12 +278,11 @@ class HAclusterRestart:
         Assign devices to controllers
         """
         import re
-        import time
-        assert numControllers, "numControllers not defined"
+        assert main.numCtrls, "main.numCtrls not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
-        assert CLIs, "CLIs not defined"
-        assert nodes, "nodes not defined"
+        assert main.CLIs, "main.CLIs not defined"
+        assert main.nodes, "main.nodes not defined"
         assert ONOS1Port, "ONOS1Port not defined"
         assert ONOS2Port, "ONOS2Port not defined"
         assert ONOS3Port, "ONOS3Port not defined"
@@ -288,8 +298,8 @@ class HAclusterRestart:
         main.step( "Assign switches to controllers" )
 
         ipList = []
-        for i in range( numControllers ):
-            ipList.append( nodes[ i ].ip_address )
+        for i in range( main.numCtrls ):
+            ipList.append( main.nodes[ i ].ip_address )
         swList = []
         for i in range( 1, 29 ):
             swList.append( "s" + str( i ) )
@@ -302,7 +312,7 @@ class HAclusterRestart:
                 main.log.info( str( response ) )
             except Exception:
                 main.log.info( repr( response ) )
-            for node in nodes:
+            for node in main.nodes:
                 if re.search( "tcp:" + node.ip_address, response ):
                     mastershipCheck = mastershipCheck and main.TRUE
                 else:
@@ -320,13 +330,12 @@ class HAclusterRestart:
         """
         Assign mastership to controllers
         """
-        import re
         import time
-        assert numControllers, "numControllers not defined"
+        assert main.numCtrls, "main.numCtrls not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
-        assert CLIs, "CLIs not defined"
-        assert nodes, "nodes not defined"
+        assert main.CLIs, "main.CLIs not defined"
+        assert main.nodes, "main.nodes not defined"
         assert ONOS1Port, "ONOS1Port not defined"
         assert ONOS2Port, "ONOS2Port not defined"
         assert ONOS3Port, "ONOS3Port not defined"
@@ -354,45 +363,45 @@ class HAclusterRestart:
                 # set up correct variables:
                 if i == 1:
                     c = 0
-                    ip = nodes[ c ].ip_address  # ONOS1
+                    ip = main.nodes[ c ].ip_address  # ONOS1
                     deviceId = main.ONOScli1.getDevice( "1000" ).get( 'id' )
                 elif i == 2:
-                    c = 1 % numControllers
-                    ip = nodes[ c ].ip_address  # ONOS2
+                    c = 1 % main.numCtrls
+                    ip = main.nodes[ c ].ip_address  # ONOS2
                     deviceId = main.ONOScli1.getDevice( "2000" ).get( 'id' )
                 elif i == 3:
-                    c = 1 % numControllers
-                    ip = nodes[ c ].ip_address  # ONOS2
+                    c = 1 % main.numCtrls
+                    ip = main.nodes[ c ].ip_address  # ONOS2
                     deviceId = main.ONOScli1.getDevice( "3000" ).get( 'id' )
                 elif i == 4:
-                    c = 3 % numControllers
-                    ip = nodes[ c ].ip_address  # ONOS4
+                    c = 3 % main.numCtrls
+                    ip = main.nodes[ c ].ip_address  # ONOS4
                     deviceId = main.ONOScli1.getDevice( "3004" ).get( 'id' )
                 elif i == 5:
-                    c = 2 % numControllers
-                    ip = nodes[ c ].ip_address  # ONOS3
+                    c = 2 % main.numCtrls
+                    ip = main.nodes[ c ].ip_address  # ONOS3
                     deviceId = main.ONOScli1.getDevice( "5000" ).get( 'id' )
                 elif i == 6:
-                    c = 2 % numControllers
-                    ip = nodes[ c ].ip_address  # ONOS3
+                    c = 2 % main.numCtrls
+                    ip = main.nodes[ c ].ip_address  # ONOS3
                     deviceId = main.ONOScli1.getDevice( "6000" ).get( 'id' )
                 elif i == 7:
-                    c = 5 % numControllers
-                    ip = nodes[ c ].ip_address  # ONOS6
+                    c = 5 % main.numCtrls
+                    ip = main.nodes[ c ].ip_address  # ONOS6
                     deviceId = main.ONOScli1.getDevice( "6007" ).get( 'id' )
                 elif i >= 8 and i <= 17:
-                    c = 4 % numControllers
-                    ip = nodes[ c ].ip_address  # ONOS5
+                    c = 4 % main.numCtrls
+                    ip = main.nodes[ c ].ip_address  # ONOS5
                     dpid = '3' + str( i ).zfill( 3 )
                     deviceId = main.ONOScli1.getDevice( dpid ).get( 'id' )
                 elif i >= 18 and i <= 27:
-                    c = 6 % numControllers
-                    ip = nodes[ c ].ip_address  # ONOS7
+                    c = 6 % main.numCtrls
+                    ip = main.nodes[ c ].ip_address  # ONOS7
                     dpid = '6' + str( i ).zfill( 3 )
                     deviceId = main.ONOScli1.getDevice( dpid ).get( 'id' )
                 elif i == 28:
                     c = 0
-                    ip = nodes[ c ].ip_address  # ONOS1
+                    ip = main.nodes[ c ].ip_address  # ONOS1
                     deviceId = main.ONOScli1.getDevice( "2800" ).get( 'id' )
                 else:
                     main.log.error( "You didn't write an else statement for " +
@@ -445,11 +454,11 @@ class HAclusterRestart:
         """
         import time
         import json
-        assert numControllers, "numControllers not defined"
+        assert main.numCtrls, "main.numCtrls not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
-        assert CLIs, "CLIs not defined"
-        assert nodes, "nodes not defined"
+        assert main.CLIs, "main.CLIs not defined"
+        assert main.nodes, "main.nodes not defined"
         try:
             labels
         except NameError:
@@ -471,7 +480,7 @@ class HAclusterRestart:
 
         # install onos-app-fwd
         main.step( "Install reactive forwarding app" )
-        installResults = CLIs[0].activateApp( "org.onosproject.fwd" )
+        installResults = main.CLIs[0].activateApp( "org.onosproject.fwd" )
         utilities.assert_equals( expect=main.TRUE, actual=installResults,
                                  onpass="Install fwd successful",
                                  onfail="Install fwd failed" )
@@ -479,8 +488,8 @@ class HAclusterRestart:
         main.step( "Check app ids" )
         appCheck = main.TRUE
         threads = []
-        for i in range( numControllers ):
-            t = main.Thread( target=CLIs[i].appToIDCheck,
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].appToIDCheck,
                              name="appToIDCheck-" + str( i ),
                              args=[] )
             threads.append( t )
@@ -490,8 +499,8 @@ class HAclusterRestart:
             t.join()
             appCheck = appCheck and t.result
         if appCheck != main.TRUE:
-            main.log.warn( CLIs[0].apps() )
-            main.log.warn( CLIs[0].appIDs() )
+            main.log.warn( main.CLIs[0].apps() )
+            main.log.warn( main.CLIs[0].appIDs() )
         utilities.assert_equals( expect=main.TRUE, actual=appCheck,
                                  onpass="App Ids seem to be correct",
                                  onfail="Something is wrong with app Ids" )
@@ -517,7 +526,7 @@ class HAclusterRestart:
         time.sleep( 11 )
         # uninstall onos-app-fwd
         main.step( "Uninstall reactive forwarding app" )
-        uninstallResult = CLIs[0].deactivateApp( "org.onosproject.fwd" )
+        uninstallResult = main.CLIs[0].deactivateApp( "org.onosproject.fwd" )
         utilities.assert_equals( expect=main.TRUE, actual=uninstallResult,
                                  onpass="Uninstall fwd successful",
                                  onfail="Uninstall fwd failed" )
@@ -525,8 +534,8 @@ class HAclusterRestart:
         main.step( "Check app ids" )
         threads = []
         appCheck2 = main.TRUE
-        for i in range( numControllers ):
-            t = main.Thread( target=CLIs[i].appToIDCheck,
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].appToIDCheck,
                              name="appToIDCheck-" + str( i ),
                              args=[] )
             threads.append( t )
@@ -536,8 +545,8 @@ class HAclusterRestart:
             t.join()
             appCheck2 = appCheck2 and t.result
         if appCheck2 != main.TRUE:
-            main.log.warn( CLIs[0].apps() )
-            main.log.warn( CLIs[0].appIDs() )
+            main.log.warn( main.CLIs[0].apps() )
+            main.log.warn( main.CLIs[0].appIDs() )
         utilities.assert_equals( expect=main.TRUE, actual=appCheck2,
                                  onpass="App Ids seem to be correct",
                                  onfail="Something is wrong with app Ids" )
@@ -564,8 +573,8 @@ class HAclusterRestart:
                 host1Id = host1Dict.get( 'id', None )
                 host2Id = host2Dict.get( 'id', None )
             if host1Id and host2Id:
-                nodeNum = ( i % numControllers )
-                tmpId = CLIs[ nodeNum ].addHostIntent( host1Id, host2Id )
+                nodeNum = ( i % main.numCtrls )
+                tmpId = main.CLIs[ nodeNum ].addHostIntent( host1Id, host2Id )
                 if tmpId:
                     main.log.info( "Added intent with id: " + tmpId )
                     intentIds.append( tmpId )
@@ -575,7 +584,7 @@ class HAclusterRestart:
             else:
                 main.log.error( "Error, getHost() failed for h" + str( i ) +
                                 " and/or h" + str( i + 10 ) )
-                hosts = CLIs[ 0 ].hosts()
+                hosts = main.CLIs[ 0 ].hosts()
                 main.log.warn( "Hosts output: " )
                 try:
                     main.log.warn( json.dumps( json.loads( hosts ),
@@ -656,7 +665,7 @@ class HAclusterRestart:
             main.log.error( repr( leaders ) )
         # Check all nodes
         if missing:
-            for node in CLIs:
+            for node in main.CLIs:
                 response = node.leaders( jsonFormat=False)
                 main.log.warn( str( node.name ) + " leaders output: \n" +
                                str( response ) )
@@ -700,7 +709,7 @@ class HAclusterRestart:
         for i in range(100):
             correct = True
             main.log.info( "Submitted intents: " + str( sorted( intentIds ) ) )
-            for cli in CLIs:
+            for cli in main.CLIs:
                 onosIds = []
                 ids = cli.getAllIntentsId()
                 onosIds.append( ids )
@@ -812,7 +821,7 @@ class HAclusterRestart:
                 main.log.error( repr( leaders ) )
             # Check all nodes
             if missing:
-                for node in CLIs:
+                for node in main.CLIs:
                     response = node.leaders( jsonFormat=False)
                     main.log.warn( str( node.name ) + " leaders output: \n" +
                                    str( response ) )
@@ -853,11 +862,11 @@ class HAclusterRestart:
         """
         import json
         import time
-        assert numControllers, "numControllers not defined"
+        assert main.numCtrls, "main.numCtrls not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
-        assert CLIs, "CLIs not defined"
-        assert nodes, "nodes not defined"
+        assert main.CLIs, "main.CLIs not defined"
+        assert main.nodes, "main.nodes not defined"
         main.case( "Verify connectivity by sendind traffic across Intents" )
         main.caseExplanation = "Ping across added host intents to check " +\
                                 "functionality and check the state of " +\
@@ -902,6 +911,7 @@ class HAclusterRestart:
             intents = main.ONOScli1.intents()
             intentStates = []
             main.log.info( "%-6s%-15s%-15s" % ( 'Count', 'ID', 'State' ) )
+            count = 0
             # Iter through intents of a node
             try:
                 for intent in json.loads( intents ):
@@ -962,7 +972,7 @@ class HAclusterRestart:
             # TODO: Check for a leader of these topics
         # Check all nodes
         if topicCheck:
-            for node in CLIs:
+            for node in main.CLIs:
                 response = node.leaders( jsonFormat=False)
                 main.log.warn( str( node.name ) + " leaders output: \n" +
                                str( response ) )
@@ -1055,7 +1065,7 @@ class HAclusterRestart:
                 main.log.exception( "Error parsing leaders" )
                 main.log.error( repr( leaders ) )
             if missing:
-                for node in CLIs:
+                for node in main.CLIs:
                     response = node.leaders( jsonFormat=False)
                     main.log.warn( str( node.name ) + " leaders output: \n" +
                                    str( response ) )
@@ -1090,7 +1100,7 @@ class HAclusterRestart:
                 main.log.exception( "Error parsing pending map" )
                 main.log.error( repr( pendingMap ) )
         # Print flowrules
-        main.log.debug( CLIs[0].flows( jsonFormat=False ) )
+        main.log.debug( main.CLIs[0].flows( jsonFormat=False ) )
         main.step( "Wait a minute then ping again" )
         # the wait is above
         PingResult = main.TRUE
@@ -1129,11 +1139,11 @@ class HAclusterRestart:
         """
         import json
         import time
-        assert numControllers, "numControllers not defined"
+        assert main.numCtrls, "main.numCtrls not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
-        assert CLIs, "CLIs not defined"
-        assert nodes, "nodes not defined"
+        assert main.CLIs, "main.CLIs not defined"
+        assert main.nodes, "main.nodes not defined"
 
         main.case( "Setting up and gathering data for current state" )
         # The general idea for this test case is to pull the state of
@@ -1147,8 +1157,8 @@ class HAclusterRestart:
         # Assert that each device has a master
         rolesNotNull = main.TRUE
         threads = []
-        for i in range( numControllers ):
-            t = main.Thread( target=CLIs[i].rolesNotNull,
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].rolesNotNull,
                              name="rolesNotNull-" + str( i ),
                              args=[] )
             threads.append( t )
@@ -1169,8 +1179,8 @@ class HAclusterRestart:
         consistentMastership = True
         rolesResults = True
         threads = []
-        for i in range( numControllers ):
-            t = main.Thread( target=CLIs[i].roles,
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].roles,
                              name="roles-" + str( i ),
                              args=[] )
             threads.append( t )
@@ -1180,7 +1190,7 @@ class HAclusterRestart:
             t.join()
             ONOSMastership.append( t.result )
 
-        for i in range( numControllers ):
+        for i in range( main.numCtrls ):
             if not ONOSMastership[i] or "Error" in ONOSMastership[i]:
                 main.log.error( "Error in getting ONOS" + str( i + 1 ) +
                                  " roles" )
@@ -1207,7 +1217,7 @@ class HAclusterRestart:
             onfail="ONOS nodes have different views of switch roles" )
 
         if rolesResults and not consistentMastership:
-            for i in range( numControllers ):
+            for i in range( main.numCtrls ):
                 try:
                     main.log.warn(
                         "ONOS" + str( i + 1 ) + " roles: ",
@@ -1230,8 +1240,8 @@ class HAclusterRestart:
         consistentIntents = True
         intentsResults = True
         threads = []
-        for i in range( numControllers ):
-            t = main.Thread( target=CLIs[i].intents,
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].intents,
                              name="intents-" + str( i ),
                              args=[],
                              kwargs={ 'jsonFormat': True } )
@@ -1242,7 +1252,7 @@ class HAclusterRestart:
             t.join()
             ONOSIntents.append( t.result )
 
-        for i in range( numControllers ):
+        for i in range( main.numCtrls ):
             if not ONOSIntents[ i ] or "Error" in ONOSIntents[ i ]:
                 main.log.error( "Error in getting ONOS" + str( i + 1 ) +
                                  " intents" )
@@ -1276,7 +1286,7 @@ class HAclusterRestart:
             #  ...        ...         ...
             #  ...        ...         ...
             title = "   Id"
-            for n in range( numControllers ):
+            for n in range( main.numCtrls ):
                 title += " " * 10 + "ONOS" + str( n + 1 )
             main.log.warn( title )
             # get all intent keys in the cluster
@@ -1304,7 +1314,7 @@ class HAclusterRestart:
                                         sort_keys=True,
                                         indent=4,
                                         separators=( ',', ': ' ) ) )
-            for i in range( numControllers ):
+            for i in range( main.numCtrls ):
                 if ONOSIntents[ i ] != ONOSIntents[ -1 ]:
                     main.log.debug( "ONOS" + str( i + 1 ) + " intents: " )
                     main.log.debug( json.dumps( json.loads( ONOSIntents[i] ),
@@ -1312,7 +1322,7 @@ class HAclusterRestart:
                                                 indent=4,
                                                 separators=( ',', ': ' ) ) )
                 else:
-                    main.log.debug( nodes[ i ].name + " intents match ONOS" +
+                    main.log.debug( main.nodes[ i ].name + " intents match ONOS" +
                                     str( n ) + " intents" )
         elif intentsResults and consistentIntents:
             intentCheck = main.TRUE
@@ -1327,8 +1337,8 @@ class HAclusterRestart:
         consistentFlows = True
         flowsResults = True
         threads = []
-        for i in range( numControllers ):
-            t = main.Thread( target=CLIs[i].flows,
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].flows,
                              name="flows-" + str( i ),
                              args=[],
                              kwargs={ 'jsonFormat': True } )
@@ -1342,7 +1352,7 @@ class HAclusterRestart:
             result = t.result
             ONOSFlows.append( result )
 
-        for i in range( numControllers ):
+        for i in range( main.numCtrls ):
             num = str( i + 1 )
             if not ONOSFlows[ i ] or "Error" in ONOSFlows[ i ]:
                 main.log.error( "Error in getting ONOS" + num + " flows" )
@@ -1379,7 +1389,7 @@ class HAclusterRestart:
             onfail="ONOS nodes have different flow counts" )
 
         if flowsResults and not consistentFlows:
-            for i in range( numControllers ):
+            for i in range( main.numCtrls ):
                 try:
                     main.log.warn(
                         "ONOS" + str( i + 1 ) + " flows: " +
@@ -1448,8 +1458,8 @@ class HAclusterRestart:
         main.step( "Collecting topology information from ONOS" )
         devices = []
         threads = []
-        for i in range( numControllers ):
-            t = main.Thread( target=CLIs[i].devices,
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].devices,
                              name="devices-" + str( i ),
                              args=[ ] )
             threads.append( t )
@@ -1460,8 +1470,8 @@ class HAclusterRestart:
             devices.append( t.result )
         hosts = []
         threads = []
-        for i in range( numControllers ):
-            t = main.Thread( target=CLIs[i].hosts,
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].hosts,
                              name="hosts-" + str( i ),
                              args=[ ] )
             threads.append( t )
@@ -1480,8 +1490,8 @@ class HAclusterRestart:
 
         ports = []
         threads = []
-        for i in range( numControllers ):
-            t = main.Thread( target=CLIs[i].ports,
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].ports,
                              name="ports-" + str( i ),
                              args=[ ] )
             threads.append( t )
@@ -1492,8 +1502,8 @@ class HAclusterRestart:
             ports.append( t.result )
         links = []
         threads = []
-        for i in range( numControllers ):
-            t = main.Thread( target=CLIs[i].links,
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].links,
                              name="links-" + str( i ),
                              args=[ ] )
             threads.append( t )
@@ -1504,8 +1514,8 @@ class HAclusterRestart:
             links.append( t.result )
         clusters = []
         threads = []
-        for i in range( numControllers ):
-            t = main.Thread( target=CLIs[i].clusters,
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].clusters,
                              name="clusters-" + str( i ),
                              args=[ ] )
             threads.append( t )
@@ -1607,16 +1617,15 @@ class HAclusterRestart:
         mnSwitches = main.Mininet1.getSwitches()
         mnLinks = main.Mininet1.getLinks()
         mnHosts = main.Mininet1.getHosts()
-        for controller in range( numControllers ):
+        for controller in range( main.numCtrls ):
             controllerStr = str( controller + 1 )
             if devices[ controller ] and ports[ controller ] and\
                 "Error" not in devices[ controller ] and\
                 "Error" not in ports[ controller ]:
-
-                currentDevicesResult = main.Mininet1.compareSwitches(
-                        mnSwitches,
-                        json.loads( devices[ controller ] ),
-                        json.loads( ports[ controller ] ) )
+                    currentDevicesResult = main.Mininet1.compareSwitches(
+                            mnSwitches,
+                            json.loads( devices[ controller ] ),
+                            json.loads( ports[ controller ] ) )
             else:
                 currentDevicesResult = main.FALSE
             utilities.assert_equals( expect=main.TRUE,
@@ -1681,11 +1690,11 @@ class HAclusterRestart:
         The Failure case.
         """
         import time
-        assert numControllers, "numControllers not defined"
+        assert main.numCtrls, "main.numCtrls not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
-        assert CLIs, "CLIs not defined"
-        assert nodes, "nodes not defined"
+        assert main.CLIs, "main.CLIs not defined"
+        assert main.nodes, "main.nodes not defined"
         try:
             labels
         except NameError:
@@ -1710,7 +1719,7 @@ class HAclusterRestart:
         main.step( "Killing ONOS nodes" )
         killResults = main.TRUE
         killTime = time.time()
-        for node in nodes:
+        for node in main.nodes:
             killed = main.ONOSbench.onosKill( node.ip_address )
             killResults = killResults and killed
         utilities.assert_equals( expect=main.TRUE, actual=killResults,
@@ -1720,7 +1729,7 @@ class HAclusterRestart:
         main.step( "Checking if ONOS is up yet" )
         for i in range( 2 ):
             onosIsupResult = main.TRUE
-            for node in nodes:
+            for node in main.nodes:
                 started = main.ONOSbench.isup( node.ip_address )
                 if not started:
                     main.log.error( node.name + " didn't start!" )
@@ -1734,10 +1743,10 @@ class HAclusterRestart:
         main.log.step( "Starting ONOS CLI sessions" )
         cliResults = main.TRUE
         threads = []
-        for i in range( numControllers ):
-            t = main.Thread( target=CLIs[i].startOnosCli,
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].startOnosCli,
                              name="startOnosCli-" + str( i ),
-                             args=[nodes[i].ip_address] )
+                             args=[main.nodes[i].ip_address] )
             threads.append( t )
             t.start()
 
@@ -1758,8 +1767,8 @@ class HAclusterRestart:
         # FIXME: revisit test plan for election with madan
         # Rerun for election on restarted nodes
         runResults = main.TRUE
-        for cli in CLIs:
-            run = CLIs[0].electionTestRun()
+        for cli in main.CLIs:
+            run = main.CLIs[0].electionTestRun()
             if run != main.TRUE:
                 main.log.error( "Error running for election on " + cli.name )
             runResults = runResults and run
@@ -1769,28 +1778,28 @@ class HAclusterRestart:
 
         # TODO: Make this configurable
         time.sleep( 60 )
-        main.log.debug( CLIs[0].nodes( jsonFormat=False ) )
-        main.log.debug( CLIs[0].leaders( jsonFormat=False ) )
-        main.log.debug( CLIs[0].partitions( jsonFormat=False ) )
+        main.log.debug( main.CLIs[0].nodes( jsonFormat=False ) )
+        main.log.debug( main.CLIs[0].leaders( jsonFormat=False ) )
+        main.log.debug( main.CLIs[0].partitions( jsonFormat=False ) )
 
     def CASE7( self, main ):
         """
         Check state after ONOS failure
         """
         import json
-        assert numControllers, "numControllers not defined"
+        assert main.numCtrls, "main.numCtrls not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
-        assert CLIs, "CLIs not defined"
-        assert nodes, "nodes not defined"
+        assert main.CLIs, "main.CLIs not defined"
+        assert main.nodes, "main.nodes not defined"
         main.case( "Running ONOS Constant State Tests" )
 
         main.step( "Check that each switch has a master" )
         # Assert that each device has a master
         rolesNotNull = main.TRUE
         threads = []
-        for i in range( numControllers ):
-            t = main.Thread( target=CLIs[i].rolesNotNull,
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].rolesNotNull,
                              name="rolesNotNull-" + str( i ),
                              args=[ ] )
             threads.append( t )
@@ -1811,8 +1820,8 @@ class HAclusterRestart:
         consistentMastership = True
         rolesResults = True
         threads = []
-        for i in range( numControllers ):
-            t = main.Thread( target=CLIs[i].roles,
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].roles,
                              name="roles-" + str( i ),
                              args=[] )
             threads.append( t )
@@ -1822,7 +1831,7 @@ class HAclusterRestart:
             t.join()
             ONOSMastership.append( t.result )
 
-        for i in range( numControllers ):
+        for i in range( main.numCtrls ):
             if not ONOSMastership[i] or "Error" in ONOSMastership[i]:
                 main.log.error( "Error in getting ONOS" + str( i + 1 ) +
                                  " roles" )
@@ -1849,7 +1858,7 @@ class HAclusterRestart:
             onfail="ONOS nodes have different views of switch roles" )
 
         if rolesResults and not consistentMastership:
-            for i in range( numControllers ):
+            for i in range( main.numCtrls ):
                 main.log.warn(
                     "ONOS" + str( i + 1 ) + " roles: ",
                     json.dumps(
@@ -1900,8 +1909,8 @@ class HAclusterRestart:
         consistentIntents = True
         intentsResults = True
         threads = []
-        for i in range( numControllers ):
-            t = main.Thread( target=CLIs[i].intents,
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].intents,
                              name="intents-" + str( i ),
                              args=[],
                              kwargs={ 'jsonFormat': True } )
@@ -1912,7 +1921,7 @@ class HAclusterRestart:
             t.join()
             ONOSIntents.append( t.result )
 
-        for i in range( numControllers ):
+        for i in range( main.numCtrls ):
             if not ONOSIntents[ i ] or "Error" in ONOSIntents[ i ]:
                 main.log.error( "Error in getting ONOS" + str( i + 1 ) +
                                  " intents" )
@@ -1939,7 +1948,7 @@ class HAclusterRestart:
         #  ...        ...         ...
         #  ...        ...         ...
         title = "   ID"
-        for n in range( numControllers ):
+        for n in range( main.numCtrls ):
             title += " " * 10 + "ONOS" + str( n + 1 )
         main.log.warn( title )
         # get all intent keys in the cluster
@@ -1979,7 +1988,7 @@ class HAclusterRestart:
             main.log.info( dict( out ) )
 
         if intentsResults and not consistentIntents:
-            for i in range( numControllers ):
+            for i in range( main.numCtrls ):
                 main.log.warn( "ONOS" + str( i + 1 ) + " intents: " )
                 main.log.warn( json.dumps(
                     json.loads( ONOSIntents[ i ] ),
@@ -2095,7 +2104,7 @@ class HAclusterRestart:
         # Test of LeadershipElection
         leaderList = []
         leaderResult = main.TRUE
-        for cli in CLIs:
+        for cli in main.CLIs:
             leaderN = cli.electionTestLeader()
             leaderList.append( leaderN )
             if leaderN == main.FALSE:
@@ -2125,11 +2134,11 @@ class HAclusterRestart:
         """
         import json
         import time
-        assert numControllers, "numControllers not defined"
+        assert main.numCtrls, "main.numCtrls not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
-        assert CLIs, "CLIs not defined"
-        assert nodes, "nodes not defined"
+        assert main.CLIs, "main.CLIs not defined"
+        assert main.nodes, "main.nodes not defined"
 
         main.case( "Compare ONOS Topology view to Mininet topology" )
         main.caseExplanation = "Compare topology objects between Mininet" +\
@@ -2151,8 +2160,8 @@ class HAclusterRestart:
             cliStart = time.time()
             devices = []
             threads = []
-            for i in range( numControllers ):
-                t = main.Thread( target=CLIs[i].devices,
+            for i in range( main.numCtrls ):
+                t = main.Thread( target=main.CLIs[i].devices,
                                  name="devices-" + str( i ),
                                  args=[ ] )
                 threads.append( t )
@@ -2164,8 +2173,8 @@ class HAclusterRestart:
             hosts = []
             ipResult = main.TRUE
             threads = []
-            for i in range( numControllers ):
-                t = main.Thread( target=CLIs[i].hosts,
+            for i in range( main.numCtrls ):
+                t = main.Thread( target=main.CLIs[i].hosts,
                                  name="hosts-" + str( i ),
                                  args=[ ] )
                 threads.append( t )
@@ -2188,8 +2197,8 @@ class HAclusterRestart:
                         ipResult = main.FALSE
             ports = []
             threads = []
-            for i in range( numControllers ):
-                t = main.Thread( target=CLIs[i].ports,
+            for i in range( main.numCtrls ):
+                t = main.Thread( target=main.CLIs[i].ports,
                                  name="ports-" + str( i ),
                                  args=[ ] )
                 threads.append( t )
@@ -2200,8 +2209,8 @@ class HAclusterRestart:
                 ports.append( t.result )
             links = []
             threads = []
-            for i in range( numControllers ):
-                t = main.Thread( target=CLIs[i].links,
+            for i in range( main.numCtrls ):
+                t = main.Thread( target=main.CLIs[i].links,
                                  name="links-" + str( i ),
                                  args=[ ] )
                 threads.append( t )
@@ -2212,8 +2221,8 @@ class HAclusterRestart:
                 links.append( t.result )
             clusters = []
             threads = []
-            for i in range( numControllers ):
-                t = main.Thread( target=CLIs[i].clusters,
+            for i in range( main.numCtrls ):
+                t = main.Thread( target=main.CLIs[i].clusters,
                                  name="clusters-" + str( i ),
                                  args=[ ] )
                 threads.append( t )
@@ -2231,7 +2240,7 @@ class HAclusterRestart:
             mnSwitches = main.Mininet1.getSwitches()
             mnLinks = main.Mininet1.getLinks()
             mnHosts = main.Mininet1.getHosts()
-            for controller in range( numControllers ):
+            for controller in range( main.numCtrls ):
                 controllerStr = str( controller + 1 )
                 if devices[ controller ] and ports[ controller ] and\
                     "Error" not in devices[ controller ] and\
@@ -2489,8 +2498,8 @@ class HAclusterRestart:
         nodesOutput = []
         nodeResults = main.TRUE
         threads = []
-        for i in range( numControllers ):
-            t = main.Thread( target=CLIs[i].nodes,
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].nodes,
                              name="nodes-" + str( i ),
                              args=[ ] )
             threads.append( t )
@@ -2499,7 +2508,7 @@ class HAclusterRestart:
         for t in threads:
             t.join()
             nodesOutput.append( t.result )
-        ips = [ node.ip_address for node in nodes ]
+        ips = [ node.ip_address for node in main.nodes ]
         for i in nodesOutput:
             try:
                 current = json.loads( i )
@@ -2529,11 +2538,11 @@ class HAclusterRestart:
         Link s3-s28 down
         """
         import time
-        assert numControllers, "numControllers not defined"
+        assert main.numCtrls, "main.numCtrls not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
-        assert CLIs, "CLIs not defined"
-        assert nodes, "nodes not defined"
+        assert main.CLIs, "main.CLIs not defined"
+        assert main.nodes, "main.nodes not defined"
         # NOTE: You should probably run a topology check after this
 
         linkSleep = float( main.params[ 'timers' ][ 'LinkDiscovery' ] )
@@ -2557,11 +2566,11 @@ class HAclusterRestart:
         Link s3-s28 up
         """
         import time
-        assert numControllers, "numControllers not defined"
+        assert main.numCtrls, "main.numCtrls not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
-        assert CLIs, "CLIs not defined"
-        assert nodes, "nodes not defined"
+        assert main.CLIs, "main.CLIs not defined"
+        assert main.nodes, "main.nodes not defined"
         # NOTE: You should probably run a topology check after this
 
         linkSleep = float( main.params[ 'timers' ][ 'LinkDiscovery' ] )
@@ -2586,11 +2595,11 @@ class HAclusterRestart:
         """
         # NOTE: You should probably run a topology check after this
         import time
-        assert numControllers, "numControllers not defined"
+        assert main.numCtrls, "main.numCtrls not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
-        assert CLIs, "CLIs not defined"
-        assert nodes, "nodes not defined"
+        assert main.CLIs, "main.CLIs not defined"
+        assert main.nodes, "main.nodes not defined"
 
         switchSleep = float( main.params[ 'timers' ][ 'SwitchDiscovery' ] )
 
@@ -2622,11 +2631,11 @@ class HAclusterRestart:
         """
         # NOTE: You should probably run a topology check after this
         import time
-        assert numControllers, "numControllers not defined"
+        assert main.numCtrls, "main.numCtrls not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
-        assert CLIs, "CLIs not defined"
-        assert nodes, "nodes not defined"
+        assert main.CLIs, "main.CLIs not defined"
+        assert main.nodes, "main.nodes not defined"
         assert ONOS1Port, "ONOS1Port not defined"
         assert ONOS2Port, "ONOS2Port not defined"
         assert ONOS3Port, "ONOS3Port not defined"
@@ -2647,8 +2656,8 @@ class HAclusterRestart:
         for peer in links:
             main.Mininet1.addLink( switch, peer )
         ipList = []
-        for i in range( numControllers ):
-            ipList.append( nodes[ i ].ip_address )
+        for i in range( main.numCtrls ):
+            ipList.append( main.nodes[ i ].ip_address )
         main.Mininet1.assignSwController( sw=switch, ip=ipList )
         main.log.info( "Waiting " + str( switchSleep ) +
                        " seconds for switch up to be discovered" )
@@ -2669,11 +2678,11 @@ class HAclusterRestart:
         """
         import os
         import time
-        assert numControllers, "numControllers not defined"
+        assert main.numCtrls, "main.numCtrls not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
-        assert CLIs, "CLIs not defined"
-        assert nodes, "nodes not defined"
+        assert main.CLIs, "main.CLIs not defined"
+        assert main.nodes, "main.nodes not defined"
 
         # printing colors to terminal
         colors = { 'cyan': '\033[96m', 'purple': '\033[95m',
@@ -2699,7 +2708,7 @@ class HAclusterRestart:
             # NOTE: must end in /
             dstDir = "~/packet_captures/"
             for f in logFiles:
-                for node in nodes:
+                for node in main.nodes:
                     main.ONOSbench.handle.sendline( "scp sdn@" + node.ip_address +
                                                     ":" + logFolder + f + " " +
                                                     teststationUser + "@" +
@@ -2715,7 +2724,7 @@ class HAclusterRestart:
             # NOTE: must end in /
             dstDir = "~/packet_captures/"
             for f in logFiles:
-                for node in nodes:
+                for node in main.nodes:
                     main.ONOSbench.handle.sendline( "scp sdn@" + node.ip_address +
                                                     ":" + logFolder + f + " " +
                                                     teststationUser + "@" +
@@ -2735,7 +2744,7 @@ class HAclusterRestart:
                                  onfail="MN cleanup NOT successful" )
 
         main.step( "Checking ONOS Logs for errors" )
-        for node in nodes:
+        for node in main.nodes:
             print colors[ 'purple' ] + "Checking logs for errors on " + \
                 node.name + ":" + colors[ 'end' ]
             print main.ONOSbench.checkLogs( node.ip_address, restart=True )
@@ -2752,11 +2761,11 @@ class HAclusterRestart:
         """
         start election app on all onos nodes
         """
-        assert numControllers, "numControllers not defined"
+        assert main.numCtrls, "main.numCtrls not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
-        assert CLIs, "CLIs not defined"
-        assert nodes, "nodes not defined"
+        assert main.CLIs, "main.CLIs not defined"
+        assert main.nodes, "main.nodes not defined"
 
         main.case("Start Leadership Election app")
         main.step( "Install leadership election app" )
@@ -2770,9 +2779,9 @@ class HAclusterRestart:
         main.step( "Run for election on each node" )
         leaderResult = main.TRUE
         leaders = []
-        for cli in CLIs:
+        for cli in main.CLIs:
             cli.electionTestRun()
-        for cli in CLIs:
+        for cli in main.CLIs:
             leader = cli.electionTestLeader()
             if leader is None or leader == main.FALSE:
                 main.log.error( cli.name + ": Leader for the election app " +
@@ -2803,11 +2812,11 @@ class HAclusterRestart:
         Check that Leadership Election is still functional
         """
         import time
-        assert numControllers, "numControllers not defined"
+        assert main.numCtrls, "main.numCtrls not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
-        assert CLIs, "CLIs not defined"
-        assert nodes, "nodes not defined"
+        assert main.CLIs, "main.CLIs not defined"
+        assert main.nodes, "main.nodes not defined"
 
         leaderResult = main.TRUE
         description = "Check that Leadership Election is still functional"
@@ -2816,9 +2825,9 @@ class HAclusterRestart:
         main.step( "Run for election on each node" )
         leaderResult = main.TRUE
         leaders = []
-        for cli in CLIs:
+        for cli in main.CLIs:
             cli.electionTestRun()
-        for cli in CLIs:
+        for cli in main.CLIs:
             leader = cli.electionTestLeader()
             if leader is None or leader == main.FALSE:
                 main.log.error( cli.name + ": Leader for the election app " +
@@ -2836,7 +2845,7 @@ class HAclusterRestart:
         sameLeader = main.TRUE
         if len( set( leaders ) ) != 1:
             sameLeader = main.FALSE
-            main.log.error( "Results of electionTestLeader is order of CLIs:" +
+            main.log.error( "Results of electionTestLeader is order of main.CLIs:" +
                             str( leaders ) )
         utilities.assert_equals(
             expect=main.TRUE,
@@ -2854,9 +2863,9 @@ class HAclusterRestart:
                 "instead got '" + str( leader ) + "'" )
             leaderResult = main.FALSE
             oldLeader = None
-        for i in range( len( CLIs ) ):
-            if leader == nodes[ i ].ip_address:
-                oldLeader = CLIs[ i ]
+        for i in range( len( main.CLIs ) ):
+            if leader == main.nodes[ i ].ip_address:
+                oldLeader = main.CLIs[ i ]
                 break
         else:  # FOR/ELSE statement
             main.log.error( "Leader election, could not find current leader" )
@@ -2871,7 +2880,7 @@ class HAclusterRestart:
         main.step( "Make sure new leader is elected" )
         # FIXME: use threads
         leaderList = []
-        for cli in CLIs:
+        for cli in main.CLIs:
             leaderN = cli.electionTestLeader()
             leaderList.append( leaderN )
             if leaderN == leader:
@@ -2943,11 +2952,11 @@ class HAclusterRestart:
         Install Distributed Primitives app
         """
         import time
-        assert numControllers, "numControllers not defined"
+        assert main.numCtrls, "main.numCtrls not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
-        assert CLIs, "CLIs not defined"
-        assert nodes, "nodes not defined"
+        assert main.CLIs, "main.CLIs not defined"
+        assert main.nodes, "main.nodes not defined"
 
         # Variables for the distributed primitives tests
         global pCounterName
@@ -2967,7 +2976,7 @@ class HAclusterRestart:
         main.case( description )
         main.step( "Install Primitives app" )
         appName = "org.onosproject.distributedprimitives"
-        appResults = CLIs[0].activateApp( appName )
+        appResults = main.CLIs[0].activateApp( appName )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=appResults,
                                  onpass="Primitives app activated",
@@ -2978,13 +2987,12 @@ class HAclusterRestart:
         """
         Check for basic functionality with distributed primitives
         """
-        import json
         # Make sure variables are defined/set
-        assert numControllers, "numControllers not defined"
+        assert main.numCtrls, "main.numCtrls not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
-        assert CLIs, "CLIs not defined"
-        assert nodes, "nodes not defined"
+        assert main.CLIs, "main.CLIs not defined"
+        assert main.nodes, "main.nodes not defined"
         assert pCounterName, "pCounterName not defined"
         assert iCounterName, "iCounterName not defined"
         assert onosSetName, "onosSetName not defined"
@@ -3012,15 +3020,17 @@ class HAclusterRestart:
         description = "Check for basic functionality with distributed " +\
                       "primitives"
         main.case( description )
-        main.caseExplanation = "Test the methods of the distributed primitives (counters and sets) throught the cli"
+        main.caseExplanation = "Test the methods of the distributed " +\
+                                "primitives (counters and sets) throught the cli"
         # DISTRIBUTED ATOMIC COUNTERS
-        main.step( "Increment and get a default counter on each node" )
+        # Partitioned counters
+        main.step( "Increment then get a default counter on each node" )
         pCounters = []
         threads = []
         addedPValues = []
-        for i in range( numControllers ):
-            t = main.Thread( target=CLIs[i].counterTestIncrement,
-                             name="counterIncrement-" + str( i ),
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].counterTestAddAndGet,
+                             name="counterAddAndGet-" + str( i ),
                              args=[ pCounterName ] )
             pCounterValue += 1
             addedPValues.append( pCounterValue )
@@ -3044,12 +3054,150 @@ class HAclusterRestart:
                                  onfail="Error incrementing default" +
                                         " counter" )
 
-        main.step( "Increment and get an in memory counter on each node" )
+        main.step( "Get then Increment a default counter on each node" )
+        pCounters = []
+        threads = []
+        addedPValues = []
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].counterTestGetAndAdd,
+                             name="counterGetAndAdd-" + str( i ),
+                             args=[ pCounterName ] )
+            addedPValues.append( pCounterValue )
+            pCounterValue += 1
+            threads.append( t )
+            t.start()
+
+        for t in threads:
+            t.join()
+            pCounters.append( t.result )
+        # Check that counter incremented numController times
+        pCounterResults = True
+        for i in addedPValues:
+            tmpResult = i in pCounters
+            pCounterResults = pCounterResults and tmpResult
+            if not tmpResult:
+                main.log.error( str( i ) + " is not in partitioned "
+                                "counter incremented results" )
+        utilities.assert_equals( expect=True,
+                                 actual=pCounterResults,
+                                 onpass="Default counter incremented",
+                                 onfail="Error incrementing default" +
+                                        " counter" )
+
+        main.step( "Counters we added have the correct values" )
+        incrementCheck = main.Counters.counterCheck( pCounterName, pCounterValue )
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=incrementCheck,
+                                 onpass="Added counters are correct",
+                                 onfail="Added counters are incorrect" )
+
+        main.step( "Add -8 to then get a default counter on each node" )
+        pCounters = []
+        threads = []
+        addedPValues = []
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].counterTestAddAndGet,
+                             name="counterIncrement-" + str( i ),
+                             args=[ pCounterName ],
+                             kwargs={ "delta": -8 } )
+            pCounterValue += -8
+            addedPValues.append( pCounterValue )
+            threads.append( t )
+            t.start()
+
+        for t in threads:
+            t.join()
+            pCounters.append( t.result )
+        # Check that counter incremented numController times
+        pCounterResults = True
+        for i in addedPValues:
+            tmpResult = i in pCounters
+            pCounterResults = pCounterResults and tmpResult
+            if not tmpResult:
+                main.log.error( str( i ) + " is not in partitioned "
+                                "counter incremented results" )
+        utilities.assert_equals( expect=True,
+                                 actual=pCounterResults,
+                                 onpass="Default counter incremented",
+                                 onfail="Error incrementing default" +
+                                        " counter" )
+
+        main.step( "Add 5 to then get a default counter on each node" )
+        pCounters = []
+        threads = []
+        addedPValues = []
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].counterTestAddAndGet,
+                             name="counterIncrement-" + str( i ),
+                             args=[ pCounterName ],
+                             kwargs={ "delta": 5 } )
+            pCounterValue += 5
+            addedPValues.append( pCounterValue )
+            threads.append( t )
+            t.start()
+
+        for t in threads:
+            t.join()
+            pCounters.append( t.result )
+        # Check that counter incremented numController times
+        pCounterResults = True
+        for i in addedPValues:
+            tmpResult = i in pCounters
+            pCounterResults = pCounterResults and tmpResult
+            if not tmpResult:
+                main.log.error( str( i ) + " is not in partitioned "
+                                "counter incremented results" )
+        utilities.assert_equals( expect=True,
+                                 actual=pCounterResults,
+                                 onpass="Default counter incremented",
+                                 onfail="Error incrementing default" +
+                                        " counter" )
+
+        main.step( "Get then add 5 to a default counter on each node" )
+        pCounters = []
+        threads = []
+        addedPValues = []
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].counterTestGetAndAdd,
+                             name="counterIncrement-" + str( i ),
+                             args=[ pCounterName ],
+                             kwargs={ "delta": 5 } )
+            addedPValues.append( pCounterValue )
+            pCounterValue += 5
+            threads.append( t )
+            t.start()
+
+        for t in threads:
+            t.join()
+            pCounters.append( t.result )
+        # Check that counter incremented numController times
+        pCounterResults = True
+        for i in addedPValues:
+            tmpResult = i in pCounters
+            pCounterResults = pCounterResults and tmpResult
+            if not tmpResult:
+                main.log.error( str( i ) + " is not in partitioned "
+                                "counter incremented results" )
+        utilities.assert_equals( expect=True,
+                                 actual=pCounterResults,
+                                 onpass="Default counter incremented",
+                                 onfail="Error incrementing default" +
+                                        " counter" )
+
+        main.step( "Counters we added have the correct values" )
+        incrementCheck = main.Counters.counterCheck( pCounterName, pCounterValue )
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=incrementCheck,
+                                 onpass="Added counters are correct",
+                                 onfail="Added counters are incorrect" )
+
+        # In-Memory counters
+        main.step( "Increment and get an in-memory counter on each node" )
         iCounters = []
         addedIValues = []
         threads = []
-        for i in range( numControllers ):
-            t = main.Thread( target=CLIs[i].counterTestIncrement,
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].counterTestAddAndGet,
                              name="icounterIncrement-" + str( i ),
                              args=[ iCounterName ],
                              kwargs={ "inMemory": True } )
@@ -3071,15 +3219,153 @@ class HAclusterRestart:
                                 "counter incremented results" )
         utilities.assert_equals( expect=True,
                                  actual=iCounterResults,
-                                 onpass="In memory counter incremented",
-                                 onfail="Error incrementing in memory" +
+                                 onpass="In-memory counter incremented",
+                                 onfail="Error incrementing in-memory" +
                                         " counter" )
+
+        main.step( "Get then Increment a in-memory counter on each node" )
+        iCounters = []
+        threads = []
+        addedIValues = []
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].counterTestGetAndAdd,
+                             name="counterGetAndAdd-" + str( i ),
+                             args=[ iCounterName ],
+                             kwargs={ "inMemory": True } )
+            addedIValues.append( iCounterValue )
+            iCounterValue += 1
+            threads.append( t )
+            t.start()
+
+        for t in threads:
+            t.join()
+            iCounters.append( t.result )
+        # Check that counter incremented numController times
+        iCounterResults = True
+        for i in addedIValues:
+            tmpResult = i in iCounters
+            iCounterResults = iCounterResults and tmpResult
+            if not tmpResult:
+                main.log.error( str( i ) + " is not in in-memory "
+                                "counter incremented results" )
+        utilities.assert_equals( expect=True,
+                                 actual=iCounterResults,
+                                 onpass="In-memory counter incremented",
+                                 onfail="Error incrementing in-memory" +
+                                        " counter" )
+
+        main.step( "Counters we added have the correct values" )
+        incrementCheck = main.Counters.counterCheck( iCounterName, iCounterValue )
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=incrementCheck,
+                                 onpass="Added counters are correct",
+                                 onfail="Added counters are incorrect" )
+
+        main.step( "Add -8 to then get a in-memory counter on each node" )
+        iCounters = []
+        threads = []
+        addedIValues = []
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].counterTestAddAndGet,
+                             name="counterIncrement-" + str( i ),
+                             args=[ iCounterName ],
+                             kwargs={ "delta": -8, "inMemory": True  } )
+            iCounterValue += -8
+            addedIValues.append( iCounterValue )
+            threads.append( t )
+            t.start()
+
+        for t in threads:
+            t.join()
+            iCounters.append( t.result )
+        # Check that counter incremented numController times
+        iCounterResults = True
+        for i in addedIValues:
+            tmpResult = i in iCounters
+            iCounterResults = iCounterResults and tmpResult
+            if not tmpResult:
+                main.log.error( str( i ) + " is not in in-memory "
+                                "counter incremented results" )
+        utilities.assert_equals( expect=True,
+                                 actual=pCounterResults,
+                                 onpass="In-memory counter incremented",
+                                 onfail="Error incrementing in-memory" +
+                                        " counter" )
+
+        main.step( "Add 5 to then get a in-memory counter on each node" )
+        iCounters = []
+        threads = []
+        addedIValues = []
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].counterTestAddAndGet,
+                             name="counterIncrement-" + str( i ),
+                             args=[ iCounterName ],
+                             kwargs={ "delta": 5, "inMemory": True  } )
+            iCounterValue += 5
+            addedIValues.append( iCounterValue )
+            threads.append( t )
+            t.start()
+
+        for t in threads:
+            t.join()
+            iCounters.append( t.result )
+        # Check that counter incremented numController times
+        iCounterResults = True
+        for i in addedIValues:
+            tmpResult = i in iCounters
+            iCounterResults = iCounterResults and tmpResult
+            if not tmpResult:
+                main.log.error( str( i ) + " is not in in-memory "
+                                "counter incremented results" )
+        utilities.assert_equals( expect=True,
+                                 actual=pCounterResults,
+                                 onpass="In-memory counter incremented",
+                                 onfail="Error incrementing in-memory" +
+                                        " counter" )
+
+        main.step( "Get then add 5 to a in-memory counter on each node" )
+        iCounters = []
+        threads = []
+        addedIValues = []
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].counterTestGetAndAdd,
+                             name="counterIncrement-" + str( i ),
+                             args=[ iCounterName ],
+                             kwargs={ "delta": 5, "inMemory": True  } )
+            addedIValues.append( iCounterValue )
+            iCounterValue += 5
+            threads.append( t )
+            t.start()
+
+        for t in threads:
+            t.join()
+            iCounters.append( t.result )
+        # Check that counter incremented numController times
+        iCounterResults = True
+        for i in addedIValues:
+            tmpResult = i in iCounters
+            iCounterResults = iCounterResults and tmpResult
+            if not tmpResult:
+                main.log.error( str( i ) + " is not in in-memory "
+                                "counter incremented results" )
+        utilities.assert_equals( expect=True,
+                                 actual=iCounterResults,
+                                 onpass="In-memory counter incremented",
+                                 onfail="Error incrementing in-memory" +
+                                        " counter" )
+
+        main.step( "Counters we added have the correct values" )
+        incrementCheck = main.Counters.counterCheck( iCounterName, iCounterValue )
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=incrementCheck,
+                                 onpass="Added counters are correct",
+                                 onfail="Added counters are incorrect" )
 
         main.step( "Check counters are consistant across nodes" )
         onosCounters = []
         threads = []
-        for i in range( numControllers ):
-            t = main.Thread( target=CLIs[i].counters,
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].counters,
                              name="counters-" + str( i ) )
             threads.append( t )
             t.start()
@@ -3101,59 +3387,21 @@ class HAclusterRestart:
                                         "across nodes" )
 
         main.step( "Counters we added have the correct values" )
-        correctResults = main.TRUE
-        for i in range( numControllers ):
-            try:
-                current = json.loads( onosCounters[i] )
-            except ( ValueError, TypeError ):
-                main.log.error( "Could not parse counters response from ONOS" +
-                                str( i + 1 ) )
-                main.log.warn( repr( onosCounters[ i ] ) )
-            pValue = None
-            iValue = None
-            try:
-                for database in current:
-                    partitioned = database.get( 'partitionedDatabaseCounters' )
-                    if partitioned:
-                        for value in partitioned:
-                            if value.get( 'name' ) == pCounterName:
-                                pValue = value.get( 'value' )
-                                break
-                    inMemory = database.get( 'inMemoryDatabaseCounters' )
-                    if inMemory:
-                        for value in inMemory:
-                            if value.get( 'name' ) == iCounterName:
-                                iValue = value.get( 'value' )
-                                break
-            except AttributeError, e:
-                main.log.error( "ONOS" + str( i + 1 ) + " counters result " +
-                                "is not as expected" )
-                correctResults = main.FALSE
-            if pValue == pCounterValue:
-                main.log.info( "Partitioned counter value is correct" )
-            else:
-                main.log.error( "Partitioned counter value is incorrect," +
-                                " expected value: " + str( pCounterValue )
-                                + " current value: " + str( pValue ) )
-                correctResults = main.FALSE
-            if iValue == iCounterValue:
-                main.log.info( "In memory counter value is correct" )
-            else:
-                main.log.error( "In memory counter value is incorrect, " +
-                                "expected value: " + str( iCounterValue ) +
-                                " current value: " + str( iValue ) )
-                correctResults = main.FALSE
+        incrementCheck = main.Counters.counterCheck( iCounterName, iCounterValue )
+        incrementCheck = incrementCheck and \
+                         main.Counters.counterCheck( iCounterName, iCounterValue )
         utilities.assert_equals( expect=main.TRUE,
-                                 actual=correctResults,
+                                 actual=incrementCheck,
                                  onpass="Added counters are correct",
                                  onfail="Added counters are incorrect" )
+
         # DISTRIBUTED SETS
         main.step( "Distributed Set get" )
         size = len( onosSet )
         getResponses = []
         threads = []
-        for i in range( numControllers ):
-            t = main.Thread( target=CLIs[i].setTestGet,
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].setTestGet,
                              name="setTestGet-" + str( i ),
                              args=[ onosSetName ] )
             threads.append( t )
@@ -3163,7 +3411,7 @@ class HAclusterRestart:
             getResponses.append( t.result )
 
         getResults = main.TRUE
-        for i in range( numControllers ):
+        for i in range( main.numCtrls ):
             if isinstance( getResponses[ i ], list):
                 current = set( getResponses[ i ] )
                 if len( current ) == len( getResponses[ i ] ):
@@ -3193,8 +3441,8 @@ class HAclusterRestart:
         main.step( "Distributed Set size" )
         sizeResponses = []
         threads = []
-        for i in range( numControllers ):
-            t = main.Thread( target=CLIs[i].setTestSize,
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].setTestSize,
                              name="setTestSize-" + str( i ),
                              args=[ onosSetName ] )
             threads.append( t )
@@ -3204,7 +3452,7 @@ class HAclusterRestart:
             sizeResponses.append( t.result )
 
         sizeResults = main.TRUE
-        for i in range( numControllers ):
+        for i in range( main.numCtrls ):
             if size != sizeResponses[ i ]:
                 sizeResults = main.FALSE
                 main.log.error( "ONOS" + str( i + 1 ) +
@@ -3220,8 +3468,8 @@ class HAclusterRestart:
         onosSet.add( addValue )
         addResponses = []
         threads = []
-        for i in range( numControllers ):
-            t = main.Thread( target=CLIs[i].setTestAdd,
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].setTestAdd,
                              name="setTestAdd-" + str( i ),
                              args=[ onosSetName, addValue ] )
             threads.append( t )
@@ -3234,7 +3482,7 @@ class HAclusterRestart:
         # main.FALSE = action resulted in no change in set
         # main.ERROR - Some error in executing the function
         addResults = main.TRUE
-        for i in range( numControllers ):
+        for i in range( main.numCtrls ):
             if addResponses[ i ] == main.TRUE:
                 # All is well
                 pass
@@ -3254,8 +3502,8 @@ class HAclusterRestart:
         size = len( onosSet )
         getResponses = []
         threads = []
-        for i in range( numControllers ):
-            t = main.Thread( target=CLIs[i].setTestGet,
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].setTestGet,
                              name="setTestGet-" + str( i ),
                              args=[ onosSetName ] )
             threads.append( t )
@@ -3264,7 +3512,7 @@ class HAclusterRestart:
             t.join()
             getResponses.append( t.result )
         getResults = main.TRUE
-        for i in range( numControllers ):
+        for i in range( main.numCtrls ):
             if isinstance( getResponses[ i ], list):
                 current = set( getResponses[ i ] )
                 if len( current ) == len( getResponses[ i ] ):
@@ -3288,8 +3536,8 @@ class HAclusterRestart:
                 getResults = main.FALSE
         sizeResponses = []
         threads = []
-        for i in range( numControllers ):
-            t = main.Thread( target=CLIs[i].setTestSize,
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].setTestSize,
                              name="setTestSize-" + str( i ),
                              args=[ onosSetName ] )
             threads.append( t )
@@ -3298,7 +3546,7 @@ class HAclusterRestart:
             t.join()
             sizeResponses.append( t.result )
         sizeResults = main.TRUE
-        for i in range( numControllers ):
+        for i in range( main.numCtrls ):
             if size != sizeResponses[ i ]:
                 sizeResults = main.FALSE
                 main.log.error( "ONOS" + str( i + 1 ) +
@@ -3315,8 +3563,8 @@ class HAclusterRestart:
         onosSet.update( addAllValue.split() )
         addResponses = []
         threads = []
-        for i in range( numControllers ):
-            t = main.Thread( target=CLIs[i].setTestAdd,
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].setTestAdd,
                              name="setTestAddAll-" + str( i ),
                              args=[ onosSetName, addAllValue ] )
             threads.append( t )
@@ -3329,7 +3577,7 @@ class HAclusterRestart:
         # main.FALSE = action resulted in no change in set
         # main.ERROR - Some error in executing the function
         addAllResults = main.TRUE
-        for i in range( numControllers ):
+        for i in range( main.numCtrls ):
             if addResponses[ i ] == main.TRUE:
                 # All is well
                 pass
@@ -3349,8 +3597,8 @@ class HAclusterRestart:
         size = len( onosSet )
         getResponses = []
         threads = []
-        for i in range( numControllers ):
-            t = main.Thread( target=CLIs[i].setTestGet,
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].setTestGet,
                              name="setTestGet-" + str( i ),
                              args=[ onosSetName ] )
             threads.append( t )
@@ -3359,7 +3607,7 @@ class HAclusterRestart:
             t.join()
             getResponses.append( t.result )
         getResults = main.TRUE
-        for i in range( numControllers ):
+        for i in range( main.numCtrls ):
             if isinstance( getResponses[ i ], list):
                 current = set( getResponses[ i ] )
                 if len( current ) == len( getResponses[ i ] ):
@@ -3383,8 +3631,8 @@ class HAclusterRestart:
                 getResults = main.FALSE
         sizeResponses = []
         threads = []
-        for i in range( numControllers ):
-            t = main.Thread( target=CLIs[i].setTestSize,
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].setTestSize,
                              name="setTestSize-" + str( i ),
                              args=[ onosSetName ] )
             threads.append( t )
@@ -3393,7 +3641,7 @@ class HAclusterRestart:
             t.join()
             sizeResponses.append( t.result )
         sizeResults = main.TRUE
-        for i in range( numControllers ):
+        for i in range( main.numCtrls ):
             if size != sizeResponses[ i ]:
                 sizeResults = main.FALSE
                 main.log.error( "ONOS" + str( i + 1 ) +
@@ -3409,8 +3657,8 @@ class HAclusterRestart:
         main.step( "Distributed Set contains()" )
         containsResponses = []
         threads = []
-        for i in range( numControllers ):
-            t = main.Thread( target=CLIs[i].setTestGet,
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].setTestGet,
                              name="setContains-" + str( i ),
                              args=[ onosSetName ],
                              kwargs={ "values": addValue } )
@@ -3422,7 +3670,7 @@ class HAclusterRestart:
             containsResponses.append( t.result )
 
         containsResults = main.TRUE
-        for i in range( numControllers ):
+        for i in range( main.numCtrls ):
             if containsResponses[ i ] == main.ERROR:
                 containsResults = main.FALSE
             else:
@@ -3436,8 +3684,8 @@ class HAclusterRestart:
         main.step( "Distributed Set containsAll()" )
         containsAllResponses = []
         threads = []
-        for i in range( numControllers ):
-            t = main.Thread( target=CLIs[i].setTestGet,
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].setTestGet,
                              name="setContainsAll-" + str( i ),
                              args=[ onosSetName ],
                              kwargs={ "values": addAllValue } )
@@ -3449,7 +3697,7 @@ class HAclusterRestart:
             containsAllResponses.append( t.result )
 
         containsAllResults = main.TRUE
-        for i in range( numControllers ):
+        for i in range( main.numCtrls ):
             if containsResponses[ i ] == main.ERROR:
                 containsResults = main.FALSE
             else:
@@ -3464,8 +3712,8 @@ class HAclusterRestart:
         onosSet.remove( addValue )
         removeResponses = []
         threads = []
-        for i in range( numControllers ):
-            t = main.Thread( target=CLIs[i].setTestRemove,
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].setTestRemove,
                              name="setTestRemove-" + str( i ),
                              args=[ onosSetName, addValue ] )
             threads.append( t )
@@ -3478,7 +3726,7 @@ class HAclusterRestart:
         # main.FALSE = action resulted in no change in set
         # main.ERROR - Some error in executing the function
         removeResults = main.TRUE
-        for i in range( numControllers ):
+        for i in range( main.numCtrls ):
             if removeResponses[ i ] == main.TRUE:
                 # All is well
                 pass
@@ -3498,8 +3746,8 @@ class HAclusterRestart:
         size = len( onosSet )
         getResponses = []
         threads = []
-        for i in range( numControllers ):
-            t = main.Thread( target=CLIs[i].setTestGet,
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].setTestGet,
                              name="setTestGet-" + str( i ),
                              args=[ onosSetName ] )
             threads.append( t )
@@ -3508,7 +3756,7 @@ class HAclusterRestart:
             t.join()
             getResponses.append( t.result )
         getResults = main.TRUE
-        for i in range( numControllers ):
+        for i in range( main.numCtrls ):
             if isinstance( getResponses[ i ], list):
                 current = set( getResponses[ i ] )
                 if len( current ) == len( getResponses[ i ] ):
@@ -3532,8 +3780,8 @@ class HAclusterRestart:
                 getResults = main.FALSE
         sizeResponses = []
         threads = []
-        for i in range( numControllers ):
-            t = main.Thread( target=CLIs[i].setTestSize,
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].setTestSize,
                              name="setTestSize-" + str( i ),
                              args=[ onosSetName ] )
             threads.append( t )
@@ -3542,7 +3790,7 @@ class HAclusterRestart:
             t.join()
             sizeResponses.append( t.result )
         sizeResults = main.TRUE
-        for i in range( numControllers ):
+        for i in range( main.numCtrls ):
             if size != sizeResponses[ i ]:
                 sizeResults = main.FALSE
                 main.log.error( "ONOS" + str( i + 1 ) +
@@ -3560,8 +3808,8 @@ class HAclusterRestart:
         removeAllResponses = []
         threads = []
         try:
-            for i in range( numControllers ):
-                t = main.Thread( target=CLIs[i].setTestRemove,
+            for i in range( main.numCtrls ):
+                t = main.Thread( target=main.CLIs[i].setTestRemove,
                                  name="setTestRemoveAll-" + str( i ),
                                  args=[ onosSetName, addAllValue ] )
                 threads.append( t )
@@ -3576,7 +3824,7 @@ class HAclusterRestart:
         # main.FALSE = action resulted in no change in set
         # main.ERROR - Some error in executing the function
         removeAllResults = main.TRUE
-        for i in range( numControllers ):
+        for i in range( main.numCtrls ):
             if removeAllResponses[ i ] == main.TRUE:
                 # All is well
                 pass
@@ -3596,8 +3844,8 @@ class HAclusterRestart:
         size = len( onosSet )
         getResponses = []
         threads = []
-        for i in range( numControllers ):
-            t = main.Thread( target=CLIs[i].setTestGet,
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].setTestGet,
                              name="setTestGet-" + str( i ),
                              args=[ onosSetName ] )
             threads.append( t )
@@ -3606,7 +3854,7 @@ class HAclusterRestart:
             t.join()
             getResponses.append( t.result )
         getResults = main.TRUE
-        for i in range( numControllers ):
+        for i in range( main.numCtrls ):
             if isinstance( getResponses[ i ], list):
                 current = set( getResponses[ i ] )
                 if len( current ) == len( getResponses[ i ] ):
@@ -3630,8 +3878,8 @@ class HAclusterRestart:
                 getResults = main.FALSE
         sizeResponses = []
         threads = []
-        for i in range( numControllers ):
-            t = main.Thread( target=CLIs[i].setTestSize,
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].setTestSize,
                              name="setTestSize-" + str( i ),
                              args=[ onosSetName ] )
             threads.append( t )
@@ -3640,7 +3888,7 @@ class HAclusterRestart:
             t.join()
             sizeResponses.append( t.result )
         sizeResults = main.TRUE
-        for i in range( numControllers ):
+        for i in range( main.numCtrls ):
             if size != sizeResponses[ i ]:
                 sizeResults = main.FALSE
                 main.log.error( "ONOS" + str( i + 1 ) +
@@ -3657,8 +3905,8 @@ class HAclusterRestart:
         onosSet.update( addAllValue.split() )
         addResponses = []
         threads = []
-        for i in range( numControllers ):
-            t = main.Thread( target=CLIs[i].setTestAdd,
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].setTestAdd,
                              name="setTestAddAll-" + str( i ),
                              args=[ onosSetName, addAllValue ] )
             threads.append( t )
@@ -3671,7 +3919,7 @@ class HAclusterRestart:
         # main.FALSE = action resulted in no change in set
         # main.ERROR - Some error in executing the function
         addAllResults = main.TRUE
-        for i in range( numControllers ):
+        for i in range( main.numCtrls ):
             if addResponses[ i ] == main.TRUE:
                 # All is well
                 pass
@@ -3691,8 +3939,8 @@ class HAclusterRestart:
         size = len( onosSet )
         getResponses = []
         threads = []
-        for i in range( numControllers ):
-            t = main.Thread( target=CLIs[i].setTestGet,
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].setTestGet,
                              name="setTestGet-" + str( i ),
                              args=[ onosSetName ] )
             threads.append( t )
@@ -3701,7 +3949,7 @@ class HAclusterRestart:
             t.join()
             getResponses.append( t.result )
         getResults = main.TRUE
-        for i in range( numControllers ):
+        for i in range( main.numCtrls ):
             if isinstance( getResponses[ i ], list):
                 current = set( getResponses[ i ] )
                 if len( current ) == len( getResponses[ i ] ):
@@ -3725,8 +3973,8 @@ class HAclusterRestart:
                 getResults = main.FALSE
         sizeResponses = []
         threads = []
-        for i in range( numControllers ):
-            t = main.Thread( target=CLIs[i].setTestSize,
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].setTestSize,
                              name="setTestSize-" + str( i ),
                              args=[ onosSetName ] )
             threads.append( t )
@@ -3735,7 +3983,7 @@ class HAclusterRestart:
             t.join()
             sizeResponses.append( t.result )
         sizeResults = main.TRUE
-        for i in range( numControllers ):
+        for i in range( main.numCtrls ):
             if size != sizeResponses[ i ]:
                 sizeResults = main.FALSE
                 main.log.error( "ONOS" + str( i + 1 ) +
@@ -3752,8 +4000,8 @@ class HAclusterRestart:
         onosSet.clear()
         clearResponses = []
         threads = []
-        for i in range( numControllers ):
-            t = main.Thread( target=CLIs[i].setTestRemove,
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].setTestRemove,
                              name="setTestClear-" + str( i ),
                              args=[ onosSetName, " "],  # Values doesn't matter
                              kwargs={ "clear": True } )
@@ -3767,7 +4015,7 @@ class HAclusterRestart:
         # main.FALSE = action resulted in no change in set
         # main.ERROR - Some error in executing the function
         clearResults = main.TRUE
-        for i in range( numControllers ):
+        for i in range( main.numCtrls ):
             if clearResponses[ i ] == main.TRUE:
                 # All is well
                 pass
@@ -3787,8 +4035,8 @@ class HAclusterRestart:
         size = len( onosSet )
         getResponses = []
         threads = []
-        for i in range( numControllers ):
-            t = main.Thread( target=CLIs[i].setTestGet,
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].setTestGet,
                              name="setTestGet-" + str( i ),
                              args=[ onosSetName ] )
             threads.append( t )
@@ -3797,7 +4045,7 @@ class HAclusterRestart:
             t.join()
             getResponses.append( t.result )
         getResults = main.TRUE
-        for i in range( numControllers ):
+        for i in range( main.numCtrls ):
             if isinstance( getResponses[ i ], list):
                 current = set( getResponses[ i ] )
                 if len( current ) == len( getResponses[ i ] ):
@@ -3821,8 +4069,8 @@ class HAclusterRestart:
                 getResults = main.FALSE
         sizeResponses = []
         threads = []
-        for i in range( numControllers ):
-            t = main.Thread( target=CLIs[i].setTestSize,
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].setTestSize,
                              name="setTestSize-" + str( i ),
                              args=[ onosSetName ] )
             threads.append( t )
@@ -3831,7 +4079,7 @@ class HAclusterRestart:
             t.join()
             sizeResponses.append( t.result )
         sizeResults = main.TRUE
-        for i in range( numControllers ):
+        for i in range( main.numCtrls ):
             if size != sizeResponses[ i ]:
                 sizeResults = main.FALSE
                 main.log.error( "ONOS" + str( i + 1 ) +
@@ -3848,8 +4096,8 @@ class HAclusterRestart:
         onosSet.update( addAllValue.split() )
         addResponses = []
         threads = []
-        for i in range( numControllers ):
-            t = main.Thread( target=CLIs[i].setTestAdd,
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].setTestAdd,
                              name="setTestAddAll-" + str( i ),
                              args=[ onosSetName, addAllValue ] )
             threads.append( t )
@@ -3862,7 +4110,7 @@ class HAclusterRestart:
         # main.FALSE = action resulted in no change in set
         # main.ERROR - Some error in executing the function
         addAllResults = main.TRUE
-        for i in range( numControllers ):
+        for i in range( main.numCtrls ):
             if addResponses[ i ] == main.TRUE:
                 # All is well
                 pass
@@ -3882,8 +4130,8 @@ class HAclusterRestart:
         size = len( onosSet )
         getResponses = []
         threads = []
-        for i in range( numControllers ):
-            t = main.Thread( target=CLIs[i].setTestGet,
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].setTestGet,
                              name="setTestGet-" + str( i ),
                              args=[ onosSetName ] )
             threads.append( t )
@@ -3892,7 +4140,7 @@ class HAclusterRestart:
             t.join()
             getResponses.append( t.result )
         getResults = main.TRUE
-        for i in range( numControllers ):
+        for i in range( main.numCtrls ):
             if isinstance( getResponses[ i ], list):
                 current = set( getResponses[ i ] )
                 if len( current ) == len( getResponses[ i ] ):
@@ -3916,8 +4164,8 @@ class HAclusterRestart:
                 getResults = main.FALSE
         sizeResponses = []
         threads = []
-        for i in range( numControllers ):
-            t = main.Thread( target=CLIs[i].setTestSize,
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].setTestSize,
                              name="setTestSize-" + str( i ),
                              args=[ onosSetName ] )
             threads.append( t )
@@ -3926,7 +4174,7 @@ class HAclusterRestart:
             t.join()
             sizeResponses.append( t.result )
         sizeResults = main.TRUE
-        for i in range( numControllers ):
+        for i in range( main.numCtrls ):
             if size != sizeResponses[ i ]:
                 sizeResults = main.FALSE
                 main.log.error( "ONOS" + str( i + 1 ) +
@@ -3943,8 +4191,8 @@ class HAclusterRestart:
         onosSet.intersection_update( retainValue.split() )
         retainResponses = []
         threads = []
-        for i in range( numControllers ):
-            t = main.Thread( target=CLIs[i].setTestRemove,
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].setTestRemove,
                              name="setTestRetain-" + str( i ),
                              args=[ onosSetName, retainValue ],
                              kwargs={ "retain": True } )
@@ -3958,7 +4206,7 @@ class HAclusterRestart:
         # main.FALSE = action resulted in no change in set
         # main.ERROR - Some error in executing the function
         retainResults = main.TRUE
-        for i in range( numControllers ):
+        for i in range( main.numCtrls ):
             if retainResponses[ i ] == main.TRUE:
                 # All is well
                 pass
@@ -3978,8 +4226,8 @@ class HAclusterRestart:
         size = len( onosSet )
         getResponses = []
         threads = []
-        for i in range( numControllers ):
-            t = main.Thread( target=CLIs[i].setTestGet,
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].setTestGet,
                              name="setTestGet-" + str( i ),
                              args=[ onosSetName ] )
             threads.append( t )
@@ -3988,7 +4236,7 @@ class HAclusterRestart:
             t.join()
             getResponses.append( t.result )
         getResults = main.TRUE
-        for i in range( numControllers ):
+        for i in range( main.numCtrls ):
             if isinstance( getResponses[ i ], list):
                 current = set( getResponses[ i ] )
                 if len( current ) == len( getResponses[ i ] ):
@@ -4012,8 +4260,8 @@ class HAclusterRestart:
                 getResults = main.FALSE
         sizeResponses = []
         threads = []
-        for i in range( numControllers ):
-            t = main.Thread( target=CLIs[i].setTestSize,
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].setTestSize,
                              name="setTestSize-" + str( i ),
                              args=[ onosSetName ] )
             threads.append( t )
@@ -4022,7 +4270,7 @@ class HAclusterRestart:
             t.join()
             sizeResponses.append( t.result )
         sizeResults = main.TRUE
-        for i in range( numControllers ):
+        for i in range( main.numCtrls ):
             if size != sizeResponses[ i ]:
                 sizeResults = main.FALSE
                 main.log.error( "ONOS" + str( i + 1 ) +

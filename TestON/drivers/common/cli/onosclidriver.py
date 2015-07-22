@@ -3267,7 +3267,7 @@ class OnosCliDriver( CLI ):
                 # Node not leader
                 assert "java.lang.IllegalStateException" not in output
             except AssertionError:
-                main.log.error( "Error in processing 'set-test-add' " +
+                main.log.error( "Error in processing '" + cmdStr + "' " +
                                 "command: " + str( output ) )
                 retryTime = 30  # Conservative time, given by Madan
                 main.log.info( "Waiting " + str( retryTime ) +
@@ -3288,7 +3288,7 @@ class OnosCliDriver( CLI ):
                 main.log.debug( self.name + " actual: " + repr( output ) )
                 return main.ERROR
         except AssertionError:
-            main.log.error( "Error in processing 'set-test-add' command: " +
+            main.log.error( "Error in processing '" + cmdStr + "' command: " +
                             str( output ) )
             return main.ERROR
         except TypeError:
@@ -3335,7 +3335,7 @@ class OnosCliDriver( CLI ):
                 # Node not leader
                 assert "java.lang.IllegalStateException" not in output
             except AssertionError:
-                main.log.error( "Error in processing 'set-test-add' " +
+                main.log.error( "Error in processing '" + cmdStr + "' " +
                                 "command: " + str( output ) )
                 retryTime = 30  # Conservative time, given by Madan
                 main.log.info( "Waiting " + str( retryTime ) +
@@ -3377,7 +3377,7 @@ class OnosCliDriver( CLI ):
             main.log.debug( self.name + " actual: " + repr( output ) )
             return main.ERROR
         except AssertionError:
-            main.log.error( "Error in processing 'set-test-remove' command: " +
+            main.log.error( "Error in processing '" + cmdStr + "' command: " +
                             str( output ) )
             return main.ERROR
         except TypeError:
@@ -3434,7 +3434,7 @@ class OnosCliDriver( CLI ):
                 # Node not leader
                 assert "java.lang.IllegalStateException" not in output
             except AssertionError:
-                main.log.error( "Error in processing 'set-test-add' " +
+                main.log.error( "Error in processing '" + cmdStr + "' " +
                                 "command: " + str( output ) )
                 retryTime = 30  # Conservative time, given by Madan
                 main.log.info( "Waiting " + str( retryTime ) +
@@ -3484,7 +3484,7 @@ class OnosCliDriver( CLI ):
                 main.log.debug( self.name + " actual: " + repr( output ) )
                 return main.ERROR
         except AssertionError:
-            main.log.error( "Error in processing 'set-test-get' command: " +
+            main.log.error( "Error in processing '" + cmdStr + "' command: " +
                             str( output ) )
             return main.ERROR
         except TypeError:
@@ -3527,7 +3527,7 @@ class OnosCliDriver( CLI ):
                 # Node not leader
                 assert "java.lang.IllegalStateException" not in output
             except AssertionError:
-                main.log.error( "Error in processing 'set-test-add' " +
+                main.log.error( "Error in processing '" + cmdStr + "' " +
                                 "command: " + str( output ) )
                 retryTime = 30  # Conservative time, given by Madan
                 main.log.info( "Waiting " + str( retryTime ) +
@@ -3556,7 +3556,7 @@ class OnosCliDriver( CLI ):
                 main.log.debug( self.name + " actual: " + repr( output ) )
                 return None
         except AssertionError:
-            main.log.error( "Error in processing 'set-test-get' command: " +
+            main.log.error( "Error in processing '" + cmdStr + "' command: " +
                             str( output ) )
             return None
         except TypeError:
@@ -3607,12 +3607,13 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def counterTestIncrement( self, counter, inMemory=False ):
+    def counterTestAddAndGet( self, counter, delta=1, inMemory=False ):
         """
-        CLI command to increment and get a distributed counter.
+        CLI command to add a delta to then get a distributed counter.
         Required arguments:
             counter - The name of the counter to increment.
         Optional arguments:
+            delta - The long to add to the counter
             inMemory - use in memory map for the counter
         returns:
             integer value of the counter or
@@ -3620,10 +3621,13 @@ class OnosCliDriver( CLI ):
         """
         try:
             counter = str( counter )
+            delta = int( delta )
             cmdStr = "counter-test-increment "
             if inMemory:
                 cmdStr += "-i "
             cmdStr += counter
+            if delta != 1:
+                cmdStr += " " + str( delta )
             output = self.sendline( cmdStr )
             try:
                 # TODO: Maybe make this less hardcoded
@@ -3632,7 +3636,7 @@ class OnosCliDriver( CLI ):
                 # Node not leader
                 assert "java.lang.IllegalStateException" not in output
             except AssertionError:
-                main.log.error( "Error in processing 'set-test-add' " +
+                main.log.error( "Error in processing '" + cmdStr + "' " +
                                 "command: " + str( output ) )
                 retryTime = 30  # Conservative time, given by Madan
                 main.log.info( "Waiting " + str( retryTime ) +
@@ -3641,18 +3645,18 @@ class OnosCliDriver( CLI ):
                 output = self.sendline( cmdStr )
             assert "Error executing command" not in output
             main.log.info( self.name + ": " + output )
-            pattern = counter + " was updated to (\d+)"
+            pattern = counter + " was updated to (-?\d+)"
             match = re.search( pattern, output )
             if match:
                 return int( match.group( 1 ) )
             else:
-                main.log.error( self.name + ": counterTestIncrement did not" +
+                main.log.error( self.name + ": counterTestAddAndGet did not" +
                                 " match expected output." )
                 main.log.debug( self.name + " expected: " + pattern )
                 main.log.debug( self.name + " actual: " + repr( output ) )
                 return None
         except AssertionError:
-            main.log.error( "Error in processing 'counter-test-increment'" +
+            main.log.error( "Error in processing '" + cmdStr + "'" +
                             " command: " + str( output ) )
             return None
         except TypeError:
@@ -3667,6 +3671,72 @@ class OnosCliDriver( CLI ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
+
+    def counterTestGetAndAdd( self, counter, delta=1, inMemory=False ):
+        """
+        CLI command to get a distributed counter then add a delta to it.
+        Required arguments:
+            counter - The name of the counter to increment.
+        Optional arguments:
+            delta - The long to add to the counter
+            inMemory - use in memory map for the counter
+        returns:
+            integer value of the counter or
+            None on Error
+        """
+        try:
+            counter = str( counter )
+            delta = int( delta )
+            cmdStr = "counter-test-increment -g "
+            if inMemory:
+                cmdStr += "-i "
+            cmdStr += counter
+            if delta != 1:
+                cmdStr += " " + str( delta )
+            output = self.sendline( cmdStr )
+            try:
+                # TODO: Maybe make this less hardcoded
+                # ConsistentMap Exceptions
+                assert "org.onosproject.store.service" not in output
+                # Node not leader
+                assert "java.lang.IllegalStateException" not in output
+            except AssertionError:
+                main.log.error( "Error in processing '" + cmdStr + "' " +
+                                "command: " + str( output ) )
+                retryTime = 30  # Conservative time, given by Madan
+                main.log.info( "Waiting " + str( retryTime ) +
+                               "seconds before retrying." )
+                time.sleep( retryTime )  # Due to change in mastership
+                output = self.sendline( cmdStr )
+            assert "Error executing command" not in output
+            main.log.info( self.name + ": " + output )
+            pattern = counter + " was updated to (-?\d+)"
+            match = re.search( pattern, output )
+            if match:
+                return int( match.group( 1 ) )
+            else:
+                main.log.error( self.name + ": counterTestGetAndAdd did not" +
+                                " match expected output." )
+                main.log.debug( self.name + " expected: " + pattern )
+                main.log.debug( self.name + " actual: " + repr( output ) )
+                return None
+        except AssertionError:
+            main.log.error( "Error in processing '" + cmdStr + "'" +
+                            " command: " + str( output ) )
+            return None
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
 
     def summary( self, jsonFormat=True ):
         """

@@ -47,6 +47,7 @@ class HAsingleInstanceRestart:
         start cli sessions
         start tcpdump
         """
+        import imp
         main.log.info( "ONOS Single node cluster restart " +
                          "HA test - initialization" )
         main.case( "Setting up test environment" )
@@ -62,23 +63,29 @@ class HAsingleInstanceRestart:
         gitBranch = main.params[ 'branch' ]
         cellName = main.params[ 'ENV' ][ 'cellName' ]
 
-        # set global variables
-        global numControllers
-        numControllers = int( main.params[ 'num_controllers' ] )
+        main.numCtrls = int( main.params[ 'num_controllers' ] )
         if main.ONOSbench.maxNodes:
-            if main.ONOSbench.maxNodes < numControllers:
-                numControllers = int( main.ONOSbench.maxNodes )
+            if main.ONOSbench.maxNodes < main.numCtrls:
+                main.numCtrls = int( main.ONOSbench.maxNodes )
 
-        global CLIs
-        CLIs = []
-        global nodes
-        nodes = []
+        try:
+            fileName = "Counters"
+            path = main.params[ 'imports' ][ 'path' ]
+            main.Counters = imp.load_source( fileName,
+                                             path + fileName + ".py" )
+        except Exception as e:
+            main.log.exception( e )
+            main.cleanup()
+            main.exit()
+
+        main.CLIs = []
+        main.nodes = []
         ipList = []
         for i in range( 1, int( main.ONOSbench.maxNodes ) + 1 ):
             try:
-                CLIs.append( getattr( main, 'ONOScli' + str( i ) ) )
-                nodes.append( getattr( main, 'ONOS' + str( i ) ) )
-                ipList.append( nodes[ -1 ].ip_address )
+                main.CLIs.append( getattr( main, 'ONOScli' + str( i ) ) )
+                main.nodes.append( getattr( main, 'ONOS' + str( i ) ) )
+                ipList.append( main.nodes[ -1 ].ip_address )
             except AttributeError:
                 break
 
@@ -96,13 +103,13 @@ class HAsingleInstanceRestart:
         main.ONOSbench.onosRemoveRaftLogs()
 
         main.log.info( "Uninstalling ONOS" )
-        for node in nodes:
+        for node in main.nodes:
             main.ONOSbench.onosUninstall( node.ip_address )
 
         # Make sure ONOS is DEAD
         main.log.info( "Killing any ONOS processes" )
         killResults = main.TRUE
-        for node in nodes:
+        for node in main.nodes:
             killed = main.ONOSbench.onosKill( node.ip_address )
             killResults = killResults and killed
 
@@ -161,13 +168,13 @@ class HAsingleInstanceRestart:
         graphs += '</ac:structured-macro>\n'
         main.log.wiki(graphs)
 
-        CLIs = []
-        nodes = []
+        main.CLIs = []
+        main.nodes = []
         ipList = []
-        for i in range( 1, numControllers + 1 ):
-            CLIs.append( getattr( main, 'ONOScli' + str( i ) ) )
-            nodes.append( getattr( main, 'ONOS' + str( i ) ) )
-            ipList.append( nodes[ -1 ].ip_address )
+        for i in range( 1, main.numCtrls + 1 ):
+            main.CLIs.append( getattr( main, 'ONOScli' + str( i ) ) )
+            main.nodes.append( getattr( main, 'ONOS' + str( i ) ) )
+            ipList.append( main.nodes[ -1 ].ip_address )
 
         main.ONOSbench.createCellFile( main.ONOSbench.ip_address, "SingleHA",
                                        main.Mininet1.ip_address,
@@ -182,14 +189,14 @@ class HAsingleInstanceRestart:
 
         main.step( "Installing ONOS package" )
         onosInstallResult = main.ONOSbench.onosInstall(
-                options="-f", node=nodes[0].ip_address )
+                options="-f", node=main.nodes[0].ip_address )
         utilities.assert_equals( expect=main.TRUE, actual=onosInstallResult,
                                  onpass="ONOS install successful",
                                  onfail="ONOS install failed" )
 
         main.step( "Checking if ONOS is up yet" )
         for i in range( 2 ):
-            onos1Isup = main.ONOSbench.isup( nodes[0].ip_address )
+            onos1Isup = main.ONOSbench.isup( main.nodes[0].ip_address )
             if onos1Isup:
                 break
         utilities.assert_equals( expect=main.TRUE, actual=onos1Isup,
@@ -197,7 +204,7 @@ class HAsingleInstanceRestart:
                                  onfail="ONOS startup failed" )
 
         main.log.step( "Starting ONOS CLI sessions" )
-        cliResults = main.ONOScli1.startOnosCli( nodes[0].ip_address )
+        cliResults = main.ONOScli1.startOnosCli( main.nodes[0].ip_address )
         utilities.assert_equals( expect=main.TRUE, actual=cliResults,
                                  onpass="ONOS cli startup successful",
                                  onfail="ONOS cli startup failed" )
@@ -213,8 +220,8 @@ class HAsingleInstanceRestart:
         main.step( "App Ids check" )
         appCheck = main.ONOScli1.appToIDCheck()
         if appCheck != main.TRUE:
-            main.log.warn( CLIs[0].apps() )
-            main.log.warn( CLIs[0].appIDs() )
+            main.log.warn( main.CLIs[0].apps() )
+            main.log.warn( main.CLIs[0].appIDs() )
         utilities.assert_equals( expect=main.TRUE, actual=appCheck,
                                  onpass="App Ids seem to be correct",
                                  onfail="Something is wrong with app Ids" )
@@ -229,8 +236,7 @@ class HAsingleInstanceRestart:
         Assign devices to controllers
         """
         import re
-        import time
-        assert numControllers, "numControllers not defined"
+        assert main.numCtrls, "main.numCtrls not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
 
@@ -241,8 +247,8 @@ class HAsingleInstanceRestart:
         main.step( "Assign switches to controllers" )
 
         ipList = []
-        for i in range( numControllers ):
-            ipList.append( nodes[ i ].ip_address )
+        for i in range( main.numCtrls ):
+            ipList.append( main.nodes[ i ].ip_address )
         swList = []
         for i in range( 1, 29 ):
             swList.append( "s" + str( i ) )
@@ -255,7 +261,7 @@ class HAsingleInstanceRestart:
                 main.log.info( str( response ) )
             except Exception:
                 main.log.info( repr( response ) )
-            if re.search( "tcp:" + nodes[0].ip_address, response ):
+            if re.search( "tcp:" + main.nodes[0].ip_address, response ):
                 mastershipCheck = mastershipCheck and main.TRUE
             else:
                 mastershipCheck = main.FALSE
@@ -271,13 +277,11 @@ class HAsingleInstanceRestart:
         """
         Assign mastership to controllers
         """
-        import re
-        import time
-        assert numControllers, "numControllers not defined"
+        assert main.numCtrls, "main.numCtrls not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
-        assert CLIs, "CLIs not defined"
-        assert nodes, "nodes not defined"
+        assert main.CLIs, "main.CLIs not defined"
+        assert main.nodes, "main.nodes not defined"
 
         main.case( "Assigning Controller roles for switches" )
         main.caseExplanation = "Check that ONOS is connected to each " +\
@@ -289,7 +293,7 @@ class HAsingleInstanceRestart:
         roleCheck = main.TRUE
         try:
             for i in range( 1, 29 ):  # switches 1 through 28
-                ip = nodes[ 0 ].ip_address  # ONOS1
+                ip = main.nodes[ 0 ].ip_address  # ONOS1
                 # set up correct variables:
                 if i == 1:
                     deviceId = main.ONOScli1.getDevice( "1000" ).get( 'id' )
@@ -354,7 +358,7 @@ class HAsingleInstanceRestart:
         """
         import time
         import json
-        assert numControllers, "numControllers not defined"
+        assert main.numCtrls, "main.numCtrls not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
         # NOTE: we must reinstall intents until we have a persistant intent
@@ -368,7 +372,7 @@ class HAsingleInstanceRestart:
 
         # install onos-app-fwd
         main.step( "Install reactive forwarding app" )
-        installResults = CLIs[0].activateApp( "org.onosproject.fwd" )
+        installResults = main.CLIs[0].activateApp( "org.onosproject.fwd" )
         utilities.assert_equals( expect=main.TRUE, actual=installResults,
                                  onpass="Install fwd successful",
                                  onfail="Install fwd failed" )
@@ -376,8 +380,8 @@ class HAsingleInstanceRestart:
         main.step( "Check app ids" )
         appCheck = main.ONOScli1.appToIDCheck()
         if appCheck != main.TRUE:
-            main.log.warn( CLIs[0].apps() )
-            main.log.warn( CLIs[0].appIDs() )
+            main.log.warn( main.CLIs[0].apps() )
+            main.log.warn( main.CLIs[0].appIDs() )
         utilities.assert_equals( expect=main.TRUE, actual=appCheck,
                                  onpass="App Ids seem to be correct",
                                  onfail="Something is wrong with app Ids" )
@@ -403,7 +407,7 @@ class HAsingleInstanceRestart:
         time.sleep( 11 )
         # uninstall onos-app-fwd
         main.step( "Uninstall reactive forwarding app" )
-        uninstallResult = CLIs[0].deactivateApp( "org.onosproject.fwd" )
+        uninstallResult = main.CLIs[0].deactivateApp( "org.onosproject.fwd" )
         utilities.assert_equals( expect=main.TRUE, actual=uninstallResult,
                                  onpass="Uninstall fwd successful",
                                  onfail="Uninstall fwd failed" )
@@ -411,8 +415,8 @@ class HAsingleInstanceRestart:
         main.step( "Check app ids" )
         appCheck2 = main.ONOScli1.appToIDCheck()
         if appCheck2 != main.TRUE:
-            main.log.warn( CLIs[0].apps() )
-            main.log.warn( CLIs[0].appIDs() )
+            main.log.warn( main.CLIs[0].apps() )
+            main.log.warn( main.CLIs[0].appIDs() )
         utilities.assert_equals( expect=main.TRUE, actual=appCheck2,
                                  onpass="App Ids seem to be correct",
                                  onfail="Something is wrong with app Ids" )
@@ -573,7 +577,7 @@ class HAsingleInstanceRestart:
         for i in range(100):
             correct = True
             main.log.info( "Submitted intents: " + str( sorted( intentIds ) ) )
-            for cli in CLIs:
+            for cli in main.CLIs:
                 onosIds = []
                 ids = cli.getAllIntentsId()
                 onosIds.append( ids )
@@ -713,7 +717,7 @@ class HAsingleInstanceRestart:
         """
         import json
         import time
-        assert numControllers, "numControllers not defined"
+        assert main.numCtrls, "main.numCtrls not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
         main.case( "Verify connectivity by sendind traffic across Intents" )
@@ -934,7 +938,7 @@ class HAsingleInstanceRestart:
                 main.log.exception( "Error parsing pending map" )
                 main.log.error( repr( pendingMap ) )
         # Print flowrules
-        main.log.debug( CLIs[0].flows( jsonFormat=False ) )
+        main.log.debug( main.CLIs[0].flows( jsonFormat=False ) )
         main.step( "Wait a minute then ping again" )
         # the wait is above
         PingResult = main.TRUE
@@ -972,7 +976,7 @@ class HAsingleInstanceRestart:
         Reading state of ONOS
         """
         import json
-        assert numControllers, "numControllers not defined"
+        assert main.numCtrls, "main.numCtrls not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
 
@@ -1091,7 +1095,7 @@ class HAsingleInstanceRestart:
         mnSwitches = main.Mininet1.getSwitches()
         mnLinks = main.Mininet1.getLinks()
         mnHosts = main.Mininet1.getHosts()
-        for controller in range( numControllers ):
+        for controller in range( main.numCtrls ):
             controllerStr = str( controller + 1 )
             if devices[ controller ] and ports[ controller ] and\
                 "Error" not in devices[ controller ] and\
@@ -1165,7 +1169,7 @@ class HAsingleInstanceRestart:
         The Failure case.
         """
         import time
-        assert numControllers, "numControllers not defined"
+        assert main.numCtrls, "main.numCtrls not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
 
@@ -1180,7 +1184,7 @@ class HAsingleInstanceRestart:
         main.caseExplanation = "Killing ONOS process and restart cli " +\
                                 "sessions once onos is up."
         main.step( "Killing ONOS processes" )
-        killResult = main.ONOSbench.onosKill( nodes[0].ip_address )
+        killResult = main.ONOSbench.onosKill( main.nodes[0].ip_address )
         start = time.time()
         utilities.assert_equals( expect=main.TRUE, actual=killResult,
                                  onpass="ONOS Killed",
@@ -1189,7 +1193,7 @@ class HAsingleInstanceRestart:
         main.step( "Checking if ONOS is up yet" )
         count = 0
         while count < 10:
-            onos1Isup = main.ONOSbench.isup( nodes[0].ip_address )
+            onos1Isup = main.ONOSbench.isup( main.nodes[0].ip_address )
             if onos1Isup == main.TRUE:
                 elapsed = time.time() - start
                 break
@@ -1200,7 +1204,7 @@ class HAsingleInstanceRestart:
                                  onfail="ONOS failed to start" )
 
         main.log.step( "Starting ONOS CLI sessions" )
-        cliResults = main.ONOScli1.startOnosCli( nodes[0].ip_address )
+        cliResults = main.ONOScli1.startOnosCli( main.nodes[0].ip_address )
         utilities.assert_equals( expect=main.TRUE, actual=cliResults,
                                  onpass="ONOS cli startup successful",
                                  onfail="ONOS cli startup failed" )
@@ -1220,7 +1224,7 @@ class HAsingleInstanceRestart:
         Check state after ONOS failure
         """
         import json
-        assert numControllers, "numControllers not defined"
+        assert main.numCtrls, "main.numCtrls not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
         main.case( "Running ONOS Constant State Tests" )
@@ -1373,9 +1377,9 @@ class HAsingleInstanceRestart:
         main.step( "Leadership Election is still functional" )
         # Test of LeadershipElection
 
-        leader = nodes[0].ip_address
+        leader = main.nodes[0].ip_address
         leaderResult = main.TRUE
-        for controller in range( 1, numControllers + 1 ):
+        for controller in range( 1, main.numCtrls + 1 ):
             # loop through ONOScli handlers
             node = getattr( main, ( 'ONOScli' + str( controller ) ) )
             leaderN = node.electionTestLeader()
@@ -1409,7 +1413,7 @@ class HAsingleInstanceRestart:
         """
         import json
         import time
-        assert numControllers, "numControllers not defined"
+        assert main.numCtrls, "main.numCtrls not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
 
@@ -1458,7 +1462,7 @@ class HAsingleInstanceRestart:
             mnSwitches = main.Mininet1.getSwitches()
             mnLinks = main.Mininet1.getLinks()
             mnHosts = main.Mininet1.getHosts()
-            for controller in range( numControllers ):
+            for controller in range( main.numCtrls ):
                 controllerStr = str( controller + 1 )
                 if devices[ controller ] and ports[ controller ] and\
                     "Error" not in devices[ controller ] and\
@@ -1584,7 +1588,6 @@ class HAsingleInstanceRestart:
                 if zeroHosts is False:
                     hostAttachment = True
 
-
                 devicesResults = devicesResults and currentDevicesResult
                 linksResults = linksResults and currentLinksResult
                 hostsResults = hostsResults and currentHostsResult
@@ -1624,7 +1627,7 @@ class HAsingleInstanceRestart:
         Link s3-s28 down
         """
         import time
-        assert numControllers, "numControllers not defined"
+        assert main.numCtrls, "main.numCtrls not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
         # NOTE: You should probably run a topology check after this
@@ -1650,7 +1653,7 @@ class HAsingleInstanceRestart:
         Link s3-s28 up
         """
         import time
-        assert numControllers, "numControllers not defined"
+        assert main.numCtrls, "main.numCtrls not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
         # NOTE: You should probably run a topology check after this
@@ -1677,7 +1680,7 @@ class HAsingleInstanceRestart:
         """
         # NOTE: You should probably run a topology check after this
         import time
-        assert numControllers, "numControllers not defined"
+        assert main.numCtrls, "main.numCtrls not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
 
@@ -1711,7 +1714,7 @@ class HAsingleInstanceRestart:
         """
         # NOTE: You should probably run a topology check after this
         import time
-        assert numControllers, "numControllers not defined"
+        assert main.numCtrls, "main.numCtrls not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
 
@@ -1727,8 +1730,8 @@ class HAsingleInstanceRestart:
         for peer in links:
             main.Mininet1.addLink( switch, peer )
         ipList = []
-        for i in range( numControllers ):
-            ipList.append( nodes[ i ].ip_address )
+        for i in range( main.numCtrls ):
+            ipList.append( main.nodes[ i ].ip_address )
         main.Mininet1.assignSwController( sw=switch, ip=ipList )
         main.log.info( "Waiting " + str( switchSleep ) +
                        " seconds for switch up to be discovered" )
@@ -1749,7 +1752,7 @@ class HAsingleInstanceRestart:
         """
         import os
         import time
-        assert numControllers, "numControllers not defined"
+        assert main.numCtrls, "main.numCtrls not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
         # printing colors to terminal
@@ -1776,7 +1779,7 @@ class HAsingleInstanceRestart:
             # NOTE: must end in /
             dstDir = "~/packet_captures/"
             for f in logFiles:
-                main.ONOSbench.handle.sendline( "scp sdn@" + nodes[0].ip_address + ":" +
+                main.ONOSbench.handle.sendline( "scp sdn@" + main.nodes[0].ip_address + ":" +
                                                 logFolder + f + " " +
                                                 teststationUser + "@" +
                                                 teststationIP + ":" + dstDir +
@@ -1790,7 +1793,7 @@ class HAsingleInstanceRestart:
             # NOTE: must end in /
             dstDir = "~/packet_captures/"
             for f in logFiles:
-                main.ONOSbench.handle.sendline( "scp sdn@" + nodes[0].ip_address + ":" +
+                main.ONOSbench.handle.sendline( "scp sdn@" + main.nodes[0].ip_address + ":" +
                                                 logFolder + f + " " +
                                                 teststationUser + "@" +
                                                 teststationIP + ":" + dstDir +
@@ -1810,7 +1813,7 @@ class HAsingleInstanceRestart:
         main.step( "Checking ONOS Logs for errors" )
         print colors[ 'purple' ] + "Checking logs for errors on ONOS1:" + \
             colors[ 'end' ]
-        print main.ONOSbench.checkLogs( nodes[0].ip_address, restart=True )
+        print main.ONOSbench.checkLogs( main.nodes[0].ip_address, restart=True )
 
         try:
             timerLog = open( main.logdir + "/Timers.csv", 'w')
@@ -1826,7 +1829,7 @@ class HAsingleInstanceRestart:
         """
         start election app on all onos nodes
         """
-        assert numControllers, "numControllers not defined"
+        assert main.numCtrls, "main.numCtrls not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
 
@@ -1844,7 +1847,7 @@ class HAsingleInstanceRestart:
         # check for leader
         leader = main.ONOScli1.electionTestLeader()
         # verify leader is ONOS1
-        if leader == nodes[0].ip_address:
+        if leader == main.nodes[0].ip_address:
             # all is well
             pass
         elif leader is None:
@@ -1875,7 +1878,7 @@ class HAsingleInstanceRestart:
         """
         Check that Leadership Election is still functional
         """
-        assert numControllers, "numControllers not defined"
+        assert main.numCtrls, "main.numCtrls not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
         leaderResult = main.TRUE
@@ -1885,7 +1888,7 @@ class HAsingleInstanceRestart:
         leader = main.ONOScli1.electionTestLeader()
         # do some sanity checking on leader before using it
         withdrawResult = main.FALSE
-        if leader == nodes[0].ip_address:
+        if leader == main.nodes[0].ip_address:
             oldLeader = getattr( main, "ONOScli1" )
         elif leader is None or leader == main.FALSE:
             main.log.error(
@@ -1943,7 +1946,7 @@ class HAsingleInstanceRestart:
         main.step( "Node became leader when it ran for election" )
         afterRun = main.ONOScli1.electionTestLeader()
         # verify leader is ONOS1
-        if afterRun == nodes[0].ip_address:
+        if afterRun == main.nodes[0].ip_address:
             afterResult = main.TRUE
         else:
             afterResult = main.FALSE
@@ -1959,11 +1962,11 @@ class HAsingleInstanceRestart:
         """
         Install Distributed Primitives app
         """
-        assert numControllers, "numControllers not defined"
+        assert main.numCtrls, "main.numCtrls not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
-        assert CLIs, "CLIs not defined"
-        assert nodes, "nodes not defined"
+        assert main.CLIs, "main.CLIs not defined"
+        assert main.nodes, "main.nodes not defined"
 
         # Variables for the distributed primitives tests
         global pCounterName
@@ -1983,7 +1986,7 @@ class HAsingleInstanceRestart:
         main.case( description )
         main.step( "Install Primitives app" )
         appName = "org.onosproject.distributedprimitives"
-        appResults = CLIs[0].activateApp( appName )
+        appResults = main.CLIs[0].activateApp( appName )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=appResults,
                                  onpass="Primitives app activated",
@@ -1993,13 +1996,12 @@ class HAsingleInstanceRestart:
         """
         Check for basic functionality with distributed primitives
         """
-        import json
         # Make sure variables are defined/set
-        assert numControllers, "numControllers not defined"
+        assert main.numCtrls, "main.numCtrls not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
-        assert CLIs, "CLIs not defined"
-        assert nodes, "nodes not defined"
+        assert main.CLIs, "main.CLIs not defined"
+        assert main.nodes, "main.nodes not defined"
         assert pCounterName, "pCounterName not defined"
         assert iCounterName, "iCounterName not defined"
         assert onosSetName, "onosSetName not defined"
@@ -2027,15 +2029,17 @@ class HAsingleInstanceRestart:
         description = "Check for basic functionality with distributed " +\
                       "primitives"
         main.case( description )
-        main.caseExplanation = "Test the methods of the distributed primitives (counters and sets) throught the cli"
+        main.caseExplanation = "Test the methods of the distributed " +\
+                                "primitives (counters and sets) throught the cli"
         # DISTRIBUTED ATOMIC COUNTERS
-        main.step( "Increment and get a default counter on each node" )
+        # Partitioned counters
+        main.step( "Increment then get a default counter on each node" )
         pCounters = []
         threads = []
         addedPValues = []
-        for i in range( numControllers ):
-            t = main.Thread( target=CLIs[i].counterTestIncrement,
-                             name="counterIncrement-" + str( i ),
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].counterTestAddAndGet,
+                             name="counterAddAndGet-" + str( i ),
                              args=[ pCounterName ] )
             pCounterValue += 1
             addedPValues.append( pCounterValue )
@@ -2059,12 +2063,150 @@ class HAsingleInstanceRestart:
                                  onfail="Error incrementing default" +
                                         " counter" )
 
-        main.step( "Increment and get an in memory counter on each node" )
+        main.step( "Get then Increment a default counter on each node" )
+        pCounters = []
+        threads = []
+        addedPValues = []
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].counterTestGetAndAdd,
+                             name="counterGetAndAdd-" + str( i ),
+                             args=[ pCounterName ] )
+            addedPValues.append( pCounterValue )
+            pCounterValue += 1
+            threads.append( t )
+            t.start()
+
+        for t in threads:
+            t.join()
+            pCounters.append( t.result )
+        # Check that counter incremented numController times
+        pCounterResults = True
+        for i in addedPValues:
+            tmpResult = i in pCounters
+            pCounterResults = pCounterResults and tmpResult
+            if not tmpResult:
+                main.log.error( str( i ) + " is not in partitioned "
+                                "counter incremented results" )
+        utilities.assert_equals( expect=True,
+                                 actual=pCounterResults,
+                                 onpass="Default counter incremented",
+                                 onfail="Error incrementing default" +
+                                        " counter" )
+
+        main.step( "Counters we added have the correct values" )
+        incrementCheck = main.Counters.counterCheck( pCounterName, pCounterValue )
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=incrementCheck,
+                                 onpass="Added counters are correct",
+                                 onfail="Added counters are incorrect" )
+
+        main.step( "Add -8 to then get a default counter on each node" )
+        pCounters = []
+        threads = []
+        addedPValues = []
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].counterTestAddAndGet,
+                             name="counterIncrement-" + str( i ),
+                             args=[ pCounterName ],
+                             kwargs={ "delta": -8 } )
+            pCounterValue += -8
+            addedPValues.append( pCounterValue )
+            threads.append( t )
+            t.start()
+
+        for t in threads:
+            t.join()
+            pCounters.append( t.result )
+        # Check that counter incremented numController times
+        pCounterResults = True
+        for i in addedPValues:
+            tmpResult = i in pCounters
+            pCounterResults = pCounterResults and tmpResult
+            if not tmpResult:
+                main.log.error( str( i ) + " is not in partitioned "
+                                "counter incremented results" )
+        utilities.assert_equals( expect=True,
+                                 actual=pCounterResults,
+                                 onpass="Default counter incremented",
+                                 onfail="Error incrementing default" +
+                                        " counter" )
+
+        main.step( "Add 5 to then get a default counter on each node" )
+        pCounters = []
+        threads = []
+        addedPValues = []
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].counterTestAddAndGet,
+                             name="counterIncrement-" + str( i ),
+                             args=[ pCounterName ],
+                             kwargs={ "delta": 5 } )
+            pCounterValue += 5
+            addedPValues.append( pCounterValue )
+            threads.append( t )
+            t.start()
+
+        for t in threads:
+            t.join()
+            pCounters.append( t.result )
+        # Check that counter incremented numController times
+        pCounterResults = True
+        for i in addedPValues:
+            tmpResult = i in pCounters
+            pCounterResults = pCounterResults and tmpResult
+            if not tmpResult:
+                main.log.error( str( i ) + " is not in partitioned "
+                                "counter incremented results" )
+        utilities.assert_equals( expect=True,
+                                 actual=pCounterResults,
+                                 onpass="Default counter incremented",
+                                 onfail="Error incrementing default" +
+                                        " counter" )
+
+        main.step( "Get then add 5 to a default counter on each node" )
+        pCounters = []
+        threads = []
+        addedPValues = []
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].counterTestGetAndAdd,
+                             name="counterIncrement-" + str( i ),
+                             args=[ pCounterName ],
+                             kwargs={ "delta": 5 } )
+            addedPValues.append( pCounterValue )
+            pCounterValue += 5
+            threads.append( t )
+            t.start()
+
+        for t in threads:
+            t.join()
+            pCounters.append( t.result )
+        # Check that counter incremented numController times
+        pCounterResults = True
+        for i in addedPValues:
+            tmpResult = i in pCounters
+            pCounterResults = pCounterResults and tmpResult
+            if not tmpResult:
+                main.log.error( str( i ) + " is not in partitioned "
+                                "counter incremented results" )
+        utilities.assert_equals( expect=True,
+                                 actual=pCounterResults,
+                                 onpass="Default counter incremented",
+                                 onfail="Error incrementing default" +
+                                        " counter" )
+
+        main.step( "Counters we added have the correct values" )
+        incrementCheck = main.Counters.counterCheck( pCounterName, pCounterValue )
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=incrementCheck,
+                                 onpass="Added counters are correct",
+                                 onfail="Added counters are incorrect" )
+
+        # In-Memory counters
+        main.step( "Increment and get an in-memory counter on each node" )
         iCounters = []
         addedIValues = []
         threads = []
-        for i in range( numControllers ):
-            t = main.Thread( target=CLIs[i].counterTestIncrement,
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].counterTestAddAndGet,
                              name="icounterIncrement-" + str( i ),
                              args=[ iCounterName ],
                              kwargs={ "inMemory": True } )
@@ -2086,15 +2228,153 @@ class HAsingleInstanceRestart:
                                 "counter incremented results" )
         utilities.assert_equals( expect=True,
                                  actual=iCounterResults,
-                                 onpass="In memory counter incremented",
-                                 onfail="Error incrementing in memory" +
+                                 onpass="In-memory counter incremented",
+                                 onfail="Error incrementing in-memory" +
                                         " counter" )
+
+        main.step( "Get then Increment a in-memory counter on each node" )
+        iCounters = []
+        threads = []
+        addedIValues = []
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].counterTestGetAndAdd,
+                             name="counterGetAndAdd-" + str( i ),
+                             args=[ iCounterName ],
+                             kwargs={ "inMemory": True } )
+            addedIValues.append( iCounterValue )
+            iCounterValue += 1
+            threads.append( t )
+            t.start()
+
+        for t in threads:
+            t.join()
+            iCounters.append( t.result )
+        # Check that counter incremented numController times
+        iCounterResults = True
+        for i in addedIValues:
+            tmpResult = i in iCounters
+            iCounterResults = iCounterResults and tmpResult
+            if not tmpResult:
+                main.log.error( str( i ) + " is not in in-memory "
+                                "counter incremented results" )
+        utilities.assert_equals( expect=True,
+                                 actual=iCounterResults,
+                                 onpass="In-memory counter incremented",
+                                 onfail="Error incrementing in-memory" +
+                                        " counter" )
+
+        main.step( "Counters we added have the correct values" )
+        incrementCheck = main.Counters.counterCheck( iCounterName, iCounterValue )
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=incrementCheck,
+                                 onpass="Added counters are correct",
+                                 onfail="Added counters are incorrect" )
+
+        main.step( "Add -8 to then get a in-memory counter on each node" )
+        iCounters = []
+        threads = []
+        addedIValues = []
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].counterTestAddAndGet,
+                             name="counterIncrement-" + str( i ),
+                             args=[ iCounterName ],
+                             kwargs={ "delta": -8, "inMemory": True  } )
+            iCounterValue += -8
+            addedIValues.append( iCounterValue )
+            threads.append( t )
+            t.start()
+
+        for t in threads:
+            t.join()
+            iCounters.append( t.result )
+        # Check that counter incremented numController times
+        iCounterResults = True
+        for i in addedIValues:
+            tmpResult = i in iCounters
+            iCounterResults = iCounterResults and tmpResult
+            if not tmpResult:
+                main.log.error( str( i ) + " is not in in-memory "
+                                "counter incremented results" )
+        utilities.assert_equals( expect=True,
+                                 actual=pCounterResults,
+                                 onpass="In-memory counter incremented",
+                                 onfail="Error incrementing in-memory" +
+                                        " counter" )
+
+        main.step( "Add 5 to then get a in-memory counter on each node" )
+        iCounters = []
+        threads = []
+        addedIValues = []
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].counterTestAddAndGet,
+                             name="counterIncrement-" + str( i ),
+                             args=[ iCounterName ],
+                             kwargs={ "delta": 5, "inMemory": True  } )
+            iCounterValue += 5
+            addedIValues.append( iCounterValue )
+            threads.append( t )
+            t.start()
+
+        for t in threads:
+            t.join()
+            iCounters.append( t.result )
+        # Check that counter incremented numController times
+        iCounterResults = True
+        for i in addedIValues:
+            tmpResult = i in iCounters
+            iCounterResults = iCounterResults and tmpResult
+            if not tmpResult:
+                main.log.error( str( i ) + " is not in in-memory "
+                                "counter incremented results" )
+        utilities.assert_equals( expect=True,
+                                 actual=pCounterResults,
+                                 onpass="In-memory counter incremented",
+                                 onfail="Error incrementing in-memory" +
+                                        " counter" )
+
+        main.step( "Get then add 5 to a in-memory counter on each node" )
+        iCounters = []
+        threads = []
+        addedIValues = []
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].counterTestGetAndAdd,
+                             name="counterIncrement-" + str( i ),
+                             args=[ iCounterName ],
+                             kwargs={ "delta": 5, "inMemory": True  } )
+            addedIValues.append( iCounterValue )
+            iCounterValue += 5
+            threads.append( t )
+            t.start()
+
+        for t in threads:
+            t.join()
+            iCounters.append( t.result )
+        # Check that counter incremented numController times
+        iCounterResults = True
+        for i in addedIValues:
+            tmpResult = i in iCounters
+            iCounterResults = iCounterResults and tmpResult
+            if not tmpResult:
+                main.log.error( str( i ) + " is not in in-memory "
+                                "counter incremented results" )
+        utilities.assert_equals( expect=True,
+                                 actual=iCounterResults,
+                                 onpass="In-memory counter incremented",
+                                 onfail="Error incrementing in-memory" +
+                                        " counter" )
+
+        main.step( "Counters we added have the correct values" )
+        incrementCheck = main.Counters.counterCheck( iCounterName, iCounterValue )
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=incrementCheck,
+                                 onpass="Added counters are correct",
+                                 onfail="Added counters are incorrect" )
 
         main.step( "Check counters are consistant across nodes" )
         onosCounters = []
         threads = []
-        for i in range( numControllers ):
-            t = main.Thread( target=CLIs[i].counters,
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].counters,
                              name="counters-" + str( i ) )
             threads.append( t )
             t.start()
@@ -2116,59 +2396,21 @@ class HAsingleInstanceRestart:
                                         "across nodes" )
 
         main.step( "Counters we added have the correct values" )
-        correctResults = main.TRUE
-        for i in range( numControllers ):
-            try:
-                current = json.loads( onosCounters[i] )
-            except ( ValueError, TypeError ):
-                main.log.error( "Could not parse counters response from ONOS" +
-                                str( i + 1 ) )
-                main.log.warn( repr( onosCounters[ i ] ) )
-            pValue = None
-            iValue = None
-            try:
-                for database in current:
-                    partitioned = database.get( 'partitionedDatabaseCounters' )
-                    if partitioned:
-                        for value in partitioned:
-                            if value.get( 'name' ) == pCounterName:
-                                pValue = value.get( 'value' )
-                                break
-                    inMemory = database.get( 'inMemoryDatabaseCounters' )
-                    if inMemory:
-                        for value in inMemory:
-                            if value.get( 'name' ) == iCounterName:
-                                iValue = value.get( 'value' )
-                                break
-            except AttributeError, e:
-                main.log.error( "ONOS" + str( i + 1 ) + " counters result " +
-                                "is not as expected" )
-                correctResults = main.FALSE
-            if pValue == pCounterValue:
-                main.log.info( "Partitioned counter value is correct" )
-            else:
-                main.log.error( "Partitioned counter value is incorrect," +
-                                " expected value: " + str( pCounterValue )
-                                + " current value: " + str( pValue ) )
-                correctResults = main.FALSE
-            if iValue == iCounterValue:
-                main.log.info( "In memory counter value is correct" )
-            else:
-                main.log.error( "In memory counter value is incorrect, " +
-                                "expected value: " + str( iCounterValue ) +
-                                " current value: " + str( iValue ) )
-                correctResults = main.FALSE
+        incrementCheck = main.Counters.counterCheck( iCounterName, iCounterValue )
+        incrementCheck = incrementCheck and \
+                         main.Counters.counterCheck( iCounterName, iCounterValue )
         utilities.assert_equals( expect=main.TRUE,
-                                 actual=correctResults,
+                                 actual=incrementCheck,
                                  onpass="Added counters are correct",
                                  onfail="Added counters are incorrect" )
+
         # DISTRIBUTED SETS
         main.step( "Distributed Set get" )
         size = len( onosSet )
         getResponses = []
         threads = []
-        for i in range( numControllers ):
-            t = main.Thread( target=CLIs[i].setTestGet,
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].setTestGet,
                              name="setTestGet-" + str( i ),
                              args=[ onosSetName ] )
             threads.append( t )
@@ -2178,7 +2420,7 @@ class HAsingleInstanceRestart:
             getResponses.append( t.result )
 
         getResults = main.TRUE
-        for i in range( numControllers ):
+        for i in range( main.numCtrls ):
             if isinstance( getResponses[ i ], list):
                 current = set( getResponses[ i ] )
                 if len( current ) == len( getResponses[ i ] ):
@@ -2208,8 +2450,8 @@ class HAsingleInstanceRestart:
         main.step( "Distributed Set size" )
         sizeResponses = []
         threads = []
-        for i in range( numControllers ):
-            t = main.Thread( target=CLIs[i].setTestSize,
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].setTestSize,
                              name="setTestSize-" + str( i ),
                              args=[ onosSetName ] )
             threads.append( t )
@@ -2219,7 +2461,7 @@ class HAsingleInstanceRestart:
             sizeResponses.append( t.result )
 
         sizeResults = main.TRUE
-        for i in range( numControllers ):
+        for i in range( main.numCtrls ):
             if size != sizeResponses[ i ]:
                 sizeResults = main.FALSE
                 main.log.error( "ONOS" + str( i + 1 ) +
@@ -2235,8 +2477,8 @@ class HAsingleInstanceRestart:
         onosSet.add( addValue )
         addResponses = []
         threads = []
-        for i in range( numControllers ):
-            t = main.Thread( target=CLIs[i].setTestAdd,
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].setTestAdd,
                              name="setTestAdd-" + str( i ),
                              args=[ onosSetName, addValue ] )
             threads.append( t )
@@ -2249,7 +2491,7 @@ class HAsingleInstanceRestart:
         # main.FALSE = action resulted in no change in set
         # main.ERROR - Some error in executing the function
         addResults = main.TRUE
-        for i in range( numControllers ):
+        for i in range( main.numCtrls ):
             if addResponses[ i ] == main.TRUE:
                 # All is well
                 pass
@@ -2269,8 +2511,8 @@ class HAsingleInstanceRestart:
         size = len( onosSet )
         getResponses = []
         threads = []
-        for i in range( numControllers ):
-            t = main.Thread( target=CLIs[i].setTestGet,
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].setTestGet,
                              name="setTestGet-" + str( i ),
                              args=[ onosSetName ] )
             threads.append( t )
@@ -2279,7 +2521,7 @@ class HAsingleInstanceRestart:
             t.join()
             getResponses.append( t.result )
         getResults = main.TRUE
-        for i in range( numControllers ):
+        for i in range( main.numCtrls ):
             if isinstance( getResponses[ i ], list):
                 current = set( getResponses[ i ] )
                 if len( current ) == len( getResponses[ i ] ):
@@ -2303,8 +2545,8 @@ class HAsingleInstanceRestart:
                 getResults = main.FALSE
         sizeResponses = []
         threads = []
-        for i in range( numControllers ):
-            t = main.Thread( target=CLIs[i].setTestSize,
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].setTestSize,
                              name="setTestSize-" + str( i ),
                              args=[ onosSetName ] )
             threads.append( t )
@@ -2313,7 +2555,7 @@ class HAsingleInstanceRestart:
             t.join()
             sizeResponses.append( t.result )
         sizeResults = main.TRUE
-        for i in range( numControllers ):
+        for i in range( main.numCtrls ):
             if size != sizeResponses[ i ]:
                 sizeResults = main.FALSE
                 main.log.error( "ONOS" + str( i + 1 ) +
@@ -2330,8 +2572,8 @@ class HAsingleInstanceRestart:
         onosSet.update( addAllValue.split() )
         addResponses = []
         threads = []
-        for i in range( numControllers ):
-            t = main.Thread( target=CLIs[i].setTestAdd,
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].setTestAdd,
                              name="setTestAddAll-" + str( i ),
                              args=[ onosSetName, addAllValue ] )
             threads.append( t )
@@ -2344,7 +2586,7 @@ class HAsingleInstanceRestart:
         # main.FALSE = action resulted in no change in set
         # main.ERROR - Some error in executing the function
         addAllResults = main.TRUE
-        for i in range( numControllers ):
+        for i in range( main.numCtrls ):
             if addResponses[ i ] == main.TRUE:
                 # All is well
                 pass
@@ -2364,8 +2606,8 @@ class HAsingleInstanceRestart:
         size = len( onosSet )
         getResponses = []
         threads = []
-        for i in range( numControllers ):
-            t = main.Thread( target=CLIs[i].setTestGet,
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].setTestGet,
                              name="setTestGet-" + str( i ),
                              args=[ onosSetName ] )
             threads.append( t )
@@ -2374,7 +2616,7 @@ class HAsingleInstanceRestart:
             t.join()
             getResponses.append( t.result )
         getResults = main.TRUE
-        for i in range( numControllers ):
+        for i in range( main.numCtrls ):
             if isinstance( getResponses[ i ], list):
                 current = set( getResponses[ i ] )
                 if len( current ) == len( getResponses[ i ] ):
@@ -2398,8 +2640,8 @@ class HAsingleInstanceRestart:
                 getResults = main.FALSE
         sizeResponses = []
         threads = []
-        for i in range( numControllers ):
-            t = main.Thread( target=CLIs[i].setTestSize,
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].setTestSize,
                              name="setTestSize-" + str( i ),
                              args=[ onosSetName ] )
             threads.append( t )
@@ -2408,7 +2650,7 @@ class HAsingleInstanceRestart:
             t.join()
             sizeResponses.append( t.result )
         sizeResults = main.TRUE
-        for i in range( numControllers ):
+        for i in range( main.numCtrls ):
             if size != sizeResponses[ i ]:
                 sizeResults = main.FALSE
                 main.log.error( "ONOS" + str( i + 1 ) +
@@ -2424,8 +2666,8 @@ class HAsingleInstanceRestart:
         main.step( "Distributed Set contains()" )
         containsResponses = []
         threads = []
-        for i in range( numControllers ):
-            t = main.Thread( target=CLIs[i].setTestGet,
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].setTestGet,
                              name="setContains-" + str( i ),
                              args=[ onosSetName ],
                              kwargs={ "values": addValue } )
@@ -2437,7 +2679,7 @@ class HAsingleInstanceRestart:
             containsResponses.append( t.result )
 
         containsResults = main.TRUE
-        for i in range( numControllers ):
+        for i in range( main.numCtrls ):
             if containsResponses[ i ] == main.ERROR:
                 containsResults = main.FALSE
             else:
@@ -2451,8 +2693,8 @@ class HAsingleInstanceRestart:
         main.step( "Distributed Set containsAll()" )
         containsAllResponses = []
         threads = []
-        for i in range( numControllers ):
-            t = main.Thread( target=CLIs[i].setTestGet,
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].setTestGet,
                              name="setContainsAll-" + str( i ),
                              args=[ onosSetName ],
                              kwargs={ "values": addAllValue } )
@@ -2464,7 +2706,7 @@ class HAsingleInstanceRestart:
             containsAllResponses.append( t.result )
 
         containsAllResults = main.TRUE
-        for i in range( numControllers ):
+        for i in range( main.numCtrls ):
             if containsResponses[ i ] == main.ERROR:
                 containsResults = main.FALSE
             else:
@@ -2479,8 +2721,8 @@ class HAsingleInstanceRestart:
         onosSet.remove( addValue )
         removeResponses = []
         threads = []
-        for i in range( numControllers ):
-            t = main.Thread( target=CLIs[i].setTestRemove,
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].setTestRemove,
                              name="setTestRemove-" + str( i ),
                              args=[ onosSetName, addValue ] )
             threads.append( t )
@@ -2493,7 +2735,7 @@ class HAsingleInstanceRestart:
         # main.FALSE = action resulted in no change in set
         # main.ERROR - Some error in executing the function
         removeResults = main.TRUE
-        for i in range( numControllers ):
+        for i in range( main.numCtrls ):
             if removeResponses[ i ] == main.TRUE:
                 # All is well
                 pass
@@ -2513,8 +2755,8 @@ class HAsingleInstanceRestart:
         size = len( onosSet )
         getResponses = []
         threads = []
-        for i in range( numControllers ):
-            t = main.Thread( target=CLIs[i].setTestGet,
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].setTestGet,
                              name="setTestGet-" + str( i ),
                              args=[ onosSetName ] )
             threads.append( t )
@@ -2523,7 +2765,7 @@ class HAsingleInstanceRestart:
             t.join()
             getResponses.append( t.result )
         getResults = main.TRUE
-        for i in range( numControllers ):
+        for i in range( main.numCtrls ):
             if isinstance( getResponses[ i ], list):
                 current = set( getResponses[ i ] )
                 if len( current ) == len( getResponses[ i ] ):
@@ -2547,8 +2789,8 @@ class HAsingleInstanceRestart:
                 getResults = main.FALSE
         sizeResponses = []
         threads = []
-        for i in range( numControllers ):
-            t = main.Thread( target=CLIs[i].setTestSize,
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].setTestSize,
                              name="setTestSize-" + str( i ),
                              args=[ onosSetName ] )
             threads.append( t )
@@ -2557,7 +2799,7 @@ class HAsingleInstanceRestart:
             t.join()
             sizeResponses.append( t.result )
         sizeResults = main.TRUE
-        for i in range( numControllers ):
+        for i in range( main.numCtrls ):
             if size != sizeResponses[ i ]:
                 sizeResults = main.FALSE
                 main.log.error( "ONOS" + str( i + 1 ) +
@@ -2575,8 +2817,8 @@ class HAsingleInstanceRestart:
         removeAllResponses = []
         threads = []
         try:
-            for i in range( numControllers ):
-                t = main.Thread( target=CLIs[i].setTestRemove,
+            for i in range( main.numCtrls ):
+                t = main.Thread( target=main.CLIs[i].setTestRemove,
                                  name="setTestRemoveAll-" + str( i ),
                                  args=[ onosSetName, addAllValue ] )
                 threads.append( t )
@@ -2591,7 +2833,7 @@ class HAsingleInstanceRestart:
         # main.FALSE = action resulted in no change in set
         # main.ERROR - Some error in executing the function
         removeAllResults = main.TRUE
-        for i in range( numControllers ):
+        for i in range( main.numCtrls ):
             if removeAllResponses[ i ] == main.TRUE:
                 # All is well
                 pass
@@ -2611,8 +2853,8 @@ class HAsingleInstanceRestart:
         size = len( onosSet )
         getResponses = []
         threads = []
-        for i in range( numControllers ):
-            t = main.Thread( target=CLIs[i].setTestGet,
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].setTestGet,
                              name="setTestGet-" + str( i ),
                              args=[ onosSetName ] )
             threads.append( t )
@@ -2621,7 +2863,7 @@ class HAsingleInstanceRestart:
             t.join()
             getResponses.append( t.result )
         getResults = main.TRUE
-        for i in range( numControllers ):
+        for i in range( main.numCtrls ):
             if isinstance( getResponses[ i ], list):
                 current = set( getResponses[ i ] )
                 if len( current ) == len( getResponses[ i ] ):
@@ -2645,8 +2887,8 @@ class HAsingleInstanceRestart:
                 getResults = main.FALSE
         sizeResponses = []
         threads = []
-        for i in range( numControllers ):
-            t = main.Thread( target=CLIs[i].setTestSize,
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].setTestSize,
                              name="setTestSize-" + str( i ),
                              args=[ onosSetName ] )
             threads.append( t )
@@ -2655,7 +2897,7 @@ class HAsingleInstanceRestart:
             t.join()
             sizeResponses.append( t.result )
         sizeResults = main.TRUE
-        for i in range( numControllers ):
+        for i in range( main.numCtrls ):
             if size != sizeResponses[ i ]:
                 sizeResults = main.FALSE
                 main.log.error( "ONOS" + str( i + 1 ) +
@@ -2672,8 +2914,8 @@ class HAsingleInstanceRestart:
         onosSet.update( addAllValue.split() )
         addResponses = []
         threads = []
-        for i in range( numControllers ):
-            t = main.Thread( target=CLIs[i].setTestAdd,
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].setTestAdd,
                              name="setTestAddAll-" + str( i ),
                              args=[ onosSetName, addAllValue ] )
             threads.append( t )
@@ -2686,7 +2928,7 @@ class HAsingleInstanceRestart:
         # main.FALSE = action resulted in no change in set
         # main.ERROR - Some error in executing the function
         addAllResults = main.TRUE
-        for i in range( numControllers ):
+        for i in range( main.numCtrls ):
             if addResponses[ i ] == main.TRUE:
                 # All is well
                 pass
@@ -2706,8 +2948,8 @@ class HAsingleInstanceRestart:
         size = len( onosSet )
         getResponses = []
         threads = []
-        for i in range( numControllers ):
-            t = main.Thread( target=CLIs[i].setTestGet,
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].setTestGet,
                              name="setTestGet-" + str( i ),
                              args=[ onosSetName ] )
             threads.append( t )
@@ -2716,7 +2958,7 @@ class HAsingleInstanceRestart:
             t.join()
             getResponses.append( t.result )
         getResults = main.TRUE
-        for i in range( numControllers ):
+        for i in range( main.numCtrls ):
             if isinstance( getResponses[ i ], list):
                 current = set( getResponses[ i ] )
                 if len( current ) == len( getResponses[ i ] ):
@@ -2740,8 +2982,8 @@ class HAsingleInstanceRestart:
                 getResults = main.FALSE
         sizeResponses = []
         threads = []
-        for i in range( numControllers ):
-            t = main.Thread( target=CLIs[i].setTestSize,
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].setTestSize,
                              name="setTestSize-" + str( i ),
                              args=[ onosSetName ] )
             threads.append( t )
@@ -2750,7 +2992,7 @@ class HAsingleInstanceRestart:
             t.join()
             sizeResponses.append( t.result )
         sizeResults = main.TRUE
-        for i in range( numControllers ):
+        for i in range( main.numCtrls ):
             if size != sizeResponses[ i ]:
                 sizeResults = main.FALSE
                 main.log.error( "ONOS" + str( i + 1 ) +
@@ -2767,8 +3009,8 @@ class HAsingleInstanceRestart:
         onosSet.clear()
         clearResponses = []
         threads = []
-        for i in range( numControllers ):
-            t = main.Thread( target=CLIs[i].setTestRemove,
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].setTestRemove,
                              name="setTestClear-" + str( i ),
                              args=[ onosSetName, " "],  # Values doesn't matter
                              kwargs={ "clear": True } )
@@ -2782,7 +3024,7 @@ class HAsingleInstanceRestart:
         # main.FALSE = action resulted in no change in set
         # main.ERROR - Some error in executing the function
         clearResults = main.TRUE
-        for i in range( numControllers ):
+        for i in range( main.numCtrls ):
             if clearResponses[ i ] == main.TRUE:
                 # All is well
                 pass
@@ -2802,8 +3044,8 @@ class HAsingleInstanceRestart:
         size = len( onosSet )
         getResponses = []
         threads = []
-        for i in range( numControllers ):
-            t = main.Thread( target=CLIs[i].setTestGet,
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].setTestGet,
                              name="setTestGet-" + str( i ),
                              args=[ onosSetName ] )
             threads.append( t )
@@ -2812,7 +3054,7 @@ class HAsingleInstanceRestart:
             t.join()
             getResponses.append( t.result )
         getResults = main.TRUE
-        for i in range( numControllers ):
+        for i in range( main.numCtrls ):
             if isinstance( getResponses[ i ], list):
                 current = set( getResponses[ i ] )
                 if len( current ) == len( getResponses[ i ] ):
@@ -2836,8 +3078,8 @@ class HAsingleInstanceRestart:
                 getResults = main.FALSE
         sizeResponses = []
         threads = []
-        for i in range( numControllers ):
-            t = main.Thread( target=CLIs[i].setTestSize,
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].setTestSize,
                              name="setTestSize-" + str( i ),
                              args=[ onosSetName ] )
             threads.append( t )
@@ -2846,7 +3088,7 @@ class HAsingleInstanceRestart:
             t.join()
             sizeResponses.append( t.result )
         sizeResults = main.TRUE
-        for i in range( numControllers ):
+        for i in range( main.numCtrls ):
             if size != sizeResponses[ i ]:
                 sizeResults = main.FALSE
                 main.log.error( "ONOS" + str( i + 1 ) +
@@ -2863,8 +3105,8 @@ class HAsingleInstanceRestart:
         onosSet.update( addAllValue.split() )
         addResponses = []
         threads = []
-        for i in range( numControllers ):
-            t = main.Thread( target=CLIs[i].setTestAdd,
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].setTestAdd,
                              name="setTestAddAll-" + str( i ),
                              args=[ onosSetName, addAllValue ] )
             threads.append( t )
@@ -2877,7 +3119,7 @@ class HAsingleInstanceRestart:
         # main.FALSE = action resulted in no change in set
         # main.ERROR - Some error in executing the function
         addAllResults = main.TRUE
-        for i in range( numControllers ):
+        for i in range( main.numCtrls ):
             if addResponses[ i ] == main.TRUE:
                 # All is well
                 pass
@@ -2897,8 +3139,8 @@ class HAsingleInstanceRestart:
         size = len( onosSet )
         getResponses = []
         threads = []
-        for i in range( numControllers ):
-            t = main.Thread( target=CLIs[i].setTestGet,
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].setTestGet,
                              name="setTestGet-" + str( i ),
                              args=[ onosSetName ] )
             threads.append( t )
@@ -2907,7 +3149,7 @@ class HAsingleInstanceRestart:
             t.join()
             getResponses.append( t.result )
         getResults = main.TRUE
-        for i in range( numControllers ):
+        for i in range( main.numCtrls ):
             if isinstance( getResponses[ i ], list):
                 current = set( getResponses[ i ] )
                 if len( current ) == len( getResponses[ i ] ):
@@ -2931,8 +3173,8 @@ class HAsingleInstanceRestart:
                 getResults = main.FALSE
         sizeResponses = []
         threads = []
-        for i in range( numControllers ):
-            t = main.Thread( target=CLIs[i].setTestSize,
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].setTestSize,
                              name="setTestSize-" + str( i ),
                              args=[ onosSetName ] )
             threads.append( t )
@@ -2941,7 +3183,7 @@ class HAsingleInstanceRestart:
             t.join()
             sizeResponses.append( t.result )
         sizeResults = main.TRUE
-        for i in range( numControllers ):
+        for i in range( main.numCtrls ):
             if size != sizeResponses[ i ]:
                 sizeResults = main.FALSE
                 main.log.error( "ONOS" + str( i + 1 ) +
@@ -2958,8 +3200,8 @@ class HAsingleInstanceRestart:
         onosSet.intersection_update( retainValue.split() )
         retainResponses = []
         threads = []
-        for i in range( numControllers ):
-            t = main.Thread( target=CLIs[i].setTestRemove,
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].setTestRemove,
                              name="setTestRetain-" + str( i ),
                              args=[ onosSetName, retainValue ],
                              kwargs={ "retain": True } )
@@ -2973,7 +3215,7 @@ class HAsingleInstanceRestart:
         # main.FALSE = action resulted in no change in set
         # main.ERROR - Some error in executing the function
         retainResults = main.TRUE
-        for i in range( numControllers ):
+        for i in range( main.numCtrls ):
             if retainResponses[ i ] == main.TRUE:
                 # All is well
                 pass
@@ -2993,8 +3235,8 @@ class HAsingleInstanceRestart:
         size = len( onosSet )
         getResponses = []
         threads = []
-        for i in range( numControllers ):
-            t = main.Thread( target=CLIs[i].setTestGet,
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].setTestGet,
                              name="setTestGet-" + str( i ),
                              args=[ onosSetName ] )
             threads.append( t )
@@ -3003,7 +3245,7 @@ class HAsingleInstanceRestart:
             t.join()
             getResponses.append( t.result )
         getResults = main.TRUE
-        for i in range( numControllers ):
+        for i in range( main.numCtrls ):
             if isinstance( getResponses[ i ], list):
                 current = set( getResponses[ i ] )
                 if len( current ) == len( getResponses[ i ] ):
@@ -3027,8 +3269,8 @@ class HAsingleInstanceRestart:
                 getResults = main.FALSE
         sizeResponses = []
         threads = []
-        for i in range( numControllers ):
-            t = main.Thread( target=CLIs[i].setTestSize,
+        for i in range( main.numCtrls ):
+            t = main.Thread( target=main.CLIs[i].setTestSize,
                              name="setTestSize-" + str( i ),
                              args=[ onosSetName ] )
             threads.append( t )
@@ -3037,7 +3279,7 @@ class HAsingleInstanceRestart:
             t.join()
             sizeResponses.append( t.result )
         sizeResults = main.TRUE
-        for i in range( numControllers ):
+        for i in range( main.numCtrls ):
             if size != sizeResponses[ i ]:
                 sizeResults = main.FALSE
                 main.log.error( "ONOS" + str( i + 1 ) +

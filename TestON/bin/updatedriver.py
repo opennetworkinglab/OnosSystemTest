@@ -1,8 +1,7 @@
 import inspect
 import sys
 import os
-import re 
-sys.path.append("../")
+import re
 from core import xmldict
 '''
 @author: Raghav Kashyap (raghavkashyap@paxterrasolutions.com)

@@ -16,14 +16,12 @@ andrew@onlab.us
 OCT 9 2014
 
 """
-import sys
 import time
 import types
 import pexpect
 import os
 import os.path
 from requests.models import Response
-sys.path.append( "../" )
 from drivers.common.clidriver import CLI
 
 

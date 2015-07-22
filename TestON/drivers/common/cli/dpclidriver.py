@@ -2,8 +2,6 @@
 Driver for blank dataplane VMs. Created for SDNIP test.
 """
 import pexpect
-import sys
-sys.path.append( "../" )
 from drivers.common.clidriver import CLI
 
 

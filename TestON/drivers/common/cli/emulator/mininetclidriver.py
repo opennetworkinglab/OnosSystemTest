@@ -36,7 +36,6 @@ import re
 import sys
 import types
 import os
-sys.path.append( "../" )
 from math import pow
 from drivers.common.cli.emulatordriver import Emulator
 

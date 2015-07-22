@@ -23,7 +23,6 @@ FlowVisorDriver is the basic driver which will handle the Mininet functions
 """
 import re
 import sys
-sys.path.append( "../" )
 from drivers.common.cli.emulatordriver import Emulator
 
 

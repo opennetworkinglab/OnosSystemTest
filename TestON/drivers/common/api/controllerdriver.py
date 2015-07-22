@@ -19,8 +19,6 @@ author:: Anil Kumar ( anilkumar.s@paxterrasolutions.com )
     along with TestON.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-import sys
-sys.path.append( "../" )
 from drivers.common.apidriver import API
 
 

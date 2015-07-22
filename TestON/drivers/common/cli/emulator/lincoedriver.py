@@ -17,7 +17,6 @@ OCT 20 2014
 
 import pexpect
 import sys
-sys.path.append( "../" )
 from drivers.common.cli.emulatordriver import Emulator
 
 

@@ -19,8 +19,6 @@ author:: Anil Kumar ( anilkumar.s@paxterrasolutions.com )
 
 
 """
-import sys
-sys.path.append( "../" )
 from drivers.common.clidriver import CLI
 
 

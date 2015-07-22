@@ -16,14 +16,12 @@ shreya@onlab.us
 OCT 13 2014
 
 """
-import sys
 import pexpect
 import re
 import json
 import types
 import time
 import os
-sys.path.append( "../" )
 from drivers.common.clidriver import CLI
 
 

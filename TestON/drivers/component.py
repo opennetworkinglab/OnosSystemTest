@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-import logging
 """
 Created on 24-Oct-2012
 
@@ -23,6 +22,8 @@ author:s: Anil Kumar ( anilkumar.s@paxterrasolutions.com ),
 
 
 """
+import logging
+
 
 class Component( object ):
 

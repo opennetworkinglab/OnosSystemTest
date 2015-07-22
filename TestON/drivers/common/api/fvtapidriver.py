@@ -35,7 +35,6 @@ import os
 import signal
 import re
 import sys
-sys.path.append( "../" )
 from common.apidriver import API
 import logging
 

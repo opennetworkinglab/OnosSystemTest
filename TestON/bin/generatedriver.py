@@ -22,9 +22,7 @@ Created on 11-Oct-2012
 '''
 import pexpect
 import struct, fcntl, os, sys, signal
-import sys
 import re
-sys.path.append("../")
 from core import xmldict
 
 class GenerateDriver():

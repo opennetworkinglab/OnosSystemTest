@@ -4,7 +4,6 @@ import time
 import pexpect
 import sys
 import json
-sys.path.append( "../" )
 from drivers.common.clidriver import CLI
 
 
@@ -28,7 +27,6 @@ class QuaggaCliDriver( CLI ):
         else:
             main.log.info( "NO HANDLE" )
             return main.FALSE
-            
 
     def connectQuagga( self ):
         self.name = self.options[ 'name' ]

@@ -1434,8 +1434,7 @@ class OnosDriver( CLI ):
             self.handle.sendline( "" )
             self.handle.expect( "\$" )
 
-            self.handle.sendline( "tshark -i " + str( interface ) +
-                                  " -t e -w " + str( dirFile ) + " &" )
+            self.handle.sendline( "tshark -i " + str( interface ) + " -t e -w " + str( dirFile ) + " &" )
             self.handle.sendline( "\r" )
             self.handle.expect( "Capturing on" )
             self.handle.sendline( "\r" )
@@ -1505,8 +1504,8 @@ class OnosDriver( CLI ):
             else:
                 grepStr = "grep"
             
-            self.handle.sendline(
-                "tshark -i " +
+            cmd = (
+                "sudo tshark -i " +
                 str( interface ) +
                 " -t e | " +
                 grepStr + " --line-buffered \"" +
@@ -1514,9 +1513,10 @@ class OnosDriver( CLI ):
                 "\" >" +
                 directory +
                 " &" )
-            self.handle.sendline( "\r" )
+            self.handle.sendline(cmd)
+            main.log.info(cmd)
             self.handle.expect( "Capturing on" )
-            self.handle.sendline( "\r" )
+            self.handle.sendline( "\n" )
             self.handle.expect( "\$" )
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )

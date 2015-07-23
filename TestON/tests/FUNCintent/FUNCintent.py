@@ -26,6 +26,9 @@ class FUNCintent:
 
         main.case( "Constructing test variables and building ONOS package" )
         main.step( "Constructing test variables" )
+        main.caseExplaination = "This test case is mainly for loading " +\
+                               "from params file, and pull and build the " +\
+                               " latest ONOS package"
         stepResult = main.FALSE
 
         # Test variables
@@ -117,6 +120,10 @@ class FUNCintent:
 
         main.case( "Starting up " + str( main.numCtrls ) +
                    " node(s) ONOS cluster" )
+        main.caseExplaination = "Set up ONOS with " + str( main.numCtrls ) +\
+                                " node(s) ONOS cluster"
+
+
 
         #kill off all onos processes
         main.log.info( "Safety check, killing all ONOS processes" +
@@ -228,10 +235,14 @@ class FUNCintent:
         """
             Start Mininet topology with OF 1.0 switches
         """
+        main.OFProtocol = "1.0"
         main.log.report( "Start Mininet topology with OF 1.0 switches" )
-        main.log.case( "Start Mininet topology with OF 1.0 switches" )
+        main.case( "Start Mininet topology with OF 1.0 switches" )
+        main.caseExplaination = "Start mininet topology with OF 1.0 " +\
+                                "switches to test intents, exits out if " +\
+                                "topology did not start correctly"
 
-        main.step( "Start Mininet topology with OF 1.0 switches" )
+        main.step( "Starting Mininet topology with OF 1.0 switches" )
         args = "--switch ovs,protocols=OpenFlow10"
         topoResult = main.Mininet1.startNet( topoFile=main.dependencyPath +
                                                       main.topology,
@@ -250,10 +261,14 @@ class FUNCintent:
         """
             Start Mininet topology with OF 1.3 switches
         """
+        main.OFProtocol = "1.3"
         main.log.report( "Start Mininet topology with OF 1.3 switches" )
-        main.log.case( "Start Mininet topology with OF 1.3 switches" )
+        main.case( "Start Mininet topology with OF 1.3 switches" )
+        main.caseExplaination = "Start mininet topology with OF 1.3 " +\
+                                "switches to test intents, exits out if " +\
+                                "topology did not start correctly"
 
-        main.step( "Start Mininet topology with OF 1.3 switches" )
+        main.step( "Starting Mininet topology with OF 1.3 switches" )
         args = "--switch ovs,protocols=OpenFlow13"
         topoResult = main.Mininet1.startNet( topoFile=main.dependencyPath +
                                                       main.topology,
@@ -276,6 +291,9 @@ class FUNCintent:
 
         main.case( "Assign switches to controllers" )
         main.step( "Assigning switches to controllers" )
+        main.caseExplaination = "Assign OF " + main.OFProtocol +\
+                                " switches to ONOS nodes"
+
         assignResult = main.TRUE
         switchList = []
 
@@ -327,7 +345,9 @@ class FUNCintent:
             Stop mininet
         """
         main.log.report( "Stop Mininet topology" )
-        main.log.case( "Stop Mininet topology" )
+        main.case( "Stop Mininet topology" )
+        main.caseExplaination = "Stopping the current mininet topology " +\
+                                "to start up fresh"
 
         main.step( "Stopping Mininet Topology" )
         topoResult = main.Mininet1.stopNet( )
@@ -374,7 +394,13 @@ class FUNCintent:
 
         intentLeadersOld = main.CLIs[ 0 ].leaderCandidates()
 
-        main.case( "Add host intents between 2 host" )
+        main.case( "TESTING HOST INTENTS" )
+        main.caseExplaination = "This test case tests Host intents using " +\
+                                str( main.numCtrls ) + " node(s) cluster;\n" +\
+                                "Different type of hosts will be tested in " +\
+                                "each step such as IPV4, Dual stack, VLAN " +\
+                                "etc;\nThe test will use OF " + main.OFProtocol\
+                                + "OVS running in Mininet"
 
         main.step( "IPV4: Add host intents between h1 and h9" )
         stepResult = main.TRUE
@@ -509,7 +535,14 @@ class FUNCintent:
         assert main.numSwitch, "Placed the total number of switch topology in \
                                 main.numSwitch"
 
-        main.case( "Add point intents between 2 devices" )
+        main.case( "TESTING POINT INTENTS" )
+        main.caseExplaination = "This test case will test point to point" +\
+                               " intents using " + str( main.numCtrls ) +\
+                               " node(s) cluster;\n" +\
+                               "Different type of hosts will be tested in " +\
+                               "each step such as IPV4, Dual stack, VLAN etc" +\
+                               ";\nThe test will use OF " + main.OFProtocol +\
+                               "OVS running in Mininet"
 
         # No option point intents
         main.step( "NOOPTION: Add point intents between h1 and h9" )
@@ -740,7 +773,14 @@ class FUNCintent:
         assert main.numSwitch, "Placed the total number of switch topology in \
                                 main.numSwitch"
 
-        main.case( "Add single point to multi point intents between devices" )
+        main.case( "TESTING SINGLE TO MULTI POINT INTENTS" )
+        main.caseExplaination = "This test case will test single point to" +\
+                               " multi point intents using " +\
+                               str( main.numCtrls ) + " node(s) cluster;\n" +\
+                               "Different type of hosts will be tested in " +\
+                               "each step such as IPV4, Dual stack, VLAN etc" +\
+                               ";\nThe test will use OF " + main.OFProtocol +\
+                               "OVS running in Mininet"
 
         main.step( "NOOPTION: Add single point to multi point intents" )
         stepResult = main.TRUE
@@ -862,7 +902,14 @@ class FUNCintent:
         assert main.numSwitch, "Placed the total number of switch topology in \
                                 main.numSwitch"
 
-        main.case( "Add multi point to single point intents between devices" )
+        main.case( "TESTING MULTI TO SINGLE POINT INTENTS" )
+        main.caseExplaination = "This test case will test single point to" +\
+                               " multi point intents using " +\
+                               str( main.numCtrls ) + " node(s) cluster;\n" +\
+                               "Different type of hosts will be tested in " +\
+                               "each step such as IPV4, Dual stack, VLAN etc" +\
+                               ";\nThe test will use OF " + main.OFProtocol +\
+                               "OVS running in Mininet"
 
         main.step( "NOOPTION: Add multi point to single point intents" )
         stepResult = main.TRUE

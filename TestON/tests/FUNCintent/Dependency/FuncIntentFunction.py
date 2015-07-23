@@ -62,6 +62,9 @@ def hostIntent( main,
             expectedLink - Expected link when the switches are down, it should
                            be two links lower than the links before the two
                            switches are down
+        Return:
+            Returns main.TRUE if all verification passed, otherwise return
+            main.FALSE; returns main.FALSE if there is a key error
     """
 
     # Assert variables
@@ -89,50 +92,44 @@ def hostIntent( main,
     linkUpResult = main.TRUE
     onosNode = int( onosNode )
 
-    if main.hostsData:
-        if not h1Mac:
-            h1Mac = main.hostsData[ host1 ][ 'mac' ]
-        if not h2Mac:
-            h2Mac = main.hostsData[ host2 ][ 'mac' ]
-        if main.hostsData[ host1 ][ 'vlan' ] != '-1':
-            vlan1 = main.hostsData[ host1 ][ 'vlan' ]
-        if main.hostsData[ host2 ][ 'vlan' ] != '-1':
-            vlan2 = main.hostsData[ host2 ][ 'vlan' ]
-        if not h1Id:
-            h1Id = main.hostsData[ host1 ][ 'id' ]
-        if not h2Id:
-            h2Id = main.hostsData[ host2 ][ 'id' ]
+    try:
+        if main.hostsData:
+            if not h1Mac:
+                h1Mac = main.hostsData[ host1 ][ 'mac' ]
+            if not h2Mac:
+                h2Mac = main.hostsData[ host2 ][ 'mac' ]
+            if main.hostsData[ host1 ].get( 'vlan' ):
+                vlan1 = main.hostsData[ host1 ][ 'vlan' ]
+            if main.hostsData[ host1 ].get( 'vlan' ):
+                vlan2 = main.hostsData[ host2 ][ 'vlan' ]
+            if not h1Id:
+                h1Id = main.hostsData[ host1 ][ 'id' ]
+            if not h2Id:
+                h2Id = main.hostsData[ host2 ][ 'id' ]
 
-    assert h1Id and h2Id, "You must specify host IDs"
-    if not ( h1Id and h2Id ):
-        main.log.info( "There are no host IDs" )
+        assert h1Id and h2Id, "You must specify host IDs"
+        if not ( h1Id and h2Id ):
+            main.log.info( "There are no host IDs" )
+            return main.FALSE
+
+        # Discover hosts using arping
+        if not main.hostsData:
+            main.log.info( itemName + ": Discover host using arping" )
+            main.Mininet1.arping( host=host1 )
+            main.Mininet1.arping( host=host2 )
+            host1 = main.CLIs[ 0 ].getHost( mac=h1Mac )
+            host2 = main.CLIs[ 0 ].getHost( mac=h2Mac )
+    except KeyError:
+        main.log.error( itemName + ": Key error Exception" )
         return main.FALSE
-
-    # Discover hosts using arping
-    if not main.hostsData:
-        main.log.info( itemName + ": Discover host using arping" )
-        main.Mininet1.arping( host=host1 )
-        main.Mininet1.arping( host=host2 )
-        host1 = main.CLIs[ 0 ].getHost( mac=h1Mac )
-        host2 = main.CLIs[ 0 ].getHost( mac=h2Mac )
 
     # Check flows count in each node
     checkFlowsCount( main )
 
-    # Checking connectivity before installing intents
-    main.log.info( itemName + ": Check hosts connection before adding intents" )
-    checkPing = pingallHosts( main, hostNames )
-    if not checkPing:
-        main.log.info( itemName + ": Ping did not go through " +
-                       "before adding intents" )
-    else:
-        main.log.debug( itemName + ": Pinged successful before adding " +
-                        "intents,please check fwd app if it is activated" )
-
     # Adding host intents
     main.log.info( itemName + ": Adding host intents" )
     intent1 = main.CLIs[ onosNode ].addHostIntent( hostIdOne=h1Id,
-                                           hostIdTwo=h2Id )
+                                                   hostIdTwo=h2Id )
     intentsId.append( intent1 )
 
     # Check intents state
@@ -306,16 +303,6 @@ def pointIntent( main,
     linkDownResult = main.TRUE
     linkUpResult = main.TRUE
     onosNode = int( onosNode )
-
-    # Checking connectivity before installing intents
-    main.log.info( itemName + ": Check hosts connection before adding intents" )
-    checkPing = pingallHosts( main, hostNames )
-    if not checkPing:
-        main.log.info( itemName + ": Ping did not go through " +
-                       "before adding intents" )
-    else:
-        main.log.debug( itemName + ": Pinged successful before adding " +
-                        "intents,please check fwd app if it is activated" )
 
     # Adding bidirectional point  intents
     main.log.info( itemName + ": Adding point intents" )
@@ -564,16 +551,6 @@ def singleToMultiIntent( main,
     # Check flows count in each node
     checkFlowsCount( main )
 
-    # Checking connectivity before installing intents
-    main.log.info( itemName + ": Check hosts connection before adding intents" )
-    checkPing = pingallHosts( main, hostNames )
-    if not checkPing:
-        main.log.info( itemName + ": Ping did not go through " +
-                       "before adding intents" )
-    else:
-        main.log.debug( itemName + ": Pinged successful before adding " +
-                        "intents,please check fwd app if it is activated" )
-
     # Adding bidirectional point  intents
     for i in range( len( devices ) ):
         ingressDevice = devicesCopy[ i ]
@@ -814,16 +791,6 @@ def multiToSingleIntent( main,
 
     # Check flows count in each node
     checkFlowsCount( main )
-
-    # Checking connectivity before installing intents
-    main.log.info( itemName + ": Check hosts connection before adding intents" )
-    checkPing = pingallHosts( main, hostNames )
-    if not checkPing:
-        main.log.info( itemName + ": Ping did not go through " +
-                       "before adding intents" )
-    else:
-        main.log.debug( itemName + ": Pinged successful before adding " +
-                        "intents,please check fwd app if it is activated" )
 
     # Adding bidirectional point  intents
     for i in range( len( devices ) ):
@@ -1115,7 +1082,7 @@ def checkFlowsCount( main ):
         else:
             for i in range( main.numCtrls ):
                 main.log.debug( itemName + ": ONOS node " + str( i ) + " has " +
-                                flowsCount[ i ] + " flows" )
+                                str( flowsCount[ i ] ) + " flows" )
     else:
         main.log.error( "Checking flows count failed, check summary command" )
         return main.FALSE

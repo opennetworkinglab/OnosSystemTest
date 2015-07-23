@@ -45,6 +45,7 @@ class FUNCintent:
         main.startUpSleep = int( main.params[ 'SLEEP' ][ 'startup' ] )
         main.checkIntentSleep = int( main.params[ 'SLEEP' ][ 'checkintent' ] )
         main.rerouteSleep = int( main.params[ 'SLEEP' ][ 'reroute' ] )
+        main.fwdSleep = int( main.params[ 'SLEEP' ][ 'fwd' ] )
         gitPull = main.params[ 'GIT' ][ 'pull' ]
         main.numSwitch = int( main.params[ 'MININET' ][ 'switch' ] )
         main.numLinks = int( main.params[ 'MININET' ][ 'links' ] )
@@ -620,8 +621,15 @@ class FUNCintent:
         stepResult = main.TRUE
         mac1 = main.hostsData[ 'h1' ][ 'mac' ]
         mac2 = main.hostsData[ 'h9' ][ 'mac' ]
-        ip1 = str( main.hostsData[ 'h1' ][ 'ipAddresses' ][ 0 ] ) + "/24"
-        ip2 = str( main.hostsData[ 'h9' ][ 'ipAddresses' ][ 0 ] ) + "/24"
+        try:
+            ip1 = str( main.hostsData[ 'h1' ][ 'ipAddresses' ][ 0 ] ) + "/24"
+            ip2 = str( main.hostsData[ 'h9' ][ 'ipAddresses' ][ 0 ] ) + "/24"
+        except KeyError:
+            main.log.debug( "Key Error getting IP addresses of h1 | h9 in" +
+                            "main.hostsData" )
+            ip1 = main.Mininet1.getIPAddress( 'h1')
+            ip2 = main.Mininet1.getIPAddress( 'h9')
+
         ipProto = main.params[ 'SDNIP' ][ 'icmpProto' ]
         tcp1 = main.params[ 'SDNIP' ][ 'srcPort' ]
         tcp2 = main.params[ 'SDNIP' ][ 'dstPort' ]

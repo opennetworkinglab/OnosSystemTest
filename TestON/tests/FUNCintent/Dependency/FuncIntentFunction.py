@@ -112,16 +112,16 @@ def hostIntent( main,
             main.log.info( "There are no host IDs" )
             return main.FALSE
 
-        # Discover hosts using arping
-        if not main.hostsData:
-            main.log.info( itemName + ": Discover host using arping" )
-            main.Mininet1.arping( host=host1 )
-            main.Mininet1.arping( host=host2 )
-            host1 = main.CLIs[ 0 ].getHost( mac=h1Mac )
-            host2 = main.CLIs[ 0 ].getHost( mac=h2Mac )
     except KeyError:
         main.log.error( itemName + ": Key error Exception" )
         return main.FALSE
+
+    # Discover hosts using arping incase pingall discovery failed
+    main.log.info( itemName + ": Discover host using arping" )
+    main.Mininet1.arping( host=host1 )
+    main.Mininet1.arping( host=host2 )
+    host1 = main.CLIs[ 0 ].getHost( mac=h1Mac )
+    host2 = main.CLIs[ 0 ].getHost( mac=h2Mac )
 
     # Check flows count in each node
     checkFlowsCount( main )
@@ -921,6 +921,7 @@ def getHostsData( main ):
     getDataResult = main.TRUE
     main.log.info( "Activating reactive forwarding app " )
     activateResult = main.CLIs[ 0 ].activateApp( "org.onosproject.fwd" )
+    time.sleep( main.fwdSleep )
 
     for i in range( main.numCtrls ):
         appCheck = appCheck and main.CLIs[ i ].appToIDCheck()

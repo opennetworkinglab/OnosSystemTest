@@ -222,7 +222,7 @@ class TestON:
         self.CurrentTestCase = ""
         self.stepResults = []
         self.stepName = ""
-        self.caseExplaination = ""
+        self.caseExplanation = ""
         result = self.TRUE
         self.stepCount = 0
         self.EXPERIMENTAL_MODE = self.FALSE
@@ -256,8 +256,8 @@ class TestON:
                 self.CASERESULT = self.NORESULT
             self.testCaseResult[str(self.CurrentTestCaseNumber)] = self.CASERESULT
             self.logger.updateCaseResults(self)
-            self.log.wiki( "<p>" + self.caseExplaination + "</p>" )
-            self.log.summary( self.caseExplaination )
+            self.log.wiki( "<p>" + self.caseExplanation + "</p>" )
+            self.log.summary( self.caseExplanation )
             self.log.wiki( "<ul>" )
             for line in self.stepCache.splitlines():
                 if re.search( " - PASS$", line ):

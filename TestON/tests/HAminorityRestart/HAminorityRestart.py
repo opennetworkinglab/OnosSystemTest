@@ -50,7 +50,7 @@ class HAminorityRestart:
         main.log.info( "ONOS HA test: Restart minority of ONOS nodes - " +
                          "initialization" )
         main.case( "Setting up test environment" )
-        main.caseExplaination = "Setup the test environment including " +\
+        main.caseExplanation = "Setup the test environment including " +\
                                 "installing ONOS, starting Mininet and ONOS" +\
                                 "cli sessions."
         # TODO: save all the timers and output them for plotting
@@ -277,7 +277,7 @@ class HAminorityRestart:
         assert ONOS7Port, "ONOS7Port not defined"
 
         main.case( "Assigning devices to controllers" )
-        main.caseExplaination = "Assign switches to ONOS using 'ovs-vsctl' " +\
+        main.caseExplanation = "Assign switches to ONOS using 'ovs-vsctl' " +\
                                 "and check that an ONOS node becomes the " +\
                                 "master of the device."
         main.step( "Assign switches to controllers" )
@@ -331,7 +331,7 @@ class HAminorityRestart:
         assert ONOS7Port, "ONOS7Port not defined"
 
         main.case( "Assigning Controller roles for switches" )
-        main.caseExplaination = "Check that ONOS is connected to each " +\
+        main.caseExplanation = "Check that ONOS is connected to each " +\
                                 "device. Then manually assign" +\
                                 " mastership to specific ONOS nodes using" +\
                                 " 'device-role'"
@@ -446,7 +446,7 @@ class HAminorityRestart:
         assert CLIs, "CLIs not defined"
         assert nodes, "nodes not defined"
         main.case( "Adding host Intents" )
-        main.caseExplaination = "Discover hosts by using pingall then " +\
+        main.caseExplanation = "Discover hosts by using pingall then " +\
                                 "assign predetermined host-to-host intents." +\
                                 " After installation, check that the intent" +\
                                 " is distributed to all nodes and the state" +\
@@ -831,7 +831,7 @@ class HAminorityRestart:
         assert CLIs, "CLIs not defined"
         assert nodes, "nodes not defined"
         main.case( "Verify connectivity by sendind traffic across Intents" )
-        main.caseExplaination = "Ping across added host intents to check " +\
+        main.caseExplanation = "Ping across added host intents to check " +\
                                 "functionality and check the state of " +\
                                 "the intent"
         main.step( "Ping across added host intents" )
@@ -2080,7 +2080,7 @@ class HAminorityRestart:
         assert nodes, "nodes not defined"
 
         main.case( "Compare ONOS Topology view to Mininet topology" )
-        main.caseExplaination = "Compare topology objects between Mininet" +\
+        main.caseExplanation = "Compare topology objects between Mininet" +\
                                 " and ONOS"
 
         main.step( "Comparing ONOS topology to MN" )
@@ -2942,7 +2942,7 @@ class HAminorityRestart:
         description = "Check for basic functionality with distributed " +\
                       "primitives"
         main.case( description )
-        main.caseExplaination = "Test the methods of the distributed primitives (counters and sets) throught the cli"
+        main.caseExplanation = "Test the methods of the distributed primitives (counters and sets) throught the cli"
         # DISTRIBUTED ATOMIC COUNTERS
         main.step( "Increment and get a default counter on each node" )
         pCounters = []

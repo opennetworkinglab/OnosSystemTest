@@ -1013,3 +1013,28 @@ class FUNCintent:
                                         + " to single point intents",
                                  onfail="VLAN: Failed to add multi point" +
                                         " to single point intents" )
+    def CASE5000( self, main ):
+        """
+        Will add description in next patch set
+
+        """
+        assert main, "There is no main"
+        assert main.CLIs, "There is no main.CLIs"
+        assert main.Mininet1, "Mininet handle should be named Mininet1"
+        assert main.numSwitch, "Placed the total number of switch topology in \
+                                main.numSwitch"
+        main.case( "Move a host with mininet and check connectivity" )
+
+        h1PreMove = main.hostsData[ "h1" ][ "location" ][ 0:19 ]
+
+        main.log.info( "Moving h1 from s5 to s6")
+
+        main.Mininet1.moveHost( "h1","s5","s6" )
+
+        main.intentFunction.getHostsData( main )
+        h1PostMove = main.hostsData[ "h1" ][ "location" ][ 0:19 ]
+
+        utilities.assert_equals( expect="of:0000000000000006",
+                                 actual=h1PostMove,
+                                 onpass="Mobility: Successfully moved h1 to s6",
+                                 onfail="Mobility: Failed to moved h1 to s6" )

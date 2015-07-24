@@ -32,55 +32,69 @@ class FUNCintent:
         stepResult = main.FALSE
 
         # Test variables
-        main.testOnDirectory = os.path.dirname( os.getcwd ( ) )
-        main.apps = main.params[ 'ENV' ][ 'cellApps' ]
-        gitBranch = main.params[ 'GIT' ][ 'branch' ]
-        main.dependencyPath = main.testOnDirectory + \
-                              main.params[ 'DEPENDENCY' ][ 'path' ]
-        main.topology = main.params[ 'DEPENDENCY' ][ 'topology' ]
-        main.scale = ( main.params[ 'SCALE' ][ 'size' ] ).split( "," )
-        main.maxNodes = int( main.ONOSbench.maxNodes )
-        wrapperFile1 = main.params[ 'DEPENDENCY' ][ 'wrapper1' ]
-        wrapperFile2 = main.params[ 'DEPENDENCY' ][ 'wrapper2' ]
-        main.startUpSleep = int( main.params[ 'SLEEP' ][ 'startup' ] )
-        main.checkIntentSleep = int( main.params[ 'SLEEP' ][ 'checkintent' ] )
-        main.rerouteSleep = int( main.params[ 'SLEEP' ][ 'reroute' ] )
-        main.fwdSleep = int( main.params[ 'SLEEP' ][ 'fwd' ] )
-        gitPull = main.params[ 'GIT' ][ 'pull' ]
-        main.numSwitch = int( main.params[ 'MININET' ][ 'switch' ] )
-        main.numLinks = int( main.params[ 'MININET' ][ 'links' ] )
-        main.cellData = {} # for creating cell file
-        main.hostsData = {}
-        main.CLIs = []
-        main.ONOSip = []
+        try:
+            main.testOnDirectory = os.path.dirname( os.getcwd ( ) )
+            main.apps = main.params[ 'ENV' ][ 'cellApps' ]
+            gitBranch = main.params[ 'GIT' ][ 'branch' ]
+            main.dependencyPath = main.testOnDirectory + \
+                                  main.params[ 'DEPENDENCY' ][ 'path' ]
+            main.topology = main.params[ 'DEPENDENCY' ][ 'topology' ]
+            main.scale = ( main.params[ 'SCALE' ][ 'size' ] ).split( "," )
+            if main.ONOSbench.maxNodes:
+                main.maxNodes = int( main.ONOSbench.maxNodes )
+            else:
+                main.maxNodes = 0
+            wrapperFile1 = main.params[ 'DEPENDENCY' ][ 'wrapper1' ]
+            wrapperFile2 = main.params[ 'DEPENDENCY' ][ 'wrapper2' ]
+            wrapperFile3 = main.params[ 'DEPENDENCY' ][ 'wrapper3' ]
+            main.startUpSleep = int( main.params[ 'SLEEP' ][ 'startup' ] )
+            main.checkIntentSleep = int( main.params[ 'SLEEP' ][ 'checkintent' ] )
+            main.rerouteSleep = int( main.params[ 'SLEEP' ][ 'reroute' ] )
+            main.fwdSleep = int( main.params[ 'SLEEP' ][ 'fwd' ] )
+            gitPull = main.params[ 'GIT' ][ 'pull' ]
+            main.numSwitch = int( main.params[ 'MININET' ][ 'switch' ] )
+            main.numLinks = int( main.params[ 'MININET' ][ 'links' ] )
+            main.cellData = {} # for creating cell file
+            main.hostsData = {}
+            main.CLIs = []
+            main.ONOSip = []
 
-        main.ONOSip = main.ONOSbench.getOnosIps()
-        print main.ONOSip
+            main.ONOSip = main.ONOSbench.getOnosIps()
+            print main.ONOSip
 
-        # Assigning ONOS cli handles to a list
-        for i in range( 1,  main.maxNodes + 1 ):
-            main.CLIs.append( getattr( main, 'ONOScli' + str( i ) ) )
+            # Assigning ONOS cli handles to a list
+            for i in range( 1,  main.maxNodes + 1 ):
+                main.CLIs.append( getattr( main, 'ONOScli' + str( i ) ) )
 
-        # -- INIT SECTION, ONLY RUNS ONCE -- #
-        main.startUp = imp.load_source( wrapperFile1,
-                                        main.dependencyPath +
-                                        wrapperFile1 +
-                                        ".py" )
+            # -- INIT SECTION, ONLY RUNS ONCE -- #
+            main.startUp = imp.load_source( wrapperFile1,
+                                            main.dependencyPath +
+                                            wrapperFile1 +
+                                            ".py" )
 
-        main.intentFunction = imp.load_source( wrapperFile2,
-                                        main.dependencyPath +
-                                        wrapperFile2 +
-                                        ".py" )
+            main.intentFunction = imp.load_source( wrapperFile2,
+                                            main.dependencyPath +
+                                            wrapperFile2 +
+                                            ".py" )
 
-        copyResult = main.ONOSbench.copyMininetFile( main.topology,
-                                                     main.dependencyPath,
-                                                     main.Mininet1.user_name,
-                                                     main.Mininet1.ip_address )
-        if main.CLIs:
-            stepResult = main.TRUE
-        else:
-            main.log.error( "Did not properly created list of ONOS CLI handle" )
-            stepResult = main.FALSE
+            main.topo = imp.load_source( wrapperFile3,
+                                         main.dependencyPath +
+                                         wrapperFile3 +
+                                         ".py" )
+
+            copyResult = main.ONOSbench.copyMininetFile( main.topology,
+                                                         main.dependencyPath,
+                                                         main.Mininet1.user_name,
+                                                         main.Mininet1.ip_address )
+            if main.CLIs:
+                stepResult = main.TRUE
+            else:
+                main.log.error( "Did not properly created list of ONOS CLI handle" )
+                stepResult = main.FALSE
+        except Exception as e:
+            main.log.exception(e)
+            main.cleanup()
+            main.exit()
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -223,6 +237,77 @@ class FUNCintent:
 
         # Remove the first element in main.scale list
         main.scale.remove( main.scale[ 0 ] )
+
+    def CASE8( self, main ):
+        """
+        Compare Topo
+        """
+        import json
+
+        main.case( "Compare ONOS Topology view to Mininet topology" )
+        main.caseExplanation = "Compare topology elements between Mininet" +\
+                                " and ONOS"
+
+        main.step( "Gathering topology information" )
+        # TODO: add a paramaterized sleep here
+        devicesResults = main.TRUE
+        linksResults = main.TRUE
+        hostsResults = main.TRUE
+        devices = main.topo.getAllDevices( main )
+        hosts = main.topo.getAllHosts( main )
+        ports = main.topo.getAllPorts( main )
+        links = main.topo.getAllLinks( main )
+        clusters = main.topo.getAllClusters( main )
+
+        mnSwitches = main.Mininet1.getSwitches()
+        mnLinks = main.Mininet1.getLinks()
+        mnHosts = main.Mininet1.getHosts()
+
+        main.step( "Conmparing MN topology to ONOS topology" )
+        for controller in range( main.numCtrls ):
+            controllerStr = str( controller + 1 )
+            if devices[ controller ] and ports[ controller ] and\
+                "Error" not in devices[ controller ] and\
+                "Error" not in ports[ controller ]:
+
+                currentDevicesResult = main.Mininet1.compareSwitches(
+                        mnSwitches,
+                        json.loads( devices[ controller ] ),
+                        json.loads( ports[ controller ] ) )
+            else:
+                currentDevicesResult = main.FALSE
+            utilities.assert_equals( expect=main.TRUE,
+                                     actual=currentDevicesResult,
+                                     onpass="ONOS" + controllerStr +
+                                     " Switches view is correct",
+                                     onfail="ONOS" + controllerStr +
+                                     " Switches view is incorrect" )
+
+            if links[ controller ] and "Error" not in links[ controller ]:
+                currentLinksResult = main.Mininet1.compareLinks(
+                        mnSwitches, mnLinks,
+                        json.loads( links[ controller ] ) )
+            else:
+                currentLinksResult = main.FALSE
+            utilities.assert_equals( expect=main.TRUE,
+                                     actual=currentLinksResult,
+                                     onpass="ONOS" + controllerStr +
+                                     " links view is correct",
+                                     onfail="ONOS" + controllerStr +
+                                     " links view is incorrect" )
+
+            if hosts[ controller ] or "Error" not in hosts[ controller ]:
+                currentHostsResult = main.Mininet1.compareHosts(
+                        mnHosts,
+                        json.loads( hosts[ controller ] ) )
+            else:
+                currentHostsResult = main.FALSE
+            utilities.assert_equals( expect=main.TRUE,
+                                     actual=currentHostsResult,
+                                     onpass="ONOS" + controllerStr +
+                                     " hosts exist in Mininet",
+                                     onfail="ONOS" + controllerStr +
+                                     " hosts don't match Mininet" )
 
     def CASE9( self, main ):
         '''

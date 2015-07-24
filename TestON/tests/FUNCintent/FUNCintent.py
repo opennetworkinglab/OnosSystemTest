@@ -397,7 +397,7 @@ class FUNCintent:
 
         intentLeadersOld = main.CLIs[ 0 ].leaderCandidates()
 
-        main.case( "TESTING HOST INTENTS - " + str( main.numCtrls ) +
+        main.case( "Host Intents Test - " + str( main.numCtrls ) +
                    " NODE(S) - OF " + main.OFProtocol )
         main.caseExplanation = "This test case tests Host intents using " +\
                                 str( main.numCtrls ) + " node(s) cluster;\n" +\
@@ -556,7 +556,7 @@ class FUNCintent:
         assert main.numSwitch, "Placed the total number of switch topology in \
                                 main.numSwitch"
 
-        main.case( "TESTING POINT INTENTS - " + str( main.numCtrls ) +
+        main.case( "Point Intents Test - " + str( main.numCtrls ) +
                    " NODE(S) - OF " + main.OFProtocol )
         main.caseExplanation = "This test case will test point to point" +\
                                " intents using " + str( main.numCtrls ) +\
@@ -829,7 +829,7 @@ class FUNCintent:
         assert main.numSwitch, "Placed the total number of switch topology in \
                                 main.numSwitch"
 
-        main.case( "TESTING SINGLE TO MULTI POINT INTENTS - " +
+        main.case( "Single To Multi Point Intents Test - " +
                    str( main.numCtrls ) + " NODE(S) - OF " + main.OFProtocol )
         main.caseExplanation = "This test case will test single point to" +\
                                " multi point intents using " +\
@@ -969,7 +969,7 @@ class FUNCintent:
         assert main.numSwitch, "Placed the total number of switch topology in \
                                 main.numSwitch"
 
-        main.case( "TESTING MULTI TO SINGLE POINT INTENTS - " +
+        main.case( "Multi To Single Point Intents Test - " +
                    str( main.numCtrls ) + " NODE(S) - OF " + main.OFProtocol )
         main.caseExplanation = "This test case will test single point to" +\
                                " multi point intents using " +\

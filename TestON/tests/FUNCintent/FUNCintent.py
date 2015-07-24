@@ -397,13 +397,14 @@ class FUNCintent:
 
         intentLeadersOld = main.CLIs[ 0 ].leaderCandidates()
 
-        main.case( "TESTING HOST INTENTS" )
+        main.case( "TESTING HOST INTENTS - " + main.numCtrls +
+                   " NODE(S) - OF " + main.OFProtocol )
         main.caseExplanation = "This test case tests Host intents using " +\
                                 str( main.numCtrls ) + " node(s) cluster;\n" +\
                                 "Different type of hosts will be tested in " +\
                                 "each step such as IPV4, Dual stack, VLAN " +\
                                 "etc;\nThe test will use OF " + main.OFProtocol\
-                                + "OVS running in Mininet"
+                                + " OVS running in Mininet"
 
         main.step( "IPV4: Add host intents between h1 and h9" )
         stepResult = main.TRUE
@@ -555,14 +556,15 @@ class FUNCintent:
         assert main.numSwitch, "Placed the total number of switch topology in \
                                 main.numSwitch"
 
-        main.case( "TESTING POINT INTENTS" )
+        main.case( "TESTING POINT INTENTS - " + main.numCtrls +
+                   " NODE(S) - OF " + main.OFProtocol )
         main.caseExplanation = "This test case will test point to point" +\
                                " intents using " + str( main.numCtrls ) +\
                                " node(s) cluster;\n" +\
                                "Different type of hosts will be tested in " +\
                                "each step such as IPV4, Dual stack, VLAN etc" +\
                                ";\nThe test will use OF " + main.OFProtocol +\
-                               "OVS running in Mininet"
+                               " OVS running in Mininet"
 
         # No option point intents
         main.step( "NOOPTION: Add point intents between h1 and h9" )
@@ -827,14 +829,15 @@ class FUNCintent:
         assert main.numSwitch, "Placed the total number of switch topology in \
                                 main.numSwitch"
 
-        main.case( "TESTING SINGLE TO MULTI POINT INTENTS" )
+        main.case( "TESTING SINGLE TO MULTI POINT INTENTS - " + main.numCtrls +
+                   " NODE(S) - OF " + main.OFProtocol )
         main.caseExplanation = "This test case will test single point to" +\
                                " multi point intents using " +\
                                str( main.numCtrls ) + " node(s) cluster;\n" +\
                                "Different type of hosts will be tested in " +\
                                "each step such as IPV4, Dual stack, VLAN etc" +\
                                ";\nThe test will use OF " + main.OFProtocol +\
-                               "OVS running in Mininet"
+                               " OVS running in Mininet"
 
         main.step( "NOOPTION: Add single point to multi point intents" )
         stepResult = main.TRUE
@@ -966,14 +969,15 @@ class FUNCintent:
         assert main.numSwitch, "Placed the total number of switch topology in \
                                 main.numSwitch"
 
-        main.case( "TESTING MULTI TO SINGLE POINT INTENTS" )
+        main.case( "TESTING MULTI TO SINGLE POINT INTENTS - " + main.numCtrls +
+                   " NODE(S) - OF " + main.OFProtocol )
         main.caseExplanation = "This test case will test single point to" +\
                                " multi point intents using " +\
                                str( main.numCtrls ) + " node(s) cluster;\n" +\
                                "Different type of hosts will be tested in " +\
                                "each step such as IPV4, Dual stack, VLAN etc" +\
                                ";\nThe test will use OF " + main.OFProtocol +\
-                               "OVS running in Mininet"
+                               " OVS running in Mininet"
 
         main.step( "NOOPTION: Add multi point to single point intents" )
         stepResult = main.TRUE
@@ -1081,7 +1085,6 @@ class FUNCintent:
     def CASE5000( self, main ):
         """
         Will add description in next patch set
-
         """
         assert main, "There is no main"
         assert main.CLIs, "There is no main.CLIs"

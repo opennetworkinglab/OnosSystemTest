@@ -746,6 +746,7 @@ class FUNCintent:
             ip2 = main.Mininet1.getIPAddress( 'h9')
 
         ipProto = main.params[ 'SDNIP' ][ 'icmpProto' ]
+        # Uneccessary, not including this in the selectors
         tcp1 = main.params[ 'SDNIP' ][ 'srcPort' ]
         tcp2 = main.params[ 'SDNIP' ][ 'dstPort' ]
 
@@ -761,9 +762,7 @@ class FUNCintent:
                                            ethType="IPV4",
                                            ipProto=ipProto,
                                            ip1=ip1,
-                                           ip2=ip2,
-                                           tcp1=tcp1,
-                                           tcp2=tcp2 )
+                                           ip2=ip2 )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,

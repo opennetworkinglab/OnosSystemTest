@@ -376,7 +376,7 @@ class OnosRestDriver( Controller ):
         Optional:
             str appId - Application name of intent identifier
         Returns:
-            A string of the intent id or None on Error; Returns main.FALSE if
+            Returns main.TRUE for successful requests; Returns main.FALSE if
             error on requests; Returns None for exceptions
         """
         try:
@@ -406,6 +406,149 @@ class OnosRestDriver( Controller ):
                     main.log.info( self.name + ": Successfully POST host" +
                                    " intent between host: " + hostIdOne +
                                    " and host: " + hostIdTwo )
+                    return main.TRUE
+                else:
+                    main.log.error( "Error with REST request, response was: " +
+                                    str( response ) )
+                    return main.FALSE
+
+        except Exception as e:
+            main.log.exception( e )
+            return None
+
+    def addPointIntent( self,
+                        ingressDevice,
+                        egressDevice,
+                        ip="DEFAULT",
+                        port="DEFAULT",
+                        appId='org.onosproject.cli',
+                        ingressPort="",
+                        egressPort="",
+                        ethType="",
+                        ethSrc="",
+                        ethDst="",
+                        bandwidth="",
+                        lambdaAlloc=False,
+                        ipProto="",
+                        ipSrc="",
+                        ipDst="",
+                        tcpSrc="",
+                        tcpDst="" ):
+        """
+        Description:
+            Adds a point-to-point intent ( uni-directional ) by
+            specifying device id's and optional fields
+        Required:
+            * ingressDevice: device id of ingress device
+            * egressDevice: device id of egress device
+        Optional:
+            * ethType: specify ethType
+            * ethSrc: specify ethSrc ( i.e. src mac addr )
+            * ethDst: specify ethDst ( i.e. dst mac addr )
+            * bandwidth: specify bandwidth capacity of link (TODO)
+            * lambdaAlloc: if True, intent will allocate lambda
+              for the specified intent (TODO)
+            * ipProto: specify ip protocol
+            * ipSrc: specify ip source address with mask eg. ip#/24
+            * ipDst: specify ip destination address eg. ip#/24
+            * tcpSrc: specify tcp source port
+            * tcpDst: specify tcp destination port
+        Returns:
+            Returns main.TRUE for successful requests; Returns main.FALSE if
+            no ingress|egress port found and if error on requests;
+            Returns None for exceptions
+        NOTE:
+            The ip and port option are for the requests input's ip and port
+            of the ONOS node
+        """
+        try:
+            if "/" in ingressDevice:
+                if not ingressPort:
+                    ingressPort = ingressDevice.split( "/" )[ 1 ]
+                ingressDevice = ingressDevice.split( "/" )[ 0 ]
+            else:
+                if not ingressPort:
+                    main.log.debug( self.name + ": Ingress port not specified" )
+                    return main.FALSE
+
+            if "/" in egressDevice:
+                if not egressPort:
+                    egressPort = egressDevice.split( "/" )[ 1 ]
+                egressDevice = egressDevice.split( "/" )[ 0 ]
+            else:
+                if not egressPort:
+                    main.log.debug( self.name + ": Egress port not specified" )
+                    return main.FALSE
+
+            intentJson ={ "ingressPoint": { "device": ingressDevice,
+                                           "port": ingressPort },
+                          "selector": { "criteria": [] },
+                          "priority": 55,
+                          "treatment": { "deferred": [],
+                                         "instructions": [] },
+                          "egressPoint": { "device": egressDevice,
+                                           "port": egressPort },
+                          "appId": appId,
+                          "type": "PointToPointIntent",
+                          "constraints": [ { "type": "LinkTypeConstraint",
+                                             "types": [ "OPTICAL" ],
+                                             "inclusive": "false" } ] }
+
+            if ethType == "IPV4":
+                intentJson[ 'selector' ][ 'criteria' ].append( {
+                                                         "type":"ETH_TYPE",
+                                                         "ethType":2048 } )
+            if ethSrc:
+                intentJson[ 'selector' ][ 'criteria' ].append(
+                                                       { "type":"ETH_SRC",
+                                                         "mac":ethSrc } )
+            if ethDst:
+                intentJson[ 'selector' ][ 'criteria' ].append(
+                                                       { "type":"ETH_DST",
+                                                         "mac":ethDst } )
+            if ipSrc:
+                intentJson[ 'selector' ][ 'criteria' ].append(
+                                                       { "type":"IPV4_SRC",
+                                                         "ip":ipSrc } )
+            if ipDst:
+                intentJson[ 'selector' ][ 'criteria' ].append(
+                                                       { "type":"IPV4_DST",
+                                                         "ip":ipDst } )
+            if tcpSrc:
+                intentJson[ 'selector' ][ 'criteria' ].append(
+                                                       { "type":"TCP_SRC",
+                                                         "tcpPort": tcpSrc } )
+            if tcpDst:
+                intentJson[ 'selector' ][ 'criteria' ].append(
+                                                       { "type":"TCP_DST",
+                                                         "tcpPort": tcpDst } )
+            if ipProto:
+                intentJson[ 'selector' ][ 'criteria' ].append(
+                                                       { "type":"IP_PROTO",
+                                                         "protocol": ipProto } )
+
+            # TODO: Bandwidth and Lambda will be implemented if needed
+
+            main.log.debug( intentJson )
+
+            output = None
+            if ip == "DEFAULT":
+                main.log.warn( "No ip given, reverting to ip from topo file" )
+                ip = self.ip_address
+            if port == "DEFAULT":
+                main.log.warn( "No port given, reverting to port " +
+                               "from topo file" )
+                port = self.port
+            response = self.send( ip,
+                                  port,
+                                  method="POST",
+                                  url="/intents",
+                                  data=json.dumps( intentJson ) )
+            if response:
+                if 201:
+                    main.log.info( self.name + ": Successfully POST point" +
+                                   " intent between ingress: " + ingressDevice +
+                                   " and egress: " + egressDevice + " devices" )
                     return main.TRUE
                 else:
                     main.log.error( "Error with REST request, response was: " +

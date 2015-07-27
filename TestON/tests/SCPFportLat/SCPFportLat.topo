@@ -1,0 +1,97 @@
+<TOPOLOGY>
+
+    <COMPONENT>
+
+        <ONOSbench>
+            <host>localhost</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>OnosDriver</type>
+            <connect_order>1</connect_order>
+            <COMPONENTS>
+                <home>~/onos</home>
+                <nodes>7</nodes> 
+            </COMPONENTS>
+        </ONOSbench>
+
+        <ONOS1cli>
+            <host>localhost</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>OnosCliDriver</type>
+            <connect_order>2</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </ONOS1cli>
+
+        <ONOS2cli>
+            <host>localhost</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>OnosCliDriver</type>
+            <connect_order>3</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </ONOS2cli>
+
+        <ONOS3cli>
+            <host>localhost</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>OnosCliDriver</type>
+            <connect_order>4</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </ONOS3cli>
+
+        <ONOS4cli>
+            <host>localhost</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>OnosCliDriver</type>
+            <connect_order>5</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </ONOS4cli>
+
+        <ONOS5cli>
+            <host>localhost</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>OnosCliDriver</type>
+            <connect_order>6</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </ONOS5cli>
+
+        <ONOS6cli>
+            <host>localhost</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>OnosCliDriver</type>
+            <connect_order>7</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </ONOS6cli>
+
+        <ONOS7cli>
+            <host>localhost</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>OnosCliDriver</type>
+            <connect_order>8</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </ONOS7cli>
+
+        <Mininet1>
+            <host>localhost</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>MininetCliDriver</type>
+            <connect_order>9</connect_order>
+            <COMPONENTS>
+                <arg1> --custom ~/mininet/custom/topo-perf-2sw.py </arg1>
+                <arg2> --topo mytopo</arg2>
+                <arg3> --switch ovsk,protocols=OpenFlow13</arg3>
+                <controller> remote </controller>
+            </COMPONENTS>
+        </Mininet1>
+
+    </COMPONENT>
+
+</TOPOLOGY>
+ 

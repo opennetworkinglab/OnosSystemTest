@@ -1,0 +1,57 @@
+<TOPOLOGY>
+    <COMPONENT>
+
+        <ONOSbench>
+            <host>localhost</host>
+            <user>admin</user>
+            <password></password>
+            <type>OnosDriver</type>
+            <connect_order>1</connect_order>
+            <COMPONENTS>
+            </COMPONENTS>
+        </ONOSbench>
+
+        <ONOSrest1>
+            <host>OC1</host>
+            <port>8181</port>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>OnosRestDriver</type>
+            <connect_order>2</connect_order>
+            <COMPONENTS>
+            </COMPONENTS>
+        </ONOSrest1>
+
+        <ONOSrest2>
+            <host>OC2</host>
+            <port>8181</port>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>OnosRestDriver</type>
+            <connect_order>3</connect_order>
+            <COMPONENTS>
+            </COMPONENTS>
+        </ONOSrest2>
+
+        <ONOSrest3>
+            <host>OC3</host>
+            <port>8181</port>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>OnosRestDriver</type>
+            <connect_order>4</connect_order>
+            <COMPONENTS>
+            </COMPONENTS>
+        </ONOSrest3>
+
+        <Mininet1>
+            <host>localhost</host>
+            <user>admin</user>
+            <password></password>
+            <type>MininetCliDriver</type>
+            <connect_order>5</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </Mininet1>
+
+    </COMPONENT>
+</TOPOLOGY>

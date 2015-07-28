@@ -40,7 +40,6 @@ class SCPFintentEventTp:
         cellName = main.params[ 'ENV' ][ 'cellName' ]
         numSwitches = (main.params[ 'TEST' ][ 'numSwitches' ]).split(",")
         flowRuleBU = main.params[ 'TEST' ][ 'flowRuleBUEnabled' ]
-        onBaremetal = main.params['isOnBaremetal']
         homeDir = os.path.expanduser('~')
 
         main.exceptions = [0]*11
@@ -134,25 +133,6 @@ class SCPFintentEventTp:
         for node in range (clusterCount):
             myDistribution.append(numSwitches[node])
 
-        #main.ONOSbench.createLinkGraphFile( BENCHIp,cellIp,myDistribution)
-
-        if onBaremetal == "True":
-            filename = "/onos/tools/package/bin/onos-service"
-            serviceConfig = open(homeDir + filename, 'w+')
-            serviceConfig.write("#!/bin/bash\n ")
-            serviceConfig.write("#------------------------------------- \n ")
-            serviceConfig.write("# Starts ONOS Apache Karaf container\n ")
-            serviceConfig.write("#------------------------------------- \n ")
-            serviceConfig.write("#export JAVA_HOME=${JAVA_HOME:-/usr/lib/jvm/java-7-openjdk-amd64/}\n ")
-            serviceConfig.write("""export JAVA_OPTS="${JAVA_OPTS:--Xms8G -Xmx8G}" \n """)
-            serviceConfig.write("")
-            serviceConfig.write("ONOS_HOME=/opt/onos \n ")
-            serviceConfig.write("")
-            serviceConfig.write("[ -d $ONOS_HOME ] && cd $ONOS_HOME || ONOS_HOME=$(dirname $0)/..\n")
-            serviceConfig.write("""${ONOS_HOME}/apache-karaf-$KARAF_VERSION/bin/karaf "$@" \n """)
-            serviceConfig.close()
-            main.log.info("Set /onos/tools/package/bin/onos-service with 8G Xms/Xmx Options.")
-      
         main.step( "Creating ONOS package" )
         packageResult = main.ONOSbench.onosPackage()  
 

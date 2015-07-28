@@ -112,6 +112,7 @@
             <connect_order>12</connect_order>
             <COMPONENTS> </COMPONENTS>
         </ONOS4>
+
     
         <ONOS5>
             <host>OC5</host>

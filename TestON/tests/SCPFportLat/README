@@ -1,0 +1,31 @@
+PORT LATENCY
+
+Summary: This is a performance test suite to measure the time it takes ONOS 
+        to recognize a port going down and up.
+
+Pre-requisites: To run out-of-the box this test requires 7 NODES. 
+    OC1->OC7 must be set before initiating the test. Passwordless login 
+    must be set from TestStation "admin" root user. The 7 NODES must have
+    their clocks synced to TestStation via ptpd and be accurate to the 
+    millisecond. You will also need the Wireshark disector to see openflow packets.
+
+***If you wish to run this test with less than 7 nodes the following 
+    alterations must be made:
+
+NOTE: Only scale sizes 1,3,5 and 7 will be functional
+
+--In the .params, remove any values in the comma separated list in the 
+    <scale> tag that are above your desired cluster size. 
+
+--In the .params file remove one instance of “1,2” from the <testcases> 
+    tag for each value you removed from <scale> (case 1 and 2 are each 
+    called once for each scale value)
+
+--In the .params file, change the value in the <max> tag to your 
+    desired scale size (1,3, or 5)
+
+--In the .topo file, change the <ONOSbench/COMPONENTS/nodes> tag to your 
+    desired scale size 
+
+--Also in the .topo file, you will need to remove all unneeded <ONOS X 
+    cli> tags and their contents

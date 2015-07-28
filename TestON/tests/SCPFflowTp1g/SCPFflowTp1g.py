@@ -164,7 +164,6 @@ class SCPFflowTp1g:
         testCMD[0] = main.params[ 'TEST' ][ 'testCMD0' ]
         testCMD[1] = main.params[ 'TEST' ][ 'testCMD1' ]
         main.maxNodes = main.params[ 'max' ]
-        onBaremetal = main.params['isOnBaremetal']
         cooldown = main.params[ 'TEST' ][ 'cooldown' ]
         cellName = main.params[ 'ENV' ][ 'cellName' ]
         BENCHIp = main.params[ 'BENCH' ][ 'ip1' ]
@@ -190,10 +189,6 @@ class SCPFflowTp1g:
 
         ts = time.time()
         st = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
-
-        #write file to change mem limit to 32 gigs (BAREMETAL ONLY!)
-        if onBaremetal == "true":
-            main.ONOSbench.jvmSet()
 
         for n in neighborList:
             main.log.step("\tSTARTING TEST")

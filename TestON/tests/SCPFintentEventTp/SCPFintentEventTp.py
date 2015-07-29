@@ -35,7 +35,7 @@ class SCPFintentEventTp:
         BENCHUser = main.params[ 'BENCH' ][ 'user' ]
         MN1Ip = main.params[ 'MN' ][ 'ip1' ]
         maxNodes = int(main.params[ 'max' ])
-        main.maxNodes = maxNodes 
+        main.maxNodes = maxNodes
         skipMvn = main.params[ 'TEST' ][ 'skipCleanInstall' ]
         cellName = main.params[ 'ENV' ][ 'cellName' ]
         numSwitches = (main.params[ 'TEST' ][ 'numSwitches' ]).split(",")
@@ -46,12 +46,12 @@ class SCPFintentEventTp:
         main.warnings = [0]*11
         main.errors = [0]*11
 
-        # -- INIT SECTION, ONLY RUNS ONCE -- # 
-        if init == False: 
+        # -- INIT SECTION, ONLY RUNS ONCE -- #
+        if init == False:
             init = True
             global clusterCount             #number of nodes running
             global ONOSIp                   #list of ONOS IP addresses
-            global scale 
+            global scale
             global commit
 
             clusterCount = 0
@@ -59,10 +59,10 @@ class SCPFintentEventTp:
             print ONOSIp
             print main.ONOSbench.onosIps.values()
 
-            scale = (main.params[ 'SCALE' ]).split(",")            
+            scale = (main.params[ 'SCALE' ]).split(",")
             clusterCount = int(scale[0])
 
-            #Populate ONOSIp with ips from params 
+            #Populate ONOSIp with ips from params
             ONOSIp.extend(main.ONOSbench.getOnosIps())
 
             #mvn clean install, for debugging set param 'skipCleanInstall' to yes to speed up test
@@ -80,31 +80,31 @@ class SCPFintentEventTp:
                 pullResult = main.TRUE
                 main.log.info( "Skipped git checkout and pull" )
 
-            main.log.step("Grabbing commit number") 
+            main.log.step("Grabbing commit number")
             commit = main.ONOSbench.getVersion()
             commit = (commit.split(" "))[1]
-        
-            main.log.step("Creating results file") 
+
+            main.log.step("Creating results file")
             resultsDB = open("/tmp/IntentEventTPDB", "w+")
             resultsDB.close()
 
         # -- END OF INIT SECTION --#
 
-        main.log.step("Adjusting scale") 
-        print str(scale) 
+        main.log.step("Adjusting scale")
+        print str(scale)
         print str(ONOSIp)
         clusterCount = int(scale[0])
-        scale.remove(scale[0])       
-       
+        scale.remove(scale[0])
+
         MN1Ip = ONOSIp[len(ONOSIp) -1]
         BENCHIp = ONOSIp[len(ONOSIp) -2]
- 
-        #kill off all onos processes 
+
+        #kill off all onos processes
         main.log.step("Safety check, killing all ONOS processes")
         main.log.step("before initiating enviornment setup")
         for node in range(maxNodes):
             main.ONOSbench.onosDie(ONOSIp[node])
-       
+
         MN1Ip = ONOSIp[len(ONOSIp) -1]
         BENCHIp = ONOSIp[len(ONOSIp) -2]
 
@@ -117,13 +117,13 @@ class SCPFintentEventTp:
         time.sleep(10)
         main.ONOSbench.handle.sendline(" ")
         main.ONOSbench.handle.expect(":~")
-        
+
         #construct the cell file
         main.log.info("Creating cell file")
         cellIp = []
         for node in range (clusterCount):
             cellIp.append(ONOSIp[node])
-         
+
         main.ONOSbench.createCellFile("localhost",cellName,MN1Ip,str(Apps), cellIp)
 
         main.step( "Set Cell" )
@@ -134,11 +134,11 @@ class SCPFintentEventTp:
             myDistribution.append(numSwitches[node])
 
         main.step( "Creating ONOS package" )
-        packageResult = main.ONOSbench.onosPackage()  
+        packageResult = main.ONOSbench.onosPackage()
 
         main.step( "verify cells" )
         verifyCellResult = main.ONOSbench.verifyCell()
-      
+
         main.log.report( "Initializeing " + str( clusterCount ) + " node cluster." )
         for node in range(clusterCount):
             main.log.info("Starting ONOS " + str(node) + " at IP: " + ONOSIp[node])
@@ -158,7 +158,7 @@ class SCPFintentEventTp:
 
         main.ONOSbench.onosCfgSet( ONOSIp[0], "org.onosproject.store.flow.impl.NewDistributedFlowRuleStore", "backupEnabled false")
 
-        devices = int(clusterCount)*10 
+        devices = int(clusterCount)*10
 
         main.log.step("Setting up null provider")
         for i in range(3):
@@ -188,7 +188,7 @@ class SCPFintentEventTp:
 
             main.ONOSbench.handle.sendline("onos $OC1 summary")
             main.ONOSbench.handle.expect(":~")
-            
+
             main.log.info("before" + main.ONOSbench.handle.before)
             clusterCheck = main.ONOSbench.handle.before
             print("\nBefore: " + str(clusterCheck))
@@ -206,7 +206,7 @@ class SCPFintentEventTp:
             lastOutput = clusterCheck
             time.sleep(5)
         main.ONOSbench.logReport(ONOSIp[1], ["ERROR", "WARNING", "EXCEPT"])
-    def CASE2( self, main ): 
+    def CASE2( self, main ):
         import time
         import json
         import string
@@ -227,7 +227,7 @@ class SCPFintentEventTp:
                 currentNeighbors = "a"
                 neighbors = ['0']
             else:
-                currentNeighbors = "r" 
+                currentNeighbors = "r"
                 neighbors = ['a']
 
         if clusterCount == 1:
@@ -243,21 +243,21 @@ class SCPFintentEventTp:
         debug = main.params[ 'debugMode' ]
         numKeys = main.params[ 'TEST' ][ 'numKeys' ]
         cyclePeriod = main.params[ 'TEST' ][ 'cyclePeriod' ]
-        #neighbors = (main.params[ 'TEST' ][ 'neighbors' ]).split(",") 
+        #neighbors = (main.params[ 'TEST' ][ 'neighbors' ]).split(",")
         metricList = [intentsRate, intentsWithdrawn, intentsFailed]
 
-        for n in range(0, len(neighbors)): 
-            if neighbors[n] == 'a': 
+        for n in range(0, len(neighbors)):
+            if neighbors[n] == 'a':
                 neighbors[n] = str(clusterCount -1)
                 if int(clusterCount) == 1:
                     neighbors = neighbors.pop()
- 
+
         for n in neighbors:
-            main.log.info("Run with " + n + " neighbors") 
+            main.log.info("Run with " + n + " neighbors")
             time.sleep(5)
             main.ONOSbench.handle.sendline("onos $OC1 cfg set org.onosproject.intentperf.IntentPerfInstaller numKeys " + numKeys )
             main.ONOSbench.handle.expect(":~")
-            main.ONOSbench.handle.sendline("onos $OC1 cfg set org.onosproject.intentperf.IntentPerfInstaller numNeighbors " + n ) 
+            main.ONOSbench.handle.sendline("onos $OC1 cfg set org.onosproject.intentperf.IntentPerfInstaller numNeighbors " + n )
             main.ONOSbench.handle.expect(":~")
             main.ONOSbench.handle.sendline("onos $OC1 cfg set org.onosproject.intentperf.IntentPerfInstaller cyclePeriod " + cyclePeriod )
             main.ONOSbench.handle.expect(":~")
@@ -321,9 +321,9 @@ class SCPFintentEventTp:
             main.ONOSbench.handle.sendline(cmd)
             main.ONOSbench.handle.expect(":~")
             main.log.info("Stopping intentperf" )
-   
+
             resultsDB = open("/tmp/IntentEventTPDB", "a")
-            for node in groupResult: 
+            for node in groupResult:
 
                 resultString = "'" + commit + "',"
                 resultString += "'1gig',"
@@ -333,8 +333,8 @@ class SCPFintentEventTp:
                 resultString += str(node) + ","
                 resultString += str(0) + "\n" #no stddev
                 resultsDB.write(resultString)
-            
-            resultsDB.close() 
-            
-            main.ONOSbench.logReport(ONOSIp[1], ["ERROR", "WARNING", "EXCEPT"])            
+
+            resultsDB.close()
+
+            main.ONOSbench.logReport(ONOSIp[1], ["ERROR", "WARNING", "EXCEPT"])
 

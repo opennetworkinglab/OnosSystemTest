@@ -13,16 +13,16 @@ class SCPFintentInstallWithdrawLat:
     def __init__( self ):
         self.default = ''
 
-    def CASE1( self, main ):           
-                                        
-        import time                     
-        global init       
-        try: 
-            if type(init) is not bool: 
-                init = False  
-        except NameError: 
-            init = False 
-       
+    def CASE1( self, main ):
+
+        import time
+        global init
+        try:
+            if type(init) is not bool:
+                init = False
+        except NameError:
+            init = False
+
         #Load values from params file
         checkoutBranch = main.params[ 'GIT' ][ 'checkout' ]
         gitPull = main.params[ 'GIT' ][ 'autopull' ]
@@ -33,23 +33,23 @@ class SCPFintentInstallWithdrawLat:
         MN1Ip = main.params[ 'MN' ][ 'ip1' ]
         main.maxNodes = int(main.params[ 'max' ])
         skipMvn = main.params[ 'TEST' ][ 'skipCleanInstall' ]
-        cellName = main.params[ 'ENV' ][ 'cellName' ]        
+        cellName = main.params[ 'ENV' ][ 'cellName' ]
         switchCount = main.params[ 'TEST' ][ 'switchCount' ]
 
-        # -- INIT SECTION, ONLY RUNS ONCE -- # 
-        if init == False: 
+        # -- INIT SECTION, ONLY RUNS ONCE -- #
+        if init == False:
             init = True
             global clusterCount             #number of nodes running
             global ONOSIp                   #list of ONOS IP addresses
-            global scale 
-            global commit            
-    
+            global scale
+            global commit
+
             clusterCount = 0
             ONOSIp = [ 0 ]
-            scale = (main.params[ 'SCALE' ]).split(",")            
+            scale = (main.params[ 'SCALE' ]).split(",")
             clusterCount = int(scale[0])
 
-            #Populate ONOSIp with ips from params 
+            #Populate ONOSIp with ips from params
             ONOSIp = [0]
             ONOSIp.extend(main.ONOSbench.getOnosIps())
 
@@ -67,7 +67,7 @@ class SCPFintentInstallWithdrawLat:
                 checkoutResult = main.TRUE
                 pullResult = main.TRUE
                 main.log.info( "Skipped git checkout and pull" )
-       
+
             commit = main.ONOSbench.getVersion()
             commit = (commit.split(" "))[1]
 
@@ -75,22 +75,22 @@ class SCPFintentInstallWithdrawLat:
             resultsDB.close()
 
         # -- END OF INIT SECTION --#
-         
-        clusterCount = int(scale[0])
-        scale.remove(scale[0])       
 
-        #kill off all onos processes 
+        clusterCount = int(scale[0])
+        scale.remove(scale[0])
+
+        #kill off all onos processes
         main.log.step("Safety check, killing all ONOS processes")
         main.log.step("before initiating enviornment setup")
         for node in range(1, main.maxNodes + 1):
             main.ONOSbench.onosDie(ONOSIp[node])
-        
+
         #Uninstall everywhere
         main.log.step( "Cleaning Enviornment..." )
         for i in range(1, main.maxNodes + 1):
             main.log.info(" Uninstalling ONOS " + str(i) )
             main.ONOSbench.onosUninstall( ONOSIp[i] )
-       
+
         #construct the cell file
         main.log.info("Creating cell file")
         cellIp = []
@@ -101,13 +101,13 @@ class SCPFintentInstallWithdrawLat:
 
         main.step( "Set Cell" )
         main.ONOSbench.setCell(cellName)
-        
+
         main.step( "Creating ONOS package" )
-        packageResult = main.ONOSbench.onosPackage()  
+        packageResult = main.ONOSbench.onosPackage()
 
         main.step( "verify cells" )
         verifyCellResult = main.ONOSbench.verifyCell()
-      
+
         main.log.report( "Initializeing " + str( clusterCount ) + " node cluster." )
         for node in range(1, clusterCount + 1):
             main.log.info("Starting ONOS " + str(node) + " at IP: " + ONOSIp[node])
@@ -124,24 +124,24 @@ class SCPFintentInstallWithdrawLat:
 
         main.ONOS1cli.startOnosCli( ONOSIp[1] )
         main.log.info("Startup sequence complete")
-        
+
         time.sleep(30)
-        
+
         for i in range(3):
-            main.ONOSbench.onosCfgSet( ONOSIp[1], "org.onosproject.provider.nil.NullProviders", ("deviceCount " + str(switchCount)) ) 
+            main.ONOSbench.onosCfgSet( ONOSIp[1], "org.onosproject.provider.nil.NullProviders", ("deviceCount " + str(switchCount)) )
             main.ONOSbench.onosCfgSet( ONOSIp[1], "org.onosproject.provider.nil.NullProviders", "topoShape linear")
             main.ONOSbench.onosCfgSet( ONOSIp[1], "org.onosproject.provider.nil.NullProviders", "enabled true")
             if main.ONOSbench.verifySummary(ONOSIp[1], switchCount):
                 break
-            else: 
-                print "Failed- looping" 
+            else:
+                print "Failed- looping"
 
         main.ONOSbench.handle.sendline("""onos $OC1 "balance-masters" """)
         main.ONOSbench.handle.expect(":~")
         main.ONOSbench.logReport(ONOSIp[1], ["ERROR", "WARNING", "EXCEPT"])
 
     def CASE2( self, main ):
-         
+
         import time
         import numpy
 
@@ -169,18 +169,18 @@ class SCPFintentInstallWithdrawLat:
             time.sleep(2)
 
         links = "--"
-        for i in range(8): 
+        for i in range(8):
             if debug: main.log.info("top of loop")
             main.ONOSbench.handle.sendline("onos $OC1 links")
             main.ONOSbench.handle.expect(":~")
             links = main.ONOSbench.handle.before
             if "=null:" in links:
-                break 
+                break
             if debug: main.log.info(str(links))
-            if i > 3: 
-                main.ONOSbench.logReport(ONOSIp[1], ["ERROR", "WARNING", "EXCEPT"], "d")  
-            if i == 7: 
-                main.log.error("link data missing") 
+            if i > 3:
+                main.ONOSbench.logReport(ONOSIp[1], ["ERROR", "WARNING", "EXCEPT"], "d")
+            if i == 7:
+                main.log.error("link data missing")
             time.sleep(3)
 
         links = links.splitlines()
@@ -236,21 +236,21 @@ class SCPFintentInstallWithdrawLat:
                         if "withdraw" in line:
                             withdrawn.append(int(line.split(" ")[5]))
 
-                    for line in myRawResult: 
-                        if "Failure:" in line: 
+                    for line in myRawResult:
+                        if "Failure:" in line:
                             main.log.error("INTENT TEST FAILURE, ABORTING TESTCASE")
                             testStatus = "fail"
-                if testStatus == "fail": 
-                    break 
-                            
+                if testStatus == "fail":
+                    break
+
                     print("installed: " + str(installed))
                     print("withraw: " + str(withdrawn) + "\n")
-                    if withdrawn[len(withdrawn) -1] > 1000 or installed[len(installed) -1] > 1000: 
+                    if withdrawn[len(withdrawn) -1] > 1000 or installed[len(installed) -1] > 1000:
                         main.log.info("ABNORMAL VALUE, CHECKING LOG")
                         main.ONOSbench.logReport(ONOSIp[1], ["ERROR", "WARNING", "EXCEPT"], outputMode="d")
 
-            if testStatus == "fail": 
-                break 
+            if testStatus == "fail":
+                break
             main.log.report("----------------------------------------------------")
             main.log.report("Scale: " + str(clusterCount) + "\tIntent batch size: " + str(intentSize))
             main.log.report("Data samples: " + str(sampleSize) + "\tWarm up tests: " + str(warmUp))

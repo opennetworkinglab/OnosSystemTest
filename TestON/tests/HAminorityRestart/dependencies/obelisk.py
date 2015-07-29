@@ -9,9 +9,9 @@ class ObeliskTopo( Topo ):
         leftTopSwitch = self.addSwitch('s2',dpid='2000'.zfill(16))
         rightTopSwitch = self.addSwitch('s5',dpid='5000'.zfill(16))
         leftBotSwitch = self.addSwitch('s3',dpid='3000'.zfill(16))
-        rightBotSwitch = self.addSwitch('s6',dpid='6000'.zfill(16))	
+        rightBotSwitch = self.addSwitch('s6',dpid='6000'.zfill(16))
         midBotSwitch = self.addSwitch('s28',dpid='2800'.zfill(16))
-        
+
         topHost = self.addHost( 'h1' )
         leftTopHost = self.addHost('h2')
         rightTopHost = self.addHost('h5')

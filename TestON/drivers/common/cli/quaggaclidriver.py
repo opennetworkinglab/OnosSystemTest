@@ -381,7 +381,7 @@ class QuaggaCliDriver( CLI ):
         chunk_size = 20
 
         if len(routes) > chunk_size:
-            num_iter = (int) (len(routes) / chunk_size) 
+            num_iter = (int) (len(routes) / chunk_size)
         else:
             num_iter = 1;
 
@@ -403,7 +403,7 @@ class QuaggaCliDriver( CLI ):
             except Exception:
                 main.log.warn( "Failed to add route" )
                 self.disconnect()
-            
+
             # waitTimer = 1.00 / routeRate
             main.log.info("Total routes so far " + ((str) (total)) + " wait for 0 sec")
             #time.sleep( 1 )

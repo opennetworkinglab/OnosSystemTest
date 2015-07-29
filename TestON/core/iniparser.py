@@ -1,7 +1,7 @@
 #/usr/bin/env python
 '''
 Created on 07-Jan-2013
-       
+
 @author: Raghav Kashyap(raghavkashyap@paxterrasolutions.com)
 
     TestON is free software: you can redistribute it and/or modify
@@ -15,7 +15,7 @@ Created on 07-Jan-2013
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with TestON.  If not, see <http://www.gnu.org/licenses/>.		
+    along with TestON.  If not, see <http://www.gnu.org/licenses/>.
 
 
 '''
@@ -28,12 +28,12 @@ class iniparser:
     Test-Topology parser
     Module that parses the test from plain English and topology
     from a specification file and prepares for execution.
-    Test sequencer 
+    Test sequencer
     Module that executes the tests case by case,
     step by step adding ability for step by step pause and debug later.
     Object loader
-    Module that connects and loads all the component connection objects 
-    for access in the test 
+    Module that connects and loads all the component connection objects
+    for access in the test
     '''
     def __init__(self) :
         self.default = ''

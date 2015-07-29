@@ -191,7 +191,7 @@ class Logger:
             logfile.close()
             print newmsg
 
-        main.log.case = case 
+        main.log.case = case
 
         def step(msg):
             '''

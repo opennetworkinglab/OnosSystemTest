@@ -1,7 +1,7 @@
 #/usr/bin/env python
 '''
 Created on 07-Jan-2013
-       
+
 @author: Raghav Kashyap(raghavkashyap@paxterrasolutions.com)
 
     TestON is free software: you can redistribute it and/or modify
@@ -15,7 +15,7 @@ Created on 07-Jan-2013
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with TestON.  If not, see <http://www.gnu.org/licenses/>.		
+    along with TestON.  If not, see <http://www.gnu.org/licenses/>.
 
 
 '''
@@ -24,7 +24,7 @@ import xmldict
 import re
 
 class xmlparser :
-    
+
     def __init__(self) :
         self.default = ''
 
@@ -40,7 +40,7 @@ class xmlparser :
                 parsedInfo = xmldict.xml_to_dict(xml)
                 return parsedInfo
             except Exception:
-                print "There is no such file to parse " + fileName 
+                print "There is no such file to parse " + fileName
         else :
             print "file name is not correct"
 
@@ -48,7 +48,7 @@ class xmlparser :
         '''
          It will take the params file path and will return the params dictionary
         '''
-        paramsPath = re.sub("\.","/",paramsPath) 
+        paramsPath = re.sub("\.","/",paramsPath)
         paramsPath = re.sub("tests|examples","",paramsPath)
         params = self.parse(main.tests_path+paramsPath+".params")
         paramsAsString = str(params)
@@ -64,4 +64,4 @@ class xmlparser :
         topology = self.parse(main.tests_path+topologyPath+".topo")
         topoAsString = str(topology)
         return eval(topoAsString)
-                                                                  
+

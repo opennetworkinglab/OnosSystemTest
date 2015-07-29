@@ -64,4 +64,4 @@ class DictToObject( dict ):
                     else:
                         self[k] = obj[k]
         return self
-    
+

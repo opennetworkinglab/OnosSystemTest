@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 '''
 Created on 23-Oct-2012
-    
+
 @authors: Anil Kumar (anilkumar.s@paxterrasolutions.com),
           Raghav Kashyap(raghavkashyap@paxterrasolutions.com)
 
@@ -18,9 +18,9 @@ Created on 23-Oct-2012
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with TestON.  If not, see <http://www.gnu.org/licenses/>.		
+    along with TestON.  If not, see <http://www.gnu.org/licenses/>.
 
-        
+
 Utilities will take care about the basic functions like :
    * Extended assertion,
    * parse_args for key-value pair handling
@@ -43,7 +43,7 @@ class Utilities:
        * parse_args for key-value pair handling
        * Parsing the params or topology file.
     '''
-    
+
     def __init__(self):
         self.wrapped = sys.modules[__name__]
 
@@ -57,7 +57,7 @@ class Utilities:
             return getattr(self.wrapped, name)
         except AttributeError:
             def assertHandling(**kwargs):
-                nameVar = re.match("^assert",name,flags=0) 
+                nameVar = re.match("^assert",name,flags=0)
                 matchVar = re.match("assert(_not_|_)(equals|matches|greater|lesser)",name,flags=0)
                 notVar = 0
                 operators = ""
@@ -193,16 +193,16 @@ class Utilities:
         for key,value in kwargs.iteritems():
             #currentKey =  str.upper(key)
             if isinstance(args,list) and str.upper(key) in args:
-                for each in args:                    
+                for each in args:
                     if each==str.upper(key):
                         newArgs [str(each)] = value
                     elif each != str.upper(key) and (newArgs.has_key(str(each)) == False ):
                         newArgs[str(each)] = None
-                    
-                    
-            
+
+
+
         return newArgs
-    
+
     def send_mail(self):
         # Create a text/plain message
         msg = email.mime.Multipart.MIMEMultipart()
@@ -213,16 +213,16 @@ class Utilities:
                 sub = "Result summary of \""+main.TEST+"\": "+str(main.TOTAL_TC_SUCCESS)+"% Passed"
         except KeyError,AttributeError:
             sub = "Result summary of \""+main.TEST+"\": "+str(main.TOTAL_TC_SUCCESS)+"% Passed"
-            
+
         msg['Subject'] = sub
         msg['From'] = 'paxweb@paxterrasolutions.com'
         msg['To'] = main.mail
         #msg['Cc'] = 'paxweb@paxterrasolutions.com'
-        
+
         # The main body is just another attachment
         body = email.mime.Text.MIMEText(main.logHeader+"\n"+main.testResult)
         msg.attach(body)
-        
+
         # Attachment
         for filename in os.listdir(main.logdir):
             filepath = main.logdir+"/"+filename
@@ -231,32 +231,32 @@ class Utilities:
             fp.close()
             att.add_header('Content-Disposition','attachment',filename=filename)
             msg.attach(att)
-        
+
         smtp = smtplib.SMTP('198.57.211.46')
         smtp.starttls()
         smtp.login('paxweb@paxterrasolutions.com','pax@peace')
         smtp.sendmail(msg['From'],[msg['To']], msg.as_string())
         smtp.quit()
-        return main.TRUE        
-        
-           
+        return main.TRUE
+
+
     def parse(self,fileName):
         '''
         This will parse the params or topo or cfg file and return content in the file as Dictionary
         '''
         self.fileName = fileName
-        matchFileName = re.match(r'(.*)\.(cfg|params|topo)',self.fileName,re.M|re.I)    
+        matchFileName = re.match(r'(.*)\.(cfg|params|topo)',self.fileName,re.M|re.I)
         if matchFileName:
             try :
                 parsedInfo = ConfigObj(self.fileName)
                 return parsedInfo
             except Exception:
-                print "There is no such file to parse "+fileName 
+                print "There is no such file to parse "+fileName
         else:
-            return 0   
+            return 0
 
 
 if __name__ != "__main__":
     import sys
-    
-    sys.modules[__name__] = Utilities()    
+
+    sys.modules[__name__] = Utilities()

@@ -36,20 +36,20 @@ class SCPFintentRerouteLat:
         skipMvn = main.params[ 'TEST' ][ 'skipCleanInstall' ]
         cellName = main.params[ 'ENV' ][ 'cellName' ]
 
-        # -- INIT SECTION, ONLY RUNS ONCE -- # 
-        if init == False: 
+        # -- INIT SECTION, ONLY RUNS ONCE -- #
+        if init == False:
             init = True
             global clusterCount             #number of nodes running
             global ONOSIp                   #list of ONOS IP addresses
-            global scale 
+            global scale
             global commit
 
             clusterCount = 0
             ONOSIp = [ 0 ]
-            scale = (main.params[ 'SCALE' ]).split(",")            
+            scale = (main.params[ 'SCALE' ]).split(",")
             clusterCount = int(scale[0])
 
-            #Populate ONOSIp with ips from params 
+            #Populate ONOSIp with ips from params
             ONOSIp = [0]
             ONOSIp.extend(main.ONOSbench.getOnosIps())
 
@@ -68,7 +68,7 @@ class SCPFintentRerouteLat:
                 checkoutResult = main.TRUE
                 pullResult = main.TRUE
                 main.log.info( "Skipped git checkout and pull" )
-            
+
             commit = main.ONOSbench.getVersion()
             commit = (commit.split(" "))[1]
 
@@ -76,22 +76,22 @@ class SCPFintentRerouteLat:
             resultsDB.close()
 
         # -- END OF INIT SECTION --#
-         
+
         clusterCount = int(scale[0])
-        scale.remove(scale[0])       
-      
-        #kill off all onos processes 
+        scale.remove(scale[0])
+
+        #kill off all onos processes
         main.log.step("Safety check, killing all ONOS processes")
         main.log.step("before initiating enviornment setup")
         for node in range(1, main.maxNodes + 1):
             main.ONOSbench.onosDie(ONOSIp[node])
-        
+
         #Uninstall everywhere
         main.log.step( "Cleaning Enviornment..." )
         for i in range(1, main.maxNodes + 1):
             main.log.info(" Uninstalling ONOS " + str(i) )
             main.ONOSbench.onosUninstall( ONOSIp[i] )
-       
+
         #construct the cell file
         main.log.info("Creating cell file")
         cellIp = []
@@ -102,13 +102,13 @@ class SCPFintentRerouteLat:
 
         main.step( "Set Cell" )
         main.ONOSbench.setCell(cellName)
-        
+
         main.step( "Creating ONOS package" )
-        packageResult = main.ONOSbench.onosPackage()  
+        packageResult = main.ONOSbench.onosPackage()
 
         main.step( "verify cells" )
         verifyCellResult = main.ONOSbench.verifyCell()
-      
+
         main.log.report( "Initializing " + str( clusterCount ) + " node cluster." )
         for node in range(1, clusterCount + 1):
             main.log.info("Starting ONOS " + str(node) + " at IP: " + ONOSIp[node])
@@ -123,7 +123,7 @@ class SCPFintentRerouteLat:
             if not isup:
                 main.log.report( "ONOS " + str(node) + " didn't start!" )
         main.log.info("Startup sequence complete")
-    
+
         deviceMastership = (main.params[ 'TEST' ][ "s" + str(clusterCount) ]).split(",")
         print("Device mastership list: " + str(deviceMastership))
 
@@ -149,9 +149,9 @@ class SCPFintentRerouteLat:
                 main.ONOSbench.handle.sendline(cmd)
                 main.ONOSbench.handle.expect(":~")
                 time.sleep(4)
-                
-                cmd = ( "onos $OC" + node + " roles|grep 00000" + str(index)) 
-                main.log.info(cmd) 
+
+                cmd = ( "onos $OC" + node + " roles|grep 00000" + str(index))
+                main.log.info(cmd)
                 main.ONOSbench.handle.sendline(cmd)
                 main.ONOSbench.handle.expect(":~")
                 check = main.ONOSbench.handle.before
@@ -163,7 +163,7 @@ class SCPFintentRerouteLat:
         main.ONOSbench.logReport(ONOSIp[1], ["ERROR", "WARNING", "EXCEPT"])
 
     def CASE2( self, main ):
-         
+
         import time
         import numpy
         import datetime
@@ -233,7 +233,7 @@ class SCPFintentRerouteLat:
                         #main.ONOSbench.logReport(ONOSIp[(clusterCount-1)], ["ERROR", "WARNING", "EXCEPT"], "d")
                         main.ONOSbench.sendline("onos $OC1 summary")
                         main.ONOSbench.sendline("onos $OC1 devices")
-                        main.ONOSbench.sendline("onos $OC1 links") 
+                        main.ONOSbench.sendline("onos $OC1 links")
                         main.ONOSbench.expect(":~")
                         main.log.info(main.ONOSbench.before)
 
@@ -265,7 +265,7 @@ class SCPFintentRerouteLat:
                         break
 
                 cutTimestamp = (temp.split(" "))[0] + " " + (temp.split(" "))[1]
-                if debug: main.log.info("Cut timestamp: " + cutTimestamp) 
+                if debug: main.log.info("Cut timestamp: " + cutTimestamp)
 
                 #validate link count and flow count
                 for i in range(0, 40):
@@ -279,7 +279,7 @@ class SCPFintentRerouteLat:
                         main.log.error("Link or flow count incorrect, data invalid." + linkCheck)
                         main.ONOSbench.logReport(ONOSIp[1], ["ERROR", "WARNING", "EXCEPT"], "d")
 
-                time.sleep(5) #trying to avoid negative values 
+                time.sleep(5) #trying to avoid negative values
 
                 #intents events metrics installed timestamp
                 IEMtimestamps = [0]*(clusterCount + 1)
@@ -340,12 +340,12 @@ class SCPFintentRerouteLat:
                 if debug: main.log.info(cmd)
                 main.ONOSbench.handle.sendline(cmd)
                 main.ONOSbench.handle.expect(":~")
-                
+
                 #wait for intent withdraw
                 main.ONOSbench.handle.sendline(withdrawCmd)
-                main.log.info(withdrawCmd) 
+                main.log.info(withdrawCmd)
                 main.ONOSbench.handle.expect(":~")
-                if debug: main.log.info(main.ONOSbench.handle.before) 
+                if debug: main.log.info(main.ONOSbench.handle.before)
                 main.ONOSbench.handle.sendline("onos $OC1 intents|grep WITHDRAWN|wc -l")
                 main.ONOSbench.handle.expect(":~")
                 intentWithdrawCheck = main.ONOSbench.handle.before
@@ -373,7 +373,7 @@ class SCPFintentRerouteLat:
             for i in myResult:
                 latTemp.append(i[0])
                 nodeTemp.append(i[1])
-                 
+
             mode = {}
             for i in nodeTemp:
                 if i in mode:
@@ -398,7 +398,7 @@ class SCPFintentRerouteLat:
             main.log.report("________________________________________________________")
 
             resultsDB = open("/tmp/IntentRerouteLatDB", "a")
-            resultsDB.write("'" + commit + "',") 
+            resultsDB.write("'" + commit + "',")
             resultsDB.write(str(clusterCount) + ",")
             resultsDB.write(str(intents) + ",")
             resultsDB.write(str(average) + ",")

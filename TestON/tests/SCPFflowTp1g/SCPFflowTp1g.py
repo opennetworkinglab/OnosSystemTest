@@ -13,7 +13,7 @@ class SCPFflowTp1g:
     def __init__( self ):
         self.default = ''
 
-    def CASE1( self, main ):          
+    def CASE1( self, main ):
 
         import time
         global init
@@ -32,8 +32,8 @@ class SCPFflowTp1g:
         BENCHIp = main.params[ 'BENCH' ][ 'ip1' ]
         main.maxNodes = int(main.params[ 'max' ])
         skipMvn = main.params[ 'TEST' ][ 'skipCleanInstall' ]
-        cellName = main.params[ 'ENV' ][ 'cellName' ]       
-    
+        cellName = main.params[ 'ENV' ][ 'cellName' ]
+
         main.log.info("==========DEBUG VERSION 3===========")
 
         # -- INIT SECTION, ONLY RUNS ONCE -- #
@@ -71,7 +71,7 @@ class SCPFflowTp1g:
                 checkoutResult = main.TRUE
                 pullResult = main.TRUE
                 main.log.info( "Skipped git checkout and pull" )
-            
+
             commit = main.ONOSbench.getVersion()
             commit = (commit.split(" "))[1]
 
@@ -84,7 +84,7 @@ class SCPFflowTp1g:
         scale.remove(scale[0])
         main.log.info("CLUSTER COUNT: " + str(clusterCount))
 
-        #kill off all onos processes 
+        #kill off all onos processes
         main.log.step("Safety check, killing all ONOS processes")
         main.log.step("before initiating enviornment setup")
         for node in range(1, main.maxNodes + 1):
@@ -100,16 +100,16 @@ class SCPFflowTp1g:
         main.log.info("Creating cell file")
         cellIp = []
         for node in range (1, clusterCount + 1):
-            cellIp.append(ONOSIp[node])        
-        
+            cellIp.append(ONOSIp[node])
+
         main.ONOSbench.createCellFile(BENCHIp,cellName,"localhost",str(Apps), cellIp)
         main.log.info("Cell Ip list: " + str(cellIp))
-        
+
         main.step( "Set Cell" )
-        main.ONOSbench.setCell(cellName)       
- 
+        main.ONOSbench.setCell(cellName)
+
         main.step( "Creating ONOS package" )
-        packageResult = main.ONOSbench.onosPackage()  
+        packageResult = main.ONOSbench.onosPackage()
 
         main.step( "verify cells" )
         verifyCellResult = main.ONOSbench.verifyCell()
@@ -127,21 +127,21 @@ class SCPFflowTp1g:
                     break
             if not isup:
                 main.log.report( "ONOS " + str(node) + " didn't start!" )
-        
+
         for node in range(1, clusterCount + 1):
             exec "a = main.ONOS%scli.startOnosCli" %str(node)
             a(ONOSIp[node])
-         
+
         main.log.info("Startup sequence complete")
-        main.ONOSbench.logReport(ONOSIp[1], ["ERROR", "WARNING", "EXCEPT"], outputMode="d") 
+        main.ONOSbench.logReport(ONOSIp[1], ["ERROR", "WARNING", "EXCEPT"], outputMode="d")
     def CASE2( self, main ):
         #
-        # This is the flow TP test 
+        # This is the flow TP test
         #
-        import os.path  
-        import numpy       
+        import os.path
+        import numpy
         import math
-        import time 
+        import time
         import datetime
         import traceback
 
@@ -173,9 +173,9 @@ class SCPFflowTp1g:
         flowRuleBackup = str(main.params[ 'TEST' ][ 'enableFlowRuleStoreBackup' ])
         main.log.info("Flow Rule Backup is set to:" + flowRuleBackup)
 
-        servers = str(clusterCount) 
-        
-        if clusterCount == 1: 
+        servers = str(clusterCount)
+
+        if clusterCount == 1:
             neighborList = ['0']
             currentNeighbors = "r"
         else:
@@ -183,7 +183,7 @@ class SCPFflowTp1g:
                 neighborList = [str(clusterCount-1)]
                 currentNeighbors = "r"
             else:
-                neighborList = ['0'] 
+                neighborList = ['0']
 
         main.log.info("neightborlist: " + str(neighborList))
 
@@ -192,32 +192,32 @@ class SCPFflowTp1g:
 
         for n in neighborList:
             main.log.step("\tSTARTING TEST")
-            main.log.step("\tLOADING FROM SERVERS:  \t" + str(clusterCount) ) 
-            main.log.step("\tNEIGHBORS:\t" + n )  
+            main.log.step("\tLOADING FROM SERVERS:  \t" + str(clusterCount) )
+            main.log.step("\tNEIGHBORS:\t" + n )
             main.log.info("=============================================================")
             main.log.info("=============================================================")
             #write file to configure nil link
             ipCSV = ""
             for i in range (1, int(main.maxNodes) + 1):
                 tempstr = "ip" + str(i)
-                ipCSV += main.params[ 'CTRL' ][ tempstr ] 
+                ipCSV += main.params[ 'CTRL' ][ tempstr ]
                 if i < int(main.maxNodes):
                     ipCSV +=","
-            
+
             for i in range(3):
                 main.ONOSbench.onosCfgSet(ONOSIp[1], "org.onosproject.provider.nil.NullProviders", "deviceCount 35")
                 main.ONOSbench.onosCfgSet(ONOSIp[1], "org.onosproject.provider.nil.NullProviders", "topoShape linear")
-                main.ONOSbench.onosCfgSet(ONOSIp[1], "org.onosproject.provider.nil.NullProviders", "enabled true") 
+                main.ONOSbench.onosCfgSet(ONOSIp[1], "org.onosproject.provider.nil.NullProviders", "enabled true")
 
                 time.sleep(5)
                 main.ONOSbench.handle.sendline("onos $OC1 summary")
                 main.ONOSbench.handle.expect(":~")
                 check = main.ONOSbench.handle.before
-                main.log.info("\nStart up check: \n" + check + "\n") 
-                if "SCC(s)=1," in check: 
-                    break 
+                main.log.info("\nStart up check: \n" + check + "\n")
+                if "SCC(s)=1," in check:
+                    break
                 time.sleep(5)
-                
+
             #devide flows
             flows = int(main.params[ 'TEST' ][ 'flows' ])
             main.log.info("Flow Target  = " + str(flows))
@@ -230,99 +230,99 @@ class SCPFflowTp1g:
             serverEnvVars = ""
             for i in range (1,int(servers)+1):
                 serverEnvVars += ("-s " + ONOSIp[i] + " ")
-            
+
             data = [[""]*int(servers)]*int(sampleSize)
             maxes = [""]*int(sampleSize)
 
             flowCMD = "python3 " + homeDir + "/onos/tools/test/bin/"
             flowCMD += testCMD[0] + " " + str(flows) + " " + testCMD[1]
-            flowCMD += " " + str(n) + " " + str(serverEnvVars) + "-j" 
+            flowCMD += " " + str(n) + " " + str(serverEnvVars) + "-j"
 
             main.log.info(flowCMD)
             #time.sleep(60)
-            
-            for test in range(0, warmUp + sampleSize): 
-                if test < warmUp: 
+
+            for test in range(0, warmUp + sampleSize):
+                if test < warmUp:
                     main.log.info("Warm up " + str(test + 1) + " of " + str(warmUp))
-                else: 
-                     main.log.info("====== Test run: " + str(test-warmUp+1) + " ======") 
+                else:
+                     main.log.info("====== Test run: " + str(test-warmUp+1) + " ======")
 
                 main.ONOSbench.handle.sendline(flowCMD)
                 main.ONOSbench.handle.expect(":~")
                 rawResult = main.ONOSbench.handle.before
                 main.log.info("Raw results: \n" + rawResult + "\n")
 
-                if "failed" in rawResult: 
+                if "failed" in rawResult:
                     main.log.report("FLOW_TESTER.PY FAILURE")
                     main.log.report( " \n" + rawResult + " \n")
                     for i in range(clusterCount):
                         main.log.report("=======================================================")
-                        main.log.report(" ONOS " + str(i) + "LOG REPORT") 
+                        main.log.report(" ONOS " + str(i) + "LOG REPORT")
                         main.ONOSbench.logReport(ONOSIp[i], ["ERROR", "WARNING", "EXCEPT"], outputMode="d")
-                    main.ONOSbench.handle.sendline("onos $OC1 flows") 
-                    main.ONOSbench.handle.expect(":~") 
+                    main.ONOSbench.handle.sendline("onos $OC1 flows")
+                    main.ONOSbench.handle.expect(":~")
                     main.log.info(main.ONOSbench.handle.before)
 
                     break
-            
+
             ########################################################################################
                 result = [""]*(clusterCount)
-        
+
                 #print("rawResult: " + rawResult)
 
                 rawResult = rawResult.splitlines()
 
-                for node in range(1, clusterCount + 1):        
+                for node in range(1, clusterCount + 1):
                     for line in rawResult:
-                        #print("line: " + line) 
+                        #print("line: " + line)
                         if ONOSIp[node] in line and "server" in line:
-                            temp = line.split(" ") 
+                            temp = line.split(" ")
                             for word in temp:
-                                #print ("word: " + word) 
-                                if "elapsed" in repr(word): 
+                                #print ("word: " + word)
+                                if "elapsed" in repr(word):
                                     index = temp.index(word) + 1
                                     myParsed = (temp[index]).replace(",","")
                                     myParsed = myParsed.replace("}","")
                                     myParsed = int(myParsed)
                                     result[node-1] = myParsed
                                     main.log.info( ONOSIp[node] + " : " + str(myParsed))
-                                    break 
+                                    break
 
                 if test >= warmUp:
-                    for i in result: 
-                        if i == "": 
+                    for i in result:
+                        if i == "":
                             main.log.error("Missing data point, critical failure incoming")
 
                     print result
                     maxes[test-warmUp] = max(result)
                     main.log.info("Data collection iteration: " + str(test-warmUp) + " of " + str(sampleSize))
-                    main.log.info("Throughput time: " + str(maxes[test-warmUp]) + "(ms)")                
+                    main.log.info("Throughput time: " + str(maxes[test-warmUp]) + "(ms)")
 
                     data[test-warmUp] = result
 
-                # wait for flows = 0 
-                for checkCount in range(0,5): 
+                # wait for flows = 0
+                for checkCount in range(0,5):
                     time.sleep(10)
                     main.ONOSbench.handle.sendline("onos $OC1 summary")
                     main.ONOSbench.handle.expect(":~")
                     flowCheck = main.ONOSbench.handle.before
-                    if "flows=0," in flowCheck: 
+                    if "flows=0," in flowCheck:
                         main.log.info("Flows removed")
                         break
-                    else: 
-                        for line in flowCheck.splitlines(): 
-                            if "flows=" in line: 
-                                main.log.info("Current Summary: " + line) 
-                    if checkCount == 2: 
+                    else:
+                        for line in flowCheck.splitlines():
+                            if "flows=" in line:
+                                main.log.info("Current Summary: " + line)
+                    if checkCount == 2:
                         main.log.info("Flows are stuck, moving on ")
 
 
                 time.sleep(5)
-                
+
             main.log.info("raw data: " + str(data))
             main.log.info("maxes:" + str(maxes))
 
-            
+
             # report data
             print("")
             main.log.info("\t Results (measurments are in milliseconds)")
@@ -330,16 +330,16 @@ class SCPFflowTp1g:
 
             nodeString = ""
             for i in range(1, int(servers) + 1):
-                nodeString += ("\tNode " + str(i)) 
-             
+                nodeString += ("\tNode " + str(i))
+
             for test in range(0, sampleSize ):
                 main.log.info("\t Test iteration " + str(test + 1) )
                 main.log.info("\t------------------")
-                main.log.info(nodeString)       
+                main.log.info(nodeString)
                 resultString = ""
 
                 for i in range(0, int(servers) ):
-                    resultString += ("\t" + str(data[test][i]) ) 
+                    resultString += ("\t" + str(data[test][i]) )
                 main.log.info(resultString)
 
                 print("\n")
@@ -348,19 +348,19 @@ class SCPFflowTp1g:
             main.log.info("Average of max value from each test iteration: " + str(avgOfMaxes))
 
             stdOfMaxes = numpy.std(maxes)
-            main.log.info("Standard Deviation of max values: " + str(stdOfMaxes))       
+            main.log.info("Standard Deviation of max values: " + str(stdOfMaxes))
             print("\n\n")
 
             avgTP = int(main.params[ 'TEST' ][ 'flows' ])  / avgOfMaxes #result in kflows/second
-            
+
             tp = []
-            for i in maxes: 
+            for i in maxes:
                 tp.append((int(main.params[ 'TEST' ][ 'flows' ]) / i ))
 
             stdTP = numpy.std(tp)
 
             main.log.info("Average thoughput:  " + str(avgTP) + " Kflows/second" )
-            main.log.info("Standard deviation of throughput: " + str(stdTP) + " Kflows/second") 
+            main.log.info("Standard deviation of throughput: " + str(stdTP) + " Kflows/second")
 
             resultsLog = open("/tmp/flowTP1gDB","a")
             resultString = ("'" + commit + "',")
@@ -369,9 +369,9 @@ class SCPFflowTp1g:
             resultString += (str(clusterCount) + ",")
             resultString += (str(n) + ",")
             resultString += (str(avgTP) + "," + str(stdTP) + "\n")
-            resultsLog.write(resultString) 
+            resultsLog.write(resultString)
             resultsLog.close()
-            
+
             main.log.report("Result line to file: " + resultString)
-           
-        main.ONOSbench.logReport(ONOSIp[1], ["ERROR", "WARNING", "EXCEPT"], outputMode="d") 
+
+        main.ONOSbench.logReport(ONOSIp[1], ["ERROR", "WARNING", "EXCEPT"], outputMode="d")

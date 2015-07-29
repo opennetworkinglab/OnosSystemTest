@@ -17,7 +17,7 @@ from core import xmldict
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with TestON.  If not, see <http://www.gnu.org/licenses/>.		
+    along with TestON.  If not, see <http://www.gnu.org/licenses/>.
 
 
 '''
@@ -29,18 +29,18 @@ class UpdateDriver:
         self.configFile = "/home/openflow/TestON/config/ofadriver.cfg"
         self.methodDict = {}
         self.fileDict = {}
-        
+
 
     def getmethods(self,modulePath,Class) :
         '''
          This will get the list of methods in given module or class.
-         It accepts the module path and class name. If there is no 
+         It accepts the module path and class name. If there is no
          class name then it has be mentioned as None.
         '''
         methodList = []
         moduleList = modulePath.split("/")
         newModule = ".".join([moduleList[len(moduleList) - 2],moduleList[len(moduleList) - 1]])
-        print "Message : Method list is being obatined , Please wait ..." 
+        print "Message : Method list is being obatined , Please wait ..."
         try :
             if Class :
                 Module = __import__(moduleList[len(moduleList) - 1], globals(), locals(), [Class], -1)
@@ -55,8 +55,8 @@ class UpdateDriver:
                 self.ClassList = ClassList
         except :
             print "Error : " +str(sys.exc_info()[1])
-         
-        
+
+
         self.method = methodList
         return self.method
 
@@ -101,7 +101,7 @@ class UpdateDriver:
         '''
          It will parse the config file (ofa.cfg) and return as dictionary
         '''
-        
+
         matchFileName = re.match(r'(.*)\.cfg', fileName, re.M | re.I)
         if matchFileName:
             self.configFile = fileName
@@ -111,28 +111,28 @@ class UpdateDriver:
                 return self.configDict
             except :
                 print "Error : Config file " + self.configFile + " not defined properly or file path error"
-        
- 
+
+
     def getList(self):
         '''
-          This method will maintain the hash with module->class->methodList or 
+          This method will maintain the hash with module->class->methodList or
           module -> methodList .It will return the same Hash.
         '''
         classList = []
         try :
             moduleList = self.configDict['config-driver']['importTypes'][self.driver]['modules'].keys()
         except KeyError,e:
-            print "Error : Module Does not Exists"    
+            print "Error : Module Does not Exists"
             print e
             return False
-     
+
         for index,value in enumerate(moduleList):
             modulePath = self.configDict['config-driver']['importTypes'][self.driver]['modules'][value]['path']
             moduleName = self.configDict['config-driver']['importTypes'][self.driver]['modules'][value]['name']
 
             try :
                 pathList = self.configDict['config-driver']['importTypes'][self.driver]['modules'][value]['set-path'].split(",")
-                sys.path.extend(pathList)  
+                sys.path.extend(pathList)
             except KeyError :
                 print "Error : No System Path is given "
                 pass
@@ -159,9 +159,9 @@ class UpdateDriver:
 
     def class_ignoreList(self,module) :
         '''
-        It removes the ignored classes for each module mention in ofadriver.cfg 
+        It removes the ignored classes for each module mention in ofadriver.cfg
         '''
-        class_ignoreList = [] 
+        class_ignoreList = []
         if self.configDict['config-driver']['importTypes'][self.driver]['modules'][module]['classes'] == None :
             pass
         else :
@@ -176,7 +176,7 @@ class UpdateDriver:
                 if className in self.methodDict[moduleName].keys():
                     del self.methodDict[moduleName][className]
         except AttributeError:
-            pass      
+            pass
         return self.methodDict
 
     def method_ignoreList(self,module,className):
@@ -195,7 +195,7 @@ class UpdateDriver:
                 try :
                     method_ignoreList = str(self.configDict['config-driver']['importTypes'][self.driver]['modules'][module]['classes'][className]['methods']['ignore-list']).split(",")
                 except TypeError :
-                    pass 
+                    pass
         except KeyError :
             print "Message : No Ignore-List Exists , proceeding for looking add method"
             self.add_method(module,className)
@@ -213,7 +213,7 @@ class UpdateDriver:
                     print "Message : Method " + method + "Does not exist in module " + moduleName + ", Continue to rest execution"
                     pass
 
-            else :    
+            else :
                 if method in self.methodDict[moduleName][className] :
                     self.methodDict[moduleName][className].remove(method)
         self.add_method(module,className)
@@ -221,7 +221,7 @@ class UpdateDriver:
 
     def add_method(self,module,className) :
         '''
-         This  will add the methods(mentioned in ofadriver.cfg file) into method list if it doesnot exists in list. 
+         This  will add the methods(mentioned in ofadriver.cfg file) into method list if it doesnot exists in list.
         '''
         method_List = []
         try :
@@ -235,13 +235,13 @@ class UpdateDriver:
                     method_List = str(self.configDict['config-driver']['importTypes'][self.driver]['modules'][module]['classes'][className]['methods']['add-list']).split(",")
                 except TypeError :
                     pass
-                
+
         except KeyError :
             print "Message : No Add-List Exists , Proceeding with all available methods"
             return True
         moduleName = self.configDict['config-driver']['importTypes'][self.driver]['modules'][module]['name']
         for index, method in enumerate(method_List) :
-            if className == None :    
+            if className == None :
                 self.methodDict[moduleName] = []
                 self.methodDict[moduleName].append(method)
             else :
@@ -256,19 +256,19 @@ class UpdateDriver:
         moduleList = modulePath.split("/")
         newModule = ".".join([moduleList[len(moduleList) - 2],moduleList[len(moduleList) - 1]])
         if className == None :
-            methodArgs = self.getargs(newModule,None,self.methodDict[moduleName])  
-            self.fileDict[moduleName] = methodArgs 
+            methodArgs = self.getargs(newModule,None,self.methodDict[moduleName])
+            self.fileDict[moduleName] = methodArgs
         else :
             methodArgs = self.getargs(newModule,className,self.methodDict[moduleName][className])
             self.fileDict[className] = methodArgs
         return self.fileDict
-             
+
     def appendDriver(self,fileName):
         '''
          This will append the given driver file with methods along with arguments.
         '''
         matchFileName = re.match(r'(.*)\.py', fileName, re.M | re.I)
-        
+
         if matchFileName:
             fileHandle = None
             try :
@@ -294,7 +294,7 @@ class UpdateDriver:
                 print "Error : Driver file " + fileName + "does not exists"
         else :
              print "Error : File name " + fileName + "is not python module"
-             return False  
+             return False
 
 
     def writeDriver(self, driver) :
@@ -314,15 +314,15 @@ class UpdateDriver:
             for index, driverName in enumerate(self.configDict['config-driver']['importTypes'].keys()):
                 self.driver = driverName
                 result = self.getList()
-                if result : 
+                if result :
                     self.getDriverPath()
                     self.appendDriver(self.driverPath + self.driver + ".py")
                     self.driverList.append(self.driverPath + self.driver + ".py")
                 else :
-                    return False 
+                    return False
         else :
             for index, driverName in enumerate(drivers) :
-                
+
                 self.driver = driverName
                 result = self.getList()
                 if result :
@@ -330,40 +330,40 @@ class UpdateDriver:
                     self.appendDriver(self.driverPath + self.driver + ".py")
                     self.driverList.append(self.driverPath + self.driver + ".py")
                 else :
-                    return False 
-         
+                    return False
+
         print "=" * 90
         print " " * 30  + "Output Driver File :"
-        print ",\n".join(self.driverList)         
+        print ",\n".join(self.driverList)
         print "=" * 90
-        return True   
-       
+        return True
 
- 
+
+
     def getDriverPath(self):
         '''
-         It will set the driver path and returns it.If driver path is not specified then it will take 
+         It will set the driver path and returns it.If driver path is not specified then it will take
          default path (/lib/updatedriver/).
-        ''' 
+        '''
         self.driverPath = ''
-        try : 
+        try :
             self.driverPath = self.configDict['config-driver']['importTypes'][self.driver]['driver-path']
-              
+
         except KeyError :
-            path = re.sub("(bin)$", "", os.getcwd()) 
+            path = re.sub("(bin)$", "", os.getcwd())
             self.driverPath = path + "/lib/updatedriver/"
         return self.driverPath
 
 
     def printHeader(self,driver):
         content = ''
-        
+
         print " " * 10 +"=" * 90 + "\n"
-        content = content + " " * 30 + "*-- Welcome to Updated Driver --*\n"       
+        content = content + " " * 30 + "*-- Welcome to Updated Driver --*\n"
         content = content + "\n" + " " * 10 + " " * 10 + "Config File : " + "/home/openflow/TestON/config/ofadriver.py"
-        content = content + "\n" + " " * 10 + " " * 10 + "Drivers Name : " + driver      
-        print content 
-        print " " * 10 + "=" * 90 
+        content = content + "\n" + " " * 10 + " " * 10 + "Drivers Name : " + driver
+        print content
+        print " " * 10 + "=" * 90
 
 
 

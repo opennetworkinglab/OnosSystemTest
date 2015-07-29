@@ -116,7 +116,7 @@ class CHOtest:
                                      onpass="Test step PASS",
                                      onfail="Test step FAIL" )
             statusResult = ( statusResult and onos_status )
-        
+
         main.step( "Start ONOS CLI on all nodes" )
         cliResult = main.TRUE
         main.log.step(" Start ONOS cli using thread ")
@@ -135,7 +135,7 @@ class CHOtest:
             t.join()
             startCliResult = startCliResult and t.result
         time2 = time.time()
-        
+
         if not startCliResult:
                 main.log.info("ONOS CLI did not start up properly")
                 main.cleanup()
@@ -168,7 +168,7 @@ class CHOtest:
             "________________________________________________________________________" )
         main.case(
             "Assign and Balance all Mininet switches across controllers" )
-        
+
         main.step( "Stop any previous Mininet network topology" )
         cliResult = main.TRUE
         if main.newTopo == main.params['TOPO3']['topo']:
@@ -177,7 +177,7 @@ class CHOtest:
         main.step( "Start Mininet with Att topology" )
         main.newTopo = main.params['TOPO1']['topo']
         startStatus = main.Mininet1.startNet(topoFile = main.newTopo)
-        
+
         main.step( "Assign switches to controllers" )
         for i in range( 1, ( main.numMNswitches + 1 ) ):  # 1 to ( num of switches +1 )
             main.Mininet1.assignSwController(
@@ -202,7 +202,7 @@ class CHOtest:
 
         main.step( "Balance devices across controllers" )
         balanceResult = main.ONOScli1.balanceMasters()
-		# giving some breathing time for ONOS to complete re-balance
+        # giving some breathing time for ONOS to complete re-balance
         time.sleep( 5 )
 
         topology_output = main.ONOScli1.topology()
@@ -260,10 +260,10 @@ class CHOtest:
             main.log.report( "Controller assignment successfull" )
         else:
             main.log.report( "Controller assignment failed" )
-        
+
         main.step( "Balance devices across controllers" )
         balanceResult = main.ONOScli1.balanceMasters()
-		# giving some breathing time for ONOS to complete re-balance
+        # giving some breathing time for ONOS to complete re-balance
         time.sleep( 5 )
 
         case21Result = switch_mastership
@@ -273,7 +273,7 @@ class CHOtest:
             actual=case21Result,
             onpass="Starting new Chordal topology test PASS",
             onfail="Starting new Chordal topology test FAIL" )
-        
+
     def CASE22( self, main ):
         """
         This test script Loads a new Topology (Spine) on CHO setup and balances all switches
@@ -287,7 +287,7 @@ class CHOtest:
         main.numMNlinks = int ( main.params[ 'TOPO3' ][ 'numLinks' ] )
         main.numMNhosts = int ( main.params[ 'TOPO3' ][ 'numHosts' ] )
         main.pingTimeout = 600
-        
+
         main.log.report(
             "Load Spine and Leaf topology and Balance all Mininet switches across controllers" )
         main.log.report(
@@ -314,7 +314,7 @@ class CHOtest:
                 switch_mastership = switch_mastership and main.TRUE
             else:
                 switch_mastership = main.FALSE
-        
+
         if switch_mastership == main.TRUE:
             main.log.report( "Controller assignment successfull" )
         else:
@@ -347,7 +347,7 @@ class CHOtest:
         main.deviceLinks = []
         main.deviceActiveLinksCount = []
         main.devicePortsEnabledCount = []
-        
+
         main.log.report(
             "Collect and Store topology details from ONOS before running any Tests" )
         main.log.report(
@@ -410,7 +410,7 @@ class CHOtest:
 
             main.step( "Collect and store each Device active links Count" )
             time1 = time.time()
-            
+
             for i in xrange( 1,( main.numMNswitches + 1 ), int( main.numCtrls) ):
                 pool = []
                 for cli in main.CLIs:
@@ -434,13 +434,13 @@ class CHOtest:
             main.log.info("Time for counting all enabled links of the switches: %2f seconds" %(time2-time1))
 
         else:
-            main.log.info("Devices (expected): %s, Links (expected): %s" % 
+            main.log.info("Devices (expected): %s, Links (expected): %s" %
                     ( str( main.numMNswitches ), str( main.numMNlinks ) ) )
             main.log.info("Devices (actual): %s, Links (actual): %s" %
                     ( numOnosDevices , numOnosLinks ) )
             main.log.info("Topology does not match, exiting CHO test...")
             topoResult = main.FALSE
-            # It's better exit here from running the test            
+            # It's better exit here from running the test
             main.cleanup()
             main.exit()
 
@@ -481,7 +481,7 @@ class CHOtest:
         if appCheck != main.TRUE:
             main.log.warn( main.CLIs[0].apps() )
             main.log.warn( main.CLIs[0].appIDs() )
- 
+
         time.sleep( 10 )
 
         main.step( "Verify Pingall" )
@@ -501,7 +501,7 @@ class CHOtest:
             main.log.report( "Pingall Test in Reactive mode failed" )
 
         main.step( "Disable Reactive forwarding" )
-       
+
         main.log.info( "Uninstall reactive forwarding app" )
         appResults = appResults and main.CLIs[0].deactivateApp( "org.onosproject.fwd" )
         pool = []
@@ -561,7 +561,7 @@ class CHOtest:
         if appCheck != main.TRUE:
             main.log.warn( main.CLIs[0].apps() )
             main.log.warn( main.CLIs[0].appIDs() )
- 
+
         time.sleep( 10 )
 
         main.step( "Verify Pingall" )
@@ -581,7 +581,7 @@ class CHOtest:
             main.log.report( "Pingall Test in Reactive mode failed" )
 
         main.step( "Disable Reactive forwarding" )
-       
+
         main.log.info( "Uninstall reactive forwarding app" )
         appResults = appResults and main.CLIs[0].deactivateApp( "org.onosproject.fwd" )
         pool = []
@@ -641,7 +641,7 @@ class CHOtest:
         if appCheck != main.TRUE:
             main.log.warn( main.CLIs[0].apps() )
             main.log.warn( main.CLIs[0].appIDs() )
- 
+
         time.sleep( 10 )
 
         main.step( "Verify Pingall" )
@@ -661,7 +661,7 @@ class CHOtest:
             main.log.report( "Pingall Test in Reactive mode failed" )
 
         main.step( "Disable Reactive forwarding" )
-       
+
         main.log.info( "Uninstall reactive forwarding app" )
         appResults = appResults and main.CLIs[0].deactivateApp( "org.onosproject.fwd" )
         pool = []
@@ -694,7 +694,7 @@ class CHOtest:
         Compare current ONOS topology with reference data
         """
         import re
-        
+
         devicesDPIDTemp = []
         hostMACsTemp = []
         deviceLinksTemp = []
@@ -732,12 +732,12 @@ class CHOtest:
         time2 = time.time()
         main.log.info("Time for counting enabled ports of the switches: %2f seconds" %(time2-time1))
         main.log.info (
-            "Device Enabled ports EXPECTED: %s" % 
-	     str( main.devicePortsEnabledCount ) )
+            "Device Enabled ports EXPECTED: %s" %
+            str( main.devicePortsEnabledCount ) )
         main.log.info (
-            "Device Enabled ports ACTUAL: %s" % 
+            "Device Enabled ports ACTUAL: %s" %
             str( devicePortsEnabledCountTemp ) )
-        
+
         if ( cmp( main.devicePortsEnabledCount,
                   devicePortsEnabledCountTemp ) == 0 ):
             stepResult1 = main.TRUE
@@ -799,8 +799,8 @@ class CHOtest:
         main.case( "Install 300 host intents" )
         main.step( "Add host Intents" )
         intentResult = main.TRUE
-        hostCombos = list( itertools.combinations( main.hostMACs, 2 ) ) 
-        
+        hostCombos = list( itertools.combinations( main.hostMACs, 2 ) )
+
         intentIdList = []
         time1 = time.time()
         for i in xrange( 0, len( hostCombos ), int(main.numCtrls) ):
@@ -865,15 +865,15 @@ class CHOtest:
         main.log.report( "Add 600 host intents and verify pingall (Chordal Topo)" )
         main.log.report( "_______________________________________" )
         import itertools
-        
+
         main.case( "Install 600 host intents" )
         main.step( "Add host Intents" )
         intentResult = main.TRUE
-        hostCombos = list( itertools.combinations( main.hostMACs, 2 ) ) 
-        
+        hostCombos = list( itertools.combinations( main.hostMACs, 2 ) )
+
         intentIdList = []
         time1 = time.time()
-        
+
         for i in xrange( 0, len( hostCombos ), int(main.numCtrls) ):
             pool = []
             for cli in main.CLIs:
@@ -913,7 +913,7 @@ class CHOtest:
                                  onfail="PING ALL FAIL" )
 
         case14Result = ( intentResult and pingResult )
-        
+
         utilities.assert_equals(
             expect=main.TRUE,
             actual=case14Result,
@@ -927,11 +927,11 @@ class CHOtest:
         main.log.report( "Add 2278 host intents and verify pingall (Spine Topo)" )
         main.log.report( "_______________________________________" )
         import itertools
-        
+
         main.case( "Install 2278 host intents" )
         main.step( "Add host Intents" )
         intentResult = main.TRUE
-        hostCombos = list( itertools.combinations( main.hostMACs, 2 ) ) 
+        hostCombos = list( itertools.combinations( main.hostMACs, 2 ) )
         main.pingTimeout = 300
         intentIdList = []
         time1 = time.time()
@@ -974,7 +974,7 @@ class CHOtest:
                                  onfail="PING ALL FAIL" )
 
         case15Result = ( intentResult and pingResult )
-        
+
         utilities.assert_equals(
             expect=main.TRUE,
             actual=case15Result,
@@ -1282,9 +1282,9 @@ class CHOtest:
         Randomly bring some links down and verify ping all ( Host Intents-Chordal Topo)
         """
         import random
-        import itertools 
+        import itertools
         link_sleep = int( main.params[ 'timers' ][ 'LinkDiscovery' ] )
-        
+
         main.log.report( "Randomly bring some core links down and verify ping all (Host Intents-Chordal Topo)" )
         main.log.report( "___________________________________________________________________________" )
         main.case( "Host intents - Randomly bring some core links down and verify ping all" )
@@ -1296,7 +1296,7 @@ class CHOtest:
         main.randomLinks = random.sample(switchesLinksComb, 5 )
         print main.randomLinks
         main.step( "Cut links on random devices" )
-        
+
         for switch in main.randomLinks:
             main.Mininet1.link(
                 END1=switch[0],
@@ -1341,7 +1341,7 @@ class CHOtest:
         """
         import random
         link_sleep = int( main.params[ 'timers' ][ 'LinkDiscovery' ] )
-       
+
         main.log.report(
             "Bring the core links up that are down and verify ping all (Host Intents-Chordal Topo" )
         main.log.report(
@@ -1349,7 +1349,7 @@ class CHOtest:
         main.case(
             "Host intents - Bring the core links up that are down and verify ping all" )
         main.step( "Bring randomly cut links on devices up" )
-        
+
         for switch in main.randomLinks:
             main.Mininet1.link(
                 END1=switch[0],
@@ -1394,9 +1394,9 @@ class CHOtest:
         Randomly bring some links down and verify ping all ( Point Intents-Chordal Topo)
         """
         import random
-        import itertools 
+        import itertools
         link_sleep = int( main.params[ 'timers' ][ 'LinkDiscovery' ] )
-        
+
         main.log.report( "Randomly bring some core links down and verify ping all ( Point Intents-Chordal Topo)" )
         main.log.report( "___________________________________________________________________________" )
         main.case( "Point intents - Randomly bring some core links down and verify ping all" )
@@ -1408,7 +1408,7 @@ class CHOtest:
         main.randomLinks = random.sample(switchesLinksComb, 5 )
         print main.randomLinks
         main.step( "Cut links on random devices" )
-        
+
         for switch in main.randomLinks:
             main.Mininet1.link(
                 END1=switch[0],
@@ -1453,7 +1453,7 @@ class CHOtest:
         """
         import random
         link_sleep = int( main.params[ 'timers' ][ 'LinkDiscovery' ] )
-       
+
         main.log.report(
             "Bring the core links up that are down and verify ping all ( Point Intents-Chordal Topo" )
         main.log.report(
@@ -1461,7 +1461,7 @@ class CHOtest:
         main.case(
             "Point intents - Bring the core links up that are down and verify ping all" )
         main.step( "Bring randomly cut links on devices up" )
-        
+
         for switch in main.randomLinks:
             main.Mininet1.link(
                 END1=switch[0],
@@ -1518,10 +1518,10 @@ class CHOtest:
         link2End2bot = main.params[ 'SPINECORELINKS' ][ 'linkS10bot' ].split( ',' )
         link_sleep = int( main.params[ 'timers' ][ 'LinkDiscovery' ] )
         main.pingTimeout = 400
-        
+
         main.log.report( "Bring some core links down and verify ping all (Host Intents-Spine Topo)" )
         main.log.report( "___________________________________________________________________________" )
-        
+
         linkIndex = range(4)
         linkIndexS9 = random.sample(linkIndex,1)[0]
         linkIndex.remove(linkIndexS9)
@@ -1624,7 +1624,7 @@ class CHOtest:
         utilities.assert_equals( expect=main.TRUE, actual=caseResult84,
                                  onpass="Link Up Test PASS",
                                  onfail="Link Up Test FAIL" )
-    
+
     def CASE90( self ):
         """
         Install 600 point intents and verify ping all (Att Topology)
@@ -1636,8 +1636,8 @@ class CHOtest:
         main.case( "Install 600 point intents" )
         main.step( "Add point Intents" )
         intentResult = main.TRUE
-        deviceCombos = list( itertools.permutations( main.deviceDPIDs, 2 ) ) 
-        
+        deviceCombos = list( itertools.permutations( main.deviceDPIDs, 2 ) )
+
         intentIdList = []
         time1 = time.time()
         for i in xrange( 0, len( deviceCombos ), int(main.numCtrls) ):
@@ -1680,7 +1680,7 @@ class CHOtest:
                                  onfail="PING ALL FAIL" )
 
         case90Result = ( intentResult and pingResult )
-        
+
         utilities.assert_equals(
             expect=main.TRUE,
             actual=case90Result,
@@ -1698,8 +1698,8 @@ class CHOtest:
         main.case( "Install 600 point intents" )
         main.step( "Add point Intents" )
         intentResult = main.TRUE
-        deviceCombos = list( itertools.permutations( main.deviceDPIDs, 2 ) ) 
-        
+        deviceCombos = list( itertools.permutations( main.deviceDPIDs, 2 ) )
+
         intentIdList = []
         time1 = time.time()
         for i in xrange( 0, len( deviceCombos ), int(main.numCtrls) ):
@@ -1743,13 +1743,13 @@ class CHOtest:
                                  onfail="PING ALL FAIL" )
 
         case91Result = ( intentResult and pingResult )
-        
+
         utilities.assert_equals(
             expect=main.TRUE,
             actual=case91Result,
             onpass="Install 600 point Intents and Ping All test PASS",
             onfail="Install 600 point Intents and Ping All test FAIL" )
-    
+
     def CASE92( self ):
         """
         Install 4556 point intents and verify ping all (Spine Topology)
@@ -1809,13 +1809,13 @@ class CHOtest:
                                  onfail="PING ALL FAIL" )
 
         case92Result = ( intentResult and pingResult )
-        
+
         utilities.assert_equals(
             expect=main.TRUE,
             actual=case92Result,
             onpass="Install 4556 point Intents and Ping All test PASS",
             onfail="Install 4556 point Intents and Ping All test FAIL" )
-     
+
     def CASE93( self ):
         """
         Install multi-single point intents and verify Ping all works
@@ -1866,7 +1866,7 @@ class CHOtest:
         checkIntentStateResult = main.ONOScli3.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
         checkIntentStateResult = main.ONOScli4.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
         checkIntentStateResult = main.ONOScli5.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
-        
+
         if checkIntentStateResult:
             main.log.info( "All intents are installed correctly " )
 
@@ -1890,7 +1890,7 @@ class CHOtest:
             actual=case93Result,
             onpass="Install 25 multi to single point Intents and Ping All test PASS",
             onfail="Install 25 multi to single point Intents and Ping All test FAIL" )
-        
+
     def CASE94( self ):
         """
         Install multi-single point intents and verify Ping all works
@@ -1927,7 +1927,7 @@ class CHOtest:
                 thread.join()
                 intentIdList.append(thread.result)
         time2 = time.time()
-        main.log.info("Time for adding point intents: %2f seconds" %(time2-time1)) 
+        main.log.info("Time for adding point intents: %2f seconds" %(time2-time1))
         time.sleep(5)
         main.step( "Verify Ping across all hosts" )
         pingResult = main.FALSE
@@ -1946,7 +1946,7 @@ class CHOtest:
             actual=case94Result,
             onpass="Install 25 multi to single point Intents and Ping All test PASS",
             onfail="Install 25 multi to single point Intents and Ping All test FAIL" )
-    
+
     #def CASE95 multi-single point intent for Spine
 
     def CASE96( self ):
@@ -1984,7 +1984,7 @@ class CHOtest:
                 thread.join()
                 intentIdList.append(thread.result)
         time2 = time.time()
-        main.log.info("Time for adding point intents: %2f seconds" %(time2-time1)) 
+        main.log.info("Time for adding point intents: %2f seconds" %(time2-time1))
         time.sleep(5)
         main.step( "Verify Ping across all hosts" )
         pingResult = main.FALSE
@@ -2039,7 +2039,7 @@ class CHOtest:
                 thread.join()
                 intentIdList.append(thread.result)
         time2 = time.time()
-        main.log.info("Time for adding point intents: %2f seconds" %(time2-time1)) 
+        main.log.info("Time for adding point intents: %2f seconds" %(time2-time1))
         time.sleep(5)
         main.step( "Verify Ping across all hosts" )
         pingResult = main.FALSE
@@ -2101,7 +2101,7 @@ class CHOtest:
                 thread.join()
                 intentIdList.append(thread.result)
         time2 = time.time()
-        main.log.info("Time for adding point intents: %2f seconds" %(time2-time1)) 
+        main.log.info("Time for adding point intents: %2f seconds" %(time2-time1))
         time.sleep(5)
         main.step( "Verify Ping across all hosts" )
         pingResult = main.FALSE
@@ -2246,13 +2246,13 @@ class CHOtest:
             pool.append(t)
             t.start()
             threadID = threadID + 1
-            
+
         results = []
         for thread in pool:
             thread.join()
             results.append(thread.result)
         time2 = time.time()
-        
+
         if( all(result == main.TRUE for result in results) == False):
                 main.log.info("Did not install onos-app-ifwd feature properly")
                 #main.cleanup()
@@ -2261,7 +2261,7 @@ class CHOtest:
             main.log.info("Successful feature:install onos-app-ifwd")
             installResult = main.TRUE
         main.log.info("Time for feature:install onos-app-ifwd: %2f seconds" %(time2-time1))
-        
+
         main.step( "Verify Pingall" )
         ping_result = main.FALSE
         time1 = time.time()
@@ -2272,7 +2272,7 @@ class CHOtest:
             "Time taken for Ping All: " +
             str( timeDiff ) +
             " seconds" )
-        
+
         if ping_result == main.TRUE:
             main.log.report( "Pingall Test in Reactive mode successful" )
         else:
@@ -2280,7 +2280,7 @@ class CHOtest:
 
         main.step( "Disable Intent based Reactive forwarding" )
         uninstallResult = main.FALSE
-        
+
         pool = []
         time1 = time.time()
         for cli,feature in main.CLIs:
@@ -2289,13 +2289,13 @@ class CHOtest:
             pool.append(t)
             t.start()
             threadID = threadID + 1
-            
+
         results = []
         for thread in pool:
             thread.join()
             results.append(thread.result)
         time2 = time.time()
-        
+
         if( all(result == main.TRUE for result in results) == False):
                 main.log.info("Did not uninstall onos-app-ifwd feature properly")
                 uninstallResult = main.FALSE

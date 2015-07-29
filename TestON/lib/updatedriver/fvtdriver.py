@@ -1,7 +1,7 @@
 class driver :
     def __init__(self):
         self.default = ''
- 
+
 
     def runTest(self,self) :
         return TemplateTest.runTest(self)

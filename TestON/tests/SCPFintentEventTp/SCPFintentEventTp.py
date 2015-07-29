@@ -158,9 +158,11 @@ class SCPFintentEventTp:
 
         main.ONOSbench.onosCfgSet( ONOSIp[0], "org.onosproject.store.flow.impl.NewDistributedFlowRuleStore", "backupEnabled false")
 
+        devices = int(clusterCount)*10 
+
         main.log.step("Setting up null provider")
         for i in range(3):
-            main.ONOSbench.onosCfgSet( ONOSIp[0], "org.onosproject.provider.nil.NullProviders", "deviceCount 8")
+            main.ONOSbench.onosCfgSet( ONOSIp[0], "org.onosproject.provider.nil.NullProviders", "deviceCount " + str(devices))
             main.ONOSbench.onosCfgSet( ONOSIp[0], "org.onosproject.provider.nil.NullProviders", "topoShape linear")
             main.ONOSbench.onosCfgSet( ONOSIp[0], "org.onosproject.provider.nil.NullProviders", "enabled true")
             time.sleep(5)
@@ -169,7 +171,7 @@ class SCPFintentEventTp:
             main.ONOSbench.handle.expect(":~")
 
             before = main.ONOSbench.handle.before
-            if "devices=8" in before and "links=14" in before:
+            if ("devices=" + str(devices)) in before:
                 break
 
         main.ONOSbench.handle.sendline("""onos $OC1 "balance-masters" """)

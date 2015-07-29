@@ -1860,27 +1860,42 @@ class MininetCliDriver( Emulator ):
         Returns a dictionary whose keys are the switch names and the value is
         a dictionary containing information about the switch.
         """
-        # FIXME: This currently only works with OVS Switches
+        # NOTE: To support new Mininet switch classes, just append the new
+        # class to the switchClasses variable
 
-        # Regex patterns to parse dump output
-        # Example Switch:
+        # Regex patterns to parse 'dump' output
+        # Example Switches:
         # <OVSSwitch s1: lo:127.0.0.1,s1-eth1:None,s1-eth2:None,s1-eth3:None pid=5238>
         # <OVSSwitch{ 'protocols': 'OpenFlow10' } s1: lo:127.0.0.1,s1-eth1:None,s1-eth2:None pid=25974>
-        swRE = r"<OVSSwitch(\{.*\})?\s(?P<name>[^:]+)\:\s" +\
-               "(?P<ports>([^,]+,)*[^,\s]+)"
+        # <OVSSwitchNS s1: lo:127.0.0.1,s1-eth1:None,s1-eth2:None,s1-eth3:None pid=22550>
+        # <OVSBridge s1: lo:127.0.0.1,s1-eth1:None,s1-eth2:None pid=26830>
+        # <UserSwitch s1: lo:127.0.0.1,s1-eth1:None,s1-eth2:None pid=14737>
+        switchClasses = r"(OVSSwitch)|(OVSBridge)|(OVSSwitchNS)|(IVSSwitch)|(LinuxBridge)|(UserSwitch)"
+        swRE = r"<(?P<class>" + switchClasses + r")" +\
+               r"(?P<options>\{.*\})?\s" +\
+               r"(?P<name>[^:]+)\:\s" +\
+               r"(?P<ports>([^,]+,)*[^,\s]+)" +\
+               r"\spid=(?P<pid>(\d)+)"
         # Update mn port info
         self.update()
         output = {}
         dump = self.dump().split( "\n" )
         for line in dump:
-            if line.startswith( "<OVSSwitch" ):
-                result = re.search( swRE, line, re.I )
+            result = re.search( swRE, line, re.I )
+            if result:
                 name = result.group( 'name' )
                 dpid = str( self.getSwitchDPID( name ) ).zfill( 16 )
+                pid = result.group( 'pid' )
+                swClass = result.group( 'class' )
+                options = result.group( 'options' )
                 if verbose:
                     main.log.info( "Reading switch %s(%s)" % ( name, dpid ) )
                 ports = self.getPorts( name )
-                output[ name ] = { "dpid": dpid, "ports": ports }
+                output[ name ] = { "dpid": dpid,
+                                   "ports": ports,
+                                   "swClass": swClass,
+                                   "pid": pid,
+                                   "options": options }
         return output
 
     def getHosts( self, verbose=False ):

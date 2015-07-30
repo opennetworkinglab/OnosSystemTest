@@ -9,7 +9,7 @@ class SCPFportLat:
 
     def CASE1( self, main ):
         import sys
-        import os.path
+        import re
         import os
         import time
 
@@ -34,7 +34,7 @@ class SCPFportLat:
         topoCfgName = main.params['TEST']['topoConfigName']
         portEventResultPath = main.params['DB']['portEventResultPath']
         skipMvn = main.params ['TEST']['mci']
-        testONpath = os.getcwd() #testON/bin
+        testONpath = re.sub( "(tests)$", "bin", main.testDir )  # TestON/bin
 
         # -- INIT SECTION, ONLY RUNS ONCE -- #
         if init == False:

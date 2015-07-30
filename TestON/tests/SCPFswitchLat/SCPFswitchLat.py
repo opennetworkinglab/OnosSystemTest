@@ -571,10 +571,11 @@ class SCPFswitchLat:
                             temp = 0
                         if index == 1:
                             tFinAck = float(temp) * 1000.0
+                            main.log.info("DEBUG-- tFinAck: " + str(tFinAck))
                         elif index == 3:
                             tAck = float(temp) * 1000.0
+                            main.log.info("DEBUG-- tAck: " + str(tAck))
                         else:
-                            tFinAck = 0
                             tAck = 0
                     else:
                         main.log.error('Tshark output file for OFP' +
@@ -584,6 +585,8 @@ class SCPFswitchLat:
                         assertion = main.FALSE
 
                     index += 1
+                main.log.info("DEBUG-- tFinAck: " + str(tFinAck))
+                main.log.info("DEBUG-- tAck: " + str(tAck))
 
             # with open() as f takes care of closing file
 
@@ -610,6 +613,7 @@ class SCPFswitchLat:
                 ackToDevice = float(deviceTimestamp) - float(tAck)
                 deviceToGraph = float(graphTimestamp) - float(deviceTimestamp)
                 endToEndDisc = int(graphTimestamp) - int(tFinAck)
+                main.log.info("DEBUG-- endToEndDisc = graphTimestamp - tFinAck  == (" + str(graphTimestamp) + "-" + str(tFinAck) + ")") 
 
                 if endToEndDisc >= thresholdMin and\
                    endToEndDisc < thresholdMax and i >= iterIgnore:
@@ -732,33 +736,43 @@ class SCPFswitchLat:
 
             endToEndAvg = round(numpy.mean(endToEndList), 2)
             endToEndStdDev = round(numpy.std(endToEndList), 2)
+            main.log.info("endToEndList: " + str(endToEndList))
 
             tcpToFeatureAvg = round(numpy.mean(tcpToFeatureList), 2)
             tcpToFeatureStdDev = round(numpy.std(tcpToFeatureList), 2)
+            main.log.info("tcpToFeatureList: " + str(tcpToFeatureList))
 
             featureToRoleAvg = round(numpy.mean(featureToRoleList), 2)
             featureToRoleStdDev = round(numpy.std(featureToRoleList), 2)
+            main.log.info("featureToRoleList: " + str(featureToRoleList)) 
 
             roleToOfpAvg = round(numpy.mean(roleToOfpList), 2)
             roleToOfpStdDev = round(numpy.std(roleToOfpList), 2)
+            main.log.info("roleToOfList: " + str(roleToOfpList))
 
             ofpToDeviceAvg = round(numpy.mean(ofpToDeviceList), 2)
             ofpToDeviceStdDev = round(numpy.std(ofpToDeviceList), 2)
+            main.log.info("ofpToDeviceList: " + str(ofpToDeviceList))
 
             deviceToGraphAvg = round(numpy.mean(deviceToGraphList), 2)
             deviceToGraphStdDev = round(numpy.std(deviceToGraphList), 2)
+            main.log.info("deviceToGraphList: " + str(deviceToGraphList))
 
             endToEndDiscAvg = round(numpy.mean(endToEndDiscList), 2)
             endToEndDiscStdDev = round(numpy.std(endToEndDiscList), 2)
+            main.log.info("endToEndDiscList: " + str(endToEndDiscList))
 
             finAckAvg = round(numpy.mean(finAckTransactionList), 2)
             finAckStdDev = round(numpy.std(finAckTransactionList), 2)
+            main.log.info("finAckTransactionList: " + str(finAckTransactionList))
 
             ackToDeviceAvg = round(numpy.mean(ackToDeviceList), 2)
             ackToDeviceStdDev = round(numpy.std(ackToDeviceList), 2)
+            main.log.info("ackToDeviceList: " + str(ackToDeviceList))
 
             deviceToGraphDiscAvg = round(numpy.mean(deviceToGraphDiscList), 2)
             deviceToGraphDiscStdDev = round(numpy.std(deviceToGraphDiscList), 2)
+            main.log.info("deviceToGraphDiscList: " + str(deviceToGraphDiscList))
 
             main.log.report(' - Node ' + str(node + 1) + ' Summary - ')
             main.log.report(' - Switch Connection Statistics - ')

@@ -37,16 +37,17 @@ module = new.module("test")
 import openspeak
 import subprocess
 global path, drivers_path, core_path, tests_path,logs_path
-path = re.sub("(core|bin)$", "", os.getcwd())
+location = os.path.abspath( os.path.dirname( __file__ ) )
+path = re.sub( "(core|bin)$", "", location )
 drivers_path = path+"drivers/"
 core_path = path+"core"
 tests_path = path+"tests"
 logs_path = path+"logs/"
 config_path = path + "config/"
-sys.path.append(path)
-sys.path.append( drivers_path)
-sys.path.append(core_path )
-sys.path.append(tests_path)
+sys.path.append( path )
+sys.path.append( drivers_path )
+sys.path.append( core_path )
+sys.path.append( tests_path )
 
 from core.utilities import Utilities
 from core.Thread import Thread
@@ -624,15 +625,16 @@ def verifyOptions(options):
     verifyOnosCell(options)
 
 def verifyTest(options):
-    if options.testname:
-        main.TEST = options.testname
-        main.classPath = "tests."+main.TEST+"."+main.TEST
-        main.tests_path = tests_path
-    elif options.example :
-        main.TEST = options.example
-        main.tests_path = path+"/examples/"
-        main.classPath = "examples."+main.TEST+"."+main.TEST
-    else :
+    try:
+        if options.testname:
+            main.TEST = options.testname
+            main.classPath = "tests."+main.TEST+"."+main.TEST
+            main.tests_path = tests_path
+        elif options.example:
+            main.TEST = options.example
+            main.tests_path = path+"/examples/"
+            main.classPath = "examples."+main.TEST+"."+main.TEST
+    except AttributeError:
         print "Test or Example not specified please specify the --test <test name > or --example <example name>"
         main.exit()
 
@@ -713,18 +715,22 @@ def verifyTestScript(options):
     main.openspeak = openspeak.OpenSpeak()
     openspeakfile = main.testDir+"/" + main.TEST + "/" + main.TEST + ".ospk"
     testfile = main.testDir+"/" + main.TEST + "/" + main.TEST + ".py"
-    if os.path.exists(openspeakfile) :
+    if os.path.exists(openspeakfile):
+        # Openspeak file found, compiling to python
         main.openspeak.compiler(openspeakfile=openspeakfile,writetofile=1)
     elif os.path.exists(testfile):
-        print ''
+        # No openspeak found, using python file instead
+        pass
     else:
-        print "\nThere is no :\""+main.TEST+"\" test, Please Provide OpenSpeak Script/ test script"
+        print "\nThere is no \""+main.TEST+"\" test script.\nPlease provide a " +\
+              "Python or OpenSpeak test script in the tests folder: " +\
+              main.testDir+"/" + main.TEST + "/"
         __builtin__.testthread = None
         main.exit()
     try :
         testModule = __import__(main.classPath, globals(), locals(), [main.TEST], -1)
     except(ImportError):
-        print "There was an import error, it might mean that there is no test like "+main.TEST
+        print "There was an import error, it might mean that there is no test named "+main.TEST
         main.exit()
 
     testClass = getattr(testModule, main.TEST)
@@ -754,28 +760,26 @@ def load_parser() :
     '''
     confighash = main.configDict
     if 'file' in confighash['config']['parser'] and 'class' in confighash['config']['parser']:
-        if confighash['config']['parser']['file'] != None or confighash['config']['parser']['class']!= None :
-            if os.path.exists(confighash['config']['parser']['file']) :
-                module = re.sub(r".py\s*$","",confighash['config']['parser']['file'])
+        path = confighash['config']['parser']['file']
+        if path != None or confighash['config']['parser']['class']!= None:
+            try:
+                module = re.sub( r".py\s*$", "", path )
                 moduleList = module.split("/")
                 newModule = ".".join([moduleList[len(moduleList) - 2],moduleList[len(moduleList) - 1]])
-                try :
-                    parsingClass = confighash['config']['parser']['class']
-                    parsingModule = __import__(newModule, globals(), locals(), [parsingClass], -1)
-                    parsingClass = getattr(parsingModule, parsingClass)
-                    main.parser = parsingClass()
-                    #hashobj = main.parser.parseParams(main.classPath)
-                    if hasattr(main.parser,"parseParams") and hasattr(main.parser,"parseTopology") and hasattr(main.parser,"parse") :
-                        pass
-                    else:
-                        main.exit()
-                except ImportError:
-                    print sys.exc_info()[1]
+                parsingClass = confighash['config']['parser']['class']
+                parsingModule = __import__(newModule, globals(), locals(), [parsingClass], -1)
+                parsingClass = getattr(parsingModule, parsingClass)
+                main.parser = parsingClass()
+                #hashobj = main.parser.parseParams(main.classPath)
+                if hasattr(main.parser,"parseParams") and hasattr(main.parser,"parseTopology") and hasattr(main.parser,"parse"):
+                    pass
+                else:
+                    print "Invalid parser format"
                     main.exit()
-            else :
-                print "No Such File Exists !!"+ confighash['config']['parser']['file'] +"using default parser"
+            except ImportError:
+                print "Could not find the file " + path + " using default parser."
                 load_defaultParser()
-        elif confighash['config']['parser']['file'] == None or confighash['config']['parser']['class'] == None :
+        elif confighash['config']['parser']['file'] == None or confighash['config']['parser']['class'] == None:
             load_defaultParser()
     else:
         load_defaultParser()
@@ -808,22 +812,19 @@ def load_logger() :
     '''
     confighash = main.configDict
     if 'file' in confighash['config']['logger'] and 'class' in confighash['config']['logger']:
-        if confighash['config']['logger']['file'] != None or confighash['config']['logger']['class']!= None :
-            if os.path.exists(confighash['config']['logger']['file']) :
-                module = re.sub(r".py\s*$","",confighash['config']['logger']['file'])
+        path = confighash['config']['logger']['file']
+        if path != None or confighash['config']['logger']['class']!= None :
+            try:
+                module = re.sub( r".py\s*$", "", path )
                 moduleList = module.split("/")
                 newModule = ".".join([moduleList[len(moduleList) - 2],moduleList[len(moduleList) - 1]])
-                try :
-                    loggerClass = confighash['config']['logger']['class']
-                    loggerModule = __import__(newModule, globals(), locals(), [loggerClass], -1)
-                    loggerClass = getattr(loggerModule, loggerClass)
-                    main.logger = loggerClass()
-                    #hashobj = main.parser.parseParams(main.classPath)
-
-                except ImportError:
-                    print sys.exc_info()[1]
-            else :
-                print "No Such File Exists !!"+confighash['config']['logger']['file']+ "Using default logger"
+                loggerClass = confighash['config']['logger']['class']
+                loggerModule = __import__(newModule, globals(), locals(), [loggerClass], -1)
+                loggerClass = getattr(loggerModule, loggerClass)
+                main.logger = loggerClass()
+                #hashobj = main.parser.parseParams(main.classPath)
+            except ImportError:
+                print "Could not find the file " + path + " using default logger."
                 load_defaultlogger()
         elif confighash['config']['parser']['file'] == None or confighash['config']['parser']['class'] == None :
             load_defaultlogger()

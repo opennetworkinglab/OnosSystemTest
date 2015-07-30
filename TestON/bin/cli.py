@@ -472,7 +472,8 @@ class CLI( threading.Thread,Cmd,object ):
         converter = updatedriver.UpdateDriver()
 
         if config == '':
-            path = re.sub("(bin)$", "", os.getcwd())
+            location = os.path.abspath( os.path.dirname( __file__ ) )
+            path = re.sub( "(bin)$", "", location )
             config = path + "/config/updatedriver.cfg"
             configDict = converter.configparser(config)
 

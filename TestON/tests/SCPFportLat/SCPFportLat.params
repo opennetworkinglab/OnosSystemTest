@@ -72,9 +72,7 @@
 
     <DB>
         <postToDB>no</postToDB>
-        <portEventResultPath>
-            /tmp/portEventResultDb.log
-        </portEventResultPath>
+        <portEventResultPath>/tmp/portEventResultDb</portEventResultPath>
     </DB>
 
     <JSON>

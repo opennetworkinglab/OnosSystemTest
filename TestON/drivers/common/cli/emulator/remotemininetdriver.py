@@ -112,31 +112,6 @@ class RemoteMininetDriver( Emulator ):
             main.log.warn( outputs )
             return main.TRUE
 
-    def arping( self, host="", ip="10.128.20.211" ):
-        """
-        Description:
-            Sends arp message from mininet host for hosts discovery
-        Required:
-            host - hosts name
-        Optional:
-            ip - ip address that does not exist in the network so there would
-                 be no reply.
-        """
-        cmd = " py " + host  + ".cmd(\"arping -c 1 " + ip + "\")"
-        try:
-            main.log.warn( "Sending: " + cmd )
-            self.handle.sendline( cmd )
-            response = self.handle.before
-            self.handle.sendline( "" )
-            self.handle.expect( "mininet>" )
-            return main.TRUE
-
-        except pexpect.EOF:
-            main.log.error( self.name + ": EOF exception found" )
-            main.log.error( self.name + ":     " + self.handle.before )
-            main.cleanup()
-            main.exit()
-
     def pingLong( self, **pingParams ):
         """
         Starts a continuous ping on the mininet host outputting
@@ -479,63 +454,6 @@ class RemoteMininetDriver( Emulator ):
         else:
             main.log.error( "Connection failed to the host" )
         return main.TRUE
-
-    def getFlowTable( self, protoVersion, sw ):
-        """
-         TODO document usage
-         TODO add option to look at cookies. ignoring them for now
-
-         print "get_flowTable(" + str( protoVersion ) +" " + str( sw ) +")"
-         NOTE: Use format to force consistent flow table output across
-         versions
-        """
-        try:
-            self.handle.sendline( "cd" )
-            self.handle.expect( "\$" )
-            if protoVersion == 1.0:
-                command = "sudo ovs-ofctl dump-flows " + sw + \
-                    " -F OpenFlow10-table_id | awk '{OFS=\",\" ; print $1  $3  $6 \
-                    $7  $8}' | cut -d ',' -f 2- | sort -n -k1 -r"
-                self.handle.sendline( command )
-                self.handle.expect( "sort" )
-                self.handle.expect( "OFPST_FLOW" )
-                response = self.handle.before
-                # print "response=", response
-                return response
-            elif protoVersion == 1.3:
-                command = "sudo ovs-ofctl dump-flows " + sw + \
-                    " -O OpenFlow13  | awk '{OFS=\",\" ; print $1  $3  $6  $7}'\
-                    | cut -d ',' -f 2- | sort -n -k1 -r"
-                self.handle.sendline( command )
-                self.handle.expect( "sort" )
-                self.handle.expect( "OFPST_FLOW" )
-                response = self.handle.before
-                # print "response=", response
-                return response
-            else:
-                main.log.error(
-                    "Unknown  protoVersion in get_flowTable(). given: (" +
-                    str( type( protoVersion ) ) +
-                    ") '" + str( protoVersion ) + "'" )
-        except pexpect.EOF:
-            main.log.error( self.name + ": EOF exception found" )
-            main.log.error( self.name + ":     " + self.handle.before )
-            main.cleanup()
-            main.exit()
-        except pexpect.TIMEOUT:
-            main.log.exception( self.name + ": Timeout exception: " )
-            return None
-
-    def flowComp( self, flow1, flow2 ):
-        if flow1 == flow2:
-            return main.TRUE
-        else:
-            main.log.info( "Flow tables do not match, printing tables:" )
-            main.log.info( "Flow Table 1:" )
-            main.log.info( flow1 )
-            main.log.info( "Flow Table 2:" )
-            main.log.info( flow2 )
-            return main.FALSE
 
     def setIpTablesOUTPUT( self, dstIp, dstPort, action='add',
                            packetType='tcp', rule='DROP' ):

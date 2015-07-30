@@ -1733,6 +1733,58 @@ class MininetCliDriver( Emulator ):
             main.cleanup()
             main.exit()
 
+    def getFlowTable( self, protoVersion, sw ):
+        """
+        Returns certain fields of an OVS flow table. Will force output to
+        either OF 1.0 or 1.3 format for consistency.
+
+        TODO add option to look at cookies. ignoring them for now
+
+         NOTE: Use format to force consistent flow table output across
+         versions
+        """
+        try:
+            self.handle.sendline( "" )
+            self.handle.expect( "mininet>" )
+            command = "sh ovs-ofctl dump-flows " + sw
+            if protoVersion == 1.0:
+                command += " -F OpenFlow10-table_id | awk '{OFS=\",\" ;" +\
+                           " print $1  $3  $6  $7  $8}' | "
+            elif protoVersion == 1.3:
+                command += " -O OpenFlow13 | awk '{OFS=\",\" ;" +\
+                           " print $1  $3  $6  $7}' | "
+            else:
+                main.log.error(
+                    "Unknown protoVersion in getFlowTable(). given: (" +
+                    str( type( protoVersion ) ) +
+                    ") '" + str( protoVersion ) + "'" )
+                return None
+            command += "cut -d ',' -f 2- | sort -n -k1 -r"
+            self.handle.sendline( command )
+            self.handle.expect( "sort" )
+            self.handle.expect( "OFPST_FLOW" )
+            response = self.handle.before
+            return response
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except pexpect.TIMEOUT:
+            main.log.exception( self.name + ": Timeout exception: " )
+            return None
+
+    def flowComp( self, flow1, flow2 ):
+        if flow1 == flow2:
+            return main.TRUE
+        else:
+            main.log.info( "Flow tables do not match, printing tables:" )
+            main.log.info( "Flow Table 1:" )
+            main.log.info( flow1 )
+            main.log.info( "Flow Table 2:" )
+            main.log.info( flow2 )
+            return main.FALSE
+
     def startTcpdump( self, filename, intf="eth0", port="port 6633" ):
         """
            Runs tpdump on an interface and saves the file

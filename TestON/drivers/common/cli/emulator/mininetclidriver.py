@@ -395,13 +395,9 @@ class MininetCliDriver( Emulator ):
         main.log.info( self.name + ": \n---\n" + response )
         return main.FALSE
 
-    def pingallHosts( self, hostList, pingType='ipv4' ):
+    def pingallHosts( self, hostList ):
         """
-            Ping all specified hosts with a specific ping type
-
-            Acceptable pingTypes:
-                - 'ipv4'
-                - 'ipv6'
+            Ping all specified IPv4 hosts
 
             Acceptable hostList:
                 - [ 'h1','h2','h3','h4' ]
@@ -411,13 +407,8 @@ class MininetCliDriver( Emulator ):
 
             Returns main.FALSE if one or more of hosts specified
             cannot reach each other"""
-        if pingType == "ipv4":
-            cmd = " ping -c 1 -i 1 -W 8 "
-        elif pingType == "ipv6":
-            cmd = " ping6 -c 1 -i 1 -W 8 "
-        else:
-            main.log.warn( "Invalid pingType specified" )
-            return
+
+        cmd = " ping -c 1 -i 1 -W 8 "
 
         try:
             main.log.info( "Testing reachability between specified hosts" )
@@ -446,6 +437,48 @@ class MininetCliDriver( Emulator ):
                         # One of the host to host pair is unreachable
                         isReachable = main.FALSE
 
+            return isReachable
+
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            main.cleanup()
+            main.exit()
+
+    def pingIpv6Hosts(self, hostList, prefix='1000::')
+        """
+           IPv6 ping all hosts in hostList. If no prefix passed this will use
+           default prefix of 1000::
+
+           Returns main.TRUE if all hosts specified can reach each other
+
+           Returns main.FALSE if one or more of hosts specified cannot reach each other 
+        """
+        try:
+            main.log.info( "Testing reachability between specified IPv6 hosts" )
+            isReachable = main.TRUE
+            cmd = " ping6 -c 1 -i 1 -W 8 "
+            for host in hostList:
+                listIndex = hostList.index( host )
+                # List of hosts to ping other than itself
+                pingList = hostList[ :listIndex ] + \
+                    hostList[ ( listIndex + 1 ): ]
+
+                for temp in pingList:
+                    # Current host pings all other hosts specified
+                    pingCmd = str( host ) + cmd + prefix + str( temp[1:] )
+                    i = self.handle.expect( [ pingCmd, pexpect.TIMEOUT ] )
+                    j = self.handle.expect( [ "mininet>", pexpect.TIMEOUT ] )
+                    response = self.handle.before
+                    if re.search( ',\s0\%\spacket\sloss', response ):
+                        main.log.info( str( host ) + " -> " + str( temp ) )
+                    else:
+                        main.log.info(
+                            str( host ) + " -> X (" + str( temp ) + ") "
+                            " Destination Unreachable" )
+                        main.log.error( "Response from Mininet: " + str( response ) )
+                        # One of the host to host pair is unreachable
+                        isReachable = main.FALSE
             return isReachable
 
         except pexpect.EOF:

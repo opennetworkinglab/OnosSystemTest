@@ -1391,7 +1391,7 @@ class HAsanity:
         global flows
         flows = []
         for i in range( 1, 29 ):
-            flows.append( main.Mininet2.getFlowTable( 1.3, "s" + str( i ) ) )
+            flows.append( main.Mininet1.getFlowTable( 1.3, "s" + str( i ) ) )
         if flowCheck == main.FALSE:
             for table in flows:
                 main.log.warn( table )
@@ -1955,9 +1955,9 @@ class HAsanity:
         flows2 = []
         for i in range( 28 ):
             main.log.info( "Checking flow table on s" + str( i + 1 ) )
-            tmpFlows = main.Mininet2.getFlowTable( 1.3, "s" + str( i + 1 ) )
+            tmpFlows = main.Mininet1.getFlowTable( 1.3, "s" + str( i + 1 ) )
             flows2.append( tmpFlows )
-            tempResult = main.Mininet2.flowComp(
+            tempResult = main.Mininet1.flowComp(
                 flow1=flows[ i ],
                 flow2=tmpFlows )
             FlowTables = FlowTables and tempResult

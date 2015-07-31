@@ -677,6 +677,70 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
+    def checkMasters( self,jsonFormat=True  ):
+        """
+            Returns the output of the masters command.
+            Optional argument:
+                * jsonFormat - boolean indicating if you want output in json
+        """
+        try:
+            cmdStr = "onos:masters"
+            if jsonFormat:
+                cmdStr += " -j"
+            output = self.sendline( cmdStr )
+            return output
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
+    def checkBalanceMasters( self,jsonFormat=True ):
+        """
+            Uses the master command to check that the devices' leadership
+            is evenly divided
+
+            Dependencies: checkMasters() and summary()
+
+            Returns main.True if the devices are balanced
+            Returns main.False if the devices are unbalanced
+            Exits on Exception
+            Returns None on TypeError
+        """
+        try:
+            totalDevices = json.loads( self.summary() )[ "devices" ]
+            totalOwnedDevices = 0
+            masters = json.loads( self.checkMasters() )
+            first = masters[ 0 ][ "size" ]
+            for master in masters:
+                totalOwnedDevices += master[ "size" ]
+                if master[ "size" ] > first + 1 or master[ "size" ] < first - 1:
+                    main.log.error( "Mastership not balanced" )
+                    main.log.info( "\n" + self.checkMasters( False ) )
+                    return main.FALSE
+            main.log.info( "Mastership balanced between " \
+                            + str( len(masters) ) + " masters" )
+            return main.TRUE
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
     def links( self, jsonFormat=True ):
         """
         Lists all core links

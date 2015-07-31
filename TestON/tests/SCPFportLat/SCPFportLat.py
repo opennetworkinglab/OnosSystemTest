@@ -32,7 +32,7 @@ class SCPFportLat:
         homeDir = os.path.expanduser('~')
         topoCfgFile = main.params['TEST']['topoConfigFile']
         topoCfgName = main.params['TEST']['topoConfigName']
-        portEventResultPath = main.params['DB']['portEventResultPath']
+        resultPath = main.params['DB']['portEventResultPath']
         skipMvn = main.params ['TEST']['mci']
         testONpath = os.getcwd() #testON/bin
 
@@ -90,7 +90,7 @@ class SCPFportLat:
             commit = (commit.split(" "))[1]
 
             main.step("Creating results file")
-            resultsDB = open("IntentEventTPDB", "w+")
+            resultsDB = open(resultPath, "w+")
             resultsDB.close()
 
             main.log.report('Commit information - ')
@@ -136,10 +136,6 @@ class SCPFportLat:
 
         main.step('Starting mininet topology ')
         main.Mininet1.startNet()
-
-        main.step('Clearing previous DB log file')
-        fPortLog = open(portEventResultPath, 'w+')
-        fPortLog.close()
 
         main.log.report( "Initializeing " + str( clusterCount ) + " node cluster." )
         for node in range(clusterCount):
@@ -352,6 +348,8 @@ class SCPFportLat:
             main.Mininet1.handle.sendline('sh ifconfig ' + interfaceConfig + ' up')
             main.Mininet1.handle.expect('mininet>')
 
+            time.sleep(5)
+
             jsonStrPtUp = []
             for node in range (0, clusterCount):
                 metricsPortUp = CLIs[node].topologyEventsMetrics()
@@ -391,7 +389,7 @@ class SCPFportLat:
                     linkTimestamp = 0
 
 
-                main.log.info('ptDownTimestamp: ' + str(timestampBeginPtDown))
+                main.log.info('ptUpTimestamp: ' + str(timestampBeginPtUp))
                 main.log.info("graphTimestamp: " + str(graphTimestamp))
                 main.log.info("deviceTimestamp: " + str(deviceTimestamp))
                 main.log.info("linkTimestamp: " + str(linkTimestamp))

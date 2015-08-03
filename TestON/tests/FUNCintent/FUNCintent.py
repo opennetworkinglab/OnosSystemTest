@@ -282,6 +282,7 @@ class FUNCintent:
                                      " Switches view is correct",
                                      onfail="ONOS" + controllerStr +
                                      " Switches view is incorrect" )
+            devicesResults = devicesResults and currentDevicesResult
 
             if links[ controller ] and "Error" not in links[ controller ]:
                 currentLinksResult = main.Mininet1.compareLinks(
@@ -295,6 +296,7 @@ class FUNCintent:
                                      " links view is correct",
                                      onfail="ONOS" + controllerStr +
                                      " links view is incorrect" )
+            linksResults = linksResults and currentLinksResult
 
             if hosts[ controller ] or "Error" not in hosts[ controller ]:
                 currentHostsResult = main.Mininet1.compareHosts(
@@ -308,6 +310,12 @@ class FUNCintent:
                                      " hosts exist in Mininet",
                                      onfail="ONOS" + controllerStr +
                                      " hosts don't match Mininet" )
+            hostsResults = hostsResults and currentHostsResult
+        topoResults = hostsResults and linksResults and devicesResults
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=topoResults,
+                                 onpass="ONOS correctly discovered the topology",
+                                 onfail="ONOS incorrectly discovered the topology" )
 
     def CASE9( self, main ):
         '''

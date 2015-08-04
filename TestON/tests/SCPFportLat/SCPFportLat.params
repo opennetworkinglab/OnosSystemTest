@@ -59,12 +59,12 @@
         </topoConfigName>
 
         #Number of times to iterate each case
-        <numIter>2</numIter>
+        <numIter>25</numIter>
         <numSwitch>2</numSwitch>
         #Number of iterations to ignore initially
-        <iterIgnore>0</iterIgnore>
+        <iterIgnore>5</iterIgnore>
 
-        <portUpThreshold>0,1000</portUpThreshold>
+        <portUpThreshold>0,5000</portUpThreshold>
         <portDownThreshold>0,1000</portDownThreshold>
 
         <tabletFile>tablets_3node.json</tabletFile>

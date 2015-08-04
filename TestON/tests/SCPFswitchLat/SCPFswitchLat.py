@@ -9,7 +9,7 @@ class SCPFswitchLat:
 
     def CASE1( self, main ):
         import sys
-        import os.path
+        import re
         import os
         import time
 
@@ -34,7 +34,7 @@ class SCPFswitchLat:
         topoCfgName = main.params['TEST']['topoConfigName']
         switchEventResultPath = main.params['DB']['switchEventResultPath']
         skipMvn = main.params ['TEST']['mci']
-        testONpath = os.getcwd() #testON/bin
+        testONpath = re.sub( "(tests)$", "bin", main.testDir )  # TestON/bin
         user = main.params[ 'CTRL' ][ 'user' ]
 
         # -- INIT SECTION, ONLY RUNS ONCE -- #

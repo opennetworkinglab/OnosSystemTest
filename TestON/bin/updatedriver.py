@@ -349,8 +349,9 @@ class UpdateDriver:
         try :
             self.driverPath = self.configDict['config-driver']['importTypes'][self.driver]['driver-path']
 
-        except KeyError :
-            path = re.sub("(bin)$", "", os.getcwd())
+        except KeyError:
+            location = os.path.abspath( os.path.dirname( __file__ ) )
+            path = re.sub( "(bin)$", "", location )
             self.driverPath = path + "/lib/updatedriver/"
         return self.driverPath
 

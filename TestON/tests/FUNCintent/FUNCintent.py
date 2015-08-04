@@ -1,8 +1,4 @@
-
 # Testing the basic intent functionality of ONOS
-
-import time
-import json
 
 class FUNCintent:
 
@@ -13,6 +9,7 @@ class FUNCintent:
         import time
         import os
         import imp
+        import re
 
         """
         - Construct tests variables
@@ -33,7 +30,7 @@ class FUNCintent:
 
         # Test variables
         try:
-            main.testOnDirectory = os.path.dirname( os.getcwd ( ) )
+            main.testOnDirectory = re.sub( "(/tests)$", "", main.testDir )
             main.apps = main.params[ 'ENV' ][ 'cellApps' ]
             gitBranch = main.params[ 'GIT' ][ 'branch' ]
             main.dependencyPath = main.testOnDirectory + \

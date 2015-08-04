@@ -11,6 +11,7 @@ class SAMPstartTemplate:
         import time
         import os
         import imp
+        import re
 
         """
         - Construct tests variables
@@ -27,7 +28,7 @@ class SAMPstartTemplate:
         stepResult = main.FALSE
 
         # Test variables
-        main.testOnDirectory = os.path.dirname( os.getcwd ( ) )
+        main.testOnDirectory = re.sub( "(/tests)$", "", main.testDir )
         main.cellName = main.params[ 'ENV' ][ 'cellName' ]
         main.apps = main.params[ 'ENV' ][ 'cellApps' ]
         gitBranch = main.params[ 'GIT' ][ 'branch' ]

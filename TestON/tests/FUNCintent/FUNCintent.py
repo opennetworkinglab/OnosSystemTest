@@ -175,9 +175,9 @@ class FUNCintent:
         time.sleep( main.startUpSleep )
         main.step( "Uninstalling ONOS package" )
         onosUninstallResult = main.TRUE
-        for i in range( main.numCtrls ):
+        for ip in main.ONOSip:
             onosUninstallResult = onosUninstallResult and \
-                    main.ONOSbench.onosUninstall( nodeIp=main.ONOSip[ i ] )
+                    main.ONOSbench.onosUninstall( nodeIp=ip )
         stepResult = onosUninstallResult
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
@@ -319,10 +319,10 @@ class FUNCintent:
             Report errors/warnings/exceptions
         '''
         main.log.info( "Error report: \n" )
-        main.ONOSbench.logReport( globalONOSip[0],
-                [ "INFO", "FOLLOWER", "WARN", "flow", "ERROR" , "Except" ],
-                "s" )
-        #main.ONOSbench.logReport( globalONOSip[1], [ "INFO" ], "d" )
+        for i in range( main.numCtrls ):
+            main.ONOSbench.logReport( main.ONOSip[ i ],
+                    [ "INFO", "FOLLOWER", "WARN", "flow", "ERROR" , "Except" ],
+                    "s" )
 
     def CASE10( self, main ):
         """

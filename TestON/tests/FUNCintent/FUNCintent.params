@@ -51,8 +51,8 @@
     <SDNIP>
         <tcpProto>6</tcpProto>
         <icmpProto>1</icmpProto>
-        <srcPort>5001</srcPort>
-        <dstPort>5001</dstPort>
+        <srcPort>179</srcPort>
+        <dstPort>179</dstPort>
     </SDNIP>
 
 </PARAMS>

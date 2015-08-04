@@ -740,7 +740,7 @@ class FUNCintent:
                                         "failed using IPV4 type with " +
                                         "no MAC addresses" )
 
-        main.step( "SDNIP-TCP: Add point intents between h1 and h9" )
+        main.step( "SDNIP-ICMP: Add point intents between h1 and h9" )
         stepResult = main.TRUE
         mac1 = main.hostsData[ 'h1' ][ 'mac' ]
         mac2 = main.hostsData[ 'h9' ][ 'mac' ]
@@ -760,7 +760,7 @@ class FUNCintent:
 
         stepResult = main.intentFunction.pointIntent(
                                            main,
-                                           name="SDNIP-TCP",
+                                           name="SDNIP-ICMP",
                                            host1="h1",
                                            host2="h9",
                                            deviceId1="of:0000000000000005/1",
@@ -774,14 +774,14 @@ class FUNCintent:
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
-                                 onpass="SDNIP-TCP: Point intent test " +
+                                 onpass="SDNIP-ICMP: Point intent test " +
                                         "successful using IPV4 type with " +
                                         "IP protocol TCP enabled",
-                                 onfail="SDNIP-TCP: Point intent test " +
+                                 onfail="SDNIP-ICMP: Point intent test " +
                                         "failed using IPV4 type with " +
                                         "IP protocol TCP enabled" )
 
-        main.step( "SDNIP-ICMP: Add point intents between h1 and h9" )
+        main.step( "SDNIP-TCP: Add point intents between h1 and h9" )
         stepResult = main.TRUE
         mac1 = main.hostsData[ 'h1' ][ 'mac' ]
         mac2 = main.hostsData[ 'h9' ][ 'mac' ]
@@ -793,7 +793,7 @@ class FUNCintent:
 
         stepResult = main.intentFunction.pointIntent(
                                            main,
-                                           name="SDNIP-ICMP",
+                                           name="SDNIP-TCP",
                                            host1="h1",
                                            host2="h9",
                                            deviceId1="of:0000000000000005/1",
@@ -801,14 +801,18 @@ class FUNCintent:
                                            mac1=mac1,
                                            mac2=mac2,
                                            ethType="IPV4",
-                                           ipProto=ipProto )
+                                           ipProto=ipProto,
+                                           ip1=ip1,
+                                           ip2=ip2,
+                                           tcp1=tcp1,
+                                           tcp2=tcp2 )
 
         utilities.assert_equals( expect=main.TRUE,
                              actual=stepResult,
-                                 onpass="SDNIP-ICMP: Point intent test " +
+                                 onpass="SDNIP-TCP: Point intent test " +
                                         "successful using IPV4 type with " +
                                         "IP protocol ICMP enabled",
-                                 onfail="SDNIP-ICMP: Point intent test " +
+                                 onfail="SDNIP-TCP: Point intent test " +
                                         "failed using IPV4 type with " +
                                         "IP protocol ICMP enabled" )
 

@@ -314,15 +314,40 @@ class FUNCintent:
                                  onpass="ONOS correctly discovered the topology",
                                  onfail="ONOS incorrectly discovered the topology" )
 
+
     def CASE9( self, main ):
         '''
             Report errors/warnings/exceptions
         '''
-        main.log.info( "Error report: \n" )
+        main.case( main.testName + " Report - " + str( main.numCtrls ) +
+                   " NODE(S) - OF " + main.OFProtocol )
+
+        main.ONOSbench.logReport( main.ONOSip[ 0 ],
+                                  [ "INFO",
+                                    "FOLLOWER",
+                                    "WARN",
+                                    "flow",
+                                    "ERROR",
+                                    "Except" ],
+                                  "s" )
+
+        main.step( "ERROR report: \n" )
         for i in range( main.numCtrls ):
             main.ONOSbench.logReport( main.ONOSip[ i ],
-                    [ "INFO", "FOLLOWER", "WARN", "flow", "ERROR" , "Except" ],
-                    "s" )
+                    [ "ERROR" ],
+                    "d" )
+
+        main.step( "EXCEPTIONS report: \n" )
+        for i in range( main.numCtrls ):
+            main.ONOSbench.logReport( main.ONOSip[ i ],
+                    [ "Except" ],
+                    "d" )
+
+        main.step( "WARNING report: \n" )
+        for i in range( main.numCtrls ):
+            main.ONOSbench.logReport( main.ONOSip[ i ],
+                    [ "WARN" ],
+                    "d" )
 
     def CASE10( self, main ):
         """
@@ -487,7 +512,8 @@ class FUNCintent:
 
         intentLeadersOld = main.CLIs[ 0 ].leaderCandidates()
 
-        main.case( "Host Intents Test - " + str( main.numCtrls ) +
+        main.testName = "Host Intents"
+        main.case( main.testName + " Test - " + str( main.numCtrls ) +
                    " NODE(S) - OF " + main.OFProtocol )
         main.caseExplanation = "This test case tests Host intents using " +\
                                 str( main.numCtrls ) + " node(s) cluster;\n" +\
@@ -646,7 +672,8 @@ class FUNCintent:
         assert main.numSwitch, "Placed the total number of switch topology in \
                                 main.numSwitch"
 
-        main.case( "Point Intents Test - " + str( main.numCtrls ) +
+        main.testName = "Point Intents"
+        main.case( main.testName + " Test - " + str( main.numCtrls ) +
                    " NODE(S) - OF " + main.OFProtocol )
         main.caseExplanation = "This test case will test point to point" +\
                                " intents using " + str( main.numCtrls ) +\
@@ -922,8 +949,9 @@ class FUNCintent:
         assert main.numSwitch, "Placed the total number of switch topology in \
                                 main.numSwitch"
 
-        main.case( "Single To Multi Point Intents Test - " +
-                   str( main.numCtrls ) + " NODE(S) - OF " + main.OFProtocol )
+        main.testName = "Single to Multi Point Intents"
+        main.case( main.testName + " Test - " + str( main.numCtrls ) +
+                   " NODE(S) - OF " + main.OFProtocol )
         main.caseExplanation = "This test case will test single point to" +\
                                " multi point intents using " +\
                                str( main.numCtrls ) + " node(s) cluster;\n" +\
@@ -1062,8 +1090,9 @@ class FUNCintent:
         assert main.numSwitch, "Placed the total number of switch topology in \
                                 main.numSwitch"
 
-        main.case( "Multi To Single Point Intents Test - " +
-                   str( main.numCtrls ) + " NODE(S) - OF " + main.OFProtocol )
+        main.testName = "Multi To Single Point Intents"
+        main.case( main.testName + " Test - " + str( main.numCtrls ) +
+                   " NODE(S) - OF " + main.OFProtocol )
         main.caseExplanation = "This test case will test single point to" +\
                                " multi point intents using " +\
                                str( main.numCtrls ) + " node(s) cluster;\n" +\

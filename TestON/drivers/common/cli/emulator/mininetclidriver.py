@@ -445,7 +445,7 @@ class MininetCliDriver( Emulator ):
             main.cleanup()
             main.exit()
 
-    def pingIpv6Hosts(self, hostList, prefix='1000::')
+    def pingIpv6Hosts(self, hostList, prefix='1000::'):
         """
            IPv6 ping all hosts in hostList. If no prefix passed this will use
            default prefix of 1000::

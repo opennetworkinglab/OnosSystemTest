@@ -242,6 +242,7 @@ class SCPFportLat:
         portDownLinkToGraphNodeIter = numpy.zeros((clusterCount, int(numIter)))
 
         for i in range(0, int(numIter)):
+            main.log.report('Iteration: ' + str(i+1) + ' ClusterCount: ' + str(clusterCount))
             main.step('Starting wireshark capture for port status down')
             main.ONOSbench.tsharkGrep(tsharkPortStatus, tsharkPortDown)
 

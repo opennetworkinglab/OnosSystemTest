@@ -809,13 +809,13 @@ class FUNCintent:
         stepResult = main.TRUE
         mac1 = main.hostsData[ 'h1' ][ 'mac' ]
         mac2 = main.hostsData[ 'h9' ][ 'mac' ]
-        ip1 = str( main.hostsData[ 'h1' ][ 'ipAddresses' ][ 0 ] ) + "/24"
-        ip2 = str( main.hostsData[ 'h9' ][ 'ipAddresses' ][ 0 ] ) + "/24"
+        ip1 = str( main.hostsData[ 'h1' ][ 'ipAddresses' ][ 0 ] ) + "/32"
+        ip2 = str( main.hostsData[ 'h9' ][ 'ipAddresses' ][ 0 ] ) + "/32"
         ipProto = main.params[ 'SDNIP' ][ 'tcpProto' ]
         tcp1 = main.params[ 'SDNIP' ][ 'srcPort' ]
         tcp2 = main.params[ 'SDNIP' ][ 'dstPort' ]
 
-        stepResult = main.intentFunction.pointIntent(
+        stepResult = main.intentFunction.pointIntentTcp(
                                            main,
                                            name="SDNIP-TCP",
                                            host1="h1",

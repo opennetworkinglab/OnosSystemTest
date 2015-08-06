@@ -252,27 +252,44 @@ class CLI( Component ):
                     prompt="(.*)",
                     timeout=120 )
 
-    def secureCopy( self, user_name, ip_address, filepath, pwd, dst_path ):
-
-        # scp openflow@192.168.56.101:/home/openflow/sample
-        # /home/paxterra/Desktop/
+    def secureCopy( self, userName, ipAddress, filePath, dstPath, pwd="",
+                    direction="from" ):
         """
-           Connection will establish to the remote host using ssh.
-           It will take user_name ,ip_address and password as arguments<br>
-           and will return the handle.
+        Definition:
+            Execute scp command in linux to copy to/from a remote host
+        Required:
+            str userName - User name of the remote host
+            str ipAddress - IP address of the remote host
+            str filePath - File path including the file it self
+            str dstPath - Destination path
+        Optional:
+            str pwd - Password of the host
+            str direction - Direction of the scp, default to "from" which means
+                            copy "from" the remote machine to local machine,
+                            while "to" means copy "to" the remote machine from
+                            local machine
         """
+        returnVal = main.TRUE
         ssh_newkey = 'Are you sure you want to continue connecting'
         refused = "ssh: connect to host " + \
-            ip_address + " port 22: Connection refused"
+            ipAddress + " port 22: Connection refused"
 
-        cmd = 'scp ' + str( user_name ) + '@' + str( ip_address ) + ':' + \
-          str( filepath ) + ' ' + str(dst_path )
+        if direction == "from":
+            cmd = 'scp ' + str( userName ) + '@' + str( ipAddress ) + ':' + \
+            str( filePath ) + ' ' + str( dstPath )
+        elif direction == "to":
+            cmd = 'scp ' + str( filePath ) + ' ' + str( userName ) + \
+            '@' + str( ipAddress ) + ':' + str( dstPath )
+        else:
+            main.log.debug( "Wrong direction using secure copy command!" )
+            return main.FALSE
 
         main.log.info( "Sending: " + cmd )
-        self.handle = pexpect.spawn( cmd )
+        self.handle.sendline( cmd )
         i = self.handle.expect( [
                             ssh_newkey,
                             'password:',
+                            "100%",
                             pexpect.EOF,
                             pexpect.TIMEOUT,
                             refused ],
@@ -285,27 +302,50 @@ class CLI( Component ):
         if i == 1:
             main.log.info( "ssh connection asked for password, gave password" )
             self.handle.sendline( pwd )
-            # self.handle.expect( user_name )
-
-        elif i == 2:
-            main.log.error( "Connection timeout" )
-            pass
-        elif i == 3:  # timeout
+            # self.handle.expect( userName )
+        if i == 2:
+            main.log.info( "Secure copy successful\n" + self.handle.before  )
+            returnVal = main.TRUE
+        elif i == 3:
+            main.log.error( "Pexpect.EOF found!!!" )
+            main.cleanup()
+            main.exit()
+        elif i == 4:  # timeout
             main.log.error(
                 "No route to the Host " +
-                user_name +
+                userName +
                 "@" +
-                ip_address )
-            return main.FALSE
-        elif i == 4:
+                ipAddress )
+            returnVal = main.FALSE
+        elif i == 5:
             main.log.error(
                 "ssh: connect to host " +
-                ip_address +
+                ipAddress +
                 " port 22: Connection refused" )
-            return main.FALSE
+            returnVal = main.FALSE
 
         self.handle.sendline( "" )
         self.handle.expect( "$" )
-        print self.handle.before
 
-        return self.handle
+        return returnVal
+
+    def scp( self, remoteHost, filePath, dstPath, direction="from" ):
+        """
+        Definition:
+            Execute scp command in linux to copy to/from a remote host
+        Required:
+            * remoteHost - Test ON component to be parsed
+            str filePath - File path including the file it self
+            str dstPath - Destination path
+        Optional:
+            str direction - Direction of the scp, default to "from" which means
+                            copy "from" the remote machine to local machine,
+                            while "to" means copy "to" the remote machine from
+                            local machine
+        """
+        return self.secureCopy( remoteHost.user_name,
+                                remoteHost.ip_address,
+                                filePath,
+                                dstPath,
+                                pwd=remoteHost.pwd,
+                                direction=direction )

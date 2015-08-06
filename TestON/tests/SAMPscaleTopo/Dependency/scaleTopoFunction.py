@@ -9,7 +9,7 @@ import re
 def __init__( self ):
     self.default = ''
 
-def testTopology( main, topoFile='', args='', mnCmd='', clean=True ):
+def testTopology( main, topoFile='', args='', mnCmd='', timeout=300, clean=True ):
     """
     Description:
         This function combines different wrapper functions in this module
@@ -44,25 +44,17 @@ def testTopology( main, topoFile='', args='', mnCmd='', clean=True ):
     reinstallOnosResult = reinstallOnos( main )
 
     # Starts topology
-    startResult = startNewTopology( main, topoFile, args, mnCmd )
+    startResult = startNewTopology( main, topoFile, args, mnCmd, timeout=timeout )
 
     # Gets list of switches in mininet
-    assignSwitch( main )
+    #assignSwitch( main )
 
-    # This function activates fwd app then does pingall as well as store
-    # hosts data in a variable main.hostsData
-    getHostsResult = getHostsData( main )
-
-    # Compare Topology
-    compareTopoResult = compareTopo( main )
-
-    testTopoResult = startResult and topoObjectResult and \
-                     compareTopoResult and getHostsResult
+    testTopoResult = startResult and topoObjectResult
 
 
     return testTopoResult
 
-def startNewTopology( main, topoFile='', args='', mnCmd='' ):
+def startNewTopology( main, topoFile='', args='', mnCmd='', timeout=900 ):
     """
     Description:
         This wrapper function starts new topology
@@ -97,7 +89,8 @@ def startNewTopology( main, topoFile='', args='', mnCmd='' ):
 
     result = main.Mininet1.startNet( topoFile=topoFile,
                                      args=args,
-                                     mnCmd=mnCmd )
+                                     mnCmd=mnCmd,
+                                     timeout=timeout)
 
     return result
 
@@ -213,6 +206,41 @@ def assignSwitch( main ):
             assignResult = main.FALSE
 
     return switchList
+
+def connectivity( main, timeout=900, shortCircuit=True, acceptableFailed=20 ):
+    """
+        Use fwd app and pingall to discover all the hosts
+    """
+    activateResult = main.TRUE
+    appCheck = main.TRUE
+    getDataResult = main.TRUE
+    main.log.info( main.topoName + ": Activating reactive forwarding app " )
+    activateResult = main.CLIs[ 0 ].activateApp( "org.onosproject.fwd" )
+
+    if main.hostsData:
+        main.hostsData = {}
+    for i in range( main.numCtrls ):
+        appCheck = appCheck and main.CLIs[ i ].appToIDCheck()
+        if appCheck != main.TRUE:
+            main.log.warn( main.CLIs[ i ].apps() )
+            main.log.warn( main.CLIs[ i ].appIDs() )
+
+    time.sleep( main.fwdSleep )
+
+    # Discover hosts using pingall
+    pingResult = main.Mininet1.pingall( timeout=timeout,
+                                        shortCircuit=shortCircuit,
+                                        acceptableFailed=acceptableFailed )
+
+    main.log.info( main.topoName + ": Deactivate reactive forwarding app " )
+    activateResult = main.CLIs[ 0 ].deactivateApp( "org.onosproject.fwd" )
+    for i in range( main.numCtrls ):
+        appCheck = appCheck and main.CLIs[ i ].appToIDCheck()
+        if appCheck != main.TRUE:
+            main.log.warn( main.CLIs[ i ].apps() )
+            main.log.warn( main.CLIs[ i ].appIDs() )
+
+    return pingResult
 
 def getHostsData( main ):
     """

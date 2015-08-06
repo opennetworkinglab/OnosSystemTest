@@ -45,7 +45,9 @@
             <password></password>
             <type>MininetCliDriver</type>
             <connect_order>5</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <home>~/mininet/custom/</home>
+            </COMPONENTS>
         </Mininet1>
 
     </COMPONENT>

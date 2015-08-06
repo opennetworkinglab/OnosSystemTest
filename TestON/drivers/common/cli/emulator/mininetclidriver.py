@@ -49,6 +49,7 @@ class MininetCliDriver( Emulator ):
         super( Emulator, self ).__init__()
         self.handle = self
         self.name = None
+        self.home = None
         self.wrapped = sys.modules[ __name__ ]
         self.flag = 0
 
@@ -59,8 +60,14 @@ class MininetCliDriver( Emulator ):
         try:
             for key in connectargs:
                 vars( self )[ key ] = connectargs[ key ]
-
+            self.home = "~/mininet"
             self.name = self.options[ 'name' ]
+            for key in self.options:
+                if key == "home":
+                    self.home = self.options[ 'home' ]
+                    break
+            if self.home is None or self.home == "":
+                self.home = "~/mininet"
 
             try:
                 if os.getenv( str( self.ip_address ) ) != None:

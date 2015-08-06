@@ -58,10 +58,11 @@ class SAMPstartTemplate:
                                         wrapperFile1 +
                                         ".py" )
 
-        copyResult = main.ONOSbench.copyMininetFile( main.topology,
-                                                     main.dependencyPath,
-                                                     main.Mininet1.user_name,
-                                                     main.Mininet1.ip_address )
+        copyResult1 = main.ONOSbench.scp( main.Mininet1,
+                                          main.dependencyPath +
+                                          main.topology,
+                                          main.Mininet1.home,
+                                          direction="to" )
         if main.CLIs:
             stepResult = main.TRUE
         else:
@@ -120,7 +121,11 @@ class SAMPstartTemplate:
         for i in range( main.numCtrls ):
             tempOnosIp.append( main.ONOSip[i] )
 
-        main.ONOSbench.createCellFile( main.ONOSbench.ip_address, "temp", main.Mininet1.ip_address, main.apps, tempOnosIp )
+        main.ONOSbench.createCellFile( main.ONOSbench.ip_address,
+                                       "temp",
+                                       main.Mininet1.ip_address,
+                                       main.apps,
+                                       tempOnosIp )
 
         main.step( "Apply cell to environment" )
         cellResult = main.ONOSbench.setCell( "temp" )

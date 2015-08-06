@@ -153,6 +153,7 @@
                 <arg2> --topo obelisk </arg2>
                 <arg3> --switch ovs,protocols=OpenFlow13 </arg3>
                 <controller> none </controller>
+                <home>~/mininet/custom/</home>
             </COMPONENTS>
         </Mininet1>
 

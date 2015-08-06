@@ -42,12 +42,14 @@
         </ONOScli3>
 
         <Mininet1>
-            <host>localhost</host>
+            <host>OCN</host>
             <user>admin</user>
             <password>onos_test</password>
             <type>MininetCliDriver</type>
             <connect_order>5</connect_order>
-            <COMPONENTS> </COMPONENTS>
+            <COMPONENTS>
+                <home>~/mininet/custom/</home>
+            </COMPONENTS>
         </Mininet1>
 
     </COMPONENT>

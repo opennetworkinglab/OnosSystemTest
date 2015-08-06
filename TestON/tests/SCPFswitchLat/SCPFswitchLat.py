@@ -89,7 +89,10 @@ class SCPFswitchLat:
             commit = (commit.split(" "))[1]
 
             temp = testONpath.replace("bin","") + "tests/SCPFswitchLat/Dependency/"
-            main.ONOSbench.copyMininetFile("topo-perf-1sw.py", temp, user, "localhost" )
+            main.ONOSbench.scp( main.Mininet1,
+                                temp + "topo-perf-1sw.py",
+                                main.Mininet1.home,
+                                direction="to" )
             #main.ONOSbench.handle.expect(":~")
 
             main.step('Clearing previous DB log file')

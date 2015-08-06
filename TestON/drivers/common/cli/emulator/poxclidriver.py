@@ -57,15 +57,7 @@ class PoxCliDriver( Emulator ):
         self.name = self.options[ 'name' ]
 
         poxLibPath = 'default'
-        copy = super(
-            PoxCliDriver,
-            self ).secureCopy(
-            self.user_name,
-            self.ip_address,
-            '/home/openflow/pox/pox/core.py',
-            self.pwd,
-            path +
-            '/lib/pox/' )
+
         self.handle = super(
             PoxCliDriver,
             self ).connect(

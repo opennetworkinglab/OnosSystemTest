@@ -97,6 +97,7 @@
                 <arg2> --topo mytopo</arg2>
                 <arg3> --switch ovsk,protocols=OpenFlow13</arg3>
                 <controller> remote </controller>
+                <home>~/mininet/custom/</home>
             </COMPONENTS>
         </Mininet1>
 

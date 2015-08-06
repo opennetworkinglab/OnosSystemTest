@@ -1453,25 +1453,31 @@ class OnosDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def runOnosTopoCfg( self, instanceName, jsonFile ):
+    def onosTopoCfg( self, onosIp, jsonFile ):
         """
-         On ONOS bench, run this command:
-         {ONOS_HOME}/tools/test/bin/onos-topo-cfg $OC1 filename
-         which starts the rest and copies
-         the json file to the onos instance
+            Description:
+                Execute onos-topo-cfg command
+            Required:
+                onosIp - IP of the onos node you want to send the json to
+                jsonFile - File path of the json file
+            Return:
+                Returns main.TRUE if the command is successfull; Returns
+                main.FALSE if there was an error
         """
         try:
             self.handle.sendline( "" )
             self.handle.expect( "\$" )
-            self.handle.sendline( "cd " + self.home + "/tools/test/bin" )
-            self.handle.expect( "/bin$" )
-            cmd = "./onos-topo-cfg " + instanceName + " " + jsonFile
-            print "cmd = ", cmd
-            self.handle.sendline( cmd )
-            self.handle.expect( "\$" )
-            self.handle.sendline( "cd ~" )
-            self.handle.expect( "\$" )
-            return main.TRUE
+            cmd = "onos-topo-cfg "
+            self.handle.sendline( cmd + str( onosIp ) + " " + jsonFile )
+            handle = self.handle.before
+            print handle
+            if "Error" in handle:
+                main.log.error( self.name + ":    " + self.handle.before )
+                return main.FALSE
+            else:
+                self.handle.expect( "\$" )
+                return main.TRUE
+
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )

@@ -1,6 +1,6 @@
 <PARAMS>
 
-    <testcases>1,2,1001</testcases>
+    <testcases>1</testcases>
 
     <SCALE>
         <size>1,2,3</size>
@@ -11,7 +11,9 @@
         <path>/tests/SAMPscaleTopo/Dependency/</path>
         <wrapper1>startUp</wrapper1>
         <wrapper2>scaleTopoFunction</wrapper2>
-        <topology>newFuncTopo.py</topology>
+        <wrapper3>topo</wrapper3>
+        <topology>spine.py</topology>
+        <multiovs>multiovs.py</multiovs>
     </DEPENDENCY>
 
     <ENV>
@@ -29,7 +31,7 @@
 
     <SLEEP>
         <startup>15</startup>
-        <fwd>10</fwd>
+        <fwd>30</fwd>
     </SLEEP>
 
 </PARAMS>

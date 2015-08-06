@@ -144,9 +144,10 @@ class HAclusterRestart:
         # TODO: move to params?
         topoName = "obelisk.py"
         filePath = main.ONOSbench.home + "/tools/test/topos/"
-        main.ONOSbench.copyMininetFile( topoName, filePath,
-                                        main.Mininet1.user_name,
-                                        main.Mininet1.ip_address )
+        main.ONOSbench.scp( main.Mininet1,
+                            filePath + topoName,
+                            main.Mininet1.home,
+                            direction="to" )
         mnResult = main.Mininet1.startNet( )
         utilities.assert_equals( expect=main.TRUE, actual=mnResult,
                                  onpass="Mininet Started",

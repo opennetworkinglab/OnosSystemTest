@@ -1269,7 +1269,7 @@ def removeAllIntents( main, intentsId ):
     for intent in intentsId:
         main.CLIs[ 0 ].removeIntent( intentId=intent, purge=True )
 
-    time.sleep( 5 )
+    time.sleep( main.removeIntentSleep )
 
     # If there is remianing intents then remove intents should fail
     for i in range( main.numCtrls ):

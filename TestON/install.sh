@@ -62,10 +62,11 @@ fi
 # Install TestON dependencies
 echo "Installing TestON dependencies"
 if [ "$DIST" = "Fedora" ]; then
+    # Fedora may have vlan enabled by default. Still need to confirm and update later
     $install python-pip build-essential python-dev pep8
     $pipinstall pexpect==3.2 configobj==4.7.2 numpy
 else
-    $install python-pip build-essential python-dev pep8
+    $install python-pip build-essential python-dev pep8 vlan
     $pipinstall pexpect==3.2 configobj==4.7.2 numpy
 fi
 

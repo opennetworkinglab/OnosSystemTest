@@ -176,7 +176,11 @@ class CHOtest:
 
         main.step( "Start Mininet with Att topology" )
         main.newTopo = main.params['TOPO1']['topo']
-        startStatus = main.Mininet1.startNet(topoFile = main.newTopo)
+        mininetDir = main.Mininet1.home + "/custom/"
+        topoPath = main.testDir + "/" + main.TEST  + "/Dependencies/" + main.newTopo
+        main.ONOSbench.secureCopy(main.Mininet1.user_name, main.Mininet1.ip_address, topoPath, mininetDir, direction="to")
+        topoPath = mininetDir + main.newTopo
+        startStatus = main.Mininet1.startNet(topoFile = topoPath)
 
         main.step( "Assign switches to controllers" )
         for i in range( 1, ( main.numMNswitches + 1 ) ):  # 1 to ( num of switches +1 )
@@ -237,8 +241,12 @@ class CHOtest:
         main.step( "Stop any previous Mininet network topology" )
         stopStatus = main.Mininet1.stopNet(fileName = "topoAtt" )
 
-        main.step( "Start Mininet with Chordal topology" )
-        startStatus = main.Mininet1.startNet(topoFile = main.newTopo)
+        main.step("Start Mininet with Chordal topology")
+        mininetDir = main.Mininet1.home + "/custom/"
+        topoPath = main.testDir + "/" + main.TEST  + "/Dependencies/" + main.newTopo
+        main.ONOSbench.secureCopy(main.Mininet1.user_name, main.Mininet1.ip_address, topoPath, mininetDir, direction="to")
+        topoPath = mininetDir + main.newTopo
+        startStatus = main.Mininet1.startNet(topoFile = topoPath)
 
         main.step( "Assign switches to controllers" )
 
@@ -296,8 +304,14 @@ class CHOtest:
             "Assign and Balance all Mininet switches across controllers" )
         main.step( "Stop any previous Mininet network topology" )
         stopStatus = main.Mininet1.stopNet(fileName = "topoChordal" )
-        main.step( "Start Mininet with Spine topology" )
-        startStatus = main.Mininet1.startNet(topoFile = main.newTopo)
+
+        main.step("Start Mininet with Spine topology")
+        mininetDir = main.Mininet1.home + "/custom/"
+        topoPath = main.testDir + "/" + main.TEST  + "/Dependencies/" + main.newTopo
+        main.ONOSbench.secureCopy(main.Mininet1.user_name, main.Mininet1.ip_address, topoPath, mininetDir, direction="to")
+        topoPath = mininetDir + main.newTopo
+        startStatus = main.Mininet1.startNet(topoFile = topoPath)
+
         time.sleep(60)
         main.step( "Assign switches to controllers" )
 
@@ -2123,6 +2137,7 @@ class CHOtest:
 
     def CASE10( self ):
         import time
+        import re
         """
          Remove all Intents
         """

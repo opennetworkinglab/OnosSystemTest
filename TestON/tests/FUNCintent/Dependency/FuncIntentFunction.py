@@ -1357,3 +1357,35 @@ def checkLeaderChange( leaders1, leaders2 ):
         return main.FALSE
     else:
         return main.TRUE
+
+def report( main ):
+    """
+    Report errors/warnings/exceptions
+    """
+
+    main.ONOSbench.logReport( main.ONOSip[ 0 ],
+                              [ "INFO",
+                                "FOLLOWER",
+                                "WARN",
+                                "flow",
+                                "ERROR",
+                                "Except" ],
+                              "s" )
+
+    main.log.info( "ERROR report: \n" )
+    for i in range( main.numCtrls ):
+        main.ONOSbench.logReport( main.ONOSip[ i ],
+                [ "ERROR" ],
+                "d" )
+
+    main.log.info( "EXCEPTIONS report: \n" )
+    for i in range( main.numCtrls ):
+        main.ONOSbench.logReport( main.ONOSip[ i ],
+                [ "Except" ],
+                "d" )
+
+    main.log.info( "WARNING report: \n" )
+    for i in range( main.numCtrls ):
+        main.ONOSbench.logReport( main.ONOSip[ i ],
+                [ "WARN" ],
+                "d" )

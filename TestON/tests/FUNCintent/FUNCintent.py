@@ -236,6 +236,8 @@ class FUNCintent:
         # Remove the first element in main.scale list
         main.scale.remove( main.scale[ 0 ] )
 
+        main.intentFunction.report( main )
+
     def CASE8( self, main ):
         """
         Compare Topo
@@ -314,41 +316,6 @@ class FUNCintent:
                                  actual=topoResults,
                                  onpass="ONOS correctly discovered the topology",
                                  onfail="ONOS incorrectly discovered the topology" )
-
-
-    def CASE9( self, main ):
-        '''
-            Report errors/warnings/exceptions
-        '''
-        main.case( main.testName + " Report - " + str( main.numCtrls ) +
-                   " NODE(S) - OF " + main.OFProtocol )
-
-        main.ONOSbench.logReport( main.ONOSip[ 0 ],
-                                  [ "INFO",
-                                    "FOLLOWER",
-                                    "WARN",
-                                    "flow",
-                                    "ERROR",
-                                    "Except" ],
-                                  "s" )
-
-        main.step( "ERROR report: \n" )
-        for i in range( main.numCtrls ):
-            main.ONOSbench.logReport( main.ONOSip[ i ],
-                    [ "ERROR" ],
-                    "d" )
-
-        main.step( "EXCEPTIONS report: \n" )
-        for i in range( main.numCtrls ):
-            main.ONOSbench.logReport( main.ONOSip[ i ],
-                    [ "Except" ],
-                    "d" )
-
-        main.step( "WARNING report: \n" )
-        for i in range( main.numCtrls ):
-            main.ONOSbench.logReport( main.ONOSip[ i ],
-                    [ "WARN" ],
-                    "d" )
 
     def CASE10( self, main ):
         """
@@ -642,6 +609,8 @@ class FUNCintent:
         main.intentFunction.checkLeaderChange( intentLeadersOld,
                                                 intentLeadersNew )
 
+        main.intentFunction.report( main )
+
     def CASE2000( self, main ):
         """
             Add point intents between 2 hosts:
@@ -925,6 +894,8 @@ class FUNCintent:
                                         "failed using IPV4 type with " +
                                         "no MAC addresses" )
 
+        main.intentFunction.report( main )
+
     def CASE3000( self, main ):
         """
             Add single point to multi point intents
@@ -1065,6 +1036,8 @@ class FUNCintent:
                                         + " point to multi point intents" +
                                         " with IPV4 type and MAC addresses" +
                                         " in the same VLAN")
+
+        main.intentFunction.report( main )
 
     def CASE4000( self, main ):
         """
@@ -1249,3 +1222,5 @@ class FUNCintent:
                                         "between two IPV4 hosts",
                                  onfail="IPV4: Host intent test failed " +
                                         "between two IPV4 hosts")
+
+        main.intentFunction.report( main )

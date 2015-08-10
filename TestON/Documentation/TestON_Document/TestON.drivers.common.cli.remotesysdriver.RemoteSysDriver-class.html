@@ -30,7 +30,12 @@
       <th>&nbsp;&nbsp;&nbsp;<a
         href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
 
-      <th class="navbar" width="100%"></th>
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            >TestON</th>
+          </tr></table></th>
   </tr>
 </table>
 <table width="100%" cellpadding="0" cellspacing="0">
@@ -60,16 +65,15 @@
 </table>
 <!-- ==================== CLASS DESCRIPTION ==================== -->
 <h1 class="epydoc">Class RemoteSysDriver</h1><p class="nomargin-top"><span class="codelink"><a href="TestON.drivers.common.cli.remotesysdriver-pysrc.html#RemoteSysDriver">source&nbsp;code</a></span></p>
-<pre class="base-tree">
-         object --+        
-                  |        
-<a href="TestON.drivers.component.Component-class.html">component.Component</a> --+    
-                      |    
-          <a href="TestON.drivers.common.clidriver.CLI-class.html">clidriver.CLI</a> --+
-                          |
-                         <strong class="uidshort">RemoteSysDriver</strong>
-</pre>
-
+<center>
+<center>  <map id="class_hierarchy_for_remotesysd" name="class_hierarchy_for_remotesysd">
+<area shape="rect" id="node1" href="TestON.drivers.common.cli.remotesysdriver.RemoteSysDriver-class.html" title="RemoteSysDriver" alt="" coords="5,6,131,31"/>
+<area shape="rect" id="node2" href="TestON.drivers.common.clidriver.CLI-class.html" title="clidriver.CLI" alt="" coords="155,6,247,31"/>
+<area shape="rect" id="node3" href="javascript:void(0);" title="component.Component" alt="" coords="272,6,429,31"/>
+</map>
+  <img src="class_hierarchy_for_remotesysd.gif" alt='' usemap="#class_hierarchy_for_remotesysd" ismap="ismap" class="graph-without-title" />
+</center>
+</center>
 <hr />
 <!-- ==================== INSTANCE METHODS ==================== -->
 <a name="section-InstanceMethods"></a>
@@ -95,7 +99,7 @@
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
           <td><span class="summary-sig"><a href="TestON.drivers.common.cli.remotesysdriver.RemoteSysDriver-class.html#__init__" class="summary-sig-name">__init__</a>(<span class="summary-sig-arg">self</span>)</span><br />
-      x.__init__(...) initializes x; see x.__class__.__doc__ for signature</td>
+      x.__init__(...) initializes x; see help(type(x)) for signature</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="TestON.drivers.common.cli.remotesysdriver-pysrc.html#RemoteSysDriver.__init__">source&nbsp;code</a></span>
             
@@ -123,23 +127,130 @@
       
     </td>
   </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="TestON.drivers.common.clidriver.CLI-class.html#disconnect" class="summary-sig-name">disconnect</a>(<span class="summary-sig-arg">self</span>)</span>
+      <em>(Inherited from <a href="TestON.drivers.common.clidriver.CLI-class.html">TestON.drivers.common.clidriver.CLI</a>)</em></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.drivers.common.clidriver-pysrc.html#CLI.disconnect">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="TestON.drivers.common.clidriver.CLI-class.html#execute" class="summary-sig-name">execute</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">**execparams</span>)</span><br />
+      It facilitates the command line execution of a given command.
+      <em>(Inherited from <a href="TestON.drivers.common.clidriver.CLI-class.html">TestON.drivers.common.clidriver.CLI</a>)</em></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.drivers.common.clidriver-pysrc.html#CLI.execute">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="onfail"></a><span class="summary-sig-name">onfail</span>(<span class="summary-sig-arg">self</span>)</span>
+      <em>(Inherited from <a href="TestON.drivers.common.clidriver.CLI-class.html">TestON.drivers.common.clidriver.CLI</a>)</em></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.drivers.common.clidriver-pysrc.html#CLI.onfail">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="remove_contol_chars"></a><span class="summary-sig-name">remove_contol_chars</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">response</span>)</span>
+      <em>(Inherited from <a href="TestON.drivers.common.clidriver.CLI-class.html">TestON.drivers.common.clidriver.CLI</a>)</em></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.drivers.common.clidriver-pysrc.html#CLI.remove_contol_chars">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="runAsSudoUser"></a><span class="summary-sig-name">runAsSudoUser</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">handle</span>,
+        <span class="summary-sig-arg">pwd</span>,
+        <span class="summary-sig-arg">default</span>)</span>
+      <em>(Inherited from <a href="TestON.drivers.common.clidriver.CLI-class.html">TestON.drivers.common.clidriver.CLI</a>)</em></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.drivers.common.clidriver-pysrc.html#CLI.runAsSudoUser">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="TestON.drivers.common.clidriver.CLI-class.html#secureCopy" class="summary-sig-name">secureCopy</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">user_name</span>,
+        <span class="summary-sig-arg">ip_address</span>,
+        <span class="summary-sig-arg">filepath</span>,
+        <span class="summary-sig-arg">pwd</span>,
+        <span class="summary-sig-arg">dst_path</span>)</span><br />
+      Connection will establish to the remote host using ssh.
+      <em>(Inherited from <a href="TestON.drivers.common.clidriver.CLI-class.html">TestON.drivers.common.clidriver.CLI</a>)</em></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.drivers.common.clidriver-pysrc.html#CLI.secureCopy">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
   <tr>
     <td colspan="2" class="summary">
-    <p class="indent-wrapped-lines"><b>Inherited from <code><a href="TestON.drivers.common.clidriver.CLI-class.html">clidriver.CLI</a></code></b>:
-      <code><a href="TestON.drivers.common.clidriver.CLI-class.html#disconnect">disconnect</a></code>,
-      <code><a href="TestON.drivers.common.clidriver.CLI-class.html#execute">execute</a></code>,
-      <code><a href="TestON.drivers.common.clidriver.CLI-class.html#onfail">onfail</a></code>,
-      <code><a href="TestON.drivers.common.clidriver.CLI-class.html#runAsSudoUser">runAsSudoUser</a></code>,
-      <code><a href="TestON.drivers.common.clidriver.CLI-class.html#secureCopy">secureCopy</a></code>
-      </p>
-    <p class="indent-wrapped-lines"><b>Inherited from <code><a href="TestON.drivers.component.Component-class.html">component.Component</a></code></b>:
-      <code><a href="TestON.drivers.component.Component-class.html#__getattr__">__getattr__</a></code>,
-      <code><a href="TestON.drivers.component.Component-class.html#cleanup">cleanup</a></code>,
-      <code><a href="TestON.drivers.component.Component-class.html#close_log_handles">close_log_handles</a></code>,
-      <code><a href="TestON.drivers.component.Component-class.html#config">config</a></code>,
-      <code><a href="TestON.drivers.component.Component-class.html#experimentRun">experimentRun</a></code>,
-      <code><a href="TestON.drivers.component.Component-class.html#get_version">get_version</a></code>,
-      <code><a href="TestON.drivers.component.Component-class.html#log">log</a></code>
+    <p class="indent-wrapped-lines"><b>Inherited from <code>component.Component</code></b>:
+      <code>__getattr__</code>,
+      <code>cleanup</code>,
+      <code>close_log_handles</code>,
+      <code>config</code>,
+      <code>experimentRun</code>,
+      <code>get_version</code>,
+      <code>log</code>
       </p>
     <p class="indent-wrapped-lines"><b>Inherited from <code>object</code></b>:
       <code>__delattr__</code>,
@@ -155,6 +266,43 @@
       <code>__str__</code>,
       <code>__subclasshook__</code>
       </p>
+    </td>
+  </tr>
+</table>
+<!-- ==================== INSTANCE VARIABLES ==================== -->
+<a name="section-InstanceVariables"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Instance Variables</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-InstanceVariables"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="TestON.drivers.common.cli.remotesysdriver.RemoteSysDriver-class.html#handle" class="summary-name">handle</a><br />
+      if self.handle:
+            self.execute( cmd= &quot;
+&quot;,prompt= &quot;\$|&gt;|#&quot;,timeout= 10 )
+            self.execute( cmd= &quot;ssh -l paxterra 10.128.4.1&quot;,prompt= &quot;paxterra@10.128.4.1's password:&quot;,timeout= 10 )
+            self.execute( cmd= &quot;
+&quot;,prompt= &quot;paxterra@10.128.4.1's password:&quot;,timeout= 10 )
+            self.execute( cmd=&quot;0nLab_gu3st&quot;,prompt=&quot;\$&quot;,timeout=10 )
+            self.execute( cmd=&quot;cd TestON/bin/&quot;,prompt=&quot;\$&quot;,timeout=10 )
+            self.execute( cmd=&quot;./cli.py run Assert example 1&quot;,prompt=&quot;\$&quot;,timeout=10 )
+            self.execute( cmd= &quot;
+&quot;,prompt= &quot;$&quot;,timeout= 10 )
+            #self.execute( cmd=&quot;help&quot;,prompt=&quot;&gt;&quot;,timeout=10 )
     </td>
   </tr>
 </table>
@@ -216,8 +364,7 @@
     </td>
   </tr></table>
   
-  <p>x.__init__(...) initializes x; see x.__class__.__doc__ for 
-  signature</p>
+  <p>x.__init__(...) initializes x; see help(type(x)) for signature</p>
   <dl class="fields">
     <dt>Overrides:
         object.__init__
@@ -246,8 +393,57 @@
   the handle.</p>
   <dl class="fields">
     <dt>Overrides:
-        <a href="TestON.drivers.component.Component-class.html#connect">component.Component.connect</a>
+        component.Component.connect
     </dt>
+  </dl>
+</td></tr></table>
+</div>
+<br />
+<!-- ==================== INSTANCE VARIABLE DETAILS ==================== -->
+<a name="section-InstanceVariableDetails"></a>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Instance Variable Details</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-InstanceVariableDetails"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+</table>
+<a name="handle"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <h3 class="epydoc">handle</h3>
+  <pre class="literalblock">
+
+        if self.handle:
+            self.execute( cmd= &quot;
+&quot;,prompt= &quot;\$|&gt;|#&quot;,timeout= 10 )
+            self.execute( cmd= &quot;ssh -l paxterra 10.128.4.1&quot;,prompt= &quot;paxterra@10.128.4.1's password:&quot;,timeout= 10 )
+            self.execute( cmd= &quot;
+&quot;,prompt= &quot;paxterra@10.128.4.1's password:&quot;,timeout= 10 )
+            self.execute( cmd=&quot;0nLab_gu3st&quot;,prompt=&quot;\$&quot;,timeout=10 )
+            self.execute( cmd=&quot;cd TestON/bin/&quot;,prompt=&quot;\$&quot;,timeout=10 )
+            self.execute( cmd=&quot;./cli.py run Assert example 1&quot;,prompt=&quot;\$&quot;,timeout=10 )
+            self.execute( cmd= &quot;
+&quot;,prompt= &quot;$&quot;,timeout= 10 )
+            #self.execute( cmd=&quot;help&quot;,prompt=&quot;&gt;&quot;,timeout=10 )
+
+            #self.execute( cmd=&quot;~.&quot;,prompt= &quot;.*&quot;,timeout= 10 )
+        return main.TRUE
+        
+
+</pre>
+  <dl class="fields">
   </dl>
 </td></tr></table>
 </div>
@@ -272,13 +468,18 @@
       <th>&nbsp;&nbsp;&nbsp;<a
         href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
 
-      <th class="navbar" width="100%"></th>
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            >TestON</th>
+          </tr></table></th>
   </tr>
 </table>
 <table border="0" cellpadding="0" cellspacing="0" width="100%%">
   <tr>
     <td align="left" class="footer">
-    Generated by Epydoc 3.0.1 on Mon Mar 11 12:56:26 2013
+    Generated by Epydoc 3.0.1 on Mon Aug 10 11:12:35 2015
     </td>
     <td align="right" class="footer">
       <a target="mainFrame" href="http://epydoc.sourceforge.net"

@@ -30,7 +30,12 @@
       <th>&nbsp;&nbsp;&nbsp;<a
         href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
 
-      <th class="navbar" width="100%"></th>
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            >TestON</th>
+          </tr></table></th>
   </tr>
 </table>
 <table width="100%" cellpadding="0" cellspacing="0">
@@ -59,14 +64,14 @@
 </table>
 <!-- ==================== CLASS DESCRIPTION ==================== -->
 <h1 class="epydoc">Class CLI</h1><p class="nomargin-top"><span class="codelink"><a href="TestON.drivers.common.clidriver-pysrc.html#CLI">source&nbsp;code</a></span></p>
-<pre class="base-tree">
-         object --+    
-                  |    
-<a href="TestON.drivers.component.Component-class.html">component.Component</a> --+
-                      |
-                     <strong class="uidshort">CLI</strong>
-</pre>
-
+<center>
+<center>  <map id="class_hierarchy_for_cli_2" name="class_hierarchy_for_cli_2">
+<area shape="rect" id="node1" href="TestON.drivers.common.clidriver.CLI-class.html" title="CLI" alt="" coords="5,6,48,31"/>
+<area shape="rect" id="node2" href="javascript:void(0);" title="component.Component" alt="" coords="72,6,229,31"/>
+</map>
+  <img src="class_hierarchy_for_cli_2.gif" alt='' usemap="#class_hierarchy_for_cli_2" ismap="ismap" class="graph-without-title" />
+</center>
+</center>
 <hr />
 <p>This will define common functions for CLI included.</p>
 
@@ -94,7 +99,7 @@
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
           <td><span class="summary-sig"><a href="TestON.drivers.common.clidriver.CLI-class.html#__init__" class="summary-sig-name">__init__</a>(<span class="summary-sig-arg">self</span>)</span><br />
-      x.__init__(...) initializes x; see x.__class__.__doc__ for signature</td>
+      x.__init__(...) initializes x; see help(type(x)) for signature</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="TestON.drivers.common.clidriver-pysrc.html#CLI.__init__">source&nbsp;code</a></span>
             
@@ -162,6 +167,23 @@
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
+          <td><span class="summary-sig"><a name="remove_contol_chars"></a><span class="summary-sig-name">remove_contol_chars</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">response</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.drivers.common.clidriver-pysrc.html#CLI.remove_contol_chars">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
           <td><span class="summary-sig"><a name="runAsSudoUser"></a><span class="summary-sig-name">runAsSudoUser</span>(<span class="summary-sig-arg">self</span>,
         <span class="summary-sig-arg">handle</span>,
         <span class="summary-sig-arg">pwd</span>,
@@ -215,14 +237,14 @@
   </tr>
   <tr>
     <td colspan="2" class="summary">
-    <p class="indent-wrapped-lines"><b>Inherited from <code><a href="TestON.drivers.component.Component-class.html">component.Component</a></code></b>:
-      <code><a href="TestON.drivers.component.Component-class.html#__getattr__">__getattr__</a></code>,
-      <code><a href="TestON.drivers.component.Component-class.html#cleanup">cleanup</a></code>,
-      <code><a href="TestON.drivers.component.Component-class.html#close_log_handles">close_log_handles</a></code>,
-      <code><a href="TestON.drivers.component.Component-class.html#config">config</a></code>,
-      <code><a href="TestON.drivers.component.Component-class.html#experimentRun">experimentRun</a></code>,
-      <code><a href="TestON.drivers.component.Component-class.html#get_version">get_version</a></code>,
-      <code><a href="TestON.drivers.component.Component-class.html#log">log</a></code>
+    <p class="indent-wrapped-lines"><b>Inherited from <code>component.Component</code></b>:
+      <code>__getattr__</code>,
+      <code>cleanup</code>,
+      <code>close_log_handles</code>,
+      <code>config</code>,
+      <code>experimentRun</code>,
+      <code>get_version</code>,
+      <code>log</code>
       </p>
     <p class="indent-wrapped-lines"><b>Inherited from <code>object</code></b>:
       <code>__delattr__</code>,
@@ -299,8 +321,7 @@
     </td>
   </tr></table>
   
-  <p>x.__init__(...) initializes x; see x.__class__.__doc__ for 
-  signature</p>
+  <p>x.__init__(...) initializes x; see help(type(x)) for signature</p>
   <dl class="fields">
     <dt>Overrides:
         object.__init__
@@ -329,7 +350,7 @@
   the handle.</p>
   <dl class="fields">
     <dt>Overrides:
-        <a href="TestON.drivers.component.Component-class.html#connect">component.Component.connect</a>
+        component.Component.connect
     </dt>
   </dl>
 </td></tr></table>
@@ -351,7 +372,7 @@
   
   <dl class="fields">
     <dt>Overrides:
-        <a href="TestON.drivers.component.Component-class.html#disconnect">component.Component.disconnect</a>
+        component.Component.disconnect
     </dt>
   </dl>
 </td></tr></table>
@@ -378,7 +399,7 @@
   <p>It will return output of command exection.</p>
   <dl class="fields">
     <dt>Overrides:
-        <a href="TestON.drivers.component.Component-class.html#execute">component.Component.execute</a>
+        component.Component.execute
     </dt>
   </dl>
 </td></tr></table>
@@ -430,13 +451,18 @@
       <th>&nbsp;&nbsp;&nbsp;<a
         href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
 
-      <th class="navbar" width="100%"></th>
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            >TestON</th>
+          </tr></table></th>
   </tr>
 </table>
 <table border="0" cellpadding="0" cellspacing="0" width="100%%">
   <tr>
     <td align="left" class="footer">
-    Generated by Epydoc 3.0.1 on Mon Mar 11 12:56:26 2013
+    Generated by Epydoc 3.0.1 on Mon Aug 10 11:12:35 2015
     </td>
     <td align="right" class="footer">
       <a target="mainFrame" href="http://epydoc.sourceforge.net"

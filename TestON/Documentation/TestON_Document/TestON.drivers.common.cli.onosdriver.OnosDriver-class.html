@@ -1,0 +1,2120 @@
+<?xml version="1.0" encoding="ascii"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>TestON.drivers.common.cli.onosdriver.OnosDriver</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css" />
+  <script type="text/javascript" src="epydoc.js"></script>
+</head>
+
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="TestON-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            >TestON</th>
+          </tr></table></th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">
+      <span class="breadcrumbs">
+        <a href="TestON-module.html">Package&nbsp;TestON</a> ::
+        <a href="TestON.drivers-module.html">Package&nbsp;drivers</a> ::
+        <a href="TestON.drivers.common-module.html">Package&nbsp;common</a> ::
+        <a href="TestON.drivers.common.cli-module.html">Package&nbsp;cli</a> ::
+        <a href="TestON.drivers.common.cli.onosdriver-module.html">Module&nbsp;onosdriver</a> ::
+        Class&nbsp;OnosDriver
+      </span>
+    </td>
+    <td>
+      <table cellpadding="0" cellspacing="0">
+        <!-- hide/show private -->
+        <tr><td align="right"><span class="options">[<a href="javascript:void(0);" class="privatelink"
+    onclick="toggle_private();">hide&nbsp;private</a>]</span></td></tr>
+        <tr><td align="right"><span class="options"
+            >[<a href="frames.html" target="_top">frames</a
+            >]&nbsp;|&nbsp;<a href="TestON.drivers.common.cli.onosdriver.OnosDriver-class.html"
+            target="_top">no&nbsp;frames</a>]</span></td></tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<!-- ==================== CLASS DESCRIPTION ==================== -->
+<h1 class="epydoc">Class OnosDriver</h1><p class="nomargin-top"><span class="codelink"><a href="TestON.drivers.common.cli.onosdriver-pysrc.html#OnosDriver">source&nbsp;code</a></span></p>
+<center>
+<center>  <map id="class_hierarchy_for_onosdriver" name="class_hierarchy_for_onosdriver">
+<area shape="rect" id="node1" href="TestON.drivers.common.cli.onosdriver.OnosDriver-class.html" title="OnosDriver" alt="" coords="5,6,93,31"/>
+<area shape="rect" id="node2" href="TestON.drivers.common.clidriver.CLI-class.html" title="clidriver.CLI" alt="" coords="118,6,209,31"/>
+<area shape="rect" id="node3" href="javascript:void(0);" title="component.Component" alt="" coords="235,6,392,31"/>
+</map>
+  <img src="class_hierarchy_for_onosdriver.gif" alt='' usemap="#class_hierarchy_for_onosdriver" ismap="ismap" class="graph-without-title" />
+</center>
+</center>
+<hr />
+<!-- ==================== INSTANCE METHODS ==================== -->
+<a name="section-InstanceMethods"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Instance Methods</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-InstanceMethods"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="TestON.drivers.common.cli.onosdriver.OnosDriver-class.html#__init__" class="summary-sig-name">__init__</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Initialize client</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.drivers.common.cli.onosdriver-pysrc.html#OnosDriver.__init__">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="TestON.drivers.common.cli.onosdriver.OnosDriver-class.html#connect" class="summary-sig-name">connect</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">**connectargs</span>)</span><br />
+      Creates ssh handle for ONOS &quot;bench&quot;.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.drivers.common.cli.onosdriver-pysrc.html#OnosDriver.connect">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="TestON.drivers.common.cli.onosdriver.OnosDriver-class.html#disconnect" class="summary-sig-name">disconnect</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Called when Test is complete to disconnect the ONOS handle.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.drivers.common.cli.onosdriver-pysrc.html#OnosDriver.disconnect">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="TestON.drivers.common.cli.onosdriver.OnosDriver-class.html#getEpochMs" class="summary-sig-name">getEpochMs</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Returns milliseconds since epoch</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.drivers.common.cli.onosdriver-pysrc.html#OnosDriver.getEpochMs">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="onosPackage"></a><span class="summary-sig-name">onosPackage</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">opTimeout</span>=<span class="summary-sig-default">30</span>)</span><br />
+      Produce a self-contained tar.gz file that can be deployed and 
+      executed on any platform with Java 7 JRE.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.drivers.common.cli.onosdriver-pysrc.html#OnosDriver.onosPackage">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="onosBuild"></a><span class="summary-sig-name">onosBuild</span>(<span class="summary-sig-arg">self</span>)</span><br />
+      Use the pre defined script to build onos via mvn</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.drivers.common.cli.onosdriver-pysrc.html#OnosDriver.onosBuild">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="TestON.drivers.common.cli.onosdriver.OnosDriver-class.html#cleanInstall" class="summary-sig-name">cleanInstall</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">skipTest</span>=<span class="summary-sig-default">False</span>,
+        <span class="summary-sig-arg">mciTimeout</span>=<span class="summary-sig-default">600</span>)</span><br />
+      Runs mvn clean install in the root of the ONOS directory.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.drivers.common.cli.onosdriver-pysrc.html#OnosDriver.cleanInstall">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="TestON.drivers.common.cli.onosdriver.OnosDriver-class.html#gitPull" class="summary-sig-name">gitPull</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">comp1</span>=<span class="summary-sig-default">&quot;&quot;</span>,
+        <span class="summary-sig-arg">fastForward</span>=<span class="summary-sig-default">True</span>)</span><br />
+      Assumes that &quot;git pull&quot; works without login</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.drivers.common.cli.onosdriver-pysrc.html#OnosDriver.gitPull">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="TestON.drivers.common.cli.onosdriver.OnosDriver-class.html#gitCheckout" class="summary-sig-name">gitCheckout</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">branch</span>=<span class="summary-sig-default">&quot;master&quot;</span>)</span><br />
+      Assumes that &quot;git pull&quot; works without login</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.drivers.common.cli.onosdriver-pysrc.html#OnosDriver.gitCheckout">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="getBranchName"></a><span class="summary-sig-name">getBranchName</span>(<span class="summary-sig-arg">self</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.drivers.common.cli.onosdriver-pysrc.html#OnosDriver.getBranchName">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="getVersion"></a><span class="summary-sig-name">getVersion</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">report</span>=<span class="summary-sig-default">False</span>)</span><br />
+      Writes the COMMIT number to the report to be parsed
+        by Jenkins data collector.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.drivers.common.cli.onosdriver-pysrc.html#OnosDriver.getVersion">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="TestON.drivers.common.cli.onosdriver.OnosDriver-class.html#createCellFile" class="summary-sig-name">createCellFile</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">benchIp</span>,
+        <span class="summary-sig-arg">fileName</span>,
+        <span class="summary-sig-arg">mnIpAddrs</span>,
+        <span class="summary-sig-arg">appString</span>,
+        <span class="summary-sig-arg">onosIpAddrs</span>)</span><br />
+      Creates a cell file based on arguments
+Required:
+    * Bench IP address ( benchIp )
+        - Needed to copy the cell file over
+    * File name of the cell file ( fileName )
+    * Mininet IP address ( mnIpAddrs )
+        - Note that only 1 ip address is
+          supported currently
+    * ONOS IP addresses ( onosIpAddrs )
+        - Must be passed in as last arguments</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.drivers.common.cli.onosdriver-pysrc.html#OnosDriver.createCellFile">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="setCell"></a><span class="summary-sig-name">setCell</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">cellname</span>)</span><br />
+      Calls 'cell &lt;name&gt;' to set the environment variables on 
+      ONOSbench</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.drivers.common.cli.onosdriver-pysrc.html#OnosDriver.setCell">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="verifyCell"></a><span class="summary-sig-name">verifyCell</span>(<span class="summary-sig-arg">self</span>)</span><br />
+      Calls 'onos-verify-cell' to check for cell installation</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.drivers.common.cli.onosdriver-pysrc.html#OnosDriver.verifyCell">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="TestON.drivers.common.cli.onosdriver.OnosDriver-class.html#onosCfgSet" class="summary-sig-name">onosCfgSet</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">ONOSIp</span>,
+        <span class="summary-sig-arg">configName</span>,
+        <span class="summary-sig-arg">configParam</span>)</span><br />
+      Uses 'onos &lt;node-ip&gt; cfg set' to change a parameter value of an
+application.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.drivers.common.cli.onosdriver-pysrc.html#OnosDriver.onosCfgSet">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="TestON.drivers.common.cli.onosdriver.OnosDriver-class.html#onosCli" class="summary-sig-name">onosCli</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">ONOSIp</span>,
+        <span class="summary-sig-arg">cmdstr</span>)</span><br />
+      Uses 'onos' command to send various ONOS CLI arguments.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.drivers.common.cli.onosdriver-pysrc.html#OnosDriver.onosCli">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="TestON.drivers.common.cli.onosdriver.OnosDriver-class.html#onosInstall" class="summary-sig-name">onosInstall</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">options</span>=<span class="summary-sig-default">&quot;-f&quot;</span>,
+        <span class="summary-sig-arg">node</span>=<span class="summary-sig-default">&quot;&quot;</span>)</span><br />
+      Installs ONOS bits on the designated cell machine.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.drivers.common.cli.onosdriver-pysrc.html#OnosDriver.onosInstall">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="onosStart"></a><span class="summary-sig-name">onosStart</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">nodeIp</span>)</span><br />
+      Calls onos command: 'onos-service [&lt;node-ip&gt;] start' This 
+      command is a remote management of the ONOS upstart daemon</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.drivers.common.cli.onosdriver-pysrc.html#OnosDriver.onosStart">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="onosStop"></a><span class="summary-sig-name">onosStop</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">nodeIp</span>)</span><br />
+      Calls onos command: 'onos-service [&lt;node-ip&gt;] stop' This 
+      command is a remote management of the ONOS upstart daemon</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.drivers.common.cli.onosdriver-pysrc.html#OnosDriver.onosStop">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="onosUninstall"></a><span class="summary-sig-name">onosUninstall</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">nodeIp</span>=<span class="summary-sig-default">&quot;&quot;</span>)</span><br />
+      Calls the command: 'onos-uninstall' Uninstalls ONOS from the 
+      designated cell machine, stopping if needed</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.drivers.common.cli.onosdriver-pysrc.html#OnosDriver.onosUninstall">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="onosDie"></a><span class="summary-sig-name">onosDie</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">nodeIp</span>)</span><br />
+      Issues the command 'onos-die &lt;node-ip&gt;' This command calls 
+      onos-kill and also stops the node</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.drivers.common.cli.onosdriver-pysrc.html#OnosDriver.onosDie">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="onosKill"></a><span class="summary-sig-name">onosKill</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">nodeIp</span>)</span><br />
+      Calls the command: 'onos-kill [&lt;node-ip&gt;]' &quot;Remotely, and 
+      unceremoniously kills the ONOS instance running on the specified cell
+      machine&quot; - Tom V</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.drivers.common.cli.onosdriver-pysrc.html#OnosDriver.onosKill">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="TestON.drivers.common.cli.onosdriver.OnosDriver-class.html#onosRemoveRaftLogs" class="summary-sig-name">onosRemoveRaftLogs</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Removes Raft / Copy cat files from ONOS to ensure
+a cleaner environment.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.drivers.common.cli.onosdriver-pysrc.html#OnosDriver.onosRemoveRaftLogs">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="TestON.drivers.common.cli.onosdriver.OnosDriver-class.html#onosStartNetwork" class="summary-sig-name">onosStartNetwork</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">mntopo</span>)</span><br />
+      Calls the command 'onos-start-network [ &lt;mininet-topo&gt; ]
+&quot;remotely starts the specified topology on the cell's
+mininet machine against all controllers configured in the
+cell.&quot;
+* Specify mininet topology file name for mntopo
+* Topo files should be placed at:
+  ~/&lt;your-onos-directory&gt;/tools/test/topos</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.drivers.common.cli.onosdriver-pysrc.html#OnosDriver.onosStartNetwork">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="TestON.drivers.common.cli.onosdriver.OnosDriver-class.html#isup" class="summary-sig-name">isup</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">node</span>=<span class="summary-sig-default">&quot;&quot;</span>,
+        <span class="summary-sig-arg">timeout</span>=<span class="summary-sig-default">120</span>)</span><br />
+      Run's onos-wait-for-start which only returns once ONOS is at run 
+      level 100(ready for use)</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.drivers.common.cli.onosdriver-pysrc.html#OnosDriver.isup">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="TestON.drivers.common.cli.onosdriver.OnosDriver-class.html#pushTestIntentsShell" class="summary-sig-name">pushTestIntentsShell</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">dpidSrc</span>,
+        <span class="summary-sig-arg">dpidDst</span>,
+        <span class="summary-sig-arg">numIntents</span>,
+        <span class="summary-sig-arg">dirFile</span>,
+        <span class="summary-sig-arg">onosIp</span>,
+        <span class="summary-sig-arg">numMult</span>=<span class="summary-sig-default">&quot;&quot;</span>,
+        <span class="summary-sig-arg">appId</span>=<span class="summary-sig-default">&quot;&quot;</span>,
+        <span class="summary-sig-arg">report</span>=<span class="summary-sig-default">True</span>,
+        <span class="summary-sig-arg">options</span>=<span class="summary-sig-default">&quot;&quot;</span>)</span><br />
+      Description:...</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.drivers.common.cli.onosdriver-pysrc.html#OnosDriver.pushTestIntentsShell">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="TestON.drivers.common.cli.onosdriver.OnosDriver-class.html#getTopology" class="summary-sig-name">getTopology</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">topologyOutput</span>)</span><br />
+      Definition:...</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.drivers.common.cli.onosdriver-pysrc.html#OnosDriver.getTopology">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="TestON.drivers.common.cli.onosdriver.OnosDriver-class.html#checkStatus" class="summary-sig-name">checkStatus</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">topologyResult</span>,
+        <span class="summary-sig-arg">numoswitch</span>,
+        <span class="summary-sig-arg">numolink</span>,
+        <span class="summary-sig-arg">logLevel</span>=<span class="summary-sig-default">&quot;info&quot;</span>)</span><br />
+      Checks the number of switches &amp; links that ONOS sees against the
+supplied values.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.drivers.common.cli.onosdriver-pysrc.html#OnosDriver.checkStatus">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="TestON.drivers.common.cli.onosdriver.OnosDriver-class.html#tsharkPcap" class="summary-sig-name">tsharkPcap</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">interface</span>,
+        <span class="summary-sig-arg">dirFile</span>)</span><br />
+      Capture all packet activity and store in specified
+directory/file</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.drivers.common.cli.onosdriver-pysrc.html#OnosDriver.tsharkPcap">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="runOnosTopoCfg"></a><span class="summary-sig-name">runOnosTopoCfg</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">instanceName</span>,
+        <span class="summary-sig-arg">jsonFile</span>)</span><br />
+      On ONOS bench, run this command: 
+      {ONOS_HOME}/tools/test/bin/onos-topo-cfg $OC1 filename which starts 
+      the rest and copies the json file to the onos instance</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.drivers.common.cli.onosdriver-pysrc.html#OnosDriver.runOnosTopoCfg">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="TestON.drivers.common.cli.onosdriver.OnosDriver-class.html#tsharkGrep" class="summary-sig-name">tsharkGrep</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">grep</span>,
+        <span class="summary-sig-arg">directory</span>,
+        <span class="summary-sig-arg">interface</span>=<span class="summary-sig-default">'eth0'</span>,
+        <span class="summary-sig-arg">grepOptions</span>=<span class="summary-sig-default">''</span>)</span><br />
+      Required:
+    * grep string
+    * directory to store results
+Optional:
+    * interface - default: eth0
+    * grepOptions - options for grep
+Description:
+    Uses tshark command to grep specific group of packets
+    and stores the results to specified directory.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.drivers.common.cli.onosdriver-pysrc.html#OnosDriver.tsharkGrep">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="tsharkStop"></a><span class="summary-sig-name">tsharkStop</span>(<span class="summary-sig-arg">self</span>)</span><br />
+      Removes wireshark files from /tmp and kills all tshark processes</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.drivers.common.cli.onosdriver-pysrc.html#OnosDriver.tsharkStop">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="TestON.drivers.common.cli.onosdriver.OnosDriver-class.html#ptpd" class="summary-sig-name">ptpd</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">args</span>)</span><br />
+      Initiate ptp with user-specified args.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.drivers.common.cli.onosdriver-pysrc.html#OnosDriver.ptpd">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="TestON.drivers.common.cli.onosdriver.OnosDriver-class.html#cpLogsToDir" class="summary-sig-name">cpLogsToDir</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">logToCopy</span>,
+        <span class="summary-sig-arg">destDir</span>,
+        <span class="summary-sig-arg">copyFileName</span>=<span class="summary-sig-default">&quot;&quot;</span>)</span><br />
+      Copies logs to a desired directory.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.drivers.common.cli.onosdriver-pysrc.html#OnosDriver.cpLogsToDir">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="TestON.drivers.common.cli.onosdriver.OnosDriver-class.html#checkLogs" class="summary-sig-name">checkLogs</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">onosIp</span>,
+        <span class="summary-sig-arg">restart</span>=<span class="summary-sig-default">False</span>)</span><br />
+      runs onos-check-logs on the given onos node...</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.drivers.common.cli.onosdriver-pysrc.html#OnosDriver.checkLogs">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="onosStatus"></a><span class="summary-sig-name">onosStatus</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">node</span>=<span class="summary-sig-default">&quot;&quot;</span>)</span><br />
+      Calls onos command: 'onos-service [&lt;node-ip&gt;] status'</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.drivers.common.cli.onosdriver-pysrc.html#OnosDriver.onosStatus">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="TestON.drivers.common.cli.onosdriver.OnosDriver-class.html#setIpTables" class="summary-sig-name">setIpTables</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">ip</span>,
+        <span class="summary-sig-arg">port</span>=<span class="summary-sig-default">''</span>,
+        <span class="summary-sig-arg">action</span>=<span class="summary-sig-default">'add'</span>,
+        <span class="summary-sig-arg">packet_type</span>=<span class="summary-sig-default">''</span>,
+        <span class="summary-sig-arg">direction</span>=<span class="summary-sig-default">'INPUT'</span>,
+        <span class="summary-sig-arg">rule</span>=<span class="summary-sig-default">'DROP'</span>,
+        <span class="summary-sig-arg">states</span>=<span class="summary-sig-default">True</span>)</span><br />
+      Description:
+    add or remove iptables rule to DROP (default) packets from
+    specific IP and PORT
+Usage:
+* specify action ('add' or 'remove')
+  when removing, pass in the same argument as you would add.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.drivers.common.cli.onosdriver-pysrc.html#OnosDriver.setIpTables">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="detailed_status"></a><span class="summary-sig-name">detailed_status</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">log_filename</span>)</span><br />
+      This method is used by STS to check the status of the controller 
+      Reports RUNNING, STARTING, STOPPED, FROZEN, ERROR (and reason)</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.drivers.common.cli.onosdriver-pysrc.html#OnosDriver.detailed_status">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="TestON.drivers.common.cli.onosdriver.OnosDriver-class.html#createLinkGraphFile" class="summary-sig-name">createLinkGraphFile</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">benchIp</span>,
+        <span class="summary-sig-arg">ONOSIpList</span>,
+        <span class="summary-sig-arg">deviceCount</span>)</span><br />
+      Create/formats the LinkGraph.cfg file based on arguments
+    -only creates a linear topology and connects islands
+    -evenly distributes devices
+    -must be called by ONOSbench</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.drivers.common.cli.onosdriver-pysrc.html#OnosDriver.createLinkGraphFile">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="TestON.drivers.common.cli.onosdriver.OnosDriver-class.html#configNullDev" class="summary-sig-name">configNullDev</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">ONOSIpList</span>,
+        <span class="summary-sig-arg">deviceCount</span>,
+        <span class="summary-sig-arg">numPorts</span>=<span class="summary-sig-default">10</span>)</span><br />
+      ONOSIpList = list of Ip addresses of nodes switches will be devided 
+      amongst deviceCount = number of switches to distribute, or list of 
+      values to use as custom distribution numPorts = number of ports per 
+      device.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.drivers.common.cli.onosdriver-pysrc.html#OnosDriver.configNullDev">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="configNullLink"></a><span class="summary-sig-name">configNullLink</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">fileName</span>=<span class="summary-sig-default">&quot;/opt/onos/apache-karaf-3.0.3/etc/linkGraph.cfg&quot;</span>,
+        <span class="summary-sig-arg">eventRate</span>=<span class="summary-sig-default">0</span>)</span><br />
+      fileName default is currently the same as the default on ONOS, 
+      specify alternate file if you want to use a different topology file 
+      than linkGraph.cfg</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.drivers.common.cli.onosdriver-pysrc.html#OnosDriver.configNullLink">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="getOnosIps"></a><span class="summary-sig-name">getOnosIps</span>(<span class="summary-sig-arg">self</span>)</span><br />
+      Get all onos IPs stored in</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.drivers.common.cli.onosdriver-pysrc.html#OnosDriver.getOnosIps">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="TestON.drivers.common.cli.onosdriver.OnosDriver-class.html#logReport" class="summary-sig-name">logReport</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">nodeIp</span>,
+        <span class="summary-sig-arg">searchTerms</span>,
+        <span class="summary-sig-arg">outputMode</span>=<span class="summary-sig-default">&quot;s&quot;</span>)</span><br />
+      - accepts either a list or a string for &quot;searchTerms&quot; these
+  terms will be searched for in the log and have their
+  instances counted</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.drivers.common.cli.onosdriver-pysrc.html#OnosDriver.logReport">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="TestON.drivers.common.cli.onosdriver.OnosDriver-class.html#copyMininetFile" class="summary-sig-name">copyMininetFile</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">fileName</span>,
+        <span class="summary-sig-arg">localPath</span>,
+        <span class="summary-sig-arg">userName</span>,
+        <span class="summary-sig-arg">ip</span>,
+        <span class="summary-sig-arg">mnPath</span>=<span class="summary-sig-default">'~/mininet/custom/'</span>,
+        <span class="summary-sig-arg">timeout</span>=<span class="summary-sig-default">60</span>)</span><br />
+      Description:...</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.drivers.common.cli.onosdriver-pysrc.html#OnosDriver.copyMininetFile">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="jvmSet"></a><span class="summary-sig-name">jvmSet</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">memory</span>=<span class="summary-sig-default">8</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.drivers.common.cli.onosdriver-pysrc.html#OnosDriver.jvmSet">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="createDBFile"></a><span class="summary-sig-name">createDBFile</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">testData</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.drivers.common.cli.onosdriver-pysrc.html#OnosDriver.createDBFile">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="verifySummary"></a><span class="summary-sig-name">verifySummary</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">ONOSIp</span>,
+        <span class="summary-sig-arg">*deviceCount</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.drivers.common.cli.onosdriver-pysrc.html#OnosDriver.verifySummary">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="TestON.drivers.common.clidriver.CLI-class.html#execute" class="summary-sig-name">execute</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">**execparams</span>)</span><br />
+      It facilitates the command line execution of a given command.
+      <em>(Inherited from <a href="TestON.drivers.common.clidriver.CLI-class.html">TestON.drivers.common.clidriver.CLI</a>)</em></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.drivers.common.clidriver-pysrc.html#CLI.execute">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="onfail"></a><span class="summary-sig-name">onfail</span>(<span class="summary-sig-arg">self</span>)</span>
+      <em>(Inherited from <a href="TestON.drivers.common.clidriver.CLI-class.html">TestON.drivers.common.clidriver.CLI</a>)</em></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.drivers.common.clidriver-pysrc.html#CLI.onfail">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="remove_contol_chars"></a><span class="summary-sig-name">remove_contol_chars</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">response</span>)</span>
+      <em>(Inherited from <a href="TestON.drivers.common.clidriver.CLI-class.html">TestON.drivers.common.clidriver.CLI</a>)</em></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.drivers.common.clidriver-pysrc.html#CLI.remove_contol_chars">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="runAsSudoUser"></a><span class="summary-sig-name">runAsSudoUser</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">handle</span>,
+        <span class="summary-sig-arg">pwd</span>,
+        <span class="summary-sig-arg">default</span>)</span>
+      <em>(Inherited from <a href="TestON.drivers.common.clidriver.CLI-class.html">TestON.drivers.common.clidriver.CLI</a>)</em></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.drivers.common.clidriver-pysrc.html#CLI.runAsSudoUser">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="TestON.drivers.common.clidriver.CLI-class.html#secureCopy" class="summary-sig-name">secureCopy</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">user_name</span>,
+        <span class="summary-sig-arg">ip_address</span>,
+        <span class="summary-sig-arg">filepath</span>,
+        <span class="summary-sig-arg">pwd</span>,
+        <span class="summary-sig-arg">dst_path</span>)</span><br />
+      Connection will establish to the remote host using ssh.
+      <em>(Inherited from <a href="TestON.drivers.common.clidriver.CLI-class.html">TestON.drivers.common.clidriver.CLI</a>)</em></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.drivers.common.clidriver-pysrc.html#CLI.secureCopy">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" class="summary">
+    <p class="indent-wrapped-lines"><b>Inherited from <code>component.Component</code></b>:
+      <code>__getattr__</code>,
+      <code>cleanup</code>,
+      <code>close_log_handles</code>,
+      <code>config</code>,
+      <code>experimentRun</code>,
+      <code>get_version</code>,
+      <code>log</code>
+      </p>
+    <p class="indent-wrapped-lines"><b>Inherited from <code>object</code></b>:
+      <code>__delattr__</code>,
+      <code>__format__</code>,
+      <code>__getattribute__</code>,
+      <code>__hash__</code>,
+      <code>__new__</code>,
+      <code>__reduce__</code>,
+      <code>__reduce_ex__</code>,
+      <code>__repr__</code>,
+      <code>__setattr__</code>,
+      <code>__sizeof__</code>,
+      <code>__str__</code>,
+      <code>__subclasshook__</code>
+      </p>
+    </td>
+  </tr>
+</table>
+<!-- ==================== PROPERTIES ==================== -->
+<a name="section-Properties"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Properties</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-Properties"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+  <tr>
+    <td colspan="2" class="summary">
+    <p class="indent-wrapped-lines"><b>Inherited from <code>object</code></b>:
+      <code>__class__</code>
+      </p>
+    </td>
+  </tr>
+</table>
+<!-- ==================== METHOD DETAILS ==================== -->
+<a name="section-MethodDetails"></a>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Method Details</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-MethodDetails"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+</table>
+<a name="__init__"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">__init__</span>(<span class="sig-arg">self</span>)</span>
+    <br /><em class="fname">(Constructor)</em>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="TestON.drivers.common.cli.onosdriver-pysrc.html#OnosDriver.__init__">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Initialize client</p>
+  <dl class="fields">
+    <dt>Overrides:
+        object.__init__
+    </dt>
+  </dl>
+</td></tr></table>
+</div>
+<a name="connect"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">connect</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">**connectargs</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="TestON.drivers.common.cli.onosdriver-pysrc.html#OnosDriver.connect">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Creates ssh handle for ONOS &quot;bench&quot;. NOTE: The ip_address 
+  would come from the topo file using the host tag, the value can be an 
+  environment variable as well as a &quot;localhost&quot; to get the ip 
+  address needed to ssh to the &quot;bench&quot;</p>
+  <dl class="fields">
+    <dt>Overrides:
+        component.Component.connect
+    </dt>
+  </dl>
+</td></tr></table>
+</div>
+<a name="disconnect"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">disconnect</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="TestON.drivers.common.cli.onosdriver-pysrc.html#OnosDriver.disconnect">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Called when Test is complete to disconnect the ONOS handle.</p>
+  <dl class="fields">
+    <dt>Overrides:
+        component.Component.disconnect
+    </dt>
+  </dl>
+</td></tr></table>
+</div>
+<a name="getEpochMs"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">getEpochMs</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="TestON.drivers.common.cli.onosdriver-pysrc.html#OnosDriver.getEpochMs">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Returns milliseconds since epoch</p>
+  <p>When checking multiple nodes in a for loop, around a hundred 
+  milliseconds of difference (ascending) is generally acceptable due to 
+  calltime of the function. Few seconds, however, is not and it means 
+  clocks are off sync.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="cleanInstall"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">cleanInstall</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">skipTest</span>=<span class="sig-default">False</span>,
+        <span class="sig-arg">mciTimeout</span>=<span class="sig-default">600</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="TestON.drivers.common.cli.onosdriver-pysrc.html#OnosDriver.cleanInstall">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <pre class="literalblock">
+
+Runs mvn clean install in the root of the ONOS directory.
+This will clean all ONOS artifacts then compile each module
+Optional:
+    skipTest - Does &quot;-DskipTests -Dcheckstyle.skip -U -T 1C&quot; which
+               skip the test. This will make the building faster.
+               Disregarding the credibility of the build
+Returns: main.TRUE on success
+On Failure, exits the test
+
+</pre>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="gitPull"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">gitPull</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">comp1</span>=<span class="sig-default">&quot;&quot;</span>,
+        <span class="sig-arg">fastForward</span>=<span class="sig-default">True</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="TestON.drivers.common.cli.onosdriver-pysrc.html#OnosDriver.gitPull">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Assumes that &quot;git pull&quot; works without login</p>
+  <p>If the fastForward boolean is set to true, only git pulls that can be 
+  fast forwarded will be performed. IE if you have not local commits in 
+  your branch.</p>
+  <p>This function will perform a git pull on the ONOS instance. If used as
+  gitPull( &quot;NODE&quot; ) it will do git pull + NODE. This is for the 
+  purpose of pulling from other nodes if necessary.</p>
+  <p>Otherwise, this function will perform a git pull in the ONOS 
+  repository. If it has any problems, it will return main.ERROR If it 
+  successfully does a gitPull, it will return a 1 ( main.TRUE ) If it has 
+  no updates, it will return 3.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="gitCheckout"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">gitCheckout</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">branch</span>=<span class="sig-default">&quot;master&quot;</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="TestON.drivers.common.cli.onosdriver-pysrc.html#OnosDriver.gitCheckout">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Assumes that &quot;git pull&quot; works without login</p>
+  <p>This function will perform a git git checkout on the ONOS instance. If
+  used as gitCheckout( &quot;branch&quot; ) it will do git checkout of the 
+  &quot;branch&quot;.</p>
+  <p>Otherwise, this function will perform a git checkout of the master 
+  branch of the ONOS repository. If it has any problems, it will return 
+  main.ERROR. If the branch was already the specified branch, or the git 
+  checkout was successful then the function will return main.TRUE.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="createCellFile"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">createCellFile</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">benchIp</span>,
+        <span class="sig-arg">fileName</span>,
+        <span class="sig-arg">mnIpAddrs</span>,
+        <span class="sig-arg">appString</span>,
+        <span class="sig-arg">onosIpAddrs</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="TestON.drivers.common.cli.onosdriver-pysrc.html#OnosDriver.createCellFile">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <pre class="literalblock">
+
+Creates a cell file based on arguments
+Required:
+    * Bench IP address ( benchIp )
+        - Needed to copy the cell file over
+    * File name of the cell file ( fileName )
+    * Mininet IP address ( mnIpAddrs )
+        - Note that only 1 ip address is
+          supported currently
+    * ONOS IP addresses ( onosIpAddrs )
+        - Must be passed in as last arguments
+
+NOTE: Assumes cells are located at:
+    ~/&lt;self.home&gt;/tools/test/cells/
+
+</pre>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="onosCfgSet"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">onosCfgSet</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">ONOSIp</span>,
+        <span class="sig-arg">configName</span>,
+        <span class="sig-arg">configParam</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="TestON.drivers.common.cli.onosdriver-pysrc.html#OnosDriver.onosCfgSet">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <pre class="literalblock">
+
+Uses 'onos &lt;node-ip&gt; cfg set' to change a parameter value of an
+application.
+
+ex)
+    onos 10.0.0.1 cfg set org.onosproject.myapp appSetting 1
+ONOSIp = '10.0.0.1'
+configName = 'org.onosproject.myapp'
+configParam = 'appSetting 1'
+
+</pre>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="onosCli"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">onosCli</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">ONOSIp</span>,
+        <span class="sig-arg">cmdstr</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="TestON.drivers.common.cli.onosdriver-pysrc.html#OnosDriver.onosCli">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <pre class="literalblock">
+
+Uses 'onos' command to send various ONOS CLI arguments.
+Required:
+    * ONOSIp: specify the ip of the cell machine
+    * cmdstr: specify the command string to send
+
+This function is intended to expose the entire karaf
+CLI commands for ONOS. Try to use this function first
+before attempting to write a ONOS CLI specific driver
+function.
+You can see a list of available 'cmdstr' arguments
+by starting onos, and typing in 'onos' to enter the
+onos&gt; CLI. Then, type 'help' to see the list of
+available commands.
+
+</pre>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="onosInstall"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">onosInstall</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">options</span>=<span class="sig-default">&quot;-f&quot;</span>,
+        <span class="sig-arg">node</span>=<span class="sig-default">&quot;&quot;</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="TestON.drivers.common.cli.onosdriver-pysrc.html#OnosDriver.onosInstall">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Installs ONOS bits on the designated cell machine. If -f option is 
+  provided, it also forces an uninstall. Presently, install also includes 
+  onos-push-bits and onos-config within. The node option allows you to 
+  selectively only push the jar files to certain onos nodes</p>
+  <p>Returns: main.TRUE on success and main.FALSE on failure</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="onosRemoveRaftLogs"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">onosRemoveRaftLogs</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="TestON.drivers.common.cli.onosdriver-pysrc.html#OnosDriver.onosRemoveRaftLogs">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <pre class="literalblock">
+
+Removes Raft / Copy cat files from ONOS to ensure
+a cleaner environment.
+
+Description:
+    Stops all ONOS defined in the cell,
+    wipes the raft / copycat log files
+
+</pre>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="onosStartNetwork"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">onosStartNetwork</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">mntopo</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="TestON.drivers.common.cli.onosdriver-pysrc.html#OnosDriver.onosStartNetwork">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <pre class="literalblock">
+
+Calls the command 'onos-start-network [ &lt;mininet-topo&gt; ]
+&quot;remotely starts the specified topology on the cell's
+mininet machine against all controllers configured in the
+cell.&quot;
+* Specify mininet topology file name for mntopo
+* Topo files should be placed at:
+  ~/&lt;your-onos-directory&gt;/tools/test/topos
+
+NOTE: This function will take you to the mininet prompt
+
+</pre>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="isup"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">isup</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">node</span>=<span class="sig-default">&quot;&quot;</span>,
+        <span class="sig-arg">timeout</span>=<span class="sig-default">120</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="TestON.drivers.common.cli.onosdriver-pysrc.html#OnosDriver.isup">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Run's onos-wait-for-start which only returns once ONOS is at run level
+  100(ready for use)</p>
+  <p>Returns: main.TRUE if ONOS is running and main.FALSE on timeout</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="pushTestIntentsShell"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">pushTestIntentsShell</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">dpidSrc</span>,
+        <span class="sig-arg">dpidDst</span>,
+        <span class="sig-arg">numIntents</span>,
+        <span class="sig-arg">dirFile</span>,
+        <span class="sig-arg">onosIp</span>,
+        <span class="sig-arg">numMult</span>=<span class="sig-default">&quot;&quot;</span>,
+        <span class="sig-arg">appId</span>=<span class="sig-default">&quot;&quot;</span>,
+        <span class="sig-arg">report</span>=<span class="sig-default">True</span>,
+        <span class="sig-arg">options</span>=<span class="sig-default">&quot;&quot;</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="TestON.drivers.common.cli.onosdriver-pysrc.html#OnosDriver.pushTestIntentsShell">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <pre class="literalblock">
+
+Description:
+    Use the linux prompt to push test intents to
+    better parallelize the results than the CLI
+Required:
+    * dpidSrc: specify source dpid
+    * dpidDst: specify destination dpid
+    * numIntents: specify number of intents to push
+    * dirFile: specify directory and file name to save
+      results
+    * onosIp: specify the IP of ONOS to install on
+NOTE:
+    You must invoke this command at linux shell prompt
+
+</pre>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="getTopology"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">getTopology</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">topologyOutput</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="TestON.drivers.common.cli.onosdriver-pysrc.html#OnosDriver.getTopology">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <pre class="literalblock">
+
+Definition:
+    Loads a json topology output
+Return:
+    topology = current ONOS topology
+
+</pre>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="checkStatus"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">checkStatus</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">topologyResult</span>,
+        <span class="sig-arg">numoswitch</span>,
+        <span class="sig-arg">numolink</span>,
+        <span class="sig-arg">logLevel</span>=<span class="sig-default">&quot;info&quot;</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="TestON.drivers.common.cli.onosdriver-pysrc.html#OnosDriver.checkStatus">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <pre class="literalblock">
+
+Checks the number of switches &amp; links that ONOS sees against the
+supplied values. By default this will report to main.log, but the
+log level can be specific.
+
+Params: ip = ip used for the onos cli
+        numoswitch = expected number of switches
+        numolink = expected number of links
+        logLevel = level to log to.
+        Currently accepts 'info', 'warn' and 'report'
+
+
+logLevel can
+
+Returns: main.TRUE if the number of switches and links are correct,
+         main.FALSE if the number of switches and links is incorrect,
+         and main.ERROR otherwise
+
+</pre>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="tsharkPcap"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">tsharkPcap</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">interface</span>,
+        <span class="sig-arg">dirFile</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="TestON.drivers.common.cli.onosdriver-pysrc.html#OnosDriver.tsharkPcap">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <pre class="literalblock">
+
+Capture all packet activity and store in specified
+directory/file
+
+Required:
+    * interface: interface to capture
+    * dir: directory/filename to store pcap
+
+</pre>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="tsharkGrep"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">tsharkGrep</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">grep</span>,
+        <span class="sig-arg">directory</span>,
+        <span class="sig-arg">interface</span>=<span class="sig-default">'eth0'</span>,
+        <span class="sig-arg">grepOptions</span>=<span class="sig-default">''</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="TestON.drivers.common.cli.onosdriver-pysrc.html#OnosDriver.tsharkGrep">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <pre class="literalblock">
+
+Required:
+    * grep string
+    * directory to store results
+Optional:
+    * interface - default: eth0
+    * grepOptions - options for grep
+Description:
+    Uses tshark command to grep specific group of packets
+    and stores the results to specified directory.
+    The timestamp is hardcoded to be in epoch
+
+</pre>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="ptpd"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">ptpd</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">args</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="TestON.drivers.common.cli.onosdriver-pysrc.html#OnosDriver.ptpd">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <pre class="literalblock">
+
+Initiate ptp with user-specified args.
+Required:
+    * args: specify string of args after command
+      'sudo ptpd'
+
+</pre>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="cpLogsToDir"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">cpLogsToDir</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">logToCopy</span>,
+        <span class="sig-arg">destDir</span>,
+        <span class="sig-arg">copyFileName</span>=<span class="sig-default">&quot;&quot;</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="TestON.drivers.common.cli.onosdriver-pysrc.html#OnosDriver.cpLogsToDir">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <pre class="literalblock">
+
+Copies logs to a desired directory.
+Current implementation of ONOS deletes its karaf
+logs on every iteration. For debugging purposes,
+you may want to use this function to capture
+certain karaf logs. ( or any other logs if needed )
+Localtime will be attached to the filename
+
+Required:
+    * logToCopy: specify directory and log name to
+      copy.
+      ex ) /opt/onos/log/karaf.log.1
+      For copying multiple files, leave copyFileName
+      empty and only specify destDir -
+      ex ) /opt/onos/log/karaf*
+    * destDir: specify directory to copy to.
+      ex ) /tmp/
+Optional:
+    * copyFileName: If you want to rename the log
+      file, specify copyFileName. This will not work
+      with multiple file copying
+
+</pre>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="checkLogs"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">checkLogs</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">onosIp</span>,
+        <span class="sig-arg">restart</span>=<span class="sig-default">False</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="TestON.drivers.common.cli.onosdriver-pysrc.html#OnosDriver.checkLogs">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <pre class="literalblock">
+
+runs onos-check-logs on the given onos node
+If restart is True, use the old version of onos-check-logs which
+    does not print the full stacktrace, but shows the entire log file,
+    including across restarts
+returns the response
+
+</pre>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="setIpTables"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">setIpTables</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">ip</span>,
+        <span class="sig-arg">port</span>=<span class="sig-default">''</span>,
+        <span class="sig-arg">action</span>=<span class="sig-default">'add'</span>,
+        <span class="sig-arg">packet_type</span>=<span class="sig-default">''</span>,
+        <span class="sig-arg">direction</span>=<span class="sig-default">'INPUT'</span>,
+        <span class="sig-arg">rule</span>=<span class="sig-default">'DROP'</span>,
+        <span class="sig-arg">states</span>=<span class="sig-default">True</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="TestON.drivers.common.cli.onosdriver-pysrc.html#OnosDriver.setIpTables">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <pre class="literalblock">
+
+Description:
+    add or remove iptables rule to DROP (default) packets from
+    specific IP and PORT
+Usage:
+* specify action ('add' or 'remove')
+  when removing, pass in the same argument as you would add. It will
+  delete that specific rule.
+* specify the ip to block
+* specify the destination port to block (defaults to all ports)
+* optional packet type to block (default tcp)
+* optional iptables rule (default DROP)
+* optional direction to block (default 'INPUT')
+* States boolean toggles adding all supported tcp states to the
+  firewall rule
+Returns:
+    main.TRUE on success or
+    main.FALSE if given invalid input or
+    main.ERROR if there is an error in response from iptables
+WARNING:
+* This function uses root privilege iptables command which may result
+  in unwanted network errors. USE WITH CAUTION
+
+</pre>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="createLinkGraphFile"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">createLinkGraphFile</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">benchIp</span>,
+        <span class="sig-arg">ONOSIpList</span>,
+        <span class="sig-arg">deviceCount</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="TestON.drivers.common.cli.onosdriver-pysrc.html#OnosDriver.createLinkGraphFile">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <pre class="literalblock">
+
+Create/formats the LinkGraph.cfg file based on arguments
+    -only creates a linear topology and connects islands
+    -evenly distributes devices
+    -must be called by ONOSbench
+
+    ONOSIpList - list of all of the node IPs to be used
+
+    deviceCount - number of switches to be assigned
+
+</pre>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="configNullDev"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">configNullDev</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">ONOSIpList</span>,
+        <span class="sig-arg">deviceCount</span>,
+        <span class="sig-arg">numPorts</span>=<span class="sig-default">10</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="TestON.drivers.common.cli.onosdriver-pysrc.html#OnosDriver.configNullDev">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>ONOSIpList = list of Ip addresses of nodes switches will be devided 
+  amongst deviceCount = number of switches to distribute, or list of values
+  to use as custom distribution numPorts = number of ports per device. 
+  Defaults to 10 both in this function and in ONOS. Optional arg</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="logReport"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">logReport</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">nodeIp</span>,
+        <span class="sig-arg">searchTerms</span>,
+        <span class="sig-arg">outputMode</span>=<span class="sig-default">&quot;s&quot;</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="TestON.drivers.common.cli.onosdriver-pysrc.html#OnosDriver.logReport">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <pre class="literalblock">
+
+- accepts either a list or a string for &quot;searchTerms&quot; these
+  terms will be searched for in the log and have their
+  instances counted
+
+- nodeIp is the ip of the node whos log is to be scanned
+
+- output modes:
+    &quot;s&quot; -   Simple. Quiet output mode that just prints
+            the occurences of each search term
+
+    &quot;d&quot; -   Detailed. Prints number of occurences as well as the entire
+            line for each of the last 5 occurences
+
+- returns total of the number of instances of all search terms
+
+</pre>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="copyMininetFile"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">copyMininetFile</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">fileName</span>,
+        <span class="sig-arg">localPath</span>,
+        <span class="sig-arg">userName</span>,
+        <span class="sig-arg">ip</span>,
+        <span class="sig-arg">mnPath</span>=<span class="sig-default">'~/mininet/custom/'</span>,
+        <span class="sig-arg">timeout</span>=<span class="sig-default">60</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="TestON.drivers.common.cli.onosdriver-pysrc.html#OnosDriver.copyMininetFile">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <pre class="literalblock">
+
+Description:
+    Copy mininet topology file from dependency folder in the test folder
+    and paste it to the mininet machine's mininet/custom folder
+Required:
+    fileName - Name of the topology file to copy
+    localPath - File path of the mininet topology file
+    userName - User name of the mininet machine to send the file to
+    ip - Ip address of the mininet machine
+Optional:
+    mnPath - of the mininet directory to send the file to
+Return:
+    Return main.TRUE if successfully copied the file otherwise
+    return main.FALSE
+
+</pre>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<br />
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="TestON-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            >TestON</th>
+          </tr></table></th>
+  </tr>
+</table>
+<table border="0" cellpadding="0" cellspacing="0" width="100%%">
+  <tr>
+    <td align="left" class="footer">
+    Generated by Epydoc 3.0.1 on Mon Aug 10 11:12:35 2015
+    </td>
+    <td align="right" class="footer">
+      <a target="mainFrame" href="http://epydoc.sourceforge.net"
+        >http://epydoc.sourceforge.net</a>
+    </td>
+  </tr>
+</table>
+
+<script type="text/javascript">
+  <!--
+  // Private objects are initially displayed (because if
+  // javascript is turned off then we want them to be
+  // visible); but by default, we want to hide them.  So hide
+  // them unless we have a cookie that says to show them.
+  checkCookie();
+  // -->
+</script>
+</body>
+</html>

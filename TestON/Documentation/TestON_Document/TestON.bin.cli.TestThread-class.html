@@ -30,7 +30,12 @@
       <th>&nbsp;&nbsp;&nbsp;<a
         href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
 
-      <th class="navbar" width="100%"></th>
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            >TestON</th>
+          </tr></table></th>
   </tr>
 </table>
 <table width="100%" cellpadding="0" cellspacing="0">
@@ -58,16 +63,15 @@
 </table>
 <!-- ==================== CLASS DESCRIPTION ==================== -->
 <h1 class="epydoc">Class TestThread</h1><p class="nomargin-top"><span class="codelink"><a href="TestON.bin.cli-pysrc.html#TestThread">source&nbsp;code</a></span></p>
-<pre class="base-tree">
-        object --+        
-                 |        
-threading._Verbose --+    
-                     |    
-      threading.Thread --+
-                         |
-                        <strong class="uidshort">TestThread</strong>
-</pre>
-
+<center>
+<center>  <map id="class_hierarchy_for_testthread" name="class_hierarchy_for_testthread">
+<area shape="rect" id="node1" href="TestON.bin.cli.TestThread-class.html" title="TestThread" alt="" coords="28,118,116,143"/>
+<area shape="rect" id="node2" href="javascript:void(0);" title="threading.Thread" alt="" coords="13,62,131,87"/>
+<area shape="rect" id="node3" href="javascript:void(0);" title="threading._Verbose" alt="" coords="5,6,139,31"/>
+</map>
+  <img src="class_hierarchy_for_testthread.gif" alt='' usemap="#class_hierarchy_for_testthread" ismap="ismap" class="graph-without-title" />
+</center>
+</center>
 <hr />
 <p>TestThread class will handle the test execution and will communicate 
   with the thread in the do_run.</p>
@@ -97,7 +101,7 @@ threading._Verbose --+
         <tr>
           <td><span class="summary-sig"><a href="TestON.bin.cli.TestThread-class.html#__init__" class="summary-sig-name">__init__</a>(<span class="summary-sig-arg">self</span>,
         <span class="summary-sig-arg">options</span>)</span><br />
-      x.__init__(...) initializes x; see x.__class__.__doc__ for signature</td>
+      This constructor should always be called with keyword arguments.</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="TestON.bin.cli-pysrc.html#TestThread.__init__">source&nbsp;code</a></span>
             
@@ -179,19 +183,17 @@ threading._Verbose --+
     <td colspan="2" class="summary">
     <p class="indent-wrapped-lines"><b>Inherited from <code>threading.Thread</code></b>:
       <code>__repr__</code>,
-      <code>daemon</code>,
       <code>getName</code>,
-      <code>ident</code>,
       <code>isAlive</code>,
       <code>isDaemon</code>,
       <code>is_alive</code>,
       <code>join</code>,
-      <code>name</code>,
       <code>setDaemon</code>,
       <code>setName</code>,
       <code>start</code>
       </p>
     <div class="private">    <p class="indent-wrapped-lines"><b>Inherited from <code>threading.Thread</code></b> (private):
+      <code>_reset_internal_locks</code>,
       <code>_set_daemon</code>,
       <code>_set_ident</code>
       </p></div>
@@ -233,6 +235,14 @@ threading._Verbose --+
 </tr>
   <tr>
     <td colspan="2" class="summary">
+    <p class="indent-wrapped-lines"><b>Inherited from <code>threading.Thread</code></b>:
+      <code>daemon</code>,
+      <code>ident</code>,
+      <code>name</code>
+      </p>
+    <div class="private">    <p class="indent-wrapped-lines"><b>Inherited from <code>threading.Thread</code></b> (private):
+      <code>_block</code>
+      </p></div>
     <p class="indent-wrapped-lines"><b>Inherited from <code>object</code></b>:
       <code>__class__</code>
       </p>
@@ -273,8 +283,21 @@ threading._Verbose --+
     </td>
   </tr></table>
   
-  <p>x.__init__(...) initializes x; see x.__class__.__doc__ for 
-  signature</p>
+  <p>This constructor should always be called with keyword arguments. 
+  Arguments are:</p>
+  <p>*group* should be None; reserved for future extension when a 
+  ThreadGroup class is implemented.</p>
+  <p>*target* is the callable object to be invoked by the run() method. 
+  Defaults to None, meaning nothing is called.</p>
+  <p>*name* is the thread name. By default, a unique name is constructed of
+  the form &quot;Thread-N&quot; where N is a small decimal number.</p>
+  <p>*args* is the argument tuple for the target invocation. Defaults to 
+  ().</p>
+  <p>*kwargs* is a dictionary of keyword arguments for the target 
+  invocation. Defaults to {}.</p>
+  <p>If a subclass overrides the constructor, it must make sure to invoke 
+  the base class constructor (Thread.__init__()) before doing anything else
+  to the thread.</p>
   <dl class="fields">
     <dt>Overrides:
         object.__init__
@@ -326,13 +349,18 @@ threading._Verbose --+
       <th>&nbsp;&nbsp;&nbsp;<a
         href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
 
-      <th class="navbar" width="100%"></th>
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            >TestON</th>
+          </tr></table></th>
   </tr>
 </table>
 <table border="0" cellpadding="0" cellspacing="0" width="100%%">
   <tr>
     <td align="left" class="footer">
-    Generated by Epydoc 3.0.1 on Mon Mar 11 12:56:26 2013
+    Generated by Epydoc 3.0.1 on Mon Aug 10 11:12:34 2015
     </td>
     <td align="right" class="footer">
       <a target="mainFrame" href="http://epydoc.sourceforge.net"

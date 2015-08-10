@@ -30,7 +30,12 @@
       <th>&nbsp;&nbsp;&nbsp;<a
         href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
 
-      <th class="navbar" width="100%"></th>
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            >TestON</th>
+          </tr></table></th>
   </tr>
 </table>
 <table width="100%" cellpadding="0" cellspacing="0">
@@ -58,20 +63,16 @@
 </table>
 <!-- ==================== CLASS DESCRIPTION ==================== -->
 <h1 class="epydoc">Class CLI</h1><p class="nomargin-top"><span class="codelink"><a href="TestON.bin.cli-pysrc.html#CLI">source&nbsp;code</a></span></p>
-<pre class="base-tree">
-        object --+        
-                 |        
-threading._Verbose --+    
-                     |    
-      threading.Thread --+
-                         |
-               cmd.Cmd --+
-                         |
-                object --+
-                         |
-                        <strong class="uidshort">CLI</strong>
-</pre>
-
+<center>
+<center>  <map id="class_hierarchy_for_cli" name="class_hierarchy_for_cli">
+<area shape="rect" id="node1" href="TestON.bin.cli.CLI-class.html" title="CLI" alt="" coords="84,118,127,143"/>
+<area shape="rect" id="node2" href="javascript:void(0);" title="cmd.Cmd" alt="" coords="5,62,83,87"/>
+<area shape="rect" id="node3" href="javascript:void(0);" title="threading.Thread" alt="" coords="107,62,225,87"/>
+<area shape="rect" id="node4" href="javascript:void(0);" title="threading._Verbose" alt="" coords="99,6,233,31"/>
+</map>
+  <img src="class_hierarchy_for_cli.gif" alt='' usemap="#class_hierarchy_for_cli" ismap="ismap" class="graph-without-title" />
+</center>
+</center>
 <hr />
 <p>command-line interface to execute the test.</p>
 
@@ -101,7 +102,7 @@ threading._Verbose --+
           <td><span class="summary-sig"><a href="TestON.bin.cli.CLI-class.html#__init__" class="summary-sig-name">__init__</a>(<span class="summary-sig-arg">self</span>,
         <span class="summary-sig-arg">teston</span>,
         <span class="summary-sig-arg">stdin</span>=<span class="summary-sig-default">sys.stdin</span>)</span><br />
-      Instantiate a line-oriented interpreter framework.</td>
+      This constructor should always be called with keyword arguments.</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="TestON.bin.cli-pysrc.html#CLI.__init__">source&nbsp;code</a></span>
             
@@ -383,7 +384,7 @@ threading._Verbose --+
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
           <td><span class="summary-sig"><a href="TestON.bin.cli.CLI-class.html#cmdloop" class="summary-sig-name">cmdloop</a>(<span class="summary-sig-arg">self</span>,
-        <span class="summary-sig-arg">intro</span>=<span class="summary-sig-default">introduction</span>)</span><br />
+        <span class="summary-sig-arg">intro</span>=<span class="summary-sig-default"><code class="variable-quote">'</code><code class="variable-string">TestON is the testing framework \nDeveloped by Paxterra Solut</code><code class="variable-ellipsis">...</code></span>)</span><br />
       Repeatedly issue a prompt, accept input, parse an initial prefix off 
       the received input, and dispatch to action methods, passing them the 
       remainder of the line as argument.</td>
@@ -654,20 +655,18 @@ threading._Verbose --+
     <td colspan="2" class="summary">
     <p class="indent-wrapped-lines"><b>Inherited from <code>threading.Thread</code></b>:
       <code>__repr__</code>,
-      <code>daemon</code>,
       <code>getName</code>,
-      <code>ident</code>,
       <code>isAlive</code>,
       <code>isDaemon</code>,
       <code>is_alive</code>,
       <code>join</code>,
-      <code>name</code>,
       <code>run</code>,
       <code>setDaemon</code>,
       <code>setName</code>,
       <code>start</code>
       </p>
     <div class="private">    <p class="indent-wrapped-lines"><b>Inherited from <code>threading.Thread</code></b> (private):
+      <code>_reset_internal_locks</code>,
       <code>_set_daemon</code>,
       <code>_set_ident</code>
       </p></div>
@@ -726,14 +725,14 @@ threading._Verbose --+
     <td width="15%" align="right" valign="top" class="summary">
       <span class="summary-type">&nbsp;</span>
     </td><td class="summary">
-        <a name="prompt"></a><span class="summary-name">prompt</span> = <code title="'teston&gt; '">'teston&gt; '</code>
+        <a name="prompt"></a><span class="summary-name">prompt</span> = <code title="'teston&gt; '"><code class="variable-quote">'</code><code class="variable-string">teston&gt; </code><code class="variable-quote">'</code></code>
     </td>
   </tr>
 <tr>
     <td width="15%" align="right" valign="top" class="summary">
       <span class="summary-type">&nbsp;</span>
     </td><td class="summary">
-        <a name="helpStr"></a><span class="summary-name">helpStr</span> = <code title="&quot; teston help&quot;">&quot; teston help&quot;</code>
+        <a name="helpStr"></a><span class="summary-name">helpStr</span> = <code title="' teston help'"><code class="variable-quote">'</code><code class="variable-string"> teston help</code><code class="variable-quote">'</code></code>
     </td>
   </tr>
   <tr>
@@ -772,6 +771,14 @@ threading._Verbose --+
 </tr>
   <tr>
     <td colspan="2" class="summary">
+    <p class="indent-wrapped-lines"><b>Inherited from <code>threading.Thread</code></b>:
+      <code>daemon</code>,
+      <code>ident</code>,
+      <code>name</code>
+      </p>
+    <div class="private">    <p class="indent-wrapped-lines"><b>Inherited from <code>threading.Thread</code></b> (private):
+      <code>_block</code>
+      </p></div>
     <p class="indent-wrapped-lines"><b>Inherited from <code>object</code></b>:
       <code>__class__</code>
       </p>
@@ -813,13 +820,21 @@ threading._Verbose --+
     </td>
   </tr></table>
   
-  <p>Instantiate a line-oriented interpreter framework.</p>
-  <p>The optional argument 'completekey' is the readline name of a 
-  completion key; it defaults to the Tab key. If completekey is not None 
-  and the readline module is available, command completion is done 
-  automatically. The optional arguments stdin and stdout specify alternate 
-  input and output file objects; if not specified, sys.stdin and sys.stdout
-  are used.</p>
+  <p>This constructor should always be called with keyword arguments. 
+  Arguments are:</p>
+  <p>*group* should be None; reserved for future extension when a 
+  ThreadGroup class is implemented.</p>
+  <p>*target* is the callable object to be invoked by the run() method. 
+  Defaults to None, meaning nothing is called.</p>
+  <p>*name* is the thread name. By default, a unique name is constructed of
+  the form &quot;Thread-N&quot; where N is a small decimal number.</p>
+  <p>*args* is the argument tuple for the target invocation. Defaults to 
+  ().</p>
+  <p>*kwargs* is a dictionary of keyword arguments for the target 
+  invocation. Defaults to {}.</p>
+  <p>If a subclass overrides the constructor, it must make sure to invoke 
+  the base class constructor (Thread.__init__()) before doing anything else
+  to the thread.</p>
   <dl class="fields">
     <dt>Overrides:
         object.__init__
@@ -1046,7 +1061,7 @@ threading._Verbose --+
   <table width="100%" cellpadding="0" cellspacing="0" border="0">
   <tr valign="top"><td>
   <h3 class="epydoc"><span class="sig"><span class="sig-name">cmdloop</span>(<span class="sig-arg">self</span>,
-        <span class="sig-arg">intro</span>=<span class="sig-default">introduction</span>)</span>
+        <span class="sig-arg">intro</span>=<span class="sig-default"><code class="variable-quote">'</code><code class="variable-string">TestON is the testing framework \nDeveloped by Paxterra Solut</code><code class="variable-ellipsis">...</code></span>)</span>
   </h3>
   </td><td align="right" valign="top"
     ><span class="codelink"><a href="TestON.bin.cli-pysrc.html#CLI.cmdloop">source&nbsp;code</a></span>&nbsp;
@@ -1179,7 +1194,7 @@ cmdsource.txt :
 
 &quot;pwd
  ls &quot;
- 
+
 teston&gt;source /home/openflow/cmdsource.txt
 /home/openflow/TestON/bin/
 cli.py  __init__.py
@@ -1209,7 +1224,7 @@ cli.py  __init__.py
 updatedriver will update the given driver name which exists into mentioned config file.
 It will receive two optional arguments :
 
-1. Config File Path 
+1. Config File Path
 2. Drivers List to be updated.
 
 Default : config file = &quot;~/TestON/config/updatedriver&quot; ,
@@ -1264,13 +1279,18 @@ Default : config file = &quot;~/TestON/config/updatedriver&quot; ,
       <th>&nbsp;&nbsp;&nbsp;<a
         href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
 
-      <th class="navbar" width="100%"></th>
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            >TestON</th>
+          </tr></table></th>
   </tr>
 </table>
 <table border="0" cellpadding="0" cellspacing="0" width="100%%">
   <tr>
     <td align="left" class="footer">
-    Generated by Epydoc 3.0.1 on Mon Mar 11 12:56:26 2013
+    Generated by Epydoc 3.0.1 on Mon Aug 10 11:12:34 2015
     </td>
     <td align="right" class="footer">
       <a target="mainFrame" href="http://epydoc.sourceforge.net"

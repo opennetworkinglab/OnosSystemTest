@@ -30,7 +30,12 @@
       <th>&nbsp;&nbsp;&nbsp;<a
         href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
 
-      <th class="navbar" width="100%"></th>
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            >TestON</th>
+          </tr></table></th>
   </tr>
 </table>
 <table width="100%" cellpadding="0" cellspacing="0">
@@ -60,14 +65,15 @@
 </table>
 <!-- ==================== CLASS DESCRIPTION ==================== -->
 <h1 class="epydoc">Class Controller</h1><p class="nomargin-top"><span class="codelink"><a href="TestON.drivers.common.api.controllerdriver-pysrc.html#Controller">source&nbsp;code</a></span></p>
-<pre class="base-tree">
-    ??-41 --+    
-            |    
-apidriver.API --+
-                |
-               <strong class="uidshort">Controller</strong>
-</pre>
-
+<center>
+<center>  <map id="class_hierarchy_for_controller" name="class_hierarchy_for_controller">
+<area shape="rect" id="node1" href="TestON.drivers.common.api.controllerdriver.Controller-class.html" title="Controller" alt="" coords="5,6,83,31"/>
+<area shape="rect" id="node2" href="TestON.drivers.common.apidriver.API-class.html" title="apidriver.API" alt="" coords="107,6,204,31"/>
+<area shape="rect" id="node3" href="javascript:void(0);" title="component.Component" alt="" coords="229,6,387,31"/>
+</map>
+  <img src="class_hierarchy_for_controller.gif" alt='' usemap="#class_hierarchy_for_controller" ismap="ismap" class="graph-without-title" />
+</center>
+</center>
 <hr />
 <!-- ==================== INSTANCE METHODS ==================== -->
 <a name="section-InstanceMethods"></a>
@@ -92,7 +98,8 @@ apidriver.API --+
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
-          <td><span class="summary-sig"><a href="TestON.drivers.common.api.controllerdriver.Controller-class.html#__init__" class="summary-sig-name">__init__</a>(<span class="summary-sig-arg">self</span>)</span></td>
+          <td><span class="summary-sig"><a href="TestON.drivers.common.api.controllerdriver.Controller-class.html#__init__" class="summary-sig-name">__init__</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      x.__init__(...) initializes x; see help(type(x)) for signature</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="TestON.drivers.common.api.controllerdriver-pysrc.html#Controller.__init__">source&nbsp;code</a></span>
             
@@ -102,10 +109,75 @@ apidriver.API --+
       
     </td>
   </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="TestON.drivers.common.apidriver.API-class.html#connect" class="summary-sig-name">connect</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Connection will establish to the remote host using ssh.
+      <em>(Inherited from <a href="TestON.drivers.common.apidriver.API-class.html">TestON.drivers.common.apidriver.API</a>)</em></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.drivers.common.apidriver-pysrc.html#API.connect">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
   <tr>
     <td colspan="2" class="summary">
-    <p class="indent-wrapped-lines"><b>Inherited from <code>apidriver.API</code></b>:
-      <code>connect</code>
+    <p class="indent-wrapped-lines"><b>Inherited from <code>component.Component</code></b>:
+      <code>__getattr__</code>,
+      <code>cleanup</code>,
+      <code>close_log_handles</code>,
+      <code>config</code>,
+      <code>disconnect</code>,
+      <code>execute</code>,
+      <code>experimentRun</code>,
+      <code>get_version</code>,
+      <code>log</code>
+      </p>
+    <p class="indent-wrapped-lines"><b>Inherited from <code>object</code></b>:
+      <code>__delattr__</code>,
+      <code>__format__</code>,
+      <code>__getattribute__</code>,
+      <code>__hash__</code>,
+      <code>__new__</code>,
+      <code>__reduce__</code>,
+      <code>__reduce_ex__</code>,
+      <code>__repr__</code>,
+      <code>__setattr__</code>,
+      <code>__sizeof__</code>,
+      <code>__str__</code>,
+      <code>__subclasshook__</code>
+      </p>
+    </td>
+  </tr>
+</table>
+<!-- ==================== PROPERTIES ==================== -->
+<a name="section-Properties"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Properties</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-Properties"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+  <tr>
+    <td colspan="2" class="summary">
+    <p class="indent-wrapped-lines"><b>Inherited from <code>object</code></b>:
+      <code>__class__</code>
       </p>
     </td>
   </tr>
@@ -143,10 +215,11 @@ apidriver.API --+
     </td>
   </tr></table>
   
-  
+  <p>x.__init__(...) initializes x; see help(type(x)) for signature</p>
   <dl class="fields">
     <dt>Overrides:
-        apidriver.API.__init__
+        object.__init__
+        <dd><em class="note">(inherited documentation)</em></dd>
     </dt>
   </dl>
 </td></tr></table>
@@ -172,13 +245,18 @@ apidriver.API --+
       <th>&nbsp;&nbsp;&nbsp;<a
         href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
 
-      <th class="navbar" width="100%"></th>
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            >TestON</th>
+          </tr></table></th>
   </tr>
 </table>
 <table border="0" cellpadding="0" cellspacing="0" width="100%%">
   <tr>
     <td align="left" class="footer">
-    Generated by Epydoc 3.0.1 on Mon Mar 11 12:56:26 2013
+    Generated by Epydoc 3.0.1 on Mon Aug 10 11:12:35 2015
     </td>
     <td align="right" class="footer">
       <a target="mainFrame" href="http://epydoc.sourceforge.net"

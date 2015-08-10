@@ -30,7 +30,12 @@
       <th>&nbsp;&nbsp;&nbsp;<a
         href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
 
-      <th class="navbar" width="100%"></th>
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            >TestON</th>
+          </tr></table></th>
   </tr>
 </table>
 <table width="100%" cellpadding="0" cellspacing="0">
@@ -57,14 +62,33 @@
 </table>
 <!-- ==================== MODULE DESCRIPTION ==================== -->
 <h1 class="epydoc">Module teston</h1><p class="nomargin-top"><span class="codelink"><a href="TestON.core.teston-pysrc.html">source&nbsp;code</a></span></p>
-<p>Created on 22-Oct-2012</p>
+<pre class="literalblock">
 
-<hr />
-<div class="fields">      <p><strong>Author:</strong>
-        Anil Kumar (anilkumar.s@paxterrasolutions.com)
-        <p>teston is the main module.</p>
-      </p>
-</div><!-- ==================== CLASSES ==================== -->
+Created on 22-Oct-2012
+
+@author: Anil Kumar (anilkumar.s@paxterrasolutions.com)
+
+
+    TestON is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 2 of the License, or
+    (at your option) any later version.
+
+    TestON is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with TestON.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+
+
+
+teston is the main module.
+
+</pre>
+
+<!-- ==================== CLASSES ==================== -->
 <a name="section-Classes"></a>
 <table class="summary" border="1" cellpadding="3"
        cellspacing="0" width="100%" bgcolor="white">
@@ -198,6 +222,22 @@
           <td><span class="summary-sig"><a name="verifyTestCases"></a><span class="summary-sig-name">verifyTestCases</span>(<span class="summary-sig-arg">options</span>)</span></td>
           <td align="right" valign="top">
             <span class="codelink"><a href="TestON.core.teston-pysrc.html#verifyTestCases">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="verifyOnosCell"></a><span class="summary-sig-name">verifyOnosCell</span>(<span class="summary-sig-arg">options</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.core.teston-pysrc.html#verifyOnosCell">source&nbsp;code</a></span>
             
           </td>
         </tr>
@@ -348,49 +388,56 @@
     <td width="15%" align="right" valign="top" class="summary">
       <span class="summary-type">&nbsp;</span>
     </td><td class="summary">
-        <a name="module"></a><span class="summary-name">module</span> = <code title="new.module(&quot;test&quot;)">new.module(&quot;test&quot;)</code>
+        <a name="location"></a><span class="summary-name">location</span> = <code title="'/home/admin/OnosSystemTest/TestON/core'"><code class="variable-quote">'</code><code class="variable-string">/home/admin/OnosSystemTest/TestON/core</code><code class="variable-quote">'</code></code>
     </td>
   </tr>
 <tr>
     <td width="15%" align="right" valign="top" class="summary">
       <span class="summary-type">&nbsp;</span>
     </td><td class="summary">
-        <a name="path"></a><span class="summary-name">path</span> = <code title="re.sub(&quot;(core|bin)$&quot;, &quot;&quot;, os.getcwd())">re.sub(&quot;(core|bin)$&quot;, &quot;&quot;, os.getcwd())</code>
+        <a name="path"></a><span class="summary-name">path</span> = <code title="'/home/admin/OnosSystemTest/TestON/'"><code class="variable-quote">'</code><code class="variable-string">/home/admin/OnosSystemTest/TestON/</code><code class="variable-quote">'</code></code>
     </td>
   </tr>
 <tr>
     <td width="15%" align="right" valign="top" class="summary">
       <span class="summary-type">&nbsp;</span>
     </td><td class="summary">
-        <a name="drivers_path"></a><span class="summary-name">drivers_path</span> = <code title="path+ &quot;drivers/&quot;">path+ &quot;drivers/&quot;</code>
+        <a name="drivers_path"></a><span class="summary-name">drivers_path</span> = <code title="'/home/admin/OnosSystemTest/TestON/drivers/'"><code class="variable-quote">'</code><code class="variable-string">/home/admin/OnosSystemTest/TestON/drivers/</code><code class="variable-quote">'</code></code>
     </td>
   </tr>
 <tr>
     <td width="15%" align="right" valign="top" class="summary">
       <span class="summary-type">&nbsp;</span>
     </td><td class="summary">
-        <a name="core_path"></a><span class="summary-name">core_path</span> = <code title="path+ &quot;core&quot;">path+ &quot;core&quot;</code>
+        <a name="core_path"></a><span class="summary-name">core_path</span> = <code title="'/home/admin/OnosSystemTest/TestON/core'"><code class="variable-quote">'</code><code class="variable-string">/home/admin/OnosSystemTest/TestON/core</code><code class="variable-quote">'</code></code>
     </td>
   </tr>
 <tr>
     <td width="15%" align="right" valign="top" class="summary">
       <span class="summary-type">&nbsp;</span>
     </td><td class="summary">
-        <a name="tests_path"></a><span class="summary-name">tests_path</span> = <code title="path+ &quot;tests&quot;">path+ &quot;tests&quot;</code>
+        <a name="tests_path"></a><span class="summary-name">tests_path</span> = <code title="'/home/admin/OnosSystemTest/TestON/tests'"><code class="variable-quote">'</code><code class="variable-string">/home/admin/OnosSystemTest/TestON/tests</code><code class="variable-quote">'</code></code>
     </td>
   </tr>
 <tr>
     <td width="15%" align="right" valign="top" class="summary">
       <span class="summary-type">&nbsp;</span>
     </td><td class="summary">
-        <a name="logs_path"></a><span class="summary-name">logs_path</span> = <code title="path+ &quot;logs/&quot;">path+ &quot;logs/&quot;</code>
+        <a name="logs_path"></a><span class="summary-name">logs_path</span> = <code title="'/home/admin/OnosSystemTest/TestON/logs/'"><code class="variable-quote">'</code><code class="variable-string">/home/admin/OnosSystemTest/TestON/logs/</code><code class="variable-quote">'</code></code>
     </td>
   </tr>
 <tr>
     <td width="15%" align="right" valign="top" class="summary">
       <span class="summary-type">&nbsp;</span>
     </td><td class="summary">
-        <a name="config_path"></a><span class="summary-name">config_path</span> = <code title="path+ &quot;config/&quot;">path+ &quot;config/&quot;</code>
+        <a name="config_path"></a><span class="summary-name">config_path</span> = <code title="'/home/admin/OnosSystemTest/TestON/config/'"><code class="variable-quote">'</code><code class="variable-string">/home/admin/OnosSystemTest/TestON/config/</code><code class="variable-quote">'</code></code>
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a name="__package__"></a><span class="summary-name">__package__</span> = <code title="'TestON.core'"><code class="variable-quote">'</code><code class="variable-string">TestON.core</code><code class="variable-quote">'</code></code>
     </td>
   </tr>
 </table>
@@ -427,8 +474,8 @@
   </tr></table>
   
   <p>It facilitates the loading customised parser for topology and params 
-  file. It loads parser mentioned in tab named parser of ofa.cfg file. It 
-  also loads default xmlparser if no parser have specified in ofa.cfg 
+  file. It loads parser mentioned in tab named parser of teston.cfg file. 
+  It also loads default xmlparser if no parser have specified in teston.cfg
   file.</p>
   <dl class="fields">
   </dl>
@@ -449,8 +496,8 @@
   </tr></table>
   
   <p>It facilitates the loading customised parser for topology and params 
-  file. It loads parser mentioned in tab named parser of ofa.cfg file. It 
-  also loads default xmlparser if no parser have specified in ofa.cfg 
+  file. It loads parser mentioned in tab named parser of teston.cfg file. 
+  It also loads default xmlparser if no parser have specified in teston.cfg
   file.</p>
   <dl class="fields">
   </dl>
@@ -477,13 +524,18 @@
       <th>&nbsp;&nbsp;&nbsp;<a
         href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
 
-      <th class="navbar" width="100%"></th>
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            >TestON</th>
+          </tr></table></th>
   </tr>
 </table>
 <table border="0" cellpadding="0" cellspacing="0" width="100%%">
   <tr>
     <td align="left" class="footer">
-    Generated by Epydoc 3.0.1 on Mon Mar 11 12:56:26 2013
+    Generated by Epydoc 3.0.1 on Mon Aug 10 11:12:34 2015
     </td>
     <td align="right" class="footer">
       <a target="mainFrame" href="http://epydoc.sourceforge.net"

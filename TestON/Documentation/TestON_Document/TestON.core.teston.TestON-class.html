@@ -30,7 +30,12 @@
       <th>&nbsp;&nbsp;&nbsp;<a
         href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
 
-      <th class="navbar" width="100%"></th>
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            >TestON</th>
+          </tr></table></th>
   </tr>
 </table>
 <table width="100%" cellpadding="0" cellspacing="0">
@@ -105,7 +110,7 @@
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
           <td><span class="summary-sig"><a name="configparser"></a><span class="summary-sig-name">configparser</span>(<span class="summary-sig-arg">self</span>)</span><br />
-      It will parse the config file (ofa.cfg) and return as dictionary</td>
+      It will parse the config file (teston.cfg) and return as dictionary</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="TestON.core.teston-pysrc.html#TestON.configparser">source&nbsp;code</a></span>
             
@@ -226,7 +231,8 @@
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
           <td><span class="summary-sig"><a href="TestON.core.teston.TestON-class.html#cleanup" class="summary-sig-name">cleanup</a>(<span class="summary-sig-arg">self</span>)</span><br />
-      Release all the component handles and the close opened file handles.</td>
+      Print a summary of the current test's results then attempt to release
+      all the component handles and the close opened file handles.</td>
           <td align="right" valign="top">
             <span class="codelink"><a href="TestON.core.teston-pysrc.html#TestON.cleanup">source&nbsp;code</a></span>
             
@@ -370,6 +376,78 @@
     </td><td class="summary">
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
+          <td><span class="summary-sig"><a name="response_parser"></a><span class="summary-sig-name">response_parser</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">response</span>,
+        <span class="summary-sig-arg">return_format</span>)</span><br />
+      It will load the default response parser</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.core.teston-pysrc.html#TestON.response_parser">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="response_to_dict"></a><span class="summary-sig-name">response_to_dict</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">response</span>,
+        <span class="summary-sig-arg">return_format</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.core.teston-pysrc.html#TestON.response_to_dict">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="dict_to_return_format"></a><span class="summary-sig-name">dict_to_return_format</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">response</span>,
+        <span class="summary-sig-arg">return_format</span>,
+        <span class="summary-sig-arg">response_dict</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.core.teston-pysrc.html#TestON.dict_to_return_format">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="get_random"></a><span class="summary-sig-name">get_random</span>(<span class="summary-sig-arg">self</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="TestON.core.teston-pysrc.html#TestON.get_random">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
           <td><span class="summary-sig"><a name="exit"></a><span class="summary-sig-name">exit</span>(<span class="summary-sig-arg">self</span>)</span></td>
           <td align="right" valign="top">
             <span class="codelink"><a href="TestON.core.teston-pysrc.html#TestON.exit">source&nbsp;code</a></span>
@@ -435,9 +513,12 @@
     </td>
   </tr></table>
   
-  <p>Release all the component handles and the close opened file handles. 
-  This will return TRUE if all the component handles and log handles closed
-  properly, else return FALSE</p>
+  <p>Print a summary of the current test's results then attempt to release 
+  all the component handles and the close opened file handles.</p>
+  <p>This function shouldbe threadsafe such that cleanup will only be 
+  executed once per test.</p>
+  <p>This will return TRUE if all the component handles and log handles 
+  closed properly, else return FALSE.</p>
   <dl class="fields">
   </dl>
 </td></tr></table>
@@ -463,13 +544,18 @@
       <th>&nbsp;&nbsp;&nbsp;<a
         href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
 
-      <th class="navbar" width="100%"></th>
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            >TestON</th>
+          </tr></table></th>
   </tr>
 </table>
 <table border="0" cellpadding="0" cellspacing="0" width="100%%">
   <tr>
     <td align="left" class="footer">
-    Generated by Epydoc 3.0.1 on Mon Mar 11 12:56:26 2013
+    Generated by Epydoc 3.0.1 on Mon Aug 10 11:12:35 2015
     </td>
     <td align="right" class="footer">
       <a target="mainFrame" href="http://epydoc.sourceforge.net"

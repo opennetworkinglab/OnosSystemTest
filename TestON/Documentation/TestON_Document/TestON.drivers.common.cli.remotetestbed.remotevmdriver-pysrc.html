@@ -1,0 +1,329 @@
+<?xml version="1.0" encoding="ascii"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>TestON.drivers.common.cli.remotetestbed.remotevmdriver</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css" />
+  <script type="text/javascript" src="epydoc.js"></script>
+</head>
+
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="TestON-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            >TestON</th>
+          </tr></table></th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">
+      <span class="breadcrumbs">
+        <a href="TestON-module.html">Package&nbsp;TestON</a> ::
+        <a href="TestON.drivers-module.html">Package&nbsp;drivers</a> ::
+        <a href="TestON.drivers.common-module.html">Package&nbsp;common</a> ::
+        <a href="TestON.drivers.common.cli-module.html">Package&nbsp;cli</a> ::
+        <a href="TestON.drivers.common.cli.remotetestbed-module.html">Package&nbsp;remotetestbed</a> ::
+        Module&nbsp;remotevmdriver
+      </span>
+    </td>
+    <td>
+      <table cellpadding="0" cellspacing="0">
+        <!-- hide/show private -->
+        <tr><td align="right"><span class="options">[<a href="javascript:void(0);" class="privatelink"
+    onclick="toggle_private();">hide&nbsp;private</a>]</span></td></tr>
+        <tr><td align="right"><span class="options"
+            >[<a href="frames.html" target="_top">frames</a
+            >]&nbsp;|&nbsp;<a href="TestON.drivers.common.cli.remotetestbed.remotevmdriver-pysrc.html"
+            target="_top">no&nbsp;frames</a>]</span></td></tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<h1 class="epydoc">Source Code for <a href="TestON.drivers.common.cli.remotetestbed.remotevmdriver-module.html">Module TestON.drivers.common.cli.remotetestbed.remotevmdriver</a></h1>
+<pre class="py-src">
+<a name="L1"></a><tt class="py-lineno">  1</tt>  <tt class="py-line"><tt class="py-comment">#!/usr/bin/env python</tt> </tt>
+<a name="L2"></a><tt class="py-lineno">  2</tt>  <tt class="py-line"><tt class="py-docstring">"""</tt> </tt>
+<a name="L3"></a><tt class="py-lineno">  3</tt>  <tt class="py-line"><tt class="py-docstring">Created on 12-Feb-2013</tt> </tt>
+<a name="L4"></a><tt class="py-lineno">  4</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L5"></a><tt class="py-lineno">  5</tt>  <tt class="py-line"><tt class="py-docstring">author:: Anil Kumar ( anilkumar.s@paxterrasolutions.com )</tt> </tt>
+<a name="L6"></a><tt class="py-lineno">  6</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L7"></a><tt class="py-lineno">  7</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L8"></a><tt class="py-lineno">  8</tt>  <tt class="py-line"><tt class="py-docstring">    TestON is free software: you can redistribute it and/or modify</tt> </tt>
+<a name="L9"></a><tt class="py-lineno">  9</tt>  <tt class="py-line"><tt class="py-docstring">    it under the terms of the GNU General Public License as published by</tt> </tt>
+<a name="L10"></a><tt class="py-lineno"> 10</tt>  <tt class="py-line"><tt class="py-docstring">    the Free Software Foundation, either version 2 of the License, or</tt> </tt>
+<a name="L11"></a><tt class="py-lineno"> 11</tt>  <tt class="py-line"><tt class="py-docstring">    ( at your option ) any later version.</tt> </tt>
+<a name="L12"></a><tt class="py-lineno"> 12</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L13"></a><tt class="py-lineno"> 13</tt>  <tt class="py-line"><tt class="py-docstring">    TestON is distributed in the hope that it will be useful,</tt> </tt>
+<a name="L14"></a><tt class="py-lineno"> 14</tt>  <tt class="py-line"><tt class="py-docstring">    but WITHOUT ANY WARRANTY; without even the implied warranty of</tt> </tt>
+<a name="L15"></a><tt class="py-lineno"> 15</tt>  <tt class="py-line"><tt class="py-docstring">    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</tt> </tt>
+<a name="L16"></a><tt class="py-lineno"> 16</tt>  <tt class="py-line"><tt class="py-docstring">    GNU General Public License for more details.</tt> </tt>
+<a name="L17"></a><tt class="py-lineno"> 17</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L18"></a><tt class="py-lineno"> 18</tt>  <tt class="py-line"><tt class="py-docstring">    You should have received a copy of the GNU General Public License</tt> </tt>
+<a name="L19"></a><tt class="py-lineno"> 19</tt>  <tt class="py-line"><tt class="py-docstring">    along with TestON.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</tt> </tt>
+<a name="L20"></a><tt class="py-lineno"> 20</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L21"></a><tt class="py-lineno"> 21</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L22"></a><tt class="py-lineno"> 22</tt>  <tt class="py-line"><tt class="py-docstring">RemoteVMDriver is the basic driver which will handle the Mininet functions</tt> </tt>
+<a name="L23"></a><tt class="py-lineno"> 23</tt>  <tt class="py-line"><tt class="py-docstring">"""</tt> </tt>
+<a name="L24"></a><tt class="py-lineno"> 24</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt class="py-name">pexpect</tt> </tt>
+<a name="L25"></a><tt class="py-lineno"> 25</tt>  <tt class="py-line"> </tt>
+<a name="L26"></a><tt class="py-lineno"> 26</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt id="link-0" class="py-name" targets="Package TestON.drivers=TestON.drivers-module.html"><a title="TestON.drivers" class="py-name" href="#" onclick="return doclink('link-0', 'drivers', 'link-0');">drivers</a></tt><tt class="py-op">.</tt><tt id="link-1" class="py-name" targets="Package TestON.drivers.common=TestON.drivers.common-module.html"><a title="TestON.drivers.common" class="py-name" href="#" onclick="return doclink('link-1', 'common', 'link-1');">common</a></tt><tt class="py-op">.</tt><tt id="link-2" class="py-name" targets="Module TestON.bin.cli=TestON.bin.cli-module.html,Package TestON.drivers.common.cli=TestON.drivers.common.cli-module.html"><a title="TestON.bin.cli
+TestON.drivers.common.cli" class="py-name" href="#" onclick="return doclink('link-2', 'cli', 'link-2');">cli</a></tt><tt class="py-op">.</tt><tt id="link-3" class="py-name" targets="Module TestON.drivers.common.cli.remotetestbeddriver=TestON.drivers.common.cli.remotetestbeddriver-module.html"><a title="TestON.drivers.common.cli.remotetestbeddriver" class="py-name" href="#" onclick="return doclink('link-3', 'remotetestbeddriver', 'link-3');">remotetestbeddriver</a></tt> <tt class="py-keyword">import</tt> <tt id="link-4" class="py-name" targets="Class TestON.drivers.common.cli.remotetestbeddriver.RemoteTestBedDriver=TestON.drivers.common.cli.remotetestbeddriver.RemoteTestBedDriver-class.html"><a title="TestON.drivers.common.cli.remotetestbeddriver.RemoteTestBedDriver" class="py-name" href="#" onclick="return doclink('link-4', 'RemoteTestBedDriver', 'link-4');">RemoteTestBedDriver</a></tt> </tt>
+<a name="L27"></a><tt class="py-lineno"> 27</tt>  <tt class="py-line"> </tt>
+<a name="L28"></a><tt class="py-lineno"> 28</tt>  <tt class="py-line"> </tt>
+<a name="RemoteVMDriver"></a><div id="RemoteVMDriver-def"><a name="L29"></a><tt class="py-lineno"> 29</tt> <a class="py-toggle" href="#" id="RemoteVMDriver-toggle" onclick="return toggle('RemoteVMDriver');">-</a><tt class="py-line"><tt class="py-keyword">class</tt> <a class="py-def-name" href="TestON.drivers.common.cli.remotetestbed.remotevmdriver.RemoteVMDriver-class.html">RemoteVMDriver</a><tt class="py-op">(</tt> <tt class="py-base-class">RemoteTestBedDriver</tt> <tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="RemoteVMDriver-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="RemoteVMDriver-expanded"><a name="L30"></a><tt class="py-lineno"> 30</tt>  <tt class="py-line"> </tt>
+<a name="L31"></a><tt class="py-lineno"> 31</tt>  <tt class="py-line">    <tt class="py-docstring">"""</tt> </tt>
+<a name="L32"></a><tt class="py-lineno"> 32</tt>  <tt class="py-line"><tt class="py-docstring">        RemoteVMDriver is the basic driver which will handle the Mininet functions</tt> </tt>
+<a name="L33"></a><tt class="py-lineno"> 33</tt>  <tt class="py-line"><tt class="py-docstring">    """</tt> </tt>
+<a name="RemoteVMDriver.__init__"></a><div id="RemoteVMDriver.__init__-def"><a name="L34"></a><tt class="py-lineno"> 34</tt> <a class="py-toggle" href="#" id="RemoteVMDriver.__init__-toggle" onclick="return toggle('RemoteVMDriver.__init__');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="TestON.drivers.common.cli.remotetestbed.remotevmdriver.RemoteVMDriver-class.html#__init__">__init__</a><tt class="py-op">(</tt> <tt class="py-param">self</tt> <tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="RemoteVMDriver.__init__-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="RemoteVMDriver.__init__-expanded"><a name="L35"></a><tt class="py-lineno"> 35</tt>  <tt class="py-line">        <tt class="py-name">super</tt><tt class="py-op">(</tt> <tt id="link-5" class="py-name"><a title="TestON.drivers.common.cli.remotetestbeddriver.RemoteTestBedDriver" class="py-name" href="#" onclick="return doclink('link-5', 'RemoteTestBedDriver', 'link-4');">RemoteTestBedDriver</a></tt><tt class="py-op">,</tt> <tt class="py-name">self</tt> <tt class="py-op">)</tt><tt class="py-op">.</tt><tt id="link-6" class="py-name" targets="Method TestON.bin.cli.CLI.__init__()=TestON.bin.cli.CLI-class.html#__init__,Method TestON.bin.cli.TestThread.__init__()=TestON.bin.cli.TestThread-class.html#__init__,Method TestON.bin.generatedriver.GenerateDriver.__init__()=TestON.bin.generatedriver.GenerateDriver-class.html#__init__,Method TestON.bin.nec.NEC.__init__()=TestON.bin.nec.NEC-class.html#__init__,Method TestON.bin.updatedriver.UpdateDriver.__init__()=TestON.bin.updatedriver.UpdateDriver-class.html#__init__,Method TestON.bin.vyatta.Vyatta.__init__()=TestON.bin.vyatta.Vyatta-class.html#__init__,Method TestON.core.Thread.Thread.__init__()=TestON.core.Thread.Thread-class.html#__init__,Method TestON.core.dicttoobject.DictToObject.__init__()=TestON.core.dicttoobject.DictToObject-class.html#__init__,Method TestON.core.iniparser.iniparser.__init__()=TestON.core.iniparser.iniparser-class.html#__init__,Method TestON.core.jsonparser.JsonParser.__init__()=TestON.core.jsonparser.JsonParser-class.html#__init__,Method TestON.core.openspeak.OpenSpeak.__init__()=TestON.core.openspeak.OpenSpeak-class.html#__init__,Method TestON.core.teston.TestON.__init__()=TestON.core.teston.TestON-class.html#__init__,Method TestON.core.testparser.TestParser.__init__()=TestON.core.testparser.TestParser-class.html#__init__,Method TestON.core.xmlparser.xmlparser.__init__()=TestON.core.xmlparser.xmlparser-class.html#__init__,Method TestON.drivers.common.api.controller.onosrestdriver.OnosRestDriver.__init__()=TestON.drivers.common.api.controller.onosrestdriver.OnosRestDriver-class.html#__init__,Method TestON.drivers.common.api.controllerdriver.Controller.__init__()=TestON.drivers.common.api.controllerdriver.Controller-class.html#__init__,Method TestON.drivers.common.api.fvtapidriver.FvtApiDriver.__init__()=TestON.drivers.common.api.fvtapidriver.FvtApiDriver-class.html#__init__,Method TestON.drivers.common.apidriver.API.__init__()=TestON.drivers.common.apidriver.API-class.html#__init__,Method TestON.drivers.common.cli.dpclidriver.DPCliDriver.__init__()=TestON.drivers.common.cli.dpclidriver.DPCliDriver-class.html#__init__,Method TestON.drivers.common.cli.emulator.flowvisordriver.FlowVisorDriver.__init__()=TestON.drivers.common.cli.emulator.flowvisordriver.FlowVisorDriver-class.html#__init__,Method TestON.drivers.common.cli.emulator.lincoedriver.LincOEDriver.__init__()=TestON.drivers.common.cli.emulator.lincoedriver.LincOEDriver-class.html#__init__,Method TestON.drivers.common.cli.emulator.mininetclidriver.MininetCliDriver.__init__()=TestON.drivers.common.cli.emulator.mininetclidriver.MininetCliDriver-class.html#__init__,Method TestON.drivers.common.cli.emulator.poxclidriver.PoxCliDriver.__init__()=TestON.drivers.common.cli.emulator.poxclidriver.PoxCliDriver-class.html#__init__,Method TestON.drivers.common.cli.emulator.remotemininetdriver.RemoteMininetDriver.__init__()=TestON.drivers.common.cli.emulator.remotemininetdriver.RemoteMininetDriver-class.html#__init__,Method TestON.drivers.common.cli.emulatordriver.Emulator.__init__()=TestON.drivers.common.cli.emulatordriver.Emulator-class.html#__init__,Method TestON.drivers.common.cli.onosclidriver.OnosCliDriver.__init__()=TestON.drivers.common.cli.onosclidriver.OnosCliDriver-class.html#__init__,Method TestON.drivers.common.cli.onosdriver.OnosDriver.__init__()=TestON.drivers.common.cli.onosdriver.OnosDriver-class.html#__init__,Method TestON.drivers.common.cli.quaggaclidriver.QuaggaCliDriver.__init__()=TestON.drivers.common.cli.quaggaclidriver.QuaggaCliDriver-class.html#__init__,Method TestON.drivers.common.cli.remotesysdriver.RemoteSysDriver.__init__()=TestON.drivers.common.cli.remotesysdriver.RemoteSysDriver-class.html#__init__,Method TestON.drivers.common.cli.remotetestbed.floodlightclidriver.FloodLightCliDriver.__init__()=TestON.drivers.common.cli.remotetestbed.floodlightclidriver.FloodLightCliDriver-class.html#__init__,Method TestON.drivers.common.cli.remotetestbed.necswitchdriver.NEC.__init__()=TestON.drivers.common.cli.remotetestbed.necswitchdriver.NEC-class.html#__init__,Method TestON.drivers.common.cli.remotetestbed.remotepoxdriver.RemotePoxDriver.__init__()=TestON.drivers.common.cli.remotetestbed.remotepoxdriver.RemotePoxDriver-class.html#__init__,Method TestON.drivers.common.cli.remotetestbed.remotevmdriver.RemoteVMDriver.__init__()=TestON.drivers.common.cli.remotetestbed.remotevmdriver.RemoteVMDriver-class.html#__init__,Method TestON.drivers.common.cli.remotetestbeddriver.RemoteTestBedDriver.__init__()=TestON.drivers.common.cli.remotetestbeddriver.RemoteTestBedDriver-class.html#__init__,Method TestON.drivers.common.cli.tool.dpctlclidriver.DpctlCliDriver.__init__()=TestON.drivers.common.cli.tool.dpctlclidriver.DpctlCliDriver-class.html#__init__,Method TestON.drivers.common.cli.toolsdriver.Tools.__init__()=TestON.drivers.common.cli.toolsdriver.Tools-class.html#__init__,Method TestON.drivers.common.clidriver.CLI.__init__()=TestON.drivers.common.clidriver.CLI-class.html#__init__,Method TestON.examples.Assert.Assert.Assert.__init__()=TestON.examples.Assert.Assert.Assert-class.html#__init__,Method TestON.examples.CaseParams.CaseParams.CaseParams.__init__()=TestON.examples.CaseParams.CaseParams.CaseParams-class.html#__init__,Method TestON.examples.ExperimentTest.ExperimentTest.ExperimentTest.__init__()=TestON.examples.ExperimentTest.ExperimentTest.ExperimentTest-class.html#__init__,Method TestON.examples.StepParams.StepParams.StepParams.__init__()=TestON.examples.StepParams.StepParams.StepParams-class.html#__init__,Method TestON.examples.Topology.Topology.Topology.__init__()=TestON.examples.Topology.Topology.Topology-class.html#__init__,Method TestON.tests.CHOtest.CHOtest.CHOtest.__init__()=TestON.tests.CHOtest.CHOtest.CHOtest-class.html#__init__,Method TestON.tests.FUNCintent.FUNCintent.FUNCintent.__init__()=TestON.tests.FUNCintent.FUNCintent.FUNCintent-class.html#__init__,Method TestON.tests.HAclusterRestart.HAclusterRestart.HAclusterRestart.__init__()=TestON.tests.HAclusterRestart.HAclusterRestart.HAclusterRestart-class.html#__init__,Function TestON.tests.HAclusterRestart.dependencies.Counters.__init__()=TestON.tests.HAclusterRestart.dependencies.Counters-module.html#__init__,Method TestON.tests.HAclusterRestart.dependencies.obelisk.ObeliskTopo.__init__()=TestON.tests.HAclusterRestart.dependencies.obelisk.ObeliskTopo-class.html#__init__,Method TestON.tests.HAminorityRestart.HAminorityRestart.HAminorityRestart.__init__()=TestON.tests.HAminorityRestart.HAminorityRestart.HAminorityRestart-class.html#__init__,Function TestON.tests.HAminorityRestart.dependencies.Counters.__init__()=TestON.tests.HAminorityRestart.dependencies.Counters-module.html#__init__,Method TestON.tests.HAminorityRestart.dependencies.obelisk.ObeliskTopo.__init__()=TestON.tests.HAminorityRestart.dependencies.obelisk.ObeliskTopo-class.html#__init__,Method TestON.tests.HAsanity.HAsanity.HAsanity.__init__()=TestON.tests.HAsanity.HAsanity.HAsanity-class.html#__init__,Function TestON.tests.HAsanity.dependencies.Counters.__init__()=TestON.tests.HAsanity.dependencies.Counters-module.html#__init__,Method TestON.tests.HAsanity.dependencies.obelisk.ObeliskTopo.__init__()=TestON.tests.HAsanity.dependencies.obelisk.ObeliskTopo-class.html#__init__,Method TestON.tests.HAsingleInstanceRestart.HAsingleInstanceRestart.HAsingleInstanceRestart.__init__()=TestON.tests.HAsingleInstanceRestart.HAsingleInstanceRestart.HAsingleInstanceRestart-class.html#__init__,Function TestON.tests.HAsingleInstanceRestart.dependencies.Counters.__init__()=TestON.tests.HAsingleInstanceRestart.dependencies.Counters-module.html#__init__,Method TestON.tests.HAsingleInstanceRestart.dependencies.obelisk.ObeliskTopo.__init__()=TestON.tests.HAsingleInstanceRestart.dependencies.obelisk.ObeliskTopo-class.html#__init__,Method TestON.tests.SAMPscaleTopo.SAMPscaleTopo.SAMPscaleTopo.__init__()=TestON.tests.SAMPscaleTopo.SAMPscaleTopo.SAMPscaleTopo-class.html#__init__,Method TestON.tests.SAMPstartTemplate.SAMPstartTemplate.SAMPstartTemplate.__init__()=TestON.tests.SAMPstartTemplate.SAMPstartTemplate.SAMPstartTemplate-class.html#__init__,Method TestON.tests.SCPFcbench.SCPFcbench.SCPFcbench.__init__()=TestON.tests.SCPFcbench.SCPFcbench.SCPFcbench-class.html#__init__,Method TestON.tests.SCPFflowTp1g.SCPFflowTp1g.SCPFflowTp1g.__init__()=TestON.tests.SCPFflowTp1g.SCPFflowTp1g.SCPFflowTp1g-class.html#__init__,Method TestON.tests.SCPFintentEventTp.SCPFintentEventTp.SCPFintentEventTp.__init__()=TestON.tests.SCPFintentEventTp.SCPFintentEventTp.SCPFintentEventTp-class.html#__init__,Method TestON.tests.SCPFintentInstallWithdrawLat.SCPFintentInstallWithdrawLat.SCPFintentInstallWithdrawLat.__init__()=TestON.tests.SCPFintentInstallWithdrawLat.SCPFintentInstallWithdrawLat.SCPFintentInstallWithdrawLat-class.html#__init__,Method TestON.tests.SCPFintentRerouteLat.SCPFintentRerouteLat.SCPFintentRerouteLat.__init__()=TestON.tests.SCPFintentRerouteLat.SCPFintentRerouteLat.SCPFintentRerouteLat-class.html#__init__,Method TestON.tests.SCPFportLat.SCPFportLat.SCPFportLat.__init__()=TestON.tests.SCPFportLat.SCPFportLat.SCPFportLat-class.html#__init__,Method TestON.tests.SCPFswitchLat.SCPFswitchLat.SCPFswitchLat.__init__()=TestON.tests.SCPFswitchLat.SCPFswitchLat.SCPFswitchLat-class.html#__init__"><a title="TestON.bin.cli.CLI.__init__
+TestON.bin.cli.TestThread.__init__
+TestON.bin.generatedriver.GenerateDriver.__init__
+TestON.bin.nec.NEC.__init__
+TestON.bin.updatedriver.UpdateDriver.__init__
+TestON.bin.vyatta.Vyatta.__init__
+TestON.core.Thread.Thread.__init__
+TestON.core.dicttoobject.DictToObject.__init__
+TestON.core.iniparser.iniparser.__init__
+TestON.core.jsonparser.JsonParser.__init__
+TestON.core.openspeak.OpenSpeak.__init__
+TestON.core.teston.TestON.__init__
+TestON.core.testparser.TestParser.__init__
+TestON.core.xmlparser.xmlparser.__init__
+TestON.drivers.common.api.controller.onosrestdriver.OnosRestDriver.__init__
+TestON.drivers.common.api.controllerdriver.Controller.__init__
+TestON.drivers.common.api.fvtapidriver.FvtApiDriver.__init__
+TestON.drivers.common.apidriver.API.__init__
+TestON.drivers.common.cli.dpclidriver.DPCliDriver.__init__
+TestON.drivers.common.cli.emulator.flowvisordriver.FlowVisorDriver.__init__
+TestON.drivers.common.cli.emulator.lincoedriver.LincOEDriver.__init__
+TestON.drivers.common.cli.emulator.mininetclidriver.MininetCliDriver.__init__
+TestON.drivers.common.cli.emulator.poxclidriver.PoxCliDriver.__init__
+TestON.drivers.common.cli.emulator.remotemininetdriver.RemoteMininetDriver.__init__
+TestON.drivers.common.cli.emulatordriver.Emulator.__init__
+TestON.drivers.common.cli.onosclidriver.OnosCliDriver.__init__
+TestON.drivers.common.cli.onosdriver.OnosDriver.__init__
+TestON.drivers.common.cli.quaggaclidriver.QuaggaCliDriver.__init__
+TestON.drivers.common.cli.remotesysdriver.RemoteSysDriver.__init__
+TestON.drivers.common.cli.remotetestbed.floodlightclidriver.FloodLightCliDriver.__init__
+TestON.drivers.common.cli.remotetestbed.necswitchdriver.NEC.__init__
+TestON.drivers.common.cli.remotetestbed.remotepoxdriver.RemotePoxDriver.__init__
+TestON.drivers.common.cli.remotetestbed.remotevmdriver.RemoteVMDriver.__init__
+TestON.drivers.common.cli.remotetestbeddriver.RemoteTestBedDriver.__init__
+TestON.drivers.common.cli.tool.dpctlclidriver.DpctlCliDriver.__init__
+TestON.drivers.common.cli.toolsdriver.Tools.__init__
+TestON.drivers.common.clidriver.CLI.__init__
+TestON.examples.Assert.Assert.Assert.__init__
+TestON.examples.CaseParams.CaseParams.CaseParams.__init__
+TestON.examples.ExperimentTest.ExperimentTest.ExperimentTest.__init__
+TestON.examples.StepParams.StepParams.StepParams.__init__
+TestON.examples.Topology.Topology.Topology.__init__
+TestON.tests.CHOtest.CHOtest.CHOtest.__init__
+TestON.tests.FUNCintent.FUNCintent.FUNCintent.__init__
+TestON.tests.HAclusterRestart.HAclusterRestart.HAclusterRestart.__init__
+TestON.tests.HAclusterRestart.dependencies.Counters.__init__
+TestON.tests.HAclusterRestart.dependencies.obelisk.ObeliskTopo.__init__
+TestON.tests.HAminorityRestart.HAminorityRestart.HAminorityRestart.__init__
+TestON.tests.HAminorityRestart.dependencies.Counters.__init__
+TestON.tests.HAminorityRestart.dependencies.obelisk.ObeliskTopo.__init__
+TestON.tests.HAsanity.HAsanity.HAsanity.__init__
+TestON.tests.HAsanity.dependencies.Counters.__init__
+TestON.tests.HAsanity.dependencies.obelisk.ObeliskTopo.__init__
+TestON.tests.HAsingleInstanceRestart.HAsingleInstanceRestart.HAsingleInstanceRestart.__init__
+TestON.tests.HAsingleInstanceRestart.dependencies.Counters.__init__
+TestON.tests.HAsingleInstanceRestart.dependencies.obelisk.ObeliskTopo.__init__
+TestON.tests.SAMPscaleTopo.SAMPscaleTopo.SAMPscaleTopo.__init__
+TestON.tests.SAMPstartTemplate.SAMPstartTemplate.SAMPstartTemplate.__init__
+TestON.tests.SCPFcbench.SCPFcbench.SCPFcbench.__init__
+TestON.tests.SCPFflowTp1g.SCPFflowTp1g.SCPFflowTp1g.__init__
+TestON.tests.SCPFintentEventTp.SCPFintentEventTp.SCPFintentEventTp.__init__
+TestON.tests.SCPFintentInstallWithdrawLat.SCPFintentInstallWithdrawLat.SCPFintentInstallWithdrawLat.__init__
+TestON.tests.SCPFintentRerouteLat.SCPFintentRerouteLat.SCPFintentRerouteLat.__init__
+TestON.tests.SCPFportLat.SCPFportLat.SCPFportLat.__init__
+TestON.tests.SCPFswitchLat.SCPFswitchLat.SCPFswitchLat.__init__" class="py-name" href="#" onclick="return doclink('link-6', '__init__', 'link-6');">__init__</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L36"></a><tt class="py-lineno"> 36</tt>  <tt class="py-line"> </tt>
+<a name="RemoteVMDriver.connect"></a><div id="RemoteVMDriver.connect-def"><a name="L37"></a><tt class="py-lineno"> 37</tt> <a class="py-toggle" href="#" id="RemoteVMDriver.connect-toggle" onclick="return toggle('RemoteVMDriver.connect');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="TestON.drivers.common.cli.remotetestbed.remotevmdriver.RemoteVMDriver-class.html#connect">connect</a><tt class="py-op">(</tt> <tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-op">**</tt><tt class="py-param">connectargs</tt> <tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="RemoteVMDriver.connect-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="RemoteVMDriver.connect-expanded"><a name="L38"></a><tt class="py-lineno"> 38</tt>  <tt class="py-line">        <tt class="py-keyword">for</tt> <tt class="py-name">key</tt> <tt class="py-keyword">in</tt> <tt class="py-name">connectargs</tt><tt class="py-op">:</tt> </tt>
+<a name="L39"></a><tt class="py-lineno"> 39</tt>  <tt class="py-line">            <tt class="py-name">vars</tt><tt class="py-op">(</tt> <tt class="py-name">self</tt> <tt class="py-op">)</tt><tt class="py-op">[</tt> <tt class="py-name">key</tt> <tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-name">connectargs</tt><tt class="py-op">[</tt> <tt class="py-name">key</tt> <tt class="py-op">]</tt> </tt>
+<a name="L40"></a><tt class="py-lineno"> 40</tt>  <tt class="py-line"> </tt>
+<a name="L41"></a><tt class="py-lineno"> 41</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">name</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">options</tt><tt class="py-op">[</tt> <tt class="py-string">'name'</tt> <tt class="py-op">]</tt> </tt>
+<a name="L42"></a><tt class="py-lineno"> 42</tt>  <tt class="py-line"> </tt>
+<a name="L43"></a><tt class="py-lineno"> 43</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">handle</tt> <tt class="py-op">=</tt> <tt class="py-name">super</tt><tt class="py-op">(</tt> </tt>
+<a name="L44"></a><tt class="py-lineno"> 44</tt>  <tt class="py-line">            <tt id="link-7" class="py-name" targets="Class TestON.drivers.common.cli.remotetestbed.remotevmdriver.RemoteVMDriver=TestON.drivers.common.cli.remotetestbed.remotevmdriver.RemoteVMDriver-class.html"><a title="TestON.drivers.common.cli.remotetestbed.remotevmdriver.RemoteVMDriver" class="py-name" href="#" onclick="return doclink('link-7', 'RemoteVMDriver', 'link-7');">RemoteVMDriver</a></tt><tt class="py-op">,</tt> </tt>
+<a name="L45"></a><tt class="py-lineno"> 45</tt>  <tt class="py-line">            <tt class="py-name">self</tt> <tt class="py-op">)</tt><tt class="py-op">.</tt><tt id="link-8" class="py-name" targets="Method TestON.bin.generatedriver.GenerateDriver.connect()=TestON.bin.generatedriver.GenerateDriver-class.html#connect,Method TestON.drivers.common.api.controller.onosrestdriver.OnosRestDriver.connect()=TestON.drivers.common.api.controller.onosrestdriver.OnosRestDriver-class.html#connect,Method TestON.drivers.common.api.fvtapidriver.FvtApiDriver.connect()=TestON.drivers.common.api.fvtapidriver.FvtApiDriver-class.html#connect,Method TestON.drivers.common.apidriver.API.connect()=TestON.drivers.common.apidriver.API-class.html#connect,Method TestON.drivers.common.cli.dpclidriver.DPCliDriver.connect()=TestON.drivers.common.cli.dpclidriver.DPCliDriver-class.html#connect,Method TestON.drivers.common.cli.emulator.flowvisordriver.FlowVisorDriver.connect()=TestON.drivers.common.cli.emulator.flowvisordriver.FlowVisorDriver-class.html#connect,Method TestON.drivers.common.cli.emulator.lincoedriver.LincOEDriver.connect()=TestON.drivers.common.cli.emulator.lincoedriver.LincOEDriver-class.html#connect,Method TestON.drivers.common.cli.emulator.mininetclidriver.MininetCliDriver.connect()=TestON.drivers.common.cli.emulator.mininetclidriver.MininetCliDriver-class.html#connect,Method TestON.drivers.common.cli.emulator.poxclidriver.PoxCliDriver.connect()=TestON.drivers.common.cli.emulator.poxclidriver.PoxCliDriver-class.html#connect,Method TestON.drivers.common.cli.emulator.remotemininetdriver.RemoteMininetDriver.connect()=TestON.drivers.common.cli.emulator.remotemininetdriver.RemoteMininetDriver-class.html#connect,Method TestON.drivers.common.cli.onosclidriver.OnosCliDriver.connect()=TestON.drivers.common.cli.onosclidriver.OnosCliDriver-class.html#connect,Method TestON.drivers.common.cli.onosdriver.OnosDriver.connect()=TestON.drivers.common.cli.onosdriver.OnosDriver-class.html#connect,Method TestON.drivers.common.cli.quaggaclidriver.QuaggaCliDriver.connect()=TestON.drivers.common.cli.quaggaclidriver.QuaggaCliDriver-class.html#connect,Method TestON.drivers.common.cli.remotesysdriver.RemoteSysDriver.connect()=TestON.drivers.common.cli.remotesysdriver.RemoteSysDriver-class.html#connect,Method TestON.drivers.common.cli.remotetestbed.floodlightclidriver.FloodLightCliDriver.connect()=TestON.drivers.common.cli.remotetestbed.floodlightclidriver.FloodLightCliDriver-class.html#connect,Method TestON.drivers.common.cli.remotetestbed.remotepoxdriver.RemotePoxDriver.connect()=TestON.drivers.common.cli.remotetestbed.remotepoxdriver.RemotePoxDriver-class.html#connect,Method TestON.drivers.common.cli.remotetestbed.remotevmdriver.RemoteVMDriver.connect()=TestON.drivers.common.cli.remotetestbed.remotevmdriver.RemoteVMDriver-class.html#connect,Method TestON.drivers.common.cli.remotetestbeddriver.RemoteTestBedDriver.connect()=TestON.drivers.common.cli.remotetestbeddriver.RemoteTestBedDriver-class.html#connect,Method TestON.drivers.common.cli.tool.dpctlclidriver.DpctlCliDriver.connect()=TestON.drivers.common.cli.tool.dpctlclidriver.DpctlCliDriver-class.html#connect,Method TestON.drivers.common.clidriver.CLI.connect()=TestON.drivers.common.clidriver.CLI-class.html#connect"><a title="TestON.bin.generatedriver.GenerateDriver.connect
+TestON.drivers.common.api.controller.onosrestdriver.OnosRestDriver.connect
+TestON.drivers.common.api.fvtapidriver.FvtApiDriver.connect
+TestON.drivers.common.apidriver.API.connect
+TestON.drivers.common.cli.dpclidriver.DPCliDriver.connect
+TestON.drivers.common.cli.emulator.flowvisordriver.FlowVisorDriver.connect
+TestON.drivers.common.cli.emulator.lincoedriver.LincOEDriver.connect
+TestON.drivers.common.cli.emulator.mininetclidriver.MininetCliDriver.connect
+TestON.drivers.common.cli.emulator.poxclidriver.PoxCliDriver.connect
+TestON.drivers.common.cli.emulator.remotemininetdriver.RemoteMininetDriver.connect
+TestON.drivers.common.cli.onosclidriver.OnosCliDriver.connect
+TestON.drivers.common.cli.onosdriver.OnosDriver.connect
+TestON.drivers.common.cli.quaggaclidriver.QuaggaCliDriver.connect
+TestON.drivers.common.cli.remotesysdriver.RemoteSysDriver.connect
+TestON.drivers.common.cli.remotetestbed.floodlightclidriver.FloodLightCliDriver.connect
+TestON.drivers.common.cli.remotetestbed.remotepoxdriver.RemotePoxDriver.connect
+TestON.drivers.common.cli.remotetestbed.remotevmdriver.RemoteVMDriver.connect
+TestON.drivers.common.cli.remotetestbeddriver.RemoteTestBedDriver.connect
+TestON.drivers.common.cli.tool.dpctlclidriver.DpctlCliDriver.connect
+TestON.drivers.common.clidriver.CLI.connect" class="py-name" href="#" onclick="return doclink('link-8', 'connect', 'link-8');">connect</a></tt><tt class="py-op">(</tt> </tt>
+<a name="L46"></a><tt class="py-lineno"> 46</tt>  <tt class="py-line">            <tt class="py-name">user_name</tt><tt class="py-op">=</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">user_name</tt><tt class="py-op">,</tt> </tt>
+<a name="L47"></a><tt class="py-lineno"> 47</tt>  <tt class="py-line">            <tt class="py-name">ip_address</tt><tt class="py-op">=</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">ip_address</tt><tt class="py-op">,</tt> </tt>
+<a name="L48"></a><tt class="py-lineno"> 48</tt>  <tt class="py-line">            <tt class="py-name">port</tt><tt class="py-op">=</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">port</tt><tt class="py-op">,</tt> </tt>
+<a name="L49"></a><tt class="py-lineno"> 49</tt>  <tt class="py-line">            <tt class="py-name">pwd</tt><tt class="py-op">=</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">pwd</tt> <tt class="py-op">)</tt> </tt>
+<a name="L50"></a><tt class="py-lineno"> 50</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">handle</tt><tt class="py-op">:</tt> </tt>
+<a name="L51"></a><tt class="py-lineno"> 51</tt>  <tt class="py-line">            <tt class="py-name">main</tt><tt class="py-op">.</tt><tt id="link-9" class="py-name" targets="Method TestON.drivers.common.cli.onosclidriver.OnosCliDriver.log()=TestON.drivers.common.cli.onosclidriver.OnosCliDriver-class.html#log"><a title="TestON.drivers.common.cli.onosclidriver.OnosCliDriver.log" class="py-name" href="#" onclick="return doclink('link-9', 'log', 'link-9');">log</a></tt><tt class="py-op">.</tt><tt class="py-name">info</tt><tt class="py-op">(</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">name</tt> <tt class="py-op">+</tt> <tt class="py-string">" connected successfully "</tt> <tt class="py-op">)</tt> </tt>
+<a name="L52"></a><tt class="py-lineno"> 52</tt>  <tt class="py-line">            <tt class="py-keyword">return</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">handle</tt> </tt>
+<a name="L53"></a><tt class="py-lineno"> 53</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">main</tt><tt class="py-op">.</tt><tt class="py-name">TRUE</tt> </tt>
+</div><a name="L54"></a><tt class="py-lineno"> 54</tt>  <tt class="py-line"> </tt>
+<a name="RemoteVMDriver.SSH"></a><div id="RemoteVMDriver.SSH-def"><a name="L55"></a><tt class="py-lineno"> 55</tt> <a class="py-toggle" href="#" id="RemoteVMDriver.SSH-toggle" onclick="return toggle('RemoteVMDriver.SSH');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="TestON.drivers.common.cli.remotetestbed.remotevmdriver.RemoteVMDriver-class.html#SSH">SSH</a><tt class="py-op">(</tt> <tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-op">**</tt><tt class="py-param">connectargs</tt> <tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="RemoteVMDriver.SSH-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="RemoteVMDriver.SSH-expanded"><a name="L56"></a><tt class="py-lineno"> 56</tt>  <tt class="py-line">        <tt class="py-keyword">for</tt> <tt class="py-name">key</tt> <tt class="py-keyword">in</tt> <tt class="py-name">connectargs</tt><tt class="py-op">:</tt> </tt>
+<a name="L57"></a><tt class="py-lineno"> 57</tt>  <tt class="py-line">            <tt class="py-name">vars</tt><tt class="py-op">(</tt> <tt class="py-name">self</tt> <tt class="py-op">)</tt><tt class="py-op">[</tt> <tt class="py-name">key</tt> <tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-name">connectargs</tt><tt class="py-op">[</tt> <tt class="py-name">key</tt> <tt class="py-op">]</tt> </tt>
+<a name="L58"></a><tt class="py-lineno"> 58</tt>  <tt class="py-line"> </tt>
+<a name="L59"></a><tt class="py-lineno"> 59</tt>  <tt class="py-line">        <tt class="py-string">"""</tt> </tt>
+<a name="L60"></a><tt class="py-lineno"> 60</tt>  <tt class="py-line"><tt class="py-string">           Connection will establish to the remote host using ssh.</tt> </tt>
+<a name="L61"></a><tt class="py-lineno"> 61</tt>  <tt class="py-line"><tt class="py-string">           It will take user_name ,ip_address and password as arguments&lt;br&gt;</tt> </tt>
+<a name="L62"></a><tt class="py-lineno"> 62</tt>  <tt class="py-line"><tt class="py-string">           and will return the handle.</tt> </tt>
+<a name="L63"></a><tt class="py-lineno"> 63</tt>  <tt class="py-line"><tt class="py-string">        """</tt> </tt>
+<a name="L64"></a><tt class="py-lineno"> 64</tt>  <tt class="py-line">        <tt class="py-keyword">for</tt> <tt class="py-name">key</tt> <tt class="py-keyword">in</tt> <tt class="py-name">connectargs</tt><tt class="py-op">:</tt> </tt>
+<a name="L65"></a><tt class="py-lineno"> 65</tt>  <tt class="py-line">            <tt class="py-name">vars</tt><tt class="py-op">(</tt> <tt class="py-name">self</tt> <tt class="py-op">)</tt><tt class="py-op">[</tt> <tt class="py-name">key</tt> <tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-name">connectargs</tt><tt class="py-op">[</tt> <tt class="py-name">key</tt> <tt class="py-op">]</tt> </tt>
+<a name="L66"></a><tt class="py-lineno"> 66</tt>  <tt class="py-line"> </tt>
+<a name="L67"></a><tt class="py-lineno"> 67</tt>  <tt class="py-line">        <tt class="py-name">ssh_newkey</tt> <tt class="py-op">=</tt> <tt class="py-string">'Are you sure you want to continue connecting'</tt> </tt>
+<a name="L68"></a><tt class="py-lineno"> 68</tt>  <tt class="py-line">        <tt class="py-name">refused</tt> <tt class="py-op">=</tt> <tt class="py-string">"ssh: connect to host "</tt> <tt class="py-op">+</tt> \ </tt>
+<a name="L69"></a><tt class="py-lineno"> 69</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">ip_address</tt> <tt class="py-op">+</tt> <tt class="py-string">" port 22: Connection refused"</tt> </tt>
+<a name="L70"></a><tt class="py-lineno"> 70</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">port</tt><tt class="py-op">:</tt> </tt>
+<a name="L71"></a><tt class="py-lineno"> 71</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">handle</tt><tt class="py-op">.</tt><tt id="link-10" class="py-name" targets="Method TestON.drivers.common.cli.onosclidriver.OnosCliDriver.sendline()=TestON.drivers.common.cli.onosclidriver.OnosCliDriver-class.html#sendline"><a title="TestON.drivers.common.cli.onosclidriver.OnosCliDriver.sendline" class="py-name" href="#" onclick="return doclink('link-10', 'sendline', 'link-10');">sendline</a></tt><tt class="py-op">(</tt> </tt>
+<a name="L72"></a><tt class="py-lineno"> 72</tt>  <tt class="py-line">                <tt class="py-string">'ssh -p '</tt> <tt class="py-op">+</tt> </tt>
+<a name="L73"></a><tt class="py-lineno"> 73</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">port</tt> <tt class="py-op">+</tt> </tt>
+<a name="L74"></a><tt class="py-lineno"> 74</tt>  <tt class="py-line">                <tt class="py-string">' '</tt> <tt class="py-op">+</tt> </tt>
+<a name="L75"></a><tt class="py-lineno"> 75</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">user_name</tt> <tt class="py-op">+</tt> </tt>
+<a name="L76"></a><tt class="py-lineno"> 76</tt>  <tt class="py-line">                <tt class="py-string">'@'</tt> <tt class="py-op">+</tt> </tt>
+<a name="L77"></a><tt class="py-lineno"> 77</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">ip_address</tt> <tt class="py-op">)</tt> </tt>
+<a name="L78"></a><tt class="py-lineno"> 78</tt>  <tt class="py-line">        <tt class="py-keyword">else</tt><tt class="py-op">:</tt> </tt>
+<a name="L79"></a><tt class="py-lineno"> 79</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">handle</tt><tt class="py-op">.</tt><tt id="link-11" class="py-name"><a title="TestON.drivers.common.cli.onosclidriver.OnosCliDriver.sendline" class="py-name" href="#" onclick="return doclink('link-11', 'sendline', 'link-10');">sendline</a></tt><tt class="py-op">(</tt> </tt>
+<a name="L80"></a><tt class="py-lineno"> 80</tt>  <tt class="py-line">                <tt class="py-string">'ssh '</tt> <tt class="py-op">+</tt> </tt>
+<a name="L81"></a><tt class="py-lineno"> 81</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">user_name</tt> <tt class="py-op">+</tt> </tt>
+<a name="L82"></a><tt class="py-lineno"> 82</tt>  <tt class="py-line">                <tt class="py-string">'@'</tt> <tt class="py-op">+</tt> </tt>
+<a name="L83"></a><tt class="py-lineno"> 83</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">ip_address</tt> <tt class="py-op">)</tt> </tt>
+<a name="L84"></a><tt class="py-lineno"> 84</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">handle</tt><tt class="py-op">.</tt><tt id="link-12" class="py-name"><a title="TestON.drivers.common.cli.onosclidriver.OnosCliDriver.sendline" class="py-name" href="#" onclick="return doclink('link-12', 'sendline', 'link-10');">sendline</a></tt><tt class="py-op">(</tt> <tt class="py-string">"\r"</tt> <tt class="py-op">)</tt> </tt>
+<a name="L85"></a><tt class="py-lineno"> 85</tt>  <tt class="py-line"> </tt>
+<a name="L86"></a><tt class="py-lineno"> 86</tt>  <tt class="py-line">        <tt class="py-name">i</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">handle</tt><tt class="py-op">.</tt><tt class="py-name">expect</tt><tt class="py-op">(</tt> <tt class="py-op">[</tt> <tt class="py-name">ssh_newkey</tt><tt class="py-op">,</tt> </tt>
+<a name="L87"></a><tt class="py-lineno"> 87</tt>  <tt class="py-line">                                  <tt class="py-string">'password:'</tt><tt class="py-op">,</tt> </tt>
+<a name="L88"></a><tt class="py-lineno"> 88</tt>  <tt class="py-line">                                  <tt class="py-name">pexpect</tt><tt class="py-op">.</tt><tt class="py-name">EOF</tt><tt class="py-op">,</tt> </tt>
+<a name="L89"></a><tt class="py-lineno"> 89</tt>  <tt class="py-line">                                  <tt class="py-name">pexpect</tt><tt class="py-op">.</tt><tt class="py-name">TIMEOUT</tt><tt class="py-op">,</tt> </tt>
+<a name="L90"></a><tt class="py-lineno"> 90</tt>  <tt class="py-line">                                  <tt class="py-name">refused</tt> <tt class="py-op">]</tt><tt class="py-op">,</tt> </tt>
+<a name="L91"></a><tt class="py-lineno"> 91</tt>  <tt class="py-line">                                <tt class="py-number">120</tt> <tt class="py-op">)</tt> </tt>
+<a name="L92"></a><tt class="py-lineno"> 92</tt>  <tt class="py-line"> </tt>
+<a name="L93"></a><tt class="py-lineno"> 93</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-name">i</tt> <tt class="py-op">==</tt> <tt class="py-number">0</tt><tt class="py-op">:</tt> </tt>
+<a name="L94"></a><tt class="py-lineno"> 94</tt>  <tt class="py-line">            <tt class="py-name">main</tt><tt class="py-op">.</tt><tt id="link-13" class="py-name"><a title="TestON.drivers.common.cli.onosclidriver.OnosCliDriver.log" class="py-name" href="#" onclick="return doclink('link-13', 'log', 'link-9');">log</a></tt><tt class="py-op">.</tt><tt class="py-name">info</tt><tt class="py-op">(</tt> <tt class="py-string">"ssh key confirmation received, send yes"</tt> <tt class="py-op">)</tt> </tt>
+<a name="L95"></a><tt class="py-lineno"> 95</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">handle</tt><tt class="py-op">.</tt><tt id="link-14" class="py-name"><a title="TestON.drivers.common.cli.onosclidriver.OnosCliDriver.sendline" class="py-name" href="#" onclick="return doclink('link-14', 'sendline', 'link-10');">sendline</a></tt><tt class="py-op">(</tt> <tt class="py-string">'yes'</tt> <tt class="py-op">)</tt> </tt>
+<a name="L96"></a><tt class="py-lineno"> 96</tt>  <tt class="py-line">            <tt class="py-name">i</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">handle</tt><tt class="py-op">.</tt><tt class="py-name">expect</tt><tt class="py-op">(</tt> <tt class="py-op">[</tt> <tt class="py-name">ssh_newkey</tt><tt class="py-op">,</tt> <tt class="py-string">'password:'</tt><tt class="py-op">,</tt> <tt class="py-name">pexpect</tt><tt class="py-op">.</tt><tt class="py-name">EOF</tt> <tt class="py-op">]</tt> <tt class="py-op">)</tt> </tt>
+<a name="L97"></a><tt class="py-lineno"> 97</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-name">i</tt> <tt class="py-op">==</tt> <tt class="py-number">1</tt><tt class="py-op">:</tt> </tt>
+<a name="L98"></a><tt class="py-lineno"> 98</tt>  <tt class="py-line">            <tt class="py-name">main</tt><tt class="py-op">.</tt><tt id="link-15" class="py-name"><a title="TestON.drivers.common.cli.onosclidriver.OnosCliDriver.log" class="py-name" href="#" onclick="return doclink('link-15', 'log', 'link-9');">log</a></tt><tt class="py-op">.</tt><tt class="py-name">info</tt><tt class="py-op">(</tt> <tt class="py-string">"ssh connection asked for password, gave password"</tt> <tt class="py-op">)</tt> </tt>
+<a name="L99"></a><tt class="py-lineno"> 99</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">handle</tt><tt class="py-op">.</tt><tt id="link-16" class="py-name"><a title="TestON.drivers.common.cli.onosclidriver.OnosCliDriver.sendline" class="py-name" href="#" onclick="return doclink('link-16', 'sendline', 'link-10');">sendline</a></tt><tt class="py-op">(</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">pwd</tt> <tt class="py-op">)</tt> </tt>
+<a name="L100"></a><tt class="py-lineno">100</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">handle</tt><tt class="py-op">.</tt><tt class="py-name">expect</tt><tt class="py-op">(</tt> <tt class="py-string">'&gt;|#|$'</tt> <tt class="py-op">)</tt> </tt>
+<a name="L101"></a><tt class="py-lineno">101</tt>  <tt class="py-line"> </tt>
+<a name="L102"></a><tt class="py-lineno">102</tt>  <tt class="py-line">        <tt class="py-keyword">elif</tt> <tt class="py-name">i</tt> <tt class="py-op">==</tt> <tt class="py-number">2</tt><tt class="py-op">:</tt> </tt>
+<a name="L103"></a><tt class="py-lineno">103</tt>  <tt class="py-line">            <tt class="py-name">main</tt><tt class="py-op">.</tt><tt id="link-17" class="py-name"><a title="TestON.drivers.common.cli.onosclidriver.OnosCliDriver.log" class="py-name" href="#" onclick="return doclink('link-17', 'log', 'link-9');">log</a></tt><tt class="py-op">.</tt><tt id="link-18" class="py-name" targets="Function TestON.bin.cli.error()=TestON.bin.cli-module.html#error"><a title="TestON.bin.cli.error" class="py-name" href="#" onclick="return doclink('link-18', 'error', 'link-18');">error</a></tt><tt class="py-op">(</tt> <tt class="py-string">"Connection timeout"</tt> <tt class="py-op">)</tt> </tt>
+<a name="L104"></a><tt class="py-lineno">104</tt>  <tt class="py-line">            <tt class="py-keyword">return</tt> <tt class="py-name">main</tt><tt class="py-op">.</tt><tt class="py-name">FALSE</tt> </tt>
+<a name="L105"></a><tt class="py-lineno">105</tt>  <tt class="py-line">        <tt class="py-keyword">elif</tt> <tt class="py-name">i</tt> <tt class="py-op">==</tt> <tt class="py-number">3</tt><tt class="py-op">:</tt>  <tt class="py-comment"># timeout</tt> </tt>
+<a name="L106"></a><tt class="py-lineno">106</tt>  <tt class="py-line">            <tt class="py-name">main</tt><tt class="py-op">.</tt><tt id="link-19" class="py-name"><a title="TestON.drivers.common.cli.onosclidriver.OnosCliDriver.log" class="py-name" href="#" onclick="return doclink('link-19', 'log', 'link-9');">log</a></tt><tt class="py-op">.</tt><tt id="link-20" class="py-name"><a title="TestON.bin.cli.error" class="py-name" href="#" onclick="return doclink('link-20', 'error', 'link-18');">error</a></tt><tt class="py-op">(</tt> </tt>
+<a name="L107"></a><tt class="py-lineno">107</tt>  <tt class="py-line">                <tt class="py-string">"No route to the Host "</tt> <tt class="py-op">+</tt> </tt>
+<a name="L108"></a><tt class="py-lineno">108</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">user_name</tt> <tt class="py-op">+</tt> </tt>
+<a name="L109"></a><tt class="py-lineno">109</tt>  <tt class="py-line">                <tt class="py-string">"@"</tt> <tt class="py-op">+</tt> </tt>
+<a name="L110"></a><tt class="py-lineno">110</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">ip_address</tt> <tt class="py-op">)</tt> </tt>
+<a name="L111"></a><tt class="py-lineno">111</tt>  <tt class="py-line">            <tt class="py-keyword">return</tt> <tt class="py-name">main</tt><tt class="py-op">.</tt><tt class="py-name">FALSE</tt> </tt>
+<a name="L112"></a><tt class="py-lineno">112</tt>  <tt class="py-line">        <tt class="py-keyword">elif</tt> <tt class="py-name">i</tt> <tt class="py-op">==</tt> <tt class="py-number">4</tt><tt class="py-op">:</tt> </tt>
+<a name="L113"></a><tt class="py-lineno">113</tt>  <tt class="py-line">            <tt class="py-name">main</tt><tt class="py-op">.</tt><tt id="link-21" class="py-name"><a title="TestON.drivers.common.cli.onosclidriver.OnosCliDriver.log" class="py-name" href="#" onclick="return doclink('link-21', 'log', 'link-9');">log</a></tt><tt class="py-op">.</tt><tt id="link-22" class="py-name"><a title="TestON.bin.cli.error" class="py-name" href="#" onclick="return doclink('link-22', 'error', 'link-18');">error</a></tt><tt class="py-op">(</tt> </tt>
+<a name="L114"></a><tt class="py-lineno">114</tt>  <tt class="py-line">                <tt class="py-string">"ssh: connect to host "</tt> <tt class="py-op">+</tt> </tt>
+<a name="L115"></a><tt class="py-lineno">115</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">ip_address</tt> <tt class="py-op">+</tt> </tt>
+<a name="L116"></a><tt class="py-lineno">116</tt>  <tt class="py-line">                <tt class="py-string">" port 22: Connection refused"</tt> <tt class="py-op">)</tt> </tt>
+<a name="L117"></a><tt class="py-lineno">117</tt>  <tt class="py-line">            <tt class="py-keyword">return</tt> <tt class="py-name">main</tt><tt class="py-op">.</tt><tt class="py-name">FALSE</tt> </tt>
+<a name="L118"></a><tt class="py-lineno">118</tt>  <tt class="py-line"> </tt>
+<a name="L119"></a><tt class="py-lineno">119</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">handle</tt><tt class="py-op">.</tt><tt id="link-23" class="py-name"><a title="TestON.drivers.common.cli.onosclidriver.OnosCliDriver.sendline" class="py-name" href="#" onclick="return doclink('link-23', 'sendline', 'link-10');">sendline</a></tt><tt class="py-op">(</tt> <tt class="py-string">"\r"</tt> <tt class="py-op">)</tt> </tt>
+<a name="L120"></a><tt class="py-lineno">120</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">main</tt><tt class="py-op">.</tt><tt class="py-name">TRUE</tt> </tt>
+</div></div><a name="L121"></a><tt class="py-lineno">121</tt>  <tt class="py-line"> </tt><script type="text/javascript">
+<!--
+expandto(location.href);
+// -->
+</script>
+</pre>
+<br />
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="TestON-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            >TestON</th>
+          </tr></table></th>
+  </tr>
+</table>
+<table border="0" cellpadding="0" cellspacing="0" width="100%%">
+  <tr>
+    <td align="left" class="footer">
+    Generated by Epydoc 3.0.1 on Mon Aug 10 11:12:39 2015
+    </td>
+    <td align="right" class="footer">
+      <a target="mainFrame" href="http://epydoc.sourceforge.net"
+        >http://epydoc.sourceforge.net</a>
+    </td>
+  </tr>
+</table>
+
+<script type="text/javascript">
+  <!--
+  // Private objects are initially displayed (because if
+  // javascript is turned off then we want them to be
+  // visible); but by default, we want to hide them.  So hide
+  // them unless we have a cookie that says to show them.
+  checkCookie();
+  // -->
+</script>
+</body>
+</html>

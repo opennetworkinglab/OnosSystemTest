@@ -46,6 +46,7 @@ class FUNCintent:
             wrapperFile3 = main.params[ 'DEPENDENCY' ][ 'wrapper3' ]
             main.startUpSleep = int( main.params[ 'SLEEP' ][ 'startup' ] )
             main.checkIntentSleep = int( main.params[ 'SLEEP' ][ 'checkintent' ] )
+            main.removeIntentSleep = int( main.params[ 'SLEEP' ][ 'removeintent' ] )
             main.rerouteSleep = int( main.params[ 'SLEEP' ][ 'reroute' ] )
             main.fwdSleep = int( main.params[ 'SLEEP' ][ 'fwd' ] )
             gitPull = main.params[ 'GIT' ][ 'pull' ]

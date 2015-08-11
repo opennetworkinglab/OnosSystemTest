@@ -26,7 +26,7 @@
     </CTRL>
 
     <TOPO1>
-        <topo>~/TestON/tests/CHOtest/Dependencies/topoAtt.py</topo>
+        <topo>topoAtt.py</topo>
         <numSwitches>25</numSwitches>
         <numHosts>25</numHosts>
         <numLinks>114</numLinks>
@@ -34,7 +34,7 @@
     </TOPO1>
 
     <TOPO2>
-        <topo>~/TestON/tests/CHOtest/Dependencies/topoChordal.py</topo>
+        <topo>topoChordal.py</topo>
         <numSwitches>25</numSwitches>
         <numHosts>25</numHosts>
         <numLinks>600</numLinks>
@@ -42,7 +42,7 @@
     </TOPO2>
 
     <TOPO3>
-        <topo>~/TestON/tests/CHOtest/Dependencies/topoSpine.py</topo>
+        <topo>topoSpine.py</topo>
         <numSwitches>78</numSwitches>
         <numHosts>68</numHosts>
         <numLinks>284</numLinks>

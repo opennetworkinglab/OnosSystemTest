@@ -38,7 +38,7 @@
     <SLEEP>
         <startup>15</startup>
         <reroute>5</reroute>
-        <removeintent>5</removeintent>
+        <removeintent>10</removeintent>
         <checkintent>5</checkintent>
         <fwd>10</fwd>
     </SLEEP>

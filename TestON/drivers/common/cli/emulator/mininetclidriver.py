@@ -432,8 +432,7 @@ class MininetCliDriver( Emulator ):
                     # Current host pings all other hosts specified
                     pingCmd = str( host ) + cmd + str( temp )
                     self.handle.sendline( pingCmd )
-                    i = self.handle.expect( [ pingCmd, pexpect.TIMEOUT ] )
-                    j = self.handle.expect( [ "mininet>", pexpect.TIMEOUT ] )
+                    self.handle.expect( "mininet>" )
                     response = self.handle.before
                     if re.search( ',\s0\%\spacket\sloss', response ):
                         main.log.info( str( host ) + " -> " + str( temp ) )
@@ -446,9 +445,16 @@ class MininetCliDriver( Emulator ):
 
             return isReachable
 
+        except pexpect.TIMEOUT:
+            main.log.exception( self.name + ": TIMEOUT exception" )
+            return main.FALSE 
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 
@@ -474,23 +480,30 @@ class MininetCliDriver( Emulator ):
                 for temp in pingList:
                     # Current host pings all other hosts specified
                     pingCmd = str( host ) + cmd + prefix + str( temp[1:] )
-                    i = self.handle.expect( [ pingCmd, pexpect.TIMEOUT ] )
-                    j = self.handle.expect( [ "mininet>", pexpect.TIMEOUT ] )
+                    self.handle.sendline( pingCmd )
+                    self.handle.expect( "mininet>" )
                     response = self.handle.before
                     if re.search( ',\s0\%\spacket\sloss', response ):
-                        main.log.info( str( host ) + " -> " + str( temp ) )
+                        main.log.info( str( host ) + " -> " + prefix + str( temp[1:] ) )
                     else:
                         main.log.info(
-                            str( host ) + " -> X (" + str( temp ) + ") "
+                            str( host ) + " -> X (" + prefix + str( temp[1:] ) + ") "
                             " Destination Unreachable" )
                         main.log.error( "Response from Mininet: " + str( response ) )
                         # One of the host to host pair is unreachable
                         isReachable = main.FALSE
             return isReachable
 
+        except pexpect.TIMEOUT:
+            main.log.exception( self.name + ": TIMEOUT exception" )
+            return main.FALSE
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
 

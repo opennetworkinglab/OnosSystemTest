@@ -179,7 +179,7 @@ class TestON:
                                               options = driver_options)
 
         if not connect_result:
-            self.log.error("Exiting form the test execution because the connecting to the "+component+" component failed.")
+            self.log.error("Exiting from the test execution because the connecting to the "+component+" component failed.")
             self.exit()
 
         vars(self)[component] = driverObject
@@ -441,6 +441,7 @@ class TestON:
             self.exit()
 
         result = re.sub("(.*)drivers","",result)
+        result = re.sub("\/\/","/",result)
         result = re.sub("\.py","",result)
         result = re.sub("\.pyc","",result)
         result = re.sub("\/",".",result)

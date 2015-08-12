@@ -6,6 +6,7 @@
 import time
 import copy
 import json
+import types
 
 def __init__( self ):
     self.default = ''
@@ -125,9 +126,9 @@ def hostIntent( main,
     intent1 = main.CLIs[ onosNode ].addHostIntent( hostIdOne=h1Id,
                                                    hostIdTwo=h2Id )
 
-    time.sleep( main.hostIntentSleep )
+    # Get all intents ID in the system, time delay right after intents are added
+    time.sleep( main.addIntentSleep )
     intentsId = main.CLIs[ 0 ].getIntentsId()
-    print intentsId
 
     # Check intents state
     time.sleep( main.checkIntentSleep )
@@ -332,8 +333,10 @@ def pointIntent( main,
                                                     ipDst=ip1,
                                                     tcpSrc=tcp2,
                                                     tcpDst=tcp1 )
+
+    # Get all intents ID in the system, time delay right after intents are added
+    time.sleep( main.addIntentSleep )
     intentsId = main.CLIs[ 0 ].getIntentsId()
-    print intentsId
 
     # Check intents state
     time.sleep( main.checkIntentSleep )
@@ -411,6 +414,242 @@ def pointIntent( main,
     removeIntentResult = removeAllIntents( main )
 
     stepResult = pingResult and linkDownResult and linkUpResult \
+                 and intentResult and removeIntentResult
+
+    return stepResult
+
+def pointIntentTcp( main,
+                    name,
+                    host1,
+                    host2,
+                    onosNode=0,
+                    deviceId1="",
+                    deviceId2="",
+                    port1="",
+                    port2="",
+                    ethType="",
+                    mac1="",
+                    mac2="",
+                    bandwidth="",
+                    lambdaAlloc=False,
+                    ipProto="",
+                    ip1="",
+                    ip2="",
+                    tcp1="",
+                    tcp2="",
+                    sw1="",
+                    sw2="",
+                    expectedLink=0 ):
+
+    """
+    Description:
+        Verify add-point-intent only for TCP
+    Steps:
+        - Get device ids | ports
+        - Add point intents
+        - Check intents
+        - Verify flows
+        - Ping hosts
+        - Reroute
+            - Link down
+            - Verify flows
+            - Check topology
+            - Ping hosts
+            - Link up
+            - Verify flows
+            - Check topology
+            - Ping hosts
+        - Remove intents
+    Required:
+        name - Type of point intent to add eg. IPV4 | VLAN | Dualstack
+        host1 - Name of first host
+        host2 - Name of second host
+    Optional:
+        onosNode - ONOS node to install the intents in main.CLIs[ ]
+                   0 by default so that it will always use the first
+                   ONOS node
+        deviceId1 - ONOS device id of the first switch, the same as the
+                    location of the first host eg. of:0000000000000001/1,
+                    located at device 1 port 1
+        deviceId2 - ONOS device id of the second switch
+        port1 - The port number where the first host is attached
+        port2 - The port number where the second host is attached
+        ethType - Ethernet type eg. IPV4, IPV6
+        mac1 - Mac address of first host
+        mac2 - Mac address of the second host
+        bandwidth - Bandwidth capacity
+        lambdaAlloc - Allocate lambda, defaults to False
+        ipProto - IP protocol
+        ip1 - IP address of first host
+        ip2 - IP address of second host
+        tcp1 - TCP port of first host
+        tcp2 - TCP port of second host
+        sw1 - First switch to bring down & up for rerouting purpose
+        sw2 - Second switch to bring down & up for rerouting purpose
+        expectedLink - Expected link when the switches are down, it should
+                       be two links lower than the links before the two
+                       switches are down
+    """
+
+    assert main, "There is no main variable"
+    assert name, "variable name is empty"
+    assert host1 and host2, "You must specify hosts"
+
+    global itemName
+    itemName = name
+    host1 = host1
+    host2 = host2
+    hostNames = [ host1, host2 ]
+    intentsId = []
+
+    iperfResult = main.TRUE
+    intentResult = main.TRUE
+    removeIntentResult = main.TRUE
+    flowResult = main.TRUE
+    topoResult = main.TRUE
+    linkDownResult = main.TRUE
+    linkUpResult = main.TRUE
+    onosNode = int( onosNode )
+
+    # Adding bidirectional point  intents
+    main.log.info( itemName + ": Adding point intents" )
+    intent1 = main.CLIs[ onosNode ].addPointIntent( ingressDevice=deviceId1,
+                                                    egressDevice=deviceId2,
+                                                    ingressPort=port1,
+                                                    egressPort=port2,
+                                                    ethType=ethType,
+                                                    ethSrc=mac1,
+                                                    ethDst=mac2,
+                                                    bandwidth=bandwidth,
+                                                    lambdaAlloc=lambdaAlloc,
+                                                    ipProto=ipProto,
+                                                    ipSrc=ip1,
+                                                    ipDst=ip2,
+                                                    tcpSrc=tcp1,
+                                                    tcpDst="" )
+
+    intent2 = main.CLIs[ onosNode ].addPointIntent( ingressDevice=deviceId2,
+                                                    egressDevice=deviceId1,
+                                                    ingressPort=port2,
+                                                    egressPort=port1,
+                                                    ethType=ethType,
+                                                    ethSrc=mac2,
+                                                    ethDst=mac1,
+                                                    bandwidth=bandwidth,
+                                                    lambdaAlloc=lambdaAlloc,
+                                                    ipProto=ipProto,
+                                                    ipSrc=ip2,
+                                                    ipDst=ip1,
+                                                    tcpSrc=tcp2,
+                                                    tcpDst="" )
+
+    intent3 = main.CLIs[ onosNode ].addPointIntent( ingressDevice=deviceId1,
+                                                    egressDevice=deviceId2,
+                                                    ingressPort=port1,
+                                                    egressPort=port2,
+                                                    ethType=ethType,
+                                                    ethSrc=mac1,
+                                                    ethDst=mac2,
+                                                    bandwidth=bandwidth,
+                                                    lambdaAlloc=lambdaAlloc,
+                                                    ipProto=ipProto,
+                                                    ipSrc=ip1,
+                                                    ipDst=ip2,
+                                                    tcpSrc="",
+                                                    tcpDst=tcp2 )
+
+    intent4 = main.CLIs[ onosNode ].addPointIntent( ingressDevice=deviceId2,
+                                                    egressDevice=deviceId1,
+                                                    ingressPort=port2,
+                                                    egressPort=port1,
+                                                    ethType=ethType,
+                                                    ethSrc=mac2,
+                                                    ethDst=mac1,
+                                                    bandwidth=bandwidth,
+                                                    lambdaAlloc=lambdaAlloc,
+                                                    ipProto=ipProto,
+                                                    ipSrc=ip2,
+                                                    ipDst=ip1,
+                                                    tcpSrc="",
+                                                    tcpDst=tcp1 )
+
+    # Get all intents ID in the system, time delay right after intents are added
+    time.sleep( main.addIntentSleep )
+    intentsId = main.CLIs[ 0 ].getIntentsId()
+    # Check intents state
+    time.sleep( main.checkIntentSleep )
+    intentResult = checkIntentState( main, intentsId )
+    # Check flows count in each node
+    checkFlowsCount( main )
+
+    # Check intents state again if first check fails...
+    if not intentResult:
+        intentResult = checkIntentState( main, intentsId )
+
+    # Check flows count in each node
+    checkFlowsCount( main )
+
+    # Verify flows
+    checkFlowsState( main )
+
+    # Run iperf to both host
+    iperfResult = iperfResult and main.Mininet1.iperftcp( host1,
+                                                          host2, 10 )
+
+    # Test rerouting if these variables exist
+    if sw1 and sw2 and expectedLink:
+        # link down
+        linkDownResult = link( main, sw1, sw2, "down" )
+        intentResult = intentResult and checkIntentState( main, intentsId )
+
+        # Check flows count in each node
+        checkFlowsCount( main )
+        # Verify flows
+        checkFlowsState( main )
+
+        # Check OnosTopology
+        topoResult = checkTopology( main, expectedLink )
+
+        # Run iperf to both host
+        iperfResult = iperfResult and main.Mininet1.iperftcp( host1,
+                                                              host2, 10 )
+
+        intentResult = checkIntentState( main, intentsId )
+
+        # Checks ONOS state in link down
+        if linkDownResult and topoResult and iperfResult and intentResult:
+            main.log.info( itemName + ": Successfully brought link down" )
+        else:
+            main.log.error( itemName + ": Failed to bring link down" )
+
+        # link up
+        linkUpResult = link( main, sw1, sw2, "up" )
+        time.sleep( main.rerouteSleep )
+
+        # Check flows count in each node
+        checkFlowsCount( main )
+        # Verify flows
+        checkFlowsState( main )
+
+        # Check OnosTopology
+        topoResult = checkTopology( main, main.numLinks )
+
+        # Run iperf to both host
+        iperfResult = iperfResult and main.Mininet1.iperftcp( host1,
+                                                              host2, 10 )
+
+        intentResult = checkIntentState( main, intentsId )
+
+        # Checks ONOS state in link up
+        if linkUpResult and topoResult and iperfResult and intentResult:
+            main.log.info( itemName + ": Successfully brought link back up" )
+        else:
+            main.log.error( itemName + ": Failed to bring link back up" )
+
+    # Remove all intents
+    removeIntentResult = removeAllIntents( main )
+
+    stepResult = iperfResult and linkDownResult and linkUpResult \
                  and intentResult and removeIntentResult
 
     return stepResult
@@ -901,14 +1140,14 @@ def multiToSingleIntent( main,
 
     return stepResult
 
-def pingallHosts( main, hostList, pingType="ipv4" ):
+def pingallHosts( main, hostList ):
     # Ping all host in the hosts list variable
     print "Pinging : ", hostList
     pingResult = main.TRUE
-    pingResult = main.Mininet1.pingallHosts( hostList, pingType )
+    pingResult = main.Mininet1.pingallHosts( hostList )
     return pingResult
 
-def getHostsData( main ):
+def getHostsData( main, hostList ):
     """
         Use fwd app and pingall to discover all the hosts
     """
@@ -921,7 +1160,12 @@ def getHostsData( main ):
     if not activateResult:
         main.log.error( "Something went wrong installing fwd app" )
     time.sleep( main.fwdSleep )
-    pingResult = main.Mininet1.pingall( timeout = 600 )
+    if isinstance( hostList[ 0 ], types.StringType ):
+        main.Mininet1.pingallHosts( hostList )
+    elif isinstance( hostList[ 0 ], types.ListType ):
+        for i in xrange( len( hostList ) ):
+            main.Mininet1.pingallHosts( hostList[ i ] )
+
     hostsJson = json.loads( main.CLIs[ 0 ].hosts() )
     hosts = main.Mininet1.getHosts().keys()
     # TODO: Make better use of new getHosts function

@@ -39,7 +39,7 @@
         <reroute>5</reroute>
         <checkintent>5</checkintent>
         <fwd>5</fwd>
-        <hostintent>3</hostintent>
+        <addIntent>3</addIntent>
     </SLEEP>
 
     <MININET>

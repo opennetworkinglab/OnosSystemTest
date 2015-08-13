@@ -39,10 +39,10 @@ class xmlparser :
             try :
                 parsedInfo = xmldict.xml_to_dict(xml)
                 return parsedInfo
-            except Exception:
-                print "There is no such file to parse " + fileName
+            except Exception as e:
+                print "Error parsing file " + fileName + ": " + e.message
         else :
-            print "file name is not correct"
+            print "File name is not correct"
 
     def parseParams(self,paramsPath):
         '''

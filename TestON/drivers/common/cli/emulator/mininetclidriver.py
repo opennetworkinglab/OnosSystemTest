@@ -447,7 +447,7 @@ class MininetCliDriver( Emulator ):
 
         except pexpect.TIMEOUT:
             main.log.exception( self.name + ": TIMEOUT exception" )
-            return main.FALSE 
+            return main.FALSE
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )

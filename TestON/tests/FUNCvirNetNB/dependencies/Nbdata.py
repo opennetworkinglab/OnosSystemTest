@@ -67,12 +67,17 @@ class NetworkData:
             print "SourceData or DestData is not JSON Type!"
             return False
 
-        Socom = SourceCompareDataDic[FirstPara][SecondPara]
-        Decom = DestiCompareDataDic[FirstPara][SecondPara]
-        if Socom == Decom:
+        try:
+            Socom = SourceCompareDataDic[FirstPara][SecondPara]
+            Decom = DestiCompareDataDic[FirstPara][SecondPara]
+        except KeyError,error:
+            print "Key error ,This key is not found:%s"%error
+            return False            
+
+        if str(Socom).lower()== str(Decom).lower():
             return True
         else:
-            print "Source Compare data:"+FirstPara+"."+SecondPara+"="+Socom
+            print "Source Compare data:"+FirstPara+"."+SecondPara+"="+str(Socom)
             print "Dest Compare data: "+FirstPara+"."+SecondPara+"="+str(Decom)
             return False
 
@@ -138,12 +143,6 @@ class SubnetData(NetworkData):
         Dicdata = {'subnet': Dicdata}
 
         return json.dumps(Dicdata,indent=4)
-
-    def Ordered(self,obj):
-        super(NetworkData,self).Ordered(obj)
-
-    def JsonCompare(self,SourceData,DestiData,FirstPara,SecondPara):
-        super(NetworkData,self).JsonCompare(SourceData,DestiData,FirstPara,SecondPara)
 
 class VirtualPortData(NetworkData):
 
@@ -213,9 +212,3 @@ class VirtualPortData(NetworkData):
             Dicdata = {'virtualport': Dicdata}
 
             return json.dumps(Dicdata,indent=4)
-
-    def Ordered(self,obj):
-        super(NetworkData,self).Ordered(obj)
-
-    def JsonCompare(self,SourceData,DestiData,FirstPara,SecondPara):
-        super(NetworkData,self).JsonCompare(SourceData,DestiData,FirstPara,SecondPara)

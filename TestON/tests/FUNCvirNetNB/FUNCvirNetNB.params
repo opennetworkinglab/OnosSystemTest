@@ -11,7 +11,7 @@
     # 9 - Update Virtualport northbound test
     #10 - Delete Virtualport northbound test
 
-    <testcases>1,2,3,4</testcases>
+    <testcases>1,2,3,4,5,6,7</testcases>
 
     <SLEEP>
         <startup>15</startup>

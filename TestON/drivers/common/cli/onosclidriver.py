@@ -1761,6 +1761,32 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
+    def ipv4RouteNumber( self ):
+        """
+        NOTE: This method should be used after installing application:
+              onos-app-sdnip
+        Description:
+            Obtain the total IPv4 routes number in the system
+        """
+        try:
+            cmdStr = "routes -s -j"
+            handle = self.sendline( cmdStr )
+            jsonResult = json.loads( handle )
+            return jsonResult['totalRoutes4']
+
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
     def intents( self, jsonFormat=True ):
         """
         Optional:
@@ -1774,6 +1800,31 @@ class OnosCliDriver( CLI ):
                 cmdStr += " -j"
             handle = self.sendline( cmdStr )
             return handle
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
+    def m2SIntentInstalledNumber( self ):
+        """
+        Description:
+            Obtain the number of multiple point to single point intents
+            installed
+        """
+        try:
+            cmdStr = "intents -s -j"
+            handle = self.sendline( cmdStr )
+            jsonResult = json.loads( handle )
+            return jsonResult['multiPointToSinglePoint']['installed']
+
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
             return None

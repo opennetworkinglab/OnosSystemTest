@@ -1,18 +1,25 @@
 <PARAMS>
-    # 1,20,3,[40,5,60,70,80,10,90,71,81,10,93,10]*50,21,3,[41,5,61,72,82,10,91,73,83,10,94,10]*50,22,3,[42,5,62,10,92,10,95,10,98,10]*50
+    # 1,20,3,[40,5,140,60,160,70,170,80,180,10,5,90,190,71,171,81,181,10,5]*50,21,3,[41,5,141,61,161,72,172,82,182,10,5,91,191,73,173,83,183,10,5]*50,22,3,[42,5,142,62,162,73,174,84,184,10,5,92,192,75,175,85,185,10,5]*50
     # 1. Starts ONOS cluster with 5 nodes
     # 20. Starts Att Topology
     # 21. Starts Chordal Topology
     # 22. Starts Spine-Leaf Topology
     # 3. Checks the consistency of ONOS and Mininet's topologies
     # 4X. Reactive forwarding | host discovery
+    # 14X. IPv6 Reative forwarding | host discovery
     # 5. ONOS Topology verification
     # 6X. host intents
+    # 16X. IPv6 ping across host intents
     # 7X. Bring random links down( Unique for each topology)
+    # 17X. IPv6 ping after link down
     # 8X. Bring random links back up
-    # 9X Point,Multi-single,Single-Multi Intents
+    # 18X. IPv6 ping after link backs up
+    # 9X. Point,Multi-single,Single-Multi Intents
+    # 19X. IPv6 ping across Point,Multi-single,Single-Multi Intents
 
-    <testcases>1,20,3,[40,5,60,70,80,10,90,71,81,10]*50,21,3,[41,5,61,72,82,10,91,73,83,10]*50,22,3,[42,5,62,74,84,10,92,10]*50</testcases>
+<testcases>
+1,20,3,[40,5,140,60,160,70,170,80,180,10,5,90,190,71,171,81,181,10,5]*50,21,3,[41,5,141,61,161,72,172,82,182,10,5,91,191,73,173,83,183,10,5]*50,22,3,[42,5,142,62,162,73,174,84,184,10,5,92,192,75,175,85,185,10,5]*50
+</testcases>
 
     <GIT>
         #autoPull 'on' or 'off'
@@ -26,7 +33,7 @@
     </CTRL>
 
     <TOPO1>
-        <topo>topoAtt.py</topo>
+        <topo>topoAttIpv6.py</topo>
         <numSwitches>25</numSwitches>
         <numHosts>25</numHosts>
         <numLinks>114</numLinks>
@@ -34,7 +41,7 @@
     </TOPO1>
 
     <TOPO2>
-        <topo>topoChordal.py</topo>
+        <topo>topoChordalIpv6.py</topo>
         <numSwitches>25</numSwitches>
         <numHosts>25</numHosts>
         <numLinks>600</numLinks>
@@ -42,7 +49,7 @@
     </TOPO2>
 
     <TOPO3>
-        <topo>topoSpine.py</topo>
+        <topo>topoSpineIpv6.py</topo>
         <numSwitches>78</numSwitches>
         <numHosts>68</numHosts>
         <numLinks>284</numLinks>

@@ -143,8 +143,16 @@ class CHOtest:
         else:
             main.log.info("Successful CLI startup")
             startCliResult = main.TRUE
-        case1Result = installResult and uninstallResult and statusResult and startCliResult
-        time.sleep(30)
+
+        main.step( "Set IPv6 cfg parameters for Neighbor Discovery" )
+        cfgResult1 = main.CLIs[0].setCfg( "org.onosproject.proxyarp.ProxyArp", "ipv6NeighborDiscovery", "true" )
+        cfgResult2 = main.CLIs[0].setCfg( "org.onosproject.provider.host.impl.HostLocationProvider", "ipv6NeighborDiscovery", "true" )
+        cfgResult = cfgResult1 and cfgResult2
+        utilities.assert_equals( expect=main.TRUE, actual=cfgResult,
+                                 onpass="ipv6NeighborDiscovery cfg is set to true",
+                                 onfail="Failed to cfg set ipv6NeighborDiscovery" )
+
+        case1Result = installResult and uninstallResult and statusResult and startCliResult and cfgResult
         main.log.info("Time for connecting to CLI: %2f seconds" %(time2-time1))
         utilities.assert_equals( expect=main.TRUE, actual=case1Result,
                                  onpass="Set up test environment PASS",
@@ -510,38 +518,14 @@ class CHOtest:
             " seconds" )
 
         if ping_result == main.TRUE:
-            main.log.report( "Pingall Test in Reactive mode successful" )
+            main.log.report( "IPv4 Pingall Test in Reactive mode successful" )
         else:
-            main.log.report( "Pingall Test in Reactive mode failed" )
+            main.log.report( "IPv4 Pingall Test in Reactive mode failed" )
 
-        main.step( "Disable Reactive forwarding" )
-
-        main.log.info( "Uninstall reactive forwarding app" )
-        appResults = appResults and main.CLIs[0].deactivateApp( "org.onosproject.fwd" )
-        pool = []
-        for cli in main.CLIs:
-            t = main.Thread( target=cli.appToIDCheck,
-                             name="appToIDCheck-" + str( i ),
-                             args=[] )
-            pool.append( t )
-            t.start()
-
-        for t in pool:
-            t.join()
-            appCheck = appCheck and t.result
-        utilities.assert_equals( expect=main.TRUE, actual=appCheck,
-                                 onpass="App Ids seem to be correct",
-                                 onfail="Something is wrong with app Ids" )
-        if appCheck != main.TRUE:
-            main.log.warn( main.CLIs[0].apps() )
-            main.log.warn( main.CLIs[0].appIDs() )
-
-        # Waiting for reative flows to be cleared.
-        time.sleep( 30 )
-        case40Result =  installResult and uninstallResult and ping_result
+        case40Result =  appCheck and ping_result
         utilities.assert_equals( expect=main.TRUE, actual=case40Result,
-                                 onpass="Reactive Mode Pingall test PASS",
-                                 onfail="Reactive Mode Pingall test FAIL" )
+                                 onpass="Reactive Mode IPv4 Pingall test PASS",
+                                 onfail="Reactive Mode IPv4 Pingall test FAIL" )
 
     def CASE41( self, main ):
         """
@@ -590,38 +574,14 @@ class CHOtest:
             " seconds" )
 
         if ping_result == main.TRUE:
-            main.log.report( "Pingall Test in Reactive mode successful" )
+            main.log.report( "IPv4 Pingall Test in Reactive mode successful" )
         else:
-            main.log.report( "Pingall Test in Reactive mode failed" )
+            main.log.report( "IPv4 Pingall Test in Reactive mode failed" )
 
-        main.step( "Disable Reactive forwarding" )
-
-        main.log.info( "Uninstall reactive forwarding app" )
-        appResults = appResults and main.CLIs[0].deactivateApp( "org.onosproject.fwd" )
-        pool = []
-        for cli in main.CLIs:
-            t = main.Thread( target=cli.appToIDCheck,
-                             name="appToIDCheck-" + str( i ),
-                             args=[] )
-            pool.append( t )
-            t.start()
-
-        for t in pool:
-            t.join()
-            appCheck = appCheck and t.result
-        utilities.assert_equals( expect=main.TRUE, actual=appCheck,
-                                 onpass="App Ids seem to be correct",
-                                 onfail="Something is wrong with app Ids" )
-        if appCheck != main.TRUE:
-            main.log.warn( main.CLIs[0].apps() )
-            main.log.warn( main.CLIs[0].appIDs() )
-
-        # Waiting for reative flows to be cleared.
-        time.sleep( 30 )
-        case41Result =  installResult and uninstallResult and ping_result
+        case41Result =  appCheck and ping_result
         utilities.assert_equals( expect=main.TRUE, actual=case41Result,
-                                 onpass="Reactive Mode Pingall test PASS",
-                                 onfail="Reactive Mode Pingall test FAIL" )
+                                 onpass="Reactive Mode IPv4 Pingall test PASS",
+                                 onfail="Reactive Mode IPv4 Pingall test FAIL" )
 
     def CASE42( self, main ):
         """
@@ -670,13 +630,55 @@ class CHOtest:
             " seconds" )
 
         if ping_result == main.TRUE:
-            main.log.report( "Pingall Test in Reactive mode successful" )
+            main.log.report( "IPv4 Pingall Test in Reactive mode successful" )
         else:
-            main.log.report( "Pingall Test in Reactive mode failed" )
+            main.log.report( "IPv4 Pingall Test in Reactive mode failed" )
+
+        case42Result =  appCheck and ping_result
+        utilities.assert_equals( expect=main.TRUE, actual=case42Result,
+                                 onpass="Reactive Mode IPv4 Pingall test PASS",
+                                 onfail="Reactive Mode IPv4 Pingall test FAIL" )
+
+    def CASE140( self, main ):
+        """
+        Verify IPv6 Reactive forwarding (Att Topology)
+        """
+        import re
+        import copy
+        import time
+        main.log.report( "Verify IPv6 Reactive forwarding (Att Topology)" )
+        main.log.report( "______________________________________________" )
+        main.case( "Enable IPv6 Reactive forwarding and Verify ping all" )
+        hostList = [ ('h'+ str(x + 1)) for x in range (main.numMNhosts) ]
+
+        main.step( "Set IPv6 cfg parameters for Reactive forwarding" )
+        cfgResult1 = main.CLIs[0].setCfg( "org.onosproject.fwd.ReactiveForwarding", "ipv6Forwarding", "true" )
+        cfgResult2 = main.CLIs[0].setCfg( "org.onosproject.fwd.ReactiveForwarding", "matchIpv6Address", "true" )
+        cfgResult = cfgResult1 and cfgResult2
+        utilities.assert_equals( expect=main.TRUE, actual=cfgResult,
+                                 onpass="Reactive mode ipv6Fowarding cfg is set to true",
+                                 onfail="Failed to cfg set Reactive mode ipv6Fowarding" )
+
+        main.step( "Verify IPv6 Pingall" )
+        ping_result = main.FALSE
+        time1 = time.time()
+        ping_result = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
+        time2 = time.time()
+        timeDiff = round( ( time2 - time1 ), 2 )
+        main.log.report(
+            "Time taken for IPv6 Ping All: " +
+            str( timeDiff ) +
+            " seconds" )
+
+        if ping_result == main.TRUE:
+            main.log.report( "IPv6 Pingall Test in Reactive mode successful" )
+        else:
+            main.log.report( "IPv6 Pingall Test in Reactive mode failed" )
 
         main.step( "Disable Reactive forwarding" )
 
         main.log.info( "Uninstall reactive forwarding app" )
+        appCheck = main.TRUE
         appResults = appResults and main.CLIs[0].deactivateApp( "org.onosproject.fwd" )
         pool = []
         for cli in main.CLIs:
@@ -698,10 +700,142 @@ class CHOtest:
 
         # Waiting for reative flows to be cleared.
         time.sleep( 30 )
-        case42Result =  installResult and uninstallResult and ping_result
-        utilities.assert_equals( expect=main.TRUE, actual=case42Result,
-                                 onpass="Reactive Mode Pingall test PASS",
-                                 onfail="Reactive Mode Pingall test FAIL" )
+        case140Result =  appCheck and cfgResult and ping_result
+        utilities.assert_equals( expect=main.TRUE, actual=case140Result,
+                                 onpass="Reactive Mode IPv6 Pingall test PASS",
+                                 onfail="Reactive Mode IPv6 Pingall test FAIL" )
+
+    def CASE141( self, main ):
+        """
+        Verify IPv6 Reactive forwarding (Chordal Topology)
+        """
+        import re
+        import copy
+        import time
+        main.log.report( "Verify IPv6 Reactive forwarding (Chordal Topology)" )
+        main.log.report( "______________________________________________" )
+        main.case( "Enable IPv6 Reactive forwarding and Verify ping all" )
+        hostList = [ ('h'+ str(x + 1)) for x in range (main.numMNhosts) ]
+
+        main.step( "Set IPv6 cfg parameters for Reactive forwarding" )
+        cfgResult1 = main.CLIs[0].setCfg( "org.onosproject.fwd.ReactiveForwarding", "ipv6Forwarding", "true" )
+        cfgResult2 = main.CLIs[0].setCfg( "org.onosproject.fwd.ReactiveForwarding", "matchIpv6Address", "true" )
+        cfgResult = cfgResult1 and cfgResult2
+        utilities.assert_equals( expect=main.TRUE, actual=cfgResult,
+                                 onpass="Reactive mode ipv6Fowarding cfg is set to true",
+                                 onfail="Failed to cfg set Reactive mode ipv6Fowarding" )
+
+        main.step( "Verify IPv6 Pingall" )
+        ping_result = main.FALSE
+        time1 = time.time()
+        ping_result = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
+        time2 = time.time()
+        timeDiff = round( ( time2 - time1 ), 2 )
+        main.log.report(
+            "Time taken for IPv6 Ping All: " +
+            str( timeDiff ) +
+            " seconds" )
+
+        if ping_result == main.TRUE:
+            main.log.report( "IPv6 Pingall Test in Reactive mode successful" )
+        else:
+            main.log.report( "IPv6 Pingall Test in Reactive mode failed" )
+
+        main.step( "Disable Reactive forwarding" )
+
+        main.log.info( "Uninstall reactive forwarding app" )
+        appCheck = main.TRUE
+        appResults = appResults and main.CLIs[0].deactivateApp( "org.onosproject.fwd" )
+        pool = []
+        for cli in main.CLIs:
+            t = main.Thread( target=cli.appToIDCheck,
+                             name="appToIDCheck-" + str( i ),
+                             args=[] )
+            pool.append( t )
+            t.start()
+
+        for t in pool:
+            t.join()
+            appCheck = appCheck and t.result
+        utilities.assert_equals( expect=main.TRUE, actual=appCheck,
+                                 onpass="App Ids seem to be correct",
+                                 onfail="Something is wrong with app Ids" )
+        if appCheck != main.TRUE:
+            main.log.warn( main.CLIs[0].apps() )
+            main.log.warn( main.CLIs[0].appIDs() )
+
+        # Waiting for reative flows to be cleared.
+        time.sleep( 30 )
+        case140Result =  appCheck and cfgResult and ping_result
+        utilities.assert_equals( expect=main.TRUE, actual=case140Result,
+                                 onpass="Reactive Mode IPv6 Pingall test PASS",
+                                 onfail="Reactive Mode IPv6 Pingall test FAIL" )
+
+    def CASE142( self, main ):
+        """
+        Verify IPv6 Reactive forwarding (Spine Topology)
+        """
+        import re
+        import copy
+        import time
+        main.log.report( "Verify IPv6 Reactive forwarding (Spine Topology)" )
+        main.log.report( "______________________________________________" )
+        main.case( "Enable IPv6 Reactive forwarding and Verify ping all" )
+        # Spine topology do not have hosts h1-h10
+        hostList = [ ('h'+ str(x + 11)) for x in range (main.numMNhosts) ]
+        main.step( "Set IPv6 cfg parameters for Reactive forwarding" )
+        cfgResult1 = main.CLIs[0].setCfg( "org.onosproject.fwd.ReactiveForwarding", "ipv6Forwarding", "true" )
+        cfgResult2 = main.CLIs[0].setCfg( "org.onosproject.fwd.ReactiveForwarding", "matchIpv6Address", "true" )
+        cfgResult = cfgResult1 and cfgResult2
+        utilities.assert_equals( expect=main.TRUE, actual=cfgResult,
+                                 onpass="Reactive mode ipv6Fowarding cfg is set to true",
+                                 onfail="Failed to cfg set Reactive mode ipv6Fowarding" )
+
+        main.step( "Verify IPv6 Pingall" )
+        ping_result = main.FALSE
+        time1 = time.time()
+        ping_result = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
+        time2 = time.time()
+        timeDiff = round( ( time2 - time1 ), 2 )
+        main.log.report(
+            "Time taken for IPv6 Ping All: " +
+            str( timeDiff ) +
+            " seconds" )
+
+        if ping_result == main.TRUE:
+            main.log.report( "IPv6 Pingall Test in Reactive mode successful" )
+        else:
+            main.log.report( "IPv6 Pingall Test in Reactive mode failed" )
+
+        main.step( "Disable Reactive forwarding" )
+
+        main.log.info( "Uninstall reactive forwarding app" )
+        appCheck = main.TRUE
+        appResults = appResults and main.CLIs[0].deactivateApp( "org.onosproject.fwd" )
+        pool = []
+        for cli in main.CLIs:
+            t = main.Thread( target=cli.appToIDCheck,
+                             name="appToIDCheck-" + str( i ),
+                             args=[] )
+            pool.append( t )
+            t.start()
+
+        for t in pool:
+            t.join()
+            appCheck = appCheck and t.result
+        utilities.assert_equals( expect=main.TRUE, actual=appCheck,
+                                 onpass="App Ids seem to be correct",
+                                 onfail="Something is wrong with app Ids" )
+        if appCheck != main.TRUE:
+            main.log.warn( main.CLIs[0].apps() )
+            main.log.warn( main.CLIs[0].appIDs() )
+
+        # Waiting for reative flows to be cleared.
+        time.sleep( 30 )
+        case142Result =  appCheck and cfgResult and ping_result
+        utilities.assert_equals( expect=main.TRUE, actual=case142Result,
+                                 onpass="Reactive Mode IPv6 Pingall test PASS",
+                                 onfail="Reactive Mode IPv6 Pingall test FAIL" )
 
     def CASE5( self, main ):
         """
@@ -994,6 +1128,99 @@ class CHOtest:
             actual=case15Result,
             onpass="Install 2278 Host Intents and Ping All test PASS",
             onfail="Install 2278 Host Intents and Ping All test FAIL" )
+
+    def CASE160( self ):
+        """
+        Verify IPv6 ping across 300 host intents (Att Topology)
+        """
+        main.log.report( "Verify IPv6 ping across 300 host intents (Att Topology)" )
+        main.log.report( "_________________________________________________" )
+        import itertools
+        import time
+        main.case( "IPv6 ping all 300 host intents" )
+        main.step( "Verify IPv6 Ping across all hosts" )
+        hostList = [ ('h'+ str(x + 1)) for x in range (main.numMNhosts) ]
+        pingResult = main.FALSE
+        time1 = time.time()
+        pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
+        time2 = time.time()
+        timeDiff = round( ( time2 - time1 ), 2 )
+        main.log.report(
+            "Time taken for IPv6 Ping All: " +
+            str( timeDiff ) +
+            " seconds" )
+        utilities.assert_equals( expect=main.TRUE, actual=pingResult,
+                                 onpass="PING ALL PASS",
+                                 onfail="PING ALL FAIL" )
+
+        case160Result = pingResult
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=case160Result,
+            onpass="IPv6 Ping across 300 host intents test PASS",
+            onfail="IPv6 Ping across 300 host intents test FAIL" )
+
+    def CASE161( self ):
+        """
+        Verify IPv6 ping across 600 host intents (Chordal Topology)
+        """
+        main.log.report( "Verify IPv6 ping across 600 host intents (Chordal Topology)" )
+        main.log.report( "_________________________________________________" )
+        import itertools
+        import time
+        main.case( "IPv6 ping all 600 host intents" )
+        main.step( "Verify IPv6 Ping across all hosts" )
+        hostList = [ ('h'+ str(x + 1)) for x in range (main.numMNhosts) ]
+        pingResult = main.FALSE
+        time1 = time.time()
+        pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
+        time2 = time.time()
+        timeDiff = round( ( time2 - time1 ), 2 )
+        main.log.report(
+            "Time taken for IPv6 Ping All: " +
+            str( timeDiff ) +
+            " seconds" )
+        utilities.assert_equals( expect=main.TRUE, actual=pingResult,
+                                 onpass="PING ALL PASS",
+                                 onfail="PING ALL FAIL" )
+
+        case161Result = pingResult
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=case161Result,
+            onpass="IPv6 Ping across 600 host intents test PASS",
+            onfail="IPv6 Ping across 600 host intents test FAIL" )
+
+    def CASE162( self ):
+        """
+        Verify IPv6 ping across 2278 host intents (Spine Topology)
+        """
+        main.log.report( "Verify IPv6 ping across 2278 host intents (Spine Topology)" )
+        main.log.report( "_________________________________________________" )
+        import itertools
+        import time
+        main.case( "IPv6 ping all 600 host intents" )
+        main.step( "Verify IPv6 Ping across all hosts" )
+        hostList = [ ('h'+ str(x + 11)) for x in range (main.numMNhosts) ]
+        pingResult = main.FALSE
+        time1 = time.time()
+        pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
+        time2 = time.time()
+        timeDiff = round( ( time2 - time1 ), 2 )
+        main.log.report(
+            "Time taken for IPv6 Ping All: " +
+            str( timeDiff ) +
+            " seconds" )
+        utilities.assert_equals( expect=main.TRUE, actual=pingResult,
+                                 onpass="PING ALL PASS",
+                                 onfail="PING ALL FAIL" )
+
+        case162Result = pingResult
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=case162Result,
+            onpass="IPv6 Ping across 600 host intents test PASS",
+            onfail="IPv6 Ping across 600 host intents test FAIL" )
 
     def CASE70( self, main ):
         """
@@ -1639,6 +1866,378 @@ class CHOtest:
                                  onpass="Link Up Test PASS",
                                  onfail="Link Up Test FAIL" )
 
+    def CASE170( self ):
+        """
+        IPv6 ping all with some core links down( Host Intents-Att Topo)
+        """
+        main.log.report( "IPv6 ping all with some core links down( Host Intents-Att Topo )" )
+        main.log.report( "_________________________________________________" )
+        import itertools
+        import time
+        main.case( "IPv6 ping all with some core links down( Host Intents-Att Topo )" )
+        main.step( "Verify IPv6 Ping across all hosts" )
+        hostList = [ ('h'+ str(x + 1)) for x in range (main.numMNhosts) ]
+        pingResult = main.FALSE
+        time1 = time.time()
+        pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
+        time2 = time.time()
+        timeDiff = round( ( time2 - time1 ), 2 )
+        main.log.report(
+            "Time taken for IPv6 Ping All: " +
+            str( timeDiff ) +
+            " seconds" )
+        utilities.assert_equals( expect=main.TRUE, actual=pingResult,
+                                 onpass="PING ALL PASS",
+                                 onfail="PING ALL FAIL" )
+
+        case170Result = pingResult
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=case170Result,
+            onpass="IPv6 Ping across 300 host intents test PASS",
+            onfail="IPv6 Ping across 300 host intents test FAIL" )
+
+    def CASE180( self ):
+        """
+        IPv6 ping all with after core links back up( Host Intents-Att Topo)
+        """
+        main.log.report( "IPv6 ping all with after core links back up( Host Intents-Att Topo )" )
+        main.log.report( "_________________________________________________" )
+        import itertools
+        import time
+        main.case( "IPv6 ping all with after core links back up( Host Intents-Att Topo )" )
+        main.step( "Verify IPv6 Ping across all hosts" )
+        hostList = [ ('h'+ str(x + 1)) for x in range (main.numMNhosts) ]
+        pingResult = main.FALSE
+        time1 = time.time()
+        pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
+        time2 = time.time()
+        timeDiff = round( ( time2 - time1 ), 2 )
+        main.log.report(
+            "Time taken for IPv6 Ping All: " +
+            str( timeDiff ) +
+            " seconds" )
+        utilities.assert_equals( expect=main.TRUE, actual=pingResult,
+                                 onpass="PING ALL PASS",
+                                 onfail="PING ALL FAIL" )
+
+        case180Result = pingResult
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=case180Result,
+            onpass="IPv6 Ping across 300 host intents test PASS",
+            onfail="IPv6 Ping across 300 host intents test FAIL" )
+
+    def CASE171( self ):
+        """
+        IPv6 ping all with some core links down( Point Intents-Att Topo)
+        """
+        main.log.report( "IPv6 ping all with some core links down( Point Intents-Att Topo )" )
+        main.log.report( "_________________________________________________" )
+        import itertools
+        import time
+        main.case( "IPv6 ping all with some core links down( Point Intents-Att Topo )" )
+        main.step( "Verify IPv6 Ping across all hosts" )
+        hostList = [ ('h'+ str(x + 1)) for x in range (main.numMNhosts) ]
+        pingResult = main.FALSE
+        time1 = time.time()
+        pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
+        time2 = time.time()
+        timeDiff = round( ( time2 - time1 ), 2 )
+        main.log.report(
+            "Time taken for IPv6 Ping All: " +
+            str( timeDiff ) +
+            " seconds" )
+        utilities.assert_equals( expect=main.TRUE, actual=pingResult,
+                                 onpass="PING ALL PASS",
+                                 onfail="PING ALL FAIL" )
+
+        case171Result = pingResult
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=case171Result,
+            onpass="IPv6 Ping across 600 point intents test PASS",
+            onfail="IPv6 Ping across 600 point intents test FAIL" )
+
+    def CASE181( self ):
+        """
+        IPv6 ping all with after core links back up( Point Intents-Att Topo)
+        """
+        main.log.report( "IPv6 ping all with after core links back up( Point Intents-Att Topo )" )
+        main.log.report( "_________________________________________________" )
+        import itertools
+        import time
+        main.case( "IPv6 ping all with after core links back up( Point Intents-Att Topo )" )
+        main.step( "Verify IPv6 Ping across all hosts" )
+        hostList = [ ('h'+ str(x + 1)) for x in range (main.numMNhosts) ]
+        pingResult = main.FALSE
+        time1 = time.time()
+        pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
+        time2 = time.time()
+        timeDiff = round( ( time2 - time1 ), 2 )
+        main.log.report(
+            "Time taken for IPv6 Ping All: " +
+            str( timeDiff ) +
+            " seconds" )
+        utilities.assert_equals( expect=main.TRUE, actual=pingResult,
+                                 onpass="PING ALL PASS",
+                                 onfail="PING ALL FAIL" )
+
+        case181Result = pingResult
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=case181Result,
+            onpass="IPv6 Ping across 600 Point intents test PASS",
+            onfail="IPv6 Ping across 600 Point intents test FAIL" )
+
+    def CASE172( self ):
+        """
+        IPv6 ping all with some core links down( Host Intents-Chordal Topo)
+        """
+        main.log.report( "IPv6 ping all with some core links down( Host Intents-Chordal Topo )" )
+        main.log.report( "_________________________________________________" )
+        import itertools
+        import time
+        main.case( "IPv6 ping all with some core links down( Host Intents-Chordal Topo )" )
+        main.step( "Verify IPv6 Ping across all hosts" )
+        hostList = [ ('h'+ str(x + 1)) for x in range (main.numMNhosts) ]
+        pingResult = main.FALSE
+        time1 = time.time()
+        pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
+        time2 = time.time()
+        timeDiff = round( ( time2 - time1 ), 2 )
+        main.log.report(
+            "Time taken for IPv6 Ping All: " +
+            str( timeDiff ) +
+            " seconds" )
+        utilities.assert_equals( expect=main.TRUE, actual=pingResult,
+                                 onpass="PING ALL PASS",
+                                 onfail="PING ALL FAIL" )
+
+        case172Result = pingResult
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=case172Result,
+            onpass="IPv6 Ping across 300 host intents test PASS",
+            onfail="IPv6 Ping across 300 host intents test FAIL" )
+
+    def CASE182( self ):
+        """
+        IPv6 ping all with after core links back up( Host Intents-Chordal Topo)
+        """
+        main.log.report( "IPv6 ping all with after core links back up( Host Intents-Chordal Topo )" )
+        main.log.report( "_________________________________________________" )
+        import itertools
+        import time
+        main.case( "IPv6 ping all with after core links back up( Host Intents-Chordal Topo )" )
+        main.step( "Verify IPv6 Ping across all hosts" )
+        hostList = [ ('h'+ str(x + 1)) for x in range (main.numMNhosts) ]
+        pingResult = main.FALSE
+        time1 = time.time()
+        pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
+        time2 = time.time()
+        timeDiff = round( ( time2 - time1 ), 2 )
+        main.log.report(
+            "Time taken for IPv6 Ping All: " +
+            str( timeDiff ) +
+            " seconds" )
+        utilities.assert_equals( expect=main.TRUE, actual=pingResult,
+                                 onpass="PING ALL PASS",
+                                 onfail="PING ALL FAIL" )
+
+        case182Result = pingResult
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=case182Result,
+            onpass="IPv6 Ping across 300 host intents test PASS",
+            onfail="IPv6 Ping across 300 host intents test FAIL" )
+
+    def CASE173( self ):
+        """
+        IPv6 ping all with some core links down( Point Intents-Chordal Topo)
+        """
+        main.log.report( "IPv6 ping all with some core links down( Point Intents-Chordal Topo )" )
+        main.log.report( "_________________________________________________" )
+        import itertools
+        import time
+        main.case( "IPv6 ping all with some core links down( Point Intents-Chordal Topo )" )
+        main.step( "Verify IPv6 Ping across all hosts" )
+        hostList = [ ('h'+ str(x + 1)) for x in range (main.numMNhosts) ]
+        pingResult = main.FALSE
+        time1 = time.time()
+        pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
+        time2 = time.time()
+        timeDiff = round( ( time2 - time1 ), 2 )
+        main.log.report(
+            "Time taken for IPv6 Ping All: " +
+            str( timeDiff ) +
+            " seconds" )
+        utilities.assert_equals( expect=main.TRUE, actual=pingResult,
+                                 onpass="PING ALL PASS",
+                                 onfail="PING ALL FAIL" )
+
+        case173Result = pingResult
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=case173Result,
+            onpass="IPv6 Ping across 600 point intents test PASS",
+            onfail="IPv6 Ping across 600 point intents test FAIL" )
+
+    def CASE183( self ):
+        """
+        IPv6 ping all with after core links back up( Point Intents-Chordal Topo)
+        """
+        main.log.report( "IPv6 ping all with after core links back up( Point Intents-Chordal Topo )" )
+        main.log.report( "_________________________________________________" )
+        import itertools
+        import time
+        main.case( "IPv6 ping all with after core links back up( Point Intents-Chordal Topo )" )
+        main.step( "Verify IPv6 Ping across all hosts" )
+        hostList = [ ('h'+ str(x + 1)) for x in range (main.numMNhosts) ]
+        pingResult = main.FALSE
+        time1 = time.time()
+        pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
+        time2 = time.time()
+        timeDiff = round( ( time2 - time1 ), 2 )
+        main.log.report(
+            "Time taken for IPv6 Ping All: " +
+            str( timeDiff ) +
+            " seconds" )
+        utilities.assert_equals( expect=main.TRUE, actual=pingResult,
+                                 onpass="PING ALL PASS",
+                                 onfail="PING ALL FAIL" )
+
+        case183Result = pingResult
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=case183Result,
+            onpass="IPv6 Ping across 600 Point intents test PASS",
+            onfail="IPv6 Ping across 600 Point intents test FAIL" )
+
+    def CASE174( self ):
+        """
+        IPv6 ping all with some core links down( Host Intents-Spine Topo)
+        """
+        main.log.report( "IPv6 ping all with some core links down( Host Intents-Spine Topo )" )
+        main.log.report( "_________________________________________________" )
+        import itertools
+        import time
+        main.case( "IPv6 ping all with some core links down( Host Intents-Spine Topo )" )
+        main.step( "Verify IPv6 Ping across all hosts" )
+        hostList = [ ('h'+ str(x + 11)) for x in range (main.numMNhosts) ]
+        pingResult = main.FALSE
+        time1 = time.time()
+        pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
+        time2 = time.time()
+        timeDiff = round( ( time2 - time1 ), 2 )
+        main.log.report(
+            "Time taken for IPv6 Ping All: " +
+            str( timeDiff ) +
+            " seconds" )
+        utilities.assert_equals( expect=main.TRUE, actual=pingResult,
+                                 onpass="PING ALL PASS",
+                                 onfail="PING ALL FAIL" )
+
+        case174Result = pingResult
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=case174Result,
+            onpass="IPv6 Ping across 2278 host intents test PASS",
+            onfail="IPv6 Ping across 2278 host intents test FAIL" )
+
+    def CASE184( self ):
+        """
+        IPv6 ping all with after core links back up( Host Intents-Spine Topo)
+        """
+        main.log.report( "IPv6 ping all with after core links back up( Host Intents-Spine Topo )" )
+        main.log.report( "_________________________________________________" )
+        import itertools
+        import time
+        main.case( "IPv6 ping all with after core links back up( Host Intents-Spine Topo )" )
+        main.step( "Verify IPv6 Ping across all hosts" )
+        hostList = [ ('h'+ str(x + 11)) for x in range (main.numMNhosts) ]
+        pingResult = main.FALSE
+        time1 = time.time()
+        pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
+        time2 = time.time()
+        timeDiff = round( ( time2 - time1 ), 2 )
+        main.log.report(
+            "Time taken for IPv6 Ping All: " +
+            str( timeDiff ) +
+            " seconds" )
+        utilities.assert_equals( expect=main.TRUE, actual=pingResult,
+                                 onpass="PING ALL PASS",
+                                 onfail="PING ALL FAIL" )
+
+        case184Result = pingResult
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=case184Result,
+            onpass="IPv6 Ping across 2278 host intents test PASS",
+            onfail="IPv6 Ping across 2278 host intents test FAIL" )
+
+    def CASE175( self ):
+        """
+        IPv6 ping all with some core links down( Point Intents-Spine Topo)
+        """
+        main.log.report( "IPv6 ping all with some core links down( Point Intents-Spine Topo )" )
+        main.log.report( "_________________________________________________" )
+        import itertools
+        import time
+        main.case( "IPv6 ping all with some core links down( Point Intents-Spine Topo )" )
+        main.step( "Verify IPv6 Ping across all hosts" )
+        hostList = [ ('h'+ str(x + 11)) for x in range (main.numMNhosts) ]
+        pingResult = main.FALSE
+        time1 = time.time()
+        pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
+        time2 = time.time()
+        timeDiff = round( ( time2 - time1 ), 2 )
+        main.log.report(
+            "Time taken for IPv6 Ping All: " +
+            str( timeDiff ) +
+            " seconds" )
+        utilities.assert_equals( expect=main.TRUE, actual=pingResult,
+                                 onpass="PING ALL PASS",
+                                 onfail="PING ALL FAIL" )
+
+        case175Result = pingResult
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=case175Result,
+            onpass="IPv6 Ping across 4556 point intents test PASS",
+            onfail="IPv6 Ping across 4556 point intents test FAIL" )
+
+    def CASE185( self ):
+        """
+        IPv6 ping all with after core links back up( Point Intents-Spine Topo)
+        """
+        main.log.report( "IPv6 ping all with after core links back up( Point Intents-Spine Topo )" )
+        main.log.report( "_________________________________________________" )
+        import itertools
+        import time
+        main.case( "IPv6 ping all with after core links back up( Point Intents-Spine Topo )" )
+        main.step( "Verify IPv6 Ping across all hosts" )
+        hostList = [ ('h'+ str(x + 11)) for x in range (main.numMNhosts) ]
+        pingResult = main.FALSE
+        time1 = time.time()
+        pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
+        time2 = time.time()
+        timeDiff = round( ( time2 - time1 ), 2 )
+        main.log.report(
+            "Time taken for IPv6 Ping All: " +
+            str( timeDiff ) +
+            " seconds" )
+        utilities.assert_equals( expect=main.TRUE, actual=pingResult,
+                                 onpass="PING ALL PASS",
+                                 onfail="PING ALL FAIL" )
+
+        case183Result = pingResult
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=case183Result,
+            onpass="IPv6 Ping across 4556 Point intents test PASS",
+            onfail="IPv6 Ping across 4556 Point intents test FAIL" )
+
     def CASE90( self ):
         """
         Install 600 point intents and verify ping all (Att Topology)
@@ -1662,7 +2261,7 @@ class CHOtest:
                 t = main.Thread( target=cli.addPointIntent,
                         threadID=main.threadID,
                         name="addPointIntent",
-                        args=[deviceCombos[i][0],deviceCombos[i][1],1,1,"IPV4",main.MACsDict.get(deviceCombos[i][0]),main.MACsDict.get(deviceCombos[i][1])])
+                        args=[deviceCombos[i][0],deviceCombos[i][1],1,1,'',main.MACsDict.get(deviceCombos[i][0]),main.MACsDict.get(deviceCombos[i][1])])
                 pool.append(t)
                 t.start()
                 i = i + 1
@@ -1724,7 +2323,7 @@ class CHOtest:
                 t = main.Thread( target=cli.addPointIntent,
                         threadID=main.threadID,
                         name="addPointIntent",
-                        args=[deviceCombos[i][0],deviceCombos[i][1],1,1,"IPV4","",main.MACsDict.get(deviceCombos[i][1])])
+                        args=[deviceCombos[i][0],deviceCombos[i][1],1,1,"","",main.MACsDict.get(deviceCombos[i][1])])
                 pool.append(t)
                 #time.sleep(1)
                 t.start()
@@ -1790,7 +2389,7 @@ class CHOtest:
                 t = main.Thread( target=cli.addPointIntent,
                         threadID=main.threadID,
                         name="addPointIntent",
-                        args=[deviceCombos[i][0],deviceCombos[i][1],1,1,"IPV4","",main.MACsDict.get(deviceCombos[i][1])])
+                        args=[deviceCombos[i][0],deviceCombos[i][1],1,1,"","",main.MACsDict.get(deviceCombos[i][1])])
                 pool.append(t)
                 #time.sleep(1)
                 t.start()
@@ -1856,7 +2455,7 @@ class CHOtest:
                 t = main.Thread( target=cli.addMultipointToSinglepointIntent,
                         threadID=main.threadID,
                         name="addMultipointToSinglepointIntent",
-                        args =[ingressDeviceList,egressDevice,portIngressList,'1','IPV4','',main.MACsDict.get(egressDevice)])
+                        args =[ingressDeviceList,egressDevice,portIngressList,'1','','',main.MACsDict.get(egressDevice)])
                 pool.append(t)
                 #time.sleep(1)
                 t.start()
@@ -1931,7 +2530,7 @@ class CHOtest:
                 t = main.Thread( target=cli.addMultipointToSinglepointIntent,
                         threadID=main.threadID,
                         name="addMultipointToSinglepointIntent",
-                        args =[ingressDeviceList,egressDevice,portIngressList,'1','IPV4','',main.MACsDict.get(egressDevice)])
+                        args =[ingressDeviceList,egressDevice,portIngressList,'1','','',main.MACsDict.get(egressDevice)])
                 pool.append(t)
                 #time.sleep(1)
                 t.start()
@@ -1988,7 +2587,7 @@ class CHOtest:
                 t = main.Thread( target=cli.addSinglepointToMultipointIntent,
                         threadID=main.threadID,
                         name="addSinglepointToMultipointIntent",
-                        args =[ingressDevice,egressDeviceList,'1',portEgressList,'IPV4',main.MACsDict.get(ingressDevice)])
+                        args =[ingressDevice,egressDeviceList,'1',portEgressList,'',main.MACsDict.get(ingressDevice)])
                 pool.append(t)
                 #time.sleep(1)
                 t.start()
@@ -2043,7 +2642,7 @@ class CHOtest:
                 t = main.Thread( target=cli.addSinglepointToMultipointIntent,
                         threadID=main.threadID,
                         name="addSinglepointToMultipointIntent",
-                        args =[ingressDevice,egressDeviceList,'1',portEgressList,'IPV4',main.MACsDict.get(ingressDevice),''])
+                        args =[ingressDevice,egressDeviceList,'1',portEgressList,'',main.MACsDict.get(ingressDevice),''])
                 pool.append(t)
                 #time.sleep(1)
                 t.start()
@@ -2105,7 +2704,7 @@ class CHOtest:
                 t = main.Thread( target=cli.addSinglepointToMultipointIntent,
                         threadID=main.threadID,
                         name="addSinglepointToMultipointIntent",
-                        args =[ingressDevice,egressDeviceList,'1',portEgressList,'IPV4',MACsDictCopy.get(ingressDevice),''])
+                        args =[ingressDevice,egressDeviceList,'1',portEgressList,'',MACsDictCopy.get(ingressDevice),''])
                 pool.append(t)
                 #time.sleep(1)
                 t.start()
@@ -2134,6 +2733,99 @@ class CHOtest:
             actual=case98Result,
             onpass="Install 25 single to multi point Intents and Ping All test PASS",
             onfail="Install 25 single to multi point Intents and Ping All test FAIL" )
+
+    def CASE190( self ):
+        """
+        Verify IPv6 ping across 600 Point intents (Att Topology)
+        """
+        main.log.report( "Verify IPv6 ping across 600 Point intents (Att Topology)" )
+        main.log.report( "_________________________________________________" )
+        import itertools
+        import time
+        main.case( "IPv6 ping all 600 Point intents" )
+        main.step( "Verify IPv6 Ping across all hosts" )
+        hostList = [ ('h'+ str(x + 1)) for x in range (main.numMNhosts) ]
+        pingResult = main.FALSE
+        time1 = time.time()
+        pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
+        time2 = time.time()
+        timeDiff = round( ( time2 - time1 ), 2 )
+        main.log.report(
+            "Time taken for IPv6 Ping All: " +
+            str( timeDiff ) +
+            " seconds" )
+        utilities.assert_equals( expect=main.TRUE, actual=pingResult,
+                                 onpass="PING ALL PASS",
+                                 onfail="PING ALL FAIL" )
+
+        case160Result = pingResult
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=case160Result,
+            onpass="IPv6 Ping across 600 Point intents test PASS",
+            onfail="IPv6 Ping across 600 Point intents test FAIL" )
+
+    def CASE191( self ):
+        """
+        Verify IPv6 ping across 600 Point intents (Chordal Topology)
+        """
+        main.log.report( "Verify IPv6 ping across 600 Point intents (Chordal Topology)" )
+        main.log.report( "_________________________________________________" )
+        import itertools
+        import time
+        main.case( "IPv6 ping all 600 Point intents" )
+        main.step( "Verify IPv6 Ping across all hosts" )
+        hostList = [ ('h'+ str(x + 1)) for x in range (main.numMNhosts) ]
+        pingResult = main.FALSE
+        time1 = time.time()
+        pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
+        time2 = time.time()
+        timeDiff = round( ( time2 - time1 ), 2 )
+        main.log.report(
+            "Time taken for IPv6 Ping All: " +
+            str( timeDiff ) +
+            " seconds" )
+        utilities.assert_equals( expect=main.TRUE, actual=pingResult,
+                                 onpass="PING ALL PASS",
+                                 onfail="PING ALL FAIL" )
+
+        case191Result = pingResult
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=case191Result,
+            onpass="IPv6 Ping across 600 Point intents test PASS",
+            onfail="IPv6 Ping across 600 Point intents test FAIL" )
+
+    def CASE192( self ):
+        """
+        Verify IPv6 ping across 4556 Point intents (Spine Topology)
+        """
+        main.log.report( "Verify IPv6 ping across 4556 Point intents (Spine Topology)" )
+        main.log.report( "_________________________________________________" )
+        import itertools
+        import time
+        main.case( "IPv6 ping all 600 Point intents" )
+        main.step( "Verify IPv6 Ping across all hosts" )
+        hostList = [ ('h'+ str(x + 11)) for x in range (main.numMNhosts) ]
+        pingResult = main.FALSE
+        time1 = time.time()
+        pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
+        time2 = time.time()
+        timeDiff = round( ( time2 - time1 ), 2 )
+        main.log.report(
+            "Time taken for IPv6 Ping All: " +
+            str( timeDiff ) +
+            " seconds" )
+        utilities.assert_equals( expect=main.TRUE, actual=pingResult,
+                                 onpass="PING ALL PASS",
+                                 onfail="PING ALL FAIL" )
+
+        case192Result = pingResult
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=case192Result,
+            onpass="IPv6 Ping across 600 Point intents test PASS",
+            onfail="IPv6 Ping across 600 Point intents test FAIL" )
 
     def CASE10( self ):
         import time

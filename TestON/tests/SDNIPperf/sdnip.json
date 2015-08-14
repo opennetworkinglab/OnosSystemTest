@@ -1,0 +1,566 @@
+{
+
+    "bgpPeers" : [
+		{
+		    "attachmentDpid" : "00:00:00:00:00:00:00:a3",
+		    "attachmentPort" : "1",
+		    "ipAddress" : "192.168.10.1"
+		},
+		{
+		    "attachmentDpid" : "00:00:00:00:00:00:00:a5",
+		    "attachmentPort" : "1",
+		    "ipAddress" : "192.168.20.1"
+		},
+		{
+		    "attachmentDpid" : "00:00:00:00:00:00:00:a2",
+		    "attachmentPort" : "1",
+		    "ipAddress" : "192.168.30.1"
+		},
+
+
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.1"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.2"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.3"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.4"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.5"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.6"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.7"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.8"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.9"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.10"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.11"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.12"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.13"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.14"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.15"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.16"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.17"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.18"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.19"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.20"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.21"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.22"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.23"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.24"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.25"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.26"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.27"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.28"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.29"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.30"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.31"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.32"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.33"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.34"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.35"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.36"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.37"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.38"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.39"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.40"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.41"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.42"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.43"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.44"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.45"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.46"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.47"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.48"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.49"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.50"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.51"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.52"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.53"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.54"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.55"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.56"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.57"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.58"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.59"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.60"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.61"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.62"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.63"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.64"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.65"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.66"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.67"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.68"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.69"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.70"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.71"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.72"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.73"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.74"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.75"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.76"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.77"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.78"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.79"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.80"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.81"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.82"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.83"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.84"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.85"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.86"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.87"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.88"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.89"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.90"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.91"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.92"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.93"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.94"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.95"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.96"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.97"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.98"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.99"
+                },
+                {
+                    "attachmentDpid" : "00:00:00:00:00:00:00:a6",
+                    "attachmentPort" : "1",
+                    "ipAddress" : "192.168.40.100"
+                },
+		{
+		    "attachmentDpid" : "00:00:00:00:00:00:00:a4",
+		    "attachmentPort" : "4",
+		    "ipAddress" : "192.168.60.1"
+		}
+
+    ],
+    "bgpSpeakers" : [
+	    {
+	    	 "name" : "bgpSpeaker1",
+	    	 "attachmentDpid" : "00:00:00:00:00:00:00:a1",
+	         "attachmentPort" : "1",
+	         "macAddress" : "00:00:00:00:00:01",
+	         "interfaceAddresses" : [
+				{
+				    "interfaceDpid" : "00:00:00:00:00:00:00:a3",
+		  		    "interfacePort" : "1",
+				    "ipAddress" : "192.168.10.101"
+				},
+				{
+				    "interfaceDpid" : "00:00:00:00:00:00:00:a5",
+		       		    "interfacePort" : "1",
+				    "ipAddress" : "192.168.20.101"
+				},
+				{
+				    "interfaceDpid" : "00:00:00:00:00:00:00:a2",
+		       		    "interfacePort" : "1",
+				    "ipAddress" : "192.168.30.101"
+				},
+				{
+				    "interfaceDpid" : "00:00:00:00:00:00:00:a6",
+		       		    "interfacePort" : "1",
+				    "ipAddress" : "192.168.40.101"
+				},
+				{
+				    "interfaceDpid" : "00:00:00:00:00:00:00:a4",
+		       		    "interfacePort" : "4",
+				    "ipAddress" : "192.168.60.101"
+				}
+
+		    ]
+   
+	    }
+
+    ]
+}

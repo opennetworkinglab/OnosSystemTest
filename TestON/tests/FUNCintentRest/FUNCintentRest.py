@@ -52,7 +52,7 @@ class FUNCintentRest:
                     [ 'checkintent' ] )
             main.rerouteSleep = int( main.params[ 'SLEEP' ][ 'reroute' ] )
             main.fwdSleep = int( main.params[ 'SLEEP' ][ 'fwd' ] )
-            main.hostIntentSleep = int( main.params[ 'SLEEP' ][ 'hostintent' ] )
+            main.addIntentSleep = int( main.params[ 'SLEEP' ][ 'addIntent' ] )
             gitPull = main.params[ 'GIT' ][ 'pull' ]
             main.numSwitch = int( main.params[ 'MININET' ][ 'switch' ] )
             main.numLinks = int( main.params[ 'MININET' ][ 'links' ] )
@@ -411,8 +411,22 @@ class FUNCintentRest:
         main.case( "Discover all hosts" )
 
         stepResult = main.TRUE
-        main.step( "Discover all hosts using pingall " )
-        stepResult = main.intentFunction.getHostsData( main )
+        main.step( "Discover all ipv4 host hosts " )
+        hostList = []
+        # List of host with default vlan
+        defaultHosts = [ "h1", "h3", "h8", "h9", "h11", "h16", "h17", "h19", "h24" ]
+        # Lists of host with unique vlan
+        vlanHosts1 = [ "h4", "h12", "h20" ]
+        vlanHosts2 = [ "h5", "h13", "h21" ]
+        vlanHosts3 = [ "h6", "h14", "h22" ]
+        vlanHosts4 = [ "h7", "h15", "h23" ]
+        hostList.append( defaultHosts )
+        hostList.append( vlanHosts1 )
+        hostList.append( vlanHosts2 )
+        hostList.append( vlanHosts3 )
+        hostList.append( vlanHosts4 )
+
+        stepResult = main.intentFunction.getHostsData( main, hostList )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
                                  onpass="Successfully discovered hosts",
@@ -716,13 +730,13 @@ class FUNCintentRest:
                                         "failed using IPV4 type with " +
                                         "no MAC addresses" )
 
-        main.step( "SDNIP-TCP: Add point intents between h1 and h9" )
+        main.step( "SDNIP-ICMP: Add point intents between h1 and h9" )
         stepResult = main.TRUE
         mac1 = main.hostsData[ 'h1' ][ 'mac' ]
         mac2 = main.hostsData[ 'h9' ][ 'mac' ]
         try:
-            ip1 = str( main.hostsData[ 'h1' ][ 'ipAddresses' ][ 0 ] ) + "/24"
-            ip2 = str( main.hostsData[ 'h9' ][ 'ipAddresses' ][ 0 ] ) + "/24"
+            ip1 = str( main.hostsData[ 'h1' ][ 'ipAddresses' ][ 0 ] ) + "/32"
+            ip2 = str( main.hostsData[ 'h9' ][ 'ipAddresses' ][ 0 ] ) + "/32"
         except KeyError:
             main.log.debug( "Key Error getting IP addresses of h1 | h9 in" +
                             "main.hostsData" )
@@ -736,7 +750,7 @@ class FUNCintentRest:
 
         stepResult = main.intentFunction.pointIntent(
                                            main,
-                                           name="SDNIP-TCP",
+                                           name="SDNIP-ICMP",
                                            host1="h1",
                                            host2="h9",
                                            deviceId1="of:0000000000000005/1",
@@ -750,26 +764,26 @@ class FUNCintentRest:
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
-                                 onpass="SDNIP-TCP: Point intent test " +
+                                 onpass="SDNIP-ICMP: Point intent test " +
                                         "successful using IPV4 type with " +
                                         "IP protocol TCP enabled",
-                                 onfail="SDNIP-TCP: Point intent test " +
+                                 onfail="SDNIP-ICMP: Point intent test " +
                                         "failed using IPV4 type with " +
                                         "IP protocol TCP enabled" )
 
-        main.step( "SDNIP-ICMP: Add point intents between h1 and h9" )
+        main.step( "SDNIP-TCP: Add point intents between h1 and h9" )
         stepResult = main.TRUE
         mac1 = main.hostsData[ 'h1' ][ 'mac' ]
         mac2 = main.hostsData[ 'h9' ][ 'mac' ]
-        ip1 = str( main.hostsData[ 'h1' ][ 'ipAddresses' ][ 0 ] ) + "/24"
-        ip2 = str( main.hostsData[ 'h9' ][ 'ipAddresses' ][ 0 ] ) + "/24"
+        ip1 = str( main.hostsData[ 'h1' ][ 'ipAddresses' ][ 0 ] ) + "/32"
+        ip2 = str( main.hostsData[ 'h9' ][ 'ipAddresses' ][ 0 ] ) + "/32"
         ipProto = main.params[ 'SDNIP' ][ 'tcpProto' ]
         tcp1 = main.params[ 'SDNIP' ][ 'srcPort' ]
         tcp2 = main.params[ 'SDNIP' ][ 'dstPort' ]
 
-        stepResult = main.intentFunction.pointIntent(
+        stepResult = main.intentFunction.pointIntentTcp(
                                            main,
-                                           name="SDNIP-ICMP",
+                                           name="SDNIP-TCP",
                                            host1="h1",
                                            host2="h9",
                                            deviceId1="of:0000000000000005/1",
@@ -777,16 +791,20 @@ class FUNCintentRest:
                                            mac1=mac1,
                                            mac2=mac2,
                                            ethType="IPV4",
-                                           ipProto=ipProto )
+                                           ipProto=ipProto,
+                                           ip1=ip1,
+                                           ip2=ip2,
+                                           tcp1=tcp1,
+                                           tcp2=tcp2 )
 
         utilities.assert_equals( expect=main.TRUE,
                              actual=stepResult,
-                                 onpass="SDNIP-ICMP: Point intent test " +
+                                 onpass="SDNIP-TCP: Point intent test " +
                                         "successful using IPV4 type with " +
-                                        "IP protocol ICMP enabled",
-                                 onfail="SDNIP-ICMP: Point intent test " +
+                                        "IP protocol TCP enabled",
+                                 onfail="SDNIP-TCP: Point intent test " +
                                         "failed using IPV4 type with " +
-                                        "IP protocol ICMP enabled" )
+                                        "IP protocol TCP enabled" )
 
         main.step( "DUALSTACK1: Add point intents between h1 and h9" )
         stepResult = main.TRUE

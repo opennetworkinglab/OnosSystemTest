@@ -40,7 +40,7 @@
         </ONOScli3>
 
         <Mininet1>
-            <host>localhost</host>
+            <host>OCN</host>
             <user>admin</user>
             <password></password>
             <type>MininetCliDriver</type>

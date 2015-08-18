@@ -112,8 +112,8 @@ def hostIntent( main,
     # Discover hosts using arping
     if not main.hostsData:
         main.log.info( itemName + ": Discover host using arping" )
-        main.Mininet1.arping( host=host1 )
-        main.Mininet1.arping( host=host2 )
+        main.Mininet1.arping( srcHost=host1, dstHost=host2 )
+        main.Mininet1.arping( srcHost=host2, dstHost=host1 )
         h1Id = main.CLIs[ 0 ].getHost( mac=h1Mac )
         h2Id = main.CLIs[ 0 ].getHost( mac=h2Mac )
 

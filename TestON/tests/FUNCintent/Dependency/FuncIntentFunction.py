@@ -118,8 +118,8 @@ def hostIntent( main,
 
     # Discover hosts using arping incase pingall discovery failed
     main.log.info( itemName + ": Discover host using arping" )
-    main.Mininet1.arping( host=host1 )
-    main.Mininet1.arping( host=host2 )
+    main.Mininet1.arping( srcHost=host1, dstHost=host2 )
+    main.Mininet1.arping( srcHost=host2, dstHost=host1 )
     host1 = main.CLIs[ 0 ].getHost( mac=h1Mac )
     host2 = main.CLIs[ 0 ].getHost( mac=h2Mac )
 
@@ -1137,10 +1137,8 @@ def multiToSingleIntent( main,
 
 def pingallHosts( main, hostList ):
     # Ping all host in the hosts list variable
-    print "Pinging : ", hostList
-    pingResult = main.TRUE
-    pingResult = main.Mininet1.pingallHosts( hostList )
-    return pingResult
+    main.log.info( "Pinging: " + str( hostList ) )
+    return main.Mininet1.pingallHosts( hostList )
 
 def getHostsData( main ):
     """

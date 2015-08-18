@@ -427,7 +427,6 @@ class MininetCliDriver( Emulator ):
                 # List of hosts to ping other than itself
                 pingList = hostList[ :listIndex ] + \
                     hostList[ ( listIndex + 1 ): ]
-
                 for temp in pingList:
                     # Current host pings all other hosts specified
                     pingCmd = str( host ) + cmd + str( temp )
@@ -437,14 +436,12 @@ class MininetCliDriver( Emulator ):
                     if re.search( ',\s0\%\spacket\sloss', response ):
                         main.log.info( str( host ) + " -> " + str( temp ) )
                     else:
-                        main.log.info(
+                        main.log.warn(
                             str( host ) + " -> X (" + str( temp ) + ") "
                             " Destination Unreachable" )
                         # One of the host to host pair is unreachable
                         isReachable = main.FALSE
-
             return isReachable
-
         except pexpect.TIMEOUT:
             main.log.exception( self.name + ": TIMEOUT exception" )
             return main.FALSE
@@ -1712,7 +1709,7 @@ class MininetCliDriver( Emulator ):
             response = main.FALSE
         return response
 
-    def arping( self, host="", ip="10.128.20.211", ethDevice="" ):
+    def arping( self, srcHost="", dstHost="10.128.20.211", ethDevice="" ):
         """
         Description:
             Sends arp message from mininet host for hosts discovery
@@ -1724,15 +1721,24 @@ class MininetCliDriver( Emulator ):
         """
         if ethDevice:
             ethDevice = '-I ' + ethDevice + ' '
-        cmd = " py " + host + ".cmd(\"arping -c 1 " + ethDevice + ip + "\")"
+        cmd = srcHost + " arping -c1 " + ethDevice + dstHost
         try:
-            main.log.warn( "Sending: " + cmd )
+            main.log.info( "Sending: " + cmd )
             self.handle.sendline( cmd )
-            response = self.handle.before
-            self.handle.sendline( "" )
-            self.handle.expect( "mininet>" )
-            return main.TRUE
-
+            i = self.handle.expect( [ "mininet>", "arping: " ] )
+            if i == 0:
+                return main.TRUE
+            elif i == 1:
+                response = self.handle.before + self.handle.after
+                self.handle.expect( "mininet>" )
+                response += self.handle.before + self.handle.after
+                main.log.warn( "Error sending arping, output was: " +
+                                response )
+                return main.FALSE
+        except pexpect.TIMEOUT:
+            main.log.error( self.name + ": TIMEOUT exception found" )
+            main.log.warn( self.handle.before )
+            return main.FALSE
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )

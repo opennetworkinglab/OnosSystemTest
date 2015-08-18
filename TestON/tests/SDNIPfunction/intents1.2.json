@@ -1,0 +1,60 @@
+[
+   {
+      "type":"MultiPointToSinglePointIntent",
+      "id":"0xfa8",
+      "appId":"DefaultApplicationId{id=25, name=org.onosproject.sdnip}",
+      "details":"MultiPointToSinglePointIntent{id=0xfa8, key=173.0.2.0/24,
+appId=DefaultApplicationId{id=25, name=org.onosproject.sdnip}, priority=220,
+resources=[],
+selector=DefaultTrafficSelector{criteria=[IPV4_DST{ip=173.0.2.0/24},
+ETH_TYPE{ethType=800}]},
+treatment=DefaultTrafficTreatment{immediate=[ETH_DST{mac=00:00:72:00:00:90}],
+deferred=[], transition=None, cleared=false},
+ingress=[ConnectPoint{elementId=of:00000000000000a3, portNumber=1},
+ConnectPoint{elementId=of:00000000000000a2, portNumber=1},
+ConnectPoint{elementId=of:00000000000000a4, portNumber=4},
+ConnectPoint{elementId=of:00000000000000a5, portNumber=1}],
+egress=ConnectPoint{elementId=of:00000000000000a6, portNumber=1},
+constraints=[]}",
+      "resources":[
+
+      ],
+      "state":"WITHDRAWN"
+   },
+   {
+      "type":"PointToPointIntent",
+      "id":"0xce",
+      "appId":"DefaultApplicationId{id=25, name=org.onosproject.sdnip}",
+      "details":"PointToPointIntent{id=0xce, key=0xce,
+appId=DefaultApplicationId{id=25, name=org.onosproject.sdnip}, priority=1000,
+resources=[], selector=DefaultTrafficSelector{criteria=[IP_PROTO{protocol=6},
+IPV4_DST{ip=192.168.40.101/32}, IPV4_SRC{ip=192.168.40.74/32},
+ETH_TYPE{ethType=800}, TCP_DST{tcpPort=179}]},
+treatment=DefaultTrafficTreatment{immediate=[], deferred=[], transition=None,
+cleared=false}, ingress=ConnectPoint{elementId=of:00000000000000a6,
+portNumber=1}, egress=ConnectPoint{elementId=of:00000000000000a1,
+portNumber=1}, constraints=[]}",
+      "resources":[
+
+      ],
+      "state":"INSTALLED"
+   },
+   {
+      "type":"PointToPointIntent",
+      "id":"0x9f",
+      "appId":"DefaultApplicationId{id=25, name=org.onosproject.sdnip}",
+      "details":"PointToPointIntent{id=0x9f, key=0x9f,
+appId=DefaultApplicationId{id=25, name=org.onosproject.sdnip}, priority=1000,
+resources=[], selector=DefaultTrafficSelector{criteria=[IP_PROTO{protocol=6},
+IPV4_DST{ip=192.168.40.101/32}, TCP_SRC{tcpPort=179},
+IPV4_SRC{ip=192.168.40.34/32}, ETH_TYPE{ethType=800}]},
+treatment=DefaultTrafficTreatment{immediate=[], deferred=[], transition=None,
+cleared=false}, ingress=ConnectPoint{elementId=of:00000000000000a6,
+portNumber=1}, egress=ConnectPoint{elementId=of:00000000000000a1,
+portNumber=1}, constraints=[]}",
+      "resources":[
+
+      ],
+      "state":"INSTALLED"
+   }
+]

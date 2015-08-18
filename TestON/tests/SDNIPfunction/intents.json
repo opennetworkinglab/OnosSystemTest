@@ -1,0 +1,1468 @@
+[
+   {
+      "id":"0xffffffffcb2cb6ec",
+      "type":"PointToPointIntent",
+      "appId":"org.onlab.onos.sdnip",
+      "state":"INSTALLED",
+      "selector":"[IPV4_SRC{ip=192.168.10.101/32}, IPV4_DST{ip=192.168.10.1/32}, IP_PROTO{protocol=1}, ETH_TYPE{ethType=800}]",
+      "ingress":{
+         "device":"of:00000000000000a1",
+         "port":"1"
+      },
+      "egress":{
+         "device":"of:00000000000000a3",
+         "port":"1"
+      },
+      "installable":[
+         {
+            "id":"0x140a3304",
+            "type":"PathIntent",
+            "appId":"org.onlab.onos.sdnip",
+            "resources":[
+               "DefaultEdgeLink{src=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, dst=HostLocation{elementId=of:00000000000000a1, portNumber=1}, type=EDGE, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a1, portNumber=4}, dst=ConnectPoint{elementId=of:00000000000000a3, portNumber=2}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultEdgeLink{src=HostLocation{elementId=of:00000000000000a3, portNumber=1}, dst=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, type=EDGE, state=ACTIVE, durable=false}"
+            ],
+            "selector":"[IPV4_SRC{ip=192.168.10.101/32}, IPV4_DST{ip=192.168.10.1/32}, IP_PROTO{protocol=1}, ETH_TYPE{ethType=800}]",
+            "path":[
+               "DefaultEdgeLink{src=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, dst=HostLocation{elementId=of:00000000000000a1, portNumber=1}, type=EDGE, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a1, portNumber=4}, dst=ConnectPoint{elementId=of:00000000000000a3, portNumber=2}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultEdgeLink{src=HostLocation{elementId=of:00000000000000a3, portNumber=1}, dst=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, type=EDGE, state=ACTIVE, durable=false}"
+            ]
+         }
+      ]
+   },
+   {
+      "id":"0xffffffffcb2d9828",
+      "type":"PointToPointIntent",
+      "appId":"org.onlab.onos.sdnip",
+      "state":"INSTALLED",
+      "selector":"[IPV4_SRC{ip=192.168.10.1/32}, IPV4_DST{ip=192.168.10.101/32}, IP_PROTO{protocol=1}, ETH_TYPE{ethType=800}]",
+      "ingress":{
+         "device":"of:00000000000000a3",
+         "port":"1"
+      },
+      "egress":{
+         "device":"of:00000000000000a1",
+         "port":"1"
+      },
+      "installable":[
+         {
+            "id":"0x1a89f138",
+            "type":"PathIntent",
+            "appId":"org.onlab.onos.sdnip",
+            "resources":[
+               "DefaultEdgeLink{src=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, dst=HostLocation{elementId=of:00000000000000a3, portNumber=1}, type=EDGE, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a3, portNumber=2}, dst=ConnectPoint{elementId=of:00000000000000a1, portNumber=4}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultEdgeLink{src=HostLocation{elementId=of:00000000000000a1, portNumber=1}, dst=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, type=EDGE, state=ACTIVE, durable=false}"
+            ],
+            "selector":"[IPV4_SRC{ip=192.168.10.1/32}, IPV4_DST{ip=192.168.10.101/32}, IP_PROTO{protocol=1}, ETH_TYPE{ethType=800}]",
+            "path":[
+               "DefaultEdgeLink{src=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, dst=HostLocation{elementId=of:00000000000000a3, portNumber=1}, type=EDGE, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a3, portNumber=2}, dst=ConnectPoint{elementId=of:00000000000000a1, portNumber=4}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultEdgeLink{src=HostLocation{elementId=of:00000000000000a1, portNumber=1}, dst=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, type=EDGE, state=ACTIVE, durable=false}"
+            ]
+         }
+      ]
+   },
+   {
+      "id":"0xffffffffd1418988",
+      "type":"PointToPointIntent",
+      "appId":"org.onlab.onos.sdnip",
+      "state":"INSTALLED",
+      "selector":"[IPV4_SRC{ip=192.168.30.101/32}, IPV4_DST{ip=192.168.30.1/32}, IP_PROTO{protocol=6}, ETH_TYPE{ethType=800}, TCP_DST{tcpPort=179}]",
+      "ingress":{
+         "device":"of:00000000000000a1",
+         "port":"1"
+      },
+      "egress":{
+         "device":"of:00000000000000a2",
+         "port":"1"
+      },
+      "installable":[
+         {
+            "id":"0x2cd85684",
+            "type":"PathIntent",
+            "appId":"org.onlab.onos.sdnip",
+            "resources":[
+               "DefaultEdgeLink{src=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, dst=HostLocation{elementId=of:00000000000000a1, portNumber=1}, type=EDGE, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a1, portNumber=3}, dst=ConnectPoint{elementId=of:00000000000000a2, portNumber=2}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultEdgeLink{src=HostLocation{elementId=of:00000000000000a2, portNumber=1}, dst=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, type=EDGE, state=ACTIVE, durable=false}"
+            ],
+            "selector":"[IPV4_SRC{ip=192.168.30.101/32}, IPV4_DST{ip=192.168.30.1/32}, IP_PROTO{protocol=6}, ETH_TYPE{ethType=800}, TCP_DST{tcpPort=179}]",
+            "path":[
+               "DefaultEdgeLink{src=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, dst=HostLocation{elementId=of:00000000000000a1, portNumber=1}, type=EDGE, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a1, portNumber=3}, dst=ConnectPoint{elementId=of:00000000000000a2, portNumber=2}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultEdgeLink{src=HostLocation{elementId=of:00000000000000a2, portNumber=1}, dst=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, type=EDGE, state=ACTIVE, durable=false}"
+            ]
+         }
+      ]
+   },
+   {
+      "id":"0x3122a56b",
+      "type":"PointToPointIntent",
+      "appId":"org.onlab.onos.sdnip",
+      "state":"INSTALLED",
+      "selector":"[IPV4_SRC{ip=192.168.40.101/32}, IPV4_DST{ip=192.168.40.1/32}, IP_PROTO{protocol=1}, ETH_TYPE{ethType=800}]",
+      "ingress":{
+         "device":"of:00000000000000a1",
+         "port":"1"
+      },
+      "egress":{
+         "device":"of:00000000000000a6",
+         "port":"1"
+      },
+      "installable":[
+         {
+            "id":"0x5874487",
+            "type":"PathIntent",
+            "appId":"org.onlab.onos.sdnip",
+            "resources":[
+               "DefaultEdgeLink{src=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, dst=HostLocation{elementId=of:00000000000000a1, portNumber=1}, type=EDGE, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a1, portNumber=4}, dst=ConnectPoint{elementId=of:00000000000000a3, portNumber=2}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a3, portNumber=4}, dst=ConnectPoint{elementId=of:00000000000000a5, portNumber=2}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a5, portNumber=3}, dst=ConnectPoint{elementId=of:00000000000000a6, portNumber=4}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultEdgeLink{src=HostLocation{elementId=of:00000000000000a6, portNumber=1}, dst=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, type=EDGE, state=ACTIVE, durable=false}"
+            ],
+            "selector":"[IPV4_SRC{ip=192.168.40.101/32}, IPV4_DST{ip=192.168.40.1/32}, IP_PROTO{protocol=1}, ETH_TYPE{ethType=800}]",
+            "path":[
+               "DefaultEdgeLink{src=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, dst=HostLocation{elementId=of:00000000000000a1, portNumber=1}, type=EDGE, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a1, portNumber=4}, dst=ConnectPoint{elementId=of:00000000000000a3, portNumber=2}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a3, portNumber=4}, dst=ConnectPoint{elementId=of:00000000000000a5, portNumber=2}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a5, portNumber=3}, dst=ConnectPoint{elementId=of:00000000000000a6, portNumber=4}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultEdgeLink{src=HostLocation{elementId=of:00000000000000a6, portNumber=1}, dst=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, type=EDGE, state=ACTIVE, durable=false}"
+            ]
+         }
+      ]
+   },
+   {
+      "id":"0x6ae96523",
+      "type":"PointToPointIntent",
+      "appId":"org.onlab.onos.sdnip",
+      "state":"INSTALLED",
+      "selector":"[IPV4_SRC{ip=192.168.10.101/32}, IPV4_DST{ip=192.168.10.1/32}, IP_PROTO{protocol=6}, TCP_SRC{tcpPort=179}, ETH_TYPE{ethType=800}]",
+      "ingress":{
+         "device":"of:00000000000000a1",
+         "port":"1"
+      },
+      "egress":{
+         "device":"of:00000000000000a3",
+         "port":"1"
+      },
+      "installable":[
+         {
+            "id":"0x217361ed",
+            "type":"PathIntent",
+            "appId":"org.onlab.onos.sdnip",
+            "resources":[
+               "DefaultEdgeLink{src=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, dst=HostLocation{elementId=of:00000000000000a1, portNumber=1}, type=EDGE, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a1, portNumber=4}, dst=ConnectPoint{elementId=of:00000000000000a3, portNumber=2}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultEdgeLink{src=HostLocation{elementId=of:00000000000000a3, portNumber=1}, dst=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, type=EDGE, state=ACTIVE, durable=false}"
+            ],
+            "selector":"[IPV4_SRC{ip=192.168.10.101/32}, IPV4_DST{ip=192.168.10.1/32}, IP_PROTO{protocol=6}, TCP_SRC{tcpPort=179}, ETH_TYPE{ethType=800}]",
+            "path":[
+               "DefaultEdgeLink{src=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, dst=HostLocation{elementId=of:00000000000000a1, portNumber=1}, type=EDGE, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a1, portNumber=4}, dst=ConnectPoint{elementId=of:00000000000000a3, portNumber=2}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultEdgeLink{src=HostLocation{elementId=of:00000000000000a3, portNumber=1}, dst=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, type=EDGE, state=ACTIVE, durable=false}"
+            ]
+         }
+      ]
+   },
+   {
+      "id":"0xffffffffaee31428",
+      "type":"PointToPointIntent",
+      "appId":"org.onlab.onos.sdnip",
+      "state":"INSTALLED",
+      "selector":"[IPV4_SRC{ip=192.168.30.1/32}, IPV4_DST{ip=192.168.30.101/32}, IP_PROTO{protocol=6}, TCP_SRC{tcpPort=179}, ETH_TYPE{ethType=800}]",
+      "ingress":{
+         "device":"of:00000000000000a2",
+         "port":"1"
+      },
+      "egress":{
+         "device":"of:00000000000000a1",
+         "port":"1"
+      },
+      "installable":[
+         {
+            "id":"0x68cad35c",
+            "type":"PathIntent",
+            "appId":"org.onlab.onos.sdnip",
+            "resources":[
+               "DefaultEdgeLink{src=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, dst=HostLocation{elementId=of:00000000000000a2, portNumber=1}, type=EDGE, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a2, portNumber=2}, dst=ConnectPoint{elementId=of:00000000000000a1, portNumber=3}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultEdgeLink{src=HostLocation{elementId=of:00000000000000a1, portNumber=1}, dst=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, type=EDGE, state=ACTIVE, durable=false}"
+            ],
+            "selector":"[IPV4_SRC{ip=192.168.30.1/32}, IPV4_DST{ip=192.168.30.101/32}, IP_PROTO{protocol=6}, TCP_SRC{tcpPort=179}, ETH_TYPE{ethType=800}]",
+            "path":[
+               "DefaultEdgeLink{src=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, dst=HostLocation{elementId=of:00000000000000a2, portNumber=1}, type=EDGE, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a2, portNumber=2}, dst=ConnectPoint{elementId=of:00000000000000a1, portNumber=3}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultEdgeLink{src=HostLocation{elementId=of:00000000000000a1, portNumber=1}, dst=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, type=EDGE, state=ACTIVE, durable=false}"
+            ]
+         }
+      ]
+   },
+   {
+      "id":"0xffffffffed2b21fa",
+      "type":"PointToPointIntent",
+      "appId":"org.onlab.onos.sdnip",
+      "state":"INSTALLED",
+      "selector":"[IPV4_SRC{ip=192.168.20.1/32}, IPV4_DST{ip=192.168.20.101/32}, IP_PROTO{protocol=1}, ETH_TYPE{ethType=800}]",
+      "ingress":{
+         "device":"of:00000000000000a5",
+         "port":"1"
+      },
+      "egress":{
+         "device":"of:00000000000000a1",
+         "port":"1"
+      },
+      "installable":[
+         {
+            "id":"0xffffffffa5dbcf50",
+            "type":"PathIntent",
+            "appId":"org.onlab.onos.sdnip",
+            "resources":[
+               "DefaultEdgeLink{src=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, dst=HostLocation{elementId=of:00000000000000a5, portNumber=1}, type=EDGE, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a5, portNumber=2}, dst=ConnectPoint{elementId=of:00000000000000a3, portNumber=4}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a3, portNumber=2}, dst=ConnectPoint{elementId=of:00000000000000a1, portNumber=4}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultEdgeLink{src=HostLocation{elementId=of:00000000000000a1, portNumber=1}, dst=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, type=EDGE, state=ACTIVE, durable=false}"
+            ],
+            "selector":"[IPV4_SRC{ip=192.168.20.1/32}, IPV4_DST{ip=192.168.20.101/32}, IP_PROTO{protocol=1}, ETH_TYPE{ethType=800}]",
+            "path":[
+               "DefaultEdgeLink{src=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, dst=HostLocation{elementId=of:00000000000000a5, portNumber=1}, type=EDGE, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a5, portNumber=2}, dst=ConnectPoint{elementId=of:00000000000000a3, portNumber=4}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a3, portNumber=2}, dst=ConnectPoint{elementId=of:00000000000000a1, portNumber=4}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultEdgeLink{src=HostLocation{elementId=of:00000000000000a1, portNumber=1}, dst=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, type=EDGE, state=ACTIVE, durable=false}"
+            ]
+         }
+      ]
+   },
+   {
+      "id":"0x373774a3",
+      "type":"PointToPointIntent",
+      "appId":"org.onlab.onos.sdnip",
+      "state":"INSTALLED",
+      "selector":"[IPV4_SRC{ip=192.168.60.101/32}, IPV4_DST{ip=192.168.60.1/32}, IP_PROTO{protocol=6}, ETH_TYPE{ethType=800}, TCP_DST{tcpPort=179}]",
+      "ingress":{
+         "device":"of:00000000000000a1",
+         "port":"1"
+      },
+      "egress":{
+         "device":"of:00000000000000a4",
+         "port":"4"
+      },
+      "installable":[
+         {
+            "id":"0x5a75d509",
+            "type":"PathIntent",
+            "appId":"org.onlab.onos.sdnip",
+            "resources":[
+               "DefaultEdgeLink{src=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, dst=HostLocation{elementId=of:00000000000000a1, portNumber=1}, type=EDGE, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a1, portNumber=3}, dst=ConnectPoint{elementId=of:00000000000000a2, portNumber=2}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a2, portNumber=3}, dst=ConnectPoint{elementId=of:00000000000000a4, portNumber=1}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultEdgeLink{src=HostLocation{elementId=of:00000000000000a4, portNumber=4}, dst=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, type=EDGE, state=ACTIVE, durable=false}"
+            ],
+            "selector":"[IPV4_SRC{ip=192.168.60.101/32}, IPV4_DST{ip=192.168.60.1/32}, IP_PROTO{protocol=6}, ETH_TYPE{ethType=800}, TCP_DST{tcpPort=179}]",
+            "path":[
+               "DefaultEdgeLink{src=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, dst=HostLocation{elementId=of:00000000000000a1, portNumber=1}, type=EDGE, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a1, portNumber=3}, dst=ConnectPoint{elementId=of:00000000000000a2, portNumber=2}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a2, portNumber=3}, dst=ConnectPoint{elementId=of:00000000000000a4, portNumber=1}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultEdgeLink{src=HostLocation{elementId=of:00000000000000a4, portNumber=4}, dst=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, type=EDGE, state=ACTIVE, durable=false}"
+            ]
+         }
+      ]
+   },
+   {
+      "id":"0xffffffff8d492c5d",
+      "type":"PointToPointIntent",
+      "appId":"org.onlab.onos.sdnip",
+      "state":"INSTALLED",
+      "selector":"[IPV4_SRC{ip=192.168.10.1/32}, IPV4_DST{ip=192.168.10.101/32}, IP_PROTO{protocol=6}, ETH_TYPE{ethType=800}, TCP_DST{tcpPort=179}]",
+      "ingress":{
+         "device":"of:00000000000000a3",
+         "port":"1"
+      },
+      "egress":{
+         "device":"of:00000000000000a1",
+         "port":"1"
+      },
+      "installable":[
+         {
+            "id":"0xffffffffef408263",
+            "type":"PathIntent",
+            "appId":"org.onlab.onos.sdnip",
+            "resources":[
+               "DefaultEdgeLink{src=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, dst=HostLocation{elementId=of:00000000000000a3, portNumber=1}, type=EDGE, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a3, portNumber=2}, dst=ConnectPoint{elementId=of:00000000000000a1, portNumber=4}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultEdgeLink{src=HostLocation{elementId=of:00000000000000a1, portNumber=1}, dst=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, type=EDGE, state=ACTIVE, durable=false}"
+            ],
+            "selector":"[IPV4_SRC{ip=192.168.10.1/32}, IPV4_DST{ip=192.168.10.101/32}, IP_PROTO{protocol=6}, ETH_TYPE{ethType=800}, TCP_DST{tcpPort=179}]",
+            "path":[
+               "DefaultEdgeLink{src=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, dst=HostLocation{elementId=of:00000000000000a3, portNumber=1}, type=EDGE, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a3, portNumber=2}, dst=ConnectPoint{elementId=of:00000000000000a1, portNumber=4}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultEdgeLink{src=HostLocation{elementId=of:00000000000000a1, portNumber=1}, dst=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, type=EDGE, state=ACTIVE, durable=false}"
+            ]
+         }
+      ]
+   },
+   {
+      "id":"0xffffffff8ce7d031",
+      "type":"PointToPointIntent",
+      "appId":"org.onlab.onos.sdnip",
+      "state":"INSTALLED",
+      "selector":"[IPV4_SRC{ip=192.168.20.1/32}, IPV4_DST{ip=192.168.20.101/32}, IP_PROTO{protocol=6}, TCP_SRC{tcpPort=179}, ETH_TYPE{ethType=800}]",
+      "ingress":{
+         "device":"of:00000000000000a5",
+         "port":"1"
+      },
+      "egress":{
+         "device":"of:00000000000000a1",
+         "port":"1"
+      },
+      "installable":[
+         {
+            "id":"0xffffffffb344fe39",
+            "type":"PathIntent",
+            "appId":"org.onlab.onos.sdnip",
+            "resources":[
+               "DefaultEdgeLink{src=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, dst=HostLocation{elementId=of:00000000000000a5, portNumber=1}, type=EDGE, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a5, portNumber=2}, dst=ConnectPoint{elementId=of:00000000000000a3, portNumber=4}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a3, portNumber=2}, dst=ConnectPoint{elementId=of:00000000000000a1, portNumber=4}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultEdgeLink{src=HostLocation{elementId=of:00000000000000a1, portNumber=1}, dst=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, type=EDGE, state=ACTIVE, durable=false}"
+            ],
+            "selector":"[IPV4_SRC{ip=192.168.20.1/32}, IPV4_DST{ip=192.168.20.101/32}, IP_PROTO{protocol=6}, TCP_SRC{tcpPort=179}, ETH_TYPE{ethType=800}]",
+            "path":[
+               "DefaultEdgeLink{src=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, dst=HostLocation{elementId=of:00000000000000a5, portNumber=1}, type=EDGE, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a5, portNumber=2}, dst=ConnectPoint{elementId=of:00000000000000a3, portNumber=4}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a3, portNumber=2}, dst=ConnectPoint{elementId=of:00000000000000a1, portNumber=4}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultEdgeLink{src=HostLocation{elementId=of:00000000000000a1, portNumber=1}, dst=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, type=EDGE, state=ACTIVE, durable=false}"
+            ]
+         }
+      ]
+   },
+   {
+      "id":"0xf2665f1",
+      "type":"PointToPointIntent",
+      "appId":"org.onlab.onos.sdnip",
+      "state":"INSTALLED",
+      "selector":"[IPV4_SRC{ip=192.168.30.1/32}, IPV4_DST{ip=192.168.30.101/32}, IP_PROTO{protocol=1}, ETH_TYPE{ethType=800}]",
+      "ingress":{
+         "device":"of:00000000000000a2",
+         "port":"1"
+      },
+      "egress":{
+         "device":"of:00000000000000a1",
+         "port":"1"
+      },
+      "installable":[
+         {
+            "id":"0x5b61a473",
+            "type":"PathIntent",
+            "appId":"org.onlab.onos.sdnip",
+            "resources":[
+               "DefaultEdgeLink{src=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, dst=HostLocation{elementId=of:00000000000000a2, portNumber=1}, type=EDGE, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a2, portNumber=2}, dst=ConnectPoint{elementId=of:00000000000000a1, portNumber=3}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultEdgeLink{src=HostLocation{elementId=of:00000000000000a1, portNumber=1}, dst=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, type=EDGE, state=ACTIVE, durable=false}"
+            ],
+            "selector":"[IPV4_SRC{ip=192.168.30.1/32}, IPV4_DST{ip=192.168.30.101/32}, IP_PROTO{protocol=1}, ETH_TYPE{ethType=800}]",
+            "path":[
+               "DefaultEdgeLink{src=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, dst=HostLocation{elementId=of:00000000000000a2, portNumber=1}, type=EDGE, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a2, portNumber=2}, dst=ConnectPoint{elementId=of:00000000000000a1, portNumber=3}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultEdgeLink{src=HostLocation{elementId=of:00000000000000a1, portNumber=1}, dst=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, type=EDGE, state=ACTIVE, durable=false}"
+            ]
+         }
+      ]
+   },
+   {
+      "id":"0xffffffffd0e186b8",
+      "type":"PointToPointIntent",
+      "appId":"org.onlab.onos.sdnip",
+      "state":"INSTALLED",
+      "selector":"[IPV4_SRC{ip=192.168.40.1/32}, IPV4_DST{ip=192.168.40.101/32}, IP_PROTO{protocol=6}, TCP_SRC{tcpPort=179}, ETH_TYPE{ethType=800}]",
+      "ingress":{
+         "device":"of:00000000000000a6",
+         "port":"1"
+      },
+      "egress":{
+         "device":"of:00000000000000a1",
+         "port":"1"
+      },
+      "installable":[
+         {
+            "id":"0x4d8d4942",
+            "type":"PathIntent",
+            "appId":"org.onlab.onos.sdnip",
+            "resources":[
+               "DefaultEdgeLink{src=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, dst=HostLocation{elementId=of:00000000000000a6, portNumber=1}, type=EDGE, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a6, portNumber=3}, dst=ConnectPoint{elementId=of:00000000000000a4, portNumber=3}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a4, portNumber=2}, dst=ConnectPoint{elementId=of:00000000000000a3, portNumber=3}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a3, portNumber=2}, dst=ConnectPoint{elementId=of:00000000000000a1, portNumber=4}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultEdgeLink{src=HostLocation{elementId=of:00000000000000a1, portNumber=1}, dst=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, type=EDGE, state=ACTIVE, durable=false}"
+            ],
+            "selector":"[IPV4_SRC{ip=192.168.40.1/32}, IPV4_DST{ip=192.168.40.101/32}, IP_PROTO{protocol=6}, TCP_SRC{tcpPort=179}, ETH_TYPE{ethType=800}]",
+            "path":[
+               "DefaultEdgeLink{src=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, dst=HostLocation{elementId=of:00000000000000a6, portNumber=1}, type=EDGE, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a6, portNumber=3}, dst=ConnectPoint{elementId=of:00000000000000a4, portNumber=3}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a4, portNumber=2}, dst=ConnectPoint{elementId=of:00000000000000a3, portNumber=3}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a3, portNumber=2}, dst=ConnectPoint{elementId=of:00000000000000a1, portNumber=4}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultEdgeLink{src=HostLocation{elementId=of:00000000000000a1, portNumber=1}, dst=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, type=EDGE, state=ACTIVE, durable=false}"
+            ]
+         }
+      ]
+   },
+   {
+      "id":"0x3738d163",
+      "type":"PointToPointIntent",
+      "appId":"org.onlab.onos.sdnip",
+      "state":"INSTALLED",
+      "selector":"[IPV4_SRC{ip=192.168.60.1/32}, IPV4_DST{ip=192.168.60.101/32}, IP_PROTO{protocol=6}, ETH_TYPE{ethType=800}, TCP_DST{tcpPort=179}]",
+      "ingress":{
+         "device":"of:00000000000000a4",
+         "port":"4"
+      },
+      "egress":{
+         "device":"of:00000000000000a1",
+         "port":"1"
+      },
+      "installable":[
+         {
+            "id":"0xffffffff993b0fc9",
+            "type":"PathIntent",
+            "appId":"org.onlab.onos.sdnip",
+            "resources":[
+               "DefaultEdgeLink{src=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, dst=HostLocation{elementId=of:00000000000000a4, portNumber=4}, type=EDGE, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a4, portNumber=1}, dst=ConnectPoint{elementId=of:00000000000000a2, portNumber=3}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a2, portNumber=2}, dst=ConnectPoint{elementId=of:00000000000000a1, portNumber=3}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultEdgeLink{src=HostLocation{elementId=of:00000000000000a1, portNumber=1}, dst=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, type=EDGE, state=ACTIVE, durable=false}"
+            ],
+            "selector":"[IPV4_SRC{ip=192.168.60.1/32}, IPV4_DST{ip=192.168.60.101/32}, IP_PROTO{protocol=6}, ETH_TYPE{ethType=800}, TCP_DST{tcpPort=179}]",
+            "path":[
+               "DefaultEdgeLink{src=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, dst=HostLocation{elementId=of:00000000000000a4, portNumber=4}, type=EDGE, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a4, portNumber=1}, dst=ConnectPoint{elementId=of:00000000000000a2, portNumber=3}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a2, portNumber=2}, dst=ConnectPoint{elementId=of:00000000000000a1, portNumber=3}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultEdgeLink{src=HostLocation{elementId=of:00000000000000a1, portNumber=1}, dst=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, type=EDGE, state=ACTIVE, durable=false}"
+            ]
+         }
+      ]
+   },
+   {
+      "id":"0xfffffffff33e39a0",
+      "type":"PointToPointIntent",
+      "appId":"org.onlab.onos.sdnip",
+      "state":"INSTALLED",
+      "selector":"[IPV4_SRC{ip=192.168.40.101/32}, IPV4_DST{ip=192.168.40.1/32}, IP_PROTO{protocol=6}, ETH_TYPE{ethType=800}, TCP_DST{tcpPort=179}]",
+      "ingress":{
+         "device":"of:00000000000000a1",
+         "port":"1"
+      },
+      "egress":{
+         "device":"of:00000000000000a6",
+         "port":"1"
+      },
+      "installable":[
+         {
+            "id":"0xffffffffda3dd5b2",
+            "type":"PathIntent",
+            "appId":"org.onlab.onos.sdnip",
+            "resources":[
+               "DefaultEdgeLink{src=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, dst=HostLocation{elementId=of:00000000000000a1, portNumber=1}, type=EDGE, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a1, portNumber=4}, dst=ConnectPoint{elementId=of:00000000000000a3, portNumber=2}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a3, portNumber=4}, dst=ConnectPoint{elementId=of:00000000000000a5, portNumber=2}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a5, portNumber=3}, dst=ConnectPoint{elementId=of:00000000000000a6, portNumber=4}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultEdgeLink{src=HostLocation{elementId=of:00000000000000a6, portNumber=1}, dst=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, type=EDGE, state=ACTIVE, durable=false}"
+            ],
+            "selector":"[IPV4_SRC{ip=192.168.40.101/32}, IPV4_DST{ip=192.168.40.1/32}, IP_PROTO{protocol=6}, ETH_TYPE{ethType=800}, TCP_DST{tcpPort=179}]",
+            "path":[
+               "DefaultEdgeLink{src=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, dst=HostLocation{elementId=of:00000000000000a1, portNumber=1}, type=EDGE, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a1, portNumber=4}, dst=ConnectPoint{elementId=of:00000000000000a3, portNumber=2}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a3, portNumber=4}, dst=ConnectPoint{elementId=of:00000000000000a5, portNumber=2}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a5, portNumber=3}, dst=ConnectPoint{elementId=of:00000000000000a6, portNumber=4}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultEdgeLink{src=HostLocation{elementId=of:00000000000000a6, portNumber=1}, dst=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, type=EDGE, state=ACTIVE, durable=false}"
+            ]
+         }
+      ]
+   },
+   {
+      "id":"0xffffffff8ce60db9",
+      "type":"PointToPointIntent",
+      "appId":"org.onlab.onos.sdnip",
+      "state":"INSTALLED",
+      "selector":"[IPV4_SRC{ip=192.168.20.101/32}, IPV4_DST{ip=192.168.20.1/32}, IP_PROTO{protocol=6}, TCP_SRC{tcpPort=179}, ETH_TYPE{ethType=800}]",
+      "ingress":{
+         "device":"of:00000000000000a1",
+         "port":"1"
+      },
+      "egress":{
+         "device":"of:00000000000000a5",
+         "port":"1"
+      },
+      "installable":[
+         {
+            "id":"0xfeca8b9",
+            "type":"PathIntent",
+            "appId":"org.onlab.onos.sdnip",
+            "resources":[
+               "DefaultEdgeLink{src=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, dst=HostLocation{elementId=of:00000000000000a1, portNumber=1}, type=EDGE, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a1, portNumber=4}, dst=ConnectPoint{elementId=of:00000000000000a3, portNumber=2}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a3, portNumber=4}, dst=ConnectPoint{elementId=of:00000000000000a5, portNumber=2}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultEdgeLink{src=HostLocation{elementId=of:00000000000000a5, portNumber=1}, dst=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, type=EDGE, state=ACTIVE, durable=false}"
+            ],
+            "selector":"[IPV4_SRC{ip=192.168.20.101/32}, IPV4_DST{ip=192.168.20.1/32}, IP_PROTO{protocol=6}, TCP_SRC{tcpPort=179}, ETH_TYPE{ethType=800}]",
+            "path":[
+               "DefaultEdgeLink{src=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, dst=HostLocation{elementId=of:00000000000000a1, portNumber=1}, type=EDGE, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a1, portNumber=4}, dst=ConnectPoint{elementId=of:00000000000000a3, portNumber=2}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a3, portNumber=4}, dst=ConnectPoint{elementId=of:00000000000000a5, portNumber=2}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultEdgeLink{src=HostLocation{elementId=of:00000000000000a5, portNumber=1}, dst=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, type=EDGE, state=ACTIVE, durable=false}"
+            ]
+         }
+      ]
+   },
+   {
+      "id":"0x3124d881",
+      "type":"PointToPointIntent",
+      "appId":"org.onlab.onos.sdnip",
+      "state":"INSTALLED",
+      "selector":"[IPV4_SRC{ip=192.168.40.1/32}, IPV4_DST{ip=192.168.40.101/32}, IP_PROTO{protocol=1}, ETH_TYPE{ethType=800}]",
+      "ingress":{
+         "device":"of:00000000000000a6",
+         "port":"1"
+      },
+      "egress":{
+         "device":"of:00000000000000a1",
+         "port":"1"
+      },
+      "installable":[
+         {
+            "id":"0x40241a59",
+            "type":"PathIntent",
+            "appId":"org.onlab.onos.sdnip",
+            "resources":[
+               "DefaultEdgeLink{src=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, dst=HostLocation{elementId=of:00000000000000a6, portNumber=1}, type=EDGE, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a6, portNumber=3}, dst=ConnectPoint{elementId=of:00000000000000a4, portNumber=3}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a4, portNumber=2}, dst=ConnectPoint{elementId=of:00000000000000a3, portNumber=3}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a3, portNumber=2}, dst=ConnectPoint{elementId=of:00000000000000a1, portNumber=4}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultEdgeLink{src=HostLocation{elementId=of:00000000000000a1, portNumber=1}, dst=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, type=EDGE, state=ACTIVE, durable=false}"
+            ],
+            "selector":"[IPV4_SRC{ip=192.168.40.1/32}, IPV4_DST{ip=192.168.40.101/32}, IP_PROTO{protocol=1}, ETH_TYPE{ethType=800}]",
+            "path":[
+               "DefaultEdgeLink{src=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, dst=HostLocation{elementId=of:00000000000000a6, portNumber=1}, type=EDGE, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a6, portNumber=3}, dst=ConnectPoint{elementId=of:00000000000000a4, portNumber=3}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a4, portNumber=2}, dst=ConnectPoint{elementId=of:00000000000000a3, portNumber=3}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a3, portNumber=2}, dst=ConnectPoint{elementId=of:00000000000000a1, portNumber=4}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultEdgeLink{src=HostLocation{elementId=of:00000000000000a1, portNumber=1}, dst=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, type=EDGE, state=ACTIVE, durable=false}"
+            ]
+         }
+      ]
+   },
+   {
+      "id":"0xffffffffd141fa26",
+      "type":"PointToPointIntent",
+      "appId":"org.onlab.onos.sdnip",
+      "state":"INSTALLED",
+      "selector":"[IPV4_SRC{ip=192.168.30.1/32}, IPV4_DST{ip=192.168.30.101/32}, IP_PROTO{protocol=6}, ETH_TYPE{ethType=800}, TCP_DST{tcpPort=179}]",
+      "ingress":{
+         "device":"of:00000000000000a2",
+         "port":"1"
+      },
+      "egress":{
+         "device":"of:00000000000000a1",
+         "port":"1"
+      },
+      "installable":[
+         {
+            "id":"0x3018359e",
+            "type":"PathIntent",
+            "appId":"org.onlab.onos.sdnip",
+            "resources":[
+               "DefaultEdgeLink{src=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, dst=HostLocation{elementId=of:00000000000000a2, portNumber=1}, type=EDGE, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a2, portNumber=2}, dst=ConnectPoint{elementId=of:00000000000000a1, portNumber=3}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultEdgeLink{src=HostLocation{elementId=of:00000000000000a1, portNumber=1}, dst=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, type=EDGE, state=ACTIVE, durable=false}"
+            ],
+            "selector":"[IPV4_SRC{ip=192.168.30.1/32}, IPV4_DST{ip=192.168.30.101/32}, IP_PROTO{protocol=6}, ETH_TYPE{ethType=800}, TCP_DST{tcpPort=179}]",
+            "path":[
+               "DefaultEdgeLink{src=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, dst=HostLocation{elementId=of:00000000000000a2, portNumber=1}, type=EDGE, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a2, portNumber=2}, dst=ConnectPoint{elementId=of:00000000000000a1, portNumber=3}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultEdgeLink{src=HostLocation{elementId=of:00000000000000a1, portNumber=1}, dst=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, type=EDGE, state=ACTIVE, durable=false}"
+            ]
+         }
+      ]
+   },
+   {
+      "id":"0xffffffffaee2a38a",
+      "type":"PointToPointIntent",
+      "appId":"org.onlab.onos.sdnip",
+      "state":"INSTALLED",
+      "selector":"[IPV4_SRC{ip=192.168.30.101/32}, IPV4_DST{ip=192.168.30.1/32}, IP_PROTO{protocol=6}, TCP_SRC{tcpPort=179}, ETH_TYPE{ethType=800}]",
+      "ingress":{
+         "device":"of:00000000000000a1",
+         "port":"1"
+      },
+      "egress":{
+         "device":"of:00000000000000a2",
+         "port":"1"
+      },
+      "installable":[
+         {
+            "id":"0x658af442",
+            "type":"PathIntent",
+            "appId":"org.onlab.onos.sdnip",
+            "resources":[
+               "DefaultEdgeLink{src=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, dst=HostLocation{elementId=of:00000000000000a1, portNumber=1}, type=EDGE, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a1, portNumber=3}, dst=ConnectPoint{elementId=of:00000000000000a2, portNumber=2}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultEdgeLink{src=HostLocation{elementId=of:00000000000000a2, portNumber=1}, dst=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, type=EDGE, state=ACTIVE, durable=false}"
+            ],
+            "selector":"[IPV4_SRC{ip=192.168.30.101/32}, IPV4_DST{ip=192.168.30.1/32}, IP_PROTO{protocol=6}, TCP_SRC{tcpPort=179}, ETH_TYPE{ethType=800}]",
+            "path":[
+               "DefaultEdgeLink{src=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, dst=HostLocation{elementId=of:00000000000000a1, portNumber=1}, type=EDGE, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a1, portNumber=3}, dst=ConnectPoint{elementId=of:00000000000000a2, portNumber=2}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultEdgeLink{src=HostLocation{elementId=of:00000000000000a2, portNumber=1}, dst=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, type=EDGE, state=ACTIVE, durable=false}"
+            ]
+         }
+      ]
+   },
+   {
+      "id":"0xffffffffaf46b62f",
+      "type":"PointToPointIntent",
+      "appId":"org.onlab.onos.sdnip",
+      "state":"INSTALLED",
+      "selector":"[IPV4_SRC{ip=192.168.20.1/32}, IPV4_DST{ip=192.168.20.101/32}, IP_PROTO{protocol=6}, ETH_TYPE{ethType=800}, TCP_DST{tcpPort=179}]",
+      "ingress":{
+         "device":"of:00000000000000a5",
+         "port":"1"
+      },
+      "egress":{
+         "device":"of:00000000000000a1",
+         "port":"1"
+      },
+      "installable":[
+         {
+            "id":"0x7a92607b",
+            "type":"PathIntent",
+            "appId":"org.onlab.onos.sdnip",
+            "resources":[
+               "DefaultEdgeLink{src=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, dst=HostLocation{elementId=of:00000000000000a5, portNumber=1}, type=EDGE, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a5, portNumber=2}, dst=ConnectPoint{elementId=of:00000000000000a3, portNumber=4}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a3, portNumber=2}, dst=ConnectPoint{elementId=of:00000000000000a1, portNumber=4}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultEdgeLink{src=HostLocation{elementId=of:00000000000000a1, portNumber=1}, dst=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, type=EDGE, state=ACTIVE, durable=false}"
+            ],
+            "selector":"[IPV4_SRC{ip=192.168.20.1/32}, IPV4_DST{ip=192.168.20.101/32}, IP_PROTO{protocol=6}, ETH_TYPE{ethType=800}, TCP_DST{tcpPort=179}]",
+            "path":[
+               "DefaultEdgeLink{src=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, dst=HostLocation{elementId=of:00000000000000a5, portNumber=1}, type=EDGE, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a5, portNumber=2}, dst=ConnectPoint{elementId=of:00000000000000a3, portNumber=4}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a3, portNumber=2}, dst=ConnectPoint{elementId=of:00000000000000a1, portNumber=4}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultEdgeLink{src=HostLocation{elementId=of:00000000000000a1, portNumber=1}, dst=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, type=EDGE, state=ACTIVE, durable=false}"
+            ]
+         }
+      ]
+   },
+   {
+      "id":"0xffffffff8d484b21",
+      "type":"PointToPointIntent",
+      "appId":"org.onlab.onos.sdnip",
+      "state":"INSTALLED",
+      "selector":"[IPV4_SRC{ip=192.168.10.101/32}, IPV4_DST{ip=192.168.10.1/32}, IP_PROTO{protocol=6}, ETH_TYPE{ethType=800}, TCP_DST{tcpPort=179}]",
+      "ingress":{
+         "device":"of:00000000000000a1",
+         "port":"1"
+      },
+      "egress":{
+         "device":"of:00000000000000a3",
+         "port":"1"
+      },
+      "installable":[
+         {
+            "id":"0xffffffffe8c0c42f",
+            "type":"PathIntent",
+            "appId":"org.onlab.onos.sdnip",
+            "resources":[
+               "DefaultEdgeLink{src=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, dst=HostLocation{elementId=of:00000000000000a1, portNumber=1}, type=EDGE, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a1, portNumber=4}, dst=ConnectPoint{elementId=of:00000000000000a3, portNumber=2}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultEdgeLink{src=HostLocation{elementId=of:00000000000000a3, portNumber=1}, dst=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, type=EDGE, state=ACTIVE, durable=false}"
+            ],
+            "selector":"[IPV4_SRC{ip=192.168.10.101/32}, IPV4_DST{ip=192.168.10.1/32}, IP_PROTO{protocol=6}, ETH_TYPE{ethType=800}, TCP_DST{tcpPort=179}]",
+            "path":[
+               "DefaultEdgeLink{src=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, dst=HostLocation{elementId=of:00000000000000a1, portNumber=1}, type=EDGE, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a1, portNumber=4}, dst=ConnectPoint{elementId=of:00000000000000a3, portNumber=2}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultEdgeLink{src=HostLocation{elementId=of:00000000000000a3, portNumber=1}, dst=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, type=EDGE, state=ACTIVE, durable=false}"
+            ]
+         }
+      ]
+   },
+   {
+      "id":"0xffffffffed295f82",
+      "type":"PointToPointIntent",
+      "appId":"org.onlab.onos.sdnip",
+      "state":"INSTALLED",
+      "selector":"[IPV4_SRC{ip=192.168.20.101/32}, IPV4_DST{ip=192.168.20.1/32}, IP_PROTO{protocol=1}, ETH_TYPE{ethType=800}]",
+      "ingress":{
+         "device":"of:00000000000000a1",
+         "port":"1"
+      },
+      "egress":{
+         "device":"of:00000000000000a5",
+         "port":"1"
+      },
+      "installable":[
+         {
+            "id":"0x28379d0",
+            "type":"PathIntent",
+            "appId":"org.onlab.onos.sdnip",
+            "resources":[
+               "DefaultEdgeLink{src=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, dst=HostLocation{elementId=of:00000000000000a1, portNumber=1}, type=EDGE, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a1, portNumber=4}, dst=ConnectPoint{elementId=of:00000000000000a3, portNumber=2}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a3, portNumber=4}, dst=ConnectPoint{elementId=of:00000000000000a5, portNumber=2}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultEdgeLink{src=HostLocation{elementId=of:00000000000000a5, portNumber=1}, dst=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, type=EDGE, state=ACTIVE, durable=false}"
+            ],
+            "selector":"[IPV4_SRC{ip=192.168.20.101/32}, IPV4_DST{ip=192.168.20.1/32}, IP_PROTO{protocol=1}, ETH_TYPE{ethType=800}]",
+            "path":[
+               "DefaultEdgeLink{src=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, dst=HostLocation{elementId=of:00000000000000a1, portNumber=1}, type=EDGE, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a1, portNumber=4}, dst=ConnectPoint{elementId=of:00000000000000a3, portNumber=2}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a3, portNumber=4}, dst=ConnectPoint{elementId=of:00000000000000a5, portNumber=2}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultEdgeLink{src=HostLocation{elementId=of:00000000000000a5, portNumber=1}, dst=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, type=EDGE, state=ACTIVE, durable=false}"
+            ]
+         }
+      ]
+   },
+   {
+      "id":"0xffffffffdba23bce",
+      "type":"MultiPointToSinglePointIntent",
+      "appId":"org.onlab.onos.sdnip",
+      "state":"INSTALLED",
+      "selector":"[IPV4_DST{ip=172.16.30.0/24}, ETH_TYPE{ethType=800}]",
+      "treatment":"[ETH_DST{mac=00:00:00:00:03:01}]",
+      "ingress":[
+         {
+            "device":"of:00000000000000a3",
+            "port":"1"
+         },
+         {
+            "device":"of:00000000000000a4",
+            "port":"4"
+         },
+         {
+            "device":"of:00000000000000a6",
+            "port":"1"
+         },
+         {
+            "device":"of:00000000000000a5",
+            "port":"1"
+         }
+      ],
+      "egress":{
+         "device":"of:00000000000000a2",
+         "port":"1"
+      },
+      "installable":[
+         {
+            "id":"0x5e70036",
+            "type":"LinkCollectionIntent",
+            "appId":"org.onlab.onos.sdnip",
+            "resources":[
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a4, portNumber=1}, dst=ConnectPoint{elementId=of:00000000000000a2, portNumber=3}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a5, portNumber=2}, dst=ConnectPoint{elementId=of:00000000000000a3, portNumber=4}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a6, portNumber=3}, dst=ConnectPoint{elementId=of:00000000000000a4, portNumber=3}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a3, portNumber=3}, dst=ConnectPoint{elementId=of:00000000000000a4, portNumber=2}, type=DIRECT, state=ACTIVE, durable=false}"
+            ],
+            "selector":"[IPV4_DST{ip=172.16.30.0/24}, ETH_TYPE{ethType=800}]",
+            "treatment":"[ETH_DST{mac=00:00:00:00:03:01}]",
+            "links":[
+               {
+                  "src":{
+                     "device":"of:00000000000000a4",
+                     "port":"1"
+                  },
+                  "dst":{
+                     "device":"of:00000000000000a2",
+                     "port":"3"
+                  },
+                  "type":"DIRECT",
+                  "state":"ACTIVE",
+                  "annotations":{
+
+                  }
+               },
+               {
+                  "src":{
+                     "device":"of:00000000000000a5",
+                     "port":"2"
+                  },
+                  "dst":{
+                     "device":"of:00000000000000a3",
+                     "port":"4"
+                  },
+                  "type":"DIRECT",
+                  "state":"ACTIVE",
+                  "annotations":{
+
+                  }
+               },
+               {
+                  "src":{
+                     "device":"of:00000000000000a6",
+                     "port":"3"
+                  },
+                  "dst":{
+                     "device":"of:00000000000000a4",
+                     "port":"3"
+                  },
+                  "type":"DIRECT",
+                  "state":"ACTIVE",
+                  "annotations":{
+
+                  }
+               },
+               {
+                  "src":{
+                     "device":"of:00000000000000a3",
+                     "port":"3"
+                  },
+                  "dst":{
+                     "device":"of:00000000000000a4",
+                     "port":"2"
+                  },
+                  "type":"DIRECT",
+                  "state":"ACTIVE",
+                  "annotations":{
+
+                  }
+               }
+            ]
+         }
+      ]
+   },
+   {
+      "id":"0xffffffffaf44f3b7",
+      "type":"PointToPointIntent",
+      "appId":"org.onlab.onos.sdnip",
+      "state":"INSTALLED",
+      "selector":"[IPV4_SRC{ip=192.168.20.101/32}, IPV4_DST{ip=192.168.20.1/32}, IP_PROTO{protocol=6}, ETH_TYPE{ethType=800}, TCP_DST{tcpPort=179}]",
+      "ingress":{
+         "device":"of:00000000000000a1",
+         "port":"1"
+      },
+      "egress":{
+         "device":"of:00000000000000a5",
+         "port":"1"
+      },
+      "installable":[
+         {
+            "id":"0xffffffffd73a0afb",
+            "type":"PathIntent",
+            "appId":"org.onlab.onos.sdnip",
+            "resources":[
+               "DefaultEdgeLink{src=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, dst=HostLocation{elementId=of:00000000000000a1, portNumber=1}, type=EDGE, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a1, portNumber=4}, dst=ConnectPoint{elementId=of:00000000000000a3, portNumber=2}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a3, portNumber=4}, dst=ConnectPoint{elementId=of:00000000000000a5, portNumber=2}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultEdgeLink{src=HostLocation{elementId=of:00000000000000a5, portNumber=1}, dst=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, type=EDGE, state=ACTIVE, durable=false}"
+            ],
+            "selector":"[IPV4_SRC{ip=192.168.20.101/32}, IPV4_DST{ip=192.168.20.1/32}, IP_PROTO{protocol=6}, ETH_TYPE{ethType=800}, TCP_DST{tcpPort=179}]",
+            "path":[
+               "DefaultEdgeLink{src=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, dst=HostLocation{elementId=of:00000000000000a1, portNumber=1}, type=EDGE, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a1, portNumber=4}, dst=ConnectPoint{elementId=of:00000000000000a3, portNumber=2}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a3, portNumber=4}, dst=ConnectPoint{elementId=of:00000000000000a5, portNumber=2}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultEdgeLink{src=HostLocation{elementId=of:00000000000000a5, portNumber=1}, dst=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, type=EDGE, state=ACTIVE, durable=false}"
+            ]
+         }
+      ]
+   },
+   {
+      "id":"0x751d3d2e",
+      "type":"PointToPointIntent",
+      "appId":"org.onlab.onos.sdnip",
+      "state":"INSTALLED",
+      "selector":"[IPV4_SRC{ip=192.168.60.1/32}, IPV4_DST{ip=192.168.60.101/32}, IP_PROTO{protocol=1}, ETH_TYPE{ethType=800}]",
+      "ingress":{
+         "device":"of:00000000000000a4",
+         "port":"4"
+      },
+      "egress":{
+         "device":"of:00000000000000a1",
+         "port":"1"
+      },
+      "installable":[
+         {
+            "id":"0xffffffffc4847e9e",
+            "type":"PathIntent",
+            "appId":"org.onlab.onos.sdnip",
+            "resources":[
+               "DefaultEdgeLink{src=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, dst=HostLocation{elementId=of:00000000000000a4, portNumber=4}, type=EDGE, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a4, portNumber=1}, dst=ConnectPoint{elementId=of:00000000000000a2, portNumber=3}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a2, portNumber=2}, dst=ConnectPoint{elementId=of:00000000000000a1, portNumber=3}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultEdgeLink{src=HostLocation{elementId=of:00000000000000a1, portNumber=1}, dst=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, type=EDGE, state=ACTIVE, durable=false}"
+            ],
+            "selector":"[IPV4_SRC{ip=192.168.60.1/32}, IPV4_DST{ip=192.168.60.101/32}, IP_PROTO{protocol=1}, ETH_TYPE{ethType=800}]",
+            "path":[
+               "DefaultEdgeLink{src=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, dst=HostLocation{elementId=of:00000000000000a4, portNumber=4}, type=EDGE, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a4, portNumber=1}, dst=ConnectPoint{elementId=of:00000000000000a2, portNumber=3}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a2, portNumber=2}, dst=ConnectPoint{elementId=of:00000000000000a1, portNumber=3}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultEdgeLink{src=HostLocation{elementId=of:00000000000000a1, portNumber=1}, dst=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, type=EDGE, state=ACTIVE, durable=false}"
+            ]
+         }
+      ]
+   },
+   {
+      "id":"0x3fb23806",
+      "type":"MultiPointToSinglePointIntent",
+      "appId":"org.onlab.onos.sdnip",
+      "state":"INSTALLED",
+      "selector":"[IPV4_DST{ip=2.0.0.0/24}, ETH_TYPE{ethType=800}]",
+      "treatment":"[ETH_DST{mac=00:00:00:00:03:01}]",
+      "ingress":[
+         {
+            "device":"of:00000000000000a3",
+            "port":"1"
+         },
+         {
+            "device":"of:00000000000000a4",
+            "port":"4"
+         },
+         {
+            "device":"of:00000000000000a6",
+            "port":"1"
+         },
+         {
+            "device":"of:00000000000000a5",
+            "port":"1"
+         }
+      ],
+      "egress":{
+         "device":"of:00000000000000a2",
+         "port":"1"
+      },
+      "installable":[
+         {
+            "id":"0x23d68afe",
+            "type":"LinkCollectionIntent",
+            "appId":"org.onlab.onos.sdnip",
+            "resources":[
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a4, portNumber=1}, dst=ConnectPoint{elementId=of:00000000000000a2, portNumber=3}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a5, portNumber=2}, dst=ConnectPoint{elementId=of:00000000000000a3, portNumber=4}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a6, portNumber=3}, dst=ConnectPoint{elementId=of:00000000000000a4, portNumber=3}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a3, portNumber=3}, dst=ConnectPoint{elementId=of:00000000000000a4, portNumber=2}, type=DIRECT, state=ACTIVE, durable=false}"
+            ],
+            "selector":"[IPV4_DST{ip=2.0.0.0/24}, ETH_TYPE{ethType=800}]",
+            "treatment":"[ETH_DST{mac=00:00:00:00:03:01}]",
+            "links":[
+               {
+                  "src":{
+                     "device":"of:00000000000000a4",
+                     "port":"1"
+                  },
+                  "dst":{
+                     "device":"of:00000000000000a2",
+                     "port":"3"
+                  },
+                  "type":"DIRECT",
+                  "state":"ACTIVE",
+                  "annotations":{
+
+                  }
+               },
+               {
+                  "src":{
+                     "device":"of:00000000000000a5",
+                     "port":"2"
+                  },
+                  "dst":{
+                     "device":"of:00000000000000a3",
+                     "port":"4"
+                  },
+                  "type":"DIRECT",
+                  "state":"ACTIVE",
+                  "annotations":{
+
+                  }
+               },
+               {
+                  "src":{
+                     "device":"of:00000000000000a6",
+                     "port":"3"
+                  },
+                  "dst":{
+                     "device":"of:00000000000000a4",
+                     "port":"3"
+                  },
+                  "type":"DIRECT",
+                  "state":"ACTIVE",
+                  "annotations":{
+
+                  }
+               },
+               {
+                  "src":{
+                     "device":"of:00000000000000a3",
+                     "port":"3"
+                  },
+                  "dst":{
+                     "device":"of:00000000000000a4",
+                     "port":"2"
+                  },
+                  "type":"DIRECT",
+                  "state":"ACTIVE",
+                  "annotations":{
+
+                  }
+               }
+            ]
+         }
+      ]
+   },
+   {
+      "id":"0x751be06e",
+      "type":"PointToPointIntent",
+      "appId":"org.onlab.onos.sdnip",
+      "state":"INSTALLED",
+      "selector":"[IPV4_SRC{ip=192.168.60.101/32}, IPV4_DST{ip=192.168.60.1/32}, IP_PROTO{protocol=1}, ETH_TYPE{ethType=800}]",
+      "ingress":{
+         "device":"of:00000000000000a1",
+         "port":"1"
+      },
+      "egress":{
+         "device":"of:00000000000000a4",
+         "port":"4"
+      },
+      "installable":[
+         {
+            "id":"0xffffffff85bf43de",
+            "type":"PathIntent",
+            "appId":"org.onlab.onos.sdnip",
+            "resources":[
+               "DefaultEdgeLink{src=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, dst=HostLocation{elementId=of:00000000000000a1, portNumber=1}, type=EDGE, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a1, portNumber=3}, dst=ConnectPoint{elementId=of:00000000000000a2, portNumber=2}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a2, portNumber=3}, dst=ConnectPoint{elementId=of:00000000000000a4, portNumber=1}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultEdgeLink{src=HostLocation{elementId=of:00000000000000a4, portNumber=4}, dst=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, type=EDGE, state=ACTIVE, durable=false}"
+            ],
+            "selector":"[IPV4_SRC{ip=192.168.60.101/32}, IPV4_DST{ip=192.168.60.1/32}, IP_PROTO{protocol=1}, ETH_TYPE{ethType=800}]",
+            "path":[
+               "DefaultEdgeLink{src=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, dst=HostLocation{elementId=of:00000000000000a1, portNumber=1}, type=EDGE, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a1, portNumber=3}, dst=ConnectPoint{elementId=of:00000000000000a2, portNumber=2}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a2, portNumber=3}, dst=ConnectPoint{elementId=of:00000000000000a4, portNumber=1}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultEdgeLink{src=HostLocation{elementId=of:00000000000000a4, portNumber=4}, dst=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, type=EDGE, state=ACTIVE, durable=false}"
+            ]
+         }
+      ]
+   },
+   {
+      "id":"0x6aea465f",
+      "type":"PointToPointIntent",
+      "appId":"org.onlab.onos.sdnip",
+      "state":"INSTALLED",
+      "selector":"[IPV4_SRC{ip=192.168.10.1/32}, IPV4_DST{ip=192.168.10.101/32}, IP_PROTO{protocol=6}, TCP_SRC{tcpPort=179}, ETH_TYPE{ethType=800}]",
+      "ingress":{
+         "device":"of:00000000000000a3",
+         "port":"1"
+      },
+      "egress":{
+         "device":"of:00000000000000a1",
+         "port":"1"
+      },
+      "installable":[
+         {
+            "id":"0x27f32021",
+            "type":"PathIntent",
+            "appId":"org.onlab.onos.sdnip",
+            "resources":[
+               "DefaultEdgeLink{src=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, dst=HostLocation{elementId=of:00000000000000a3, portNumber=1}, type=EDGE, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a3, portNumber=2}, dst=ConnectPoint{elementId=of:00000000000000a1, portNumber=4}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultEdgeLink{src=HostLocation{elementId=of:00000000000000a1, portNumber=1}, dst=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, type=EDGE, state=ACTIVE, durable=false}"
+            ],
+            "selector":"[IPV4_SRC{ip=192.168.10.1/32}, IPV4_DST{ip=192.168.10.101/32}, IP_PROTO{protocol=6}, TCP_SRC{tcpPort=179}, ETH_TYPE{ethType=800}]",
+            "path":[
+               "DefaultEdgeLink{src=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, dst=HostLocation{elementId=of:00000000000000a3, portNumber=1}, type=EDGE, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a3, portNumber=2}, dst=ConnectPoint{elementId=of:00000000000000a1, portNumber=4}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultEdgeLink{src=HostLocation{elementId=of:00000000000000a1, portNumber=1}, dst=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, type=EDGE, state=ACTIVE, durable=false}"
+            ]
+         }
+      ]
+   },
+   {
+      "id":"0xf25f553",
+      "type":"PointToPointIntent",
+      "appId":"org.onlab.onos.sdnip",
+      "state":"INSTALLED",
+      "selector":"[IPV4_SRC{ip=192.168.30.101/32}, IPV4_DST{ip=192.168.30.1/32}, IP_PROTO{protocol=1}, ETH_TYPE{ethType=800}]",
+      "ingress":{
+         "device":"of:00000000000000a1",
+         "port":"1"
+      },
+      "egress":{
+         "device":"of:00000000000000a2",
+         "port":"1"
+      },
+      "installable":[
+         {
+            "id":"0x5821c559",
+            "type":"PathIntent",
+            "appId":"org.onlab.onos.sdnip",
+            "resources":[
+               "DefaultEdgeLink{src=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, dst=HostLocation{elementId=of:00000000000000a1, portNumber=1}, type=EDGE, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a1, portNumber=3}, dst=ConnectPoint{elementId=of:00000000000000a2, portNumber=2}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultEdgeLink{src=HostLocation{elementId=of:00000000000000a2, portNumber=1}, dst=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, type=EDGE, state=ACTIVE, durable=false}"
+            ],
+            "selector":"[IPV4_SRC{ip=192.168.30.101/32}, IPV4_DST{ip=192.168.30.1/32}, IP_PROTO{protocol=1}, ETH_TYPE{ethType=800}]",
+            "path":[
+               "DefaultEdgeLink{src=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, dst=HostLocation{elementId=of:00000000000000a1, portNumber=1}, type=EDGE, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a1, portNumber=3}, dst=ConnectPoint{elementId=of:00000000000000a2, portNumber=2}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultEdgeLink{src=HostLocation{elementId=of:00000000000000a2, portNumber=1}, dst=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, type=EDGE, state=ACTIVE, durable=false}"
+            ]
+         }
+      ]
+   },
+   {
+      "id":"0xfffffffff3406cb6",
+      "type":"PointToPointIntent",
+      "appId":"org.onlab.onos.sdnip",
+      "state":"INSTALLED",
+      "selector":"[IPV4_SRC{ip=192.168.40.1/32}, IPV4_DST{ip=192.168.40.101/32}, IP_PROTO{protocol=6}, ETH_TYPE{ethType=800}, TCP_DST{tcpPort=179}]",
+      "ingress":{
+         "device":"of:00000000000000a6",
+         "port":"1"
+      },
+      "egress":{
+         "device":"of:00000000000000a1",
+         "port":"1"
+      },
+      "installable":[
+         {
+            "id":"0x14daab84",
+            "type":"PathIntent",
+            "appId":"org.onlab.onos.sdnip",
+            "resources":[
+               "DefaultEdgeLink{src=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, dst=HostLocation{elementId=of:00000000000000a6, portNumber=1}, type=EDGE, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a6, portNumber=3}, dst=ConnectPoint{elementId=of:00000000000000a4, portNumber=3}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a4, portNumber=2}, dst=ConnectPoint{elementId=of:00000000000000a3, portNumber=3}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a3, portNumber=2}, dst=ConnectPoint{elementId=of:00000000000000a1, portNumber=4}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultEdgeLink{src=HostLocation{elementId=of:00000000000000a1, portNumber=1}, dst=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, type=EDGE, state=ACTIVE, durable=false}"
+            ],
+            "selector":"[IPV4_SRC{ip=192.168.40.1/32}, IPV4_DST{ip=192.168.40.101/32}, IP_PROTO{protocol=6}, ETH_TYPE{ethType=800}, TCP_DST{tcpPort=179}]",
+            "path":[
+               "DefaultEdgeLink{src=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, dst=HostLocation{elementId=of:00000000000000a6, portNumber=1}, type=EDGE, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a6, portNumber=3}, dst=ConnectPoint{elementId=of:00000000000000a4, portNumber=3}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a4, portNumber=2}, dst=ConnectPoint{elementId=of:00000000000000a3, portNumber=3}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a3, portNumber=2}, dst=ConnectPoint{elementId=of:00000000000000a1, portNumber=4}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultEdgeLink{src=HostLocation{elementId=of:00000000000000a1, portNumber=1}, dst=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, type=EDGE, state=ACTIVE, durable=false}"
+            ]
+         }
+      ]
+   },
+   {
+      "id":"0xffffffffd7d10b27",
+      "type":"MultiPointToSinglePointIntent",
+      "appId":"org.onlab.onos.sdnip",
+      "state":"INSTALLED",
+      "selector":"[IPV4_DST{ip=1.0.0.0/24}, ETH_TYPE{ethType=800}]",
+      "treatment":"[ETH_DST{mac=00:00:00:00:03:01}]",
+      "ingress":[
+         {
+            "device":"of:00000000000000a3",
+            "port":"1"
+         },
+         {
+            "device":"of:00000000000000a4",
+            "port":"4"
+         },
+         {
+            "device":"of:00000000000000a6",
+            "port":"1"
+         },
+         {
+            "device":"of:00000000000000a5",
+            "port":"1"
+         }
+      ],
+      "egress":{
+         "device":"of:00000000000000a2",
+         "port":"1"
+      },
+      "installable":[
+         {
+            "id":"0xffffffff8f921bfd",
+            "type":"LinkCollectionIntent",
+            "appId":"org.onlab.onos.sdnip",
+            "resources":[
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a4, portNumber=1}, dst=ConnectPoint{elementId=of:00000000000000a2, portNumber=3}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a5, portNumber=2}, dst=ConnectPoint{elementId=of:00000000000000a3, portNumber=4}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a6, portNumber=3}, dst=ConnectPoint{elementId=of:00000000000000a4, portNumber=3}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a3, portNumber=3}, dst=ConnectPoint{elementId=of:00000000000000a4, portNumber=2}, type=DIRECT, state=ACTIVE, durable=false}"
+            ],
+            "selector":"[IPV4_DST{ip=1.0.0.0/24}, ETH_TYPE{ethType=800}]",
+            "treatment":"[ETH_DST{mac=00:00:00:00:03:01}]",
+            "links":[
+               {
+                  "src":{
+                     "device":"of:00000000000000a4",
+                     "port":"1"
+                  },
+                  "dst":{
+                     "device":"of:00000000000000a2",
+                     "port":"3"
+                  },
+                  "type":"DIRECT",
+                  "state":"ACTIVE",
+                  "annotations":{
+
+                  }
+               },
+               {
+                  "src":{
+                     "device":"of:00000000000000a5",
+                     "port":"2"
+                  },
+                  "dst":{
+                     "device":"of:00000000000000a3",
+                     "port":"4"
+                  },
+                  "type":"DIRECT",
+                  "state":"ACTIVE",
+                  "annotations":{
+
+                  }
+               },
+               {
+                  "src":{
+                     "device":"of:00000000000000a6",
+                     "port":"3"
+                  },
+                  "dst":{
+                     "device":"of:00000000000000a4",
+                     "port":"3"
+                  },
+                  "type":"DIRECT",
+                  "state":"ACTIVE",
+                  "annotations":{
+
+                  }
+               },
+               {
+                  "src":{
+                     "device":"of:00000000000000a3",
+                     "port":"3"
+                  },
+                  "dst":{
+                     "device":"of:00000000000000a4",
+                     "port":"2"
+                  },
+                  "type":"DIRECT",
+                  "state":"ACTIVE",
+                  "annotations":{
+
+                  }
+               }
+            ]
+         }
+      ]
+   },
+   {
+      "id":"0xffffffffa79364e5",
+      "type":"MultiPointToSinglePointIntent",
+      "appId":"org.onlab.onos.sdnip",
+      "state":"INSTALLED",
+      "selector":"[IPV4_DST{ip=3.0.0.0/24}, ETH_TYPE{ethType=800}]",
+      "treatment":"[ETH_DST{mac=00:00:00:00:03:01}]",
+      "ingress":[
+         {
+            "device":"of:00000000000000a3",
+            "port":"1"
+         },
+         {
+            "device":"of:00000000000000a4",
+            "port":"4"
+         },
+         {
+            "device":"of:00000000000000a6",
+            "port":"1"
+         },
+         {
+            "device":"of:00000000000000a5",
+            "port":"1"
+         }
+      ],
+      "egress":{
+         "device":"of:00000000000000a2",
+         "port":"1"
+      },
+      "installable":[
+         {
+            "id":"0xffffffffb81af9ff",
+            "type":"LinkCollectionIntent",
+            "appId":"org.onlab.onos.sdnip",
+            "resources":[
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a4, portNumber=1}, dst=ConnectPoint{elementId=of:00000000000000a2, portNumber=3}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a5, portNumber=2}, dst=ConnectPoint{elementId=of:00000000000000a3, portNumber=4}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a6, portNumber=3}, dst=ConnectPoint{elementId=of:00000000000000a4, portNumber=3}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a3, portNumber=3}, dst=ConnectPoint{elementId=of:00000000000000a4, portNumber=2}, type=DIRECT, state=ACTIVE, durable=false}"
+            ],
+            "selector":"[IPV4_DST{ip=3.0.0.0/24}, ETH_TYPE{ethType=800}]",
+            "treatment":"[ETH_DST{mac=00:00:00:00:03:01}]",
+            "links":[
+               {
+                  "src":{
+                     "device":"of:00000000000000a4",
+                     "port":"1"
+                  },
+                  "dst":{
+                     "device":"of:00000000000000a2",
+                     "port":"3"
+                  },
+                  "type":"DIRECT",
+                  "state":"ACTIVE",
+                  "annotations":{
+
+                  }
+               },
+               {
+                  "src":{
+                     "device":"of:00000000000000a5",
+                     "port":"2"
+                  },
+                  "dst":{
+                     "device":"of:00000000000000a3",
+                     "port":"4"
+                  },
+                  "type":"DIRECT",
+                  "state":"ACTIVE",
+                  "annotations":{
+
+                  }
+               },
+               {
+                  "src":{
+                     "device":"of:00000000000000a6",
+                     "port":"3"
+                  },
+                  "dst":{
+                     "device":"of:00000000000000a4",
+                     "port":"3"
+                  },
+                  "type":"DIRECT",
+                  "state":"ACTIVE",
+                  "annotations":{
+
+                  }
+               },
+               {
+                  "src":{
+                     "device":"of:00000000000000a3",
+                     "port":"3"
+                  },
+                  "dst":{
+                     "device":"of:00000000000000a4",
+                     "port":"2"
+                  },
+                  "type":"DIRECT",
+                  "state":"ACTIVE",
+                  "annotations":{
+
+                  }
+               }
+            ]
+         }
+      ]
+   },
+   {
+      "id":"0x14d9eb65",
+      "type":"PointToPointIntent",
+      "appId":"org.onlab.onos.sdnip",
+      "state":"INSTALLED",
+      "selector":"[IPV4_SRC{ip=192.168.60.1/32}, IPV4_DST{ip=192.168.60.101/32}, IP_PROTO{protocol=6}, TCP_SRC{tcpPort=179}, ETH_TYPE{ethType=800}]",
+      "ingress":{
+         "device":"of:00000000000000a4",
+         "port":"4"
+      },
+      "egress":{
+         "device":"of:00000000000000a1",
+         "port":"1"
+      },
+      "installable":[
+         {
+            "id":"0xffffffffd1edad87",
+            "type":"PathIntent",
+            "appId":"org.onlab.onos.sdnip",
+            "resources":[
+               "DefaultEdgeLink{src=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, dst=HostLocation{elementId=of:00000000000000a4, portNumber=4}, type=EDGE, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a4, portNumber=1}, dst=ConnectPoint{elementId=of:00000000000000a2, portNumber=3}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a2, portNumber=2}, dst=ConnectPoint{elementId=of:00000000000000a1, portNumber=3}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultEdgeLink{src=HostLocation{elementId=of:00000000000000a1, portNumber=1}, dst=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, type=EDGE, state=ACTIVE, durable=false}"
+            ],
+            "selector":"[IPV4_SRC{ip=192.168.60.1/32}, IPV4_DST{ip=192.168.60.101/32}, IP_PROTO{protocol=6}, TCP_SRC{tcpPort=179}, ETH_TYPE{ethType=800}]",
+            "path":[
+               "DefaultEdgeLink{src=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, dst=HostLocation{elementId=of:00000000000000a4, portNumber=4}, type=EDGE, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a4, portNumber=1}, dst=ConnectPoint{elementId=of:00000000000000a2, portNumber=3}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a2, portNumber=2}, dst=ConnectPoint{elementId=of:00000000000000a1, portNumber=3}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultEdgeLink{src=HostLocation{elementId=of:00000000000000a1, portNumber=1}, dst=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, type=EDGE, state=ACTIVE, durable=false}"
+            ]
+         }
+      ]
+   },
+   {
+      "id":"0x14d88ea5",
+      "type":"PointToPointIntent",
+      "appId":"org.onlab.onos.sdnip",
+      "state":"INSTALLED",
+      "selector":"[IPV4_SRC{ip=192.168.60.101/32}, IPV4_DST{ip=192.168.60.1/32}, IP_PROTO{protocol=6}, TCP_SRC{tcpPort=179}, ETH_TYPE{ethType=800}]",
+      "ingress":{
+         "device":"of:00000000000000a1",
+         "port":"1"
+      },
+      "egress":{
+         "device":"of:00000000000000a4",
+         "port":"4"
+      },
+      "installable":[
+         {
+            "id":"0xffffffff932872c7",
+            "type":"PathIntent",
+            "appId":"org.onlab.onos.sdnip",
+            "resources":[
+               "DefaultEdgeLink{src=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, dst=HostLocation{elementId=of:00000000000000a1, portNumber=1}, type=EDGE, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a1, portNumber=3}, dst=ConnectPoint{elementId=of:00000000000000a2, portNumber=2}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a2, portNumber=3}, dst=ConnectPoint{elementId=of:00000000000000a4, portNumber=1}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultEdgeLink{src=HostLocation{elementId=of:00000000000000a4, portNumber=4}, dst=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, type=EDGE, state=ACTIVE, durable=false}"
+            ],
+            "selector":"[IPV4_SRC{ip=192.168.60.101/32}, IPV4_DST{ip=192.168.60.1/32}, IP_PROTO{protocol=6}, TCP_SRC{tcpPort=179}, ETH_TYPE{ethType=800}]",
+            "path":[
+               "DefaultEdgeLink{src=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, dst=HostLocation{elementId=of:00000000000000a1, portNumber=1}, type=EDGE, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a1, portNumber=3}, dst=ConnectPoint{elementId=of:00000000000000a2, portNumber=2}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a2, portNumber=3}, dst=ConnectPoint{elementId=of:00000000000000a4, portNumber=1}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultEdgeLink{src=HostLocation{elementId=of:00000000000000a4, portNumber=4}, dst=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, type=EDGE, state=ACTIVE, durable=false}"
+            ]
+         }
+      ]
+   },
+   {
+      "id":"0xffffffffd0df53a2",
+      "type":"PointToPointIntent",
+      "appId":"org.onlab.onos.sdnip",
+      "state":"INSTALLED",
+      "selector":"[IPV4_SRC{ip=192.168.40.101/32}, IPV4_DST{ip=192.168.40.1/32}, IP_PROTO{protocol=6}, TCP_SRC{tcpPort=179}, ETH_TYPE{ethType=800}]",
+      "ingress":{
+         "device":"of:00000000000000a1",
+         "port":"1"
+      },
+      "egress":{
+         "device":"of:00000000000000a6",
+         "port":"1"
+      },
+      "installable":[
+         {
+            "id":"0x12f07370",
+            "type":"PathIntent",
+            "appId":"org.onlab.onos.sdnip",
+            "resources":[
+               "DefaultEdgeLink{src=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, dst=HostLocation{elementId=of:00000000000000a1, portNumber=1}, type=EDGE, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a1, portNumber=4}, dst=ConnectPoint{elementId=of:00000000000000a3, portNumber=2}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a3, portNumber=4}, dst=ConnectPoint{elementId=of:00000000000000a5, portNumber=2}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a5, portNumber=3}, dst=ConnectPoint{elementId=of:00000000000000a6, portNumber=4}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultEdgeLink{src=HostLocation{elementId=of:00000000000000a6, portNumber=1}, dst=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, type=EDGE, state=ACTIVE, durable=false}"
+            ],
+            "selector":"[IPV4_SRC{ip=192.168.40.101/32}, IPV4_DST{ip=192.168.40.1/32}, IP_PROTO{protocol=6}, TCP_SRC{tcpPort=179}, ETH_TYPE{ethType=800}]",
+            "path":[
+               "DefaultEdgeLink{src=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, dst=HostLocation{elementId=of:00000000000000a1, portNumber=1}, type=EDGE, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a1, portNumber=4}, dst=ConnectPoint{elementId=of:00000000000000a3, portNumber=2}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a3, portNumber=4}, dst=ConnectPoint{elementId=of:00000000000000a5, portNumber=2}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultLink{src=ConnectPoint{elementId=of:00000000000000a5, portNumber=3}, dst=ConnectPoint{elementId=of:00000000000000a6, portNumber=4}, type=DIRECT, state=ACTIVE, durable=false}",
+               "DefaultEdgeLink{src=HostLocation{elementId=of:00000000000000a6, portNumber=1}, dst=ConnectPoint{elementId=00:00:00:00:00:00/-1, portNumber=0}, type=EDGE, state=ACTIVE, durable=false}"
+            ]
+         }
+      ]
+   }
+]

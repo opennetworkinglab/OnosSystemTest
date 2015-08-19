@@ -116,7 +116,7 @@ class SDNIPperf:
 
         main.step("Sleep 1200 seconds")
         # wait until SDN-IP receives all routes and ONOS installs all intents
-        time.sleep( main.params[ 'timers' ][ 'SystemBoot' ] )
+        time.sleep( float(main.params[ 'timers' ][ 'SystemBoot' ]) )
 
         main.step( "Checking routes installed" )
 

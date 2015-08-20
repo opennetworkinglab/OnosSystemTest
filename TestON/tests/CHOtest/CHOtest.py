@@ -1762,7 +1762,7 @@ class CHOtest:
 
         main.log.report( "Bring some core links down and verify ping all (Host Intents-Spine Topo)" )
         main.log.report( "___________________________________________________________________________" )
-
+        main.log.case( "Bring some core links down and verify ping all (Host Intents-Spine Topo)" )
         linkIndex = range(4)
         linkIndexS9 = random.sample(linkIndex,1)[0]
         linkIndex.remove(linkIndexS9)
@@ -1863,6 +1863,130 @@ class CHOtest:
 
         caseResult84 = linkUp and pingResultLinkUp
         utilities.assert_equals( expect=main.TRUE, actual=caseResult84,
+                                 onpass="Link Up Test PASS",
+                                 onfail="Link Up Test FAIL" )
+
+    def CASE75( self, main ):
+        """
+        Randomly bring some core links down and verify ping all ( Point Intents-Spine Topo)
+        """
+        import random
+        main.randomLink1 = []
+        main.randomLink2 = []
+        main.randomLink3 = []
+        main.randomLink4 = []
+        link1End1 = main.params[ 'SPINECORELINKS' ][ 'linkS9' ]
+        link1End2top = main.params[ 'SPINECORELINKS' ][ 'linkS9top' ].split( ',' )
+        link1End2bot = main.params[ 'SPINECORELINKS' ][ 'linkS9bot' ].split( ',' )
+        link2End1 = main.params[ 'SPINECORELINKS' ][ 'linkS10' ]
+        link2End2top = main.params[ 'SPINECORELINKS' ][ 'linkS10top' ].split( ',' )
+        link2End2bot = main.params[ 'SPINECORELINKS' ][ 'linkS10bot' ].split( ',' )
+        link_sleep = int( main.params[ 'timers' ][ 'LinkDiscovery' ] )
+        main.pingTimeout = 400
+
+        main.log.report( "Bring some core links down and verify ping all (Point Intents-Spine Topo)" )
+        main.log.report( "___________________________________________________________________________" )
+        main.case( "Bring some core links down and verify ping all (Point Intents-Spine Topo)" )
+        linkIndex = range(4)
+        linkIndexS9 = random.sample(linkIndex,1)[0]
+        linkIndex.remove(linkIndexS9)
+        linkIndexS10 = random.sample(linkIndex,1)[0]
+        main.randomLink1 = link1End2top[linkIndexS9]
+        main.randomLink2 = link2End2top[linkIndexS10]
+        main.randomLink3 = random.sample(link1End2bot,1)[0]
+        main.randomLink4 = random.sample(link2End2bot,1)[0]
+
+        # Work around for link state propagation delay. Added some sleep time.
+        # main.Mininet1.link( END1=link1End1, END2=main.randomLink1, OPTION="down" )
+        # main.Mininet1.link( END1=link2End1, END2=main.randomLink2, OPTION="down" )
+        main.Mininet1.link( END1=link1End1, END2=main.randomLink3, OPTION="down" )
+        time.sleep( link_sleep )
+        main.Mininet1.link( END1=link2End1, END2=main.randomLink4, OPTION="down" )
+        time.sleep( link_sleep )
+
+        topology_output = main.ONOScli1.topology()
+        linkDown = main.ONOSbench.checkStatus(
+            topology_output, main.numMNswitches, str(
+                int( main.numMNlinks ) - 8 ))
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=linkDown,
+            onpass="Link Down discovered properly",
+            onfail="Link down was not discovered in " +
+            str( link_sleep ) +
+            " seconds" )
+
+        main.step( "Verify Ping across all hosts" )
+        pingResultLinkDown = main.FALSE
+        time1 = time.time()
+        pingResultLinkDown = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=False,acceptableFailed=5)
+        time2 = time.time()
+        timeDiff = round( ( time2 - time1 ), 2 )
+        main.log.report(
+            "Time taken for Ping All: " +
+            str( timeDiff ) +
+            " seconds" )
+        utilities.assert_equals( expect=main.TRUE, actual=pingResultLinkDown,
+                                 onpass="PING ALL PASS",
+                                 onfail="PING ALL FAIL" )
+
+        caseResult75 = linkDown and pingResultLinkDown
+        utilities.assert_equals( expect=main.TRUE, actual=caseResult75,
+                                 onpass="Random Link cut Test PASS",
+                                 onfail="Random Link cut Test FAIL" )
+
+    def CASE85( self, main ):
+        """
+        Bring the core links up that are down and verify ping all ( Point Intents-Spine Topo )
+        """
+        import random
+        link1End1 = main.params[ 'SPINECORELINKS' ][ 'linkS9' ]
+        link2End1 = main.params[ 'SPINECORELINKS' ][ 'linkS10' ]
+        link_sleep = int( main.params[ 'timers' ][ 'LinkDiscovery' ] )
+        main.log.report(
+            "Bring the core links up that are down and verify ping all (Point Intents-Spine Topo" )
+        main.log.report(
+            "__________________________________________________________________" )
+        main.case(
+            "Point intents - Bring the core links up that are down and verify ping all" )
+
+        # Work around for link state propagation delay. Added some sleep time.
+        # main.Mininet1.link( END1=link1End1, END2=main.randomLink1, OPTION="up" )
+        # main.Mininet1.link( END1=link2End1, END2=main.randomLink2, OPTION="up" )
+        main.Mininet1.link( END1=link1End1, END2=main.randomLink3, OPTION="up" )
+        time.sleep( link_sleep )
+        main.Mininet1.link( END1=link2End1, END2=main.randomLink4, OPTION="up" )
+        time.sleep( link_sleep )
+
+        topology_output = main.ONOScli1.topology()
+        linkUp = main.ONOSbench.checkStatus(
+            topology_output,
+            main.numMNswitches,
+            str( main.numMNlinks ) )
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=linkUp,
+            onpass="Link up discovered properly",
+            onfail="Link up was not discovered in " +
+            str( link_sleep ) +
+            " seconds" )
+
+        main.step( "Verify Ping across all hosts" )
+        pingResultLinkUp = main.FALSE
+        time1 = time.time()
+        pingResultLinkUp = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=False,acceptableFailed=5)
+        time2 = time.time()
+        timeDiff = round( ( time2 - time1 ), 2 )
+        main.log.report(
+            "Time taken for Ping All: " +
+            str( timeDiff ) +
+            " seconds" )
+        utilities.assert_equals( expect=main.TRUE, actual=pingResultLinkUp,
+                                 onpass="PING ALL PASS",
+                                 onfail="PING ALL FAIL" )
+
+        caseResult85 = linkUp and pingResultLinkUp
+        utilities.assert_equals( expect=main.TRUE, actual=caseResult85,
                                  onpass="Link Up Test PASS",
                                  onfail="Link Up Test FAIL" )
 

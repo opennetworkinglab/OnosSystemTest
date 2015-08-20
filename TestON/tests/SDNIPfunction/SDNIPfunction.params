@@ -1,0 +1,35 @@
+<PARAMS>
+
+    <testcases>100, [4]*5</testcases>
+
+    #Environment variables
+    <ENV>
+        <cellName>sdnip_single_instance</cellName>
+    </ENV>
+
+    <CTRL>
+        <numCtrl>1</numCtrl>
+        <ip1>10.128.4.52</ip1>
+        <port1>6633</port1>
+    </CTRL>
+
+    <GIT>
+        <autoPull>on</autoPull>
+        <branch1>master</branch1>
+        <branch2>onos-1.2</branch2>
+    </GIT>
+
+    <JSON>
+        <prefix>prefix</prefix>
+        <nextHop>nextHop</nextHop>
+    </JSON>
+
+    <timers>
+        <SdnIpSetup>10</SdnIpSetup>
+        <PingTestWithRoutes>20</PingTestWithRoutes>
+        <PingTestWithoutRoutes>100</PingTestWithoutRoutes>
+        <RouteDelivery>60</RouteDelivery>
+        <PathAvailable>20</PathAvailable>
+    </timers>
+
+</PARAMS>

@@ -1783,7 +1783,7 @@ class CHOtest:
         topology_output = main.ONOScli1.topology()
         linkDown = main.ONOSbench.checkStatus(
             topology_output, main.numMNswitches, str(
-                int( main.numMNlinks ) - 8 ))
+                int( main.numMNlinks ) - 4 ))
         utilities.assert_equals(
             expect=main.TRUE,
             actual=linkDown,
@@ -1907,7 +1907,7 @@ class CHOtest:
         topology_output = main.ONOScli1.topology()
         linkDown = main.ONOSbench.checkStatus(
             topology_output, main.numMNswitches, str(
-                int( main.numMNlinks ) - 8 ))
+                int( main.numMNlinks ) - 4 ))
         utilities.assert_equals(
             expect=main.TRUE,
             actual=linkDown,

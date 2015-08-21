@@ -4215,3 +4215,94 @@ class HAminorityRestart:
                                  onpass="Set retain correct",
                                  onfail="Set retain was incorrect" )
 
+        # Transactional maps
+        main.step( "Partitioned Transactional maps put" )
+        tMapValue = "Testing"
+        numKeys = 100
+        putResult = True
+        putResponses = main.CLIs[ 0 ].transactionalMapPut( numKeys, tMapValue )
+        if len( putResponses ) == 100:
+            for i in putResponses:
+                if putResponses[ i ][ 'value' ] != tMapValue:
+                    putResult = False
+        else:
+            putResult = False
+        if not putResult:
+            main.log.debug( "Put response values: " + str( putResponses ) )
+        utilities.assert_equals( expect=True,
+                                 actual=putResult,
+                                 onpass="Partitioned Transactional Map put successful",
+                                 onfail="Partitioned Transactional Map put values are incorrect" )
+
+        main.step( "Partitioned Transactional maps get" )
+        getCheck = True
+        for n in range( 1, numKeys + 1 ):
+            getResponses = []
+            threads = []
+            valueCheck = True
+            for i in range( main.numCtrls ):
+                t = main.Thread( target=main.CLIs[i].transactionalMapGet,
+                                 name="TMap-get-" + str( i ),
+                                 args=[ "Key" + str ( n ) ] )
+                threads.append( t )
+                t.start()
+            for t in threads:
+                t.join()
+                getResponses.append( t.result )
+            for node in getResponses:
+                if node != tMapValue:
+                    valueCheck = False
+            if not valueCheck:
+                main.log.warn( "Values for key 'Key" + str( n ) + "' do not match:" )
+                main.log.warn( getResponses )
+            getCheck = getCheck and valueCheck
+        utilities.assert_equals( expect=True,
+                                 actual=getCheck,
+                                 onpass="Partitioned Transactional Map get values were correct",
+                                 onfail="Partitioned Transactional Map values incorrect" )
+
+        main.step( "In-memory Transactional maps put" )
+        tMapValue = "Testing"
+        numKeys = 100
+        putResult = True
+        putResponses = main.CLIs[ 0 ].transactionalMapPut( numKeys, tMapValue, inMemory=True )
+        if len( putResponses ) == 100:
+            for i in putResponses:
+                if putResponses[ i ][ 'value' ] != tMapValue:
+                    putResult = False
+        else:
+            putResult = False
+        if not putResult:
+            main.log.debug( "Put response values: " + str( putResponses ) )
+        utilities.assert_equals( expect=True,
+                                 actual=putResult,
+                                 onpass="In-Memory Transactional Map put successful",
+                                 onfail="In-Memory Transactional Map put values are incorrect" )
+
+        main.step( "In-Memory Transactional maps get" )
+        getCheck = True
+        for n in range( 1, numKeys + 1 ):
+            getResponses = []
+            threads = []
+            valueCheck = True
+            for i in range( main.numCtrls ):
+                t = main.Thread( target=main.CLIs[i].transactionalMapGet,
+                                 name="TMap-get-" + str( i ),
+                                 args=[ "Key" + str ( n ) ],
+                                 kwargs={ "inMemory": True } )
+                threads.append( t )
+                t.start()
+            for t in threads:
+                t.join()
+                getResponses.append( t.result )
+            for node in getResponses:
+                if node != tMapValue:
+                    valueCheck = False
+            if not valueCheck:
+                main.log.warn( "Values for key 'Key" + str( n ) + "' do not match:" )
+                main.log.warn( getResponses )
+            getCheck = getCheck and valueCheck
+        utilities.assert_equals( expect=True,
+                                 actual=getCheck,
+                                 onpass="In-Memory Transactional Map get values were correct",
+                                 onfail="In-Memory Transactional Map values incorrect" )

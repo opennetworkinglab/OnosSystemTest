@@ -3852,7 +3852,6 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
-
     def summary( self, jsonFormat=True ):
         """
         Description: Execute summary command in onos
@@ -3874,6 +3873,131 @@ class OnosCliDriver( CLI ):
                                 "summary command" )
                 return main.FALSE
             return handle
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
+    def transactionalMapGet( self, keyName, inMemory=False ):
+        """
+        CLI command to get the value of a key in a consistent map using
+        transactions. This a test function and can only get keys from the
+        test map hard coded into the cli command
+        Required arguments:
+            keyName - The name of the key to get
+        Optional arguments:
+            inMemory - use in memory map for the counter
+        returns:
+            The string value of the key or
+            None on Error
+        """
+        try:
+            keyName = str( keyName )
+            cmdStr = "transactional-map-test-get "
+            if inMemory:
+                cmdStr += "-i "
+            cmdStr += keyName
+            output = self.sendline( cmdStr )
+            try:
+                # TODO: Maybe make this less hardcoded
+                # ConsistentMap Exceptions
+                assert "org.onosproject.store.service" not in output
+                # Node not leader
+                assert "java.lang.IllegalStateException" not in output
+            except AssertionError:
+                main.log.error( "Error in processing '" + cmdStr + "' " +
+                                "command: " + str( output ) )
+                return None
+            pattern = "Key-value pair \(" + keyName + ", (?P<value>.+)\) found."
+            if "Key " + keyName + " not found." in output:
+                return None
+            else:
+                match = re.search( pattern, output )
+                if match:
+                    return match.groupdict()[ 'value' ]
+                else:
+                    main.log.error( self.name + ": transactionlMapGet did not" +
+                                    " match expected output." )
+                    main.log.debug( self.name + " expected: " + pattern )
+                    main.log.debug( self.name + " actual: " + repr( output ) )
+                    return None
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
+    def transactionalMapPut( self, numKeys, value, inMemory=False ):
+        """
+        CLI command to put a value into 'numKeys' number of keys in a
+        consistent map using transactions. This a test function and can only
+        put into keys named 'Key#' of the test map hard coded into the cli command
+        Required arguments:
+            numKeys - Number of keys to add the value to
+            value - The string value to put into the keys
+        Optional arguments:
+            inMemory - use in memory map for the counter
+        returns:
+            A dictionary whose keys are the name of the keys put into the map
+            and the values of the keys are dictionaries whose key-values are
+            'value': value put into map and optionaly
+            'oldValue': Previous value in the key or
+            None on Error
+
+            Example output
+            { 'Key1': {'oldValue': 'oldTestValue', 'value': 'Testing'},
+              'Key2': {'value': 'Testing'} }
+        """
+        try:
+            numKeys = str( numKeys )
+            value = str( value )
+            cmdStr = "transactional-map-test-put "
+            if inMemory:
+                cmdStr += "-i "
+            cmdStr += numKeys + " " + value
+            output = self.sendline( cmdStr )
+            try:
+                # TODO: Maybe make this less hardcoded
+                # ConsistentMap Exceptions
+                assert "org.onosproject.store.service" not in output
+                # Node not leader
+                assert "java.lang.IllegalStateException" not in output
+            except AssertionError:
+                main.log.error( "Error in processing '" + cmdStr + "' " +
+                                "command: " + str( output ) )
+                return None
+            newPattern = 'Created Key (?P<key>(\w)+) with value (?P<value>(.)+)\.'
+            updatedPattern = "Put (?P<value>(.)+) into key (?P<key>(\w)+)\. The old value was (?P<oldValue>(.)+)\."
+            results = {}
+            for line in output.splitlines():
+                new = re.search( newPattern, line )
+                updated = re.search( updatedPattern, line )
+                if new:
+                    results[ new.groupdict()[ 'key' ] ] = { 'value': new.groupdict()[ 'value' ] }
+                elif updated:
+                    results[ updated.groupdict()[ 'key' ] ] = { 'value': updated.groupdict()[ 'value' ],
+                                                            'oldValue': updated.groupdict()[ 'oldValue' ] }
+                else:
+                    main.log.error( self.name + ": transactionlMapGet did not" +
+                                    " match expected output." )
+                    main.log.debug( self.name + " expected: " + pattern )
+                    main.log.debug( self.name + " actual: " + repr( output ) )
+            return results
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
             return None

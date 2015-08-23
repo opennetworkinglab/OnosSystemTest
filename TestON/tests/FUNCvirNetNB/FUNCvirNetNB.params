@@ -24,7 +24,7 @@
 
     <CTRL>
         <ip1>OC1</ip1>
-        <port1>6633</port1>
+        <port1>6653</port1>
     </CTRL>
 
     <HTTP>

@@ -28,7 +28,7 @@
     </GIT>
 
     <CTRL>
-        <port>6633</port>
+        <port>6653</port>
     </CTRL>
 
     <SLEEP>

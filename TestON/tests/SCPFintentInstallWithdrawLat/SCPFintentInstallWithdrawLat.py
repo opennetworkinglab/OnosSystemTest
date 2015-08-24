@@ -232,22 +232,19 @@ class SCPFintentInstallWithdrawLat:
                         if "install" in line:
                             installed.append(int(line.split(" ")[5]))
 
-                    for line in myRawResult:
                         if "withdraw" in line:
                             withdrawn.append(int(line.split(" ")[5]))
 
-                    for line in myRawResult:
                         if "Failure:" in line:
                             main.log.error("INTENT TEST FAILURE, ABORTING TESTCASE")
                             testStatus = "fail"
                 if testStatus == "fail":
-                    break
-
                     print("installed: " + str(installed))
                     print("withraw: " + str(withdrawn) + "\n")
                     if withdrawn[len(withdrawn) -1] > 1000 or installed[len(installed) -1] > 1000:
                         main.log.info("ABNORMAL VALUE, CHECKING LOG")
                         main.ONOSbench.logReport(ONOSIp[1], ["ERROR", "WARNING", "EXCEPT"], outputMode="d")
+                    break
 
             if testStatus == "fail":
                 break

@@ -40,7 +40,7 @@ class SDNIPperf:
         #Need to push some new code to ONOS before using the git pull
         #gitPullResult = main.ONOSbench.gitPull()
 
-        main.step( "Using mvn clean & install" )
+        main.step( "Using mvn clean install" )
         if gitPullResult == main.TRUE:
             cleanInstallResult = main.ONOSbench.cleanInstall()
         else:
@@ -116,7 +116,7 @@ class SDNIPperf:
 
         main.step("Sleep 1200 seconds")
         # wait until SDN-IP receives all routes and ONOS installs all intents
-        time.sleep( float(main.params[ 'timers' ][ 'SystemBoot' ]) )
+        time.sleep( int(main.params[ 'timers' ][ 'SystemBoot' ]) )
 
         main.step( "Checking routes installed" )
 

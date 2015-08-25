@@ -2,7 +2,7 @@
     <COMPONENT>
 
         <ONOSbench>
-            <host>10.128.4.60</host>
+            <host>10.128.4.53</host>
             <user>admin</user>
             <password></password>
             <type>OnosDriver</type>
@@ -11,7 +11,7 @@
         </ONOSbench>
 
         <ONOScli>
-            <host>10.128.4.60</host>
+            <host>10.128.4.53</host>
             <user>admin</user>
             <password></password>
             <type>OnosCliDriver</type>

@@ -218,11 +218,10 @@ class SCPFintentInstallWithdrawLat:
                     time.sleep(5)
 
                 myRawResult = "--"
-                while "ms" not in myRawResult:
-                    main.ONOSbench.handle.sendline(cmd)
-                    main.ONOSbench.handle.expect(":~")
-                    myRawResult = main.ONOSbench.handle.before
-                    if debug: main.log.info(myRawResult)
+
+                main.ONOSbench.handle.sendline(cmd)
+                main.ONOSbench.handle.expect(":~")
+                myRawResult = main.ONOSbench.handle.before
 
                 if debug: main.log.info(myRawResult)
 

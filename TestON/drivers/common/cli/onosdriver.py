@@ -2225,7 +2225,7 @@ class OnosDriver( CLI ):
         #if deviceCount:
         #    passed = "devices=" + str(deviceCount) + "," not in summaryStr
 
-
+        passed = False
         if "SCC(s)=1," in summaryStr:
             passed = True
             print("Summary is verifed")

@@ -527,22 +527,70 @@ class MininetCliDriver( Emulator ):
                     ": timeout when waiting for response from mininet" )
                 main.log.error( "response: " + str( self.handle.before ) )
             response = self.handle.before
+            if re.search( ',\s0\%\spacket\sloss', response ):
+                main.log.info( self.name + ": no packets lost, host is reachable" )
+                return main.TRUE
+            else:
+                main.log.error(
+                    self.name +
+                    ": PACKET LOST, HOST IS NOT REACHABLE" )
+                return main.FALSE
+
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
             main.cleanup()
             main.exit()
-        main.log.info( self.name + ": Ping Response: " + response )
-        if re.search( ',\s0\%\spacket\sloss', response ):
-            main.log.info( self.name + ": no packets lost, host is reachable" )
-            main.lastResult = main.TRUE
-            return main.TRUE
-        else:
-            main.log.error(
-                self.name +
-                ": PACKET LOST, HOST IS NOT REACHABLE" )
-            main.lastResult = main.FALSE
-            return main.FALSE
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
+    def ping6pair( self, **pingParams ):
+        """
+           IPv6 Ping between a pair of mininet hosts 
+           Currently the only supported Params are: SRC , TARGET
+           FLOWLABEL and -I (src interface) will be added later after running some tests.
+           Example: main.Mininet1.ping6pair( src="h1", target="1000::2" )
+        """
+        args = utilities.parse_args( [ "SRC", "TARGET" ], **pingParams )
+        command = args[ "SRC" ] + " ping6 " + \
+            args[ "TARGET" ] + " -c 1 -i 1 -W 8"
+        try:
+            main.log.info( "Sending: " + command )
+            self.handle.sendline( command )
+            i = self.handle.expect( [ command, pexpect.TIMEOUT ] )
+            if i == 1:
+                main.log.error(
+                    self.name +
+                    ": timeout when waiting for response from mininet" )
+                main.log.error( "response: " + str( self.handle.before ) )
+            i = self.handle.expect( [ "mininet>", pexpect.TIMEOUT ] )
+            if i == 1:
+                main.log.error(
+                    self.name +
+                    ": timeout when waiting for response from mininet" )
+                main.log.error( "response: " + str( self.handle.before ) )
+            response = self.handle.before
+            main.log.info( self.name + ": Ping Response: " + response )
+            if re.search( ',\s0\%\spacket\sloss', response ):
+                main.log.info( self.name + ": no packets lost, host is reachable" )
+                return main.TRUE 
+            else:
+                main.log.error(
+                    self.name +
+                    ": PACKET LOST, HOST IS NOT REACHABLE" )
+                return main.FALSE
+
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
 
     def checkIP( self, host ):
         """
@@ -1152,11 +1200,9 @@ class MininetCliDriver( Emulator ):
 
         if re.search( ',\s0\%\spacket\sloss', response ):
             main.log.info( self.name + ": Ping between two hosts SUCCESSFUL" )
-            main.lastResult = main.TRUE
             return main.TRUE
         else:
             main.log.error( self.name + ": PACKET LOST, HOSTS NOT REACHABLE" )
-            main.lastResult = main.FALSE
             return main.FALSE
 
     def link( self, **linkargs ):

@@ -7,8 +7,9 @@ CASE2: Test ovsdb connection and tearDown
 CASE3: Test default br-int configuration and vxlan port
 CASE4: Test default openflow configuration
 CASE5: Test default flows
-CASE6: Configure Network Subnet Port And Check On ONOS
+CASE6: Configure Network Subnet Port
 CASE7: Test host go online and ping each other
+CASE8: Clear ovs configuration and host configuration
 zhanghaoyu7@huawei.com
 """
 import os
@@ -340,3 +341,447 @@ class FUNCovsdbtest:
                                  actual=stepResult,
                                  onpass="onos add default vxlan port on the node 2 sucess",
                                  onfail="onos add default vxlan port on the node 2 failed" )
+
+    def CASE4( self, main ):
+
+        """
+        Test default openflow configuration
+        """
+        import re
+        import time
+        import os,sys
+
+        ctrlip = os.getenv( main.params[ 'CTRL' ][ 'ip1' ] )
+        ovsdbport = main.params[ 'CTRL' ][ 'ovsdbport' ]
+        delaytime = main.params[ 'TIMER' ][ 'delaytime' ]
+
+        main.step( "ovsdb node 1 set ovs manager to " + str( ctrlip ) )
+        assignResult = main.OVSDB1.setManager( ip=ctrlip, port=ovsdbport, delaytime=delaytime )
+        stepResult = assignResult
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="ovsdb node 1 set ovs manager to  to " +\
+                                  str( ctrlip ) + " sucess",
+                                 onfail="ovsdb node 1 set ovs manager to  to " +\
+                                  str( ctrlip ) + " failed" )
+
+        main.step( "ovsdb node 2 set ovs manager to " + str( ctrlip ) )
+        assignResult = main.OVSDB2.setManager( ip=ctrlip, port=ovsdbport, delaytime=delaytime )
+        stepResult = assignResult
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="ovsdb node 2 set ovs manager to  to " +\
+                                  str( ctrlip ) + " sucess",
+                                 onfail="ovsdb node 2 set ovs manager to  to " +\
+                                  str( ctrlip ) + " failed" )
+
+        main.step( "Check ovsdb node 1 manager is " + str( ctrlip ) )
+        response = main.OVSDB1.getManager()
+        if re.search( ctrlip, response ):
+            stepResult = main.TRUE
+        else:
+            stepResult = main.FALSE
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="ovsdb node 1 manager is " + str( response ) ,
+                                 onfail="ovsdb node 1 manager check failed" )
+
+        main.step( "Check ovsdb node 2 manager is " + str( ctrlip ) )
+        response = main.OVSDB2.getManager()
+        if re.search( ctrlip, response ):
+            stepResult = main.TRUE
+        else:
+            stepResult = main.FALSE
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="ovsdb node 2 manager is " + str( response ) ,
+                                 onfail="ovsdb node 2 manager check failed" )
+
+        main.step( "Check ovsdb node 1 bridge br-int controller set to " + str( ctrlip ) )
+        response = main.OVSDB1.getController( "br-int" )
+        if re.search( ctrlip, response ):
+            stepResult = main.TRUE
+        else:
+            stepResult = main.FALSE
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="Check ovsdb node 1 bridge br-int controller set to " +\
+                                  str( ctrlip ) + " sucess",
+                                 onfail="Check ovsdb node 1 bridge br-int controller set to " +\
+                                  str( ctrlip ) + " failed" )
+
+        main.step( "Check ovsdb node 2 bridge br-int controller set to  " + str( ctrlip ) )
+        response = main.OVSDB2.getController( "br-int" )
+        if re.search( ctrlip, response ):
+            stepResult = main.TRUE
+        else:
+            stepResult = main.FALSE
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="Check ovsdb node 2 bridge br-int controller set to " +\
+                                  str( ctrlip ) + " sucess",
+                                 onfail="Check ovsdb node 2 bridge br-int controller set to " +\
+                                  str( ctrlip ) + " failed" )
+
+        main.step( "Check onoscli devices have ovs " + str( OVSDB1Ip ) )
+        response = main.ONOScli1.devices()
+        if re.search( OVSDB1Ip, response ) and not re.search( "false", response ):
+            stepResult = main.TRUE
+        else:
+            stepResult = main.FALSE
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="Check onoscli devices have ovs " + str( OVSDB1Ip ) + " sucess",
+                                 onfail="Check onoscli devices have ovs " + str( OVSDB1Ip ) + " failed" )
+
+        main.step( "Check onoscli devices have ovs " + str( OVSDB2Ip ) )
+        response = main.ONOScli1.devices()
+        if re.search( OVSDB2Ip, response ) and not re.search( "false", response ):
+            stepResult = main.TRUE
+        else:
+            stepResult = main.FALSE
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="Check onoscli devices have ovs " + str( OVSDB2Ip ) + " sucess",
+                                 onfail="Check onoscli devices have ovs " + str( OVSDB2Ip ) + " failed" )
+
+    def CASE5( self, main ):
+
+        """
+        Test default flows
+        """
+        import re
+        import time
+        import os,sys
+
+        ctrlip = os.getenv( main.params[ 'CTRL' ][ 'ip1' ] )
+        ovsdbport = main.params[ 'CTRL' ][ 'ovsdbport' ]
+        delaytime = main.params[ 'TIMER' ][ 'delaytime' ]
+
+        main.step( "ovsdb node 1 set ovs manager to onos" )
+        assignResult = main.OVSDB1.setManager( ip=ctrlip, port=ovsdbport, delaytime=delaytime )
+        stepResult = assignResult
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="ovsdb node 1 set ovs manager to  to " +\
+                                  str( ctrlip ) + " sucess",
+                                 onfail="ovsdb node 1 set ovs manager to  to " +\
+                                  str( ctrlip ) + " failed" )
+
+        main.step( "Check ovsdb node 1 manager is " + str( ctrlip ) )
+        response = main.OVSDB1.getManager()
+        if re.search( ctrlip, response ):
+            stepResult = main.TRUE
+        else:
+            stepResult = main.FALSE
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="ovsdb node 1 manager is " + str( response ) ,
+                                 onfail="ovsdb node 1 manager check failed" )
+
+        main.step( "Check ovsdb node 1 bridge br-int default flows on " + str( OVSDB1Ip ) )
+        response = main.OVSDB1.dumpFlows( sw="br-int", protocols="OpenFlow13" )
+        if re.search( "actions=CONTROLLER", response ):
+            stepResult = main.TRUE
+        else:
+            stepResult = main.FALSE
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="Successfully set default flows " + str( ctrlip ) ,
+                                 onfail="Failed to set default flows " + str( ctrlip ) )
+
+    def CASE6( self, main ):
+        """
+        Configure Network Subnet Port
+        """
+        import os
+
+        try:
+            from tests.FUNCovsdbtest.dependencies.Nbdata import NetworkData
+            from tests.FUNCovsdbtest.dependencies.Nbdata import SubnetData
+            from tests.FUNCovsdbtest.dependencies.Nbdata import VirtualPortData
+        except ImportError:
+            main.log.exception( "Something wrong with import file or code error." )
+            main.log.info( "Import Error, please check!" )
+            main.cleanup()
+            main.exit()
+
+        main.log.info( "Configure Network Subnet Port Start" )
+        main.case( "Configure Network Subnet Port" )
+        main.caseExplanation = "Configure Network Subnet Port " +\
+                                "Verify post is OK"
+
+        ctrlip = os.getenv( main.params['CTRL']['ip1'] )
+        httpport = main.params['HTTP']['port']
+        path = main.params['HTTP']['path']
+
+        main.step( "Generate Post Data" )
+        network = NetworkData()
+        network.id = '030d6d3d-fa36-45bf-ae2b-4f4bc43a54dc'
+        network.tenant_id = '26cd996094344a0598b0a1af1d525cdc'
+        subnet = SubnetData()
+        subnet.id = "e44bd655-e22c-4aeb-b1e9-ea1606875178"
+        subnet.tenant_id = network.tenant_id
+        subnet.network_id = network.id
+        subnet.start = "10.0.0.1"
+        subnet.end = "10.0.0.254"
+        subnet.cidr = "10.0.0.0/24"
+        port1 = VirtualPortData()
+        port1.id = "00000000-0000-0000-0000-000000000001"
+        port1.subnet_id = subnet.id
+        port1.tenant_id = network.tenant_id
+        port1.network_id = network.id
+        port1.macAddress = "00:00:00:00:00:01"
+        port1.ip_address = "10.0.0.1"
+        port2 = VirtualPortData()
+        port2.id = "00000000-0000-0000-0000-000000000002"
+        port2.subnet_id = subnet.id
+        port2.tenant_id = network.tenant_id
+        port2.network_id = network.id
+        port2.macAddress = "00:00:00:00:00:02"
+        port2.ip_address = "10.0.0.2"
+
+        networkpostdata = network.DictoJson()
+        subnetpostdata = subnet.DictoJson()
+        port1postdata = port1.DictoJson()
+        port2postdata = port2.DictoJson()
+
+        main.step( "Post Network Data via HTTP(Post port need post network)" )
+        Poststatus, result = main.ONOSrest.send( ctrlip, httpport, '', path + 'networks/',
+                                                 'POST', None, networkpostdata )
+        utilities.assert_equals(
+                expect='200',
+                actual=Poststatus,
+                onpass="Post Network Success",
+                onfail="Post Network Failed " + str( Poststatus ) + "," + str( result ) )
+
+        main.step( "Post Subnet Data via HTTP(Post port need post subnet)" )
+        Poststatus, result = main.ONOSrest.send( ctrlip, httpport, '', path + 'subnets/',
+                                                 'POST', None, subnetpostdata )
+        utilities.assert_equals(
+                expect='202',
+                actual=Poststatus,
+                onpass="Post Subnet Success",
+                onfail="Post Subnet Failed " + str( Poststatus ) + "," + str( result ) )
+
+        main.step( "Post Port1 Data via HTTP" )
+        Poststatus, result = main.ONOSrest.send( ctrlip, httpport, '', path + 'ports/',
+                                                 'POST', None, port1postdata )
+        utilities.assert_equals(
+                expect='200',
+                actual=Poststatus,
+                onpass="Post Port Success",
+                onfail="Post Port Failed " + str( Poststatus ) + "," + str( result ) )
+
+        main.step( "Post Port2 Data via HTTP" )
+        Poststatus, result = main.ONOSrest.send( ctrlip, httpport, '', path + 'ports/',
+                                                 'POST', None, port2postdata )
+        utilities.assert_equals(
+                expect='200',
+                actual=Poststatus,
+                onpass="Post Port Success",
+                onfail="Post Port Failed " + str( Poststatus ) + "," + str( result ) )
+
+    def CASE7( self, main ):
+
+        """
+        Test host go online and ping each other
+        """
+        import re
+        import time
+        import os,sys
+
+        ctrlip = os.getenv( main.params[ 'CTRL' ][ 'ip1' ] )
+        ovsdbport = main.params[ 'CTRL' ][ 'ovsdbport' ]
+        delaytime = main.params[ 'TIMER' ][ 'delaytime' ]
+
+        main.step( "ovsdb node 1 set ovs manager to " + str( ctrlip ) )
+        assignResult = main.OVSDB1.setManager( ip=ctrlip, port=ovsdbport, delaytime=delaytime )
+        stepResult = assignResult
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="ovsdb node 1 set ovs manager to  to " +\
+                                  str( ctrlip ) + " sucess",
+                                 onfail="ovsdb node 1 set ovs manager to  to " +\
+                                  str( ctrlip ) + " failed" )
+
+        main.step( "ovsdb node 2 set ovs manager to " + str( ctrlip ) )
+        assignResult = main.OVSDB2.setManager( ip=ctrlip, port=ovsdbport, delaytime=delaytime )
+        stepResult = assignResult
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="ovsdb node 2 set ovs manager to " +\
+                                  str( ctrlip ) + " sucess",
+                                 onfail="ovsdb node 2 set ovs manager to " +\
+                                  str( ctrlip ) + " failed" )
+
+        main.step( "Create host1 on node 1 " + str( OVSDB1Ip ) )
+        stepResult = main.OVSDB1.createHost( hostname="host1" )
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="Create host1 on node 1 " + str( OVSDB1Ip ) + " sucess",
+                                 onfail="Create host1 on node 1 " + str( OVSDB1Ip ) + " failed" )
+
+        main.step( "Create host2 on node 2 " + str( OVSDB2Ip ) )
+        stepResult = main.OVSDB2.createHost( hostname="host2" )
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="Create host2 on node 2 " + str( OVSDB2Ip ) + " sucess",
+                                 onfail="Create host2 on node 2 " + str( OVSDB2Ip ) + " failed" )
+
+        main.step( "Create port on host1 on the node " + str ( OVSDB1Ip ) )
+        stepResult = main.OVSDB1.createHostport( hostname="host1", hostport="host1-eth0", hostportmac="000000000001" )
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="Create port on host1 on the node " + str( OVSDB1Ip ) + " sucess",
+                                 onfail="Create port on host1 on the node " + str( OVSDB1Ip ) + " failed" )
+
+        main.step( "Create port on host2 on the node " + str ( OVSDB2Ip ) )
+        stepResult = main.OVSDB2.createHostport( hostname="host2", hostport="host2-eth0", hostportmac="000000000002" )
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="Create port on host1 on the node " + str( OVSDB2Ip ) + " sucess",
+                                 onfail="Create port on host1 on the node " + str( OVSDB2Ip ) + " failed" )
+
+        main.step( "Add port to ovs br-int and host go-online on the node " + str ( OVSDB1Ip ) )
+        stepResult = main.OVSDB1.addPortToOvs( ovsname="br-int", ifaceId="00000000-0000-0000-0000-000000000001",
+                                               attachedMac="00:00:00:00:00:01", vmuuid="10000000-0000-0000-0000-000000000001" )
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="Add port to ovs br-int and host go-online on the node " +\
+                                  str( OVSDB1Ip ) + " sucess",
+                                 onfail="Add port to ovs br-int and host go-online on the node " +\
+                                  str( OVSDB1Ip ) + " failed" )
+
+        main.step( "Add port to ovs br-int and host go-online on the node " + str ( OVSDB2Ip ) )
+        stepResult = main.OVSDB2.addPortToOvs( ovsname="br-int", ifaceId="00000000-0000-0000-0000-000000000002",
+                                               attachedMac="00:00:00:00:00:02", vmuuid="10000000-0000-0000-0000-000000000001" )
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="Add port to ovs br-int and host go-online on the node " +\
+                                  str( OVSDB2Ip ) + " sucess",
+                                 onfail="Add port to ovs br-int and host go-online on the node " +\
+                                  str( OVSDB2Ip ) + " failed" )
+
+        main.step( "Check onos set host flows on the node " + str( OVSDB1Ip ) )
+        response = main.OVSDB1.dumpFlows( sw="br-int", protocols="OpenFlow13" )
+        if re.search( "00:00:00:00:00:01", response ):
+            stepResult = main.TRUE
+        else:
+            stepResult = main.FALSE
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="Check onos set host flows on the node " +\
+                                  str( OVSDB1Ip ) + " sucess",
+                                 onfail="Check onos set host flows on the node " +\
+                                  str( OVSDB1Ip ) + " failed" )
+
+        main.step( "Check onos set host flows on the node " + str( OVSDB2Ip ) )
+        response = main.OVSDB2.dumpFlows( sw="br-int", protocols="OpenFlow13" )
+        if re.search( "00:00:00:00:00:02", response ):
+            stepResult = main.TRUE
+        else:
+            stepResult = main.FALSE
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="Check onos set host flows on the node " +\
+                                  str( OVSDB2Ip ) + " sucess",
+                                 onfail="Check onos set host flows on the node " +\
+                                  str( OVSDB2Ip ) + " failed" )
+
+        main.step( "Check hosts can ping each other" )
+        main.OVSDB1.setHostportIp( hostname="host1", hostport1="host1-eth0", ip="10.0.0.1" )
+        main.OVSDB2.setHostportIp( hostname="host2", hostport1="host2-eth0", ip="10.0.0.2" )
+        pingResult1 = main.OVSDB1.hostPing( src="10.0.0.1", hostname="host1", target="10.0.0.2" )
+        pingResult2 = main.OVSDB2.hostPing( src="10.0.0.2", hostname="host2", target="10.0.0.1" )
+        stepResult = pingResult1 and pingResult2
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="Successfully host go online and ping each other,controller is " +\
+                                        str( ctrlip ),
+                                 onfail="Failed to host go online and ping each other,controller is " +\
+                                        str( ctrlip ) )
+
+    def CASE8( self, main ):
+
+        """
+        Clear ovs configuration and host configuration
+        """
+        import re
+        import time
+        import os,sys
+
+        ctrlip = os.getenv( main.params[ 'CTRL' ][ 'ip1' ] )
+        OVSDB1Ip = os.getenv( main.params[ 'OVSDB' ][ 'ip1' ] )
+        OVSDB2Ip = os.getenv( main.params[ 'OVSDB' ][ 'ip2' ] )
+        delaytime = main.params[ 'TIMER' ][ 'delaytime' ]
+
+        main.step( "Delete ovsdb node 1 manager" )
+        deleteResult = main.OVSDB1.delManager( delaytime=delaytime )
+        stepResult = deleteResult
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="ovsdb node 1 delete manager sucess",
+                                 onfail="ovsdb node 1 delete manager failed" )
+
+        main.step( "Delete ovsdb node 2 manager" )
+        deleteResult = main.OVSDB2.delManager( delaytime=delaytime )
+        stepResult = deleteResult
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="ovsdb node 2 delete manager sucess",
+                                 onfail="ovsdb node 2 delete manager failed" )
+
+        main.step( "Delete ovsdb node 1 bridge br-int" )
+        deleteResult = main.OVSDB1.delBr( sw="br-int" )
+        stepResult = deleteResult
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="Delete ovsdb node 1 bridge br-int sucess",
+                                 onfail="Delete ovsdb node 1 bridge br-int failed" )
+
+        main.step( "Delete ovsdb node 2 bridge br-int" )
+        deleteResult = main.OVSDB2.delBr( sw="br-int" )
+        stepResult = deleteResult
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="Delete ovsdb node 2 bridge br-int sucess",
+                                 onfail="Delete ovsdb node 2 bridge br-int failed" )
+
+        main.step( "Delete ip netns host on the ovsdb node 1" )
+        deleteResult = main.OVSDB1.delHost( hostname="host1" )
+        stepResult = deleteResult
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="Delete ip netns host on the ovsdb node 1 sucess",
+                                 onfail="Delete ip netns host on the ovsdb node 1 failed" )
+
+        main.step( "Delete ip netns host on the ovsdb node 2" )
+        deleteResult = main.OVSDB2.delHost( hostname="host2" )
+        stepResult = deleteResult
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="Delete ip netns host on the ovsdb node 2 sucess",
+                                 onfail="Delete ip netns host on the ovsdb node 2 failed" )
+
+        main.step( "Check onoscli devices openflow session is false " + str( OVSDB1Ip ) )
+        response = main.ONOScli1.devices()
+        if re.search( OVSDB1Ip, response ) and not re.search( "true", response ):
+            stepResult = main.TRUE
+        else:
+            stepResult = main.FALSE
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="Check openflow session is false " + str( OVSDB1Ip ) + " sucess",
+                                 onfail="Check openflow session is false " + str( OVSDB1Ip ) + " failed" )
+
+        main.step( "Check onoscli devices have ovs " + str( OVSDB2Ip ) )
+        response = main.ONOScli1.devices()
+        if re.search( OVSDB2Ip, response ) and not re.search( "true", response ):
+            stepResult = main.TRUE
+        else:
+            stepResult = main.FALSE
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="Check openflow session is false " + str( OVSDB2Ip ) + " sucess",
+                                 onfail="Check openflow session is false " + str( OVSDB2Ip ) + " failed" )

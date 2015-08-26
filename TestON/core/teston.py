@@ -39,7 +39,7 @@ import subprocess
 global path, drivers_path, core_path, tests_path,logs_path
 location = os.path.abspath( os.path.dirname( __file__ ) )
 path = re.sub( "(core|bin)$", "", location )
-drivers_path = path+"drivers/"
+drivers_path = path+"drivers"
 core_path = path+"core"
 tests_path = path+"tests"
 logs_path = path+"logs/"
@@ -527,9 +527,8 @@ class TestON:
             try :
                 import json
                 response_dict = json.loads(response)
-            except Exception, e:
-                self.log.exception( e )
-                self.log.error("Json Parser is unable to parse the string")
+            except Exception:
+                self.log.exception( "Json Parser is unable to parse the string" )
             return response_dict
         elif ini_match :
             self.log.info(" Response is in 'INI' format and Converting to '"+return_format+"' format")

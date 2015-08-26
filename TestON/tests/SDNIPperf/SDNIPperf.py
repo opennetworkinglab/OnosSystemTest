@@ -42,11 +42,11 @@ class SDNIPperf:
 
         main.step( "Using mvn clean install" )
         if gitPullResult == main.TRUE:
-            cleanInstallResult = main.ONOSbench.cleanInstall()
+            #cleanInstallResult = main.ONOSbench.cleanInstall()
+            cleanInstallResult = main.ONOSbench.cleanInstall( skipTest=True)
         else:
              main.log.warn( "Did not pull new code so skipping mvn " +
                              "clean install" )
-        cleanInstallResult = main.ONOSbench.cleanInstall( mciTimeout= 300 )
         main.ONOSbench.getVersion( report=True )
 
         main.step( "Creating ONOS package" )

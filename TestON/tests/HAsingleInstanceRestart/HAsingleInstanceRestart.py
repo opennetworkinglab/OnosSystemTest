@@ -1882,12 +1882,24 @@ class HAsingleInstanceRestart:
         assert main.numCtrls, "main.numCtrls not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
-        leaderResult = main.TRUE
+        electionResult = main.TRUE
+        candidateElected = main.TRUE
         description = "Check that Leadership Election is still functional"
         main.case( description )
         main.step( "Find current leader and withdraw" )
         leader = main.ONOScli1.electionTestLeader()
-        # do some sanity checking on leader before using it
+
+        # save candidate status before leader withdraw
+        candidateList = main.ONOScli1.specificLeaderCandidate(
+            'org.onosproject.election' )
+        # if there is only one leader available
+        onlyOneLeader = False
+        if len( candidateList ) == 2:
+            main.log.info( "Leader and Candidate are the same, " +
+                "assuming only 1 leader exists" )
+            onlyOneLeader = True
+
+        # withdraw the current leader
         withdrawResult = main.FALSE
         if leader == main.nodes[0].ip_address:
             oldLeader = getattr( main, "ONOScli1" )
@@ -1909,29 +1921,41 @@ class HAsingleInstanceRestart:
             onpass="Node was withdrawn from election",
             onfail="Node was not withdrawn from election" )
 
-        main.step( "Make sure new leader is elected" )
-        leaderN = main.ONOScli1.electionTestLeader()
-        if leaderN == leader:
+        main.step( "Checking Leadership Withdrawl and Election Result" )
+        leaderN = main.ONOScli1.electionTestLeader()  # Get new leader
+        candidatePassMessage = ""
+        # Check that the candidate was elected (if there was one)
+        if leaderN == leader: # Case Fails
             main.log.error( "ONOS still sees " + str( leaderN ) +
                              " as leader after they withdrew" )
-            leaderResult = main.FALSE
-        elif leaderN == main.FALSE:
+            electionResult = main.FALSE
+        elif onlyOneLeader and ( leaderN == None ):  # Case Passes
+            candidateElected = main.TRUE
+            candidatePassMessage = ( "No leader after only leader was " +
+                "withdrawn. Election passed." )
+        elif leaderN == candidateList[ 1 ]:
+            # Case Passes
+            candidateElected = main.TRUE
+            candidatePassMessage = "Old leader's candidate elected to leader"
+        elif leaderN == main.FALSE:  # Case Fails
             # error in  response
             # TODO: add check for "Command not found:" in the driver, this
             # means the app isn't loaded
             main.log.error( "Something is wrong with electionTestLeader " +
                              "function, check the error logs" )
-            leaderResult = main.FALSE
-        elif leaderN is None:
-            main.log.info(
-                "There is no leader after the app withdrew from election" )
-            leaderResult = main.TRUE
+            electionResult = main.FALSE
+        else:  # Case Fails
+            # Catches weird cases like
+            # leaderN = None when there was multiple leaders
+            candidateElected = main.FALSE
         utilities.assert_equals(
             expect=main.TRUE,
-            actual=leaderResult,
-            onpass="Leadership election passed",
-            onfail="Something went wrong with Leadership election" )
+            actual=electionResult and candidateElected,
+            onpass=candidatePassMessage,
+            onfail="The new leader was not the old leader election candidate"
+        )
 
+        # Elect oldLeader back
         main.step( "Run for election on old leader( just so everyone " +
                    "is in the hat )" )
         if oldLeader:

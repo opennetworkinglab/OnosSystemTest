@@ -249,8 +249,8 @@ class FUNCintent:
         main.caseExplanation = "Compare topology elements between Mininet" +\
                                 " and ONOS"
 
-        main.step( "Gathering topology information" )
-        # TODO: add a paramaterized sleep here
+        main.log.info( "Gathering topology information" )
+
         devicesResults = main.TRUE
         linksResults = main.TRUE
         hostsResults = main.TRUE

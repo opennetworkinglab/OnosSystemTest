@@ -1,0 +1,49 @@
+<PARAMS>
+
+    # 0-init, 1-setup, 10-null provider setup,
+    # 11-mininet setup, 20-pushing intents,
+    # 21-rerouting intents
+    <testcases>0,1,10,20,1,11,20,1,10,21,1,11,21,100</testcases>
+
+    <SCALE>
+        <size>1</size>
+        <max>1</max>
+    </SCALE>
+
+    <DEPENDENCY>
+        <path>/tests/SCPFmaxIntents/Dependency/</path>
+        <wrapper1>startUp</wrapper1>
+        <wrapper2>maxIntentFunctions</wrapper2>
+        <topology>rerouteTopo.py</topology>
+    </DEPENDENCY>
+
+    <ENV>
+        <cellName>productionCell</cellName>
+        <cellApps>drivers</cellApps>
+    </ENV>
+
+    <GIT>
+        <pull>False</pull>
+        <branch>master</branch>
+    </GIT>
+
+    <CTRL>
+        <port>6633</port>
+    </CTRL>
+
+    <SLEEP>
+        <startup>3</startup>
+        <install>5</install>
+        <verify>15</verify>
+        <reroute>15</reroute>
+        # timeout for pexpect
+        <timeout>120</timeout>
+    </SLEEP>
+
+    <TEST>
+        <batch_size>1000</batch_size>
+        <min_intents>500000</min_intents>
+        <check_interval>1000</check_interval>
+    </TEST>
+
+</PARAMS>

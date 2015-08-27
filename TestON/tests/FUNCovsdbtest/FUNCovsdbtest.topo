@@ -48,8 +48,8 @@
         </OVSDB1>
 
         <OVSDB2>
-            <host>OCN</host>
-            <user>admin</user>
+            <host>OC1</host>
+            <user>sdn</user>
             <password></password>
             <type>OvsdbDriver</type>
             <connect_order>6</connect_order>

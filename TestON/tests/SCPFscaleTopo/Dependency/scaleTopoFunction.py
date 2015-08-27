@@ -45,6 +45,8 @@ def testTopology( main, topoFile='', args='', mnCmd='', timeout=300, clean=True 
 
     # Starts topology
     startResult = startNewTopology( main, topoFile, args, mnCmd, timeout=timeout )
+    # onos needs time to see the links
+    time.sleep(15)
 
     # Gets list of switches in mininet
     #assignSwitch( main )

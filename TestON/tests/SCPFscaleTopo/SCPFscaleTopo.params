@@ -1,14 +1,14 @@
 <PARAMS>
 
-    <testcases>1</testcases>
+    <testcases>1,2,1001,8,1002,8</testcases>
 
     <SCALE>
-        <size>1,2,3</size>
+        <size>3</size>
         <max>3</max>
     </SCALE>
 
     <DEPENDENCY>
-        <path>/tests/SAMPscaleTopo/Dependency/</path>
+        <path>/tests/SCPFscaleTopo/Dependency/</path>
         <wrapper1>startUp</wrapper1>
         <wrapper2>scaleTopoFunction</wrapper2>
         <wrapper3>topo</wrapper3>

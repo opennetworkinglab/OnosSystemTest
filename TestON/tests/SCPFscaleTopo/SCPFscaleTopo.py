@@ -2,7 +2,7 @@
 # Testing network scalability, this test suite scales up a network topology
 # using mininet and verifies ONOS stability
 
-class SAMPscaleTopo:
+class SCPFscaleTopo:
 
     def __init__( self ):
         self.default = ''
@@ -284,6 +284,7 @@ class SAMPscaleTopo:
         main.log.case( "Start Mininet topology" )
 
         main.step( "Starting Mininet Topology" )
+        topology = main.dependencyPath + main.topology
         topoResult = main.Mininet1.startNet( topoFile=topology )
         stepResult = topoResult
         utilities.assert_equals( expect=main.TRUE,
@@ -315,9 +316,9 @@ class SAMPscaleTopo:
                                                           clean=False )
 
         main.ONOSbench.scp( main.Mininet1,
-                            "~/mininet/custom/spine.json",
-                            "/tmp/",
-                            direction="to" )
+                           "~/mininet/custom/spine.json",
+                           "/tmp/",
+                           direction="to" )
 
         time.sleep(10)
 
@@ -328,20 +329,20 @@ class SAMPscaleTopo:
                                  actual=stepResult,
                                  onpass=main.topoName + " topology successful",
                                  onfail=main.topoName +
-                                 "Torus 5-5 topology failed" )
+                                 "Spine topology failed" )
         time.sleep(60)
 
     def CASE1002( self, main ):
         """
             Topology test
         """
-        main.topoName = "TORUS10-10"
+        main.topoName = "TORUS28-28"
         main.case( "Topology discovery test" )
         stepResult = main.TRUE
         main.step( main.topoName + " topology" )
-        mnCmd = "sudo mn --custom=mininet/examples/multiovs.py " +\
-                "--switch=ovsm --topo=torus,10,10 " +\
-                "--controller=remote,ip=10.128.10.21 --mac"
+        mnCmd = "sudo mn --custom=mininet/custom/multiovs.py " +\
+                "--switch=ovsm --topo=torus,28,28 " +\
+                "--controller=remote,ip=" + main.ONOSip[ 0 ]  +" --mac"
         stepResult = main.scaleTopoFunction.testTopology( main,
                                                           mnCmd=mnCmd,
                                                           timeout=900,
@@ -349,4 +350,4 @@ class SAMPscaleTopo:
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
                                  onpass=main.topoName + " topology successful",
-                                 onfail=main.topoName + "Torus 5-5 topology failed" )
+                                 onfail=main.topoName + "Torus 28-28 topology failed" )

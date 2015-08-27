@@ -3,7 +3,7 @@
 
         <ONOSbench>
             <host>OCN</host>
-            <user>onos</user>
+            <user>admin</user>
             <password></password>
             <type>OnosDriver</type>
             <connect_order>1</connect_order>
@@ -13,7 +13,7 @@
 
         <ONOScli1>
             <host>OCN</host>
-            <user>onos</user>
+            <user>admin</user>
             <password></password>
             <type>OnosCliDriver</type>
             <connect_order>2</connect_order>
@@ -22,7 +22,7 @@
 
         <ONOS1>
             <host>OC1</host>
-            <user>onos</user>
+            <user>sdn</user>
             <password></password>
             <type>OnosDriver</type>
             <connect_order>3</connect_order>
@@ -31,7 +31,7 @@
 
         <ONOSrest>
             <host>OC1</host>
-            <user>onos</user>
+            <user>sdn</user>
             <password></password>
             <type>OnosRestDriver</type>
             <connect_order>4</connect_order>
@@ -40,7 +40,7 @@
 
         <OVSDB1>
             <host>OCN</host>
-            <user>onos</user>
+            <user>admin</user>
             <password></password>
             <type>OvsdbDriver</type>
             <connect_order>5</connect_order>
@@ -48,8 +48,8 @@
         </OVSDB1>
 
         <OVSDB2>
-            <host>OC1</host>
-            <user>onos</user>
+            <host>OCN</host>
+            <user>admin</user>
             <password></password>
             <type>OvsdbDriver</type>
             <connect_order>6</connect_order>

@@ -35,6 +35,8 @@ class SCPFscaleTopo:
                                   main.params[ 'DEPENDENCY' ][ 'path' ]
             main.topology = main.params[ 'DEPENDENCY' ][ 'topology' ]
             main.multiovs = main.params[ 'DEPENDENCY' ][ 'multiovs' ]
+            main.torus = main.params[ 'DEPENDENCY' ][ 'torus' ]
+            main.spine = main.params[ 'DEPENDENCY' ][ 'spine' ]
             main.scale = ( main.params[ 'SCALE' ][ 'size' ] ).split( "," )
             if main.ONOSbench.maxNodes:
                 main.maxNodes = int( main.ONOSbench.maxNodes )
@@ -79,13 +81,13 @@ class SCPFscaleTopo:
                                               main.topology,
                                               main.Mininet1.home,
                                               direction="to" )
-
+            time.sleep(3)
             copyResult2 = main.ONOSbench.scp( main.Mininet1,
                                               main.dependencyPath +
                                               main.multiovs,
                                               main.Mininet1.home,
                                               direction="to" )
-
+            time.sleep(3)
             if main.CLIs:
                 stepResult = main.TRUE
             else:
@@ -189,7 +191,7 @@ class SCPFscaleTopo:
 
 
         # Remove the first element in main.scale list
-        main.scale.remove( main.scale[ 0 ] )
+        #main.scale.remove( main.scale[ 0 ] )
 
     def CASE8( self, main ):
         """
@@ -307,7 +309,7 @@ class SCPFscaleTopo:
         mnCmd = "sudo mn --custom " + main.dependencyPath +\
                 main.multiovs + " --switch=ovsm --custom " +\
                 main.dependencyPath + main.topology +\
-                " --topo spine,3,6 --controller=remote,ip=" +\
+                " --topo " + main.spine + " --controller=remote,ip=" +\
                 main.ONOSip[ 0 ] + " --mac"
 
         stepResult = main.scaleTopoFunction.testTopology( main,
@@ -315,6 +317,7 @@ class SCPFscaleTopo:
                                                           timeout=900,
                                                           clean=False )
 
+        time.sleep(3)
         main.ONOSbench.scp( main.Mininet1,
                            "~/mininet/custom/spine.json",
                            "/tmp/",
@@ -327,8 +330,8 @@ class SCPFscaleTopo:
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
-                                 onpass=main.topoName + " topology successful",
-                                 onfail=main.topoName +
+                                 onpass=main.spine + " topology successful",
+                                 onfail=main.spine +
                                  "Spine topology failed" )
         time.sleep(60)
 
@@ -336,18 +339,18 @@ class SCPFscaleTopo:
         """
             Topology test
         """
-        main.topoName = "TORUS28-28"
+        main.topoName = "TORUS"
         main.case( "Topology discovery test" )
         stepResult = main.TRUE
-        main.step( main.topoName + " topology" )
+        main.step( main.torus + " topology" )
         mnCmd = "sudo mn --custom=mininet/custom/multiovs.py " +\
-                "--switch=ovsm --topo=torus,28,28 " +\
-                "--controller=remote,ip=" + main.ONOSip[ 0 ]  +" --mac"
+                "--switch=ovsm --topo " + main.torus +\
+                " --controller=remote,ip=" + main.ONOSip[ 0 ]  +" --mac"
         stepResult = main.scaleTopoFunction.testTopology( main,
                                                           mnCmd=mnCmd,
                                                           timeout=900,
-                                                          clean=True )
+                                                          clean=False )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
-                                 onpass=main.topoName + " topology successful",
-                                 onfail=main.topoName + "Torus 28-28 topology failed" )
+                                 onpass=main.torus + " topology successful",
+                                 onfail=main.torus + " topology failed" )

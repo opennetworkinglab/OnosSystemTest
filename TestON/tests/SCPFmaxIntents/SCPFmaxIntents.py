@@ -39,6 +39,7 @@ class SCPFmaxIntents:
         main.ONOSport = main.params[ 'CTRL' ][ 'port' ]
         main.timeout = int(main.params['SLEEP']['timeout'])
         main.minIntents = int(main.params['TEST']['min_intents'])
+        main.maxIntents = int(main.params['TEST']['max_intents'])
         main.checkInterval = int(main.params['TEST']['check_interval'])
         wrapperFile1 = main.params[ 'DEPENDENCY' ][ 'wrapper1' ]
         wrapperFile2 = main.params[ 'DEPENDENCY' ][ 'wrapper2' ]
@@ -324,9 +325,10 @@ class SCPFmaxIntents:
         expectedIntents = 0
         # the number of flows we expect to be in the added state
         expectedFlows = main.defaultFlows
-
+        # limit for the number of intents that can be installed
+        limit = main.maxIntents / main.batchSize
         try:
-            while True:
+            for i in range(limit):
                 # Push intents
                 main.log.step("Pushing intents")
                 stepResult = main.intentFunctions.pushIntents( main,
@@ -406,9 +408,10 @@ class SCPFmaxIntents:
         expectedIntents = 0
         # the number of flows we expect to be in the added state
         expectedFlows = main.defaultFlows
-
+        # limit for the number of intents that can be installed
+        limit = main.maxIntents / main.batchSize
         try:
-            while True:
+            for i in range(limit):
                 # Push intents
                 main.log.step("Pushing intents")
                 stepResult = main.intentFunctions.pushIntents( main,

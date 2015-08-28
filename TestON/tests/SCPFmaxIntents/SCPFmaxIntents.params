@@ -43,6 +43,7 @@
     <TEST>
         <batch_size>1000</batch_size>
         <min_intents>500000</min_intents>
+        <max_intents>1000000</max_intents>
         <check_interval>1000</check_interval>
     </TEST>
 

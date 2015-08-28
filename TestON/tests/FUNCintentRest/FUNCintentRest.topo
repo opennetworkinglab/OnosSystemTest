@@ -14,8 +14,8 @@
         <ONOSrest1>
             <host>OC1</host>
             <port>8181</port>
-            <user>admin</user>
-            <password>onos_test</password>
+            <user>onos</user>
+            <password>rocks</password>
             <type>OnosRestDriver</type>
             <connect_order>2</connect_order>
             <COMPONENTS>
@@ -25,8 +25,8 @@
         <ONOSrest2>
             <host>OC2</host>
             <port>8181</port>
-            <user>admin</user>
-            <password>onos_test</password>
+            <user>onos</user>
+            <password>rocks</password>
             <type>OnosRestDriver</type>
             <connect_order>3</connect_order>
             <COMPONENTS>
@@ -36,8 +36,8 @@
         <ONOSrest3>
             <host>OC3</host>
             <port>8181</port>
-            <user>admin</user>
-            <password>onos_test</password>
+            <user>onos</user>
+            <password>rocks</password>
             <type>OnosRestDriver</type>
             <connect_order>4</connect_order>
             <COMPONENTS>

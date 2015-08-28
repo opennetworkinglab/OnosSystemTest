@@ -7,7 +7,6 @@ class FUNCintent:
 
     def CASE1( self, main ):
         import time
-        import os
         import imp
         import re
 

@@ -11,8 +11,8 @@ class FUNCintentRest:
 
     def CASE1( self, main ):
         import time
-        import os
         import imp
+        import re
 
         """
         - Construct tests variables
@@ -33,7 +33,7 @@ class FUNCintentRest:
 
         # Test variables
         try:
-            main.testOnDirectory = os.path.dirname( os.getcwd ( ) )
+            main.testOnDirectory = re.sub( "(/tests)$", "", main.testDir )
             main.apps = main.params[ 'ENV' ][ 'cellApps' ]
             gitBranch = main.params[ 'GIT' ][ 'branch' ]
             main.dependencyPath = main.testOnDirectory + \
@@ -64,8 +64,16 @@ class FUNCintentRest:
             main.ONOSip = main.ONOSbench.getOnosIps()
 
             # Assigning ONOS cli handles to a list
-            for i in range( 1,  main.maxNodes + 1 ):
-                main.CLIs.append( getattr( main, 'ONOSrest' + str( i ) ) )
+            try:
+                for i in range( 1,  main.maxNodes + 1 ):
+                    main.CLIs.append( getattr( main, 'ONOSrest' + str( i ) ) )
+            except AttributeError:
+                main.log.warn( "A " + str( main.maxNodes ) + " node cluster " +
+                               "was defined in env variables, but only " +
+                               str( len( main.CLIs ) ) +
+                               " nodes were defined in the .topo file. " +
+                               "Using " + str( len( main.CLIs ) ) +
+                               " nodes for the test." )
 
             # -- INIT SECTION, ONLY RUNS ONCE -- #
             main.startUp = imp.load_source( wrapperFile1,
@@ -83,10 +91,11 @@ class FUNCintentRest:
                                          wrapperFile3 +
                                          ".py" )
 
-            copyResult = main.ONOSbench.copyMininetFile( main.topology,
-                                                         main.dependencyPath,
-                                                         main.Mininet1.user_name,
-                                                         main.Mininet1.ip_address )
+            copyResult1 = main.ONOSbench.scp( main.Mininet1,
+                                              main.dependencyPath +
+                                              main.topology,
+                                              main.Mininet1.home,
+                                              direction="to" )
             if main.CLIs:
                 stepResult = main.TRUE
             else:
@@ -179,9 +188,9 @@ class FUNCintentRest:
         time.sleep( main.startUpSleep )
         main.step( "Uninstalling ONOS package" )
         onosUninstallResult = main.TRUE
-        for i in range( main.numCtrls ):
+        for ip in main.ONOSip:
             onosUninstallResult = onosUninstallResult and \
-                    main.ONOSbench.onosUninstall( nodeIp=main.ONOSip[ i ] )
+                    main.ONOSbench.onosUninstall( nodeIp=ip )
         stepResult = onosUninstallResult
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,

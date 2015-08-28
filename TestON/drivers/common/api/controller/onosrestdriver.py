@@ -27,11 +27,11 @@ from drivers.common.api.controllerdriver import Controller
 class OnosRestDriver( Controller ):
 
     def __init__( self ):
+        self.pwd = None
+        self.user_name = "user"
         super( Controller, self ).__init__()
         self.ip_address = "localhost"
         self.port = "8080"
-        self.user_name = "user"
-        self.password = "CHANGEME"
 
     def connect( self, **connectargs ):
         try:
@@ -56,7 +56,7 @@ class OnosRestDriver( Controller ):
         return self.handle
 
     def send( self, ip, port, url, base="/onos/v1", method="GET",
-              query=None, data=None ):
+              query=None, data=None, debug=False ):
         """
         Arguments:
             str ip: ONOS IP Address
@@ -76,12 +76,19 @@ class OnosRestDriver( Controller ):
         # ANSWER: Not yet, but potentially https with certificates
         try:
             path = "http://" + str( ip ) + ":" + str( port ) + base + url
+            if self.user_name and self.pwd:
+                auth = (self.user_name, self.pwd)
+            else:
+                auth=None
             main.log.info( "Sending request " + path + " using " +
                            method.upper() + " method." )
             response = requests.request( method.upper(),
                                          path,
                                          params=query,
-                                         data=data )
+                                         data=data,
+                                         auth=auth )
+            if debug:
+                main.log.debug( response )
             return ( response.status_code, response.text.encode( 'utf8' ) )
         except requests.exceptions:
             main.log.exception( "Error sending request." )
@@ -147,7 +154,7 @@ class OnosRestDriver( Controller ):
                 main.log.warn( "No ip given, reverting to ip from topo file" )
                 ip = self.ip_address
             if port == "DEFAULT":
-                main.log.warn( "No port given, reverting to port" +
+                main.log.warn( "No port given, reverting to port " +
                                "from topo file" )
                 port = self.port
             # NOTE: REST url requires the intent id to be in decimal form
@@ -207,8 +214,8 @@ class OnosRestDriver( Controller ):
                 main.log.warn( "No ip given, reverting to ip from topo file" )
                 ip = self.ip_address
             if port == "DEFAULT":
-                main.log.warn( "No port given, reverting to port \
-                               from topo file" )
+                main.log.warn( "No port given, reverting to port " +
+                               "from topo file" )
                 port = self.port
             response = self.send( ip, port, url="/applications" )
             if response:
@@ -244,7 +251,7 @@ class OnosRestDriver( Controller ):
                 main.log.warn( "No ip given, reverting to ip from topo file" )
                 ip = self.ip_address
             if port == "DEFAULT":
-                main.log.warn( "No port given, reverting to port" +
+                main.log.warn( "No port given, reverting to port " +
                                "from topo file" )
                 port = self.port
             query = "/" + str( appName ) + "/active"
@@ -296,7 +303,7 @@ class OnosRestDriver( Controller ):
                 main.log.warn( "No ip given, reverting to ip from topo file" )
                 ip = self.ip_address
             if port == "DEFAULT":
-                main.log.warn( "No port given, reverting to port" +
+                main.log.warn( "No port given, reverting to port " +
                                "from topo file" )
                 port = self.port
             query = "/" + str( appName ) + "/active"
@@ -346,7 +353,7 @@ class OnosRestDriver( Controller ):
                 main.log.warn( "No ip given, reverting to ip from topo file" )
                 ip = self.ip_address
             if port == "DEFAULT":
-                main.log.warn( "No port given, reverting to port" +
+                main.log.warn( "No port given, reverting to port " +
                                "from topo file" )
                 port = self.port
             query = "/" + project + str( appName )
@@ -673,8 +680,8 @@ class OnosRestDriver( Controller ):
                 main.log.warn( "No ip given, reverting to ip from topo file" )
                 ip = self.ip_address
             if port == "DEFAULT":
-                main.log.warn( "No port given, reverting to port \
-                               from topo file" )
+                main.log.warn( "No port given, reverting to port " +
+                               "from topo file" )
                 port = self.port
             response = self.send( ip, port, url="/hosts" )
             if response:
@@ -713,8 +720,8 @@ class OnosRestDriver( Controller ):
                 main.log.warn( "No ip given, reverting to ip from topo file" )
                 ip = self.ip_address
             if port == "DEFAULT":
-                main.log.warn( "No port given, reverting to port \
-                               from topo file" )
+                main.log.warn( "No port given, reverting to port " +
+                               "from topo file" )
                 port = self.port
             query = "/" + mac + "/" + vlan
             response = self.send( ip, port, url="/hosts" + query )
@@ -749,8 +756,8 @@ class OnosRestDriver( Controller ):
                 main.log.warn( "No ip given, reverting to ip from topo file" )
                 ip = self.ip_address
             if port == "DEFAULT":
-                main.log.warn( "No port given, reverting to port \
-                               from topo file" )
+                main.log.warn( "No port given, reverting to port " +
+                               "from topo file" )
                 port = self.port
             response = self.send( ip, port, url="/topology" )
             if response:
@@ -903,8 +910,8 @@ class OnosRestDriver( Controller ):
                 main.log.warn( "No ip given, reverting to ip from topo file" )
                 ip = self.ip_address
             if port == "DEFAULT":
-                main.log.warn( "No port given, reverting to port \
-                               from topo file" )
+                main.log.warn( "No port given, reverting to port " +
+                               "from topo file" )
                 port = self.port
             response = self.send( ip, port, url="/flows" )
             if response:
@@ -937,8 +944,8 @@ class OnosRestDriver( Controller ):
                 main.log.warn( "No ip given, reverting to ip from topo file" )
                 ip = self.ip_address
             if port == "DEFAULT":
-                main.log.warn( "No port given, reverting to port \
-                               from topo file" )
+                main.log.warn( "No port given, reverting to port " +
+                               "from topo file" )
                 port = self.port
             url = "/flows/" + device
             if flowId:

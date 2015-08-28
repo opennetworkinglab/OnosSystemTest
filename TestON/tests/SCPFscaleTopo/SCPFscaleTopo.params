@@ -14,10 +14,12 @@
         <wrapper3>topo</wrapper3>
         <topology>spine.py</topology>
         <multiovs>multiovs.py</multiovs>
+        <spine>spine,3,6</spine>
+        <torus>torus,5,5</torus>
     </DEPENDENCY>
 
     <ENV>
-        <cellApps>drivers,openflow,proxyarp,mobility</cellApps>
+        <cellApps>drivers,openflow,fwd</cellApps>
     </ENV>
 
     <GIT>

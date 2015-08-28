@@ -49,8 +49,8 @@
         <target10>10.0.0.27</target10>
     </PING>
     <timers>
-        <LinkDiscovery>.2</LinkDiscovery>
-        <SwitchDiscovery>.2</SwitchDiscovery>
+        <LinkDiscovery>12</LinkDiscovery>
+        <SwitchDiscovery>12</SwitchDiscovery>
     </timers>
     <kill>
         <switch> s5 </switch>

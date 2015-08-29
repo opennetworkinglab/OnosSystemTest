@@ -1,4 +1,22 @@
 <PARAMS>
+    #CASE1: Compile ONOS and push it to the test machines
+    #CASE2: Assign devices to controllers
+    #CASE21: Assign mastership to controllers
+    #CASE3: Assign intents
+    #CASE4: Ping across added host intents
+    #CASE5: Reading state of ONOS
+    #CASE6: The Failure case.
+    #CASE7: Check state after control plane failure
+    #CASE8: Compare topo
+    #CASE9: Link s3-s28 down
+    #CASE10: Link s3-s28 up
+    #CASE11: Switch down
+    #CASE12: Switch up
+    #CASE13: Clean up
+    #CASE14: start election app on all onos nodes
+    #CASE15: Check that Leadership Election is still functional
+    #CASE16: Install Distributed Primitives app
+    #CASE17: Check for basic functionality with distributed primitives
     <testcases>1,2,8,3,8,4,5,14,16,17,[6],8,3,7,4,15,17,9,8,4,10,8,4,11,8,4,12,8,4,13</testcases>
     <imports>
         <path> /home/admin/OnosSystemTest/TestON/tests/HAclusterRestart/dependencies/ </path>

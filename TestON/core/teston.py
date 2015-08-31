@@ -218,7 +218,7 @@ class TestON:
             repeat-=1
         return result
 
-    def runCase(self,testCaseNumber):
+    def runCase( self, testCaseNumber ):
         self.CurrentTestCaseNumber = testCaseNumber
         self.CurrentTestCase = ""
         self.stepResults = []
@@ -228,14 +228,14 @@ class TestON:
         self.stepCount = 0
         self.EXPERIMENTAL_MODE = self.FALSE
         self.addCaseHeader()
-        self.testCaseNumber = str(testCaseNumber)
+        self.testCaseNumber = str( testCaseNumber )
+        self.CASERESULT = self.NORESULT
         stopped = False
         try :
             self.stepList = self.code[self.testCaseNumber].keys()
         except KeyError:
-            self.log.error("There is no Test-Case "+ self.testCaseNumber)
+            self.log.error( "There is no Test-Case " + self.testCaseNumber )
             return self.FALSE
-
         self.stepCount = 0
         while self.stepCount < len(self.code[self.testCaseNumber].keys()):
             result = self.runStep(self.stepList,self.code,self.testCaseNumber)
@@ -243,8 +243,11 @@ class TestON:
                 break
             elif result == self.TRUE:
                 continue
-        if not stopped :
-            if all( self.TRUE == i for i in self.stepResults ):
+        if not stopped:
+            if self.CASERESULT == self.TRUE or self.CASERESULT == self.FALSE:
+                # Result was already explitily set somewhere else like skipCase()
+                pass
+            elif all( self.TRUE == i for i in self.stepResults ):
                 # ALL PASSED
                 self.CASERESULT = self.TRUE
             elif self.FALSE in self.stepResults:
@@ -279,7 +282,7 @@ class TestON:
             try :
                 step = stepList[self.stepCount]
                 self.STEPRESULT = self.NORESULT
-                self.onFailMsg = "\t\tNo on fail message given"
+                self.onFailMsg = "No on fail message given"
                 exec code[testCaseNumber][step] in module.__dict__
                 self.stepCount = self.stepCount + 1
                 if step > 0:
@@ -293,10 +296,17 @@ class TestON:
                     else:
                         self.stepCache += "No Result\n"
                     self.stepResults.append(self.STEPRESULT)
+            except StopIteration:  # Raised in self.skipCase()
+                self.log.warn( "Skipping the rest of CASE" +
+                               str( testCaseNumber ) )
+                self.stepResults.append(self.STEPRESULT)
+                self.stepCache += "\t\t" + self.onFailMsg + "\n"
+                self.stepCount = self.stepCount + 1
+                return self.FALSE
             except StandardError:
                 self.log.exception( "\nException in the following section of" +
-                                    " code: " + str(testCaseNumber) + "." +
-                                    str(step) + ": " + self.stepName )
+                                    " code: " + str( testCaseNumber ) + "." +
+                                    str( step ) + ": " + self.stepName )
                 #print code[testCaseNumber][step]
                 self.stepCount = self.stepCount + 1
                 self.logger.updateCaseResults(self)
@@ -317,7 +327,7 @@ class TestON:
                 self.stepCache = ""
                 self.cleanup()
                 self.exit()
-            return main.TRUE
+            return self.TRUE
         if cli.stop:
             cli.stop = False
             stopped = True
@@ -325,7 +335,28 @@ class TestON:
             self.testCaseResult[str(self.CurrentTestCaseNumber)] = "Stopped"
             self.logger.updateCaseResults(self)
             result = self.cleanup()
-            return main.FALSE
+            return self.FALSE
+
+    def skipCase( self, result="DEFAULT", msg=None ):
+        """
+        Will skip the rest of the code in a test case. The case results will be
+        determined as normal based on completed assertions unless the result
+        argument is given.
+
+        Optional Arguments:
+            result: Case insensite string. Can be 'PASS' or 'FAIL' and will set
+                    the case result accordingly.
+            msg: Message to be printed when the case is skipped in the reports.
+        """
+        result = result.upper().strip()
+        if result == "PASS":
+            self.CASERESULT = self.TRUE
+        elif result == "FAIL":
+            self.CASERESULT = self.FALSE
+        self.onFailMsg = "Skipping the rest of this case. "
+        if msg:
+            self.onFailMsg += str( msg )
+        raise StopIteration
 
     def addCaseHeader(self):
         caseHeader = "\n"+"*" * 30+"\n Result summary for Testcase"+str(self.CurrentTestCaseNumber)+"\n"+"*" * 30+"\n"

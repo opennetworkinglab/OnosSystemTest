@@ -20,6 +20,11 @@ class SCPFmaxIntents:
         - Building ONOS ( optional )
             - Install ONOS package
             - Build ONOS package
+        - Set up cell
+            - Create cell file
+            - Set cell file
+            - Verify cell file
+        - Kill ONOS process
         """
 
         main.case( "Constructing test variables and building ONOS package" )
@@ -56,6 +61,9 @@ class SCPFmaxIntents:
 
         main.ONOSip = main.ONOSbench.getOnosIps()
         main.log.info(main.ONOSip)
+
+        # main.scale[ 0 ] determines the current number of ONOS controller
+        main.numCtrls = int( main.scale[ 0 ] )
 
         # Assigning ONOS cli handles to a list
         for i in range( 1,  main.maxNodes + 1 ):
@@ -103,22 +111,6 @@ class SCPFmaxIntents:
             main.log.warn( "Did not pull new code so skipping mvn " +
                            "clean install" )
 
-    def CASE1( self, main ):
-        """
-        - Set up cell
-            - Create cell file
-            - Set cell file
-            - Verify cell file
-        - Kill ONOS process
-        - Uninstall ONOS cluster
-        - Verify ONOS start up
-        - Install ONOS cluster
-        - Connect to cli
-        """
-
-        # main.scale[ 0 ] determines the current number of ONOS controller
-        main.numCtrls = int( main.scale[ 0 ] )
-
         main.case( "Starting up " + str( main.numCtrls ) +
                    " node(s) ONOS cluster" )
 
@@ -158,6 +150,26 @@ class SCPFmaxIntents:
                                  actual=stepResult,
                                  onpass="Successfully created ONOS package",
                                  onfail="Failed to create ONOS package" )
+
+        commit = main.ONOSbench.getVersion()
+        commit = commit.split(" ")[1]
+
+        try:
+            dbFileName="/tmp/MaxIntentDB"
+            dbfile = open(dbFileName, "w+")
+            temp = "'" + commit + "',"
+            dbfile.write(temp)
+            dbfile.close()
+        except IOError:
+            main.log.warn("Error opening " + dbFileName + " to write results.")
+
+    def CASE1( self, main ):
+        """
+        - Uninstall ONOS cluster
+        - Verify ONOS start up
+        - Install ONOS cluster
+        - Connect to cli
+        """
 
         main.step( "Uninstalling ONOS package" )
         onosUninstallResult = main.TRUE
@@ -386,10 +398,22 @@ class SCPFmaxIntents:
         except pexpect.TIMEOUT:
             main.log.exception("Timeout exception caught")
 
+        maxIntents = main.intentFunctions.getIntents( main )
+        maxFlows = main.intentFunctions.getFlows( main )
+
         main.log.report("Done pushing intents")
         main.log.info("Summary: Intents=" + str(expectedIntents) + " Flows=" + str(expectedFlows))
-        main.log.info("Installed intents: " + str(main.intentFunctions.getIntents(main)) +
-                      "\nAdded flows: " + str(main.intentFunctions.getFlows(main)))
+        main.log.info("Installed intents: " + str(maxIntents) +
+                      "\nAdded flows: " + str(maxFlows))
+
+        try:
+            dbFileName="/tmp/MaxIntentDB"
+            dbfile = open(dbFileName, "a+")
+            temp = "'" + str(maxIntents) + "',"
+            dbfile.write(temp)
+            dbfile.close()
+        except IOError:
+            main.log.warn("Error opening " + dbFileName + " to write results.")
 
         # Stopping mininet
         if main.switch == "of":
@@ -509,10 +533,22 @@ class SCPFmaxIntents:
         except pexpect.TIMEOUT:
             main.log.exception("Timeout exception caught")
 
+        maxIntents = main.intentFunctions.getIntents( main )
+        maxFlows = main.intentFunctions.getFlows( main )
+
         main.log.report("Done pushing intents")
         main.log.info("Summary: Intents=" + str(expectedIntents) + " Flows=" + str(expectedFlows))
-        main.log.info("Installed intents: " + str(main.intentFunctions.getIntents(main)) +
-                      "\nAdded flows: " + str(main.intentFunctions.getFlows(main)))
+        main.log.info("Installed intents: " + str(maxIntents) +
+                      "\nAdded flows: " + str(maxFlows))
+
+        try:
+            dbFileName="/tmp/MaxIntentDB"
+            dbfile = open(dbFileName, "a+")
+            temp = "'" + str(maxIntents) + "',"
+            dbfile.write(temp)
+            dbfile.close()
+        except IOError:
+            main.log.warn("Error opening " + dbFileName + " to write results.")
 
         # Stopping mininet
         if main.switch == "of":

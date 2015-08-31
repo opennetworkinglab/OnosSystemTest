@@ -2757,6 +2757,17 @@ class HAminorityRestart:
     def CASE15( self, main ):
         """
         Check that Leadership Election is still functional
+            15.1 Run election on each node
+            15.2 Check that each node has the same leaders and candidates
+            15.3 Find current leader and withdraw
+            15.4 Check that a new node was elected leader
+            15.5 Check that that new leader was the candidate of old leader
+            15.6 Run for election on old leader
+            15.7 Check that oldLeader is a candidate, and leader if only 1 node
+            15.8 Make sure that the old leader was added to the candidate list
+
+            old and new variable prefixes refer to data from before vs after
+                withdrawl and later before withdrawl vs after re-election
         """
         import time
         assert main.numCtrls, "main.numCtrls not defined"
@@ -2765,116 +2776,220 @@ class HAminorityRestart:
         assert main.CLIs, "main.CLIs not defined"
         assert main.nodes, "main.nodes not defined"
 
-        leaderResult = main.TRUE
         description = "Check that Leadership Election is still functional"
         main.case( description )
+        # NOTE: Need to re-run since being a canidate is not persistant
+        # TODO: add check for "Command not found:" in the driver, this
+        #       means the election test app isn't loaded
 
-        main.step( "Check that each node shows the same leader" )
-        sameLeader = main.TRUE
-        leaders = []
-        for cli in main.CLIs:
-            leader = cli.electionTestLeader()
-            leaders.append( leader )
-        if len( set( leaders ) ) != 1:
-            sameLeader = main.FALSE
-            main.log.error( "Results of electionTestLeader is order of main.CLIs:" +
-                            str( leaders ) )
+        oldLeaders = []  # leaders by node before withdrawl from candidates
+        newLeaders = []  # leaders by node after withdrawl from candidates
+        oldAllCandidates = []  # list of lists of each nodes' candidates before
+        newAllCandidates = []  # list of lists of each nodes' candidates after
+        oldCandidates = []  # list of candidates from node 0 before withdrawl
+        newCandidates = []  # list of candidates from node 0 after withdrawl
+        oldLeader = ''  # the old leader from oldLeaders, None if not same
+        newLeader = ''  # the new leaders fron newLoeaders, None if not same
+        oldLeaderCLI = None  # the CLI of the old leader used for re-electing
+        expectNoLeader = False  # True when there is only one leader
+        if main.numCtrls == 1:
+            expectNoLeader = True
+
+        main.step( "Run for election on each node" )
+        electionResult = main.TRUE
+
+        for cli in main.CLIs:  # run test election on each node
+            if cli.electionTestRun() == main.FALSE:
+                electionResult = main.FALSE
+
         utilities.assert_equals(
             expect=main.TRUE,
-            actual=sameLeader,
+            actual=electionResult,
+            onpass="All nodes successfully ran for leadership",
+            onfail="At least one node failed to run for leadership" )
+
+        main.step( "Check that each node shows the same leader and candidates" )
+        sameResult = main.TRUE
+        failMessage = "Nodes have different leaders"
+        for cli in main.CLIs:
+            node = cli.specificLeaderCandidate( 'org.onosproject.election' )
+            oldAllCandidates.append( node )
+            oldLeaders.append( node[ 0 ] )
+        oldCandidates = oldAllCandidates[ 0 ]
+
+        # Check that each node has the same leader. Defines oldLeader
+        if len( set( oldLeaders ) ) != 1:
+            sameResult = main.FALSE
+            main.log.error( "More than one leader present:" + str( oldLeaders ) )
+            oldLeader = None
+        else:
+            oldLeader = oldLeaders[ 0 ]
+
+        # Check that each node's candidate list is the same
+        for candidates in oldAllCandidates:
+            if set( candidates ) != set( oldCandidates ):
+                sameResult = main.FALSE
+                failMessage += "and candidates"
+
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=sameResult,
             onpass="Leadership is consistent for the election topic",
-            onfail="Nodes have different leaders" )
+            onfail=failMessage )
 
         main.step( "Find current leader and withdraw" )
-        leader = main.ONOScli1.electionTestLeader()
+        withdrawResult = main.TRUE
         # do some sanity checking on leader before using it
-        withdrawResult = main.FALSE
-        if leader is None or leader == main.FALSE:
-            main.log.error(
-                "Leader for the election app should be an ONOS node," +
-                "instead got '" + str( leader ) + "'" )
-            leaderResult = main.FALSE
-            oldLeader = None
+        if oldLeader is None:
+            main.log.error( "Leadership isn't consistent." )
+            withdrawResult = main.FALSE
+        # Get the CLI of the oldLeader
         for i in range( len( main.CLIs ) ):
-            if leader == main.nodes[ i ].ip_address:
-                oldLeader = main.CLIs[ i ]
+            if oldLeader == main.nodes[ i ].ip_address:
+                oldLeaderCLI = main.CLIs[ i ]
                 break
         else:  # FOR/ELSE statement
             main.log.error( "Leader election, could not find current leader" )
         if oldLeader:
-            withdrawResult = oldLeader.electionTestWithdraw()
+            withdrawResult = oldLeaderCLI.electionTestWithdraw()
         utilities.assert_equals(
             expect=main.TRUE,
             actual=withdrawResult,
             onpass="Node was withdrawn from election",
             onfail="Node was not withdrawn from election" )
 
-        main.step( "Make sure new leader is elected" )
+        main.step( "Check that a new node was elected leader" )
+
         # FIXME: use threads
-        leaderList = []
+        newLeaderResult = main.TRUE
+        failMessage = "Nodes have different leaders"
+
+        # Get new leaders and candidates
         for cli in main.CLIs:
-            leaderN = cli.electionTestLeader()
-            leaderList.append( leaderN )
-            if leaderN == leader:
-                main.log.error(  cli.name + " still sees " + str( leader ) +
-                                  " as leader after they withdrew" )
-                leaderResult = main.FALSE
-            elif leaderN == main.FALSE:
-                # error in  response
-                # TODO: add check for "Command not found:" in the driver, this
-                #       means the app isn't loaded
-                main.log.error( "Something is wrong with " +
-                                 "electionTestLeader function, " +
-                                 "check the error logs" )
-                leaderResult = main.FALSE
-            elif leaderN is None:
-                # node may not have recieved the event yet
-                time.sleep(7)
-                leaderN = cli.electionTestLeader()
-                leaderList.pop()
-                leaderList.append( leaderN )
-        consistentLeader = main.FALSE
-        if len( set( leaderList ) ) == 1:
-            main.log.info( "Each Election-app sees '" +
-                           str( leaderList[ 0 ] ) +
-                           "' as the leader" )
-            consistentLeader = main.TRUE
+            node = cli.specificLeaderCandidate( 'org.onosproject.election' )
+            # elections might no have finished yet
+            if node[ 0 ] == 'none' and not expectNoLeader:
+                main.log.info( "Node has no leader, waiting 5 seconds to be " +
+                    "sure elections are complete." )
+                time.sleep(5)
+                node = cli.specificLeaderCandidate( 'org.onosproject.election' )
+                # election still isn't done or there is a problem
+                if node[ 0 ] == 'none':
+                    main.log.error( "No leader was elected on at least 1 node" )
+                    newLeaderResult = main.FALSE
+            newAllCandidates.append( node )
+            newLeaders.append( node[ 0 ] )
+        newCandidates = newAllCandidates[ 0 ]
+
+        # Check that each node has the same leader. Defines newLeader
+        if len( set( newLeaders ) ) != 1:
+            newLeaderResult = main.FALSE
+            main.log.error( "Nodes have different leaders: " +
+                            str( newLeaders ) )
+            newLeader = None
         else:
-            main.log.error(
-                "Inconsistent responses for leader of Election-app:" )
-            for n in range( len( leaderList ) ):
-                main.log.error( "ONOS" + str( n + 1 ) + " response: " +
-                                 str( leaderList[ n ] ) )
-        leaderResult = leaderResult and consistentLeader
+            newLeader = newLeaders[ 0 ]
+
+        # Check that each node's candidate list is the same
+        for candidates in newAllCandidates:
+            if set( candidates ) != set( newCandidates ):
+                newLeaderResult = main.FALSE
+                main.error.log( "Discrepancy in candidate lists detected" )
+
+        # Check that the new leader is not the older leader, which was withdrawn
+        if newLeader == oldLeader:
+            newLeaderResult = main.FALSE
+            main.log.error( "All nodes still see old leader: " + oldLeader +
+                " as the current leader" )
+
         utilities.assert_equals(
             expect=main.TRUE,
-            actual=leaderResult,
+            actual=newLeaderResult,
             onpass="Leadership election passed",
             onfail="Something went wrong with Leadership election" )
 
+        main.step( "Check that that new leader was the candidate of old leader")
+        # candidates[ 2 ] should be come the top candidate after withdrawl
+        correctCandidateResult = main.TRUE
+        if expectNoLeader:
+            if newLeader == 'none':
+                main.log.info( "No leader expected. None found. Pass" )
+                correctCandidateResult = main.TRUE
+            else:
+                main.log.info( "Expected no leader, got: " + str( newLeader ) )
+                correctCandidateResult = main.FALSE
+        elif newLeader != oldCandidates[ 2 ]:
+            correctCandidateResult = main.FALSE
+            main.log.error( "Candidate " + newLeader + " was elected. " +
+                oldCandidates[ 2 ] + " should have had priority." )
+
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=correctCandidateResult,
+            onpass="Correct Candidate Elected",
+            onfail="Incorrect Candidate Elected" )
+
         main.step( "Run for election on old leader( just so everyone " +
                    "is in the hat )" )
-        if oldLeader:
-            runResult = oldLeader.electionTestRun()
+        if oldLeaderCLI is not None:
+            runResult = oldLeaderCLI.electionTestRun()
         else:
+            main.log.error( "No old leader to re-elect" )
             runResult = main.FALSE
         utilities.assert_equals(
             expect=main.TRUE,
             actual=runResult,
             onpass="App re-ran for election",
             onfail="App failed to run for election" )
-
-        main.step( "Leader did not change when old leader re-ran" )
-        afterRun = main.ONOScli1.electionTestLeader()
+        main.step(
+            "Check that oldLeader is a candidate, and leader if only 1 node" )
         # verify leader didn't just change
-        if afterRun == leaderList[ 0 ]:
-            afterResult = main.TRUE
+        positionResult = main.TRUE
+        # Get new leaders and candidates, wait if oldLeader is not a candidate yet
+
+        # Reset and reuse the new candidate and leaders lists
+        newAllCandidates = []
+        newCandidates = []
+        newLeaders = []
+        for cli in main.CLIs:
+            node = cli.specificLeaderCandidate( 'org.onosproject.election' )
+            if oldLeader not in node:  # election might no have finished yet
+                main.log.info( "Old Leader not elected, waiting 5 seconds to " +
+                    "be sure elections are complete" )
+                time.sleep(5)
+                node = cli.specificLeaderCandidate( 'org.onosproject.election' )
+            if oldLeader not in node:  # election still isn't done, errors
+                main.log.error(
+                    "Old leader was not elected on at least one node" )
+                positionResult = main.FALSE
+            newAllCandidates.append( node )
+            newLeaders.append( node[ 0 ] )
+        newCandidates = newAllCandidates[ 0 ]
+
+        # Check that each node has the same leader. Defines newLeader
+        if len( set( newLeaders ) ) != 1:
+            positionResult = main.FALSE
+            main.log.error( "Nodes have different leaders: " +
+                            str( newLeaders ) )
+            newLeader = None
         else:
-            afterResult = main.FALSE
+            newLeader = newLeaders[ 0 ]
+
+        # Check that each node's candidate list is the same
+        for candidates in newAllCandidates:
+            if set( candidates ) != set( newCandidates ):
+                newLeaderResult = main.FALSE
+                main.error.log( "Discrepancy in candidate lists detected" )
+
+        # Check that the re-elected node is last on the candidate List
+        if oldLeader != newCandidates[ -1 ]:
+            main.log.error( "Old Leader ("  + oldLeader + ") not in the proper position " +
+                str( newCandidates ) )
+            positionResult = main.FALSE
 
         utilities.assert_equals(
             expect=main.TRUE,
-            actual=afterResult,
+            actual=positionResult,
             onpass="Old leader successfully re-ran for election",
             onfail="Something went wrong with Leadership election after " +
                    "the old leader re-ran for election" )

@@ -178,7 +178,7 @@ def sdn1net():
     topo = SDNIpModifiedTopo()
     info( '*** Creating network\n' )
     net = Mininet( topo=topo, controller=RemoteController )
-    net = Mininet( topo=topo, controller=RemoteController )
+    #net = Mininet( topo=topo, controller=RemoteController )
 
     host1, host3, host4, host5 = net.get( 'host1', 'host3', 'host4', 'host5' )
     

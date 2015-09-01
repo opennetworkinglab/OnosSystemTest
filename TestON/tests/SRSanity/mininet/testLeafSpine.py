@@ -7,14 +7,12 @@ Intended for the "Advanced Switches" exercise.
 
 from mininet.cli import CLI
 from mininet.log import setLogLevel
-from mininet.node import UserSwitch, RemoteController
+from mininet.node import UserSwitch, RemoteController, OVSSwitch
 from mininet.topolib import TreeNet
 from mininet.topo import SingleSwitchTopo
 from mininet.net import Mininet
 from functools import partial
-from ringTopo import MyTopo
-from alterableNet import alterableCLI
-from alterableNet import alterNet
+from leafspineTopo import MyTopo
 
 def setDefaultRoute(node, ip, intf=None):
     """Modified node.setDefaultRoute that sets a default gateway IP.
@@ -34,19 +32,26 @@ def setDefaultRoute(node, ip, intf=None):
 if __name__ == '__main__':
     setLogLevel( 'info' )
     topo = MyTopo()
-    net = alterNet(topo=topo, switch=UserSwitch, controller=partial(RemoteController,ip='10.128.4.49'))
-    #s1, s2, s3 = net.switches
-    #net.addLink(s1, s2)
+    net = Mininet(topo=topo, switch=UserSwitch, controller=partial(RemoteController,ip='10.128.4.49'))
     net.start()
+   
+    h1, h2, h3, h4 = net.hosts
 
+    h1.setIP("10.0.1.1/24")
+    h1.setMAC("00:00:00:00:00:01")
+    setDefaultRoute(h1, "10.0.1.128")
 
-    h1, h2, h3, h4, h5 = net.hosts
+    h2.setIP("10.0.2.1/24")
+    h2.setMAC("00:00:00:00:00:02")
+    setDefaultRoute(h2, "10.0.2.128")
 
-    # For each host in Subnet A, set up a default route and static ARPs.
-    for i, h in enumerate([h1, h2, h3, h4, h5]):
-        h.setIP("10.0.%i.%i/24" % (i + 1, i+1))
-        h.setMAC("00:00:00:00:0%i:0%i" % (i + 1, i+1))
-        setDefaultRoute(h, "10.0.%i.128" % (i + 1))
+    h3.setIP("10.0.3.1/24")
+    h3.setMAC("00:00:00:00:00:03")
+    setDefaultRoute(h3, "10.0.3.128")
 
-    alterableCLI(net)
+    h4.setIP("10.0.4.1/24")
+    h4.setMAC("00:00:00:00:00:04")
+    setDefaultRoute(h4, "10.0.4.128")
+
+    CLI(net)
     net.stop()

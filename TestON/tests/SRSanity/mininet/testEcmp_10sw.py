@@ -34,7 +34,7 @@ def setDefaultRoute(node, ip, intf=None):
 if __name__ == '__main__':
     setLogLevel( 'info' )
     topo = MyTopo()
-    net = alterNet(topo=topo, switch=UserSwitch, controller=partial(RemoteController,ip='192.168.0.2'))
+    net = alterNet(topo=topo, switch=UserSwitch, controller=partial(RemoteController,ip='10.128.4.49'))
     s1, s2, s3, s4, s5, s6, s7, s8, s9, s10 = net.switches
     net.addLink(s2, s5)
     net.start()

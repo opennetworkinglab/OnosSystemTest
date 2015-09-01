@@ -302,19 +302,24 @@ class PeeringRouterTest:
         main.ONOSbench.handle.sendline("onos-topo-cfg $OC1 ~/TestON/tests/PeeringRouterTest/bgprouter.json")
         listResult = main.ONOScli.devices( jsonFormat=False )
         main.log.info( listResult )
-        time.sleep(10)
+        time.sleep(20)
 
         # Activate bgprouter app
-        main.log.info( "Installing bgprouter app" )
-        main.ONOScli.handle.sendline("app activate org.onosproject.bgprouter")
-        time.sleep( 10 )
+        #main.log.info( "Installing bgprouter app" )
+        #main.ONOScli.handle.sendline("app activate org.onosproject.bgprouter")
+        #time.sleep( 20 )
 
         # Launch mininet topology for this case
         MININET_TOPO_FILE = TESTCASE_MININET_ROOT_PATH + "/PeeringRouterMininetVlan.py"
         main.step( "Launch mininet" )
         main.Mininet.handle.sendline("sudo python " + MININET_TOPO_FILE + " " + TESTCASE_MININET_ROOT_PATH)
         main.step("waiting 20 secs for all switches and quagga instances to comeup")
-        time.sleep(20)
+        time.sleep(30)
+
+        # Activate bgprouter app
+        main.log.info( "Installing bgprouter app" )
+        main.ONOScli.handle.sendline("app activate org.onosproject.bgprouter")
+        time.sleep( 10 )
 
         main.step( "Test whether Mininet is started" )
         main.log.info( "Login Quagga CLI on host3" )

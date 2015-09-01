@@ -11,6 +11,7 @@
 
     <TEST>
         <skipCleanInstall>yes</skipCleanInstall>
+        <cbenchCMD>cbench -c localhost -p 6633 -m 1000 -l 70 -s 16 -M 100000 -w 10 -D 5000 -</cbenchCMD>
         <mode>t</mode>                     #t throughput
     </TEST>
 

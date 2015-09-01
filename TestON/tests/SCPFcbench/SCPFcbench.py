@@ -152,11 +152,12 @@ class SCPFcbench:
         main.case("Running Cbench")
         main.step("Issuing cbench commands and grab returned results")
         validFlag = False
+        cbenchCMD = main.params[ 'TEST' ][ 'cbenchCMD' ]
         mode = main.params[ 'TEST' ][ 'mode' ]
         if mode != "t":
             mode = " "
 
-        runCbench = ( "ssh " + CBENCHuser + "@" + ONOSIp[1] + " cbench -c localhost -p 6633 -m 1000 -l 25 -s 16 -M 100000 -w 15 -D 10000 -" + mode )
+        runCbench = ( "ssh " + CBENCHuser + "@" + ONOSIp[1] + " " + cbenchCMD + mode )
         main.ONOSbench.handle.sendline(runCbench)
         time.sleep(30)
         main.ONOSbench.handle.expect(":~")

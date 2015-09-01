@@ -14,8 +14,8 @@
         <wrapper3>topo</wrapper3>
         <topology>spine.py</topology>
         <multiovs>multiovs.py</multiovs>
-        <spine>spine,3,6</spine>
-        <torus>torus,5,5</torus>
+        <spine>spine,15,30</spine>
+        <torus>torus,28,28</torus>
     </DEPENDENCY>
 
     <ENV>

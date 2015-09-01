@@ -319,12 +319,6 @@ class SCPFscaleTopo:
 
         time.sleep(3)
 
-        '''
-        main.ONOSbench.scp( main.Mininet1,
-                           "~/mininet/custom/spine.json",
-                           "/tmp/",
-                           direction="to" )
-        '''
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
                                  onpass=main.spine + " topology successful",
@@ -332,6 +326,13 @@ class SCPFscaleTopo:
                                  "Spine topology failed" )
 
         time.sleep(60)
+
+        '''
+        main.ONOSbench.scp( main.Mininet1,
+                           "~/mininet/custom/spine.json",
+                           "/tmp/",
+                           direction="to" )
+        '''
 
     def CASE1002( self, main ):
         """

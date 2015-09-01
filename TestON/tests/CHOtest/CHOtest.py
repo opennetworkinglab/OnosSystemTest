@@ -2961,6 +2961,7 @@ class CHOtest:
         main.log.report( "______________________________________________" )
         main.log.info( "Remove all intents" )
         main.case( "Removing intents" )
+        purgeDelay = int( main.params[ "timers" ][ "IntentPurgeDelay" ] )
         main.step( "Obtain the intent id's first" )
         intentsList = main.ONOScli1.getAllIntentIds()
         ansi_escape = re.compile( r'\x1b[^m]*m' )
@@ -3030,7 +3031,7 @@ class CHOtest:
                         #time.sleep(2)
                     time2 = time.time()
                     main.log.info("Time for removing host intents: %2f seconds" %(time2-time1))
-                    time.sleep(10)
+                    time.sleep( purgeDelay )
                     main.log.info("Purging WITHDRAWN Intents")
                     purgeResult  = main.ONOScli1.purgeWithdrawnIntents()
                 else:
@@ -3038,7 +3039,7 @@ class CHOtest:
                     if len( main.ONOScli1.intents()):
                         continue
                     break
-                time.sleep(10)
+                time.sleep( purgeDelay )
             else:
                 print "Removed %d intents" %(intentsCount)
                 step1Result = main.TRUE

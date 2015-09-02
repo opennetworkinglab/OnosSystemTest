@@ -2739,7 +2739,7 @@ class HAsanity:
         assert main.CLIs, "main.CLIs not defined"
         assert main.nodes, "main.nodes not defined"
 
-        description = "Check that Leadership Election is still functional"
+        description = "Check that Leadership Election App is still functional"
         main.case( description )
         # NOTE: Need to re-run since being a canidate is not persistant
         # TODO: add check for "Command not found:" in the driver, this
@@ -2770,6 +2770,11 @@ class HAsanity:
             actual=electionResult,
             onpass="All nodes successfully ran for leadership",
             onfail="At least one node failed to run for leadership" )
+
+        if electionResult == main.FALSE:
+            main.log.error(
+                "Skipping Test Case because Election Test isn't loaded" )
+            main.skipCase()
 
         main.step( "Check that each node shows the same leader and candidates" )
         sameResult = main.TRUE

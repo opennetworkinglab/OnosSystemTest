@@ -2447,7 +2447,7 @@ class CHOtest:
                 t = main.Thread( target=cli.addPointIntent,
                         threadID=main.threadID,
                         name="addPointIntent",
-                        args=[deviceCombos[i][0],deviceCombos[i][1],1,1,"","",main.MACsDict.get(deviceCombos[i][1])])
+                        args=[deviceCombos[i][0],deviceCombos[i][1],1,1,'',main.MACsDict.get(deviceCombos[i][0]),main.MACsDict.get(deviceCombos[i][1])])
                 pool.append(t)
                 #time.sleep(1)
                 t.start()
@@ -2513,7 +2513,7 @@ class CHOtest:
                 t = main.Thread( target=cli.addPointIntent,
                         threadID=main.threadID,
                         name="addPointIntent",
-                        args=[deviceCombos[i][0],deviceCombos[i][1],1,1,"","",main.MACsDict.get(deviceCombos[i][1])])
+                        args=[deviceCombos[i][0],deviceCombos[i][1],1,1,'',main.MACsDict.get(deviceCombos[i][0]),main.MACsDict.get(deviceCombos[i][1])])
                 pool.append(t)
                 #time.sleep(1)
                 t.start()

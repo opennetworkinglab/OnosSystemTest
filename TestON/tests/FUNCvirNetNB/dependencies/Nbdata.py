@@ -11,12 +11,12 @@ class NetworkData:
         self.state = 'ACTIVE'
         self.name = 'onosfw-1'
         self.physicalNetwork = 'none'
-        self.admin_state_up = 'true'
+        self.admin_state_up = True
         self.tenant_id = ''
-        self.routerExternal = 'false'
+        self.routerExternal = False
         self.type ='LOCAL'
         self.segmentationID = '6'
-        self.shared = 'false'
+        self.shared = False
 
     def DictoJson(self):
 
@@ -72,7 +72,7 @@ class NetworkData:
             Decom = DestiCompareDataDic[FirstPara][SecondPara]
         except KeyError,error:
             print "Key error ,This key is not found:%s"%error
-            return False            
+            return False
 
         if str(Socom).lower()== str(Decom).lower():
             return True
@@ -94,11 +94,11 @@ class SubnetData(NetworkData):
         self.ipv6_address_mode = 'DHCPV6_STATELESS'
         self.ipv6_ra_mode = 'DHCPV6_STATELESS'
         self.cidr = '192.168.1.1/24'
-        self.enable_dhcp = 'true'
+        self.enable_dhcp = True
         self.dns_nameservers = 'aaa'
         self.gateway_ip = '192.168.2.1'
-        self.ip_version = 'INET'
-        self.shared = 'false'
+        self.ip_version = '4'
+        self.shared = False
         self.name = 'demo-subnet'
 
     def DictoJson(self):
@@ -150,14 +150,14 @@ class VirtualPortData(NetworkData):
         self.id = ''
         self.state = 'ACTIVE'
         self.bindingHostId = 'fa:16:3e:76:8e:88'
-        self.allowedAddressPairs = [{'macAddress':'fa:16:3e:76:8e:88','ipAddress':'192.168.1.1'}]
+        self.allowedAddressPairs = [{'mac_address':'fa:16:3e:76:8e:88','ip_address':'192.168.1.1'}]
         self.deviceOwner = 'none'
         self.fixedIp = []
         self.securityGroups = [{'securityGroup':'asd'}]
-        self.adminStateUp = 'true'
-        self.networkId = ''
-        self.tenantId = ''
-        self.subnetId = ''
+        self.adminStateUp = True
+        self.network_id = ''
+        self.tenant_id = ''
+        self.subnet_id = ''
         self.bindingvifDetails = 'port_filter'
         self.bindingvnicType = 'normal'
         self.bindingvifType = 'ovs'
@@ -166,49 +166,47 @@ class VirtualPortData(NetworkData):
         self.name = 'u'
 
     def DictoJson(self):
-        if self.id == '' or self.tenant_id == ' ' or self.networkId == '':
+        if self.id == '' or self.tenant_id == ' ' or \
+           self.network_id == '' or self.subnet_id == '':
             print 'Id/tenant id/networkid/subnetId is necessary!'
 
         Dicdata = {}
         fixedIp =[]
-        fixedIp.append({'subnetId':self.subnetId,'ipAddress':'192.168.1.4'})
+        fixedIp.append({'subnet_id':self.subnet_id,'ip_address':'192.168.1.4'})
         allocation_pools = []
 
         if self.id != '':
             Dicdata['id'] = self.id
         if self.state != '':
-            Dicdata['state'] = self.state
+            Dicdata['status'] = self.state
         if self.bindingHostId != '':
-            Dicdata['bindingHostId'] = self.bindingHostId
+            Dicdata['binding:host_id'] = self.bindingHostId
         if self.allowedAddressPairs != '':
-            Dicdata['allowedAddressPairs'] = self.allowedAddressPairs
+            Dicdata['allowed_address_pairs'] = self.allowedAddressPairs
         if self.deviceOwner != '':
-            Dicdata['deviceOwner'] = self.deviceOwner
-        if self.fixedIp != []:
-            Dicdata['fixedIp'] = fixedIp
+            Dicdata['device_owner'] = self.deviceOwner            
         if self.securityGroups != '':
-            Dicdata['securityGroups'] = self.securityGroups
+            Dicdata['security_groups'] = self.securityGroups
         if self.adminStateUp != '':
-            Dicdata['adminStateUp'] = self.adminStateUp
-        if self.networkId != '':
-            Dicdata['networkId'] = self.networkId
-        if self.tenantId != '':
-            Dicdata['tenantId'] = self.tenantId
-        if self.subnetId != '':
-            Dicdata['subnetId'] = self.subnetId
+            Dicdata['admin_state_up'] = self.adminStateUp
+        if self.network_id != '':
+            Dicdata['network_id'] = self.network_id
+        if self.tenant_id != '':
+            Dicdata['tenant_id'] = self.tenant_id
         if self.bindingvifDetails != '':
-            Dicdata['bindingvifDetails'] = self.bindingvifDetails
+            Dicdata['binding:vif_details'] = self.bindingvifDetails
         if self.bindingvnicType != '':
-            Dicdata['bindingvnicType'] = self.bindingvnicType
+            Dicdata['binding:vnic_type'] = self.bindingvnicType
         if self.bindingvifType != '':
-            Dicdata['bindingvifType'] = self.bindingvifType
+            Dicdata['binding:vif_type'] = self.bindingvifType
         if self.macAddress != '':
-            Dicdata['macAddress'] = self.macAddress
+            Dicdata['mac_address'] = self.macAddress
         if self.deviceId != '':
-            Dicdata['deviceId'] = self.deviceId
+            Dicdata['device_id'] = self.deviceId
         if self.name != '':
             Dicdata['name'] = self.name
 
-            Dicdata = {'virtualport': Dicdata}
+        Dicdata['fixed_ips'] = fixedIp
+        Dicdata = {'port': Dicdata}
 
-            return json.dumps(Dicdata,indent=4)
+        return json.dumps(Dicdata,indent=4)

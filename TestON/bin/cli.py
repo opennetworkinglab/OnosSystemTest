@@ -93,15 +93,23 @@ class CLI( threading.Thread,Cmd,object ):
         mail <mail-id or list of mail-ids seperated by comma>
         example 1, to execute the examples specified in the ~/examples diretory.
         '''
-        args = args.split()
-        options = {}
-        options = self.parseArgs(args,options)
-        options = dictToObj(options)
-        if not testthread:
-            test = TestThread(options)
-            test.start()
-        else :
-            print main.TEST+ " test execution paused, please resume that before executing to another test"
+        try:
+            args = args.split()
+            options = {}
+            options = self.parseArgs(args,options)
+            options = dictToObj(options)
+            if not testthread:
+                test = TestThread(options)
+                test.start()
+                while test.isAlive:
+                    test.join(1)
+            else :
+                print main.TEST+ " test execution paused, please resume that before executing to another test"
+        except KeyboardInterrupt, SystemExit:
+            print "Interrupt called, Exiting."
+            test._Thread__stop()
+            main.cleanup()
+            main.exit()
 
     def do_resume(self, line):
         '''
@@ -157,7 +165,7 @@ class CLI( threading.Thread,Cmd,object ):
             else :
                 try :
                     dump.pprint(vars(main)[line])
-                except KeyError,e:
+                except KeyError as e:
                     print e
         else :
             print "There is no paused test "
@@ -261,7 +269,7 @@ class CLI( threading.Thread,Cmd,object ):
                         options = self.testcasesInRange(index,option,args,options)
                 else :
                     options['testname'] = option
-        except IndexError,e:
+        except IndexError as e:
             print e
 
         return options
@@ -310,7 +318,11 @@ class CLI( threading.Thread,Cmd,object ):
                 super(CLI, self).cmdloop(intro="")
                 self.postloop()
             except KeyboardInterrupt:
-                testthread.pause()
+                if testthread:
+                    testthread.pause()
+                else:
+                    print "KeyboardInterrupt, Exiting."
+                    sys.exit()
 
     def do_echo( self, line ):
         '''
@@ -337,7 +349,7 @@ class CLI( threading.Thread,Cmd,object ):
         '''
         try:
             exec( line )
-        except Exception, e:
+        except Exception as e:
             output( str( e ) + '\n' )
 
     def do_interpret(self,line):
@@ -353,7 +365,7 @@ class CLI( threading.Thread,Cmd,object ):
         try :
             translated_code = ospk.interpret(text=line)
             print translated_code
-        except AttributeError, e:
+        except AttributeError as e:
             print 'Dynamic params are not allowed in single statement translations'
 
     def do_do (self,line):
@@ -367,8 +379,9 @@ class CLI( threading.Thread,Cmd,object ):
             try :
                 translated_code = ospk.interpret(text=line)
                 eval(translated_code)
-            except (AttributeError,SyntaxError), e:
-                print 'Dynamic params are not allowed in single statement translations'
+            except ( AttributeError, SyntaxError ) as e:
+                print 'Dynamic params are not allowed in single statement translations:'
+                print e
         else :
             print "Do will translate and execute the openspeak statement for the paused test.\nPlease use interpret to translate the OpenSpeak statement."
 
@@ -531,8 +544,8 @@ class TestThread(threading.Thread):
                         if not self.is_stop :
                             result = self.test_on.cleanup()
                         self.is_stop = True
-                except(KeyboardInterrupt):
-                    print "Recevied Interrupt,cleaning-up the logs and drivers before exiting"
+                except KeyboardInterrupt:
+                    print "Recevied Interrupt, cleaning-up the logs and drivers before exiting"
                     result = self.test_on.cleanup()
                     self.is_stop = True
 
@@ -542,9 +555,17 @@ class TestThread(threading.Thread):
         '''
         Will pause the test.
         '''
-        print "Will pause the test's execution, after completion of this step.....\n\n\n\n"
-        cli.pause = True
-        self._stopevent.set()
+        if not cli.pause:
+            print "Will pause the test's execution, after completion of this step.....\n\n\n\n"
+            cli.pause = True
+            self._stopevent.set()
+        elif cli.pause and self.is_stop:
+            print "KeyboardInterrupt, Exiting."
+            self.test_on.exit()
+        else:
+            print "Recevied Interrupt, cleaning-up the logs and drivers before exiting"
+            result = self.test_on.cleanup()
+            self.is_stop = True
 
     def play(self):
         '''

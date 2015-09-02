@@ -1075,29 +1075,36 @@ class FUNCintent:
                                ";\nThe test will use OF " + main.OFProtocol +\
                                " OVS running in Mininet"
 
-        main.step( "NOOPTION: Add multi point to single point intents" )
-        stepResult = main.TRUE
         hostNames = [ 'h8', 'h16', 'h24' ]
         devices = [ 'of:0000000000000005/8', 'of:0000000000000006/8', \
                     'of:0000000000000007/8' ]
         macs = [ '00:00:00:00:00:08', '00:00:00:00:00:10', '00:00:00:00:00:18' ]
-        stepResult = main.intentFunction.multiToSingleIntent(
-                                         main,
-                                         name="NOOPTION",
-                                         hostNames=hostNames,
-                                         devices=devices,
-                                         sw1="s5",
-                                         sw2="s2",
-                                         expectedLink=18 )
 
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="NOOPTION: Successfully added multi "
-                                        + " point to single point intents" +
-                                        " with no match action",
-                                 onfail="NOOPTION: Failed to add multi point" +
-                                        " to single point intents" +
-                                        " with no match action" )
+        # This test as written attempts something that is impossible
+        # Multi to Single Raw intent cannot be bi-directional, so pings are not usable to test it
+        # This test should be re-written so that one multi-to-single NOOPTION
+        # intent is installed, with listeners at the destinations, so that one way
+        # packets can be detected
+        #
+        # main.step( "NOOPTION: Add multi point to single point intents" )
+        # stepResult = main.TRUE
+        # stepResult = main.intentFunction.multiToSingleIntent(
+        #                                  main,
+        #                                  name="NOOPTION",
+        #                                  hostNames=hostNames,
+        #                                  devices=devices,
+        #                                  sw1="s5",
+        #                                  sw2="s2",
+        #                                  expectedLink=18 )
+        #
+        # utilities.assert_equals( expect=main.TRUE,
+        #                          actual=stepResult,
+        #                          onpass="NOOPTION: Successfully added multi "
+        #                                 + " point to single point intents" +
+        #                                 " with no match action",
+        #                          onfail="NOOPTION: Failed to add multi point" +
+        #                                 " to single point intents" +
+        #                                 " with no match action" )
 
         main.step( "IPV4: Add multi point to single point intents" )
         stepResult = main.TRUE

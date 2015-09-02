@@ -3,6 +3,7 @@
     # 0-init, 1-setup, 10-null provider setup,
     # 11-mininet setup, 20-pushing intents,
     # 21-rerouting intents
+    # 0,1,10,20,1,11,20,1,10,21,1,11,21,100
     <testcases>0,1,10,20,1,11,20,1,10,21,1,11,21,100</testcases>
 
     <SCALE>
@@ -40,10 +41,15 @@
         <timeout>120</timeout>
     </SLEEP>
 
+    <DATABASE>
+        <nic>1gig</nic>
+        <node>baremetal</node>
+    </DATABASE>
+
     <TEST>
         <batch_size>1000</batch_size>
         <min_intents>800000</min_intents>
-        <max_intents>10000000</max_intents>
+        <max_intents>1000000</max_intents>
         <check_interval>10000</check_interval>
     </TEST>
 

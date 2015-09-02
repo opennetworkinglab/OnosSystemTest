@@ -154,10 +154,16 @@ class SCPFmaxIntents:
         commit = main.ONOSbench.getVersion()
         commit = commit.split(" ")[1]
 
+        main.log.info("Creating DB file")
+        nic = main.params['DATABASE']['nic']
+        node = main.params['DATABASE']['node']
         try:
             dbFileName="/tmp/MaxIntentDB"
             dbfile = open(dbFileName, "w+")
             temp = "'" + commit + "',"
+            temp += "'" + nic + "',"
+            temp += str(main.numCtrls) + ","
+            temp += "'" + node + "1" + "',"
             dbfile.write(temp)
             dbfile.close()
         except IOError:
@@ -170,7 +176,6 @@ class SCPFmaxIntents:
         - Install ONOS cluster
         - Connect to cli
         """
-
         main.step( "Uninstalling ONOS package" )
         onosUninstallResult = main.TRUE
         for i in range( main.maxNodes ):
@@ -406,10 +411,12 @@ class SCPFmaxIntents:
         main.log.info("Installed intents: " + str(maxIntents) +
                       "\nAdded flows: " + str(maxFlows))
 
+        main.log.info("Writing results to DB file")
         try:
             dbFileName="/tmp/MaxIntentDB"
-            dbfile = open(dbFileName, "a+")
-            temp = "'" + str(maxIntents) + "',"
+            dbfile = open(dbFileName, "a")
+            temp = str(maxIntents) + ","
+            temp += str(maxFlows) + "\n"
             dbfile.write(temp)
             dbfile.close()
         except IOError:
@@ -540,15 +547,6 @@ class SCPFmaxIntents:
         main.log.info("Summary: Intents=" + str(expectedIntents) + " Flows=" + str(expectedFlows))
         main.log.info("Installed intents: " + str(maxIntents) +
                       "\nAdded flows: " + str(maxFlows))
-
-        try:
-            dbFileName="/tmp/MaxIntentDB"
-            dbfile = open(dbFileName, "a+")
-            temp = "'" + str(maxIntents) + "',"
-            dbfile.write(temp)
-            dbfile.close()
-        except IOError:
-            main.log.warn("Error opening " + dbFileName + " to write results.")
 
         # Stopping mininet
         if main.switch == "of":

@@ -1929,6 +1929,11 @@ class HAsingleInstanceRestart:
             onpass="All nodes successfully ran for leadership",
             onfail="At least one node failed to run for leadership" )
 
+        if electionResult == main.FALSE:
+            main.log.error(
+                "Skipping Test Case because Election Test App isn't loaded" )
+            main.skipCase()
+
         main.step( "Check that each node shows the same leader and candidates" )
         sameResult = main.TRUE
         failMessage = "Nodes have different leaders"

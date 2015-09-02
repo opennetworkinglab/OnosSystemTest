@@ -2845,6 +2845,9 @@ class HAclusterRestart:
         oldLeader = ''  # the old leader from oldLeaders, None if not same
         newLeader = ''  # the new leaders fron newLoeaders, None if not same
         oldLeaderCLI = None  # the CLI of the old leader used for re-electing
+        expectNoLeader = False  # True when there is only one leader
+        if main.numCtrls == 1:
+            expectNoLeader = True
 
         main.step( "Run for election on each node" )
         electionResult = main.TRUE
@@ -2871,8 +2874,7 @@ class HAclusterRestart:
         # Check that each node has the same leader. Defines oldLeader
         if len( set( oldLeaders ) ) != 1:
             sameResult = main.FALSE
-            main.log.error( "Results of electionTestLeader is order of " +
-                "main.CLIs:" + str( oldLeaders ) )
+            main.log.error( "More than one leader present:" + str( oldLeaders ) )
             oldLeader = None
         else:
             oldLeader = oldLeaders[ 0 ]
@@ -2885,7 +2887,7 @@ class HAclusterRestart:
 
         utilities.assert_equals(
             expect=main.TRUE,
-            actual=sameLeader,
+            actual=sameResult,
             onpass="Leadership is consistent for the election topic",
             onfail=failMessage )
 
@@ -2911,6 +2913,7 @@ class HAclusterRestart:
             onfail="Node was not withdrawn from election" )
 
         main.step( "Check that a new node was elected leader" )
+
         # FIXME: use threads
         newLeaderResult = main.TRUE
         failMessage = "Nodes have different leaders"
@@ -2918,14 +2921,16 @@ class HAclusterRestart:
         # Get new leaders and candidates
         for cli in main.CLIs:
             node = cli.specificLeaderCandidate( 'org.onosproject.election' )
-            if node[ 0 ] == 'none':  # election might no have finished yet
+            # elections might no have finished yet
+            if node[ 0 ] == 'none' and not expectNoLeader:
                 main.log.info( "Node has no leader, waiting 5 seconds to be " +
                     "sure elections are complete." )
                 time.sleep(5)
                 node = cli.specificLeaderCandidate( 'org.onosproject.election' )
-            if node[ 0 ] == 'none':  # election still isn't done, errors
-                main.log.error( "No leader was elected on at least one node" )
-                newLeaderResult = main.FALSE
+                # election still isn't done or there is a problem
+                if node[ 0 ] == 'none':
+                    main.log.error( "No leader was elected on at least 1 node" )
+                    newLeaderResult = main.FALSE
             newAllCandidates.append( node )
             newLeaders.append( node[ 0 ] )
         newCandidates = newAllCandidates[ 0 ]
@@ -2938,6 +2943,12 @@ class HAclusterRestart:
             newLeader = None
         else:
             newLeader = newLeaders[ 0 ]
+
+        # Check that each node's candidate list is the same
+        for candidates in newAllCandidates:
+            if set( candidates ) != set( newCandidates ):
+                newLeaderResult = main.FALSE
+                main.error.log( "Discrepancy in candidate lists detected" )
 
         # Check that the new leader is not the older leader, which was withdrawn
         if newLeader == oldLeader:
@@ -2954,8 +2965,14 @@ class HAclusterRestart:
         main.step( "Check that that new leader was the candidate of old leader")
         # candidates[ 2 ] should be come the top candidate after withdrawl
         correctCandidateResult = main.TRUE
-
-        if newLeader != oldCandidates[ 2 ]:
+        if expectNoLeader:
+            if newLeader == 'none':
+                main.log.info( "No leader expected. None found. Pass" )
+                correctCandidateResult = main.TRUE
+            else:
+                main.log.info( "Expected no leader, got: " + str( newLeader ) )
+                correctCandidateResult = main.FALSE
+        elif newLeader != oldCandidates[ 2 ]:
             correctCandidateResult = main.FALSE
             main.log.error( "Candidate " + newLeader + " was elected. " +
                 oldCandidates[ 2 ] + " should have had priority." )
@@ -2978,9 +2995,6 @@ class HAclusterRestart:
             actual=runResult,
             onpass="App re-ran for election",
             onfail="App failed to run for election" )
-
-
-
         main.step(
             "Check that oldLeader is a candidate, and leader if only 1 node" )
         # verify leader didn't just change
@@ -3014,6 +3028,12 @@ class HAclusterRestart:
             newLeader = None
         else:
             newLeader = newLeaders[ 0 ]
+
+        # Check that each node's candidate list is the same
+        for candidates in newAllCandidates:
+            if set( candidates ) != set( newCandidates ):
+                newLeaderResult = main.FALSE
+                main.error.log( "Discrepancy in candidate lists detected" )
 
         # Check that the re-elected node is last on the candidate List
         if oldLeader != newCandidates[ -1 ]:

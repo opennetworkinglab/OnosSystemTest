@@ -521,7 +521,7 @@ class SCPFportLat:
             main.log.report(' Port down Link-to-graph' +
                     str(portDownLinkToGraphAvg) + ' ms')
 
-            dbCmdList.append("INSERT INTO port_latency_details VALUES('" +
+            dbCmdList.append(
                     timeToPost + "','port_latency_results'," + jenkinsBuildNumber +
                     ',' + str(clusterCount) + ",'baremetal" + str(node + 1) +
                     "'," +
@@ -532,8 +532,7 @@ class SCPFportLat:
                     str(portDownEndToEndAvg) + ',' +
                     str(portDownOfpToDevAvg) + ',' +
                     str(portDownDevToLinkAvg) + ',' +
-                    str(portDownLinkToGraphAvg) +
-                    ');')
+                    str(portDownLinkToGraphAvg))
 
         fResult = open(resultPath, 'a')
         for line in dbCmdList:

@@ -830,7 +830,6 @@ class SCPFswitchLat:
 
             # For database schema, refer to Amazon web services
             dbCmdList.append(
-                    "INSERT INTO switch_latency_details VALUES('" +
                     timeToPost + "','switch_latency_results'," +
                     jenkinsBuildNumber + ',' + str(clusterCount) + ",'baremetal" +
                     str(node + 1) + "'," +
@@ -843,8 +842,7 @@ class SCPFswitchLat:
                     str(endToEndDiscAvg) + ',' +
                     str(finAckAvg) + ',' +
                     str(ackToDeviceAvg) + ',' +
-                    str(deviceToGraphDiscAvg) +
-                    ');')
+                    str(deviceToGraphDiscAvg))
 
         if debugMode == 'on':
             main.ONOSbench.cpLogsToDir('/opt/onos/log/karaf.log',

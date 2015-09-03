@@ -522,7 +522,7 @@ class SCPFportLat:
                     str(portDownLinkToGraphAvg) + ' ms')
 
             dbCmdList.append(
-                    timeToPost + "','port_latency_results'," + jenkinsBuildNumber +
+                    "'" + timeToPost + "','port_latency_results'," + jenkinsBuildNumber +
                     ',' + str(clusterCount) + ",'baremetal" + str(node + 1) +
                     "'," +
                     str(portUpEndToEndAvg) +',' +

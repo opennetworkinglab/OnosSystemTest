@@ -830,7 +830,7 @@ class SCPFswitchLat:
 
             # For database schema, refer to Amazon web services
             dbCmdList.append(
-                    timeToPost + "','switch_latency_results'," +
+                    "'" + timeToPost + "','switch_latency_results'," +
                     jenkinsBuildNumber + ',' + str(clusterCount) + ",'baremetal" +
                     str(node + 1) + "'," +
                     str(endToEndAvg) + ',' +

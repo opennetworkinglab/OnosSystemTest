@@ -156,7 +156,7 @@ class SCPFintentEventTp:
 
         time.sleep(20)
 
-        main.ONOSbench.onosCfgSet( ONOSIp[0], "org.onosproject.store.flow.impl.NewDistributedFlowRuleStore", "backupEnabled false")
+        main.ONOSbench.onosCfgSet( ONOSIp[0], "org.onosproject.store.flow.impl.NewDistributedFlowRuleStore", "backupEnabled " + str(flowRuleBU))
 
         devices = int(clusterCount)*10
 

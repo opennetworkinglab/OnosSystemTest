@@ -60,10 +60,10 @@
         </topoConfigName>
 
         #Number of times to iterate each case
-        <numIter>13</numIter>
+        <numIter>25</numIter>
         <numSwitch>2</numSwitch>
         #Number of iterations to ignore initially
-        <iterIgnore>2</iterIgnore>
+        <iterIgnore>5</iterIgnore>
 
         <singleSwThreshold>0,1000</singleSwThreshold>
     

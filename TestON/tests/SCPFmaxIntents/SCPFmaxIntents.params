@@ -4,7 +4,7 @@
     # 11-mininet setup, 20-pushing intents,
     # 21-rerouting intents
     # 0,1,10,20,1,11,20,1,10,21,1,11,21,100
-    <testcases>0,1,10,20,1,11,20,1,10,21,1,11,21,100</testcases>
+    <testcases>0,1,11,20,1,11,21,100</testcases>
 
     <SCALE>
         <size>1</size>
@@ -48,7 +48,7 @@
 
     <TEST>
         <batch_size>1000</batch_size>
-        <min_intents>800000</min_intents>
+        <min_intents>500000</min_intents>
         <max_intents>1000000</max_intents>
         <check_interval>10000</check_interval>
     </TEST>

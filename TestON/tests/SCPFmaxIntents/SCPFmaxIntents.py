@@ -416,7 +416,7 @@ class SCPFmaxIntents:
             dbFileName="/tmp/MaxIntentDB"
             dbfile = open(dbFileName, "a")
             temp = str(maxIntents) + ","
-            temp += str(maxFlows) + "\n"
+            temp += str(maxFlows) + ","
             dbfile.write(temp)
             dbfile.close()
         except IOError:
@@ -547,6 +547,16 @@ class SCPFmaxIntents:
         main.log.info("Summary: Intents=" + str(expectedIntents) + " Flows=" + str(expectedFlows))
         main.log.info("Installed intents: " + str(maxIntents) +
                       "\nAdded flows: " + str(maxFlows))
+
+        try:
+            dbFileName="/tmp/MaxIntentDB"
+            dbfile = open(dbFileName, "a")
+            temp = str(maxIntents) + ","
+            temp += str(maxFlows) + "\n"
+            dbfile.write(temp)
+            dbfile.close()
+        except IOError:
+            main.log.warn("Error opening " + dbFileName + " to write results.")
 
         # Stopping mininet
         if main.switch == "of":

@@ -2928,7 +2928,7 @@ class CHOtest:
         main.log.report( "_________________________________________________" )
         import itertools
         import time
-        main.case( "IPv6 ping all 600 Point intents" )
+        main.case( "IPv6 ping all 4556 Point intents" )
         main.step( "Verify IPv6 Ping across all hosts" )
         hostList = [ ('h'+ str(x + 11)) for x in range (main.numMNhosts) ]
         pingResult = main.FALSE
@@ -2948,8 +2948,8 @@ class CHOtest:
         utilities.assert_equals(
             expect=main.TRUE,
             actual=case192Result,
-            onpass="IPv6 Ping across 600 Point intents test PASS",
-            onfail="IPv6 Ping across 600 Point intents test FAIL" )
+            onpass="IPv6 Ping across 4556 Point intents test PASS",
+            onfail="IPv6 Ping across 4556 Point intents test FAIL" )
 
     def CASE10( self ):
         import time

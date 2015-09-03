@@ -54,6 +54,8 @@ class SCPFmaxIntents:
         main.rerouteSleep = int ( main.params['SLEEP']['reroute'] )
         gitPull = main.params[ 'GIT' ][ 'pull' ]
         main.batchSize = int(main.params['TEST']['batch_size'])
+        nic = main.params['DATABASE']['nic']
+        node = main.params['DATABASE']['node']
         main.cellData = {} # for creating cell file
         main.CLIs = []
         main.ONOSip = []
@@ -157,6 +159,7 @@ class SCPFmaxIntents:
         main.log.info("Creating DB file")
         nic = main.params['DATABASE']['nic']
         node = main.params['DATABASE']['node']
+
         try:
             dbFileName="/tmp/MaxIntentDB"
             dbfile = open(dbFileName, "w+")
@@ -344,64 +347,61 @@ class SCPFmaxIntents:
         expectedFlows = main.defaultFlows
         # limit for the number of intents that can be installed
         limit = main.maxIntents / main.batchSize
-        try:
-            for i in range(limit):
-                # Push intents
-                main.log.step("Pushing intents")
-                stepResult = main.intentFunctions.pushIntents( main,
-                                                               main.switch,
-                                                               main.ingress,
-                                                               main.egress,
-                                                               main.batchSize,
-                                                               offset,
-                                                               sleep=main.installSleep,
-                                                               timeout=main.timeout,
-                                                               options="-i" )
+
+        for i in range(limit):
+            # Push intents
+            main.log.step("Pushing intents")
+            stepResult = main.intentFunctions.pushIntents( main,
+                                                           main.switch,
+                                                           main.ingress,
+                                                           main.egress,
+                                                           main.batchSize,
+                                                           offset,
+                                                           sleep=main.installSleep,
+                                                           timeout=main.timeout,
+                                                           options="-i" )
+            utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="Successfully pushed intents",
+                                 onfail="Failed to push intents")
+            if stepResult == main.FALSE:
+                break
+
+            offset += main.batchSize
+            expectedIntents = offset
+            expectedFlows += main.batchSize*2
+
+            if offset >= main.minIntents and offset % main.checkInterval == 0:
+                # Verifying intents
+                main.log.step("Verifying intents")
+                main.log.info("Expected intents: " + str(expectedIntents))
+                stepResult = main.intentFunctions.verifyIntents( main,
+                                                                 expectedIntents,
+                                                                 sleep=main.verifySleep,
+                                                                 timeout=main.timeout)
                 utilities.assert_equals( expect=main.TRUE,
-                                     actual=stepResult,
-                                     onpass="Successfully pushed intents",
-                                     onfail="Failed to push intents")
+                                         actual=stepResult,
+                                         onpass="Successfully verified intents",
+                                         onfail="Failed to verify intents")
+
                 if stepResult == main.FALSE:
                     break
 
-                offset += main.batchSize
-                expectedIntents = offset
-                expectedFlows += main.batchSize*2
+                # Verfying flows
+                main.log.step("Verifying flows")
+                main.log.info("Expected Flows: " + str(expectedFlows))
+                stepResult = main.intentFunctions.verifyFlows( main,
+                                                               expectedFlows,
+                                                               sleep=main.verifySleep,
+                                                               timeout=main.timeout)
 
-                if offset >= main.minIntents and offset % main.checkInterval == 0:
-                    # Verifying intents
-                    main.log.step("Verifying intents")
-                    main.log.info("Expected intents: " + str(expectedIntents))
-                    stepResult = main.intentFunctions.verifyIntents( main,
-                                                                     expectedIntents,
-                                                                     sleep=main.verifySleep,
-                                                                     timeout=main.timeout)
-                    utilities.assert_equals( expect=main.TRUE,
-                                             actual=stepResult,
-                                             onpass="Successfully verified intents",
-                                             onfail="Failed to verify intents")
+                utilities.assert_equals( expect=main.TRUE,
+                                         actual=stepResult,
+                                         onpass="Successfully verified flows",
+                                         onfail="Failed to verify flows")
 
-                    if stepResult == main.FALSE:
-                        break
-
-                    # Verfying flows
-                    main.log.step("Verifying flows")
-                    main.log.info("Expected Flows: " + str(expectedFlows))
-                    stepResult = main.intentFunctions.verifyFlows( main,
-                                                                   expectedFlows,
-                                                                   sleep=main.verifySleep,
-                                                                   timeout=main.timeout)
-
-                    utilities.assert_equals( expect=main.TRUE,
-                                             actual=stepResult,
-                                             onpass="Successfully verified flows",
-                                             onfail="Failed to verify flows")
-
-                    if stepResult == main.FALSE:
-                        break
-
-        except pexpect.TIMEOUT:
-            main.log.exception("Timeout exception caught")
+                if stepResult == main.FALSE:
+                    break
 
         maxIntents = main.intentFunctions.getIntents( main )
         maxFlows = main.intentFunctions.getFlows( main )
@@ -441,104 +441,101 @@ class SCPFmaxIntents:
         expectedFlows = main.defaultFlows
         # limit for the number of intents that can be installed
         limit = main.maxIntents / main.batchSize
-        try:
-            for i in range(limit):
-                # Push intents
-                main.log.step("Pushing intents")
-                stepResult = main.intentFunctions.pushIntents( main,
-                                                               main.switch,
-                                                               main.ingress,
-                                                               main.egress,
-                                                               main.batchSize,
-                                                               offset,
-                                                               sleep=main.installSleep,
-                                                               options="-i",
-                                                               timeout=main.timeout )
-                utilities.assert_equals( expect=main.TRUE,
+
+        for i in range(limit):
+            # Push intents
+            main.log.step("Pushing intents")
+            stepResult = main.intentFunctions.pushIntents( main,
+                                                           main.switch,
+                                                           main.ingress,
+                                                           main.egress,
+                                                           main.batchSize,
+                                                           offset,
+                                                           sleep=main.installSleep,
+                                                           options="-i",
+                                                           timeout=main.timeout )
+            utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="Successfully pushed intents",
+                                 onfail="Failed to push intents")
+            if stepResult == main.FALSE:
+                break
+
+            offset += main.batchSize
+            expectedIntents = offset
+            expectedFlows += main.batchSize*2
+
+            # Verifying intents
+            main.log.step("Verifying intents")
+            main.log.info("Expected intents: " + str(expectedIntents))
+            stepResult = main.intentFunctions.verifyIntents( main,
+                                                             expectedIntents,
+                                                             sleep=main.verifySleep,
+                                                             timeout=main.timeout )
+            utilities.assert_equals( expect=main.TRUE,
                                      actual=stepResult,
-                                     onpass="Successfully pushed intents",
-                                     onfail="Failed to push intents")
-                if stepResult == main.FALSE:
-                    break
+                                     onpass="Successfully verified intents",
+                                     onfail="Failed to verify intents")
 
-                offset += main.batchSize
-                expectedIntents = offset
-                expectedFlows += main.batchSize*2
+            if stepResult == main.FALSE:
+                break
 
-                # Verifying intents
-                main.log.step("Verifying intents")
-                main.log.info("Expected intents: " + str(expectedIntents))
-                stepResult = main.intentFunctions.verifyIntents( main,
-                                                                 expectedIntents,
-                                                                 sleep=main.verifySleep,
-                                                                 timeout=main.timeout )
-                utilities.assert_equals( expect=main.TRUE,
-                                         actual=stepResult,
-                                         onpass="Successfully verified intents",
-                                         onfail="Failed to verify intents")
+            # Verfying flows
+            main.log.step("Verifying flows")
+            main.log.info("Expected Flows: " + str(expectedFlows))
+            stepResult = main.intentFunctions.verifyFlows( main,
+                                                           expectedFlows,
+                                                           sleep=main.verifySleep,
+                                                           timeout=main.timeout )
+            utilities.assert_equals( expect=main.TRUE,
+                                     actual=stepResult,
+                                     onpass="Successfully verified flows",
+                                     onfail="Failed to verify flows")
 
-                if stepResult == main.FALSE:
-                    break
+            if stepResult == main.FALSE:
+                break
 
-                # Verfying flows
-                main.log.step("Verifying flows")
-                main.log.info("Expected Flows: " + str(expectedFlows))
-                stepResult = main.intentFunctions.verifyFlows( main,
-                                                               expectedFlows,
-                                                               sleep=main.verifySleep,
-                                                               timeout=main.timeout )
-                utilities.assert_equals( expect=main.TRUE,
-                                         actual=stepResult,
-                                         onpass="Successfully verified flows",
-                                         onfail="Failed to verify flows")
+            # tear down a link
+            main.log.step("Tearing down link")
+            if main.switch == "of":
+                main.log.info("Sending: " + main.linkDownCmd)
+                main.Mininet1.handle.sendline(main.linkDownCmd)
+                main.Mininet1.handle.expect('mininet>')
+            else:
+                main.log.info("Sending: " + main.linkDownCmd)
+                main.CLIs[0].handle.sendline(main.linkDownCmd)
+                main.CLIs[0].handle.expect('onos>')
+            time.sleep(main.rerouteSleep)
 
-                if stepResult == main.FALSE:
-                    break
+            # rerouting adds a 1000 flows
+            expectedFlows += 1000
 
-                # tear down a link
-                main.log.step("Tearing down link")
-                if main.switch == "of":
-                    main.log.info("Sending: " + main.linkDownCmd)
-                    main.Mininet1.handle.sendline(main.linkDownCmd)
-                    main.Mininet1.handle.expect('mininet>')
-                else:
-                    main.log.info("Sending: " + main.linkDownCmd)
-                    main.CLIs[0].handle.sendline(main.linkDownCmd)
-                    main.CLIs[0].handle.expect('onos>')
-                time.sleep(main.rerouteSleep)
+            # Verfying flows
+            main.log.step("Verifying flows")
+            main.log.info("Expected Flows: " + str(expectedFlows))
+            stepResult = main.intentFunctions.verifyFlows( main,
+                                                           expectedFlows,
+                                                           sleep=main.verifySleep,
+                                                           timeout=main.timeout)
+            utilities.assert_equals( expect=main.TRUE,
+                                     actual=stepResult,
+                                     onpass="Successfully verified flows",
+                                     onfail="Failed to verify flows")
 
-                # rerouting adds a 1000 flows
-                expectedFlows += 1000
+            if stepResult == main.FALSE:
+                break
 
-                # Verfying flows
-                main.log.step("Verifying flows")
-                main.log.info("Expected Flows: " + str(expectedFlows))
-                stepResult = main.intentFunctions.verifyFlows( main,
-                                                               expectedFlows,
-                                                               sleep=main.verifySleep,
-                                                               timeout=main.timeout)
-                utilities.assert_equals( expect=main.TRUE,
-                                         actual=stepResult,
-                                         onpass="Successfully verified flows",
-                                         onfail="Failed to verify flows")
-
-                if stepResult == main.FALSE:
-                    break
-
-                # Bring link back up
-                main.log.step("Tearing down link")
-                if main.switch == "of":
-                    main.log.info("Sending: " + main.linkUpCmd)
-                    main.Mininet1.handle.sendline(main.linkUpCmd)
-                    main.Mininet1.handle.expect('mininet>')
-                else:
-                    main.log.info("Sending: " + main.linkUpCmd)
-                    main.CLIs[0].handle.sendline(main.linkUpCmd)
-                    main.CLIs[0].handle.expect('onos>')
-                time.sleep(main.rerouteSleep)
-
-        except pexpect.TIMEOUT:
-            main.log.exception("Timeout exception caught")
+            # Bring link back up
+            main.log.step("Tearing down link")
+            if main.switch == "of":
+                main.log.info("Sending: " + main.linkUpCmd)
+                main.Mininet1.handle.sendline(main.linkUpCmd)
+                main.Mininet1.handle.expect('mininet>')
+            else:
+                main.log.info("Sending: " + main.linkUpCmd)
+                main.CLIs[0].handle.sendline(main.linkUpCmd)
+                main.CLIs[0].handle.expect('onos>')
+            time.sleep(main.rerouteSleep)
 
         maxIntents = main.intentFunctions.getIntents( main )
         maxFlows = main.intentFunctions.getFlows( main )

@@ -4,35 +4,47 @@
 
 import json
 import time
+import pexpect
 
 def __init__( self ):
     self.default = ""
 
 def getIntents( main, state="INSTALLED", sleep=1, timeout=120 ):
-    cmd = "intents | grep " + state + " | wc -l"
-    main.log.info("Sending: " + cmd)
-    main.CLIs[0].handle.sendline(cmd)
+    intents = 0
+    try:
+        cmd = "intents | grep " + state + " | wc -l"
+        main.log.info("Sending: " + cmd)
+        main.CLIs[0].handle.sendline(cmd)
 
-    time.sleep(sleep)
+        time.sleep(sleep)
 
-    main.CLIs[0].handle.expect("onos>", timeout=timeout)
-    raw = main.CLIs[0].handle.before
-    intents = int(main.CLIs[0].handle.before.split()[7])
-    main.log.info(state + "intents: " + str(intents))
+        main.CLIs[0].handle.expect("onos>", timeout=timeout)
+        raw = main.CLIs[0].handle.before
+        intents = int(main.CLIs[0].handle.before.split()[7])
+        main.log.info(state + "intents: " + str(intents))
+    except pexpect.TIMEOUT:
+        main.log.exception("Timeout exception found")
+    except pexpect.EOF:
+        main.log.error("EOF exception found")
     return intents
 
-
 def getFlows( main, state="ADDED", sleep=1, timeout=120 ):
-    cmd = "flows | grep " + state + " | wc -l"
-    main.log.info("Sending: " + cmd)
-    main.CLIs[0].handle.sendline(cmd)
+    flows = 0
+    try:
+        cmd = "flows | grep " + state + " | wc -l"
+        main.log.info("Sending: " + cmd)
+        main.CLIs[0].handle.sendline(cmd)
 
-    time.sleep(sleep)
+        time.sleep(sleep)
 
-    main.CLIs[0].handle.expect("onos>", timeout=timeout)
-    raw = main.CLIs[0].handle.before
-    flows = int(main.CLIs[0].handle.before.split()[7])
-    main.log.info(state + "flows: " + str(flows))
+        main.CLIs[0].handle.expect("onos>", timeout=timeout)
+        raw = main.CLIs[0].handle.before
+        flows = int(main.CLIs[0].handle.before.split()[7])
+        main.log.info(state + "flows: " + str(flows))
+    except pexpect.TIMEOUT:
+        main.log.exception("Timeout exception found")
+    except pexpect.EOF:
+        main.log.error("EOF exception found")
     return flows
 
 
@@ -46,20 +58,25 @@ def pushIntents( main,
                  options="",
                  timeout=120):
     '''
-        Description
+        Pushes intents using the push-test-intents cli command.
     '''
-    cmd = "push-test-intents " + options + " " + switch + ingress + " " +\
-            switch + egress + " " + str(batch) + " " + str(offset)
-    main.log.info("Installing " + str(offset+batch) + " intents")
-    main.log.debug("Sending: " + cmd)
-    main.CLIs[0].handle.sendline(cmd)
-    time.sleep(sleep)
-    main.CLIs[0].handle.expect("onos>", timeout=timeout)
+    try:
+        cmd = "push-test-intents " + options + " " + switch + ingress + " " +\
+                switch + egress + " " + str(batch) + " " + str(offset)
+        main.log.info("Installing " + str(offset+batch) + " intents")
+        main.log.debug("Sending: " + cmd)
+        main.CLIs[0].handle.sendline(cmd)
+        time.sleep(sleep)
+        main.CLIs[0].handle.expect("onos>", timeout=timeout)
 
-    raw = main.CLIs[0].handle.before
-    if "Failure:" in raw or "GC" in raw:
-        return main.FALSE
-    return main.TRUE
+        raw = main.CLIs[0].handle.before
+        if "Failure:" not in raw and "GC" not in raw:
+            return main.TRUE
+    except pexpect.TIMEOUT:
+        main.log.exception("Timeout exception found")
+    except pexpect.EOF:
+        main.log.error("EOF exception found")
+    return main.FALSE
 
 def verifyFlows( main, expectedFlows, state="ADDED", sleep=1,  timeout=120):
     '''

@@ -342,7 +342,7 @@ def sdn1net():
     root1.cmd('ssh -N -o "PasswordAuthentication no" \
     -o "StrictHostKeyChecking no" -L 2605:1.1.1.1:2605 1.1.1.1 &')
     '''
-    time.sleep( 3000000000 )
+    # time.sleep( 3000000000 )
     CLI( net )
 
     # Close the ssh port forwarding

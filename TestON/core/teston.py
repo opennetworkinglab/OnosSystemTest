@@ -146,10 +146,8 @@ class TestON:
             try :
                 self.configDict = xmldict.xml_to_dict(xml)
                 return self.configDict
-            except IOError:
+            except Exception:
                 print "There is no such file to parse " + self.configFile
-        else:
-            print "There is no such file to parse " + self.configFile
 
     def componentInit(self,component):
         '''
@@ -402,13 +400,7 @@ class TestON:
                             print "Disconnecting from " + str(tempObject.name) + ": " + \
                                   str(tempObject)
                             tempObject.disconnect()
-                        except KeyboardInterrupt:
-                            pass
-                        except KeyError:
-                            # Component not created yet
-                            self.log.warn( "Could not find the component " +
-                                           str( component ) )
-                        except StandardError:
+                        except Exception:
                             self.log.exception( "Exception while disconnecting from " +
                                                  str( component ) )
                             result = self.FALSE
@@ -416,14 +408,7 @@ class TestON:
                     for driver in self.componentDictionary.keys():
                         try:
                             vars(self)[driver].close_log_handles()
-                        except KeyboardInterrupt:
-                            pass
-                        except KeyError:
-                            # Component not created yet
-                            self.log.warn( "Could not find the component " +
-                                           str( driver ) + " while trying to" +
-                                           " close log file" )
-                        except StandardError:
+                        except Exception:
                             self.log.exception( "Exception while closing log files for " +
                                                  str( driver ) )
                             result = self.FALSE
@@ -455,7 +440,7 @@ class TestON:
                 for component in self.componentDictionary.keys():
                     tempObject  = vars(self)[component]
                     result = tempObject.onfail()
-            except StandardError as e:
+            except(Exception),e:
                 print str(e)
                 result = self.FALSE
         else:
@@ -463,7 +448,7 @@ class TestON:
                 for component in components:
                     tempObject  = vars(self)[component]
                     result = tempObject.onfail()
-            except StandardError as e:
+            except(Exception),e:
                 print str(e)
                 result = self.FALSE
 
@@ -573,7 +558,7 @@ class TestON:
             try :
                 import json
                 response_dict = json.loads(response)
-            except StandardError:
+            except Exception:
                 self.log.exception( "Json Parser is unable to parse the string" )
             return response_dict
         elif ini_match :
@@ -588,8 +573,8 @@ class TestON:
             self.log.info(" Response is in 'XML' format and Converting to '"+return_format+"' format")
             try :
                 response_dict = xmldict.xml_to_dict("<response> "+str(response)+" </response>")
-            except StandardError:
-                self.log.exception()
+            except Exception, e:
+                self.log.exception( e )
             return response_dict
 
     def dict_to_return_format(self,response,return_format,response_dict):
@@ -650,10 +635,7 @@ class TestON:
                 try:
                     thread._Thread__stop()
                 except:
-                    # NOTE: We should catch any exceptions while trying to
-                    # close the thread so that we can try to close the other
-                    # threads as well
-                    print( str( thread.getName() ) + ' could not be terminated' )
+                    print(str(thread.getName()) + ' could not be terminated' )
         sys.exit()
 
 def verifyOptions(options):
@@ -778,7 +760,7 @@ def verifyTestScript(options):
         main.exit()
     try :
         testModule = __import__(main.classPath, globals(), locals(), [main.TEST], -1)
-    except ImportError:
+    except(ImportError):
         print "There was an import error, it might mean that there is no test named "+main.TEST
         main.exit()
 
@@ -791,12 +773,12 @@ def verifyTestScript(options):
 def verifyParams():
     try :
         main.params = main.params['PARAMS']
-    except KeyError:
+    except(KeyError):
         print "Error with the params file: Either the file not specified or the format is not correct"
         main.exit()
     try :
         main.topology = main.topology['TOPOLOGY']
-    except KeyError:
+    except(KeyError):
         print "Error with the Topology file: Either the file not specified or the format is not correct"
         main.exit()
 

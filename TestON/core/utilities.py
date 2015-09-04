@@ -121,9 +121,8 @@ class Utilities:
         try :
             opcode = operators[str(arguments["OPERATOR"])][valuetype] if arguments["OPERATOR"] == 'equals' else operators[str(arguments["OPERATOR"])]
 
-        except KeyError as e:
+        except KeyError:
             print "Key Error in assertion"
-            print e
             return main.FALSE
 
         if opcode == '=~':
@@ -180,9 +179,8 @@ class Utilities:
         if not isinstance(msg,str):
             try:
                 eval(str(msg))
-            except SyntaxError as e:
-                print "function definition is not right"
-                print e
+            except SyntaxError:
+                print "functin definition is not write"
 
         main.last_result = result
         return result
@@ -193,12 +191,15 @@ class Utilities:
         '''
         newArgs = {}
         for key,value in kwargs.iteritems():
+            #currentKey =  str.upper(key)
             if isinstance(args,list) and str.upper(key) in args:
                 for each in args:
                     if each==str.upper(key):
                         newArgs [str(each)] = value
                     elif each != str.upper(key) and (newArgs.has_key(str(each)) == False ):
                         newArgs[str(each)] = None
+
+
 
         return newArgs
 
@@ -210,7 +211,7 @@ class Utilities:
                 sub = "Result summary of \""+main.TEST+"\" run on component \""+main.test_target+"\" Version \""+vars(main)[main.test_target].get_version()+"\": "+str(main.TOTAL_TC_SUCCESS)+"% Passed"
             else :
                 sub = "Result summary of \""+main.TEST+"\": "+str(main.TOTAL_TC_SUCCESS)+"% Passed"
-        except ( KeyError, AttributeError ):
+        except KeyError,AttributeError:
             sub = "Result summary of \""+main.TEST+"\": "+str(main.TOTAL_TC_SUCCESS)+"% Passed"
 
         msg['Subject'] = sub
@@ -249,7 +250,7 @@ class Utilities:
             try :
                 parsedInfo = ConfigObj(self.fileName)
                 return parsedInfo
-            except StandardError:
+            except Exception:
                 print "There is no such file to parse "+fileName
         else:
             return 0

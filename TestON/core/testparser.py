@@ -46,7 +46,7 @@ class TestParser:
                 try :
                     while not re.match('^\s*(\'\'\')|^\s*(\"\"\")',testFileList[index],0) :
                         index = index + 1
-                except IndexError:
+                except IndexError,e:
                     print ''
 
             # skip empty lines and single line comments
@@ -58,9 +58,11 @@ class TestParser:
         index = 0
         statementsList = self.statementsList
         while index < len(statementsList):
+            #print statementsList[index]
             m= re.match('def\s+CASE(\d+)',statementsList[index],0)
             self.caseBlock = []
             if m:
+                #print m.group(1)
                 index = index + 1
                 try :
                     while not re.match('\s*def\s+CASE(\d+)',statementsList[index],0) :
@@ -70,9 +72,11 @@ class TestParser:
                         else :
                             break
                     index = index - 1
-                except IndexError:
+                except IndexError,e:
+                    #print 'IndexError'
                     print ''
                 self.caseCode [str(m.group(1))] = self.caseBlock
+                #print "Case CODE "+self.caseCode [str(m.group(1))]
             index = index + 1
         return self.caseCode
 
@@ -104,7 +108,8 @@ class TestParser:
                         else :
                             break
                     index = index - 1
-                except IndexError:
+                except IndexError,e:
+                    #print 'IndexError'
                     print ''
                 stepCode[step] = stepBlock
                 step = step + 1

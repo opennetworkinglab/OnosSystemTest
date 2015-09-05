@@ -215,7 +215,7 @@ class SCPFflowTp1g:
                 check = main.ONOSbench.handle.before
                 main.log.info("\nStart up check: \n" + check + "\n")
                 if "SCC(s)=1," in check:
-                    main.ONOSbench.handle.sendline( "onos $OC1 balance-master" )
+                    main.ONOSbench.handle.sendline( "onos $OC1 balance-masters" )
                     main.ONOSbench.handle.expect( ":~" )
                     time.sleep(5)
                     main.ONOSbench.handle.sendline( "onos $OC1 roles ")

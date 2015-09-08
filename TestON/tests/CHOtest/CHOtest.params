@@ -23,7 +23,7 @@
 
     <GIT>
         #autoPull 'on' or 'off'
-        <autoPull>on</autoPull>
+        <autoPull>off</autoPull>
         <branch>master</branch>
     </GIT>
 

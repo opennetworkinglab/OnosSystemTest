@@ -21,11 +21,9 @@ def getIntents( main, state="INSTALLED", sleep=1, timeout=120 ):
         main.CLIs[0].handle.expect("onos>", timeout=timeout)
         raw = main.CLIs[0].handle.before
         intents = int(main.CLIs[0].handle.before.split()[7])
-        main.log.info(state + "intents: " + str(intents))
+        main.log.info(state + " intents: " + str(intents))
     except pexpect.TIMEOUT:
-        main.log.exception("Timeout exception found")
-    except pexpect.EOF:
-        main.log.error("EOF exception found")
+        main.log.exception("Timeout exception caught in getIntent")
     return intents
 
 def getFlows( main, state="ADDED", sleep=1, timeout=120 ):
@@ -40,11 +38,9 @@ def getFlows( main, state="ADDED", sleep=1, timeout=120 ):
         main.CLIs[0].handle.expect("onos>", timeout=timeout)
         raw = main.CLIs[0].handle.before
         flows = int(main.CLIs[0].handle.before.split()[7])
-        main.log.info(state + "flows: " + str(flows))
+        main.log.info(state + " flows: " + str(flows))
     except pexpect.TIMEOUT:
-        main.log.exception("Timeout exception found")
-    except pexpect.EOF:
-        main.log.error("EOF exception found")
+        main.log.exception("Timeout exception caught in getFlows")
     return flows
 
 
@@ -73,9 +69,7 @@ def pushIntents( main,
         if "Failure:" not in raw and "GC" not in raw:
             return main.TRUE
     except pexpect.TIMEOUT:
-        main.log.exception("Timeout exception found")
-    except pexpect.EOF:
-        main.log.error("EOF exception found")
+        main.log.exception("Timeout exception caught in pushIntents")
     return main.FALSE
 
 def verifyFlows( main, expectedFlows, state="ADDED", sleep=1,  timeout=120):

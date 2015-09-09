@@ -166,7 +166,7 @@ class SCPFmaxIntents:
             temp = "'" + commit + "',"
             temp += "'" + nic + "',"
             temp += str(main.numCtrls) + ","
-            temp += "'" + node + "1" + "',"
+            temp += "'" + node + "1" + "'"
             dbfile.write(temp)
             dbfile.close()
         except IOError:
@@ -371,7 +371,7 @@ class SCPFmaxIntents:
             expectedIntents = offset
             expectedFlows += main.batchSize*2
 
-            if offset >= main.minIntents and offset % main.checkInterval == 0:
+            if offset >= main.minIntents and offset % main.checkInterval == 0 or expectedIntents == main.maxIntents:
                 # Verifying intents
                 main.log.step("Verifying intents")
                 main.log.info("Expected intents: " + str(expectedIntents))
@@ -409,14 +409,14 @@ class SCPFmaxIntents:
         main.log.report("Done pushing intents")
         main.log.info("Summary: Intents=" + str(expectedIntents) + " Flows=" + str(expectedFlows))
         main.log.info("Installed intents: " + str(maxIntents) +
-                      "\nAdded flows: " + str(maxFlows))
+                      " Added flows: " + str(maxFlows))
 
         main.log.info("Writing results to DB file")
         try:
             dbFileName="/tmp/MaxIntentDB"
             dbfile = open(dbFileName, "a")
-            temp = str(maxIntents) + ","
-            temp += str(maxFlows) + ","
+            temp = "," + str(maxIntents)
+            temp += "," + str(maxFlows)
             dbfile.write(temp)
             dbfile.close()
         except IOError:
@@ -543,13 +543,13 @@ class SCPFmaxIntents:
         main.log.report("Done pushing intents")
         main.log.info("Summary: Intents=" + str(expectedIntents) + " Flows=" + str(expectedFlows))
         main.log.info("Installed intents: " + str(maxIntents) +
-                      "\nAdded flows: " + str(maxFlows))
+                      " Added flows: " + str(maxFlows))
 
         try:
             dbFileName="/tmp/MaxIntentDB"
             dbfile = open(dbFileName, "a")
-            temp = str(maxIntents) + ","
-            temp += str(maxFlows) + "\n"
+            temp = "," + str(maxIntents)
+            temp += "," + str(maxFlows)
             dbfile.write(temp)
             dbfile.close()
         except IOError:

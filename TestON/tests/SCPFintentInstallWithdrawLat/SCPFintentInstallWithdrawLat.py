@@ -212,6 +212,7 @@ class SCPFintentInstallWithdrawLat:
             cmd += str(intentSize) + " 1"
             installed = []
             withdrawn = []
+            testStatus = ""
 
             for run in range(0, (warmUp + sampleSize)):
                 if run > warmUp:
@@ -237,16 +238,17 @@ class SCPFintentInstallWithdrawLat:
                         if "Failure:" in line:
                             main.log.error("INTENT TEST FAILURE, ABORTING TESTCASE")
                             testStatus = "fail"
-                if testStatus == "fail":
-                    print("installed: " + str(installed))
-                    print("withraw: " + str(withdrawn) + "\n")
-                    if withdrawn[len(withdrawn) -1] > 1000 or installed[len(installed) -1] > 1000:
-                        main.log.info("ABNORMAL VALUE, CHECKING LOG")
-                        main.ONOSbench.logReport(ONOSIp[1], ["ERROR", "WARNING", "EXCEPT"], outputMode="d")
-                    break
+                            break
 
-            if testStatus == "fail":
-                break
+                if testStatus == "fail":
+                    main.log.info("Installed: " + str(installed))
+                    main.log.info("Withdrawn: " + str(withdrawn))
+                    main.log.info("Scale: " + str(clusterCount))
+                    main.log.info("Warmup: " + str(warmUp) + " SampleSize: " + str(sampleSize))
+                    main.log.info("Run: " + str(run))
+                    main.log.error("Skipping test case")
+                    main.skipCase()
+
             main.log.report("----------------------------------------------------")
             main.log.report("Scale: " + str(clusterCount) + "\tIntent batch size: " + str(intentSize))
             main.log.report("Data samples: " + str(sampleSize) + "\tWarm up tests: " + str(warmUp))

@@ -1,6 +1,6 @@
 <PARAMS>
 
-    <testcases>100, 3</testcases>
+    <testcases>100, 2</testcases>
 
     #Environment variables
     <ENV>
@@ -23,6 +23,10 @@
         <prefix>prefix</prefix>
         <nextHop>nextHop</nextHop>
     </JSON>
+
+    <config>
+        <peerNum> 3 </peerNum>
+    </config>
 
     <timers>
         <SdnIpSetup>10</SdnIpSetup>

@@ -85,25 +85,6 @@ class USECASE_SdnipI2:
             main.cleanup()
             main.exit()
 
-    def CASE1( self, main ):
-        '''
-        ping test from 3 bgp peers to BGP speaker
-        '''
-        main.case( "This case is to check ping between BGP peers and speakers" )
-
-    def CASE2( self, main ):
-        '''
-        point-to-point intents test for each BGP peer and BGP speaker pair
-        '''
-        main.case( "This case is to check point-to-point intents" )
-
-
-    def CASE3( self, main ):
-        '''
-        routes and intents check to all BGP peers
-        '''
-        main.case( "This case is to check routes and intents to all BGP peers" )
-
         main.step( "Get links in the network" )
         listResult = main.ONOScli.links( jsonFormat = False )
         main.log.info( listResult )
@@ -117,6 +98,42 @@ class USECASE_SdnipI2:
         time.sleep( int( main.params[ 'timers' ][ 'RouteDelivery' ] ) )
         time.sleep( int( main.params[ 'timers' ][ 'PathAvailable' ] ) )
 
+
+    def CASE1( self, main ):
+        '''
+        ping test from 3 bgp peers to BGP speaker
+        '''
+        main.case( "This case is to check ping between BGP peers and speakers" )
+
+    def CASE2( self, main ):
+        '''
+        point-to-point intents test for each BGP peer and BGP speaker pair
+        '''
+        main.case( "This case is to check point-to-point intents" )
+        main.log.info( "There are %s BGP peers in total "
+                       % main.params[ 'config' ][ 'peerNum' ] )
+        main.step( "Get point-to-point intents from ONOS CLI" )
+
+        getIntentsResult = main.ONOScli.intents( jsonFormat = True )
+        bgpIntentsActualNum = \
+            main.QuaggaCliSpeaker1.extractActualBgpIntentNum( getIntentsResult )
+        bgpIntentsExpectedNum = int( main.params[ 'config' ][ 'peerNum' ] ) * 6
+        main.log.info( "bgpIntentsExpected num is:" )
+        main.log.info( bgpIntentsExpectedNum )
+        main.log.info( "bgpIntentsActual num is:" )
+        main.log.info( bgpIntentsActualNum )
+        utilities.assertEquals( \
+            expect = True,
+            actual = eq( bgpIntentsExpectedNum, bgpIntentsActualNum ),
+            onpass = "***PointToPointIntent Intent Num in SDN-IP are correct!***",
+            onfail = "***PointToPointIntent Intent Num in SDN-IP are wrong!***" )
+
+
+    def CASE3( self, main ):
+        '''
+        routes and intents check to all BGP peers
+        '''
+        main.case( "This case is to check routes and intents to all BGP peers" )
 
         allRoutesExpected = []
         allRoutesExpected.append( "4.0.0.0/24" + "/" + "10.0.4.1" )

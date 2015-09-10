@@ -40,7 +40,6 @@ class SDNTopo( Topo ):
         peer64514 = self.addHost( 'peer64514' )
         peer64515 = self.addHost( 'peer64515' )
         peer64516 = self.addHost( 'peer64516' )
-        sw100 = self.addSwitch( 'sw100', dpid = '00000000000000a1' )
 
         '''
         sw1 = self.addSwitch( 'SEAT', dpid = '00000000000000a1' )

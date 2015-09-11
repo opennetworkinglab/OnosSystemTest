@@ -37,6 +37,17 @@
             <COMPONENTS> </COMPONENTS>
         </QuaggaCliSpeaker1>
 
+        <Mininet>
+            <host>OCN</host>
+            <user>admin</user>
+            <password></password>
+            <type>MininetCliDriver</type>
+            <connect_order>5</connect_order>
+            <COMPONENTS>
+                <home>~/Mininet/mininet/custom/</home>
+            </COMPONENTS>
+        </Mininet>
+
     </COMPONENT>
 </TOPOLOGY>
 

@@ -5,9 +5,32 @@ class USECASE_SdnipI2:
         self.default = ''
         global branchName
 
+    # This case is to setup Mininet testbed
+    def CASE100( self, main ):
+        """
+            Start mininet
+        """
+        import os
+        main.log.case( "Start Mininet topology" )
+        main.dependencyPath = main.testDir + \
+                              main.params[ 'DEPENDENCY' ][ 'path' ]
+        main.topology = main.params[ 'DEPENDENCY' ][ 'topology' ]
+
+        main.step( "Starting Mininet Topology" )
+        topology = main.dependencyPath + main.topology
+        topoResult = main.Mininet.startNet( topoFile = topology )
+        stepResult = topoResult
+        utilities.assert_equals( expect = main.TRUE,
+                                 actual = stepResult,
+                                 onpass = "Successfully loaded topology",
+                                 onfail = "Failed to load topology" )
+        # Exit if topology did not load properly
+        if not topoResult:
+            main.cleanup()
+            main.exit()
 
     # This case is to setup ONOS
-    def CASE100( self, main ):
+    def CASE101( self, main ):
         """
            CASE100 is to compile ONOS and install it
            Startup sequence:
@@ -72,16 +95,16 @@ class USECASE_SdnipI2:
         cliResult = main.ONOScli.startOnosCli( ONOS1Ip,
                 commandlineTimeout = 100, onosStartTimeout = 600 )
 
-        case1Result = ( cleanInstallResult and packageResult and
+        caseResult = ( cleanInstallResult and packageResult and
                         cellResult and verifyResult and
                         onos1InstallResult and
                         onos1Isup and cliResult )
 
-        utilities.assert_equals( expect = main.TRUE, actual = case1Result,
+        utilities.assert_equals( expect = main.TRUE, actual = caseResult,
                                  onpass = "ONOS startup successful",
                                  onfail = "ONOS startup NOT successful" )
 
-        if case1Result == main.FALSE:
+        if caseResult == main.FALSE:
             main.cleanup()
             main.exit()
 
@@ -90,11 +113,12 @@ class USECASE_SdnipI2:
         main.log.info( listResult )
         main.log.info( "Activate sdn-ip application" )
         main.ONOScli.activateApp( "org.onosproject.sdnip" )
-        # wait sdn-ip to finish installing connectivity intents, and the BGP
-        # paths in data plane are ready.
+
+        main.log.info( "Wait sdn-ip to finish installing connectivity intents, \
+        and the BGP paths in data plane are ready..." )
         time.sleep( int( main.params[ 'timers' ][ 'SdnIpSetup' ] ) )
-        # wait Quagga to finish delivery all routes to each other and to sdn-ip,
-        # plus finish installing all intents.
+        main.log.info( "Wait Quagga to finish delivery all routes to each \
+        other and to sdn-ip, plus finish installing all intents..." )
         time.sleep( int( main.params[ 'timers' ][ 'RouteDelivery' ] ) )
         time.sleep( int( main.params[ 'timers' ][ 'PathAvailable' ] ) )
 
@@ -104,6 +128,18 @@ class USECASE_SdnipI2:
         ping test from 3 bgp peers to BGP speaker
         '''
         main.case( "This case is to check ping between BGP peers and speakers" )
+        result1 = main.Mininet.pingHost( src = "speaker1", target = "peer64514" )
+        result2 = main.Mininet.pingHost( src = "speaker1", target = "peer64515" )
+        result3 = main.Mininet.pingHost( src = "speaker1", target = "peer64516" )
+
+        caseResult = result1 and result2 and result3
+        utilities.assert_equals( expect = main.TRUE, actual = caseResult,
+                                 onpass = "Speaker1 ping peers successful",
+                                 onfail = "Speaker1 ping peers NOT successful" )
+
+        if caseResult == main.FALSE:
+            main.cleanup()
+            main.exit()
 
     def CASE2( self, main ):
         '''

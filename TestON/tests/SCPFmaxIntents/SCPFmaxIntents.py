@@ -343,8 +343,12 @@ class SCPFmaxIntents:
         offset = 0
         # the number of intents we expect to be in the installed state
         expectedIntents = 0
+        # keeps track of how many intents have been installed
+        maxIntents = 0
         # the number of flows we expect to be in the added state
         expectedFlows = main.defaultFlows
+        # keeps track of how many flows have been installed
+        maxFlows = main.defaultFlows
         # limit for the number of intents that can be installed
         limit = main.maxIntents / main.batchSize
 
@@ -370,6 +374,9 @@ class SCPFmaxIntents:
             offset += main.batchSize
             expectedIntents = offset
             expectedFlows += main.batchSize*2
+
+            maxIntents = main.intentFunctions.getIntents( main )
+            maxFlows = main.intentFunctions.getFlows( main )
 
             if offset >= main.minIntents and offset % main.checkInterval == 0 or expectedIntents == main.maxIntents:
                 # Verifying intents
@@ -403,9 +410,6 @@ class SCPFmaxIntents:
                 if stepResult == main.FALSE:
                     break
 
-        maxIntents = main.intentFunctions.getIntents( main )
-        maxFlows = main.intentFunctions.getFlows( main )
-
         main.log.report("Done pushing intents")
         main.log.info("Summary: Intents=" + str(expectedIntents) + " Flows=" + str(expectedFlows))
         main.log.info("Installed intents: " + str(maxIntents) +
@@ -437,8 +441,12 @@ class SCPFmaxIntents:
         offset = 0
         # the number of intents we expect to be in the installed state
         expectedIntents = 0
+        # keeps track of how many intents have been installed
+        maxIntents = 0
         # the number of flows we expect to be in the added state
         expectedFlows = main.defaultFlows
+        # keeps track of how many flows have been installed
+        maxFlows = main.defaultFlows
         # limit for the number of intents that can be installed
         limit = main.maxIntents / main.batchSize
 
@@ -460,6 +468,9 @@ class SCPFmaxIntents:
                                  onfail="Failed to push intents")
             if stepResult == main.FALSE:
                 break
+
+            maxIntents = main.intentFunctions.getIntents( main )
+            maxFlows = main.intentFunctions.getFlows( main )
 
             offset += main.batchSize
             expectedIntents = offset
@@ -536,9 +547,6 @@ class SCPFmaxIntents:
                 main.CLIs[0].handle.sendline(main.linkUpCmd)
                 main.CLIs[0].handle.expect('onos>')
             time.sleep(main.rerouteSleep)
-
-        maxIntents = main.intentFunctions.getIntents( main )
-        maxFlows = main.intentFunctions.getFlows( main )
 
         main.log.report("Done pushing intents")
         main.log.info("Summary: Intents=" + str(expectedIntents) + " Flows=" + str(expectedFlows))

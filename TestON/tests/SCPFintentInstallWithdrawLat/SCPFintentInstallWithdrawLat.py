@@ -229,16 +229,16 @@ class SCPFintentInstallWithdrawLat:
                 if run >= warmUp:
                     myRawResult = myRawResult.splitlines()
                     for line in myRawResult:
+                        if "Failure:" in line:
+                            main.log.error("INTENT TEST FAILURE, ABORTING TESTCASE")
+                            testStatus = "fail"
+                            break
+
                         if "install" in line:
                             installed.append(int(line.split(" ")[5]))
 
                         if "withdraw" in line:
                             withdrawn.append(int(line.split(" ")[5]))
-
-                        if "Failure:" in line:
-                            main.log.error("INTENT TEST FAILURE, ABORTING TESTCASE")
-                            testStatus = "fail"
-                            break
 
                 if testStatus == "fail":
                     main.log.info("Installed: " + str(installed))

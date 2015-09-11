@@ -35,6 +35,7 @@ def counterCheck( counterName, counterValue ):
             main.log.error( "Could not parse counters response from ONOS" +
                             str( i + 1 ) )
             main.log.warn( repr( onosCounters[ i ] ) )
+            return main.FALSE
         onosValue = None
         try:
             for database in current:

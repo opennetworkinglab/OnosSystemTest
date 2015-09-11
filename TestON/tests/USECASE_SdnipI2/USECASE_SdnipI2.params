@@ -1,6 +1,6 @@
 <PARAMS>
 
-    <testcases>100, 2</testcases>
+    <testcases>100, 101, 1, 4</testcases>
 
     #Environment variables
     <ENV>
@@ -23,6 +23,11 @@
         <prefix>prefix</prefix>
         <nextHop>nextHop</nextHop>
     </JSON>
+
+    <DEPENDENCY>
+        <path>/USECASE_SdnipI2/Dependency/</path>
+        <topology>USECASE_SdnipI2MN.py</topology>
+    </DEPENDENCY>
 
     <config>
         <peerNum> 3 </peerNum>

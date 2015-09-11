@@ -462,17 +462,21 @@ class MininetCliDriver( Emulator ):
 
            Returns main.TRUE if all hosts specified can reach each other
 
-           Returns main.FALSE if one or more of hosts specified cannot reach each other 
+           Returns main.FALSE if one or more of hosts specified cannot reach each other
         """
         try:
             main.log.info( "Testing reachability between specified IPv6 hosts" )
             isReachable = main.TRUE
             cmd = " ping6 -c 1 -i 1 -W 8 "
+            pingResponse = ""
+            main.log.info("Pingall output:")
             for host in hostList:
                 listIndex = hostList.index( host )
                 # List of hosts to ping other than itself
                 pingList = hostList[ :listIndex ] + \
                     hostList[ ( listIndex + 1 ): ]
+
+                pingResponse += str(str(host) + " -> ")
 
                 for temp in pingList:
                     # Current host pings all other hosts specified
@@ -481,14 +485,13 @@ class MininetCliDriver( Emulator ):
                     self.handle.expect( "mininet>" )
                     response = self.handle.before
                     if re.search( ',\s0\%\spacket\sloss', response ):
-                        main.log.info( str( host ) + " -> " + prefix + str( temp[1:] ) )
+                        pingResponse += str(" h" + str( temp[1:] ))
                     else:
-                        main.log.info(
-                            str( host ) + " -> X (" + prefix + str( temp[1:] ) + ") "
-                            " Destination Unreachable" )
-                        main.log.error( "Response from Mininet: " + str( response ) )
+                        pingResponse += " X"
                         # One of the host to host pair is unreachable
                         isReachable = main.FALSE
+                main.log.info(pingResponse)
+                pingResponse = ""
             return isReachable
 
         except pexpect.TIMEOUT:
@@ -548,7 +551,7 @@ class MininetCliDriver( Emulator ):
 
     def ping6pair( self, **pingParams ):
         """
-           IPv6 Ping between a pair of mininet hosts 
+           IPv6 Ping between a pair of mininet hosts
            Currently the only supported Params are: SRC , TARGET
            FLOWLABEL and -I (src interface) will be added later after running some tests.
            Example: main.Mininet1.ping6pair( src="h1", target="1000::2" )
@@ -575,7 +578,7 @@ class MininetCliDriver( Emulator ):
             main.log.info( self.name + ": Ping Response: " + response )
             if re.search( ',\s0\%\spacket\sloss', response ):
                 main.log.info( self.name + ": no packets lost, host is reachable" )
-                return main.TRUE 
+                return main.TRUE
             else:
                 main.log.error(
                     self.name +

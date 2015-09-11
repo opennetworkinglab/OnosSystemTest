@@ -48,6 +48,7 @@ class FUNCintent:
             main.removeIntentSleep = int( main.params[ 'SLEEP' ][ 'removeintent' ] )
             main.rerouteSleep = int( main.params[ 'SLEEP' ][ 'reroute' ] )
             main.fwdSleep = int( main.params[ 'SLEEP' ][ 'fwd' ] )
+            main.checkTopoAttempts = int( main.params[ 'SLEEP' ][ 'topoAttempts' ] )
             gitPull = main.params[ 'GIT' ][ 'pull' ]
             main.numSwitch = int( main.params[ 'MININET' ][ 'switch' ] )
             main.numLinks = int( main.params[ 'MININET' ][ 'links' ] )
@@ -240,7 +241,7 @@ class FUNCintent:
 
     def CASE8( self, main ):
         """
-        Compare Topo
+        Compare ONOS Topology to Mininet Topology
         """
         import json
 
@@ -248,69 +249,94 @@ class FUNCintent:
         main.caseExplanation = "Compare topology elements between Mininet" +\
                                 " and ONOS"
 
-        main.log.info( "Gathering topology information" )
-
-        devicesResults = main.TRUE
-        linksResults = main.TRUE
-        hostsResults = main.TRUE
-        devices = main.topo.getAllDevices( main )
-        hosts = main.topo.getAllHosts( main )
-        ports = main.topo.getAllPorts( main )
-        links = main.topo.getAllLinks( main )
-        clusters = main.topo.getAllClusters( main )
+        main.log.info( "Gathering topology information from Mininet" )
+        devicesResults = main.FALSE  # Overall Boolean for device correctness
+        linksResults = main.FALSE  # Overall Boolean for link correctness
+        hostsResults = main.FALSE  # Overall Boolean for host correctness
+        deviceFails = []  # Nodes where devices are incorrect
+        linkFails = []  # Nodes where links are incorrect
+        hostFails = []  # Nodes where hosts are incorrect
+        attempts = main.checkTopoAttempts  # Remaining Attempts
 
         mnSwitches = main.Mininet1.getSwitches()
         mnLinks = main.Mininet1.getLinks()
         mnHosts = main.Mininet1.getHosts()
 
-        main.step( "Conmparing MN topology to ONOS topology" )
-        for controller in range( main.numCtrls ):
-            controllerStr = str( controller + 1 )
-            if devices[ controller ] and ports[ controller ] and\
-                "Error" not in devices[ controller ] and\
-                "Error" not in ports[ controller ]:
+        main.step( "Conmparing Mininet topology to ONOS topology" )
 
-                currentDevicesResult = main.Mininet1.compareSwitches(
-                        mnSwitches,
-                        json.loads( devices[ controller ] ),
-                        json.loads( ports[ controller ] ) )
-            else:
-                currentDevicesResult = main.FALSE
-            utilities.assert_equals( expect=main.TRUE,
-                                     actual=currentDevicesResult,
-                                     onpass="ONOS" + controllerStr +
-                                     " Switches view is correct",
-                                     onfail="ONOS" + controllerStr +
-                                     " Switches view is incorrect" )
-            devicesResults = devicesResults and currentDevicesResult
+        while ( attempts >= 0 ) and\
+            ( not devicesResults or not linksResults or not hostsResults ):
+            time.sleep( 2 )
+            if not devicesResults:
+                devices = main.topo.getAllDevices( main )
+                ports = main.topo.getAllPorts( main )
+                devicesResults = main.TRUE
+                deviceFails = []  # Reset for each attempt
+            if not linksResults:
+                links = main.topo.getAllLinks( main )
+                linksResults = main.TRUE
+                linkFails = []  # Reset for each attempt
+            if not hostsResults:
+                hosts = main.topo.getAllHosts( main )
+                hostsResults = main.TRUE
+                hostFails = []  # Reset for each attempt
 
-            if links[ controller ] and "Error" not in links[ controller ]:
-                currentLinksResult = main.Mininet1.compareLinks(
-                        mnSwitches, mnLinks,
-                        json.loads( links[ controller ] ) )
-            else:
-                currentLinksResult = main.FALSE
-            utilities.assert_equals( expect=main.TRUE,
-                                     actual=currentLinksResult,
-                                     onpass="ONOS" + controllerStr +
-                                     " links view is correct",
-                                     onfail="ONOS" + controllerStr +
-                                     " links view is incorrect" )
-            linksResults = linksResults and currentLinksResult
+            #  Check for matching topology on each node
+            for controller in range( main.numCtrls ):
+                controllerStr = str( controller + 1 )  # ONOS node number
+                # Compare Devices
+                if devices[ controller ] and ports[ controller ] and\
+                    "Error" not in devices[ controller ] and\
+                    "Error" not in ports[ controller ]:
 
-            if hosts[ controller ] or "Error" not in hosts[ controller ]:
-                currentHostsResult = main.Mininet1.compareHosts(
-                        mnHosts,
-                        json.loads( hosts[ controller ] ) )
-            else:
-                currentHostsResult = main.FALSE
-            utilities.assert_equals( expect=main.TRUE,
-                                     actual=currentHostsResult,
-                                     onpass="ONOS" + controllerStr +
-                                     " hosts exist in Mininet",
-                                     onfail="ONOS" + controllerStr +
-                                     " hosts don't match Mininet" )
-            hostsResults = hostsResults and currentHostsResult
+                    currentDevicesResult = main.Mininet1.compareSwitches(
+                            mnSwitches,
+                            json.loads( devices[ controller ] ),
+                            json.loads( ports[ controller ] ) )
+                else:
+                    currentDevicesResult = main.FALSE
+                if not currentDevicesResult:
+                    deviceFails.append( controllerStr )
+                devicesResults = devicesResults and currentDevicesResult
+                # Compare Links
+                if links[ controller ] and "Error" not in links[ controller ]:
+                    currentLinksResult = main.Mininet1.compareLinks(
+                            mnSwitches, mnLinks,
+                            json.loads( links[ controller ] ) )
+                else:
+                    currentLinksResult = main.FALSE
+                if not currentLinksResult:
+                    linkFails.append( controllerStr )
+                linksResults = linksResults and currentLinksResult
+                # Compare Hosts
+                if hosts[ controller ] or "Error" not in hosts[ controller ]:
+                    currentHostsResult = main.Mininet1.compareHosts(
+                            mnHosts,
+                            json.loads( hosts[ controller ] ) )
+                else:
+                    currentHostsResult = main.FALSE
+                if not currentHostsResult:
+                    hostFails.append( controllerStr )
+                hostsResults = hostsResults and currentHostsResult
+            # Decrement Attempts Remaining
+            attempts -= 1
+
+
+        utilities.assert_equals( expect=[],
+                                 actual=deviceFails,
+                                 onpass="ONOS correctly discovered all devices",
+                                 onfail="ONOS incorrectly discovered devices on nodes: " +
+                                 str( deviceFails ) )
+        utilities.assert_equals( expect=[],
+                                 actual=linkFails,
+                                 onpass="ONOS correctly discovered all links",
+                                 onfail="ONOS incorrectly discovered links on nodes: " +
+                                 str( linkFails ) )
+        utilities.assert_equals( expect=[],
+                                 actual=hostFails,
+                                 onpass="ONOS correctly discovered all hosts",
+                                 onfail="ONOS incorrectly discovered hosts on nodes: " +
+                                 str( hostFails ) )
         topoResults = hostsResults and linksResults and devicesResults
         utilities.assert_equals( expect=main.TRUE,
                                  actual=topoResults,

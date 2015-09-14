@@ -469,7 +469,7 @@ class MininetCliDriver( Emulator ):
             isReachable = main.TRUE
             cmd = " ping6 -c 1 -i 1 -W 8 "
             pingResponse = ""
-            main.log.info("Pingall output:")
+            main.log.info("IPv6 Pingall output:")
             for host in hostList:
                 listIndex = hostList.index( host )
                 # List of hosts to ping other than itself

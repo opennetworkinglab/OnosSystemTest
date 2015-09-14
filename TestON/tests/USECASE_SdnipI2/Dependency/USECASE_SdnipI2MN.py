@@ -25,6 +25,7 @@ from subprocess import Popen, STDOUT, PIPE
 
 QUAGGA_DIR = '/usr/lib/quagga'
 QUAGGA_RUN_DIR = '/usr/local/var/run/quagga'
+QUAGGA_CONFIG_DIR = '~/OnosSystemTest/TestON/tests/USECASE_SdnipI2/Dependency/'
 onos1IP = '10.128.4.52'
 numSw = 39
 
@@ -239,6 +240,7 @@ def stopsshd():
 
 def startquagga( host, num, config_file ):
     info( '*** Starting Quagga on %s\n' % host )
+    host.cmd( "cd %s" % QUAGGA_CONFIG_DIR )
     zebra_cmd = \
     '%s/zebra -d -f  ./zebra.conf -z %s/zserv%s.api -i %s/zebra%s.pid'\
      % ( QUAGGA_DIR, QUAGGA_RUN_DIR, num, QUAGGA_RUN_DIR, num )
@@ -380,5 +382,5 @@ def sdn1net():
     net.stop()
 
 if __name__ == '__main__':
-    # setLogLevel( 'debug' )
+    setLogLevel( 'debug' )
     sdn1net()

@@ -127,10 +127,16 @@ class USECASE_SdnipI2:
         '''
         ping test from 3 bgp peers to BGP speaker
         '''
+
+        m2SIntentsNumberActual = main.ONOScli.m2SIntentInstalledNumber()
+        main.log.info( "MultiPointToSinglePoint intent number actual is:" )
+        main.log.info( m2SIntentsNumberActual )
+
         main.case( "This case is to check ping between BGP peers and speakers" )
         result1 = main.Mininet.pingHost( src = "speaker1", target = "peer64514" )
         result2 = main.Mininet.pingHost( src = "speaker1", target = "peer64515" )
         result3 = main.Mininet.pingHost( src = "speaker1", target = "peer64516" )
+
 
         caseResult = result1 and result2 and result3
         utilities.assert_equals( expect = main.TRUE, actual = caseResult,
@@ -140,6 +146,7 @@ class USECASE_SdnipI2:
         if caseResult == main.FALSE:
             main.cleanup()
             main.exit()
+
 
     def CASE2( self, main ):
         '''
@@ -210,3 +217,21 @@ class USECASE_SdnipI2:
             onfail = "***MultiPointToSinglePoint Intent Num in SDN-IP is \
             wrong!***" )
 
+
+    def CASE4( self, main ):
+        '''
+        Ping test in data plane for each route
+        '''
+        main.case( "This case is to check ping for each route" )
+        result1 = main.Mininet.pingHost( src = "host64514", target = "host64515" )
+        result2 = main.Mininet.pingHost( src = "host64515", target = "host64516" )
+        result3 = main.Mininet.pingHost( src = "host64514", target = "host64516" )
+
+        caseResult = result1 and result2 and result3
+        utilities.assert_equals( expect = main.TRUE, actual = caseResult,
+                                 onpass = "Ping test for each route successful",
+                                 onfail = "Ping test for each route NOT successful" )
+
+        if caseResult == main.FALSE:
+            main.cleanup()
+            main.exit()

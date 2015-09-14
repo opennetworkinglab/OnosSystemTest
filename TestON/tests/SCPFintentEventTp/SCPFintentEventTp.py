@@ -276,7 +276,7 @@ class SCPFintentEventTp:
                 for node in range (1, clusterCount + 1):
                     groupResult.append(0)
 
-                    cmd = " onos-ssh $OC" + str(node) +  """ cat /opt/onos/log/karaf.log | grep "SNAPSHOT | Throughput" | tail -1  """
+                    cmd = " onos-ssh $OC" + str(node) +  """ cat /opt/onos/log/karaf.log | grep "Throughput:" | tail -1  """
                     main.log.info("COMMAND: " + str(cmd))
 
                     x = 0

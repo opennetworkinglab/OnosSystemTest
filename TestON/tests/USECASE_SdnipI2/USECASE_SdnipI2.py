@@ -11,6 +11,7 @@ class USECASE_SdnipI2:
             Start mininet
         """
         import os
+        import imp
         main.log.case( "Start Mininet topology" )
         main.dependencyPath = main.testDir + \
                               main.params[ 'DEPENDENCY' ][ 'path' ]
@@ -121,6 +122,19 @@ class USECASE_SdnipI2:
         other and to sdn-ip, plus finish installing all intents..." )
         time.sleep( int( main.params[ 'timers' ][ 'RouteDelivery' ] ) )
         time.sleep( int( main.params[ 'timers' ][ 'PathAvailable' ] ) )
+
+
+    def CASE102( self, main ):
+        '''
+        This test case is to load the methods from other Python files.
+        '''
+        main.case( "Loading the methods from other Python file" )
+        # load the methods from other file
+        wrapperFile = main.params[ 'DEPENDENCY' ][ 'wrapper1' ]
+        main.Functions = imp.load_source( wrapperFile,
+                                          main.dependencyPath +
+                                          wrapperFile +
+                                          ".py" )
 
 
     def CASE1( self, main ):
@@ -235,3 +249,84 @@ class USECASE_SdnipI2:
         if caseResult == main.FALSE:
             main.cleanup()
             main.exit()
+
+
+    def CASE5( self, main ):
+        '''
+        Cut links to peers one by one, check routes/intents
+        '''
+        import time
+        main.case( "This case is to bring down links and check routes/intents" )
+        main.step( "Bring down the link between sw32 and peer64514" )
+        result = main.Mininet.link( END1 = "sw32", END2 = "peer64514",
+                                    OPTION = "down" )
+        if result == main.TRUE:
+            time.sleep( int( main.params[ 'timers' ][ 'RouteDelivery' ] ) )
+            main.Functions.checkRouteNum( main, 2 )
+            main.Functions.checkM2SintentNum( main, 2 )
+        else:
+            main.log.info( "Bring down link failed!!!" )
+            main.exit();
+
+        main.step( "Bring down the link between sw8 and peer64515" )
+        result = main.Mininet.link( END1 = "sw8", END2 = "peer64515",
+                                    OPTION = "down" )
+        if result == main.TRUE:
+            time.sleep( int( main.params[ 'timers' ][ 'RouteDelivery' ] ) )
+            main.Functions.checkRouteNum( main, 1 )
+            main.Functions.checkM2SintentNum( main, 1 )
+        else:
+            main.log.info( "Bring down link failed!!!" )
+            main.exit();
+
+        main.step( "Bring down the link between sw28 and peer64516" )
+        result = main.Mininet.link( END1 = "sw28", END2 = "peer64516",
+                                    OPTION = "down" )
+        if result == main.TRUE:
+            time.sleep( int( main.params[ 'timers' ][ 'RouteDelivery' ] ) )
+            main.Functions.checkRouteNum( main, 0 )
+            main.Functions.checkM2SintentNum( main, 0 )
+        else:
+            main.log.info( "Bring down link failed!!!" )
+            main.exit();
+
+
+    def CASE6(self, main):
+        '''
+        Recover links to peers one by one, check routes/intents
+        '''
+        import time
+        main.case( "This case is to bring up links and check routes/intents" )
+        main.step( "Bring up the link between sw32 and peer64514" )
+        result = main.Mininet.link( END1 = "sw32", END2 = "peer64514",
+                                    OPTION = "up" )
+        if result == main.TRUE:
+            time.sleep( int( main.params[ 'timers' ][ 'RouteDelivery' ] ) )
+            main.Functions.checkRouteNum( main, 1 )
+            main.Functions.checkM2SintentNum( main, 1 )
+        else:
+            main.log.info( "Bring up link failed!!!" )
+            main.exit();
+
+        main.step( "Bring up the link between sw8 and peer64515" )
+        result = main.Mininet.link( END1 = "sw8", END2 = "peer64515",
+                                    OPTION = "up" )
+        if result == main.TRUE:
+            time.sleep( int( main.params[ 'timers' ][ 'RouteDelivery' ] ) )
+            main.Functions.checkRouteNum( main, 2 )
+            main.Functions.checkM2SintentNum( main, 2 )
+        else:
+            main.log.info( "Bring up link failed!!!" )
+            main.exit();
+
+        main.step( "Bring up the link between sw28 and peer64516" )
+        result = main.Mininet.link( END1 = "sw28", END2 = "peer64516",
+                                    OPTION = "up" )
+        if result == main.TRUE:
+            time.sleep( int( main.params[ 'timers' ][ 'RouteDelivery' ] ) )
+            main.Functions.checkRouteNum( main, 3 )
+            main.Functions.checkM2SintentNum( main, 3 )
+        else:
+            main.log.info( "Bring up link failed!!!" )
+            main.exit();
+

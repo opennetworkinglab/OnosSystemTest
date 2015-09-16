@@ -211,6 +211,7 @@ class FUNCintent:
         else:
             main.log.report( "ONOS instance may not be up, stop and " +
                              "start ONOS again " )
+
             for i in range( main.numCtrls ):
                 stopResult = stopResult and \
                         main.ONOSbench.onosStop( main.ONOSip[ i ] )
@@ -289,10 +290,15 @@ class FUNCintent:
                     "Error" not in devices[ controller ] and\
                     "Error" not in ports[ controller ]:
 
-                    currentDevicesResult = main.Mininet1.compareSwitches(
-                            mnSwitches,
-                            json.loads( devices[ controller ] ),
-                            json.loads( ports[ controller ] ) )
+                    try:
+                        deviceData = json.loads( devices[ controller ] )
+                        portData = json.loads( ports[ controller ] )
+                    except (TypeError,ValueError):
+                        main.log.error("Could not load json:" + str( devices[ controller ] ) + ' or ' + str( ports[ controller ] ))
+                        currentDevicesResult = main.FALSE
+                    else:
+                        currentDevicesResult = main.Mininet1.compareSwitches(
+                            mnSwitches,deviceData,portData )
                 else:
                     currentDevicesResult = main.FALSE
                 if not currentDevicesResult:
@@ -300,19 +306,29 @@ class FUNCintent:
                 devicesResults = devicesResults and currentDevicesResult
                 # Compare Links
                 if links[ controller ] and "Error" not in links[ controller ]:
-                    currentLinksResult = main.Mininet1.compareLinks(
-                            mnSwitches, mnLinks,
-                            json.loads( links[ controller ] ) )
+                    try:
+                        linkData = json.loads( links[ controller ] )
+                    except (TypeError,ValueError):
+                        main.log.error("Could not load json:" + str( links[ controller ] ) )
+                        currentLinksResult = main.FALSE
+                    else:
+                        currentLinksResult = main.Mininet1.compareLinks(
+                            mnSwitches, mnLinks,linkData )
                 else:
                     currentLinksResult = main.FALSE
                 if not currentLinksResult:
                     linkFails.append( controllerStr )
                 linksResults = linksResults and currentLinksResult
                 # Compare Hosts
-                if hosts[ controller ] or "Error" not in hosts[ controller ]:
-                    currentHostsResult = main.Mininet1.compareHosts(
-                            mnHosts,
-                            json.loads( hosts[ controller ] ) )
+                if hosts[ controller ] and "Error" not in hosts[ controller ]:
+                    try:
+                        hostData = json.loads( hosts[ controller ] )
+                    except (TypeError,ValueError):
+                        main.log.error("Could not load json:" + str( hosts[ controller ] ) )
+                        currentHostsResult = main.FALSE
+                    else:
+                        currentHostsResult = main.Mininet1.compareHosts(
+                                mnHosts,hostData )
                 else:
                     currentHostsResult = main.FALSE
                 if not currentHostsResult:
@@ -958,29 +974,36 @@ class FUNCintent:
                                ";\nThe test will use OF " + main.OFProtocol +\
                                " OVS running in Mininet"
 
-        main.step( "NOOPTION: Add single point to multi point intents" )
-        stepResult = main.TRUE
         hostNames = [ 'h8', 'h16', 'h24' ]
         devices = [ 'of:0000000000000005/8', 'of:0000000000000006/8', \
                     'of:0000000000000007/8' ]
         macs = [ '00:00:00:00:00:08', '00:00:00:00:00:10', '00:00:00:00:00:18' ]
-        stepResult = main.intentFunction.singleToMultiIntent(
-                                         main,
-                                         name="NOOPTION",
-                                         hostNames=hostNames,
-                                         devices=devices,
-                                         sw1="s5",
-                                         sw2="s2",
-                                         expectedLink=18 )
 
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="NOOPTION: Successfully added single "
-                                        + " point to multi point intents" +
-                                        " with no match action",
-                                 onfail="NOOPTION: Failed to add single point"
-                                        + " point to multi point intents" +
-                                        " with no match action" )
+        # This test as written attempts something that is improbable to succeed
+        # Single to Multi Point Raw intent cannot be bi-directional, so pings are not usable to test it
+        # This test should be re-written so that one single-to-multi NOOPTION
+        # intent is installed, with listeners at the destinations, so that one way
+        # packets can be detected
+        #
+        # main.step( "NOOPTION: Add single point to multi point intents" )
+        # stepResult = main.TRUE
+        # stepResult = main.intentFunction.singleToMultiIntent(
+        #                                  main,
+        #                                  name="NOOPTION",
+        #                                  hostNames=hostNames,
+        #                                  devices=devices,
+        #                                  sw1="s5",
+        #                                  sw2="s2",
+        #                                  expectedLink=18 )
+        #
+        # utilities.assert_equals( expect=main.TRUE,
+        #                          actual=stepResult,
+        #                          onpass="NOOPTION: Successfully added single "
+        #                                 + " point to multi point intents" +
+        #                                 " with no match action",
+        #                          onfail="NOOPTION: Failed to add single point"
+        #                                 + " point to multi point intents" +
+        #                                 " with no match action" )
 
         main.step( "IPV4: Add single point to multi point intents" )
         stepResult = main.TRUE

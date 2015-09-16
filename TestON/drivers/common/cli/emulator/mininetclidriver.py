@@ -1235,6 +1235,29 @@ class MininetCliDriver( Emulator ):
             main.exit()
         return main.TRUE
 
+    def switch( self, **switchargs ):
+        """
+           start/stop a switch
+        """
+        args = utilities.parse_args( [ "SW", "OPTION" ], **switchargs )
+        sw = args[ "SW" ] if args[ "SW" ] is not None else ""
+        option = args[ "OPTION" ] if args[ "OPTION" ] is not None else ""
+        command = "switch " + str( sw ) + " " + str( option )
+        main.log.info( command )
+        try:
+            self.handle.sendline( command )
+            self.handle.expect( "mininet>" )
+        except pexpect.TIMEOUT:
+            main.log.error( self.name + ": pexpect.TIMEOUT found" )
+            main.cleanup()
+            main.exit()
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        return main.TRUE
+
     def yank( self, **yankargs ):
         """
            yank a mininet switch interface to a host"""

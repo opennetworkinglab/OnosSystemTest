@@ -329,6 +329,63 @@ class USECASE_SdnipI2:
         else:
             main.log.info( "Bring up link failed!!!" )
             main.exit();
+        '''
+        Note: at the end of this test case, we should carry out ping test.
+        So we run CASE4 again after CASE6
+        '''
+
+
+    def CASE7(self, main):
+        '''
+        shut down a edge switch, check P-2-P and M-2-S intents, ping test
+        '''
+        import time
+        main.case( "This case is to stop 1 edge switch,\
+        check P-2-P and M-2-S intents, ping test")
+        main.step( "Stop sw32" )
+        result = main.Mininet.switch( SW = "sw32", OPTION = "stop" )
+        if result == main.TRUE:
+            time.sleep( int( main.params[ 'timers' ][ 'RouteDelivery' ] ) )
+            main.Functions.checkRouteNum( main, 2 )
+            main.Functions.checkM2SintentNum( main, 2 )
+            main.Functions.checkP2PintentNum( main, 12 )
+        else:
+            main.log.info( "Stop switch failed!!!" )
+            main.exit();
+
+        '''
+        main.step( "Stop sw8" )
+        result = main.Mininet.switch( SW = "sw8", OPTION = "stop" )
+        if result == main.TRUE:
+            time.sleep( int( main.params[ 'timers' ][ 'RouteDelivery' ] ) )
+            main.Functions.checkRouteNum( main, 1 )
+
+            # Note: there should be 0 M2S intent, not 1.
+            main.Functions.checkM2SintentNum( main, 0 )
+            main.Functions.checkP2PintentNum( main, 6 )
+        else:
+            main.log.info( "Stop switch failed!!!" )
+            main.exit();
+
+        main.step( "Stop sw28" )
+        result = main.Mininet.switch( SW = "sw28", OPTION = "stop" )
+        if result == main.TRUE:
+            time.sleep( int( main.params[ 'timers' ][ 'RouteDelivery' ] ) )
+            main.Functions.checkRouteNum( main, 0 )
+            main.Functions.checkM2SintentNum( main, 0 )
+            main.Functions.checkP2PintentNum( main, 0 )
+        else:
+            main.log.info( "Stop switch failed!!!" )
+            main.exit();
+        '''
+        '''
+        ping test between BGP speaker and BGP peers, ping test between hosts
+        behind BGP peers ===
+        '''
+
+    def CASE8( self, main ):
+        main.case( "This case is to bring up 1 edge switch,\
+        check P-2-P and M-2-S intents, ping test" )
 
 
     def CASE20( self, main ):

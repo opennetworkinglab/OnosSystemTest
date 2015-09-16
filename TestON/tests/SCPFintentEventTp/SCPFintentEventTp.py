@@ -305,17 +305,16 @@ class SCPFintentEventTp:
             main.ONOSbench.handle.expect(":~")
             main.log.info("Stopping intentperf" )
 
-            resultsDB = open("/tmp/IntentEventTPDB", "a")
-            for node in groupResult:
-
-                resultString = "'" + commit + "',"
-                resultString += "'1gig',"
-                resultString += str(clusterCount) + ","
-                resultString += "'baremetal" + str(int(groupResult.index(node)) + 1) + "',"
-                resultString += n + ","
-                resultString += str(node) + ","
-                resultString += str(0) + "\n" #no stddev
-                resultsDB.write(resultString)
+            with open("/tmp/IntentEventTPDB", "a") as resultsDB:
+                for node in groupResult:
+                    resultString = "'" + commit + "',"
+                    resultString += "'1gig',"
+                    resultString += str(clusterCount) + ","
+                    resultString += "'baremetal" + str(int(groupResult.index(node)) + 1) + "',"
+                    resultString += n + ","
+                    resultString += str(node) + ","
+                    resultString += str(0) + "\n" #no stddev
+                    resultsDB.write(resultString)
 
             resultsDB.close()
 

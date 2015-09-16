@@ -22,7 +22,7 @@ class SCPFintentEventTp:
         global init
         try:
             if type(init) is not bool:
-                init = Fals
+                init = False
         except NameError:
             init = False
 
@@ -178,34 +178,17 @@ class SCPFintentEventTp:
         main.ONOSbench.handle.expect(":~")
         print main.ONOSbench.handle.before
 
-        lastOutput = "--"
-        origin = time.time()
-        clockStarted = False
-        while True:
-
-            main.ONOSbench.handle.sendline("")
-            main.ONOSbench.handle.expect(":~")
-
-            main.ONOSbench.handle.sendline("onos $OC1 summary")
-            main.ONOSbench.handle.expect(":~")
-
-            main.log.info("before" + main.ONOSbench.handle.before)
-            clusterCheck = main.ONOSbench.handle.before
-            print("\nBefore: " + str(clusterCheck))
-            if ("SCC(s)=1,") in clusterCheck:
+        for i in range(3):
+            passed = main.ONOSbench.verifySummary( ONOSIp[0] )
+            if passed:
+                main.log.info("Clusters have converged")
                 break
-            if clusterCheck != lastOutput:
-                sameOutput = False
-            elif clusterCheck == lastOutput:
-                if clockStarted == False:
-                    start = time.time()
-                    clockStarted = True
-                if time.time() > (start + 30):
-                    main.log.error("TIMEOUT EXCEEDED: Clusters have not converged, continuing anyway...")
-                    break
-            lastOutput = clusterCheck
-            time.sleep(5)
+            else:
+                main.log.error("Clusters have not converged, retying...")
+            time.sleep(3)
+
         main.ONOSbench.logReport(ONOSIp[1], ["ERROR", "WARNING", "EXCEPT"])
+
     def CASE2( self, main ):
         import time
         import json

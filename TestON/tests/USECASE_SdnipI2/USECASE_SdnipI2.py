@@ -330,3 +330,42 @@ class USECASE_SdnipI2:
             main.log.info( "Bring up link failed!!!" )
             main.exit();
 
+
+    def CASE20( self, main ):
+        '''
+        ping test from 3 bgp peers to BGP speaker
+        '''
+        main.case( "This case is to check ping between BGP peers and speakers" )
+        result1 = main.Mininet.pingHost( src = "speaker1", target = "peer64514" )
+        result2 = main.Mininet.pingHost( src = "speaker1", target = "peer64515" )
+        result3 = main.Mininet.pingHost( src = "speaker1", target = "peer64516" )
+
+
+        caseResult = result1 or result2 or result3
+        utilities.assert_equals( expect = main.FALSE, actual = caseResult,
+                                 onpass = "Speaker1 failed to ping all peers - Correct",
+                                 onfail = "Speaker1 did not fail to ping all peers- NOT Correct" )
+
+        if caseResult == main.TRUE:
+            main.cleanup()
+            main.exit()
+
+
+    def CASE21( self, main ):
+        '''
+        Ping test in data plane for each route
+        '''
+        main.case( "This case is to check ping for each route" )
+        result1 = main.Mininet.pingHost( src = "host64514", target = "host64515" )
+        result2 = main.Mininet.pingHost( src = "host64515", target = "host64516" )
+        result3 = main.Mininet.pingHost( src = "host64514", target = "host64516" )
+
+        caseResult = result1 or result2 or result3
+        utilities.assert_equals( expect = main.FALSE, actual = caseResult,
+                                 onpass = "Ping test for all routes failed- Correct",
+                                 onfail = "Ping test for all routes NOT failed- NOT Correct" )
+
+        if caseResult == main.TRUE:
+            main.cleanup()
+            main.exit()
+

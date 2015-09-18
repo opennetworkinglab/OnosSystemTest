@@ -29,7 +29,7 @@
 
     <CTRL>
         <numCtrl>3</numCtrl>
-        <karafCliTimeout>3600000</karafCliTimeout>
+        <karafCliTimeout>7200000</karafCliTimeout>
     </CTRL>
 
     <TOPO1>

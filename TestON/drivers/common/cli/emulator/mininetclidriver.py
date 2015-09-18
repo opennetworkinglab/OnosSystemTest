@@ -281,7 +281,7 @@ class MininetCliDriver( Emulator ):
         topoDict = self.numSwitchesNlinks( *topoArgList )
         return topoDict
 
-    def pingall( self, timeout=300, shortCircuit=False, acceptableFailed=0 ):
+    def pingall( self, protocol="IPv4", timeout=300, shortCircuit=False, acceptableFailed=0 ):
         """
            Verifies the reachability of the hosts using pingall command.
            Optional parameter timeout allows you to specify how long to
@@ -306,7 +306,10 @@ class MininetCliDriver( Emulator ):
                 response = ""
                 failedPings = 0
                 returnValue = main.TRUE
-                self.handle.sendline( "pingall" )
+                cmd = "pingall"
+                if protocol == "IPv6":
+                    cmd = "py net.pingAll6()"
+                self.handle.sendline( cmd )
                 startTime = time.time()
                 while True:
                     i = self.handle.expect( [ "mininet>", "X",

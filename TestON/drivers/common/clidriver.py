@@ -232,7 +232,7 @@ class CLI( Component ):
         i = handle.expect( [ ".ssword:*", default, pexpect.EOF ] )
         if i == 0:
             handle.sendline( pwd )
-            handle.sendline( "\r" )
+            handle.sendline( "\n" )
 
         if i == 1:
             handle.expect( default )

@@ -1717,6 +1717,11 @@ class HAclusterRestart:
 
         main.case( "Restart entire ONOS cluster" )
 
+        main.step( "Checking ONOS Logs for errors" )
+        for node in main.nodes:
+            main.log.debug( "Checking logs for errors on " + node.name + ":" )
+            main.log.warn( main.ONOSbench.checkLogs( node.ip_address ) )
+
         main.step( "Killing ONOS nodes" )
         killResults = main.TRUE
         killTime = time.time()
@@ -2694,7 +2699,8 @@ class HAclusterRestart:
         main.Mininet2.stopTcpdump()
 
         testname = main.TEST
-        if main.params[ 'BACKUP' ] == "True":
+        main.log.error( main.params[ 'BACKUP' ][ 'ENABLED' ] )
+        if main.params[ 'BACKUP' ][ 'ENABLED' ] == "True":
             main.step( "Copying MN pcap and ONOS log files to test station" )
             teststationUser = main.params[ 'BACKUP' ][ 'TESTONUSER' ]
             teststationIP = main.params[ 'BACKUP' ][ 'TESTONIP' ]
@@ -2707,36 +2713,38 @@ class HAclusterRestart:
             logFolder = "/opt/onos/log/"
             logFiles = [ "karaf.log", "karaf.log.1" ]
             # NOTE: must end in /
-            dstDir = "~/packet_captures/"
             for f in logFiles:
                 for node in main.nodes:
                     main.ONOSbench.handle.sendline( "scp sdn@" + node.ip_address +
                                                     ":" + logFolder + f + " " +
                                                     teststationUser + "@" +
                                                     teststationIP + ":" +
-                                                    dstDir + str( testname ) +
-                                                    "-" + node.name + "-" + f )
-                    main.ONOSbench.handle.expect( "\$" )
+                                                    main.logdir + "/" +
+                                                    node.name + "-" + f )
+                    main.ONOSbench.handle.expect( "\$ " )
+                    print main.ONOSbench.handle.before
 
             # std*.log's
             # NOTE: must end in /
             logFolder = "/opt/onos/var/"
             logFiles = [ "stderr.log", "stdout.log" ]
             # NOTE: must end in /
-            dstDir = "~/packet_captures/"
             for f in logFiles:
                 for node in main.nodes:
                     main.ONOSbench.handle.sendline( "scp sdn@" + node.ip_address +
                                                     ":" + logFolder + f + " " +
                                                     teststationUser + "@" +
                                                     teststationIP + ":" +
-                                                    dstDir + str( testname ) +
-                                                    "-" + node.name + "-" + f )
-                    main.ONOSbench.handle.expect( "\$" )
+                                                    main.logdir + "/" +
+                                                    node.name + "-" + f )
+                    main.ONOSbench.handle.expect( "\$ " )
+                    print main.ONOSbench.handle.before
             # sleep so scp can finish
             time.sleep( 10 )
-            main.step( "Packing and rotating pcap archives" )
-            os.system( "~/TestON/dependencies/rotate.sh " + str( testname ) )
+            # main.step( "Packing and rotating pcap archives" )
+            # os.system( "~/TestON/dependencies/rotate.sh " + str( testname ) )
+        else:
+            main.log.debug( "skipping saving log files" )
 
         main.step( "Stopping Mininet" )
         mnResult = main.Mininet1.stopNet()
@@ -2746,9 +2754,8 @@ class HAclusterRestart:
 
         main.step( "Checking ONOS Logs for errors" )
         for node in main.nodes:
-            print colors[ 'purple' ] + "Checking logs for errors on " + \
-                node.name + ":" + colors[ 'end' ]
-            print main.ONOSbench.checkLogs( node.ip_address, restart=True )
+            main.log.debug( "Checking logs for errors on " + node.name + ":" )
+            main.log.warn( main.ONOSbench.checkLogs( node.ip_address ) )
 
         try:
             timerLog = open( main.logdir + "/Timers.csv", 'w')

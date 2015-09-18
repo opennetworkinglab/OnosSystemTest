@@ -711,6 +711,7 @@ class OnosDriver( CLI ):
                                 "=" + "\"" + arg + "\"" + "\n" )
                 tempCount = tempCount + 1
 
+            cellFile.write( "export OCI=$OC1" )
             cellFile.write( mnString + "\"" + mnIpAddrs + "\"" + "\n" )
             cellFile.write( appString + "\n" )
             cellFile.close()
@@ -1435,9 +1436,9 @@ class OnosDriver( CLI ):
             self.handle.expect( "\$" )
 
             self.handle.sendline( "tshark -i " + str( interface ) + " -t e -w " + str( dirFile ) + " &" )
-            self.handle.sendline( "\r" )
+            self.handle.sendline( "\n" )
             self.handle.expect( "Capturing on" )
-            self.handle.sendline( "\r" )
+            self.handle.sendline( "\n" )
             self.handle.expect( "\$" )
 
             main.log.info( "Tshark started capturing files on " +
@@ -1661,7 +1662,7 @@ class OnosDriver( CLI ):
                 cmd += " old"
             self.handle.sendline( cmd )
             self.handle.expect( cmd )
-            self.handle.expect( "\$" )
+            self.handle.expect( "\$ " )
             response = self.handle.before
             return response
         except pexpect.EOF:
@@ -1730,7 +1731,6 @@ class OnosDriver( CLI ):
         * This function uses root privilege iptables command which may result
           in unwanted network errors. USE WITH CAUTION
         """
-        import time
 
         # NOTE*********
         #   The strict checking methods of this driver function is intentional

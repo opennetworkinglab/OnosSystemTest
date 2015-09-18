@@ -507,12 +507,12 @@ class CHOtest:
         time.sleep( 10 )
 
         main.step( "Verify Pingall" )
-        ping_result = main.FALSE
+        pingResult = main.FALSE
         time1 = time.time()
-        ping_result = main.Mininet1.pingall( timeout=main.pingTimeout )
-        if not ping_result:
+        pingResult = main.Mininet1.pingall( timeout=main.pingTimeout )
+        if not pingResult:
             main.log.warn("First pingall failed. Trying again...")
-            ping_result = main.Mininet1.pingall( timeout=main.pingTimeout)
+            pingResult = main.Mininet1.pingall( timeout=main.pingTimeout)
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -520,12 +520,12 @@ class CHOtest:
             str( timeDiff ) +
             " seconds" )
 
-        if ping_result == main.TRUE:
+        if pingResult == main.TRUE:
             main.log.report( "IPv4 Pingall Test in Reactive mode successful" )
         else:
             main.log.report( "IPv4 Pingall Test in Reactive mode failed" )
 
-        case40Result =  appCheck and ping_result
+        case40Result =  appCheck and pingResult
         utilities.assert_equals( expect=main.TRUE, actual=case40Result,
                                  onpass="Reactive Mode IPv4 Pingall test PASS",
                                  onfail="Reactive Mode IPv4 Pingall test FAIL" )
@@ -566,12 +566,12 @@ class CHOtest:
         time.sleep( 10 )
 
         main.step( "Verify Pingall" )
-        ping_result = main.FALSE
+        pingResult = main.FALSE
         time1 = time.time()
-        ping_result = main.Mininet1.pingall( timeout=main.pingTimeout )
-        if not ping_result:
+        pingResult = main.Mininet1.pingall( timeout=main.pingTimeout )
+        if not pingResult:
             main.log.warn("First pingall failed. Trying again...")
-            ping_result = main.Mininet1.pingall( timeout=main.pingTimeout )
+            pingResult = main.Mininet1.pingall( timeout=main.pingTimeout )
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -579,12 +579,12 @@ class CHOtest:
             str( timeDiff ) +
             " seconds" )
 
-        if ping_result == main.TRUE:
+        if pingResult == main.TRUE:
             main.log.report( "IPv4 Pingall Test in Reactive mode successful" )
         else:
             main.log.report( "IPv4 Pingall Test in Reactive mode failed" )
 
-        case41Result =  appCheck and ping_result
+        case41Result =  appCheck and pingResult
         utilities.assert_equals( expect=main.TRUE, actual=case41Result,
                                  onpass="Reactive Mode IPv4 Pingall test PASS",
                                  onfail="Reactive Mode IPv4 Pingall test FAIL" )
@@ -625,12 +625,12 @@ class CHOtest:
         time.sleep( 10 )
 
         main.step( "Verify Pingall" )
-        ping_result = main.FALSE
+        pingResult = main.FALSE
         time1 = time.time()
-        ping_result = main.Mininet1.pingall( timeout=main.pingTimeout )
-        if not ping_result:
+        pingResult = main.Mininet1.pingall( timeout=main.pingTimeout )
+        if not pingResult:
             main.log.warn("First pingall failed. Trying again...")
-            ping_result = main.Mininet1.pingall( timeout=main.pingTimeout )
+            pingResult = main.Mininet1.pingall( timeout=main.pingTimeout )
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -638,12 +638,12 @@ class CHOtest:
             str( timeDiff ) +
             " seconds" )
 
-        if ping_result == main.TRUE:
+        if pingResult == main.TRUE:
             main.log.report( "IPv4 Pingall Test in Reactive mode successful" )
         else:
             main.log.report( "IPv4 Pingall Test in Reactive mode failed" )
 
-        case42Result =  appCheck and ping_result
+        case42Result =  appCheck and pingResult
         utilities.assert_equals( expect=main.TRUE, actual=case42Result,
                                  onpass="Reactive Mode IPv4 Pingall test PASS",
                                  onfail="Reactive Mode IPv4 Pingall test FAIL" )
@@ -669,12 +669,12 @@ class CHOtest:
                                  onfail="Failed to cfg set Reactive mode ipv6Fowarding" )
 
         main.step( "Verify IPv6 Pingall" )
-        ping_result = main.FALSE
+        pingResult = main.FALSE
         time1 = time.time()
-        ping_result = main.Mininet1.pingall( protocol="IPv6", timeout=main.pingTimeout)
-        if not ping_result:
+        pingResult = main.Mininet1.pingall( protocol="IPv6", timeout=main.pingTimeout)
+        if not pingResult:
             main.log.warn("First pingall failed. Trying again..")
-            ping_result = main.Mininet1.pingall( protocol="IPv6", timeout=main.pingTimeout )
+            pingResult = main.Mininet1.pingall( protocol="IPv6", timeout=main.pingTimeout )
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -682,7 +682,7 @@ class CHOtest:
             str( timeDiff ) +
             " seconds" )
 
-        if ping_result == main.TRUE:
+        if pingResult == main.TRUE:
             main.log.report( "IPv6 Pingall Test in Reactive mode successful" )
         else:
             main.log.report( "IPv6 Pingall Test in Reactive mode failed" )
@@ -712,7 +712,7 @@ class CHOtest:
 
         # Waiting for reative flows to be cleared.
         time.sleep( 30 )
-        case140Result =  appCheck and cfgResult and ping_result
+        case140Result =  appCheck and cfgResult and pingResult
         utilities.assert_equals( expect=main.TRUE, actual=case140Result,
                                  onpass="Reactive Mode IPv6 Pingall test PASS",
                                  onfail="Reactive Mode IPv6 Pingall test FAIL" )
@@ -738,12 +738,12 @@ class CHOtest:
                                  onfail="Failed to cfg set Reactive mode ipv6Fowarding" )
 
         main.step( "Verify IPv6 Pingall" )
-        ping_result = main.FALSE
+        pingResult = main.FALSE
         time1 = time.time()
-        ping_result = main.Mininet1.pingall( protocol="IPv6", timeout=main.pingTimeout)
-        if not ping_result:
+        pingResult = main.Mininet1.pingall( protocol="IPv6", timeout=main.pingTimeout)
+        if not pingResult:
             main.log.warn("First pingall failed. Trying again..")
-            ping_result = main.Mininet1.pingall( protocol="IPv6", timeout=main.pingTimeout )
+            pingResult = main.Mininet1.pingall( protocol="IPv6", timeout=main.pingTimeout )
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -751,7 +751,7 @@ class CHOtest:
             str( timeDiff ) +
             " seconds" )
 
-        if ping_result == main.TRUE:
+        if pingResult == main.TRUE:
             main.log.report( "IPv6 Pingall Test in Reactive mode successful" )
         else:
             main.log.report( "IPv6 Pingall Test in Reactive mode failed" )
@@ -781,7 +781,7 @@ class CHOtest:
 
         # Waiting for reative flows to be cleared.
         time.sleep( 30 )
-        case140Result =  appCheck and cfgResult and ping_result
+        case140Result =  appCheck and cfgResult and pingResult
         utilities.assert_equals( expect=main.TRUE, actual=case140Result,
                                  onpass="Reactive Mode IPv6 Pingall test PASS",
                                  onfail="Reactive Mode IPv6 Pingall test FAIL" )
@@ -807,12 +807,12 @@ class CHOtest:
                                  onfail="Failed to cfg set Reactive mode ipv6Fowarding" )
 
         main.step( "Verify IPv6 Pingall" )
-        ping_result = main.FALSE
+        pingResult = main.FALSE
         time1 = time.time()
-        ping_result = main.Mininet1.pingall( protocol="IPv6", timeout=main.pingTimeout)
-        if not ping_result:
+        pingResult = main.Mininet1.pingall( protocol="IPv6", timeout=main.pingTimeout)
+        if not pingResult:
             main.log.warn("First pingall failed. Trying again..")
-            ping_result = main.Mininet1.pingall( protocol="IPv6", timeout=main.pingTimeout )
+            pingResult = main.Mininet1.pingall( protocol="IPv6", timeout=main.pingTimeout )
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -820,7 +820,7 @@ class CHOtest:
             str( timeDiff ) +
             " seconds" )
 
-        if ping_result == main.TRUE:
+        if pingResult == main.TRUE:
             main.log.report( "IPv6 Pingall Test in Reactive mode successful" )
         else:
             main.log.report( "IPv6 Pingall Test in Reactive mode failed" )
@@ -850,7 +850,7 @@ class CHOtest:
 
         # Waiting for reative flows to be cleared.
         time.sleep( 30 )
-        case142Result =  appCheck and cfgResult and ping_result
+        case142Result =  appCheck and cfgResult and pingResult
         utilities.assert_equals( expect=main.TRUE, actual=case142Result,
                                  onpass="Reactive Mode IPv6 Pingall test PASS",
                                  onfail="Reactive Mode IPv6 Pingall test FAIL" )
@@ -1161,6 +1161,9 @@ class CHOtest:
         pingResult = main.FALSE
         time1 = time.time()
         pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
+        if not pingResult:
+            main.log.warn("Failed to ping Ipv6 hosts. Retrying...")
+            pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -1192,6 +1195,9 @@ class CHOtest:
         pingResult = main.FALSE
         time1 = time.time()
         pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
+        if not pingResult:
+            main.log.warn("Failed to ping Ipv6 hosts. Retrying...")
+            pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -1223,6 +1229,9 @@ class CHOtest:
         pingResult = main.FALSE
         time1 = time.time()
         pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
+        if not pingResult:
+            main.log.warn("Failed to ping Ipv6 hosts. Retrying...")
+            pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -2022,6 +2031,9 @@ class CHOtest:
         pingResult = main.FALSE
         time1 = time.time()
         pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
+        if not pingResult:
+            main.log.warn("Failed to ping Ipv6 hosts. Retrying...")
+            pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -2053,6 +2065,9 @@ class CHOtest:
         pingResult = main.FALSE
         time1 = time.time()
         pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
+        if not pingResult:
+            main.log.warn("Failed to ping Ipv6 hosts. Retrying...")
+            pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -2084,6 +2099,9 @@ class CHOtest:
         pingResult = main.FALSE
         time1 = time.time()
         pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
+        if not pingResult:
+            main.log.warn("Failed to ping Ipv6 hosts. Retrying...")
+            pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -2115,6 +2133,9 @@ class CHOtest:
         pingResult = main.FALSE
         time1 = time.time()
         pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
+        if not pingResult:
+            main.log.warn("Failed to ping Ipv6 hosts. Retrying...")
+            pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -2146,6 +2167,9 @@ class CHOtest:
         pingResult = main.FALSE
         time1 = time.time()
         pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
+        if not pingResult:
+            main.log.warn("Failed to ping Ipv6 hosts. Retrying...")
+            pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -2177,6 +2201,9 @@ class CHOtest:
         pingResult = main.FALSE
         time1 = time.time()
         pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
+        if not pingResult:
+            main.log.warn("Failed to ping Ipv6 hosts. Retrying...")
+            pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -2208,6 +2235,9 @@ class CHOtest:
         pingResult = main.FALSE
         time1 = time.time()
         pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
+        if not pingResult:
+            main.log.warn("Failed to ping Ipv6 hosts. Retrying...")
+            pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -2239,6 +2269,9 @@ class CHOtest:
         pingResult = main.FALSE
         time1 = time.time()
         pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
+        if not pingResult:
+            main.log.warn("Failed to ping Ipv6 hosts. Retrying...")
+            pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -2270,6 +2303,9 @@ class CHOtest:
         pingResult = main.FALSE
         time1 = time.time()
         pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
+        if not pingResult:
+            main.log.warn("Failed to ping Ipv6 hosts. Retrying...")
+            pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -2301,6 +2337,9 @@ class CHOtest:
         pingResult = main.FALSE
         time1 = time.time()
         pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
+        if not pingResult:
+            main.log.warn("Failed to ping Ipv6 hosts. Retrying...")
+            pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -2332,6 +2371,9 @@ class CHOtest:
         pingResult = main.FALSE
         time1 = time.time()
         pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
+        if not pingResult:
+            main.log.warn("Failed to ping Ipv6 hosts. Retrying...")
+            pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -2363,6 +2405,9 @@ class CHOtest:
         pingResult = main.FALSE
         time1 = time.time()
         pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
+        if not pingResult:
+            main.log.warn("Failed to ping Ipv6 hosts. Retrying...")
+            pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -2890,6 +2935,10 @@ class CHOtest:
         pingResult = main.FALSE
         time1 = time.time()
         pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
+        if not pingResult:
+            main.log.warn("Failed to ping Ipv6 hosts. Retrying...")
+            pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
+
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -2921,6 +2970,9 @@ class CHOtest:
         pingResult = main.FALSE
         time1 = time.time()
         pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
+        if not pingResult:
+            main.log.warn("Failed to ping Ipv6 hosts. Retrying...")
+            pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -3113,9 +3165,9 @@ class CHOtest:
         main.log.info("Time for feature:install onos-app-ifwd: %2f seconds" %(time2-time1))
 
         main.step( "Verify Pingall" )
-        ping_result = main.FALSE
+        pingResult = main.FALSE
         time1 = time.time()
-        ping_result = main.Mininet1.pingall(timeout=600)
+        pingResult = main.Mininet1.pingall(timeout=600)
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -3123,7 +3175,7 @@ class CHOtest:
             str( timeDiff ) +
             " seconds" )
 
-        if ping_result == main.TRUE:
+        if pingResult == main.TRUE:
             main.log.report( "Pingall Test in Reactive mode successful" )
         else:
             main.log.report( "Pingall Test in Reactive mode failed" )
@@ -3159,7 +3211,7 @@ class CHOtest:
         # Waiting for reative flows to be cleared.
         time.sleep( 10 )
 
-        case11Result = installResult and ping_result and uninstallResult
+        case11Result = installResult and pingResult and uninstallResult
         utilities.assert_equals( expect=main.TRUE, actual=case11Result,
                                  onpass="Intent based Reactive forwarding Pingall test PASS",
                                  onfail="Intent based Reactive forwarding Pingall test FAIL" )

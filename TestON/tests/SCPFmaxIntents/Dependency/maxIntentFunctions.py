@@ -72,7 +72,7 @@ def pushIntents( main,
         main.log.exception("Timeout exception caught in pushIntents")
     return main.FALSE
 
-def verifyFlows( main, expectedFlows, state="ADDED", sleep=1,  timeout=120):
+def verifyFlows( main, expectedFlows, state="ADDED", sleep=1, numcheck=10, timeout=120):
     '''
         This function returns main.TRUE if the number of expected flows are in
         the specified state
@@ -80,17 +80,19 @@ def verifyFlows( main, expectedFlows, state="ADDED", sleep=1,  timeout=120):
         @params
             expectedFlows: the flows you expect to see in the specified state
             state: the state of the flow to check for
+            sleep: how long it should sleep for each check
+            numcheck: how many times it should check
             timeout: the timeout for pexpect
     '''
     cmd = "flows | grep " + state + " | wc -l"
-    for i in range(10):
+    for i in range(numcheck):
         flows = getFlows( main, state, sleep, timeout )
         if expectedFlows == flows:
             return main.TRUE
 
     return main.FALSE
 
-def verifyIntents( main, expectedIntents, state="INSTALLED", sleep=1, timeout=120):
+def verifyIntents( main, expectedIntents, state="INSTALLED", sleep=1, numcheck=10, timeout=120):
     '''
         This function returns main.TRUE if the number of expected intents are in
         the specified state
@@ -98,12 +100,15 @@ def verifyIntents( main, expectedIntents, state="INSTALLED", sleep=1, timeout=12
         @params
             expectedFlows: the intents you expect to see in the specified state
             state: the state of the intent to check for
+            sleep: how long it should sleep for each check
+            numcheck: how many times it should check
             timeout: the timeout for pexpect
     '''
     cmd = "intents | grep " + state + " | wc -l"
-    for i in range(10):
+    for i in range(numcheck):
         intents = getIntents( main, state, sleep, timeout )
         if expectedIntents == intents:
             return main.TRUE
+        time.sleep(sleep)
 
     return main.FALSE

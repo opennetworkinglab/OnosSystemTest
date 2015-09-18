@@ -2151,10 +2151,6 @@ class HAclusterRestart:
                                 " and ONOS"
 
         main.step( "Comparing ONOS topology to MN" )
-        devicesResults = main.TRUE
-        linksResults = main.TRUE
-        hostsResults = main.TRUE
-        hostAttachmentResults = True
         topoResult = main.FALSE
         elapsed = 0
         count = 0
@@ -2162,6 +2158,10 @@ class HAclusterRestart:
         startTime = time.time()
         # Give time for Gossip to work
         while topoResult == main.FALSE and elapsed < 60:
+            devicesResults = main.TRUE
+            linksResults = main.TRUE
+            hostsResults = main.TRUE
+            hostAttachmentResults = True
             count += 1
             cliStart = time.time()
             devices = []
@@ -2715,10 +2715,9 @@ class HAclusterRestart:
             # NOTE: must end in /
             for f in logFiles:
                 for node in main.nodes:
+                    # scp sdn@<ip>:<file path> <test's log path>/<node name>-<orig filename>
                     main.ONOSbench.handle.sendline( "scp sdn@" + node.ip_address +
                                                     ":" + logFolder + f + " " +
-                                                    teststationUser + "@" +
-                                                    teststationIP + ":" +
                                                     main.logdir + "/" +
                                                     node.name + "-" + f )
                     main.ONOSbench.handle.expect( "\$ " )
@@ -2731,10 +2730,9 @@ class HAclusterRestart:
             # NOTE: must end in /
             for f in logFiles:
                 for node in main.nodes:
+                    # scp sdn@<ip>:<file path> <test's log path>/<node name>-<orig filename>
                     main.ONOSbench.handle.sendline( "scp sdn@" + node.ip_address +
                                                     ":" + logFolder + f + " " +
-                                                    teststationUser + "@" +
-                                                    teststationIP + ":" +
                                                     main.logdir + "/" +
                                                     node.name + "-" + f )
                     main.ONOSbench.handle.expect( "\$ " )

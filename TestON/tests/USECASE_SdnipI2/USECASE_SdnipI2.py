@@ -50,6 +50,7 @@ class USECASE_SdnipI2:
         main.case( "Setting up test environment" )
 
         cellName = main.params[ 'ENV' ][ 'cellName' ]
+        global ONOS1Ip
         ONOS1Ip = main.params[ 'CTRL' ][ 'ip1' ]
 
         main.step( "Applying cell variable to environment" )
@@ -383,9 +384,28 @@ class USECASE_SdnipI2:
         behind BGP peers ===
         '''
 
+
     def CASE8( self, main ):
-        main.case( "This case is to bring up 1 edge switch,\
+        '''
+        Bring up the edge switch which was shut down in CASE7,
+        check P-2-P and M-2-S intents, ping test
+        '''
+        import time
+        main.case( "This case is to start the switch which was shut down in CASE7,\
         check P-2-P and M-2-S intents, ping test" )
+        main.step( "Start sw32" )
+        result1 = main.Mininet.switch( SW = "sw32", OPTION = "start" )
+        result2 = main.Mininet.assignSwController( "sw32", ONOS1Ip )
+
+        if result1 and result2:
+            time.sleep( int( main.params[ 'timers' ][ 'RouteDelivery' ] ) )
+            main.Functions.checkRouteNum( main, 3 )
+            main.Functions.checkM2SintentNum( main, 3 )
+            main.Functions.checkP2PintentNum( main, 18 )
+        else:
+            main.log.info( "Start switch failed!!!" )
+            main.cleanup()
+            main.exit();
 
 
     def CASE20( self, main ):

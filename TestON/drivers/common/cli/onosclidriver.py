@@ -1806,7 +1806,10 @@ class OnosCliDriver( CLI ):
                 cmdStr += " -j"
             handle = self.sendline( cmdStr )
             args = utilities.parse_args( [ "TYPE" ], **intentargs )
-            type = args[ "TYPE" ] if args[ "TYPE" ] is not None else ""
+            if "TYPE" in args.keys():
+                type = args[ "TYPE" ]
+            else:
+                type = ""
             if jsonFormat and summary and ( type != "" ):
                 jsonResult = json.loads( handle )
                 if type in jsonResult.keys():

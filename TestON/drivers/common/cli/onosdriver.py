@@ -708,11 +708,11 @@ class OnosDriver( CLI ):
                 #   export OC1="10.128.20.11"
                 #   export OC2="10.128.20.12"
                 cellFile.write( onosString + str( tempCount ) +
-                                "=" + "\"" + arg + "\"" + "\n" )
+                                "=\"" + arg + "\"\n" )
                 tempCount = tempCount + 1
 
-            cellFile.write( "export OCI=$OC1" )
-            cellFile.write( mnString + "\"" + mnIpAddrs + "\"" + "\n" )
+            cellFile.write( "export OCI=$OC1\n" )
+            cellFile.write( mnString + "\"" + mnIpAddrs + "\"\n" )
             cellFile.write( appString + "\n" )
             cellFile.close()
 

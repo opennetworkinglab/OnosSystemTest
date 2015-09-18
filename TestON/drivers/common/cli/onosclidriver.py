@@ -1787,43 +1787,35 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def intents( self, jsonFormat=True ):
+    def intents( self, jsonFormat = True, summary = False, **intentargs):
         """
         Optional:
             * jsonFormat: enable output formatting in json
+            * summary: whether only output the intent summary
+            * type: only output a certain type of intent
+              This options is valid only when jsonFormat is true and summary is
+              true
         Description:
-            Obtain intents currently installed
+            Obtain intents
         """
         try:
             cmdStr = "intents"
+            if summary:
+                cmdStr += " -s"
             if jsonFormat:
                 cmdStr += " -j"
             handle = self.sendline( cmdStr )
-            return handle
-        except TypeError:
-            main.log.exception( self.name + ": Object not as expected" )
-            return None
-        except pexpect.EOF:
-            main.log.error( self.name + ": EOF exception found" )
-            main.log.error( self.name + ":    " + self.handle.before )
-            main.cleanup()
-            main.exit()
-        except Exception:
-            main.log.exception( self.name + ": Uncaught exception!" )
-            main.cleanup()
-            main.exit()
-
-    def m2SIntentInstalledNumber( self ):
-        """
-        Description:
-            Obtain the number of multiple point to single point intents
-            installed
-        """
-        try:
-            cmdStr = "intents -s -j"
-            handle = self.sendline( cmdStr )
-            jsonResult = json.loads( handle )
-            return jsonResult['multiPointToSinglePoint']['installed']
+            args = utilities.parse_args( [ "TYPE" ], **intentargs )
+            type = args[ "TYPE" ] if args[ "TYPE" ] is not None else ""
+            if jsonFormat and summary and ( type != "" ):
+                jsonResult = json.loads( handle )
+                if type in jsonResult.keys():
+                    return jsonResult[ type ]
+                else:
+                    main.log.error( "unknown TYPE, return all types of intents" )
+                    return handle
+            else:
+                return handle
 
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
@@ -1837,6 +1829,7 @@ class OnosCliDriver( CLI ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
+
 
     def getIntentState(self, intentsId, intentsJson=None):
         """

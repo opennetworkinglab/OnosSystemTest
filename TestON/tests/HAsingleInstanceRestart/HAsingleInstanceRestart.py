@@ -391,19 +391,22 @@ class HAsingleInstanceRestart:
         # FIXME: Once we have a host discovery mechanism, use that instead
         # REACTIVE FWD test
         pingResult = main.FALSE
-        for i in range(2):  # Retry if pingall fails first time
-            time1 = time.time()
+        passMsg = "Reactive Pingall test passed"
+        time1 = time.time()
+        pingResult = main.Mininet1.pingall()
+        time2 = time.time()
+        if not pingResult:
+            main.log.warn("First pingall failed. Trying again...")
             pingResult = main.Mininet1.pingall()
-            if i == 0:
-                utilities.assert_equals(
-                    expect=main.TRUE,
-                    actual=pingResult,
-                    onpass="Reactive Pingall test passed",
-                    onfail="Reactive Pingall failed, " +
-                           "one or more ping pairs failed" )
-            time2 = time.time()
-            main.log.info( "Time for pingall: %2f seconds" %
-                           ( time2 - time1 ) )
+            passMsg += " on the second try"
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=pingResult,
+            onpass= passMsg,
+            onfail="Reactive Pingall failed, " +
+                   "one or more ping pairs failed" )
+        main.log.info( "Time for pingall: %2f seconds" %
+                       ( time2 - time1 ) )
         # timeout for fwd flows
         time.sleep( 11 )
         # uninstall onos-app-fwd
@@ -1184,6 +1187,12 @@ class HAsingleInstanceRestart:
         main.case( "Restart ONOS node" )
         main.caseExplanation = "Killing ONOS process and restart cli " +\
                                 "sessions once onos is up."
+
+        main.step( "Checking ONOS Logs for errors" )
+        for node in main.nodes:
+            main.log.debug( "Checking logs for errors on " + node.name + ":" )
+            main.log.warn( main.ONOSbench.checkLogs( node.ip_address ) )
+
         main.step( "Killing ONOS processes" )
         killResult = main.ONOSbench.onosKill( main.nodes[0].ip_address )
         start = time.time()
@@ -1423,10 +1432,6 @@ class HAsingleInstanceRestart:
                                 " and ONOS"
 
         main.step( "Comparing ONOS topology to MN" )
-        devicesResults = main.TRUE
-        linksResults = main.TRUE
-        hostsResults = main.TRUE
-        hostAttachmentResults = True
         topoResult = main.FALSE
         elapsed = 0
         count = 0
@@ -1434,6 +1439,10 @@ class HAsingleInstanceRestart:
         startTime = time.time()
         # Give time for Gossip to work
         while topoResult == main.FALSE and elapsed < 60:
+            devicesResults = main.TRUE
+            linksResults = main.TRUE
+            hostsResults = main.TRUE
+            hostAttachmentResults = True
             count += 1
             cliStart = time.time()
             devices = []
@@ -1765,45 +1774,36 @@ class HAsingleInstanceRestart:
         main.Mininet2.stopTcpdump()
 
         testname = main.TEST
-        if main.params[ 'BACKUP' ] == "True":
+        if main.params[ 'BACKUP' ][ 'ENABLED' ] == "True":
             main.step( "Copying MN pcap and ONOS log files to test station" )
             teststationUser = main.params[ 'BACKUP' ][ 'TESTONUSER' ]
             teststationIP = main.params[ 'BACKUP' ][ 'TESTONIP' ]
-            # NOTE: MN Pcap file is being saved to ~/packet_captures
-            #       scp this file as MN and TestON aren't necessarily the same vm
-            # FIXME: scp
-            # mn files
+            # NOTE: MN Pcap file is being saved to logdir.
+            #       We scp this file as MN and TestON aren't necessarily the same vm
+
+            # FIXME: To be replaced with a Jenkin's post script
             # TODO: Load these from params
             # NOTE: must end in /
             logFolder = "/opt/onos/log/"
             logFiles = [ "karaf.log", "karaf.log.1" ]
             # NOTE: must end in /
-            dstDir = "~/packet_captures/"
             for f in logFiles:
-                main.ONOSbench.handle.sendline( "scp sdn@" + main.nodes[0].ip_address + ":" +
-                                                logFolder + f + " " +
-                                                teststationUser + "@" +
-                                                teststationIP + ":" + dstDir +
-                                                str( testname ) + "-ONOS1-" + f )
-                main.ONOSbench.handle.expect( "\$" )
-
+                for node in main.nodes:
+                    dstName =  main.logdir + "/" + node.name + "-" + f
+                    main.ONOSbench.secureCopy( node.user_name, node.ip_address,
+                                               logFolder + f, dstName )
             # std*.log's
             # NOTE: must end in /
             logFolder = "/opt/onos/var/"
             logFiles = [ "stderr.log", "stdout.log" ]
             # NOTE: must end in /
-            dstDir = "~/packet_captures/"
             for f in logFiles:
-                main.ONOSbench.handle.sendline( "scp sdn@" + main.nodes[0].ip_address + ":" +
-                                                logFolder + f + " " +
-                                                teststationUser + "@" +
-                                                teststationIP + ":" + dstDir +
-                                                str( testname ) + "-ONOS1-" + f )
-                main.ONOSbench.handle.expect( "\$" )
-            # sleep so scp can finish
-            time.sleep( 10 )
-            main.step( "Packing and rotating pcap archives" )
-            os.system( "~/TestON/dependencies/rotate.sh " + str( testname ) )
+                for node in main.nodes:
+                    dstName =  main.logdir + "/" + node.name + "-" + f
+                    main.ONOSbench.secureCopy( node.user_name, node.ip_address,
+                                               logFolder + f, dstName )
+        else:
+            main.log.debug( "skipping saving log files" )
 
         main.step( "Stopping Mininet" )
         mnResult = main.Mininet1.stopNet()
@@ -1812,9 +1812,9 @@ class HAsingleInstanceRestart:
                                  onfail="MN cleanup NOT successful" )
 
         main.step( "Checking ONOS Logs for errors" )
-        print colors[ 'purple' ] + "Checking logs for errors on ONOS1:" + \
-            colors[ 'end' ]
-        print main.ONOSbench.checkLogs( main.nodes[0].ip_address, restart=True )
+        for node in main.nodes:
+            main.log.debug( "Checking logs for errors on " + node.name + ":" )
+            main.log.warn( main.ONOSbench.checkLogs( node.ip_address ) )
 
         try:
             timerLog = open( main.logdir + "/Timers.csv", 'w')

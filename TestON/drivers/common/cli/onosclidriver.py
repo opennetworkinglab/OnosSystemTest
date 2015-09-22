@@ -1990,31 +1990,44 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def checkFlowsState( self ):
+    def checkFlowsState( self, isPENDING_ADD = True ):
         """
         Description:
             Check the if all the current flows are in ADDED state or
             PENDING_ADD state
+        Optional:
+            * isPENDING_ADD: whether the PENDING_ADD is also a correct status
         Return:
             returnValue - Returns main.TRUE only if all flows are in
-                          ADDED state or PENDING_ADD, return main.FALSE
-                          otherwise.
+                          ADDED state or PENDING_ADD if the PENDING_ADD
+                          parameter is set true, return main.FALSE otherwise.
         """
         try:
             tempFlows = json.loads( self.flows() )
             #print tempFlows[0]
             returnValue = main.TRUE
 
-            for device in tempFlows:
-                for flow in device.get( 'flows' ):
-                    if flow.get( 'state' ) != 'ADDED' and flow.get( 'state' ) != \
-                            'PENDING_ADD':
+            if isPENDING_ADD:
+                for device in tempFlows:
+                    for flow in device.get( 'flows' ):
+                        if flow.get( 'state' ) != 'ADDED' and \
+                            flow.get( 'state' ) != 'PENDING_ADD':
 
-                        main.log.info( self.name + ": flow Id: " +
-                                       str( flow.get( 'groupId' ) ) +
-                                       " | state:" +
-                                       str( flow.get( 'state' ) ) )
-                        returnValue = main.FALSE
+                            main.log.info( self.name + ": flow Id: " +
+                                           str( flow.get( 'groupId' ) ) +
+                                           " | state:" +
+                                           str( flow.get( 'state' ) ) )
+                            returnValue = main.FALSE
+            else:
+                for device in tempFlows:
+                    for flow in device.get( 'flows' ):
+                        if flow.get( 'state' ) != 'ADDED':
+
+                            main.log.info( self.name + ": flow Id: " +
+                                           str( flow.get( 'groupId' ) ) +
+                                           " | state:" +
+                                           str( flow.get( 'state' ) ) )
+                            returnValue = main.FALSE
 
             return returnValue
         except TypeError:

@@ -39,3 +39,16 @@ def checkP2PintentNum( main, intentNumExpected ):
         expect = intentNumExpected, actual = intentNumActual,
         onpass = "***P2P intent number is correct!***",
         onfail = "***P2P intent number is wrong!***" )
+
+def checkFlowNum( main, switch, flowNumExpected ):
+    main.step( "Check flow entry number in " + switch )
+    main.log.info( "Flow number expected:" )
+    main.log.info( flowNumExpected )
+    main.log.info( "Flow number actual:" )
+    flowNumActual = main.Mininet.getSwitchFlowCount( switch )
+    main.log.info( flowNumActual )
+    utilities.assertEquals( \
+        expect = flowNumExpected, actual = flowNumActual,
+        onpass = "***Flow number in " + switch + " is correct!***",
+        onfail = "***Flow number in " + switch + " is wrong!***" )
+

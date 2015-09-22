@@ -184,7 +184,7 @@ class VirtualPortData(NetworkData):
         if self.allowedAddressPairs != '':
             Dicdata['allowed_address_pairs'] = self.allowedAddressPairs
         if self.deviceOwner != '':
-            Dicdata['device_owner'] = self.deviceOwner            
+            Dicdata['device_owner'] = self.deviceOwner
         if self.securityGroups != '':
             Dicdata['security_groups'] = self.securityGroups
         if self.adminStateUp != '':

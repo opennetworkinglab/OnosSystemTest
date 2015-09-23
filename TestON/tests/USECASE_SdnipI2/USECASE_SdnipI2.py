@@ -143,24 +143,10 @@ class USECASE_SdnipI2:
         ping test from 3 bgp peers to BGP speaker
         '''
 
-        m2SIntentsNumberActual = main.ONOScli.m2SIntentInstalledNumber()
-        main.log.info( "MultiPointToSinglePoint intent number actual is:" )
-        main.log.info( m2SIntentsNumberActual )
-
         main.case( "This case is to check ping between BGP peers and speakers" )
-        result1 = main.Mininet.pingHost( src = "speaker1", target = "peer64514" )
-        result2 = main.Mininet.pingHost( src = "speaker1", target = "peer64515" )
-        result3 = main.Mininet.pingHost( src = "speaker1", target = "peer64516" )
-
-
-        caseResult = result1 and result2 and result3
-        utilities.assert_equals( expect = main.TRUE, actual = caseResult,
-                                 onpass = "Speaker1 ping peers successful",
-                                 onfail = "Speaker1 ping peers NOT successful" )
-
-        if caseResult == main.FALSE:
-            main.cleanup()
-            main.exit()
+        main.Functions.pingSpeakerToPeer( main, speakers = ["speaker1"],
+                       peers = ["peer64514", "peer64515", "peer64516"],
+                       expectAllSuccess = True )
 
 
     def CASE2( self, main ):
@@ -244,20 +230,11 @@ class USECASE_SdnipI2:
         '''
         Ping test in data plane for each route
         '''
-        main.case( "This case is to check ping for each route" )
-        main.step( "Start ping tests between hosts behind BGP peers" )
-        result1 = main.Mininet.pingHost( src = "host64514", target = "host64515" )
-        result2 = main.Mininet.pingHost( src = "host64515", target = "host64516" )
-        result3 = main.Mininet.pingHost( src = "host64514", target = "host64516" )
-
-        caseResult = result1 and result2 and result3
-        utilities.assert_equals( expect = main.TRUE, actual = caseResult,
-                                 onpass = "Ping test for each route successful",
-                                 onfail = "Ping test for each route NOT successful" )
-
-        if caseResult == main.FALSE:
-            main.cleanup()
-            main.exit()
+        main.case( "This case is to check ping for each route, \
+        all hosts behind BGP peers" )
+        main.Functions.pingHostToHost( main,
+                        hosts = ["host64514", "host64515", "host64516"],
+                        expectAllSuccess = True )
 
 
     def CASE5( self, main ):
@@ -306,8 +283,16 @@ class USECASE_SdnipI2:
             onpass = "***Flow status is correct!***",
             onfail = "***Flow status is wrong!***" )
 
+        # Ping test
+        main.Functions.pingSpeakerToPeer( main, speakers = ["speaker1"],
+                       peers = ["peer64514", "peer64515", "peer64516"],
+                       expectAllSuccess = False )
+        main.Functions.pingHostToHost( main,
+                        hosts = ["host64514", "host64515", "host64516"],
+                        expectAllSuccess = False )
 
-    def CASE6(self, main):
+
+    def CASE6( self, main ):
         '''
         Recover links to peers one by one, check routes/intents
         '''
@@ -352,19 +337,23 @@ class USECASE_SdnipI2:
             actual = main.ONOScli.checkFlowsState( isPENDING_ADD = False ),
             onpass = "***Flow status is correct!***",
             onfail = "***Flow status is wrong!***" )
-        '''
-        Note: at the end of this test case, we should carry out ping test.
-        So we run CASE4 again after CASE6
-        '''
+
+        # Ping test
+        main.Functions.pingSpeakerToPeer( main, speakers = ["speaker1"],
+                       peers = ["peer64514", "peer64515", "peer64516"],
+                       expectAllSuccess = True )
+        main.Functions.pingHostToHost( main,
+                        hosts = ["host64514", "host64515", "host64516"],
+                        expectAllSuccess = True )
 
 
-    def CASE7(self, main):
+    def CASE7( self, main ):
         '''
-        shut down a edge switch, check P-2-P and M-2-S intents, ping test
+        Shut down a edge switch, check P-2-P and M-2-S intents, ping test
         '''
         import time
         main.case( "This case is to stop 1 edge switch,\
-        check P-2-P and M-2-S intents, ping test")
+        check P-2-P and M-2-S intents, ping test" )
         main.step( "Stop sw32" )
         result = main.Mininet.switch( SW = "sw32", OPTION = "stop" )
         if result == main.TRUE:
@@ -375,6 +364,36 @@ class USECASE_SdnipI2:
         else:
             main.log.info( "Stop switch failed!!!" )
             main.exit();
+
+        main.step( "Check ping between hosts behind BGP peers" )
+        result1 = main.Mininet.pingHost( src = "host64514", target = "host64515" )
+        result2 = main.Mininet.pingHost( src = "host64515", target = "host64516" )
+        result3 = main.Mininet.pingHost( src = "host64514", target = "host64516" )
+
+        pingResult1 = ( result1 == main.FALSE ) and ( result2 == main.TRUE ) \
+                                                and ( result3 == main.FALSE )
+        utilities.assert_equals( expect = True, actual = pingResult1,
+                                 onpass = "Ping test result is correct",
+                                 onfail = "Ping test result is wrong" )
+
+        if pingResult1 == False:
+            main.cleanup()
+            main.exit()
+
+        main.step( "Check ping between BGP peers and speakers" )
+        result4 = main.Mininet.pingHost( src = "speaker1", target = "peer64514" )
+        result5 = main.Mininet.pingHost( src = "speaker1", target = "peer64515" )
+        result6 = main.Mininet.pingHost( src = "speaker1", target = "peer64516" )
+
+        pingResult2 = ( result4 == main.FALSE ) and ( result5 == main.TRUE ) \
+                                                and ( result6 == main.TRUE )
+        utilities.assert_equals( expect = True, actual = pingResult2,
+                                 onpass = "Speaker1 ping peers successful",
+                                 onfail = "Speaker1 ping peers NOT successful" )
+
+        if pingResult2 == False:
+            main.cleanup()
+            main.exit()
 
         main.step( "Check whether all flow status are ADDED" )
         utilities.assertEquals( \
@@ -408,10 +427,6 @@ class USECASE_SdnipI2:
             main.log.info( "Stop switch failed!!!" )
             main.exit();
         '''
-        '''
-        ping test between BGP speaker and BGP peers, ping test between hosts
-        behind BGP peers ===
-        '''
 
 
     def CASE8( self, main ):
@@ -443,8 +458,16 @@ class USECASE_SdnipI2:
             onpass = "***Flow status is correct!***",
             onfail = "***Flow status is wrong!***" )
 
+        # Ping test
+        main.Functions.pingSpeakerToPeer( main, speakers = ["speaker1"],
+                       peers = ["peer64514", "peer64515", "peer64516"],
+                       expectAllSuccess = True )
+        main.Functions.pingHostToHost( main,
+                        hosts = ["host64514", "host64515", "host64516"],
+                        expectAllSuccess = True )
 
-    def CASE9(self, main):
+
+    def CASE9( self, main ):
         '''
         Bring down a switch in best path, check:
         route number, P2P intent number, M2S intent number, ping test
@@ -467,7 +490,6 @@ class USECASE_SdnipI2:
             main.Functions.checkRouteNum( main, 3 )
             main.Functions.checkM2SintentNum( main, 3 )
             main.Functions.checkP2PintentNum( main, 18 )
-
         else:
             main.log.info( "Stop switch failed!!!" )
             main.cleanup()
@@ -479,9 +501,13 @@ class USECASE_SdnipI2:
             actual = main.ONOScli.checkFlowsState( isPENDING_ADD = False ),
             onpass = "***Flow status is correct!***",
             onfail = "***Flow status is wrong!***" )
-        '''
-        Note: this test case should be followed by ping test, CASE1 and CASE4
-        '''
+        # Ping test
+        main.Functions.pingSpeakerToPeer( main, speakers = ["speaker1"],
+                       peers = ["peer64514", "peer64515", "peer64516"],
+                       expectAllSuccess = True )
+        main.Functions.pingHostToHost( main,
+                        hosts = ["host64514", "host64515", "host64516"],
+                        expectAllSuccess = True )
 
 
     def CASE10( self, main ):
@@ -517,50 +543,10 @@ class USECASE_SdnipI2:
             actual = main.ONOScli.checkFlowsState( isPENDING_ADD = False ),
             onpass = "***Flow status is correct!***",
             onfail = "***Flow status is wrong!***" )
-        '''
-        Note: this test case should be followed by ping test, CASE1 and CASE4
-        '''
-
-
-    def CASE20( self, main ):
-        '''
-        ping test from 3 bgp peers to BGP speaker
-        '''
-        main.case( "This case is to check ping between BGP peers and speakers, \
-        and expect all ping tests to fail." )
-        main.step( "Start ping tests between BGP speaker and BGP peers" )
-        result1 = main.Mininet.pingHost( src = "speaker1", target = "peer64514" )
-        result2 = main.Mininet.pingHost( src = "speaker1", target = "peer64515" )
-        result3 = main.Mininet.pingHost( src = "speaker1", target = "peer64516" )
-
-
-        caseResult = result1 or result2 or result3
-        utilities.assert_equals( expect = main.FALSE, actual = caseResult,
-                                 onpass = "Speaker1 failed to ping all peers - Correct",
-                                 onfail = "Speaker1 did not fail to ping all peers- NOT Correct" )
-
-        if caseResult == main.TRUE:
-            main.cleanup()
-            main.exit()
-
-
-    def CASE21( self, main ):
-        '''
-        Ping test in data plane for each route
-        '''
-        main.case( "This case is to check ping for each route, and expect \
-        all ping tests to fail." )
-        main.step( "Start ping tests between hosts behind BGP peers" )
-        result1 = main.Mininet.pingHost( src = "host64514", target = "host64515" )
-        result2 = main.Mininet.pingHost( src = "host64515", target = "host64516" )
-        result3 = main.Mininet.pingHost( src = "host64514", target = "host64516" )
-
-        caseResult = result1 or result2 or result3
-        utilities.assert_equals( expect = main.FALSE, actual = caseResult,
-                                 onpass = "Ping test for all routes failed- Correct",
-                                 onfail = "Ping test for all routes NOT failed- NOT Correct" )
-
-        if caseResult == main.TRUE:
-            main.cleanup()
-            main.exit()
-
+        # Ping test
+        main.Functions.pingSpeakerToPeer( main, speakers = ["speaker1"],
+                       peers = ["peer64514", "peer64515", "peer64516"],
+                       expectAllSuccess = True )
+        main.Functions.pingHostToHost( main,
+                        hosts = ["host64514", "host64515", "host64516"],
+                        expectAllSuccess = True )

@@ -52,3 +52,92 @@ def checkFlowNum( main, switch, flowNumExpected ):
         onpass = "***Flow number in " + switch + " is correct!***",
         onfail = "***Flow number in " + switch + " is wrong!***" )
 
+
+def pingSpeakerToPeer( main, speakers = ["speaker1"],
+                       peers = ["peer64514", "peer64515", "peer64516"],
+                       expectAllSuccess = True ):
+    """
+    Carry out ping test between each BGP speaker and peer pair
+    Optional argument:
+        * speakers - BGP speakers
+        * peers - BGP peers
+        * expectAllSuccess - boolean indicating if you expect all results
+        succeed if True, otherwise expect all results fail if False
+    """
+    if len( speakers ) == 0:
+        main.log.error( "Parameter speakers can not be empty." )
+        main.clearUp()
+        main.exit()
+    if len( peers ) == 0:
+        main.log.error( "Parameter speakers can not be empty." )
+        main.clearUp()
+        main.exit()
+
+    if expectAllSuccess:
+        main.step( "Check ping between BGP peers and speakers, expect all tests\
+        will SUCCEED" )
+    else:
+        main.step( "Check ping between BGP peers and speakers, expect all tests\
+        will FAIL" )
+
+    result = True
+    if expectAllSuccess:
+        for speaker in speakers:
+            for peer in peers:
+                tmpResult = main.Mininet.pingHost( src = speaker,
+                                                   target = peer )
+                result = result and ( tmpResult == main.TRUE )
+    else:
+        for speaker in speakers:
+            for peer in peers:
+                tmpResult = main.Mininet.pingHost( src = speaker,
+                                                   target = peer )
+
+    utilities.assert_equals( expect = True, actual = result,
+                             onpass = "Ping test results are expected",
+                             onfail = "Ping test results are Not expected" )
+
+    if result == False:
+        main.clearUp()
+        main.exit()
+
+
+def pingHostToHost( main, hosts = ["host64514", "host64515", "host64516"],
+                expectAllSuccess = True ):
+    """
+    Carry out ping test between each BGP host pair
+    Optional argument:
+        * hosts - hosts behind BGP peer routers
+        * expectAllSuccess - boolean indicating if you expect all results
+        succeed if True, otherwise expect all results fail if False
+    """
+    main.step( "Check ping between each host pair" )
+    if len( hosts ) == 0:
+        main.log.error( "Parameter hosts can not be empty." )
+        main.clearUp()
+        main.exit()
+
+    result = True
+    if expectAllSuccess:
+        for srcHost in hosts:
+            for targetHost in hosts:
+                if srcHost != targetHost:
+                    tmpResult = main.Mininet.pingHost( src = srcHost,
+                                                       target = targetHost )
+                    result = result and ( tmpResult == main.TRUE )
+    else:
+        for srcHost in hosts:
+            for targetHost in hosts:
+                if srcHost != targetHost:
+                    tmpResult = main.Mininet.pingHost( src = srcHost,
+                                                       target = targetHost )
+                    result = result and ( tmpResult == main.FALSE )
+
+    utilities.assert_equals( expect = True, actual = result,
+                             onpass = "Ping test results are expected",
+                             onfail = "Ping test results are Not expected" )
+
+    if result == False:
+        main.cleanup()
+        main.exit()
+

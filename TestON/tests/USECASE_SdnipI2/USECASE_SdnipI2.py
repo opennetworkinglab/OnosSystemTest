@@ -232,12 +232,20 @@ class USECASE_SdnipI2:
             onfail = "***MultiPointToSinglePoint Intent Num in SDN-IP is \
             wrong!***" )
 
+        main.step( "Check whether all flow status are ADDED" )
+        utilities.assertEquals( \
+            expect = main.TRUE,
+            actual = main.ONOScli.checkFlowsState( isPENDING_ADD = False ),
+            onpass = "***Flow status is correct!***",
+            onfail = "***Flow status is wrong!***" )
+
 
     def CASE4( self, main ):
         '''
         Ping test in data plane for each route
         '''
         main.case( "This case is to check ping for each route" )
+        main.step( "Start ping tests between hosts behind BGP peers" )
         result1 = main.Mininet.pingHost( src = "host64514", target = "host64515" )
         result2 = main.Mininet.pingHost( src = "host64515", target = "host64516" )
         result3 = main.Mininet.pingHost( src = "host64514", target = "host64516" )
@@ -291,6 +299,13 @@ class USECASE_SdnipI2:
             main.log.info( "Bring down link failed!!!" )
             main.exit();
 
+        main.step( "Check whether all flow status are ADDED" )
+        utilities.assertEquals( \
+            expect = main.TRUE,
+            actual = main.ONOScli.checkFlowsState( isPENDING_ADD = False ),
+            onpass = "***Flow status is correct!***",
+            onfail = "***Flow status is wrong!***" )
+
 
     def CASE6(self, main):
         '''
@@ -330,6 +345,13 @@ class USECASE_SdnipI2:
         else:
             main.log.info( "Bring up link failed!!!" )
             main.exit();
+
+        main.step( "Check whether all flow status are ADDED" )
+        utilities.assertEquals( \
+            expect = main.TRUE,
+            actual = main.ONOScli.checkFlowsState( isPENDING_ADD = False ),
+            onpass = "***Flow status is correct!***",
+            onfail = "***Flow status is wrong!***" )
         '''
         Note: at the end of this test case, we should carry out ping test.
         So we run CASE4 again after CASE6
@@ -353,6 +375,13 @@ class USECASE_SdnipI2:
         else:
             main.log.info( "Stop switch failed!!!" )
             main.exit();
+
+        main.step( "Check whether all flow status are ADDED" )
+        utilities.assertEquals( \
+            expect = main.TRUE,
+            actual = main.ONOScli.checkFlowsState( isPENDING_ADD = False ),
+            onpass = "***Flow status is correct!***",
+            onfail = "***Flow status is wrong!***" )
 
         '''
         main.step( "Stop sw8" )
@@ -407,12 +436,99 @@ class USECASE_SdnipI2:
             main.cleanup()
             main.exit();
 
+        main.step( "Check whether all flow status are ADDED" )
+        utilities.assertEquals( \
+            expect = main.TRUE,
+            actual = main.ONOScli.checkFlowsState( isPENDING_ADD = False ),
+            onpass = "***Flow status is correct!***",
+            onfail = "***Flow status is wrong!***" )
+
+
+    def CASE9(self, main):
+        '''
+        Bring down a switch in best path, check:
+        route number, P2P intent number, M2S intent number, ping test
+        '''
+        main.case( "This case is to stop switch in best path, \
+        check route number, P2P intent number, M2S intent number, ping test" )
+
+        main.step( "Check the flow status before stopping sw11" )
+        main.Functions.checkFlowNum( main, "sw11", 13 )
+        main.Functions.checkFlowNum( main, "sw1", 3 )
+        main.Functions.checkFlowNum( main, "sw7", 3 )
+        main.log.info( main.Mininet.checkFlows( "sw11" ) )
+        main.log.info( main.Mininet.checkFlows( "sw1" ) )
+        main.log.info( main.Mininet.checkFlows( "sw7" ) )
+
+        main.step( "Stop sw11" )
+        result = main.Mininet.switch( SW = "sw11", OPTION = "stop" )
+        if result:
+            time.sleep( int( main.params[ 'timers' ][ 'RouteDelivery' ] ) )
+            main.Functions.checkRouteNum( main, 3 )
+            main.Functions.checkM2SintentNum( main, 3 )
+            main.Functions.checkP2PintentNum( main, 18 )
+
+        else:
+            main.log.info( "Stop switch failed!!!" )
+            main.cleanup()
+            main.exit();
+
+        main.step( "Check whether all flow status are ADDED" )
+        utilities.assertEquals( \
+            expect = main.TRUE,
+            actual = main.ONOScli.checkFlowsState( isPENDING_ADD = False ),
+            onpass = "***Flow status is correct!***",
+            onfail = "***Flow status is wrong!***" )
+        '''
+        Note: this test case should be followed by ping test, CASE1 and CASE4
+        '''
+
+
+    def CASE10( self, main ):
+        '''
+        Bring up the switch which was stopped in CASE9, check:
+        route number, P2P intent number, M2S intent number, ping test
+        '''
+        main.case( "This case is to start switch which was stopped in CASE9, \
+        check route number, P2P intent number, M2S intent number, ping test" )
+        main.step( "Start sw11" )
+        result = main.Mininet.switch( SW = "sw11", OPTION = "start" )
+        if result:
+            time.sleep( int( main.params[ 'timers' ][ 'RouteDelivery' ] ) )
+            main.Functions.checkRouteNum( main, 3 )
+            main.Functions.checkM2SintentNum( main, 3 )
+            main.Functions.checkP2PintentNum( main, 18 )
+
+            main.step( "Check the flow status after stop and start sw11" )
+            main.Functions.checkFlowNum( main, "sw11", 3 )
+            main.Functions.checkFlowNum( main, "sw1", 11 )
+            main.Functions.checkFlowNum( main, "sw7", 5 )
+            main.log.info( main.Mininet.checkFlows( "sw11" ) )
+            main.log.info( main.Mininet.checkFlows( "sw1" ) )
+            main.log.info( main.Mininet.checkFlows( "sw7" ) )
+        else:
+            main.log.info( "Start switch failed!!!" )
+            main.cleanup()
+            main.exit();
+
+        main.step( "Check whether all flow status are ADDED" )
+        utilities.assertEquals( \
+            expect = main.TRUE,
+            actual = main.ONOScli.checkFlowsState( isPENDING_ADD = False ),
+            onpass = "***Flow status is correct!***",
+            onfail = "***Flow status is wrong!***" )
+        '''
+        Note: this test case should be followed by ping test, CASE1 and CASE4
+        '''
+
 
     def CASE20( self, main ):
         '''
         ping test from 3 bgp peers to BGP speaker
         '''
-        main.case( "This case is to check ping between BGP peers and speakers" )
+        main.case( "This case is to check ping between BGP peers and speakers, \
+        and expect all ping tests to fail." )
+        main.step( "Start ping tests between BGP speaker and BGP peers" )
         result1 = main.Mininet.pingHost( src = "speaker1", target = "peer64514" )
         result2 = main.Mininet.pingHost( src = "speaker1", target = "peer64515" )
         result3 = main.Mininet.pingHost( src = "speaker1", target = "peer64516" )
@@ -432,7 +548,9 @@ class USECASE_SdnipI2:
         '''
         Ping test in data plane for each route
         '''
-        main.case( "This case is to check ping for each route" )
+        main.case( "This case is to check ping for each route, and expect \
+        all ping tests to fail." )
+        main.step( "Start ping tests between hosts behind BGP peers" )
         result1 = main.Mininet.pingHost( src = "host64514", target = "host64515" )
         result2 = main.Mininet.pingHost( src = "host64515", target = "host64516" )
         result3 = main.Mininet.pingHost( src = "host64514", target = "host64516" )

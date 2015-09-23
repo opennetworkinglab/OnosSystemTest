@@ -11,7 +11,7 @@
 
     <TEST>
         <skipCleanInstall>yes</skipCleanInstall>
-        <cbenchCMD>cbench -c localhost -p 6633 -m 1000 -l 70 -s 16 -M 100000 -w 10 -D 5000 -</cbenchCMD>
+        <cbenchCMD>cbench -c localhost -p 6653 -m 1000 -l 70 -s 16 -M 100000 -w 10 -D 5000 -</cbenchCMD>
         <mode>t</mode>                     #t throughput
     </TEST>
 
@@ -23,7 +23,7 @@
     <CTRL>
         <USER>admin</USER>
         <ip1>OC1</ip1>
-        <port1>6633</port1>
+        <port1>6653</port1>
     </CTRL>
 
     <MN>
@@ -34,7 +34,7 @@
         <user>admin</user>
         <ip1>localhost</ip1>
     </BENCH>
-    
+
     <CBENCH>
         <user>sdn</user>
     </CBENCH>

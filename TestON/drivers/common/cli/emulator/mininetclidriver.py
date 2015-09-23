@@ -1356,7 +1356,7 @@ class MininetCliDriver( Emulator ):
             main.cleanup()
             main.exit()
 
-    def assignSwController( self, sw, ip, port="6633", ptcp="" ):
+    def assignSwController( self, sw, ip, port="6653", ptcp="" ):
         """
         Description:
             Assign switches to the controllers ( for ovs use only )
@@ -1364,8 +1364,8 @@ class MininetCliDriver( Emulator ):
             sw - Name of the switch. This can be a list or a string.
             ip - Ip addresses of controllers. This can be a list or a string.
         Optional:
-            port - ONOS use port 6633, if no list of ports is passed, then
-                   the all the controller will use 6633 as their port number
+            port - ONOS use port 6653, if no list of ports is passed, then
+                   the all the controller will use 6653 as their port number
             ptcp - ptcp number, This can be a string or a list that has
                    the same length as switch. This is optional and not required
                    when using ovs switches.
@@ -1919,7 +1919,7 @@ class MininetCliDriver( Emulator ):
             main.log.info( flow2 )
             return main.FALSE
 
-    def startTcpdump( self, filename, intf="eth0", port="port 6633" ):
+    def startTcpdump( self, filename, intf="eth0", port="port 6653" ):
         """
            Runs tpdump on an interface and saves the file
            intf can be specified, or the default eth0 is used"""

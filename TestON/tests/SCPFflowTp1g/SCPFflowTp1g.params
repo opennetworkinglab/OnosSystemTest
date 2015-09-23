@@ -1,10 +1,10 @@
 <PARAMS>
 
     <testcases>1,2,1,2,1,2,1,2,1,2,1,2,1,2</testcases>
-    
+
     <SCALE>1,3,3,5,5,7,7</SCALE>
     <max>7</max>
-    
+
 
 
     <ENV>
@@ -14,16 +14,16 @@
 
     <TEST>
         <enableFlowRuleStoreBackup>true</enableFlowRuleStoreBackup>
-        <skipCleanInstall>yes</skipCleanInstall> 
+        <skipCleanInstall>yes</skipCleanInstall>
         <warmUp>5</warmUp>                              #number of runs to warm up the system
         <sampleSize>20</sampleSize>                     #number of runs to take data from
-        <neighbors>0,a</neighbors>                      #list of number of neighbors, a = all 
+        <neighbors>0,a</neighbors>                      #list of number of neighbors, a = all
         <flows>122500</flows>
         <switches>35</switches>
         <cooldown>10</cooldown>
-        <testCMD0>flow-tester.py -f</testCMD0>          #base command 
-        <testCMD1> -n </testCMD1>                       #neighbors 
-        
+        <testCMD0>flow-tester.py -f</testCMD0>          #base command
+        <testCMD1> -n </testCMD1>                       #neighbors
+
     </TEST>
 
     <GIT>
@@ -33,27 +33,27 @@
 
     <CTRL>
         <USER>admin</USER>
-        
+
         <ip1>OC1</ip1>
-        <port1>6633</port1>
-        
+        <port1>6653</port1>
+
         <ip2>OC2</ip2>
-        <port2>6633</port2>
-        
+        <port2>6653</port2>
+
         <ip3>OC3</ip3>
-        <port3>6633</port3>
-        
+        <port3>6653</port3>
+
         <ip4>OC4</ip4>
-        <port4>6633</port4>
-        
+        <port4>6653</port4>
+
         <ip5>OC5</ip5>
-        <port5>6633</port5>
-        
+        <port5>6653</port5>
+
         <ip6>OC6</ip6>
-        <port6>6633</port6> 
-       
+        <port6>6653</port6>
+
         <ip7>OC7</ip7>
-        <port7>6633</port7>
+        <port7>6653</port7>
 
     </CTRL>
 

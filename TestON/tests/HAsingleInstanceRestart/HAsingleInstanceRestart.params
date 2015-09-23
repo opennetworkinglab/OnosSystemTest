@@ -28,7 +28,7 @@
     <tcpdump> False </tcpdump>
 
     <CTRL>
-        <port1>6633</port1>
+        <port1>6653</port1>
     </CTRL>
     <BACKUP>
         <ENABLED> False </ENABLED>

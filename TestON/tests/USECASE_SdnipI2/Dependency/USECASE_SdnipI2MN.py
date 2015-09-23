@@ -340,7 +340,7 @@ def sdn1net():
     # connect all switches to controller
     for i in range ( 1, numSw + 1 ):
         swX = net.get( 'sw%s' % ( i ) )
-        swX.cmd( 'ovs-vsctl set-controller sw%s tcp:%s:6633' % ( i, onos1IP ) )
+        swX.cmd( 'ovs-vsctl set-controller sw%s tcp:%s:6653' % ( i, onos1IP ) )
 
     # Start Quagga on border routers
     '''

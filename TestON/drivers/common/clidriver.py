@@ -272,57 +272,61 @@ class CLI( Component ):
         returnVal = main.TRUE
         ssh_newkey = 'Are you sure you want to continue connecting'
         refused = "ssh: connect to host " + \
-            ipAddress + " port 22: Connection refused"
+                  ipAddress + " port 22: Connection refused"
 
         if direction == "from":
             cmd = 'scp ' + str( userName ) + '@' + str( ipAddress ) + ':' + \
-            str( filePath ) + ' ' + str( dstPath )
+                  str( filePath ) + ' ' + str( dstPath )
         elif direction == "to":
             cmd = 'scp ' + str( filePath ) + ' ' + str( userName ) + \
-            '@' + str( ipAddress ) + ':' + str( dstPath )
+                  '@' + str( ipAddress ) + ':' + str( dstPath )
         else:
             main.log.debug( "Wrong direction using secure copy command!" )
             return main.FALSE
 
         main.log.info( "Sending: " + cmd )
         self.handle.sendline( cmd )
-        i = self.handle.expect( [
-                            ssh_newkey,
-                            'password:',
-                            "100%",
-                            pexpect.EOF,
-                            pexpect.TIMEOUT,
-                            refused ],
-                            120 )
+        i = 0
+        while i < 2:
+            i = self.handle.expect( [
+                                ssh_newkey,
+                                'password:',
+                                "100%",
+                                refused,
+                                "No such file or directory",
+                                pexpect.EOF,
+                                pexpect.TIMEOUT ],
+                                120 )
 
-        if i == 0:
-            main.log.info( "ssh key confirmation received, send yes" )
-            self.handle.sendline( 'yes' )
-            i = self.handle.expect( [ ssh_newkey, 'password:', pexpect.EOF ] )
-        if i == 1:
-            main.log.info( "ssh connection asked for password, gave password" )
-            self.handle.sendline( pwd )
-            # self.handle.expect( userName )
-        if i == 2:
-            main.log.info( "Secure copy successful\n" + self.handle.before  )
-            returnVal = main.TRUE
-        elif i == 3:
-            main.log.error( "Pexpect.EOF found!!!" )
-            main.cleanup()
-            main.exit()
-        elif i == 4:  # timeout
-            main.log.error(
-                "No route to the Host " +
-                userName +
-                "@" +
-                ipAddress )
-            returnVal = main.FALSE
-        elif i == 5:
-            main.log.error(
-                "ssh: connect to host " +
-                ipAddress +
-                " port 22: Connection refused" )
-            returnVal = main.FALSE
+            if i == 0:  # ask for ssh key confirmation
+                main.log.info( "ssh key confirmation received, sending yes" )
+                self.handle.sendline( 'yes' )
+            elif i == 1:  # Asked for ssh password
+                main.log.info( "ssh connection asked for password, gave password" )
+                self.handle.sendline( pwd )
+            elif i == 2:  # File finished transfering
+                main.log.info( "Secure copy successful" )
+                returnVal = main.TRUE
+            elif i == 3:  # Connection refused
+                main.log.error(
+                    "ssh: connect to host " +
+                    ipAddress +
+                    " port 22: Connection refused" )
+                returnVal = main.FALSE
+            elif i == 4:  # File Not found
+                main.log.error( "No such file found" )
+                returnVal = main.FALSE
+            elif i == 5:  # EOF
+                main.log.error( "Pexpect.EOF found!!!" )
+                main.cleanup()
+                main.exit()
+            elif i == 6:  # timeout
+                main.log.error(
+                    "No route to the Host " +
+                    userName +
+                    "@" +
+                    ipAddress )
+                returnVal = main.FALSE
 
         self.handle.sendline( "" )
         self.handle.expect( "$" )

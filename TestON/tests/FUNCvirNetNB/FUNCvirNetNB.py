@@ -57,15 +57,21 @@ class FUNCvirNetNB:
         cellName = main.params['ENV']['cellName']
         ipList = os.getenv( main.params['CTRL']['ip1'] )
 
-        main.step("Create cell file")
+        main.step("Create cell file and apply to environment")
         cellAppString = main.params['ENV']['cellApps']
         main.ONOSbench.createCellFile(main.ONOSbench.ip_address,cellName,
                                       main.Mininet1.ip_address,
                                       cellAppString,ipList )
 
-        main.step( "Applying cell variable to environment" )
         cellResult = main.ONOSbench.setCell(cellName)
         verifyResult = main.ONOSbench.verifyCell()
+
+        stepResult = cellResult and verifyResult
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="Successfully applied cell to " + \
+                                        "environment",
+                                 onfail="Failed to apply cell to environment " )
 
         #FIXME:this is short term fix
         main.log.info( "Removing raft logs" )
@@ -97,7 +103,7 @@ class FUNCvirNetNB:
 
         cleanInstallResult = main.TRUE
         gitPullResult = main.TRUE
-        main.step( "Git checkout and pull " + gitBranch )
+        main.log.info( "Git checkout and pull " + gitBranch )
         if PULLCODE:
             main.ONOSbench.gitCheckout ( gitBranch )
             gitPullResult = main.ONOSbench.gitPull()
@@ -209,7 +215,7 @@ class FUNCvirNetNB:
         port = main.params['HTTP']['port']
         path = main.params['HTTP']['path']
 
-        main.step( "Generate Post Data" )
+        main.log.info( "Generate Post Data" )
         network = NetworkData()
         network.id = '030d6d3d-fa36-45bf-ae2b-4f4bc43a54dc'
         network.tenant_id = '26cd996094344a0598b0a1af1d525cdc'
@@ -283,7 +289,7 @@ class FUNCvirNetNB:
         port = main.params['HTTP']['port']
         path = main.params['HTTP']['path']
 
-        main.step( "Generate Post Data" )
+        main.log.info( "Generate Post Data" )
         network = NetworkData()
         network.id = '030d6d3d-fa36-45bf-ae2b-4f4bc43a54dc'
         network.tenant_id = '26cd996094344a0598b0a1af1d525cdc'
@@ -370,7 +376,7 @@ class FUNCvirNetNB:
         port = main.params['HTTP']['port']
         path = main.params['HTTP']['path']
 
-        main.step( "Generate Post Data" )
+        main.log.info( "Generate Post Data" )
         network = NetworkData()
         network.id = '030d6d3d-fa36-45bf-ae2b-4f4bc43a54dc'
         network.tenant_id = '26cd996094344a0598b0a1af1d525cdc'
@@ -431,7 +437,7 @@ class FUNCvirNetNB:
         port = main.params['HTTP']['port']
         path = main.params['HTTP']['path']
 
-        main.step( "Generate Post Data" )
+        main.log.info( "Generate Post Data" )
         network = NetworkData()
         network.id = '030d6d3d-fa36-45bf-ae2b-4f4bc43a54dc'
         network.tenant_id = '26cd996094344a0598b0a1af1d525cdc'
@@ -520,7 +526,7 @@ class FUNCvirNetNB:
         port = main.params['HTTP']['port']
         path = main.params['HTTP']['path']
 
-        main.step( "Generate Post Data" )
+        main.log.info( "Generate Post Data" )
         network = NetworkData()
         network.id = '030d6d3d-fa36-45bf-ae2b-4f4bc43a54dc'
         network.tenant_id = '26cd996094344a0598b0a1af1d525cdc'
@@ -626,7 +632,7 @@ class FUNCvirNetNB:
         port = main.params['HTTP']['port']
         path = main.params['HTTP']['path']
 
-        main.step( "Generate Post Data" )
+        main.log.info( "Generate Post Data" )
         network = NetworkData()
         network.id = '030d6d3d-fa36-45bf-ae2b-4f4bc43a54dc'
         network.tenant_id = '26cd996094344a0598b0a1af1d525cdc'
@@ -703,7 +709,7 @@ class FUNCvirNetNB:
         httpport = main.params['HTTP']['port']
         path = main.params['HTTP']['path']
 
-        main.step( "Generate Post Data" )
+        main.log.info( "Generate Post Data" )
         network = NetworkData()
         network.id = '030d6d3d-fa36-45bf-ae2b-4f4bc43a54dc'
         network.tenant_id = '26cd996094344a0598b0a1af1d525cdc'
@@ -811,7 +817,7 @@ class FUNCvirNetNB:
         httpport = main.params['HTTP']['port']
         path = main.params['HTTP']['path']
 
-        main.step( "Generate Post Data" )
+        main.log.info( "Generate Post Data" )
         network = NetworkData()
         network.id = '030d6d3d-fa36-45bf-ae2b-4f4bc43a54dc'
         network.tenant_id = '26cd996094344a0598b0a1af1d525cdc'
@@ -934,7 +940,7 @@ class FUNCvirNetNB:
         httpport = main.params['HTTP']['port']
         path = main.params['HTTP']['path']
 
-        main.step( "Generate Post Data" )
+        main.log.info( "Generate Post Data" )
         network = NetworkData()
         network.id = '030d6d3d-fa36-45bf-ae2b-4f4bc43a54dc'
         network.tenant_id = '26cd996094344a0598b0a1af1d525cdc'

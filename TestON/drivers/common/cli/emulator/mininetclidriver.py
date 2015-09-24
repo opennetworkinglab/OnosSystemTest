@@ -424,12 +424,17 @@ class MininetCliDriver( Emulator ):
             main.log.info( "Testing reachability between specified hosts" )
 
             isReachable = main.TRUE
+            pingResponse = ""
+            main.info.log("IPv4 ping across specified hosts")
 
             for host in hostList:
                 listIndex = hostList.index( host )
                 # List of hosts to ping other than itself
                 pingList = hostList[ :listIndex ] + \
                     hostList[ ( listIndex + 1 ): ]
+
+                pingResponse += str(str(host) + " -> ")
+
                 for temp in pingList:
                     # Current host pings all other hosts specified
                     pingCmd = str( host ) + cmd + str( temp )
@@ -438,12 +443,13 @@ class MininetCliDriver( Emulator ):
                     response = self.handle.before
                     if re.search( ',\s0\%\spacket\sloss', response ):
                         main.log.info( str( host ) + " -> " + str( temp ) )
+                        pingResponse += str(" h" + str( temp[1:] ))
                     else:
-                        main.log.warn(
-                            str( host ) + " -> X (" + str( temp ) + ") "
-                            " Destination Unreachable" )
+                        pingResponse += " X"
                         # One of the host to host pair is unreachable
                         isReachable = main.FALSE
+                pingResponse += "\n"
+            main.log.info(pingResponse)
             return isReachable
         except pexpect.TIMEOUT:
             main.log.exception( self.name + ": TIMEOUT exception" )
@@ -493,8 +499,8 @@ class MininetCliDriver( Emulator ):
                         pingResponse += " X"
                         # One of the host to host pair is unreachable
                         isReachable = main.FALSE
-                main.log.info(pingResponse)
-                pingResponse = ""
+                pingResponse += "\n"
+            main.log.info(pingResponse)
             return isReachable
 
         except pexpect.TIMEOUT:

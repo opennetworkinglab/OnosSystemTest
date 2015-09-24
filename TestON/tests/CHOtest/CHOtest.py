@@ -32,6 +32,7 @@ class CHOtest:
         git_pull = main.params[ 'GIT' ][ 'autoPull' ]
         git_branch = main.params[ 'GIT' ][ 'branch' ]
         karafTimeout = main.params['CTRL']['karafCliTimeout']
+        main.checkIntentsDelay = int( main.params['timers']['CheckIntentDelay'] )
         main.newTopo = ""
         main.CLIs = []
 
@@ -100,7 +101,7 @@ class CHOtest:
         main.step( "Install ONOS package on all Nodes" )
         installResult = main.TRUE
         for i in range( int( main.numCtrls ) ):
-            main.log.info( "Intsalling package on ONOS Node IP: " + main.onosIPs[i] )
+            main.log.info( "Installing package on ONOS Node IP: " + main.onosIPs[i] )
             i_result = main.ONOSbench.onosInstall( node=main.onosIPs[i] )
             utilities.assert_equals( expect=main.TRUE, actual=i_result,
                                      onpass="Test step PASS",
@@ -809,10 +810,10 @@ class CHOtest:
         main.step( "Verify IPv6 Pingall" )
         pingResult = main.FALSE
         time1 = time.time()
-        pingResult = main.Mininet1.pingall( protocol="IPv6", timeout=main.pingTimeout)
-        if not pingResult:
-            main.log.warn("First pingall failed. Trying again..")
-            pingResult = main.Mininet1.pingall( protocol="IPv6", timeout=main.pingTimeout )
+        ping_result = main.Mininet1.pingall( protocol="IPv6", timeout=main.pingTimeout)
+        if not ping_result:
+            main.log.warn("First pingall failed. Trying again...")
+            ping_result = main.Mininet1.pingall( protocol="IPv6", timeout=main.pingTimeout )
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -988,25 +989,40 @@ class CHOtest:
         time2 = time.time()
         main.log.info("Time for adding host intents: %2f seconds" %(time2-time1))
 
-        intentResult = main.TRUE
-        intentsJson = main.ONOScli1.intents()
-        getIntentStateResult = main.ONOScli1.getIntentState(intentsId = intentIdList,
-                intentsJson = intentsJson)
-        print "len of intent ID", str(len(intentIdList))
-        print "len of intent state results", str(len(getIntentStateResult))
-        print getIntentStateResult
-        # Takes awhile for all the onos to get the intents
-        time.sleep( 30 )
-        """intentState = main.TRUE
-        for i in getIntentStateResult:
-            if getIntentStateResult.get( 'state' ) != 'INSTALLED':
-        """
+        main.step("Verify intents are installed")
 
+        # Giving onos 3 chances to install intents
+        for i in range(3):
+            intentsJson = main.ONOScli1.intents()
+            getIntentStateResult = main.ONOScli1.getIntentState(intentsId = intentIdList,
+                                                                intentsJson = intentsJson)
+            main.log.info("Waiting for onos to get intents...")
+            time.sleep( main.checkIntentsDelay )
+
+            intentState = main.TRUE
+            failedIntents = 0
+            for intent in getIntentStateResult:
+                state = intent.items()[0][1]
+                if state != 'INSTALLED':
+                    main.log.info("Intent State: " + state)
+                    failedIntents += 1
+                    intentState = main.FALSE
+            if intentState:
+                break
+            main.log.error("Total # of intents not in an INSTALLED state: " + str(failedIntents))
+
+        utilities.assert_equals( expect=main.TRUE, actual=intentState,
+                                 onpass="INTENTS INSTALLED",
+                                 onfail="SOME INTENTS NOT INSTALLED" )
 
         main.step( "Verify Ping across all hosts" )
         pingResult = main.FALSE
         time1 = time.time()
-        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=False,acceptableFailed=5)
+        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout)
+        if not pingResult:
+            main.log.warn("First pingall failed. Retrying...")
+            time1 = time.time()
+            pingResult = main.Mininet1.pingall(timeout=main.pingTimeout)
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -1017,7 +1033,7 @@ class CHOtest:
                                  onpass="PING ALL PASS",
                                  onfail="PING ALL FAIL" )
 
-        case60Result = ( intentResult and pingResult )
+        case60Result = ( intentState and pingResult )
         utilities.assert_equals(
             expect=main.TRUE,
             actual=case60Result,
@@ -1058,16 +1074,42 @@ class CHOtest:
                 intentIdList.append(thread.result)
         time2 = time.time()
         main.log.info("Time for adding host intents: %2f seconds" %(time2-time1))
-        intentResult = main.TRUE
-        intentsJson = main.ONOScli1.intents()
-        getIntentStateResult = main.ONOScli1.getIntentState(intentsId = intentIdList,
-                intentsJson = intentsJson)
-        print getIntentStateResult
+
+        main.step("Verify intents are installed")
+
+        # Giving onos 3 chances to install intents
+        for i in range(3):
+            intentsJson = main.ONOScli1.intents()
+            getIntentStateResult = main.ONOScli1.getIntentState(intentsId = intentIdList,
+                                                                intentsJson = intentsJson)
+            main.log.info("Waiting for onos to get intents...")
+            time.sleep( main.checkIntentsDelay )
+
+            intentState = main.TRUE
+            failedIntents = 0
+            for intent in getIntentStateResult:
+                state = intent.items()[0][1]
+                if state != 'INSTALLED':
+                    main.log.info("Intent State: " + state)
+                    failedIntents += 1
+                    intentState = main.FALSE
+            if intentState:
+                break
+            main.log.error("Total # of intents not in an INSTALLED state: " + str(failedIntents))
+
+
+        utilities.assert_equals( expect=main.TRUE, actual=intentState,
+                                 onpass="INTENTS INSTALLED",
+                                 onfail="SOME INTENTS NOT INSTALLED" )
 
         main.step( "Verify Ping across all hosts" )
         pingResult = main.FALSE
         time1 = time.time()
-        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=False,acceptableFailed=5)
+        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout)
+        if not pingResult:
+            main.log.warn("First pingall failed. Retrying...")
+            time1 = time.time()
+            pingResult = main.Mininet1.pingall(timeout=main.pingTimeout)
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -1078,7 +1120,7 @@ class CHOtest:
                                  onpass="PING ALL PASS",
                                  onfail="PING ALL FAIL" )
 
-        case14Result = ( intentResult and pingResult )
+        case14Result = ( intentState and pingResult )
 
         utilities.assert_equals(
             expect=main.TRUE,
@@ -1119,16 +1161,41 @@ class CHOtest:
                 intentIdList.append(thread.result)
         time2 = time.time()
         main.log.info("Time for adding host intents: %2f seconds" %(time2-time1))
-        intentResult = main.TRUE
-        intentsJson = main.ONOScli1.intents()
-        getIntentStateResult = main.ONOScli1.getIntentState(intentsId = intentIdList,
-                intentsJson = intentsJson)
-        print getIntentStateResult
+
+        main.step("Verify intents are installed")
+
+        # Giving onos 5 chances to install intents
+        for i in range(5):
+            intentsJson = main.ONOScli1.intents()
+            getIntentStateResult = main.ONOScli1.getIntentState(intentsId = intentIdList,
+                                                                intentsJson = intentsJson)
+            main.log.info("Waiting for onos to get intents...")
+            time.sleep( main.checkIntentsDelay )
+
+            intentState = main.TRUE
+            failedIntents = 0
+            for intent in getIntentStateResult:
+                state = intent.items()[0][1]
+                if state != 'INSTALLED':
+                    main.log.info("Intent State: " + state)
+                    failedIntents += 1
+                    intentState = main.FALSE
+            if intentState:
+                break
+            main.log.error("Total # of intents not in an INSTALLED state: " + str(failedIntents))
+
+        utilities.assert_equals( expect=main.TRUE, actual=intentState,
+                                 onpass="INTENTS INSTALLED",
+                                 onfail="SOME INTENTS NOT INSTALLED" )
 
         main.step( "Verify Ping across all hosts" )
         pingResult = main.FALSE
         time1 = time.time()
-        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=False,acceptableFailed=5)
+        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout)
+        if not pingResult:
+            main.log.warn("First pingall failed. Retrying...")
+            time1 = time.time()
+            pingResult = main.Mininet1.pingall(timeout=main.pingTimeout)
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -1139,7 +1206,7 @@ class CHOtest:
                                  onpass="PING ALL PASS",
                                  onfail="PING ALL FAIL" )
 
-        case15Result = ( intentResult and pingResult )
+        case15Result = ( intentState and pingResult )
 
         utilities.assert_equals(
             expect=main.TRUE,
@@ -1162,7 +1229,8 @@ class CHOtest:
         time1 = time.time()
         pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
         if not pingResult:
-            main.log.warn("Failed to ping Ipv6 hosts. Retrying...")
+            main.log.warn("First pingall failed. Retrying...")
+            time1 = time.time()
             pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
@@ -1196,8 +1264,10 @@ class CHOtest:
         time1 = time.time()
         pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
         if not pingResult:
-            main.log.warn("Failed to ping Ipv6 hosts. Retrying...")
+            main.log.warn("First pingall failed. Retrying...")
+            time1 = time.time()
             pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
+
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -1230,8 +1300,10 @@ class CHOtest:
         time1 = time.time()
         pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
         if not pingResult:
-            main.log.warn("Failed to ping Ipv6 hosts. Retrying...")
+            main.log.warn("First pingall failed. Retrying...")
+            time1 = time.time()
             pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
+
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -1315,6 +1387,11 @@ class CHOtest:
         pingResultLinkDown = main.FALSE
         time1 = time.time()
         pingResultLinkDown = main.Mininet1.pingall(timeout=main.pingTimeout )
+        if not pingResultLinkDown:
+            main.log.warn("First pingall failed. Retrying...")
+            time1 = time.time()
+            pingResultLinkDown = main.Mininet1.pingall(timeout=main.pingTimeout )
+
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -1382,6 +1459,11 @@ class CHOtest:
         pingResultLinkUp = main.FALSE
         time1 = time.time()
         pingResultLinkUp = main.Mininet1.pingall( timeout=main.pingTimeout )
+        if not pingResultLinkUp:
+            main.log.warn("First pingall failed. Retrying...")
+            time1 = time.time()
+            pingResultLinkUp = main.Mininet1.pingall(timeout=main.pingTimeout )
+
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -1463,6 +1545,11 @@ class CHOtest:
         pingResultLinkDown = main.FALSE
         time1 = time.time()
         pingResultLinkDown = main.Mininet1.pingall(timeout=main.pingTimeout)
+        if not pingResultLinkDown:
+            main.log.warn("First pingall failed. Retrying...")
+            time1 = time.time()
+            pingResultLinkDown = main.Mininet1.pingall(timeout=main.pingTimeout )
+
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -1530,6 +1617,11 @@ class CHOtest:
         pingResultLinkUp = main.FALSE
         time1 = time.time()
         pingResultLinkUp = main.Mininet1.pingall(timeout = main.pingTimeout )
+        if not pingResultLinkUp:
+            main.log.warn("First pingall failed. Retrying...")
+            time1 = time.time()
+            pingResultLinkUp = main.Mininet1.pingall(timeout=main.pingTimeout )
+
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -1588,6 +1680,12 @@ class CHOtest:
         pingResultLinkDown = main.FALSE
         time1 = time.time()
         pingResultLinkDown = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=False,acceptableFailed=5)
+        if not pingResultLinkDown:
+            main.log.warn("First pingall failed. Retrying...")
+            time1 = time.time()
+            pingResultLinkDown = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=False,acceptableFailed=5)
+
+
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -1642,6 +1740,12 @@ class CHOtest:
         pingResultLinkUp = main.FALSE
         time1 = time.time()
         pingResultLinkUp = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=False,acceptableFailed=5)
+        if not pingResultLinkUp:
+            main.log.warn("First pingall failed. Retrying...")
+            time1 = time.time()
+            pingResultLinkUp = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=False,acceptableFailed=5)
+
+
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -1700,6 +1804,11 @@ class CHOtest:
         pingResultLinkDown = main.FALSE
         time1 = time.time()
         pingResultLinkDown = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=False,acceptableFailed=5)
+        if not pingResultLinkDown:
+            main.log.warn("First pingall failed. Retrying...")
+            time1 = time.time()
+            pingResultLinkDown = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=False,acceptableFailed=5)
+
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -1754,6 +1863,11 @@ class CHOtest:
         pingResultLinkUp = main.FALSE
         time1 = time.time()
         pingResultLinkUp = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=False,acceptableFailed=5)
+        if not pingResultLinkUp:
+            main.log.warn("First pingall failed. Retrying...")
+            time1 = time.time()
+            pingResultLinkUp = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=False,acceptableFailed=5)
+
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -1823,6 +1937,11 @@ class CHOtest:
         pingResultLinkDown = main.FALSE
         time1 = time.time()
         pingResultLinkDown = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=False,acceptableFailed=5)
+        if not pingResultLinkDown:
+            main.log.warn("First pingall failed. Retrying...")
+            time1 = time.time()
+            pingResultLinkDown = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=False,acceptableFailed=5)
+
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -1878,6 +1997,11 @@ class CHOtest:
         pingResultLinkUp = main.FALSE
         time1 = time.time()
         pingResultLinkUp = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=False,acceptableFailed=5)
+        if not pingResultLinkUp:
+            main.log.warn("First pingall failed. Retrying...")
+            time1 = time.time()
+            pingResultLinkUp = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=False,acceptableFailed=5)
+
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -1947,6 +2071,11 @@ class CHOtest:
         pingResultLinkDown = main.FALSE
         time1 = time.time()
         pingResultLinkDown = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=False,acceptableFailed=5)
+        if not pingResultLinkDown:
+            main.log.warn("First pingall failed. Retrying...")
+            time1 = time.time()
+            pingResultLinkDown = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=False,acceptableFailed=5)
+
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -2002,6 +2131,11 @@ class CHOtest:
         pingResultLinkUp = main.FALSE
         time1 = time.time()
         pingResultLinkUp = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=False,acceptableFailed=5)
+        if not pingResultLinkUp:
+            main.log.warn("First pingall failed. Retrying...")
+            time1 = time.time()
+            pingResultLinkUp = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=False,acceptableFailed=5)
+
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -2066,8 +2200,10 @@ class CHOtest:
         time1 = time.time()
         pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
         if not pingResult:
-            main.log.warn("Failed to ping Ipv6 hosts. Retrying...")
+            main.log.warn("First ping failed. Retrying...")
+            time1 = time.time()
             pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
+
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -2100,8 +2236,10 @@ class CHOtest:
         time1 = time.time()
         pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
         if not pingResult:
-            main.log.warn("Failed to ping Ipv6 hosts. Retrying...")
+            main.log.warn("First ping failed. Retrying...")
+            time1 = time.time()
             pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
+
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -2134,8 +2272,10 @@ class CHOtest:
         time1 = time.time()
         pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
         if not pingResult:
-            main.log.warn("Failed to ping Ipv6 hosts. Retrying...")
+            main.log.warn("First ping failed. Retrying...")
+            time1 = time.time()
             pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
+
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -2168,8 +2308,10 @@ class CHOtest:
         time1 = time.time()
         pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
         if not pingResult:
-            main.log.warn("Failed to ping Ipv6 hosts. Retrying...")
+            main.log.warn("First ping failed. Retrying...")
+            time1 = time.time()
             pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
+
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -2202,8 +2344,10 @@ class CHOtest:
         time1 = time.time()
         pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
         if not pingResult:
-            main.log.warn("Failed to ping Ipv6 hosts. Retrying...")
+            main.log.warn("First ping failed. Retrying...")
+            time1 = time.time()
             pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
+
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -2236,8 +2380,10 @@ class CHOtest:
         time1 = time.time()
         pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
         if not pingResult:
-            main.log.warn("Failed to ping Ipv6 hosts. Retrying...")
+            main.log.warn("First ping failed. Retrying...")
+            time1 = time.time()
             pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
+
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -2270,8 +2416,10 @@ class CHOtest:
         time1 = time.time()
         pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
         if not pingResult:
-            main.log.warn("Failed to ping Ipv6 hosts. Retrying...")
+            main.log.warn("First ping failed. Retrying...")
+            time1 = time.time()
             pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
+
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -2304,8 +2452,10 @@ class CHOtest:
         time1 = time.time()
         pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
         if not pingResult:
-            main.log.warn("Failed to ping Ipv6 hosts. Retrying...")
+            main.log.warn("First ping failed. Retrying...")
+            time1 = time.time()
             pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
+
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -2338,8 +2488,10 @@ class CHOtest:
         time1 = time.time()
         pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
         if not pingResult:
-            main.log.warn("Failed to ping Ipv6 hosts. Retrying...")
+            main.log.warn("First ping failed. Retrying...")
+            time1 = time.time()
             pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
+
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -2372,8 +2524,10 @@ class CHOtest:
         time1 = time.time()
         pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
         if not pingResult:
-            main.log.warn("Failed to ping Ipv6 hosts. Retrying...")
+            main.log.warn("First ping failed. Retrying...")
+            time1 = time.time()
             pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
+
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -2406,8 +2560,10 @@ class CHOtest:
         time1 = time.time()
         pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
         if not pingResult:
-            main.log.warn("Failed to ping Ipv6 hosts. Retrying...")
+            main.log.warn("First ping failed. Retrying...")
+            time1 = time.time()
             pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
+
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -2462,9 +2618,29 @@ class CHOtest:
         intentsJson = main.ONOScli1.intents()
         getIntentStateResult = main.ONOScli1.getIntentState(intentsId = intentIdList,
                 intentsJson = intentsJson)
-        print getIntentStateResult
         # Takes awhile for all the onos to get the intents
         time.sleep(60)
+
+        main.step("Verify intents are installed")
+        for i in range(3):
+            intentState = main.TRUE
+            failedIntents = 0
+            for intent in getIntentStateResult:
+                state = intent.items()[0][1]
+                if state != 'INSTALLED':
+                    main.log.info("Intent State: " + state)
+                    failedIntents += 1
+                    intentState = main.FALSE
+            if intentState:
+                break
+            main.log.error("Total: " + str(failedIntents))
+            time.sleep(5)
+
+        utilities.assert_equals( expect=main.TRUE, actual=intentState,
+                                 onpass="INTENTS INSTALLED",
+                                 onfail="SOME INTENTS NOT INSTALLED" )
+
+
         main.step( "Verify Ping across all hosts" )
         pingResult = main.FALSE
         time1 = time.time()
@@ -2525,9 +2701,29 @@ class CHOtest:
         intentsJson = main.ONOScli1.intents()
         getIntentStateResult = main.ONOScli1.getIntentState(intentsId = intentIdList,
                 intentsJson = intentsJson)
-        print getIntentStateResult
         # Takes awhile for all the onos to get the intents
         time.sleep(30)
+
+        main.step("Verify intents are installed")
+        for i in range(3):
+            intentState = main.TRUE
+            failedIntents = 0
+            for intent in getIntentStateResult:
+                state = intent.items()[0][1]
+                if state != 'INSTALLED':
+                    main.log.info("Intent State: " + state)
+                    failedIntents += 1
+                    intentState = main.FALSE
+            if intentState:
+                break
+            main.log.error("Total: " + str(failedIntents))
+            time.sleep(5)
+
+        utilities.assert_equals( expect=main.TRUE, actual=intentState,
+                                 onpass="INTENTS INSTALLED",
+                                 onfail="SOME INTENTS NOT INSTALLED" )
+
+
         main.step( "Verify Ping across all hosts" )
         pingResult = main.FALSE
         time1 = time.time()
@@ -2594,6 +2790,27 @@ class CHOtest:
         #print getIntentStateResult
         # Takes awhile for all the onos to get the intents
         time.sleep(60)
+
+        main.step("Verify intents are installed")
+        for i in range(3):
+            intentState = main.TRUE
+            failedIntents = 0
+            for intent in getIntentStateResult:
+                state = intent.items()[0][1]
+                if state != 'INSTALLED':
+                    main.log.info("Intent State: " + state)
+                    failedIntents += 1
+                    intentState = main.FALSE
+            if intentState:
+                break
+            main.log.error("Total: " + str(failedIntents))
+            time.sleep(5)
+
+        utilities.assert_equals( expect=main.TRUE, actual=intentState,
+                                 onpass="INTENTS INSTALLED",
+                                 onfail="SOME INTENTS NOT INSTALLED" )
+
+
         main.step( "Verify Ping across all hosts" )
         pingResult = main.FALSE
         time1 = time.time()
@@ -2936,7 +3153,8 @@ class CHOtest:
         time1 = time.time()
         pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
         if not pingResult:
-            main.log.warn("Failed to ping Ipv6 hosts. Retrying...")
+            main.log.warn("First pingall failed. Retrying...")
+            time1 = time.time()
             pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
 
         time2 = time.time()
@@ -2971,8 +3189,10 @@ class CHOtest:
         time1 = time.time()
         pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
         if not pingResult:
-            main.log.warn("Failed to ping Ipv6 hosts. Retrying...")
+            main.log.warn("First pingall failed. Retrying...")
+            time1 = time.time()
             pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
+
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -3004,6 +3224,11 @@ class CHOtest:
         pingResult = main.FALSE
         time1 = time.time()
         pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
+        if not pingResult:
+            main.log.warn("First pingall failed. Retrying...")
+            time1 = time.time()
+            pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
+
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(

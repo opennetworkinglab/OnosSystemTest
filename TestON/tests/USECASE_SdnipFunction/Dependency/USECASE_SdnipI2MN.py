@@ -25,8 +25,8 @@ from subprocess import Popen, STDOUT, PIPE
 
 QUAGGA_DIR = '/usr/lib/quagga'
 QUAGGA_RUN_DIR = '/usr/local/var/run/quagga'
-QUAGGA_CONFIG_DIR = '~/OnosSystemTest/TestON/tests/USECASE_SdnipI2/Dependency/'
-onos1IP = '10.128.4.52'
+QUAGGA_CONFIG_DIR = '~/OnosSystemTest/TestON/tests/USECASE_SdnipFunction/Dependency/'
+# onos1IP = '10.254.1.201'
 numSw = 39
 
 
@@ -338,10 +338,11 @@ def sdn1net():
     swCtl100.cmd( 'ovs-vsctl set-fail-mode swCtl100 standalone' )
 
     # connect all switches to controller
+    '''
     for i in range ( 1, numSw + 1 ):
         swX = net.get( 'sw%s' % ( i ) )
         swX.cmd( 'ovs-vsctl set-controller sw%s tcp:%s:6653' % ( i, onos1IP ) )
-
+    '''
     # Start Quagga on border routers
     '''
     for i in range ( 64514, 64516 + 1 ):
@@ -367,12 +368,12 @@ def sdn1net():
     hosts = [ peer64514, peer64515, peer64516, host64514];
     startsshds( hosts )
     #
-
+    '''
     forwarding1 = '%s:2000:%s:2000' % ( '1.1.1.2', onos1IP )
     root.cmd( 'ssh -nNT -o "PasswordAuthentication no" \
     -o "StrictHostKeyChecking no" -l sdn -L %s %s & ' % ( forwarding1, onos1IP ) )
 
-
+    '''
     # time.sleep( 3000000000 )
     CLI( net )
 

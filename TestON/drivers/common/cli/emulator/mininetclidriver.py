@@ -1267,6 +1267,35 @@ class MininetCliDriver( Emulator ):
             main.exit()
         return main.TRUE
 
+    def node( self, nodeName, commandStr ):
+        """
+        Carry out a command line on a given node
+        @parm:
+            nodeName: the node name in Mininet testbed
+            commandStr: the command line will be carried out on the node
+        Example: main.Mininet.node( nodeName="h1", commandStr="ls" )
+        """
+        command = str( nodeName ) + " " + str( commandStr )
+        main.log.info( command )
+
+        try:
+            response = self.execute( cmd = command, prompt = "mininet>" )
+            if re.search( "Unknown command", response ):
+                main.log.warn( response )
+                return main.FALSE
+        except pexpect.TIMEOUT:
+            main.log.error( self.name + ": pexpect.TIMEOUT found" )
+            main.cleanup()
+            main.exit()
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        main.log.info( " response is :" )
+        main.log.info( response )
+        return response
+
     def yank( self, **yankargs ):
         """
            yank a mininet switch interface to a host"""

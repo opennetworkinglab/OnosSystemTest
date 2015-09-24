@@ -66,11 +66,11 @@ def pingSpeakerToPeer( main, speakers = ["speaker1"],
     """
     if len( speakers ) == 0:
         main.log.error( "Parameter speakers can not be empty." )
-        main.clearUp()
+        main.cleanup()
         main.exit()
     if len( peers ) == 0:
         main.log.error( "Parameter speakers can not be empty." )
-        main.clearUp()
+        main.cleanup()
         main.exit()
 
     if expectAllSuccess:
@@ -98,7 +98,7 @@ def pingSpeakerToPeer( main, speakers = ["speaker1"],
                              onfail = "Ping test results are Not expected" )
 
     if result == False:
-        main.clearUp()
+        main.cleanup()
         main.exit()
 
 
@@ -114,7 +114,7 @@ def pingHostToHost( main, hosts = ["host64514", "host64515", "host64516"],
     main.step( "Check ping between each host pair" )
     if len( hosts ) == 0:
         main.log.error( "Parameter hosts can not be empty." )
-        main.clearUp()
+        main.cleanup()
         main.exit()
 
     result = True

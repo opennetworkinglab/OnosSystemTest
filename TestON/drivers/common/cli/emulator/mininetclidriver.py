@@ -424,9 +424,8 @@ class MininetCliDriver( Emulator ):
             main.log.info( "Testing reachability between specified hosts" )
 
             isReachable = main.TRUE
-            pingResponse = ""
-            main.info.log("IPv4 ping across specified hosts")
-
+            pingResponse = "IPv4 ping across specified hosts\n"
+            failedPings = 0
             for host in hostList:
                 listIndex = hostList.index( host )
                 # List of hosts to ping other than itself
@@ -442,14 +441,14 @@ class MininetCliDriver( Emulator ):
                     self.handle.expect( "mininet>" )
                     response = self.handle.before
                     if re.search( ',\s0\%\spacket\sloss', response ):
-                        main.log.info( str( host ) + " -> " + str( temp ) )
                         pingResponse += str(" h" + str( temp[1:] ))
                     else:
                         pingResponse += " X"
                         # One of the host to host pair is unreachable
                         isReachable = main.FALSE
+                        failedPings += 1
                 pingResponse += "\n"
-            main.log.info(pingResponse)
+            main.log.info( pingResponse + "Failed pings: " + str(failedPings) )
             return isReachable
         except pexpect.TIMEOUT:
             main.log.exception( self.name + ": TIMEOUT exception" )
@@ -477,8 +476,8 @@ class MininetCliDriver( Emulator ):
             main.log.info( "Testing reachability between specified IPv6 hosts" )
             isReachable = main.TRUE
             cmd = " ping6 -c 1 -i 1 -W 8 "
-            pingResponse = ""
-            main.log.info("IPv6 Pingall output:")
+            pingResponse = "IPv6 Pingall output:\n"
+            failedPings = 0
             for host in hostList:
                 listIndex = hostList.index( host )
                 # List of hosts to ping other than itself
@@ -499,8 +498,9 @@ class MininetCliDriver( Emulator ):
                         pingResponse += " X"
                         # One of the host to host pair is unreachable
                         isReachable = main.FALSE
+                        failedPings += 1
                 pingResponse += "\n"
-            main.log.info(pingResponse)
+            main.log.info( pingResponse + "Failed pings: " + str(failedPings) )
             return isReachable
 
         except pexpect.TIMEOUT:

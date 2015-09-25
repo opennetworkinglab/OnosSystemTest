@@ -56,6 +56,7 @@ class FUNCintent:
             main.hostsData = {}
             main.CLIs = []
             main.ONOSip = []
+            main.assertReturnString = ''  # Assembled assert return string
 
             main.ONOSip = main.ONOSbench.getOnosIps()
             print main.ONOSip
@@ -454,6 +455,7 @@ class FUNCintent:
                                         "to controller",
                                  onfail="Failed to assign switches to " +
                                         "controller" )
+
     def CASE13( self, main ):
         """
             Discover all hosts and store its data to a dictionary
@@ -533,6 +535,7 @@ class FUNCintent:
                                 + " OVS running in Mininet"
 
         main.step( "IPV4: Add host intents between h1 and h9" )
+        main.assertReturnString = "Assertion Result for IPV4 host intent with mac addresses\n"
         stepResult = main.TRUE
         stepResult = main.intentFunction.hostIntent( main,
                                               onosNode='0',
@@ -544,15 +547,13 @@ class FUNCintent:
                                               sw1='s5',
                                               sw2='s2',
                                               expectedLink=18 )
-
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
-                                 onpass="IPV4: Host intent test successful " +
-                                        "between two IPV4 hosts",
-                                 onfail="IPV4: Host intent test failed " +
-                                        "between two IPV4 hosts")
+                                 onpass=main.assertReturnString,
+                                 onfail=main.assertReturnString)
 
         main.step( "DUALSTACK1: Add host intents between h3 and h11" )
+        main.assertReturnString = "Assertion Result for dualstack IPV4 with MAC addresses\n"
         stepResult = main.TRUE
         stepResult = main.intentFunction.hostIntent( main,
                                               name='DUALSTACK',
@@ -566,15 +567,11 @@ class FUNCintent:
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
-                                 onpass="DUALSTACK: Host intent test " +
-                                        "successful between two " +
-                                        "dual stack host using IPV4",
-                                 onfail="DUALSTACK: Host intent test " +
-                                        "failed between two" +
-                                        "dual stack host using IPV4" )
-
+                                 onpass=main.assertReturnString,
+                                 onfail=main.assertReturnString )
 
         main.step( "DUALSTACK2: Add host intents between h1 and h11" )
+        main.assertReturnString = "Assertion Result for dualstack2 host intent\n"
         stepResult = main.TRUE
         stepResult = main.intentFunction.hostIntent( main,
                                               name='DUALSTACK2',
@@ -586,14 +583,11 @@ class FUNCintent:
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
-                                 onpass="DUALSTACK2: Host intent test " +
-                                        "successful between two " +
-                                        "dual stack host using IPV4",
-                                 onfail="DUALSTACK2: Host intent test " +
-                                        "failed between two" +
-                                        "dual stack host using IPV4" )
+                                 onpass=main.assertReturnString,
+                                 onfail=main.assertReturnString )
 
         main.step( "1HOP: Add host intents between h1 and h3" )
+        main.assertReturnString = "Assertion Result for 1HOP for IPV4 same switch\n"
         stepResult = main.TRUE
         stepResult = main.intentFunction.hostIntent( main,
                                               name='1HOP',
@@ -602,14 +596,11 @@ class FUNCintent:
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
-                                 onpass="1HOP: Host intent test " +
-                                        "successful between two " +
-                                        "host using IPV4 in the same switch",
-                                 onfail="1HOP: Host intent test " +
-                                        "failed between two" +
-                                        "host using IPV4 in the same switch" )
+                                 onpass=main.assertReturnString,
+                                 onfail=main.assertReturnString )
 
         main.step( "VLAN1: Add vlan host intents between h4 and h12" )
+        main.assertReturnString = "Assertion Result vlan IPV4\n"
         stepResult = main.TRUE
         stepResult = main.intentFunction.hostIntent( main,
                                               name='VLAN1',
@@ -623,14 +614,11 @@ class FUNCintent:
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
-                                 onpass="VLAN1: Host intent test " +
-                                        "successful between two " +
-                                        "host using IPV4 in the same VLAN",
-                                 onfail="VLAN1: Host intent test " +
-                                        "failed between two" +
-                                        "host using IPV4 in the same VLAN" )
+                                 onpass=main.assertReturnString,
+                                 onfail=main.assertReturnString )
 
         main.step( "VLAN2: Add inter vlan host intents between h13 and h20" )
+        main.assertReturnString = "Assertion Result different VLAN negative test\n"
         stepResult = main.TRUE
         stepResult = main.intentFunction.hostIntent( main,
                                               name='VLAN2',
@@ -639,12 +627,8 @@ class FUNCintent:
 
         utilities.assert_equals( expect=main.FALSE,
                                  actual=stepResult,
-                                 onpass="VLAN2: Host intent negative test " +
-                                        "successful between two " +
-                                        "host using IPV4 in different VLAN",
-                                 onfail="VLAN2: Host intent negative test " +
-                                        "failed between two" +
-                                        "host using IPV4 in different VLAN" )
+                                 onpass=main.assertReturnString,
+                                 onfail=main.assertReturnString )
 
 
         intentLeadersNew = main.CLIs[ 0 ].leaderCandidates()
@@ -697,6 +681,7 @@ class FUNCintent:
 
         # No option point intents
         main.step( "NOOPTION: Add point intents between h1 and h9" )
+        main.assertReturnString = "Assertion Result for NOOPTION point intent\n"
         stepResult = main.TRUE
         stepResult = main.intentFunction.pointIntent(
                                        main,
@@ -711,13 +696,12 @@ class FUNCintent:
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
-                                 onpass="NOOPTION: Point intent test " +
-                                        "successful using no match action",
-                                 onfail="NOOPTION: Point intent test " +
-                                        "failed using no match action" )
+                                 onpass=main.assertReturnString,
+                                 onfail=main.assertReturnString )
 
         stepResult = main.TRUE
         main.step( "IPV4: Add point intents between h1 and h9" )
+        main.assertReturnString = "Assertion Result for IPV4 point intent\n"
         stepResult = main.intentFunction.pointIntent(
                                        main,
                                        name="IPV4",
@@ -743,14 +727,10 @@ class FUNCintent:
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
-                                 onpass="IPV4: Point intent test " +
-                                        "successful using IPV4 type with " +
-                                        "MAC addresses",
-                                 onfail="IPV4: Point intent test " +
-                                        "failed using IPV4 type with " +
-                                        "MAC addresses" )
+                                 onpass=main.assertReturnString,
+                                 onfail=main.assertReturnString )
         main.step( "IPV4_2: Add point intents between h1 and h9" )
-        stepResult = main.TRUE
+        main.assertReturnString = "Assertion Result for IPV4 no mac address point intents\n"
         stepResult = main.intentFunction.pointIntent(
                                        main,
                                        name="IPV4_2",
@@ -769,15 +749,11 @@ class FUNCintent:
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
-                                 onpass="IPV4_2: Point intent test " +
-                                        "successful using IPV4 type with " +
-                                        "no MAC addresses",
-                                 onfail="IPV4_2: Point intent test " +
-                                        "failed using IPV4 type with " +
-                                        "no MAC addresses" )
+                                 onpass=main.assertReturnString,
+                                 onfail=main.assertReturnString )
 
         main.step( "SDNIP-ICMP: Add point intents between h1 and h9" )
-        stepResult = main.TRUE
+        main.assertReturnString = "Assertion Result for SDNIP-ICMP IPV4 using TCP point intents\n"
         mac1 = main.hostsData[ 'h1' ][ 'mac' ]
         mac2 = main.hostsData[ 'h9' ][ 'mac' ]
         try:
@@ -810,15 +786,11 @@ class FUNCintent:
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
-                                 onpass="SDNIP-ICMP: Point intent test " +
-                                        "successful using IPV4 type with " +
-                                        "IP protocol TCP enabled",
-                                 onfail="SDNIP-ICMP: Point intent test " +
-                                        "failed using IPV4 type with " +
-                                        "IP protocol TCP enabled" )
+                                 onpass=main.assertReturnString,
+                                 onfail=main.assertReturnString )
 
         main.step( "SDNIP-TCP: Add point intents between h1 and h9" )
-        stepResult = main.TRUE
+        main.assertReturnString = "Assertion Result for SDNIP-TCP IPV4 using ICMP point intents\n"
         mac1 = main.hostsData[ 'h1' ][ 'mac' ]
         mac2 = main.hostsData[ 'h9' ][ 'mac' ]
         ip1 = str( main.hostsData[ 'h1' ][ 'ipAddresses' ][ 0 ] ) + "/32"
@@ -845,15 +817,11 @@ class FUNCintent:
 
         utilities.assert_equals( expect=main.TRUE,
                              actual=stepResult,
-                                 onpass="SDNIP-TCP: Point intent test " +
-                                        "successful using IPV4 type with " +
-                                        "IP protocol ICMP enabled",
-                                 onfail="SDNIP-TCP: Point intent test " +
-                                        "failed using IPV4 type with " +
-                                        "IP protocol ICMP enabled" )
+                                 onpass=main.assertReturnString,
+                                 onfail=main.assertReturnString )
 
-        main.step( "DUALSTACK1: Add point intents between h1 and h9" )
-        stepResult = main.TRUE
+        main.step( "DUALSTACK1: Add point intents between h3 and h11" )
+        main.assertReturnString = "Assertion Result for Dualstack1 IPV4 with mac address point intents\n"
         stepResult = main.intentFunction.pointIntent(
                                        main,
                                        name="DUALSTACK1",
@@ -879,15 +847,11 @@ class FUNCintent:
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
-                                 onpass="DUALSTACK1: Point intent test " +
-                                        "successful using IPV4 type with " +
-                                        "MAC addresses",
-                                 onfail="DUALSTACK1: Point intent test " +
-                                        "failed using IPV4 type with " +
-                                        "MAC addresses" )
+                                 onpass=main.assertReturnString,
+                                 onfail=main.assertReturnString )
 
         main.step( "VLAN: Add point intents between h5 and h21" )
-        stepResult = main.TRUE
+        main.assertReturnString = "Assertion Result for VLAN IPV4 with mac address point intents\n"
         stepResult = main.intentFunction.pointIntent(
                                        main,
                                        name="VLAN",
@@ -913,15 +877,11 @@ class FUNCintent:
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
-                                 onpass="VLAN1: Point intent test " +
-                                        "successful using IPV4 type with " +
-                                        "MAC addresses",
-                                 onfail="VLAN1: Point intent test " +
-                                        "failed using IPV4 type with " +
-                                        "MAC addresses" )
+                                 onpass=main.assertReturnString,
+                                 onfail=main.assertReturnString )
 
         main.step( "1HOP: Add point intents between h1 and h3" )
-        stepResult = main.TRUE
+        main.assertReturnString = "Assertion Result for 1HOP IPV4 with no mac address point intents\n"
         stepResult = main.intentFunction.hostIntent( main,
                                               name='1HOP',
                                               host1='h1',
@@ -929,12 +889,8 @@ class FUNCintent:
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
-                                 onpass="1HOP: Point intent test " +
-                                        "successful using IPV4 type with " +
-                                        "no MAC addresses",
-                                 onfail="1HOP: Point intent test " +
-                                        "failed using IPV4 type with " +
-                                        "no MAC addresses" )
+                                 onpass=main.assertReturnString,
+                                 onfail=main.assertReturnString )
 
         main.intentFunction.report( main )
 
@@ -1006,7 +962,7 @@ class FUNCintent:
         #                                 " with no match action" )
 
         main.step( "IPV4: Add single point to multi point intents" )
-        stepResult = main.TRUE
+        main.assertReturnString = "Assertion results for IPV4 single to multi point intent with IPV4 type and MAC addresses\n"
         stepResult = main.intentFunction.singleToMultiIntent(
                                          main,
                                          name="IPV4",
@@ -1026,15 +982,11 @@ class FUNCintent:
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
-                                 onpass="IPV4: Successfully added single "
-                                        + " point to multi point intents" +
-                                        " with IPV4 type and MAC addresses",
-                                 onfail="IPV4: Failed to add single point"
-                                        + " point to multi point intents" +
-                                        " with IPV4 type and MAC addresses" )
+                                 onpass=main.assertReturnString,
+                                 onfail=main.assertReturnString )
 
         main.step( "IPV4_2: Add single point to multi point intents" )
-        stepResult = main.TRUE
+        main.assertReturnString = "Assertion results for IPV4 single to multi point intent with IPV4 type and no MAC addresses\n"
         hostNames = [ 'h8', 'h16', 'h24' ]
         stepResult = main.intentFunction.singleToMultiIntent(
                                          main,
@@ -1045,15 +997,11 @@ class FUNCintent:
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
-                                 onpass="IPV4_2: Successfully added single "
-                                        + " point to multi point intents" +
-                                        " with IPV4 type and no MAC addresses",
-                                 onfail="IPV4_2: Failed to add single point"
-                                        + " point to multi point intents" +
-                                        " with IPV4 type and no MAC addresses" )
+                                 onpass=main.assertReturnString,
+                                 onfail=main.assertReturnString )
 
         main.step( "VLAN: Add single point to multi point intents" )
-        stepResult = main.TRUE
+        main.assertReturnString = "Assertion results for IPV4 single to multi point intent with IPV4 type and MAC addresses in the same VLAN\n"
         hostNames = [ 'h4', 'h12', 'h20' ]
         devices = [ 'of:0000000000000005/4', 'of:0000000000000006/4', \
                     'of:0000000000000007/4' ]
@@ -1077,14 +1025,8 @@ class FUNCintent:
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
-                                 onpass="VLAN: Successfully added single "
-                                        + " point to multi point intents" +
-                                        " with IPV4 type and MAC addresses" +
-                                        " in the same VLAN",
-                                 onfail="VLAN: Failed to add single point"
-                                        + " point to multi point intents" +
-                                        " with IPV4 type and MAC addresses" +
-                                        " in the same VLAN")
+                                 onpass=main.assertReturnString,
+                                 onfail=main.assertReturnString )
 
         main.intentFunction.report( main )
 
@@ -1156,7 +1098,7 @@ class FUNCintent:
         #                                 " with no match action" )
 
         main.step( "IPV4: Add multi point to single point intents" )
-        stepResult = main.TRUE
+        main.assertReturnString = "Assertion results for IPV4 multi to single point intent with IPV4 type and MAC addresses\n"
         stepResult = main.intentFunction.multiToSingleIntent(
                                          main,
                                          name="IPV4",
@@ -1176,15 +1118,11 @@ class FUNCintent:
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
-                                 onpass="IPV4: Successfully added multi point"
-                                        + " to single point intents" +
-                                        " with IPV4 type and MAC addresses",
-                                 onfail="IPV4: Failed to add multi point" +
-                                        " to single point intents" +
-                                        " with IPV4 type and MAC addresses" )
+                                 onpass=main.assertReturnString,
+                                 onfail=main.assertReturnString )
 
         main.step( "IPV4_2: Add multi point to single point intents" )
-        stepResult = main.TRUE
+        main.assertReturnString = "Assertion results for IPV4 multi to single point intent with IPV4 type and no MAC addresses\n"
         hostNames = [ 'h8', 'h16', 'h24' ]
         stepResult = main.intentFunction.multiToSingleIntent(
                                          main,
@@ -1195,15 +1133,11 @@ class FUNCintent:
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
-                                 onpass="IPV4_2: Successfully added multi point"
-                                        + " to single point intents" +
-                                        " with IPV4 type and no MAC addresses",
-                                 onfail="IPV4_2: Failed to add multi point" +
-                                        " to single point intents" +
-                                        " with IPV4 type and no MAC addresses" )
+                                 onpass=main.assertReturnString,
+                                 onfail=main.assertReturnString )
 
         main.step( "VLAN: Add multi point to single point intents" )
-        stepResult = main.TRUE
+        main.assertReturnString = "Assertion results for IPV4 multi to single point intent with IPV4 type and no MAC addresses in the same VLAN\n"
         hostNames = [ 'h5', 'h13', 'h21' ]
         devices = [ 'of:0000000000000005/5', 'of:0000000000000006/5', \
                     'of:0000000000000007/5' ]
@@ -1227,16 +1161,13 @@ class FUNCintent:
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
-                                 onpass="VLAN: Successfully added multi point"
-                                        + " to single point intents" +
-                                        " with IPV4 type and MAC addresses" +
-                                        " in the same VLAN",
-                                 onfail="VLAN: Failed to add multi point" +
-                                        " to single point intents" )
+                                 onpass=main.assertReturnString,
+                                 onfail=main.assertReturnString )
 
     def CASE5000( self, main ):
         """
-        Will add description in next patch set
+        Tests Host Mobility
+        Modifies the topology location of h1
         """
         assert main, "There is no main"
         assert main.CLIs, "There is no main.CLIs"
@@ -1257,13 +1188,13 @@ class FUNCintent:
         utilities.assert_equals( expect="of:0000000000000006",
                                  actual=h1PostMove,
                                  onpass="Mobility: Successfully moved h1 to s6",
-                                 onfail="Mobility: Failed to moved h1 to s6" +
+                                 onfail="Mobility: Failed to move h1 to s6" +
                                         " to single point intents" +
                                         " with IPV4 type and MAC addresses" +
                                         " in the same VLAN" )
 
         main.step( "IPV4: Add host intents between h1 and h9" )
-        stepResult = main.TRUE
+        main.assertReturnString = "Assert result for IPV4 host intent between h1, moved, and h9\n"
         stepResult = main.intentFunction.hostIntent( main,
                                               onosNode='0',
                                               name='IPV4',
@@ -1274,9 +1205,7 @@ class FUNCintent:
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
-                                 onpass="IPV4: Host intent test successful " +
-                                        "between two IPV4 hosts",
-                                 onfail="IPV4: Host intent test failed " +
-                                        "between two IPV4 hosts")
+                                 onpass=main.assertReturnString,
+                                 onfail=main.assertReturnString )
 
         main.intentFunction.report( main )

@@ -153,13 +153,21 @@ def hostIntent( main,
                        " something wrong with ONOS performance" )
 
     # Ping hosts again...
-    pingResult = pingResult and pingallHosts( main, hostNames )
+    pingResult = pingallHosts( main, hostNames )
+    if pingResult:
+        main.assertReturnString += 'Initial Pingall Passed\n'
+    else:
+        main.assertReturnString += 'Initial Pingall Failed\n'
 
     # Test rerouting if these variables exist
     if sw1 and sw2 and expectedLink:
-        # link down
+        # Link down
         linkDownResult = link( main, sw1, sw2, "down" )
-        intentResult = intentResult and checkIntentState( main, intentsId )
+
+        if linkDownResult:
+            main.assertReturnString += 'Link Down Passed\n'
+        else:
+            main.assertReturnString += 'Link Down Failed\n'
 
         # Check flows count in each node
         checkFlowsCount( main )
@@ -168,11 +176,26 @@ def hostIntent( main,
 
         # Check OnosTopology
         topoResult = checkTopology( main, expectedLink )
+        if topoResult:
+            main.assertReturnString += 'Link Down Topology State Passed\n'
+        else:
+            main.assertReturnString += 'Link Down Topology State Failed\n'
 
         # Ping hosts
         pingResult = pingResult and pingallHosts( main, hostNames )
 
+        if pingResult:
+            main.assertReturnString += 'Link Down Pingall Passed\n'
+        else:
+            main.assertReturnString += 'Link Down Pingall Failed\n'
+
+        # Check intent states
         intentResult = checkIntentState( main, intentsId )
+
+        if intentResult:
+            main.assertReturnString += 'Link Down Intent State Passed\n'
+        else:
+            main.assertReturnString += 'Link Down Intent State Failed\n'
 
         # Checks ONOS state in link down
         if linkDownResult and topoResult and pingResult and intentResult:
@@ -180,9 +203,14 @@ def hostIntent( main,
         else:
             main.log.error( itemName + ": Failed to bring link down" )
 
-        # link up
+        # Link up
         linkUpResult = link( main, sw1, sw2, "up" )
         time.sleep( main.rerouteSleep )
+
+        if linkUpResult:
+            main.assertReturnString += 'Link Up Passed\n'
+        else:
+            main.assertReturnString += 'Link Up Failed\n'
 
         # Check flows count in each node
         checkFlowsCount( main )
@@ -192,10 +220,25 @@ def hostIntent( main,
         # Check OnosTopology
         topoResult = checkTopology( main, main.numLinks )
 
+        if topoResult:
+            main.assertReturnString += 'Link Up Topology State Passed\n'
+        else:
+            main.assertReturnString += 'Link Up Topology State Failed\n'
+
         # Ping hosts
         pingResult = pingResult and pingallHosts( main, hostNames )
 
+        if pingResult:
+            main.assertReturnString += 'Link Up Pingall Passed\n'
+        else:
+            main.assertReturnString += 'Link Up Pingall Failed\n'
+
         intentResult = checkIntentState( main, intentsId )
+
+        if intentResult:
+            main.assertReturnString += 'Link Up Intent State Passed\n'
+        else:
+            main.assertReturnString += 'Link Up Intent State Failed\n'
 
         # Checks ONOS state in link up
         if linkUpResult and topoResult and pingResult and intentResult:
@@ -205,6 +248,11 @@ def hostIntent( main,
 
     # Remove all intents
     removeIntentResult = removeAllIntents( main, intentsId )
+
+    if removeIntentResult:
+        main.assertReturnString += 'Remove Intents Passed'
+    else:
+        main.assertReturnString += 'Remove Intents Failed'
 
     stepResult = pingResult and linkDownResult and linkUpResult \
                  and intentResult and removeIntentResult

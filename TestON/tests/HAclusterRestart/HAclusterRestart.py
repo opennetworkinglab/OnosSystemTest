@@ -2947,7 +2947,7 @@ class HAclusterRestart:
         for candidates in newAllCandidates:
             if set( candidates ) != set( newCandidates ):
                 newLeaderResult = main.FALSE
-                main.error.log( "Discrepancy in candidate lists detected" )
+                main.log.error( "Discrepancy in candidate lists detected" )
 
         # Check that the new leader is not the older leader, which was withdrawn
         if newLeader == oldLeader:
@@ -3032,7 +3032,7 @@ class HAclusterRestart:
         for candidates in newAllCandidates:
             if set( candidates ) != set( newCandidates ):
                 newLeaderResult = main.FALSE
-                main.error.log( "Discrepancy in candidate lists detected" )
+                main.log.error( "Discrepancy in candidate lists detected" )
 
         # Check that the re-elected node is last on the candidate List
         if oldLeader != newCandidates[ -1 ]:

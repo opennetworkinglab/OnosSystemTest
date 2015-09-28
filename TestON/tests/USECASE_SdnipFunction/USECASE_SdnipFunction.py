@@ -547,8 +547,9 @@ class USECASE_SdnipFunction:
         main.case( "This case is to start switch which was stopped in CASE9, \
         check route number, P2P intent number, M2S intent number, ping test" )
         main.step( "Start sw11" )
-        result = main.Mininet.switch( SW = "sw11", OPTION = "start" )
-        if result:
+        result1 = main.Mininet.switch( SW = "sw11", OPTION = "start" )
+        result2 = main.Mininet.assignSwController( "sw11", ONOS1Ip )
+        if result1 and result2:
             time.sleep( int( main.params[ 'timers' ][ 'RouteDelivery' ] ) )
             main.Functions.checkRouteNum( main, 3 )
             main.Functions.checkM2SintentNum( main, 3 )

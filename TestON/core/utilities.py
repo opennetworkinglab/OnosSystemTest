@@ -185,11 +185,14 @@ class Utilities:
                 print e
 
         main.last_result = result
-        main.stepResults[2][-1] = result
-        try:
-            main.stepResults[3][-1] = arguments[ 'ONFAIL' ]
-        except AttributeError:
-            pass
+        if main.stepResults[2]:
+            main.stepResults[2][-1] = result
+            try:
+                main.stepResults[3][-1] = arguments[ 'ONFAIL' ]
+            except AttributeError:
+                pass
+        else:
+            main.log.warn( "Assertion called before a test step" )
         return result
 
     def parse_args(self,args, **kwargs):

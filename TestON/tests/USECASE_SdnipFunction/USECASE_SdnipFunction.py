@@ -12,7 +12,7 @@ class USECASE_SdnipFunction:
         """
         import os
         import imp
-        main.log.case( "This case is to setup the Mininet testbed" )
+        main.log.case( "Setup the Mininet testbed" )
         main.dependencyPath = main.testDir + \
                               main.params[ 'DEPENDENCY' ][ 'path' ]
         main.topology = main.params[ 'DEPENDENCY' ][ 'topology' ]
@@ -53,18 +53,19 @@ class USECASE_SdnipFunction:
 
         tunnelResult = main.TRUE
         tunnelResult = main.Mininet.node( "root", command )
-        if not tunnelResult:
-            main.log.report("Failed to create tunnel")
+        utilities.assert_equals( expect = True,
+                             actual = ( "PasswordAuthentication" in tunnelResult ),
+                             onpass = "Created tunnel succeeded",
+                             onfail = "Create tunnel failed" )
+        if ("PasswordAuthentication" not in tunnelResult) :
             main.cleanup()
             main.exit()
-        elif "PasswordAuthentication" in tunnelResult:
-            main.log.report("Successfully created tunnel")
 
 
     # This case is to setup ONOS
     def CASE101( self, main ):
         """
-           CASE100 is to compile ONOS and install it
+           Compile ONOS and install it
            Startup sequence:
            cell <name>
            onos-verify-cell
@@ -84,52 +85,84 @@ class USECASE_SdnipFunction:
 
         main.step( "Applying cell variable to environment" )
         cellResult = main.ONOSbench.setCell( cellName )
+        utilities.assert_equals( expect = main.TRUE,
+                             actual = cellResult,
+                             onpass = "Set cell succeeded",
+                             onfail = "Set cell failed" )
+
         verifyResult = main.ONOSbench.verifyCell()
+        utilities.assert_equals( expect = main.TRUE,
+                             actual = verifyResult,
+                             onpass = "Verify cell succeeded",
+                             onfail = "Verify cell failed" )
 
         branchName = main.ONOSbench.getBranchName()
-        main.log.info( "ONOS is on branch: " + branchName )
+        main.log.report( "ONOS is on branch: " + branchName )
 
-        main.log.report( "Uninstalling ONOS" )
-        main.ONOSbench.onosUninstall( ONOS1Ip )
-
-        # cleanInstallResult = main.TRUE
-        # gitPullResult = main.TRUE
+        main.log.step( "Uninstalling ONOS" )
+        uninstallResult = main.ONOSbench.onosUninstall( ONOS1Ip )
+        utilities.assert_equals( expect = main.TRUE,
+                                actual = uninstallResult,
+                                onpass = "Uninstall ONOS succeeded",
+                                onfail = "Uninstall ONOS failed" )
 
         main.step( "Git pull" )
         gitPullResult = main.ONOSbench.gitPull()
+        main.log.info( "gitPullResult" )
+        main.log.info( gitPullResult )
+        gitPullResult2 = ( gitPullResult == main.TRUE ) or ( gitPullResult == 3 )
+        utilities.assert_equals( expect = True,
+                                 actual = gitPullResult2,
+                                 onpass = "Git pull ONOS succeeded",
+                                 onfail = "Git pull ONOS failed" )
 
         main.step( "Using mvn clean install" )
         if gitPullResult == main.TRUE:
-            cleanInstallResult = main.ONOSbench.cleanInstall( mciTimeout = 1000 )
+            mciResult = main.ONOSbench.cleanInstall( mciTimeout = 1000 )
+            utilities.assert_equals( expect = main.TRUE,
+                                     actual = mciResult,
+                                     onpass = "Maven clean install ONOS succeeded",
+                                     onfail = "Maven clean install ONOS failed" )
         else:
              main.log.warn( "Did not pull new code so skipping mvn " +
                             "clean install" )
-             cleanInstallResult = main.TRUE
+             mciResult = main.TRUE
 
         main.ONOSbench.getVersion( report = True )
 
         main.step( "Creating ONOS package" )
         packageResult = main.ONOSbench.onosPackage( opTimeout = 500 )
+        utilities.assert_equals( expect = main.TRUE,
+                                 actual = packageResult,
+                                 onpass = "Package ONOS succeeded",
+                                 onfail = "Package ONOS failed" )
 
         main.step( "Installing ONOS package" )
         onos1InstallResult = main.ONOSbench.onosInstall( options = "-f",
-                                                           node = ONOS1Ip )
+                                                         node = ONOS1Ip )
+        utilities.assert_equals( expect = main.TRUE,
+                                 actual = onos1InstallResult,
+                                 onpass = "Install ONOS succeeded",
+                                 onfail = "Install ONOS failed" )
 
         main.step( "Checking if ONOS is up yet" )
-        for i in range( 2 ):
-            onos1Isup = main.ONOSbench.isup( ONOS1Ip, timeout = 420 )
-            if onos1Isup:
-                break
-        if not onos1Isup:
-            main.log.report( "ONOS1 didn't start!" )
+        onos1UpResult = main.ONOSbench.isup( ONOS1Ip, timeout = 420 )
+        utilities.assert_equals( expect = main.TRUE,
+                                 actual = onos1UpResult,
+                                 onpass = "ONOS is up",
+                                 onfail = "ONOS is NOT up" )
 
+        main.step( "Checking if ONOS CLI is ready" )
         cliResult = main.ONOScli.startOnosCli( ONOS1Ip,
                 commandlineTimeout = 100, onosStartTimeout = 600 )
+        utilities.assert_equals( expect = main.TRUE,
+                         actual = cliResult,
+                         onpass = "ONOS CLI is ready",
+                         onfail = "ONOS CLI is NOT ready" )
 
-        caseResult = ( cleanInstallResult and packageResult and
-                        cellResult and verifyResult and
-                        onos1InstallResult and
-                        onos1Isup and cliResult )
+        caseResult = ( cellResult and verifyResult and
+                       gitPullResult and mciResult and packageResult and
+                       onos1InstallResult and onos1UpResult and cliResult )
 
         utilities.assert_equals( expect = main.TRUE, actual = caseResult,
                                  onpass = "ONOS startup successful",
@@ -139,13 +172,18 @@ class USECASE_SdnipFunction:
             main.cleanup()
             main.exit()
 
-        main.step( "Get links in the network" )
+        main.log.info( "Get links in the network" )
         listResult = main.ONOScli.links( jsonFormat = False )
         main.log.info( listResult )
-        main.log.info( "Activate sdn-ip application" )
-        main.ONOScli.activateApp( "org.onosproject.sdnip" )
 
-        main.log.info( "Wait sdn-ip to finish installing connectivity intents, \
+        main.step( "Activate sdn-ip application" )
+        activeSDNIPresult = main.ONOScli.activateApp( "org.onosproject.sdnip" )
+        utilities.assert_equals( expect = main.TRUE,
+                                 actual = activeSDNIPresult,
+                                 onpass = "Activate SDN-IP succeeded",
+                                 onfail = "Activate SDN-IP failed" )
+
+        main.log.info( "Wait SDN-IP to finish installing connectivity intents \
         and the BGP paths in data plane are ready..." )
         time.sleep( int( main.params[ 'timers' ][ 'SdnIpSetup' ] ) )
         main.log.info( "Wait Quagga to finish delivery all routes to each \
@@ -158,7 +196,7 @@ class USECASE_SdnipFunction:
         '''
         This test case is to load the methods from other Python files.
         '''
-        main.case( "Loading the methods from other Python file" )
+        main.case( "Loading methods from other Python file" )
         # load the methods from other file
         wrapperFile = main.params[ 'DEPENDENCY' ][ 'wrapper1' ]
         main.Functions = imp.load_source( wrapperFile,
@@ -172,7 +210,7 @@ class USECASE_SdnipFunction:
         ping test from 3 bgp peers to BGP speaker
         '''
 
-        main.case( "This case is to check ping between BGP peers and speakers" )
+        main.case( "Ping tests between BGP peers and speakers" )
         main.Functions.pingSpeakerToPeer( main, speakers = ["speaker1"],
                        peers = ["peer64514", "peer64515", "peer64516"],
                        expectAllSuccess = True )
@@ -182,10 +220,10 @@ class USECASE_SdnipFunction:
         '''
         point-to-point intents test for each BGP peer and BGP speaker pair
         '''
-        main.case( "This case is to check point-to-point intents" )
+        main.case( "Check point-to-point intents" )
         main.log.info( "There are %s BGP peers in total "
                        % main.params[ 'config' ][ 'peerNum' ] )
-        main.step( "Get point-to-point intents from ONOS CLI" )
+        main.step( "Check P2P intents number from ONOS CLI" )
 
         getIntentsResult = main.ONOScli.intents( jsonFormat = True )
         bgpIntentsActualNum = \
@@ -198,15 +236,15 @@ class USECASE_SdnipFunction:
         utilities.assertEquals( \
             expect = True,
             actual = eq( bgpIntentsExpectedNum, bgpIntentsActualNum ),
-            onpass = "***PointToPointIntent Intent Num in SDN-IP are correct!***",
-            onfail = "***PointToPointIntent Intent Num in SDN-IP are wrong!***" )
+            onpass = "PointToPointIntent Intent Num is correct!",
+            onfail = "PointToPointIntent Intent Num is wrong!" )
 
 
     def CASE3( self, main ):
         '''
         routes and intents check to all BGP peers
         '''
-        main.case( "This case is to check routes and intents to all BGP peers" )
+        main.case( "Check routes and M2S intents to all BGP peers" )
 
         allRoutesExpected = []
         allRoutesExpected.append( "4.0.0.0/24" + "/" + "10.0.4.1" )
@@ -226,10 +264,10 @@ class USECASE_SdnipFunction:
         main.log.info( allRoutesStrActual )
         utilities.assertEquals( \
             expect = allRoutesStrExpected, actual = allRoutesStrActual,
-            onpass = "***Routes in SDN-IP are correct!***",
-            onfail = "***Routes in SDN-IP are wrong!***" )
+            onpass = "Routes are correct!",
+            onfail = "Routes are wrong!" )
 
-        main.step( "Check MultiPointToSinglePointIntent intents installed" )
+        main.step( "Check M2S intents installed" )
         getIntentsResult = main.ONOScli.intents( jsonFormat = True )
         routeIntentsActualNum = \
             main.QuaggaCliSpeaker1.extractActualRouteIntentNum( getIntentsResult )
@@ -242,25 +280,22 @@ class USECASE_SdnipFunction:
         utilities.assertEquals( \
             expect = True,
             actual = eq( routeIntentsExpectedNum, routeIntentsActualNum ),
-            onpass = "***MultiPointToSinglePoint Intent Num in SDN-IP is \
-            correct!***",
-            onfail = "***MultiPointToSinglePoint Intent Num in SDN-IP is \
-            wrong!***" )
+            onpass = "MultiPointToSinglePoint Intent Num is correct!",
+            onfail = "MultiPointToSinglePoint Intent Num is wrong!" )
 
         main.step( "Check whether all flow status are ADDED" )
         utilities.assertEquals( \
             expect = main.TRUE,
             actual = main.ONOScli.checkFlowsState( isPENDING_ADD = False ),
-            onpass = "***Flow status is correct!***",
-            onfail = "***Flow status is wrong!***" )
+            onpass = "Flow status is correct!",
+            onfail = "Flow status is wrong!" )
 
 
     def CASE4( self, main ):
         '''
         Ping test in data plane for each route
         '''
-        main.case( "This case is to check ping for each route, \
-        all hosts behind BGP peers" )
+        main.case( "Ping test for each route, all hosts behind BGP peers" )
         main.Functions.pingHostToHost( main,
                         hosts = ["host64514", "host64515", "host64516"],
                         expectAllSuccess = True )
@@ -271,46 +306,62 @@ class USECASE_SdnipFunction:
         Cut links to peers one by one, check routes/intents
         '''
         import time
-        main.case( "This case is to bring down links and check routes/intents" )
+        main.case( "Bring down links and check routes/intents" )
         main.step( "Bring down the link between sw32 and peer64514" )
-        result = main.Mininet.link( END1 = "sw32", END2 = "peer64514",
-                                    OPTION = "down" )
-        if result == main.TRUE:
+        linkResult1 = main.Mininet.link( END1 = "sw32", END2 = "peer64514",
+                                         OPTION = "down" )
+        utilities.assertEquals( expect = main.TRUE,
+                                actual = linkResult1,
+                                onpass = "Bring down link succeeded!",
+                                onfail = "Bring down link failed!" )
+
+        if linkResult1 == main.TRUE:
             time.sleep( int( main.params[ 'timers' ][ 'RouteDelivery' ] ) )
             main.Functions.checkRouteNum( main, 2 )
             main.Functions.checkM2SintentNum( main, 2 )
         else:
-            main.log.info( "Bring down link failed!!!" )
-            main.exit();
+            main.log.info( "Bring down link failed!" )
+            main.cleanup()
+            main.exit()
 
         main.step( "Bring down the link between sw8 and peer64515" )
-        result = main.Mininet.link( END1 = "sw8", END2 = "peer64515",
-                                    OPTION = "down" )
-        if result == main.TRUE:
+        linkResult2 = main.Mininet.link( END1 = "sw8", END2 = "peer64515",
+                                         OPTION = "down" )
+        utilities.assertEquals( expect = main.TRUE,
+                                actual = linkResult2,
+                                onpass = "Bring down link succeeded!",
+                                onfail = "Bring down link failed!" )
+        if linkResult2 == main.TRUE:
             time.sleep( int( main.params[ 'timers' ][ 'RouteDelivery' ] ) )
             main.Functions.checkRouteNum( main, 1 )
             main.Functions.checkM2SintentNum( main, 1 )
         else:
-            main.log.info( "Bring down link failed!!!" )
-            main.exit();
+            main.log.info( "Bring down link failed!" )
+            main.cleanup()
+            main.exit()
 
         main.step( "Bring down the link between sw28 and peer64516" )
-        result = main.Mininet.link( END1 = "sw28", END2 = "peer64516",
-                                    OPTION = "down" )
-        if result == main.TRUE:
+        linkResult3 = main.Mininet.link( END1 = "sw28", END2 = "peer64516",
+                                         OPTION = "down" )
+        utilities.assertEquals( expect = main.TRUE,
+                                actual = linkResult3,
+                                onpass = "Bring down link succeeded!",
+                                onfail = "Bring down link failed!" )
+        if linkResult3 == main.TRUE:
             time.sleep( int( main.params[ 'timers' ][ 'RouteDelivery' ] ) )
             main.Functions.checkRouteNum( main, 0 )
             main.Functions.checkM2SintentNum( main, 0 )
         else:
-            main.log.info( "Bring down link failed!!!" )
-            main.exit();
+            main.log.info( "Bring down link failed!" )
+            main.cleanup()
+            main.exit()
 
         main.step( "Check whether all flow status are ADDED" )
         utilities.assertEquals( \
             expect = main.TRUE,
             actual = main.ONOScli.checkFlowsState( isPENDING_ADD = False ),
-            onpass = "***Flow status is correct!***",
-            onfail = "***Flow status is wrong!***" )
+            onpass = "Flow status is correct!",
+            onfail = "Flow status is wrong!" )
 
         # Ping test
         main.Functions.pingSpeakerToPeer( main, speakers = ["speaker1"],
@@ -326,46 +377,61 @@ class USECASE_SdnipFunction:
         Recover links to peers one by one, check routes/intents
         '''
         import time
-        main.case( "This case is to bring up links and check routes/intents" )
+        main.case( "Bring up links and check routes/intents" )
         main.step( "Bring up the link between sw32 and peer64514" )
-        result = main.Mininet.link( END1 = "sw32", END2 = "peer64514",
-                                    OPTION = "up" )
-        if result == main.TRUE:
+        linkResult1 = main.Mininet.link( END1 = "sw32", END2 = "peer64514",
+                                         OPTION = "up" )
+        utilities.assertEquals( expect = main.TRUE,
+                                actual = linkResult1,
+                                onpass = "Bring up link succeeded!",
+                                onfail = "Bring up link failed!" )
+        if linkResult1 == main.TRUE:
             time.sleep( int( main.params[ 'timers' ][ 'RouteDelivery' ] ) )
             main.Functions.checkRouteNum( main, 1 )
             main.Functions.checkM2SintentNum( main, 1 )
         else:
-            main.log.info( "Bring up link failed!!!" )
-            main.exit();
+            main.log.info( "Bring up link failed!" )
+            main.cleanup()
+            main.exit()
 
         main.step( "Bring up the link between sw8 and peer64515" )
-        result = main.Mininet.link( END1 = "sw8", END2 = "peer64515",
-                                    OPTION = "up" )
-        if result == main.TRUE:
+        linkResult2 = main.Mininet.link( END1 = "sw8", END2 = "peer64515",
+                                         OPTION = "up" )
+        utilities.assertEquals( expect = main.TRUE,
+                                actual = linkResult2,
+                                onpass = "Bring up link succeeded!",
+                                onfail = "Bring up link failed!" )
+        if linkResult2 == main.TRUE:
             time.sleep( int( main.params[ 'timers' ][ 'RouteDelivery' ] ) )
             main.Functions.checkRouteNum( main, 2 )
             main.Functions.checkM2SintentNum( main, 2 )
         else:
-            main.log.info( "Bring up link failed!!!" )
-            main.exit();
+            main.log.info( "Bring up link failed!" )
+            main.cleanup()
+            main.exit()
 
         main.step( "Bring up the link between sw28 and peer64516" )
-        result = main.Mininet.link( END1 = "sw28", END2 = "peer64516",
-                                    OPTION = "up" )
-        if result == main.TRUE:
+        linkResult3 = main.Mininet.link( END1 = "sw28", END2 = "peer64516",
+                                         OPTION = "up" )
+        utilities.assertEquals( expect = main.TRUE,
+                                actual = linkResult3,
+                                onpass = "Bring up link succeeded!",
+                                onfail = "Bring up link failed!" )
+        if linkResult3 == main.TRUE:
             time.sleep( int( main.params[ 'timers' ][ 'RouteDelivery' ] ) )
             main.Functions.checkRouteNum( main, 3 )
             main.Functions.checkM2SintentNum( main, 3 )
         else:
-            main.log.info( "Bring up link failed!!!" )
-            main.exit();
+            main.log.info( "Bring up link failed!" )
+            main.cleanup()
+            main.exit()
 
         main.step( "Check whether all flow status are ADDED" )
         utilities.assertEquals( \
             expect = main.TRUE,
             actual = main.ONOScli.checkFlowsState( isPENDING_ADD = False ),
-            onpass = "***Flow status is correct!***",
-            onfail = "***Flow status is wrong!***" )
+            onpass = "Flow status is correct!",
+            onfail = "Flow status is wrong!" )
 
         # Ping test
         main.Functions.pingSpeakerToPeer( main, speakers = ["speaker1"],
@@ -381,18 +447,24 @@ class USECASE_SdnipFunction:
         Shut down a edge switch, check P-2-P and M-2-S intents, ping test
         '''
         import time
-        main.case( "This case is to stop 1 edge switch,\
-        check P-2-P and M-2-S intents, ping test" )
+        main.case( "Stop edge sw32,check P-2-P and M-2-S intents, ping test" )
         main.step( "Stop sw32" )
         result = main.Mininet.switch( SW = "sw32", OPTION = "stop" )
+        utilities.assertEquals( \
+            expect = main.TRUE,
+            actual = result,
+            onpass = "Stopping switch succeeded!",
+            onfail = "Stopping switch failed!" )
+
         if result == main.TRUE:
             time.sleep( int( main.params[ 'timers' ][ 'RouteDelivery' ] ) )
             main.Functions.checkRouteNum( main, 2 )
             main.Functions.checkM2SintentNum( main, 2 )
             main.Functions.checkP2PintentNum( main, 12 )
         else:
-            main.log.info( "Stop switch failed!!!" )
-            main.exit();
+            main.log.info( "Stopping switch failed!" )
+            main.cleanup()
+            main.exit()
 
         main.step( "Check ping between hosts behind BGP peers" )
         result1 = main.Mininet.pingHost( src = "host64514", target = "host64515" )
@@ -428,47 +500,31 @@ class USECASE_SdnipFunction:
         utilities.assertEquals( \
             expect = main.TRUE,
             actual = main.ONOScli.checkFlowsState( isPENDING_ADD = False ),
-            onpass = "***Flow status is correct!***",
-            onfail = "***Flow status is wrong!***" )
-
-        '''
-        main.step( "Stop sw8" )
-        result = main.Mininet.switch( SW = "sw8", OPTION = "stop" )
-        if result == main.TRUE:
-            time.sleep( int( main.params[ 'timers' ][ 'RouteDelivery' ] ) )
-            main.Functions.checkRouteNum( main, 1 )
-
-            # Note: there should be 0 M2S intent, not 1.
-            main.Functions.checkM2SintentNum( main, 0 )
-            main.Functions.checkP2PintentNum( main, 6 )
-        else:
-            main.log.info( "Stop switch failed!!!" )
-            main.exit();
-
-        main.step( "Stop sw28" )
-        result = main.Mininet.switch( SW = "sw28", OPTION = "stop" )
-        if result == main.TRUE:
-            time.sleep( int( main.params[ 'timers' ][ 'RouteDelivery' ] ) )
-            main.Functions.checkRouteNum( main, 0 )
-            main.Functions.checkM2SintentNum( main, 0 )
-            main.Functions.checkP2PintentNum( main, 0 )
-        else:
-            main.log.info( "Stop switch failed!!!" )
-            main.exit();
-        '''
+            onpass = "Flow status is correct!",
+            onfail = "Flow status is wrong!" )
 
 
     def CASE8( self, main ):
         '''
-        Bring up the edge switch which was shut down in CASE7,
+        Bring up the edge switch (sw32) which was shut down in CASE7,
         check P-2-P and M-2-S intents, ping test
         '''
         import time
-        main.case( "This case is to start the switch which was shut down in CASE7,\
-        check P-2-P and M-2-S intents, ping test" )
+        main.case( "Start the edge sw32, check P-2-P and M-2-S intents, ping test" )
         main.step( "Start sw32" )
         result1 = main.Mininet.switch( SW = "sw32", OPTION = "start" )
+        utilities.assertEquals( \
+            expect = main.TRUE,
+            actual = result1,
+            onpass = "Starting switch succeeded!",
+            onfail = "Starting switch failed!" )
+
         result2 = main.Mininet.assignSwController( "sw32", ONOS1Ip )
+        utilities.assertEquals( \
+            expect = main.TRUE,
+            actual = result2,
+            onpass = "Connect switch to ONOS succeeded!",
+            onfail = "Connect switch to ONOS failed!" )
 
         if result1 and result2:
             time.sleep( int( main.params[ 'timers' ][ 'RouteDelivery' ] ) )
@@ -476,16 +532,16 @@ class USECASE_SdnipFunction:
             main.Functions.checkM2SintentNum( main, 3 )
             main.Functions.checkP2PintentNum( main, 18 )
         else:
-            main.log.info( "Start switch failed!!!" )
+            main.log.info( "Starting switch failed!" )
             main.cleanup()
-            main.exit();
+            main.exit()
 
         main.step( "Check whether all flow status are ADDED" )
         utilities.assertEquals( \
             expect = main.TRUE,
             actual = main.ONOScli.checkFlowsState( isPENDING_ADD = False ),
-            onpass = "***Flow status is correct!***",
-            onfail = "***Flow status is wrong!***" )
+            onpass = "Flow status is correct!",
+            onfail = "Flow status is wrong!" )
 
         # Ping test
         main.Functions.pingSpeakerToPeer( main, speakers = ["speaker1"],
@@ -501,10 +557,10 @@ class USECASE_SdnipFunction:
         Bring down a switch in best path, check:
         route number, P2P intent number, M2S intent number, ping test
         '''
-        main.case( "This case is to stop switch in best path, \
+        main.case( "Stop sw11 located in best path, \
         check route number, P2P intent number, M2S intent number, ping test" )
 
-        main.step( "Check the flow status before stopping sw11" )
+        main.step( "Check the flow number correctness before stopping sw11" )
         main.Functions.checkFlowNum( main, "sw11", 13 )
         main.Functions.checkFlowNum( main, "sw1", 3 )
         main.Functions.checkFlowNum( main, "sw7", 3 )
@@ -514,22 +570,28 @@ class USECASE_SdnipFunction:
 
         main.step( "Stop sw11" )
         result = main.Mininet.switch( SW = "sw11", OPTION = "stop" )
+        utilities.assertEquals( \
+            expect = main.TRUE,
+            actual = result,
+            onpass = "Stopping switch succeeded!",
+            onfail = "Stopping switch failed!" )
         if result:
+            time.sleep( int( main.params[ 'timers' ][ 'RouteDelivery' ] ) )
             time.sleep( int( main.params[ 'timers' ][ 'RouteDelivery' ] ) )
             main.Functions.checkRouteNum( main, 3 )
             main.Functions.checkM2SintentNum( main, 3 )
             main.Functions.checkP2PintentNum( main, 18 )
         else:
-            main.log.info( "Stop switch failed!!!" )
+            main.log.info( "Stopping switch failed!" )
             main.cleanup()
-            main.exit();
+            main.exit()
 
         main.step( "Check whether all flow status are ADDED" )
         utilities.assertEquals( \
             expect = main.TRUE,
             actual = main.ONOScli.checkFlowsState( isPENDING_ADD = False ),
-            onpass = "***Flow status is correct!***",
-            onfail = "***Flow status is wrong!***" )
+            onpass = "Flow status is correct!",
+            onfail = "Flow status is wrong!" )
         # Ping test
         main.Functions.pingSpeakerToPeer( main, speakers = ["speaker1"],
                        peers = ["peer64514", "peer64515", "peer64516"],
@@ -544,35 +606,49 @@ class USECASE_SdnipFunction:
         Bring up the switch which was stopped in CASE9, check:
         route number, P2P intent number, M2S intent number, ping test
         '''
-        main.case( "This case is to start switch which was stopped in CASE9, \
+        main.case( "Start sw11 which was stopped in CASE9, \
         check route number, P2P intent number, M2S intent number, ping test" )
+
+        main.step( "Check the flow status before starting sw11" )
+        main.Functions.checkFlowNum( main, "sw1", 11 )
+        main.Functions.checkFlowNum( main, "sw7", 5 )
+        main.log.info( main.Mininet.checkFlows( "sw1" ) )
+        main.log.info( main.Mininet.checkFlows( "sw7" ) )
+
         main.step( "Start sw11" )
         result1 = main.Mininet.switch( SW = "sw11", OPTION = "start" )
+        utilities.assertEquals( \
+            expect = main.TRUE,
+            actual = result1,
+            onpass = "Starting switch succeeded!",
+            onfail = "Starting switch failed!" )
         result2 = main.Mininet.assignSwController( "sw11", ONOS1Ip )
+        utilities.assertEquals( \
+            expect = main.TRUE,
+            actual = result2,
+            onpass = "Connect switch to ONOS succeeded!",
+            onfail = "Connect switch to ONOS failed!" )
         if result1 and result2:
             time.sleep( int( main.params[ 'timers' ][ 'RouteDelivery' ] ) )
             main.Functions.checkRouteNum( main, 3 )
             main.Functions.checkM2SintentNum( main, 3 )
             main.Functions.checkP2PintentNum( main, 18 )
 
-            main.step( "Check the flow status after stop and start sw11" )
-            main.Functions.checkFlowNum( main, "sw11", 3 )
-            main.Functions.checkFlowNum( main, "sw1", 11 )
-            main.Functions.checkFlowNum( main, "sw7", 5 )
+            # log for debug
             main.log.info( main.Mininet.checkFlows( "sw11" ) )
             main.log.info( main.Mininet.checkFlows( "sw1" ) )
             main.log.info( main.Mininet.checkFlows( "sw7" ) )
         else:
-            main.log.info( "Start switch failed!!!" )
+            main.log.info( "Starting switch failed!" )
             main.cleanup()
-            main.exit();
+            main.exit()
 
         main.step( "Check whether all flow status are ADDED" )
         utilities.assertEquals( \
             expect = main.TRUE,
             actual = main.ONOScli.checkFlowsState( isPENDING_ADD = False ),
-            onpass = "***Flow status is correct!***",
-            onfail = "***Flow status is wrong!***" )
+            onpass = "Flow status is correct!",
+            onfail = "Flow status is wrong!" )
         # Ping test
         main.Functions.pingSpeakerToPeer( main, speakers = ["speaker1"],
                        peers = ["peer64514", "peer64515", "peer64516"],

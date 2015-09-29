@@ -9,8 +9,8 @@ def checkRouteNum( main, routeNumExpected ):
     main.log.info( routeNumActual )
     utilities.assertEquals( \
         expect = routeNumExpected, actual = routeNumActual,
-        onpass = "***Route number is correct!***",
-        onfail = "***Route number is wrong!***" )
+        onpass = "Route number is correct!",
+        onfail = "Route number is wrong!" )
 
 def checkM2SintentNum( main, intentNumExpected ):
     main.step( "Check M2S intents installed" )
@@ -23,8 +23,8 @@ def checkM2SintentNum( main, intentNumExpected ):
     main.log.info( intentNumActual )
     utilities.assertEquals( \
         expect = intentNumExpected, actual = intentNumActual,
-        onpass = "***M2S intent number is correct!***",
-        onfail = "***M2S intent number is wrong!***" )
+        onpass = "M2S intent number is correct!",
+        onfail = "M2S intent number is wrong!" )
 
 def checkP2PintentNum( main, intentNumExpected ):
     main.step( "Check P2P intents installed" )
@@ -37,8 +37,8 @@ def checkP2PintentNum( main, intentNumExpected ):
     main.log.info( intentNumActual )
     utilities.assertEquals( \
         expect = intentNumExpected, actual = intentNumActual,
-        onpass = "***P2P intent number is correct!***",
-        onfail = "***P2P intent number is wrong!***" )
+        onpass = "P2P intent number is correct!",
+        onfail = "P2P intent number is wrong!" )
 
 def checkFlowNum( main, switch, flowNumExpected ):
     main.step( "Check flow entry number in " + switch )
@@ -49,8 +49,8 @@ def checkFlowNum( main, switch, flowNumExpected ):
     main.log.info( flowNumActual )
     utilities.assertEquals( \
         expect = flowNumExpected, actual = flowNumActual,
-        onpass = "***Flow number in " + switch + " is correct!***",
-        onfail = "***Flow number in " + switch + " is wrong!***" )
+        onpass = "Flow number in " + switch + " is correct!",
+        onfail = "Flow number in " + switch + " is wrong!" )
 
 
 def pingSpeakerToPeer( main, speakers = ["speaker1"],
@@ -74,11 +74,9 @@ def pingSpeakerToPeer( main, speakers = ["speaker1"],
         main.exit()
 
     if expectAllSuccess:
-        main.step( "Check ping between BGP peers and speakers, expect all tests\
-        will SUCCEED" )
+        main.step( "BGP speakers ping peers, expect all tests to SUCCEED" )
     else:
-        main.step( "Check ping between BGP peers and speakers, expect all tests\
-        will FAIL" )
+        main.step( "BGP speakers ping peers, expect all tests to FAIL" )
 
     result = True
     if expectAllSuccess:

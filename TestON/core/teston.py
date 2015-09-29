@@ -76,7 +76,6 @@ class TestON:
         self.PASS = True
         self.CASERESULT = self.ERROR
         self.STEPRESULT = self.NORESULT
-        self.stepResults = []
         self.init_result = self.TRUE
         self.testResult = "Summary"
         self.stepName = ""
@@ -202,7 +201,9 @@ class TestON:
         self.TOTAL_TC_FAIL = 0
         self.TOTAL_TC_PASS = 0
         self.TEST_ITERATION = 0
-        self.stepCount = 0
+        self.stepCount = 0  # NOTE: number of main.step statements in the
+                            # outer most level of the test case. used to
+                            # execute code in smaller steps
         self.CASERESULT = self.NORESULT
 
         import testparser
@@ -223,39 +224,45 @@ class TestON:
     def runCase( self, testCaseNumber ):
         self.CurrentTestCaseNumber = testCaseNumber
         self.CurrentTestCase = ""
-        self.stepResults = []
+        self.stepResultsList = []  # List of step results in a case. ANDed together to get the result
         self.stepName = ""
         self.caseExplanation = ""
         result = self.TRUE
-        self.stepCount = 0
+        self.stepCount = 0  # NOTE: number of main.step statements in the
+                            # outer most level of the test case. used to
+                            # execute code in smaller steps
+        self.stepNumber = 0  # NOTE: This is the current number of
+                             # main.step()'s executed in a case. Used for logging.
         self.EXPERIMENTAL_MODE = self.FALSE
         self.addCaseHeader()
         self.testCaseNumber = str( testCaseNumber )
         self.CASERESULT = self.NORESULT
         stopped = False
-        try :
-            self.stepList = self.code[self.testCaseNumber].keys()
+        try:
+            self.code[self.testCaseNumber]
         except KeyError:
             self.log.error( "There is no Test-Case " + self.testCaseNumber )
             return self.FALSE
         self.stepCount = 0
         while self.stepCount < len(self.code[self.testCaseNumber].keys()):
-            result = self.runStep(self.stepList,self.code,self.testCaseNumber)
+            result = self.runStep(self.code,self.testCaseNumber)
             if result == self.FALSE:
                 break
             elif result == self.TRUE:
                 continue
+        # stepResults format: ( stepNo[], stepName[], stepResult[], onFail[] )
+        stepResults = self.stepResultsList
         if not stopped:
             if self.CASERESULT == self.TRUE or self.CASERESULT == self.FALSE:
                 # Result was already explitily set somewhere else like skipCase()
                 pass
-            elif all( self.TRUE == i for i in self.stepResults ):
+            elif all( self.TRUE == i for i in stepResults ):
                 # ALL PASSED
                 self.CASERESULT = self.TRUE
-            elif self.FALSE in self.stepResults:
+            elif self.FALSE in stepResults:
                 # AT LEAST ONE FAILED
                 self.CASERESULT = self.FALSE
-            elif self.TRUE in self.stepResults:
+            elif self.TRUE in stepResults:
                 # AT LEAST ONE PASSED
                 self.CASERESULT = self.TRUE
             else:
@@ -279,37 +286,48 @@ class TestON:
             self.stepCache = ""
         return result
 
-    def runStep(self,stepList,code,testCaseNumber):
+    def runStep(self,code,testCaseNumber):
         if not cli.pause:
-            try :
-                step = stepList[self.stepCount]
-                self.STEPRESULT = self.NORESULT
-                self.onFailMsg = "No on fail message given"
+            try:
+                step = self.stepCount
+                # stepResults format: ( stepNo, stepName, stepResult, onFail )
+                # NOTE: This is needed to catch results of main.step()'s
+                #       called inside functions or loops
+                self.stepResults = ( [], [], [], [] )
                 exec code[testCaseNumber][step] in module.__dict__
                 self.stepCount = self.stepCount + 1
-                if step > 0:
-                    self.stepCache += "\t"+str(testCaseNumber)+"."+str(step)+" "+self.stepName+" - "
-                    if self.STEPRESULT == self.TRUE:
+
+                # Iterate through each of the steps and print them
+                for index in range( len( self.stepResults[0] ) ):
+                    # stepResults needs ( stepNo, stepName, stepResult, onFail )
+                    stepNo = self.stepResults[0][ index ]
+                    stepName = self.stepResults[1][ index ]
+                    stepResult = self.stepResults[2][ index ]
+                    onFail = self.stepResults[3][ index ]
+                    self.stepCache += "\t" + str( testCaseNumber ) + "."
+                    self.stepCache += str( stepNo ) + " "
+                    self.stepCache += stepName + " - "
+                    if stepResult == self.TRUE:
                         self.stepCache += "PASS\n"
-                    elif self.STEPRESULT == self.FALSE:
+                    elif stepResult == self.FALSE:
                         self.stepCache += "FAIL\n"
-                        # TODO: Print the on-fail statement here
-                        self.stepCache += "\t\t" + self.onFailMsg + "\n"
+                        self.stepCache += "\t\t" + onFail + "\n"
                     else:
                         self.stepCache += "No Result\n"
-                    self.stepResults.append(self.STEPRESULT)
+                    self.stepResultsList.append(stepResult)
             except StopIteration:  # Raised in self.skipCase()
                 self.log.warn( "Skipping the rest of CASE" +
                                str( testCaseNumber ) )
-                self.stepResults.append(self.STEPRESULT)
+                self.stepResultsList.append(self.STEPRESULT)
                 self.stepCache += "\t\t" + self.onFailMsg + "\n"
                 self.stepCount = self.stepCount + 1
                 return self.FALSE
             except StandardError:
+                stepNo = self.stepResults[0][ self.stepNumber - 1]
+                stepName = self.stepResults[1][ self.stepNumber - 1 ]
                 self.log.exception( "\nException in the following section of" +
                                     " code: " + str( testCaseNumber ) + "." +
-                                    str( step ) + ": " + self.stepName )
-                #print code[testCaseNumber][step]
+                                    str( stepNo ) + ": " + stepName )
                 self.stepCount = self.stepCount + 1
                 self.logger.updateCaseResults(self)
                 #WIKI results
@@ -368,8 +386,9 @@ class TestON:
             vars(self)[driver+'log'].info(caseHeader)
 
     def addCaseFooter(self):
-        if self.stepCount-1 > 0 :
-            previousStep = " "+str(self.CurrentTestCaseNumber)+"."+str(self.stepCount-1)+": "+ str(self.stepName) + ""
+        stepNo = self.stepResults[0][-2]
+        if stepNo > 0 :
+            previousStep = " "+str(self.CurrentTestCaseNumber)+"."+str(stepNo)+": "+ str(self.stepName) + ""
             stepHeader = "\n"+"*" * 40+"\nEnd of Step "+previousStep+"\n"+"*" * 40+"\n"
 
         caseFooter = "\n"+"*" * 40+"\nEnd of Test case "+str(self.CurrentTestCaseNumber)+"\n"+"*" * 40+"\n"
@@ -498,21 +517,19 @@ class TestON:
         '''
            The step information of the test-case will append to the logs.
         '''
-        previousStep = " "+str(self.CurrentTestCaseNumber)+"."+str(self.stepCount-1)+": "+ str(self.stepName) + ""
+        previousStep = " "+str(self.CurrentTestCaseNumber)+"."+str(self.stepNumber)+": "+ str(self.stepName) + ""
         self.stepName = stepDesc
+        self.stepNumber += 1
+        self.stepResults[0].append( self.stepNumber )
+        self.stepResults[1].append( stepDesc )
+        self.stepResults[2].append( self.NORESULT )
+        self.stepResults[3].append( "No on fail message given" )
 
-        stepName = " "+str(self.CurrentTestCaseNumber)+"."+str(self.stepCount)+": "+ str(stepDesc) + ""
-        try :
-            if self.stepCount == 0:
-                stepName = " INIT : Initializing the test case :"+self.CurrentTestCase
-        except AttributeError:
-                stepName = " INIT : Initializing the test case :"+str(self.CurrentTestCaseNumber)
-
+        stepName = " "+str(self.CurrentTestCaseNumber)+"."+str(self.stepNumber)+": "+ str(stepDesc) + ""
         self.log.step(stepName)
         stepHeader = ""
-        if self.stepCount > 1 :
+        if self.stepNumber > 1 :
             stepHeader = "\n"+"-"*45+"\nEnd of Step "+previousStep+"\n"+"-"*45+"\n"
-
         stepHeader += "\n"+"-"*45+"\nStart of Step"+stepName+"\n"+"-"*45+"\n"
         for driver in self.componentDictionary.keys():
             vars(self)[driver+'log'].info(stepHeader)
@@ -522,7 +539,7 @@ class TestON:
            Test's each test-case information will append to the logs.
         '''
         self.CurrentTestCase = testCaseName
-        testCaseName = " " + str(testCaseName) + ""
+        testCaseName = " " + str(testCaseName)
         self.log.case(testCaseName)
         caseHeader = testCaseName+"\n"+"*" * 40+"\n"
         for driver in self.componentDictionary.keys():

@@ -185,6 +185,11 @@ class Utilities:
                 print e
 
         main.last_result = result
+        main.stepResults[2][-1] = result
+        try:
+            main.stepResults[3][-1] = arguments[ 'ONFAIL' ]
+        except AttributeError:
+            pass
         return result
 
     def parse_args(self,args, **kwargs):

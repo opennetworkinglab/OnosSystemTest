@@ -404,12 +404,12 @@ class FUNCvirNetNB:
         Getstatus, result = main.ONOSrest.send( ctrlip, port, network.id, path+'networks/',
                                                 'GET', None, None )
         utilities.assert_equals(
-                expect='The tenantNetwork does not exists',
+                expect='Network is not found',
                 actual=result,
                 onpass="Get Success",
                 onfail="Get Failed " + str( Getstatus ) + str( result ) )
 
-        if result != 'The tenantNetwork does not exists':
+        if result != 'Network is not found':
             main.log.error( "Delete Network failed" )
 
     def CASE5( self, main ):
@@ -675,12 +675,12 @@ class FUNCvirNetNB:
         Getstatus, result = main.ONOSrest.send( ctrlip, port, subnet.id, path + 'subnets/',
                                                  'GET', None, None )
         utilities.assert_equals(
-                expect='The subnet does not exists',
+                expect='Subnet is not found',
                 actual=result,
                 onpass="Get Subnet Success",
                 onfail="Get Subnet Failed " + str( Getstatus ) + str( result ) )
 
-        if result != 'The subnet does not exists':
+        if result != 'Subnet is not found':
             main.log.error( "Delete Subnet failed" )
 
     def CASE8( self, main ):
@@ -998,12 +998,12 @@ class FUNCvirNetNB:
         Getstatus, result = main.ONOSrest.send( ctrlip, httpport, port.id, path + 'ports/',
                                                  'GET', None, None )
         utilities.assert_equals(
-                expect='The virtualPort does not exists',
+                expect='VirtualPort is not found',
                 actual=result,
                 onpass="Get Port Success",
                 onfail="Get Port Failed " + str( Getstatus ) + "," + str( result ) )
 
-        if result != 'The virtualPort does not exists':
+        if result != 'VirtualPort is not found':
             main.log.error( "Delete Port failed" )
 
         main.step( "Clean Data via HTTP" )

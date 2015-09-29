@@ -37,6 +37,7 @@
 
     <timers>
         <SdnIpSetup>10</SdnIpSetup>
+        <TopoDiscovery>60</TopoDiscovery>
         <PingTestWithRoutes>20</PingTestWithRoutes>
         <PingTestWithoutRoutes>100</PingTestWithoutRoutes>
         <RouteDelivery>60</RouteDelivery>

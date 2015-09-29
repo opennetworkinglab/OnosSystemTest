@@ -161,7 +161,7 @@ class USECASE_SdnipFunction:
                          onfail = "ONOS CLI is NOT ready" )
 
         caseResult = ( cellResult and verifyResult and
-                       gitPullResult and mciResult and packageResult and
+                       gitPullResult2 and mciResult and packageResult and
                        onos1InstallResult and onos1UpResult and cliResult )
 
         utilities.assert_equals( expect = main.TRUE, actual = caseResult,
@@ -169,10 +169,21 @@ class USECASE_SdnipFunction:
                                  onfail = "ONOS startup NOT successful" )
 
         if caseResult == main.FALSE:
+            main.log.info( "ONOS startup failed!" )
             main.cleanup()
             main.exit()
 
         main.log.info( "Get links in the network" )
+        time.sleep( int ( main.params['timers']['TopoDiscovery'] ) )
+        summaryResult = main.ONOScli.summary()
+        linkNum = json.loads( summaryResult )[ "links" ]
+        if linkNum < 100:
+            main.log.info( "Link number is wrong!" )
+            listResult = main.ONOScli.links( jsonFormat = False )
+            main.log.info( listResult )
+            main.cleanup()
+            main.exit()
+
         listResult = main.ONOScli.links( jsonFormat = False )
         main.log.info( listResult )
 
@@ -182,6 +193,11 @@ class USECASE_SdnipFunction:
                                  actual = activeSDNIPresult,
                                  onpass = "Activate SDN-IP succeeded",
                                  onfail = "Activate SDN-IP failed" )
+        if not activeSDNIPresult:
+            main.log.info( "Activate SDN-IP failed!" )
+            main.cleanup()
+            main.exit()
+
 
         main.log.info( "Wait SDN-IP to finish installing connectivity intents \
         and the BGP paths in data plane are ready..." )
@@ -450,11 +466,9 @@ class USECASE_SdnipFunction:
         main.case( "Stop edge sw32,check P-2-P and M-2-S intents, ping test" )
         main.step( "Stop sw32" )
         result = main.Mininet.switch( SW = "sw32", OPTION = "stop" )
-        utilities.assertEquals( \
-            expect = main.TRUE,
-            actual = result,
-            onpass = "Stopping switch succeeded!",
-            onfail = "Stopping switch failed!" )
+        utilities.assertEquals( expect = main.TRUE, actual = result,
+                                onpass = "Stopping switch succeeded!",
+                                onfail = "Stopping switch failed!" )
 
         if result == main.TRUE:
             time.sleep( int( main.params[ 'timers' ][ 'RouteDelivery' ] ) )
@@ -570,11 +584,9 @@ class USECASE_SdnipFunction:
 
         main.step( "Stop sw11" )
         result = main.Mininet.switch( SW = "sw11", OPTION = "stop" )
-        utilities.assertEquals( \
-            expect = main.TRUE,
-            actual = result,
-            onpass = "Stopping switch succeeded!",
-            onfail = "Stopping switch failed!" )
+        utilities.assertEquals( expect = main.TRUE, actual = result,
+                                onpass = "Stopping switch succeeded!",
+                                onfail = "Stopping switch failed!" )
         if result:
             time.sleep( int( main.params[ 'timers' ][ 'RouteDelivery' ] ) )
             time.sleep( int( main.params[ 'timers' ][ 'RouteDelivery' ] ) )
@@ -617,27 +629,22 @@ class USECASE_SdnipFunction:
 
         main.step( "Start sw11" )
         result1 = main.Mininet.switch( SW = "sw11", OPTION = "start" )
-        utilities.assertEquals( \
-            expect = main.TRUE,
-            actual = result1,
-            onpass = "Starting switch succeeded!",
-            onfail = "Starting switch failed!" )
+        utilities.assertEquals( expect = main.TRUE, actual = result1,
+                                onpass = "Starting switch succeeded!",
+                                onfail = "Starting switch failed!" )
         result2 = main.Mininet.assignSwController( "sw11", ONOS1Ip )
-        utilities.assertEquals( \
-            expect = main.TRUE,
-            actual = result2,
-            onpass = "Connect switch to ONOS succeeded!",
-            onfail = "Connect switch to ONOS failed!" )
+        utilities.assertEquals( expect = main.TRUE, actual = result2,
+                                onpass = "Connect switch to ONOS succeeded!",
+                                onfail = "Connect switch to ONOS failed!" )
         if result1 and result2:
             time.sleep( int( main.params[ 'timers' ][ 'RouteDelivery' ] ) )
             main.Functions.checkRouteNum( main, 3 )
             main.Functions.checkM2SintentNum( main, 3 )
             main.Functions.checkP2PintentNum( main, 18 )
 
-            # log for debug
-            main.log.info( main.Mininet.checkFlows( "sw11" ) )
-            main.log.info( main.Mininet.checkFlows( "sw1" ) )
-            main.log.info( main.Mininet.checkFlows( "sw7" ) )
+            main.log.debug( main.Mininet.checkFlows( "sw11" ) )
+            main.log.debug( main.Mininet.checkFlows( "sw1" ) )
+            main.log.debug( main.Mininet.checkFlows( "sw7" ) )
         else:
             main.log.info( "Starting switch failed!" )
             main.cleanup()

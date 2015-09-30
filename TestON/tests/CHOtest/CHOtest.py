@@ -989,6 +989,9 @@ class CHOtest:
         time2 = time.time()
         main.log.info("Time for adding host intents: %2f seconds" %(time2-time1))
 
+        # Saving intent ids to check intents in later cases
+        main.intentIds = list(intentIdList)
+
         main.step("Verify intents are installed")
 
         # Giving onos 3 chances to install intents
@@ -1009,7 +1012,7 @@ class CHOtest:
                 break
         else:
             #Dumping intent summary
-            main.log.info( "Intents:\n" + str( main.ONOScli1.intents( jsonFormat=False, summary=True ) ) )
+            main.log.info( "**** Intent Summary ****\n" + str(main.ONOScli1.intents( jsonFormat=False, summary=True)) )
 
 
         utilities.assert_equals( expect=main.TRUE, actual=intentState,
@@ -1040,6 +1043,11 @@ class CHOtest:
             actual=case60Result,
             onpass="Install 300 Host Intents and Ping All test PASS",
             onfail="Install 300 Host Intents and Ping All test FAIL" )
+
+        if not intentState:
+            main.log.debug( "Intents failed to install completely" )
+        if not pingResult:
+            main.log.debug( "Pingall failed" )
 
     def CASE61( self ):
         """
@@ -1076,6 +1084,9 @@ class CHOtest:
         time2 = time.time()
         main.log.info("Time for adding host intents: %2f seconds" %(time2-time1))
 
+        # Saving intent ids to check intents in later cases
+        main.intentIds = list(intentIdList)
+
         main.step("Verify intents are installed")
 
         # Giving onos 3 chances to install intents
@@ -1096,7 +1107,7 @@ class CHOtest:
                 break
         else:
             #Dumping intent summary
-            main.log.info( "Intents:\n" + str( main.ONOScli1.intents( jsonFormat=False, summary=True ) ) )
+            main.log.info( "**** Intents Summary ****\n" + str(main.ONOScli1.intents(jsonFormat=False, summary=True)) )
 
         utilities.assert_equals( expect=main.TRUE, actual=intentState,
                                  onpass="INTENTS INSTALLED",
@@ -1127,6 +1138,11 @@ class CHOtest:
             actual=case14Result,
             onpass="Install 300 Host Intents and Ping All test PASS",
             onfail="Install 300 Host Intents and Ping All test FAIL" )
+
+        if not intentState:
+            main.log.debug( "Intents failed to install completely" )
+        if not pingResult:
+            main.log.debug( "Pingall failed" )
 
     def CASE62( self ):
         """
@@ -1162,6 +1178,9 @@ class CHOtest:
         time2 = time.time()
         main.log.info("Time for adding host intents: %2f seconds" %(time2-time1))
 
+        # Saving intent ids to check intents in later cases
+        main.intentIds = list(intentIdList)
+
         main.step("Verify intents are installed")
 
         # Giving onos 3 chances to install intents
@@ -1182,7 +1201,7 @@ class CHOtest:
                 break
         else:
             #Dumping intent summary
-            main.log.info( "Intents:\n" + str( main.ONOScli1.intents( jsonFormat=False, summary=True ) ) )
+            main.log.info( "**** Intents Summary ****\n" + str(main.ONOScli1.intents(jsonFormat=False, summary=True)) )
 
         utilities.assert_equals( expect=main.TRUE, actual=intentState,
                                  onpass="INTENTS INSTALLED",
@@ -1213,6 +1232,11 @@ class CHOtest:
             actual=case15Result,
             onpass="Install 2278 Host Intents and Ping All test PASS",
             onfail="Install 2278 Host Intents and Ping All test FAIL" )
+
+        if not intentState:
+            main.log.debug( "Intents failed to install completely" )
+        if not pingResult:
+            main.log.debug( "Pingall failed" )
 
     def CASE160( self ):
         """
@@ -1383,14 +1407,40 @@ class CHOtest:
             str( link_sleep ) +
             " seconds" )
 
+        main.step("Verify intents are installed")
+        # Checking a maximum of 3
+        for i in range(3):
+            if i != 0:
+                main.log.warn( "Verification failed. Retrying..." )
+            main.log.info("Giving onos some time...")
+            time.sleep( main.checkIntentsDelay )
+
+            intentState = main.TRUE
+            for e in range(int(main.numCtrls)):
+                main.log.info( "Checking intents on CLI %s" % (e+1) )
+                intentState = main.CLIs[e].checkIntentState( intentsId = main.intentIds ) and\
+                        intentState
+                if not intentState:
+                    main.log.warn( "Not all intents installed" )
+            if intentState:
+                break
+        else:
+            #Dumping intent summary
+            main.log.info( "**** Intent Summary ****\n" + str(main.ONOScli1.intents( jsonFormat=False, summary=True)) )
+
+
+        utilities.assert_equals( expect=main.TRUE, actual=intentState,
+                                 onpass="INTENTS INSTALLED",
+                                 onfail="SOME INTENTS NOT INSTALLED" )
+
         main.step( "Verify Ping across all hosts" )
-        pingResultLinkDown = main.FALSE
+        pingResult = main.FALSE
         time1 = time.time()
-        pingResultLinkDown = main.Mininet1.pingall(timeout=main.pingTimeout )
-        if not pingResultLinkDown:
+        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout )
+        if not pingResult:
             main.log.warn("First pingall failed. Retrying...")
             time1 = time.time()
-            pingResultLinkDown = main.Mininet1.pingall(timeout=main.pingTimeout )
+            pingResult = main.Mininet1.pingall(timeout=main.pingTimeout )
 
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
@@ -1398,14 +1448,22 @@ class CHOtest:
             "Time taken for Ping All: " +
             str( timeDiff ) +
             " seconds" )
-        utilities.assert_equals( expect=main.TRUE, actual=pingResultLinkDown,
+        utilities.assert_equals( expect=main.TRUE, actual=pingResult,
                                  onpass="PING ALL PASS",
                                  onfail="PING ALL FAIL" )
 
-        caseResult70 = linkDown and pingResultLinkDown
+        caseResult70 = linkDown and pingResult and intentState
         utilities.assert_equals( expect=main.TRUE, actual=caseResult70,
                                  onpass="Random Link cut Test PASS",
                                  onfail="Random Link cut Test FAIL" )
+
+        # Printing what exactly failed
+        if not linkDown:
+            main.log.debug( "Link down was not discovered correctly" )
+        if not pingResult:
+            main.log.debug( "Pingall failed" )
+        if not intentState:
+            main.log.debug( "Intents are not all installed" )
 
     def CASE80( self, main ):
         """
@@ -1455,14 +1513,40 @@ class CHOtest:
             str( link_sleep ) +
             " seconds" )
 
+        main.step("Verify intents are installed")
+        # Checking a maximum of 3
+        for i in range(3):
+            if i != 0:
+                main.log.warn( "Verification failed. Retrying..." )
+            main.log.info("Giving onos some time...")
+            time.sleep( main.checkIntentsDelay )
+
+            intentState = main.TRUE
+            for e in range(int(main.numCtrls)):
+                main.log.info( "Checking intents on CLI %s" % (e+1) )
+                intentState = main.CLIs[e].checkIntentState( intentsId = main.intentIds ) and\
+                        intentState
+                if not intentState:
+                    main.log.warn( "Not all intents installed" )
+            if intentState:
+                break
+        else:
+            #Dumping intent summary
+            main.log.info( "**** Intent Summary ****\n" + str(main.ONOScli1.intents( jsonFormat=False, summary=True)) )
+
+
+        utilities.assert_equals( expect=main.TRUE, actual=intentState,
+                                 onpass="INTENTS INSTALLED",
+                                 onfail="SOME INTENTS NOT INSTALLED" )
+
         main.step( "Verify Ping across all hosts" )
-        pingResultLinkUp = main.FALSE
+        pingResult = main.FALSE
         time1 = time.time()
-        pingResultLinkUp = main.Mininet1.pingall( timeout=main.pingTimeout )
-        if not pingResultLinkUp:
+        pingResult = main.Mininet1.pingall( timeout=main.pingTimeout )
+        if not pingResult:
             main.log.warn("First pingall failed. Retrying...")
             time1 = time.time()
-            pingResultLinkUp = main.Mininet1.pingall(timeout=main.pingTimeout )
+            pingResult = main.Mininet1.pingall(timeout=main.pingTimeout )
 
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
@@ -1470,14 +1554,21 @@ class CHOtest:
             "Time taken for Ping All: " +
             str( timeDiff ) +
             " seconds" )
-        utilities.assert_equals( expect=main.TRUE, actual=pingResultLinkUp,
+        utilities.assert_equals( expect=main.TRUE, actual=pingResult,
                                  onpass="PING ALL PASS",
                                  onfail="PING ALL FAIL" )
 
-        caseResult80 = linkUp and pingResultLinkUp
+        caseResult80 = linkUp and pingResult
         utilities.assert_equals( expect=main.TRUE, actual=caseResult80,
                                  onpass="Link Up Test PASS",
                                  onfail="Link Up Test FAIL" )
+        # Printing what exactly failed
+        if not linkUp:
+            main.log.debug( "Link down was not discovered correctly" )
+        if not pingResult:
+            main.log.debug( "Pingall failed" )
+        if not intentState:
+            main.log.debug( "Intents are not all installed" )
 
     def CASE71( self, main ):
         """
@@ -1541,14 +1632,40 @@ class CHOtest:
             str( link_sleep ) +
             " seconds" )
 
+        main.step("Verify intents are installed")
+        # Checking a maximum of 3
+        for i in range(3):
+            if i != 0:
+                main.log.warn( "Verification failed. Retrying..." )
+            main.log.info("Giving onos some time...")
+            time.sleep( main.checkIntentsDelay )
+
+            intentState = main.TRUE
+            for e in range(int(main.numCtrls)):
+                main.log.info( "Checking intents on CLI %s" % (e+1) )
+                intentState = main.CLIs[e].checkIntentState( intentsId = main.intentIds ) and\
+                        intentState
+                if not intentState:
+                    main.log.warn( "Not all intents installed" )
+            if intentState:
+                break
+        else:
+            #Dumping intent summary
+            main.log.info( "**** Intent Summary ****\n" + str(main.ONOScli1.intents( jsonFormat=False, summary=True)) )
+
+
+        utilities.assert_equals( expect=main.TRUE, actual=intentState,
+                                 onpass="INTENTS INSTALLED",
+                                 onfail="SOME INTENTS NOT INSTALLED" )
+
         main.step( "Verify Ping across all hosts" )
-        pingResultLinkDown = main.FALSE
+        pingResult = main.FALSE
         time1 = time.time()
-        pingResultLinkDown = main.Mininet1.pingall(timeout=main.pingTimeout)
-        if not pingResultLinkDown:
+        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout )
+        if not pingResult:
             main.log.warn("First pingall failed. Retrying...")
             time1 = time.time()
-            pingResultLinkDown = main.Mininet1.pingall(timeout=main.pingTimeout )
+            pingResult = main.Mininet1.pingall(timeout=main.pingTimeout )
 
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
@@ -1556,14 +1673,23 @@ class CHOtest:
             "Time taken for Ping All: " +
             str( timeDiff ) +
             " seconds" )
-        utilities.assert_equals( expect=main.TRUE, actual=pingResultLinkDown,
+        utilities.assert_equals( expect=main.TRUE, actual=pingResult,
                                  onpass="PING ALL PASS",
                                  onfail="PING ALL FAIL" )
 
-        caseResult71 = linkDown and pingResultLinkDown
-        utilities.assert_equals( expect=main.TRUE, actual=caseResult71,
+        caseResult70 = linkDown and pingResult and intentState
+        utilities.assert_equals( expect=main.TRUE, actual=caseResult70,
                                  onpass="Random Link cut Test PASS",
                                  onfail="Random Link cut Test FAIL" )
+
+        # Printing what exactly failed
+        if not linkDown:
+            main.log.debug( "Link down was not discovered correctly" )
+        if not pingResult:
+            main.log.debug( "Pingall failed" )
+        if not intentState:
+            main.log.debug( "Intents are not all installed" )
+
 
     def CASE81( self, main ):
         """
@@ -1613,14 +1739,40 @@ class CHOtest:
             str( link_sleep ) +
             " seconds" )
 
+        main.step("Verify intents are installed")
+        # Checking a maximum of 3
+        for i in range(3):
+            if i != 0:
+                main.log.warn( "Verification failed. Retrying..." )
+            main.log.info("Giving onos some time...")
+            time.sleep( main.checkIntentsDelay )
+
+            intentState = main.TRUE
+            for e in range(int(main.numCtrls)):
+                main.log.info( "Checking intents on CLI %s" % (e+1) )
+                intentState = main.CLIs[e].checkIntentState( intentsId = main.intentIds ) and\
+                        intentState
+                if not intentState:
+                    main.log.warn( "Not all intents installed" )
+            if intentState:
+                break
+        else:
+            #Dumping intent summary
+            main.log.info( "**** Intent Summary ****\n" + str(main.ONOScli1.intents( jsonFormat=False, summary=True)) )
+
+
+        utilities.assert_equals( expect=main.TRUE, actual=intentState,
+                                 onpass="INTENTS INSTALLED",
+                                 onfail="SOME INTENTS NOT INSTALLED" )
+
         main.step( "Verify Ping across all hosts" )
-        pingResultLinkUp = main.FALSE
+        pingResult = main.FALSE
         time1 = time.time()
-        pingResultLinkUp = main.Mininet1.pingall(timeout = main.pingTimeout )
-        if not pingResultLinkUp:
+        pingResult = main.Mininet1.pingall( timeout=main.pingTimeout )
+        if not pingResult:
             main.log.warn("First pingall failed. Retrying...")
             time1 = time.time()
-            pingResultLinkUp = main.Mininet1.pingall(timeout=main.pingTimeout )
+            pingResult = main.Mininet1.pingall(timeout=main.pingTimeout )
 
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
@@ -1628,14 +1780,21 @@ class CHOtest:
             "Time taken for Ping All: " +
             str( timeDiff ) +
             " seconds" )
-        utilities.assert_equals( expect=main.TRUE, actual=pingResultLinkUp,
+        utilities.assert_equals( expect=main.TRUE, actual=pingResult,
                                  onpass="PING ALL PASS",
                                  onfail="PING ALL FAIL" )
 
-        caseResult81 = linkUp and pingResultLinkUp
-        utilities.assert_equals( expect=main.TRUE, actual=caseResult81,
+        caseResult80 = linkUp and pingResult
+        utilities.assert_equals( expect=main.TRUE, actual=caseResult80,
                                  onpass="Link Up Test PASS",
                                  onfail="Link Up Test FAIL" )
+        # Printing what exactly failed
+        if not linkUp:
+            main.log.debug( "Link down was not discovered correctly" )
+        if not pingResult:
+            main.log.debug( "Pingall failed" )
+        if not intentState:
+            main.log.debug( "Intents are not all installed" )
 
     def CASE72( self, main ):
         """
@@ -1676,15 +1835,40 @@ class CHOtest:
             str( link_sleep ) +
             " seconds" )
 
+        main.step("Verify intents are installed")
+        # Checking a maximum of 3
+        for i in range(3):
+            if i != 0:
+                main.log.warn( "Verification failed. Retrying..." )
+            main.log.info("Giving onos some time...")
+            time.sleep( main.checkIntentsDelay )
+
+            intentState = main.TRUE
+            for e in range(int(main.numCtrls)):
+                main.log.info( "Checking intents on CLI %s" % (e+1) )
+                intentState = main.CLIs[e].checkIntentState( intentsId = main.intentIds ) and\
+                        intentState
+                if not intentState:
+                    main.log.warn( "Not all intents installed" )
+            if intentState:
+                break
+        else:
+            #Dumping intent summary
+            main.log.info( "**** Intent Summary ****\n" + str(main.ONOScli1.intents( jsonFormat=False, summary=True)) )
+
+
+        utilities.assert_equals( expect=main.TRUE, actual=intentState,
+                                 onpass="INTENTS INSTALLED",
+                                 onfail="SOME INTENTS NOT INSTALLED" )
+
         main.step( "Verify Ping across all hosts" )
-        pingResultLinkDown = main.FALSE
+        pingResult = main.FALSE
         time1 = time.time()
-        pingResultLinkDown = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=False,acceptableFailed=5)
-        if not pingResultLinkDown:
+        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout )
+        if not pingResult:
             main.log.warn("First pingall failed. Retrying...")
             time1 = time.time()
-            pingResultLinkDown = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=False,acceptableFailed=5)
-
+            pingResult = main.Mininet1.pingall(timeout=main.pingTimeout )
 
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
@@ -1692,14 +1876,22 @@ class CHOtest:
             "Time taken for Ping All: " +
             str( timeDiff ) +
             " seconds" )
-        utilities.assert_equals( expect=main.TRUE, actual=pingResultLinkDown,
+        utilities.assert_equals( expect=main.TRUE, actual=pingResult,
                                  onpass="PING ALL PASS",
                                  onfail="PING ALL FAIL" )
 
-        caseResult71 = pingResultLinkDown
-        utilities.assert_equals( expect=main.TRUE, actual=caseResult71,
+        caseResult70 = linkDown and pingResult and intentState
+        utilities.assert_equals( expect=main.TRUE, actual=caseResult70,
                                  onpass="Random Link cut Test PASS",
                                  onfail="Random Link cut Test FAIL" )
+
+        # Printing what exactly failed
+        if not linkDown:
+            main.log.debug( "Link down was not discovered correctly" )
+        if not pingResult:
+            main.log.debug( "Pingall failed" )
+        if not intentState:
+            main.log.debug( "Intents are not all installed" )
 
     def CASE82( self, main ):
         """
@@ -1736,15 +1928,40 @@ class CHOtest:
             str( link_sleep ) +
             " seconds" )
 
+        main.step("Verify intents are installed")
+        # Checking a maximum of 3
+        for i in range(3):
+            if i != 0:
+                main.log.warn( "Verification failed. Retrying..." )
+            main.log.info("Giving onos some time...")
+            time.sleep( main.checkIntentsDelay )
+
+            intentState = main.TRUE
+            for e in range(int(main.numCtrls)):
+                main.log.info( "Checking intents on CLI %s" % (e+1) )
+                intentState = main.CLIs[e].checkIntentState( intentsId = main.intentIds ) and\
+                        intentState
+                if not intentState:
+                    main.log.warn( "Not all intents installed" )
+            if intentState:
+                break
+        else:
+            #Dumping intent summary
+            main.log.info( "**** Intent Summary ****\n" + str(main.ONOScli1.intents( jsonFormat=False, summary=True)) )
+
+
+        utilities.assert_equals( expect=main.TRUE, actual=intentState,
+                                 onpass="INTENTS INSTALLED",
+                                 onfail="SOME INTENTS NOT INSTALLED" )
+
         main.step( "Verify Ping across all hosts" )
-        pingResultLinkUp = main.FALSE
+        pingResult = main.FALSE
         time1 = time.time()
-        pingResultLinkUp = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=False,acceptableFailed=5)
-        if not pingResultLinkUp:
+        pingResult = main.Mininet1.pingall( timeout=main.pingTimeout )
+        if not pingResult:
             main.log.warn("First pingall failed. Retrying...")
             time1 = time.time()
-            pingResultLinkUp = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=False,acceptableFailed=5)
-
+            pingResult = main.Mininet1.pingall(timeout=main.pingTimeout )
 
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
@@ -1752,14 +1969,21 @@ class CHOtest:
             "Time taken for Ping All: " +
             str( timeDiff ) +
             " seconds" )
-        utilities.assert_equals( expect=main.TRUE, actual=pingResultLinkUp,
+        utilities.assert_equals( expect=main.TRUE, actual=pingResult,
                                  onpass="PING ALL PASS",
                                  onfail="PING ALL FAIL" )
 
-        caseResult82 = linkUp and pingResultLinkUp
-        utilities.assert_equals( expect=main.TRUE, actual=caseResult82,
+        caseResult80 = linkUp and pingResult
+        utilities.assert_equals( expect=main.TRUE, actual=caseResult80,
                                  onpass="Link Up Test PASS",
                                  onfail="Link Up Test FAIL" )
+        # Printing what exactly failed
+        if not linkUp:
+            main.log.debug( "Link down was not discovered correctly" )
+        if not pingResult:
+            main.log.debug( "Pingall failed" )
+        if not intentState:
+            main.log.debug( "Intents are not all installed" )
 
     def CASE73( self, main ):
         """
@@ -1800,14 +2024,40 @@ class CHOtest:
             str( link_sleep ) +
             " seconds" )
 
+        main.step("Verify intents are installed")
+        # Checking a maximum of 3
+        for i in range(3):
+            if i != 0:
+                main.log.warn( "Verification failed. Retrying..." )
+            main.log.info("Giving onos some time...")
+            time.sleep( main.checkIntentsDelay )
+
+            intentState = main.TRUE
+            for e in range(int(main.numCtrls)):
+                main.log.info( "Checking intents on CLI %s" % (e+1) )
+                intentState = main.CLIs[e].checkIntentState( intentsId = main.intentIds ) and\
+                        intentState
+                if not intentState:
+                    main.log.warn( "Not all intents installed" )
+            if intentState:
+                break
+        else:
+            #Dumping intent summary
+            main.log.info( "**** Intent Summary ****\n" + str(main.ONOScli1.intents( jsonFormat=False, summary=True)) )
+
+
+        utilities.assert_equals( expect=main.TRUE, actual=intentState,
+                                 onpass="INTENTS INSTALLED",
+                                 onfail="SOME INTENTS NOT INSTALLED" )
+
         main.step( "Verify Ping across all hosts" )
-        pingResultLinkDown = main.FALSE
+        pingResult = main.FALSE
         time1 = time.time()
-        pingResultLinkDown = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=False,acceptableFailed=5)
-        if not pingResultLinkDown:
+        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout )
+        if not pingResult:
             main.log.warn("First pingall failed. Retrying...")
             time1 = time.time()
-            pingResultLinkDown = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=False,acceptableFailed=5)
+            pingResult = main.Mininet1.pingall(timeout=main.pingTimeout )
 
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
@@ -1815,14 +2065,22 @@ class CHOtest:
             "Time taken for Ping All: " +
             str( timeDiff ) +
             " seconds" )
-        utilities.assert_equals( expect=main.TRUE, actual=pingResultLinkDown,
+        utilities.assert_equals( expect=main.TRUE, actual=pingResult,
                                  onpass="PING ALL PASS",
                                  onfail="PING ALL FAIL" )
 
-        caseResult73 = pingResultLinkDown
-        utilities.assert_equals( expect=main.TRUE, actual=caseResult73,
+        caseResult70 = linkDown and pingResult and intentState
+        utilities.assert_equals( expect=main.TRUE, actual=caseResult70,
                                  onpass="Random Link cut Test PASS",
                                  onfail="Random Link cut Test FAIL" )
+
+        # Printing what exactly failed
+        if not linkDown:
+            main.log.debug( "Link down was not discovered correctly" )
+        if not pingResult:
+            main.log.debug( "Pingall failed" )
+        if not intentState:
+            main.log.debug( "Intents are not all installed" )
 
     def CASE83( self, main ):
         """
@@ -1859,14 +2117,40 @@ class CHOtest:
             str( link_sleep ) +
             " seconds" )
 
+        main.step("Verify intents are installed")
+        # Checking a maximum of 3
+        for i in range(3):
+            if i != 0:
+                main.log.warn( "Verification failed. Retrying..." )
+            main.log.info("Giving onos some time...")
+            time.sleep( main.checkIntentsDelay )
+
+            intentState = main.TRUE
+            for e in range(int(main.numCtrls)):
+                main.log.info( "Checking intents on CLI %s" % (e+1) )
+                intentState = main.CLIs[e].checkIntentState( intentsId = main.intentIds ) and\
+                        intentState
+                if not intentState:
+                    main.log.warn( "Not all intents installed" )
+            if intentState:
+                break
+        else:
+            #Dumping intent summary
+            main.log.info( "**** Intent Summary ****\n" + str(main.ONOScli1.intents( jsonFormat=False, summary=True)) )
+
+
+        utilities.assert_equals( expect=main.TRUE, actual=intentState,
+                                 onpass="INTENTS INSTALLED",
+                                 onfail="SOME INTENTS NOT INSTALLED" )
+
         main.step( "Verify Ping across all hosts" )
-        pingResultLinkUp = main.FALSE
+        pingResult = main.FALSE
         time1 = time.time()
-        pingResultLinkUp = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=False,acceptableFailed=5)
-        if not pingResultLinkUp:
+        pingResult = main.Mininet1.pingall( timeout=main.pingTimeout )
+        if not pingResult:
             main.log.warn("First pingall failed. Retrying...")
             time1 = time.time()
-            pingResultLinkUp = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=False,acceptableFailed=5)
+            pingResult = main.Mininet1.pingall(timeout=main.pingTimeout )
 
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
@@ -1874,14 +2158,21 @@ class CHOtest:
             "Time taken for Ping All: " +
             str( timeDiff ) +
             " seconds" )
-        utilities.assert_equals( expect=main.TRUE, actual=pingResultLinkUp,
+        utilities.assert_equals( expect=main.TRUE, actual=pingResult,
                                  onpass="PING ALL PASS",
                                  onfail="PING ALL FAIL" )
 
-        caseResult83 = linkUp and pingResultLinkUp
-        utilities.assert_equals( expect=main.TRUE, actual=caseResult83,
+        caseResult80 = linkUp and pingResult
+        utilities.assert_equals( expect=main.TRUE, actual=caseResult80,
                                  onpass="Link Up Test PASS",
                                  onfail="Link Up Test FAIL" )
+        # Printing what exactly failed
+        if not linkUp:
+            main.log.debug( "Link down was not discovered correctly" )
+        if not pingResult:
+            main.log.debug( "Pingall failed" )
+        if not intentState:
+            main.log.debug( "Intents are not all installed" )
 
     def CASE74( self, main ):
         """
@@ -1933,14 +2224,40 @@ class CHOtest:
             str( link_sleep ) +
             " seconds" )
 
+        main.step("Verify intents are installed")
+        # Checking a maximum of 3
+        for i in range(3):
+            if i != 0:
+                main.log.warn( "Verification failed. Retrying..." )
+            main.log.info("Giving onos some time...")
+            time.sleep( main.checkIntentsDelay )
+
+            intentState = main.TRUE
+            for e in range(int(main.numCtrls)):
+                main.log.info( "Checking intents on CLI %s" % (e+1) )
+                intentState = main.CLIs[e].checkIntentState( intentsId = main.intentIds ) and\
+                        intentState
+                if not intentState:
+                    main.log.warn( "Not all intents installed" )
+            if intentState:
+                break
+        else:
+            #Dumping intent summary
+            main.log.info( "**** Intent Summary ****\n" + str(main.ONOScli1.intents( jsonFormat=False, summary=True)) )
+
+
+        utilities.assert_equals( expect=main.TRUE, actual=intentState,
+                                 onpass="INTENTS INSTALLED",
+                                 onfail="SOME INTENTS NOT INSTALLED" )
+
         main.step( "Verify Ping across all hosts" )
-        pingResultLinkDown = main.FALSE
+        pingResult = main.FALSE
         time1 = time.time()
-        pingResultLinkDown = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=False,acceptableFailed=5)
-        if not pingResultLinkDown:
+        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout )
+        if not pingResult:
             main.log.warn("First pingall failed. Retrying...")
             time1 = time.time()
-            pingResultLinkDown = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=False,acceptableFailed=5)
+            pingResult = main.Mininet1.pingall(timeout=main.pingTimeout )
 
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
@@ -1948,14 +2265,22 @@ class CHOtest:
             "Time taken for Ping All: " +
             str( timeDiff ) +
             " seconds" )
-        utilities.assert_equals( expect=main.TRUE, actual=pingResultLinkDown,
+        utilities.assert_equals( expect=main.TRUE, actual=pingResult,
                                  onpass="PING ALL PASS",
                                  onfail="PING ALL FAIL" )
 
-        caseResult74 = linkDown and pingResultLinkDown
-        utilities.assert_equals( expect=main.TRUE, actual=caseResult74,
+        caseResult70 = linkDown and pingResult and intentState
+        utilities.assert_equals( expect=main.TRUE, actual=caseResult70,
                                  onpass="Random Link cut Test PASS",
                                  onfail="Random Link cut Test FAIL" )
+
+        # Printing what exactly failed
+        if not linkDown:
+            main.log.debug( "Link down was not discovered correctly" )
+        if not pingResult:
+            main.log.debug( "Pingall failed" )
+        if not intentState:
+            main.log.debug( "Intents are not all installed" )
 
     def CASE84( self, main ):
         """
@@ -1993,14 +2318,40 @@ class CHOtest:
             str( link_sleep ) +
             " seconds" )
 
+        main.step("Verify intents are installed")
+        # Checking a maximum of 3
+        for i in range(3):
+            if i != 0:
+                main.log.warn( "Verification failed. Retrying..." )
+            main.log.info("Giving onos some time...")
+            time.sleep( main.checkIntentsDelay )
+
+            intentState = main.TRUE
+            for e in range(int(main.numCtrls)):
+                main.log.info( "Checking intents on CLI %s" % (e+1) )
+                intentState = main.CLIs[e].checkIntentState( intentsId = main.intentIds ) and\
+                        intentState
+                if not intentState:
+                    main.log.warn( "Not all intents installed" )
+            if intentState:
+                break
+        else:
+            #Dumping intent summary
+            main.log.info( "**** Intent Summary ****\n" + str(main.ONOScli1.intents( jsonFormat=False, summary=True)) )
+
+
+        utilities.assert_equals( expect=main.TRUE, actual=intentState,
+                                 onpass="INTENTS INSTALLED",
+                                 onfail="SOME INTENTS NOT INSTALLED" )
+
         main.step( "Verify Ping across all hosts" )
-        pingResultLinkUp = main.FALSE
+        pingResult = main.FALSE
         time1 = time.time()
-        pingResultLinkUp = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=False,acceptableFailed=5)
-        if not pingResultLinkUp:
+        pingResult = main.Mininet1.pingall( timeout=main.pingTimeout )
+        if not pingResult:
             main.log.warn("First pingall failed. Retrying...")
             time1 = time.time()
-            pingResultLinkUp = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=False,acceptableFailed=5)
+            pingResult = main.Mininet1.pingall(timeout=main.pingTimeout )
 
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
@@ -2008,14 +2359,21 @@ class CHOtest:
             "Time taken for Ping All: " +
             str( timeDiff ) +
             " seconds" )
-        utilities.assert_equals( expect=main.TRUE, actual=pingResultLinkUp,
+        utilities.assert_equals( expect=main.TRUE, actual=pingResult,
                                  onpass="PING ALL PASS",
                                  onfail="PING ALL FAIL" )
 
-        caseResult84 = linkUp and pingResultLinkUp
-        utilities.assert_equals( expect=main.TRUE, actual=caseResult84,
+        caseResult80 = linkUp and pingResult
+        utilities.assert_equals( expect=main.TRUE, actual=caseResult80,
                                  onpass="Link Up Test PASS",
                                  onfail="Link Up Test FAIL" )
+        # Printing what exactly failed
+        if not linkUp:
+            main.log.debug( "Link down was not discovered correctly" )
+        if not pingResult:
+            main.log.debug( "Pingall failed" )
+        if not intentState:
+            main.log.debug( "Intents are not all installed" )
 
     def CASE75( self, main ):
         """
@@ -2067,14 +2425,40 @@ class CHOtest:
             str( link_sleep ) +
             " seconds" )
 
+        main.step("Verify intents are installed")
+        # Checking a maximum of 3
+        for i in range(3):
+            if i != 0:
+                main.log.warn( "Verification failed. Retrying..." )
+            main.log.info("Giving onos some time...")
+            time.sleep( main.checkIntentsDelay )
+
+            intentState = main.TRUE
+            for e in range(int(main.numCtrls)):
+                main.log.info( "Checking intents on CLI %s" % (e+1) )
+                intentState = main.CLIs[e].checkIntentState( intentsId = main.intentIds ) and\
+                        intentState
+                if not intentState:
+                    main.log.warn( "Not all intents installed" )
+            if intentState:
+                break
+        else:
+            #Dumping intent summary
+            main.log.info( "**** Intent Summary ****\n" + str(main.ONOScli1.intents( jsonFormat=False, summary=True)) )
+
+
+        utilities.assert_equals( expect=main.TRUE, actual=intentState,
+                                 onpass="INTENTS INSTALLED",
+                                 onfail="SOME INTENTS NOT INSTALLED" )
+
         main.step( "Verify Ping across all hosts" )
-        pingResultLinkDown = main.FALSE
+        pingResult = main.FALSE
         time1 = time.time()
-        pingResultLinkDown = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=False,acceptableFailed=5)
-        if not pingResultLinkDown:
+        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout )
+        if not pingResult:
             main.log.warn("First pingall failed. Retrying...")
             time1 = time.time()
-            pingResultLinkDown = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=False,acceptableFailed=5)
+            pingResult = main.Mininet1.pingall(timeout=main.pingTimeout )
 
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
@@ -2082,14 +2466,22 @@ class CHOtest:
             "Time taken for Ping All: " +
             str( timeDiff ) +
             " seconds" )
-        utilities.assert_equals( expect=main.TRUE, actual=pingResultLinkDown,
+        utilities.assert_equals( expect=main.TRUE, actual=pingResult,
                                  onpass="PING ALL PASS",
                                  onfail="PING ALL FAIL" )
 
-        caseResult75 = linkDown and pingResultLinkDown
-        utilities.assert_equals( expect=main.TRUE, actual=caseResult75,
+        caseResult70 = linkDown and pingResult and intentState
+        utilities.assert_equals( expect=main.TRUE, actual=caseResult70,
                                  onpass="Random Link cut Test PASS",
                                  onfail="Random Link cut Test FAIL" )
+
+        # Printing what exactly failed
+        if not linkDown:
+            main.log.debug( "Link down was not discovered correctly" )
+        if not pingResult:
+            main.log.debug( "Pingall failed" )
+        if not intentState:
+            main.log.debug( "Intents are not all installed" )
 
     def CASE85( self, main ):
         """
@@ -2127,14 +2519,40 @@ class CHOtest:
             str( link_sleep ) +
             " seconds" )
 
+        main.step("Verify intents are installed")
+        # Checking a maximum of 3
+        for i in range(3):
+            if i != 0:
+                main.log.warn( "Verification failed. Retrying..." )
+            main.log.info("Giving onos some time...")
+            time.sleep( main.checkIntentsDelay )
+
+            intentState = main.TRUE
+            for e in range(int(main.numCtrls)):
+                main.log.info( "Checking intents on CLI %s" % (e+1) )
+                intentState = main.CLIs[e].checkIntentState( intentsId = main.intentIds ) and\
+                        intentState
+                if not intentState:
+                    main.log.warn( "Not all intents installed" )
+            if intentState:
+                break
+        else:
+            #Dumping intent summary
+            main.log.info( "**** Intent Summary ****\n" + str(main.ONOScli1.intents( jsonFormat=False, summary=True)) )
+
+
+        utilities.assert_equals( expect=main.TRUE, actual=intentState,
+                                 onpass="INTENTS INSTALLED",
+                                 onfail="SOME INTENTS NOT INSTALLED" )
+
         main.step( "Verify Ping across all hosts" )
-        pingResultLinkUp = main.FALSE
+        pingResult = main.FALSE
         time1 = time.time()
-        pingResultLinkUp = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=False,acceptableFailed=5)
-        if not pingResultLinkUp:
+        pingResult = main.Mininet1.pingall( timeout=main.pingTimeout )
+        if not pingResult:
             main.log.warn("First pingall failed. Retrying...")
             time1 = time.time()
-            pingResultLinkUp = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=False,acceptableFailed=5)
+            pingResult = main.Mininet1.pingall(timeout=main.pingTimeout )
 
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
@@ -2142,14 +2560,21 @@ class CHOtest:
             "Time taken for Ping All: " +
             str( timeDiff ) +
             " seconds" )
-        utilities.assert_equals( expect=main.TRUE, actual=pingResultLinkUp,
+        utilities.assert_equals( expect=main.TRUE, actual=pingResult,
                                  onpass="PING ALL PASS",
                                  onfail="PING ALL FAIL" )
 
-        caseResult85 = linkUp and pingResultLinkUp
-        utilities.assert_equals( expect=main.TRUE, actual=caseResult85,
+        caseResult80 = linkUp and pingResult
+        utilities.assert_equals( expect=main.TRUE, actual=caseResult80,
                                  onpass="Link Up Test PASS",
                                  onfail="Link Up Test FAIL" )
+        # Printing what exactly failed
+        if not linkUp:
+            main.log.debug( "Link down was not discovered correctly" )
+        if not pingResult:
+            main.log.debug( "Pingall failed" )
+        if not intentState:
+            main.log.debug( "Intents are not all installed" )
 
     def CASE170( self ):
         """
@@ -2615,6 +3040,9 @@ class CHOtest:
         time2 = time.time()
         main.log.info("Time for adding point intents: %2f seconds" %(time2-time1))
 
+        # Saving intent ids to check intents in later case
+        main.intentIds = list(intentIdList)
+
         main.step("Verify intents are installed")
 
         # Giving onos 3 chances to install intents
@@ -2697,6 +3125,9 @@ class CHOtest:
                 intentIdList.append(thread.result)
         time2 = time.time()
         main.log.info( "Time for adding point intents: %2f seconds" %(time2-time1) )
+
+        # Saving intent ids to check intents in later case
+        main.intentIds = list(intentIdList)
 
         main.step("Verify intents are installed")
 
@@ -2783,6 +3214,9 @@ class CHOtest:
                 intentIdList.append(thread.result)
         time2 = time.time()
         main.log.info("Time for adding point intents: %2f seconds" %(time2-time1))
+
+        # Saving intent ids to check intents in later case
+        main.intentIds = list(intentIdList)
 
         main.step("Verify intents are installed")
 

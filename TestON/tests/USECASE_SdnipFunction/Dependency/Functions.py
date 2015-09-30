@@ -74,9 +74,9 @@ def pingSpeakerToPeer( main, speakers = ["speaker1"],
         main.exit()
 
     if expectAllSuccess:
-        main.step( "BGP speakers ping peers, expect all tests to SUCCEED" )
+        main.step( "BGP speakers ping peers, expect all tests to succeed" )
     else:
-        main.step( "BGP speakers ping peers, expect all tests to FAIL" )
+        main.step( "BGP speakers ping peers, expect all tests to fail" )
 
     result = True
     if expectAllSuccess:

@@ -574,7 +574,7 @@ class USECASE_SdnipFunction:
         main.case( "Stop sw11 located in best path, \
         check route number, P2P intent number, M2S intent number, ping test" )
 
-        main.step( "Check the flow number correctness before stopping sw11" )
+        main.log.info( "Check the flow number correctness before stopping sw11" )
         main.Functions.checkFlowNum( main, "sw11", 13 )
         main.Functions.checkFlowNum( main, "sw1", 3 )
         main.Functions.checkFlowNum( main, "sw7", 3 )
@@ -621,7 +621,7 @@ class USECASE_SdnipFunction:
         main.case( "Start sw11 which was stopped in CASE9, \
         check route number, P2P intent number, M2S intent number, ping test" )
 
-        main.step( "Check the flow status before starting sw11" )
+        main.log.info( "Check the flow status before starting sw11" )
         main.Functions.checkFlowNum( main, "sw1", 11 )
         main.Functions.checkFlowNum( main, "sw7", 5 )
         main.log.info( main.Mininet.checkFlows( "sw1" ) )

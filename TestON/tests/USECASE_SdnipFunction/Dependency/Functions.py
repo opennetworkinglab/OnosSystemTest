@@ -135,7 +135,9 @@ def pingHostToHost( main, hosts = ["host64514", "host64515", "host64516"],
                              onpass = "Ping test results are expected",
                              onfail = "Ping test results are Not expected" )
 
+    '''
     if result == False:
         main.cleanup()
         main.exit()
+    '''
 

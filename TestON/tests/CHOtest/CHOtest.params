@@ -90,7 +90,7 @@
         <LinkDiscovery>15</LinkDiscovery>
         <SwitchDiscovery>10</SwitchDiscovery>
         <IntentPurgeDelay>15</IntentPurgeDelay>
-        <CheckIntentDelay>40</CheckIntentDelay>
+        <CheckIntentDelay>5</CheckIntentDelay>
     </timers>
 
 </PARAMS>

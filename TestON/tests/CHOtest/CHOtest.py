@@ -993,23 +993,24 @@ class CHOtest:
 
         # Giving onos 3 chances to install intents
         for i in range(3):
-            intentsJson = main.ONOScli1.intents()
-            getIntentStateResult = main.ONOScli1.getIntentState(intentsId = intentIdList,
-                                                                intentsJson = intentsJson)
-            main.log.info("Waiting for onos to get intents...")
+            if i != 0:
+                main.log.warn( "Verification failed. Retrying..." )
+            main.log.info("Waiting for onos to install intents...")
             time.sleep( main.checkIntentsDelay )
 
             intentState = main.TRUE
-            failedIntents = 0
-            for intent in getIntentStateResult:
-                state = intent.items()[0][1]
-                if state != 'INSTALLED':
-                    main.log.info("Intent State: " + state)
-                    failedIntents += 1
-                    intentState = main.FALSE
+            for e in range(int(main.numCtrls)):
+                main.log.info( "Checking intents on CLI %s" % (e+1) )
+                intentState = main.CLIs[e].checkIntentState( intentsId = intentIdList ) and\
+                        intentState
+                if not intentState:
+                    main.log.warn( "Not all intents installed" )
             if intentState:
                 break
-            main.log.error("Total # of intents not in an INSTALLED state: " + str(failedIntents))
+        else:
+            #Dumping intent summary
+            main.log.info( "Intents:\n" + str( main.ONOScli1.intents( jsonFormat=False, summary=True ) ) )
+
 
         utilities.assert_equals( expect=main.TRUE, actual=intentState,
                                  onpass="INTENTS INSTALLED",
@@ -1079,24 +1080,23 @@ class CHOtest:
 
         # Giving onos 3 chances to install intents
         for i in range(3):
-            intentsJson = main.ONOScli1.intents()
-            getIntentStateResult = main.ONOScli1.getIntentState(intentsId = intentIdList,
-                                                                intentsJson = intentsJson)
-            main.log.info("Waiting for onos to get intents...")
+            if i != 0:
+                main.log.warn( "Verification failed. Retrying..." )
+            main.log.info("Waiting for onos to install intents...")
             time.sleep( main.checkIntentsDelay )
 
             intentState = main.TRUE
-            failedIntents = 0
-            for intent in getIntentStateResult:
-                state = intent.items()[0][1]
-                if state != 'INSTALLED':
-                    main.log.info("Intent State: " + state)
-                    failedIntents += 1
-                    intentState = main.FALSE
+            for e in range(int(main.numCtrls)):
+                main.log.info( "Checking intents on CLI %s" % (e+1) )
+                intentState = main.CLIs[e].checkIntentState( intentsId = intentIdList ) and\
+                        intentState
+                if not intentState:
+                    main.log.warn( "Not all intents installed" )
             if intentState:
                 break
-            main.log.error("Total # of intents not in an INSTALLED state: " + str(failedIntents))
-
+        else:
+            #Dumping intent summary
+            main.log.info( "Intents:\n" + str( main.ONOScli1.intents( jsonFormat=False, summary=True ) ) )
 
         utilities.assert_equals( expect=main.TRUE, actual=intentState,
                                  onpass="INTENTS INSTALLED",
@@ -1164,25 +1164,25 @@ class CHOtest:
 
         main.step("Verify intents are installed")
 
-        # Giving onos 5 chances to install intents
-        for i in range(5):
-            intentsJson = main.ONOScli1.intents()
-            getIntentStateResult = main.ONOScli1.getIntentState(intentsId = intentIdList,
-                                                                intentsJson = intentsJson)
-            main.log.info("Waiting for onos to get intents...")
+        # Giving onos 3 chances to install intents
+        for i in range(3):
+            if i != 0:
+                main.log.warn( "Verification failed. Retrying..." )
+            main.log.info("Waiting for onos to install intents...")
             time.sleep( main.checkIntentsDelay )
 
             intentState = main.TRUE
-            failedIntents = 0
-            for intent in getIntentStateResult:
-                state = intent.items()[0][1]
-                if state != 'INSTALLED':
-                    main.log.info("Intent State: " + state)
-                    failedIntents += 1
-                    intentState = main.FALSE
+            for e in range(int(main.numCtrls)):
+                main.log.info( "Checking intents on CLI %s" % (e+1) )
+                intentState = main.CLIs[e].checkIntentState( intentsId = intentIdList ) and\
+                        intentState
+                if not intentState:
+                    main.log.warn( "Not all intents installed" )
             if intentState:
                 break
-            main.log.error("Total # of intents not in an INSTALLED state: " + str(failedIntents))
+        else:
+            #Dumping intent summary
+            main.log.info( "Intents:\n" + str( main.ONOScli1.intents( jsonFormat=False, summary=True ) ) )
 
         utilities.assert_equals( expect=main.TRUE, actual=intentState,
                                  onpass="INTENTS INSTALLED",
@@ -2614,32 +2614,32 @@ class CHOtest:
                 intentIdList.append(thread.result)
         time2 = time.time()
         main.log.info("Time for adding point intents: %2f seconds" %(time2-time1))
-        intentResult = main.TRUE
-        intentsJson = main.ONOScli1.intents()
-        getIntentStateResult = main.ONOScli1.getIntentState(intentsId = intentIdList,
-                intentsJson = intentsJson)
-        # Takes awhile for all the onos to get the intents
-        time.sleep(60)
 
         main.step("Verify intents are installed")
+
+        # Giving onos 3 chances to install intents
         for i in range(3):
+            if i != 0:
+                main.log.warn( "Verification failed. Retrying..." )
+            main.log.info("Waiting for onos to install intents...")
+            time.sleep( main.checkIntentsDelay )
+
             intentState = main.TRUE
-            failedIntents = 0
-            for intent in getIntentStateResult:
-                state = intent.items()[0][1]
-                if state != 'INSTALLED':
-                    main.log.info("Intent State: " + state)
-                    failedIntents += 1
-                    intentState = main.FALSE
+            for e in range(int(main.numCtrls)):
+                main.log.info( "Checking intents on CLI %s" % (e+1) )
+                intentState = main.CLIs[e].checkIntentState( intentsId = intentIdList ) and\
+                        intentState
+                if not intentState:
+                    main.log.warn( "Not all intents installed" )
             if intentState:
                 break
-            main.log.error("Total: " + str(failedIntents))
-            time.sleep(5)
+        else:
+            #Dumping intent summary
+            main.log.info( "Intents:\n" + str( main.ONOScli1.intents( jsonFormat=False, summary=True ) ) )
 
         utilities.assert_equals( expect=main.TRUE, actual=intentState,
                                  onpass="INTENTS INSTALLED",
                                  onfail="SOME INTENTS NOT INSTALLED" )
-
 
         main.step( "Verify Ping across all hosts" )
         pingResult = main.FALSE
@@ -2655,7 +2655,7 @@ class CHOtest:
                                  onpass="PING tALL PASS",
                                  onfail="PING ALL FAIL" )
 
-        case90Result = ( intentResult and pingResult )
+        case90Result = ( intentState and pingResult )
 
         utilities.assert_equals(
             expect=main.TRUE,
@@ -2697,32 +2697,32 @@ class CHOtest:
                 intentIdList.append(thread.result)
         time2 = time.time()
         main.log.info( "Time for adding point intents: %2f seconds" %(time2-time1) )
-        intentResult = main.TRUE
-        intentsJson = main.ONOScli1.intents()
-        getIntentStateResult = main.ONOScli1.getIntentState(intentsId = intentIdList,
-                intentsJson = intentsJson)
-        # Takes awhile for all the onos to get the intents
-        time.sleep(30)
 
         main.step("Verify intents are installed")
+
+        # Giving onos 3 chances to install intents
         for i in range(3):
+            if i != 0:
+                main.log.warn( "Verification failed. Retrying..." )
+            main.log.info("Waiting for onos to install intents...")
+            time.sleep( main.checkIntentsDelay )
+
             intentState = main.TRUE
-            failedIntents = 0
-            for intent in getIntentStateResult:
-                state = intent.items()[0][1]
-                if state != 'INSTALLED':
-                    main.log.info("Intent State: " + state)
-                    failedIntents += 1
-                    intentState = main.FALSE
+            for e in range(int(main.numCtrls)):
+                main.log.info( "Checking intents on CLI %s" % (e+1) )
+                intentState = main.CLIs[e].checkIntentState( intentsId = intentIdList ) and\
+                        intentState
+                if not intentState:
+                    main.log.warn( "Not all intents installed" )
             if intentState:
                 break
-            main.log.error("Total: " + str(failedIntents))
-            time.sleep(5)
+        else:
+            #Dumping intent summary
+            main.log.info( "Intents:\n" + str( main.ONOScli1.intents( jsonFormat=False, summary=True ) ) )
 
         utilities.assert_equals( expect=main.TRUE, actual=intentState,
                                  onpass="INTENTS INSTALLED",
                                  onfail="SOME INTENTS NOT INSTALLED" )
-
 
         main.step( "Verify Ping across all hosts" )
         pingResult = main.FALSE
@@ -2738,7 +2738,7 @@ class CHOtest:
                                  onpass="PING ALL PASS",
                                  onfail="PING ALL FAIL" )
 
-        case91Result = ( intentResult and pingResult )
+        case91Result = ( intentState and pingResult )
 
         utilities.assert_equals(
             expect=main.TRUE,
@@ -2783,33 +2783,32 @@ class CHOtest:
                 intentIdList.append(thread.result)
         time2 = time.time()
         main.log.info("Time for adding point intents: %2f seconds" %(time2-time1))
-        intentResult = main.TRUE
-        intentsJson = main.ONOScli1.intents()
-        getIntentStateResult = main.ONOScli1.getIntentState(intentsId = intentIdList,
-                intentsJson = intentsJson)
-        #print getIntentStateResult
-        # Takes awhile for all the onos to get the intents
-        time.sleep(60)
 
         main.step("Verify intents are installed")
+
+        # Giving onos 3 chances to install intents
         for i in range(3):
+            if i != 0:
+                main.log.warn( "Verification failed. Retrying..." )
+            main.log.info("Waiting for onos to install intents...")
+            time.sleep( main.checkIntentsDelay )
+
             intentState = main.TRUE
-            failedIntents = 0
-            for intent in getIntentStateResult:
-                state = intent.items()[0][1]
-                if state != 'INSTALLED':
-                    main.log.info("Intent State: " + state)
-                    failedIntents += 1
-                    intentState = main.FALSE
+            for e in range(int(main.numCtrls)):
+                main.log.info( "Checking intents on CLI %s" % (e+1) )
+                intentState = main.CLIs[e].checkIntentState( intentsId = intentIdList ) and\
+                        intentState
+                if not intentState:
+                    main.log.warn( "Not all intents installed" )
             if intentState:
                 break
-            main.log.error("Total: " + str(failedIntents))
-            time.sleep(5)
+        else:
+            #Dumping intent summary
+            main.log.info( "Intents:\n" + str( main.ONOScli1.intents( jsonFormat=False, summary=True ) ) )
 
         utilities.assert_equals( expect=main.TRUE, actual=intentState,
                                  onpass="INTENTS INSTALLED",
                                  onfail="SOME INTENTS NOT INSTALLED" )
-
 
         main.step( "Verify Ping across all hosts" )
         pingResult = main.FALSE
@@ -2825,7 +2824,7 @@ class CHOtest:
                                  onpass="PING ALL PASS",
                                  onfail="PING ALL FAIL" )
 
-        case92Result = ( intentResult and pingResult )
+        case92Result = ( intentState and pingResult )
 
         utilities.assert_equals(
             expect=main.TRUE,
@@ -2840,13 +2839,14 @@ class CHOtest:
         """
         import copy
         import time
+        from collections import Counter
         main.log.report( "Install multi-single point intents and verify Ping all" )
         main.log.report( "___________________________________________" )
         main.case( "Install multi-single point intents and Ping all" )
         deviceDPIDsCopy = copy.copy(main.deviceDPIDs)
         portIngressList = ['1']*(len(deviceDPIDsCopy) - 1)
         intentIdList = []
-        print "MACsDict", main.MACsDict
+        main.log.info( "MACsDict" + str(main.MACsDict) )
         time1 = time.time()
         for i in xrange(0,len(deviceDPIDsCopy),int(main.numCtrls)):
             pool = []
@@ -2861,7 +2861,6 @@ class CHOtest:
                         name="addMultipointToSinglepointIntent",
                         args =[ingressDeviceList,egressDevice,portIngressList,'1','','',main.MACsDict.get(egressDevice)])
                 pool.append(t)
-                #time.sleep(1)
                 t.start()
                 i = i + 1
                 main.threadID = main.threadID + 1
@@ -2870,38 +2869,55 @@ class CHOtest:
                 intentIdList.append(thread.result)
         time2 = time.time()
         main.log.info("Time for adding point intents: %2f seconds" %(time2-time1))
-        time.sleep(30)
-        print "getting all intents ID"
-        intentIdTemp = main.ONOScli1.getAllIntentsId()
-        print intentIdTemp
-        print len(intentIdList)
-        print intentIdList
-        checkIntentStateResult = main.TRUE
-        print "Checking intents state"
-        checkIntentStateResult = main.ONOScli1.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
-        checkIntentStateResult = main.ONOScli2.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
-        checkIntentStateResult = main.ONOScli3.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
-        checkIntentStateResult = main.ONOScli4.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
-        checkIntentStateResult = main.ONOScli5.checkIntentState( intentsId = intentIdList ) and checkIntentStateResult
 
-        if checkIntentStateResult:
-            main.log.info( "All intents are installed correctly " )
+        main.step("Verify intents are installed")
 
-        print "Checking flows state "
+        # Giving onos 3 chances to install intents
+        for i in range(3):
+            if i != 0:
+                main.log.warn( "Verification failed. Retrying..." )
+            main.log.info("Waiting for onos to install intents...")
+            time.sleep( main.checkIntentsDelay )
+
+            intentState = main.TRUE
+            for e in range(int(main.numCtrls)):
+                main.log.info( "Checking intents on CLI %s" % (e+1) )
+                intentState = main.CLIs[e].checkIntentState( intentsId = intentIdList ) and\
+                        intentState
+                if not intentState:
+                    main.log.warn( "Not all intents installed" )
+            if intentState:
+                break
+        else:
+            #Dumping intent summary
+            main.log.info( "Intents:\n" + str( main.ONOScli1.intents( jsonFormat=False, summary=True ) ) )
+
+        utilities.assert_equals( expect=main.TRUE, actual=intentState,
+                                 onpass="INTENTS INSTALLED",
+                                 onfail="SOME INTENTS NOT INSTALLED" )
+
+        main.log.info( "Checking flows state" )
         checkFlowsState = main.ONOScli1.checkFlowsState()
+        # Giving onos time to return the state of the flows
         time.sleep(50)
+
         main.step( "Verify Ping across all hosts" )
         pingResult = main.FALSE
         time1 = time.time()
-        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=False,acceptableFailed=5)
+        pingResult = main.Mininet1.pingall( timeout=main.pingTimeout )
+        if not pingResult:
+            time1 = time.time()
+            main.log.warn("First pingall failed. Retrying")
+            pingResult = main.Mininet1.pingall( timeout=main.pingTimeout )
+
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
             "Time taken for Ping All: " +
             str( timeDiff ) +
             " seconds" )
-        checkFlowsState = main.ONOScli1.checkFlowsState()
-        case93Result = pingResult
+
+        case93Result = ( checkFlowsState and pingResult and intentState )
         utilities.assert_equals(
             expect=main.TRUE,
             actual=case93Result,
@@ -2936,7 +2952,6 @@ class CHOtest:
                         name="addMultipointToSinglepointIntent",
                         args =[ingressDeviceList,egressDevice,portIngressList,'1','','',main.MACsDict.get(egressDevice)])
                 pool.append(t)
-                #time.sleep(1)
                 t.start()
                 i = i + 1
                 main.threadID = main.threadID + 1
@@ -2945,11 +2960,42 @@ class CHOtest:
                 intentIdList.append(thread.result)
         time2 = time.time()
         main.log.info("Time for adding point intents: %2f seconds" %(time2-time1))
-        time.sleep(5)
+
+        main.step("Verify intents are installed")
+
+        # Giving onos 3 chances to install intents
+        for i in range(3):
+            if i != 0:
+                main.log.warn( "Verification failed. Retrying..." )
+            main.log.info("Waiting for onos to install intents...")
+            time.sleep( main.checkIntentsDelay )
+
+            intentState = main.TRUE
+            for e in range(int(main.numCtrls)):
+                main.log.info( "Checking intents on CLI %s" % (e+1) )
+                intentState = main.CLIs[e].checkIntentState( intentsId = intentIdList ) and\
+                        intentState
+                if not intentState:
+                    main.log.warn( "Not all intents installed" )
+            if intentState:
+                break
+        else:
+            #Dumping intent summary
+            main.log.info( "Intents:\n" + str( main.ONOScli1.intents( jsonFormat=False, summary=True ) ) )
+
+
+        utilities.assert_equals( expect=main.TRUE, actual=intentState,
+                                 onpass="INTENTS INSTALLED",
+                                 onfail="SOME INTENTS NOT INSTALLED" )
+
         main.step( "Verify Ping across all hosts" )
         pingResult = main.FALSE
         time1 = time.time()
-        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=False,acceptableFailed=5)
+        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout)
+        if not pingResult:
+            main.log.info( "First pingall failed. Retrying..." )
+            time1 = time.time()
+            pingResult = main.Mininet1.pingall(timeout=main.pingTimeout)
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -2957,7 +3003,8 @@ class CHOtest:
             str( timeDiff ) +
             " seconds" )
 
-        case94Result = pingResult
+
+        case94Result = ( pingResult and intentState )
         utilities.assert_equals(
             expect=main.TRUE,
             actual=case94Result,
@@ -2993,7 +3040,6 @@ class CHOtest:
                         name="addSinglepointToMultipointIntent",
                         args =[ingressDevice,egressDeviceList,'1',portEgressList,'',main.MACsDict.get(ingressDevice)])
                 pool.append(t)
-                #time.sleep(1)
                 t.start()
                 i = i + 1
                 main.threadID = main.threadID + 1
@@ -3002,11 +3048,42 @@ class CHOtest:
                 intentIdList.append(thread.result)
         time2 = time.time()
         main.log.info("Time for adding point intents: %2f seconds" %(time2-time1))
-        time.sleep(5)
+
+        main.step("Verify intents are installed")
+
+        # Giving onos 3 chances to install intents
+        for i in range(3):
+            if i != 0:
+                main.log.warn( "Verification failed. Retrying..." )
+            main.log.info("Waiting for onos to install intents...")
+            time.sleep( main.checkIntentsDelay )
+
+            intentState = main.TRUE
+            for e in range(int(main.numCtrls)):
+                main.log.info( "Checking intents on CLI %s" % (e+1) )
+                intentState = main.CLIs[e].checkIntentState( intentsId = intentIdList ) and\
+                        intentState
+                if not intentState:
+                    main.log.warn( "Not all intents installed" )
+            if intentState:
+                break
+        else:
+            #Dumping intent summary
+            main.log.info( "Intents:\n" + str( main.ONOScli1.intents( jsonFormat=False, summary=True ) ) )
+
+
+        utilities.assert_equals( expect=main.TRUE, actual=intentState,
+                                 onpass="INTENTS INSTALLED",
+                                 onfail="SOME INTENTS NOT INSTALLED" )
+
         main.step( "Verify Ping across all hosts" )
         pingResult = main.FALSE
         time1 = time.time()
-        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=False,acceptableFailed=5)
+        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout)
+        if not pingResult:
+            main.log.info( "First pingall failed. Retrying..." )
+            time1 = time.time()
+            pingResult = main.Mininet1.pingall(timeout=main.pingTimeout)
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -3014,7 +3091,7 @@ class CHOtest:
             str( timeDiff ) +
             " seconds" )
 
-        case96Result = pingResult
+        case96Result = ( pingResult and intentState )
         utilities.assert_equals(
             expect=main.TRUE,
             actual=case96Result,
@@ -3048,7 +3125,6 @@ class CHOtest:
                         name="addSinglepointToMultipointIntent",
                         args =[ingressDevice,egressDeviceList,'1',portEgressList,'',main.MACsDict.get(ingressDevice),''])
                 pool.append(t)
-                #time.sleep(1)
                 t.start()
                 i = i + 1
                 main.threadID = main.threadID + 1
@@ -3057,11 +3133,42 @@ class CHOtest:
                 intentIdList.append(thread.result)
         time2 = time.time()
         main.log.info("Time for adding point intents: %2f seconds" %(time2-time1))
-        time.sleep(5)
+
+        main.step("Verify intents are installed")
+
+        # Giving onos 3 chances to install intents
+        for i in range(3):
+            if i != 0:
+                main.log.warn( "Verification failed. Retrying..." )
+            main.log.info("Waiting for onos to install intents...")
+            time.sleep( main.checkIntentsDelay )
+
+            intentState = main.TRUE
+            for e in range(int(main.numCtrls)):
+                main.log.info( "Checking intents on CLI %s" % (e+1) )
+                intentState = main.CLIs[e].checkIntentState( intentsId = intentIdList ) and\
+                        intentState
+                if not intentState:
+                    main.log.warn( "Not all intents installed" )
+            if intentState:
+                break
+        else:
+            #Dumping intent summary
+            main.log.info( "Intents:\n" + str( main.ONOScli1.intents( jsonFormat=False, summary=True ) ) )
+
+
+        utilities.assert_equals( expect=main.TRUE, actual=intentState,
+                                 onpass="INTENTS INSTALLED",
+                                 onfail="SOME INTENTS NOT INSTALLED" )
+
         main.step( "Verify Ping across all hosts" )
         pingResult = main.FALSE
         time1 = time.time()
-        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=False,acceptableFailed=5)
+        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout)
+        if not pingResult:
+            main.log.info( "First pingall failed. Retrying..." )
+            time1 = time.time()
+            pingResult = main.Mininet1.pingall(timeout=main.pingTimeout)
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -3069,7 +3176,7 @@ class CHOtest:
             str( timeDiff ) +
             " seconds" )
 
-        case97Result = pingResult
+        case97Result = ( pingResult and intentState )
         utilities.assert_equals(
             expect=main.TRUE,
             actual=case97Result,
@@ -3110,7 +3217,6 @@ class CHOtest:
                         name="addSinglepointToMultipointIntent",
                         args =[ingressDevice,egressDeviceList,'1',portEgressList,'',MACsDictCopy.get(ingressDevice),''])
                 pool.append(t)
-                #time.sleep(1)
                 t.start()
                 i = i + 1
                 main.threadID = main.threadID + 1
@@ -3119,11 +3225,42 @@ class CHOtest:
                 intentIdList.append(thread.result)
         time2 = time.time()
         main.log.info("Time for adding point intents: %2f seconds" %(time2-time1))
-        time.sleep(5)
+
+        main.step("Verify intents are installed")
+
+        # Giving onos 3 chances to install intents
+        for i in range(3):
+            if i != 0:
+                main.log.warn( "Verification failed. Retrying..." )
+            main.log.info("Waiting for onos to install intents...")
+            time.sleep( main.checkIntentsDelay )
+
+            intentState = main.TRUE
+            for e in range(int(main.numCtrls)):
+                main.log.info( "Checking intents on CLI %s" % (e+1) )
+                intentState = main.CLIs[e].checkIntentState( intentsId = intentIdList ) and\
+                        intentState
+                if not intentState:
+                    main.log.warn( "Not all intents installed" )
+            if intentState:
+                break
+        else:
+            #Dumping intent summary
+            main.log.info( "Intents:\n" + str( main.ONOScli1.intents( jsonFormat=False, summary=True ) ) )
+
+
+        utilities.assert_equals( expect=main.TRUE, actual=intentState,
+                                 onpass="INTENTS INSTALLED",
+                                 onfail="SOME INTENTS NOT INSTALLED" )
+
         main.step( "Verify Ping across all hosts" )
         pingResult = main.FALSE
         time1 = time.time()
-        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=False,acceptableFailed=5)
+        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout)
+        if not pingResult:
+            main.log.info( "First pingall failed. Retrying..." )
+            time1 = time.time()
+            pingResult = main.Mininet1.pingall(timeout=main.pingTimeout)
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -3131,7 +3268,7 @@ class CHOtest:
             str( timeDiff ) +
             " seconds" )
 
-        case98Result = pingResult
+        case98Result = ( pingResult and intentState )
         utilities.assert_equals(
             expect=main.TRUE,
             actual=case98Result,

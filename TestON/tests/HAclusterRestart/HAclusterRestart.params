@@ -40,7 +40,7 @@
         <port7>6653</port7>
     </CTRL>
     <BACKUP>
-        <ENABLED>True</ENABLED>
+        <ENABLED>False</ENABLED>
         <TESTONUSER>admin</TESTONUSER>
         <TESTONIP>10.128.30.9</TESTONIP>
     </BACKUP>

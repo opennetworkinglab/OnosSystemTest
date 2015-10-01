@@ -716,6 +716,27 @@ class TestON:
                           ' could not be terminated'
         sys.exit()
 
+    def stop( self, email=False ):
+        """
+        Stop the test until Ctrl-D is entered.
+        Ctrl-C will kill the test
+        """
+        try:
+            if email:
+                # FIXME: implement this
+                raise NotImplementedError
+            self.log.error( "Test execution suspended. Press Ctrl-D to "
+                            "resume or Ctrl-C to exit the test" )
+            # NOTE: Ctrl-D needs to be entered on a new line
+            while True:
+                # TODO: we could give the user an interactive prompt where
+                #       they could call functions
+                raw_input()
+        except EOFError:
+            return
+        # Pass all other exceptions up to caller
+
+
 def verifyOptions( options ):
     '''
     This will verify the command line options and set to default values,

@@ -33,6 +33,8 @@ class CHOtest:
         git_branch = main.params[ 'GIT' ][ 'branch' ]
         karafTimeout = main.params['CTRL']['karafCliTimeout']
         main.checkIntentsDelay = int( main.params['timers']['CheckIntentDelay'] )
+        main.failSwitch = bool( main.params['TEST']['fail_switch'] )
+        main.emailOnStop = bool( main.params['TEST']['email'] )
         main.newTopo = ""
         main.CLIs = []
 
@@ -283,11 +285,11 @@ class CHOtest:
         # giving some breathing time for ONOS to complete re-balance
         time.sleep( 5 )
 
-        case21Result = switch_mastership
+        caseResult = switch_mastership
         time.sleep(30)
         utilities.assert_equals(
             expect=main.TRUE,
-            actual=case21Result,
+            actual=caseResult,
             onpass="Starting new Chordal topology test PASS",
             onfail="Starting new Chordal topology test FAIL" )
 
@@ -350,11 +352,11 @@ class CHOtest:
             # giving some breathing time for ONOS to complete re-balance
             time.sleep( 3 )
 
-        case22Result = switch_mastership
+        caseResult = switch_mastership
         time.sleep(60)
         utilities.assert_equals(
             expect=main.TRUE,
-            actual=case22Result,
+            actual=caseResult,
             onpass="Starting new Spine topology test PASS",
             onfail="Starting new Spine topology test FAIL" )
 
@@ -526,8 +528,8 @@ class CHOtest:
         else:
             main.log.report( "IPv4 Pingall Test in Reactive mode failed" )
 
-        case40Result =  appCheck and pingResult
-        utilities.assert_equals( expect=main.TRUE, actual=case40Result,
+        caseResult =  appCheck and pingResult
+        utilities.assert_equals( expect=main.TRUE, actual=caseResult,
                                  onpass="Reactive Mode IPv4 Pingall test PASS",
                                  onfail="Reactive Mode IPv4 Pingall test FAIL" )
 
@@ -585,8 +587,8 @@ class CHOtest:
         else:
             main.log.report( "IPv4 Pingall Test in Reactive mode failed" )
 
-        case41Result =  appCheck and pingResult
-        utilities.assert_equals( expect=main.TRUE, actual=case41Result,
+        caseResult =  appCheck and pingResult
+        utilities.assert_equals( expect=main.TRUE, actual=caseResult,
                                  onpass="Reactive Mode IPv4 Pingall test PASS",
                                  onfail="Reactive Mode IPv4 Pingall test FAIL" )
 
@@ -644,8 +646,8 @@ class CHOtest:
         else:
             main.log.report( "IPv4 Pingall Test in Reactive mode failed" )
 
-        case42Result =  appCheck and pingResult
-        utilities.assert_equals( expect=main.TRUE, actual=case42Result,
+        caseResult =  appCheck and pingResult
+        utilities.assert_equals( expect=main.TRUE, actual=caseResult,
                                  onpass="Reactive Mode IPv4 Pingall test PASS",
                                  onfail="Reactive Mode IPv4 Pingall test FAIL" )
 
@@ -713,8 +715,8 @@ class CHOtest:
 
         # Waiting for reative flows to be cleared.
         time.sleep( 30 )
-        case140Result =  appCheck and cfgResult and pingResult
-        utilities.assert_equals( expect=main.TRUE, actual=case140Result,
+        caseResult =  appCheck and cfgResult and pingResult
+        utilities.assert_equals( expect=main.TRUE, actual=caseResult,
                                  onpass="Reactive Mode IPv6 Pingall test PASS",
                                  onfail="Reactive Mode IPv6 Pingall test FAIL" )
 
@@ -782,8 +784,8 @@ class CHOtest:
 
         # Waiting for reative flows to be cleared.
         time.sleep( 30 )
-        case140Result =  appCheck and cfgResult and pingResult
-        utilities.assert_equals( expect=main.TRUE, actual=case140Result,
+        caseResult =  appCheck and cfgResult and pingResult
+        utilities.assert_equals( expect=main.TRUE, actual=caseResult,
                                  onpass="Reactive Mode IPv6 Pingall test PASS",
                                  onfail="Reactive Mode IPv6 Pingall test FAIL" )
 
@@ -851,8 +853,8 @@ class CHOtest:
 
         # Waiting for reative flows to be cleared.
         time.sleep( 30 )
-        case142Result =  appCheck and cfgResult and pingResult
-        utilities.assert_equals( expect=main.TRUE, actual=case142Result,
+        caseResult =  appCheck and cfgResult and pingResult
+        utilities.assert_equals( expect=main.TRUE, actual=caseResult,
                                  onpass="Reactive Mode IPv6 Pingall test PASS",
                                  onfail="Reactive Mode IPv6 Pingall test FAIL" )
 
@@ -1037,10 +1039,10 @@ class CHOtest:
                                  onpass="PING ALL PASS",
                                  onfail="PING ALL FAIL" )
 
-        case60Result = ( intentState and pingResult )
+        caseResult = ( intentState and pingResult )
         utilities.assert_equals(
             expect=main.TRUE,
-            actual=case60Result,
+            actual=caseResult,
             onpass="Install 300 Host Intents and Ping All test PASS",
             onfail="Install 300 Host Intents and Ping All test FAIL" )
 
@@ -1048,6 +1050,10 @@ class CHOtest:
             main.log.debug( "Intents failed to install completely" )
         if not pingResult:
             main.log.debug( "Pingall failed" )
+
+        if not caseResult and main.failSwitch:
+            main.log.report("Stopping test")
+            main.stop( email=main.emailOnStop )
 
     def CASE61( self ):
         """
@@ -1131,11 +1137,11 @@ class CHOtest:
                                  onpass="PING ALL PASS",
                                  onfail="PING ALL FAIL" )
 
-        case14Result = ( intentState and pingResult )
+        caseResult = ( intentState and pingResult )
 
         utilities.assert_equals(
             expect=main.TRUE,
-            actual=case14Result,
+            actual=caseResult,
             onpass="Install 300 Host Intents and Ping All test PASS",
             onfail="Install 300 Host Intents and Ping All test FAIL" )
 
@@ -1143,6 +1149,10 @@ class CHOtest:
             main.log.debug( "Intents failed to install completely" )
         if not pingResult:
             main.log.debug( "Pingall failed" )
+
+        if not caseResult and main.failSwitch:
+            main.log.report("Stopping test")
+            main.stop( email=main.emailOnStop )
 
     def CASE62( self ):
         """
@@ -1225,11 +1235,11 @@ class CHOtest:
                                  onpass="PING ALL PASS",
                                  onfail="PING ALL FAIL" )
 
-        case15Result = ( intentState and pingResult )
+        caseResult = ( intentState and pingResult )
 
         utilities.assert_equals(
             expect=main.TRUE,
-            actual=case15Result,
+            actual=caseResult,
             onpass="Install 2278 Host Intents and Ping All test PASS",
             onfail="Install 2278 Host Intents and Ping All test FAIL" )
 
@@ -1237,6 +1247,10 @@ class CHOtest:
             main.log.debug( "Intents failed to install completely" )
         if not pingResult:
             main.log.debug( "Pingall failed" )
+
+        if not caseResult and main.failSwitch:
+            main.log.report("Stopping test")
+            main.stop( email=main.emailOnStop )
 
     def CASE160( self ):
         """
@@ -1266,10 +1280,10 @@ class CHOtest:
                                  onpass="PING ALL PASS",
                                  onfail="PING ALL FAIL" )
 
-        case160Result = pingResult
+        caseResult = pingResult
         utilities.assert_equals(
             expect=main.TRUE,
-            actual=case160Result,
+            actual=caseResult,
             onpass="IPv6 Ping across 300 host intents test PASS",
             onfail="IPv6 Ping across 300 host intents test FAIL" )
 
@@ -1302,10 +1316,10 @@ class CHOtest:
                                  onpass="PING ALL PASS",
                                  onfail="PING ALL FAIL" )
 
-        case161Result = pingResult
+        caseResult = pingResult
         utilities.assert_equals(
             expect=main.TRUE,
-            actual=case161Result,
+            actual=caseResult,
             onpass="IPv6 Ping across 600 host intents test PASS",
             onfail="IPv6 Ping across 600 host intents test FAIL" )
 
@@ -1338,10 +1352,10 @@ class CHOtest:
                                  onpass="PING ALL PASS",
                                  onfail="PING ALL FAIL" )
 
-        case162Result = pingResult
+        caseResult = pingResult
         utilities.assert_equals(
             expect=main.TRUE,
-            actual=case162Result,
+            actual=caseResult,
             onpass="IPv6 Ping across 600 host intents test PASS",
             onfail="IPv6 Ping across 600 host intents test FAIL" )
 
@@ -1452,8 +1466,8 @@ class CHOtest:
                                  onpass="PING ALL PASS",
                                  onfail="PING ALL FAIL" )
 
-        caseResult70 = linkDown and pingResult and intentState
-        utilities.assert_equals( expect=main.TRUE, actual=caseResult70,
+        caseResult = linkDown and pingResult and intentState
+        utilities.assert_equals( expect=main.TRUE, actual=caseResult,
                                  onpass="Random Link cut Test PASS",
                                  onfail="Random Link cut Test FAIL" )
 
@@ -1464,6 +1478,10 @@ class CHOtest:
             main.log.debug( "Pingall failed" )
         if not intentState:
             main.log.debug( "Intents are not all installed" )
+
+        if not caseResult and main.failSwitch:
+            main.log.report("Stopping test")
+            main.stop( email=main.emailOnStop )
 
     def CASE80( self, main ):
         """
@@ -1558,8 +1576,8 @@ class CHOtest:
                                  onpass="PING ALL PASS",
                                  onfail="PING ALL FAIL" )
 
-        caseResult80 = linkUp and pingResult
-        utilities.assert_equals( expect=main.TRUE, actual=caseResult80,
+        caseResult = linkUp and pingResult
+        utilities.assert_equals( expect=main.TRUE, actual=caseResult,
                                  onpass="Link Up Test PASS",
                                  onfail="Link Up Test FAIL" )
         # Printing what exactly failed
@@ -1569,6 +1587,10 @@ class CHOtest:
             main.log.debug( "Pingall failed" )
         if not intentState:
             main.log.debug( "Intents are not all installed" )
+
+        if not caseResult and main.failSwitch:
+            main.log.report("Stopping test")
+            main.stop( email=main.emailOnStop )
 
     def CASE71( self, main ):
         """
@@ -1677,8 +1699,8 @@ class CHOtest:
                                  onpass="PING ALL PASS",
                                  onfail="PING ALL FAIL" )
 
-        caseResult70 = linkDown and pingResult and intentState
-        utilities.assert_equals( expect=main.TRUE, actual=caseResult70,
+        caseResult = linkDown and pingResult and intentState
+        utilities.assert_equals( expect=main.TRUE, actual=caseResult,
                                  onpass="Random Link cut Test PASS",
                                  onfail="Random Link cut Test FAIL" )
 
@@ -1690,6 +1712,9 @@ class CHOtest:
         if not intentState:
             main.log.debug( "Intents are not all installed" )
 
+        if not caseResult and main.failSwitch:
+            main.log.report("Stopping test")
+            main.stop( email=main.emailOnStop )
 
     def CASE81( self, main ):
         """
@@ -1784,8 +1809,8 @@ class CHOtest:
                                  onpass="PING ALL PASS",
                                  onfail="PING ALL FAIL" )
 
-        caseResult80 = linkUp and pingResult
-        utilities.assert_equals( expect=main.TRUE, actual=caseResult80,
+        caseResult = linkUp and pingResult
+        utilities.assert_equals( expect=main.TRUE, actual=caseResult,
                                  onpass="Link Up Test PASS",
                                  onfail="Link Up Test FAIL" )
         # Printing what exactly failed
@@ -1795,6 +1820,10 @@ class CHOtest:
             main.log.debug( "Pingall failed" )
         if not intentState:
             main.log.debug( "Intents are not all installed" )
+
+        if not caseResult and main.failSwitch:
+            main.log.report("Stopping test")
+            main.stop( email=main.emailOnStop )
 
     def CASE72( self, main ):
         """
@@ -1880,8 +1909,8 @@ class CHOtest:
                                  onpass="PING ALL PASS",
                                  onfail="PING ALL FAIL" )
 
-        caseResult70 = linkDown and pingResult and intentState
-        utilities.assert_equals( expect=main.TRUE, actual=caseResult70,
+        caseResult = linkDown and pingResult and intentState
+        utilities.assert_equals( expect=main.TRUE, actual=caseResult,
                                  onpass="Random Link cut Test PASS",
                                  onfail="Random Link cut Test FAIL" )
 
@@ -1892,6 +1921,10 @@ class CHOtest:
             main.log.debug( "Pingall failed" )
         if not intentState:
             main.log.debug( "Intents are not all installed" )
+
+        if not caseResult and main.failSwitch:
+            main.log.report("Stopping test")
+            main.stop( email=main.emailOnStop )
 
     def CASE82( self, main ):
         """
@@ -1973,8 +2006,8 @@ class CHOtest:
                                  onpass="PING ALL PASS",
                                  onfail="PING ALL FAIL" )
 
-        caseResult80 = linkUp and pingResult
-        utilities.assert_equals( expect=main.TRUE, actual=caseResult80,
+        caseResult = linkUp and pingResult
+        utilities.assert_equals( expect=main.TRUE, actual=caseResult,
                                  onpass="Link Up Test PASS",
                                  onfail="Link Up Test FAIL" )
         # Printing what exactly failed
@@ -1984,6 +2017,10 @@ class CHOtest:
             main.log.debug( "Pingall failed" )
         if not intentState:
             main.log.debug( "Intents are not all installed" )
+
+        if not caseResult and main.failSwitch:
+            main.log.report("Stopping test")
+            main.stop( email=main.emailOnStop )
 
     def CASE73( self, main ):
         """
@@ -2069,8 +2106,8 @@ class CHOtest:
                                  onpass="PING ALL PASS",
                                  onfail="PING ALL FAIL" )
 
-        caseResult70 = linkDown and pingResult and intentState
-        utilities.assert_equals( expect=main.TRUE, actual=caseResult70,
+        caseResult = linkDown and pingResult and intentState
+        utilities.assert_equals( expect=main.TRUE, actual=caseResult,
                                  onpass="Random Link cut Test PASS",
                                  onfail="Random Link cut Test FAIL" )
 
@@ -2081,6 +2118,10 @@ class CHOtest:
             main.log.debug( "Pingall failed" )
         if not intentState:
             main.log.debug( "Intents are not all installed" )
+
+        if not caseResult and main.failSwitch:
+            main.log.report("Stopping test")
+            main.stop( email=main.emailOnStop )
 
     def CASE83( self, main ):
         """
@@ -2162,8 +2203,8 @@ class CHOtest:
                                  onpass="PING ALL PASS",
                                  onfail="PING ALL FAIL" )
 
-        caseResult80 = linkUp and pingResult
-        utilities.assert_equals( expect=main.TRUE, actual=caseResult80,
+        caseResult = linkUp and pingResult
+        utilities.assert_equals( expect=main.TRUE, actual=caseResult,
                                  onpass="Link Up Test PASS",
                                  onfail="Link Up Test FAIL" )
         # Printing what exactly failed
@@ -2173,6 +2214,10 @@ class CHOtest:
             main.log.debug( "Pingall failed" )
         if not intentState:
             main.log.debug( "Intents are not all installed" )
+
+        if not caseResult and main.failSwitch:
+            main.log.report("Stopping test")
+            main.stop( email=main.emailOnStop )
 
     def CASE74( self, main ):
         """
@@ -2269,8 +2314,8 @@ class CHOtest:
                                  onpass="PING ALL PASS",
                                  onfail="PING ALL FAIL" )
 
-        caseResult70 = linkDown and pingResult and intentState
-        utilities.assert_equals( expect=main.TRUE, actual=caseResult70,
+        caseResult = linkDown and pingResult and intentState
+        utilities.assert_equals( expect=main.TRUE, actual=caseResult,
                                  onpass="Random Link cut Test PASS",
                                  onfail="Random Link cut Test FAIL" )
 
@@ -2281,6 +2326,10 @@ class CHOtest:
             main.log.debug( "Pingall failed" )
         if not intentState:
             main.log.debug( "Intents are not all installed" )
+
+        if not caseResult and main.failSwitch:
+            main.log.report("Stopping test")
+            main.stop( email=main.emailOnStop )
 
     def CASE84( self, main ):
         """
@@ -2363,8 +2412,8 @@ class CHOtest:
                                  onpass="PING ALL PASS",
                                  onfail="PING ALL FAIL" )
 
-        caseResult80 = linkUp and pingResult
-        utilities.assert_equals( expect=main.TRUE, actual=caseResult80,
+        caseResult = linkUp and pingResult
+        utilities.assert_equals( expect=main.TRUE, actual=caseResult,
                                  onpass="Link Up Test PASS",
                                  onfail="Link Up Test FAIL" )
         # Printing what exactly failed
@@ -2374,6 +2423,10 @@ class CHOtest:
             main.log.debug( "Pingall failed" )
         if not intentState:
             main.log.debug( "Intents are not all installed" )
+
+        if not caseResult and main.failSwitch:
+            main.log.report("Stopping test")
+            main.stop( email=main.emailOnStop )
 
     def CASE75( self, main ):
         """
@@ -2470,8 +2523,8 @@ class CHOtest:
                                  onpass="PING ALL PASS",
                                  onfail="PING ALL FAIL" )
 
-        caseResult70 = linkDown and pingResult and intentState
-        utilities.assert_equals( expect=main.TRUE, actual=caseResult70,
+        caseResult = linkDown and pingResult and intentState
+        utilities.assert_equals( expect=main.TRUE, actual=caseResult,
                                  onpass="Random Link cut Test PASS",
                                  onfail="Random Link cut Test FAIL" )
 
@@ -2482,6 +2535,10 @@ class CHOtest:
             main.log.debug( "Pingall failed" )
         if not intentState:
             main.log.debug( "Intents are not all installed" )
+
+        if not caseResult and main.failSwitch:
+            main.log.report("Stopping test")
+            main.stop( email=main.emailOnStop )
 
     def CASE85( self, main ):
         """
@@ -2564,8 +2621,8 @@ class CHOtest:
                                  onpass="PING ALL PASS",
                                  onfail="PING ALL FAIL" )
 
-        caseResult80 = linkUp and pingResult
-        utilities.assert_equals( expect=main.TRUE, actual=caseResult80,
+        caseResult = linkUp and pingResult
+        utilities.assert_equals( expect=main.TRUE, actual=caseResult,
                                  onpass="Link Up Test PASS",
                                  onfail="Link Up Test FAIL" )
         # Printing what exactly failed
@@ -2575,6 +2632,10 @@ class CHOtest:
             main.log.debug( "Pingall failed" )
         if not intentState:
             main.log.debug( "Intents are not all installed" )
+
+        if not caseResult and main.failSwitch:
+            main.log.report("Stopping test")
+            main.stop( email=main.emailOnStop )
 
     def CASE170( self ):
         """
@@ -2603,10 +2664,10 @@ class CHOtest:
                                  onpass="PING ALL PASS",
                                  onfail="PING ALL FAIL" )
 
-        case170Result = pingResult
+        caseResult = pingResult
         utilities.assert_equals(
             expect=main.TRUE,
-            actual=case170Result,
+            actual=caseResult,
             onpass="IPv6 Ping across 300 host intents test PASS",
             onfail="IPv6 Ping across 300 host intents test FAIL" )
 
@@ -2639,10 +2700,10 @@ class CHOtest:
                                  onpass="PING ALL PASS",
                                  onfail="PING ALL FAIL" )
 
-        case180Result = pingResult
+        caseResult = pingResult
         utilities.assert_equals(
             expect=main.TRUE,
-            actual=case180Result,
+            actual=caseResult,
             onpass="IPv6 Ping across 300 host intents test PASS",
             onfail="IPv6 Ping across 300 host intents test FAIL" )
 
@@ -2675,10 +2736,10 @@ class CHOtest:
                                  onpass="PING ALL PASS",
                                  onfail="PING ALL FAIL" )
 
-        case171Result = pingResult
+        caseResult = pingResult
         utilities.assert_equals(
             expect=main.TRUE,
-            actual=case171Result,
+            actual=caseResult,
             onpass="IPv6 Ping across 600 point intents test PASS",
             onfail="IPv6 Ping across 600 point intents test FAIL" )
 
@@ -2711,10 +2772,10 @@ class CHOtest:
                                  onpass="PING ALL PASS",
                                  onfail="PING ALL FAIL" )
 
-        case181Result = pingResult
+        caseResult = pingResult
         utilities.assert_equals(
             expect=main.TRUE,
-            actual=case181Result,
+            actual=caseResult,
             onpass="IPv6 Ping across 600 Point intents test PASS",
             onfail="IPv6 Ping across 600 Point intents test FAIL" )
 
@@ -2747,10 +2808,10 @@ class CHOtest:
                                  onpass="PING ALL PASS",
                                  onfail="PING ALL FAIL" )
 
-        case172Result = pingResult
+        caseResult = pingResult
         utilities.assert_equals(
             expect=main.TRUE,
-            actual=case172Result,
+            actual=caseResult,
             onpass="IPv6 Ping across 300 host intents test PASS",
             onfail="IPv6 Ping across 300 host intents test FAIL" )
 
@@ -2783,10 +2844,10 @@ class CHOtest:
                                  onpass="PING ALL PASS",
                                  onfail="PING ALL FAIL" )
 
-        case182Result = pingResult
+        caseResult = pingResult
         utilities.assert_equals(
             expect=main.TRUE,
-            actual=case182Result,
+            actual=caseResult,
             onpass="IPv6 Ping across 300 host intents test PASS",
             onfail="IPv6 Ping across 300 host intents test FAIL" )
 
@@ -2819,10 +2880,10 @@ class CHOtest:
                                  onpass="PING ALL PASS",
                                  onfail="PING ALL FAIL" )
 
-        case173Result = pingResult
+        caseResult = pingResult
         utilities.assert_equals(
             expect=main.TRUE,
-            actual=case173Result,
+            actual=caseResult,
             onpass="IPv6 Ping across 600 point intents test PASS",
             onfail="IPv6 Ping across 600 point intents test FAIL" )
 
@@ -2855,10 +2916,10 @@ class CHOtest:
                                  onpass="PING ALL PASS",
                                  onfail="PING ALL FAIL" )
 
-        case183Result = pingResult
+        caseResult = pingResult
         utilities.assert_equals(
             expect=main.TRUE,
-            actual=case183Result,
+            actual=caseResult,
             onpass="IPv6 Ping across 600 Point intents test PASS",
             onfail="IPv6 Ping across 600 Point intents test FAIL" )
 
@@ -2891,10 +2952,10 @@ class CHOtest:
                                  onpass="PING ALL PASS",
                                  onfail="PING ALL FAIL" )
 
-        case174Result = pingResult
+        caseResult = pingResult
         utilities.assert_equals(
             expect=main.TRUE,
-            actual=case174Result,
+            actual=caseResult,
             onpass="IPv6 Ping across 2278 host intents test PASS",
             onfail="IPv6 Ping across 2278 host intents test FAIL" )
 
@@ -2927,10 +2988,10 @@ class CHOtest:
                                  onpass="PING ALL PASS",
                                  onfail="PING ALL FAIL" )
 
-        case184Result = pingResult
+        caseResult = pingResult
         utilities.assert_equals(
             expect=main.TRUE,
-            actual=case184Result,
+            actual=caseResult,
             onpass="IPv6 Ping across 2278 host intents test PASS",
             onfail="IPv6 Ping across 2278 host intents test FAIL" )
 
@@ -2963,10 +3024,10 @@ class CHOtest:
                                  onpass="PING ALL PASS",
                                  onfail="PING ALL FAIL" )
 
-        case175Result = pingResult
+        caseResult = pingResult
         utilities.assert_equals(
             expect=main.TRUE,
-            actual=case175Result,
+            actual=caseResult,
             onpass="IPv6 Ping across 4556 point intents test PASS",
             onfail="IPv6 Ping across 4556 point intents test FAIL" )
 
@@ -2999,10 +3060,10 @@ class CHOtest:
                                  onpass="PING ALL PASS",
                                  onfail="PING ALL FAIL" )
 
-        case183Result = pingResult
+        caseResult = pingResult
         utilities.assert_equals(
             expect=main.TRUE,
-            actual=case183Result,
+            actual=caseResult,
             onpass="IPv6 Ping across 4556 Point intents test PASS",
             onfail="IPv6 Ping across 4556 Point intents test FAIL" )
 
@@ -3083,13 +3144,22 @@ class CHOtest:
                                  onpass="PING tALL PASS",
                                  onfail="PING ALL FAIL" )
 
-        case90Result = ( intentState and pingResult )
+        caseResult = ( intentState and pingResult )
 
         utilities.assert_equals(
             expect=main.TRUE,
-            actual=case90Result,
+            actual=caseResult,
             onpass="Install 600 point Intents and Ping All test PASS",
             onfail="Install 600 point Intents and Ping All test FAIL" )
+
+        if not intentState:
+            main.log.debug( "Intents failed to install completely" )
+        if not pingResult:
+            main.log.debug( "Pingall failed" )
+
+        if not caseResult and main.failSwitch:
+            main.log.report("Stopping test")
+            main.stop( email=main.emailOnStop )
 
     def CASE91( self ):
         """
@@ -3169,13 +3239,22 @@ class CHOtest:
                                  onpass="PING ALL PASS",
                                  onfail="PING ALL FAIL" )
 
-        case91Result = ( intentState and pingResult )
+        caseResult = ( intentState and pingResult )
 
         utilities.assert_equals(
             expect=main.TRUE,
-            actual=case91Result,
+            actual=caseResult,
             onpass="Install 600 point Intents and Ping All test PASS",
             onfail="Install 600 point Intents and Ping All test FAIL" )
+
+        if not intentState:
+            main.log.debug( "Intents failed to install completely" )
+        if not pingResult:
+            main.log.debug( "Pingall failed" )
+
+        if not caseResult and main.failSwitch:
+            main.log.report("Stopping test")
+            main.stop( email=main.emailOnStop )
 
     def CASE92( self ):
         """
@@ -3220,8 +3299,8 @@ class CHOtest:
 
         main.step("Verify intents are installed")
 
-        # Giving onos 3 chances to install intents
-        for i in range(3):
+        # Giving onos 5 chances to install intents
+        for i in range(5):
             if i != 0:
                 main.log.warn( "Verification failed. Retrying..." )
             main.log.info("Waiting for onos to install intents...")
@@ -3258,13 +3337,22 @@ class CHOtest:
                                  onpass="PING ALL PASS",
                                  onfail="PING ALL FAIL" )
 
-        case92Result = ( intentState and pingResult )
+        caseResult = ( intentState and pingResult )
 
         utilities.assert_equals(
             expect=main.TRUE,
-            actual=case92Result,
+            actual=caseResult,
             onpass="Install 4556 point Intents and Ping All test PASS",
             onfail="Install 4556 point Intents and Ping All test FAIL" )
+
+        if not intentState:
+            main.log.debug( "Intents failed to install completely" )
+        if not pingResult:
+            main.log.debug( "Pingall failed" )
+
+        if not caseResult and main.failSwitch:
+            main.log.report("Stopping test")
+            main.stop( email=main.emailOnStop )
 
     def CASE93( self ):
         """
@@ -3351,10 +3439,10 @@ class CHOtest:
             str( timeDiff ) +
             " seconds" )
 
-        case93Result = ( checkFlowsState and pingResult and intentState )
+        caseResult = ( checkFlowsState and pingResult and intentState )
         utilities.assert_equals(
             expect=main.TRUE,
-            actual=case93Result,
+            actual=caseResult,
             onpass="Install 25 multi to single point Intents and Ping All test PASS",
             onfail="Install 25 multi to single point Intents and Ping All test FAIL" )
 
@@ -3438,10 +3526,10 @@ class CHOtest:
             " seconds" )
 
 
-        case94Result = ( pingResult and intentState )
+        caseResult = ( pingResult and intentState )
         utilities.assert_equals(
             expect=main.TRUE,
-            actual=case94Result,
+            actual=caseResult,
             onpass="Install 25 multi to single point Intents and Ping All test PASS",
             onfail="Install 25 multi to single point Intents and Ping All test FAIL" )
 
@@ -3525,10 +3613,10 @@ class CHOtest:
             str( timeDiff ) +
             " seconds" )
 
-        case96Result = ( pingResult and intentState )
+        caseResult = ( pingResult and intentState )
         utilities.assert_equals(
             expect=main.TRUE,
-            actual=case96Result,
+            actual=caseResult,
             onpass="Install 25 single to multi point Intents and Ping All test PASS",
             onfail="Install 25 single to multi point Intents and Ping All test FAIL" )
 
@@ -3610,10 +3698,10 @@ class CHOtest:
             str( timeDiff ) +
             " seconds" )
 
-        case97Result = ( pingResult and intentState )
+        caseResult = ( pingResult and intentState )
         utilities.assert_equals(
             expect=main.TRUE,
-            actual=case97Result,
+            actual=caseResult,
             onpass="Install 25 single to multi point Intents and Ping All test PASS",
             onfail="Install 25 single to multi point Intents and Ping All test FAIL" )
 
@@ -3702,10 +3790,10 @@ class CHOtest:
             str( timeDiff ) +
             " seconds" )
 
-        case98Result = ( pingResult and intentState )
+        caseResult = ( pingResult and intentState )
         utilities.assert_equals(
             expect=main.TRUE,
-            actual=case98Result,
+            actual=caseResult,
             onpass="Install 25 single to multi point Intents and Ping All test PASS",
             onfail="Install 25 single to multi point Intents and Ping All test FAIL" )
 
@@ -3738,10 +3826,10 @@ class CHOtest:
                                  onpass="PING ALL PASS",
                                  onfail="PING ALL FAIL" )
 
-        case160Result = pingResult
+        caseResult = pingResult
         utilities.assert_equals(
             expect=main.TRUE,
-            actual=case160Result,
+            actual=caseResult,
             onpass="IPv6 Ping across 600 Point intents test PASS",
             onfail="IPv6 Ping across 600 Point intents test FAIL" )
 
@@ -3774,10 +3862,10 @@ class CHOtest:
                                  onpass="PING ALL PASS",
                                  onfail="PING ALL FAIL" )
 
-        case191Result = pingResult
+        caseResult = pingResult
         utilities.assert_equals(
             expect=main.TRUE,
-            actual=case191Result,
+            actual=caseResult,
             onpass="IPv6 Ping across 600 Point intents test PASS",
             onfail="IPv6 Ping across 600 Point intents test FAIL" )
 
@@ -3810,10 +3898,10 @@ class CHOtest:
                                  onpass="PING ALL PASS",
                                  onfail="PING ALL FAIL" )
 
-        case192Result = pingResult
+        caseResult = pingResult
         utilities.assert_equals(
             expect=main.TRUE,
-            actual=case192Result,
+            actual=caseResult,
             onpass="IPv6 Ping across 4556 Point intents test PASS",
             onfail="IPv6 Ping across 4556 Point intents test FAIL" )
 
@@ -3914,8 +4002,8 @@ class CHOtest:
             step1Result = main.FALSE
 
         print main.ONOScli1.intents()
-        caseResult10 = step1Result
-        utilities.assert_equals( expect=main.TRUE, actual=caseResult10,
+        caseResult = step1Result
+        utilities.assert_equals( expect=main.TRUE, actual=caseResult,
                                  onpass="Intent removal test successful",
                                  onfail="Intent removal test failed" )
 
@@ -4007,7 +4095,7 @@ class CHOtest:
         # Waiting for reative flows to be cleared.
         time.sleep( 10 )
 
-        case11Result = installResult and pingResult and uninstallResult
-        utilities.assert_equals( expect=main.TRUE, actual=case11Result,
+        caseResult = installResult and pingResult and uninstallResult
+        utilities.assert_equals( expect=main.TRUE, actual=caseResult,
                                  onpass="Intent based Reactive forwarding Pingall test PASS",
                                  onfail="Intent based Reactive forwarding Pingall test FAIL" )

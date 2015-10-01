@@ -93,4 +93,9 @@
         <CheckIntentDelay>5</CheckIntentDelay>
     </timers>
 
+    <TEST>
+        <fail_switch>True</fail_switch>
+        <email>False</email>
+    </TEST>
+
 </PARAMS>

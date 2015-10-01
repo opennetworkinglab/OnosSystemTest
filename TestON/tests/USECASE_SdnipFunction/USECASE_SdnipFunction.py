@@ -105,7 +105,7 @@ class USECASE_SdnipFunction:
                                 actual = uninstallResult,
                                 onpass = "Uninstall ONOS succeeded",
                                 onfail = "Uninstall ONOS failed" )
-
+        '''
         main.step( "Git pull" )
         gitPullResult = main.ONOSbench.gitPull()
         main.log.info( "gitPullResult" )
@@ -127,6 +127,7 @@ class USECASE_SdnipFunction:
              main.log.warn( "Did not pull new code so skipping mvn " +
                             "clean install" )
              mciResult = main.TRUE
+        '''
 
         main.ONOSbench.getVersion( report = True )
 
@@ -161,7 +162,7 @@ class USECASE_SdnipFunction:
                          onfail = "ONOS CLI is NOT ready" )
 
         caseResult = ( cellResult and verifyResult and
-                       gitPullResult2 and mciResult and packageResult and
+                       packageResult and
                        onos1InstallResult and onos1UpResult and cliResult )
 
         utilities.assert_equals( expect = main.TRUE, actual = caseResult,

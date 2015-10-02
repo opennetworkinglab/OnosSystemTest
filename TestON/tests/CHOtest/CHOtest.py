@@ -1263,14 +1263,13 @@ class CHOtest:
         import time
         main.case( "IPv6 ping all 300 host intents" )
         main.step( "Verify IPv6 Ping across all hosts" )
-        hostList = [ ('h'+ str(x + 1)) for x in range (main.numMNhosts) ]
         pingResult = main.FALSE
         time1 = time.time()
-        pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
+        pingResult = main.Mininet1.pingall( protocol="IPv6", timeout=main.pingTimeout )
         if not pingResult:
             main.log.warn("First pingall failed. Retrying...")
             time1 = time.time()
-            pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
+            pingResult = main.Mininet1.pingall( protocol="IPv6", timeout=main.pingTimeout )
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -1298,15 +1297,13 @@ class CHOtest:
         import time
         main.case( "IPv6 ping all 600 host intents" )
         main.step( "Verify IPv6 Ping across all hosts" )
-        hostList = [ ('h'+ str(x + 1)) for x in range (main.numMNhosts) ]
         pingResult = main.FALSE
         time1 = time.time()
-        pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
+        pingResult = main.Mininet1.pingall( protocol="IPv6", timeout=main.pingTimeout )
         if not pingResult:
             main.log.warn("First pingall failed. Retrying...")
             time1 = time.time()
-            pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
-
+            pingResult = main.Mininet1.pingall( protocol="IPv6", timeout=main.pingTimeout )
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -1334,15 +1331,13 @@ class CHOtest:
         import time
         main.case( "IPv6 ping all 600 host intents" )
         main.step( "Verify IPv6 Ping across all hosts" )
-        hostList = [ ('h'+ str(x + 11)) for x in range (main.numMNhosts) ]
         pingResult = main.FALSE
         time1 = time.time()
-        pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
+        pingResult = main.Mininet1.pingall( protocol="IPv6", timeout=main.pingTimeout )
         if not pingResult:
             main.log.warn("First pingall failed. Retrying...")
             time1 = time.time()
-            pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
-
+            pingResult = main.Mininet1.pingall( protocol="IPv6", timeout=main.pingTimeout )
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -2648,13 +2643,12 @@ class CHOtest:
         import time
         main.case( "IPv6 ping all with some core links down( Host Intents-Att Topo )" )
         main.step( "Verify IPv6 Ping across all hosts" )
-        hostList = [ ('h'+ str(x + 1)) for x in range (main.numMNhosts) ]
         pingResult = main.FALSE
         time1 = time.time()
-        pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
+        pingResult = main.Mininet1.pingall( protocol="IPv6", timeout=main.pingTimeout )
         if not pingResult:
             main.log.warn("Failed to ping Ipv6 hosts. Retrying...")
-            pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
+            pingResult = main.Mininet1.pingall( protocol="IPv6", timeout=main.pingTimeout )
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -2682,15 +2676,13 @@ class CHOtest:
         import time
         main.case( "IPv6 ping all with after core links back up( Host Intents-Att Topo )" )
         main.step( "Verify IPv6 Ping across all hosts" )
-        hostList = [ ('h'+ str(x + 1)) for x in range (main.numMNhosts) ]
         pingResult = main.FALSE
         time1 = time.time()
-        pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
+        pingResult = main.Mininet1.pingall( protocol="IPv6", timeout=main.pingTimeout )
         if not pingResult:
             main.log.warn("First ping failed. Retrying...")
             time1 = time.time()
-            pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
-
+            pingResult = main.Mininet1.pingall( protocol="IPv6", timeout=main.pingTimeout )
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -2718,15 +2710,13 @@ class CHOtest:
         import time
         main.case( "IPv6 ping all with some core links down( Point Intents-Att Topo )" )
         main.step( "Verify IPv6 Ping across all hosts" )
-        hostList = [ ('h'+ str(x + 1)) for x in range (main.numMNhosts) ]
         pingResult = main.FALSE
         time1 = time.time()
-        pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
+        pingResult = main.Mininet1.pingall( protocol="IPv6", timeout=main.pingTimeout )
         if not pingResult:
             main.log.warn("First ping failed. Retrying...")
             time1 = time.time()
-            pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
-
+            pingResult = main.Mininet1.pingall( protocol="IPv6", timeout=main.pingTimeout )
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -2754,15 +2744,13 @@ class CHOtest:
         import time
         main.case( "IPv6 ping all with after core links back up( Point Intents-Att Topo )" )
         main.step( "Verify IPv6 Ping across all hosts" )
-        hostList = [ ('h'+ str(x + 1)) for x in range (main.numMNhosts) ]
         pingResult = main.FALSE
         time1 = time.time()
-        pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
+        pingResult = main.Mininet1.pingall( protocol="IPv6", timeout=main.pingTimeout )
         if not pingResult:
             main.log.warn("First ping failed. Retrying...")
             time1 = time.time()
-            pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
-
+            pingResult = main.Mininet1.pingall( protocol="IPv6", timeout=main.pingTimeout )
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -2790,15 +2778,13 @@ class CHOtest:
         import time
         main.case( "IPv6 ping all with some core links down( Host Intents-Chordal Topo )" )
         main.step( "Verify IPv6 Ping across all hosts" )
-        hostList = [ ('h'+ str(x + 1)) for x in range (main.numMNhosts) ]
         pingResult = main.FALSE
         time1 = time.time()
-        pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
+        pingResult = main.Mininet1.pingall( protocol="IPv6", timeout=main.pingTimeout )
         if not pingResult:
             main.log.warn("First ping failed. Retrying...")
             time1 = time.time()
-            pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
-
+            pingResult = main.Mininet1.pingall( protocol="IPv6", timeout=main.pingTimeout )
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -2826,15 +2812,13 @@ class CHOtest:
         import time
         main.case( "IPv6 ping all with after core links back up( Host Intents-Chordal Topo )" )
         main.step( "Verify IPv6 Ping across all hosts" )
-        hostList = [ ('h'+ str(x + 1)) for x in range (main.numMNhosts) ]
         pingResult = main.FALSE
         time1 = time.time()
-        pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
+        pingResult = main.Mininet1.pingall( protocol="IPv6", timeout=main.pingTimeout )
         if not pingResult:
             main.log.warn("First ping failed. Retrying...")
             time1 = time.time()
-            pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
-
+            pingResult = main.Mininet1.pingall( protocol="IPv6", timeout=main.pingTimeout )
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -2862,15 +2846,13 @@ class CHOtest:
         import time
         main.case( "IPv6 ping all with some core links down( Point Intents-Chordal Topo )" )
         main.step( "Verify IPv6 Ping across all hosts" )
-        hostList = [ ('h'+ str(x + 1)) for x in range (main.numMNhosts) ]
         pingResult = main.FALSE
         time1 = time.time()
-        pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
+        pingResult = main.Mininet1.pingall( protocol="IPv6", timeout=main.pingTimeout )
         if not pingResult:
             main.log.warn("First ping failed. Retrying...")
             time1 = time.time()
-            pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
-
+            pingResult = main.Mininet1.pingall( protocol="IPv6", timeout=main.pingTimeout )
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -2898,15 +2880,13 @@ class CHOtest:
         import time
         main.case( "IPv6 ping all with after core links back up( Point Intents-Chordal Topo )" )
         main.step( "Verify IPv6 Ping across all hosts" )
-        hostList = [ ('h'+ str(x + 1)) for x in range (main.numMNhosts) ]
         pingResult = main.FALSE
         time1 = time.time()
-        pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
+        pingResult = main.Mininet1.pingall( protocol="IPv6", timeout=main.pingTimeout )
         if not pingResult:
             main.log.warn("First ping failed. Retrying...")
             time1 = time.time()
-            pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
-
+            pingResult = main.Mininet1.pingall( protocol="IPv6", timeout=main.pingTimeout )
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -2934,15 +2914,13 @@ class CHOtest:
         import time
         main.case( "IPv6 ping all with some core links down( Host Intents-Spine Topo )" )
         main.step( "Verify IPv6 Ping across all hosts" )
-        hostList = [ ('h'+ str(x + 11)) for x in range (main.numMNhosts) ]
         pingResult = main.FALSE
         time1 = time.time()
-        pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
+        pingResult = main.Mininet1.pingall( protocol="IPv6", timeout=main.pingTimeout )
         if not pingResult:
             main.log.warn("First ping failed. Retrying...")
             time1 = time.time()
-            pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
-
+            pingResult = main.Mininet1.pingall( protocol="IPv6", timeout=main.pingTimeout )
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -2970,15 +2948,13 @@ class CHOtest:
         import time
         main.case( "IPv6 ping all with after core links back up( Host Intents-Spine Topo )" )
         main.step( "Verify IPv6 Ping across all hosts" )
-        hostList = [ ('h'+ str(x + 11)) for x in range (main.numMNhosts) ]
         pingResult = main.FALSE
         time1 = time.time()
-        pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
+        pingResult = main.Mininet1.pingall( protocol="IPv6", timeout=main.pingTimeout )
         if not pingResult:
             main.log.warn("First ping failed. Retrying...")
             time1 = time.time()
-            pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
-
+            pingResult = main.Mininet1.pingall( protocol="IPv6", timeout=main.pingTimeout )
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -3006,15 +2982,13 @@ class CHOtest:
         import time
         main.case( "IPv6 ping all with some core links down( Point Intents-Spine Topo )" )
         main.step( "Verify IPv6 Ping across all hosts" )
-        hostList = [ ('h'+ str(x + 11)) for x in range (main.numMNhosts) ]
         pingResult = main.FALSE
         time1 = time.time()
-        pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
+        pingResult = main.Mininet1.pingall( protocol="IPv6", timeout=main.pingTimeout )
         if not pingResult:
             main.log.warn("First ping failed. Retrying...")
             time1 = time.time()
-            pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
-
+            pingResult = main.Mininet1.pingall( protocol="IPv6", timeout=main.pingTimeout )
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -3042,15 +3016,13 @@ class CHOtest:
         import time
         main.case( "IPv6 ping all with after core links back up( Point Intents-Spine Topo )" )
         main.step( "Verify IPv6 Ping across all hosts" )
-        hostList = [ ('h'+ str(x + 11)) for x in range (main.numMNhosts) ]
         pingResult = main.FALSE
         time1 = time.time()
-        pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
+        pingResult = main.Mininet1.pingall( protocol="IPv6", timeout=main.pingTimeout )
         if not pingResult:
             main.log.warn("First ping failed. Retrying...")
             time1 = time.time()
-            pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
-
+            pingResult = main.Mininet1.pingall( protocol="IPv6", timeout=main.pingTimeout )
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -3808,15 +3780,13 @@ class CHOtest:
         import time
         main.case( "IPv6 ping all 600 Point intents" )
         main.step( "Verify IPv6 Ping across all hosts" )
-        hostList = [ ('h'+ str(x + 1)) for x in range (main.numMNhosts) ]
         pingResult = main.FALSE
         time1 = time.time()
-        pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
+        pingResult = main.Mininet1.pingall( protocol="IPv6", timeout=main.pingTimeout )
         if not pingResult:
             main.log.warn("First pingall failed. Retrying...")
             time1 = time.time()
-            pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
-
+            pingResult = main.Mininet1.pingall( protocol="IPv6", timeout=main.pingTimeout )
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -3844,15 +3814,13 @@ class CHOtest:
         import time
         main.case( "IPv6 ping all 600 Point intents" )
         main.step( "Verify IPv6 Ping across all hosts" )
-        hostList = [ ('h'+ str(x + 1)) for x in range (main.numMNhosts) ]
         pingResult = main.FALSE
         time1 = time.time()
-        pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
+        pingResult = main.Mininet1.pingall( protocol="IPv6", timeout=main.pingTimeout )
         if not pingResult:
             main.log.warn("First pingall failed. Retrying...")
             time1 = time.time()
-            pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
-
+            pingResult = main.Mininet1.pingall( protocol="IPv6", timeout=main.pingTimeout )
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -3880,15 +3848,13 @@ class CHOtest:
         import time
         main.case( "IPv6 ping all 4556 Point intents" )
         main.step( "Verify IPv6 Ping across all hosts" )
-        hostList = [ ('h'+ str(x + 11)) for x in range (main.numMNhosts) ]
         pingResult = main.FALSE
         time1 = time.time()
-        pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
+        pingResult = main.Mininet1.pingall( protocol="IPv6", timeout=main.pingTimeout )
         if not pingResult:
             main.log.warn("First pingall failed. Retrying...")
             time1 = time.time()
-            pingResult = main.Mininet1.pingIpv6Hosts( hostList, prefix='1000::' )
-
+            pingResult = main.Mininet1.pingall( protocol="IPv6", timeout=main.pingTimeout )
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(

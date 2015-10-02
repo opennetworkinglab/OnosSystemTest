@@ -33,7 +33,7 @@ class CHOtest:
         git_branch = main.params[ 'GIT' ][ 'branch' ]
         karafTimeout = main.params['CTRL']['karafCliTimeout']
         main.checkIntentsDelay = int( main.params['timers']['CheckIntentDelay'] )
-        main.failSwitch = main.params['TEST']['fail_switch']
+        main.failSwitch = main.params['TEST']['pause_test']
         main.emailOnStop = main.params['TEST']['email']
         main.intentCheck = int( main.params['TEST']['intent_check'] )
         main.newTopo = ""

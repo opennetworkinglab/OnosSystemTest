@@ -90,12 +90,13 @@
         <LinkDiscovery>15</LinkDiscovery>
         <SwitchDiscovery>10</SwitchDiscovery>
         <IntentPurgeDelay>15</IntentPurgeDelay>
-        <CheckIntentDelay>5</CheckIntentDelay>
+        <CheckIntentDelay>8</CheckIntentDelay>
     </timers>
 
     <TEST>
         <fail_switch>True</fail_switch>
         <email>False</email>
+        <intent_check>8</intent_check>
     </TEST>
 
 </PARAMS>

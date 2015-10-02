@@ -35,6 +35,7 @@ class CHOtest:
         main.checkIntentsDelay = int( main.params['timers']['CheckIntentDelay'] )
         main.failSwitch = bool( main.params['TEST']['fail_switch'] )
         main.emailOnStop = bool( main.params['TEST']['email'] )
+        main.intentCheck = int( main.params['TEST']['intent_check'] )
         main.newTopo = ""
         main.CLIs = []
 
@@ -996,8 +997,8 @@ class CHOtest:
 
         main.step("Verify intents are installed")
 
-        # Giving onos 3 chances to install intents
-        for i in range(3):
+        # Giving onos multiple chances to install intents
+        for i in range( main.intentCheck ):
             if i != 0:
                 main.log.warn( "Verification failed. Retrying..." )
             main.log.info("Waiting for onos to install intents...")
@@ -1095,8 +1096,8 @@ class CHOtest:
 
         main.step("Verify intents are installed")
 
-        # Giving onos 3 chances to install intents
-        for i in range(3):
+        # Giving onos multiple chances to install intents
+        for i in range( main.intentCheck ):
             if i != 0:
                 main.log.warn( "Verification failed. Retrying..." )
             main.log.info("Waiting for onos to install intents...")
@@ -1193,8 +1194,8 @@ class CHOtest:
 
         main.step("Verify intents are installed")
 
-        # Giving onos 3 chances to install intents
-        for i in range(3):
+        # Giving onos multiple chances to install intents
+        for i in range( main.intentCheck ):
             if i != 0:
                 main.log.warn( "Verification failed. Retrying..." )
             main.log.info("Waiting for onos to install intents...")
@@ -1422,8 +1423,8 @@ class CHOtest:
             " seconds" )
 
         main.step("Verify intents are installed")
-        # Checking a maximum of 3
-        for i in range(3):
+        # Giving onos multiple chances to install intents
+        for i in range( main.intentCheck ):
             if i != 0:
                 main.log.warn( "Verification failed. Retrying..." )
             main.log.info("Giving onos some time...")
@@ -1532,8 +1533,8 @@ class CHOtest:
             " seconds" )
 
         main.step("Verify intents are installed")
-        # Checking a maximum of 3
-        for i in range(3):
+        # Giving onos multiple chances to install intents
+        for i in range( main.intentCheck ):
             if i != 0:
                 main.log.warn( "Verification failed. Retrying..." )
             main.log.info("Giving onos some time...")
@@ -1655,8 +1656,8 @@ class CHOtest:
             " seconds" )
 
         main.step("Verify intents are installed")
-        # Checking a maximum of 3
-        for i in range(3):
+        # Giving onos multiple chances to install intents
+        for i in range( main.intentCheck ):
             if i != 0:
                 main.log.warn( "Verification failed. Retrying..." )
             main.log.info("Giving onos some time...")
@@ -1765,8 +1766,8 @@ class CHOtest:
             " seconds" )
 
         main.step("Verify intents are installed")
-        # Checking a maximum of 3
-        for i in range(3):
+        # Giving onos multiple chances to install intents
+        for i in range( main.intentCheck ):
             if i != 0:
                 main.log.warn( "Verification failed. Retrying..." )
             main.log.info("Giving onos some time...")
@@ -1865,8 +1866,8 @@ class CHOtest:
             " seconds" )
 
         main.step("Verify intents are installed")
-        # Checking a maximum of 3
-        for i in range(3):
+        # Giving onos multiple chances to install intents
+        for i in range( main.intentCheck ):
             if i != 0:
                 main.log.warn( "Verification failed. Retrying..." )
             main.log.info("Giving onos some time...")
@@ -1962,8 +1963,8 @@ class CHOtest:
             " seconds" )
 
         main.step("Verify intents are installed")
-        # Checking a maximum of 3
-        for i in range(3):
+        # Giving onos multiple chances to install intents
+        for i in range( main.intentCheck ):
             if i != 0:
                 main.log.warn( "Verification failed. Retrying..." )
             main.log.info("Giving onos some time...")
@@ -2062,8 +2063,8 @@ class CHOtest:
             " seconds" )
 
         main.step("Verify intents are installed")
-        # Checking a maximum of 3
-        for i in range(3):
+        # Giving onos multiple chances to install intents
+        for i in range( main.intentCheck ):
             if i != 0:
                 main.log.warn( "Verification failed. Retrying..." )
             main.log.info("Giving onos some time...")
@@ -2159,8 +2160,8 @@ class CHOtest:
             " seconds" )
 
         main.step("Verify intents are installed")
-        # Checking a maximum of 3
-        for i in range(3):
+        # Giving onos multiple chances to install intents
+        for i in range( main.intentCheck ):
             if i != 0:
                 main.log.warn( "Verification failed. Retrying..." )
             main.log.info("Giving onos some time...")
@@ -2270,8 +2271,8 @@ class CHOtest:
             " seconds" )
 
         main.step("Verify intents are installed")
-        # Checking a maximum of 3
-        for i in range(3):
+        # Giving onos multiple chances to install intents
+        for i in range( main.intentCheck ):
             if i != 0:
                 main.log.warn( "Verification failed. Retrying..." )
             main.log.info("Giving onos some time...")
@@ -2368,8 +2369,8 @@ class CHOtest:
             " seconds" )
 
         main.step("Verify intents are installed")
-        # Checking a maximum of 3
-        for i in range(3):
+        # Giving onos multiple chances to install intents
+        for i in range( main.intentCheck ):
             if i != 0:
                 main.log.warn( "Verification failed. Retrying..." )
             main.log.info("Giving onos some time...")
@@ -2479,8 +2480,8 @@ class CHOtest:
             " seconds" )
 
         main.step("Verify intents are installed")
-        # Checking a maximum of 3
-        for i in range(3):
+        # Giving onos multiple chances to install intents
+        for i in range( main.intentCheck ):
             if i != 0:
                 main.log.warn( "Verification failed. Retrying..." )
             main.log.info("Giving onos some time...")
@@ -2577,8 +2578,8 @@ class CHOtest:
             " seconds" )
 
         main.step("Verify intents are installed")
-        # Checking a maximum of 3
-        for i in range(3):
+        # Giving onos multiple chances to install intents
+        for i in range( main.intentCheck ):
             if i != 0:
                 main.log.warn( "Verification failed. Retrying..." )
             main.log.info("Giving onos some time...")
@@ -3106,8 +3107,8 @@ class CHOtest:
 
         main.step("Verify intents are installed")
 
-        # Giving onos 3 chances to install intents
-        for i in range(3):
+        # Giving onos multiple chances to install intents
+        for i in range( main.intentCheck ):
             if i != 0:
                 main.log.warn( "Verification failed. Retrying..." )
             main.log.info("Waiting for onos to install intents...")
@@ -3201,8 +3202,8 @@ class CHOtest:
 
         main.step("Verify intents are installed")
 
-        # Giving onos 3 chances to install intents
-        for i in range(3):
+        # Giving onos multiple chances to install intents
+        for i in range( main.intentCheck ):
             if i != 0:
                 main.log.warn( "Verification failed. Retrying..." )
             main.log.info("Waiting for onos to install intents...")
@@ -3299,8 +3300,8 @@ class CHOtest:
 
         main.step("Verify intents are installed")
 
-        # Giving onos 5 chances to install intents
-        for i in range(5):
+        # Giving onos multiple chances to install intents
+        for i in range( main.intentCheck ):
             if i != 0:
                 main.log.warn( "Verification failed. Retrying..." )
             main.log.info("Waiting for onos to install intents...")
@@ -3394,8 +3395,8 @@ class CHOtest:
 
         main.step("Verify intents are installed")
 
-        # Giving onos 3 chances to install intents
-        for i in range(3):
+        # Giving onos multiple chances to install intents
+        for i in range( main.intentCheck ):
             if i != 0:
                 main.log.warn( "Verification failed. Retrying..." )
             main.log.info("Waiting for onos to install intents...")
@@ -3485,8 +3486,8 @@ class CHOtest:
 
         main.step("Verify intents are installed")
 
-        # Giving onos 3 chances to install intents
-        for i in range(3):
+        # Giving onos multiple chances to install intents
+        for i in range( main.intentCheck ):
             if i != 0:
                 main.log.warn( "Verification failed. Retrying..." )
             main.log.info("Waiting for onos to install intents...")
@@ -3573,8 +3574,8 @@ class CHOtest:
 
         main.step("Verify intents are installed")
 
-        # Giving onos 3 chances to install intents
-        for i in range(3):
+        # Giving onos multiple chances to install intents
+        for i in range( main.intentCheck ):
             if i != 0:
                 main.log.warn( "Verification failed. Retrying..." )
             main.log.info("Waiting for onos to install intents...")
@@ -3658,8 +3659,8 @@ class CHOtest:
 
         main.step("Verify intents are installed")
 
-        # Giving onos 3 chances to install intents
-        for i in range(3):
+        # Giving onos multiple chances to install intents
+        for i in range( main.intentCheck ):
             if i != 0:
                 main.log.warn( "Verification failed. Retrying..." )
             main.log.info("Waiting for onos to install intents...")
@@ -3750,8 +3751,8 @@ class CHOtest:
 
         main.step("Verify intents are installed")
 
-        # Giving onos 3 chances to install intents
-        for i in range(3):
+        # Giving onos multiple chances to install intents
+        for i in range( main.intentCheck ):
             if i != 0:
                 main.log.warn( "Verification failed. Retrying..." )
             main.log.info("Waiting for onos to install intents...")

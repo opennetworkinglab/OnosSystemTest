@@ -94,8 +94,8 @@
     </timers>
 
     <TEST>
-        <fail_switch>True</fail_switch>
-        <email>False</email>
+        <fail_switch>on</fail_switch>
+        <email>off</email>
         <intent_check>8</intent_check>
     </TEST>
 

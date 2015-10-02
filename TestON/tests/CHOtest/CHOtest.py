@@ -33,11 +33,14 @@ class CHOtest:
         git_branch = main.params[ 'GIT' ][ 'branch' ]
         karafTimeout = main.params['CTRL']['karafCliTimeout']
         main.checkIntentsDelay = int( main.params['timers']['CheckIntentDelay'] )
-        main.failSwitch = bool( main.params['TEST']['fail_switch'] )
-        main.emailOnStop = bool( main.params['TEST']['email'] )
+        main.failSwitch = main.params['TEST']['fail_switch']
+        main.emailOnStop = main.params['TEST']['email']
         main.intentCheck = int( main.params['TEST']['intent_check'] )
         main.newTopo = ""
         main.CLIs = []
+
+        main.failSwitch = True if main.failSwitch == "on" else False
+        main.emailOnStop = True if main.emailOnStop == "on" else False
 
         for i in range( 1, int(main.numCtrls) + 1 ):
             main.CLIs.append( getattr( main, 'ONOScli' + str( i ) ) )
@@ -1819,7 +1822,7 @@ class CHOtest:
 
         if not caseResult and main.failSwitch:
             main.log.report("Stopping test")
-            main.stop( email=main.emailOnStop )
+            main.stop( mail=main.emailOnStop )
 
     def CASE72( self, main ):
         """

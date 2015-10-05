@@ -20,6 +20,7 @@ import json
 import os
 import requests
 import types
+import sys
 
 from drivers.common.api.controllerdriver import Controller
 
@@ -32,6 +33,7 @@ class OnosRestDriver( Controller ):
         super( Controller, self ).__init__()
         self.ip_address = "localhost"
         self.port = "8080"
+        self.wrapped = sys.modules[ __name__ ]
 
     def connect( self, **connectargs ):
         try:
@@ -54,6 +56,24 @@ class OnosRestDriver( Controller ):
 
         self.handle = super( OnosRestDriver, self ).connect()
         return self.handle
+
+    def pprint( self, jsonObject ):
+        """
+        Pretty Prints a json object
+
+        arguments:
+            jsonObject - a parsed json object
+        returns:
+            A formatted string for printing or None on error
+        """
+        try:
+            if isinstance( jsonObject, str ):
+                jsonObject = json.loads( jsonObject )
+            return json.dumps( jsonObject, sort_keys=True,
+                               indent=4, separators=(',', ': '))
+        except ( TypeError, ValueError ):
+            main.log.exception( "Error parsing jsonObject" )
+            return None
 
     def send( self, ip, port, url, base="/onos/v1", method="GET",
               query=None, data=None, debug=False ):
@@ -93,10 +113,10 @@ class OnosRestDriver( Controller ):
         except requests.exceptions:
             main.log.exception( "Error sending request." )
             return None
-        except Exception as e:
-            main.log.exception( e )
-            return None
-        # FIXME: add other exceptions
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
 
     def intents( self, ip="DEFAULT", port="DEFAULT" ):
         """
@@ -121,15 +141,20 @@ class OnosRestDriver( Controller ):
                 if 200 <= response[ 0 ] <= 299:
                     output = response[ 1 ]
                     a = json.loads( output ).get( 'intents' )
+                    assert a is not None, "Error parsing json object"
                     b = json.dumps( a )
                     return b
                 else:
                     main.log.error( "Error with REST request, response was: " +
                                     str( response ) )
                     return main.FALSE
-        except Exception as e:
-            main.log.exception( e )
+        except ( AttributeError, AssertionError, TypeError ):
+            main.log.exception( self.name + ": Object not as expected" )
             return None
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
 
     def intent( self, intentId, appId="org.onosproject.cli",
                 ip="DEFAULT", port="DEFAULT" ):
@@ -169,9 +194,13 @@ class OnosRestDriver( Controller ):
                     main.log.error( "Error with REST request, response was: " +
                                     str( response ) )
                     return main.FALSE
-        except Exception as e:
-            main.log.exception( e )
+        except ( AttributeError, TypeError ):
+            main.log.exception( self.name + ": Object not as expected" )
             return None
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
 
     def getIntentsId( self, ip="DEFAULT", port="DEFAULT" ):
         """
@@ -187,18 +216,19 @@ class OnosRestDriver( Controller ):
             intentsDict = json.loads( self.intents( ip=ip, port=port ) )
             for intent in intentsDict:
                 intentsIdList.append( intent.get( 'id' ) )
-
             if not intentsIdList:
                 main.log.debug( "Cannot find any intents" )
                 return main.FALSE
             else:
                 main.log.info( "Found intents: " + str( intentsIdList ) )
                 return main.TRUE
-
-        except Exception as e:
-            main.log.exception( e )
+        except ( AttributeError, TypeError ):
+            main.log.exception( self.name + ": Object not as expected" )
             return None
-
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
 
     def apps( self, ip="DEFAULT", port="DEFAULT" ):
         """
@@ -222,15 +252,20 @@ class OnosRestDriver( Controller ):
                 if 200 <= response[ 0 ] <= 299:
                     output = response[ 1 ]
                     a = json.loads( output ).get( 'applications' )
+                    assert a is not None, "Error parsing json object"
                     b = json.dumps( a )
                     return b
                 else:
                     main.log.error( "Error with REST request, response was: " +
                                     str( response ) )
                     return main.FALSE
-        except Exception as e:
-            main.log.exception( e )
+        except ( AttributeError, AssertionError, TypeError ):
+            main.log.exception( self.name + ": Object not as expected" )
             return None
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
 
     def activateApp( self, appName, ip="DEFAULT", port="DEFAULT", check=True ):
         """
@@ -280,9 +315,13 @@ class OnosRestDriver( Controller ):
                     main.log.error( "Error with REST request, response was: " +
                                     str( response ) )
                     return main.FALSE
-        except Exception as e:
-            main.log.exception( e )
+        except ( AttributeError, TypeError ):
+            main.log.exception( self.name + ": Object not as expected" )
             return None
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
 
     def deactivateApp( self, appName, ip="DEFAULT", port="DEFAULT",
                        check=True ):
@@ -332,9 +371,13 @@ class OnosRestDriver( Controller ):
                     main.log.error( "Error with REST request, response was: " +
                                     str( response ) )
                     return main.FALSE
-        except Exception as e:
-            main.log.exception( e )
+        except ( AttributeError, TypeError ):
+            main.log.exception( self.name + ": Object not as expected" )
             return None
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
 
     def getApp( self, appName, project="org.onosproject.", ip="DEFAULT",
                 port="DEFAULT" ):
@@ -367,9 +410,13 @@ class OnosRestDriver( Controller ):
                     main.log.error( "Error with REST request, response was: " +
                                     str( response ) )
                     return main.FALSE
-        except Exception as e:
-            main.log.exception( e )
+        except ( AttributeError, TypeError ):
+            main.log.exception( self.name + ": Object not as expected" )
             return None
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
 
     def addHostIntent( self, hostIdOne, hostIdTwo, appId='org.onosproject.cli',
                        ip="DEFAULT", port="DEFAULT" ):
@@ -419,9 +466,13 @@ class OnosRestDriver( Controller ):
                                     str( response ) )
                     return main.FALSE
 
-        except Exception as e:
-            main.log.exception( e )
+        except ( AttributeError, TypeError ):
+            main.log.exception( self.name + ": Object not as expected" )
             return None
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
 
     def addPointIntent( self,
                         ingressDevice,
@@ -567,10 +618,13 @@ class OnosRestDriver( Controller ):
                                     str( response ) )
                     return main.FALSE
 
-        except Exception as e:
-            main.log.exception( e )
+        except ( AttributeError, TypeError ):
+            main.log.exception( self.name + ": Object not as expected" )
             return None
-
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
 
     def removeIntent( self, intentId, appId='org.onosproject.cli',
                        ip="DEFAULT", port="DEFAULT" ):
@@ -600,9 +654,13 @@ class OnosRestDriver( Controller ):
                     main.log.error( "Error with REST request, response was: " +
                                     str( response ) )
                     return main.FALSE
-        except Exception as e:
-            main.log.exception( e )
+        except ( AttributeError, TypeError ):
+            main.log.exception( self.name + ": Object not as expected" )
             return None
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
 
     def getIntentsId( self, ip="DEFAULT", port="DEFAULT" ):
         """
@@ -611,14 +669,16 @@ class OnosRestDriver( Controller ):
         try:
             intentIdList = []
             intentsJson = json.loads( self.intents() )
-            print intentsJson
             for intent in intentsJson:
                 intentIdList.append( intent.get( 'id' ) )
-            print intentIdList
             return intentIdList
-        except Exception as e:
-            main.log.exception( e )
+        except ( AttributeError, TypeError ):
+            main.log.exception( self.name + ": Object not as expected" )
             return None
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
 
     def removeAllIntents( self, intentIdList ='ALL',appId='org.onosproject.cli',
                           ip="DEFAULT", port="DEFAULT", delay=5 ):
@@ -660,10 +720,13 @@ class OnosRestDriver( Controller ):
                     return main.FALSE
             else:
                 main.log.debug( self.name + ": There is no intents ID list" )
-        except Exception as e:
-            main.log.exception( e )
+        except ( AttributeError, TypeError ):
+            main.log.exception( self.name + ": Object not as expected" )
             return None
-
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
 
     def hosts( self, ip="DEFAULT", port="DEFAULT" ):
         """
@@ -688,15 +751,20 @@ class OnosRestDriver( Controller ):
                 if 200 <= response[ 0 ] <= 299:
                     output = response[ 1 ]
                     a = json.loads( output ).get( 'hosts' )
+                    assert a is not None, "Error parsing json object"
                     b = json.dumps( a )
                     return b
                 else:
                     main.log.error( "Error with REST request, response was: " +
                                     str( response ) )
                     return main.FALSE
-        except Exception as e:
-            main.log.exception( e )
+        except ( AttributeError, AssertionError, TypeError ):
+            main.log.exception( self.name + ": Object not as expected" )
             return None
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
 
     def getHost( self, mac, vlan="-1", ip="DEFAULT", port="DEFAULT" ):
         """
@@ -738,9 +806,13 @@ class OnosRestDriver( Controller ):
                     main.log.error( "Error with REST request, response was: " +
                                     str( response ) )
                     return main.FALSE
-        except Exception as e:
-            main.log.exception( e )
+        except ( AttributeError, TypeError ):
+            main.log.exception( self.name + ": Object not as expected" )
             return None
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
 
     def topology( self, ip="DEFAULT", port="DEFAULT" ):
         """
@@ -770,9 +842,51 @@ class OnosRestDriver( Controller ):
                     main.log.error( "Error with REST request, response was: " +
                                     str( response ) )
                     return main.FALSE
-        except Exception as e:
-            main.log.exception( e )
+        except ( AttributeError, TypeError ):
+            main.log.exception( self.name + ": Object not as expected" )
             return None
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
+    def devices( self, ip="DEFAULT", port="DEFAULT" ):
+        """
+        Description:
+            Get the devices discovered by ONOS is json string format
+        Returns:
+            a json string of the devices currently discovered by ONOS OR
+            main.FALSE if there is an error in the request OR
+            Returns None for exception
+        """
+        try:
+            output = None
+            if ip == "DEFAULT":
+                main.log.warn( "No ip given, reverting to ip from topo file" )
+                ip = self.ip_address
+            if port == "DEFAULT":
+                main.log.warn( "No port given, reverting to port " +
+                               "from topo file" )
+                port = self.port
+            response = self.send( ip, port, url="/devices" )
+            if response:
+                if 200 <= response[ 0 ] <= 299:
+                    output = response[ 1 ]
+                    a = json.loads( output ).get( 'devices' )
+                    assert a is not None, "Error parsing json object"
+                    b = json.dumps( a )
+                    return b
+                else:
+                    main.log.error( "Error with REST request, response was: " +
+                                    str( response ) )
+                    return main.FALSE
+        except ( AttributeError, AssertionError, TypeError ):
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
 
     def getIntentState( self, intentsId, intentsJson=None,
                         ip="DEFAULT", port="DEFAULT" ):
@@ -823,12 +937,13 @@ class OnosRestDriver( Controller ):
                 main.log.info( "Invalid intents ID entry" )
                 return None
 
-        except TypeError:
-            main.log.exception( self.name + ": Object Type not as expected" )
+        except ( AttributeError, TypeError ):
+            main.log.exception( self.name + ": Object not as expected" )
             return None
-        except Exception as e:
-            main.log.exception( e )
-            return None
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
 
     def checkIntentState( self, intentsId="ALL", expectedState='INSTALLED',
                           ip="DEFAULT", port="DEFAULT"):
@@ -889,12 +1004,13 @@ class OnosRestDriver( Controller ):
                                " intents are in " + str( expectedState ) +
                                " state" )
             return returnValue
-        except TypeError:
+        except ( AttributeError, TypeError ):
             main.log.exception( self.name + ": Object not as expected" )
-            return main.FALSE
-        except Exception as e:
-            main.log.exception( e )
             return None
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
 
     def flows( self, ip="DEFAULT", port="DEFAULT" ):
         """
@@ -902,7 +1018,9 @@ class OnosRestDriver( Controller ):
             Get flows currently added to the system
         NOTE:
             The flows -j cli command has completely different format than
-            the REST output; Returns None for exception
+            the REST output
+
+        Returns None for exception
         """
         try:
             output = None
@@ -918,23 +1036,28 @@ class OnosRestDriver( Controller ):
                 if 200 <= response[ 0 ] <= 299:
                     output = response[ 1 ]
                     a = json.loads( output ).get( 'flows' )
+                    assert a is not None, "Error parsing json object"
                     b = json.dumps( a )
                     return b
                 else:
                     main.log.error( "Error with REST request, response was: " +
                                     str( response ) )
                     return main.FALSE
-        except Exception as e:
-            main.log.exception( e )
+        except ( AttributeError, AssertionError, TypeError ):
+            main.log.exception( self.name + ": Object not as expected" )
             return None
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
 
-    def getFlows( self, device, flowId=0, ip="DEFAULT", port="DEFAULT" ):
+    def getFlows( self, deviceId, flowId=None, ip="DEFAULT", port="DEFAULT" ):
         """
         Description:
             Gets all the flows of the device or get a specific flow in the
             device by giving its flow ID
         Required:
-            str device - device/switch Id
+            str deviceId - device/switch Id
         Optional:
             int/hex flowId - ID of the flow
         """
@@ -947,7 +1070,7 @@ class OnosRestDriver( Controller ):
                 main.log.warn( "No port given, reverting to port " +
                                "from topo file" )
                 port = self.port
-            url = "/flows/" + device
+            url = "/flows/" + deviceId
             if flowId:
                 url += "/" + str( int( flowId ) )
             print url
@@ -956,16 +1079,20 @@ class OnosRestDriver( Controller ):
                 if 200 <= response[ 0 ] <= 299:
                     output = response[ 1 ]
                     a = json.loads( output ).get( 'flows' )
+                    assert a is not None, "Error parsing json object"
                     b = json.dumps( a )
                     return b
                 else:
                     main.log.error( "Error with REST request, response was: " +
                                     str( response ) )
                     return main.FALSE
-        except Exception as e:
-            main.log.exception( e )
+        except ( AttributeError, AssertionError, TypeError ):
+            main.log.exception( self.name + ": Object not as expected" )
             return None
-
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
 
     def addFlow( self,
                  deviceId,
@@ -1009,17 +1136,14 @@ class OnosRestDriver( Controller ):
             of the ONOS node
         """
         try:
-
             flowJson = { "priority":100,
                            "isPermanent":"true",
                            "timeout":0,
                            "deviceId":deviceId,
                            "treatment":{"instructions":[]},
                            "selector": {"criteria":[]}}
-
             if appId:
                 flowJson[ "appId" ] = appId
-
             if egressPort:
                 flowJson[ 'treatment' ][ 'instructions' ].append(
                                                        { "type":"OUTPUT",
@@ -1064,11 +1188,10 @@ class OnosRestDriver( Controller ):
                 flowJson[ 'selector' ][ 'criteria' ].append(
                                                        { "type":"IP_PROTO",
                                                          "protocol": ipProto } )
-
-            # TODO: Bandwidth and Lambda will be implemented if needed
-
-            main.log.debug( flowJson )
-
+            if bandwidth or lambdaAlloc:
+                # TODO: Bandwidth and Lambda will be implemented if needed
+                raise NotImplementedError
+            main.log.debug( "Adding flow: " + self.pprint( flowJson ) )
             output = None
             if ip == "DEFAULT":
                 main.log.warn( "No ip given, reverting to ip from topo file" )
@@ -1092,10 +1215,15 @@ class OnosRestDriver( Controller ):
                     main.log.error( "Error with REST request, response was: " +
                                     str( response ) )
                     return main.FALSE
-
-        except Exception as e:
-            main.log.exception( e )
+        except NotImplementedError as e:
+            raise e  # Inform the caller
+        except ( AttributeError, TypeError ):
+            main.log.exception( self.name + ": Object not as expected" )
             return None
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
 
     def removeFlow( self, deviceId, flowId,
                        ip="DEFAULT", port="DEFAULT" ):
@@ -1131,9 +1259,13 @@ class OnosRestDriver( Controller ):
                     main.log.error( "Error with REST request, response was: " +
                                     str( response ) )
                     return main.FALSE
-        except Exception as e:
-            main.log.exception( e )
+        except ( AttributeError, TypeError ):
+            main.log.exception( self.name + ": Object not as expected" )
             return None
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
 
     def checkFlowsState( self , ip="DEFAULT", port="DEFAULT" ):
         """
@@ -1155,11 +1287,8 @@ class OnosRestDriver( Controller ):
                                    str( flow.get( 'state' ) ) )
                     returnValue = main.FALSE
             return returnValue
-        except TypeError:
+        except ( AttributeError, TypeError ):
             main.log.exception( self.name + ": Object not as expected" )
-            return main.FALSE
-        except Exception as e:
-            main.log.exception( e )
             return None
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )

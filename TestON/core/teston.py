@@ -292,15 +292,24 @@ class TestON:
             self.log.wiki( "<p>" + self.caseExplanation + "</p>" )
             self.log.summary( self.caseExplanation )
             self.log.wiki( "<ul>" )
+            subcaseMessage = False
             for line in self.stepCache.splitlines():
-                if re.search( " - PASS$", line ):
-                    self.log.wiki( "<li>" + line + "  <ac:emoticon ac:name=\"tick\" /></li>\n" )
-                elif re.search( " - FAIL$", line ):
-                    self.log.wiki( "<li>" + line + "  <ac:emoticon ac:name=\"cross\" /></li>\n" )
-                elif re.search( " - No Result$", line ):
-                    self.log.wiki( "<li>" + line + "  <ac:emoticon ac:name=\"warning\" /></li>\n" )
-                else:  # Should only be on fail message
-                    self.log.wiki( "<ul><li>" + line + "</li></ul>\n" )
+                if re.search( "[0-9]\.[0-9]", line ):  # Step
+                    if subcaseMessage:  # End of Failure Message Printout
+                        self.log.wiki( "</ul>\n" )
+                        subcaseMessage = False
+                    if re.search( " - PASS$", line ):
+                        self.log.wiki( "<li>" + line + "  <ac:emoticon ac:name=\"tick\" /></li>\n" )
+                    elif re.search( " - FAIL$", line ):
+                        self.log.wiki( "<li>" + line + "  <ac:emoticon ac:name=\"cross\" /></li>\n" )
+                    elif re.search( " - No Result$", line ):
+                        self.log.wiki( "<li>" + line + "  <ac:emoticon ac:name=\"warning\" /></li>\n" )
+                else:  # Substep
+                    if not subcaseMessage:  # Open Failure Message Printout
+                        self.log.wiki( "<ul><li>" + line + "</li>\n" )
+                        subcaseMessage = True
+                    else:  # Add to Failure Message Printout
+                        self.log.wiki( "<li>" + line + "</li>\n" )
             self.log.wiki( "</ul>" )
             self.log.summary( self.stepCache )
             self.stepCache = ""

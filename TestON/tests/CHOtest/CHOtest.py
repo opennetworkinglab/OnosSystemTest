@@ -3394,10 +3394,28 @@ class CHOtest:
                                  onpass="INTENTS INSTALLED",
                                  onfail="SOME INTENTS NOT INSTALLED" )
 
-        main.log.info( "Checking flows state" )
-        checkFlowsState = main.ONOScli1.checkFlowsState()
-        # Giving onos time to return the state of the flows
-        time.sleep(50)
+        main.step("Verify flows are all added")
+
+        for i in range( main.flowCheck ):
+            if i != 0:
+                main.log.warn( "verification failed. Retrying..." )
+            main.log.info( "Waiting for onos to add flows..." )
+            time.sleep( main.checkFlowsDelay )
+
+            flowState = main.TRUE
+            for cli in main.CLIs:
+                flowState = cli.checkFlowState()
+                if not flowState:
+                    main.log.warn( "Not all flows added" )
+            if flowState:
+                break
+        else:
+            #Dumping summary
+            main.log.info( "Summary:\n" + str( main.ONOScli1.summary(jsonFormat=False) ) )
+
+        utilities.assert_equals( expect=main.TRUE, actual=flowState,
+                                 onpass="FLOWS INSTALLED",
+                                 onfail="SOME FLOWS NOT ADDED" )
 
         main.step( "Verify Ping across all hosts" )
         pingResult = main.FALSE
@@ -3422,6 +3440,17 @@ class CHOtest:
             onpass="Install 25 multi to single point Intents and Ping All test PASS",
             onfail="Install 25 multi to single point Intents and Ping All test FAIL" )
 
+        if not intentState:
+            main.log.debug( "Intents failed to install completely" )
+        if not pingResult:
+            main.log.debug( "Pingall failed" )
+        if not checkFlowsState:
+            main.log.debug( "Flows failed to add completely" )
+
+        if not caseResult and main.failSwitch:
+            main.log.report("Stopping test")
+            main.stop( email=main.emailOnStop )
+
     def CASE94( self ):
         """
         Install multi-single point intents and verify Ping all works
@@ -3435,7 +3464,7 @@ class CHOtest:
         deviceDPIDsCopy = copy.copy(main.deviceDPIDs)
         portIngressList = ['1']*(len(deviceDPIDsCopy) - 1)
         intentIdList = []
-        print "MACsDict", main.MACsDict
+        main.log.info( "MACsDict" + str(main.MACsDict) )
         time1 = time.time()
         for i in xrange(0,len(deviceDPIDsCopy),int(main.numCtrls)):
             pool = []
@@ -3481,19 +3510,42 @@ class CHOtest:
             #Dumping intent summary
             main.log.info( "Intents:\n" + str( main.ONOScli1.intents( jsonFormat=False, summary=True ) ) )
 
-
         utilities.assert_equals( expect=main.TRUE, actual=intentState,
                                  onpass="INTENTS INSTALLED",
                                  onfail="SOME INTENTS NOT INSTALLED" )
 
+        main.step("Verify flows are all added")
+
+        for i in range( main.flowCheck ):
+            if i != 0:
+                main.log.warn( "verification failed. Retrying..." )
+            main.log.info( "Waiting for onos to add flows..." )
+            time.sleep( main.checkFlowsDelay )
+
+            flowState = main.TRUE
+            for cli in main.CLIs:
+                flowState = cli.checkFlowState()
+                if not flowState:
+                    main.log.warn( "Not all flows added" )
+            if flowState:
+                break
+        else:
+            #Dumping summary
+            main.log.info( "Summary:\n" + str( main.ONOScli1.summary(jsonFormat=False) ) )
+
+        utilities.assert_equals( expect=main.TRUE, actual=flowState,
+                                 onpass="FLOWS INSTALLED",
+                                 onfail="SOME FLOWS NOT ADDED" )
+
         main.step( "Verify Ping across all hosts" )
         pingResult = main.FALSE
         time1 = time.time()
-        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout)
+        pingResult = main.Mininet1.pingall( timeout=main.pingTimeout )
         if not pingResult:
-            main.log.info( "First pingall failed. Retrying..." )
             time1 = time.time()
-            pingResult = main.Mininet1.pingall(timeout=main.pingTimeout)
+            main.log.warn("First pingall failed. Retrying")
+            pingResult = main.Mininet1.pingall( timeout=main.pingTimeout )
+
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -3501,15 +3553,143 @@ class CHOtest:
             str( timeDiff ) +
             " seconds" )
 
-
-        caseResult = ( pingResult and intentState )
+        caseResult = ( checkFlowsState and pingResult and intentState )
         utilities.assert_equals(
             expect=main.TRUE,
             actual=caseResult,
             onpass="Install 25 multi to single point Intents and Ping All test PASS",
             onfail="Install 25 multi to single point Intents and Ping All test FAIL" )
 
-    #def CASE95 multi-single point intent for Spine
+        if not intentState:
+            main.log.debug( "Intents failed to install completely" )
+        if not pingResult:
+            main.log.debug( "Pingall failed" )
+        if not checkFlowsState:
+            main.log.debug( "Flows failed to add completely" )
+
+        if not caseResult and main.failSwitch:
+            main.log.report("Stopping test")
+            main.stop( email=main.emailOnStop )
+
+    def CASE95( self ):
+        """
+        Install multi-single point intents and verify Ping all works
+        for Spine topology
+        """
+        import copy
+        import time
+        main.log.report( "Install multi-single point intents and verify Ping all" )
+        main.log.report( "___________________________________________" )
+        main.case( "Install multi-single point intents and Ping all" )
+        deviceDPIDsCopy = copy.copy(main.deviceDPIDs)
+        portIngressList = ['1']*(len(deviceDPIDsCopy) - 1)
+        intentIdList = []
+        main.log.info( "MACsDict" + str(main.MACsDict) )
+        time1 = time.time()
+        for i in xrange(0,len(deviceDPIDsCopy),int(main.numCtrls)):
+            pool = []
+            for cli in main.CLIs:
+                egressDevice = deviceDPIDsCopy[i]
+                ingressDeviceList = copy.copy(deviceDPIDsCopy)
+                ingressDeviceList.remove(egressDevice)
+                if i >= len( deviceDPIDsCopy ):
+                    break
+                t = main.Thread( target=cli.addMultipointToSinglepointIntent,
+                        threadID=main.threadID,
+                        name="addMultipointToSinglepointIntent",
+                        args =[ingressDeviceList,egressDevice,portIngressList,'1','','',main.MACsDict.get(egressDevice)])
+                pool.append(t)
+                t.start()
+                i = i + 1
+                main.threadID = main.threadID + 1
+            for thread in pool:
+                thread.join()
+                intentIdList.append(thread.result)
+        time2 = time.time()
+        main.log.info("Time for adding point intents: %2f seconds" %(time2-time1))
+
+        main.step("Verify intents are installed")
+
+        # Giving onos multiple chances to install intents
+        for i in range( main.intentCheck ):
+            if i != 0:
+                main.log.warn( "Verification failed. Retrying..." )
+            main.log.info("Waiting for onos to install intents...")
+            time.sleep( main.checkIntentsDelay )
+
+            intentState = main.TRUE
+            for e in range(int(main.numCtrls)):
+                main.log.info( "Checking intents on CLI %s" % (e+1) )
+                intentState = main.CLIs[e].checkIntentState( intentsId = intentIdList ) and\
+                        intentState
+                if not intentState:
+                    main.log.warn( "Not all intents installed" )
+            if intentState:
+                break
+        else:
+            #Dumping intent summary
+            main.log.info( "Intents:\n" + str( main.ONOScli1.intents( jsonFormat=False, summary=True ) ) )
+
+        utilities.assert_equals( expect=main.TRUE, actual=intentState,
+                                 onpass="INTENTS INSTALLED",
+                                 onfail="SOME INTENTS NOT INSTALLED" )
+
+        main.step("Verify flows are all added")
+
+        for i in range( main.flowCheck ):
+            if i != 0:
+                main.log.warn( "verification failed. Retrying..." )
+            main.log.info( "Waiting for onos to add flows..." )
+            time.sleep( main.checkFlowsDelay )
+
+            flowState = main.TRUE
+            for cli in main.CLIs:
+                flowState = cli.checkFlowState()
+                if not flowState:
+                    main.log.warn( "Not all flows added" )
+            if flowState:
+                break
+        else:
+            #Dumping summary
+            main.log.info( "Summary:\n" + str( main.ONOScli1.summary(jsonFormat=False) ) )
+
+        utilities.assert_equals( expect=main.TRUE, actual=flowState,
+                                 onpass="FLOWS INSTALLED",
+                                 onfail="SOME FLOWS NOT ADDED" )
+
+        main.step( "Verify Ping across all hosts" )
+        pingResult = main.FALSE
+        time1 = time.time()
+        pingResult = main.Mininet1.pingall( timeout=main.pingTimeout )
+        if not pingResult:
+            time1 = time.time()
+            main.log.warn("First pingall failed. Retrying")
+            pingResult = main.Mininet1.pingall( timeout=main.pingTimeout )
+
+        time2 = time.time()
+        timeDiff = round( ( time2 - time1 ), 2 )
+        main.log.report(
+            "Time taken for Ping All: " +
+            str( timeDiff ) +
+            " seconds" )
+
+        caseResult = ( checkFlowsState and pingResult and intentState )
+        utilities.assert_equals(
+            expect=main.TRUE,
+            actual=caseResult,
+            onpass="Install 25 multi to single point Intents and Ping All test PASS",
+            onfail="Install 25 multi to single point Intents and Ping All test FAIL" )
+
+        if not intentState:
+            main.log.debug( "Intents failed to install completely" )
+        if not pingResult:
+            main.log.debug( "Pingall failed" )
+        if not checkFlowsState:
+            main.log.debug( "Flows failed to add completely" )
+
+        if not caseResult and main.failSwitch:
+            main.log.report("Stopping test")
+            main.stop( email=main.emailOnStop )
 
     def CASE96( self ):
         """
@@ -3523,7 +3703,7 @@ class CHOtest:
         deviceDPIDsCopy = copy.copy(main.deviceDPIDs)
         portEgressList = ['1']*(len(deviceDPIDsCopy) - 1)
         intentIdList = []
-        print "MACsDict", main.MACsDict
+        main.log.info( "MACsDict" + str(main.MACsDict) )
         time1 = time.time()
         for i in xrange(0,len(deviceDPIDsCopy),int(main.numCtrls)):
             pool = []
@@ -3569,19 +3749,42 @@ class CHOtest:
             #Dumping intent summary
             main.log.info( "Intents:\n" + str( main.ONOScli1.intents( jsonFormat=False, summary=True ) ) )
 
-
         utilities.assert_equals( expect=main.TRUE, actual=intentState,
                                  onpass="INTENTS INSTALLED",
                                  onfail="SOME INTENTS NOT INSTALLED" )
 
+        main.step("Verify flows are all added")
+
+        for i in range( main.flowCheck ):
+            if i != 0:
+                main.log.warn( "verification failed. Retrying..." )
+            main.log.info( "Waiting for onos to add flows..." )
+            time.sleep( main.checkFlowsDelay )
+
+            flowState = main.TRUE
+            for cli in main.CLIs:
+                flowState = cli.checkFlowState()
+                if not flowState:
+                    main.log.warn( "Not all flows added" )
+            if flowState:
+                break
+        else:
+            #Dumping summary
+            main.log.info( "Summary:\n" + str( main.ONOScli1.summary(jsonFormat=False) ) )
+
+        utilities.assert_equals( expect=main.TRUE, actual=flowState,
+                                 onpass="FLOWS INSTALLED",
+                                 onfail="SOME FLOWS NOT ADDED" )
+
         main.step( "Verify Ping across all hosts" )
         pingResult = main.FALSE
         time1 = time.time()
-        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout)
+        pingResult = main.Mininet1.pingall( timeout=main.pingTimeout )
         if not pingResult:
-            main.log.info( "First pingall failed. Retrying..." )
             time1 = time.time()
-            pingResult = main.Mininet1.pingall(timeout=main.pingTimeout)
+            main.log.warn("First pingall failed. Retrying")
+            pingResult = main.Mininet1.pingall( timeout=main.pingTimeout )
+
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -3589,12 +3792,23 @@ class CHOtest:
             str( timeDiff ) +
             " seconds" )
 
-        caseResult = ( pingResult and intentState )
+        caseResult = ( pingResult and intentState and flowState)
         utilities.assert_equals(
             expect=main.TRUE,
             actual=caseResult,
             onpass="Install 25 single to multi point Intents and Ping All test PASS",
             onfail="Install 25 single to multi point Intents and Ping All test FAIL" )
+
+        if not intentState:
+            main.log.debug( "Intents failed to install completely" )
+        if not pingResult:
+            main.log.debug( "Pingall failed" )
+        if not checkFlowsState:
+            main.log.debug( "Flows failed to add completely" )
+
+        if not caseResult and main.failSwitch:
+            main.log.report("Stopping test")
+            main.stop( email=main.emailOnStop )
 
     def CASE97( self ):
         """
@@ -3608,7 +3822,7 @@ class CHOtest:
         deviceDPIDsCopy = copy.copy(main.deviceDPIDs)
         portEgressList = ['1']*(len(deviceDPIDsCopy) - 1)
         intentIdList = []
-        print "MACsDict", main.MACsDict
+        main.log.info( "MACsDict" + str(main.MACsDict) )
         time1 = time.time()
         for i in xrange(0,len(deviceDPIDsCopy),int(main.numCtrls)):
             pool = []
@@ -3654,19 +3868,42 @@ class CHOtest:
             #Dumping intent summary
             main.log.info( "Intents:\n" + str( main.ONOScli1.intents( jsonFormat=False, summary=True ) ) )
 
-
         utilities.assert_equals( expect=main.TRUE, actual=intentState,
                                  onpass="INTENTS INSTALLED",
                                  onfail="SOME INTENTS NOT INSTALLED" )
 
+        main.step("Verify flows are all added")
+
+        for i in range( main.flowCheck ):
+            if i != 0:
+                main.log.warn( "verification failed. Retrying..." )
+            main.log.info( "Waiting for onos to add flows..." )
+            time.sleep( main.checkFlowsDelay )
+
+            flowState = main.TRUE
+            for cli in main.CLIs:
+                flowState = cli.checkFlowState()
+                if not flowState:
+                    main.log.warn( "Not all flows added" )
+            if flowState:
+                break
+        else:
+            #Dumping summary
+            main.log.info( "Summary:\n" + str( main.ONOScli1.summary(jsonFormat=False) ) )
+
+        utilities.assert_equals( expect=main.TRUE, actual=flowState,
+                                 onpass="FLOWS INSTALLED",
+                                 onfail="SOME FLOWS NOT ADDED" )
+
         main.step( "Verify Ping across all hosts" )
         pingResult = main.FALSE
         time1 = time.time()
-        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout)
+        pingResult = main.Mininet1.pingall( timeout=main.pingTimeout )
         if not pingResult:
-            main.log.info( "First pingall failed. Retrying..." )
             time1 = time.time()
-            pingResult = main.Mininet1.pingall(timeout=main.pingTimeout)
+            main.log.warn("First pingall failed. Retrying")
+            pingResult = main.Mininet1.pingall( timeout=main.pingTimeout )
+
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -3674,12 +3911,23 @@ class CHOtest:
             str( timeDiff ) +
             " seconds" )
 
-        caseResult = ( pingResult and intentState )
+        caseResult = ( pingResult and intentState and flowState)
         utilities.assert_equals(
             expect=main.TRUE,
             actual=caseResult,
             onpass="Install 25 single to multi point Intents and Ping All test PASS",
             onfail="Install 25 single to multi point Intents and Ping All test FAIL" )
+
+        if not intentState:
+            main.log.debug( "Intents failed to install completely" )
+        if not pingResult:
+            main.log.debug( "Pingall failed" )
+        if not checkFlowsState:
+            main.log.debug( "Flows failed to add completely" )
+
+        if not caseResult and main.failSwitch:
+            main.log.report("Stopping test")
+            main.stop( email=main.emailOnStop )
 
     def CASE98( self ):
         """
@@ -3698,9 +3946,8 @@ class CHOtest:
         for i in range( len( deviceDPIDsCopy ) ):
             MACsDictCopy[ deviceDPIDsCopy[ i ] ] = main.hostMACs[i].split( '/' )[ 0 ]
 
-        print "deviceDPIDsCopy", deviceDPIDsCopy
-        print ""
-        print "MACsDictCopy", MACsDictCopy
+        main.log.info( "deviceDPIDsCopy" + str(deviceDPIDsCopy) )
+        main.log.info( "MACsDictCopy" +  str(MACsDictCopy) )
         time1 = time.time()
         for i in xrange(0,len(deviceDPIDsCopy),int(main.numCtrls)):
             pool = []
@@ -3746,19 +3993,42 @@ class CHOtest:
             #Dumping intent summary
             main.log.info( "Intents:\n" + str( main.ONOScli1.intents( jsonFormat=False, summary=True ) ) )
 
-
         utilities.assert_equals( expect=main.TRUE, actual=intentState,
                                  onpass="INTENTS INSTALLED",
                                  onfail="SOME INTENTS NOT INSTALLED" )
 
+        main.step("Verify flows are all added")
+
+        for i in range( main.flowCheck ):
+            if i != 0:
+                main.log.warn( "verification failed. Retrying..." )
+            main.log.info( "Waiting for onos to add flows..." )
+            time.sleep( main.checkFlowsDelay )
+
+            flowState = main.TRUE
+            for cli in main.CLIs:
+                flowState = cli.checkFlowState()
+                if not flowState:
+                    main.log.warn( "Not all flows added" )
+            if flowState:
+                break
+        else:
+            #Dumping summary
+            main.log.info( "Summary:\n" + str( main.ONOScli1.summary(jsonFormat=False) ) )
+
+        utilities.assert_equals( expect=main.TRUE, actual=flowState,
+                                 onpass="FLOWS INSTALLED",
+                                 onfail="SOME FLOWS NOT ADDED" )
+
         main.step( "Verify Ping across all hosts" )
         pingResult = main.FALSE
         time1 = time.time()
-        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout)
+        pingResult = main.Mininet1.pingall( timeout=main.pingTimeout )
         if not pingResult:
-            main.log.info( "First pingall failed. Retrying..." )
             time1 = time.time()
-            pingResult = main.Mininet1.pingall(timeout=main.pingTimeout)
+            main.log.warn("First pingall failed. Retrying")
+            pingResult = main.Mininet1.pingall( timeout=main.pingTimeout )
+
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -3766,12 +4036,23 @@ class CHOtest:
             str( timeDiff ) +
             " seconds" )
 
-        caseResult = ( pingResult and intentState )
+        caseResult = ( pingResult and intentState and flowState)
         utilities.assert_equals(
             expect=main.TRUE,
             actual=caseResult,
             onpass="Install 25 single to multi point Intents and Ping All test PASS",
             onfail="Install 25 single to multi point Intents and Ping All test FAIL" )
+
+        if not intentState:
+            main.log.debug( "Intents failed to install completely" )
+        if not pingResult:
+            main.log.debug( "Pingall failed" )
+        if not checkFlowsState:
+            main.log.debug( "Flows failed to add completely" )
+
+        if not caseResult and main.failSwitch:
+            main.log.report("Stopping test")
+            main.stop( email=main.emailOnStop )
 
     def CASE190( self ):
         """

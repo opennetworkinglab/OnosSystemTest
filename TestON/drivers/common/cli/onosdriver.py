@@ -192,6 +192,7 @@ class OnosDriver( CLI ):
             self.handle.sendline( "onos-package" )
             self.handle.expect( "onos-package" )
             self.handle.expect( "tar.gz", opTimeout )
+            self.handle.expect( "\$" )
             handle = str( self.handle.before )
             main.log.info( "onos-package command returned: " +
                            handle )
@@ -221,6 +222,7 @@ class OnosDriver( CLI ):
                 "BUILD FAILED" ],
                 timeout=120 )
             handle = str( self.handle.before )
+            self.handle.expect( "\$" )
 
             main.log.info( "onos-build command returned: " +
                            handle )
@@ -752,12 +754,11 @@ class OnosDriver( CLI ):
                 # Expect the cellname in the ONOSCELL variable.
                 # Note that this variable name is subject to change
                 #   and that this driver will have to change accordingly
-                self.handle.expect(str(cellname))
+                self.handle.expect( str( cellname ) )
                 handleBefore = self.handle.before
                 handleAfter = self.handle.after
                 # Get the rest of the handle
-                self.handle.sendline("")
-                self.handle.expect("\$")
+                self.handle.expect( "\$" )
                 handleMore = self.handle.before
 
                 cell_result = handleBefore + handleAfter + handleMore
@@ -768,7 +769,6 @@ class OnosDriver( CLI ):
                     main.cleanup()
                     main.exit()
                 return main.TRUE
-
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
@@ -793,19 +793,11 @@ class OnosDriver( CLI ):
             self.handle.expect( "\$" )
             handleBefore = self.handle.before
             handleAfter = self.handle.after
-            # Get the rest of the handle
-            self.handle.sendline( "" )
-            self.handle.expect( "\$" )
-            handleMore = self.handle.before
-
             main.log.info( "Verify cell returned: " + handleBefore +
-                           handleAfter + handleMore )
-
+                           handleAfter )
             return main.TRUE
         except pexpect.ExceptionPexpect as e:
-            main.log.error( self.name + ": Pexpect exception found of type " +
-                            str( type( e ) ) )
-            main.log.error ( e.get_trace() )
+            main.log.exception( self.name + ": Pexpect exception found: " )
             main.log.error( self.name + ":    " + self.handle.before )
             main.cleanup()
             main.exit()
@@ -851,9 +843,7 @@ class OnosDriver( CLI ):
                     return main.TRUE
 
             except pexpect.ExceptionPexpect as e:
-                main.log.error( self.name + ": Pexpect exception found of type " +
-                                str( type( e ) ) )
-                main.log.error ( e.get_trace() )
+                main.log.exception( self.name + ": Pexpect exception found: " )
                 main.log.error( self.name + ":    " + self.handle.before )
                 main.cleanup()
                 main.exit()
@@ -904,23 +894,12 @@ class OnosDriver( CLI ):
             self.handle.expect( "\$" )
 
             handleBefore = self.handle.before
-            print "handle_before = ", self.handle.before
-            # handleAfter = str( self.handle.after )
-
-            # self.handle.sendline( "" )
-            # self.handle.expect( "\$" )
-            # handleMore = str( self.handle.before )
-
             main.log.info( "Command sent successfully" )
-
             # Obtain return handle that consists of result from
             # the onos command. The string may need to be
             # configured further.
-            # returnString = handleBefore + handleAfter
             returnString = handleBefore
-            print "return_string = ", returnString
             return returnString
-
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
@@ -954,26 +933,28 @@ class OnosDriver( CLI ):
                                       "onos\sstart/running,\sprocess",
                                       "ONOS\sis\salready\sinstalled",
                                       pexpect.TIMEOUT ], timeout=60 )
-
             if i == 0:
                 main.log.warn( "Network is unreachable" )
+                self.handle.expect( "\$" )
                 return main.FALSE
             elif i == 1:
                 main.log.info(
                     "ONOS was installed on " +
                     node +
                     " and started" )
+                self.handle.expect( "\$" )
                 return main.TRUE
             elif i == 2:
                 main.log.info( "ONOS is already installed on " + node )
+                self.handle.expect( "\$" )
                 return main.TRUE
             elif i == 3:
                 main.log.info(
                     "Installation of ONOS on " +
                     node +
                     " timed out" )
+                self.handle.expect( "\$" )
                 return main.FALSE
-
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
@@ -999,7 +980,7 @@ class OnosDriver( CLI ):
                 "start/running",
                 "Unknown\sinstance",
                 pexpect.TIMEOUT ], timeout=120 )
-
+            self.handle.expect( "\$" )
             if i == 0:
                 main.log.info( "Service is already running" )
                 return main.TRUE
@@ -1035,7 +1016,7 @@ class OnosDriver( CLI ):
                 "Could not resolve hostname",
                 "Unknown\sinstance",
                 pexpect.TIMEOUT ], timeout=60 )
-
+            self.handle.expect( "\$" )
             if i == 0:
                 main.log.info( "ONOS service stopped" )
                 return main.TRUE
@@ -1049,7 +1030,6 @@ class OnosDriver( CLI ):
             else:
                 main.log.error( "ONOS service failed to stop" )
                 return main.FALSE
-
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
@@ -1070,13 +1050,10 @@ class OnosDriver( CLI ):
             self.handle.sendline( "" )
             self.handle.expect( "\$", timeout=60 )
             self.handle.sendline( "onos-uninstall " + str( nodeIp ) )
-            self.handle.expect( "\$" )
-
+            self.handle.expect( "\$", timeout=60 )
             main.log.info( "ONOS " + nodeIp + " was uninstalled" )
-
             # onos-uninstall command does not return any text
             return main.TRUE
-
         except pexpect.TIMEOUT:
             main.log.exception( self.name + ": Timeout in onosUninstall" )
             return main.FALSE
@@ -1186,10 +1163,7 @@ class OnosDriver( CLI ):
                                         timeout=120 )
                 if i == 1:
                     return main.FALSE
-            #self.handle.sendline( "" )
-            #self.handle.expect( "\$" )
             return main.TRUE
-
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
@@ -1237,7 +1211,7 @@ class OnosDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def isup(self, node = "", timeout = 120):
+    def isup( self, node="", timeout=120 ):
         """
         Run's onos-wait-for-start which only returns once ONOS is at run
         level 100(ready for use)
@@ -1245,8 +1219,8 @@ class OnosDriver( CLI ):
         Returns: main.TRUE if ONOS is running and main.FALSE on timeout
         """
         try:
-            self.handle.sendline("onos-wait-for-start " + node )
-            self.handle.expect("onos-wait-for-start")
+            self.handle.sendline( "onos-wait-for-start " + node )
+            self.handle.expect( "onos-wait-for-start" )
             # NOTE: this timeout is arbitrary"
             i = self.handle.expect(["\$", pexpect.TIMEOUT], timeout)
             if i == 0:

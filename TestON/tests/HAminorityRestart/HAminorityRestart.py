@@ -48,6 +48,7 @@ class HAminorityRestart:
         start tcpdump
         """
         import imp
+        import pexpect
         main.log.info( "ONOS HA test: Restart minority of ONOS nodes - " +
                          "initialization" )
         main.case( "Setting up test environment" )
@@ -189,6 +190,16 @@ class HAminorityRestart:
         main.log.wiki(graphs)
 
         main.step( "Creating ONOS package" )
+        # copy gen-partions file to ONOS
+        # NOTE: this assumes TestON and ONOS are on the same machine
+        srcFile = main.testDir + "/" + main.TEST + "/dependencies/onos-gen-partitions"
+        dstDir = main.ONOSbench.home + "/tools/test/bin/onos-gen-partitions"
+        cpResult = main.ONOSbench.secureCopy( main.ONOSbench.user_name,
+                                              main.ONOSbench.ip_address,
+                                              srcFile,
+                                              dstDir,
+                                              pwd=main.ONOSbench.pwd,
+                                              direction="from" )
         packageResult = main.ONOSbench.onosPackage()
         utilities.assert_equals( expect=main.TRUE, actual=packageResult,
                                  onpass="ONOS package successful",
@@ -203,6 +214,19 @@ class HAminorityRestart:
         utilities.assert_equals( expect=main.TRUE, actual=onosInstallResult,
                                  onpass="ONOS install successful",
                                  onfail="ONOS install failed" )
+        # clean up gen-partitions file
+        try:
+            main.ONOSbench.handle.sendline( "cd " + main.ONOSbench.home )
+            main.ONOSbench.handle.expect( main.ONOSbench.home + "\$" )
+            main.ONOSbench.handle.sendline( "git checkout -- tools/test/bin/onos-gen-partitions" )
+            main.ONOSbench.handle.expect( main.ONOSbench.home + "\$" )
+            main.log.info( " Cleaning custom gen partitions file, response was: \n" +
+                           str( main.ONOSbench.handle.before ) )
+        except ( pexpect.TIMEOUT, pexpect.EOF ):
+            main.log.exception( "ONOSbench: pexpect exception found:" +
+                                main.ONOSbench.handle.before )
+            main.cleanup()
+            main.exit()
 
         main.step( "Checking if ONOS is up yet" )
         for i in range( 2 ):
@@ -1680,17 +1704,19 @@ class HAminorityRestart:
             main.log.debug( "Checking logs for errors on " + node.name + ":" )
             main.log.warn( main.ONOSbench.checkLogs( node.ip_address ) )
 
-        main.step( "Killing 3 ONOS nodes" )
+        n = len( main.nodes )  # Number of nodes
+        p = ( ( n + 1 ) / 2 ) + 1  # Number of partitions
+        main.kill = [ 0 ]  # ONOS node to kill, listed by index in main.nodes
+        if n > 3:
+            main.kill.append( p - 1 )
+            # NOTE: This only works for cluster sizes of 3,5, or 7.
+
+        main.step( "Killing " + str( len( main.kill ) ) + " ONOS nodes" )
         killTime = time.time()
-        # TODO: Randomize these nodes or base this on partitions
-        # TODO: use threads in this case
-        killResults = main.ONOSbench.onosKill( main.nodes[0].ip_address )
-        time.sleep( 10 )
-        killResults = killResults and\
-                      main.ONOSbench.onosKill( main.nodes[1].ip_address )
-        time.sleep( 10 )
-        killResults = killResults and\
-                      main.ONOSbench.onosKill( main.nodes[2].ip_address )
+        killResults = main.TRUE
+        for i in main.kill:
+            killResults = killResults and\
+                          main.ONOSbench.onosKill( main.nodes[i].ip_address )
         utilities.assert_equals( expect=main.TRUE, actual=killResults,
                                  onpass="ONOS Killed successfully",
                                  onfail="ONOS kill NOT successful" )
@@ -1699,21 +1725,20 @@ class HAminorityRestart:
         count = 0
         onosIsupResult = main.FALSE
         while onosIsupResult == main.FALSE and count < 10:
-            onos1Isup = main.ONOSbench.isup( main.nodes[0].ip_address )
-            onos2Isup = main.ONOSbench.isup( main.nodes[1].ip_address )
-            onos3Isup = main.ONOSbench.isup( main.nodes[2].ip_address )
-            onosIsupResult = onos1Isup and onos2Isup and onos3Isup
+            onosIsupResult = main.TRUE
+            for i in main.kill:
+                onosIsupResult = onosIsupResult and\
+                                 main.ONOSbench.isup( main.nodes[i].ip_address )
             count = count + 1
-        # TODO: if it becomes an issue, we can retry this step  a few times
         utilities.assert_equals( expect=main.TRUE, actual=onosIsupResult,
                                  onpass="ONOS restarted successfully",
                                  onfail="ONOS restart NOT successful" )
 
         main.step( "Restarting ONOS main.CLIs" )
-        cliResult1 = main.ONOScli1.startOnosCli( main.nodes[0].ip_address )
-        cliResult2 = main.ONOScli2.startOnosCli( main.nodes[1].ip_address )
-        cliResult3 = main.ONOScli3.startOnosCli( main.nodes[2].ip_address )
-        cliResults = cliResult1 and cliResult2 and cliResult3
+        cliResults = main.TRUE
+        for i in main.kill:
+            cliResults = cliResults and\
+                         main.CLIs[i].startOnosCli( main.nodes[i].ip_address )
         utilities.assert_equals( expect=main.TRUE, actual=cliResults,
                                  onpass="ONOS cli restarted",
                                  onfail="ONOS cli did not restart" )
@@ -1722,17 +1747,6 @@ class HAminorityRestart:
         # protocol has had time to work
         main.restartTime = time.time() - killTime
         main.log.debug( "Restart time: " + str( main.restartTime ) )
-        '''
-        # FIXME: revisit test plan for election with madan
-        # Rerun for election on restarted nodes
-        run1 = main.CLIs[0].electionTestRun()
-        run2 = main.CLIs[1].electionTestRun()
-        run3 = main.CLIs[2].electionTestRun()
-        runResults = run1 and run2 and run3
-        utilities.assert_equals( expect=main.TRUE, actual=runResults,
-                                 onpass="Reran for election",
-                                 onfail="Failed to rerun for election" )
-        '''
         # TODO: MAke this configurable. Also, we are breaking the above timer
         time.sleep( 60 )
         main.log.debug( main.CLIs[0].nodes( jsonFormat=False ) )
@@ -2052,11 +2066,12 @@ class HAminorityRestart:
         main.step( "Leadership Election is still functional" )
         # Test of LeadershipElection
         leaderList = []
-        # FIXME: make sure this matches nodes that were restarted
-        restarted = [ main.nodes[0].ip_address, main.nodes[1].ip_address,
-                      main.nodes[2].ip_address ]
 
+        restarted = []
+        for i in main.kill:
+            restarted.append( main.nodes[i].ip_address )
         leaderResult = main.TRUE
+
         for cli in main.CLIs:
             leaderN = cli.electionTestLeader()
             leaderList.append( leaderN )
@@ -3409,23 +3424,7 @@ class HAminorityRestart:
                                  onfail="Added counters are incorrect" )
 
         main.step( "Check counters are consistant across nodes" )
-        onosCounters = []
-        threads = []
-        for i in range( main.numCtrls ):
-            t = main.Thread( target=main.CLIs[i].counters,
-                             name="counters-" + str( i ) )
-            threads.append( t )
-            t.start()
-        for t in threads:
-            t.join()
-            onosCounters.append( t.result )
-        tmp = [ i == onosCounters[ 0 ] for i in onosCounters ]
-        if all( tmp ):
-            main.log.info( "Counters are consistent across all nodes" )
-            consistentCounterResults = main.TRUE
-        else:
-            main.log.error( "Counters are not consistent across all nodes" )
-            consistentCounterResults = main.FALSE
+        onosCounters, consistentCounterResults = main.Counters.consistentCheck()
         utilities.assert_equals( expect=main.TRUE,
                                  actual=consistentCounterResults,
                                  onpass="ONOS counters are consistent " +
@@ -3441,7 +3440,6 @@ class HAminorityRestart:
                                  actual=incrementCheck,
                                  onpass="Added counters are correct",
                                  onfail="Added counters are incorrect" )
-
         # DISTRIBUTED SETS
         main.step( "Distributed Set get" )
         size = len( onosSet )

@@ -405,7 +405,7 @@ class MininetCliDriver( Emulator ):
         main.log.info( self.name + ": \n---\n" + response )
         return main.FALSE
 
-    def pingallHosts( self, hostList ):
+    def pingallHosts( self, hostList, wait=1 ):
         """
             Ping all specified IPv4 hosts
 
@@ -417,8 +417,8 @@ class MininetCliDriver( Emulator ):
 
             Returns main.FALSE if one or more of hosts specified
             cannot reach each other"""
-
-        cmd = " ping -c 1 -i 1 -W 8 "
+        wait = int( wait )
+        cmd = " ping -c 1 -i 1 -W " + str( wait ) + " "
 
         try:
             main.log.info( "Testing reachability between specified hosts" )
@@ -437,7 +437,7 @@ class MininetCliDriver( Emulator ):
                 for temp in pingList:
                     # Current host pings all other hosts specified
                     pingCmd = str( host ) + cmd + str( temp )
-                    self.handle.sendline( pingCmd )
+                    self.handle.sendline( pingCmd, timeout=wait + 1 )
                     self.handle.expect( "mininet>" )
                     response = self.handle.before
                     if re.search( ',\s0\%\spacket\sloss', response ):
@@ -463,19 +463,20 @@ class MininetCliDriver( Emulator ):
             main.cleanup()
             main.exit()
 
-    def pingIpv6Hosts(self, hostList, prefix='1000::'):
+    def pingIpv6Hosts( self, hostList, prefix='1000::', wait=1 ):
         """
-           IPv6 ping all hosts in hostList. If no prefix passed this will use
-           default prefix of 1000::
+        IPv6 ping all hosts in hostList. If no prefix passed this will use
+        default prefix of 1000::
 
-           Returns main.TRUE if all hosts specified can reach each other
+        Returns main.TRUE if all hosts specified can reach each other
 
-           Returns main.FALSE if one or more of hosts specified cannot reach each other
+        Returns main.FALSE if one or more of hosts specified cannot reach each other
         """
         try:
             main.log.info( "Testing reachability between specified IPv6 hosts" )
             isReachable = main.TRUE
-            cmd = " ping6 -c 1 -i 1 -W 8 "
+            wait = int( wait )
+            cmd = " ping6 -c 1 -i 1 -W " + str( wait ) + " "
             pingResponse = "IPv6 Pingall output:\n"
             failedPings = 0
             for host in hostList:
@@ -489,7 +490,7 @@ class MininetCliDriver( Emulator ):
                 for temp in pingList:
                     # Current host pings all other hosts specified
                     pingCmd = str( host ) + cmd + prefix + str( temp[1:] )
-                    self.handle.sendline( pingCmd )
+                    self.handle.sendline( pingCmd, timeout=wait + 1 )
                     self.handle.expect( "mininet>" )
                     response = self.handle.before
                     if re.search( ',\s0\%\spacket\sloss', response ):
@@ -518,15 +519,19 @@ class MininetCliDriver( Emulator ):
 
     def pingHost( self, **pingParams ):
         """
-           Ping from one mininet host to another
-           Currently the only supported Params: SRC and TARGET"""
-        args = utilities.parse_args( [ "SRC", "TARGET" ], **pingParams )
+        Ping from one mininet host to another
+        Currently the only supported Params: SRC, TARGET, and WAIT
+        """
+        args = utilities.parse_args( [ "SRC", "TARGET", 'WAIT' ], **pingParams )
+        wait = args['WAIT']
+        wait = int( wait if wait else 1 )
         command = args[ "SRC" ] + " ping " + \
-            args[ "TARGET" ] + " -c 1 -i 1 -W 8"
+            args[ "TARGET" ] + " -c 1 -i 1 -W " + str( wait ) + " "
         try:
             main.log.info( "Sending: " + command )
             self.handle.sendline( command )
-            i = self.handle.expect( [ command, pexpect.TIMEOUT ] )
+            i = self.handle.expect( [ command, pexpect.TIMEOUT ],
+                                    timeout=wait + 1 )
             if i == 1:
                 main.log.error(
                     self.name +
@@ -561,17 +566,20 @@ class MininetCliDriver( Emulator ):
     def ping6pair( self, **pingParams ):
         """
            IPv6 Ping between a pair of mininet hosts
-           Currently the only supported Params are: SRC , TARGET
+           Currently the only supported Params are: SRC, TARGET, and WAIT
            FLOWLABEL and -I (src interface) will be added later after running some tests.
            Example: main.Mininet1.ping6pair( src="h1", target="1000::2" )
         """
-        args = utilities.parse_args( [ "SRC", "TARGET" ], **pingParams )
-        command = args[ "SRC" ] + " ping6 " + \
-            args[ "TARGET" ] + " -c 1 -i 1 -W 8"
+        args = utilities.parse_args( [ "SRC", "TARGET", 'WAIT' ], **pingParams )
+        wait = args['WAIT']
+        wait = int( wait if wait else 1 )
+        command = args[ "SRC" ] + " ping " + \
+            args[ "TARGET" ] + " -c 1 -i 1 -W " + str( wait ) + " "
         try:
             main.log.info( "Sending: " + command )
             self.handle.sendline( command )
-            i = self.handle.expect( [ command, pexpect.TIMEOUT ] )
+            i = self.handle.expect( [ command, pexpect.TIMEOUT ],
+                                    timeout=wait + 1 )
             if i == 1:
                 main.log.error(
                     self.name +
@@ -1039,7 +1047,7 @@ class MininetCliDriver( Emulator ):
         main.log.info( self.name + ": List network links" )
         try:
             response = self.execute( cmd='links', prompt='mininet>',
-                                     timeout=10 )
+                                     timeout=20 )
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )
@@ -1104,12 +1112,15 @@ class MininetCliDriver( Emulator ):
             else:
                 main.log.error( self.name + ": iperf test failed" )
                 return main.FALSE
-
         except pexpect.TIMEOUT:
-            main.log.error( self.name + ": TIMEOUT exception found")
-            main.log.error( self.name + ": Exception: Cannot connect to iperf on port 5001" )
+            main.log.error( self.name + ": TIMEOUT exception found" )
+            main.log.error( self.name + " response: " +
+                            repr ( self.handle.before ) )
+            # NOTE: Send ctrl-c to make sure iperf is done
+            self.handle.sendline( "\x03" )
+            self.handle.expect( "Interrupt" )
+            self.handle.expect( "mininet>" )
             return main.FALSE
-
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":     " + self.handle.before )

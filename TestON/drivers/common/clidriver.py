@@ -145,12 +145,11 @@ class CLI( Component ):
         """
         result = super( CLI, self ).execute( self )
         defaultPrompt = '.*[$>\#]'
-        args = utilities.parse_args( [
-                     "CMD",
-                                     "TIMEOUT",
-                                     "PROMPT",
-                                     "MORE" ],
-                             **execparams )
+        args = utilities.parse_args( [ "CMD",
+                                       "TIMEOUT",
+                                       "PROMPT",
+                                       "MORE" ],
+                                     **execparams )
 
         expectPrompt = args[ "PROMPT" ] if args[ "PROMPT" ] else defaultPrompt
         self.LASTRSP = ""
@@ -164,20 +163,18 @@ class CLI( Component ):
             args[ "MORE" ] = " "
         self.handle.sendline( cmd )
         self.lastCommand = cmd
-        index = self.handle.expect( [
-                    expectPrompt,
-                                    "--More--",
-                                    'Command not found.',
-                                    pexpect.TIMEOUT,
-                                    "^:$" ],
-                            timeout=timeoutVar )
+        index = self.handle.expect( [ expectPrompt,
+                                      "--More--",
+                                      'Command not found.',
+                                      pexpect.TIMEOUT,
+                                      "^:$" ],
+                                    timeout=timeoutVar )
         if index == 0:
             self.LASTRSP = self.LASTRSP + \
                 self.handle.before + self.handle.after
-            main.log.info(
-                "Executed :" + str(
-                    cmd ) + " \t\t Expected Prompt '" + str(
-                        expectPrompt) + "' Found" )
+            main.log.info( "Executed :" + str(cmd ) +
+                           " \t\t Expected Prompt '" + str( expectPrompt) +
+                           "' Found" )
         elif index == 1:
             self.LASTRSP = self.LASTRSP + self.handle.before
             self.handle.send( args[ "MORE" ] )
@@ -196,26 +193,25 @@ class CLI( Component ):
             main.log.error( "Command not found" )
             self.LASTRSP = self.LASTRSP + self.handle.before
         elif index == 3:
-            main.log.error( "Expected Prompt not found , Time Out!!" )
+            main.log.error( "Expected Prompt not found, Time Out!!" )
             main.log.error( expectPrompt )
-            return "Expected Prompt not found , Time Out!!"
-
+            self.LASTRSP = self.LASTRSP + self.handle.before
+            return self.LASTRSP
         elif index == 4:
             self.LASTRSP = self.LASTRSP + self.handle.before
             # self.handle.send( args[ "MORE" ] )
             self.handle.sendcontrol( "D" )
             main.log.info(
-                "Found More screen to go , Sending a key to proceed" )
+                "Found More screen to go, Sending a key to proceed" )
             indexMore = self.handle.expect(
                 [ "^:$", expectPrompt ], timeout=timeoutVar )
             while indexMore == 0:
                 main.log.info(
-                    "Found another More screen to go , Sending a key to proceed" )
+                    "Found another More screen to go, Sending a key to proceed" )
                 self.handle.sendcontrol( "D" )
                 indexMore = self.handle.expect(
                     [ "^:$", expectPrompt ], timeout=timeoutVar )
                 self.LASTRSP = self.LASTRSP + self.handle.before
-
         main.last_response = self.remove_contol_chars( self.LASTRSP )
         return self.LASTRSP
 
@@ -297,7 +293,6 @@ class CLI( Component ):
                                 pexpect.EOF,
                                 pexpect.TIMEOUT ],
                                 120 )
-
             if i == 0:  # ask for ssh key confirmation
                 main.log.info( "ssh key confirmation received, sending yes" )
                 self.handle.sendline( 'yes' )
@@ -327,10 +322,7 @@ class CLI( Component ):
                     "@" +
                     ipAddress )
                 returnVal = main.FALSE
-
-        self.handle.sendline( "" )
-        self.handle.expect( "$" )
-
+        self.handle.expect( "\$" )
         return returnVal
 
     def scp( self, remoteHost, filePath, dstPath, direction="from" ):

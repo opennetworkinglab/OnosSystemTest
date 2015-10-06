@@ -353,12 +353,23 @@ class TestON:
                 self.stepCache += "\t\t" + self.onFailMsg + "\n"
                 self.stepCount = self.stepCount + 1
                 return self.FALSE
-            except StandardError:
-                stepNo = self.stepResults[0][ self.stepNumber - 1]
-                stepName = self.stepResults[1][ self.stepNumber - 1 ]
-                self.log.exception( "\nException in the following section of" +
-                                    " code: " + str( testCaseNumber ) + "." +
-                                    str( stepNo ) + ": " + stepName )
+            except StandardError as e:
+                try:
+                    stepNo = self.stepResults[0][ self.stepNumber - 1 ]
+                except IndexError:
+                    stepNo = "<IndexError>"
+                    main.log.warn( "Error trying to get step number. " +
+                                   "It is likely between step " +
+                                   str( self.stepNumber ) + " and step" +
+                                   str( self.stepNumber + 1 ) )
+                try:
+                    stepName = self.stepResults[1][ self.stepNumber - 1 ]
+                except IndexError:
+                    stepName = "<IndexError>"
+                self.log.error( "\nException in the following section of" +
+                                " code: " + str( testCaseNumber ) + "." +
+                                str( stepNo ) + ": " + stepName )
+                self.log.error( e )
                 self.stepCount = self.stepCount + 1
                 self.logger.updateCaseResults( self )
                 # WIKI results

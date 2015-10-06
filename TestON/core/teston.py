@@ -310,6 +310,8 @@ class TestON:
                         subcaseMessage = True
                     else:  # Add to Failure Message Printout
                         self.log.wiki( "<li>" + line + "</li>\n" )
+            if subcaseMessage:  # End of Failure Message Printout for last item
+                self.log.wiki( "</ul>\n" )
             self.log.wiki( "</ul>" )
             self.log.summary( self.stepCache )
             self.stepCache = ""

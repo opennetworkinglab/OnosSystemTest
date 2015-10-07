@@ -32,6 +32,9 @@ class FUNCflow:
         main.topology = main.params[ 'DEPENDENCY' ][ 'topology' ]
         main.maxNodes = int( main.params[ 'SCALE' ][ 'max' ] )
         main.ONOSport = main.params[ 'CTRL' ][ 'port' ]
+        main.numSwitches = int( main.params[ 'TOPO' ][ 'numSwitches' ] )
+        main.numHosts = int( main.params[ 'TOPO' ][ 'numHosts' ] )
+        main.numLinks = int( main.params[ 'TOPO' ][ 'numLinks' ] )
         wrapperFile1 = main.params[ 'DEPENDENCY' ][ 'wrapper1' ]
         main.startUpSleep = int( main.params[ 'SLEEP' ][ 'startup' ] )
         gitPull = main.params[ 'GIT' ][ 'pull' ]
@@ -51,6 +54,11 @@ class FUNCflow:
                                         main.dependencyPath +
                                         wrapperFile1 +
                                         ".py" )
+
+        copyResult = main.ONOSbench.scp( main.Mininet1,
+                                         main.dependencyPath+main.topology,
+                                         main.Mininet1.home+'/custom/',
+                                         direction="to" )
 
         if main.CLIs:
             stepResult = main.TRUE
@@ -210,13 +218,35 @@ class FUNCflow:
 
     def CASE10( self, main ):
         '''
-            Start Mininet with Openflow 1.3
+            Start Mininet with
         '''
+        main.case( "Setup mininet and assign switches to controllers" )
+        main.step( "Setup Mininet Topology" )
+        topology = main.Mininet1.home + '/custom/' + main.topology
+        stepResult1 = main.Mininet1.startNet( topoFile=topology )
 
-    def CASE11( self, main ):
-        '''
-            Assign switches to controller
-        '''
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult1,
+                                 onpass="Successfully loaded topology",
+                                 onfail="Failed to load topology" )
+
+        main.step( "Assign switches to controllers" )
+        for i in range( main.numSwitches ):
+            stepResult2 = main.Mininet1.assignSwController(
+                                            sw="s" + str( i+1 ),
+                                            ip=main.ONOSip )
+            if not stepResult2:
+                break
+
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult2,
+                                 onpass="Controller assignment successfull",
+                                 onfail="Controller assignment failed" )
+
+        caseResult = stepResult1 and stepResult2
+        if not caseResult:
+            main.cleanup()
+            main.exit()
 
     def CASE1000( self, main ):
         '''

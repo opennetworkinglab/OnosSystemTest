@@ -816,10 +816,10 @@ class CHOtest:
         main.step( "Verify IPv6 Pingall" )
         pingResult = main.FALSE
         time1 = time.time()
-        ping_result = main.Mininet1.pingall( protocol="IPv6", timeout=main.pingTimeout)
-        if not ping_result:
+        pingResult = main.Mininet1.pingall( protocol="IPv6", timeout=main.pingTimeout)
+        if not pingResult:
             main.log.warn("First pingall failed. Trying again...")
-            ping_result = main.Mininet1.pingall( protocol="IPv6", timeout=main.pingTimeout )
+            pingResult = main.Mininet1.pingall( protocol="IPv6", timeout=main.pingTimeout )
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(

@@ -12,7 +12,7 @@
     # 4000 - Modify flow rule treatments
     # 5000 - flow rule controller
     # 100 - Compare switch flow table with ONOS
-    <testcases>1,2,10</testcases>
+    <testcases>1,2,10,8</testcases>
 
     <SCALE>
         <max>3</max>
@@ -21,18 +21,19 @@
     <DEPENDENCY>
         <path>/tests/FUNCflow/Dependency/</path>
         <wrapper1>startUp</wrapper1>
+        <wrapper2>topo</wrapper2>
         <topology>flow-2sw.py</topology>
     </DEPENDENCY>
 
     <TOPO>
         <numSwitches>2</numSwitches>
         <numHosts>4</numHosts>
-        <numLinks>10</numLinks>
+        <numLinks>2</numLinks>
     </TOPO>
 
     <ENV>
         <cellName>productionCell</cellName>
-        <cellApps>drivers,openflow,proxyarp,mobility</cellApps>
+        <cellApps>drivers,openflow,proxyarp,mobility,fwd</cellApps>
     </ENV>
 
     <GIT>

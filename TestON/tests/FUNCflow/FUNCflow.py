@@ -36,6 +36,7 @@ class FUNCflow:
         main.numHosts = int( main.params[ 'TOPO' ][ 'numHosts' ] )
         main.numLinks = int( main.params[ 'TOPO' ][ 'numLinks' ] )
         wrapperFile1 = main.params[ 'DEPENDENCY' ][ 'wrapper1' ]
+        wrapperFile2 = main.params[ 'DEPENDENCY' ][ 'wrapper2' ]
         main.startUpSleep = int( main.params[ 'SLEEP' ][ 'startup' ] )
         gitPull = main.params[ 'GIT' ][ 'pull' ]
         main.cellData = {} # for creating cell file
@@ -54,6 +55,11 @@ class FUNCflow:
                                         main.dependencyPath +
                                         wrapperFile1 +
                                         ".py" )
+
+        main.topo = imp.load_source( wrapperFile2,
+                                     main.dependencyPath +
+                                     wrapperFile2 +
+                                     ".py" )
 
         copyResult = main.ONOSbench.scp( main.Mininet1,
                                          main.dependencyPath+main.topology,
@@ -201,6 +207,71 @@ class FUNCflow:
         '''
             Compare topology
         '''
+        import json
+
+        main.case( "Compare ONOS Topology view to Mininet topology" )
+        main.caseExplanation = "Compare topology elements between Mininet" +\
+                                " and ONOS"
+
+        main.step( "Gathering topology information" )
+        # TODO: add a paramaterized sleep here
+        devicesResults = main.TRUE
+        linksResults = main.TRUE
+        hostsResults = main.TRUE
+        devices = main.topo.getAllDevices( main )
+        hosts = main.topo.getAllHosts( main )
+        ports = main.topo.getAllPorts( main )
+        links = main.topo.getAllLinks( main )
+        clusters = main.topo.getAllClusters( main )
+
+        mnSwitches = main.Mininet1.getSwitches()
+        mnLinks = main.Mininet1.getLinks()
+        mnHosts = main.Mininet1.getHosts()
+
+        main.step( "Conmparing MN topology to ONOS topology" )
+        for controller in range( main.numCtrls ):
+            controllerStr = str( controller + 1 )
+            if devices[ controller ] and ports[ controller ] and\
+                "Error" not in devices[ controller ] and\
+                "Error" not in ports[ controller ]:
+
+                currentDevicesResult = main.Mininet1.compareSwitches(
+                        mnSwitches,
+                        json.loads( devices[ controller ] ),
+                        json.loads( ports[ controller ] ) )
+            else:
+                currentDevicesResult = main.FALSE
+            utilities.assert_equals( expect=main.TRUE,
+                                     actual=currentDevicesResult,
+                                     onpass="ONOS" + controllerStr +
+                                     " Switches view is correct",
+                                     onfail="ONOS" + controllerStr +
+                                     " Switches view is incorrect" )
+            if links[ controller ] and "Error" not in links[ controller ]:
+                currentLinksResult = main.Mininet1.compareLinks(
+                        mnSwitches, mnLinks,
+                        json.loads( links[ controller ] ) )
+            else:
+                currentLinksResult = main.FALSE
+            utilities.assert_equals( expect=main.TRUE,
+                                     actual=currentLinksResult,
+                                     onpass="ONOS" + controllerStr +
+                                     " links view is correct",
+                                     onfail="ONOS" + controllerStr +
+                                     " links view is incorrect" )
+
+            if hosts[ controller ] or "Error" not in hosts[ controller ]:
+                currentHostsResult = main.Mininet1.compareHosts(
+                        mnHosts,
+                        json.loads( hosts[ controller ] ) )
+            else:
+                currentHostsResult = main.FALSE
+            utilities.assert_equals( expect=main.TRUE,
+                                     actual=currentHostsResult,
+                                     onpass="ONOS" + controllerStr +
+                                     " hosts exist in Mininet",
+                                     onfail="ONOS" + controllerStr +
+                                     " hosts don't match Mininet" )
 
     def CASE9( self, main ):
         '''
@@ -214,7 +285,7 @@ class FUNCflow:
                                     "flow",
                                     "ERROR",
                                     "Except" ],
-                                  "s" )
+                                 "s" )
 
     def CASE10( self, main ):
         '''
@@ -243,7 +314,18 @@ class FUNCflow:
                                  onpass="Controller assignment successfull",
                                  onfail="Controller assignment failed" )
 
-        caseResult = stepResult1 and stepResult2
+        time.sleep(5)
+
+        main.step( "Pingall hosts for discovery" )
+        stepResult3 = main.Mininet1.pingall()
+        if not stepResult3:
+            stepResult3 = main.Mininet1.pingall()
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult3,
+                                 onpass="Pingall successfull",
+                                 onfail="Pingall unsuccessfull" )
+
+        caseResult = stepResult1 and stepResult2 and stepResult3
         if not caseResult:
             main.cleanup()
             main.exit()

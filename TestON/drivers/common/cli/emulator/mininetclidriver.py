@@ -437,8 +437,8 @@ class MininetCliDriver( Emulator ):
                 for temp in pingList:
                     # Current host pings all other hosts specified
                     pingCmd = str( host ) + cmd + str( temp )
-                    self.handle.sendline( pingCmd, timeout=wait + 1 )
-                    self.handle.expect( "mininet>" )
+                    self.handle.sendline( pingCmd )
+                    self.handle.expect( "mininet>", timeout=wait + 1 )
                     response = self.handle.before
                     if re.search( ',\s0\%\spacket\sloss', response ):
                         pingResponse += str(" h" + str( temp[1:] ))
@@ -490,8 +490,8 @@ class MininetCliDriver( Emulator ):
                 for temp in pingList:
                     # Current host pings all other hosts specified
                     pingCmd = str( host ) + cmd + prefix + str( temp[1:] )
-                    self.handle.sendline( pingCmd, timeout=wait + 1 )
-                    self.handle.expect( "mininet>" )
+                    self.handle.sendline( pingCmd )
+                    self.handle.expect( "mininet>", timeout=wait + 1 )
                     response = self.handle.before
                     if re.search( ',\s0\%\spacket\sloss', response ):
                         pingResponse += str(" h" + str( temp[1:] ))

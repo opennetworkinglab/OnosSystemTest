@@ -1822,7 +1822,7 @@ class CHOtest:
 
         if not caseResult and main.failSwitch:
             main.log.report("Stopping test")
-            main.stop( mail=main.emailOnStop )
+            main.stop( email=main.emailOnStop )
 
     def CASE72( self, main ):
         """

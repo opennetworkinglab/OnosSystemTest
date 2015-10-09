@@ -135,8 +135,11 @@ class USECASE_SdnipFunctionCluster:
                                  onfail = "ONOS nodes are NOT up" )
 
         main.step( "Checking if ONOS CLI is ready" )
-        cliResult = main.ONOScli.startOnosCli( ONOS1Ip,
+        cliResult1 = main.ONOScli1.startOnosCli( ONOS1Ip,
                 commandlineTimeout = 100, onosStartTimeout = 600 )
+        cliResult2 = main.ONOScli2.startOnosCli( ONOS2Ip,
+                commandlineTimeout = 100, onosStartTimeout = 600 )
+        cliResult = cliResult1 and cliResult2
         utilities.assert_equals( expect = main.TRUE,
                                  actual = cliResult,
                                  onpass = "ONOS CLI (on node1) is ready",
@@ -162,20 +165,18 @@ class USECASE_SdnipFunctionCluster:
         time.sleep( int ( main.params['timers']['TopoDiscovery'] ) )
 
         main.log.info( "Get links in the network" )
-        summaryResult = main.ONOScli.summary()
+        summaryResult = main.ONOScli1.summary()
         linkNum = json.loads( summaryResult )[ "links" ]
+        listResult = main.ONOScli1.links( jsonFormat = False )
+        main.log.info( listResult )
+
         if linkNum < 100:
             main.log.error( "Link number is wrong!" )
-            listResult = main.ONOScli.links( jsonFormat = False )
-            main.log.info( listResult )
             main.cleanup()
             main.exit()
 
-        listResult = main.ONOScli.links( jsonFormat = False )
-        main.log.info( listResult )
-
         main.step( "Activate sdn-ip application" )
-        activeSDNIPresult = main.ONOScli.activateApp( "org.onosproject.sdnip" )
+        activeSDNIPresult = main.ONOScli1.activateApp( "org.onosproject.sdnip" )
         utilities.assert_equals( expect = main.TRUE,
                                  actual = activeSDNIPresult,
                                  onpass = "Activate SDN-IP succeeded",
@@ -185,8 +186,8 @@ class USECASE_SdnipFunctionCluster:
             main.exit()
 
         # TODO should be deleted in the future after the SDN-IP bug is fixed
-        main.ONOScli.deactivateApp( "org.onosproject.sdnip" )
-        main.ONOScli.activateApp( "org.onosproject.sdnip" )
+        main.ONOScli1.deactivateApp( "org.onosproject.sdnip" )
+        main.ONOScli1.activateApp( "org.onosproject.sdnip" )
 
 
     def CASE102( self, main ):
@@ -250,7 +251,7 @@ class USECASE_SdnipFunctionCluster:
                        % main.params[ 'config' ][ 'peerNum' ] )
         main.step( "Check P2P intents number from ONOS CLI" )
 
-        getIntentsResult = main.ONOScli.intents( jsonFormat = True )
+        getIntentsResult = main.ONOScli1.intents( jsonFormat = True )
         bgpIntentsActualNum = \
             main.QuaggaCliSpeaker1.extractActualBgpIntentNum( getIntentsResult )
         bgpIntentsExpectedNum = int( main.params[ 'config' ][ 'peerNum' ] ) * 6 * 2
@@ -276,7 +277,7 @@ class USECASE_SdnipFunctionCluster:
         allRoutesExpected.append( "5.0.0.0/24" + "/" + "10.0.5.1" )
         allRoutesExpected.append( "6.0.0.0/24" + "/" + "10.0.6.1" )
 
-        getRoutesResult = main.ONOScli.routes( jsonFormat = True )
+        getRoutesResult = main.ONOScli1.routes( jsonFormat = True )
         allRoutesActual = \
             main.QuaggaCliSpeaker1.extractActualRoutesMaster( getRoutesResult )
         allRoutesStrExpected = str( sorted( allRoutesExpected ) )
@@ -293,7 +294,7 @@ class USECASE_SdnipFunctionCluster:
             onfail = "Routes are wrong!" )
 
         main.step( "Check M2S intents installed" )
-        getIntentsResult = main.ONOScli.intents( jsonFormat = True )
+        getIntentsResult = main.ONOScli1.intents( jsonFormat = True )
         routeIntentsActualNum = \
             main.QuaggaCliSpeaker1.extractActualRouteIntentNum( getIntentsResult )
         routeIntentsExpectedNum = 3
@@ -311,7 +312,7 @@ class USECASE_SdnipFunctionCluster:
         main.step( "Check whether all flow status are ADDED" )
         utilities.assertEquals( \
             expect = main.TRUE,
-            actual = main.ONOScli.checkFlowsState( isPENDING_ADD = False ),
+            actual = main.ONOScli1.checkFlowsState( isPENDING_ADD = False ),
             onpass = "Flow status is correct!",
             onfail = "Flow status is wrong!" )
 
@@ -384,7 +385,7 @@ class USECASE_SdnipFunctionCluster:
         main.step( "Check whether all flow status are ADDED" )
         utilities.assertEquals( \
             expect = main.TRUE,
-            actual = main.ONOScli.checkFlowsState( isPENDING_ADD = False ),
+            actual = main.ONOScli1.checkFlowsState( isPENDING_ADD = False ),
             onpass = "Flow status is correct!",
             onfail = "Flow status is wrong!" )
 
@@ -454,7 +455,7 @@ class USECASE_SdnipFunctionCluster:
         main.step( "Check whether all flow status are ADDED" )
         utilities.assertEquals( \
             expect = main.TRUE,
-            actual = main.ONOScli.checkFlowsState( isPENDING_ADD = False ),
+            actual = main.ONOScli1.checkFlowsState( isPENDING_ADD = False ),
             onpass = "Flow status is correct!",
             onfail = "Flow status is wrong!" )
 
@@ -538,7 +539,7 @@ class USECASE_SdnipFunctionCluster:
         main.step( "Check whether all flow status are ADDED" )
         utilities.assertEquals( \
             expect = main.TRUE,
-            actual = main.ONOScli.checkFlowsState( isPENDING_ADD = False ),
+            actual = main.ONOScli1.checkFlowsState( isPENDING_ADD = False ),
             onpass = "Flow status is correct!",
             onfail = "Flow status is wrong!" )
 
@@ -578,7 +579,7 @@ class USECASE_SdnipFunctionCluster:
         main.step( "Check whether all flow status are ADDED" )
         utilities.assertEquals( \
             expect = main.TRUE,
-            actual = main.ONOScli.checkFlowsState( isPENDING_ADD = False ),
+            actual = main.ONOScli1.checkFlowsState( isPENDING_ADD = False ),
             onpass = "Flow status is correct!",
             onfail = "Flow status is wrong!" )
 
@@ -629,7 +630,7 @@ class USECASE_SdnipFunctionCluster:
         main.step( "Check whether all flow status are ADDED" )
         utilities.assertEquals( \
             expect = main.TRUE,
-            actual = main.ONOScli.checkFlowsState( isPENDING_ADD = False ),
+            actual = main.ONOScli1.checkFlowsState( isPENDING_ADD = False ),
             onpass = "Flow status is correct!",
             onfail = "Flow status is wrong!" )
         # Ping test
@@ -684,7 +685,7 @@ class USECASE_SdnipFunctionCluster:
         main.step( "Check whether all flow status are ADDED" )
         utilities.assertEquals( \
             expect = main.TRUE,
-            actual = main.ONOScli.checkFlowsState( isPENDING_ADD = False ),
+            actual = main.ONOScli1.checkFlowsState( isPENDING_ADD = False ),
             onpass = "Flow status is correct!",
             onfail = "Flow status is wrong!" )
         # Ping test
@@ -703,14 +704,14 @@ class USECASE_SdnipFunctionCluster:
         import time
         main.case( "Kill speaker1, check:\
         route number, P2P intent number, M2S intent number, ping test" )
-        main.info( "Check network status before killing speaker1" )
+        main.log.info( "Check network status before killing speaker1" )
         main.Functions.checkRouteNum( main, 3 )
         main.Functions.checkM2SintentNum( main, 3 )
         main.Functions.checkP2PintentNum( main, 18 * 2 )
         main.step( "Check whether all flow status are ADDED" )
         utilities.assertEquals( \
             expect = main.TRUE,
-            actual = main.ONOScli.checkFlowsState( isPENDING_ADD = False ),
+            actual = main.ONOScli1.checkFlowsState( isPENDING_ADD = False ),
             onpass = "Flow status is correct!",
             onfail = "Flow status is wrong!" )
 
@@ -744,7 +745,7 @@ class USECASE_SdnipFunctionCluster:
         main.step( "Check whether all flow status are ADDED" )
         utilities.assertEquals( \
             expect = main.TRUE,
-            actual = main.ONOScli.checkFlowsState( isPENDING_ADD = False ),
+            actual = main.ONOScli1.checkFlowsState( isPENDING_ADD = False ),
             onpass = "Flow status is correct!",
             onfail = "Flow status is wrong!" )
 
@@ -763,30 +764,58 @@ class USECASE_SdnipFunctionCluster:
 
     def CASE12( self, main ):
         import time
+        import json
         main.case( "Bring down leader ONOS node, check: \
         route number, P2P intent number, M2S intent number, ping test" )
         main.step( "Find out ONOS leader node" )
-        # TODO
-        main.step( "Uninstall ONOS leader node" )
-        uninstallResult = main.ONOSbench.onosUninstall( ONOS2Ip )
+        result = main.ONOScli1.leaders()
+        jsonResult = json.load( result )
+        leaderIP = ""
+        for entry in jsonResult:
+            if entry["topic"] == "org.onosproject.sdnip":
+                leaderIP = entry["leader"]
+                main.log.info( "leaderIP is: " )
+                main.log.info( leaderIP )
+
+        main.step( "Uninstall ONOS/SDN-IP leader node" )
+        if leaderIP == ONOS1Ip:
+            uninstallResult = main.ONOSbench.onosStop( ONOS1Ip )
+        elif leaderIP == ONOS2Ip:
+            uninstallResult = main.ONOSbench.onosStop( ONOS2Ip )
+        else:
+            uninstallResult = main.ONOSbench.onosStop( ONOS3Ip )
+
         utilities.assert_equals( expect = main.TRUE,
                                  actual = uninstallResult,
-                                 onpass = "Uninstall ONOS node2 succeeded",
-                                 onfail = "Uninstall ONOS node2 failed" )
+                                 onpass = "Uninstall ONOS leader succeeded",
+                                 onfail = "Uninstall ONOS leader failed" )
         if uninstallResult != main.TRUE:
             main.cleanup()
             main.exit()
         time.sleep( int( main.params[ 'timers' ][ 'RouteDelivery' ] ) )
-        main.Functions.checkRouteNum( main, 3 )
-        main.Functions.checkM2SintentNum( main, 3 )
-        main.Functions.checkP2PintentNum( main, 18 * 2 )
 
-        main.step( "Check whether all flow status are ADDED" )
-        utilities.assertEquals( \
-            expect = main.TRUE,
-            actual = main.ONOScli.checkFlowsState( isPENDING_ADD = False ),
-            onpass = "Flow status is correct!",
-            onfail = "Flow status is wrong!" )
+        if leaderIP == ONOS1Ip:
+            main.Functions.checkRouteNum( main, 3, ONOScli = "ONOScli2" )
+            main.Functions.checkM2SintentNum( main, 3, ONOScli = "ONOScli2" )
+            main.Functions.checkP2PintentNum( main, 18 * 2, ONOScli = "ONOScli2" )
+
+            main.step( "Check whether all flow status are ADDED" )
+            utilities.assertEquals( \
+                expect = main.TRUE,
+                actual = main.ONOScli2.checkFlowsState( isPENDING_ADD = False ),
+                onpass = "Flow status is correct!",
+                onfail = "Flow status is wrong!" )
+        else:
+            main.Functions.checkRouteNum( main, 3 )
+            main.Functions.checkM2SintentNum( main, 3 )
+            main.Functions.checkP2PintentNum( main, 18 * 2 )
+
+            main.step( "Check whether all flow status are ADDED" )
+            utilities.assertEquals( \
+                expect = main.TRUE,
+                actual = main.ONOScli1.checkFlowsState( isPENDING_ADD = False ),
+                onpass = "Flow status is correct!",
+                onfail = "Flow status is wrong!" )
 
         main.Functions.pingSpeakerToPeer( main, speakers = ["speaker1"],
                        peers = ["peer64514", "peer64515", "peer64516"],

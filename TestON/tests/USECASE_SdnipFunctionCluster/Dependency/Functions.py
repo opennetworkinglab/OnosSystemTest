@@ -5,7 +5,7 @@ def checkRouteNum( main, routeNumExpected, ONOScli = "ONOScli1" ):
     main.log.info( routeNumExpected )
     main.log.info( "Route number from ONOS CLI:" )
 
-    if ONOScli =="ONOScli1":
+    if ONOScli == "ONOScli1":
         routeNumActual = main.ONOScli1.ipv4RouteNumber()
     else:
         routeNumActual = main.ONOScli2.ipv4RouteNumber()

@@ -769,7 +769,7 @@ class USECASE_SdnipFunctionCluster:
         route number, P2P intent number, M2S intent number, ping test" )
         main.step( "Find out ONOS leader node" )
         result = main.ONOScli1.leaders()
-        jsonResult = json.load( result )
+        jsonResult = json.loads( result )
         leaderIP = ""
         for entry in jsonResult:
             if entry["topic"] == "org.onosproject.sdnip":

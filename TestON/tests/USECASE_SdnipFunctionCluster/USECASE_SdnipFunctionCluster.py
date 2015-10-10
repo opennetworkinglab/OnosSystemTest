@@ -726,14 +726,27 @@ class USECASE_SdnipFunctionCluster:
                         expectAllSuccess = True )
 
         main.step( "Kill speaker1" )
-        result = main.TRUE
-        command = "sudo kill -9 `ps -ef | grep quagga-sdn.conf | grep -v grep | awk '{print $2}'`"
-        result = main.Mininet.node( "root", command )
+        command1 = "ps -e | grep bgp -c"
+        result1 = main.Mininet.node( "root", command1 )
+
+        # The total BGP daemon number in this test environment is 5.
+        if "5" in result1:
+            main.log.debug( "Before kill speaker1, 5 BGP daemons - correct" )
+        else:
+            main.log.warn( "Before kill speaker1, number of BGP daemons is wrong" )
+            main.log.info( result1 )
+
+        command2 = "sudo kill -9 `ps -ef | grep quagga-sdn.conf | grep -v grep | awk '{print $2}'`"
+        result2 = main.Mininet.node( "root", command2 )
+
+        result3 = main.Mininet.node( "root", command1 )
+
         utilities.assert_equals( expect = True,
-                                 actual = ( "quagga-sdn.conf" in result ),
+                                 actual = ( "4" in result3 ),
                                  onpass = "Kill speaker1 succeeded",
                                  onfail = "Kill speaker1 failed" )
-        if ( "quagga-sdn.conf" not in result ) :
+        if ( "4" not in result3 ) :
+            main.log.info( result3 )
             main.cleanup()
             main.exit()
 

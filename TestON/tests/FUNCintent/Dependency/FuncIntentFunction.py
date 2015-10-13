@@ -1468,6 +1468,7 @@ def checkIntentState( main, intentsId ):
         main.log.info( itemName + ": Intents are installed correctly" )
     else:
         # Wait for at least 5 second before checking the intents again
+        main.log.error( "Intents are not installed correctly. Waiting 5 sec" )
         time.sleep( 5 )
         results = []
         # Second check of intents since some of the intents may be in
@@ -1478,6 +1479,7 @@ def checkIntentState( main, intentsId ):
             results.append( tempResult )
         if all( result == main.TRUE for result in results ):
             main.log.info( itemName + ": Intents are installed correctly" )
+            intentResult = main.TRUE
         else:
             main.log.error( itemName + ": Intents are NOT installed correctly" )
             intentResult = main.FALSE

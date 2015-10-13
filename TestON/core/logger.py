@@ -120,6 +120,7 @@ class Logger:
         main.WikiFileName = main.logdir + "/" + main.TEST + "Wiki.txt"
         main.SummaryFileName = main.logdir + "/" + main.TEST + "Summary.txt"
         main.JenkinsCSV = main.logdir + "/" + main.TEST + ".csv"
+        main.TOTAL_TC_SUCCESS = 0
 
         #### Add log-level - Report
         logging.addLevelName(9, "REPORT")

@@ -215,37 +215,67 @@ class Utilities:
         msg = email.mime.Multipart.MIMEMultipart()
         try :
             if main.test_target:
-                sub = "Result summary of \""+main.TEST+"\" run on component \""+main.test_target+"\" Version \""+vars(main)[main.test_target].get_version()+"\": "+str(main.TOTAL_TC_SUCCESS)+"% Passed"
+                sub = "Result summary of \"" + main.TEST + "\" run on component \"" +\
+                      main.test_target + "\" Version \"" +\
+                      vars( main )[main.test_target].get_version() + "\": " +\
+                      str( main.TOTAL_TC_SUCCESS ) + "% Passed"
             else :
-                sub = "Result summary of \""+main.TEST+"\": "+str(main.TOTAL_TC_SUCCESS)+"% Passed"
+                sub = "Result summary of \"" + main.TEST + "\": " +\
+                      str( main.TOTAL_TC_SUCCESS ) + "% Passed"
         except ( KeyError, AttributeError ):
-            sub = "Result summary of \""+main.TEST+"\": "+str(main.TOTAL_TC_SUCCESS)+"% Passed"
+            sub = "Result summary of \"" + main.TEST + "\": " +\
+                  str( main.TOTAL_TC_SUCCESS ) + "% Passed"
 
         msg['Subject'] = sub
-        msg['From'] = 'paxweb@paxterrasolutions.com'
+        msg['From'] = main.sender
         msg['To'] = main.mail
-        #msg['Cc'] = 'paxweb@paxterrasolutions.com'
 
         # The main body is just another attachment
-        body = email.mime.Text.MIMEText(main.logHeader+"\n"+main.testResult)
-        msg.attach(body)
+        body = email.mime.Text.MIMEText( main.logHeader + "\n" +
+                                         main.testResult)
+        msg.attach( body )
 
-        # Attachment
-        for filename in os.listdir(main.logdir):
-            filepath = main.logdir+"/"+filename
-            fp=open(filepath,'rb')
-            att = email.mime.application.MIMEApplication(fp.read(),_subtype="")
+        # Attachments
+        for filename in os.listdir( main.logdir ):
+            filepath = main.logdir + "/" + filename
+            fp = open( filepath, 'rb' )
+            att = email.mime.application.MIMEApplication( fp.read(),
+                                                          _subtype="" )
             fp.close()
-            att.add_header('Content-Disposition','attachment',filename=filename)
-            msg.attach(att)
-
-        smtp = smtplib.SMTP('198.57.211.46')
-        smtp.starttls()
-        smtp.login('paxweb@paxterrasolutions.com','pax@peace')
-        smtp.sendmail(msg['From'],[msg['To']], msg.as_string())
-        smtp.quit()
+            att.add_header( 'Content-Disposition',
+                            'attachment',
+                            filename=filename )
+            msg.attach( att )
+        try:
+            smtp = smtplib.SMTP( main.smtp )
+            smtp.starttls()
+            smtp.login( main.sender, main.senderPwd )
+            smtp.sendmail( msg['From'], [msg['To']], msg.as_string() )
+            smtp.quit()
+        except Exception:
+            main.log.exception( "Error sending email" )
         return main.TRUE
 
+    def send_warning_email( self, subject=None ):
+        try:
+            if not subject:
+                subject = main.TEST + " PAUSED!"
+            # Create a text/plain message
+            msg = email.mime.Multipart.MIMEMultipart()
+
+            msg['Subject'] = subject
+            msg['From'] = main.sender
+            msg['To'] = main.mail
+
+            smtp = smtplib.SMTP( main.smtp )
+            smtp.starttls()
+            smtp.login( main.sender, main.senderPwd )
+            smtp.sendmail( msg['From'], [msg['To']], msg.as_string() )
+            smtp.quit()
+        except Exception:
+            main.log.exception( "" )
+            return main.FALSE
+        return main.TRUE
 
     def parse(self,fileName):
         '''

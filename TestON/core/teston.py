@@ -97,7 +97,7 @@ class TestON:
         self.cleanupLock = threading.Lock()
         self.initiated = False
 
-        self.configparser()
+        self.config = self.configparser()
         verifyOptions( options )
         load_logger()
         self.componentDictionary = {}
@@ -742,11 +742,16 @@ class TestON:
         """
         Stop the test until Ctrl-D is entered.
         Ctrl-C will kill the test
+
+        Optional arguments:
+        email can either be a bool, or you can specify the email address
+        to send the email to
         """
         try:
             if email:
-                # FIXME: implement this
-                raise NotImplementedError
+                if '@' in email:
+                    main.mail = email
+                utilities.send_warning_email()
             self.log.error( "Test execution suspended. Press Ctrl-D to "
                             "resume or Ctrl-C to exit the test" )
             # NOTE: Ctrl-D needs to be entered on a new line
@@ -801,11 +806,20 @@ def verifyLogdir( options ):
         main.logdir = main.FALSE
 
 def verifyMail( options ):
-    # Checking the mailing list
-    if options.mail:
+    # Mail-To: field
+    if options.mail:  # Test run specific
         main.mail = options.mail
-    else:
-        main.mail = main.params.get( 'mail', 'paxweb@paxterrasolutions.com' )
+    elif main.params.get('mail'):  # Test suite specific
+        main.mail = main.params.get( 'mail' )
+    else:  # TestON specific
+        main.mail = main.config['config'].get( 'mail_to' )
+    # Mail-From: field
+    main.sender = main.config['config'].get( 'mail_from' )
+    # Mail smtp server
+    main.smtp = main.config['config'].get( 'mail_server' )
+    # Mail-From account password
+    main.senderPwd = main.config['config'].get( 'mail_pass' )
+
 
 def verifyTestCases( options ):
     # Getting Test cases list

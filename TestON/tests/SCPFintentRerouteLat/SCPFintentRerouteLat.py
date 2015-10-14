@@ -258,13 +258,28 @@ class SCPFintentRerouteLat:
                         break
                     time.sleep(2)
 
-                temp = raw.splitlines()
+                if debug: main.log.debug("raw: " + raw)
+
+                try:
+                    temp = raw.splitlines()
+                except ValueError:
+                    main.log.error("Exception at line 264: cannot split lines")
+                    continue
+
+                if debug: main.log.debug("temp (after splitlines): " + str(temp))
+
                 for line in temp:
                     if str(date) in line:
                         temp = line
                         break
 
-                cutTimestamp = (temp.split(" "))[0] + " " + (temp.split(" "))[1]
+                if debug: main.log.debug("temp (checking for date): " + str(temp))
+
+                try:
+                    cutTimestamp = (temp.split(" "))[0] + " " + (temp.split(" "))[1]
+                except ValueError:
+                    main.log.error("Exception at line 279: cannot split on spaces")
+
                 if debug: main.log.info("Cut timestamp: " + cutTimestamp)
 
                 #validate link count and flow count

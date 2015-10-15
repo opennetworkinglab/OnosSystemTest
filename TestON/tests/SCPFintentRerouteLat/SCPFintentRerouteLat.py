@@ -170,7 +170,6 @@ class SCPFintentRerouteLat:
         #from scipy import stats
 
         ts = time.time()
-        date = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d')
 
         sampleSize = int(main.params[ 'TEST' ][ 'sampleSize' ])
         warmUp = int(main.params[ 'TEST' ][ 'warmUp' ])
@@ -260,25 +259,21 @@ class SCPFintentRerouteLat:
 
                 if debug: main.log.debug("raw: " + raw)
 
-                try:
-                    temp = raw.splitlines()
-                except ValueError:
-                    main.log.error("Exception at line 264: cannot split lines")
-                    continue
+                temp = raw.splitlines()
 
                 if debug: main.log.debug("temp (after splitlines): " + str(temp))
 
-                for line in temp:
-                    if str(date) in line:
-                        temp = line
-                        break
+                # Since the string is deterministic the date is always the 3rd element.
+                # However, if the data were grepping for in the onos log changes then this will
+                # not work. This is why we print out the raw and temp string so we can visually
+                # check if everything is in the correct order. temp should like this:
+                # temp = ['/onos$ onos-ssh $OC1 cat /opt/onos/log/karaf.log | grep Top ', 
+                #         'ologyManager| tail -1', '2015-10-15 12:03:33,736 ... ]
+                temp = temp[2]
 
                 if debug: main.log.debug("temp (checking for date): " + str(temp))
 
-                try:
-                    cutTimestamp = (temp.split(" "))[0] + " " + (temp.split(" "))[1]
-                except ValueError:
-                    main.log.error("Exception at line 279: cannot split on spaces")
+                cutTimestamp = (temp.split(" "))[0] + " " + (temp.split(" "))[1]
 
                 if debug: main.log.info("Cut timestamp: " + cutTimestamp)
 

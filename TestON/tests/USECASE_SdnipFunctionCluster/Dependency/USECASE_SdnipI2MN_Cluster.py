@@ -364,7 +364,7 @@ def sdn1net():
     onos3IP = "10.128.4.54"
     for i in range ( 1, numSw + 1 ):
         swX = net.get( 'sw%s' % ( i ) )
-        swX.cmd( 'ovs-vsctl set-controller sw%s tcp:%s:6653 tcp:%s:6653 tcp:%s:6653' % ( i, onos1IP, onos2IP, onos3IP) )
+        swX.cmd( 'ovs-vsctl set-controller sw%s tcp:%s:6633 tcp:%s:6633 tcp:%s:6633' % ( i, onos1IP, onos2IP, onos3IP) )
     '''
 
     # Start Quagga on border routers

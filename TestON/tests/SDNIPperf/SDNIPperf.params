@@ -9,7 +9,7 @@
     <CTRL>
         <numCtrl>1</numCtrl>
         <ip1>10.254.1.201</ip1>
-        <port1>6653</port1>
+        <port1>6633</port1>
     </CTRL>
 
     <GIT>

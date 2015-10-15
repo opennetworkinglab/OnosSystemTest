@@ -394,7 +394,7 @@ class FUNCintentRest:
 
         assignResult = main.Mininet1.assignSwController( sw=switchList,
                                                          ip=tempONOSip,
-                                                         port='6653' )
+                                                         port='6633' )
         if not assignResult:
             main.cleanup()
             main.exit()

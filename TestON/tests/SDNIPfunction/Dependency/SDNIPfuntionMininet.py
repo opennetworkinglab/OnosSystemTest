@@ -208,12 +208,12 @@ def sdn1net():
 
     sw1, sw2, sw3, sw4, sw5, sw6 = \
     net.get( 'sw1', 'sw2', 'sw3', 'sw4', 'sw5', 'sw6' )
-    sw1.cmd( 'ovs-vsctl set-controller sw1 tcp:10.128.4.52:6653' )
-    sw2.cmd( 'ovs-vsctl set-controller sw2 tcp:10.128.4.52:6653' )
-    sw3.cmd( 'ovs-vsctl set-controller sw3 tcp:10.128.4.52:6653' )
-    sw4.cmd( 'ovs-vsctl set-controller sw4 tcp:10.128.4.52:6653' )
-    sw5.cmd( 'ovs-vsctl set-controller sw5 tcp:10.128.4.52:6653' )
-    sw6.cmd( 'ovs-vsctl set-controller sw6 tcp:10.128.4.52:6653' )
+    sw1.cmd( 'ovs-vsctl set-controller sw1 tcp:10.128.4.52:6633' )
+    sw2.cmd( 'ovs-vsctl set-controller sw2 tcp:10.128.4.52:6633' )
+    sw3.cmd( 'ovs-vsctl set-controller sw3 tcp:10.128.4.52:6633' )
+    sw4.cmd( 'ovs-vsctl set-controller sw4 tcp:10.128.4.52:6633' )
+    sw5.cmd( 'ovs-vsctl set-controller sw5 tcp:10.128.4.52:6633' )
+    sw6.cmd( 'ovs-vsctl set-controller sw6 tcp:10.128.4.52:6633' )
 
 
     # Set up sw100 as a learning

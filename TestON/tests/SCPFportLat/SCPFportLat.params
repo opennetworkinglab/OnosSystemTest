@@ -38,7 +38,7 @@
         <ofpRoleReply>OF 1.3 90 of_role_reply</ofpRoleReply>
         <featureReply>OF 1.3 98 of_features_reply</featureReply>
         <roleRequest>OF 1.3 90 of_role_request</roleRequest>
-        <tcpSynAck>TCP 74 6653</tcpSynAck>
+        <tcpSynAck>TCP 74 6633</tcpSynAck>
         <finAckSequence>FIN</finAckSequence>
     </TSHARK>
 

@@ -53,8 +53,8 @@
         <ONOSrest>
             <host>OC1</host>
             <port>8181</port>
-            <user>admin</user>
-            <password>onos_test</password>
+            <user>onos</user>
+            <password>rocks</password>
             <type>OnosRestDriver</type>
             <connect_order>6</connect_order>
             <COMPONENTS>

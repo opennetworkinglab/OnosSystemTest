@@ -271,7 +271,17 @@ class FUNCflow:
                                      onpass="ONOS" + controllerStr +
                                      " hosts exist in Mininet",
                                      onfail="ONOS" + controllerStr +
-                                     " hosts don't match Mininet" )
+                                     " hosts don't match Mininet")
+
+        main.step( "Deactiviate reactive fwd" )
+        stepResult = main.CLIs[0].deactivateApp( 'org.onosproject.fwd' )
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="Successfully deactived fwd app",
+                                 onfail="Failed to deactivate fwd app" )
+
+        main.log.info("Wait for the flows to dissappear")
+        time.sleep(5)
 
     def CASE9( self, main ):
         '''
@@ -289,7 +299,7 @@ class FUNCflow:
 
     def CASE10( self, main ):
         '''
-            Start Mininet with
+            Start Mininet
         '''
         main.case( "Setup mininet and assign switches to controllers" )
         main.step( "Setup Mininet Topology" )
@@ -335,6 +345,52 @@ class FUNCflow:
             Add flows
         '''
 
+        main.step("Add some flows")
+
+        deviceId = main.params['TOPO']['deviceId']
+        host1_mac = main.params['TOPO']['hostMac1']
+        host2_mac = main.params['TOPO']['hostMac2']
+
+
+        flowResult1 = main.ONOSrest.addFlow( deviceId=deviceId,
+                                             egressPort=-3,
+                                             ethType="IPV4" )
+
+        flowResult2 = main.ONOSrest.addFlow( deviceId=deviceId,
+                                             egressPort=2,
+                                             ingressPort=1,
+                                             ethSrc=host1_mac,
+                                             ethDst=host2_mac)
+
+        flowResult3 = main.ONOSrest.addFlow( deviceId=deviceId,
+                                             egressPort=1,
+                                             ingressPort=2,
+                                             ethSrc=host2_mac,
+                                             ethDst=host1_mac)
+
+        flowResult = flowResult1 and flowResult2 and flowResult3
+
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=flowResult,
+                                 onpass="Successfully added flows",
+                                 onfail="Failed add flows" )
+
+        main.step("Verify flows with pingall")
+        main.log.info("wait for flows to install")
+        time.sleep(5)
+
+        pingResult = main.Mininet1.pingall()
+        if not pingResult:
+            main.log.warn("First pingall failed. Retrying")
+            pingResult = main.Mininet1.pingall()
+
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=pingResult,
+                                 onpass="Pingall successfull",
+                                 onfail="Pingall failed" )
+
+        time.sleep(100)
+
     def CASE2000( self, main ):
         '''
             Delete flows
@@ -359,4 +415,3 @@ class FUNCflow:
         '''
             Compare switch flow table with ONOS
         '''
-

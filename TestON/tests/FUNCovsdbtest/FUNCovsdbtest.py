@@ -384,7 +384,8 @@ class FUNCovsdbtest:
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
                                  onpass="ovsdb node 1 manager is " + str( response ) ,
-                                 onfail="ovsdb node 1 manager check failed" )
+                                 onfail="ovsdb node 1 manager check failed\n" +\
+                                 str( main.OVSDB1.show() ) )
 
         main.step( "Check ovsdb node 2 manager is " + str( ctrlip ) )
         response = main.OVSDB2.getManager()
@@ -395,7 +396,8 @@ class FUNCovsdbtest:
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
                                  onpass="ovsdb node 2 manager is " + str( response ) ,
-                                 onfail="ovsdb node 2 manager check failed" )
+                                 onfail="ovsdb node 2 manager check failed\n" +\
+                                 str( main.OVSDB2.show() ) )
 
         main.step( "Check ovsdb node 1 bridge br-int controller set to " + str( ctrlip ) )
         response = main.OVSDB1.getController( "br-int" )
@@ -408,7 +410,7 @@ class FUNCovsdbtest:
                                  onpass="Check ovsdb node 1 bridge br-int controller set to " +\
                                   str( ctrlip ) + " sucess",
                                  onfail="Check ovsdb node 1 bridge br-int controller set to " +\
-                                  str( ctrlip ) + " failed" )
+                                  str( ctrlip ) + " failed\n" + str( main.OVSDB1.show() ) )
 
         main.step( "Check ovsdb node 2 bridge br-int controller set to  " + str( ctrlip ) )
         response = main.OVSDB2.getController( "br-int" )
@@ -421,7 +423,7 @@ class FUNCovsdbtest:
                                  onpass="Check ovsdb node 2 bridge br-int controller set to " +\
                                   str( ctrlip ) + " sucess",
                                  onfail="Check ovsdb node 2 bridge br-int controller set to " +\
-                                  str( ctrlip ) + " failed" )
+                                  str( ctrlip ) + " failed\n" + str( main.OVSDB2.show()) )
 
         main.step( "Check onoscli devices have ovs " + str( OVSDB1Ip ) )
         response = main.ONOScli1.devices()

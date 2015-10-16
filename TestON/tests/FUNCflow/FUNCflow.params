@@ -12,7 +12,7 @@
     # 4000 - Modify flow rule treatments
     # 5000 - flow rule controller
     # 100 - Compare switch flow table with ONOS
-    <testcases>1,2,10,8</testcases>
+    <testcases>1,2,10,8,1000</testcases>
 
     <SCALE>
         <max>3</max>
@@ -25,15 +25,20 @@
         <topology>flow-2sw.py</topology>
     </DEPENDENCY>
 
+
     <TOPO>
-        <numSwitches>2</numSwitches>
-        <numHosts>4</numHosts>
+        <numSwitches>1</numSwitches>
+        <numHosts>2</numHosts>
         <numLinks>2</numLinks>
+        <deviceId>of:0000000000000001</deviceId>
+        <hostMac1>00:00:00:00:00:01</hostMac1>
+        <hostMac2>00:00:00:00:00:02</hostMac2>
+        <ethType>IPV4</ethType>
     </TOPO>
 
     <ENV>
         <cellName>productionCell</cellName>
-        <cellApps>drivers,openflow,proxyarp,mobility,fwd</cellApps>
+        <cellApps>drivers,openflow,fwd</cellApps>
     </ENV>
 
     <GIT>

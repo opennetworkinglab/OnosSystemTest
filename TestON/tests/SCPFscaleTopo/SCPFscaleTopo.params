@@ -1,21 +1,22 @@
 <PARAMS>
 
-    <testcases>1,2,1001,8,1002,8</testcases>
+    # 1 - Optional pull and build ONOS package
+    # 2 - Set cell and install ONOS
+    # 10 - start mininet and assign switches to controller
+    # 11 - pingall
+    # 12 - compare topology
+    # 100 - balance master
+    # 200 - bring down onos node
+    # 300 - bring up onos node
 
-    <SCALE>
-        <size>3</size>
-        <max>3</max>
-    </SCALE>
+    <testcases>1,2,[10,100,12,200,100,12,300,100,12,1000]*3</testcases>
 
     <DEPENDENCY>
         <path>/tests/SCPFscaleTopo/Dependency/</path>
         <wrapper1>startUp</wrapper1>
         <wrapper2>scaleTopoFunction</wrapper2>
         <wrapper3>topo</wrapper3>
-        <topology>spine.py</topology>
         <multiovs>multiovs.py</multiovs>
-        <spine>spine,15,30</spine>
-        <torus>torus,28,28</torus>
     </DEPENDENCY>
 
     <ENV>
@@ -29,11 +30,25 @@
 
     <CTRL>
         <port>6653</port>
+        <numCtrls>3</numCtrls>
     </CTRL>
 
     <SLEEP>
         <startup>15</startup>
         <fwd>30</fwd>
+        <topoAttempts>1</topoAttempts>
+        <balance>10</balance>
+        <nodeDown>10</nodeDown>
+        <nodeUp>10</nodeUp>
     </SLEEP>
+
+    <TIMEOUT>
+        <pingall>60</pingall>
+    </TIMEOUT>
+
+    <TOPOLOGY>
+        <topology>torus</topology>
+        <scale>5,10,20</scale>
+    </TOPOLOGY>
 
 </PARAMS>

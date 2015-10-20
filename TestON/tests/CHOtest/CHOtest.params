@@ -94,9 +94,10 @@
     </timers>
 
     <TEST>
-        <pause_test>off</pause_test>
+        <pauseTest>off</pauseTest>
         <email>off</email>
-        <intent_check>8</intent_check>
+        <intentChecks>8</intentChecks>
+        <numPings>5</numPings>
     </TEST>
 
 </PARAMS>

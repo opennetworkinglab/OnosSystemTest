@@ -33,9 +33,10 @@ class CHOtest:
         git_branch = main.params[ 'GIT' ][ 'branch' ]
         karafTimeout = main.params['CTRL']['karafCliTimeout']
         main.checkIntentsDelay = int( main.params['timers']['CheckIntentDelay'] )
-        main.failSwitch = main.params['TEST']['pause_test']
+        main.failSwitch = main.params['TEST']['pauseTest']
         main.emailOnStop = main.params['TEST']['email']
-        main.intentCheck = int( main.params['TEST']['intent_check'] )
+        main.intentCheck = int( main.params['TEST']['intentChecks'] )
+        main.numPings = int( main.params['TEST']['numPings'] )
         main.newTopo = ""
         main.CLIs = []
 
@@ -1026,13 +1027,14 @@ class CHOtest:
                                  onfail="SOME INTENTS NOT INSTALLED" )
 
         main.step( "Verify Ping across all hosts" )
-        pingResult = main.FALSE
-        time1 = time.time()
-        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout)
-        if not pingResult:
-            main.log.warn("First pingall failed. Retrying...")
+        for i in range(main.numPings):
             time1 = time.time()
             pingResult = main.Mininet1.pingall(timeout=main.pingTimeout)
+            if not pingResult:
+                main.log.warn("First pingall failed. Retrying...")
+                time.sleep(3)
+            else: break
+
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(

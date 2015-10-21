@@ -1,15 +1,16 @@
 <PARAMS>
 
-    # 1 - Optional pull and build ONOS package
-    # 2 - Set cell and install ONOS
+    # 1 - optional pull and build ONOS package
+    # 2 - set cell and install ONOS
     # 10 - start mininet and assign switches to controller
     # 11 - pingall
     # 12 - compare topology
     # 100 - balance master
     # 200 - bring down onos node
     # 300 - bring up onos node
+    # 1000 - report logs
 
-    <testcases>1,2,[10,100,12,200,100,12,300,100,12,1000]*3</testcases>
+    <testcases>1,2,[10,100,11,12,200,100,11,12,300,100,11,12,1000]*3</testcases>
 
     <DEPENDENCY>
         <path>/tests/SCPFscaleTopo/Dependency/</path>

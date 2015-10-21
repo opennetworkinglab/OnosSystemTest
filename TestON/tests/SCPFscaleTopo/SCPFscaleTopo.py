@@ -283,7 +283,7 @@ class SCPFscaleTopo:
         '''
         main.case( "Pingall" )
         main.step( "Pingall" )
-        pingResult = main.Mininet1.pingall()
+        pingResult = main.Mininet1.pingall( timeout=main.pingallTimeout )
         if not pingResult:
             main.log.warn( "First pingall failed. Retrying..." )
             time.sleep(3)

@@ -12,7 +12,7 @@ def getAllDevices( main ):
     """
     devices = []
     threads = []
-    for i in range( main.numCtrls ):
+    for i in main.activeNodes:
         t = main.Thread( target=main.CLIs[i].devices,
                          name="devices-" + str( i ),
                          args=[ ] )
@@ -31,7 +31,7 @@ def getAllHosts( main ):
     hosts = []
     ipResult = main.TRUE
     threads = []
-    for i in range( main.numCtrls ):
+    for i in main.activeNodes:
         t = main.Thread( target=main.CLIs[i].hosts,
                          name="hosts-" + str( i ),
                          args=[ ] )
@@ -49,7 +49,7 @@ def getAllPorts( main ):
     """
     ports = []
     threads = []
-    for i in range( main.numCtrls ):
+    for i in main.activeNodes:
         t = main.Thread( target=main.CLIs[i].ports,
                          name="ports-" + str( i ),
                          args=[ ] )
@@ -67,7 +67,7 @@ def getAllLinks( main ):
     """
     links = []
     threads = []
-    for i in range( main.numCtrls ):
+    for i in main.activeNodes:
         t = main.Thread( target=main.CLIs[i].links,
                          name="links-" + str( i ),
                          args=[ ] )
@@ -85,7 +85,7 @@ def getAllClusters( main ):
     """
     clusters = []
     threads = []
-    for i in range( main.numCtrls ):
+    for i in main.activeNodes:
         t = main.Thread( target=main.CLIs[i].clusters,
                          name="clusters-" + str( i ),
                          args=[ ] )

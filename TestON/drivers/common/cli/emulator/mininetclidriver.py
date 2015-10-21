@@ -52,6 +52,11 @@ class MininetCliDriver( Emulator ):
         self.home = None
         self.wrapped = sys.modules[ __name__ ]
         self.flag = 0
+        # TODO: Refactor driver to use these everywhere
+        self.mnPrompt = "mininet>"
+        self.hostPrompt = "~#"
+        self.bashPrompt = "\$"
+        self.scapyPrompt = ">>>"
 
     def connect( self, **connectargs ):
         """
@@ -70,7 +75,7 @@ class MininetCliDriver( Emulator ):
                 self.home = "~/mininet"
 
             try:
-                if os.getenv( str( self.ip_address ) ) != None:
+                if os.getenv( str( self.ip_address ) ) is not None:
                     self.ip_address = os.getenv( str( self.ip_address ) )
                 else:
                     main.log.info( self.name +
@@ -1088,7 +1093,7 @@ class MininetCliDriver( Emulator ):
 
             # checks if there are results in the mininet response
             if "Results:" in response:
-                main.log.report(self.name +  ": iperf test completed")
+                main.log.report(self.name + ": iperf test completed")
                 # parse the mn results
                 response = response.split("\r\n")
                 response = response[len(response)-2]
@@ -1115,7 +1120,7 @@ class MininetCliDriver( Emulator ):
         except pexpect.TIMEOUT:
             main.log.error( self.name + ": TIMEOUT exception found" )
             main.log.error( self.name + " response: " +
-                            repr ( self.handle.before ) )
+                            repr( self.handle.before ) )
             # NOTE: Send ctrl-c to make sure iperf is done
             self.handle.sendline( "\x03" )
             self.handle.expect( "Interrupt" )
@@ -1160,7 +1165,7 @@ class MininetCliDriver( Emulator ):
 
             # check if there are in results in the mininet response
             if "Results:" in response:
-                main.log.report(self.name +  ": iperfudp test completed")
+                main.log.report(self.name + ": iperfudp test completed")
                 # parse the results
                 response = response.split("\r\n")
                 response = response[len(response)-2]
@@ -2650,6 +2655,679 @@ class MininetCliDriver( Emulator ):
                 main.log.error( self.name + ":     " + self.handle.before )
                 return main.FALSE
 
+    def createHostComponent( self, name ):
+        """
+        Creates a new mininet cli component with the same parameters as self.
+        This new component is intended to be used to login to the hosts created
+        by mininet.
+
+        Arguments:
+            name - The string of the name of this component. The new component
+                   will be assigned to main.<name> .
+                   In addition, main.<name>.name = str( name )
+        """
+        try:
+            # look to see if this component already exists
+            getattr( main, name )
+        except AttributeError:
+            # namespace is clear, creating component
+            main.componentDictionary[name] = main.componentDictionary[self.name].copy()
+            main.componentDictionary[name]['connect_order'] = str( int( main.componentDictionary[name]['connect_order'] ) + 1 )
+            main.componentInit( name )
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+        else:
+            # namespace is not clear!
+            main.log.error( name + " component already exists!" )
+            # FIXME: Should we exit here?
+            main.cleanup()
+            main.exit()
+
+    def removeHostComponent( self, name ):
+        """
+        Remove host component
+        Arguments:
+            name - The string of the name of the component to delete.
+        """
+        try:
+            # Get host component
+            component = getattr( main, name )
+        except AttributeError:
+            main.log.error( "Component " + name + " does not exist." )
+            return
+        try:
+            # Disconnect from component
+            component.disconnect()
+            # Delete component
+            delattr( main, name )
+            # Delete component from ComponentDictionary
+            del( main.componentDictionary[name] )
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
+    def startHostCli( self, host=None ):
+        """
+        Use the mininet m utility to connect to the host's cli
+        """
+        # These are fields that can be used by scapy packets. Initialized to None
+        self.hostIp = None
+        self.hostMac = None
+        try:
+            if not host:
+                host = self.name
+            self.handle.sendline( self.home + "/util/m " + host )
+            self.handle.expect( self.hostPrompt )
+            return main.TRUE
+        except pexpect.TIMEOUT:
+            main.log.exception( self.name + ": Command timed out" )
+            return main.FALSE
+        except pexpect.EOF:
+            main.log.exception( self.name + ": connection closed." )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
+    def startScapy( self ):
+        """
+        Start the Scapy cli
+        """
+        try:
+            self.handle.sendline( "scapy" )
+            self.handle.expect( self.scapyPrompt )
+            self.handle.sendline( "conf.color_theme = NoTheme()" )
+            self.handle.expect( self.scapyPrompt )
+            return main.TRUE
+        except pexpect.TIMEOUT:
+            main.log.exception( self.name + ": Command timed out" )
+            return main.FALSE
+        except pexpect.EOF:
+            main.log.exception( self.name + ": connection closed." )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
+    def stopScapy( self ):
+        """
+        Exit the Scapy cli
+        """
+        try:
+            self.handle.sendline( "exit()" )
+            self.handle.expect( self.hostPrompt )
+            return main.TRUE
+        except pexpect.TIMEOUT:
+            main.log.exception( self.name + ": Command timed out" )
+            return main.FALSE
+        except pexpect.EOF:
+            main.log.exception( self.name + ": connection closed." )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
+    def buildEther( self, **kwargs ):
+        """
+        Build an Ethernet frame
+
+        Will create a frame class with the given options. If a field is
+        left blank it will default to the below value unless it is
+        overwritten by the next frame.
+        Default frame:
+        ###[ Ethernet ]###
+          dst= ff:ff:ff:ff:ff:ff
+          src= 00:00:00:00:00:00
+          type= 0x800
+
+        Returns main.TRUE or main.FALSE on error
+        """
+        try:
+            # Set the Ethernet frame
+            cmd = 'ether = Ether( '
+            options = []
+            for key, value in kwargs.iteritems():
+                if isinstance( value, str ):
+                    value = '"' + value + '"'
+                options.append( str( key ) + "=" + str( value ) )
+            cmd += ", ".join( options )
+            cmd += ' )'
+            self.handle.sendline( cmd )
+            self.handle.expect( self.scapyPrompt )
+            if "Traceback" in self.handle.before:
+                # KeyError, SyntaxError, ...
+                main.log.error( "Error in sending command: " + self.handle.before )
+                return main.FALSE
+            self.handle.sendline( "packet = ether" )
+            self.handle.expect( self.scapyPrompt )
+            if "Traceback" in self.handle.before:
+                # KeyError, SyntaxError, ...
+                main.log.error( "Error in sending command: " + self.handle.before )
+                return main.FALSE
+            return main.TRUE
+        except pexpect.TIMEOUT:
+            main.log.exception( self.name + ": Command timed out" )
+            return main.FALSE
+        except pexpect.EOF:
+            main.log.exception( self.name + ": connection closed." )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
+    def buildIP( self, **kwargs ):
+        """
+        Build an IP frame
+
+        Will create a frame class with the given options. If a field is
+        left blank it will default to the below value unless it is
+        overwritten by the next frame.
+        Default frame:
+        ###[ IP ]###
+          version= 4
+          ihl= None
+          tos= 0x0
+          len= None
+          id= 1
+          flags=
+          frag= 0
+          ttl= 64
+          proto= hopopt
+          chksum= None
+          src= 127.0.0.1
+          dst= 127.0.0.1
+          \options\
+
+        Returns main.TRUE or main.FALSE on error
+        """
+        try:
+            # Set the IP frame
+            cmd = 'ip = IP( '
+            options = []
+            for key, value in kwargs.iteritems():
+                if isinstance( value, str ):
+                    value = '"' + value + '"'
+                options.append( str( key ) + "=" + str( value ) )
+            cmd += ", ".join( options )
+            cmd += ' )'
+            self.handle.sendline( cmd )
+            self.handle.expect( self.scapyPrompt )
+            if "Traceback" in self.handle.before:
+                # KeyError, SyntaxError, ...
+                main.log.error( "Error in sending command: " + self.handle.before )
+                return main.FALSE
+            self.handle.sendline( "packet = ether/ip" )
+            self.handle.expect( self.scapyPrompt )
+            if "Traceback" in self.handle.before:
+                # KeyError, SyntaxError, ...
+                main.log.error( "Error in sending command: " + self.handle.before )
+                return main.FALSE
+            return main.TRUE
+        except pexpect.TIMEOUT:
+            main.log.exception( self.name + ": Command timed out" )
+            return main.FALSE
+        except pexpect.EOF:
+            main.log.exception( self.name + ": connection closed." )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
+    def buildIPv6( self, **kwargs ):
+        """
+        Build an IPv6 frame
+
+        Will create a frame class with the given options. If a field is
+        left blank it will default to the below value unless it is
+        overwritten by the next frame.
+        Default frame:
+        ###[ IPv6 ]###
+          version= 6
+          tc= 0
+          fl= 0
+          plen= None
+          nh= No Next Header
+          hlim= 64
+          src= ::1
+          dst= ::1
+
+        Returns main.TRUE or main.FALSE on error
+        """
+        try:
+            # Set the IPv6 frame
+            cmd = 'ipv6 = IPv6( '
+            options = []
+            for key, value in kwargs.iteritems():
+                if isinstance( value, str ):
+                    value = '"' + value + '"'
+                options.append( str( key ) + "=" + str( value ) )
+            cmd += ", ".join( options )
+            cmd += ' )'
+            self.handle.sendline( cmd )
+            self.handle.expect( self.scapyPrompt )
+            if "Traceback" in self.handle.before:
+                # KeyError, SyntaxError, ...
+                main.log.error( "Error in sending command: " + self.handle.before )
+                return main.FALSE
+            self.handle.sendline( "packet = ether/ipv6" )
+            self.handle.expect( self.scapyPrompt )
+            if "Traceback" in self.handle.before:
+                # KeyError, SyntaxError, ...
+                main.log.error( "Error in sending command: " + self.handle.before )
+                return main.FALSE
+            return main.TRUE
+        except pexpect.TIMEOUT:
+            main.log.exception( self.name + ": Command timed out" )
+            return main.FALSE
+        except pexpect.EOF:
+            main.log.exception( self.name + ": connection closed." )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
+    def buildTCP( self, ipVersion=4, **kwargs ):
+        """
+        Build an TCP frame
+
+        Will create a frame class with the given options. If a field is
+        left blank it will default to the below value unless it is
+        overwritten by the next frame.
+
+        Options:
+        ipVersion - Either 4 (default) or 6, indicates what Internet Protocol
+                    frame to use to encapsulate into
+        Default frame:
+        ###[ TCP ]###
+          sport= ftp_data
+          dport= http
+          seq= 0
+          ack= 0
+          dataofs= None
+          reserved= 0
+          flags= S
+          window= 8192
+          chksum= None
+          urgptr= 0
+          options= {}
+
+        Returns main.TRUE or main.FALSE on error
+        """
+        try:
+            # Set the TCP frame
+            cmd = 'tcp = TCP( '
+            options = []
+            for key, value in kwargs.iteritems():
+                if isinstance( value, str ):
+                    value = '"' + value + '"'
+                options.append( str( key ) + "=" + str( value ) )
+            cmd += ", ".join( options )
+            cmd += ' )'
+            self.handle.sendline( cmd )
+            self.handle.expect( self.scapyPrompt )
+            if "Traceback" in self.handle.before:
+                # KeyError, SyntaxError, ...
+                main.log.error( "Error in sending command: " + self.handle.before )
+                return main.FALSE
+            if str( ipVersion ) is '4':
+                self.handle.sendline( "packet = ether/ip/tcp" )
+            elif str( ipVersion ) is '6':
+                self.handle.sendline( "packet = ether/ipv6/tcp" )
+            else:
+                main.log.error( "Unrecognized option for ipVersion, given " +
+                                repr( ipVersion ) )
+                return main.FALSE
+            self.handle.expect( self.scapyPrompt )
+            if "Traceback" in self.handle.before:
+                # KeyError, SyntaxError, ...
+                main.log.error( "Error in sending command: " + self.handle.before )
+                return main.FALSE
+            return main.TRUE
+        except pexpect.TIMEOUT:
+            main.log.exception( self.name + ": Command timed out" )
+            return main.FALSE
+        except pexpect.EOF:
+            main.log.exception( self.name + ": connection closed." )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
+    def buildUDP( self, ipVersion=4, **kwargs ):
+        """
+        Build an UDP frame
+
+        Will create a frame class with the given options. If a field is
+        left blank it will default to the below value unless it is
+        overwritten by the next frame.
+
+        Options:
+        ipVersion - Either 4 (default) or 6, indicates what Internet Protocol
+                    frame to use to encapsulate into
+        Default frame:
+        ###[ UDP ]###
+          sport= domain
+          dport= domain
+          len= None
+          chksum= None
+
+        Returns main.TRUE or main.FALSE on error
+        """
+        try:
+            # Set the UDP frame
+            cmd = 'udp = UDP( '
+            options = []
+            for key, value in kwargs.iteritems():
+                if isinstance( value, str ):
+                    value = '"' + value + '"'
+                options.append( str( key ) + "=" + str( value ) )
+            cmd += ", ".join( options )
+            cmd += ' )'
+            self.handle.sendline( cmd )
+            self.handle.expect( self.scapyPrompt )
+            if "Traceback" in self.handle.before:
+                # KeyError, SyntaxError, ...
+                main.log.error( "Error in sending command: " + self.handle.before )
+                return main.FALSE
+            if str( ipVersion ) is '4':
+                self.handle.sendline( "packet = ether/ip/udp" )
+            elif str( ipVersion ) is '6':
+                self.handle.sendline( "packet = ether/ipv6/udp" )
+            else:
+                main.log.error( "Unrecognized option for ipVersion, given " +
+                                repr( ipVersion ) )
+                return main.FALSE
+            self.handle.expect( self.scapyPrompt )
+            if "Traceback" in self.handle.before:
+                # KeyError, SyntaxError, ...
+                main.log.error( "Error in sending command: " + self.handle.before )
+                return main.FALSE
+            return main.TRUE
+        except pexpect.TIMEOUT:
+            main.log.exception( self.name + ": Command timed out" )
+            return main.FALSE
+        except pexpect.EOF:
+            main.log.exception( self.name + ": connection closed." )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
+    def buildICMP( self, **kwargs ):
+        """
+        Build an ICMP frame
+
+        Will create a frame class with the given options. If a field is
+        left blank it will default to the below value unless it is
+        overwritten by the next frame.
+        Default frame:
+        ###[ ICMP ]###
+          type= echo-request
+          code= 0
+          chksum= None
+          id= 0x0
+          seq= 0x0
+
+        Returns main.TRUE or main.FALSE on error
+        """
+        try:
+            # Set the ICMP frame
+            cmd = 'icmp = ICMP( '
+            options = []
+            for key, value in kwargs.iteritems():
+                if isinstance( value, str ):
+                    value = '"' + value + '"'
+                options.append( str( key ) + "=" + str( value ) )
+            cmd += ", ".join( options )
+            cmd += ' )'
+            self.handle.sendline( cmd )
+            self.handle.expect( self.scapyPrompt )
+            if "Traceback" in self.handle.before:
+                # KeyError, SyntaxError, ...
+                main.log.error( "Error in sending command: " + self.handle.before )
+                return main.FALSE
+            self.handle.sendline( "packet = ether/ip/icmp" )
+            self.handle.expect( self.scapyPrompt )
+            if "Traceback" in self.handle.before:
+                # KeyError, SyntaxError, ...
+                main.log.error( "Error in sending command: " + self.handle.before )
+                return main.FALSE
+            return main.TRUE
+        except pexpect.TIMEOUT:
+            main.log.exception( self.name + ": Command timed out" )
+            return main.FALSE
+        except pexpect.EOF:
+            main.log.exception( self.name + ": connection closed." )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
+    def sendPacket( self, packet=None, timeout=1 ):
+        """
+        Send a packet with either the given scapy packet command, or use the
+        packet saved in the variable 'packet'.
+
+        Examples of a valid string for packet:
+
+        Simple IP packet
+        packet='Ether(dst="a6:d9:26:df:1d:4b")/IP(dst="10.0.0.2")'
+
+        A Ping with two vlan tags
+        packet='Ether(dst='ff:ff:ff:ff:ff:ff')/Dot1Q(vlan=1)/Dot1Q(vlan=10)/
+                IP(dst='255.255.255.255', src='192.168.0.1')/ICMP()'
+
+        Returns main.TRUE or main.FALSE on error
+        """
+        try:
+            # TODO: add all params, or use kwargs
+            sendCmd = 'srp( '
+            if packet:
+                sendCmd += packet
+            else:
+                sendCmd += "packet"
+            sendCmd += ', timeout=' + str( timeout ) + ')'
+            self.handle.sendline( sendCmd )
+            self.handle.expect( self.scapyPrompt )
+            if "Traceback" in self.handle.before:
+                # KeyError, SyntaxError, ...
+                main.log.error( "Error in sending command: " + self.handle.before )
+                return main.FALSE
+            # TODO: Check # of packets sent?
+            return main.TRUE
+        except pexpect.TIMEOUT:
+            main.log.exception( self.name + ": Command timed out" )
+            return main.FALSE
+        except pexpect.EOF:
+            main.log.exception( self.name + ": connection closed." )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
+    def startFilter( self, ifaceName=None, sniffCount=1, pktFilter="ip" ):
+        """
+        Listen for packets using the given filters
+
+        Options:
+        ifaceName - the name of the interface to listen on. If none is given,
+                    defaults to <host name>-eth0
+        pktFilter - A string in Berkeley Packet Filter (BPF) format which
+                    specifies which packets to sniff
+        sniffCount - The number of matching packets to capture before returning
+
+        Returns main.TRUE or main.FALSE on error
+        """
+        try:
+            # TODO: add all params, or use kwargs
+            ifaceName = str( ifaceName ) if ifaceName else self.name + "-eth0"
+            # Set interface
+            self.handle.sendline( ' conf.iface = "' + ifaceName + '"' )
+            self.handle.expect( self.scapyPrompt )
+            cmd = 'pkt = sniff(count = ' + str( sniffCount ) +\
+                  ', filter = "' + str( pktFilter ) + '")'
+            self.handle.sendline( cmd )
+            self.handle.expect( '"\)\r\n' )
+            # TODO: parse this?
+            return main.TRUE
+        except pexpect.TIMEOUT:
+            main.log.exception( self.name + ": Command timed out" )
+            return main.FALSE
+        except pexpect.EOF:
+            main.log.exception( self.name + ": connection closed." )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
+    def checkFilter( self ):
+        """
+        Check that a filter returned and returns the reponse
+        """
+        try:
+            i = self.handle.expect( [ self.scapyPrompt, pexpect.TIMEOUT ] )
+            if i == 0:
+                return main.TRUE
+            else:
+                return main.FALSE
+        except pexpect.EOF:
+            main.log.exception( self.name + ": connection closed." )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
+    def killFilter( self ):
+        """
+        Kill a scapy filter
+        """
+        try:
+            self.handle.send( "\x03" )  # Send a ctrl-c to kill the filter
+            self.handle.expect( self.scapyPrompt )
+            return self.handle.before
+        except pexpect.TIMEOUT:
+            main.log.exception( self.name + ": Command timed out" )
+            return None
+        except pexpect.EOF:
+            main.log.exception( self.name + ": connection closed." )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
+    def readPackets( self ):
+        """
+        Read all the packets captured by the previous filter
+        """
+        try:
+            self.handle.sendline( "for p in pkt: p \n")
+            self.handle.expect( "for p in pkt: p \r\n... \r\n" )
+            self.handle.expect( self.scapyPrompt )
+        except pexpect.TIMEOUT:
+            main.log.exception( self.name + ": Command timed out" )
+            return None
+        except pexpect.EOF:
+            main.log.exception( self.name + ": connection closed." )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+        return self.handle.before
+
+    def updateSelf( self ):
+        """
+        Updates local MAC and IP fields
+        """
+        self.hostMac = self.getMac()
+        self.hostIp = self.getIp()
+
+    def getMac( self, ifaceName=None ):
+        """
+        Save host's MAC address
+        """
+        try:
+            ifaceName = str( ifaceName ) if ifaceName else self.name + "-eth0"
+            cmd = 'get_if_hwaddr("' + str( ifaceName ) + '")'
+            self.handle.sendline( cmd )
+            self.handle.expect( self.scapyPrompt )
+            pattern = r'(([0-9a-f]{2}[:-]){5}([0-9a-f]{2}))'
+            match = re.search( pattern, self.handle.before )
+            if match:
+                return match.group()
+            else:
+                # the command will have an exception if iface doesn't exist
+                return None
+        except pexpect.TIMEOUT:
+            main.log.exception( self.name + ": Command timed out" )
+            return None
+        except pexpect.EOF:
+            main.log.exception( self.name + ": connection closed." )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
+    def getIp( self, ifaceName=None ):
+        """
+        Save host's IP address
+        """
+        try:
+            ifaceName = ifaceName if ifaceName else self.name + "-eth0"
+            cmd = 'get_if_addr("' + str( ifaceName ) + '")'
+            self.handle.sendline( cmd )
+            self.handle.expect( self.scapyPrompt )
+
+            pattern = r'(((2[0-5]|1[0-9]|[0-9])?[0-9]\.){3}((2[0-5]|1[0-9]|[0-9])?[0-9]))'
+            match = re.search( pattern, self.handle.before )
+            if match:
+                # NOTE: The command will return 0.0.0.0 if the iface doesn't exist
+                return match.group()
+            else:
+                return None
+        except pexpect.TIMEOUT:
+            main.log.exception( self.name + ": Command timed out" )
+            return None
+        except pexpect.EOF:
+            main.log.exception( self.name + ": connection closed." )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
 if __name__ != "__main__":
-    import sys
     sys.modules[ __name__ ] = MininetCliDriver()

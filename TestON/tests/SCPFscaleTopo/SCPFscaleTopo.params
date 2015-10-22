@@ -44,7 +44,7 @@
     </SLEEP>
 
     <TIMEOUT>
-        <pingall>60</pingall>
+        <pingall>1000</pingall>
     </TIMEOUT>
 
     <TOPOLOGY>

@@ -390,16 +390,15 @@ class SCPFscaleTopo:
 
     def CASE200( self, main ):
         '''
-            Bring random node down
+            Bring third node down
         '''
-        import random
-        main.case( "Randomly stopping an ONOS service" )
-        main.step( "Bringing down an onos node" )
+        main.case( "Stopping an ONOS service" )
+        main.step( "Bringing down node 3" )
 
-        random.seed()
-        # Get the random index of the node
-        main.deadNode = random.randrange(0,main.numCtrls)
+        # Always bring down the third node
+        main.deadNode = 2
 
+        # Printing purposes
         node = main.deadNode + 1
 
         main.log.info( "deadnode: %s" % node )

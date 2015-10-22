@@ -2533,23 +2533,7 @@ class HAsingleInstanceRestart:
                                  onfail="Added counters are incorrect" )
 
         main.step( "Check counters are consistant across nodes" )
-        onosCounters = []
-        threads = []
-        for i in range( main.numCtrls ):
-            t = main.Thread( target=main.CLIs[i].counters,
-                             name="counters-" + str( i ) )
-            threads.append( t )
-            t.start()
-        for t in threads:
-            t.join()
-            onosCounters.append( t.result )
-        tmp = [ i == onosCounters[ 0 ] for i in onosCounters ]
-        if all( tmp ):
-            main.log.info( "Counters are consistent across all nodes" )
-            consistentCounterResults = main.TRUE
-        else:
-            main.log.error( "Counters are not consistent across all nodes" )
-            consistentCounterResults = main.FALSE
+        onosCounters, consistentCounterResults = main.Counters.consistentCheck()
         utilities.assert_equals( expect=main.TRUE,
                                  actual=consistentCounterResults,
                                  onpass="ONOS counters are consistent " +
@@ -2565,7 +2549,6 @@ class HAsingleInstanceRestart:
                                  actual=incrementCheck,
                                  onpass="Added counters are correct",
                                  onfail="Added counters are incorrect" )
-
         # DISTRIBUTED SETS
         main.step( "Distributed Set get" )
         size = len( onosSet )

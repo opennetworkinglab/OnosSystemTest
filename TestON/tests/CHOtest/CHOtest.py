@@ -37,6 +37,7 @@ class CHOtest:
         main.emailOnStop = main.params['TEST']['email']
         main.intentCheck = int( main.params['TEST']['intentChecks'] )
         main.numPings = int( main.params['TEST']['numPings'] )
+        main.pingSleep = int( main.params['timers']['pingSleep'] )
         main.newTopo = ""
         main.CLIs = []
 
@@ -514,13 +515,15 @@ class CHOtest:
 
         time.sleep( 10 )
 
-        main.step( "Verify Pingall" )
-        pingResult = main.FALSE
-        time1 = time.time()
-        pingResult = main.Mininet1.pingall( timeout=main.pingTimeout )
-        if not pingResult:
-            main.log.warn("First pingall failed. Trying again...")
-            pingResult = main.Mininet1.pingall( timeout=main.pingTimeout)
+        main.step( "Verify Ping across all hosts" )
+        for i in range(main.numPings):
+            time1 = time.time()
+            pingResult = main.Mininet1.pingall(timeout=main.pingTimeout)
+            if not pingResult:
+                main.log.warn("First pingall failed. Retrying...")
+                time.sleep(main.pingSleep)
+            else: break
+
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -573,13 +576,15 @@ class CHOtest:
 
         time.sleep( 10 )
 
-        main.step( "Verify Pingall" )
-        pingResult = main.FALSE
-        time1 = time.time()
-        pingResult = main.Mininet1.pingall( timeout=main.pingTimeout )
-        if not pingResult:
-            main.log.warn("First pingall failed. Trying again...")
-            pingResult = main.Mininet1.pingall( timeout=main.pingTimeout )
+        main.step( "Verify Ping across all hosts" )
+        for i in range(main.numPings):
+            time1 = time.time()
+            pingResult = main.Mininet1.pingall(timeout=main.pingTimeout)
+            if not pingResult:
+                main.log.warn("First pingall failed. Retrying...")
+                time.sleep(main.pingSleep)
+            else: break
+
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -632,13 +637,15 @@ class CHOtest:
 
         time.sleep( 10 )
 
-        main.step( "Verify Pingall" )
-        pingResult = main.FALSE
-        time1 = time.time()
-        pingResult = main.Mininet1.pingall( timeout=main.pingTimeout )
-        if not pingResult:
-            main.log.warn("First pingall failed. Trying again...")
-            pingResult = main.Mininet1.pingall( timeout=main.pingTimeout )
+        main.step( "Verify Ping across all hosts" )
+        for i in range(main.numPings):
+            time1 = time.time()
+            pingResult = main.Mininet1.pingall(timeout=main.pingTimeout)
+            if not pingResult:
+                main.log.warn("First pingall failed. Retrying...")
+                time.sleep(main.pingSleep)
+            else: break
+
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -1126,13 +1133,14 @@ class CHOtest:
                                  onfail="SOME INTENTS NOT INSTALLED" )
 
         main.step( "Verify Ping across all hosts" )
-        pingResult = main.FALSE
-        time1 = time.time()
-        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout)
-        if not pingResult:
-            main.log.warn("First pingall failed. Retrying...")
+        for i in range(main.numPings):
             time1 = time.time()
             pingResult = main.Mininet1.pingall(timeout=main.pingTimeout)
+            if not pingResult:
+                main.log.warn("First pingall failed. Retrying...")
+                time.sleep(main.pingSleep)
+            else: break
+
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -1224,13 +1232,14 @@ class CHOtest:
                                  onfail="SOME INTENTS NOT INSTALLED" )
 
         main.step( "Verify Ping across all hosts" )
-        pingResult = main.FALSE
-        time1 = time.time()
-        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout)
-        if not pingResult:
-            main.log.warn("First pingall failed. Retrying...")
+        for i in range(main.numPings):
             time1 = time.time()
             pingResult = main.Mininet1.pingall(timeout=main.pingTimeout)
+            if not pingResult:
+                main.log.warn("First pingall failed. Retrying...")
+                time.sleep(main.pingSleep)
+            else: break
+
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -1449,13 +1458,13 @@ class CHOtest:
                                  onfail="SOME INTENTS NOT INSTALLED" )
 
         main.step( "Verify Ping across all hosts" )
-        pingResult = main.FALSE
-        time1 = time.time()
-        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout )
-        if not pingResult:
-            main.log.warn("First pingall failed. Retrying...")
+        for i in range(main.numPings):
             time1 = time.time()
-            pingResult = main.Mininet1.pingall(timeout=main.pingTimeout )
+            pingResult = main.Mininet1.pingall(timeout=main.pingTimeout)
+            if not pingResult:
+                main.log.warn("First pingall failed. Retrying...")
+                time.sleep(main.pingSleep)
+            else: break
 
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
@@ -1559,13 +1568,13 @@ class CHOtest:
                                  onfail="SOME INTENTS NOT INSTALLED" )
 
         main.step( "Verify Ping across all hosts" )
-        pingResult = main.FALSE
-        time1 = time.time()
-        pingResult = main.Mininet1.pingall( timeout=main.pingTimeout )
-        if not pingResult:
-            main.log.warn("First pingall failed. Retrying...")
+        for i in range(main.numPings):
             time1 = time.time()
-            pingResult = main.Mininet1.pingall(timeout=main.pingTimeout )
+            pingResult = main.Mininet1.pingall(timeout=main.pingTimeout)
+            if not pingResult:
+                main.log.warn("First pingall failed. Retrying...")
+                time.sleep(main.pingSleep)
+            else: break
 
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
@@ -1682,13 +1691,13 @@ class CHOtest:
                                  onfail="SOME INTENTS NOT INSTALLED" )
 
         main.step( "Verify Ping across all hosts" )
-        pingResult = main.FALSE
-        time1 = time.time()
-        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout )
-        if not pingResult:
-            main.log.warn("First pingall failed. Retrying...")
+        for i in range(main.numPings):
             time1 = time.time()
-            pingResult = main.Mininet1.pingall(timeout=main.pingTimeout )
+            pingResult = main.Mininet1.pingall(timeout=main.pingTimeout)
+            if not pingResult:
+                main.log.warn("First pingall failed. Retrying...")
+                time.sleep(main.pingSleep)
+            else: break
 
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
@@ -1792,13 +1801,13 @@ class CHOtest:
                                  onfail="SOME INTENTS NOT INSTALLED" )
 
         main.step( "Verify Ping across all hosts" )
-        pingResult = main.FALSE
-        time1 = time.time()
-        pingResult = main.Mininet1.pingall( timeout=main.pingTimeout )
-        if not pingResult:
-            main.log.warn("First pingall failed. Retrying...")
+        for i in range(main.numPings):
             time1 = time.time()
-            pingResult = main.Mininet1.pingall(timeout=main.pingTimeout )
+            pingResult = main.Mininet1.pingall(timeout=main.pingTimeout)
+            if not pingResult:
+                main.log.warn("First pingall failed. Retrying...")
+                time.sleep(main.pingSleep)
+            else: break
 
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
@@ -1892,13 +1901,13 @@ class CHOtest:
                                  onfail="SOME INTENTS NOT INSTALLED" )
 
         main.step( "Verify Ping across all hosts" )
-        pingResult = main.FALSE
-        time1 = time.time()
-        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout )
-        if not pingResult:
-            main.log.warn("First pingall failed. Retrying...")
+        for i in range(main.numPings):
             time1 = time.time()
-            pingResult = main.Mininet1.pingall(timeout=main.pingTimeout )
+            pingResult = main.Mininet1.pingall(timeout=main.pingTimeout)
+            if not pingResult:
+                main.log.warn("First pingall failed. Retrying...")
+                time.sleep(main.pingSleep)
+            else: break
 
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
@@ -1989,13 +1998,13 @@ class CHOtest:
                                  onfail="SOME INTENTS NOT INSTALLED" )
 
         main.step( "Verify Ping across all hosts" )
-        pingResult = main.FALSE
-        time1 = time.time()
-        pingResult = main.Mininet1.pingall( timeout=main.pingTimeout )
-        if not pingResult:
-            main.log.warn("First pingall failed. Retrying...")
+        for i in range(main.numPings):
             time1 = time.time()
-            pingResult = main.Mininet1.pingall(timeout=main.pingTimeout )
+            pingResult = main.Mininet1.pingall(timeout=main.pingTimeout)
+            if not pingResult:
+                main.log.warn("First pingall failed. Retrying...")
+                time.sleep(main.pingSleep)
+            else: break
 
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
@@ -2089,13 +2098,13 @@ class CHOtest:
                                  onfail="SOME INTENTS NOT INSTALLED" )
 
         main.step( "Verify Ping across all hosts" )
-        pingResult = main.FALSE
-        time1 = time.time()
-        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout )
-        if not pingResult:
-            main.log.warn("First pingall failed. Retrying...")
+        for i in range(main.numPings):
             time1 = time.time()
-            pingResult = main.Mininet1.pingall(timeout=main.pingTimeout )
+            pingResult = main.Mininet1.pingall(timeout=main.pingTimeout)
+            if not pingResult:
+                main.log.warn("First pingall failed. Retrying...")
+                time.sleep(main.pingSleep)
+            else: break
 
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
@@ -2186,13 +2195,13 @@ class CHOtest:
                                  onfail="SOME INTENTS NOT INSTALLED" )
 
         main.step( "Verify Ping across all hosts" )
-        pingResult = main.FALSE
-        time1 = time.time()
-        pingResult = main.Mininet1.pingall( timeout=main.pingTimeout )
-        if not pingResult:
-            main.log.warn("First pingall failed. Retrying...")
+        for i in range(main.numPings):
             time1 = time.time()
-            pingResult = main.Mininet1.pingall(timeout=main.pingTimeout )
+            pingResult = main.Mininet1.pingall(timeout=main.pingTimeout)
+            if not pingResult:
+                main.log.warn("First pingall failed. Retrying...")
+                time.sleep(main.pingSleep)
+            else: break
 
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
@@ -2297,13 +2306,13 @@ class CHOtest:
                                  onfail="SOME INTENTS NOT INSTALLED" )
 
         main.step( "Verify Ping across all hosts" )
-        pingResult = main.FALSE
-        time1 = time.time()
-        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout )
-        if not pingResult:
-            main.log.warn("First pingall failed. Retrying...")
+        for i in range(main.numPings):
             time1 = time.time()
-            pingResult = main.Mininet1.pingall(timeout=main.pingTimeout )
+            pingResult = main.Mininet1.pingall(timeout=main.pingTimeout)
+            if not pingResult:
+                main.log.warn("First pingall failed. Retrying...")
+                time.sleep(main.pingSleep)
+            else: break
 
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
@@ -2395,13 +2404,13 @@ class CHOtest:
                                  onfail="SOME INTENTS NOT INSTALLED" )
 
         main.step( "Verify Ping across all hosts" )
-        pingResult = main.FALSE
-        time1 = time.time()
-        pingResult = main.Mininet1.pingall( timeout=main.pingTimeout )
-        if not pingResult:
-            main.log.warn("First pingall failed. Retrying...")
+        for i in range(main.numPings):
             time1 = time.time()
-            pingResult = main.Mininet1.pingall(timeout=main.pingTimeout )
+            pingResult = main.Mininet1.pingall(timeout=main.pingTimeout)
+            if not pingResult:
+                main.log.warn("First pingall failed. Retrying...")
+                time.sleep(main.pingSleep)
+            else: break
 
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
@@ -2506,13 +2515,13 @@ class CHOtest:
                                  onfail="SOME INTENTS NOT INSTALLED" )
 
         main.step( "Verify Ping across all hosts" )
-        pingResult = main.FALSE
-        time1 = time.time()
-        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout )
-        if not pingResult:
-            main.log.warn("First pingall failed. Retrying...")
+        for i in range(main.numPings):
             time1 = time.time()
-            pingResult = main.Mininet1.pingall(timeout=main.pingTimeout )
+            pingResult = main.Mininet1.pingall(timeout=main.pingTimeout)
+            if not pingResult:
+                main.log.warn("First pingall failed. Retrying...")
+                time.sleep(main.pingSleep)
+            else: break
 
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
@@ -2604,13 +2613,13 @@ class CHOtest:
                                  onfail="SOME INTENTS NOT INSTALLED" )
 
         main.step( "Verify Ping across all hosts" )
-        pingResult = main.FALSE
-        time1 = time.time()
-        pingResult = main.Mininet1.pingall( timeout=main.pingTimeout )
-        if not pingResult:
-            main.log.warn("First pingall failed. Retrying...")
+        for i in range(main.numPings):
             time1 = time.time()
-            pingResult = main.Mininet1.pingall(timeout=main.pingTimeout )
+            pingResult = main.Mininet1.pingall(timeout=main.pingTimeout)
+            if not pingResult:
+                main.log.warn("First pingall failed. Retrying...")
+                time.sleep(main.pingSleep)
+            else: break
 
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
@@ -3109,9 +3118,14 @@ class CHOtest:
                                  onfail="SOME INTENTS NOT INSTALLED" )
 
         main.step( "Verify Ping across all hosts" )
-        pingResult = main.FALSE
-        time1 = time.time()
-        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=False,acceptableFailed=5)
+        for i in range(main.numPings):
+            time1 = time.time()
+            pingResult = main.Mininet1.pingall(timeout=main.pingTimeout)
+            if not pingResult:
+                main.log.warn("First pingall failed. Retrying...")
+                time.sleep(main.pingSleep)
+            else: break
+
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -3119,7 +3133,7 @@ class CHOtest:
             str( timeDiff ) +
             " seconds" )
         utilities.assert_equals( expect=main.TRUE, actual=pingResult,
-                                 onpass="PING tALL PASS",
+                                 onpass="PING ALL PASS",
                                  onfail="PING ALL FAIL" )
 
         caseResult = ( intentState and pingResult )
@@ -3204,9 +3218,14 @@ class CHOtest:
                                  onfail="SOME INTENTS NOT INSTALLED" )
 
         main.step( "Verify Ping across all hosts" )
-        pingResult = main.FALSE
-        time1 = time.time()
-        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=False,acceptableFailed=5)
+        for i in range(main.numPings):
+            time1 = time.time()
+            pingResult = main.Mininet1.pingall(timeout=main.pingTimeout)
+            if not pingResult:
+                main.log.warn("First pingall failed. Retrying...")
+                time.sleep(main.pingSleep)
+            else: break
+
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -3302,9 +3321,14 @@ class CHOtest:
                                  onfail="SOME INTENTS NOT INSTALLED" )
 
         main.step( "Verify Ping across all hosts" )
-        pingResult = main.FALSE
-        time1 = time.time()
-        pingResult = main.Mininet1.pingall(timeout=main.pingTimeout,shortCircuit=False,acceptableFailed=5)
+        for i in range(main.numPings):
+            time1 = time.time()
+            pingResult = main.Mininet1.pingall(timeout=main.pingTimeout)
+            if not pingResult:
+                main.log.warn("First pingall failed. Retrying...")
+                time.sleep(main.pingSleep)
+            else: break
+
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(
@@ -3420,13 +3444,13 @@ class CHOtest:
                                  onfail="SOME FLOWS NOT ADDED" )
 
         main.step( "Verify Ping across all hosts" )
-        pingResult = main.FALSE
-        time1 = time.time()
-        pingResult = main.Mininet1.pingall( timeout=main.pingTimeout )
-        if not pingResult:
+        for i in range(main.numPings):
             time1 = time.time()
-            main.log.warn("First pingall failed. Retrying")
-            pingResult = main.Mininet1.pingall( timeout=main.pingTimeout )
+            pingResult = main.Mininet1.pingall(timeout=main.pingTimeout)
+            if not pingResult:
+                main.log.warn("First pingall failed. Retrying...")
+                time.sleep(main.pingSleep)
+            else: break
 
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
@@ -3540,13 +3564,13 @@ class CHOtest:
                                  onfail="SOME FLOWS NOT ADDED" )
 
         main.step( "Verify Ping across all hosts" )
-        pingResult = main.FALSE
-        time1 = time.time()
-        pingResult = main.Mininet1.pingall( timeout=main.pingTimeout )
-        if not pingResult:
+        for i in range(main.numPings):
             time1 = time.time()
-            main.log.warn("First pingall failed. Retrying")
-            pingResult = main.Mininet1.pingall( timeout=main.pingTimeout )
+            pingResult = main.Mininet1.pingall(timeout=main.pingTimeout)
+            if not pingResult:
+                main.log.warn("First pingall failed. Retrying...")
+                time.sleep(main.pingSleep)
+            else: break
 
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
@@ -3660,13 +3684,13 @@ class CHOtest:
                                  onfail="SOME FLOWS NOT ADDED" )
 
         main.step( "Verify Ping across all hosts" )
-        pingResult = main.FALSE
-        time1 = time.time()
-        pingResult = main.Mininet1.pingall( timeout=main.pingTimeout )
-        if not pingResult:
+        for i in range(main.numPings):
             time1 = time.time()
-            main.log.warn("First pingall failed. Retrying")
-            pingResult = main.Mininet1.pingall( timeout=main.pingTimeout )
+            pingResult = main.Mininet1.pingall(timeout=main.pingTimeout)
+            if not pingResult:
+                main.log.warn("First pingall failed. Retrying...")
+                time.sleep(main.pingSleep)
+            else: break
 
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
@@ -3779,13 +3803,13 @@ class CHOtest:
                                  onfail="SOME FLOWS NOT ADDED" )
 
         main.step( "Verify Ping across all hosts" )
-        pingResult = main.FALSE
-        time1 = time.time()
-        pingResult = main.Mininet1.pingall( timeout=main.pingTimeout )
-        if not pingResult:
+        for i in range(main.numPings):
             time1 = time.time()
-            main.log.warn("First pingall failed. Retrying")
-            pingResult = main.Mininet1.pingall( timeout=main.pingTimeout )
+            pingResult = main.Mininet1.pingall(timeout=main.pingTimeout)
+            if not pingResult:
+                main.log.warn("First pingall failed. Retrying...")
+                time.sleep(main.pingSleep)
+            else: break
 
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
@@ -3898,13 +3922,13 @@ class CHOtest:
                                  onfail="SOME FLOWS NOT ADDED" )
 
         main.step( "Verify Ping across all hosts" )
-        pingResult = main.FALSE
-        time1 = time.time()
-        pingResult = main.Mininet1.pingall( timeout=main.pingTimeout )
-        if not pingResult:
+        for i in range(main.numPings):
             time1 = time.time()
-            main.log.warn("First pingall failed. Retrying")
-            pingResult = main.Mininet1.pingall( timeout=main.pingTimeout )
+            pingResult = main.Mininet1.pingall(timeout=main.pingTimeout)
+            if not pingResult:
+                main.log.warn("First pingall failed. Retrying...")
+                time.sleep(main.pingSleep)
+            else: break
 
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
@@ -4023,13 +4047,13 @@ class CHOtest:
                                  onfail="SOME FLOWS NOT ADDED" )
 
         main.step( "Verify Ping across all hosts" )
-        pingResult = main.FALSE
-        time1 = time.time()
-        pingResult = main.Mininet1.pingall( timeout=main.pingTimeout )
-        if not pingResult:
+        for i in range(main.numPings):
             time1 = time.time()
-            main.log.warn("First pingall failed. Retrying")
-            pingResult = main.Mininet1.pingall( timeout=main.pingTimeout )
+            pingResult = main.Mininet1.pingall(timeout=main.pingTimeout)
+            if not pingResult:
+                main.log.warn("First pingall failed. Retrying...")
+                time.sleep(main.pingSleep)
+            else: break
 
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
@@ -4301,10 +4325,15 @@ class CHOtest:
             installResult = main.TRUE
         main.log.info("Time for feature:install onos-app-ifwd: %2f seconds" %(time2-time1))
 
-        main.step( "Verify Pingall" )
-        pingResult = main.FALSE
-        time1 = time.time()
-        pingResult = main.Mininet1.pingall(timeout=600)
+        main.step( "Verify Ping across all hosts" )
+        for i in range(main.numPings):
+            time1 = time.time()
+            pingResult = main.Mininet1.pingall(timeout=main.pingTimeout)
+            if not pingResult:
+                main.log.warn("First pingall failed. Retrying...")
+                time.sleep(main.pingSleep)
+            else: break
+
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
         main.log.report(

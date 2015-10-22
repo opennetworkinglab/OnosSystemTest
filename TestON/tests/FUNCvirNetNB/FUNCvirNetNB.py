@@ -13,6 +13,9 @@ CASE7 - Delete Subnet northbound test
 CASE8 - Create Virtualport northbound test
 CASE9 - Update Virtualport northbound test
 CASE10 - Delete Virtualport northbound test
+CASE11 - Post Error Json Create Network test
+CASE12 - Post Error Json Create Subnet test
+CASE13 - Post Error Json Create Virtualport test
 
 lanqinglong@huawei.com
 """
@@ -1013,4 +1016,179 @@ class FUNCvirNetNB:
                 expect='200',
                 actual=deletestatus,
                 onpass="Delete Network Success",
-                onfail="Delete Network Failed" )
+                onfail="Delete Network Failed" )            
+    def CASE11 ( self,main ):
+
+        """
+        Test Post Error Json Create Network
+        """
+        import os
+
+        try:
+            from tests.FUNCvirNetNB.dependencies.Nbdata import NetworkData
+        except ImportError:
+            main.log.exception( "Something wrong with import file or code error." )
+            main.log.info( "Import Error, please check!" )
+            main.cleanup()
+            main.exit()
+
+        main.log.info( "ONOS Post Error Json Create Network test Start" )
+        main.case( "Virtual Network NBI Test - Network" )
+        main.caseExplanation  = "Test Network Post With Error json " +\
+                                "The wrong Json can't post network successfully"
+
+        ctrlip = os.getenv( main.params['CTRL']['ip1'] )
+        port = main.params['HTTP']['port']
+        path = main.params['HTTP']['path']
+
+        main.step( "Generate Post Data" )
+        network = NetworkData()
+        network.id = '030d6d3d-fa36-45bf-ae2b-4f4bc43a54dc'
+        network.tenant_id = '26cd996094344a0598b0a1af1d525cdc'
+        #The network.admin_state_up should be True or False,when the admin_state_up is 'tttttttttt',the Json can't post.
+        network.admin_state_up = 'tttttttttt'
+        #The network.routerExternal should be True or False,when the routerExternal is 'ffffffffffff',the Json can't post.
+        network.routerExternal = 'ffffffffffff'
+        #The network.shared should be True or False,when the shared is 'ffffffffffffff',the Json can't post.
+        network.shared = 'ffffffffffffff'
+        postdata = network.DictoJson()
+
+        main.step( "Post Data via HTTP" )
+        Poststatus, result = main.ONOSrest.send( ctrlip, port, '', path+'networks/',
+                                                'POST', None, postdata)
+
+        utilities.assert_equals(
+                expect='500',
+                actual=Poststatus,
+                onpass="The Json is wrong,can't post",
+                onfail="Wrong Json can post successfully " )
+    def CASE12( self, main ):
+
+        """
+        Test Post Error Json Create Subnet
+        """
+        import os
+
+        try:
+            from tests.FUNCvirNetNB.dependencies.Nbdata import NetworkData
+            from tests.FUNCvirNetNB.dependencies.Nbdata import SubnetData
+        except ImportError:
+            main.log.exception( "Something wrong with import file or code error." )
+            main.log.info( "Import Error, please check!" )
+            main.cleanup()
+            main.exit()
+
+        main.log.info( "ONOS Post Error Json Create Subnet test Start" )
+        main.case( "Virtual Network NBI Test - Subnet" )
+        main.caseExplanation = "Test Subnet Post With Error json " +\
+                                "The wrong Json can't post network successfully"
+
+        ctrlip = os.getenv( main.params['CTRL']['ip1'] )
+        port = main.params['HTTP']['port']
+        path = main.params['HTTP']['path']
+
+        main.step( "Generate Post Data" )
+        network = NetworkData()
+        network.id = '030d6d3d-fa36-45bf-ae2b-4f4bc43a54dc'
+        network.tenant_id = '26cd996094344a0598b0a1af1d525cdc'
+        subnet = SubnetData()
+        subnet.id = "e44bd655-e22c-4aeb-b1e9-ea1606875178"
+        #The subnet.enable_dhcp should be True or False,when the enable_dhcp is 'tttttttttttttt',the Json can't post.
+        subnet.enable_dhcp = 'tttttttttttttt'
+        #The subnet.tenant_id should be True or False,when the tenant_id is ffffffffffffff',the Json can't post.
+        subnet.shared = 'ffffffffffffff'
+        subnet.tenant_id = network.tenant_id
+        subnet.network_id = network.id
+
+        networkpostdata = network.DictoJson()
+        subnetpostdata = subnet.DictoJson()
+
+        main.step( "Post Network Data via HTTP(Post Subnet need post network)" )
+        Poststatus, result = main.ONOSrest.send( ctrlip, port, '', path + 'networks/',
+                                                 'POST', None, networkpostdata )
+        utilities.assert_equals(
+                expect='200',
+                actual=Poststatus,
+                onpass="Post Network Success",
+                onfail="Post Network Failed " + str( Poststatus ) + "," + str( result ) )
+
+        main.step( "Post Subnet Data via HTTP" )
+        Poststatus, result = main.ONOSrest.send( ctrlip, port, '', path + 'subnets/',
+                                                 'POST', None, subnetpostdata )
+        utilities.assert_equals(
+                expect='500',
+                actual=Poststatus,
+                onpass="The Json is wrong,can't post",
+                onfail="Wrong Json can post successfully " )
+    def CASE13( self, main ):
+
+        """
+        Test Post Error Json Create Virtualport
+        """
+        import os
+
+        try:
+            from tests.FUNCvirNetNB.dependencies.Nbdata import NetworkData
+            from tests.FUNCvirNetNB.dependencies.Nbdata import SubnetData
+            from tests.FUNCvirNetNB.dependencies.Nbdata import VirtualPortData
+        except ImportError:
+            main.log.exception( "Something wrong with import file or code error." )
+            main.log.info( "Import Error, please check!" )
+            main.cleanup()
+            main.exit()
+
+        main.log.info( "ONOS Post Error Json Create Subnet test Start" )
+        main.case( "Virtual Network NBI Test - Port" )
+        main.caseExplanation = "Test Subnet Post With Error json " +\
+                                "The wrong Json can't create port successfully"
+
+        ctrlip = os.getenv( main.params['CTRL']['ip1'] )
+        httpport = main.params['HTTP']['port']
+        path = main.params['HTTP']['path']
+
+        main.step( "Generate Post Data" )
+        network = NetworkData()
+        network.id = '030d6d3d-fa36-45bf-ae2b-4f4bc43a54dc'
+        network.tenant_id = '26cd996094344a0598b0a1af1d525cdc'
+        subnet = SubnetData()
+        subnet.id = "e44bd655-e22c-4aeb-b1e9-ea1606875178"
+        subnet.tenant_id = network.tenant_id
+        subnet.network_id = network.id
+        port = VirtualPortData()
+        port.id = "9352e05c-58b8-4f2c-b4df-c20435ser56466"
+        port.subnet_id = subnet.id
+        port.tenant_id = network.tenant_id
+        port.network_id = network.id
+        #The port.adminStateUp should be True or False,when the adminStateUp is 'tttttttttttt',the Json can't post.
+        port.adminStateUp = 'tttttttttttt'
+
+        networkpostdata = network.DictoJson()
+        subnetpostdata = subnet.DictoJson()
+        portpostdata = port.DictoJson()
+
+        main.step( "Post Network Data via HTTP(Post port need post network)" )
+        Poststatus, result = main.ONOSrest.send( ctrlip, httpport, '', path + 'networks/',
+                                                 'POST', None, networkpostdata )
+        utilities.assert_equals(
+                expect='200',
+                actual=Poststatus,
+                onpass="Post Network Success",
+                onfail="Post Network Failed " + str( Poststatus ) + "," + str( result ) )
+
+        main.step( "Post Subnet Data via HTTP(Post port need post subnet)" )
+        Poststatus, result = main.ONOSrest.send( ctrlip, httpport, '', path + 'subnets/',
+                                                 'POST', None, subnetpostdata )
+        utilities.assert_equals(
+                expect='202',
+                actual=Poststatus,
+                onpass="Post Subnet Success",
+                onfail="Post Subnet Failed " + str( Poststatus ) + "," + str( result ) )
+
+        main.step( "Post Port Data via HTTP" )
+        Poststatus, result = main.ONOSrest.send( ctrlip, httpport, '', path + 'ports/',
+                                                 'POST', None, portpostdata )
+        utilities.assert_equals(
+                expect='500',
+                actual=Poststatus,
+                onpass="The Json is wrong,can't post",
+                onfail="Wrong Json can post successfully" )

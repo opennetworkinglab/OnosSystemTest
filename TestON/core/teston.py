@@ -162,7 +162,6 @@ class TestON:
         driver_options = {}
         if 'COMPONENTS' in self.componentDictionary[component].keys():
             driver_options = dict( self.componentDictionary[component]['COMPONENTS'] )
-
         driver_options['name'] = component
         driverName = self.componentDictionary[component]['type']
         driver_options['type'] = driverName
@@ -461,7 +460,10 @@ class TestON:
                     self.cleanupFlag = True
                     if self.initiated:
                         self.logger.testSummary( self )
-                    for component in self.componentDictionary.keys():
+                    components = self.componentDictionary
+                    for component in sorted( components,
+                                             key=lambda item: components[item]['connect_order'],
+                                             reverse=True ):
                         try:
                             tempObject = vars( self )[component]
                             print "Disconnecting from " + str( tempObject.name ) +\

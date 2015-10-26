@@ -310,6 +310,74 @@ class FUNCflow:
 
 
 
+    def CASE66( self, main ):
+        '''
+        Testing scapy
+        '''
+        main.case( "Testing scapy" )
+        main.step( "Creating Host1 component" )
+        main.Mininet1.createHostComponent( "h1" )
+        main.Mininet1.createHostComponent( "h2" )
+        hosts = [main.h1, main.h2]
+        for host in hosts:
+            host.startHostCli()
+            host.startScapy()
+            host.updateSelf()
+            main.log.debug( host.name )
+            main.log.debug( host.hostIp )
+            main.log.debug( host.hostMac )
+
+        main.step( "Sending/Receiving Test packet - Filter doesn't match" )
+        main.h2.startFilter()
+        main.h1.buildEther( dst=main.h2.hostMac )
+        main.h1.sendPacket( )
+        finished = main.h2.checkFilter()
+        i = ""
+        if finished:
+            a = main.h2.readPackets()
+            for i in a.splitlines():
+                main.log.info( i )
+        else:
+            kill = main.h2.killFilter()
+            main.log.debug( kill )
+            main.h2.handle.sendline( "" )
+            main.h2.handle.expect( main.h2.scapyPrompt )
+            main.log.debug( main.h2.handle.before )
+        utilities.assert_equals( expect=True,
+                                 actual="dst=00:00:00:00:00:02 src=00:00:00:00:00:01" in i,
+                                 onpass="Pass",
+                                 onfail="Fail" )
+
+        main.step( "Sending/Receiving Test packet - Filter matches" )
+        main.h2.startFilter()
+        main.h1.buildEther( dst=main.h2.hostMac )
+        main.h1.buildIP( dst=main.h2.hostIp )
+        main.h1.sendPacket( )
+        finished = main.h2.checkFilter()
+        i = ""
+        if finished:
+            a = main.h2.readPackets()
+            for i in a.splitlines():
+                main.log.info( i )
+        else:
+            kill = main.h2.killFilter()
+            main.log.debug( kill )
+            main.h2.handle.sendline( "" )
+            main.h2.handle.expect( main.h2.scapyPrompt )
+            main.log.debug( main.h2.handle.before )
+        utilities.assert_equals( expect=True,
+                                 actual="dst=00:00:00:00:00:02 src=00:00:00:00:00:01" in i,
+                                 onpass="Pass",
+                                 onfail="Fail" )
+
+
+
+        main.step( "Clean up host components" )
+        for host in hosts:
+            host.stopScapy()
+        main.Mininet1.removeHostComponent("h1")
+        main.Mininet1.removeHostComponent("h2")
+
     def CASE1000( self, main ):
         '''
             Add flows

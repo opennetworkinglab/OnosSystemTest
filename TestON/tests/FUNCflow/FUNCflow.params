@@ -6,10 +6,11 @@
     # 8 - Compare topology
     # 9 - Report logs
     # 10 - Start mininet and assign switches to controller
+    # 66 - Testing Scapy
     # 1000 - Add flows
     # 2000 - Verify flows are in the ADDED state
     # 3000 - Delete flows
-    <testcases>1,2,10,11,1000,2000,3000,100</testcases>
+    <testcases>1,2,10,11,1000,2000,[66]*3,3000</testcases>
 
     <SCALE>
         <max>1</max>

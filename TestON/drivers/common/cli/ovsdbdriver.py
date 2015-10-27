@@ -264,6 +264,8 @@ class OvsdbDriver( CLI ):
 
     def createHostport(self, hostname="host1", hostport="host1-eth0", ovsport="port1", hostportmac="000000000001" ):
         command = "sudo ip link add " + str(hostport) +" type veth peer name " + str(ovsport)
+        command += ";" + "sudo ip link set " + str(hostport) + " up"
+        command += ";" + "sudo ip link set " + str(ovsport) + " up"
         command += ";" +" sudo ifconfig " + str(hostport) + " hw ether " + str(hostportmac)
         command += ";" +" sudo ip link set " + str(hostport) + " netns " + str(hostname)
         try:

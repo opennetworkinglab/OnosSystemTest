@@ -247,15 +247,15 @@ class SCPFscaleTopo:
             main.log.info( "Mininet was not running" )
 
         if main.topoScale:
-            scale = main.topoScale.pop(0)
+            main.currScale = main.topoScale.pop(0)
         else: main.log.error( "topology scale is empty" )
 
 
-        main.step( "Starting up TORUS %sx%s topology" % (scale, scale) )
+        main.step( "Starting up TORUS %sx%s topology" % (main.currScale, main.currScale) )
 
         main.log.info( "Constructing Mininet command" )
         mnCmd = " mn --custom " + main.Mininet1.home + main.multiovs +\
-                " --switch ovsm --topo " + main.topoName + ","+ scale + "," + scale
+                " --switch ovsm --topo " + main.topoName + ","+ main.currScale + "," + main.currScale
 
         for i in range( main.numCtrls ):
                 mnCmd += " --controller remote,ip=" + main.ONOSip[ i ]
@@ -352,9 +352,7 @@ class SCPFscaleTopo:
         """
         import json
 
-        scale = main.topoScale[0]
-
-        main.case( "Verifying topology: TORUS %sx%s" % (scale, scale) )
+        main.case( "Verifying topology: TORUS %sx%s" % (main.currScale, main.currScale) )
         main.caseExplanation = "Pinging all hosts andcomparing topology " +\
                 "elements between Mininet and ONOS"
         main.step( "Pinging all hosts" )
@@ -438,9 +436,8 @@ class SCPFscaleTopo:
         '''
             Balance masters, ping and bring third ONOS node down
         '''
-        scale = main.topoScale[0]
 
-        main.case("Balancing Masters and bring ONOS node 3 down: TORUS %sx%s" % (scale, scale))
+        main.case("Balancing Masters and bring ONOS node 3 down: TORUS %sx%s" % (main.currScale, main.currScale))
         main.caseExplanation = "Balance masters to make sure " +\
                         "each controller has some devices and " +\
                         "stop ONOS node 3 service. "
@@ -500,9 +497,7 @@ class SCPFscaleTopo:
             Bring up onos node and balance masters
         '''
 
-        scale = main.topoScale[0]
-
-        main.case("Bring ONOS node 3 up and balance masters: TORUS %sx%s" % (scale, scale))
+        main.case("Bring ONOS node 3 up and balance masters: TORUS %sx%s" % (main.currScale, main.currScale))
         main.caseExplanation = "Bring node 3 back up and balance the masters"
 
         node = main.deadNode + 1

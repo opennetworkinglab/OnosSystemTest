@@ -3124,7 +3124,7 @@ class MininetCliDriver( Emulator ):
             main.cleanup()
             main.exit()
 
-    def sendPacket( self, packet=None, timeout=1 ):
+    def sendPacket( self, iface=None, packet=None, timeout=1 ):
         """
         Send a packet with either the given scapy packet command, or use the
         packet saved in the variable 'packet'.
@@ -3147,6 +3147,9 @@ class MininetCliDriver( Emulator ):
                 sendCmd += packet
             else:
                 sendCmd += "packet"
+            if iface:
+                sendCmd += ", iface='{}'".format( iface )
+
             sendCmd += ', timeout=' + str( timeout ) + ')'
             self.handle.sendline( sendCmd )
             self.handle.expect( self.scapyPrompt )

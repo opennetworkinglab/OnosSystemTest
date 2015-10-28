@@ -1,0 +1,46 @@
+<TOPOLOGY>
+    <COMPONENT>
+        <ONOSbenchCli>
+            <host>localhost</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>OnosCliDriver</type>
+            <connect_order>1</connect_order>
+            <COMPONENTS>
+            </COMPONENTS>
+        </ONOSbenchCli>
+
+        <ONOSbenchRest>
+            <host>localhost</host>
+            <port>8181</port>
+            <user>karaf</user>
+            <password>karaf</password>
+            <type>OnosRestDriver</type>
+            <connect_order>2</connect_order>
+            <COMPONENTS>
+            </COMPONENTS>
+        </ONOSbenchRest>
+
+        <ONOSbenchDocker>
+            <host>localhost</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>DockerApiDriver</type>
+            <connect_order>3</connect_order>
+            <COMPONENTS>
+            </COMPONENTS>
+        </ONOSbenchDocker>
+
+        <Mininet1>
+            <host>localhost</host>
+            <user>admin</user>
+            <password>onos_test</password>
+            <type>MininetCliDriver</type>
+            <connect_order>5</connect_order>
+            <COMPONENTS>
+                <home>~/mininet/custom/</home>
+            </COMPONENTS>
+        </Mininet1>
+
+    </COMPONENT>
+</TOPOLOGY>

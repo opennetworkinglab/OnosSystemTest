@@ -752,14 +752,16 @@ class HAclusterRestart:
                 append = True
             else:
                 count += 1
-        # FIXME: make this time configurable/calculate based off of number of
-        #        nodes and gossip rounds
+        gossipPeriod = int( main.params['timers']['gossip'] )
+        maxGossipTime = gossipPeriod * len( main.nodes )
         utilities.assert_greater_equals(
-                expect=40, actual=gossipTime,
+                expect=maxGossipTime, actual=gossipTime,
                 onpass="ECM anti-entropy for intents worked within " +
                        "expected time",
-                onfail="Intent ECM anti-entropy took too long" )
-        if gossipTime <= 40:
+                onfail="Intent ECM anti-entropy took too long. " +
+                       "Expected time:{}, Actual time:{}".format( maxGossipTime,
+                                                                  gossipTime ) )
+        if gossipTime <= maxGossipTime:
             intentAddResult = True
 
         if not intentAddResult or "key" in pendingMap:

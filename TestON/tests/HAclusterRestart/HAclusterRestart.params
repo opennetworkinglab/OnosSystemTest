@@ -40,7 +40,7 @@
         <port7>6653</port7>
     </CTRL>
     <BACKUP>
-        <ENABLED>False</ENABLED>
+        <ENABLED> False </ENABLED>
         <TESTONUSER>admin</TESTONUSER>
         <TESTONIP>10.128.30.9</TESTONIP>
     </BACKUP>
@@ -69,6 +69,7 @@
     <timers>
         <LinkDiscovery>12</LinkDiscovery>
         <SwitchDiscovery>12</SwitchDiscovery>
+        <gossip>5</gossip>
     </timers>
     <kill>
         <switch> s5 </switch>

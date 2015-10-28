@@ -9,7 +9,8 @@ CASE21: Assign mastership to controllers
 CASE3: Assign intents
 CASE4: Ping across added host intents
 CASE5: Reading state of ONOS
-CASE6: The Failure case.
+CASE61: The Failure inducing case.
+CASE62: The Failure recovery case.
 CASE7: Check state after control plane failure
 CASE8: Compare topo
 CASE9: Link s3-s28 down
@@ -24,7 +25,7 @@ CASE17: Check for basic functionality with distributed primitives
 """
 
 
-class HAminorityRestart:
+class HAkillNodes:
 
     def __init__( self ):
         self.default = ''
@@ -171,12 +172,19 @@ class HAminorityRestart:
                                  actual=cleanInstallResult,
                                  onpass="MCI successful",
                                  onfail="MCI failed" )
+
+        main.step( "Make sure ONOS service doesn't automatically respawn" )
+        handle = main.ONOSbench.handle
+        handle.sendline( "sed -i -e 's/^respawn$/#respawn/g' tools/package/init/onos.conf" )
+        handle.expect( "\$" )  # $ from the command
+        handle.expect( "\$" )  # $ from the prompt
+
         # GRAPHS
         # NOTE: important params here:
         #       job = name of Jenkins job
         #       Plot Name = Plot-HA, only can be used if multiple plots
         #       index = The number of the graph under plot name
-        job = "HAminorityRestart"
+        job = "HAkillNodes"
         plotName = "Plot-HA"
         graphs = '<ac:structured-macro ac:name="html">\n'
         graphs += '<ac:plain-text-body><![CDATA[\n'
@@ -261,6 +269,9 @@ class HAminorityRestart:
                                  onpass="ONOS cli startup successful",
                                  onfail="ONOS cli startup failed" )
 
+        # Create a list of active nodes for use when some nodes are stopped
+        main.activeNodes = [ i for i in range( 0, len( main.CLIs ) ) ]
+
         if main.params[ 'tcpdump' ].lower() == "true":
             main.step( "Start Packet Capture MN" )
             main.Mininet2.startTcpdump(
@@ -272,7 +283,7 @@ class HAminorityRestart:
         main.step( "App Ids check" )
         appCheck = main.TRUE
         threads = []
-        for i in range( main.numCtrls ):
+        for i in main.activeNodes:
             t = main.Thread( target=main.CLIs[i].appToIDCheck,
                              name="appToIDCheck-" + str( i ),
                              args=[] )
@@ -283,11 +294,16 @@ class HAminorityRestart:
             t.join()
             appCheck = appCheck and t.result
         if appCheck != main.TRUE:
-            main.log.warn( main.CLIs[0].apps() )
-            main.log.warn( main.CLIs[0].appIDs() )
+            node = main.activeNodes[0]
+            main.log.warn( main.CLIs[node].apps() )
+            main.log.warn( main.CLIs[node].appIDs() )
         utilities.assert_equals( expect=main.TRUE, actual=appCheck,
                                  onpass="App Ids seem to be correct",
                                  onfail="Something is wrong with app Ids" )
+
+        main.step( "Clean up ONOS service changes" )
+        handle.sendline( "git checkout -- tools/package/init/onos.conf" )
+        handle.expect( "\$" )
 
         if cliResults == main.FALSE:
             main.log.error( "Failed to start ONOS, stopping test" )
@@ -376,6 +392,7 @@ class HAminorityRestart:
 
         ipList = [ ]
         deviceList = []
+        onosCli = main.CLIs[ main.activeNodes[0] ]
         try:
             # Assign mastership to specific controllers. This assignment was
             # determined for a 7 node cluser, but will work with any sized
@@ -385,45 +402,45 @@ class HAminorityRestart:
                 if i == 1:
                     c = 0
                     ip = main.nodes[ c ].ip_address  # ONOS1
-                    deviceId = main.ONOScli1.getDevice( "1000" ).get( 'id' )
+                    deviceId = onosCli.getDevice( "1000" ).get( 'id' )
                 elif i == 2:
                     c = 1 % main.numCtrls
                     ip = main.nodes[ c ].ip_address  # ONOS2
-                    deviceId = main.ONOScli1.getDevice( "2000" ).get( 'id' )
+                    deviceId = onosCli.getDevice( "2000" ).get( 'id' )
                 elif i == 3:
                     c = 1 % main.numCtrls
                     ip = main.nodes[ c ].ip_address  # ONOS2
-                    deviceId = main.ONOScli1.getDevice( "3000" ).get( 'id' )
+                    deviceId = onosCli.getDevice( "3000" ).get( 'id' )
                 elif i == 4:
                     c = 3 % main.numCtrls
                     ip = main.nodes[ c ].ip_address  # ONOS4
-                    deviceId = main.ONOScli1.getDevice( "3004" ).get( 'id' )
+                    deviceId = onosCli.getDevice( "3004" ).get( 'id' )
                 elif i == 5:
                     c = 2 % main.numCtrls
                     ip = main.nodes[ c ].ip_address  # ONOS3
-                    deviceId = main.ONOScli1.getDevice( "5000" ).get( 'id' )
+                    deviceId = onosCli.getDevice( "5000" ).get( 'id' )
                 elif i == 6:
                     c = 2 % main.numCtrls
                     ip = main.nodes[ c ].ip_address  # ONOS3
-                    deviceId = main.ONOScli1.getDevice( "6000" ).get( 'id' )
+                    deviceId = onosCli.getDevice( "6000" ).get( 'id' )
                 elif i == 7:
                     c = 5 % main.numCtrls
                     ip = main.nodes[ c ].ip_address  # ONOS6
-                    deviceId = main.ONOScli1.getDevice( "6007" ).get( 'id' )
+                    deviceId = onosCli.getDevice( "6007" ).get( 'id' )
                 elif i >= 8 and i <= 17:
                     c = 4 % main.numCtrls
                     ip = main.nodes[ c ].ip_address  # ONOS5
                     dpid = '3' + str( i ).zfill( 3 )
-                    deviceId = main.ONOScli1.getDevice( dpid ).get( 'id' )
+                    deviceId = onosCli.getDevice( dpid ).get( 'id' )
                 elif i >= 18 and i <= 27:
                     c = 6 % main.numCtrls
                     ip = main.nodes[ c ].ip_address  # ONOS7
                     dpid = '6' + str( i ).zfill( 3 )
-                    deviceId = main.ONOScli1.getDevice( dpid ).get( 'id' )
+                    deviceId = onosCli.getDevice( dpid ).get( 'id' )
                 elif i == 28:
                     c = 0
                     ip = main.nodes[ c ].ip_address  # ONOS1
-                    deviceId = main.ONOScli1.getDevice( "2800" ).get( 'id' )
+                    deviceId = onosCli.getDevice( "2800" ).get( 'id' )
                 else:
                     main.log.error( "You didn't write an else statement for " +
                                     "switch s" + str( i ) )
@@ -431,13 +448,12 @@ class HAminorityRestart:
                 # Assign switch
                 assert deviceId, "No device id for s" + str( i ) + " in ONOS"
                 # TODO: make this controller dynamic
-                roleCall = roleCall and main.ONOScli1.deviceRole( deviceId,
-                                                                  ip )
+                roleCall = roleCall and onosCli.deviceRole( deviceId, ip )
                 ipList.append( ip )
                 deviceList.append( deviceId )
         except ( AttributeError, AssertionError ):
             main.log.exception( "Something is wrong with ONOS device view" )
-            main.log.info( main.ONOScli1.devices() )
+            main.log.info( onosCli.devices() )
         utilities.assert_equals(
             expect=main.TRUE,
             actual=roleCall,
@@ -453,7 +469,7 @@ class HAminorityRestart:
             ip = ipList[i]
             deviceId = deviceList[i]
             # Check assignment
-            master = main.ONOScli1.getRole( deviceId ).get( 'master' )
+            master = onosCli.getRole( deviceId ).get( 'master' )
             if ip in master:
                 roleCheck = roleCheck and main.TRUE
             else:
@@ -489,7 +505,8 @@ class HAminorityRestart:
 
         # install onos-app-fwd
         main.step( "Install reactive forwarding app" )
-        installResults = main.CLIs[0].activateApp( "org.onosproject.fwd" )
+        onosCli = main.CLIs[ main.activeNodes[0] ]
+        installResults = onosCli.activateApp( "org.onosproject.fwd" )
         utilities.assert_equals( expect=main.TRUE, actual=installResults,
                                  onpass="Install fwd successful",
                                  onfail="Install fwd failed" )
@@ -497,7 +514,7 @@ class HAminorityRestart:
         main.step( "Check app ids" )
         appCheck = main.TRUE
         threads = []
-        for i in range( main.numCtrls ):
+        for i in main.activeNodes:
             t = main.Thread( target=main.CLIs[i].appToIDCheck,
                              name="appToIDCheck-" + str( i ),
                              args=[] )
@@ -508,8 +525,8 @@ class HAminorityRestart:
             t.join()
             appCheck = appCheck and t.result
         if appCheck != main.TRUE:
-            main.log.warn( main.CLIs[0].apps() )
-            main.log.warn( main.CLIs[0].appIDs() )
+            main.log.warn( onosCli.apps() )
+            main.log.warn( onosCli.appIDs() )
         utilities.assert_equals( expect=main.TRUE, actual=appCheck,
                                  onpass="App Ids seem to be correct",
                                  onfail="Something is wrong with app Ids" )
@@ -538,7 +555,8 @@ class HAminorityRestart:
         time.sleep( 11 )
         # uninstall onos-app-fwd
         main.step( "Uninstall reactive forwarding app" )
-        uninstallResult = main.CLIs[0].deactivateApp( "org.onosproject.fwd" )
+        node = main.activeNodes[0]
+        uninstallResult = main.CLIs[node].deactivateApp( "org.onosproject.fwd" )
         utilities.assert_equals( expect=main.TRUE, actual=uninstallResult,
                                  onpass="Uninstall fwd successful",
                                  onfail="Uninstall fwd failed" )
@@ -546,7 +564,7 @@ class HAminorityRestart:
         main.step( "Check app ids" )
         threads = []
         appCheck2 = main.TRUE
-        for i in range( main.numCtrls ):
+        for i in main.activeNodes:
             t = main.Thread( target=main.CLIs[i].appToIDCheck,
                              name="appToIDCheck-" + str( i ),
                              args=[] )
@@ -557,16 +575,17 @@ class HAminorityRestart:
             t.join()
             appCheck2 = appCheck2 and t.result
         if appCheck2 != main.TRUE:
-            main.log.warn( main.CLIs[0].apps() )
-            main.log.warn( main.CLIs[0].appIDs() )
+            node = main.activeNodes[0]
+            main.log.warn( main.CLIs[node].apps() )
+            main.log.warn( main.CLIs[node].appIDs() )
         utilities.assert_equals( expect=main.TRUE, actual=appCheck2,
                                  onpass="App Ids seem to be correct",
                                  onfail="Something is wrong with app Ids" )
 
         main.step( "Add host intents via cli" )
         intentIds = []
-        # TODO:  move the host numbers to params
-        #        Maybe look at all the paths we ping?
+        # TODO: move the host numbers to params
+        #       Maybe look at all the paths we ping?
         intentAddResult = True
         hostResult = main.TRUE
         for i in range( 8, 18 ):
@@ -577,16 +596,17 @@ class HAminorityRestart:
             host2 = "00:00:00:00:00:" + \
                 str( hex( i + 10 )[ 2: ] ).zfill( 2 ).upper()
             # NOTE: getHost can return None
-            host1Dict = main.ONOScli1.getHost( host1 )
-            host2Dict = main.ONOScli1.getHost( host2 )
+            host1Dict = onosCli.getHost( host1 )
+            host2Dict = onosCli.getHost( host2 )
             host1Id = None
             host2Id = None
             if host1Dict and host2Dict:
                 host1Id = host1Dict.get( 'id', None )
                 host2Id = host2Dict.get( 'id', None )
             if host1Id and host2Id:
-                nodeNum = ( i % main.numCtrls )
-                tmpId = main.CLIs[ nodeNum ].addHostIntent( host1Id, host2Id )
+                nodeNum = ( i % len( main.activeNodes ) )
+                node = main.activeNodes[nodeNum]
+                tmpId = main.CLIs[node].addHostIntent( host1Id, host2Id )
                 if tmpId:
                     main.log.info( "Added intent with id: " + tmpId )
                     intentIds.append( tmpId )
@@ -596,7 +616,8 @@ class HAminorityRestart:
             else:
                 main.log.error( "Error, getHost() failed for h" + str( i ) +
                                 " and/or h" + str( i + 10 ) )
-                hosts = main.CLIs[ 0 ].hosts()
+                node = main.activeNodes[0]
+                hosts = main.CLIs[node].hosts()
                 main.log.warn( "Hosts output: " )
                 try:
                     main.log.warn( json.dumps( json.loads( hosts ),
@@ -611,7 +632,7 @@ class HAminorityRestart:
                                  onfail="Error looking up host ids" )
 
         intentStart = time.time()
-        onosIds = main.ONOScli1.getAllIntentsId()
+        onosIds = onosCli.getAllIntentsId()
         main.log.info( "Submitted intents: " + str( intentIds ) )
         main.log.info( "Intents in ONOS: " + str( onosIds ) )
         for intent in intentIds:
@@ -624,7 +645,7 @@ class HAminorityRestart:
         else:
             intentStop = None
         # Print the intent states
-        intents = main.ONOScli1.intents()
+        intents = onosCli.intents()
         intentStates = []
         installedCheck = True
         main.log.info( "%-6s%-15s%-15s" % ( 'Count', 'ID', 'State' ) )
@@ -650,7 +671,7 @@ class HAminorityRestart:
             count += 1
             main.log.info( "%-6s%-15s%-15s" %
                            ( str( count ), str( i ), str( s ) ) )
-        leaders = main.ONOScli1.leaders()
+        leaders = onosCli.leaders()
         try:
             missing = False
             if leaders:
@@ -677,12 +698,12 @@ class HAminorityRestart:
             main.log.error( repr( leaders ) )
         # Check all nodes
         if missing:
-            for node in main.CLIs:
-                response = node.leaders( jsonFormat=False)
-                main.log.warn( str( node.name ) + " leaders output: \n" +
+            for i in main.activeNodes:
+                response = main.CLIs[i].leaders( jsonFormat=False)
+                main.log.warn( str( main.CLIs[i].name ) + " leaders output: \n" +
                                str( response ) )
 
-        partitions = main.ONOScli1.partitions()
+        partitions = onosCli.partitions()
         try:
             if partitions :
                 parsedPartitions = json.loads( partitions )
@@ -697,7 +718,7 @@ class HAminorityRestart:
         except ( ValueError, TypeError ):
             main.log.exception( "Error parsing partitions" )
             main.log.error( repr( partitions ) )
-        pendingMap = main.ONOScli1.pendingMap()
+        pendingMap = onosCli.pendingMap()
         try:
             if pendingMap :
                 parsedPending = json.loads( pendingMap )
@@ -718,21 +739,21 @@ class HAminorityRestart:
             main.log.error( "Error in pushing host intents to ONOS" )
 
         main.step( "Intent Anti-Entropy dispersion" )
-        for i in range(100):
+        for j in range(100):
             correct = True
             main.log.info( "Submitted intents: " + str( sorted( intentIds ) ) )
-            for cli in main.CLIs:
+            for i in main.activeNodes:
                 onosIds = []
-                ids = cli.getAllIntentsId()
+                ids = main.CLIs[i].getAllIntentsId()
                 onosIds.append( ids )
-                main.log.debug( "Intents in " + cli.name + ": " +
+                main.log.debug( "Intents in " + main.CLIs[i].name + ": " +
                                 str( sorted( onosIds ) ) )
                 if sorted( ids ) != sorted( intentIds ):
                     main.log.warn( "Set of intent IDs doesn't match" )
                     correct = False
                     break
                 else:
-                    intents = json.loads( cli.intents() )
+                    intents = json.loads( main.CLIs[i].intents() )
                     for intent in intents:
                         if intent[ 'state' ] != "INSTALLED":
                             main.log.warn( "Intent " + intent[ 'id' ] +
@@ -749,14 +770,16 @@ class HAminorityRestart:
         gossipTime = intentStop - intentStart
         main.log.info( "It took about " + str( gossipTime ) +
                         " seconds for all intents to appear in each node" )
-        # FIXME: make this time configurable/calculate based off of number of
-        #        nodes and gossip rounds
+        gossipPeriod = int( main.params['timers']['gossip'] )
+        maxGossipTime = gossipPeriod * len( main.activeNodes )
         utilities.assert_greater_equals(
-                expect=40, actual=gossipTime,
+                expect=maxGossipTime, actual=gossipTime,
                 onpass="ECM anti-entropy for intents worked within " +
                        "expected time",
-                onfail="Intent ECM anti-entropy took too long" )
-        if gossipTime <= 40:
+                onfail="Intent ECM anti-entropy took too long. " +
+                       "Expected time:{}, Actual time:{}".format( maxGossipTime,
+                                                                  gossipTime ) )
+        if gossipTime <= maxGossipTime:
             intentAddResult = True
 
         if not intentAddResult or "key" in pendingMap:
@@ -764,11 +787,11 @@ class HAminorityRestart:
             installedCheck = True
             main.log.info( "Sleeping 60 seconds to see if intents are found" )
             time.sleep( 60 )
-            onosIds = main.ONOScli1.getAllIntentsId()
+            onosIds = onosCli.getAllIntentsId()
             main.log.info( "Submitted intents: " + str( intentIds ) )
             main.log.info( "Intents in ONOS: " + str( onosIds ) )
             # Print the intent states
-            intents = main.ONOScli1.intents()
+            intents = onosCli.intents()
             intentStates = []
             main.log.info( "%-6s%-15s%-15s" % ( 'Count', 'ID', 'State' ) )
             count = 0
@@ -792,7 +815,7 @@ class HAminorityRestart:
                 count += 1
                 main.log.info( "%-6s%-15s%-15s" %
                                ( str( count ), str( i ), str( s ) ) )
-            leaders = main.ONOScli1.leaders()
+            leaders = onosCli.leaders()
             try:
                 missing = False
                 if leaders:
@@ -822,12 +845,13 @@ class HAminorityRestart:
                 main.log.error( repr( leaders ) )
             # Check all nodes
             if missing:
-                for node in main.CLIs:
+                for i in main.activeNodes:
+                    node = main.CLIs[i]
                     response = node.leaders( jsonFormat=False)
                     main.log.warn( str( node.name ) + " leaders output: \n" +
                                    str( response ) )
 
-            partitions = main.ONOScli1.partitions()
+            partitions = onosCli.partitions()
             try:
                 if partitions :
                     parsedPartitions = json.loads( partitions )
@@ -842,7 +866,7 @@ class HAminorityRestart:
             except ( ValueError, TypeError ):
                 main.log.exception( "Error parsing partitions" )
                 main.log.error( repr( partitions ) )
-            pendingMap = main.ONOScli1.pendingMap()
+            pendingMap = onosCli.pendingMap()
             try:
                 if pendingMap :
                     parsedPending = json.loads( pendingMap )
@@ -868,11 +892,12 @@ class HAminorityRestart:
         assert utilities.assert_equals, "utilities.assert_equals not defined"
         assert main.CLIs, "main.CLIs not defined"
         assert main.nodes, "main.nodes not defined"
-        main.case( "Verify connectivity by sendind traffic across Intents" )
+        main.case( "Verify connectivity by sending traffic across Intents" )
         main.caseExplanation = "Ping across added host intents to check " +\
                                 "functionality and check the state of " +\
                                 "the intent"
         main.step( "Ping across added host intents" )
+        onosCli = main.CLIs[ main.activeNodes[0] ]
         PingResult = main.TRUE
         for i in range( 8, 18 ):
             ping = main.Mininet1.pingHost( src="h" + str( i ),
@@ -890,7 +915,7 @@ class HAminorityRestart:
             # TODO: pretty print
             main.log.warn( "ONOS1 intents: " )
             try:
-                tmpIntents = main.ONOScli1.intents()
+                tmpIntents = onosCli.intents()
                 main.log.warn( json.dumps( json.loads( tmpIntents ),
                                            sort_keys=True,
                                            indent=4,
@@ -909,7 +934,7 @@ class HAminorityRestart:
         while not installedCheck and loopCount < 40:
             installedCheck = True
             # Print the intent states
-            intents = main.ONOScli1.intents()
+            intents = onosCli.intents()
             intentStates = []
             main.log.info( "%-6s%-15s%-15s" % ( 'Count', 'ID', 'State' ) )
             count = 0
@@ -938,7 +963,7 @@ class HAminorityRestart:
                                         "INSTALLED state" )
 
         main.step( "Check leadership of topics" )
-        leaders = main.ONOScli1.leaders()
+        leaders = onosCli.leaders()
         topicCheck = main.TRUE
         try:
             if leaders:
@@ -973,7 +998,8 @@ class HAminorityRestart:
             # TODO: Check for a leader of these topics
         # Check all nodes
         if topicCheck:
-            for node in main.CLIs:
+            for i in main.activeNodes:
+                node = main.CLIs[i]
                 response = node.leaders( jsonFormat=False)
                 main.log.warn( str( node.name ) + " leaders output: \n" +
                                str( response ) )
@@ -982,7 +1008,7 @@ class HAminorityRestart:
                                  onpass="intent Partitions is in leaders",
                                  onfail="Some topics were lost " )
         # Print partitions
-        partitions = main.ONOScli1.partitions()
+        partitions = onosCli.partitions()
         try:
             if partitions :
                 parsedPartitions = json.loads( partitions )
@@ -998,7 +1024,7 @@ class HAminorityRestart:
             main.log.exception( "Error parsing partitions" )
             main.log.error( repr( partitions ) )
         # Print Pending Map
-        pendingMap = main.ONOScli1.pendingMap()
+        pendingMap = onosCli.pendingMap()
         try:
             if pendingMap :
                 parsedPending = json.loads( pendingMap )
@@ -1018,7 +1044,7 @@ class HAminorityRestart:
                            "intents change" )
             time.sleep( 60 )
             # Print the intent states
-            intents = main.ONOScli1.intents()
+            intents = onosCli.intents()
             intentStates = []
             main.log.info( "%-6s%-15s%-15s" % ( 'Count', 'ID', 'State' ) )
             count = 0
@@ -1037,7 +1063,7 @@ class HAminorityRestart:
                 count += 1
                 main.log.info( "%-6s%-15s%-15s" %
                                ( str( count ), str( i ), str( s ) ) )
-            leaders = main.ONOScli1.leaders()
+            leaders = onosCli.leaders()
             try:
                 missing = False
                 if leaders:
@@ -1066,12 +1092,13 @@ class HAminorityRestart:
                 main.log.exception( "Error parsing leaders" )
                 main.log.error( repr( leaders ) )
             if missing:
-                for node in main.CLIs:
+                for i in main.activeNodes:
+                    node = main.CLIs[i]
                     response = node.leaders( jsonFormat=False)
                     main.log.warn( str( node.name ) + " leaders output: \n" +
                                    str( response ) )
 
-            partitions = main.ONOScli1.partitions()
+            partitions = onosCli.partitions()
             try:
                 if partitions :
                     parsedPartitions = json.loads( partitions )
@@ -1086,7 +1113,7 @@ class HAminorityRestart:
             except ( ValueError, TypeError ):
                 main.log.exception( "Error parsing partitions" )
                 main.log.error( repr( partitions ) )
-            pendingMap = main.ONOScli1.pendingMap()
+            pendingMap = onosCli.pendingMap()
             try:
                 if pendingMap :
                     parsedPending = json.loads( pendingMap )
@@ -1101,7 +1128,8 @@ class HAminorityRestart:
                 main.log.exception( "Error parsing pending map" )
                 main.log.error( repr( pendingMap ) )
         # Print flowrules
-        main.log.debug( main.CLIs[0].flows( jsonFormat=False ) )
+        node = main.activeNodes[0]
+        main.log.debug( main.CLIs[node].flows( jsonFormat=False ) )
         main.step( "Wait a minute then ping again" )
         # the wait is above
         PingResult = main.TRUE
@@ -1121,7 +1149,7 @@ class HAminorityRestart:
             # TODO: pretty print
             main.log.warn( "ONOS1 intents: " )
             try:
-                tmpIntents = main.ONOScli1.intents()
+                tmpIntents = onosCli.intents()
                 main.log.warn( json.dumps( json.loads( tmpIntents ),
                                            sort_keys=True,
                                            indent=4,
@@ -1158,7 +1186,7 @@ class HAminorityRestart:
         # Assert that each device has a master
         rolesNotNull = main.TRUE
         threads = []
-        for i in range( main.numCtrls ):
+        for i in main.activeNodes:
             t = main.Thread( target=main.CLIs[i].rolesNotNull,
                              name="rolesNotNull-" + str( i ),
                              args=[] )
@@ -1180,7 +1208,7 @@ class HAminorityRestart:
         consistentMastership = True
         rolesResults = True
         threads = []
-        for i in range( main.numCtrls ):
+        for i in main.activeNodes:
             t = main.Thread( target=main.CLIs[i].roles,
                              name="roles-" + str( i ),
                              args=[] )
@@ -1191,13 +1219,12 @@ class HAminorityRestart:
             t.join()
             ONOSMastership.append( t.result )
 
-        for i in range( main.numCtrls ):
+        for i in range( len( ONOSMastership ) ):
+            node = str( main.activeNodes[i] + 1 )
             if not ONOSMastership[i] or "Error" in ONOSMastership[i]:
-                main.log.error( "Error in getting ONOS" + str( i + 1 ) +
-                                 " roles" )
-                main.log.warn(
-                    "ONOS" + str( i + 1 ) + " mastership response: " +
-                    repr( ONOSMastership[i] ) )
+                main.log.error( "Error in getting ONOS" + node + " roles" )
+                main.log.warn( "ONOS" + node + " mastership response: " +
+                               repr( ONOSMastership[i] ) )
                 rolesResults = False
         utilities.assert_equals(
             expect=True,
@@ -1218,10 +1245,11 @@ class HAminorityRestart:
             onfail="ONOS nodes have different views of switch roles" )
 
         if rolesResults and not consistentMastership:
-            for i in range( main.numCtrls ):
+            for i in range( len( main.activeNodes ) ):
+                node = str( main.activeNodes[i] + 1 )
                 try:
                     main.log.warn(
-                        "ONOS" + str( i + 1 ) + " roles: ",
+                        "ONOS" + node + " roles: ",
                         json.dumps(
                             json.loads( ONOSMastership[ i ] ),
                             sort_keys=True,
@@ -1241,7 +1269,7 @@ class HAminorityRestart:
         consistentIntents = True
         intentsResults = True
         threads = []
-        for i in range( main.numCtrls ):
+        for i in main.activeNodes:
             t = main.Thread( target=main.CLIs[i].intents,
                              name="intents-" + str( i ),
                              args=[],
@@ -1253,11 +1281,11 @@ class HAminorityRestart:
             t.join()
             ONOSIntents.append( t.result )
 
-        for i in range( main.numCtrls ):
+        for i in range( len( ONOSIntents ) ):
+            node = str( main.activeNodes[i] + 1 )
             if not ONOSIntents[ i ] or "Error" in ONOSIntents[ i ]:
-                main.log.error( "Error in getting ONOS" + str( i + 1 ) +
-                                 " intents" )
-                main.log.warn( "ONOS" + str( i + 1 ) + " intents response: " +
+                main.log.error( "Error in getting ONOS" + node + " intents" )
+                main.log.warn( "ONOS" + node + " intents response: " +
                                repr( ONOSIntents[ i ] ) )
                 intentsResults = False
         utilities.assert_equals(
@@ -1287,7 +1315,7 @@ class HAminorityRestart:
             #  ...        ...         ...
             #  ...        ...         ...
             title = "   Id"
-            for n in range( main.numCtrls ):
+            for n in main.activeNodes:
                 title += " " * 10 + "ONOS" + str( n + 1 )
             main.log.warn( title )
             # get all intent keys in the cluster
@@ -1309,22 +1337,23 @@ class HAminorityRestart:
 
         if intentsResults and not consistentIntents:
             # print the json objects
-            n = len(ONOSIntents)
-            main.log.debug( "ONOS" + str( n ) + " intents: " )
+            n = str( main.activeNodes[-1] + 1 )
+            main.log.debug( "ONOS" + n + " intents: " )
             main.log.debug( json.dumps( json.loads( ONOSIntents[ -1 ] ),
                                         sort_keys=True,
                                         indent=4,
                                         separators=( ',', ': ' ) ) )
-            for i in range( main.numCtrls ):
+            for i in range( len( ONOSIntents ) ):
+                node = str( main.activeNodes[i] + 1 )
                 if ONOSIntents[ i ] != ONOSIntents[ -1 ]:
-                    main.log.debug( "ONOS" + str( i + 1 ) + " intents: " )
+                    main.log.debug( "ONOS" + node + " intents: " )
                     main.log.debug( json.dumps( json.loads( ONOSIntents[i] ),
                                                 sort_keys=True,
                                                 indent=4,
                                                 separators=( ',', ': ' ) ) )
                 else:
-                    main.log.debug( main.nodes[ i ].name + " intents match ONOS" +
-                                    str( n ) + " intents" )
+                    main.log.debug( "ONOS" + node + " intents match ONOS" +
+                                    n + " intents" )
         elif intentsResults and consistentIntents:
             intentCheck = main.TRUE
             intentState = ONOSIntents[ 0 ]
@@ -1338,7 +1367,7 @@ class HAminorityRestart:
         consistentFlows = True
         flowsResults = True
         threads = []
-        for i in range( main.numCtrls ):
+        for i in main.activeNodes:
             t = main.Thread( target=main.CLIs[i].flows,
                              name="flows-" + str( i ),
                              args=[],
@@ -1353,8 +1382,8 @@ class HAminorityRestart:
             result = t.result
             ONOSFlows.append( result )
 
-        for i in range( main.numCtrls ):
-            num = str( i + 1 )
+        for i in range( len( ONOSFlows ) ):
+            num = str( main.activeNodes[i] + 1 )
             if not ONOSFlows[ i ] or "Error" in ONOSFlows[ i ]:
                 main.log.error( "Error in getting ONOS" + num + " flows" )
                 main.log.warn( "ONOS" + num + " flows response: " +
@@ -1390,16 +1419,16 @@ class HAminorityRestart:
             onfail="ONOS nodes have different flow counts" )
 
         if flowsResults and not consistentFlows:
-            for i in range( main.numCtrls ):
+            for i in range( len( ONOSFlows ) ):
+                node = str( main.activeNodes[i] + 1 )
                 try:
                     main.log.warn(
-                        "ONOS" + str( i + 1 ) + " flows: " +
+                        "ONOS" + node + " flows: " +
                         json.dumps( json.loads( ONOSFlows[i] ), sort_keys=True,
                                     indent=4, separators=( ',', ': ' ) ) )
                 except ( ValueError, TypeError ):
-                    main.log.warn(
-                        "ONOS" + str( i + 1 ) + " flows: " +
-                        repr( ONOSFlows[ i ] ) )
+                    main.log.warn( "ONOS" + node + " flows: " +
+                                   repr( ONOSFlows[ i ] ) )
         elif flowsResults and consistentFlows:
             flowCheck = main.TRUE
             flowState = ONOSFlows[ 0 ]
@@ -1459,7 +1488,7 @@ class HAminorityRestart:
         main.step( "Collecting topology information from ONOS" )
         devices = []
         threads = []
-        for i in range( main.numCtrls ):
+        for i in main.activeNodes:
             t = main.Thread( target=main.CLIs[i].devices,
                              name="devices-" + str( i ),
                              args=[ ] )
@@ -1471,7 +1500,7 @@ class HAminorityRestart:
             devices.append( t.result )
         hosts = []
         threads = []
-        for i in range( main.numCtrls ):
+        for i in main.activeNodes:
             t = main.Thread( target=main.CLIs[i].hosts,
                              name="hosts-" + str( i ),
                              args=[ ] )
@@ -1491,7 +1520,7 @@ class HAminorityRestart:
 
         ports = []
         threads = []
-        for i in range( main.numCtrls ):
+        for i in main.activeNodes:
             t = main.Thread( target=main.CLIs[i].ports,
                              name="ports-" + str( i ),
                              args=[ ] )
@@ -1503,7 +1532,7 @@ class HAminorityRestart:
             ports.append( t.result )
         links = []
         threads = []
-        for i in range( main.numCtrls ):
+        for i in main.activeNodes:
             t = main.Thread( target=main.CLIs[i].links,
                              name="links-" + str( i ),
                              args=[ ] )
@@ -1515,7 +1544,7 @@ class HAminorityRestart:
             links.append( t.result )
         clusters = []
         threads = []
-        for i in range( main.numCtrls ):
+        for i in main.activeNodes:
             t = main.Thread( target=main.CLIs[i].clusters,
                              name="clusters-" + str( i ),
                              args=[ ] )
@@ -1531,7 +1560,7 @@ class HAminorityRestart:
         main.step( "Host view is consistent across ONOS nodes" )
         consistentHostsResult = main.TRUE
         for controller in range( len( hosts ) ):
-            controllerStr = str( controller + 1 )
+            controllerStr = str( main.activeNodes[controller] + 1 )
             if "Error" not in hosts[ controller ]:
                 if hosts[ controller ] == hosts[ 0 ]:
                     continue
@@ -1558,10 +1587,10 @@ class HAminorityRestart:
         main.step( "Each host has an IP address" )
         ipResult = main.TRUE
         for controller in range( 0, len( hosts ) ):
-            controllerStr = str( controller + 1 )
+            controllerStr = str( main.activeNodes[controller] + 1 )
             for host in hosts[ controller ]:
                 if not host.get( 'ipAddresses', [ ] ):
-                    main.log.error( "DEBUG:Error with host ips on controller" +
+                    main.log.error( "Error with host ips on controller" +
                                     controllerStr + ": " + str( host ) )
                     ipResult = main.FALSE
         utilities.assert_equals(
@@ -1574,7 +1603,7 @@ class HAminorityRestart:
         main.step( "Cluster view is consistent across ONOS nodes" )
         consistentClustersResult = main.TRUE
         for controller in range( len( clusters ) ):
-            controllerStr = str( controller + 1 )
+            controllerStr = str( main.activeNodes[controller] + 1 )
             if "Error" not in clusters[ controller ]:
                 if clusters[ controller ] == clusters[ 0 ]:
                     continue
@@ -1618,8 +1647,8 @@ class HAminorityRestart:
         mnSwitches = main.Mininet1.getSwitches()
         mnLinks = main.Mininet1.getLinks()
         mnHosts = main.Mininet1.getHosts()
-        for controller in range( main.numCtrls ):
-            controllerStr = str( controller + 1 )
+        for controller in main.activeNodes:
+            controllerStr = str( main.activeNodes[controller] + 1 )
             if devices[ controller ] and ports[ controller ] and\
                 "Error" not in devices[ controller ] and\
                 "Error" not in ports[ controller ]:
@@ -1687,17 +1716,16 @@ class HAminorityRestart:
             onpass="Hosts are correct",
             onfail="Hosts are incorrect" )
 
-    def CASE6( self, main ):
+    def CASE61( self, main ):
         """
         The Failure case.
         """
-        import time
         assert main.numCtrls, "main.numCtrls not defined"
         assert main, "main not defined"
         assert utilities.assert_equals, "utilities.assert_equals not defined"
         assert main.CLIs, "main.CLIs not defined"
         assert main.nodes, "main.nodes not defined"
-        main.case( "Restart minority of ONOS nodes" )
+        main.case( "Kill minority of ONOS nodes" )
 
         main.step( "Checking ONOS Logs for errors" )
         for node in main.nodes:
@@ -1711,15 +1739,38 @@ class HAminorityRestart:
             main.kill.append( p - 1 )
             # NOTE: This only works for cluster sizes of 3,5, or 7.
 
-        main.step( "Killing " + str( len( main.kill ) ) + " ONOS nodes" )
-        killTime = time.time()
+        main.step( "Kill " + str( len( main.kill ) ) + " ONOS nodes" )
         killResults = main.TRUE
         for i in main.kill:
             killResults = killResults and\
                           main.ONOSbench.onosKill( main.nodes[i].ip_address )
+            main.activeNodes.remove( i )
         utilities.assert_equals( expect=main.TRUE, actual=killResults,
-                                 onpass="ONOS Killed successfully",
-                                 onfail="ONOS kill NOT successful" )
+                                 onpass="ONOS nodes killed successfully",
+                                 onfail="ONOS nodes NOT successfully killed" )
+
+    def CASE62( self, main ):
+        """
+        The bring up stopped nodes
+        """
+        import time
+        assert main.numCtrls, "main.numCtrls not defined"
+        assert main, "main not defined"
+        assert utilities.assert_equals, "utilities.assert_equals not defined"
+        assert main.CLIs, "main.CLIs not defined"
+        assert main.nodes, "main.nodes not defined"
+        assert main.kill, "main.kill not defined"
+        main.case( "Restart minority of ONOS nodes" )
+
+        main.step( "Restarting " + str( len( main.kill ) ) + " ONOS nodes" )
+        startResults = main.TRUE
+        restartTime = time.time()
+        for i in main.kill:
+            startResults = startResults and\
+                           main.ONOSbench.onosStart( main.nodes[i].ip_address )
+        utilities.assert_equals( expect=main.TRUE, actual=startResults,
+                                 onpass="ONOS nodes started successfully",
+                                 onfail="ONOS nodes NOT successfully started" )
 
         main.step( "Checking if ONOS is up yet" )
         count = 0
@@ -1739,19 +1790,29 @@ class HAminorityRestart:
         for i in main.kill:
             cliResults = cliResults and\
                          main.CLIs[i].startOnosCli( main.nodes[i].ip_address )
+            main.activeNodes.append( i )
         utilities.assert_equals( expect=main.TRUE, actual=cliResults,
                                  onpass="ONOS cli restarted",
                                  onfail="ONOS cli did not restart" )
+        main.activeNodes.sort()
+        try:
+            assert list( set( main.activeNodes ) ) == main.activeNodes,\
+                   "List of active nodes has duplicates, this likely indicates something was run out of order"
+        except AssertionError:
+            main.log.exception( "" )
+            main.cleanup()
+            main.exit()
 
         # Grab the time of restart so we chan check how long the gossip
         # protocol has had time to work
-        main.restartTime = time.time() - killTime
+        main.restartTime = time.time() - restartTime
         main.log.debug( "Restart time: " + str( main.restartTime ) )
         # TODO: MAke this configurable. Also, we are breaking the above timer
         time.sleep( 60 )
-        main.log.debug( main.CLIs[0].nodes( jsonFormat=False ) )
-        main.log.debug( main.CLIs[0].leaders( jsonFormat=False ) )
-        main.log.debug( main.CLIs[0].partitions( jsonFormat=False ) )
+        node = main.activeNodes[0]
+        main.log.debug( main.CLIs[node].nodes( jsonFormat=False ) )
+        main.log.debug( main.CLIs[node].leaders( jsonFormat=False ) )
+        main.log.debug( main.CLIs[node].partitions( jsonFormat=False ) )
 
     def CASE7( self, main ):
         """
@@ -1763,13 +1824,18 @@ class HAminorityRestart:
         assert utilities.assert_equals, "utilities.assert_equals not defined"
         assert main.CLIs, "main.CLIs not defined"
         assert main.nodes, "main.nodes not defined"
+        try:
+            main.kill
+        except AttributeError:
+            main.kill = []
+
         main.case( "Running ONOS Constant State Tests" )
 
         main.step( "Check that each switch has a master" )
         # Assert that each device has a master
         rolesNotNull = main.TRUE
         threads = []
-        for i in range( main.numCtrls ):
+        for i in main.activeNodes:
             t = main.Thread( target=main.CLIs[i].rolesNotNull,
                              name="rolesNotNull-" + str( i ),
                              args=[ ] )
@@ -1790,7 +1856,7 @@ class HAminorityRestart:
         consistentMastership = True
         rolesResults = True
         threads = []
-        for i in range( main.numCtrls ):
+        for i in main.activeNodes:
             t = main.Thread( target=main.CLIs[i].roles,
                              name="roles-" + str( i ),
                              args=[] )
@@ -1801,13 +1867,12 @@ class HAminorityRestart:
             t.join()
             ONOSMastership.append( t.result )
 
-        for i in range( main.numCtrls ):
+        for i in range( len( ONOSMastership ) ):
+            node = str( main.activeNodes[i] + 1 )
             if not ONOSMastership[i] or "Error" in ONOSMastership[i]:
-                main.log.error( "Error in getting ONOS" + str( i + 1 ) +
-                                 " roles" )
-                main.log.warn(
-                    "ONOS" + str( i + 1 ) + " mastership response: " +
-                    repr( ONOSMastership[i] ) )
+                main.log.error( "Error in getting ONOS" + node + " roles" )
+                main.log.warn( "ONOS" + node + " mastership response: " +
+                               repr( ONOSMastership[i] ) )
                 rolesResults = False
         utilities.assert_equals(
             expect=True,
@@ -1828,48 +1893,15 @@ class HAminorityRestart:
             onfail="ONOS nodes have different views of switch roles" )
 
         if rolesResults and not consistentMastership:
-            for i in range( main.numCtrls ):
-                main.log.warn(
-                    "ONOS" + str( i + 1 ) + " roles: ",
-                    json.dumps(
-                        json.loads( ONOSMastership[ i ] ),
-                        sort_keys=True,
-                        indent=4,
-                        separators=( ',', ': ' ) ) )
+            for i in range( len( ONOSMastership ) ):
+                node = str( main.activeNodes[i] + 1 )
+                main.log.warn( "ONOS" + node + " roles: ",
+                               json.dumps( json.loads( ONOSMastership[ i ] ),
+                                           sort_keys=True,
+                                           indent=4,
+                                           separators=( ',', ': ' ) ) )
 
         # NOTE: we expect mastership to change on controller failure
-        '''
-        description2 = "Compare switch roles from before failure"
-        main.step( description2 )
-        try:
-            currentJson = json.loads( ONOSMastership[0] )
-            oldJson = json.loads( mastershipState )
-        except ( ValueError, TypeError ):
-            main.log.exception( "Something is wrong with parsing " +
-                                "ONOSMastership[0] or mastershipState" )
-            main.log.error( "ONOSMastership[0]: " + repr( ONOSMastership[0] ) )
-            main.log.error( "mastershipState" + repr( mastershipState ) )
-            main.cleanup()
-            main.exit()
-        mastershipCheck = main.TRUE
-        for i in range( 1, 29 ):
-            switchDPID = str(
-                main.Mininet1.getSwitchDPID( switch="s" + str( i ) ) )
-            current = [ switch[ 'master' ] for switch in currentJson
-                        if switchDPID in switch[ 'id' ] ]
-            old = [ switch[ 'master' ] for switch in oldJson
-                    if switchDPID in switch[ 'id' ] ]
-            if current == old:
-                mastershipCheck = mastershipCheck and main.TRUE
-            else:
-                main.log.warn( "Mastership of switch %s changed" % switchDPID )
-                mastershipCheck = main.FALSE
-        utilities.assert_equals(
-            expect=main.TRUE,
-            actual=mastershipCheck,
-            onpass="Mastership of Switches was not changed",
-            onfail="Mastership of some switches changed" )
-        '''
 
         main.step( "Get the intents and compare across all nodes" )
         ONOSIntents = []
@@ -1877,7 +1909,7 @@ class HAminorityRestart:
         consistentIntents = True
         intentsResults = True
         threads = []
-        for i in range( main.numCtrls ):
+        for i in main.activeNodes:
             t = main.Thread( target=main.CLIs[i].intents,
                              name="intents-" + str( i ),
                              args=[],
@@ -1889,11 +1921,11 @@ class HAminorityRestart:
             t.join()
             ONOSIntents.append( t.result )
 
-        for i in range( main.numCtrls ):
+        for i in range( len( ONOSIntents) ):
+            node = str( main.activeNodes[i] + 1 )
             if not ONOSIntents[ i ] or "Error" in ONOSIntents[ i ]:
-                main.log.error( "Error in getting ONOS" + str( i + 1 ) +
-                                 " intents" )
-                main.log.warn( "ONOS" + str( i + 1 ) + " intents response: " +
+                main.log.error( "Error in getting ONOS" + node + " intents" )
+                main.log.warn( "ONOS" + node + " intents response: " +
                                repr( ONOSIntents[ i ] ) )
                 intentsResults = False
         utilities.assert_equals(
@@ -1916,7 +1948,7 @@ class HAminorityRestart:
         #  ...        ...         ...
         #  ...        ...         ...
         title = "   ID"
-        for n in range( main.numCtrls ):
+        for n in main.activeNodes:
             title += " " * 10 + "ONOS" + str( n + 1 )
         main.log.warn( title )
         # get all intent keys in the cluster
@@ -1956,8 +1988,9 @@ class HAminorityRestart:
             main.log.info( dict( out ) )
 
         if intentsResults and not consistentIntents:
-            for i in range( main.numCtrls ):
-                main.log.warn( "ONOS" + str( i + 1 ) + " intents: " )
+            for i in range( len( main.activeNodes ) ):
+                node = str( main.activeNodes[i] + 1 )
+                main.log.warn( "ONOS" + node + " intents: " )
                 main.log.warn( json.dumps(
                     json.loads( ONOSIntents[ i ] ),
                     sort_keys=True,
@@ -2072,7 +2105,8 @@ class HAminorityRestart:
             restarted.append( main.nodes[i].ip_address )
         leaderResult = main.TRUE
 
-        for cli in main.CLIs:
+        for i in main.activeNodes:
+            cli = main.CLIs[i]
             leaderN = cli.electionTestLeader()
             leaderList.append( leaderN )
             if leaderN == main.FALSE:
@@ -2134,7 +2168,7 @@ class HAminorityRestart:
             cliStart = time.time()
             devices = []
             threads = []
-            for i in range( main.numCtrls ):
+            for i in main.activeNodes:
                 t = main.Thread( target=main.CLIs[i].devices,
                                  name="devices-" + str( i ),
                                  args=[ ] )
@@ -2147,7 +2181,7 @@ class HAminorityRestart:
             hosts = []
             ipResult = main.TRUE
             threads = []
-            for i in range( main.numCtrls ):
+            for i in main.activeNodes:
                 t = main.Thread( target=main.CLIs[i].hosts,
                                  name="hosts-" + str( i ),
                                  args=[ ] )
@@ -2162,7 +2196,7 @@ class HAminorityRestart:
                     main.log.exception( "Error parsing hosts results" )
                     main.log.error( repr( t.result ) )
             for controller in range( 0, len( hosts ) ):
-                controllerStr = str( controller + 1 )
+                controllerStr = str( main.activeNodes[controller] + 1 )
                 for host in hosts[ controller ]:
                     if host is None or host.get( 'ipAddresses', [] ) == []:
                         main.log.error(
@@ -2171,7 +2205,7 @@ class HAminorityRestart:
                         ipResult = main.FALSE
             ports = []
             threads = []
-            for i in range( main.numCtrls ):
+            for i in main.activeNodes:
                 t = main.Thread( target=main.CLIs[i].ports,
                                  name="ports-" + str( i ),
                                  args=[ ] )
@@ -2183,7 +2217,7 @@ class HAminorityRestart:
                 ports.append( t.result )
             links = []
             threads = []
-            for i in range( main.numCtrls ):
+            for i in main.activeNodes:
                 t = main.Thread( target=main.CLIs[i].links,
                                  name="links-" + str( i ),
                                  args=[ ] )
@@ -2195,7 +2229,7 @@ class HAminorityRestart:
                 links.append( t.result )
             clusters = []
             threads = []
-            for i in range( main.numCtrls ):
+            for i in main.activeNodes:
                 t = main.Thread( target=main.CLIs[i].clusters,
                                  name="clusters-" + str( i ),
                                  args=[ ] )
@@ -2214,8 +2248,8 @@ class HAminorityRestart:
             mnSwitches = main.Mininet1.getSwitches()
             mnLinks = main.Mininet1.getLinks()
             mnHosts = main.Mininet1.getHosts()
-            for controller in range( main.numCtrls ):
-                controllerStr = str( controller + 1 )
+            for controller in range( len( main.activeNodes ) ):
+                controllerStr = str( main.activeNodes[controller] + 1 )
                 if devices[ controller ] and ports[ controller ] and\
                     "Error" not in devices[ controller ] and\
                     "Error" not in ports[ controller ]:
@@ -2353,7 +2387,7 @@ class HAminorityRestart:
         main.step( "Hosts view is consistent across all ONOS nodes" )
         consistentHostsResult = main.TRUE
         for controller in range( len( hosts ) ):
-            controllerStr = str( controller + 1 )
+            controllerStr = str( main.activeNodes[controller] + 1 )
             if "Error" not in hosts[ controller ]:
                 if hosts[ controller ] == hosts[ 0 ]:
                     continue
@@ -2395,7 +2429,7 @@ class HAminorityRestart:
         main.step( "Clusters view is consistent across all ONOS nodes" )
         consistentClustersResult = main.TRUE
         for controller in range( len( clusters ) ):
-            controllerStr = str( controller + 1 )
+            controllerStr = str( main.activeNodes[controller] + 1 )
             if "Error" not in clusters[ controller ]:
                 if clusters[ controller ] == clusters[ 0 ]:
                     continue
@@ -2467,7 +2501,7 @@ class HAminorityRestart:
         nodesOutput = []
         nodeResults = main.TRUE
         threads = []
-        for i in range( main.numCtrls ):
+        for i in main.activeNodes:
             t = main.Thread( target=main.CLIs[i].nodes,
                              name="nodes-" + str( i ),
                              args=[ ] )
@@ -2477,7 +2511,7 @@ class HAminorityRestart:
         for t in threads:
             t.join()
             nodesOutput.append( t.result )
-        ips = [ node.ip_address for node in main.nodes ]
+        ips = [ main.nodes[node].ip_address for node in main.activeNodes ]
         for i in nodesOutput:
             try:
                 current = json.loads( i )
@@ -2573,6 +2607,7 @@ class HAminorityRestart:
         switchSleep = float( main.params[ 'timers' ][ 'SwitchDiscovery' ] )
 
         description = "Killing a switch to ensure it is discovered correctly"
+        onosCli = main.CLIs[ main.activeNodes[0] ]
         main.case( description )
         switch = main.params[ 'kill' ][ 'switch' ]
         switchDPID = main.params[ 'kill' ][ 'dpid' ]
@@ -2584,7 +2619,7 @@ class HAminorityRestart:
         main.log.info( "Waiting " + str( switchSleep ) +
                        " seconds for switch down to be discovered" )
         time.sleep( switchSleep )
-        device = main.ONOScli1.getDevice( dpid=switchDPID )
+        device = onosCli.getDevice( dpid=switchDPID )
         # Peek at the deleted switch
         main.log.warn( str( device ) )
         result = main.FALSE
@@ -2617,6 +2652,7 @@ class HAminorityRestart:
         switch = main.params[ 'kill' ][ 'switch' ]
         switchDPID = main.params[ 'kill' ][ 'dpid' ]
         links = main.params[ 'kill' ][ 'links' ].split()
+        onosCli = main.CLIs[ main.activeNodes[0] ]
         description = "Adding a switch to ensure it is discovered correctly"
         main.case( description )
 
@@ -2624,14 +2660,12 @@ class HAminorityRestart:
         main.Mininet1.addSwitch( switch, dpid=switchDPID )
         for peer in links:
             main.Mininet1.addLink( switch, peer )
-        ipList = []
-        for i in range( main.numCtrls ):
-            ipList.append( main.nodes[ i ].ip_address )
+        ipList = [ node.ip_address for node in main.nodes ]
         main.Mininet1.assignSwController( sw=switch, ip=ipList )
         main.log.info( "Waiting " + str( switchSleep ) +
                        " seconds for switch up to be discovered" )
         time.sleep( switchSleep )
-        device = main.ONOScli1.getDevice( dpid=switchDPID )
+        device = onosCli.getDevice( dpid=switchDPID )
         # Peek at the deleted switch
         main.log.warn( str( device ) )
         result = main.FALSE
@@ -2677,7 +2711,7 @@ class HAminorityRestart:
             # NOTE: must end in /
             for f in logFiles:
                 for node in main.nodes:
-                    dstName =  main.logdir + "/" + node.name + "-" + f
+                    dstName = main.logdir + "/" + node.name + "-" + f
                     main.ONOSbench.secureCopy( node.user_name, node.ip_address,
                                                logFolder + f, dstName )
             # std*.log's
@@ -2687,7 +2721,7 @@ class HAminorityRestart:
             # NOTE: must end in /
             for f in logFiles:
                 for node in main.nodes:
-                    dstName =  main.logdir + "/" + node.name + "-" + f
+                    dstName = main.logdir + "/" + node.name + "-" + f
                     main.ONOSbench.secureCopy( node.user_name, node.ip_address,
                                                logFolder + f, dstName )
         else:
@@ -2726,7 +2760,8 @@ class HAminorityRestart:
 
         main.case("Start Leadership Election app")
         main.step( "Install leadership election app" )
-        appResult = main.ONOScli1.activateApp( "org.onosproject.election" )
+        onosCli = main.CLIs[ main.activeNodes[0] ]
+        appResult = onosCli.activateApp( "org.onosproject.election" )
         utilities.assert_equals(
             expect=main.TRUE,
             actual=appResult,
@@ -2736,9 +2771,10 @@ class HAminorityRestart:
         main.step( "Run for election on each node" )
         leaderResult = main.TRUE
         leaders = []
-        for cli in main.CLIs:
-            cli.electionTestRun()
-        for cli in main.CLIs:
+        for i in main.activeNodes:
+            main.CLIs[i].electionTestRun()
+        for i in main.activeNodes:
+            cli = main.CLIs[i]
             leader = cli.electionTestLeader()
             if leader is None or leader == main.FALSE:
                 main.log.error( cli.name + ": Leader for the election app " +
@@ -2808,10 +2844,9 @@ class HAminorityRestart:
         main.step( "Run for election on each node" )
         electionResult = main.TRUE
 
-        for cli in main.CLIs:  # run test election on each node
-            if cli.electionTestRun() == main.FALSE:
+        for i in main.activeNodes:  # run test election on each node
+            if main.CLIs[i].electionTestRun() == main.FALSE:
                 electionResult = main.FALSE
-
         utilities.assert_equals(
             expect=main.TRUE,
             actual=electionResult,
@@ -2826,7 +2861,8 @@ class HAminorityRestart:
         main.step( "Check that each node shows the same leader and candidates" )
         sameResult = main.TRUE
         failMessage = "Nodes have different leaders"
-        for cli in main.CLIs:
+        for i in main.activeNodes:
+            cli = main.CLIs[i]
             node = cli.specificLeaderCandidate( 'org.onosproject.election' )
             oldAllCandidates.append( node )
             oldLeaders.append( node[ 0 ] )
@@ -2845,7 +2881,6 @@ class HAminorityRestart:
             if set( candidates ) != set( oldCandidates ):
                 sameResult = main.FALSE
                 failMessage += "and candidates"
-
         utilities.assert_equals(
             expect=main.TRUE,
             actual=sameResult,
@@ -2859,7 +2894,7 @@ class HAminorityRestart:
             main.log.error( "Leadership isn't consistent." )
             withdrawResult = main.FALSE
         # Get the CLI of the oldLeader
-        for i in range( len( main.CLIs ) ):
+        for i in main.activeNodes:
             if oldLeader == main.nodes[ i ].ip_address:
                 oldLeaderCLI = main.CLIs[ i ]
                 break
@@ -2880,7 +2915,8 @@ class HAminorityRestart:
         failMessage = "Nodes have different leaders"
 
         # Get new leaders and candidates
-        for cli in main.CLIs:
+        for i in main.activeNodes:
+            cli = main.CLIs[i]
             node = cli.specificLeaderCandidate( 'org.onosproject.election' )
             # elections might no have finished yet
             if node[ 0 ] == 'none' and not expectNoLeader:
@@ -2966,7 +3002,8 @@ class HAminorityRestart:
         newAllCandidates = []
         newCandidates = []
         newLeaders = []
-        for cli in main.CLIs:
+        for i in main.activeNodes:
+            cli = main.CLIs[i]
             node = cli.specificLeaderCandidate( 'org.onosproject.election' )
             if oldLeader not in node:  # election might no have finished yet
                 main.log.info( "Old Leader not elected, waiting 5 seconds to " +
@@ -2998,7 +3035,7 @@ class HAminorityRestart:
 
         # Check that the re-elected node is last on the candidate List
         if oldLeader != newCandidates[ -1 ]:
-            main.log.error( "Old Leader ("  + oldLeader + ") not in the proper position " +
+            main.log.error( "Old Leader (" + oldLeader + ") not in the proper position " +
                 str( newCandidates ) )
             positionResult = main.FALSE
 
@@ -3038,7 +3075,8 @@ class HAminorityRestart:
         main.case( description )
         main.step( "Install Primitives app" )
         appName = "org.onosproject.distributedprimitives"
-        appResults = main.CLIs[0].activateApp( appName )
+        node = main.activeNodes[0]
+        appResults = main.CLIs[node].activateApp( appName )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=appResults,
                                  onpass="Primitives app activated",
@@ -3090,7 +3128,7 @@ class HAminorityRestart:
         pCounters = []
         threads = []
         addedPValues = []
-        for i in range( main.numCtrls ):
+        for i in main.activeNodes:
             t = main.Thread( target=main.CLIs[i].counterTestAddAndGet,
                              name="counterAddAndGet-" + str( i ),
                              args=[ pCounterName ] )
@@ -3120,7 +3158,7 @@ class HAminorityRestart:
         pCounters = []
         threads = []
         addedPValues = []
-        for i in range( main.numCtrls ):
+        for i in main.activeNodes:
             t = main.Thread( target=main.CLIs[i].counterTestGetAndAdd,
                              name="counterGetAndAdd-" + str( i ),
                              args=[ pCounterName ] )
@@ -3157,7 +3195,7 @@ class HAminorityRestart:
         pCounters = []
         threads = []
         addedPValues = []
-        for i in range( main.numCtrls ):
+        for i in main.activeNodes:
             t = main.Thread( target=main.CLIs[i].counterTestAddAndGet,
                              name="counterIncrement-" + str( i ),
                              args=[ pCounterName ],
@@ -3188,7 +3226,7 @@ class HAminorityRestart:
         pCounters = []
         threads = []
         addedPValues = []
-        for i in range( main.numCtrls ):
+        for i in main.activeNodes:
             t = main.Thread( target=main.CLIs[i].counterTestAddAndGet,
                              name="counterIncrement-" + str( i ),
                              args=[ pCounterName ],
@@ -3219,7 +3257,7 @@ class HAminorityRestart:
         pCounters = []
         threads = []
         addedPValues = []
-        for i in range( main.numCtrls ):
+        for i in main.activeNodes:
             t = main.Thread( target=main.CLIs[i].counterTestGetAndAdd,
                              name="counterIncrement-" + str( i ),
                              args=[ pCounterName ],
@@ -3258,7 +3296,7 @@ class HAminorityRestart:
         iCounters = []
         addedIValues = []
         threads = []
-        for i in range( main.numCtrls ):
+        for i in main.activeNodes:
             t = main.Thread( target=main.CLIs[i].counterTestAddAndGet,
                              name="icounterIncrement-" + str( i ),
                              args=[ iCounterName ],
@@ -3289,7 +3327,7 @@ class HAminorityRestart:
         iCounters = []
         threads = []
         addedIValues = []
-        for i in range( main.numCtrls ):
+        for i in main.activeNodes:
             t = main.Thread( target=main.CLIs[i].counterTestGetAndAdd,
                              name="counterGetAndAdd-" + str( i ),
                              args=[ iCounterName ],
@@ -3327,7 +3365,7 @@ class HAminorityRestart:
         iCounters = []
         threads = []
         addedIValues = []
-        for i in range( main.numCtrls ):
+        for i in main.activeNodes:
             t = main.Thread( target=main.CLIs[i].counterTestAddAndGet,
                              name="counterIncrement-" + str( i ),
                              args=[ iCounterName ],
@@ -3358,7 +3396,7 @@ class HAminorityRestart:
         iCounters = []
         threads = []
         addedIValues = []
-        for i in range( main.numCtrls ):
+        for i in main.activeNodes:
             t = main.Thread( target=main.CLIs[i].counterTestAddAndGet,
                              name="counterIncrement-" + str( i ),
                              args=[ iCounterName ],
@@ -3389,7 +3427,7 @@ class HAminorityRestart:
         iCounters = []
         threads = []
         addedIValues = []
-        for i in range( main.numCtrls ):
+        for i in main.activeNodes:
             t = main.Thread( target=main.CLIs[i].counterTestGetAndAdd,
                              name="counterIncrement-" + str( i ),
                              args=[ iCounterName ],
@@ -3445,7 +3483,7 @@ class HAminorityRestart:
         size = len( onosSet )
         getResponses = []
         threads = []
-        for i in range( main.numCtrls ):
+        for i in main.activeNodes:
             t = main.Thread( target=main.CLIs[i].setTestGet,
                              name="setTestGet-" + str( i ),
                              args=[ onosSetName ] )
@@ -3456,13 +3494,14 @@ class HAminorityRestart:
             getResponses.append( t.result )
 
         getResults = main.TRUE
-        for i in range( main.numCtrls ):
+        for i in range( len( main.activeNodes ) ):
+            node = str( main.activeNodes[i] + 1 )
             if isinstance( getResponses[ i ], list):
                 current = set( getResponses[ i ] )
                 if len( current ) == len( getResponses[ i ] ):
                     # no repeats
                     if onosSet != current:
-                        main.log.error( "ONOS" + str( i + 1 ) +
+                        main.log.error( "ONOS" + node +
                                         " has incorrect view" +
                                         " of set " + onosSetName + ":\n" +
                                         str( getResponses[ i ] ) )
@@ -3471,7 +3510,7 @@ class HAminorityRestart:
                         getResults = main.FALSE
                 else:
                     # error, set is not a set
-                    main.log.error( "ONOS" + str( i + 1 ) +
+                    main.log.error( "ONOS" + node +
                                     " has repeat elements in" +
                                     " set " + onosSetName + ":\n" +
                                     str( getResponses[ i ] ) )
@@ -3486,7 +3525,7 @@ class HAminorityRestart:
         main.step( "Distributed Set size" )
         sizeResponses = []
         threads = []
-        for i in range( main.numCtrls ):
+        for i in main.activeNodes:
             t = main.Thread( target=main.CLIs[i].setTestSize,
                              name="setTestSize-" + str( i ),
                              args=[ onosSetName ] )
@@ -3497,10 +3536,11 @@ class HAminorityRestart:
             sizeResponses.append( t.result )
 
         sizeResults = main.TRUE
-        for i in range( main.numCtrls ):
+        for i in range( len( main.activeNodes ) ):
+            node = str( main.activeNodes[i] + 1 )
             if size != sizeResponses[ i ]:
                 sizeResults = main.FALSE
-                main.log.error( "ONOS" + str( i + 1 ) +
+                main.log.error( "ONOS" + node +
                                 " expected a size of " + str( size ) +
                                 " for set " + onosSetName +
                                 " but got " + str( sizeResponses[ i ] ) )
@@ -3513,7 +3553,7 @@ class HAminorityRestart:
         onosSet.add( addValue )
         addResponses = []
         threads = []
-        for i in range( main.numCtrls ):
+        for i in main.activeNodes:
             t = main.Thread( target=main.CLIs[i].setTestAdd,
                              name="setTestAdd-" + str( i ),
                              args=[ onosSetName, addValue ] )
@@ -3527,7 +3567,7 @@ class HAminorityRestart:
         # main.FALSE = action resulted in no change in set
         # main.ERROR - Some error in executing the function
         addResults = main.TRUE
-        for i in range( main.numCtrls ):
+        for i in range( len( main.activeNodes ) ):
             if addResponses[ i ] == main.TRUE:
                 # All is well
                 pass
@@ -3547,7 +3587,7 @@ class HAminorityRestart:
         size = len( onosSet )
         getResponses = []
         threads = []
-        for i in range( main.numCtrls ):
+        for i in main.activeNodes:
             t = main.Thread( target=main.CLIs[i].setTestGet,
                              name="setTestGet-" + str( i ),
                              args=[ onosSetName ] )
@@ -3557,14 +3597,14 @@ class HAminorityRestart:
             t.join()
             getResponses.append( t.result )
         getResults = main.TRUE
-        for i in range( main.numCtrls ):
+        for i in range( len( main.activeNodes ) ):
+            node = str( main.activeNodes[i] + 1 )
             if isinstance( getResponses[ i ], list):
                 current = set( getResponses[ i ] )
                 if len( current ) == len( getResponses[ i ] ):
                     # no repeats
                     if onosSet != current:
-                        main.log.error( "ONOS" + str( i + 1 ) +
-                                        " has incorrect view" +
+                        main.log.error( "ONOS" + node + " has incorrect view" +
                                         " of set " + onosSetName + ":\n" +
                                         str( getResponses[ i ] ) )
                         main.log.debug( "Expected: " + str( onosSet ) )
@@ -3572,8 +3612,7 @@ class HAminorityRestart:
                         getResults = main.FALSE
                 else:
                     # error, set is not a set
-                    main.log.error( "ONOS" + str( i + 1 ) +
-                                    " has repeat elements in" +
+                    main.log.error( "ONOS" + node + " has repeat elements in" +
                                     " set " + onosSetName + ":\n" +
                                     str( getResponses[ i ] ) )
                     getResults = main.FALSE
@@ -3581,7 +3620,7 @@ class HAminorityRestart:
                 getResults = main.FALSE
         sizeResponses = []
         threads = []
-        for i in range( main.numCtrls ):
+        for i in main.activeNodes:
             t = main.Thread( target=main.CLIs[i].setTestSize,
                              name="setTestSize-" + str( i ),
                              args=[ onosSetName ] )
@@ -3591,10 +3630,11 @@ class HAminorityRestart:
             t.join()
             sizeResponses.append( t.result )
         sizeResults = main.TRUE
-        for i in range( main.numCtrls ):
+        for i in range( len( main.activeNodes ) ):
+            node = str( main.activeNodes[i] + 1 )
             if size != sizeResponses[ i ]:
                 sizeResults = main.FALSE
-                main.log.error( "ONOS" + str( i + 1 ) +
+                main.log.error( "ONOS" + node +
                                 " expected a size of " + str( size ) +
                                 " for set " + onosSetName +
                                 " but got " + str( sizeResponses[ i ] ) )
@@ -3608,7 +3648,7 @@ class HAminorityRestart:
         onosSet.update( addAllValue.split() )
         addResponses = []
         threads = []
-        for i in range( main.numCtrls ):
+        for i in main.activeNodes:
             t = main.Thread( target=main.CLIs[i].setTestAdd,
                              name="setTestAddAll-" + str( i ),
                              args=[ onosSetName, addAllValue ] )
@@ -3622,7 +3662,7 @@ class HAminorityRestart:
         # main.FALSE = action resulted in no change in set
         # main.ERROR - Some error in executing the function
         addAllResults = main.TRUE
-        for i in range( main.numCtrls ):
+        for i in range( len( main.activeNodes ) ):
             if addResponses[ i ] == main.TRUE:
                 # All is well
                 pass
@@ -3642,7 +3682,7 @@ class HAminorityRestart:
         size = len( onosSet )
         getResponses = []
         threads = []
-        for i in range( main.numCtrls ):
+        for i in main.activeNodes:
             t = main.Thread( target=main.CLIs[i].setTestGet,
                              name="setTestGet-" + str( i ),
                              args=[ onosSetName ] )
@@ -3652,13 +3692,14 @@ class HAminorityRestart:
             t.join()
             getResponses.append( t.result )
         getResults = main.TRUE
-        for i in range( main.numCtrls ):
+        for i in range( len( main.activeNodes ) ):
+            node = str( main.activeNodes[i] + 1 )
             if isinstance( getResponses[ i ], list):
                 current = set( getResponses[ i ] )
                 if len( current ) == len( getResponses[ i ] ):
                     # no repeats
                     if onosSet != current:
-                        main.log.error( "ONOS" + str( i + 1 ) +
+                        main.log.error( "ONOS" + node +
                                         " has incorrect view" +
                                         " of set " + onosSetName + ":\n" +
                                         str( getResponses[ i ] ) )
@@ -3667,7 +3708,7 @@ class HAminorityRestart:
                         getResults = main.FALSE
                 else:
                     # error, set is not a set
-                    main.log.error( "ONOS" + str( i + 1 ) +
+                    main.log.error( "ONOS" + node +
                                     " has repeat elements in" +
                                     " set " + onosSetName + ":\n" +
                                     str( getResponses[ i ] ) )
@@ -3676,7 +3717,7 @@ class HAminorityRestart:
                 getResults = main.FALSE
         sizeResponses = []
         threads = []
-        for i in range( main.numCtrls ):
+        for i in main.activeNodes:
             t = main.Thread( target=main.CLIs[i].setTestSize,
                              name="setTestSize-" + str( i ),
                              args=[ onosSetName ] )
@@ -3686,10 +3727,11 @@ class HAminorityRestart:
             t.join()
             sizeResponses.append( t.result )
         sizeResults = main.TRUE
-        for i in range( main.numCtrls ):
+        for i in range( len( main.activeNodes ) ):
+            node = str( main.activeNodes[i] + 1 )
             if size != sizeResponses[ i ]:
                 sizeResults = main.FALSE
-                main.log.error( "ONOS" + str( i + 1 ) +
+                main.log.error( "ONOS" + node +
                                 " expected a size of " + str( size ) +
                                 " for set " + onosSetName +
                                 " but got " + str( sizeResponses[ i ] ) )
@@ -3702,7 +3744,7 @@ class HAminorityRestart:
         main.step( "Distributed Set contains()" )
         containsResponses = []
         threads = []
-        for i in range( main.numCtrls ):
+        for i in main.activeNodes:
             t = main.Thread( target=main.CLIs[i].setTestGet,
                              name="setContains-" + str( i ),
                              args=[ onosSetName ],
@@ -3715,7 +3757,7 @@ class HAminorityRestart:
             containsResponses.append( t.result )
 
         containsResults = main.TRUE
-        for i in range( main.numCtrls ):
+        for i in range( len( main.activeNodes ) ):
             if containsResponses[ i ] == main.ERROR:
                 containsResults = main.FALSE
             else:
@@ -3729,7 +3771,7 @@ class HAminorityRestart:
         main.step( "Distributed Set containsAll()" )
         containsAllResponses = []
         threads = []
-        for i in range( main.numCtrls ):
+        for i in main.activeNodes:
             t = main.Thread( target=main.CLIs[i].setTestGet,
                              name="setContainsAll-" + str( i ),
                              args=[ onosSetName ],
@@ -3742,7 +3784,7 @@ class HAminorityRestart:
             containsAllResponses.append( t.result )
 
         containsAllResults = main.TRUE
-        for i in range( main.numCtrls ):
+        for i in range( len( main.activeNodes ) ):
             if containsResponses[ i ] == main.ERROR:
                 containsResults = main.FALSE
             else:
@@ -3757,7 +3799,7 @@ class HAminorityRestart:
         onosSet.remove( addValue )
         removeResponses = []
         threads = []
-        for i in range( main.numCtrls ):
+        for i in main.activeNodes:
             t = main.Thread( target=main.CLIs[i].setTestRemove,
                              name="setTestRemove-" + str( i ),
                              args=[ onosSetName, addValue ] )
@@ -3771,7 +3813,7 @@ class HAminorityRestart:
         # main.FALSE = action resulted in no change in set
         # main.ERROR - Some error in executing the function
         removeResults = main.TRUE
-        for i in range( main.numCtrls ):
+        for i in range( len( main.activeNodes ) ):
             if removeResponses[ i ] == main.TRUE:
                 # All is well
                 pass
@@ -3791,7 +3833,7 @@ class HAminorityRestart:
         size = len( onosSet )
         getResponses = []
         threads = []
-        for i in range( main.numCtrls ):
+        for i in main.activeNodes:
             t = main.Thread( target=main.CLIs[i].setTestGet,
                              name="setTestGet-" + str( i ),
                              args=[ onosSetName ] )
@@ -3801,13 +3843,14 @@ class HAminorityRestart:
             t.join()
             getResponses.append( t.result )
         getResults = main.TRUE
-        for i in range( main.numCtrls ):
+        for i in range( len( main.activeNodes ) ):
+            node = str( main.activeNodes[i] + 1 )
             if isinstance( getResponses[ i ], list):
                 current = set( getResponses[ i ] )
                 if len( current ) == len( getResponses[ i ] ):
                     # no repeats
                     if onosSet != current:
-                        main.log.error( "ONOS" + str( i + 1 ) +
+                        main.log.error( "ONOS" + node +
                                         " has incorrect view" +
                                         " of set " + onosSetName + ":\n" +
                                         str( getResponses[ i ] ) )
@@ -3816,7 +3859,7 @@ class HAminorityRestart:
                         getResults = main.FALSE
                 else:
                     # error, set is not a set
-                    main.log.error( "ONOS" + str( i + 1 ) +
+                    main.log.error( "ONOS" + node +
                                     " has repeat elements in" +
                                     " set " + onosSetName + ":\n" +
                                     str( getResponses[ i ] ) )
@@ -3825,7 +3868,7 @@ class HAminorityRestart:
                 getResults = main.FALSE
         sizeResponses = []
         threads = []
-        for i in range( main.numCtrls ):
+        for i in main.activeNodes:
             t = main.Thread( target=main.CLIs[i].setTestSize,
                              name="setTestSize-" + str( i ),
                              args=[ onosSetName ] )
@@ -3835,10 +3878,11 @@ class HAminorityRestart:
             t.join()
             sizeResponses.append( t.result )
         sizeResults = main.TRUE
-        for i in range( main.numCtrls ):
+        for i in range( len( main.activeNodes ) ):
+            node = str( main.activeNodes[i] + 1 )
             if size != sizeResponses[ i ]:
                 sizeResults = main.FALSE
-                main.log.error( "ONOS" + str( i + 1 ) +
+                main.log.error( "ONOS" + node +
                                 " expected a size of " + str( size ) +
                                 " for set " + onosSetName +
                                 " but got " + str( sizeResponses[ i ] ) )
@@ -3853,7 +3897,7 @@ class HAminorityRestart:
         removeAllResponses = []
         threads = []
         try:
-            for i in range( main.numCtrls ):
+            for i in main.activeNodes:
                 t = main.Thread( target=main.CLIs[i].setTestRemove,
                                  name="setTestRemoveAll-" + str( i ),
                                  args=[ onosSetName, addAllValue ] )
@@ -3869,7 +3913,7 @@ class HAminorityRestart:
         # main.FALSE = action resulted in no change in set
         # main.ERROR - Some error in executing the function
         removeAllResults = main.TRUE
-        for i in range( main.numCtrls ):
+        for i in range( len( main.activeNodes ) ):
             if removeAllResponses[ i ] == main.TRUE:
                 # All is well
                 pass
@@ -3889,7 +3933,7 @@ class HAminorityRestart:
         size = len( onosSet )
         getResponses = []
         threads = []
-        for i in range( main.numCtrls ):
+        for i in main.activeNodes:
             t = main.Thread( target=main.CLIs[i].setTestGet,
                              name="setTestGet-" + str( i ),
                              args=[ onosSetName ] )
@@ -3899,13 +3943,14 @@ class HAminorityRestart:
             t.join()
             getResponses.append( t.result )
         getResults = main.TRUE
-        for i in range( main.numCtrls ):
+        for i in range( len( main.activeNodes ) ):
+            node = str( main.activeNodes[i] + 1 )
             if isinstance( getResponses[ i ], list):
                 current = set( getResponses[ i ] )
                 if len( current ) == len( getResponses[ i ] ):
                     # no repeats
                     if onosSet != current:
-                        main.log.error( "ONOS" + str( i + 1 ) +
+                        main.log.error( "ONOS" + node +
                                         " has incorrect view" +
                                         " of set " + onosSetName + ":\n" +
                                         str( getResponses[ i ] ) )
@@ -3914,7 +3959,7 @@ class HAminorityRestart:
                         getResults = main.FALSE
                 else:
                     # error, set is not a set
-                    main.log.error( "ONOS" + str( i + 1 ) +
+                    main.log.error( "ONOS" + node +
                                     " has repeat elements in" +
                                     " set " + onosSetName + ":\n" +
                                     str( getResponses[ i ] ) )
@@ -3923,7 +3968,7 @@ class HAminorityRestart:
                 getResults = main.FALSE
         sizeResponses = []
         threads = []
-        for i in range( main.numCtrls ):
+        for i in main.activeNodes:
             t = main.Thread( target=main.CLIs[i].setTestSize,
                              name="setTestSize-" + str( i ),
                              args=[ onosSetName ] )
@@ -3933,10 +3978,11 @@ class HAminorityRestart:
             t.join()
             sizeResponses.append( t.result )
         sizeResults = main.TRUE
-        for i in range( main.numCtrls ):
+        for i in range( len( main.activeNodes ) ):
+            node = str( main.activeNodes[i] + 1 )
             if size != sizeResponses[ i ]:
                 sizeResults = main.FALSE
-                main.log.error( "ONOS" + str( i + 1 ) +
+                main.log.error( "ONOS" + node +
                                 " expected a size of " + str( size ) +
                                 " for set " + onosSetName +
                                 " but got " + str( sizeResponses[ i ] ) )
@@ -3950,7 +3996,7 @@ class HAminorityRestart:
         onosSet.update( addAllValue.split() )
         addResponses = []
         threads = []
-        for i in range( main.numCtrls ):
+        for i in main.activeNodes:
             t = main.Thread( target=main.CLIs[i].setTestAdd,
                              name="setTestAddAll-" + str( i ),
                              args=[ onosSetName, addAllValue ] )
@@ -3964,7 +4010,7 @@ class HAminorityRestart:
         # main.FALSE = action resulted in no change in set
         # main.ERROR - Some error in executing the function
         addAllResults = main.TRUE
-        for i in range( main.numCtrls ):
+        for i in range( len( main.activeNodes ) ):
             if addResponses[ i ] == main.TRUE:
                 # All is well
                 pass
@@ -3984,7 +4030,7 @@ class HAminorityRestart:
         size = len( onosSet )
         getResponses = []
         threads = []
-        for i in range( main.numCtrls ):
+        for i in main.activeNodes:
             t = main.Thread( target=main.CLIs[i].setTestGet,
                              name="setTestGet-" + str( i ),
                              args=[ onosSetName ] )
@@ -3994,13 +4040,14 @@ class HAminorityRestart:
             t.join()
             getResponses.append( t.result )
         getResults = main.TRUE
-        for i in range( main.numCtrls ):
+        for i in range( len( main.activeNodes ) ):
+            node = str( main.activeNodes[i] + 1 )
             if isinstance( getResponses[ i ], list):
                 current = set( getResponses[ i ] )
                 if len( current ) == len( getResponses[ i ] ):
                     # no repeats
                     if onosSet != current:
-                        main.log.error( "ONOS" + str( i + 1 ) +
+                        main.log.error( "ONOS" + node +
                                         " has incorrect view" +
                                         " of set " + onosSetName + ":\n" +
                                         str( getResponses[ i ] ) )
@@ -4009,7 +4056,7 @@ class HAminorityRestart:
                         getResults = main.FALSE
                 else:
                     # error, set is not a set
-                    main.log.error( "ONOS" + str( i + 1 ) +
+                    main.log.error( "ONOS" + node +
                                     " has repeat elements in" +
                                     " set " + onosSetName + ":\n" +
                                     str( getResponses[ i ] ) )
@@ -4018,7 +4065,7 @@ class HAminorityRestart:
                 getResults = main.FALSE
         sizeResponses = []
         threads = []
-        for i in range( main.numCtrls ):
+        for i in main.activeNodes:
             t = main.Thread( target=main.CLIs[i].setTestSize,
                              name="setTestSize-" + str( i ),
                              args=[ onosSetName ] )
@@ -4028,10 +4075,11 @@ class HAminorityRestart:
             t.join()
             sizeResponses.append( t.result )
         sizeResults = main.TRUE
-        for i in range( main.numCtrls ):
+        for i in range( len( main.activeNodes ) ):
+            node = str( main.activeNodes[i] + 1 )
             if size != sizeResponses[ i ]:
                 sizeResults = main.FALSE
-                main.log.error( "ONOS" + str( i + 1 ) +
+                main.log.error( "ONOS" + node +
                                 " expected a size of " + str( size ) +
                                 " for set " + onosSetName +
                                 " but got " + str( sizeResponses[ i ] ) )
@@ -4045,7 +4093,7 @@ class HAminorityRestart:
         onosSet.clear()
         clearResponses = []
         threads = []
-        for i in range( main.numCtrls ):
+        for i in main.activeNodes:
             t = main.Thread( target=main.CLIs[i].setTestRemove,
                              name="setTestClear-" + str( i ),
                              args=[ onosSetName, " "],  # Values doesn't matter
@@ -4060,7 +4108,7 @@ class HAminorityRestart:
         # main.FALSE = action resulted in no change in set
         # main.ERROR - Some error in executing the function
         clearResults = main.TRUE
-        for i in range( main.numCtrls ):
+        for i in range( len( main.activeNodes ) ):
             if clearResponses[ i ] == main.TRUE:
                 # All is well
                 pass
@@ -4080,7 +4128,7 @@ class HAminorityRestart:
         size = len( onosSet )
         getResponses = []
         threads = []
-        for i in range( main.numCtrls ):
+        for i in main.activeNodes:
             t = main.Thread( target=main.CLIs[i].setTestGet,
                              name="setTestGet-" + str( i ),
                              args=[ onosSetName ] )
@@ -4090,13 +4138,14 @@ class HAminorityRestart:
             t.join()
             getResponses.append( t.result )
         getResults = main.TRUE
-        for i in range( main.numCtrls ):
+        for i in range( len( main.activeNodes ) ):
+            node = str( main.activeNodes[i] + 1 )
             if isinstance( getResponses[ i ], list):
                 current = set( getResponses[ i ] )
                 if len( current ) == len( getResponses[ i ] ):
                     # no repeats
                     if onosSet != current:
-                        main.log.error( "ONOS" + str( i + 1 ) +
+                        main.log.error( "ONOS" + node +
                                         " has incorrect view" +
                                         " of set " + onosSetName + ":\n" +
                                         str( getResponses[ i ] ) )
@@ -4105,7 +4154,7 @@ class HAminorityRestart:
                         getResults = main.FALSE
                 else:
                     # error, set is not a set
-                    main.log.error( "ONOS" + str( i + 1 ) +
+                    main.log.error( "ONOS" + node +
                                     " has repeat elements in" +
                                     " set " + onosSetName + ":\n" +
                                     str( getResponses[ i ] ) )
@@ -4114,7 +4163,7 @@ class HAminorityRestart:
                 getResults = main.FALSE
         sizeResponses = []
         threads = []
-        for i in range( main.numCtrls ):
+        for i in main.activeNodes:
             t = main.Thread( target=main.CLIs[i].setTestSize,
                              name="setTestSize-" + str( i ),
                              args=[ onosSetName ] )
@@ -4124,10 +4173,11 @@ class HAminorityRestart:
             t.join()
             sizeResponses.append( t.result )
         sizeResults = main.TRUE
-        for i in range( main.numCtrls ):
+        for i in range( len( main.activeNodes ) ):
+            node = str( main.activeNodes[i] + 1 )
             if size != sizeResponses[ i ]:
                 sizeResults = main.FALSE
-                main.log.error( "ONOS" + str( i + 1 ) +
+                main.log.error( "ONOS" + node +
                                 " expected a size of " + str( size ) +
                                 " for set " + onosSetName +
                                 " but got " + str( sizeResponses[ i ] ) )
@@ -4141,7 +4191,7 @@ class HAminorityRestart:
         onosSet.update( addAllValue.split() )
         addResponses = []
         threads = []
-        for i in range( main.numCtrls ):
+        for i in main.activeNodes:
             t = main.Thread( target=main.CLIs[i].setTestAdd,
                              name="setTestAddAll-" + str( i ),
                              args=[ onosSetName, addAllValue ] )
@@ -4155,7 +4205,7 @@ class HAminorityRestart:
         # main.FALSE = action resulted in no change in set
         # main.ERROR - Some error in executing the function
         addAllResults = main.TRUE
-        for i in range( main.numCtrls ):
+        for i in range( len( main.activeNodes ) ):
             if addResponses[ i ] == main.TRUE:
                 # All is well
                 pass
@@ -4175,7 +4225,7 @@ class HAminorityRestart:
         size = len( onosSet )
         getResponses = []
         threads = []
-        for i in range( main.numCtrls ):
+        for i in main.activeNodes:
             t = main.Thread( target=main.CLIs[i].setTestGet,
                              name="setTestGet-" + str( i ),
                              args=[ onosSetName ] )
@@ -4185,13 +4235,14 @@ class HAminorityRestart:
             t.join()
             getResponses.append( t.result )
         getResults = main.TRUE
-        for i in range( main.numCtrls ):
+        for i in range( len( main.activeNodes ) ):
+            node = str( main.activeNodes[i] + 1 )
             if isinstance( getResponses[ i ], list):
                 current = set( getResponses[ i ] )
                 if len( current ) == len( getResponses[ i ] ):
                     # no repeats
                     if onosSet != current:
-                        main.log.error( "ONOS" + str( i + 1 ) +
+                        main.log.error( "ONOS" + node +
                                         " has incorrect view" +
                                         " of set " + onosSetName + ":\n" +
                                         str( getResponses[ i ] ) )
@@ -4200,7 +4251,7 @@ class HAminorityRestart:
                         getResults = main.FALSE
                 else:
                     # error, set is not a set
-                    main.log.error( "ONOS" + str( i + 1 ) +
+                    main.log.error( "ONOS" + node +
                                     " has repeat elements in" +
                                     " set " + onosSetName + ":\n" +
                                     str( getResponses[ i ] ) )
@@ -4209,7 +4260,7 @@ class HAminorityRestart:
                 getResults = main.FALSE
         sizeResponses = []
         threads = []
-        for i in range( main.numCtrls ):
+        for i in main.activeNodes:
             t = main.Thread( target=main.CLIs[i].setTestSize,
                              name="setTestSize-" + str( i ),
                              args=[ onosSetName ] )
@@ -4219,10 +4270,11 @@ class HAminorityRestart:
             t.join()
             sizeResponses.append( t.result )
         sizeResults = main.TRUE
-        for i in range( main.numCtrls ):
+        for i in range( len( main.activeNodes ) ):
+            node = str( main.activeNodes[i] + 1 )
             if size != sizeResponses[ i ]:
                 sizeResults = main.FALSE
-                main.log.error( "ONOS" + str( i + 1 ) +
+                main.log.error( "ONOS" + node +
                                 " expected a size of " + str( size ) +
                                 " for set " + onosSetName +
                                 " but got " + str( sizeResponses[ i ] ) )
@@ -4236,7 +4288,7 @@ class HAminorityRestart:
         onosSet.intersection_update( retainValue.split() )
         retainResponses = []
         threads = []
-        for i in range( main.numCtrls ):
+        for i in main.activeNodes:
             t = main.Thread( target=main.CLIs[i].setTestRemove,
                              name="setTestRetain-" + str( i ),
                              args=[ onosSetName, retainValue ],
@@ -4251,7 +4303,7 @@ class HAminorityRestart:
         # main.FALSE = action resulted in no change in set
         # main.ERROR - Some error in executing the function
         retainResults = main.TRUE
-        for i in range( main.numCtrls ):
+        for i in range( len( main.activeNodes ) ):
             if retainResponses[ i ] == main.TRUE:
                 # All is well
                 pass
@@ -4271,7 +4323,7 @@ class HAminorityRestart:
         size = len( onosSet )
         getResponses = []
         threads = []
-        for i in range( main.numCtrls ):
+        for i in main.activeNodes:
             t = main.Thread( target=main.CLIs[i].setTestGet,
                              name="setTestGet-" + str( i ),
                              args=[ onosSetName ] )
@@ -4281,13 +4333,14 @@ class HAminorityRestart:
             t.join()
             getResponses.append( t.result )
         getResults = main.TRUE
-        for i in range( main.numCtrls ):
+        for i in range( len( main.activeNodes ) ):
+            node = str( main.activeNodes[i] + 1 )
             if isinstance( getResponses[ i ], list):
                 current = set( getResponses[ i ] )
                 if len( current ) == len( getResponses[ i ] ):
                     # no repeats
                     if onosSet != current:
-                        main.log.error( "ONOS" + str( i + 1 ) +
+                        main.log.error( "ONOS" + node +
                                         " has incorrect view" +
                                         " of set " + onosSetName + ":\n" +
                                         str( getResponses[ i ] ) )
@@ -4296,7 +4349,7 @@ class HAminorityRestart:
                         getResults = main.FALSE
                 else:
                     # error, set is not a set
-                    main.log.error( "ONOS" + str( i + 1 ) +
+                    main.log.error( "ONOS" + node +
                                     " has repeat elements in" +
                                     " set " + onosSetName + ":\n" +
                                     str( getResponses[ i ] ) )
@@ -4305,7 +4358,7 @@ class HAminorityRestart:
                 getResults = main.FALSE
         sizeResponses = []
         threads = []
-        for i in range( main.numCtrls ):
+        for i in main.activeNodes:
             t = main.Thread( target=main.CLIs[i].setTestSize,
                              name="setTestSize-" + str( i ),
                              args=[ onosSetName ] )
@@ -4315,11 +4368,11 @@ class HAminorityRestart:
             t.join()
             sizeResponses.append( t.result )
         sizeResults = main.TRUE
-        for i in range( main.numCtrls ):
+        for i in range( len( main.activeNodes ) ):
+            node = str( main.activeNodes[i] + 1 )
             if size != sizeResponses[ i ]:
                 sizeResults = main.FALSE
-                main.log.error( "ONOS" + str( i + 1 ) +
-                                " expected a size of " +
+                main.log.error( "ONOS" + node + " expected a size of " +
                                 str( size ) + " for set " + onosSetName +
                                 " but got " + str( sizeResponses[ i ] ) )
         retainResults = retainResults and getResults and sizeResults
@@ -4333,7 +4386,8 @@ class HAminorityRestart:
         tMapValue = "Testing"
         numKeys = 100
         putResult = True
-        putResponses = main.CLIs[ 0 ].transactionalMapPut( numKeys, tMapValue )
+        node = main.activeNodes[0]
+        putResponses = main.CLIs[node].transactionalMapPut( numKeys, tMapValue )
         if len( putResponses ) == 100:
             for i in putResponses:
                 if putResponses[ i ][ 'value' ] != tMapValue:
@@ -4353,10 +4407,10 @@ class HAminorityRestart:
             getResponses = []
             threads = []
             valueCheck = True
-            for i in range( main.numCtrls ):
+            for i in main.activeNodes:
                 t = main.Thread( target=main.CLIs[i].transactionalMapGet,
                                  name="TMap-get-" + str( i ),
-                                 args=[ "Key" + str ( n ) ] )
+                                 args=[ "Key" + str( n ) ] )
                 threads.append( t )
                 t.start()
             for t in threads:
@@ -4378,7 +4432,8 @@ class HAminorityRestart:
         tMapValue = "Testing"
         numKeys = 100
         putResult = True
-        putResponses = main.CLIs[ 0 ].transactionalMapPut( numKeys, tMapValue, inMemory=True )
+        node = main.activeNodes[0]
+        putResponses = main.CLIs[node].transactionalMapPut( numKeys, tMapValue, inMemory=True )
         if len( putResponses ) == 100:
             for i in putResponses:
                 if putResponses[ i ][ 'value' ] != tMapValue:
@@ -4398,10 +4453,10 @@ class HAminorityRestart:
             getResponses = []
             threads = []
             valueCheck = True
-            for i in range( main.numCtrls ):
+            for i in main.activeNodes:
                 t = main.Thread( target=main.CLIs[i].transactionalMapGet,
                                  name="TMap-get-" + str( i ),
-                                 args=[ "Key" + str ( n ) ],
+                                 args=[ "Key" + str( n ) ],
                                  kwargs={ "inMemory": True } )
                 threads.append( t )
                 t.start()

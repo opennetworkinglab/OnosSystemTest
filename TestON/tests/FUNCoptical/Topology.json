@@ -1,0 +1,4362 @@
+{
+    "devices": {
+        "of:0000ffffffffff4a": {
+            "basic": {
+                "name": "WPBHFLAN",
+                "optical.regens": 0,
+                "driver": "LINC-OE",
+                "mac": "ffffffffffff4a",
+                "longitude": -80.05278,
+                "mfr": "Linc",
+                "latitude": 26.709391,
+                "type": "ROADM"
+            }
+        },
+        "of:0000ffffffffff4b": {
+            "basic": {
+                "name": "AUSTTXGR",
+                "optical.regens": 0,
+                "driver": "LINC-OE",
+                "mac": "ffffffffffff4b",
+                "longitude": -96.7,
+                "mfr": "Linc",
+                "latitude": 29.57,
+                "type": "ROADM"
+            }
+        },
+        "of:0000ffffffffff44": {
+            "basic": {
+                "name": "TCSNAZMA",
+                "optical.regens": 0,
+                "driver": "LINC-OE",
+                "mac": "ffffffffffff44",
+                "longitude": -110.968333,
+                "mfr": "Linc",
+                "latitude": 32.224444,
+                "type": "ROADM"
+            }
+        },
+        "of:0000ffffffffff45": {
+            "basic": {
+                "name": "TLHSFLAT",
+                "optical.regens": 0,
+                "driver": "LINC-OE",
+                "mac": "ffffffffffff45",
+                "longitude": -84.290833,
+                "mfr": "Linc",
+                "latitude": 30.456389,
+                "type": "ROADM"
+            }
+        },
+        "of:0000ffffffffff46": {
+            "basic": {
+                "name": "TOLDOH21",
+                "optical.regens": 2,
+                "driver": "LINC-OE",
+                "mac": "ffffffffffff46",
+                "longitude": -83.538056,
+                "mfr": "Linc",
+                "latitude": 41.65,
+                "type": "ROADM"
+            }
+        },
+        "of:0000ffffffffff47": {
+            "basic": {
+                "name": "TULSOKTB",
+                "optical.regens": 0,
+                "driver": "LINC-OE",
+                "mac": "ffffffffffff47",
+                "longitude": -95.985832,
+                "mfr": "Linc",
+                "latitude": 36.151669,
+                "type": "ROADM"
+            }
+        },
+        "of:0000ffffffffff40": {
+            "basic": {
+                "name": "STLSMO09",
+                "optical.regens": 0,
+                "driver": "LINC-OE",
+                "mac": "ffffffffffff40",
+                "longitude": -90.215279,
+                "mfr": "Linc",
+                "latitude": 38.633335,
+                "type": "ROADM"
+            }
+        },
+        "of:0000ffffffffff41": {
+            "basic": {
+                "name": "STTLWA06",
+                "optical.regens": 0,
+                "driver": "LINC-OE",
+                "mac": "ffffffffffff41",
+                "longitude": -122.333336,
+                "mfr": "Linc",
+                "latitude": 47.606945,
+                "type": "ROADM"
+            }
+        },
+        "of:0000ffffffffff42": {
+            "basic": {
+                "name": "SYRCNYSU",
+                "optical.regens": 3,
+                "driver": "LINC-OE",
+                "mac": "ffffffffffff42",
+                "longitude": -76.1475,
+                "mfr": "Linc",
+                "latitude": 43.049444,
+                "type": "ROADM"
+            }
+        },
+        "of:0000ffffffffff43": {
+            "basic": {
+                "name": "TAMQFLFN",
+                "optical.regens": 0,
+                "driver": "LINC-OE",
+                "mac": "ffffffffffff43",
+                "longitude": -82.522778,
+                "mfr": "Linc",
+                "latitude": 28.0225,
+                "type": "ROADM"
+            }
+        },
+        "of:0000ffffffffff48": {
+            "basic": {
+                "name": "WASHDCSW",
+                "optical.regens": 0,
+                "driver": "LINC-OE",
+                "mac": "ffffffffffff48",
+                "longitude": -77.01028,
+                "mfr": "Linc",
+                "latitude": 38.88306,
+                "type": "ROADM"
+            }
+        },
+        "of:0000ffffffffff49": {
+            "basic": {
+                "name": "WLMGDE01",
+                "optical.regens": 0,
+                "driver": "LINC-OE",
+                "mac": "ffffffffffff49",
+                "longitude": -75.553889,
+                "mfr": "Linc",
+                "latitude": 39.739167,
+                "type": "ROADM"
+            }
+        },
+        "of:0000ffffff00000a": {
+            "basic": {
+                "mfr": "Linc",
+                "name": "DLLSTXTL-R",
+                "latitude": 32.7,
+                "driver": "PK",
+                "type": "SWITCH",
+                "mac": "eaf75c83054e",
+                "longitude": -96.7
+            }
+        },
+        "of:0000ffffff00000b": {
+            "basic": {
+                "mfr": "Linc",
+                "name": "ATLNGATL-R",
+                "latitude": 33.7,
+                "driver": "PK",
+                "type": "SWITCH",
+                "mac": "ee5628887b4f",
+                "longitude": -97.7
+            }
+        },
+        "of:0000ffffffffff1d": {
+            "basic": {
+                "name": "LSANCA03",
+                "optical.regens": 0,
+                "driver": "LINC-OE",
+                "mac": "ffffffffffff1d",
+                "longitude": -118.252958,
+                "mfr": "Linc",
+                "latitude": 34.051227,
+                "type": "ROADM"
+            }
+        },
+        "of:0000ffffffffff03": {
+            "basic": {
+                "name": "ALBYNYSS",
+                "optical.regens": 0,
+                "driver": "LINC-OE",
+                "mac": "ffffffffffff03",
+                "longitude": -73.758333,
+                "mfr": "Linc",
+                "latitude": 42.652222,
+                "type": "ROADM"
+            }
+        },
+        "of:0000ffffffffff0a": {
+            "basic": {
+                "name": "BTRGLAMA",
+                "optical.regens": 0,
+                "driver": "LINC-OE",
+                "mac": "ffffffffffff0a",
+                "longitude": -91.184167,
+                "mfr": "Linc",
+                "latitude": 30.449722,
+                "type": "ROADM"
+            }
+        },
+        "of:0000ffffffffff0b": {
+            "basic": {
+                "name": "CHCGILCL",
+                "optical.regens": 4,
+                "driver": "LINC-OE",
+                "mac": "ffffffffffff0b",
+                "longitude": -87.640432,
+                "mfr": "Linc",
+                "latitude": 41.881484,
+                "type": "ROADM"
+            }
+        },
+        "of:0000ffffffffff0c": {
+            "basic": {
+                "name": "CHRLNCCA",
+                "optical.regens": 0,
+                "driver": "LINC-OE",
+                "mac": "ffffffffffff0c",
+                "longitude": -80.837502,
+                "mfr": "Linc",
+                "latitude": 35.224924,
+                "type": "ROADM"
+            }
+        },
+        "of:0000ffffffffff0d": {
+            "basic": {
+                "name": "CHTNSCDT",
+                "optical.regens": 0,
+                "driver": "LINC-OE",
+                "mac": "ffffffffffff0d",
+                "longitude": -79.938056,
+                "mfr": "Linc",
+                "latitude": 32.785278,
+                "type": "ROADM"
+            }
+        },
+        "of:0000ffffffffff0e": {
+            "basic": {
+                "name": "CLEVOH02",
+                "optical.regens": 0,
+                "driver": "LINC-OE",
+                "mac": "ffffffffffff0e",
+                "longitude": -81.686943,
+                "mfr": "Linc",
+                "latitude": 41.498333,
+                "type": "ROADM"
+            }
+        },
+        "of:0000ffffffffff0f": {
+            "basic": {
+                "name": "CLMBOH11",
+                "optical.regens": 0,
+                "driver": "LINC-OE",
+                "mac": "ffffffffffff0f",
+                "longitude": -82.996666,
+                "mfr": "Linc",
+                "latitude": 39.965279,
+                "type": "ROADM"
+            }
+        },
+        "of:0000ffffff000008": {
+            "basic": {
+                "mfr": "Linc",
+                "name": "MPLSMNDT-R",
+                "latitude": 44.9,
+                "driver": "PK",
+                "type": "SWITCH",
+                "mac": "96d57fb4eb43",
+                "longitude": -93.2
+            }
+        },
+        "of:0000ffffff000009": {
+            "basic": {
+                "mfr": "Linc",
+                "name": "LSANCA03-R",
+                "latitude": 34.1,
+                "driver": "PK",
+                "type": "SWITCH",
+                "mac": "6ee9b704c04d",
+                "longitude": -118.3
+            }
+        },
+        "of:0000ffffffffff19": {
+            "basic": {
+                "name": "HSTNTX01",
+                "optical.regens": 0,
+                "driver": "LINC-OE",
+                "mac": "ffffffffffff19",
+                "longitude": -95.36528,
+                "mfr": "Linc",
+                "latitude": 29.748333,
+                "type": "ROADM"
+            }
+        },
+        "of:0000ffffffffff18": {
+            "basic": {
+                "name": "HRFRCT03",
+                "optical.regens": 0,
+                "driver": "LINC-OE",
+                "mac": "ffffffffffff18",
+                "longitude": -72.676389,
+                "mfr": "Linc",
+                "latitude": 41.765833,
+                "type": "ROADM"
+            }
+        },
+        "of:0000ffffffffff13": {
+            "basic": {
+                "name": "DNVRCOMA",
+                "optical.regens": 0,
+                "driver": "LINC-OE",
+                "mac": "ffffffffffff13",
+                "longitude": -104.996391,
+                "mfr": "Linc",
+                "latitude": 39.744999,
+                "type": "ROADM"
+            }
+        },
+        "of:0000ffffff000001": {
+            "basic": {
+                "mfr": "Linc",
+                "name": "WASHDCSW-R",
+                "latitude": 38.8,
+                "driver": "PK",
+                "type": "SWITCH",
+                "mac": "2221b5cb5c45",
+                "longitude": -77.0
+            }
+        },
+        "of:0000ffffff000002": {
+            "basic": {
+                "mfr": "Linc",
+                "name": "SNJSCA02-R",
+                "latitude": 37.3,
+                "driver": "PK",
+                "type": "SWITCH",
+                "mac": "f28c95ff6145",
+                "longitude": -121.8
+            }
+        },
+        "of:0000ffffffffff10": {
+            "basic": {
+                "name": "CMBRMA01",
+                "optical.regens": 0,
+                "driver": "LINC-OE",
+                "mac": "ffffffffffff10",
+                "longitude": -71.084918,
+                "mfr": "Linc",
+                "latitude": 42.36745,
+                "type": "ROADM"
+            }
+        },
+        "of:0000ffffffffff17": {
+            "basic": {
+                "name": "GNBONCEU",
+                "optical.regens": 0,
+                "driver": "LINC-OE",
+                "mac": "ffffffffffff17",
+                "longitude": -79.793889,
+                "mfr": "Linc",
+                "latitude": 36.072222,
+                "type": "ROADM"
+            }
+        },
+        "of:0000ffffff000005": {
+            "basic": {
+                "mfr": "Linc",
+                "name": "PHNXAZMA-R",
+                "latitude": 33.4,
+                "driver": "PK",
+                "type": "SWITCH",
+                "mac": "566c93367041",
+                "longitude": -112.0
+            }
+        },
+        "of:0000ffffffffff15": {
+            "basic": {
+                "name": "ELPSTXMA",
+                "optical.regens": 0,
+                "driver": "LINC-OE",
+                "mac": "ffffffffffff15",
+                "longitude": -106.483611,
+                "mfr": "Linc",
+                "latitude": 31.756389,
+                "type": "ROADM"
+            }
+        },
+        "of:0000ffffffffff14": {
+            "basic": {
+                "name": "DTRTMIBA",
+                "optical.regens": 5,
+                "driver": "LINC-OE",
+                "mac": "ffffffffffff14",
+                "longitude": -83.054169,
+                "mfr": "Linc",
+                "latitude": 42.332779,
+                "type": "ROADM"
+            }
+        },
+        "of:0000ffffffffff12": {
+            "basic": {
+                "name": "DLLSTXTL",
+                "optical.regens": 0,
+                "driver": "LINC-OE",
+                "mac": "ffffffffffff12",
+                "longitude": -96.780431,
+                "mfr": "Linc",
+                "latitude": 32.797524,
+                "type": "ROADM"
+            }
+        },
+        "of:0000ffffffffff11": {
+            "basic": {
+                "name": "CNCNOHWS",
+                "optical.regens": 0,
+                "driver": "LINC-OE",
+                "mac": "ffffffffffff11",
+                "longitude": -84.516944,
+                "mfr": "Linc",
+                "latitude": 39.102778,
+                "type": "ROADM"
+            }
+        },
+        "of:0000ffffff000003": {
+            "basic": {
+                "mfr": "Linc",
+                "name": "SNANTXCA-R",
+                "latitude": 29.4,
+                "driver": "PK",
+                "type": "SWITCH",
+                "mac": "c6463e3da348",
+                "longitude": -98.4
+            }
+        },
+        "of:0000ffffffffff1c": {
+            "basic": {
+                "name": "LGISLAND",
+                "optical.regens": 0,
+                "driver": "LINC-OE",
+                "mac": "ffffffffffff1c",
+                "longitude": -73.6699993,
+                "mfr": "Linc",
+                "latitude": 40.5899999,
+                "type": "ROADM"
+            }
+        },
+        "of:0000ffffff000004": {
+            "basic": {
+                "mfr": "Linc",
+                "name": "ROCHNYXA-R",
+                "latitude": 43.1,
+                "driver": "PK",
+                "type": "SWITCH",
+                "mac": "a2c8e539f440",
+                "longitude": -77.6
+            }
+        },
+        "of:0000ffffffffff1a": {
+            "basic": {
+                "name": "JCVLFLCL",
+                "optical.regens": 0,
+                "driver": "LINC-OE",
+                "mac": "ffffffffffff1a",
+                "longitude": -81.43,
+                "mfr": "Linc",
+                "latitude": 30.33071,
+                "type": "ROADM"
+            }
+        },
+        "of:0000ffffffffff1f": {
+            "basic": {
+                "name": "LSVLKYCS",
+                "optical.regens": 0,
+                "driver": "LINC-OE",
+                "mac": "ffffffffffff1f",
+                "longitude": -85.760833,
+                "mfr": "Linc",
+                "latitude": 38.249167,
+                "type": "ROADM"
+            }
+        },
+        "of:0000ffffffffff1e": {
+            "basic": {
+                "name": "LSVGNV02",
+                "optical.regens": 0,
+                "driver": "LINC-OE",
+                "mac": "ffffffffffff1e",
+                "longitude": -115.138889,
+                "mfr": "Linc",
+                "latitude": 36.168056,
+                "type": "ROADM"
+            }
+        },
+        "of:0000ffffffffff16": {
+            "basic": {
+                "name": "FRSNCA01",
+                "optical.regens": 0,
+                "driver": "LINC-OE",
+                "mac": "ffffffffffff16",
+                "longitude": -119.79423,
+                "mfr": "Linc",
+                "latitude": 36.73923,
+                "type": "ROADM"
+            }
+        },
+        "of:0000ffffffffff08": {
+            "basic": {
+                "name": "BRHMALMT",
+                "optical.regens": 0,
+                "driver": "LINC-OE",
+                "mac": "ffffffffffff08",
+                "longitude": -86.812225,
+                "mfr": "Linc",
+                "latitude": 33.517223,
+                "type": "ROADM"
+            }
+        },
+        "of:0000ffffffffff09": {
+            "basic": {
+                "name": "BSMRNDJC",
+                "optical.regens": 0,
+                "driver": "LINC-OE",
+                "mac": "ffffffffffff09",
+                "longitude": -100.796917,
+                "mfr": "Linc",
+                "latitude": 46.836379,
+                "type": "ROADM"
+            }
+        },
+        "of:0000ffffff000006": {
+            "basic": {
+                "mfr": "Linc",
+                "name": "ORLDFLMA-R",
+                "latitude": 28.5,
+                "driver": "PK",
+                "type": "SWITCH",
+                "mac": "bac54f68574f",
+                "longitude": -81.3
+            }
+        },
+        "of:0000ffffffffff01": {
+            "basic": {
+                "name": "ABLNTXRO",
+                "optical.regens": 0,
+                "driver": "LINC-OE",
+                "mac": "ffffffffffff01",
+                "longitude": -99.741564,
+                "mfr": "Linc",
+                "latitude": 32.508086,
+                "type": "ROADM"
+            }
+        },
+        "of:0000ffffffffff02": {
+            "basic": {
+                "name": "ALBQNMMA",
+                "optical.regens": 0,
+                "driver": "LINC-OE",
+                "mac": "ffffffffffff02",
+                "longitude": -106.649719,
+                "mfr": "Linc",
+                "latitude": 35.084446,
+                "type": "ROADM"
+            }
+        },
+        "of:0000ffffff000007": {
+            "basic": {
+                "mfr": "Linc",
+                "name": "NWRKNJ02-R",
+                "latitude": 40.7,
+                "driver": "PK",
+                "type": "SWITCH",
+                "mac": "1237bde27347",
+                "longitude": -74.1
+            }
+        },
+        "of:0000ffffffffff04": {
+            "basic": {
+                "name": "ATLNGATL",
+                "optical.regens": 5,
+                "driver": "LINC-OE",
+                "mac": "ffffffffffff04",
+                "longitude": -97.743057,
+                "mfr": "Linc",
+                "latitude": 33.755833,
+                "type": "ROADM"
+            }
+        },
+        "of:0000ffffffffff05": {
+            "basic": {
+                "name": "BFLONYFR",
+                "optical.regens": 0,
+                "driver": "LINC-OE",
+                "mac": "ffffffffffff05",
+                "longitude": -78.877778,
+                "mfr": "Linc",
+                "latitude": 42.882778,
+                "type": "ROADM"
+            }
+        },
+        "of:0000ffffffffff06": {
+            "basic": {
+                "name": "BLNGMTMA",
+                "optical.regens": 0,
+                "driver": "LINC-OE",
+                "mac": "ffffffffffff06",
+                "longitude": -108.509167,
+                "mfr": "Linc",
+                "latitude": 45.781667,
+                "type": "ROADM"
+            }
+        },
+        "of:0000ffffffffff07": {
+            "basic": {
+                "name": "BLTMMDCH",
+                "optical.regens": 0,
+                "driver": "LINC-OE",
+                "mac": "ffffffffffff07",
+                "longitude": -76.614127,
+                "mfr": "Linc",
+                "latitude": 39.293781,
+                "type": "ROADM"
+            }
+        },
+        "of:0000ffffffffff2b": {
+            "basic": {
+                "name": "OKLDCA03",
+                "optical.regens": 2,
+                "driver": "LINC-OE",
+                "mac": "ffffffffffff2b",
+                "longitude": -122.268889,
+                "mfr": "Linc",
+                "latitude": 37.805556,
+                "type": "ROADM"
+            }
+        },
+        "of:0000ffffffffff2c": {
+            "basic": {
+                "name": "OMAHNENW",
+                "optical.regens": 0,
+                "driver": "LINC-OE",
+                "mac": "ffffffffffff2c",
+                "longitude": -95.940277,
+                "mfr": "Linc",
+                "latitude": 41.259167,
+                "type": "ROADM"
+            }
+        },
+        "of:0000ffffffffff2a": {
+            "basic": {
+                "name": "OKCYOKCE",
+                "optical.regens": 0,
+                "driver": "LINC-OE",
+                "mac": "ffffffffffff2a",
+                "longitude": -97.515274,
+                "mfr": "Linc",
+                "latitude": 35.470833,
+                "type": "ROADM"
+            }
+        },
+        "of:0000ffffffffff2f": {
+            "basic": {
+                "name": "PHNXAZMA",
+                "optical.regens": 0,
+                "driver": "LINC-OE",
+                "mac": "ffffffffffff2f",
+                "longitude": -112.07709,
+                "mfr": "Linc",
+                "latitude": 33.450361,
+                "type": "ROADM"
+            }
+        },
+        "of:0000ffffffffff2d": {
+            "basic": {
+                "name": "ORLDFLMA",
+                "optical.regens": 0,
+                "driver": "LINC-OE",
+                "mac": "ffffffffffff2d",
+                "longitude": -81.377502,
+                "mfr": "Linc",
+                "latitude": 28.543279,
+                "type": "ROADM"
+            }
+        },
+        "of:0000ffffffffff2e": {
+            "basic": {
+                "name": "PHLAPASL",
+                "optical.regens": 0,
+                "driver": "LINC-OE",
+                "mac": "ffffffffffff2e",
+                "longitude": -75.184139,
+                "mfr": "Linc",
+                "latitude": 39.946446,
+                "type": "ROADM"
+            }
+        },
+        "of:0000ffffffffff39": {
+            "basic": {
+                "name": "SNANTXCA",
+                "optical.regens": 0,
+                "driver": "LINC-OE",
+                "mac": "ffffffffffff39",
+                "longitude": -98.488892,
+                "mfr": "Linc",
+                "latitude": 29.429445,
+                "type": "ROADM"
+            }
+        },
+        "of:0000ffffffffff38": {
+            "basic": {
+                "name": "SLKCUTMA",
+                "optical.regens": 0,
+                "driver": "LINC-OE",
+                "mac": "ffffffffffff38",
+                "longitude": -111.888336,
+                "mfr": "Linc",
+                "latitude": 40.767776,
+                "type": "ROADM"
+            }
+        },
+        "of:0000ffffffffff35": {
+            "basic": {
+                "name": "ROCHNYXA",
+                "optical.regens": 0,
+                "driver": "LINC-OE",
+                "mac": "ffffffffffff35",
+                "longitude": -77.616389,
+                "mfr": "Linc",
+                "latitude": 43.157222,
+                "type": "ROADM"
+            }
+        },
+        "of:0000ffffffffff34": {
+            "basic": {
+                "name": "RLGHNCMO",
+                "optical.regens": 0,
+                "driver": "LINC-OE",
+                "mac": "ffffffffffff34",
+                "longitude": -78.640831,
+                "mfr": "Linc",
+                "latitude": 35.779656,
+                "type": "ROADM"
+            }
+        },
+        "of:0000ffffffffff37": {
+            "basic": {
+                "name": "SCTNPA01",
+                "optical.regens": 0,
+                "driver": "LINC-OE",
+                "mac": "ffffffffffff37",
+                "longitude": -75.649167,
+                "mfr": "Linc",
+                "latitude": 41.415278,
+                "type": "ROADM"
+            }
+        },
+        "of:0000ffffffffff36": {
+            "basic": {
+                "name": "SCRMCA01",
+                "optical.regens": 0,
+                "driver": "LINC-OE",
+                "mac": "ffffffffffff36",
+                "longitude": -121.487221,
+                "mfr": "Linc",
+                "latitude": 38.578609,
+                "type": "ROADM"
+            }
+        },
+        "of:0000ffffffffff31": {
+            "basic": {
+                "name": "PRVDRIGR",
+                "optical.regens": 0,
+                "driver": "LINC-OE",
+                "mac": "ffffffffffff31",
+                "longitude": -71.415278,
+                "mfr": "Linc",
+                "latitude": 41.818889,
+                "type": "ROADM"
+            }
+        },
+        "of:0000ffffffffff30": {
+            "basic": {
+                "name": "PITBPADG",
+                "optical.regens": 0,
+                "driver": "LINC-OE",
+                "mac": "ffffffffffff30",
+                "longitude": -79.995552,
+                "mfr": "Linc",
+                "latitude": 40.441387,
+                "type": "ROADM"
+            }
+        },
+        "of:0000ffffffffff33": {
+            "basic": {
+                "name": "RCMDVAGR",
+                "optical.regens": 0,
+                "driver": "LINC-OE",
+                "mac": "ffffffffffff33",
+                "longitude": -77.436096,
+                "mfr": "Linc",
+                "latitude": 37.540752,
+                "type": "ROADM"
+            }
+        },
+        "of:0000ffffffffff32": {
+            "basic": {
+                "name": "PTLDOR62",
+                "optical.regens": 2,
+                "driver": "LINC-OE",
+                "mac": "ffffffffffff32",
+                "longitude": -122.678055,
+                "mfr": "Linc",
+                "latitude": 45.522499,
+                "type": "ROADM"
+            }
+        },
+        "of:0000ffffffffff22": {
+            "basic": {
+                "name": "MILWWIHE",
+                "optical.regens": 0,
+                "driver": "LINC-OE",
+                "mac": "ffffffffffff22",
+                "longitude": -87.922501,
+                "mfr": "Linc",
+                "latitude": 43.037224,
+                "type": "ROADM"
+            }
+        },
+        "of:0000ffffffffff23": {
+            "basic": {
+                "name": "MMPHTNMA",
+                "optical.regens": 0,
+                "driver": "LINC-OE",
+                "mac": "ffffffffffff23",
+                "longitude": -90.048058,
+                "mfr": "Linc",
+                "latitude": 35.145158,
+                "type": "ROADM"
+            }
+        },
+        "of:0000ffffffffff20": {
+            "basic": {
+                "name": "LTRKARFR",
+                "optical.regens": 2,
+                "driver": "LINC-OE",
+                "mac": "ffffffffffff20",
+                "longitude": -92.271942,
+                "mfr": "Linc",
+                "latitude": 34.740833,
+                "type": "ROADM"
+            }
+        },
+        "of:0000ffffffffff21": {
+            "basic": {
+                "name": "MIAMFLAC",
+                "optical.regens": 0,
+                "driver": "LINC-OE",
+                "mac": "ffffffffffff21",
+                "longitude": -80.195,
+                "mfr": "Linc",
+                "latitude": 25.779167,
+                "type": "ROADM"
+            }
+        },
+        "of:0000ffffffffff26": {
+            "basic": {
+                "name": "NSVLTNMT",
+                "optical.regens": 0,
+                "driver": "LINC-OE",
+                "mac": "ffffffffffff26",
+                "longitude": -86.775558,
+                "mfr": "Linc",
+                "latitude": 36.163955,
+                "type": "ROADM"
+            }
+        },
+        "of:0000ffffffffff27": {
+            "basic": {
+                "name": "NWORLAMA",
+                "optical.regens": 0,
+                "driver": "LINC-OE",
+                "mac": "ffffffffffff27",
+                "longitude": -90.07222,
+                "mfr": "Linc",
+                "latitude": 29.949806,
+                "type": "ROADM"
+            }
+        },
+        "of:0000ffffffffff24": {
+            "basic": {
+                "name": "MPLSMNDT",
+                "optical.regens": 0,
+                "driver": "LINC-OE",
+                "mac": "ffffffffffff24",
+                "longitude": -93.26718,
+                "mfr": "Linc",
+                "latitude": 44.977365,
+                "type": "ROADM"
+            }
+        },
+        "of:0000ffffffffff25": {
+            "basic": {
+                "name": "NRFLVABS",
+                "optical.regens": 0,
+                "driver": "LINC-OE",
+                "mac": "ffffffffffff25",
+                "longitude": -76.29,
+                "mfr": "Linc",
+                "latitude": 36.853333,
+                "type": "ROADM"
+            }
+        },
+        "of:0000ffffffffff28": {
+            "basic": {
+                "name": "NWRKNJ02",
+                "optical.regens": 0,
+                "driver": "LINC-OE",
+                "mac": "ffffffffffff28",
+                "longitude": -74.177978,
+                "mfr": "Linc",
+                "latitude": 40.734408,
+                "type": "ROADM"
+            }
+        },
+        "of:0000ffffffffff29": {
+            "basic": {
+                "name": "NYCMNY54",
+                "optical.regens": 0,
+                "driver": "LINC-OE",
+                "mac": "ffffffffffff29",
+                "longitude": -73.989713,
+                "mfr": "Linc",
+                "latitude": 40.767497,
+                "type": "ROADM"
+            }
+        },
+        "of:0000ffffffffff3e": {
+            "basic": {
+                "name": "SPFDILSD",
+                "optical.regens": 0,
+                "driver": "LINC-OE",
+                "mac": "ffffffffffff3e",
+                "longitude": -89.649444,
+                "mfr": "Linc",
+                "latitude": 39.795278,
+                "type": "ROADM"
+            }
+        },
+        "of:0000ffffffffff3d": {
+            "basic": {
+                "name": "SNJSCA02",
+                "optical.regens": 0,
+                "driver": "LINC-OE",
+                "mac": "ffffffffffff3d",
+                "longitude": -121.892778,
+                "mfr": "Linc",
+                "latitude": 37.333333,
+                "type": "ROADM"
+            }
+        },
+        "of:0000ffffffffff3f": {
+            "basic": {
+                "name": "SPKNWA01",
+                "optical.regens": 0,
+                "driver": "LINC-OE",
+                "mac": "ffffffffffff3f",
+                "longitude": -117.419167,
+                "mfr": "Linc",
+                "latitude": 47.654724,
+                "type": "ROADM"
+            }
+        },
+        "of:0000ffffffffff3a": {
+            "basic": {
+                "name": "SNBBCA01",
+                "optical.regens": 0,
+                "driver": "LINC-OE",
+                "mac": "ffffffffffff3a",
+                "longitude": -119.7,
+                "mfr": "Linc",
+                "latitude": 34.418889,
+                "type": "ROADM"
+            }
+        },
+        "of:0000ffffffffff3c": {
+            "basic": {
+                "name": "SNFCCA21",
+                "optical.regens": 0,
+                "driver": "LINC-OE",
+                "mac": "ffffffffffff3c",
+                "longitude": -122.397263,
+                "mfr": "Linc",
+                "latitude": 37.785143,
+                "type": "ROADM"
+            }
+        },
+        "of:0000ffffffffff3b": {
+            "basic": {
+                "name": "SNDGCA02",
+                "optical.regens": 0,
+                "driver": "LINC-OE",
+                "mac": "ffffffffffff3b",
+                "longitude": -117.158611,
+                "mfr": "Linc",
+                "latitude": 32.746944,
+                "type": "ROADM"
+            }
+        },
+        "of:0000ffffffffff1b": {
+            "basic": {
+                "name": "KSCYMO09",
+                "optical.regens": 0,
+                "driver": "LINC-OE",
+                "mac": "ffffffffffff1b",
+                "longitude": -94.578716,
+                "mfr": "Linc",
+                "latitude": 39.096649,
+                "type": "ROADM"
+            }
+        }
+    },
+    "links": {
+        "of:0000ffffff000006/6-of:0000ffffffffff2d/14": {
+            "basic": {
+                "bandwidth": 100000,
+                "type": "OPTICAL",
+                "durable": "true",
+                "optical.type": "cross-connect"
+            }
+        },
+        "of:0000ffffffffff1b/101-of:0000ffffffffff2c/106": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 320
+            }
+        },
+        "of:0000ffffffffff1f/102-of:0000ffffffffff40/108": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 468
+            }
+        },
+        "of:0000ffffff000001/4-of:0000ffffffffff48/12": {
+            "basic": {
+                "bandwidth": 100000,
+                "type": "OPTICAL",
+                "durable": "true",
+                "optical.type": "cross-connect"
+            }
+        },
+        "of:0000ffffffffff0f/101-of:0000ffffffffff30/107": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 312
+            }
+        },
+        "of:0000ffffffffff06/103-of:0000ffffffffff3f/105": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 852
+            }
+        },
+        "of:0000ffffffffff30/101-of:0000ffffffffff37/107": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 457
+            }
+        },
+        "of:0000ffffffffff02/103-of:0000ffffffffff1e/106": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 931
+            }
+        },
+        "of:0000ffffff00000a/6-of:0000ffffffffff12/14": {
+            "basic": {
+                "bandwidth": 100000,
+                "type": "OPTICAL",
+                "durable": "true",
+                "optical.type": "cross-connect"
+            }
+        },
+        "of:0000ffffffffff12/102-of:0000ffffffffff20/105": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 563
+            }
+        },
+        "of:0000ffffff000003/5-of:0000ffffffffff39/13": {
+            "basic": {
+                "bandwidth": 100000,
+                "type": "OPTICAL",
+                "durable": "true",
+                "optical.type": "cross-connect"
+            }
+        },
+        "of:0000ffffff000005/3-of:0000ffffffffff2f/11": {
+            "basic": {
+                "bandwidth": 100000,
+                "type": "OPTICAL",
+                "durable": "true",
+                "optical.type": "cross-connect"
+            }
+        },
+        "of:0000ffffffffff05/103-of:0000ffffffffff0e/106": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 333
+            }
+        },
+        "of:0000ffffffffff22/101-of:0000ffffffffff24/105": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 574
+            }
+        },
+        "of:0000ffffffffff0a/102-of:0000ffffffffff27/106": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 144
+            }
+        },
+        "of:0000ffffffffff02/100-of:0000ffffffffff12/107": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 1134
+            }
+        },
+        "of:0000ffffffffff04/102-of:0000ffffffffff0c/106": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 436
+            }
+        },
+        "of:0000ffffff00000a/4-of:0000ffffffffff12/12": {
+            "basic": {
+                "bandwidth": 100000,
+                "type": "OPTICAL",
+                "durable": "true",
+                "optical.type": "cross-connect"
+            }
+        },
+        "of:0000ffffffffff2d/101-of:0000ffffffffff4a/106": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 290
+            }
+        },
+        "of:0000ffffffffff13/101-of:0000ffffffffff2c/105": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 940
+            }
+        },
+        "of:0000ffffff000008/2-of:0000ffffffffff24/10": {
+            "basic": {
+                "bandwidth": 100000,
+                "type": "OPTICAL",
+                "durable": "true",
+                "optical.type": "cross-connect"
+            }
+        },
+        "of:0000ffffff000007/6-of:0000ffffffffff28/14": {
+            "basic": {
+                "bandwidth": 100000,
+                "type": "OPTICAL",
+                "durable": "true",
+                "optical.type": "cross-connect"
+            }
+        },
+        "of:0000ffffff000008/3-of:0000ffffffffff24/11": {
+            "basic": {
+                "bandwidth": 100000,
+                "type": "OPTICAL",
+                "durable": "true",
+                "optical.type": "cross-connect"
+            }
+        },
+        "of:0000ffffffffff14/101-of:0000ffffffffff46/106": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 103
+            }
+        },
+        "of:0000ffffff000002/3-of:0000ffffffffff3d/11": {
+            "basic": {
+                "bandwidth": 100000,
+                "type": "OPTICAL",
+                "durable": "true",
+                "optical.type": "cross-connect"
+            }
+        },
+        "of:0000ffffff000009/3-of:0000ffffffffff1d/11": {
+            "basic": {
+                "bandwidth": 100000,
+                "type": "OPTICAL",
+                "durable": "true",
+                "optical.type": "cross-connect"
+            }
+        },
+        "of:0000ffffffffff11/103-of:0000ffffffffff48/106": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 779
+            }
+        },
+        "of:0000ffffff000002/5-of:0000ffffffffff3d/13": {
+            "basic": {
+                "bandwidth": 100000,
+                "type": "OPTICAL",
+                "durable": "true",
+                "optical.type": "cross-connect"
+            }
+        },
+        "of:0000ffffffffff1b/103-of:0000ffffffffff47/106": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 420
+            }
+        },
+        "of:0000ffffffffff0d/101-of:0000ffffffffff1a/107": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 368
+            }
+        },
+        "of:0000ffffff000009/4-of:0000ffffffffff1d/12": {
+            "basic": {
+                "bandwidth": 100000,
+                "type": "OPTICAL",
+                "durable": "true",
+                "optical.type": "cross-connect"
+            }
+        },
+        "of:0000ffffffffff28/101-of:0000ffffffffff2e/105": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 146
+            }
+        },
+        "of:0000ffffffffff1f/104-of:0000ffffffffff26/107": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 298
+            }
+        },
+        "of:0000ffffffffff0e/102-of:0000ffffffffff46/101": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 185
+            }
+        },
+        "of:0000ffffff000005/4-of:0000ffffffffff2f/12": {
+            "basic": {
+                "bandwidth": 100000,
+                "type": "OPTICAL",
+                "durable": "true",
+                "optical.type": "cross-connect"
+            }
+        },
+        "of:0000ffffffffff0c/101-of:0000ffffffffff17/106": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 160
+            }
+        },
+        "of:0000ffffffffff18/101-of:0000ffffffffff1c/108": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 185
+            }
+        },
+        "of:0000ffffffffff06/101-of:0000ffffffffff09/105": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 724
+            }
+        },
+        "of:0000ffffff000009/5-of:0000ffffffffff1d/13": {
+            "basic": {
+                "bandwidth": 100000,
+                "type": "OPTICAL",
+                "durable": "true",
+                "optical.type": "cross-connect"
+            }
+        },
+        "of:0000ffffffffff17/101-of:0000ffffffffff1f/108": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 697
+            }
+        },
+        "of:0000ffffffffff16/102-of:0000ffffffffff1d/106": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 396
+            }
+        },
+        "of:0000ffffff00000a/2-of:0000ffffffffff12/10": {
+            "basic": {
+                "bandwidth": 100000,
+                "type": "OPTICAL",
+                "durable": "true",
+                "optical.type": "cross-connect"
+            }
+        },
+        "of:0000ffffffffff1c/101-of:0000ffffffffff29/106": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 40
+            }
+        },
+        "of:0000ffffff000006/4-of:0000ffffffffff2d/12": {
+            "basic": {
+                "bandwidth": 100000,
+                "type": "OPTICAL",
+                "durable": "true",
+                "optical.type": "cross-connect"
+            }
+        },
+        "of:0000ffffffffff08/102-of:0000ffffffffff27/105": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 602
+            }
+        },
+        "of:0000ffffffffff1d/102-of:0000ffffffffff3a/105": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 167
+            }
+        },
+        "of:0000ffffff00000a/5-of:0000ffffffffff12/13": {
+            "basic": {
+                "bandwidth": 100000,
+                "type": "OPTICAL",
+                "durable": "true",
+                "optical.type": "cross-connect"
+            }
+        },
+        "of:0000ffffff000001/3-of:0000ffffffffff48/11": {
+            "basic": {
+                "bandwidth": 100000,
+                "type": "OPTICAL",
+                "durable": "true",
+                "optical.type": "cross-connect"
+            }
+        },
+        "of:0000ffffffffff01/100-of:0000ffffffffff12/105": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 334
+            }
+        },
+        "of:0000ffffffffff1a/101-of:0000ffffffffff2d/105": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 238
+            }
+        },
+        "of:0000ffffff000004/6-of:0000ffffffffff35/14": {
+            "basic": {
+                "bandwidth": 100000,
+                "type": "OPTICAL",
+                "durable": "true",
+                "optical.type": "cross-connect"
+            }
+        },
+        "of:0000ffffffffff1e/102-of:0000ffffffffff38/106": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 701
+            }
+        },
+        "of:0000ffffff000008/6-of:0000ffffffffff24/14": {
+            "basic": {
+                "bandwidth": 100000,
+                "type": "OPTICAL",
+                "durable": "true",
+                "optical.type": "cross-connect"
+            }
+        },
+        "of:0000ffffff000004/4-of:0000ffffffffff35/12": {
+            "basic": {
+                "bandwidth": 100000,
+                "type": "OPTICAL",
+                "durable": "true",
+                "optical.type": "cross-connect"
+            }
+        },
+        "of:0000ffffff000002/2-of:0000ffffffffff3d/10": {
+            "basic": {
+                "bandwidth": 100000,
+                "type": "OPTICAL",
+                "durable": "true",
+                "optical.type": "cross-connect"
+            }
+        },
+        "of:0000ffffffffff03/101-of:0000ffffffffff42/106": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 239
+            }
+        },
+        "of:0000ffffffffff2e/101-of:0000ffffffffff37/106": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 201
+            }
+        },
+        "of:0000ffffffffff13/102-of:0000ffffffffff38/105": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 714
+            }
+        },
+        "of:0000ffffffffff07/101-of:0000ffffffffff2e/106": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 170
+            }
+        },
+        "of:0000ffffffffff16/103-of:0000ffffffffff2a/108": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 298
+            }
+        },
+        "of:0000ffffffffff3e/101-of:0000ffffffffff40/106": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 165
+            }
+        },
+        "of:0000ffffffffff02/101-of:0000ffffffffff13/106": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 646
+            }
+        },
+        "of:0000ffffff000002/6-of:0000ffffffffff3d/14": {
+            "basic": {
+                "bandwidth": 100000,
+                "type": "OPTICAL",
+                "durable": "true",
+                "optical.type": "cross-connect"
+            }
+        },
+        "of:0000ffffff000007/5-of:0000ffffffffff28/13": {
+            "basic": {
+                "bandwidth": 100000,
+                "type": "OPTICAL",
+                "durable": "true",
+                "optical.type": "cross-connect"
+            }
+        },
+        "of:0000ffffff000002/4-of:0000ffffffffff3d/12": {
+            "basic": {
+                "bandwidth": 100000,
+                "type": "OPTICAL",
+                "durable": "true",
+                "optical.type": "cross-connect"
+            }
+        },
+        "of:0000ffffffffff01/101-of:0000ffffffffff15/106": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 768
+            }
+        },
+        "of:0000ffffff000006/2-of:0000ffffffffff2d/10": {
+            "basic": {
+                "bandwidth": 100000,
+                "type": "OPTICAL",
+                "durable": "true",
+                "optical.type": "cross-connect"
+            }
+        },
+        "of:0000ffffffffff04/103-of:0000ffffffffff1a/105": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 566
+            }
+        },
+        "of:0000ffffffffff0e/101-of:0000ffffffffff0f/105": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 243
+            }
+        },
+        "of:0000ffffff000003/4-of:0000ffffffffff39/12": {
+            "basic": {
+                "bandwidth": 100000,
+                "type": "OPTICAL",
+                "durable": "true",
+                "optical.type": "cross-connect"
+            }
+        },
+        "of:0000ffffff000009/2-of:0000ffffffffff1d/10": {
+            "basic": {
+                "bandwidth": 100000,
+                "type": "OPTICAL",
+                "durable": "true",
+                "optical.type": "cross-connect"
+            }
+        },
+        "of:0000ffffffffff18/102-of:0000ffffffffff31/106": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 125
+            }
+        },
+        "of:0000ffffff000001/5-of:0000ffffffffff48/13": {
+            "basic": {
+                "bandwidth": 100000,
+                "type": "OPTICAL",
+                "durable": "true",
+                "optical.type": "cross-connect"
+            }
+        },
+        "of:0000ffffffffff11/102-of:0000ffffffffff1f/105": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 172
+            }
+        },
+        "of:0000ffffff00000b/6-of:0000ffffffffff04/14": {
+            "basic": {
+                "bandwidth": 100000,
+                "type": "OPTICAL",
+                "durable": "true",
+                "optical.type": "cross-connect"
+            }
+        },
+        "of:0000ffffffffff29/101-of:0000ffffffffff28/106": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 19
+            }
+        },
+        "of:0000ffffffffff12/101-of:0000ffffffffff19/107": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 437
+            }
+        },
+        "of:0000ffffffffff3d/101-of:0000ffffffffff3a/106": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 455
+            }
+        },
+        "of:0000ffffffffff2b/103-of:0000ffffffffff3c/105": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 13
+            }
+        },
+        "of:0000ffffffffff4b/101-of:0000ffffffffff19/106": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 283
+            }
+        },
+        "of:0000ffffffffff32/101-of:0000ffffffffff36/106": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 934
+            }
+        },
+        "of:0000ffffffffff12/103-of:0000ffffffffff2a/106": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 365
+            }
+        },
+        "of:0000ffffffffff0d/102-of:0000ffffffffff34/105": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 424
+            }
+        },
+        "of:0000ffffffffff29/103-of:0000ffffffffff49/106": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 210
+            }
+        },
+        "of:0000ffffffffff10/101-of:0000ffffffffff31/105": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 80
+            }
+        },
+        "of:0000ffffffffff1d/101-of:0000ffffffffff3b/105": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 212
+            }
+        },
+        "of:0000ffffffffff29/102-of:0000ffffffffff37/105": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 187
+            }
+        },
+        "of:0000ffffff00000a/3-of:0000ffffffffff12/11": {
+            "basic": {
+                "bandwidth": 100000,
+                "type": "OPTICAL",
+                "durable": "true",
+                "optical.type": "cross-connect"
+            }
+        },
+        "of:0000ffffffffff15/101-of:0000ffffffffff39/106": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 969
+            }
+        },
+        "of:0000ffffff000003/6-of:0000ffffffffff39/14": {
+            "basic": {
+                "bandwidth": 100000,
+                "type": "OPTICAL",
+                "durable": "true",
+                "optical.type": "cross-connect"
+            }
+        },
+        "of:0000ffffffffff1e/101-of:0000ffffffffff2f/105": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 494
+            }
+        },
+        "of:0000ffffffffff1b/102-of:0000ffffffffff40/105": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 457
+            }
+        },
+        "of:0000ffffff000001/2-of:0000ffffffffff48/10": {
+            "basic": {
+                "bandwidth": 100000,
+                "type": "OPTICAL",
+                "durable": "true",
+                "optical.type": "cross-connect"
+            }
+        },
+        "of:0000ffffffffff21/102-of:0000ffffffffff4a/105": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 125
+            }
+        },
+        "of:0000ffffff000003/3-of:0000ffffffffff39/11": {
+            "basic": {
+                "bandwidth": 100000,
+                "type": "OPTICAL",
+                "durable": "true",
+                "optical.type": "cross-connect"
+            }
+        },
+        "of:0000ffffffffff15/102-of:0000ffffffffff44/107": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 511
+            }
+        },
+        "of:0000ffffff000005/2-of:0000ffffffffff2f/10": {
+            "basic": {
+                "bandwidth": 100000,
+                "type": "OPTICAL",
+                "durable": "true",
+                "optical.type": "cross-connect"
+            }
+        },
+        "of:0000ffffffffff2b/102-of:0000ffffffffff38/107": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 1142
+            }
+        },
+        "of:0000ffffffffff0b/101-of:0000ffffffffff14/105": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 458
+            }
+        },
+        "of:0000ffffffffff45/101-of:0000ffffffffff43/106": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 384
+            }
+        },
+        "of:0000ffffffffff32/102-of:0000ffffffffff38/108": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 1225
+            }
+        },
+        "of:0000ffffffffff24/101-of:0000ffffffffff2c/107": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 560
+            }
+        },
+        "of:0000ffffff000006/3-of:0000ffffffffff2d/11": {
+            "basic": {
+                "bandwidth": 100000,
+                "type": "OPTICAL",
+                "durable": "true",
+                "optical.type": "cross-connect"
+            }
+        },
+        "of:0000ffffffffff3c/101-of:0000ffffffffff3d/105": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 80.0
+            }
+        },
+        "of:0000ffffffffff21/101-of:0000ffffffffff43/105": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 407
+            }
+        },
+        "of:0000ffffff000008/5-of:0000ffffffffff24/13": {
+            "basic": {
+                "bandwidth": 100000,
+                "type": "OPTICAL",
+                "durable": "true",
+                "optical.type": "cross-connect"
+            }
+        },
+        "of:0000ffffff000005/6-of:0000ffffffffff2f/14": {
+            "basic": {
+                "bandwidth": 100000,
+                "type": "OPTICAL",
+                "durable": "true",
+                "optical.type": "cross-connect"
+            }
+        },
+        "of:0000ffffffffff2f/102-of:0000ffffffffff44/106": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 205
+            }
+        },
+        "of:0000ffffff000007/3-of:0000ffffffffff28/11": {
+            "basic": {
+                "bandwidth": 100000,
+                "type": "OPTICAL",
+                "durable": "true",
+                "optical.type": "cross-connect"
+            }
+        },
+        "of:0000ffffffffff0a/101-of:0000ffffffffff19/105": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 491
+            }
+        },
+        "of:0000ffffffffff41/101-of:0000ffffffffff3f/107": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 442
+            }
+        },
+        "of:0000ffffffffff33/101-of:0000ffffffffff48/105": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 184
+            }
+        },
+        "of:0000ffffff000004/3-of:0000ffffffffff35/11": {
+            "basic": {
+                "bandwidth": 100000,
+                "type": "OPTICAL",
+                "durable": "true",
+                "optical.type": "cross-connect"
+            }
+        },
+        "of:0000ffffffffff2f/101-of:0000ffffffffff3b/106": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 575
+            }
+        },
+        "of:0000ffffff000006/5-of:0000ffffffffff2d/13": {
+            "basic": {
+                "bandwidth": 100000,
+                "type": "OPTICAL",
+                "durable": "true",
+                "optical.type": "cross-connect"
+            }
+        },
+        "of:0000ffffff00000b/3-of:0000ffffffffff04/11": {
+            "basic": {
+                "bandwidth": 100000,
+                "type": "OPTICAL",
+                "durable": "true",
+                "optical.type": "cross-connect"
+            }
+        },
+        "of:0000ffffff000009/6-of:0000ffffffffff1d/14": {
+            "basic": {
+                "bandwidth": 100000,
+                "type": "OPTICAL",
+                "durable": "true",
+                "optical.type": "cross-connect"
+            }
+        },
+        "of:0000ffffff000007/2-of:0000ffffffffff28/10": {
+            "basic": {
+                "bandwidth": 100000,
+                "type": "OPTICAL",
+                "durable": "true",
+                "optical.type": "cross-connect"
+            }
+        },
+        "of:0000ffffffffff17/103-of:0000ffffffffff33/106": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 319
+            }
+        },
+        "of:0000ffffffffff16/101-of:0000ffffffffff1f/106": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 505
+            }
+        },
+        "of:0000ffffffffff17/102-of:0000ffffffffff34/107": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 130
+            }
+        },
+        "of:0000ffffffffff2b/101-of:0000ffffffffff36/107": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 131
+            }
+        },
+        "of:0000ffffffffff03/100-of:0000ffffffffff10/105": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 265
+            }
+        },
+        "of:0000ffffffffff04/101-of:0000ffffffffff08/105": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 271
+            }
+        },
+        "of:0000ffffffffff07/103-of:0000ffffffffff46/107": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 68
+            }
+        },
+        "of:0000ffffffffff0b/102-of:0000ffffffffff22/106": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 156
+            }
+        },
+        "of:0000ffffffffff20/101-of:0000ffffffffff23/105": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 249
+            }
+        },
+        "of:0000ffffff00000b/2-of:0000ffffffffff04/10": {
+            "basic": {
+                "bandwidth": 100000,
+                "type": "OPTICAL",
+                "durable": "true",
+                "optical.type": "cross-connect"
+            }
+        },
+        "of:0000ffffffffff25/102-of:0000ffffffffff49/107": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 392
+            }
+        },
+        "of:0000ffffffffff09/101-of:0000ffffffffff24/106": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 741
+            }
+        },
+        "of:0000ffffffffff2a/101-of:0000ffffffffff47/107": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 188
+            }
+        },
+        "of:0000ffffff000003/2-of:0000ffffffffff39/10": {
+            "basic": {
+                "bandwidth": 100000,
+                "type": "OPTICAL",
+                "durable": "true",
+                "optical.type": "cross-connect"
+            }
+        },
+        "of:0000ffffffffff11/101-of:0000ffffffffff0f/106": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 194
+            }
+        },
+        "of:0000ffffffffff35/101-of:0000ffffffffff42/107": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 143
+            }
+        },
+        "of:0000ffffff000005/5-of:0000ffffffffff2f/13": {
+            "basic": {
+                "bandwidth": 100000,
+                "type": "OPTICAL",
+                "durable": "true",
+                "optical.type": "cross-connect"
+            }
+        },
+        "of:0000ffffff00000b/5-of:0000ffffffffff04/13": {
+            "basic": {
+                "bandwidth": 100000,
+                "type": "OPTICAL",
+                "durable": "true",
+                "optical.type": "cross-connect"
+            }
+        },
+        "of:0000ffffffffff25/101-of:0000ffffffffff34/106": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 290
+            }
+        },
+        "of:0000ffffffffff32/103-of:0000ffffffffff41/106": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 280
+            }
+        },
+        "of:0000ffffff000008/4-of:0000ffffffffff24/12": {
+            "basic": {
+                "bandwidth": 100000,
+                "type": "OPTICAL",
+                "durable": "true",
+                "optical.type": "cross-connect"
+            }
+        },
+        "of:0000ffffffffff02/102-of:0000ffffffffff15/107": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 444
+            }
+        },
+        "of:0000ffffffffff0b/103-of:0000ffffffffff3e/105": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 344
+            }
+        },
+        "of:0000ffffffffff07/102-of:0000ffffffffff30/105": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 378
+            }
+        },
+        "of:0000ffffffffff4b/102-of:0000ffffffffff39/105": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 141
+            }
+        },
+        "of:0000ffffffffff23/101-of:0000ffffffffff26/105": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 380
+            }
+        },
+        "of:0000ffffff00000b/4-of:0000ffffffffff04/12": {
+            "basic": {
+                "bandwidth": 100000,
+                "type": "OPTICAL",
+                "durable": "true",
+                "optical.type": "cross-connect"
+            }
+        },
+        "of:0000ffffffffff08/101-of:0000ffffffffff26/106": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 353
+            }
+        },
+        "of:0000ffffffffff27/101-of:0000ffffffffff45/105": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 670
+            }
+        },
+        "of:0000ffffff000004/2-of:0000ffffffffff35/10": {
+            "basic": {
+                "bandwidth": 100000,
+                "type": "OPTICAL",
+                "durable": "true",
+                "optical.type": "cross-connect"
+            }
+        },
+        "of:0000ffffff000001/6-of:0000ffffffffff48/14": {
+            "basic": {
+                "bandwidth": 100000,
+                "type": "OPTICAL",
+                "durable": "true",
+                "optical.type": "cross-connect"
+            }
+        },
+        "of:0000ffffffffff05/104-of:0000ffffffffff35/105": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 128
+            }
+        },
+        "of:0000ffffffffff37/101-of:0000ffffffffff42/105": {
+            "basic": {
+                "optical.waves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 223
+            }
+        },
+        "of:0000ffffff000004/5-of:0000ffffffffff35/13": {
+            "basic": {
+                "bandwidth": 100000,
+                "type": "OPTICAL",
+                "durable": "true",
+                "optical.type": "cross-connect"
+            }
+        },
+        "of:0000ffffff000007/4-of:0000ffffffffff28/12": {
+            "basic": {
+                "bandwidth": 100000,
+                "type": "OPTICAL",
+                "durable": "true",
+                "optical.type": "cross-connect"
+            }
+        },
+        "of:0000ffffffffff06/102-of:0000ffffffffff13/107": {
+            "basic": {
+                "optical.wves": 80,
+                "durable": "true",
+                "type": "OPTICAL",
+                "optical.type": "WDM",
+                "optical.kms": 875
+            }
+        }
+    },
+    "ports": {
+        "of:0000ffffffffff27/106": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 106
+            }
+        },
+        "of:0000ffffffffff3b/106": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 106
+            }
+        },
+        "of:0000ffffffffff3b/105": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 105
+            }
+        },
+        "of:0000ffffff00000b/7": {
+            "optical": {
+                "speed": 0,
+                "type": "COPPER",
+                "port": 7
+            }
+        },
+        "of:0000ffffffffff32/103": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 103
+            }
+        },
+        "of:0000ffffffffff22/106": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 106
+            }
+        },
+        "of:0000ffffffffff4b/101": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 101
+            }
+        },
+        "of:0000ffffffffff22/101": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 101
+            }
+        },
+        "of:0000ffffffffff2f/12": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 12
+            }
+        },
+        "of:0000ffffffffff03/101": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 101
+            }
+        },
+        "of:0000ffffffffff03/100": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 100
+            }
+        },
+        "of:0000ffffffffff38/105": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 105
+            }
+        },
+        "of:0000ffffffffff32/101": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 101
+            }
+        },
+        "of:0000ffffffffff38/107": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 107
+            }
+        },
+        "of:0000ffffffffff38/106": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 106
+            }
+        },
+        "of:0000ffffffffff38/108": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 108
+            }
+        },
+        "of:0000ffffffffff1e/106": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 106
+            }
+        },
+        "of:0000ffffff000008/8": {
+            "optical": {
+                "speed": 0,
+                "type": "COPPER",
+                "port": 8
+            }
+        },
+        "of:0000ffffffffff3d/12": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 12
+            }
+        },
+        "of:0000ffffffffff3d/13": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 13
+            }
+        },
+        "of:0000ffffffffff1e/102": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 102
+            }
+        },
+        "of:0000ffffffffff3d/11": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 11
+            }
+        },
+        "of:0000ffffffffff3f/105": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 105
+            }
+        },
+        "of:0000ffffffffff1e/101": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 101
+            }
+        },
+        "of:0000ffffffffff42/106": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 106
+            }
+        },
+        "of:0000ffffffffff42/107": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 107
+            }
+        },
+        "of:0000ffffffffff42/105": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 105
+            }
+        },
+        "of:0000ffffffffff41/101": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 101
+            }
+        },
+        "of:0000ffffffffff39/105": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 105
+            }
+        },
+        "of:0000ffffffffff39/106": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 106
+            }
+        },
+        "of:0000ffffffffff35/105": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 105
+            }
+        },
+        "of:0000ffffff000009/9": {
+            "optical": {
+                "speed": 0,
+                "type": "COPPER",
+                "port": 9
+            }
+        },
+        "of:0000ffffffffff49/107": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 107
+            }
+        },
+        "of:0000ffffffffff49/106": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 106
+            }
+        },
+        "of:0000ffffffffff2f/101": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 101
+            }
+        },
+        "of:0000ffffffffff24/10": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 10
+            }
+        },
+        "of:0000ffffffffff46/107": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 107
+            }
+        },
+        "of:0000ffffffffff27/105": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 105
+            }
+        },
+        "of:0000ffffffffff43/106": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 106
+            }
+        },
+        "of:0000ffffffffff43/105": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 105
+            }
+        },
+        "of:0000ffffffffff35/101": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 101
+            }
+        },
+        "of:0000ffffffffff04/13": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 13
+            }
+        },
+        "of:0000ffffffffff04/12": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 12
+            }
+        },
+        "of:0000ffffffffff04/11": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 11
+            }
+        },
+        "of:0000ffffffffff04/10": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 10
+            }
+        },
+        "of:0000ffffffffff36/107": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 107
+            }
+        },
+        "of:0000ffffffffff36/106": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 106
+            }
+        },
+        "of:0000ffffffffff04/14": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 14
+            }
+        },
+        "of:0000ffffffffff35/14": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 14
+            }
+        },
+        "of:0000ffffffffff28/106": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 106
+            }
+        },
+        "of:0000ffffffffff17/101": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 101
+            }
+        },
+        "of:0000ffffffffff17/102": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 102
+            }
+        },
+        "of:0000ffffffffff17/103": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 103
+            }
+        },
+        "of:0000ffffffffff47/107": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 107
+            }
+        },
+        "of:0000ffffffffff47/106": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 106
+            }
+        },
+        "of:0000ffffffffff17/106": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 106
+            }
+        },
+        "of:0000ffffffffff20/105": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 105
+            }
+        },
+        "of:0000ffffffffff14/105": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 105
+            }
+        },
+        "of:0000ffffff000005/9": {
+            "optical": {
+                "speed": 0,
+                "type": "COPPER",
+                "port": 9
+            }
+        },
+        "of:0000ffffffffff1d/12": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 12
+            }
+        },
+        "of:0000ffffffffff1d/13": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 13
+            }
+        },
+        "of:0000ffffffffff14/101": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 101
+            }
+        },
+        "of:0000ffffffffff1d/11": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 11
+            }
+        },
+        "of:0000ffffffffff18/102": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 102
+            }
+        },
+        "of:0000ffffffffff18/101": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 101
+            }
+        },
+        "of:0000ffffffffff35/10": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 10
+            }
+        },
+        "of:0000ffffffffff2b/101": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 101
+            }
+        },
+        "of:0000ffffffffff2b/102": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 102
+            }
+        },
+        "of:0000ffffffffff2a/106": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 106
+            }
+        },
+        "of:0000ffffffffff39/13": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 13
+            }
+        },
+        "of:0000ffffff000006/9": {
+            "optical": {
+                "speed": 0,
+                "type": "COPPER",
+                "port": 9
+            }
+        },
+        "of:0000ffffff000006/8": {
+            "optical": {
+                "speed": 0,
+                "type": "COPPER",
+                "port": 8
+            }
+        },
+        "of:0000ffffffffff1d/14": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 14
+            }
+        },
+        "of:0000ffffffffff39/12": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 12
+            }
+        },
+        "of:0000ffffffffff16/101": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 101
+            }
+        },
+        "of:0000ffffffffff16/103": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 103
+            }
+        },
+        "of:0000ffffffffff16/102": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 102
+            }
+        },
+        "of:0000ffffffffff15/106": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 106
+            }
+        },
+        "of:0000ffffffffff15/107": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 107
+            }
+        },
+        "of:0000ffffffffff15/102": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 102
+            }
+        },
+        "of:0000ffffffffff15/101": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 101
+            }
+        },
+        "of:0000ffffffffff48/105": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 105
+            }
+        },
+        "of:0000ffffff00000a/8": {
+            "optical": {
+                "speed": 0,
+                "type": "COPPER",
+                "port": 8
+            }
+        },
+        "of:0000ffffff00000a/9": {
+            "optical": {
+                "speed": 0,
+                "type": "COPPER",
+                "port": 9
+            }
+        },
+        "of:0000ffffffffff3c/105": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 105
+            }
+        },
+        "of:0000ffffffffff3c/101": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 101
+            }
+        },
+        "of:0000ffffffffff23/105": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 105
+            }
+        },
+        "of:0000ffffffffff04/101": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 101
+            }
+        },
+        "of:0000ffffffffff04/102": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 102
+            }
+        },
+        "of:0000ffffffffff04/103": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 103
+            }
+        },
+        "of:0000ffffffffff23/101": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 101
+            }
+        },
+        "of:0000ffffffffff1c/101": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 101
+            }
+        },
+        "of:0000ffffffffff33/106": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 106
+            }
+        },
+        "of:0000ffffffffff07/103": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 103
+            }
+        },
+        "of:0000ffffffffff07/102": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 102
+            }
+        },
+        "of:0000ffffffffff07/101": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 101
+            }
+        },
+        "of:0000ffffffffff3d/10": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 10
+            }
+        },
+        "of:0000ffffffffff40/105": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 105
+            }
+        },
+        "of:0000ffffffffff2e/106": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 106
+            }
+        },
+        "of:0000ffffffffff2e/105": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 105
+            }
+        },
+        "of:0000ffffffffff35/12": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 12
+            }
+        },
+        "of:0000ffffffffff2e/101": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 101
+            }
+        },
+        "of:0000ffffffffff3a/105": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 105
+            }
+        },
+        "of:0000ffffffffff2d/14": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 14
+            }
+        },
+        "of:0000ffffffffff2d/11": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 11
+            }
+        },
+        "of:0000ffffffffff2d/10": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 10
+            }
+        },
+        "of:0000ffffffffff2d/13": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 13
+            }
+        },
+        "of:0000ffffffffff2d/12": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 12
+            }
+        },
+        "of:0000ffffffffff05/103": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 103
+            }
+        },
+        "of:0000ffffffffff05/104": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 104
+            }
+        },
+        "of:0000ffffffffff24/14": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 14
+            }
+        },
+        "of:0000ffffffffff13/106": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 106
+            }
+        },
+        "of:0000ffffffffff13/107": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 107
+            }
+        },
+        "of:0000ffffffffff06/102": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 102
+            }
+        },
+        "of:0000ffffffffff13/101": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 101
+            }
+        },
+        "of:0000ffffffffff13/102": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 102
+            }
+        },
+        "of:0000ffffffffff06/101": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 101
+            }
+        },
+        "of:0000ffffff000007/8": {
+            "optical": {
+                "speed": 0,
+                "type": "COPPER",
+                "port": 8
+            }
+        },
+        "of:0000ffffff000007/9": {
+            "optical": {
+                "speed": 0,
+                "type": "COPPER",
+                "port": 9
+            }
+        },
+        "of:0000ffffffffff48/106": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 106
+            }
+        },
+        "of:0000ffffffffff44/107": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 107
+            }
+        },
+        "of:0000ffffffffff44/106": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 106
+            }
+        },
+        "of:0000ffffffffff35/13": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 13
+            }
+        },
+        "of:0000ffffffffff46/101": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 101
+            }
+        },
+        "of:0000ffffffffff46/106": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 106
+            }
+        },
+        "of:0000ffffffffff31/105": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 105
+            }
+        },
+        "of:0000ffffffffff31/106": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 106
+            }
+        },
+        "of:0000ffffffffff12/105": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 105
+            }
+        },
+        "of:0000ffffffffff12/107": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 107
+            }
+        },
+        "of:0000ffffffffff2d/105": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 105
+            }
+        },
+        "of:0000ffffffffff12/101": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 101
+            }
+        },
+        "of:0000ffffffffff32/102": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 102
+            }
+        },
+        "of:0000ffffffffff12/103": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 103
+            }
+        },
+        "of:0000ffffffffff12/102": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 102
+            }
+        },
+        "of:0000ffffffffff0d/101": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 101
+            }
+        },
+        "of:0000ffffffffff0d/102": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 102
+            }
+        },
+        "of:0000ffffffffff48/14": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 14
+            }
+        },
+        "of:0000ffffffffff19/106": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 106
+            }
+        },
+        "of:0000ffffffffff19/107": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 107
+            }
+        },
+        "of:0000ffffffffff19/105": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 105
+            }
+        },
+        "of:0000ffffffffff29/103": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 103
+            }
+        },
+        "of:0000ffffffffff29/102": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 102
+            }
+        },
+        "of:0000ffffffffff29/101": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 101
+            }
+        },
+        "of:0000ffffffffff28/101": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 101
+            }
+        },
+        "of:0000ffffffffff0a/101": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 101
+            }
+        },
+        "of:0000ffffffffff29/106": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 106
+            }
+        },
+        "of:0000ffffffffff35/11": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 11
+            }
+        },
+        "of:0000ffffffffff0a/102": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 102
+            }
+        },
+        "of:0000ffffffffff30/101": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 101
+            }
+        },
+        "of:0000ffffff000004/7": {
+            "optical": {
+                "speed": 0,
+                "type": "COPPER",
+                "port": 7
+            }
+        },
+        "of:0000ffffffffff39/11": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 11
+            }
+        },
+        "of:0000ffffffffff39/10": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 10
+            }
+        },
+        "of:0000ffffffffff30/105": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 105
+            }
+        },
+        "of:0000ffffffffff30/107": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 107
+            }
+        },
+        "of:0000ffffffffff39/14": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 14
+            }
+        },
+        "of:0000ffffffffff12/10": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 10
+            }
+        },
+        "of:0000ffffffffff12/11": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 11
+            }
+        },
+        "of:0000ffffffffff12/12": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 12
+            }
+        },
+        "of:0000ffffffffff12/13": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 13
+            }
+        },
+        "of:0000ffffffffff12/14": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 14
+            }
+        },
+        "of:0000ffffffffff1d/10": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 10
+            }
+        },
+        "of:0000ffffffffff33/101": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 101
+            }
+        },
+        "of:0000ffffffffff2c/105": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 105
+            }
+        },
+        "of:0000ffffffffff48/12": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 12
+            }
+        },
+        "of:0000ffffffffff2c/107": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 107
+            }
+        },
+        "of:0000ffffffffff2c/106": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 106
+            }
+        },
+        "of:0000ffffffffff2d/101": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 101
+            }
+        },
+        "of:0000ffffffffff28/11": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 11
+            }
+        },
+        "of:0000ffffffffff28/10": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 10
+            }
+        },
+        "of:0000ffffffffff28/13": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 13
+            }
+        },
+        "of:0000ffffffffff28/12": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 12
+            }
+        },
+        "of:0000ffffffffff28/14": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 14
+            }
+        },
+        "of:0000ffffffffff45/105": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 105
+            }
+        },
+        "of:0000ffffffffff3d/14": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 14
+            }
+        },
+        "of:0000ffffffffff45/101": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 101
+            }
+        },
+        "of:0000ffffff000004/9": {
+            "optical": {
+                "speed": 0,
+                "type": "COPPER",
+                "port": 9
+            }
+        },
+        "of:0000ffffff000004/8": {
+            "optical": {
+                "speed": 0,
+                "type": "COPPER",
+                "port": 8
+            }
+        },
+        "of:0000ffffffffff01/101": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 101
+            }
+        },
+        "of:0000ffffffffff01/100": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 100
+            }
+        },
+        "of:0000ffffff000001/8": {
+            "optical": {
+                "speed": 0,
+                "type": "COPPER",
+                "port": 8
+            }
+        },
+        "of:0000ffffff000005/8": {
+            "optical": {
+                "speed": 0,
+                "type": "COPPER",
+                "port": 8
+            }
+        },
+        "of:0000ffffff000005/7": {
+            "optical": {
+                "speed": 0,
+                "type": "COPPER",
+                "port": 7
+            }
+        },
+        "of:0000ffffffffff27/101": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 101
+            }
+        },
+        "of:0000ffffff000007/7": {
+            "optical": {
+                "speed": 0,
+                "type": "COPPER",
+                "port": 7
+            }
+        },
+        "of:0000ffffffffff1b/101": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 101
+            }
+        },
+        "of:0000ffffffffff1b/103": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 103
+            }
+        },
+        "of:0000ffffffffff1b/102": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 102
+            }
+        },
+        "of:0000ffffffffff24/11": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 11
+            }
+        },
+        "of:0000ffffffffff2b/103": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 103
+            }
+        },
+        "of:0000ffffffffff06/103": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 103
+            }
+        },
+        "of:0000ffffffffff11/102": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 102
+            }
+        },
+        "of:0000ffffffffff11/103": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 103
+            }
+        },
+        "of:0000ffffffffff11/101": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 101
+            }
+        },
+        "of:0000ffffffffff24/13": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 13
+            }
+        },
+        "of:0000ffffff000002/8": {
+            "optical": {
+                "speed": 0,
+                "type": "COPPER",
+                "port": 8
+            }
+        },
+        "of:0000ffffffffff08/105": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 105
+            }
+        },
+        "of:0000ffffffffff2a/101": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 101
+            }
+        },
+        "of:0000ffffffffff24/12": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 12
+            }
+        },
+        "of:0000ffffffffff08/101": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 101
+            }
+        },
+        "of:0000ffffffffff08/102": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 102
+            }
+        },
+        "of:0000ffffffffff0b/102": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 102
+            }
+        },
+        "of:0000ffffffffff0b/103": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 103
+            }
+        },
+        "of:0000ffffffffff0c/101": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 101
+            }
+        },
+        "of:0000ffffffffff0b/101": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 101
+            }
+        },
+        "of:0000ffffffffff0c/106": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 106
+            }
+        },
+        "of:0000ffffffffff26/106": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 106
+            }
+        },
+        "of:0000ffffffffff26/107": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 107
+            }
+        },
+        "of:0000ffffffffff2f/13": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 13
+            }
+        },
+        "of:0000ffffff00000a/7": {
+            "optical": {
+                "speed": 0,
+                "type": "COPPER",
+                "port": 7
+            }
+        },
+        "of:0000ffffffffff2f/11": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 11
+            }
+        },
+        "of:0000ffffffffff2f/10": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 10
+            }
+        },
+        "of:0000ffffffffff1c/108": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 108
+            }
+        },
+        "of:0000ffffffffff2f/14": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 14
+            }
+        },
+        "of:0000ffffffffff34/105": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 105
+            }
+        },
+        "of:0000ffffffffff34/107": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 107
+            }
+        },
+        "of:0000ffffffffff34/106": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 106
+            }
+        },
+        "of:0000ffffffffff4a/105": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 105
+            }
+        },
+        "of:0000ffffffffff4a/106": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 106
+            }
+        },
+        "of:0000ffffffffff09/105": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 105
+            }
+        },
+        "of:0000ffffffffff2a/108": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 108
+            }
+        },
+        "of:0000ffffffffff09/101": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 101
+            }
+        },
+        "of:0000ffffff000002/9": {
+            "optical": {
+                "speed": 0,
+                "type": "COPPER",
+                "port": 9
+            }
+        },
+        "of:0000ffffffffff1d/106": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 106
+            }
+        },
+        "of:0000ffffffffff1d/102": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 102
+            }
+        },
+        "of:0000ffffffffff1d/101": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 101
+            }
+        },
+        "of:0000ffffff000006/7": {
+            "optical": {
+                "speed": 0,
+                "type": "COPPER",
+                "port": 7
+            }
+        },
+        "of:0000ffffff000002/7": {
+            "optical": {
+                "speed": 0,
+                "type": "COPPER",
+                "port": 7
+            }
+        },
+        "of:0000ffffff000001/9": {
+            "optical": {
+                "speed": 0,
+                "type": "COPPER",
+                "port": 9
+            }
+        },
+        "of:0000ffffffffff02/102": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 102
+            }
+        },
+        "of:0000ffffffffff02/103": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 103
+            }
+        },
+        "of:0000ffffffffff02/100": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 100
+            }
+        },
+        "of:0000ffffffffff02/101": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 101
+            }
+        },
+        "of:0000ffffffffff2f/105": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 105
+            }
+        },
+        "of:0000ffffffffff26/105": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 105
+            }
+        },
+        "of:0000ffffffffff0e/101": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 101
+            }
+        },
+        "of:0000ffffffffff0e/102": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 102
+            }
+        },
+        "of:0000ffffffffff4b/102": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 102
+            }
+        },
+        "of:0000ffffffffff0e/106": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 106
+            }
+        },
+        "of:0000ffffff000008/7": {
+            "optical": {
+                "speed": 0,
+                "type": "COPPER",
+                "port": 7
+            }
+        },
+        "of:0000ffffffffff1a/101": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 101
+            }
+        },
+        "of:0000ffffffffff1a/107": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 107
+            }
+        },
+        "of:0000ffffff000009/8": {
+            "optical": {
+                "speed": 0,
+                "type": "COPPER",
+                "port": 8
+            }
+        },
+        "of:0000ffffffffff1a/105": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 105
+            }
+        },
+        "of:0000ffffffffff24/106": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 106
+            }
+        },
+        "of:0000ffffff000009/7": {
+            "optical": {
+                "speed": 0,
+                "type": "COPPER",
+                "port": 7
+            }
+        },
+        "of:0000ffffffffff24/105": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 105
+            }
+        },
+        "of:0000ffffff000008/9": {
+            "optical": {
+                "speed": 0,
+                "type": "COPPER",
+                "port": 9
+            }
+        },
+        "of:0000ffffffffff24/101": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 101
+            }
+        },
+        "of:0000ffffff000001/7": {
+            "optical": {
+                "speed": 0,
+                "type": "COPPER",
+                "port": 7
+            }
+        },
+        "of:0000ffffff00000b/9": {
+            "optical": {
+                "speed": 0,
+                "type": "COPPER",
+                "port": 9
+            }
+        },
+        "of:0000ffffff00000b/8": {
+            "optical": {
+                "speed": 0,
+                "type": "COPPER",
+                "port": 8
+            }
+        },
+        "of:0000ffffffffff2f/102": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 102
+            }
+        },
+        "of:0000ffffffffff3a/106": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 106
+            }
+        },
+        "of:0000ffffffffff3d/105": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 105
+            }
+        },
+        "of:0000ffffff000003/7": {
+            "optical": {
+                "speed": 0,
+                "type": "COPPER",
+                "port": 7
+            }
+        },
+        "of:0000ffffffffff48/11": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 11
+            }
+        },
+        "of:0000ffffffffff48/10": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 10
+            }
+        },
+        "of:0000ffffffffff3d/101": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 101
+            }
+        },
+        "of:0000ffffffffff20/101": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 101
+            }
+        },
+        "of:0000ffffffffff41/106": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 106
+            }
+        },
+        "of:0000ffffffffff25/102": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 102
+            }
+        },
+        "of:0000ffffffffff25/101": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 101
+            }
+        },
+        "of:0000ffffffffff1f/108": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 108
+            }
+        },
+        "of:0000ffffffffff10/101": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 101
+            }
+        },
+        "of:0000ffffffffff37/101": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 101
+            }
+        },
+        "of:0000ffffffffff37/106": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 106
+            }
+        },
+        "of:0000ffffffffff37/107": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 107
+            }
+        },
+        "of:0000ffffffffff10/105": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 105
+            }
+        },
+        "of:0000ffffffffff37/105": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 105
+            }
+        },
+        "of:0000ffffff000003/8": {
+            "optical": {
+                "speed": 0,
+                "type": "COPPER",
+                "port": 8
+            }
+        },
+        "of:0000ffffff000003/9": {
+            "optical": {
+                "speed": 0,
+                "type": "COPPER",
+                "port": 9
+            }
+        },
+        "of:0000ffffffffff1f/102": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 102
+            }
+        },
+        "of:0000ffffffffff1f/105": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 105
+            }
+        },
+        "of:0000ffffffffff1f/104": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 104
+            }
+        },
+        "of:0000ffffffffff1f/106": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 106
+            }
+        },
+        "of:0000ffffffffff0f/106": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 106
+            }
+        },
+        "of:0000ffffffffff3e/105": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 105
+            }
+        },
+        "of:0000ffffffffff0f/105": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 105
+            }
+        },
+        "of:0000ffffffffff48/13": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 13
+            }
+        },
+        "of:0000ffffffffff3e/101": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 101
+            }
+        },
+        "of:0000ffffffffff40/106": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 106
+            }
+        },
+        "of:0000ffffffffff0f/101": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 101
+            }
+        },
+        "of:0000ffffffffff40/108": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 108
+            }
+        },
+        "of:0000ffffffffff21/102": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 102
+            }
+        },
+        "of:0000ffffffffff21/101": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 101
+            }
+        },
+        "of:0000ffffffffff3f/107": {
+            "optical": {
+                "type": "FIBER",
+                "speed": 0,
+                "port": 107
+            }
+        }
+    }
+}

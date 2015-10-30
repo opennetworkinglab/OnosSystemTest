@@ -1,0 +1,2832 @@
+{
+    "linkConfig": [
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 105,
+                "numWaves": 80,
+                "port1": 100,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:01",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:12",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 106,
+                "numWaves": 80,
+                "port1": 101,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:01",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:15",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 107,
+                "numWaves": 80,
+                "port1": 100,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:02",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:12",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 106,
+                "numWaves": 80,
+                "port1": 101,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:02",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:13",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 107,
+                "numWaves": 80,
+                "port1": 102,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:02",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:15",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 106,
+                "numWaves": 80,
+                "port1": 103,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:02",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:1e",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 105,
+                "numWaves": 80,
+                "port1": 100,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:03",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:10",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 106,
+                "numWaves": 80,
+                "port1": 101,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:03",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:42",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 105,
+                "numWaves": 80,
+                "port1": 101,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:04",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:08",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 106,
+                "numWaves": 80,
+                "port1": 102,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:04",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:0c",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 105,
+                "numWaves": 80,
+                "port1": 103,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:04",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:1a",
+            "allowed": true
+        },
+        {
+            "type": "pktOptLink",
+            "params": {
+                "port2": 10,
+                "bandwidth": 100000,
+                "port1": 2,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:00:00:0b",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:04",
+            "allowed": true
+        },
+        {
+            "type": "pktOptLink",
+            "params": {
+                "port2": 11,
+                "bandwidth": 100000,
+                "port1": 3,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:00:00:0b",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:04",
+            "allowed": true
+        },
+        {
+            "type": "pktOptLink",
+            "params": {
+                "port2": 12,
+                "bandwidth": 100000,
+                "port1": 4,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:00:00:0b",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:04",
+            "allowed": true
+        },
+        {
+            "type": "pktOptLink",
+            "params": {
+                "port2": 13,
+                "bandwidth": 100000,
+                "port1": 5,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:00:00:0b",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:04",
+            "allowed": true
+        },
+        {
+            "type": "pktOptLink",
+            "params": {
+                "port2": 14,
+                "bandwidth": 100000,
+                "port1": 6,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:00:00:0b",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:04",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 106,
+                "numWaves": 80,
+                "port1": 101,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:4b",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:19",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 105,
+                "numWaves": 80,
+                "port1": 102,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:4b",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:39",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 106,
+                "numWaves": 80,
+                "port1": 103,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:05",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:0e",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 105,
+                "numWaves": 80,
+                "port1": 104,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:05",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:35",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 105,
+                "numWaves": 80,
+                "port1": 101,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:06",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:09",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 107,
+                "port1": 102,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:06",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:13",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 105,
+                "numWaves": 80,
+                "port1": 103,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:06",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:3f",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 106,
+                "numWaves": 80,
+                "port1": 101,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:07",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:2e",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 105,
+                "numWaves": 80,
+                "port1": 102,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:07",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:30",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 107,
+                "numWaves": 80,
+                "port1": 103,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:07",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:46",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 106,
+                "numWaves": 80,
+                "port1": 101,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:08",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:26",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 105,
+                "numWaves": 80,
+                "port1": 102,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:08",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:27",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 106,
+                "numWaves": 80,
+                "port1": 101,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:09",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:24",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 105,
+                "numWaves": 80,
+                "port1": 101,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:0a",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:19",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 106,
+                "numWaves": 80,
+                "port1": 102,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:0a",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:27",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 105,
+                "numWaves": 80,
+                "port1": 101,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:0b",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:14",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 106,
+                "numWaves": 80,
+                "port1": 102,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:0b",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:22",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 105,
+                "numWaves": 80,
+                "port1": 103,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:0b",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:3e",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 106,
+                "numWaves": 80,
+                "port1": 101,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:0c",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:17",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 107,
+                "numWaves": 80,
+                "port1": 101,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:0d",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:1a",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 105,
+                "numWaves": 80,
+                "port1": 102,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:0d",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:34",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 105,
+                "numWaves": 80,
+                "port1": 101,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:0e",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:0f",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 101,
+                "numWaves": 80,
+                "port1": 102,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:0e",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:46",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 107,
+                "numWaves": 80,
+                "port1": 101,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:0f",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:30",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 105,
+                "numWaves": 80,
+                "port1": 101,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:10",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:31",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 106,
+                "numWaves": 80,
+                "port1": 101,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:11",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:0f",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 105,
+                "numWaves": 80,
+                "port1": 102,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:11",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:1f",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 106,
+                "numWaves": 80,
+                "port1": 103,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:11",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:48",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 107,
+                "numWaves": 80,
+                "port1": 101,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:12",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:19",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 105,
+                "numWaves": 80,
+                "port1": 102,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:12",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:20",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 106,
+                "numWaves": 80,
+                "port1": 103,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:12",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:2a",
+            "allowed": true
+        },
+        {
+            "type": "pktOptLink",
+            "params": {
+                "port2": 10,
+                "bandwidth": 100000,
+                "port1": 2,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:00:00:0a",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:12",
+            "allowed": true
+        },
+        {
+            "type": "pktOptLink",
+            "params": {
+                "port2": 11,
+                "bandwidth": 100000,
+                "port1": 3,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:00:00:0a",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:12",
+            "allowed": true
+        },
+        {
+            "type": "pktOptLink",
+            "params": {
+                "port2": 12,
+                "bandwidth": 100000,
+                "port1": 4,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:00:00:0a",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:12",
+            "allowed": true
+        },
+        {
+            "type": "pktOptLink",
+            "params": {
+                "port2": 13,
+                "bandwidth": 100000,
+                "port1": 5,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:00:00:0a",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:12",
+            "allowed": true
+        },
+        {
+            "type": "pktOptLink",
+            "params": {
+                "port2": 14,
+                "bandwidth": 100000,
+                "port1": 6,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:00:00:0a",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:12",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 105,
+                "numWaves": 80,
+                "port1": 101,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:13",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:2c",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 105,
+                "numWaves": 80,
+                "port1": 102,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:13",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:38",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 106,
+                "numWaves": 80,
+                "port1": 101,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:14",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:46",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 106,
+                "numWaves": 80,
+                "port1": 101,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:15",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:39",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 107,
+                "numWaves": 80,
+                "port1": 102,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:15",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:44",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 106,
+                "numWaves": 80,
+                "port1": 102,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:16",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:1d",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 106,
+                "numWaves": 80,
+                "port1": 101,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:16",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:1f",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 108,
+                "numWaves": 80,
+                "port1": 103,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:16",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:2a",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 108,
+                "numWaves": 80,
+                "port1": 101,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:17",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:1f",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 106,
+                "numWaves": 80,
+                "port1": 103,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:17",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:33",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 107,
+                "numWaves": 80,
+                "port1": 102,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:17",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:34",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 108,
+                "numWaves": 80,
+                "port1": 101,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:18",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:1c",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 106,
+                "numWaves": 80,
+                "port1": 102,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:18",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:31",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 105,
+                "numWaves": 80,
+                "port1": 101,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:1a",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:2d",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 106,
+                "numWaves": 80,
+                "port1": 101,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:1b",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:2c",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 105,
+                "numWaves": 80,
+                "port1": 102,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:1b",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:40",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 106,
+                "numWaves": 80,
+                "port1": 103,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:1b",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:47",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 106,
+                "numWaves": 80,
+                "port1": 101,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:1c",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:29",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 105,
+                "numWaves": 80,
+                "port1": 102,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:1d",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:3a",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 105,
+                "numWaves": 80,
+                "port1": 101,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:1d",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:3b",
+            "allowed": true
+        },
+        {
+            "type": "pktOptLink",
+            "params": {
+                "port2": 10,
+                "bandwidth": 100000,
+                "port1": 2,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:00:00:09",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:1d",
+            "allowed": true
+        },
+        {
+            "type": "pktOptLink",
+            "params": {
+                "port2": 11,
+                "bandwidth": 100000,
+                "port1": 3,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:00:00:09",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:1d",
+            "allowed": true
+        },
+        {
+            "type": "pktOptLink",
+            "params": {
+                "port2": 12,
+                "bandwidth": 100000,
+                "port1": 4,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:00:00:09",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:1d",
+            "allowed": true
+        },
+        {
+            "type": "pktOptLink",
+            "params": {
+                "port2": 13,
+                "bandwidth": 100000,
+                "port1": 5,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:00:00:09",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:1d",
+            "allowed": true
+        },
+        {
+            "type": "pktOptLink",
+            "params": {
+                "port2": 14,
+                "bandwidth": 100000,
+                "port1": 6,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:00:00:09",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:1d",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 105,
+                "numWaves": 80,
+                "port1": 101,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:1e",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:2f",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 106,
+                "numWaves": 80,
+                "port1": 102,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:1e",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:38",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 107,
+                "numWaves": 80,
+                "port1": 104,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:1f",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:26",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 108,
+                "numWaves": 80,
+                "port1": 102,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:1f",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:40",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 105,
+                "numWaves": 80,
+                "port1": 101,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:20",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:23",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 105,
+                "numWaves": 80,
+                "port1": 101,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:21",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:43",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 105,
+                "numWaves": 80,
+                "port1": 102,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:21",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:4a",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 105,
+                "numWaves": 80,
+                "port1": 101,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:22",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:24",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 105,
+                "numWaves": 80,
+                "port1": 101,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:23",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:26",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 107,
+                "numWaves": 80,
+                "port1": 101,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:24",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:2c",
+            "allowed": true
+        },
+        {
+            "type": "pktOptLink",
+            "params": {
+                "port2": 10,
+                "bandwidth": 100000,
+                "port1": 2,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:00:00:08",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:24",
+            "allowed": true
+        },
+        {
+            "type": "pktOptLink",
+            "params": {
+                "port2": 11,
+                "bandwidth": 100000,
+                "port1": 3,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:00:00:08",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:24",
+            "allowed": true
+        },
+        {
+            "type": "pktOptLink",
+            "params": {
+                "port2": 12,
+                "bandwidth": 100000,
+                "port1": 4,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:00:00:08",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:24",
+            "allowed": true
+        },
+        {
+            "type": "pktOptLink",
+            "params": {
+                "port2": 13,
+                "bandwidth": 100000,
+                "port1": 5,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:00:00:08",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:24",
+            "allowed": true
+        },
+        {
+            "type": "pktOptLink",
+            "params": {
+                "port2": 14,
+                "bandwidth": 100000,
+                "port1": 6,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:00:00:08",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:24",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 106,
+                "numWaves": 80,
+                "port1": 101,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:25",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:34",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 107,
+                "numWaves": 80,
+                "port1": 102,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:25",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:49",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 105,
+                "numWaves": 80,
+                "port1": 101,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:27",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:45",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 105,
+                "numWaves": 80,
+                "port1": 101,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:28",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:2e",
+            "allowed": true
+        },
+        {
+            "type": "pktOptLink",
+            "params": {
+                "port2": 10,
+                "bandwidth": 100000,
+                "port1": 2,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:00:00:07",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:28",
+            "allowed": true
+        },
+        {
+            "type": "pktOptLink",
+            "params": {
+                "port2": 11,
+                "bandwidth": 100000,
+                "port1": 3,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:00:00:07",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:28",
+            "allowed": true
+        },
+        {
+            "type": "pktOptLink",
+            "params": {
+                "port2": 12,
+                "bandwidth": 100000,
+                "port1": 4,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:00:00:07",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:28",
+            "allowed": true
+        },
+        {
+            "type": "pktOptLink",
+            "params": {
+                "port2": 13,
+                "bandwidth": 100000,
+                "port1": 5,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:00:00:07",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:28",
+            "allowed": true
+        },
+        {
+            "type": "pktOptLink",
+            "params": {
+                "port2": 14,
+                "bandwidth": 100000,
+                "port1": 6,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:00:00:07",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:28",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 106,
+                "numWaves": 80,
+                "port1": 101,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:29",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:28",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 105,
+                "numWaves": 80,
+                "port1": 102,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:29",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:37",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 106,
+                "numWaves": 80,
+                "port1": 103,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:29",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:49",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 107,
+                "numWaves": 80,
+                "port1": 101,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:2a",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:47",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 107,
+                "numWaves": 80,
+                "port1": 101,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:2b",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:36",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 107,
+                "numWaves": 80,
+                "port1": 102,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:2b",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:38",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 105,
+                "numWaves": 80,
+                "port1": 103,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:2b",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:3c",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 106,
+                "numWaves": 80,
+                "port1": 101,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:2d",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:4a",
+            "allowed": true
+        },
+        {
+            "type": "pktOptLink",
+            "params": {
+                "port2": 10,
+                "bandwidth": 100000,
+                "port1": 2,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:00:00:06",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:2d",
+            "allowed": true
+        },
+        {
+            "type": "pktOptLink",
+            "params": {
+                "port2": 11,
+                "bandwidth": 100000,
+                "port1": 3,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:00:00:06",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:2d",
+            "allowed": true
+        },
+        {
+            "type": "pktOptLink",
+            "params": {
+                "port2": 12,
+                "bandwidth": 100000,
+                "port1": 4,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:00:00:06",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:2d",
+            "allowed": true
+        },
+        {
+            "type": "pktOptLink",
+            "params": {
+                "port2": 13,
+                "bandwidth": 100000,
+                "port1": 5,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:00:00:06",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:2d",
+            "allowed": true
+        },
+        {
+            "type": "pktOptLink",
+            "params": {
+                "port2": 14,
+                "bandwidth": 100000,
+                "port1": 6,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:00:00:06",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:2d",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 106,
+                "numWaves": 80,
+                "port1": 101,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:2e",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:37",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 106,
+                "numWaves": 80,
+                "port1": 101,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:2f",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:3b",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 106,
+                "numWaves": 80,
+                "port1": 102,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:2f",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:44",
+            "allowed": true
+        },
+        {
+            "type": "pktOptLink",
+            "params": {
+                "port2": 10,
+                "bandwidth": 100000,
+                "port1": 2,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:00:00:05",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:2f",
+            "allowed": true
+        },
+        {
+            "type": "pktOptLink",
+            "params": {
+                "port2": 11,
+                "bandwidth": 100000,
+                "port1": 3,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:00:00:05",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:2f",
+            "allowed": true
+        },
+        {
+            "type": "pktOptLink",
+            "params": {
+                "port2": 12,
+                "bandwidth": 100000,
+                "port1": 4,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:00:00:05",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:2f",
+            "allowed": true
+        },
+        {
+            "type": "pktOptLink",
+            "params": {
+                "port2": 13,
+                "bandwidth": 100000,
+                "port1": 5,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:00:00:05",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:2f",
+            "allowed": true
+        },
+        {
+            "type": "pktOptLink",
+            "params": {
+                "port2": 14,
+                "bandwidth": 100000,
+                "port1": 6,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:00:00:05",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:2f",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 107,
+                "numWaves": 80,
+                "port1": 101,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:30",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:37",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 106,
+                "numWaves": 80,
+                "port1": 101,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:32",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:36",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 108,
+                "numWaves": 80,
+                "port1": 102,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:32",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:38",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 106,
+                "numWaves": 80,
+                "port1": 103,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:32",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:41",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 105,
+                "numWaves": 80,
+                "port1": 101,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:33",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:48",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 107,
+                "numWaves": 80,
+                "port1": 101,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:35",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:42",
+            "allowed": true
+        },
+        {
+            "type": "pktOptLink",
+            "params": {
+                "port2": 10,
+                "bandwidth": 100000,
+                "port1": 2,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:00:00:04",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:35",
+            "allowed": true
+        },
+        {
+            "type": "pktOptLink",
+            "params": {
+                "port2": 11,
+                "bandwidth": 100000,
+                "port1": 3,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:00:00:04",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:35",
+            "allowed": true
+        },
+        {
+            "type": "pktOptLink",
+            "params": {
+                "port2": 12,
+                "bandwidth": 100000,
+                "port1": 4,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:00:00:04",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:35",
+            "allowed": true
+        },
+        {
+            "type": "pktOptLink",
+            "params": {
+                "port2": 13,
+                "bandwidth": 100000,
+                "port1": 5,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:00:00:04",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:35",
+            "allowed": true
+        },
+        {
+            "type": "pktOptLink",
+            "params": {
+                "port2": 14,
+                "bandwidth": 100000,
+                "port1": 6,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:00:00:04",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:35",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 105,
+                "numWaves": 80,
+                "port1": 101,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:37",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:42",
+            "allowed": true
+        },
+        {
+            "type": "pktOptLink",
+            "params": {
+                "port2": 10,
+                "bandwidth": 100000,
+                "port1": 2,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:00:00:03",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:39",
+            "allowed": true
+        },
+        {
+            "type": "pktOptLink",
+            "params": {
+                "port2": 11,
+                "bandwidth": 100000,
+                "port1": 3,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:00:00:03",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:39",
+            "allowed": true
+        },
+        {
+            "type": "pktOptLink",
+            "params": {
+                "port2": 12,
+                "bandwidth": 100000,
+                "port1": 4,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:00:00:03",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:39",
+            "allowed": true
+        },
+        {
+            "type": "pktOptLink",
+            "params": {
+                "port2": 13,
+                "bandwidth": 100000,
+                "port1": 5,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:00:00:03",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:39",
+            "allowed": true
+        },
+        {
+            "type": "pktOptLink",
+            "params": {
+                "port2": 14,
+                "bandwidth": 100000,
+                "port1": 6,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:00:00:03",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:39",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 105,
+                "numWaves": 80,
+                "port1": 101,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:3c",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:3d",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 106,
+                "numWaves": 80,
+                "port1": 101,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:3d",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:3a",
+            "allowed": true
+        },
+        {
+            "type": "pktOptLink",
+            "params": {
+                "port2": 10,
+                "bandwidth": 100000,
+                "port1": 2,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:00:00:02",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:3d",
+            "allowed": true
+        },
+        {
+            "type": "pktOptLink",
+            "params": {
+                "port2": 11,
+                "bandwidth": 100000,
+                "port1": 3,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:00:00:02",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:3d",
+            "allowed": true
+        },
+        {
+            "type": "pktOptLink",
+            "params": {
+                "port2": 12,
+                "bandwidth": 100000,
+                "port1": 4,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:00:00:02",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:3d",
+            "allowed": true
+        },
+        {
+            "type": "pktOptLink",
+            "params": {
+                "port2": 13,
+                "bandwidth": 100000,
+                "port1": 5,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:00:00:02",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:3d",
+            "allowed": true
+        },
+        {
+            "type": "pktOptLink",
+            "params": {
+                "port2": 14,
+                "bandwidth": 100000,
+                "port1": 6,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:00:00:02",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:3d",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 106,
+                "numWaves": 80,
+                "port1": 101,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:3e",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:40",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 107,
+                "numWaves": 80,
+                "port1": 101,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:41",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:3f",
+            "allowed": true
+        },
+        {
+            "type": "wdmLink",
+            "params": {
+                "port2": 106,
+                "numWaves": 80,
+                "port1": 101,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:ff:ff:45",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:43",
+            "allowed": true
+        },
+        {
+            "type": "pktOptLink",
+            "params": {
+                "port2": 10,
+                "bandwidth": 100000,
+                "port1": 2,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:00:00:01",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:48",
+            "allowed": true
+        },
+        {
+            "type": "pktOptLink",
+            "params": {
+                "port2": 11,
+                "bandwidth": 100000,
+                "port1": 3,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:00:00:01",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:48",
+            "allowed": true
+        },
+        {
+            "type": "pktOptLink",
+            "params": {
+                "port2": 12,
+                "bandwidth": 100000,
+                "port1": 4,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:00:00:01",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:48",
+            "allowed": true
+        },
+        {
+            "type": "pktOptLink",
+            "params": {
+                "port2": 13,
+                "bandwidth": 100000,
+                "port1": 5,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:00:00:01",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:48",
+            "allowed": true
+        },
+        {
+            "type": "pktOptLink",
+            "params": {
+                "port2": 14,
+                "bandwidth": 100000,
+                "port1": 6,
+                "nodeName2": "none",
+                "nodeName1": "none"
+            },
+            "nodeDpid1": "00:00:ff:ff:ff:00:00:01",
+            "nodeDpid2": "00:00:ff:ff:ff:ff:ff:48",
+            "allowed": true
+        }
+    ],
+    "switchConfig": [
+        {
+            "name": "none",
+            "longitude": -99.741564,
+            "params": {
+                "numregens": 0
+            },
+            "allowed": true,
+            "latitude": 32.508086,
+            "type": "Roadm",
+            "nodeDpid": "00:00:ff:ff:ff:ff:ff:01"
+        },
+        {
+            "name": "none",
+            "longitude": -106.649719,
+            "params": {
+                "numregens": 0
+            },
+            "allowed": true,
+            "latitude": 35.084446,
+            "type": "Roadm",
+            "nodeDpid": "00:00:ff:ff:ff:ff:ff:02"
+        },
+        {
+            "name": "none",
+            "longitude": -73.758333,
+            "params": {
+                "numregens": 0
+            },
+            "allowed": true,
+            "latitude": 42.652222,
+            "type": "Roadm",
+            "nodeDpid": "00:00:ff:ff:ff:ff:ff:03"
+        },
+        {
+            "name": "none",
+            "longitude": -97.743057,
+            "params": {
+                "numregens": 5
+            },
+            "allowed": true,
+            "latitude": 33.755833,
+            "type": "Roadm",
+            "nodeDpid": "00:00:ff:ff:ff:ff:ff:04"
+        },
+        {
+            "name": "none",
+            "longitude": -96.7,
+            "params": {
+                "numregens": 0
+            },
+            "allowed": true,
+            "latitude": 29.57,
+            "type": "Roadm",
+            "nodeDpid": "00:00:ff:ff:ff:ff:ff:4b"
+        },
+        {
+            "name": "none",
+            "longitude": -78.877778,
+            "params": {
+                "numregens": 0
+            },
+            "allowed": true,
+            "latitude": 42.882778,
+            "type": "Roadm",
+            "nodeDpid": "00:00:ff:ff:ff:ff:ff:05"
+        },
+        {
+            "name": "none",
+            "longitude": -108.509167,
+            "params": {
+                "numregens": 0
+            },
+            "allowed": true,
+            "latitude": 45.781667,
+            "type": "Roadm",
+            "nodeDpid": "00:00:ff:ff:ff:ff:ff:06"
+        },
+        {
+            "name": "none",
+            "longitude": -76.614127,
+            "params": {
+                "numregens": 0
+            },
+            "allowed": true,
+            "latitude": 39.293781,
+            "type": "Roadm",
+            "nodeDpid": "00:00:ff:ff:ff:ff:ff:07"
+        },
+        {
+            "name": "none",
+            "longitude": -86.812225,
+            "params": {
+                "numregens": 0
+            },
+            "allowed": true,
+            "latitude": 33.517223,
+            "type": "Roadm",
+            "nodeDpid": "00:00:ff:ff:ff:ff:ff:08"
+        },
+        {
+            "name": "none",
+            "longitude": -100.796917,
+            "params": {
+                "numregens": 0
+            },
+            "allowed": true,
+            "latitude": 46.836379,
+            "type": "Roadm",
+            "nodeDpid": "00:00:ff:ff:ff:ff:ff:09"
+        },
+        {
+            "name": "none",
+            "longitude": -91.184167,
+            "params": {
+                "numregens": 0
+            },
+            "allowed": true,
+            "latitude": 30.449722,
+            "type": "Roadm",
+            "nodeDpid": "00:00:ff:ff:ff:ff:ff:0a"
+        },
+        {
+            "name": "none",
+            "longitude": -87.640432,
+            "params": {
+                "numregens": 4
+            },
+            "allowed": true,
+            "latitude": 41.881484,
+            "type": "Roadm",
+            "nodeDpid": "00:00:ff:ff:ff:ff:ff:0b"
+        },
+        {
+            "name": "none",
+            "longitude": -80.837502,
+            "params": {
+                "numregens": 0
+            },
+            "allowed": true,
+            "latitude": 35.224924,
+            "type": "Roadm",
+            "nodeDpid": "00:00:ff:ff:ff:ff:ff:0c"
+        },
+        {
+            "name": "none",
+            "longitude": -79.938056,
+            "params": {
+                "numregens": 0
+            },
+            "allowed": true,
+            "latitude": 32.785278,
+            "type": "Roadm",
+            "nodeDpid": "00:00:ff:ff:ff:ff:ff:0d"
+        },
+        {
+            "name": "none",
+            "longitude": -81.686943,
+            "params": {
+                "numregens": 0
+            },
+            "allowed": true,
+            "latitude": 41.498333,
+            "type": "Roadm",
+            "nodeDpid": "00:00:ff:ff:ff:ff:ff:0e"
+        },
+        {
+            "name": "none",
+            "longitude": -82.996666,
+            "params": {
+                "numregens": 0
+            },
+            "allowed": true,
+            "latitude": 39.965279,
+            "type": "Roadm",
+            "nodeDpid": "00:00:ff:ff:ff:ff:ff:0f"
+        },
+        {
+            "name": "none",
+            "longitude": -71.084918,
+            "params": {
+                "numregens": 0
+            },
+            "allowed": true,
+            "latitude": 42.36745,
+            "type": "Roadm",
+            "nodeDpid": "00:00:ff:ff:ff:ff:ff:10"
+        },
+        {
+            "name": "none",
+            "longitude": -84.516944,
+            "params": {
+                "numregens": 0
+            },
+            "allowed": true,
+            "latitude": 39.102778,
+            "type": "Roadm",
+            "nodeDpid": "00:00:ff:ff:ff:ff:ff:11"
+        },
+        {
+            "name": "none",
+            "longitude": -96.780431,
+            "params": {
+                "numregens": 0
+            },
+            "allowed": true,
+            "latitude": 32.797524,
+            "type": "Roadm",
+            "nodeDpid": "00:00:ff:ff:ff:ff:ff:12"
+        },
+        {
+            "name": "none",
+            "longitude": -104.996391,
+            "params": {
+                "numregens": 0
+            },
+            "allowed": true,
+            "latitude": 39.744999,
+            "type": "Roadm",
+            "nodeDpid": "00:00:ff:ff:ff:ff:ff:13"
+        },
+        {
+            "name": "none",
+            "longitude": -83.054169,
+            "params": {
+                "numregens": 5
+            },
+            "allowed": true,
+            "latitude": 42.332779,
+            "type": "Roadm",
+            "nodeDpid": "00:00:ff:ff:ff:ff:ff:14"
+        },
+        {
+            "name": "none",
+            "longitude": -106.483611,
+            "params": {
+                "numregens": 0
+            },
+            "allowed": true,
+            "latitude": 31.756389,
+            "type": "Roadm",
+            "nodeDpid": "00:00:ff:ff:ff:ff:ff:15"
+        },
+        {
+            "name": "none",
+            "longitude": -119.79423,
+            "params": {
+                "numregens": 0
+            },
+            "allowed": true,
+            "latitude": 36.73923,
+            "type": "Roadm",
+            "nodeDpid": "00:00:ff:ff:ff:ff:ff:16"
+        },
+        {
+            "name": "none",
+            "longitude": -79.793889,
+            "params": {
+                "numregens": 0
+            },
+            "allowed": true,
+            "latitude": 36.072222,
+            "type": "Roadm",
+            "nodeDpid": "00:00:ff:ff:ff:ff:ff:17"
+        },
+        {
+            "name": "none",
+            "longitude": -72.676389,
+            "params": {
+                "numregens": 0
+            },
+            "allowed": true,
+            "latitude": 41.765833,
+            "type": "Roadm",
+            "nodeDpid": "00:00:ff:ff:ff:ff:ff:18"
+        },
+        {
+            "name": "none",
+            "longitude": -95.36528,
+            "params": {
+                "numregens": 0
+            },
+            "allowed": true,
+            "latitude": 29.748333,
+            "type": "Roadm",
+            "nodeDpid": "00:00:ff:ff:ff:ff:ff:19"
+        },
+        {
+            "name": "none",
+            "longitude": -81.43,
+            "params": {
+                "numregens": 0
+            },
+            "allowed": true,
+            "latitude": 30.33071,
+            "type": "Roadm",
+            "nodeDpid": "00:00:ff:ff:ff:ff:ff:1a"
+        },
+        {
+            "name": "none",
+            "longitude": -94.578716,
+            "params": {
+                "numregens": 0
+            },
+            "allowed": true,
+            "latitude": 39.096649,
+            "type": "Roadm",
+            "nodeDpid": "00:00:ff:ff:ff:ff:ff:1b"
+        },
+        {
+            "name": "none",
+            "longitude": -73.6699993,
+            "params": {
+                "numregens": 0
+            },
+            "allowed": true,
+            "latitude": 40.5899999,
+            "type": "Roadm",
+            "nodeDpid": "00:00:ff:ff:ff:ff:ff:1c"
+        },
+        {
+            "name": "none",
+            "longitude": -118.252958,
+            "params": {
+                "numregens": 0
+            },
+            "allowed": true,
+            "latitude": 34.051227,
+            "type": "Roadm",
+            "nodeDpid": "00:00:ff:ff:ff:ff:ff:1d"
+        },
+        {
+            "name": "none",
+            "longitude": -115.138889,
+            "params": {
+                "numregens": 0
+            },
+            "allowed": true,
+            "latitude": 36.168056,
+            "type": "Roadm",
+            "nodeDpid": "00:00:ff:ff:ff:ff:ff:1e"
+        },
+        {
+            "name": "none",
+            "longitude": -85.760833,
+            "params": {
+                "numregens": 0
+            },
+            "allowed": true,
+            "latitude": 38.249167,
+            "type": "Roadm",
+            "nodeDpid": "00:00:ff:ff:ff:ff:ff:1f"
+        },
+        {
+            "name": "none",
+            "longitude": -92.271942,
+            "params": {
+                "numregens": 2
+            },
+            "allowed": true,
+            "latitude": 34.740833,
+            "type": "Roadm",
+            "nodeDpid": "00:00:ff:ff:ff:ff:ff:20"
+        },
+        {
+            "name": "none",
+            "longitude": -80.195,
+            "params": {
+                "numregens": 0
+            },
+            "allowed": true,
+            "latitude": 25.779167,
+            "type": "Roadm",
+            "nodeDpid": "00:00:ff:ff:ff:ff:ff:21"
+        },
+        {
+            "name": "none",
+            "longitude": -87.922501,
+            "params": {
+                "numregens": 0
+            },
+            "allowed": true,
+            "latitude": 43.037224,
+            "type": "Roadm",
+            "nodeDpid": "00:00:ff:ff:ff:ff:ff:22"
+        },
+        {
+            "name": "none",
+            "longitude": -90.048058,
+            "params": {
+                "numregens": 0
+            },
+            "allowed": true,
+            "latitude": 35.145158,
+            "type": "Roadm",
+            "nodeDpid": "00:00:ff:ff:ff:ff:ff:23"
+        },
+        {
+            "name": "none",
+            "longitude": -93.26718,
+            "params": {
+                "numregens": 0
+            },
+            "allowed": true,
+            "latitude": 44.977365,
+            "type": "Roadm",
+            "nodeDpid": "00:00:ff:ff:ff:ff:ff:24"
+        },
+        {
+            "name": "none",
+            "longitude": -76.29,
+            "params": {
+                "numregens": 0
+            },
+            "allowed": true,
+            "latitude": 36.853333,
+            "type": "Roadm",
+            "nodeDpid": "00:00:ff:ff:ff:ff:ff:25"
+        },
+        {
+            "name": "none",
+            "longitude": -86.775558,
+            "params": {
+                "numregens": 0
+            },
+            "allowed": true,
+            "latitude": 36.163955,
+            "type": "Roadm",
+            "nodeDpid": "00:00:ff:ff:ff:ff:ff:26"
+        },
+        {
+            "name": "none",
+            "longitude": -90.07222,
+            "params": {
+                "numregens": 0
+            },
+            "allowed": true,
+            "latitude": 29.949806,
+            "type": "Roadm",
+            "nodeDpid": "00:00:ff:ff:ff:ff:ff:27"
+        },
+        {
+            "name": "none",
+            "longitude": -74.177978,
+            "params": {
+                "numregens": 0
+            },
+            "allowed": true,
+            "latitude": 40.734408,
+            "type": "Roadm",
+            "nodeDpid": "00:00:ff:ff:ff:ff:ff:28"
+        },
+        {
+            "name": "none",
+            "longitude": -73.989713,
+            "params": {
+                "numregens": 0
+            },
+            "allowed": true,
+            "latitude": 40.767497,
+            "type": "Roadm",
+            "nodeDpid": "00:00:ff:ff:ff:ff:ff:29"
+        },
+        {
+            "name": "none",
+            "longitude": -97.515274,
+            "params": {
+                "numregens": 0
+            },
+            "allowed": true,
+            "latitude": 35.470833,
+            "type": "Roadm",
+            "nodeDpid": "00:00:ff:ff:ff:ff:ff:2a"
+        },
+        {
+            "name": "none",
+            "longitude": -122.268889,
+            "params": {
+                "numregens": 2
+            },
+            "allowed": true,
+            "latitude": 37.805556,
+            "type": "Roadm",
+            "nodeDpid": "00:00:ff:ff:ff:ff:ff:2b"
+        },
+        {
+            "name": "none",
+            "longitude": -95.940277,
+            "params": {
+                "numregens": 0
+            },
+            "allowed": true,
+            "latitude": 41.259167,
+            "type": "Roadm",
+            "nodeDpid": "00:00:ff:ff:ff:ff:ff:2c"
+        },
+        {
+            "name": "none",
+            "longitude": -81.377502,
+            "params": {
+                "numregens": 0
+            },
+            "allowed": true,
+            "latitude": 28.543279,
+            "type": "Roadm",
+            "nodeDpid": "00:00:ff:ff:ff:ff:ff:2d"
+        },
+        {
+            "name": "none",
+            "longitude": -75.184139,
+            "params": {
+                "numregens": 0
+            },
+            "allowed": true,
+            "latitude": 39.946446,
+            "type": "Roadm",
+            "nodeDpid": "00:00:ff:ff:ff:ff:ff:2e"
+        },
+        {
+            "name": "none",
+            "longitude": -112.07709,
+            "params": {
+                "numregens": 0
+            },
+            "allowed": true,
+            "latitude": 33.450361,
+            "type": "Roadm",
+            "nodeDpid": "00:00:ff:ff:ff:ff:ff:2f"
+        },
+        {
+            "name": "none",
+            "longitude": -79.995552,
+            "params": {
+                "numregens": 0
+            },
+            "allowed": true,
+            "latitude": 40.441387,
+            "type": "Roadm",
+            "nodeDpid": "00:00:ff:ff:ff:ff:ff:30"
+        },
+        {
+            "name": "none",
+            "longitude": -71.415278,
+            "params": {
+                "numregens": 0
+            },
+            "allowed": true,
+            "latitude": 41.818889,
+            "type": "Roadm",
+            "nodeDpid": "00:00:ff:ff:ff:ff:ff:31"
+        },
+        {
+            "name": "none",
+            "longitude": -122.678055,
+            "params": {
+                "numregens": 2
+            },
+            "allowed": true,
+            "latitude": 45.522499,
+            "type": "Roadm",
+            "nodeDpid": "00:00:ff:ff:ff:ff:ff:32"
+        },
+        {
+            "name": "none",
+            "longitude": -77.436096,
+            "params": {
+                "numregens": 0
+            },
+            "allowed": true,
+            "latitude": 37.540752,
+            "type": "Roadm",
+            "nodeDpid": "00:00:ff:ff:ff:ff:ff:33"
+        },
+        {
+            "name": "none",
+            "longitude": -78.640831,
+            "params": {
+                "numregens": 0
+            },
+            "allowed": true,
+            "latitude": 35.779656,
+            "type": "Roadm",
+            "nodeDpid": "00:00:ff:ff:ff:ff:ff:34"
+        },
+        {
+            "name": "none",
+            "longitude": -77.616389,
+            "params": {
+                "numregens": 0
+            },
+            "allowed": true,
+            "latitude": 43.157222,
+            "type": "Roadm",
+            "nodeDpid": "00:00:ff:ff:ff:ff:ff:35"
+        },
+        {
+            "name": "none",
+            "longitude": -121.487221,
+            "params": {
+                "numregens": 0
+            },
+            "allowed": true,
+            "latitude": 38.578609,
+            "type": "Roadm",
+            "nodeDpid": "00:00:ff:ff:ff:ff:ff:36"
+        },
+        {
+            "name": "none",
+            "longitude": -75.649167,
+            "params": {
+                "numregens": 0
+            },
+            "allowed": true,
+            "latitude": 41.415278,
+            "type": "Roadm",
+            "nodeDpid": "00:00:ff:ff:ff:ff:ff:37"
+        },
+        {
+            "name": "none",
+            "longitude": -111.888336,
+            "params": {
+                "numregens": 0
+            },
+            "allowed": true,
+            "latitude": 40.767776,
+            "type": "Roadm",
+            "nodeDpid": "00:00:ff:ff:ff:ff:ff:38"
+        },
+        {
+            "name": "none",
+            "longitude": -98.488892,
+            "params": {
+                "numregens": 0
+            },
+            "allowed": true,
+            "latitude": 29.429445,
+            "type": "Roadm",
+            "nodeDpid": "00:00:ff:ff:ff:ff:ff:39"
+        },
+        {
+            "name": "none",
+            "longitude": -119.7,
+            "params": {
+                "numregens": 0
+            },
+            "allowed": true,
+            "latitude": 34.418889,
+            "type": "Roadm",
+            "nodeDpid": "00:00:ff:ff:ff:ff:ff:3a"
+        },
+        {
+            "name": "none",
+            "longitude": -117.158611,
+            "params": {
+                "numregens": 0
+            },
+            "allowed": true,
+            "latitude": 32.746944,
+            "type": "Roadm",
+            "nodeDpid": "00:00:ff:ff:ff:ff:ff:3b"
+        },
+        {
+            "name": "none",
+            "longitude": -122.397263,
+            "params": {
+                "numregens": 0
+            },
+            "allowed": true,
+            "latitude": 37.785143,
+            "type": "Roadm",
+            "nodeDpid": "00:00:ff:ff:ff:ff:ff:3c"
+        },
+        {
+            "name": "none",
+            "longitude": -121.892778,
+            "params": {
+                "numregens": 0
+            },
+            "allowed": true,
+            "latitude": 37.333333,
+            "type": "Roadm",
+            "nodeDpid": "00:00:ff:ff:ff:ff:ff:3d"
+        },
+        {
+            "name": "none",
+            "longitude": -89.649444,
+            "params": {
+                "numregens": 0
+            },
+            "allowed": true,
+            "latitude": 39.795278,
+            "type": "Roadm",
+            "nodeDpid": "00:00:ff:ff:ff:ff:ff:3e"
+        },
+        {
+            "name": "none",
+            "longitude": -117.419167,
+            "params": {
+                "numregens": 0
+            },
+            "allowed": true,
+            "latitude": 47.654724,
+            "type": "Roadm",
+            "nodeDpid": "00:00:ff:ff:ff:ff:ff:3f"
+        },
+        {
+            "name": "none",
+            "longitude": -90.215279,
+            "params": {
+                "numregens": 0
+            },
+            "allowed": true,
+            "latitude": 38.633335,
+            "type": "Roadm",
+            "nodeDpid": "00:00:ff:ff:ff:ff:ff:40"
+        },
+        {
+            "name": "none",
+            "longitude": -122.333336,
+            "params": {
+                "numregens": 0
+            },
+            "allowed": true,
+            "latitude": 47.606945,
+            "type": "Roadm",
+            "nodeDpid": "00:00:ff:ff:ff:ff:ff:41"
+        },
+        {
+            "name": "none",
+            "longitude": -76.1475,
+            "params": {
+                "numregens": 3
+            },
+            "allowed": true,
+            "latitude": 43.049444,
+            "type": "Roadm",
+            "nodeDpid": "00:00:ff:ff:ff:ff:ff:42"
+        },
+        {
+            "name": "none",
+            "longitude": -82.522778,
+            "params": {
+                "numregens": 0
+            },
+            "allowed": true,
+            "latitude": 28.0225,
+            "type": "Roadm",
+            "nodeDpid": "00:00:ff:ff:ff:ff:ff:43"
+        },
+        {
+            "name": "none",
+            "longitude": -110.968333,
+            "params": {
+                "numregens": 0
+            },
+            "allowed": true,
+            "latitude": 32.224444,
+            "type": "Roadm",
+            "nodeDpid": "00:00:ff:ff:ff:ff:ff:44"
+        },
+        {
+            "name": "none",
+            "longitude": -84.290833,
+            "params": {
+                "numregens": 0
+            },
+            "allowed": true,
+            "latitude": 30.456389,
+            "type": "Roadm",
+            "nodeDpid": "00:00:ff:ff:ff:ff:ff:45"
+        },
+        {
+            "name": "none",
+            "longitude": -83.538056,
+            "params": {
+                "numregens": 2
+            },
+            "allowed": true,
+            "latitude": 41.65,
+            "type": "Roadm",
+            "nodeDpid": "00:00:ff:ff:ff:ff:ff:46"
+        },
+        {
+            "name": "none",
+            "longitude": -95.985832,
+            "params": {
+                "numregens": 0
+            },
+            "allowed": true,
+            "latitude": 36.151669,
+            "type": "Roadm",
+            "nodeDpid": "00:00:ff:ff:ff:ff:ff:47"
+        },
+        {
+            "name": "none",
+            "longitude": -77.01028,
+            "params": {
+                "numregens": 0
+            },
+            "allowed": true,
+            "latitude": 38.88306,
+            "type": "Roadm",
+            "nodeDpid": "00:00:ff:ff:ff:ff:ff:48"
+        },
+        {
+            "name": "none",
+            "longitude": -75.553889,
+            "params": {
+                "numregens": 0
+            },
+            "allowed": true,
+            "latitude": 39.739167,
+            "type": "Roadm",
+            "nodeDpid": "00:00:ff:ff:ff:ff:ff:49"
+        },
+        {
+            "name": "none",
+            "longitude": -80.05278,
+            "params": {
+                "numregens": 0
+            },
+            "allowed": true,
+            "latitude": 26.709391,
+            "type": "Roadm",
+            "nodeDpid": "00:00:ff:ff:ff:ff:ff:4a"
+        }
+    ]
+}

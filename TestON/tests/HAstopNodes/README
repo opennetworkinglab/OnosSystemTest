@@ -1,0 +1,26 @@
+This test is designed to verify that an ONOS cluster behaves correctly when some
+ONOS nodes are stopped. Currently, we will stop nodes so that each raft partition will
+lose a member, but we make sure that there is always a majority of nodes
+available in each partition.
+
+As written, the test only supports an ONOS cluster of 3,5, or 7 nodes.
+This is because the test doesn't apply to a single node cluster, ONOS clusters
+should be deployed in odd numbers, and the partition generation and node
+killing scheme used doesn't give the same properties for clusters of more
+than 7 nodes. Namely, each partition won't have exactly one node killed.
+
+The gerneral structure for the test:
+- Startup
+- Assign switches
+- Verify ONOS state and functionality
+    - Device mastership
+    - Intents
+    - Leadership election
+    - Distributed Primitives
+- Stop some ONOS nodes
+- Verify ONOS state and functionality
+- Restart nodes
+- Verify ONOS state and functionality
+- Dataplane failures
+    - link down and up
+    - switch down and up

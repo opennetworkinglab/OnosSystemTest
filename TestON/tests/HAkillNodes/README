@@ -19,6 +19,8 @@ The gerneral structure for the test:
     - Distributed Primitives
 - Kill some ONOS nodes
 - Verify ONOS state and functionality
+- Restart ONOS nodes
+- Verify ONOS state and functionality
 - Dataplane failures
     - link down and up
     - switch down and up

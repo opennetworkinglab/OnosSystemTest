@@ -70,6 +70,7 @@
     <timers>
         <LinkDiscovery>12</LinkDiscovery>
         <SwitchDiscovery>12</SwitchDiscovery>
+        <gossip>5</gossip>
     </timers>
     <kill>
         <switch> s5 </switch>

@@ -1094,39 +1094,14 @@ class OnosRestDriver( Controller ):
             main.cleanup()
             main.exit()
 
-    def addFlow( self,
-                 deviceId,
-                 appId=0,
-                 ingressPort="",
-                 egressPort="",
-                 ethType="",
-                 ethSrc="",
-                 ethDst="",
-                 bandwidth="",
-                 lambdaAlloc=False,
-                 ipProto="",
-                 ipSrc="",
-                 ipDst="",
-                 tcpSrc="",
-                 tcpDst="",
-                 ip="DEFAULT",
-                 port="DEFAULT" ):
+    def sendFlow( self, deviceId, flowJson, ip="DEFAULT", port="DEFAULT", debug=False ):
         """
         Description:
-            Creates a single flow in the specified device
+            Sends a single flow to the specified device. This function exists
+            so you can bypass the addFLow driver and send your own custom flow.
         Required:
-            * deviceId: id of the device
-        Optional:
-            * ingressPort: port ingress device
-            * egressPort: port  of egress device
-            * ethType: specify ethType
-            * ethSrc: specify ethSrc ( i.e. src mac addr )
-            * ethDst: specify ethDst ( i.e. dst mac addr )
-            * ipProto: specify ip protocol
-            * ipSrc: specify ip source address with mask eg. ip#/24
-            * ipDst: specify ip destination address eg. ip#/24
-            * tcpSrc: specify tcp source port
-            * tcpDst: specify tcp destination port
+            * The flow in json
+            * the device id to add the flow to
         Returns:
             Returns main.TRUE for successful requests; Returns main.FALSE
             if error on requests;
@@ -1135,63 +1110,9 @@ class OnosRestDriver( Controller ):
             The ip and port option are for the requests input's ip and port
             of the ONOS node
         """
+
         try:
-            flowJson = { "priority":100,
-                           "isPermanent":"true",
-                           "timeout":0,
-                           "deviceId":deviceId,
-                           "treatment":{"instructions":[]},
-                           "selector": {"criteria":[]}}
-            if appId:
-                flowJson[ "appId" ] = appId
-            if egressPort:
-                flowJson[ 'treatment' ][ 'instructions' ].append(
-                                                       { "type":"OUTPUT",
-                                                         "port":egressPort } )
-            if ingressPort:
-                flowJson[ 'selector' ][ 'criteria' ].append(
-                                                       { "type":"IN_PORT",
-                                                         "port":ingressPort } )
-            if ethType == "IPV4":
-                flowJson[ 'selector' ][ 'criteria' ].append( {
-                                                         "type":"ETH_TYPE",
-                                                         "ethType":2048 } )
-            elif ethType:
-                flowJson[ 'selector' ][ 'criteria' ].append( {
-                                                         "type":"ETH_TYPE",
-                                                         "ethType":ethType } )
-            if ethSrc:
-                flowJson[ 'selector' ][ 'criteria' ].append(
-                                                       { "type":"ETH_SRC",
-                                                         "mac":ethSrc } )
-            if ethDst:
-                flowJson[ 'selector' ][ 'criteria' ].append(
-                                                       { "type":"ETH_DST",
-                                                         "mac":ethDst } )
-            if ipSrc:
-                flowJson[ 'selector' ][ 'criteria' ].append(
-                                                       { "type":"IPV4_SRC",
-                                                         "ip":ipSrc } )
-            if ipDst:
-                flowJson[ 'selector' ][ 'criteria' ].append(
-                                                       { "type":"IPV4_DST",
-                                                         "ip":ipDst } )
-            if tcpSrc:
-                flowJson[ 'selector' ][ 'criteria' ].append(
-                                                       { "type":"TCP_SRC",
-                                                         "tcpPort": tcpSrc } )
-            if tcpDst:
-                flowJson[ 'selector' ][ 'criteria' ].append(
-                                                       { "type":"TCP_DST",
-                                                         "tcpPort": tcpDst } )
-            if ipProto:
-                flowJson[ 'selector' ][ 'criteria' ].append(
-                                                       { "type":"IP_PROTO",
-                                                         "protocol": ipProto } )
-            if bandwidth or lambdaAlloc:
-                # TODO: Bandwidth and Lambda will be implemented if needed
-                raise NotImplementedError
-            main.log.debug( "Adding flow: " + self.pprint( flowJson ) )
+            if debug: main.log.debug( "Adding flow: " + self.pprint( flowJson ) )
             output = None
             if ip == "DEFAULT":
                 main.log.warn( "No ip given, reverting to ip from topo file" )
@@ -1217,6 +1138,113 @@ class OnosRestDriver( Controller ):
                     return main.FALSE
         except NotImplementedError as e:
             raise e  # Inform the caller
+        except ( AttributeError, TypeError ):
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
+    def addFlow( self,
+                 deviceId,
+                 appId=0,
+                 ingressPort="",
+                 egressPort="",
+                 ethType="",
+                 ethSrc="",
+                 ethDst="",
+                 vlan="",
+                 ipProto="",
+                 ipSrc=(),
+                 ipDst=(),
+                 tcpSrc="",
+                 tcpDst="",
+                 ip="DEFAULT",
+                 port="DEFAULT",
+                 debug=False ):
+        """
+        Description:
+            Creates a single flow in the specified device
+        Required:
+            * deviceId: id of the device
+        Optional:
+            * ingressPort: port ingress device
+            * egressPort: port  of egress device
+            * ethType: specify ethType
+            * ethSrc: specify ethSrc ( i.e. src mac addr )
+            * ethDst: specify ethDst ( i.e. dst mac addr )
+            * ipProto: specify ip protocol
+            * ipSrc: specify ip source address with mask eg. ip#/24
+                as a tuple (type, ip#)
+            * ipDst: specify ip destination address eg. ip#/24
+                as a tuple (type, ip#)
+            * tcpSrc: specify tcp source port
+            * tcpDst: specify tcp destination port
+        Returns:
+            Returns main.TRUE for successful requests; Returns main.FALSE
+            if error on requests;
+            Returns None for exceptions
+        NOTE:
+            The ip and port option are for the requests input's ip and port
+            of the ONOS node
+        """
+        try:
+            flowJson = { "priority":100,
+                           "isPermanent":"true",
+                           "timeout":0,
+                           "deviceId":deviceId,
+                           "treatment":{"instructions":[]},
+                           "selector": {"criteria":[]}}
+            if appId:
+                flowJson[ "appId" ] = appId
+            if egressPort:
+                flowJson[ 'treatment' ][ 'instructions' ].append( {
+                                                        "type":"OUTPUT",
+                                                        "port":egressPort } )
+            if ingressPort:
+                flowJson[ 'selector' ][ 'criteria' ].append( {
+                                                        "type":"IN_PORT",
+                                                        "port":ingressPort } )
+            if ethType:
+                flowJson[ 'selector' ][ 'criteria' ].append( {
+                                                        "type":"ETH_TYPE",
+                                                        "ethType":ethType } )
+            if ethSrc:
+                flowJson[ 'selector' ][ 'criteria' ].append( {
+                                                        "type":"ETH_SRC",
+                                                        "mac":ethSrc } )
+            if ethDst:
+                flowJson[ 'selector' ][ 'criteria' ].append( {
+                                                        "type":"ETH_DST",
+                                                        "mac":ethDst } )
+            if vlan:
+                flowJson[ 'selector' ][ 'criteria' ].append( {
+                                                        "type":"VLAN_VID",
+                                                        "vlanId":vlan } )
+            if ipSrc:
+                flowJson[ 'selector' ][ 'criteria' ].append( {
+                                                        "type":ipSrc[0],
+                                                        "ip":ipSrc[1] } )
+            if ipDst:
+                flowJson[ 'selector' ][ 'criteria' ].append( {
+                                                        "type":ipDst[0],
+                                                        "ip":ipDst[1] } )
+            if tcpSrc:
+                flowJson[ 'selector' ][ 'criteria' ].append( {
+                                                        "type":"TCP_SRC",
+                                                        "tcpPort": tcpSrc } )
+            if tcpDst:
+                flowJson[ 'selector' ][ 'criteria' ].append( {
+                                                        "type":"TCP_DST",
+                                                        "tcpPort": tcpDst } )
+            if ipProto:
+                flowJson[ 'selector' ][ 'criteria' ].append( {
+                                                        "type":"IP_PROTO",
+                                                        "protocol": ipProto } )
+
+            return self.sendFlow( deviceId=deviceId, flowJson=flowJson, debug=debug )
+
         except ( AttributeError, TypeError ):
             main.log.exception( self.name + ": Object not as expected" )
             return None

@@ -1,16 +1,19 @@
 
 <PARAMS>
     # CASE - Descritpion
+    # 1,2,10,1000,1100,2000,1200,2000,100
     # 1 - Variable initialization and optional pull and build ONOS package
     # 2 - install ONOS
     # 8 - Compare topology
     # 9 - Report logs
-    # 10 - Start mininet and assign switches to controller
+    # 10 - Start mininet and verify topology
     # 66 - Testing Scapy
-    # 1000 - Add flows
-    # 2000 - Verify flows are in the ADDED state
-    # 3000 - Delete flows
-    <testcases>1,2,10,11,1000,2000,[66]*3,3000</testcases>
+    # 1000 - Add flows with MAC selectors
+    # 1100 - Add flows with IPv4 selectors
+    # 1200 - Add flows with vlan selector
+    # 2000 - Delete flows
+
+    <testcases>1,2,10,1000,2,1100,2,1200,100</testcases>
 
     <SCALE>
         <max>1</max>
@@ -22,19 +25,6 @@
         <wrapper2>topo</wrapper2>
         <topology>topo-flow.py</topology>
     </DEPENDENCY>
-
-
-    <TOPO>
-        <numSwitches>1</numSwitches>
-        <numHosts>2</numHosts>
-        <numLinks>0</numLinks>
-    </TOPO>
-
-    <MININET>
-        <deviceId>of:0000000000000001</deviceId>
-        <hostMac1>00:00:00:00:00:01</hostMac1>
-        <hostMac2>00:00:00:00:00:02</hostMac2>
-    </MININET>
 
     <ENV>
         <cellName>productionCell</cellName>
@@ -50,8 +40,19 @@
         <port>6653</port>
     </CTRL>
 
+    <TEST>
+        <vlan>10</vlan>
+        <ip4Type>2048</ip4Type>
+        <ip6Type>34525</ip6Type>
+        <vlanType>33024</vlanType>
+        <swDPID>of:0000000000000001</swDPID>
+    </TEST>
+
     <SLEEP>
         <startup>15</startup>
+        <startMN>5</startMN>
+        <addFlow>10</addFlow>
+        <delFlow>10</delFlow>
     </SLEEP>
 
 </PARAMS>

@@ -27,24 +27,24 @@ class FUNCflow:
         main.cellName = main.params[ 'ENV' ][ 'cellName' ]
         main.apps = main.params[ 'ENV' ][ 'cellApps' ]
         gitBranch = main.params[ 'GIT' ][ 'branch' ]
+        gitPull = main.params[ 'GIT' ][ 'pull' ]
+        main.ONOSport = main.params[ 'CTRL' ][ 'port' ]
         main.dependencyPath = main.testOnDirectory + \
                               main.params[ 'DEPENDENCY' ][ 'path' ]
-        main.topology = main.params[ 'DEPENDENCY' ][ 'topology' ]
-        main.maxNodes = int( main.params[ 'SCALE' ][ 'max' ] )
-        main.ONOSport = main.params[ 'CTRL' ][ 'port' ]
-        main.numSwitches = int( main.params[ 'TOPO' ][ 'numSwitches' ] )
-        main.numHosts = int( main.params[ 'TOPO' ][ 'numHosts' ] )
-        main.numLinks = int( main.params[ 'TOPO' ][ 'numLinks' ] )
         wrapperFile1 = main.params[ 'DEPENDENCY' ][ 'wrapper1' ]
         wrapperFile2 = main.params[ 'DEPENDENCY' ][ 'wrapper2' ]
+        main.topology = main.params[ 'DEPENDENCY' ][ 'topology' ]
+        main.maxNodes = int( main.params[ 'SCALE' ][ 'max' ] )
         main.startUpSleep = int( main.params[ 'SLEEP' ][ 'startup' ] )
-        gitPull = main.params[ 'GIT' ][ 'pull' ]
+        main.startMNSleep = int( main.params[ 'SLEEP' ][ 'startMN' ] )
+        main.addFlowSleep = int( main.params[ 'SLEEP' ][ 'addFlow' ] )
+        main.delFlowSleep = int( main.params[ 'SLEEP' ][ 'delFlow' ] )
+        main.swDPID = main.params[ 'TEST' ][ 'swDPID' ]
         main.cellData = {} # for creating cell file
         main.CLIs = []
         main.ONOSip = []
 
         main.ONOSip = main.ONOSbench.getOnosIps()
-        print main.ONOSip
 
         # Assigning ONOS cli handles to a list
         for i in range( 1,  main.maxNodes + 1 ):
@@ -207,49 +207,33 @@ class FUNCflow:
         '''
             Start Mininet
         '''
-        main.case( "Setup mininet and assign switches to controllers" )
+        import json
+
+        main.case( "Setup mininet and compare ONOS topology view to Mininet topology" )
+        main.caseExplanation = "Start mininet with custom topology and compare topology " +\
+                "elements between Mininet and ONOS"
+
         main.step( "Setup Mininet Topology" )
         topology = main.Mininet1.home + '/custom/' + main.topology
-        mnCmd = 'mn --custom ' + topology + ' --mac --arp'
-        stepResult1 = main.Mininet1.startNet( mnCmd=mnCmd )
+        stepResult = main.Mininet1.startNet( topoFile=topology )
 
         utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult1,
+                                 actual=stepResult,
                                  onpass="Successfully loaded topology",
                                  onfail="Failed to load topology" )
 
-        main.step( "Assign switches to controllers" )
-        for i in range( main.numSwitches ):
-            stepResult2 = main.Mininet1.assignSwController(
-                                            sw="s" + str( i+1 ),
-                                            ip=main.ONOSip )
-            if not stepResult2:
-                break
+        main.step( "Assign switch to controller" )
+        stepResult = main.Mininet1.assignSwController( "s1", main.ONOSip[0] )
 
         utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult2,
-                                 onpass="Controller assignment successfull",
-                                 onfail="Controller assignment failed" )
+                                 actual=stepResult,
+                                 onpass="Successfully assigned switch to controller",
+                                 onfail="Failed to assign switch to controller" )
 
-        time.sleep(5)
+        time.sleep( main.startMNSleep )
 
-        caseResult = stepResult1 and stepResult2
-        if not caseResult:
-            main.cleanup()
-            main.exit()
-
-    def CASE11( self, main ):
-        '''
-            Compare topology
-        '''
-        import json
-
-        main.case( "Compare ONOS Topology view to Mininet topology" )
-        main.caseExplanation = "Compare topology elements between Mininet" +\
-                                " and ONOS"
-
-        main.step( "Gathering topology information" )
-        # TODO: add a paramaterized sleep here
+        main.step( "Conmparing MN topology to ONOS topology" )
+        main.log.info( "Gathering topology information" )
         devicesResults = main.TRUE
         linksResults = main.TRUE
         hostsResults = main.TRUE
@@ -263,7 +247,6 @@ class FUNCflow:
         mnLinks = main.Mininet1.getLinks()
         mnHosts = main.Mininet1.getHosts()
 
-        main.step( "Conmparing MN topology to ONOS topology" )
         for controller in range( main.numCtrls ):
             controllerStr = str( controller + 1 )
             if devices[ controller ] and ports[ controller ] and\
@@ -307,7 +290,6 @@ class FUNCflow:
                                             " hosts exist in Mininet",
                                      onfail="ONOS" + controllerStr +
                                             " hosts don't match Mininet")
-
 
 
     def CASE66( self, main ):
@@ -380,75 +362,301 @@ class FUNCflow:
 
     def CASE1000( self, main ):
         '''
-            Add flows
+            Add flows with MAC selectors and verify the flows
         '''
+        import json
+        import time
 
-        main.step("Add flows through rest")
+        main.case( "Verify flow MAC selectors are correctly compiled" )
+        main.caseExplanation = "Install two flows with only MAC selectors " +\
+                "specified, then verify flows are added in ONOS, finally "+\
+                "send a packet that only specifies the MAC src and dst."
 
-        deviceId = main.params['MININET']['deviceId']
-        host1_mac = main.params['MININET']['hostMac1']
-        host2_mac = main.params['MININET']['hostMac2']
+        main.step( "Add flows with MAC addresses as the only selectors" )
 
-        # Add flows that connects host1 to host 2
-        stepResult = main.ONOSrest.addFlow( deviceId=deviceId,
-                                            egressPort=2,
-                                            ingressPort=1,
-                                            ethSrc=host1_mac,
-                                            ethDst=host2_mac)
+        main.log.info( "Creating host components" )
+        main.Mininet1.createHostComponent( "h1" )
+        main.Mininet1.createHostComponent( "h2" )
+        hosts = [main.h1, main.h2]
+        stepResult = main.TRUE
+        for host in hosts:
+            host.startHostCli()
+            host.startScapy()
+            host.updateSelf()
 
-        stepResult = stepResult and main.ONOSrest.addFlow( deviceId=deviceId,
-                                                           egressPort=1,
-                                                           ingressPort=2,
-                                                           ethSrc=host2_mac,
-                                                           ethDst=host1_mac)
+        # Add a flow that connects host1 on port1 to host2 on port2
+        # send output on port2
+        # recieve input on port1
+        egress = 2
+        ingress = 1
+
+        # Add flows that sends packets from port1 to port2 with correct
+        # MAC src and dst addresses
+        main.log.info( "Adding flow with MAC selectors" )
+        stepResult = main.ONOSrest.addFlow( deviceId=main.swDPID,
+                                            egressPort=egress,
+                                            ingressPort=ingress,
+                                            ethSrc=main.h1.hostMac,
+                                            ethDst=main.h2.hostMac,
+                                            debug=True )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
                                  onpass="Successfully added flows",
                                  onfail="Failed add flows" )
 
-    def CASE2000( self, main ):
-        '''
-            Check flows are ADDED
-        '''
-        import json
-        main.step("Check flows  are in the ADDED state")
-        main.log.info("Check only the flows added through REST")
+        # Giving ONOS time to add the flows
+        time.sleep( main.addFlowSleep )
 
+        main.step( "Check flows are in the ADDED state" )
+
+        #TODO: We should check mininet if flows are added as well
+        main.log.info( "Get the flows from ONOS" )
         flows = json.loads( main.ONOSrest.flows() )
 
         stepResult = main.TRUE
         for f in flows:
             if "rest" in f.get("appId"):
-                if "ADDED" in f.get("state"):
-                    stepResult = stepResult and main.ONOSrest.removeFlow( deviceId, flowId )
+                if "ADDED" not in f.get("state"):
+                    stepResult = main.FALSE
+                    main.log.error( "Flow: %s in state: %s" % (f.get("id"), f.get("state")) )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
                                  onpass="All flows are in the ADDED state",
-                                 onfail="All flows are in the ADDED state" )
+                                 onfail="All flows are NOT in the ADDED state" )
 
-    def CASE3000( self, main ):
+        main.step( "Send a packet to verify the flows are correct" )
+
+        # Specify the src and dst MAC addr
+        main.log.info( "Constructing packet" )
+        main.h1.buildEther( src=main.h1.hostMac, dst=main.h2.hostMac )
+
+        # Filter for packets with the correct host name. Otherwise,
+        # the filter we catch any packet that is sent to host2
+        # NOTE: I believe it doesn't matter which host name it is,
+        # as long as its host1 or host2
+        main.log.info( "Starting filter on host2" )
+        main.h2.startFilter( pktFilter="ether host %s" % main.h1.hostMac)
+
+        main.log.info( "Sending packet to host2" )
+        main.h1.sendPacket()
+
+        main.log.info( "Checking filter for our packet" )
+        stepResult = main.h2.checkFilter()
+        if stepResult:
+            main.log.info( "Packet: %s" % main.h2.readPackets() )
+        else: main.h2.killFilter()
+
+        main.log.info( "Clean up host components" )
+        for host in hosts:
+            host.stopScapy()
+        main.Mininet1.removeHostComponent("h1")
+        main.Mininet1.removeHostComponent("h2")
+
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="Successfully sent a packet",
+                                 onfail="Failed to send a packet" )
+
+    def CASE1100( self, main ):
         '''
-            Delete flows that were added through REST
+            Add flows with IPv4 selectors and verify the flows
         '''
         import json
-        main.step("Remove flows")
-        main.log.info("Remove the flows that were added through rest")
+        import time
 
+        main.case( "Verify flow IP selectors are correctly compiled" )
+        main.caseExplanation = "Install two flows with only IP selectors " +\
+                "specified, then verify flows are added in ONOS, finally "+\
+                "send a packet that only specifies the IP src and dst."
+
+        main.step( "Add flows with IPv4 addresses as the only selectors" )
+
+        main.log.info( "Creating host components" )
+        main.Mininet1.createHostComponent( "h1" )
+        main.Mininet1.createHostComponent( "h2" )
+        hosts = [main.h1, main.h2]
+        stepResult = main.TRUE
+        for host in hosts:
+            host.startHostCli()
+            host.startScapy()
+            host.updateSelf()
+
+        # Add a flow that connects host1 on port1 to host2 on port2
+        # send output on port2
+        # recieve input on port1
+        egress = 2
+        ingress = 1
+        # IPv4 etherType = 0x800
+        IPv4=2048
+
+        # Add flows that connects host1 to host2
+        main.log.info( "Add flow with port ingress 1 to port egress 2" )
+        stepResult = main.ONOSrest.addFlow( deviceId=main.swDPID,
+                                            egressPort=egress,
+                                            ingressPort=ingress,
+                                            ethType=IPv4,
+                                            ipSrc=("IPV4_SRC", main.h1.hostIp+"/32"),
+                                            ipDst=("IPV4_DST", main.h2.hostIp+"/32"),
+                                            debug=True )
+
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="Successfully added flows",
+                                 onfail="Failed add flows" )
+
+        # Giving ONOS time to add the flow
+        time.sleep( main.addFlowSleep )
+
+        main.step( "Check flow is in the ADDED state" )
+
+        main.log.info( "Get the flows from ONOS" )
         flows = json.loads( main.ONOSrest.flows() )
 
         stepResult = main.TRUE
         for f in flows:
             if "rest" in f.get("appId"):
-                flowId = f.get("id")
-                deviceId = f.get("deviceId")
-                stepResult = stepResult and main.ONOSrest.removeFlow( deviceId, flowId )
+                if "ADDED" not in f.get("state"):
+                    stepResult = main.FALSE
+                    main.log.error( "Flow: %s in state: %s" % (f.get("id"), f.get("state")) )
 
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
-                                 onpass="Successfully removed all rest flows",
-                                 onfail="Failed to remove rest flows" )
+                                 onpass="All flows are in the ADDED state",
+                                 onfail="All flows are NOT in the ADDED state" )
+
+        main.step( "Send a packet to verify the flow is correct" )
+
+        main.log.info( "Constructing packet" )
+        # No need for the MAC src dst
+        main.h1.buildEther( dst=main.h2.hostMac )
+        main.h1.buildIP( src=main.h1.hostIp, dst=main.h2.hostIp )
+
+        main.log.info( "Starting filter on host2" )
+        # Defaults to ip
+        main.h2.startFilter()
+
+        main.log.info( "Sending packet to host2" )
+        main.h1.sendPacket()
+
+        main.log.info( "Checking filter for our packet" )
+        stepResult = main.h2.checkFilter()
+        if stepResult:
+            main.log.info( "Packet: %s" % main.h2.readPackets() )
+        else: main.h2.killFilter()
+
+        main.log.info( "Clean up host components" )
+        for host in hosts:
+            host.stopScapy()
+        main.Mininet1.removeHostComponent("h1")
+        main.Mininet1.removeHostComponent("h2")
+
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="Successfully sent a packet",
+                                 onfail="Failed to send a packet" )
+
+    def CASE1200( self, main ):
+        '''
+            Add flow with VLAN selector and verify the flow
+        '''
+        import json
+        import time
+
+        main.case( "Verify VLAN selector is correctly compiled" )
+        main.caseExplanation = "Install one flow with only the VLAN selector " +\
+                "specified, then verify the flow is added in ONOS, and finally "+\
+                "broadcast a packet with the correct VLAN tag."
+
+        # We do this here to utilize the hosts information
+        main.log.info( "Creating host components" )
+        main.Mininet1.createHostComponent( "h3" )
+        main.Mininet1.createHostComponent( "h4" )
+        hosts = [main.h3, main.h4]
+        stepResult = main.TRUE
+        for host in hosts:
+            host.startHostCli()
+            host.startScapy()
+            host.updateSelf()
+
+
+        main.step( "Add a flow with the VLAN tag as the only selector" )
+
+        # Add flows that connects the two vlan hosts h3 and h4
+        # Host 3 is on port 3 and host 4 is on port 4
+        vlan = main.params[ 'TEST' ][ 'vlan' ]
+        egress = 4
+        ingress = 3
+        # VLAN ethType = 0x8100
+        ethType = 33024
+
+        # Add only one flow because we don't need a response
+        main.log.info( "Add flow with port ingress 1 to port egress 2" )
+        stepResult = main.ONOSrest.addFlow( deviceId=main.swDPID,
+                                            egressPort=egress,
+                                            ingressPort=ingress,
+                                            ethType=ethType,
+                                            vlan=vlan,
+                                            debug=True )
+
+
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="Successfully added flow",
+                                 onfail="Failed add flows" )
+
+        # Giving ONOS time to add the flows
+        time.sleep( main.addFlowSleep )
+
+        main.step( "Check flows  are in the ADDED state" )
+
+        main.log.info( "Get the flows from ONOS" )
+        flows = json.loads( main.ONOSrest.flows() )
+
+        stepResult = main.TRUE
+        for f in flows:
+            if "rest" in f.get("appId"):
+                if "ADDED" not in f.get("state"):
+                    stepResult = main.FALSE
+                    main.log.error( "Flow: %s in state: %s" % (f.get("id"), f.get("state")) )
+
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="All flows are in the ADDED state",
+                                 onfail="All flows are NOT in the ADDED state" )
+
+        main.step( "Send a packet to verify the flow are correct" )
+
+        # The receiving interface
+        recIface = "{}-eth0.{}".format(main.h4.name, vlan)
+        main.log.info( "Starting filter on host2" )
+        # Filter is setup to catch any packet on the vlan interface with the correct vlan tag
+        main.h4.startFilter( ifaceName=recIface, pktFilter="" )
+
+        # Broadcast the packet on the vlan interface. We only care if the flow forwards
+        # the packet with the correct vlan tag, not if the mac addr is correct
+        BROADCAST = "FF:FF:FF:FF:FF:FF"
+        sendIface = "{}-eth0.{}".format(main.h3.name, vlan)
+        main.log.info( "Broadcasting the packet with a vlan tag" )
+        main.h3.sendPacket( iface=sendIface, packet="Ether(dst='{}')/Dot1Q(vlan={})".format(BROADCAST, vlan))
+
+        main.log.info( "Checking filter for our packet" )
+        stepResult = main.h4.checkFilter()
+        if stepResult:
+            main.log.info( "Packet: %s" % main.h4.readPackets() )
+        else: main.h4.killFilter()
+
+        main.log.info( "Clean up host components" )
+        for host in hosts:
+            host.stopScapy()
+        main.Mininet1.removeHostComponent("h3")
+        main.Mininet1.removeHostComponent("h4")
+
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="Successfully sent a packet",
+                                 onfail="Failed to send a packet" )
 
     def CASE100( self, main ):
         '''

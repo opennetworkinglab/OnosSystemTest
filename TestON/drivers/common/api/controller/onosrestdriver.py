@@ -97,7 +97,7 @@ class OnosRestDriver( Controller ):
         try:
             path = "http://" + str( ip ) + ":" + str( port ) + base + url
             if self.user_name and self.pwd:
-                main.log.info("users/passwd is: " + self.user_name + "/" + self.pwd)
+                main.log.info("user/passwd is: " + self.user_name + "/" + self.pwd)
                 auth = (self.user_name, self.pwd)
             else:
                 auth=None

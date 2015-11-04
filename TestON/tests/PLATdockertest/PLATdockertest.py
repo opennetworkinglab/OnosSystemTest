@@ -230,7 +230,7 @@ class PLATdockertest:
 
         #main.step( "remove exiting onosproject/onos images")
         #stepResult = main.ONOSbenchDocker.dockerRemoveImage( image = DOCKERREPO + ":" + DOCKERTAG )
-        main.step( "remove exiting '<none>:<none>' images")
+        main.step( "remove exiting 'none:none' images")
         stepResult = main.ONOSbenchDocker.dockerRemoveImage( image = "<none>:<none>" )
         utilities.assert_equals( expect = main.TRUE, actual = stepResult,
                                     onpass = "Succeeded in deleting image " + "<none>:<none>",

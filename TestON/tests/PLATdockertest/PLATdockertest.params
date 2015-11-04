@@ -39,7 +39,7 @@
     </CTRL>
 
     <SLEEP>
-        <startup>120</startup>
+        <startup>60</startup>
     </SLEEP>
 
 </PARAMS>

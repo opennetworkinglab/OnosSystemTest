@@ -188,8 +188,8 @@ class PLATdockertest:
             stepResult = stepResult and appRslt
         main.log.debug("Apps activation result for " + ",".join(applist) + ": " + str(appResults) ) 
         utilities.assert_equals( expect = main.TRUE, actual = stepResult,
-                                    onpass = "Successfully activate apps",
-                                    onfail = "Failed to activate apps correctly" )
+                                    onpass = "Successfully activated apps",
+                                    onfail = "Failed to activated apps correctly" )
         if stepResult is main.FALSE: main.skipCase
 
         main.step(" Deactivate an APP from REST and check APP status")
@@ -204,8 +204,8 @@ class PLATdockertest:
             stepResult = stepResult and appRslt
         main.log.debug("Apps deactivation result for " + ",".join(applist) + ": " + str(appResults) )
         utilities.assert_equals( expect = main.TRUE, actual = stepResult,
-                                    onpass = "Successfully deactivate apps",
-                                    onfail = "Failed to deactivate apps correctly" )
+                                    onpass = "Successfully deactivated apps",
+                                    onfail = "Failed to deactivated apps correctly" )
         if stepResult is main.FALSE: main.skipCase
 
     def CASE1000( self, main ):
@@ -215,6 +215,7 @@ class PLATdockertest:
         """
         import time
 
+        main.case("Clean up unwanted images and containers")
         main.step("Stop onos containers")
         stepResult = main.TRUE
         for ctname in NODElist:

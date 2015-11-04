@@ -1,0 +1,53 @@
+<PARAMS>
+    # CASE - Description
+    # 1 - Variable initialization and optional pull and build ONOS package
+    # 2 - Install ONOS
+    # 11 - Start Mininet with Openflow 1.3
+    # 12 - Assign switch to controller
+    # 14 - Stop Mininet
+
+    <testcases>1,2,11,12,14</testcases>
+
+    <SCALE>
+        <size>1</size>
+    </SCALE>
+
+    <DEPENDENCY>
+        <path>/tests/FUNCipv6Intent/Dependency/</path>
+        <wrapper1>startUp</wrapper1>
+        <wrapper2>FUNCIpv6IntentFunction</wrapper2>
+        <wrapper3>topo</wrapper3>
+        <topology>newFuncTopo.py</topology>
+    </DEPENDENCY>
+
+    <ENV>
+        <cellApps>drivers,openflow,proxyarp,mobility</cellApps>
+    </ENV>
+    <GIT>
+        <pull>true</pull>
+        <branch>master</branch>
+    </GIT>
+
+    <SLEEP>
+        <startup>15</startup>
+        <reroute>5</reroute>
+        <removeintent>10</removeintent>
+        <checkintent>5</checkintent>
+        <fwd>10</fwd>
+        <topoAttempts>3</topoAttempts>
+    </SLEEP>
+
+    <MININET>
+        <switch>7</switch>
+        <links>20</links>
+    </MININET>
+
+    # Intent tests params
+    <SDNIP>
+        <tcpProto>6</tcpProto>
+        <icmpProto>1</icmpProto>
+        <srcPort>5001</srcPort>
+        <dstPort>5001</dstPort>
+    </SDNIP>
+
+</PARAMS>

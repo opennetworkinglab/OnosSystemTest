@@ -1,6 +1,6 @@
 
-# This is a sample template that starts up ONOS cluster, this template
-# is used as a starting script for creating functionality and performance test
+# This is a basic platform test suite.
+# Additional platform test cases can be added on this test suite where appropriate.
 
 class PLATdockertest:
     """

@@ -1,6 +1,6 @@
 <PARAMS>
 
-    <testcases>1,5,1000,10,110,1000</testcases>
+    <testcases>1,1000,5,10,110,1000</testcases>
 
     <DOCKER>
         <repo>onosproject/onos</repo>

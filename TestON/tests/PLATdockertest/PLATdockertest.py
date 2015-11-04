@@ -182,8 +182,8 @@ class PLATdockertest:
         applist = main.params["CASE110"]["apps"].split(",")
         main.log.info("List of apps to activate: " + str(applist) )
         for app in applist:
-            time.sleep(5)
             appRslt = main.ONOSbenchRest.activateApp(appName=app, ip=IPlist[0], port=8181, check=True)
+            time.sleep(5)
             appResults.append(appRslt)
             stepResult = stepResult and appRslt
         main.log.debug("Apps activation result for " + ",".join(applist) + ": " + str(appResults) ) 
@@ -196,7 +196,7 @@ class PLATdockertest:
         appResults = list()
         stepResult = main.TRUE
         applist = main.params["CASE110"]["apps"].split(",")
-        main.log.info("Apps to activae: " + str(applist) )
+        main.log.info("Apps to deactivate: " + str(applist) )
         for app in applist:
             time.sleep(5)
             appRslt = main.ONOSbenchRest.deactivateApp(appName=app, ip=IPlist[0], port=8181, check=True)

@@ -6,7 +6,7 @@
     # 12 - Assign switch to controller
     # 14 - Stop Mininet
 
-    <testcases>1,2,11,12,14</testcases>
+    <testcases>1,2,11,12,2000,14</testcases>
 
     <SCALE>
         <size>1</size>
@@ -24,7 +24,7 @@
         <cellApps>drivers,openflow,proxyarp,mobility</cellApps>
     </ENV>
     <GIT>
-        <pull>true</pull>
+        <pull>false</pull>
         <branch>master</branch>
     </GIT>
 
@@ -36,7 +36,6 @@
         <fwd>10</fwd>
         <topoAttempts>3</topoAttempts>
     </SLEEP>
-
     <MININET>
         <switch>7</switch>
         <links>20</links>

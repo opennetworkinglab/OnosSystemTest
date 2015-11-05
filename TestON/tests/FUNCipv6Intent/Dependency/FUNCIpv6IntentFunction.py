@@ -405,12 +405,12 @@ def pointIntent( main,
     checkFlowsState( main )
 
     # Ping hosts
-    pingTemp = pingallHosts( main, hostNames )
+    pingTemp = main.Mininet1.ping6pair(SRC=host1, TARGET='10:1:0::5')
     pingResult = pingResult and pingTemp
     if pingTemp:
-        main.assertReturnString += 'Initial Pingall Passed\n'
+        main.assertReturnString += 'Initial Ping6 pair Passed\n'
     else:
-        main.assertReturnString += 'Initial Pingall Failed\n'
+        main.assertReturnString += 'Initial Ping6 pair Failed\n'
 
     # Test rerouting if these variables exist
     if sw1 and sw2 and expectedLink:
@@ -435,7 +435,7 @@ def pointIntent( main,
             main.assertReturnString += 'Link Down Topology State Failed\n'
 
         # Ping hosts
-        pingTemp = pingallHosts( main, hostNames )
+        pingTemp = ping6allHosts( main, hostNames )
         pingResult = pingResult and pingTemp
         if pingTemp:
             main.assertReturnString += 'Link Down Pingall Passed\n'
@@ -1377,10 +1377,10 @@ def multiToSingleIntent( main,
 
     return stepResult
 
-def pingallHosts( main, hostList ):
+def ping6allHosts( main, hostList ):
     # Ping all host in the hosts list variable
     main.log.info( "Pinging: " + str( hostList ) )
-    return main.Mininet1.pingallHosts( hostList )
+    return main.Mininet1.pingIpv6Hosts( hostList )
 
 def getHostsData( main ):
     """

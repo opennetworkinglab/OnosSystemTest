@@ -2877,10 +2877,15 @@ class HAkillNodes:
             oldLeader = oldLeaders[ 0 ]
 
         # Check that each node's candidate list is the same
+        candidateDiscrepancy = False  # Boolean of candidate mismatches
         for candidates in oldAllCandidates:
             if set( candidates ) != set( oldCandidates ):
                 sameResult = main.FALSE
-                failMessage += "and candidates"
+                candidateDiscrepancy = True
+
+        if candidateDiscrepancy:
+            failMessage += " and candidates"
+            
         utilities.assert_equals(
             expect=main.TRUE,
             actual=sameResult,

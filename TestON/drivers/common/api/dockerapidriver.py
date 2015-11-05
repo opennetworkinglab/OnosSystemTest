@@ -49,7 +49,8 @@ class DockerApiDriver( API ):
                            ": Pulling Docker image " + onosRepo + ":"+ onosTag )
             for line in self.dockerClient.pull( repository = onosRepo, \
                     tag = onosTag, stream = True ):
-                print(json.dumps(json.loads(line), indent =4))
+                    print "#",
+            main.log.info(json.dumps(json.loads(line), indent =4))
 
             #response = json.dumps( json.load( pullResult ), indent=4 )
             if re.search( "for onosproject/onos:latest", line ):
@@ -58,7 +59,7 @@ class DockerApiDriver( API ):
             else:
                 main.log.error( "Failed to download image from: " + onosRepo +":"+ onosTag )
                 main.log.error( "Error respone: " )
-                main.log.error( response )
+                main.log.error( line )
                 return main.FALSE
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
@@ -198,27 +199,32 @@ class DockerApiDriver( API ):
         """
             Remove Docker image
         """
+        rmResult = main.TRUE
+
         if self.dockerClient.images() is []: 
             main.log.info( "No docker image found with RepoTags: " + image )
-            return main.TRUE
+            return rmResult
         else:
-            try:
-                main.log.info( self.name +
-                           ": Removing Docker image " + image )
-                response = self.dockerClient.remove_image( image, force = True)
-                if response is None:
-                    main.log.info( "Removed Docker image: " + image )
-                    return main.TRUE
-                else:
-                    main.log.info( "Noticed warnings during Remove " + image )
-                    return main.FALSE
-            except errors.NotFound:
-                main.log.warn( image + "not found! Continue with the tests...")
-                return main.TRUE
-            except Exception:
-                main.log.exception( self.name + ": Uncaught exception! Continuing..." )
-                #main.cleanup()
-                #main.exit()
+            list = [ image["Id"] for image in self.dockerClient.images() if image["RepoTags"][0] == '<none>:<none>' ]
+            for id in list:
+                try:
+                    main.log.info( self.name + ": Removing Docker image " + id )
+                    response = self.dockerClient.remove_image(id, force = True)
+                    if response is None:
+                        main.log.info( "Removed Docker image: " + id )
+                        rmResult = rmResult and main.TRUE
+                    else:
+                        main.log.info( "Noticed warnings during Remove " + id )
+                        rmResult = rmResult and main.FALSE
+                except errors.NotFound:
+                    main.log.warn( image + "not found! Continue with the tests...")
+                    rmResult = rmResult and main.TRUE
+                except Exception:
+                    main.log.exception( self.name + ": Uncaught exception! Continuing..." )
+                    rmResult = rmResult and main.FALSE
+                    #main.cleanup()
+                    #main.exit()
+        return rmResult
 
     def fetchLatestClusterFile( self, branch="master" ):
         """

@@ -29,6 +29,8 @@ class PLATdockertest:
         1) set up test params;
         """
         import re
+        import time
+        import subprocess
 
         main.case("Set case test params")
         main.step("Initialize test params")
@@ -39,9 +41,23 @@ class PLATdockertest:
         DOCKERREPO = main.params[ 'DOCKER' ][ 'repo' ]
         DOCKERTAG = main.params[ 'DOCKER' ][ 'tag' ]
         CTIDlist = list()
-        utilities.assert_equals( expect = main.TRUE, actual = main.TRUE,
-                                    onpass = "Params set",
-                                    onfail = "Failed to set params")
+
+        main.log.info("Check docker status, it not running, try restart it")
+        iter = 0
+        stepResult = main.TRUE
+        while subprocess.call("sudo service docker status", shell=True) and iter <= 3:
+            subprocess.call("sudo service docker restart", shell=True)
+            time.sleep(5)
+            iter += 1
+            if iter == 3: stepResult = main.FALSE
+
+        utilities.assert_equals( expect = main.TRUE, actual = stepResult,
+                                    onpass = "docker is running",
+                                    onfail = "docker is not running")
+        if stepResult == main.FALSE:
+            main.log.warn("docker is not running - exiting test")
+            main.exit()
+            main.cleanup()
 
     def CASE5(self, main):
         """
@@ -56,13 +72,15 @@ class PLATdockertest:
         utilities.assert_equals( expect = main.TRUE, actual = stepResult,
                                     onpass = "Succeeded in pulling " + DOCKERREPO + ":" + DOCKERTAG,
                                     onfail = "Failed to pull " + DOCKERREPO + ":" + DOCKERTAG )
+        if stepResult == main.FALSE: main.skipCase()
 
     def CASE10( self, main ):
         """
         Start docker containers for list of onos nodes, only if not already existed
         """
         import re
-
+        createResult = main.TRUE
+        startResult = main.TRUE
         main.case( "Start onos container(s)")
         image = DOCKERREPO + ":" + DOCKERTAG
 
@@ -134,7 +152,7 @@ class PLATdockertest:
         utilities.assert_equals( expect = main.TRUE, actual = stepResult,
                                     onpass = "ONOS successfully started",
                                     onfail = "Failed to start ONOS correctly" )
-        if stepResult is main.FALSE: main.skipCase
+        if stepResult is main.FALSE: main.skipCase()
 
         main.step( "Form onos cluster using 'Dependency/onos-form-cluster' util")
         stepResult = main.FALSE
@@ -150,12 +168,14 @@ class PLATdockertest:
         if status == 200:
             jrsp = json.loads(response)
             clusterIP = [item["ip"]for item in jrsp["nodes"] if item["status"]== "ACTIVE"]
+            main.log.debug(" IPlist is:" + ",".join(IPlist))
+            main.log.debug("cluster IP is" + ",".join(clusterIP) )
             if set(IPlist) == set(clusterIP): stepResult = main.TRUE
 
         utilities.assert_equals( expect = main.TRUE, actual = stepResult,
                                     onpass = "ONOS successfully started",
                                     onfail = "Failed to start ONOS correctly" )
-        if stepResult is main.FALSE: main.skipCase
+        if stepResult is main.FALSE: main.skipCase()
 
         main.step( "Check cluster app status")
         stepResult = main.TRUE
@@ -166,15 +186,15 @@ class PLATdockertest:
                     main.log.info("Some bundles are not in correct state. ")
                     main.log.info("App states are: " + response)
                     stepResult = main.FALSE
-                    break;
+                    break
                 if (item["description"] == "Builtin device drivers") and (item["state"] != "ACTIVE"):
                     main.log.info("Driver app is not in 'ACTIVE' state, but in: " + item["state"])
                     stepResult = main.FALSE
-                    break;
+                    break
         utilities.assert_equals( expect = main.TRUE, actual = stepResult,
                                     onpass = "ONOS successfully started",
                                     onfail = "Failed to start ONOS correctly" )
-        if stepResult is main.FALSE: main.skipCase
+        if stepResult is main.FALSE: main.skipCase()
 
         main.step(" Activate an APP from REST and check APP status")
         appResults = list()
@@ -190,7 +210,7 @@ class PLATdockertest:
         utilities.assert_equals( expect = main.TRUE, actual = stepResult,
                                     onpass = "Successfully activated apps",
                                     onfail = "Failed to activated apps correctly" )
-        if stepResult is main.FALSE: main.skipCase
+        if stepResult is main.FALSE: main.skipCase()
 
         main.step(" Deactivate an APP from REST and check APP status")
         appResults = list()
@@ -206,7 +226,51 @@ class PLATdockertest:
         utilities.assert_equals( expect = main.TRUE, actual = stepResult,
                                     onpass = "Successfully deactivated apps",
                                     onfail = "Failed to deactivated apps correctly" )
-        if stepResult is main.FALSE: main.skipCase
+        if stepResult is main.FALSE: main.skipCase()
+
+    def CASE900(self,main):
+        """
+        Check onos logs for exceptions after tests
+        """
+        import pexpect
+        import time
+        import re
+
+        logResult = main.TRUE
+
+        user = main.params["DOCKER"]["user"]
+        pwd = main.params["DOCKER"]["password"]
+
+        main.case("onos Exceptions check")
+        main.step("check onos for any exceptions")
+
+        for ip in IPlist:
+            spawncmd = "ssh -p 8101 " + user + "@" + ip
+            main.log.info("log on node using cmd: " + spawncmd)
+            try:
+                handle = pexpect.spawn(spawncmd)
+                handle.expect("yes/no")
+                handle.sendline("yes")
+                handle.expect("Password:")
+                handle.sendline(pwd)
+                time.sleep(5)
+                handle.expect("onos>")
+                handle.sendline("log:exception-display")
+                handle.expect("onos>")
+                result = handle.before
+                if re.search("Exception", result):
+                    main.log.info("onos: " + ip + " Exceptions:" + result)
+                    logResult = logResult and main.FALSE
+                else:
+                    main.log.info("onos: " + ip + " Exceptions: None")
+                    logResult = logResult and main.TRUE
+            except Exception:
+                main.log.exception("Uncaught exception when getting log from onos:" + ip)
+                logResult = logResult and main.FALSE
+
+        utilities.assert_equals( expect = main.TRUE, actual = logResult,
+                                    onpass = "onos exception check passed",
+                                    onfail = "onos exeption check failed" )
 
     def CASE1000( self, main ):
 
@@ -215,7 +279,7 @@ class PLATdockertest:
         """
         import time
 
-        main.case("Clean up unwanted images and containers")
+        main.case("Clean up  images (ex. none:none tagged) and containers")
         main.step("Stop onos containers")
         stepResult = main.TRUE
         for ctname in NODElist:
@@ -231,9 +295,9 @@ class PLATdockertest:
 
         #main.step( "remove exiting onosproject/onos images")
         #stepResult = main.ONOSbenchDocker.dockerRemoveImage( image = DOCKERREPO + ":" + DOCKERTAG )
-        main.step( "remove exiting 'none:none' images")
+        main.step( "remove dangling 'none:none' images")
         stepResult = main.ONOSbenchDocker.dockerRemoveImage( image = "<none>:<none>" )
         utilities.assert_equals( expect = main.TRUE, actual = stepResult,
-                                    onpass = "Succeeded in deleting image " + "<none>:<none>",
-                                    onfail = "Failed to delete image " + "<none>:<none>" )
+                                    onpass = "Succeeded in cleaning up images",
+                                    onfail = "Failed in cleaning up images" )
 

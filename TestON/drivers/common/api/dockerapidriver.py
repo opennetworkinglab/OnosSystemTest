@@ -199,7 +199,7 @@ class DockerApiDriver( API ):
             Remove Docker image
         """
         if self.dockerClient.images() is []: 
-            main.log.info( "no image found with RepoTags: " + image )
+            main.log.info( "No docker image found with RepoTags: " + image )
             return main.TRUE
         else:
             try:

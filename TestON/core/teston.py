@@ -326,28 +326,11 @@ class TestON:
                 self.stepResults = ( [], [], [], [] )
                 exec code[testCaseNumber][step] in module.__dict__
                 self.stepCount = self.stepCount + 1
-
-                # Iterate through each of the steps and print them
-                for index in range( len( self.stepResults[0] ) ):
-                    # stepResults = ( stepNo, stepName, stepResult, onFail )
-                    stepNo = self.stepResults[0][ index ]
-                    stepName = self.stepResults[1][ index ]
-                    stepResult = self.stepResults[2][ index ]
-                    onFail = self.stepResults[3][ index ]
-                    self.stepCache += "\t" + str( testCaseNumber ) + "."
-                    self.stepCache += str( stepNo ) + " "
-                    self.stepCache += stepName + " - "
-                    if stepResult == self.TRUE:
-                        self.stepCache += "PASS\n"
-                    elif stepResult == self.FALSE:
-                        self.stepCache += "FAIL\n"
-                        self.stepCache += "\t\t" + onFail + "\n"
-                    else:
-                        self.stepCache += "No Result\n"
-                    self.stepResultsList.append( stepResult )
+                self.parseStepResults( testCaseNumber )
             except StopIteration:  # Raised in self.skipCase()
                 self.log.warn( "Skipping the rest of CASE" +
                                str( testCaseNumber ) )
+                self.parseStepResults( testCaseNumber )
                 self.stepResultsList.append( self.STEPRESULT )
                 self.stepCache += "\t\t" + self.onFailMsg + "\n"
                 self.stepCount = self.stepCount + 1
@@ -396,6 +379,32 @@ class TestON:
             self.logger.updateCaseResults( self )
             result = self.cleanup()
             return self.FALSE
+
+    def parseStepResults( self, testCaseNumber ):
+        """
+        Parse throught the step results for the wiki
+        """
+        try:
+            # Iterate through each of the steps and print them
+            for index in range( len( self.stepResults[0] ) ):
+                # stepResults = ( stepNo, stepName, stepResult, onFail )
+                stepNo = self.stepResults[0][ index ]
+                stepName = self.stepResults[1][ index ]
+                stepResult = self.stepResults[2][ index ]
+                onFail = self.stepResults[3][ index ]
+                self.stepCache += "\t" + str( testCaseNumber ) + "."
+                self.stepCache += str( stepNo ) + " "
+                self.stepCache += stepName + " - "
+                if stepResult == self.TRUE:
+                    self.stepCache += "PASS\n"
+                elif stepResult == self.FALSE:
+                    self.stepCache += "FAIL\n"
+                    self.stepCache += "\t\t" + onFail + "\n"
+                else:
+                    self.stepCache += "No Result\n"
+                self.stepResultsList.append( stepResult )
+        except Exception:
+            self.log.exception( "Error parsing step results" )
 
     def skipCase( self, result="DEFAULT", msg=None ):
         """

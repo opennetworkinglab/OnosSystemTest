@@ -185,10 +185,6 @@ class USECASE_SdnipFunctionCluster:
             main.cleanup()
             main.exit()
 
-        # TODO should be deleted in the future after the SDN-IP bug is fixed
-        main.ONOScli1.deactivateApp( "org.onosproject.sdnip" )
-        main.ONOScli1.activateApp( "org.onosproject.sdnip" )
-
 
     def CASE102( self, main ):
         '''

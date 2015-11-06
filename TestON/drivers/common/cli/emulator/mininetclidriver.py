@@ -578,7 +578,7 @@ class MininetCliDriver( Emulator ):
         args = utilities.parse_args( [ "SRC", "TARGET", 'WAIT' ], **pingParams )
         wait = args['WAIT']
         wait = int( wait if wait else 1 )
-        command = args[ "SRC" ] + " ping " + \
+        command = args[ "SRC" ] + " ping6 " + \
             args[ "TARGET" ] + " -c 1 -i 1 -W " + str( wait ) + " "
         try:
             main.log.info( "Sending: " + command )

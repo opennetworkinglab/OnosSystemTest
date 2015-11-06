@@ -1161,6 +1161,9 @@ class OnosRestDriver( Controller ):
                  ipDst=(),
                  tcpSrc="",
                  tcpDst="",
+                 udpDst="",
+                 udpSrc="",
+                 mpls="",
                  ip="DEFAULT",
                  port="DEFAULT",
                  debug=False ):
@@ -1223,6 +1226,10 @@ class OnosRestDriver( Controller ):
                 flowJson[ 'selector' ][ 'criteria' ].append( {
                                                         "type":"VLAN_VID",
                                                         "vlanId":vlan } )
+            if mpls:
+                flowJson[ 'selector' ][ 'criteria' ].append( {
+                                                        "type":"MPLS_LABEL",
+                                                        "label":mpls } )
             if ipSrc:
                 flowJson[ 'selector' ][ 'criteria' ].append( {
                                                         "type":ipSrc[0],
@@ -1239,6 +1246,14 @@ class OnosRestDriver( Controller ):
                 flowJson[ 'selector' ][ 'criteria' ].append( {
                                                         "type":"TCP_DST",
                                                         "tcpPort": tcpDst } )
+            if udpSrc:
+                flowJson[ 'selector' ][ 'criteria' ].append( {
+                                                        "type":"UDP_SRC",
+                                                        "udpPort": udpSrc } )
+            if udpDst:
+                flowJson[ 'selector' ][ 'criteria' ].append( {
+                                                        "type":"UDP_DST",
+                                                        "udpPort": udpDst } )
             if ipProto:
                 flowJson[ 'selector' ][ 'criteria' ].append( {
                                                         "type":"IP_PROTO",

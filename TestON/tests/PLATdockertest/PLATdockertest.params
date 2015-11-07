@@ -1,6 +1,6 @@
 <PARAMS>
 
-    <testcases>1,1000,5,10,110,1000</testcases>
+    <testcases>1,1000,5,10,110,900,1000</testcases>
 
     <DOCKER>
         <repo>onosproject/onos</repo>
@@ -14,7 +14,7 @@
     </SCALE>
 
     <CASE110>
-        <clustercmdpath>~/OnosSystemTest/TestON/tests/PLATdockertest/Dependency</clustercmdpath>
+        <clustercmdpath>../tests/PLATdockertest/Dependency</clustercmdpath>
         <apps>org.onosproject.proxyarp,org.onosproject.fwd</apps>
     </CASE110>
 

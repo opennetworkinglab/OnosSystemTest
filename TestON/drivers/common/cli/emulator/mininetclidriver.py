@@ -1900,65 +1900,6 @@ class MininetCliDriver( Emulator ):
         else:
             main.log.error( "Connection failed to the Mininet host" )
 
-    def checkFlows( self, sw, dumpFormat=None ):
-        if dumpFormat:
-            command = "sh ovs-ofctl -F " + \
-                dumpFormat + " dump-flows " + str( sw )
-        else:
-            command = "sh ovs-ofctl dump-flows " + str( sw )
-        try:
-            response = self.execute(
-                cmd=command,
-                prompt="mininet>",
-                timeout=10 )
-            return response
-        except pexpect.EOF:
-            main.log.error( self.name + ": EOF exception found" )
-            main.log.error( self.name + ":     " + self.handle.before )
-            main.cleanup()
-            main.exit()
-
-    def getFlowTable( self, protoVersion, sw ):
-        """
-        Returns certain fields of an OVS flow table. Will force output to
-        either OF 1.0 or 1.3 format for consistency.
-
-        TODO add option to look at cookies. ignoring them for now
-
-         NOTE: Use format to force consistent flow table output across
-         versions
-        """
-        try:
-            self.handle.sendline( "" )
-            self.handle.expect( "mininet>" )
-            command = "sh ovs-ofctl dump-flows " + sw
-            if protoVersion == 1.0:
-                command += " -F OpenFlow10-table_id | awk '{OFS=\",\" ;" +\
-                           " print $1  $3  $6  $7  $8}' | "
-            elif protoVersion == 1.3:
-                command += " -O OpenFlow13 | awk '{OFS=\",\" ;" +\
-                           " print $1  $3  $6  $7}' | "
-            else:
-                main.log.error(
-                    "Unknown protoVersion in getFlowTable(). given: (" +
-                    str( type( protoVersion ) ) +
-                    ") '" + str( protoVersion ) + "'" )
-                return None
-            command += "cut -d ',' -f 2- | sort -n -k1 -r"
-            self.handle.sendline( command )
-            self.handle.expect( "sort" )
-            self.handle.expect( "OFPST_FLOW" )
-            response = self.handle.before
-            return response
-        except pexpect.EOF:
-            main.log.error( self.name + ": EOF exception found" )
-            main.log.error( self.name + ":     " + self.handle.before )
-            main.cleanup()
-            main.exit()
-        except pexpect.TIMEOUT:
-            main.log.exception( self.name + ": Timeout exception: " )
-            return None
-
     def flowComp( self, flow1, flow2 ):
         if flow1 == flow2:
             return main.TRUE
@@ -1969,6 +1910,145 @@ class MininetCliDriver( Emulator ):
             main.log.info( "Flow Table 2:" )
             main.log.info( flow2 )
             return main.FALSE
+
+    def parseFlowTable( self, flows, debug=True ):
+        '''
+        Discription: Parses flows into json format.
+        NOTE: this can parse any string thats separated with commas
+        Arguments:
+            Required:
+                flows: a list of strings that represnt flows
+            Optional:
+                version: The version of OpenFlow. Currently, 1.3 and 1.0 are supported.
+                debug: prints out the final result
+        returns: A list of flows in json format
+        '''
+        # Parse the flows
+        jsonFlows = []
+        for flow in flows:
+            # split on the comma
+            flow = flow.split(",")
+            # get rid of empty elements
+            flow = [f for f in flow if f != ""]
+            jsonFlow = {}
+            for f in flow:
+                # separate the key and the value
+                if "=" in f:
+                    f = f.split("=")
+                    key = f[0]
+                    # get rid of unwanted spaces
+                    if key[0] == " ": key = key[1:]
+                    val = f[1]
+                    jsonFlow.update( {key:val} )
+            jsonFlows.append( jsonFlow )
+
+        if debug: print "jsonFlows:\n{}\n\n".format(jsonFlows)
+
+        return jsonFlows
+
+    def getFlowTable( self, sw, version="1.3", debug=True):
+        '''
+        Discription: Returns the flow table(s) on a switch or switches in a list.
+            Each element is a flow.
+        Arguments:
+            Required:
+                sw: The switch name ("s1") to retrive the flow table. Can also be
+                    a list of switches.
+            Optional:
+                version: The version of OpenFlow. Currently, 1.3 and 1.0 are supported.
+                debug: prints out the final result
+        '''
+        try:
+            switches = []
+            if type(sw) is list:
+                switches.extends(sw)
+            else: switches.append(sw)
+
+            flows = []
+            for s in switches:
+                cmd = "sh ovs-ofctl dump-flows " + s
+
+                if "1.3" in version:
+                    cmd += " -O OpenFlow13"
+                else: cmd += " -F OpenFlow10-table_id"
+
+                main.log.info( "Sending: " + cmd )
+                self.handle.sendline( cmd )
+                self.handle.expect( "mininet>" )
+                response = self.handle.before
+                response = response.split( "\r\n" )
+                # dump the first two elements and the last
+                # the first element is the command that was sent
+                # the second is the table header
+                # the last element is empty
+                response = response[2:-1]
+                flows.extend( response )
+
+            if debug: print "Flows:\n{}\n\n".format(flows)
+
+            return self.parseFlowTable( flows, debug )
+
+        except pexpect.TIMEOUT:
+            main.log.exception( self.name + ": Command timed out" )
+            return None
+        except pexpect.EOF:
+            main.log.exception( self.name + ": connection closed." )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
+    def checkFlowId( self, sw, flowId, version="1.3", debug=True ):
+        '''
+        Discription: Checks whether the ID provided matches a flow ID in Mininet
+        Arguments:
+            Required:
+                sw: The switch name ("s1") to retrive the flow table. Can also be
+                    a list of switches.
+                flowId: the flow ID in hex format. Can also be a list of IDs
+            Optional:
+                version: The version of OpenFlow. Currently, 1.3 and 1.0 are supported.
+                debug: prints out the final result
+        returns: main.TRUE if all IDs are present, otherwise returns main.FALSE
+        NOTE: prints out IDs that are not present
+        '''
+        try:
+            main.log.info( "Getting flows from Mininet" )
+            flows = self.getFlowTable( sw, version, debug )
+
+            if debug: print "flow ids:\n{}\n\n".format(flowId)
+
+            # Check flowId is a list or a string
+            if type( flowId ) is str:
+                result = False
+                for f in flows:
+                    if flowId in f.get( 'cookie' ):
+                        result = True
+                        break
+            # flowId is a list
+            else:
+                result = True
+                # Get flow IDs from Mininet
+                mnFlowIds = [ f.get( 'cookie' ) for f in flows ]
+                # Save the IDs that are not in Mininet
+                absentIds = [ x for x in flowId if x not in mnFlowIds ]
+
+                if debug: print "mn flow ids:\n{}\n\n".format(mnFlowIds)
+
+                # Print out the IDs that are not in Mininet
+                if absentIds:
+                    main.log.warn( "Absent ids: {}".format( absentIds ) )
+                    result = False
+
+            return main.TRUE if result else main.FALSE
+
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
 
     def startTcpdump( self, filename, intf="eth0", port="port 6653" ):
         """
@@ -2734,15 +2814,32 @@ class MininetCliDriver( Emulator ):
             main.cleanup()
             main.exit()
 
-    def startScapy( self ):
+    def startScapy( self, mplsPath="" ):
         """
         Start the Scapy cli
+        optional:
+            mplsPath - The path where the MPLS class is located
+            NOTE: This can be a relative path from the user's home dir
         """
+        mplsLines = ['import imp',
+            'imp.load_source( "mplsClass", "{}mplsClass.py" )'.format(mplsPath),
+            'from mplsClass import MPLS',
+            'bind_layers(Ether, MPLS, type = 0x8847)',
+            'bind_layers(MPLS, MPLS, bottom_of_label_stack = 0)',
+            'bind_layers(MPLS, IP)']
+
         try:
             self.handle.sendline( "scapy" )
             self.handle.expect( self.scapyPrompt )
             self.handle.sendline( "conf.color_theme = NoTheme()" )
             self.handle.expect( self.scapyPrompt )
+            if mplsPath:
+                main.log.info( "Adding MPLS class" )
+                main.log.info( "MPLS class path: " + mplsPath )
+                for line in mplsLines:
+                    main.log.info( "sending line: " + line )
+                    self.handle.sendline( line )
+                    self.handle.expect( self.scapyPrompt )
             return main.TRUE
         except pexpect.TIMEOUT:
             main.log.exception( self.name + ": Command timed out" )
@@ -2949,13 +3046,17 @@ class MininetCliDriver( Emulator ):
         left blank it will default to the below value unless it is
         overwritten by the next frame.
 
+        NOTE: Some arguments require quotes around them. It's up to you to
+        know which ones and to add them yourself. Arguments with an asterisk
+        do not need quotes.
+
         Options:
         ipVersion - Either 4 (default) or 6, indicates what Internet Protocol
                     frame to use to encapsulate into
         Default frame:
         ###[ TCP ]###
-          sport= ftp_data
-          dport= http
+          sport= ftp_data *
+          dport= http *
           seq= 0
           ack= 0
           dataofs= None
@@ -2973,8 +3074,6 @@ class MininetCliDriver( Emulator ):
             cmd = 'tcp = TCP( '
             options = []
             for key, value in kwargs.iteritems():
-                if isinstance( value, str ):
-                    value = '"' + value + '"'
                 options.append( str( key ) + "=" + str( value ) )
             cmd += ", ".join( options )
             cmd += ' )'
@@ -3018,13 +3117,17 @@ class MininetCliDriver( Emulator ):
         left blank it will default to the below value unless it is
         overwritten by the next frame.
 
+        NOTE: Some arguments require quotes around them. It's up to you to
+        know which ones and to add them yourself. Arguments with an asterisk
+        do not need quotes.
+
         Options:
         ipVersion - Either 4 (default) or 6, indicates what Internet Protocol
                     frame to use to encapsulate into
         Default frame:
         ###[ UDP ]###
-          sport= domain
-          dport= domain
+          sport= domain *
+          dport= domain *
           len= None
           chksum= None
 
@@ -3035,8 +3138,6 @@ class MininetCliDriver( Emulator ):
             cmd = 'udp = UDP( '
             options = []
             for key, value in kwargs.iteritems():
-                if isinstance( value, str ):
-                    value = '"' + value + '"'
                 options.append( str( key ) + "=" + str( value ) )
             cmd += ", ".join( options )
             cmd += ' )'

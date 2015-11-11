@@ -1961,7 +1961,7 @@ class MininetCliDriver( Emulator ):
         try:
             switches = []
             if type(sw) is list:
-                switches.extends(sw)
+                switches.extend(sw)
             else: switches.append(sw)
 
             flows = []

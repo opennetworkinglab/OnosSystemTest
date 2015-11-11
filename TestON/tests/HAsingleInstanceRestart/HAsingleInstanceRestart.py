@@ -1044,7 +1044,7 @@ class HAsingleInstanceRestart:
         global flows
         flows = []
         for i in range( 1, 29 ):
-            flows.append( main.Mininet1.getFlowTable( 1.3, "s" + str( i ) ) )
+            flows.append( main.Mininet1.getFlowTable( "s" + str( i ), version="1.3" ) )
         if flowCheck == main.FALSE:
             for table in flows:
                 main.log.warn( table )
@@ -1371,7 +1371,7 @@ class HAsingleInstanceRestart:
         flows2 = []
         for i in range( 28 ):
             main.log.info( "Checking flow table on s" + str( i + 1 ) )
-            tmpFlows = main.Mininet1.getFlowTable( 1.3, "s" + str( i + 1 ) )
+            tmpFlows = main.Mininet1.getFlowTable( "s" + str( i + 1 ), version="1.3" )
             flows2.append( tmpFlows )
             tempResult = main.Mininet1.flowComp(
                 flow1=flows[ i ],

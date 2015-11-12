@@ -1,0 +1,101 @@
+<TOPOLOGY>
+    <COMPONENT>
+
+        <ONOSbench>
+            <host>localhost</host>
+            <user>admin</user>
+            <password></password>
+            <type>OnosDriver</type>
+            <connect_order>1</connect_order>
+            <COMPONENTS>
+            </COMPONENTS>
+        </ONOSbench>
+
+        <ONOSrest1>
+            <host>OC1</host>
+            <port>8181</port>
+            <user>onos</user>
+            <password>rocks</password>
+            <type>OnosRestDriver</type>
+            <connect_order>2</connect_order>
+            <COMPONENTS>
+            </COMPONENTS>
+        </ONOSrest1>
+
+        <ONOSrest2>
+            <host>OC2</host>
+            <port>8181</port>
+            <user>onos</user>
+            <password>rocks</password>
+            <type>OnosRestDriver</type>
+            <connect_order>3</connect_order>
+            <COMPONENTS>
+            </COMPONENTS>
+        </ONOSrest2>
+
+        <ONOSrest3>
+            <host>OC3</host>
+            <port>8181</port>
+            <user>onos</user>
+            <password>rocks</password>
+            <type>OnosRestDriver</type>
+            <connect_order>4</connect_order>
+            <COMPONENTS>
+            </COMPONENTS>
+        </ONOSrest3>
+
+        <ONOSrest4>
+            <host>OC4</host>
+            <port>8181</port>
+            <user>onos</user>
+            <password>rocks</password>
+            <type>OnosRestDriver</type>
+            <connect_order>3</connect_order>
+            <COMPONENTS>
+            </COMPONENTS>
+        </ONOSrest4>
+
+        <ONOSrest5>
+            <host>OC5</host>
+            <port>8181</port>
+            <user>onos</user>
+            <password>rocks</password>
+            <type>OnosRestDriver</type>
+            <connect_order>3</connect_order>
+            <COMPONENTS>
+            </COMPONENTS>
+        </ONOSrest5>
+
+        <ONOSrest6>
+            <host>OC6</host>
+            <port>8181</port>
+            <user>onos</user>
+            <password>rocks</password>
+            <type>OnosRestDriver</type>
+            <connect_order>3</connect_order>
+            <COMPONENTS>
+            </COMPONENTS>
+        </ONOSrest6>
+
+        <ONOSrest7>
+            <host>OC7</host>
+            <port>8181</port>
+            <user>onos</user>
+            <password>rocks</password>
+            <type>OnosRestDriver</type>
+            <connect_order>3</connect_order>
+            <COMPONENTS>
+            </COMPONENTS>
+        </ONOSrest7>
+
+        <Mininet1>
+            <host>OCN</host>
+            <user>admin</user>
+            <password></password>
+            <type>MininetCliDriver</type>
+            <connect_order>5</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </Mininet1>
+
+    </COMPONENT>
+</TOPOLOGY>

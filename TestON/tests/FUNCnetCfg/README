@@ -1,0 +1,11 @@
+This test is designed to test the Network config subsystem. There are two
+primary areas that we are testing, The NetCfg subsystem as a framework and how
+this is used by other subsystems.
+Features Tested:
+A. Network Configuration subsystem as a framework
+    1. Add/Modify/Remove/Reading Net Config data
+    2. Distribution of configurations across ONOS nodes
+B. Usage of Net Cfg by other systems
+    1. Device configuration
+        a. Allow/disallow devices
+        b. Device name and other annotations

@@ -1911,7 +1911,7 @@ class MininetCliDriver( Emulator ):
             main.log.info( flow2 )
             return main.FALSE
 
-    def parseFlowTable( self, flows, debug=True ):
+    def parseFlowTable( self, flowTable, version="", debug=True ):
         '''
         Discription: Parses flows into json format.
         NOTE: this can parse any string thats separated with commas
@@ -1923,30 +1923,74 @@ class MininetCliDriver( Emulator ):
                 debug: prints out the final result
         returns: A list of flows in json format
         '''
-        # Parse the flows
-        jsonFlows = []
-        for flow in flows:
-            # split on the comma
-            flow = flow.split(",")
-            # get rid of empty elements
-            flow = [f for f in flow if f != ""]
+        jsonFlowTable = []
+        for flow in flowTable:
             jsonFlow = {}
-            for f in flow:
-                # separate the key and the value
-                if "=" in f:
-                    f = f.split("=")
-                    key = f[0]
-                    # get rid of unwanted spaces
-                    if key[0] == " ": key = key[1:]
-                    val = f[1]
-                    jsonFlow.update( {key:val} )
-            jsonFlows.append( jsonFlow )
+            # split up the fields of the flow
+            parsedFlow = flow.split(", ")
+            # get rid of any spaces in front of the field
+            for i in range( len(parsedFlow) ):
+                item = parsedFlow[i]
+                if item[0] == " ":
+                    parsedFlow[i] = item[1:]
+            # grab the selector and treatment from the parsed flow
+            # the last element is the selector and the treatment
+            temp = parsedFlow.pop(-1)
+            # split up the selector and the treatment
+            temp = temp.split(" ")
+            index = 0
+            # parse the flags
+            # NOTE: This only parses one flag
+            flag = {}
+            if version == "1.3":
+                flag = {"flag":[temp[index]]}
+                index += 1
+            # the first element is the selector and split it up
+            sel = temp[index]
+            index += 1
+            sel = sel.split(",")
+            # the priority is stuck in the selecter so put it back
+            # in the flow
+            parsedFlow.append(sel.pop(0))
+            # parse selector
+            criteria = []
+            for item in sel:
+                # this is the type of the packet e.g. "arp"
+                if "=" not in item:
+                    criteria.append( {"type":item} )
+                else:
+                    field = item.split("=")
+                    criteria.append( {field[0]:field[1]} )
+            selector = {"selector": {"criteria":criteria} }
+            treat = temp[index]
+            # get rid of the action part e.g. "action=output:2"
+            # we will add it back later
+            treat = treat.split("=")
+            treat.pop(0)
+            # parse treatment
+            action = []
+            for item in treat:
+                field = item.split(":")
+                action.append( {field[0]:field[1]} )
+            # create the treatment field and add the actions
+            treatment = {"treatment": {"action":action} }
+            # parse the rest of the flow
+            for item in parsedFlow:
+                field = item.split("=")
+                jsonFlow.update( {field[0]:field[1]} )
+            # add the treatment and the selector to the json flow
+            jsonFlow.update( selector )
+            jsonFlow.update( treatment )
+            jsonFlow.update( flag )
 
-        if debug: print "jsonFlows:\n{}\n\n".format(jsonFlows)
+            if debug: main.log.debug( "\033[94mJson flow:\033[0m\n{}\n".format(jsonFlow) )
 
-        return jsonFlows
+            # add the json flow to the json flow table
+            jsonFlowTable.append( jsonFlow )
 
-    def getFlowTable( self, sw, version="1.3", debug=True):
+        return jsonFlowTable
+
+    def getFlowTable( self, sw, version="", debug=True):
         '''
         Discription: Returns the flow table(s) on a switch or switches in a list.
             Each element is a flow.
@@ -1968,9 +2012,10 @@ class MininetCliDriver( Emulator ):
             for s in switches:
                 cmd = "sh ovs-ofctl dump-flows " + s
 
-                if "1.3" in version:
+                if "1.0" == version:
+                    cmd += " -F OpenFlow10-table_id"
+                elif "1.3" == version:
                     cmd += " -O OpenFlow13"
-                else: cmd += " -F OpenFlow10-table_id"
 
                 main.log.info( "Sending: " + cmd )
                 self.handle.sendline( cmd )
@@ -1986,7 +2031,7 @@ class MininetCliDriver( Emulator ):
 
             if debug: print "Flows:\n{}\n\n".format(flows)
 
-            return self.parseFlowTable( flows, debug )
+            return self.parseFlowTable( flows, version, debug )
 
         except pexpect.TIMEOUT:
             main.log.exception( self.name + ": Command timed out" )

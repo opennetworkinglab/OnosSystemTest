@@ -1,0 +1,46 @@
+<PARAMS>
+
+    <testcases>100, 101, 102, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10</testcases>
+
+    #Environment variables
+    <ENV>
+        <cellName>sdnip_single_instance</cellName>
+    </ENV>
+
+    <CTRL>
+        <numCtrl>1</numCtrl>
+        <ip1>OC1</ip1>
+        <port1>6653</port1>
+    </CTRL>
+
+    <GIT>
+        <branch1>master</branch1>
+        <branch2>onos-1.3</branch2>
+    </GIT>
+
+    <JSON>
+        <prefix>prefix</prefix>
+        <nextHop>nextHop</nextHop>
+    </JSON>
+
+    <DEPENDENCY>
+        <path>/USECASE_SdnipFunction/Dependency/</path>
+        <topology>USECASE_SdnipI2MN.py</topology>
+        <wrapper1>Functions</wrapper1>
+    </DEPENDENCY>
+
+    <config>
+        <peerNum> 3 </peerNum>
+        <switchNum> 39 </switchNum>
+    </config>
+
+    <timers>
+        <SdnIpSetup>10</SdnIpSetup>
+        <TopoDiscovery>60</TopoDiscovery>
+        <PingTestWithRoutes>20</PingTestWithRoutes>
+        <PingTestWithoutRoutes>100</PingTestWithoutRoutes>
+        <RouteDelivery>60</RouteDelivery>
+        <PathAvailable>20</PathAvailable>
+    </timers>
+
+</PARAMS>

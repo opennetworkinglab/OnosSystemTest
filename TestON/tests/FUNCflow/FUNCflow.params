@@ -16,7 +16,7 @@
     # 1500 - Add flows with UDP selectors
     # 2000 - Delete flows
 
-    <testcases>1,2,10,1000,2000,1200,2000,1300,2000,1400,2000,1500,100</testcases>
+    <testcases>1,2,10,1000,2000,1100,2000,1200,2000,1300,2000,1400,2000,1500,100</testcases>
 
     <SCALE>
         <max>1</max>

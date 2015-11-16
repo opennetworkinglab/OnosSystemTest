@@ -434,7 +434,7 @@
             </port>
         </switch>
 
-        <controller ip_address="10.128.20.11" ssl="false" port="6653"/>
+        <controller ip_address="10.128.20.11" ssl="false" port="6633"/>
     </slice>
 
 </flowspace_firewall>

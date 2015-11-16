@@ -1,299 +1,440 @@
 <flowspace_firewall>
-  <switch name="sdn-sw.kans.net.internet2.edu" dpid="0000000000000a14" flush_rules_on_connect="false" />
-  <switch name="sdn-sw.phil.net.internet2.edu" dpid="0000000000000a39" flush_rules_on_connect="false" />
-  <switch name="sdn-sw.minn.net.internet2.edu" dpid="0000000000000a13" flush_rules_on_connect="false" />
-  <switch name="sdn-sw.wash.net.internet2.edu" dpid="0000000000000a32" flush_rules_on_connect="false" />
-  <switch name="sdn-sw.denv.net.internet2.edu" dpid="0000000000000a11" flush_rules_on_connect="false" />
-  <switch name="sdn-sw.jcsn.net.internet2.edu" dpid="0000000000000a19" flush_rules_on_connect="false" />
-  <switch name="sdn-sw.jack.net.internet2.edu" dpid="0000000000000a28" flush_rules_on_connect="false" />
-  <switch name="sdn-sw.rale.net.internet2.edu" dpid="0000000000000a33" flush_rules_on_connect="false" />
-  <switch name="sdn-sw.salt.net.internet2.edu" dpid="00000000000000a8" flush_rules_on_connect="false" />
-  <switch name="sdn-sw.elpa.net.internet2.edu" dpid="0000000000000a12" flush_rules_on_connect="false" />
-  <switch name="sdn-sw.seat.net.internet2.edu" dpid="00000000000000a1" flush_rules_on_connect="false" />
-  <switch name="sdn-sw.clev.net.internet2.edu" dpid="0000000000000a29" flush_rules_on_connect="false" />
-  <switch name="sdn-sw.houh.net.internet2.edu" dpid="0000000000000a17" flush_rules_on_connect="false" />
-  <switch name="sdn-sw.phoe.net.internet2.edu" dpid="00000000000000a9" flush_rules_on_connect="false" />
-  <switch name="sdn-sw.sunn.net.internet2.edu" dpid="00000000000000a3" flush_rules_on_connect="false" />
-  <switch name="sdn-sw.atla.net.internet2.edu" dpid="0000000000000a27" flush_rules_on_connect="false" />
-  <switch name="sdn-sw.newy32aoa.net.internet2.edu" dpid="0000000000000a38" flush_rules_on_connect="false" />
-  <switch name="sdn-sw.dall.net.internet2.edu" dpid="0000000000000a16" flush_rules_on_connect="false" />
-  <switch name="sdn-sw.bato.net.internet2.edu" dpid="0000000000000a20" flush_rules_on_connect="false" />
-  <switch name="sdn-sw.ashb.net.internet2.edu" dpid="0000000000000a31" flush_rules_on_connect="false" />
-  <switch name="sdn-sw.char.net.internet2.edu" dpid="0000000000000a34" flush_rules_on_connect="false" />
-  <switch name="sdn-sw.colu4.net.internet2.edu" dpid="0000000000000a18" flush_rules_on_connect="false" />
-  <switch name="sdn-sw.star.net.internet2.edu" dpid="0000000000000a22" flush_rules_on_connect="false" />
-  <switch name="sdn-sw.tuls.net.internet2.edu" dpid="0000000000000a15" flush_rules_on_connect="false" />
-  <switch name="sdn-sw.eqch.net.internet2.edu" dpid="0000000000000a21" flush_rules_on_connect="false" />
-  <switch name="sdn-sw.port.net.internet2.edu" dpid="00000000000000a2" flush_rules_on_connect="false" />
-  <switch name="sdn-sw.alba.net.internet2.edu" dpid="0000000000000a35" flush_rules_on_connect="false" />
-  <switch name="sdn-sw.losa.net.internet2.edu" dpid="00000000000000a5" flush_rules_on_connect="false" />
-  <switch name="sdn-sw.chic.net.internet2.edu" dpid="0000000000000a23" flush_rules_on_connect="false" />
-  <switch name="sdn-sw.tucs.net.internet2.edu" dpid="0000000000000a10" flush_rules_on_connect="false" />
-  <switch name="sdn-sw.bost.net.internet2.edu" dpid="0000000000000a36" flush_rules_on_connect="false" />
-  <switch name="sdn-sw.pitt.net.internet2.edu" dpid="0000000000000a30" flush_rules_on_connect="false" />
-  <switch name="sdn-sw.hart2.net.internet2.edu" dpid="0000000000000a37" flush_rules_on_connect="false" />
-  <switch name="sdn-sw.miss2.net.internet2.edu" dpid="00000000000000a6" flush_rules_on_connect="false" />
-  <switch name="sdn-sw.cinc.net.internet2.edu" dpid="0000000000000a25" flush_rules_on_connect="false" />
-  <switch name="sdn-sw.indi.net.internet2.edu" dpid="0000000000000a24" flush_rules_on_connect="false" />
-  <switch name="sdn-sw.reno.net.internet2.edu" dpid="00000000000000a4" flush_rules_on_connect="false" />
-  <switch name="sdn-sw.lasv.net.internet2.edu" dpid="00000000000000a7" flush_rules_on_connect="false" />
-  <switch name="sdn-sw.loui.net.internet2.edu" dpid="0000000000000a26" flush_rules_on_connect="false" />
+    <switch name="sw1" dpid="00000000000000a1" flush_rules_on_connect="false" />
+    <switch name="sw2" dpid="00000000000000a2" flush_rules_on_connect="false" />
+    <switch name="sw3" dpid="00000000000000a3" flush_rules_on_connect="false" />
+    <switch name="sw4" dpid="00000000000000a4" flush_rules_on_connect="false" />
+    <switch name="sw5" dpid="00000000000000a5" flush_rules_on_connect="false" />
+    <switch name="sw6" dpid="00000000000000a6" flush_rules_on_connect="false" />
+    <switch name="sw7" dpid="00000000000000a7" flush_rules_on_connect="false" />
+    <switch name="sw8" dpid="00000000000000a8" flush_rules_on_connect="false" />
+    <switch name="sw9" dpid="00000000000000a9" flush_rules_on_connect="false" />
+    <switch name="sw10" dpid="0000000000000a10" flush_rules_on_connect="false" />
+    <switch name="sw11" dpid="0000000000000a11" flush_rules_on_connect="false" />
+    <switch name="sw12" dpid="0000000000000a12" flush_rules_on_connect="false" />
+    <switch name="sw13" dpid="0000000000000a13" flush_rules_on_connect="false" />
+    <switch name="sw14" dpid="0000000000000a14" flush_rules_on_connect="false" />
+    <switch name="sw15" dpid="0000000000000a15" flush_rules_on_connect="false" />
+    <switch name="sw16" dpid="0000000000000a16" flush_rules_on_connect="false" />
+    <switch name="sw17" dpid="0000000000000a17" flush_rules_on_connect="false" />
+    <switch name="sw18" dpid="0000000000000a18" flush_rules_on_connect="false" />
+    <switch name="sw19" dpid="0000000000000a19" flush_rules_on_connect="false" />
+    <switch name="sw20" dpid="0000000000000a20" flush_rules_on_connect="false" />
+    <switch name="sw21" dpid="0000000000000a21" flush_rules_on_connect="false" />
+    <switch name="sw22" dpid="0000000000000a22" flush_rules_on_connect="false" />
+    <switch name="sw23" dpid="0000000000000a23" flush_rules_on_connect="false" />
+    <switch name="sw24" dpid="0000000000000a24" flush_rules_on_connect="false" />
+    <switch name="sw25" dpid="0000000000000a25" flush_rules_on_connect="false" />
+    <switch name="sw26" dpid="0000000000000a26" flush_rules_on_connect="false" />
+    <switch name="sw27" dpid="0000000000000a27" flush_rules_on_connect="false" />
+    <switch name="sw28" dpid="0000000000000a28" flush_rules_on_connect="false" />
+    <switch name="sw29" dpid="0000000000000a29" flush_rules_on_connect="false" />
+    <switch name="sw30" dpid="0000000000000a30" flush_rules_on_connect="false" />
+    <switch name="sw31" dpid="0000000000000a31" flush_rules_on_connect="false" />
+    <switch name="sw32" dpid="0000000000000a32" flush_rules_on_connect="false" />
+    <switch name="sw33" dpid="0000000000000a33" flush_rules_on_connect="false" />
+    <switch name="sw34" dpid="0000000000000a34" flush_rules_on_connect="false" />
+    <switch name="sw35" dpid="0000000000000a35" flush_rules_on_connect="false" />
+    <switch name="sw36" dpid="0000000000000a36" flush_rules_on_connect="false" />
+    <switch name="sw37" dpid="0000000000000a37" flush_rules_on_connect="false" />
+    <switch name="sw38" dpid="0000000000000a38" flush_rules_on_connect="false" />
+    <switch name="sw39" dpid="0000000000000a39" flush_rules_on_connect="false" />
 
-  <!-- midwest -->
-  <slice name="P10-ONOS-demo1">
+    <slice name="P10-ONOS-demo1">
+        <switch name="sw1" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
+            <port name="sw1-eth1">
+                 <range start="2511" end="2511"/>
+            </port>
+            <port name="sw1-eth2">
+                 <range start="2511" end="2511"/>
+            </port>
+            <port name="sw1-eth3">
+                 <range start="2511" end="2511"/>
+            </port>
+        </switch>
+        <switch name="sw2" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
+            <port name="sw2-eth1">
+                 <range start="2511" end="2511"/>
+            </port>
+            <port name="sw2-eth2">
+                 <range start="2511" end="2511"/>
+            </port>
+        </switch>
+        <switch name="sw3" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
+            <port name="sw3-eth1">
+                 <range start="2511" end="2511"/>
+            </port>
+            <port name="sw3-eth2">
+                 <range start="2511" end="2511"/>
+            </port>
+            <port name="sw3-eth3">
+                 <range start="2511" end="2511"/>
+            </port>
+        </switch>
+        <switch name="sw4" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
+            <port name="sw4-eth1">
+                 <range start="2511" end="2511"/>
+            </port>
+            <port name="sw4-eth2">
+                 <range start="2511" end="2511"/>
+            </port>
+        </switch>
+        <switch name="sw5" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
+            <port name="sw5-eth1">
+                 <range start="2511" end="2511"/>
+            </port>
+            <port name="sw5-eth2">
+                 <range start="2511" end="2511"/>
+            </port>
+            <port name="sw5-eth3">
+                 <range start="2511" end="2511"/>
+            </port>
+        </switch>
+        <switch name="sw6" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
+            <port name="sw6-eth1">
+                 <range start="2511" end="2511"/>
+            </port>
+            <port name="sw6-eth2">
+                 <range start="2511" end="2511"/>
+            </port>
+        </switch>
+        <switch name="sw7" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
+            <port name="sw7-eth1">
+                 <range start="2511" end="2511"/>
+            </port>
+            <port name="sw7-eth2">
+                 <range start="2511" end="2511"/>
+            </port>
+        </switch>
+        <switch name="sw8" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
+            <port name="sw8-eth1">
+                 <range start="2511" end="2511"/>
+            </port>
+            <port name="sw8-eth2">
+                 <range start="2511" end="2511"/>
+            </port>
+            <port name="sw8-eth3">
+                 <range start="2511" end="2511"/>
+            </port>
+            <port name="sw8-eth4">
+                 <range start="2511" end="2511"/>
+            </port>
+            <port name="sw8-eth5">
+                 <range start="2511" end="2511"/>
+            </port>
+        </switch>
+        <switch name="sw9" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
+            <port name="sw9-eth1">
+                 <range start="2511" end="2511"/>
+            </port>
+            <port name="sw9-eth2">
+                 <range start="2511" end="2511"/>
+            </port>
+        </switch>
+        <switch name="sw10" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
+            <port name="sw10-eth1">
+                 <range start="2511" end="2511"/>
+            </port>
+            <port name="sw10-eth2">
+                 <range start="2511" end="2511"/>
+            </port>
+        </switch>
+        <switch name="sw11" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
+            <port name="sw11-eth1">
+                 <range start="2511" end="2511"/>
+            </port>
+            <port name="sw11-eth2">
+                 <range start="2511" end="2511"/>
+            </port>
+            <port name="sw11-eth3">
+                 <range start="2511" end="2511"/>
+            </port>
+        </switch>
+        <switch name="sw12" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
+            <port name="sw12-eth1">
+                 <range start="2511" end="2511"/>
+            </port>
+            <port name="sw12-eth2">
+                 <range start="2511" end="2511"/>
+            </port>
+            <port name="sw12-eth3">
+                 <range start="2511" end="2511"/>
+            </port>
+        </switch>
+        <switch name="sw13" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
+            <port name="sw13-eth1">
+                 <range start="2511" end="2511"/>
+            </port>
+            <port name="sw13-eth2">
+                 <range start="2511" end="2511"/>
+            </port>
+            <port name="sw13-eth3">
+                 <range start="2511" end="2511"/>
+            </port>
+        </switch>
+        <switch name="sw14" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
+            <port name="sw14-eth1">
+                 <range start="2511" end="2511"/>
+            </port>
+            <port name="sw14-eth2">
+                 <range start="2511" end="2511"/>
+            </port>
+            <port name="sw14-eth3">
+                 <range start="2511" end="2511"/>
+            </port>
+            <port name="sw14-eth4">
+                 <range start="2511" end="2511"/>
+            </port>
+            <port name="sw14-eth5">
+                 <range start="2511" end="2511"/>
+            </port>
+        </switch>
+        <switch name="sw15" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
+            <port name="sw15-eth1">
+                 <range start="2511" end="2511"/>
+            </port>
+            <port name="sw15-eth2">
+                 <range start="2511" end="2511"/>
+            </port>
+        </switch>
+        <switch name="sw16" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
+            <port name="sw16-eth1">
+                 <range start="2511" end="2511"/>
+            </port>
+            <port name="sw16-eth2">
+                 <range start="2511" end="2511"/>
+            </port>
+        </switch>
+        <switch name="sw17" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
+            <port name="sw17-eth1">
+                 <range start="2511" end="2511"/>
+            </port>
+            <port name="sw17-eth2">
+                 <range start="2511" end="2511"/>
+            </port>
+            <port name="sw17-eth3">
+                 <range start="2511" end="2511"/>
+            </port>
+            <port name="sw17-eth4">
+                 <range start="2511" end="2511"/>
+            </port>
+        </switch>
+        <switch name="sw18" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
+            <port name="sw18-eth1">
+                 <range start="2511" end="2511"/>
+            </port>
+            <port name="sw18-eth2">
+                 <range start="2511" end="2511"/>
+            </port>
+        </switch>
+        <switch name="sw19" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
+            <port name="sw19-eth1">
+                 <range start="2511" end="2511"/>
+            </port>
+            <port name="sw19-eth2">
+                 <range start="2511" end="2511"/>
+            </port>
+        </switch>
+        <switch name="sw20" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
+            <port name="sw20-eth1">
+                 <range start="2511" end="2511"/>
+            </port>
+            <port name="sw20-eth2">
+                 <range start="2511" end="2511"/>
+            </port>
+        </switch>
+        <switch name="sw21" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
+            <port name="sw21-eth1">
+                 <range start="2511" end="2511"/>
+            </port>
+            <port name="sw21-eth2">
+                 <range start="2511" end="2511"/>
+            </port>
+            <port name="sw21-eth3">
+                 <range start="2511" end="2511"/>
+            </port>
+        </switch>
+        <switch name="sw22" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
+            <port name="sw22-eth1">
+                 <range start="2511" end="2511"/>
+            </port>
+            <port name="sw22-eth2">
+                 <range start="2511" end="2511"/>
+            </port>
+        </switch>
+        <switch name="sw23" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
+            <port name="sw23-eth1">
+                 <range start="2511" end="2511"/>
+            </port>
+            <port name="sw23-eth2">
+                 <range start="2511" end="2511"/>
+            </port>
+            <port name="sw23-eth3">
+                 <range start="2511" end="2511"/>
+            </port>
+            <port name="sw23-eth4">
+                 <range start="2511" end="2511"/>
+            </port>
+            <port name="sw23-eth5">
+                 <range start="2511" end="2511"/>
+            </port>
+        </switch>
+        <switch name="sw24" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
+            <port name="sw24-eth1">
+                 <range start="2511" end="2511"/>
+            </port>
+            <port name="sw24-eth2">
+                 <range start="2511" end="2511"/>
+            </port>
+            <port name="sw24-eth3">
+                 <range start="2511" end="2511"/>
+            </port>
+            <port name="sw24-eth4">
+                 <range start="2511" end="2511"/>
+            </port>
+        </switch>
+        <switch name="sw25" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
+            <port name="sw25-eth1">
+                 <range start="2511" end="2511"/>
+            </port>
+            <port name="sw25-eth2">
+                 <range start="2511" end="2511"/>
+            </port>
+        </switch>
+        <switch name="sw26" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
+            <port name="sw26-eth1">
+                 <range start="2511" end="2511"/>
+            </port>
+            <port name="sw26-eth2">
+                 <range start="2511" end="2511"/>
+            </port>
+        </switch>
+        <switch name="sw27" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
+            <port name="sw27-eth1">
+                 <range start="2511" end="2511"/>
+            </port>
+            <port name="sw27-eth2">
+                 <range start="2511" end="2511"/>
+            </port>
+            <port name="sw27-eth3">
+                 <range start="2511" end="2511"/>
+            </port>
+            <port name="sw27-eth4">
+                 <range start="2511" end="2511"/>
+            </port>
+        </switch>
+        <switch name="sw28" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
+            <port name="sw28-eth1">
+                 <range start="2511" end="2511"/>
+            </port>
+            <port name="sw28-eth2">
+                 <range start="2511" end="2511"/>
+            </port>
+            <port name="sw28-eth3">
+                 <range start="2511" end="2511"/>
+            </port>
+        </switch>
+        <switch name="sw29" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
+            <port name="sw29-eth1">
+                 <range start="2511" end="2511"/>
+            </port>
+            <port name="sw29-eth2">
+                 <range start="2511" end="2511"/>
+            </port>
+            <port name="sw29-eth3">
+                 <range start="2511" end="2511"/>
+            </port>
+        </switch>
+        <switch name="sw30" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
+            <port name="sw30-eth1">
+                 <range start="2511" end="2511"/>
+            </port>
+            <port name="sw30-eth2">
+                 <range start="2511" end="2511"/>
+            </port>
+        </switch>
+        <switch name="sw31" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
+            <port name="sw31-eth1">
+                 <range start="2511" end="2511"/>
+            </port>
+            <port name="sw31-eth2">
+                 <range start="2511" end="2511"/>
+            </port>
+            <port name="sw31-eth3">
+                 <range start="2511" end="2511"/>
+            </port>
+        </switch>
+        <switch name="sw32" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
+            <port name="sw32-eth1">
+                 <range start="2511" end="2511"/>
+            </port>
+            <port name="sw32-eth2">
+                 <range start="2511" end="2511"/>
+            </port>
+            <port name="sw32-eth3">
+                 <range start="2511" end="2511"/>
+            </port>
+            <port name="sw32-eth4">
+                 <range start="2511" end="2511"/>
+            </port>
+        </switch>
+        <switch name="sw33" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
+            <port name="sw33-eth1">
+                 <range start="2511" end="2511"/>
+            </port>
+            <port name="sw33-eth2">
+                 <range start="2511" end="2511"/>
+            </port>
+        </switch>
+        <switch name="sw34" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
+            <port name="sw34-eth1">
+                 <range start="2511" end="2511"/>
+            </port>
+            <port name="sw34-eth2">
+                 <range start="2511" end="2511"/>
+            </port>
+        </switch>
+        <switch name="sw35" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
+            <port name="sw35-eth1">
+                 <range start="2511" end="2511"/>
+            </port>
+            <port name="sw35-eth2">
+                 <range start="2511" end="2511"/>
+            </port>
+        </switch>
+        <switch name="sw36" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
+            <port name="sw36-eth1">
+                 <range start="2511" end="2511"/>
+            </port>
+            <port name="sw36-eth2">
+                 <range start="2511" end="2511"/>
+            </port>
+        </switch>
+        <switch name="sw37" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
+            <port name="sw37-eth1">
+                 <range start="2511" end="2511"/>
+            </port>
+            <port name="sw37-eth2">
+                 <range start="2511" end="2511"/>
+            </port>
+        </switch>
+        <switch name="sw38" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
+            <port name="sw38-eth1">
+                 <range start="2511" end="2511"/>
+            </port>
+            <port name="sw38-eth2">
+                 <range start="2511" end="2511"/>
+            </port>
+        </switch>
+        <switch name="sw39" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
+            <port name="sw39-eth1">
+                 <range start="2511" end="2511"/>
+            </port>
+            <port name="sw39-eth2">
+                 <range start="2511" end="2511"/>
+            </port>
+        </switch>
 
-    <switch name="sdn-sw.chic.net.internet2.edu" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
-        <port name="sw1-eth1">
-            <range start="2511" end="2511"/>
-        </port>
-        <port name="sw1-eth2">
-            <range start="2511" end="2511"/>
-        </port>
-        <port name="sw1-eth3">
-            <range start="2511" end="2511"/>
-        </port>
-    </switch>
-
-    <switch name="sdn-sw.clev.net.internet2.edu" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
-      <port name="eth1/1">
-	<range start="2511" end="2511" />
-      </port>
-      <port name="eth1/2">
-	<range start="2511" end="2511" />
-      </port>
-      <port name="eth3/1">
-	<range start="2511" end="2511" />
-      </port>
-    </switch>
-
-    <switch name="sdn-sw.colu4.net.internet2.edu" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
-      <port name="eth1/1">
-	<range start="2511" end="2511" />
-      </port>
-      <port name="eth3/1">
-	<range start="2511" end="2511" />
-      </port>
-    </switch>
-    <switch name="sdn-sw.minn.net.internet2.edu" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
-      <port name="et-4/0/0.0">
-	<range start="2511" end="2511" />
-      </port>
-      <port name="et-7/0/0.0">
-	<range start="2511" end="2511" />
-      </port>
-    </switch>
-    <switch name="sdn-sw.star.net.internet2.edu" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
-      <port name="eth1/1">
-	<range start="2511" end="2511" />
-      </port>
-      <port name="eth3/2">
-	<range start="2511" end="2511" />
-	</port>
-    </switch>
-    <switch name="sdn-sw.pitt.net.internet2.edu" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
-      <port name="eth1/1">
-        <range start="2511" end="2511" />
-      </port>
-      <port name="eth3/1">
-        <range start="2511" end="2511" />
-      </port>
-    </switch>
-
-    <switch name="sdn-sw.eqch.net.internet2.edu" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
-      <port name="et-3/0/0.0">
-	<range start="2511" end="2511" />
-      </port>
-      <port name="et-4/0/0.0">
-	<range start="2511" end="2511" />
-      </port>
-      <port name="et-7/0/0.0">
-	<range start="2511" end="2511" />
-      </port>
-    </switch>
-
-    <switch name="sdn-sw.indi.net.internet2.edu" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
-      <port name="et-4/0/0.0">
-        <range start="2511" end="2511" />
-      </port>
-      <port name="xe-5/0/2.0">
-	<range start="2511" end="2511"/>
-      </port>
-      <port name="et-7/0/0.0">
-        <range start="2511" end="2511" />
-      </port>
-      <port name="et-8/0/0.0">
-        <range start="2511" end="2511" />
-      </port>
-      <port name="xe-5/0/3.0">
-	<range start="2511" end="2511"/>
-      </port>
-      <port name="xe-5/0/4.0">
-        <range start="2511" end="2511"/>
-      </port>
-    </switch>
-
-    <switch name="sdn-sw.loui.net.internet2.edu" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
-      <port name="et-4/0/1.0">
-	<range start="2511" end="2511" />
-      </port>
-      <port name="et-7/0/0.0">
-	<range start="2511" end="2511" />
-      </port>
-    </switch>
-
-    <switch name="sdn-sw.kans.net.internet2.edu" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
-      <port name="eth3/1">
-	<range start="2511" end="2511" />
-      </port>
-      <port name="eth1/1">
-	<range start="2511" end="2511" />
-      </port>
-      <port name="eth1/2">
-	<range start="2511" end="2511" />
-      </port>
-      <port name="eth7/1">
-	<range start="2511" end="2511" />
-      </port>
-
-    </switch>
-
-    <switch name="sdn-sw.salt.net.internet2.edu" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
-      <port name="eth1/1">
-	<range start="2511" end="2511" />
-      </port>
-      <port name="eth3/1">
-	<range start="2511" end="2511" />
-      </port>
-      <port name="eth3/2">
-	<range start="2511" end="2511" />
-      </port>
-      <port name="eth7/1">
-	<range start="3500" end="3500" />
-      </port>
-    </switch>
-    <switch name="sdn-sw.miss2.net.internet2.edu" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
-      <port name="et-4/0/0.0">
-	<range start="2511" end="2511" />
-      </port>
-      <port name="et-7/0/0.0">
-	<range start="2511" end="2511" />
-      </port>
-    </switch>
-
-    <switch name="sdn-sw.tuls.net.internet2.edu" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
-      <port name="eth1/1">
-	<range start="2511" end="2511" />
-      </port>
-      <port name="eth3/1">
-	<range start="2511" end="2511" />
-      </port>
-    </switch>
-    <switch name="sdn-sw.denv.net.internet2.edu" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
-      <port name="eth1/1">
-	<range start="2511" end="2511" />
-      </port>
-      <port name="eth3/1">
-	<range start="2511" end="2511" />
-      </port>
-      <port name="eth3/2">
-	<range start="2511" end="2511" />
-      </port>
-    </switch>
-    <switch name="sdn-sw.jcsn.net.internet2.edu" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
-      <port name="et-4/0/0.0">
-	<range start="2511" end="2511" />
-      </port>
-      <port name="et-7/0/0.0">
-	<range start="2511" end="2511" />
-      </port>
-    </switch>
-    <switch name="sdn-sw.phoe.net.internet2.edu" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
-      <port name="et-4/0/0.0">
-	<range start="2511" end="2511" />
-      </port>
-      <port name="et-7/0/0.0">
-	<range start="2511" end="2511" />
-      </port>
-    </switch>
-    <switch name="sdn-sw.elpa.net.internet2.edu" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
-      <port name="eth1/1">
-	<range start="2511" end="2511" />
-      </port>
-      <port name="eth1/2">
-	<range start="2511" end="2511" />
-      </port>
-      <port name="eth3/1">
-	<range start="2511" end="2511" />
-      </port>
-    </switch>
-    <switch name="sdn-sw.houh.net.internet2.edu" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
-      <port name="eth1/1">
-	<range start="2511" end="2511" />
-      </port>
-      <port name="eth3/1">
-	<range start="2511" end="2511" />
-      </port>
-      <port name="eth3/2">
-	<range start="2511" end="2511" />
-      </port>
-      <port name="eth5/1">
-	<range start="2511" end="2511" />
-      </port>
-    </switch>
-
-    <switch name="sdn-sw.jack.net.internet2.edu" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
-      <port name="eth1/1">
-	<range start="2511" end="2511" />
-      </port>
-      <port name="eth1/2">
-	<range start="3500" end="3500" />
-      </port>
-      <port name="eth3/1">
-	<range start="2511" end="2511" />
-      </port>
-    </switch>
-    <switch name="sdn-sw.ashb.net.internet2.edu" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
-      <port name="et-2/0/0.0">
-	<range start="2511" end="2511" />
-      </port>
-      <port name="et-5/0/0.0">
-	<range start="2511" end="2511" />
-      </port>
-      <port name="et-7/0/0.0">
-	<range start="2511" end="2511" />
-      </port>
-      <port name="et-9/0/0.0">
-	<range start="2511" end="2511" />
-      </port>
-    </switch>
-
-    <switch name="sdn-sw.cinc.net.internet2.edu" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
-      <port name="et-4/0/0.0">
-	<range start="2511" end="2511" />
-      </port>
-      <port name="et-7/0/0.0">
-	<range start="2511" end="2511" />
-      </port>
-    </switch>
-
-    <switch name="sdn-sw.dall.net.internet2.edu" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
-      <port name="et-4/0/0.0">
-	<range start="2511" end="2511" />
-      </port>
-      <port name="et-7/0/0.0">
-	<range start="2511" end="2511" />
-      </port>
-    </switch>
-    <switch name="sdn-sw.tucs.net.internet2.edu" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
-      <port name="et-4/0/0.0">
-	<range start="2511" end="2511" />
-      </port>
-      <port name="et-7/0/0.0">
-	<range start="2511" end="2511" />
-      </port>
-    </switch>
-
-    <controller ip_address="10.128.20.11" ssl="false" port="6653"/>
-  </slice>
+        <controller ip_address="10.128.20.11" ssl="false" port="6653"/>
+    </slice>
 
 </flowspace_firewall>

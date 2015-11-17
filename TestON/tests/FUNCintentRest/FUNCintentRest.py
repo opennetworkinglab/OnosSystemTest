@@ -152,7 +152,7 @@ class FUNCintentRest:
 
         #kill off all onos processes
         main.log.info( "Safety check, killing all ONOS processes" +
-                       " before initiating enviornment setup" )
+                       " before initiating environment setup" )
 
         for i in range( main.maxNodes ):
             main.ONOSbench.onosDie( main.ONOSip[ i ] )
@@ -262,7 +262,7 @@ class FUNCintentRest:
         mnLinks = main.Mininet1.getLinks()
         mnHosts = main.Mininet1.getHosts()
 
-        main.step( "Conmparing MN topology to ONOS topology" )
+        main.step( "Comparing MN topology to ONOS topology" )
         for controller in range( main.numCtrls ):
             controllerStr = str( controller + 1 )
             if devices[ controller ] and ports[ controller ] and\

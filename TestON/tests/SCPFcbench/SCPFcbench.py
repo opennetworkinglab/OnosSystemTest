@@ -77,7 +77,7 @@ class SCPFcbench:
 
         #kill off all onos processes
         main.log.step("Safety check, killing all ONOS processes")
-        main.log.step("before initiating enviornment setup")
+        main.log.step("before initiating environment setup")
         for node in range(1, maxNodes + 1):
             main.ONOSbench.onosDie(ONOSIp[node])
 

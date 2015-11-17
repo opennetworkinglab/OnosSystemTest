@@ -110,7 +110,7 @@ class SCPFmaxIntents:
 
         main.log.info( "Starting up %s node(s) ONOS cluster" % main.numCtrls)
         main.log.info( "Safety check, killing all ONOS processes" +
-                       " before initiating enviornment setup" )
+                       " before initiating environment setup" )
 
         for i in range( main.maxNodes ):
             main.ONOSbench.onosDie( main.ONOSip[ i ] )

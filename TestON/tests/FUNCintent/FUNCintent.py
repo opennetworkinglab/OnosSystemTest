@@ -142,7 +142,7 @@ class FUNCintent:
 
         #kill off all onos processes
         main.log.info( "Safety check, killing all ONOS processes" +
-                       " before initiating enviornment setup" )
+                       " before initiating environment setup" )
 
         for i in range( main.maxNodes ):
             main.ONOSbench.onosDie( main.ONOSip[ i ] )
@@ -264,7 +264,7 @@ class FUNCintent:
         mnLinks = main.Mininet1.getLinks()
         mnHosts = main.Mininet1.getHosts()
 
-        main.step( "Conmparing Mininet topology to ONOS topology" )
+        main.step( "Comparing Mininet topology to ONOS topology" )
 
         while ( attempts >= 0 ) and\
             ( not devicesResults or not linksResults or not hostsResults ):

@@ -116,7 +116,7 @@ class FUNCflow:
 
         #kill off all onos processes
         main.log.info( "Safety check, killing all ONOS processes" +
-                       " before initiating enviornment setup" )
+                       " before initiating environment setup" )
 
         for i in range( main.maxNodes ):
             main.ONOSbench.onosDie( main.ONOSip[ i ] )
@@ -236,7 +236,7 @@ class FUNCflow:
 
         time.sleep( main.startMNSleep )
 
-        main.step( "Conmparing MN topology to ONOS topology" )
+        main.step( "Comparing MN topology to ONOS topology" )
         main.log.info( "Gathering topology information" )
         devicesResults = main.TRUE
         linksResults = main.TRUE

@@ -108,7 +108,7 @@ class SCPFswitchLat:
         scale.remove(scale[0])
 
         #kill off all onos processes
-        main.log.step("Safety check, killing all ONOS processes before initiating enviornment setup")
+        main.log.step("Safety check, killing all ONOS processes before initiating environment setup")
         for node in range(main.maxNodes):
             main.ONOSbench.onosDie(main.ONOSIp[node])
 

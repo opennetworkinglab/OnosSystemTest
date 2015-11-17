@@ -142,7 +142,7 @@ class FUNCipv6Intent:
 
         #kill off all onos processes
         main.log.info( "Safety check, killing all ONOS processes" +
-                       " before initiating enviornment setup" )
+                       " before initiating environment setup" )
 
         for i in range( main.maxNodes ):
             main.ONOSbench.onosDie( main.ONOSip[ i ] )

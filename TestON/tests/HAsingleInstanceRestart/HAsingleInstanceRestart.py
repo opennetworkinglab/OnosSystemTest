@@ -1044,7 +1044,7 @@ class HAsingleInstanceRestart:
         global flows
         flows = []
         for i in range( 1, 29 ):
-            flows.append( main.Mininet1.getFlowTable( "s" + str( i ), version="1.3" ) )
+            flows.append( main.Mininet1.getFlowTable( "s" + str( i ), version="1.3", debug=False ) )
         if flowCheck == main.FALSE:
             for table in flows:
                 main.log.warn( table )
@@ -1368,18 +1368,13 @@ class HAsingleInstanceRestart:
         main.step( "Get the OF Table entries and compare to before " +
                    "component failure" )
         FlowTables = main.TRUE
-        flows2 = []
         for i in range( 28 ):
             main.log.info( "Checking flow table on s" + str( i + 1 ) )
-            tmpFlows = main.Mininet1.getFlowTable( "s" + str( i + 1 ), version="1.3" )
-            flows2.append( tmpFlows )
-            tempResult = main.Mininet1.flowComp(
-                flow1=flows[ i ],
-                flow2=tmpFlows )
-            FlowTables = FlowTables and tempResult
+            tmpFlows = main.Mininet1.getFlowTable( "s" + str( i + 1 ), version="1.3", debug=False )
+            FlowTables = FlowTables and main.Mininet1.flowTableComp( flows[i], tmpFlows )
             if FlowTables == main.FALSE:
-                main.log.info( "Differences in flow table for switch: s" +
-                               str( i + 1 ) )
+                main.log.warn( "Differences in flow table for switch: s{}".format( i + 1 ) )
+
         utilities.assert_equals(
             expect=main.TRUE,
             actual=FlowTables,

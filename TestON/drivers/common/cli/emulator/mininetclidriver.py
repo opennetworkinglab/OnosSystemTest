@@ -1900,16 +1900,30 @@ class MininetCliDriver( Emulator ):
         else:
             main.log.error( "Connection failed to the Mininet host" )
 
-    def flowComp( self, flow1, flow2 ):
-        if flow1 == flow2:
+    def flowTableComp( self, flowTable1, flowTable2 ):
+        # This function compares the selctors and treatments of each flow
+        try:
+            if len(flowTable1) != len(flowTable2):
+                main.log.warn( "Flow table lengths do not match" )
+                return main.FALSE
+
+            for i in range( len(flowTable1) ):
+                flow1 = str(flowTable1[i].get( "selector" )) + str(flowTable1[i].get( "treatment" ))
+                flow2 = str(flowTable2[i].get( "selector" )) + str(flowTable2[i].get( "treatment" ))
+                if flow1 != flow2:
+                    main.log.info( "Flow tables do not match, printing tables:" )
+                    main.log.info( "Before:" )
+                    main.log.info( flow1 )
+                    main.log.info( "After:" )
+                    main.log.info( flow2 )
+                    return main.FALSE
+
             return main.TRUE
-        else:
-            main.log.info( "Flow tables do not match, printing tables:" )
-            main.log.info( "Flow Table 1:" )
-            main.log.info( flow1 )
-            main.log.info( "Flow Table 2:" )
-            main.log.info( flow2 )
-            return main.FALSE
+
+        except Exception:
+            main.log.exception( "Uncaught exception!" )
+            main.cleanup()
+            main.exit()
 
     def parseFlowTable( self, flowTable, version="", debug=True ):
         '''
@@ -1961,7 +1975,7 @@ class MininetCliDriver( Emulator ):
                 else:
                     field = item.split("=")
                     criteria.append( {field[0]:field[1]} )
-            selector = {"selector": {"criteria":criteria} }
+            selector = {"selector": {"criteria":sorted(criteria)} }
             treat = temp[index]
             # get rid of the action part e.g. "action=output:2"
             # we will add it back later
@@ -1973,7 +1987,7 @@ class MininetCliDriver( Emulator ):
                 field = item.split(":")
                 action.append( {field[0]:field[1]} )
             # create the treatment field and add the actions
-            treatment = {"treatment": {"action":action} }
+            treatment = {"treatment": {"action":sorted(action)} }
             # parse the rest of the flow
             for item in parsedFlow:
                 field = item.split("=")

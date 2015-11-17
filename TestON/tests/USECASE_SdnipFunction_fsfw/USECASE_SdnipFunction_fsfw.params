@@ -24,7 +24,7 @@
     </JSON>
 
     <DEPENDENCY>
-        <path>/USECASE_SdnipFunction/Dependency/</path>
+        <path>/USECASE_SdnipFunction_fsfw/Dependency/</path>
         <topology>USECASE_SdnipI2MN.py</topology>
         <wrapper1>Functions</wrapper1>
     </DEPENDENCY>

@@ -1,0 +1,77 @@
+This is a tutorial for you to manually run this test.
+Normally, we run it from Jenkins, most of steps below are configured on Jenkins,
+and will be automatically run by Jenkins.
+But here, we need to manually run all the steps.
+
+In this test environment, we use 3 nodes:
+    1) One is for running Mininet, Quagga, TestON, compiling ONOS.
+    2) The second one is running ONOS.
+    3) The third one is running FlowSpace Firewall (FSFW).
+
+
+Step 1: Install and configure Quagga.
+
+SDN-IP application uses Quagga as the BGP speaker. You need to install Quagga
+on the Mininet node, and I assume you already have Mininet in the first node.
+$ sudo apt-get install quagga
+
+After installation, check whether the Quagga directory is /usr/lib/quagga,
+otherwise you need to change the Quagga directory in USECASE_SdnipI2MN.py.
+
+Then create a running directory for Quagga:
+$cd /usr/local/var/run/
+$sudo mkdir quagga
+$sudo chmod 777 quagga
+
+
+Step 2: SDN-IP/ONOS configuration.
+
+Copy the SDN-IP/ONOS file to your ONOS directory:
+$cp ~/OnosSystemTest/TestON/tests/USECASE_SdnipFunction_fsfw/network-cfg.json ~/onos/tools/package/config/network-cfg.json
+$cp ~/OnosSystemTest/TestON/tests/USECASE_SdnipFunction_fsfw/sdnip_single_instance ~/onos/tools/test/cells/sdnip_single_instance
+
+Then enable the cell file:
+$cell sdnip_single_instance
+
+You also need to compile ONOS:
+$cd ~/onos
+$mcis
+
+Step 3: Copy public RSA keys from first node to second node.
+
+Copy public RSA key of the "root" user (not other users) from the first node to
+second node which is running ONOS.
+This is because we need to set up a tunnel from Mninet node to ONOS node for
+communication between Quagga and SDN-IP.
+
+The location of the root key is:
+$ sudo su root
+# cat ~/.ssh/id_rsa.pub
+
+Copy the key above to this file on the second node:
+$vim ~/.ssh/authorized_keys
+
+To correctly run ONOS, also make sure that the public key of the user which
+compiles ONOS is also in "authorized_keys" file on the second node.
+
+
+Step 4: Install, configure, and run FSFW.
+
+Install FSFW, and copy the FSFW configuration file from TestON directory in the first node to the FSFW node.
+$scp ~/OnosSystemTest/TestON/tests/USECASE_SdnipFunction_fsfw/Dependency/fsfw.xml root@10.128.10.12:/etc/fsfw/
+
+Change the controller IP address in fsfw.xml to your IP address of the node
+running ONOS.
+$service fsfw start
+
+Note: you only need to do Step 1, 2, 3, and 4 once.
+
+
+Step 5: Each time, before starting the test, run the following command to clean
+the whole environment.
+$ ~/OnosSystemTest/TestON/bin/cleanup.sh
+
+
+Step 6: Finally you can run TestON script.
+$cd ~/OnosSystemTest/TestON/bin
+$./cli.py run USECASE_SdnipFunction_fsfw

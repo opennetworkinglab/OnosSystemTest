@@ -1338,3 +1338,145 @@ class OnosRestDriver( Controller ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
+
+    def getNetCfg( self, ip="DEFAULT", port="DEFAULT",
+                   subjectClass=None, subjectKey=None, configKey=None ):
+        """
+        Description:
+            Get a json object with the ONOS network configurations
+        Returns:
+            A json object containing the network configuration in
+            ONOS; Returns main.FALSE if error on requests;
+            Returns None for exception
+        """
+        try:
+            output = None
+            if ip == "DEFAULT":
+                main.log.warn( "No ip given, reverting to ip from topo file" )
+                ip = self.ip_address
+            if port == "DEFAULT":
+                main.log.warn( "No port given, reverting to port " +
+                               "from topo file" )
+                port = self.port
+            url = "/network/configuration"
+            if subjectClass:
+                url += "/" + subjectClass
+                if subjectKey:
+                    url += "/" + subjectKey
+                    if configKey:
+                        url += "/" + configKey
+            response = self.send( ip, port, url=url )
+            if response:
+                if 200 <= response[ 0 ] <= 299:
+                    output = response[ 1 ]
+                    a = json.loads( output )
+                    b = json.dumps( a )
+                    return b
+                elif response[ 0 ] == 404:
+                    main.log.error( "Requested configuration doesn't exist: " +
+                                    str( response ) )
+                    return {}
+                else:
+                    main.log.error( "Error with REST request, response was: " +
+                                    str( response ) )
+                    return main.FALSE
+        except ( AttributeError, TypeError ):
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
+    def setNetCfg( self, cfgJson, ip="DEFAULT", port="DEFAULT",
+                   subjectClass=None, subjectKey=None, configKey=None ):
+        """
+        Description:
+            Set a json object with the ONOS network configurations
+        Returns:
+            Returns main.TRUE for successful requests; Returns main.FALSE
+            if error on requests;
+            Returns None for exceptions
+
+        """
+        try:
+            output = None
+            if ip == "DEFAULT":
+                main.log.warn( "No ip given, reverting to ip from topo file" )
+                ip = self.ip_address
+            if port == "DEFAULT":
+                main.log.warn( "No port given, reverting to port " +
+                               "from topo file" )
+                port = self.port
+            url = "/network/configuration"
+            if subjectClass:
+                url += "/" + subjectClass
+                if subjectKey:
+                    url += "/" + subjectKey
+                    if configKey:
+                        url += "/" + configKey
+            response = self.send( ip, port,
+                                  method="POST",
+                                  url=url,
+                                  data=json.dumps( cfgJson ) )
+            if response:
+                if 200 <= response[ 0 ] <= 299:
+                    main.log.info( self.name + ": Successfully POST cfg" )
+                    return main.TRUE
+                else:
+                    main.log.error( "Error with REST request, response was: " +
+                                    str( response ) )
+                    return main.FALSE
+        except ( AttributeError, TypeError ):
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
+    def removeNetCfg( self, ip="DEFAULT", port="DEFAULT",
+                      subjectClass=None, subjectKey=None, configKey=None ):
+        """
+        Description:
+            Remove a json object from the ONOS network configurations
+        Returns:
+            Returns main.TRUE for successful requests; Returns main.FALSE
+            if error on requests;
+            Returns None for exceptions
+
+        """
+        try:
+            output = None
+            if ip == "DEFAULT":
+                main.log.warn( "No ip given, reverting to ip from topo file" )
+                ip = self.ip_address
+            if port == "DEFAULT":
+                main.log.warn( "No port given, reverting to port " +
+                               "from topo file" )
+                port = self.port
+            url = "/network/configuration"
+            if subjectClass:
+                url += "/" + subjectClass
+                if subjectKey:
+                    url += "/" + subjectKey
+                    if configKey:
+                        url += "/" + configKey
+            response = self.send( ip, port,
+                                  method="DELETE",
+                                  url=url )
+            if response:
+                if 200 <= response[ 0 ] <= 299:
+                    main.log.info( self.name + ": Successfully delete cfg" )
+                    return main.TRUE
+                else:
+                    main.log.error( "Error with REST request, response was: " +
+                                    str( response ) )
+                    return main.FALSE
+        except ( AttributeError, TypeError ):
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()

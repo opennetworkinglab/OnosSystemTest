@@ -4043,3 +4043,92 @@ class OnosCliDriver( CLI ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
+
+    def getSwController( self, uri, jsonFormat=True ):
+        """
+        Descrition: Gets the controller information from the device
+        """
+        try:
+            cmd = "device-controllers "
+            if jsonFormat:
+                cmd += "-j "
+            response = self.sendline( cmd + uri )
+            return response
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
+    def setSwController( self, uri, ip, proto="tcp", port="6653", jsonFormat=True ):
+        """
+        Descrition: sets the controller(s) for the specified device
+
+        Parameters:
+            Required: uri - String: The uri of the device(switch).
+                      ip - String or List: The ip address of the controller.
+                      This parameter can be formed in a couple of different ways.
+                        VALID:
+                        10.0.0.1 - just the ip address
+                        tcp:10.0.0.1 - the protocol and the ip address
+                        tcp:10.0.0.1:6653 - the protocol and port can be specified,
+                                            so that you can add controllers with different
+                                            protocols and ports
+                        INVALID:
+                        10.0.0.1:6653 - this is not supported by ONOS
+
+            Optional: proto - The type of connection e.g. tcp, ssl. If a list of ips are given
+                      port - The port number.
+                      jsonFormat - If set ONOS will output in json NOTE: This is currently not supported
+
+        Returns: main.TRUE if ONOS returns without any errors, otherwise returns main.FALSE
+        """
+        try:
+            cmd = "device-setcontrollers"
+
+            if jsonFormat:
+                cmd += " -j"
+            cmd += " " + uri
+            if isinstance( ip, str ):
+                ip = [ip]
+            for item in ip:
+                if ":" in item:
+                    sitem = item.split( ":" )
+                    if len(sitem) == 3:
+                        cmd += " " + item
+                    elif "." in sitem[1]:
+                        cmd += " {}:{}".format(item, port)
+                    else:
+                        main.log.error( "Malformed entry: " + item )
+                        raise TypeError
+                else:
+                    cmd += " {}:{}:{}".format( proto, item, port )
+
+            response = self.sendline( cmd )
+
+            if "Error" in response:
+                main.log.error( response )
+                return main.FALSE
+
+            main.log.info( response )
+            return main.TRUE
+
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return main.FALSE
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()

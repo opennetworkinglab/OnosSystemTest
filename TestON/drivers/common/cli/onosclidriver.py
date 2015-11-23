@@ -331,7 +331,7 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def sendline( self, cmdStr, debug=False ):
+    def sendline( self, cmdStr, showResponse=True, debug=False ):
         """
         Send a completely user specified string to
         the onos> prompt. Use this function if you have
@@ -388,7 +388,10 @@ class OnosCliDriver( CLI ):
                 main.log.debug( self.name + ": split output" )
                 for r in output:
                     main.log.debug( self.name + ": " + repr( r ) )
-            return output[1].strip()
+            output = output[1].strip()
+            if showResponse:
+                main.log.info( "Resonse from ONOS: {}".format( output ) )
+            return output
         except IndexError:
             main.log.exception( self.name + ": Object not as expected" )
             return None
@@ -4117,7 +4120,6 @@ class OnosCliDriver( CLI ):
                 main.log.error( response )
                 return main.FALSE
 
-            main.log.info( response )
             return main.TRUE
 
         except TypeError:

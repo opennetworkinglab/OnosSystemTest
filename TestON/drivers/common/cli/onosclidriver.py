@@ -331,7 +331,7 @@ class OnosCliDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def sendline( self, cmdStr, showResponse=True, debug=False ):
+    def sendline( self, cmdStr, showResponse=False, debug=False ):
         """
         Send a completely user specified string to
         the onos> prompt. Use this function if you have

@@ -1,0 +1,6 @@
+Summary:
+        This is a performance test suit, designed to test the upper limits
+        of onos and ovsdb with respect to installing intents and rerouting flows.
+NOTE:
+        This test is largely based on the hardware used to run onos and mininet.
+        Therefore, results will very test station to test station.

@@ -1,0 +1,11 @@
+Summary:
+        This test suite consist of basic optical functionality testing.
+        It bings up Link-OE topology to simulate optical switches.
+        The following is an overview of the basic functionality that is
+        performed in this test.
+        Steps:
+            - Discover hosts
+            - Compare Mininet topology
+            - Add and test point intents
+            - Add and test host intents
+ 

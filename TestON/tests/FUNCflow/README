@@ -1,0 +1,49 @@
+FUNCflow test suite
+
+Summary:
+        This test suite consists of basic flow-rule based functionality testing.
+        The main goal of this test suite is to verify that the flow subsytem is
+        compiling flows correctly. We verify each flow by utilizing Scapy, a
+        Python library for generating and sending packets. The following is an
+        overview of the test.
+        Steps:
+            - Discover hosts
+            - add specific flow
+            - verify flow
+            - remove flow
+
+        Each repetion of the steps tests a specific selector. Here is a list
+        of the selectors that are being tested:
+        Selectors:
+            - MAC
+            - IPv4
+            - VLAN
+            - MPLS
+            - TCP
+            - UDP
+
+        We verify the selectors by sending a tailor made packet through the
+        two hosts. If the packet was recieved, then the flow was compiled
+        correctly.
+
+Topology:
+        The topology consists of one switch with four hosts connected to it.
+        Two hosts are regular IPv4 hosts, while the other two are hosts with
+        vlan interfaces to test the vlan selector.
+
+Required:
+        This test requires Mininet topology file topo-flow.py located in the
+        dependency folder. The topology consistes of VLAN hosts, so you will
+        need to install the VLAN module. You will also need to install the
+        Python module, Scapy.
+
+VLAN configuration:
+        Execute command:
+            $ sudo apt-get install vlan
+        Configuration:
+            $ sudo modprobe 8021q
+        NOTE:To make this configuration permanent
+            $ sudo su -c 'echo "8021q" >> /etc/modules'
+
+Scapy install:
+    sudo apt-get install Scapy

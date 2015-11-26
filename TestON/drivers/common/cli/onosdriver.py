@@ -183,6 +183,62 @@ class OnosDriver( CLI ):
             main.cleanup()
             main.exit()
 
+    def startPtpd( self, master=False, ntpd=False):
+        """
+        Starts ptpd on node
+
+        ptp is used for synchronizing system time across
+        multiple devices. In this case, you can specify
+        whether a machine should be a master by 
+        giving the master parameter 'True'
+        
+        Returns main.TRUE if ptpd starts correctly.
+        Else, if ntpd is running (in which case ptpd slaves
+        cannot run) by default, this function will 
+        attempt to stop ntpd service and retry ptpd.
+        
+        * master: if False, will set node to slave
+        * ntpd: if False, will attempt to kill ntpd if running 
+        """
+        try:
+            cmd = 'sudo ptpd -g'
+            if master == True:
+                cmd = 'sudo ptpd -G' 
+
+            self.handle.sendline( cmd )
+            i = self.handle.expect( 
+                    [ 'Multiple',
+                      'ntpd',
+                      '\$',
+                      pexpect.TIMEOUT ] )
+
+            if i == 0:
+                main.log.info( 'Ptpd is already running' )
+                return main.TRUE
+            elif i == 1:
+                main.log.info( 'ntpd is running on the node' )
+                if ntpd == False:
+                    main.log.warn( 'Attempting to stop ntpd service' )
+                    self.handle.sendline( 'sudo service ntpd stop' )
+                    main.log.info( 'Reattempting to start ptpd' )
+                    self.handle.sendline( cmd )
+                    self.handle.expect( '\$' )
+                    return main.TRUE
+                else:
+                    main.log.info( 'ntpd is running, you may need to ' +
+                            'kill the process to start ptpd' )
+                    return main.FALSE
+            elif i == 2:
+                main.log.info( str( cmd ) + ' executed' ) 
+                return main.TRUE
+            
+            return main.FALSE
+
+        except Exception:
+            main.log.exception( 'Unknown exception starting ptpd' )
+            main.cleanup()
+            main.exit()
+        
     def onosPackage( self, opTimeout=30 ):
         """
         Produce a self-contained tar.gz file that can be deployed

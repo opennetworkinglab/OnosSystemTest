@@ -1,0 +1,52 @@
+<TOPOLOGY>
+    <COMPONENT>
+
+        <ONOSbench>
+            <host>127.0.0.1</host>
+            <user>admin</user>
+            <password></password>
+            <type>OnosDriver</type>
+            <connect_order>1</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </ONOSbench>
+
+        <ONOScli1>
+            <host>127.0.0.1</host>
+            <user>admin</user>
+            <password></password>
+            <type>OnosCliDriver</type>
+            <connect_order>2</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </ONOScli1>
+        <ONOScli2>
+            <host>127.0.0.1</host>
+            <user>admin</user>
+            <password></password>
+            <type>OnosCliDriver</type>
+            <connect_order>3</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </ONOScli2>
+
+        <QuaggaCliSpeaker1>
+            <host>127.0.0.1</host>
+            <user>admin</user>
+            <password></password>
+            <type>QuaggaCliDriver</type>
+            <connect_order>4</connect_order>
+            <COMPONENTS> </COMPONENTS>
+        </QuaggaCliSpeaker1>
+
+        <Mininet>
+            <host>OCN</host>
+            <user>admin</user>
+            <password></password>
+            <type>MininetCliDriver</type>
+            <connect_order>5</connect_order>
+            <COMPONENTS>
+                <home>~/Mininet/mininet/custom/</home>
+            </COMPONENTS>
+        </Mininet>
+
+    </COMPONENT>
+</TOPOLOGY>
+

@@ -236,6 +236,14 @@ class FUNCipv6Intent:
                                  onpass="Successfully start ONOS cli",
                                  onfail="Failed to start ONOS cli" )
 
+        main.step( "setup the ipv6NeighbourDiscovery" )
+        cfgResult1 = main.CLIs[0].setCfg( "org.onosproject.proxyarp.ProxyArp", "ipv6NeighborDiscovery", "true" )
+        cfgResult2 = main.CLIs[0].setCfg( "org.onosproject.provider.host.impl.HostLocationProvider", "ipv6NeighborDiscovery", "true" )
+        cfgResult = cfgResult1 and cfgResult2
+        utilities.assert_equals( expect=main.TRUE, actual=cfgResult,
+                                onpass="ipv6NeighborDiscovery cfg is set to true",
+                                onfail="Failed to cfg set ipv6NeighborDiscovery" )
+
         # Remove the first element in main.scale list
         main.scale.remove( main.scale[ 0 ] )
 
@@ -291,7 +299,7 @@ class FUNCipv6Intent:
 
         assignResult = main.Mininet1.assignSwController( sw=switchList,
                                                          ip=tempONOSip,
-                                                         port='6653' )
+                                                         port='6633' )
         if not assignResult:
             main.cleanup()
             main.exit()
@@ -331,3 +339,256 @@ class FUNCipv6Intent:
         if not topoResult:
             main.cleanup()
             main.exit()
+
+    def CASE2000( self, main ):
+        """
+            add point intents between 2 hosts:
+                - Get device ids | ports
+                - Add point intents
+                - Check intents
+                - Verify flows
+                - Ping hosts
+                - Reroute
+                    - Link down
+                    - Verify flows
+                    - Check topology
+                    - Ping hosts
+                    - Link up
+                    - Verify flows
+                    - Check topology
+                    - Ping hosts
+                - Remove intents
+        """
+        import time
+        import json
+        import re
+
+        # Assert variables - These variable's name|format must be followed
+        # if you want to use the wrapper function
+        assert main, "There is no main"
+        assert main.CLIs, "There is no main.CLIs"
+        assert main.Mininet1, "Mininet handle should be named Mininet1"
+        assert main.numSwitch, "Placed the total number of switch topology in \
+                                main.numSwitch"
+
+        main.testName = "Point Intents"
+        main.case( main.testName + " Test - " + str( main.numCtrls ) +
+                   " NODE(S) - OF " + main.OFProtocol )
+        main.caseExplanation = "This test case will test point to point" +\
+                               " intents using " + str( main.numCtrls ) +\
+                               " node(s) cluster;\n" +\
+                               "Different type of hosts will be tested in " +\
+                               "each step such as IPV4, Dual stack, VLAN etc" +\
+                               ";\nThe test will use OF " + main.OFProtocol +\
+                               " OVS running in Mininet"
+
+        # No option point intents
+        main.step( "NOOPTION: Add point intents between h1 and h9, ipv6 hosts" )
+        main.assertReturnString = "Assertion Result for NOOPTION point intent\n"
+        stepResult = main.TRUE
+        stepResult = main.intentFunction.pointIntent(
+                                       main,
+                                       name="NOOPTION",
+                                       host1="h1",
+                                       host2="h9",
+                                       deviceId1="of:0000000000000005/1",
+                                       deviceId2="of:0000000000000006/1")
+
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass=main.assertReturnString,
+                                 onfail=main.assertReturnString )
+
+        stepResult = main.TRUE
+        main.step( "IPV6: Add point intents between h1 and h9" )
+        main.assertReturnString = "Assertion Result for IPV6 point intent\n"
+        stepResult = main.intentFunction.pointIntent(
+                                       main,
+                                       name="IPV6",
+                                       host1="h1",
+                                       host2="h9",
+                                       deviceId1="of:0000000000000005/1",
+                                       deviceId2="of:0000000000000006/1",
+                                       port1="",
+                                       port2="",
+                                       ethType="IPV6",
+                                       mac1="00:00:00:00:00:01",
+                                       mac2="00:00:00:00:00:09",
+                                       bandwidth="",
+                                       lambdaAlloc=False,
+                                       ipProto="",
+                                       ip1="",
+                                       ip2="",
+                                       tcp1="",
+                                       tcp2="",
+                                       expectedLink=18 )
+
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass=main.assertReturnString,
+                                 onfail=main.assertReturnString )
+
+        main.step( "IPV6_2: Add point intents between h1 and h9" )
+        main.assertReturnString = "Assertion Result for IPV6 no mac address point intents\n"
+        stepResult = main.intentFunction.pointIntent(
+                                       main,
+                                       name="IPV6_2",
+                                       host1="h1",
+                                       host2="h9",
+                                       deviceId1="of:0000000000000005/1",
+                                       deviceId2="of:0000000000000006/1",
+                                       ipProto="",
+                                       ip1="",
+                                       ip2="",
+                                       tcp1="",
+                                       tcp2="",
+                                       expectedLink=18 )
+
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass=main.assertReturnString,
+                                 onfail=main.assertReturnString )
+        """
+        main.step( "SDNIP-ICMP: Add point intents between h1 and h9" )
+        main.assertReturnString = "Assertion Result for SDNIP-ICMP IPV4 using TCP point intents\n"
+        mac1 = main.hostsData[ 'h1' ][ 'mac' ]
+        mac2 = main.hostsData[ 'h9' ][ 'mac' ]
+        try:
+            ip1 = str( main.hostsData[ 'h1' ][ 'ipAddresses' ][ 0 ] ) + "/24"
+            ip2 = str( main.hostsData[ 'h9' ][ 'ipAddresses' ][ 0 ] ) + "/24"
+        except KeyError:
+            main.log.debug( "Key Error getting IP addresses of h1 | h9 in" +
+                            "main.hostsData" )
+            ip1 = main.Mininet1.getIPAddress( 'h1')
+            ip2 = main.Mininet1.getIPAddress( 'h9')
+
+        ipProto = main.params[ 'SDNIP' ][ 'icmpProto' ]
+        # Uneccessary, not including this in the selectors
+        tcp1 = main.params[ 'SDNIP' ][ 'srcPort' ]
+        tcp2 = main.params[ 'SDNIP' ][ 'dstPort' ]
+
+        stepResult = main.intentFunction.pointIntent(
+                                           main,
+                                           name="SDNIP-ICMP",
+                                           host1="h1",
+                                           host2="h9",
+                                           deviceId1="of:0000000000000005/1",
+                                           deviceId2="of:0000000000000006/1",
+                                           mac1=mac1,
+                                           mac2=mac2,
+                                           ethType="IPV6",
+                                           ipProto=ipProto,
+                                           ip1=ip1,
+                                           ip2=ip2 )
+
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass=main.assertReturnString,
+                                 onfail=main.assertReturnString )
+
+        main.step( "SDNIP-TCP: Add point intents between h1 and h9" )
+        main.assertReturnString = "Assertion Result for SDNIP-TCP IPV4 using ICMP point intents\n"
+        mac1 = main.hostsData[ 'h1' ][ 'mac' ]
+        mac2 = main.hostsData[ 'h9' ][ 'mac' ]
+        ip1 = str( main.hostsData[ 'h1' ][ 'ipAddresses' ][ 0 ] ) + "/32"
+        ip2 = str( main.hostsData[ 'h9' ][ 'ipAddresses' ][ 0 ] ) + "/32"
+        ipProto = main.params[ 'SDNIP' ][ 'tcpProto' ]
+        tcp1 = main.params[ 'SDNIP' ][ 'srcPort' ]
+        tcp2 = main.params[ 'SDNIP' ][ 'dstPort' ]
+
+        stepResult = main.intentFunction.pointIntentTcp(
+                                           main,
+                                           name="SDNIP-TCP",
+                                           host1="h1",
+                                           host2="h9",
+                                           deviceId1="of:0000000000000005/1",
+                                           deviceId2="of:0000000000000006/1",
+                                           mac1=mac1,
+                                           mac2=mac2,
+                                           ethType="IPV4",
+                                           ipProto=ipProto,
+                                           ip1=ip1,
+                                           ip2=ip2,
+                                           tcp1=tcp1,
+                                           tcp2=tcp2 )
+
+        utilities.assert_equals( expect=main.TRUE,
+                             actual=stepResult,
+                                 onpass=main.assertReturnString,
+                                 onfail=main.assertReturnString )
+
+        main.step( "DUALSTACK1: Add point intents between h3 and h11" )
+        main.assertReturnString = "Assertion Result for Dualstack1 IPV4 with mac address point intents\n"
+        stepResult = main.intentFunction.pointIntent(
+                                       main,
+                                       name="DUALSTACK1",
+                                       host1="h3",
+                                       host2="h11",
+                                       deviceId1="of:0000000000000005",
+                                       deviceId2="of:0000000000000006",
+                                       port1="3",
+                                       port2="3",
+                                       ethType="IPV4",
+                                       mac1="00:00:00:00:00:03",
+                                       mac2="00:00:00:00:00:0B",
+                                       bandwidth="",
+                                       lambdaAlloc=False,
+                                       ipProto="",
+                                       ip1="",
+                                       ip2="",
+                                       tcp1="",
+                                       tcp2="",
+                                       sw1="s5",
+                                       sw2="s2",
+                                       expectedLink=18 )
+
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass=main.assertReturnString,
+                                 onfail=main.assertReturnString )
+
+        main.step( "VLAN: Add point intents between h5 and h21" )
+        main.assertReturnString = "Assertion Result for VLAN IPV4 with mac address point intents\n"
+        stepResult = main.intentFunction.pointIntent(
+                                       main,
+                                       name="VLAN",
+                                       host1="h5",
+                                       host2="h21",
+                                       deviceId1="of:0000000000000005/5",
+                                       deviceId2="of:0000000000000007/5",
+                                       port1="",
+                                       port2="",
+                                       ethType="IPV4",
+                                       mac1="00:00:00:00:00:05",
+                                       mac2="00:00:00:00:00:15",
+                                       bandwidth="",
+                                       lambdaAlloc=False,
+                                       ipProto="",
+                                       ip1="",
+                                       ip2="",
+                                       tcp1="",
+                                       tcp2="",
+                                       sw1="s5",
+                                       sw2="s2",
+                                       expectedLink=18 )
+
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass=main.assertReturnString,
+                                 onfail=main.assertReturnString )
+
+        main.step( "1HOP: Add point intents between h1 and h3" )
+        main.assertReturnString = "Assertion Result for 1HOP IPV4 with no mac address point intents\n"
+        stepResult = main.intentFunction.hostIntent( main,
+                                              name='1HOP',
+                                              host1='h1',
+                                              host2='h9',
+                                              host1Id='00:00:00:00:00:01/-1',
+                                              host2Id='00:00:00:00:00:09/-1')
+
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass=main.assertReturnString,
+                                 onfail=main.assertReturnString )
+        """
+        main.intentFunction.report( main )

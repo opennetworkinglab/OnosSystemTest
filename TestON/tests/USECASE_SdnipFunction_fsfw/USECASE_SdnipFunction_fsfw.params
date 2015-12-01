@@ -10,6 +10,7 @@
     <CTRL>
         <numCtrl>1</numCtrl>
         <ip1>OC1</ip1>
+        <ipN>OCN</ipN>
         <port1>6653</port1>
     </CTRL>
 

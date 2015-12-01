@@ -32,11 +32,14 @@ class USECASE_SdnipFunction_fsfw:
 
         global ONOS1Ip
         ONOS1Ip = os.getenv( main.params[ 'CTRL' ][ 'ip1' ] )
+        global fsfwIp
+        fsfwIp = os.getenv( main.params[ 'CTRL' ][ 'ipN' ] )
+
         # connect all switches to controller
         swResult = main.TRUE
         for i in range ( 1, int( main.params['config']['switchNum'] ) + 1 ):
             sw = "sw%s" % ( i )
-            swResult = swResult and main.Mininet.assignSwController( sw, ONOS1Ip )
+            swResult = swResult and main.Mininet.assignSwController( sw, fsfwIp )
             # swResult = swResult and main.Mininet.assignSwController( sw, ONOS1Ip, port = "6633" )
         utilities.assert_equals( expect = main.TRUE,
                              actual = swResult,
@@ -532,7 +535,7 @@ class USECASE_SdnipFunction_fsfw:
             onpass = "Starting switch succeeded!",
             onfail = "Starting switch failed!" )
 
-        result2 = main.Mininet.assignSwController( "sw32", ONOS1Ip )
+        result2 = main.Mininet.assignSwController( "sw32", fsfwIp )
         utilities.assertEquals( \
             expect = main.TRUE,
             actual = result2,
@@ -631,7 +634,7 @@ class USECASE_SdnipFunction_fsfw:
         utilities.assertEquals( expect = main.TRUE, actual = result1,
                                 onpass = "Starting switch succeeded!",
                                 onfail = "Starting switch failed!" )
-        result2 = main.Mininet.assignSwController( "sw11", ONOS1Ip )
+        result2 = main.Mininet.assignSwController( "sw11", fsfwIp )
         utilities.assertEquals( expect = main.TRUE, actual = result2,
                                 onpass = "Connect switch to ONOS succeeded!",
                                 onfail = "Connect switch to ONOS failed!" )

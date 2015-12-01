@@ -1,0 +1,8 @@
+Summary:
+        This is a performance test suite that is designed to test
+        large topologies. It also contains a failure case that brings
+        down an onos controller to see if the neighboring controllers
+        pick up the rest of the devices.
+NOTE:
+        This test does not scale onos controllers. The number of
+        controllers is fixed at 3.

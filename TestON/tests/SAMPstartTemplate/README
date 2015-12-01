@@ -1,0 +1,5 @@
+Summary:
+        This is a Sample test suite that demonstrates starting up ONOS
+        and scalling to multiple instances. It also has extra
+        functionalilty that allows the tester to bypass the ONOS
+        package and install case (case 2) to save time.

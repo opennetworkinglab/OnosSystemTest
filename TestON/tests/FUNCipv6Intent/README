@@ -1,12 +1,12 @@
 Summary:
-        This test suite consist of basic intent functionality testing.
-        The following is an overview of how host intents is being tested.
+        This test suite consist of basic intent IPv6 functionality testing.
+        The following is an overview of how point-to-point intents are being tested.
         Steps:
-            - Discover hosts
-            - Add host intents
+            - Discover IPv6 hosts with ICMP6 ping
+            - Add point intents
             - Check intents
             - Verify flows
-            - Ping hosts
+            - ICMP6 ping of all hosts
             - Reroute
                 - Link down
                 - Verify flows
@@ -16,6 +16,7 @@ Summary:
                 - Verify flows
                 - Check topology
                 - Ping hosts
+            - Verify intents with VLAN-id
             - Remove intents
         This test suite includes testing of different types of intents such as
         host, point, single-to-multi and multi-to-single ( More intent types to
@@ -29,10 +30,6 @@ Required:
         including VLAN hosts. Therefore you need to install VLAN module to build
         the topology correctly.
 
-NOTE:
-    This test is being updated to use Scapy for host discovery and verification of flows.
-    So, Scapy will be required to run the test in the future.
-
 VLAN configuration:
         Execute command:
             $ sudo apt-get install vlan
@@ -40,7 +37,3 @@ VLAN configuration:
             $ sudo modprobe 8021q
         NOTE:To make this configuration permanent
             $ sudo su -c 'echo "8021q" >> /etc/modules'
-
-Scapy install:
-    sudo apt-get install Scapy
-

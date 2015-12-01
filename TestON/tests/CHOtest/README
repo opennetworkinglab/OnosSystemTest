@@ -1,1 +1,40 @@
-#This README file be updated soon
+CHO TEST
+
+Summary:
+        This is a long-term regression test that is aimed to run
+        for weeks at a time. It's goal is to find memory leaks or bugs that
+        otherwise cannot be easily seen with short-term tests. The following
+        is an overview of the steps that are performed in this test.
+        Steps:
+        - Discover IPv4 and IPv6 hosts
+        - Add host intents
+        - Ping all hosts
+        - Bring links down
+        - Ping all hosts
+        - Bring links back up
+        - Ping all hosts
+        - remove intents
+
+        These steps are iterated over and over again. The number of iterations can
+        be found in the params file.
+
+Topology:
+        Att topology - 25 switches and 25 hosts and its structure is designed to simulate
+                        a real world configuration,
+        Chordal topology - 25 swithces and 25 hosts and because of its chordal graph structure,
+                            it's particulary useful in testing the rerouting capability of ONOS.
+        Leaf-spine topology - 78 switches and 68 hosts and designed to simulate modern data centers.
+
+Pre-requisites:
+        To run out-of-the box this test requires 3 NODES. The cell file
+        must be passed through the startup test command, e.g.,
+
+            ./cli.py run CHOtest onoscell <cell name>.
+
+        Passwordless login must be set from TestStation "admin" root user.
+        This test relies on the topology files to start Mininet located in
+        the Dependency folder. Be sure to check that each topology file can
+        be loaded properly by Mininet by using this command:
+
+            sudo ~/<Dependency path>/<topology name>
+

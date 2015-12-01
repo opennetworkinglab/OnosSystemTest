@@ -33,9 +33,11 @@ class USECASE_SdnipFunction_fsfw:
         global ONOS1Ip
         ONOS1Ip = os.getenv( main.params[ 'CTRL' ][ 'ip1' ] )
         global fsfwIp
-        fsfwIp = os.getenv( main.params[ 'CTRL' ][ 'ipN' ] )
+        # TDOO: there is some setup sequence issue, will fix it later
+        # fsfwIp = os.getenv( main.params[ 'CTRL' ][ 'ipN' ] )
+        fsfwIp = main.params[ 'CTRL' ][ 'fsfwIp' ]
         global fsfwPort
-        fsfwPort = os.getenv( main.params[ 'CTRL' ][ 'fsfwPort' ] )
+        fsfwPort = main.params[ 'CTRL' ][ 'fsfwPort' ]
 
         # connect all switches to controller
         swResult = main.TRUE

@@ -11,6 +11,7 @@
         <numCtrl>1</numCtrl>
         <ip1>OC1</ip1>
         <ipN>OCN</ipN>
+        <fsfwIp>10.128.10.12</fsfwIp>
         <fsfwPort>6633</fsfwPort>
         <port1>6653</port1>
     </CTRL>

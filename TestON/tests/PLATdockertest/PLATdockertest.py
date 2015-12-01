@@ -251,6 +251,9 @@ class PLATdockertest:
                 handle = pexpect.spawn(spawncmd)
                 handle.expect("yes/no")
                 handle.sendline("yes")
+                print("yes is sent") 
+                #this extra statement is sent to get around some
+                #pexpect issue of not seeing the next expected string
                 handle.expect("Password:")
                 handle.sendline(pwd)
                 time.sleep(5)

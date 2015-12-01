@@ -504,7 +504,7 @@ class FUNCnetCfg:
             if "of:0000000000000001" in sw['id']:
                 s1Correct = True
                 for k in keys:
-                    if str( sw['annotations'][k] ) != str( main.s1Json[k] ):
+                    if str( sw.get( 'annotations', {} ).get( k ) ) != str( main.s1Json[k] ):
                         s1Correct = False
                         main.log.debug( "{} is wrong on s1".format( k ) )
                 if not s1Correct:
@@ -612,7 +612,7 @@ class FUNCnetCfg:
         allowedDevices = [ "of:{}".format( str( i ).zfill( 16 ) ) for i in [ 1, 2 ] ]
         onosDevices = []
         for sw in json.loads( devices ):
-            onosDevices.append( str( sw['id'] ) )
+            onosDevices.append( str( sw.get( 'id' ) ) )
         onosDevices.sort()
         failMsg = "ONOS devices doesn't match the list of allowed devices.\n"
         failMsg += "Expected devices: {}\nActual devices: {}".format( allowedDevices,
@@ -625,10 +625,10 @@ class FUNCnetCfg:
         main.step( "Check device annotations" )
         keys = [ 'name', 'owner', 'rackAddress' ]
         for sw in json.loads( devices ):
-            if "of:0000000000000001" in sw['id']:
+            if "of:0000000000000001" in sw.get( 'id' ):
                 s1Correct = True
                 for k in keys:
-                    if str( sw['annotations'][k] ) != str( main.s1Json[k] ):
+                    if str( sw.get( 'annotations', {} ).get( k ) ) != str( main.s1Json[k] ):
                         s1Correct = False
                         main.log.debug( "{} is wrong on s1".format( k ) )
                 if not s1Correct:
@@ -636,7 +636,7 @@ class FUNCnetCfg:
             elif "of:0000000000000002" in sw['id']:
                 s2Correct = True
                 for k in keys:
-                    if str( sw['annotations'][k] ) != str( main.s2Json[k] ):
+                    if str( sw.get( 'annotations', {} ).get( k ) ) != str( main.s2Json[k] ):
                         s2Correct = False
                         main.log.debug( "{} is wrong on s2".format( k ) )
                 if not s2Correct:

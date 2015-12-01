@@ -155,7 +155,7 @@ class DockerApiDriver( API ):
         """
         try:
             main.log.info( self.name +
-                           ": Checkeng Docker Status for CT with 'Names'  " + ctName )
+                           ": Checking Docker Status for CT with 'Names'  " + ctName )
             namelist = [response["Names"] for response in self.dockerClient.containers(all=True) if not []]
             main.log.info("Name list is: " + str(namelist) )
             if( [ctName] in namelist):

@@ -34,12 +34,15 @@ class USECASE_SdnipFunction_fsfw:
         ONOS1Ip = os.getenv( main.params[ 'CTRL' ][ 'ip1' ] )
         global fsfwIp
         fsfwIp = os.getenv( main.params[ 'CTRL' ][ 'ipN' ] )
+        global fsfwPort
+        fsfwPort = os.getenv( main.params[ 'CTRL' ][ 'fsfwPort' ] )
 
         # connect all switches to controller
         swResult = main.TRUE
         for i in range ( 1, int( main.params['config']['switchNum'] ) + 1 ):
             sw = "sw%s" % ( i )
-            swResult = swResult and main.Mininet.assignSwController( sw, fsfwIp )
+            swResult = swResult and main.Mininet.assignSwController( sw, fsfwIp,
+                                                                     port = fsfwPort )
             # swResult = swResult and main.Mininet.assignSwController( sw, ONOS1Ip, port = "6633" )
         utilities.assert_equals( expect = main.TRUE,
                              actual = swResult,

@@ -1,0 +1,16 @@
+export ONOS_CELL="sdnip_single_instance"
+
+export ONOS_INSTALL_DIR="/opt/onos"
+export ONOS_NIC=10.128.20.*
+export OC1="10.128.20.11"
+export OC2="10.128.20.12"
+export OC3="10.128.20.13"
+export OCN="10.128.10.12"
+export OCI="${OC1}"
+export ONOS_USER="sdn"                  # ONOS user on remote system
+export ONOS_PWD="rocks"
+
+#export ONOS_APPS="drivers,openflow,config,proxyarp"
+export ONOS_APPS="drivers,openflow,proxyarp"
+
+

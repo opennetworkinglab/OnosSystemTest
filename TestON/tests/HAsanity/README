@@ -1,6 +1,7 @@
-This test is designed to verify that a single node ONOS cluster behaves
-correctly when all ONOS nodes die. We will kill the ONOS node and verify
-correct behavior as the node restarts.
+This test is designed to verify that an ONOS cluster behaves correctly using
+all the same verifications as the other HA tests. There is no control plane
+failures in this test. This is so that it is easier to find the cause of bugs
+discovered through the HA suite.
 
 The gerneral structure for the test:
 - Startup
@@ -10,8 +11,7 @@ The gerneral structure for the test:
     - Intents
     - Leadership election
     - Distributed Primitives
-- Kill ONOS node
-- Restart ONOS node
+- Wait 60 seconds
 - Verify ONOS state and functionality
 - Dataplane failures
     - link down and up

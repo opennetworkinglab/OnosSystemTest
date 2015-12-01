@@ -1,1 +1,18 @@
-Summary: Fill me in please!
+This test is designed to verify that an ONOS cluster behaves correctly when all
+ONOS nodes die. We will kill the entire ONOS cluster and verify correct
+behavior as the cluster restarts.
+
+The gerneral structure for the test:
+- Startup
+- Assign switches
+- Verify ONOS state and functionality
+    - Device mastership
+    - Intents
+    - Leadership election
+    - Distributed Primitives
+- Kill ONOS nodes
+- Restart ONOS nodes
+- Verify ONOS state and functionality
+- Dataplane failures
+    - link down and up
+    - switch down and up

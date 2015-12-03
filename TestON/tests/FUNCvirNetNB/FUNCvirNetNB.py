@@ -178,19 +178,11 @@ class FUNCvirNetNB:
             main.cleanup()
             main.exit()
 
-        main.step( "Install onos-app-vtnrsc app" )
-        installResults = main.ONOScli1.featureInstall( "onos-app-vtnrsc" )
+        main.step( "Install org.onosproject.vtn app" )
+        installResults = main.ONOScli1.activateApp( "org.onosproject.vtn" )
         utilities.assert_equals( expect=main.TRUE, actual=installResults,
-                     onpass="Install onos-app-vtnrsc successful",
-                     onfail="Install onos-app-vtnrsc app failed" )
-
-        time.sleep( main.startUpSleep )
-
-        main.step( "Install onos-app-vtnweb app" )
-        installResults = main.ONOScli1.featureInstall( "onos-app-vtnweb" )
-        utilities.assert_equals( expect=main.TRUE, actual=installResults,
-                     onpass="Install onos-app-vtnweb successful",
-                     onfail="Install onos-app-vtnweb app failed" )
+                     onpass="Install org.onosproject.vtn successful",
+                     onfail="Install org.onosproject.vtn app failed" )
 
         time.sleep( main.startUpSleep )
 

@@ -915,7 +915,7 @@ class MininetCliDriver( Emulator ):
         else:
             main.log.error( "Connection failed to the host" )
 
-    def getIPAddress( self, host ):
+    def getIPAddress( self, host , proto='IPV4'):
         """
            Verifies the host's ip configured or not."""
         if self.handle:
@@ -931,7 +931,11 @@ class MininetCliDriver( Emulator ):
                 main.cleanup()
                 main.exit()
 
-            pattern = "inet\saddr:(\d+\.\d+\.\d+\.\d+)"
+            pattern = ''
+            if proto == 'IPV4':
+                pattern = "inet\saddr:(\d+\.\d+\.\d+\.\d+)"
+            else:
+                pattern = "inet6\saddr:\s([\w,:]*)/"
             ipAddressSearch = re.search( pattern, response )
             main.log.info(
                 self.name +

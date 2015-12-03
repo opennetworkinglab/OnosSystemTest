@@ -6,7 +6,7 @@
     # 12 - Assign switch to controller
     # 14 - Stop Mininet
 
-    <testcases>1,2,11,12,2000,14</testcases>
+    <testcases>1,2,11,12,13,2000,14</testcases>
 
     <SCALE>
         <size>1</size>
@@ -27,7 +27,6 @@
         <pull>false</pull>
         <branch>master</branch>
     </GIT>
-
     <SLEEP>
         <startup>15</startup>
         <reroute>5</reroute>
@@ -44,7 +43,7 @@
     # Intent tests params
     <SDNIP>
         <tcpProto>6</tcpProto>
-        <icmpProto>1</icmpProto>
+        <icmpProto>58</icmpProto>
         <srcPort>5001</srcPort>
         <dstPort>5001</dstPort>
     </SDNIP>

@@ -117,11 +117,10 @@ def hostIntent( main,
         return main.FALSE
 
     # Discover hosts using arping incase pingall discovery failed
-    main.log.info( itemName + ": Discover host using arping" )
-    main.Mininet1.arping( srcHost=host1, dstHost=host2 )
-    main.Mininet1.arping( srcHost=host2, dstHost=host1 )
-    host1 = main.CLIs[ 0 ].getHost( mac=h1Mac )
-    host2 = main.CLIs[ 0 ].getHost( mac=h2Mac )
+    #main.log.info( itemName + ": Discover host using pingall" )
+    #main.Mininet1.pingall( protocol='IPv6' )
+    #host1 = main.CLIs[ 0 ].getHost( mac=h1Mac )
+    #host2 = main.CLIs[ 0 ].getHost( mac=h2Mac )
 
     # Check flows count in each node
     checkFlowsCount( main )
@@ -147,13 +146,14 @@ def hostIntent( main,
     checkFlowsState( main )
 
     # Ping hosts
-    firstPingResult = pingallHosts( main, hostNames )
+    #firstPingResult = ping6allHosts( main, hostNames )
+    firstPingResult = main.Mininet1.ping6pair(SRC=hostNames[0], TARGET=main.hostsData[ host2 ][ 'ipAddresses' ][ 0 ])
     if not firstPingResult:
         main.log.debug( "First ping failed, there must be" +
                        " something wrong with ONOS performance" )
 
     # Ping hosts again...
-    pingTemp = pingallHosts( main, hostNames )
+    pingTemp = main.Mininet1.ping6pair(SRC=hostNames[0], TARGET=main.hostsData[ host2 ][ 'ipAddresses' ][ 0 ])
     pingResult = pingResult and pingTemp
     if pingTemp:
         main.assertReturnString += 'Initial Pingall Passed\n'
@@ -405,7 +405,7 @@ def pointIntent( main,
     checkFlowsState( main )
 
     # Ping hosts
-    pingTemp = main.Mininet1.ping6pair(SRC=host1, TARGET='10:1:0::5')
+    pingTemp = main.Mininet1.ping6pair(SRC=host1, TARGET=main.hostsData[ host2 ][ 'ipAddresses' ][ 0 ])
     pingResult = pingResult and pingTemp
     if pingTemp:
         main.assertReturnString += 'Initial Ping6 pair Passed\n'
@@ -687,7 +687,7 @@ def pointIntentTcp( main,
     checkFlowsState( main )
 
     # Run iperf to both host
-    iperfTemp = main.Mininet1.iperftcp( host1,host2,10 )
+    iperfTemp = main.Mininet1.iperftcp( host1,host2,timeout=10 )
     iperfResult = iperfResult and iperfTemp
     if iperfTemp:
         main.assertReturnString += 'Initial Iperf Passed\n'
@@ -717,7 +717,7 @@ def pointIntentTcp( main,
             main.assertReturnString += 'Link Down Topology State Failed\n'
 
         # Run iperf to both host
-        iperfTemp = main.Mininet1.iperftcp( host1,host2,10 )
+        iperfTemp = main.Mininet1.iperftcp( host1,host2,timeout=10 )
         iperfResult = iperfResult and iperfTemp
         if iperfTemp:
             main.assertReturnString += 'Link Down Iperf Passed\n'
@@ -761,7 +761,7 @@ def pointIntentTcp( main,
             main.assertReturnString += 'Link Up Topology State Failed\n'
 
         # Run iperf to both host
-        iperfTemp = main.Mininet1.iperftcp( host1,host2,10 )
+        iperfTemp = main.Mininet1.iperftcp( host1,host2,timeout=10 )
         iperfResult = iperfResult and iperfTemp
         if iperfTemp:
             main.assertReturnString += 'Link Up Iperf Passed\n'
@@ -1392,6 +1392,10 @@ def getHostsData( main ):
     getDataResult = main.TRUE
     main.log.info( "Activating reactive forwarding app " )
     activateResult = main.CLIs[ 0 ].activateApp( "org.onosproject.fwd" )
+    main.CLIs[ 0 ].setCfg( "org.onosproject.fwd.ReactiveForwarding", "ipv6Forwarding", "true")
+    main.CLIs[ 0 ].setCfg( "org.onosproject.fwd.ReactiveForwarding", "matchIpv6Address", "true")
+    main.CLIs[ 0 ].setCfg( "org.onosproject.fwd.ReactiveForwarding", "ipv6Forwarding", "true")
+    main.CLIs[ 0 ].setCfg( "org.onosproject.fwd.ReactiveForwarding", "matchIpv6Address", "true")
     time.sleep( main.fwdSleep )
 
     for i in range( main.numCtrls ):
@@ -1400,7 +1404,7 @@ def getHostsData( main ):
             main.log.warn( main.CLIs[ i ].apps() )
             main.log.warn( main.CLIs[ i ].appIDs() )
 
-    pingResult = main.Mininet1.pingall( timeout = 600 )
+    pingResult = main.Mininet1.pingall( protocol="IPv6", timeout = 600 )
     hostsJson = json.loads( main.CLIs[ 0 ].hosts() )
     hosts = main.Mininet1.getHosts().keys()
     # TODO: Make better use of new getHosts function

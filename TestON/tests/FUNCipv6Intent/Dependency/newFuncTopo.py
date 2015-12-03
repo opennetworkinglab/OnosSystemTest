@@ -48,52 +48,38 @@ class MyTopo( Topo ):
         # Initialize topology
         Topo.__init__( self )
         # Switch S5 Hosts
-        # IPv4 only Host
         host1=self.addHost( 'h1', cls=IPv6Host, v6Addr='10:1:0::1/64' )
-        # IPv6 only Host
         host2=self.addHost( 'h2', cls=IPv6Host, v6Addr='1000::2/64' )
         # Dual Stack Host
-        host3=self.addHost( 'h3', cls=IPv6Host, v6Addr='2000::2/64' )
-        # VLAN hosts
+        host3=self.addHost( 'h3', cls=dualStackHost, v6Addr='2000::2/64' )
         host4=self.addHost( 'h4', cls=IPv6Host, v6Addr='3000::2/64' )
-        host5=self.addHost( 'h5', cls=IPv6Host,v6Addr='4000::2/64' )
-        # VPN-1 and VPN-2 Hosts
+        #VLAN
+        host5=self.addHost( 'h5', cls=VLANHost,v6Addr='4000::2/64' )
         host6=self.addHost( 'h6', cls=IPv6Host, v6Addr='11:1:0::2/64' )
         host7=self.addHost( 'h7', cls=IPv6Host, v6Addr='12:1:0::2/64' )
-        # Multicast Sender
         host8=self.addHost( 'h8', cls=IPv6Host, v6Addr='10:1:0::4/64' )
 
         # Switch S6 Hosts
-        # IPv4 only Host
         host9=self.addHost( 'h9', cls=IPv6Host, v6Addr='10:1:0::5/64' )
-        # IPv6 only Host
         host10=self.addHost( 'h10', cls=IPv6Host, v6Addr='1000::3/64' )
         # Dual Stack Host
-        host11=self.addHost( 'h11', cls=IPv6Host, v6Addr='2000::3/64' )
-        # VLAN hosts
+        host11=self.addHost( 'h11', cls=dualStackHost, v6Addr='2000::3/64' )
         host12=self.addHost( 'h12', cls=IPv6Host, v6Addr='3000::3/64' )
         host13=self.addHost( 'h13', cls=IPv6Host, v6Addr='4000::3/64' )
-        # VPN-1 and VPN-2 Hosts
         host14=self.addHost( 'h14', cls=IPv6Host, v6Addr='11:1:0::3/64' )
         host15=self.addHost( 'h15', cls=IPv6Host, v6Addr='12:1:0::3/64' )
-        # Multicast Receiver
         host16=self.addHost( 'h16', cls=IPv6Host, v6Addr='10:1:0::7/64' )
 
         # Switch S7 Hosts
-        # IPv4 only Host
         host17=self.addHost( 'h17', cls=IPv6Host, v6Addr='10:1:0::8/64' )
-        # IPv6 only Host
         host18=self.addHost( 'h18', cls=IPv6Host, v6Addr='1000::4/64' )
-        # Dual Stack Host
         host19=self.addHost( 'h19', cls=IPv6Host, v6Addr='10:1:0::9/64' )
-        # VLAN hosts
         host20=self.addHost( 'h20', cls=IPv6Host, v6Addr='100:1:0::4/64' )
         host21=self.addHost( 'h21', cls=IPv6Host, v6Addr='200:1:0::4/64' )
-        # VPN-1 and VPN-2 Hosts
         host22=self.addHost( 'h22', cls=IPv6Host, v6Addr='11:1:0::4/64' )
         host23=self.addHost( 'h23', cls=IPv6Host, v6Addr='12:1:0::4/64' )
-        # Multicast Receiver
-        host24=self.addHost( 'h24', cls=IPv6Host, v6Addr='10:1:0::10/64' )
+        # VLAN 
+        host24=self.addHost( 'h24', cls=VLANHost, v6Addr='4000::5/64' )
 
         s1 = self.addSwitch( 's1' )
         s2 = self.addSwitch( 's2' )

@@ -32,6 +32,7 @@ def consistentCheck():
                 main.log.error( "Could not parse counters response from ONOS" +
                                 str( main.activeNodes[i] + 1 ) )
                 main.log.warn( repr( onosCountersRaw[ i ] ) )
+                onosCounters.append( [] )
                 return main.FALSE
 
         testCounters = {}

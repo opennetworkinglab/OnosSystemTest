@@ -2042,15 +2042,13 @@ class HAsanity:
         main.case( "Compare ONOS Topology view to Mininet topology" )
         main.caseExplanation = "Compare topology objects between Mininet" +\
                                 " and ONOS"
-
-        main.step( "Comparing ONOS topology to MN" )
         topoResult = main.FALSE
         elapsed = 0
         count = 0
-        main.step( "Collecting topology information from ONOS" )
+        main.step( "Comparing ONOS topology to MN topology" )
         startTime = time.time()
         # Give time for Gossip to work
-        while topoResult == main.FALSE and elapsed < 60:
+        while topoResult == main.FALSE and ( elapsed < 60 or count < 3 ):
             devicesResults = main.TRUE
             linksResults = main.TRUE
             hostsResults = main.TRUE
@@ -2086,6 +2084,7 @@ class HAsanity:
                 except ( ValueError, TypeError ):
                     main.log.exception( "Error parsing hosts results" )
                     main.log.error( repr( t.result ) )
+                    hosts.append( [] )
             for controller in range( 0, len( hosts ) ):
                 controllerStr = str( controller + 1 )
                 for host in hosts[ controller ]:
@@ -2274,6 +2273,11 @@ class HAsanity:
                 topoResult = ( devicesResults and linksResults
                                and hostsResults and ipResult and
                                hostAttachmentResults )
+        utilities.assert_equals( expect=True,
+                                 actual=topoResult,
+                                 onpass="ONOS topology matches Mininet",
+                                 onfail="ONOS topology don't match Mininet" )
+        # End of While loop to pull ONOS state
 
         # Compare json objects for hosts and dataplane clusters
 
@@ -2413,26 +2417,23 @@ class HAsanity:
             t.join()
             nodesOutput.append( t.result )
         ips = [ node.ip_address for node in main.nodes ]
+        ips.sort()
         for i in nodesOutput:
             try:
                 current = json.loads( i )
+                activeIps = []
+                currentResult = main.FALSE
                 for node in current:
-                    currentResult = main.FALSE
-                    if node['ip'] in ips:  # node in nodes() output is in cell
-                        if node['state'] == 'ACTIVE':
-                            currentResult = main.TRUE
-                        else:
-                            main.log.error( "Error in ONOS node availability" )
-                            main.log.error(
-                                    json.dumps( current,
-                                                sort_keys=True,
-                                                indent=4,
-                                                separators=( ',', ': ' ) ) )
-                            break
-                    nodeResults = nodeResults and currentResult
+                    if node['state'] == 'ACTIVE':
+                        activeIps.append( node['ip'] )
+                activeIps.sort()
+                if ips == activeIps:
+                    currentResult = main.TRUE
             except ( ValueError, TypeError ):
                 main.log.error( "Error parsing nodes output" )
                 main.log.warn( repr( i ) )
+                currentResult = main.FALSE
+            nodeResults = nodeResults and currentResult
         utilities.assert_equals( expect=main.TRUE, actual=nodeResults,
                                  onpass="Nodes check successful",
                                  onfail="Nodes check NOT successful" )

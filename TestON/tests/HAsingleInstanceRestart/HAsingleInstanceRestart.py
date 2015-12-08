@@ -1427,15 +1427,13 @@ class HAsingleInstanceRestart:
         main.case( "Compare ONOS Topology view to Mininet topology" )
         main.caseExplanation = "Compare topology objects between Mininet" +\
                                 " and ONOS"
-
-        main.step( "Comparing ONOS topology to MN" )
         topoResult = main.FALSE
         elapsed = 0
         count = 0
-        main.step( "Collecting topology information from ONOS" )
+        main.step( "Comparing ONOS topology to MN topology" )
         startTime = time.time()
         # Give time for Gossip to work
-        while topoResult == main.FALSE and elapsed < 60:
+        while topoResult == main.FALSE and ( elapsed < 60 or count < 3 ):
             devicesResults = main.TRUE
             linksResults = main.TRUE
             hostsResults = main.TRUE

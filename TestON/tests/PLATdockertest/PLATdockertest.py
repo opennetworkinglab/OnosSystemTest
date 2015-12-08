@@ -245,13 +245,13 @@ class PLATdockertest:
         main.step("check onos for any exceptions")
 
         for ip in IPlist:
-            spawncmd = "ssh -p 8101 " + user + "@" + ip
+            spawncmd = "ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -p 8101 " + user + "@" + ip
             main.log.info("log on node using cmd: " + spawncmd)
             try:
                 handle = pexpect.spawn(spawncmd)
-                handle.expect("yes/no")
-                handle.sendline("yes")
-                print("yes is sent") 
+                #handle.expect("yes/no")
+                #handle.sendline("yes")
+                #print("yes is sent")
                 #this extra statement is sent to get around some
                 #pexpect issue of not seeing the next expected string
                 handle.expect("Password:")

@@ -7,6 +7,7 @@
 
     <ENV>
     <cellName>Cbenchcell</cellName>
+    <cellApps>drivers,openflow-base,fwd</cellApps>
     </ENV>
 
     <TEST>

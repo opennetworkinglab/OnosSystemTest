@@ -183,7 +183,7 @@ class OnosDriver( CLI ):
             main.cleanup()
             main.exit()
 
-    def onosPackage( self, opTimeout=30 ):
+    def onosPackage( self, opTimeout=120 ):
         """
         Produce a self-contained tar.gz file that can be deployed
         and executed on any platform with Java 7 JRE.

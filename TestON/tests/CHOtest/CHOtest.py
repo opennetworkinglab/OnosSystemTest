@@ -27,7 +27,7 @@ class CHOtest:
 
         global intentState
         main.threadID = 0
-        main.pingTimeout = 300
+        main.pingTimeout = 600
         main.numCtrls = main.params[ 'CTRL' ][ 'numCtrl' ]
         git_pull = main.params[ 'GIT' ][ 'autoPull' ]
         git_branch = main.params[ 'GIT' ][ 'branch' ]
@@ -61,7 +61,7 @@ class CHOtest:
         else:
             main.log.error( "Please provide onoscell option at TestON CLI to run CHO tests" )
             main.log.error( "Example: ~/TestON/bin/cli.py run OnosCHO onoscell <cellName>" )
-            main.clean()
+            main.cleanup()
             main.exit()
 
         main.step( "Git checkout and pull " + git_branch )

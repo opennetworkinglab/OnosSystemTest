@@ -91,6 +91,7 @@
         <SwitchDiscovery>10</SwitchDiscovery>
         <IntentPurgeDelay>15</IntentPurgeDelay>
         <CheckIntentDelay>8</CheckIntentDelay>
+        <topoCheckDelay>5</topoCheckDelay>
         <pingSleep>3</pingSleep>
     </timers>
 
@@ -98,6 +99,7 @@
         <pauseTest>off</pauseTest>
         <email>off</email>
         <intentChecks>8</intentChecks>
+        <topoChecks>3</topoChecks>
         <numPings>5</numPings>
     </TEST>
 

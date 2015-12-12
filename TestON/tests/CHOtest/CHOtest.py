@@ -36,8 +36,10 @@ class CHOtest:
         main.failSwitch = main.params['TEST']['pauseTest']
         main.emailOnStop = main.params['TEST']['email']
         main.intentCheck = int( main.params['TEST']['intentChecks'] )
+        main.topoCheck = int( main.params['TEST']['topoChecks'] )
         main.numPings = int( main.params['TEST']['numPings'] )
         main.pingSleep = int( main.params['timers']['pingSleep'] )
+        main.topoCheckDelay = int( main.params['timers']['topoCheckDelay'] )
         main.newTopo = ""
         main.CLIs = []
         main.prefix = 0
@@ -891,84 +893,94 @@ class CHOtest:
         main.case( "Compare ONOS topology with reference data" )
 
         main.step( "Compare current Device ports enabled with reference" )
-        time1 = time.time()
-        for i in xrange( 1,(main.numMNswitches + 1), int( main.numCtrls ) ):
-            pool = []
-            for cli in main.CLIs:
-                if i >=  main.numMNswitches + 1:
-                    break
-                dpid = "of:00000000000000" + format( i,'02x' )
-                t = main.Thread(target = cli.getDevicePortsEnabledCount,
-                        threadID = main.threadID,
-                        name = "getDevicePortsEnabledCount",
-                        args = [dpid])
-                t.start()
-                pool.append(t)
-                i = i + 1
-                main.threadID = main.threadID + 1
-            for thread in pool:
-                thread.join()
-                portResult = thread.result
-                #portTemp = re.split( r'\t+', portResult )
-                #portCount = portTemp[ 1 ].replace( "\r\r\n\x1b[32m", "" )
-                devicePortsEnabledCountTemp.append( portResult )
 
-        time2 = time.time()
-        main.log.info("Time for counting enabled ports of the switches: %2f seconds" %(time2-time1))
-        main.log.info (
-            "Device Enabled ports EXPECTED: %s" %
-            str( main.devicePortsEnabledCount ) )
-        main.log.info (
-            "Device Enabled ports ACTUAL: %s" %
-            str( devicePortsEnabledCountTemp ) )
+        for check in range(main.topoCheck):
+            time1 = time.time()
+            for i in xrange( 1,(main.numMNswitches + 1), int( main.numCtrls ) ):
+                pool = []
+                for cli in main.CLIs:
+                    if i >=  main.numMNswitches + 1:
+                        break
+                    dpid = "of:00000000000000" + format( i,'02x' )
+                    t = main.Thread(target = cli.getDevicePortsEnabledCount,
+                            threadID = main.threadID,
+                            name = "getDevicePortsEnabledCount",
+                            args = [dpid])
+                    t.start()
+                    pool.append(t)
+                    i = i + 1
+                    main.threadID = main.threadID + 1
+                for thread in pool:
+                    thread.join()
+                    portResult = thread.result
+                    #portTemp = re.split( r'\t+', portResult )
+                    #portCount = portTemp[ 1 ].replace( "\r\r\n\x1b[32m", "" )
+                    devicePortsEnabledCountTemp.append( portResult )
 
-        if ( cmp( main.devicePortsEnabledCount,
-                  devicePortsEnabledCountTemp ) == 0 ):
-            stepResult1 = main.TRUE
-        else:
-            stepResult1 = main.FALSE
+            time2 = time.time()
+            main.log.info("Time for counting enabled ports of the switches: %2f seconds" %(time2-time1))
+            main.log.info (
+                "Device Enabled ports EXPECTED: %s" %
+                str( main.devicePortsEnabledCount ) )
+            main.log.info (
+                "Device Enabled ports ACTUAL: %s" %
+                str( devicePortsEnabledCountTemp ) )
 
-        main.step( "Compare Device active links with reference" )
-        time1 = time.time()
-        for i in xrange( 1, ( main.numMNswitches + 1) , int( main.numCtrls ) ):
-            pool = []
-            for cli in main.CLIs:
-                if i >=  main.numMNswitches + 1:
-                    break
-                dpid = "of:00000000000000" + format( i,'02x' )
-                t = main.Thread(target = cli.getDeviceLinksActiveCount,
-                        threadID = main.threadID,
-                        name = "getDeviceLinksActiveCount",
-                        args = [dpid])
-                t.start()
-                pool.append(t)
-                i = i + 1
-                main.threadID = main.threadID + 1
-            for thread in pool:
-                thread.join()
-                linkCountResult = thread.result
-                #linkCountTemp = re.split( r'\t+', linkCountResult )
-                #linkCount = linkCountTemp[ 1 ].replace( "\r\r\n\x1b[32m", "" )
-                deviceActiveLinksCountTemp.append( linkCountResult )
+            if ( cmp( main.devicePortsEnabledCount,
+                      devicePortsEnabledCountTemp ) == 0 ):
+                stepResult1 = main.TRUE
+            else:
+                stepResult1 = main.FALSE
 
-        time2 = time.time()
-        main.log.info("Time for counting all enabled links of the switches: %2f seconds" %(time2-time1))
-        main.log.info (
-            "Device Active links EXPECTED: %s" %
-              str( main.deviceActiveLinksCount ) )
-        main.log.info (
-            "Device Active links ACTUAL: %s" % str( deviceActiveLinksCountTemp ) )
-        if ( cmp( main.deviceActiveLinksCount, deviceActiveLinksCountTemp ) == 0 ):
-            stepResult2 = main.TRUE
-        else:
-            stepResult2 = main.FALSE
+            main.step( "Compare Device active links with reference" )
+            time1 = time.time()
+            for i in xrange( 1, ( main.numMNswitches + 1) , int( main.numCtrls ) ):
+                pool = []
+                for cli in main.CLIs:
+                    if i >=  main.numMNswitches + 1:
+                        break
+                    dpid = "of:00000000000000" + format( i,'02x' )
+                    t = main.Thread(target = cli.getDeviceLinksActiveCount,
+                            threadID = main.threadID,
+                            name = "getDeviceLinksActiveCount",
+                            args = [dpid])
+                    t.start()
+                    pool.append(t)
+                    i = i + 1
+                    main.threadID = main.threadID + 1
+                for thread in pool:
+                    thread.join()
+                    linkCountResult = thread.result
+                    #linkCountTemp = re.split( r'\t+', linkCountResult )
+                    #linkCount = linkCountTemp[ 1 ].replace( "\r\r\n\x1b[32m", "" )
+                    deviceActiveLinksCountTemp.append( linkCountResult )
 
-        """
-        place holder for comparing devices, hosts, paths and intents if required.
-        Links and ports data would be incorrect with out devices anyways.
-        """
-        case5Result = ( stepResult1 and stepResult2 )
-        utilities.assert_equals( expect=main.TRUE, actual=case5Result,
+                    time2 = time.time()
+                    main.log.info("Time for counting all enabled links of the switches: %2f seconds" %(time2-time1))
+                    main.log.info (
+                        "Device Active links EXPECTED: %s" %
+                          str( main.deviceActiveLinksCount ) )
+                    main.log.info (
+                        "Device Active links ACTUAL: %s" % str( deviceActiveLinksCountTemp ) )
+                    if ( cmp( main.deviceActiveLinksCount, deviceActiveLinksCountTemp ) == 0 ):
+                        stepResult2 = main.TRUE
+                    else:
+                        stepResult2 = main.FALSE
+
+            """
+            place holder for comparing devices, hosts, paths and intents if required.
+            Links and ports data would be incorrect with out devices anyways.
+            """
+            caseResult = ( stepResult1 and stepResult2 )
+
+            if caseResult:
+                break
+            else:
+                time.sleep( main.topoCheckDelay )
+                main.log.warn( "Topology check failed. Trying again..." )
+
+
+        utilities.assert_equals( expect=main.TRUE, actual=caseResult,
                                  onpass="Compare Topology test PASS",
                                  onfail="Compare Topology test FAIL" )
 

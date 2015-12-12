@@ -40,6 +40,7 @@ class CHOtest:
         main.pingSleep = int( main.params['timers']['pingSleep'] )
         main.newTopo = ""
         main.CLIs = []
+        main.prefix = 0
 
         main.failSwitch = True if main.failSwitch == "on" else False
         main.emailOnStop = True if main.emailOnStop == "on" else False
@@ -394,7 +395,7 @@ class CHOtest:
         if ( ( main.numMNswitches == int(numOnosDevices) ) and ( main.numMNlinks == int(numOnosLinks) ) ):
             main.step( "Store Device DPIDs" )
             for i in range( 1, (main.numMNswitches+1) ):
-                main.deviceDPIDs.append( "of:00000000000000" + format( i, '02x' ) )
+                main.deviceDPIDs.append( "of:" + str(main.prefix) + "0000000000000%02d" % i )
             print "Device DPIDs in Store: \n", str( main.deviceDPIDs )
 
             main.step( "Store Host MACs" )
@@ -425,7 +426,7 @@ class CHOtest:
                 for cli in main.CLIs:
                     if i >=  main.numMNswitches + 1:
                         break
-                    dpid = "of:00000000000000" + format( i,'02x' )
+                    dpid = "of:" + str(main.prefix) + "0000000000000%02d" % i
                     t = main.Thread(target = cli.getDevicePortsEnabledCount,threadID = main.threadID, name = "getDevicePortsEnabledCount",args = [dpid])
                     t.start()
                     pool.append(t)
@@ -447,7 +448,7 @@ class CHOtest:
                 for cli in main.CLIs:
                     if i >=  main.numMNswitches + 1:
                         break
-                    dpid = "of:00000000000000" + format( i,'02x' )
+                    dpid = "of:" + str(main.prefix) + "0000000000000%02d" % i
                     t = main.Thread( target = cli.getDeviceLinksActiveCount,
                                      threadID = main.threadID,
                                      name = "getDevicePortsEnabledCount",
@@ -480,6 +481,8 @@ class CHOtest:
         utilities.assert_equals( expect=main.TRUE, actual=case3Result,
                                  onpass="Saving ONOS topology data test PASS",
                                  onfail="Saving ONOS topology data test FAIL" )
+
+        main.prefix += 1
 
     def CASE40( self, main ):
         """

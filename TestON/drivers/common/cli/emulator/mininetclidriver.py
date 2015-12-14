@@ -2004,7 +2004,7 @@ class MininetCliDriver( Emulator ):
 
         return jsonFlowTable
 
-    def getFlowTable( self, sw, version="", debug=True):
+    def getFlowTable( self, sw, version="", debug=False):
         '''
         Discription: Returns the flow table(s) on a switch or switches in a list.
             Each element is a flow.

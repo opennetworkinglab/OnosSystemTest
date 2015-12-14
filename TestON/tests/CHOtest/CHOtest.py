@@ -246,6 +246,8 @@ class CHOtest:
         import time
         import copy
 
+        main.prefix += 1
+
         main.newTopo = main.params['TOPO2']['topo']
         main.numMNswitches = int ( main.params[ 'TOPO2' ][ 'numSwitches' ] )
         main.numMNlinks = int ( main.params[ 'TOPO2' ][ 'numLinks' ] )
@@ -309,6 +311,8 @@ class CHOtest:
         import re
         import time
         import copy
+
+        main.prefix += 1
 
         main.newTopo = main.params['TOPO3']['topo']
         main.numMNswitches = int ( main.params[ 'TOPO3' ][ 'numSwitches' ] )
@@ -484,7 +488,6 @@ class CHOtest:
                                  onpass="Saving ONOS topology data test PASS",
                                  onfail="Saving ONOS topology data test FAIL" )
 
-        main.prefix += 1
 
     def CASE40( self, main ):
         """
@@ -901,7 +904,7 @@ class CHOtest:
                 for cli in main.CLIs:
                     if i >=  main.numMNswitches + 1:
                         break
-                    dpid = "of:00000000000000" + format( i,'02x' )
+                    dpid = "of:" + str(main.prefix) + "0000000000000%02d" % i
                     t = main.Thread(target = cli.getDevicePortsEnabledCount,
                             threadID = main.threadID,
                             name = "getDevicePortsEnabledCount",
@@ -939,7 +942,7 @@ class CHOtest:
                 for cli in main.CLIs:
                     if i >=  main.numMNswitches + 1:
                         break
-                    dpid = "of:00000000000000" + format( i,'02x' )
+                    dpid = "of:" + str(main.prefix) + "0000000000000%02d" % i
                     t = main.Thread(target = cli.getDeviceLinksActiveCount,
                             threadID = main.threadID,
                             name = "getDeviceLinksActiveCount",

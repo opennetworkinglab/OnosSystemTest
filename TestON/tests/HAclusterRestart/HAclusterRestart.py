@@ -1491,7 +1491,7 @@ class HAclusterRestart:
                 # FIXME: better handling of this, print which node
                 #        Maybe use thread name?
                 main.log.exception( "Error parsing json output of hosts" )
-                # FIXME: should this be an empty json object instead?
+                main.log.warn( repr( t.result ) )
                 hosts.append( None )
 
         ports = []
@@ -1537,7 +1537,7 @@ class HAclusterRestart:
         consistentHostsResult = main.TRUE
         for controller in range( len( hosts ) ):
             controllerStr = str( controller + 1 )
-            if "Error" not in hosts[ controller ]:
+            if hosts[ controller ] and "Error" not in hosts[ controller ]:
                 if hosts[ controller ] == hosts[ 0 ]:
                     continue
                 else:  # hosts not consistent
@@ -1564,11 +1564,12 @@ class HAclusterRestart:
         ipResult = main.TRUE
         for controller in range( 0, len( hosts ) ):
             controllerStr = str( controller + 1 )
-            for host in hosts[ controller ]:
-                if not host.get( 'ipAddresses', [ ] ):
-                    main.log.error( "DEBUG:Error with host ips on controller" +
-                                    controllerStr + ": " + str( host ) )
-                    ipResult = main.FALSE
+            if hosts[ controller ]:
+                for host in hosts[ controller ]:
+                    if not host.get( 'ipAddresses', [ ] ):
+                        main.log.error( "DEBUG:Error with host ips on controller" +
+                                        controllerStr + ": " + str( host ) )
+                        ipResult = main.FALSE
         utilities.assert_equals(
             expect=main.TRUE,
             actual=ipResult,
@@ -2191,13 +2192,13 @@ class HAclusterRestart:
                 except ( ValueError, TypeError ):
                     main.log.exception( "Error parsing hosts results" )
                     main.log.error( repr( t.result ) )
-                    hosts.append( [] )
+                    hosts.append( None )
             for controller in range( 0, len( hosts ) ):
                 controllerStr = str( controller + 1 )
                 for host in hosts[ controller ]:
                     if host is None or host.get( 'ipAddresses', [] ) == []:
                         main.log.error(
-                            "DEBUG:Error with host ipAddresses on controller" +
+                            "Error with host ipAddresses on controller" +
                             controllerStr + ": " + str( host ) )
                         ipResult = main.FALSE
             ports = []
@@ -2395,7 +2396,7 @@ class HAclusterRestart:
         consistentHostsResult = main.TRUE
         for controller in range( len( hosts ) ):
             controllerStr = str( controller + 1 )
-            if "Error" not in hosts[ controller ]:
+            if hosts[ controller ] or "Error" not in hosts[ controller ]:
                 if hosts[ controller ] == hosts[ 0 ]:
                     continue
                 else:  # hosts not consistent

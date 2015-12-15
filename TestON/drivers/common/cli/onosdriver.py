@@ -186,24 +186,41 @@ class OnosDriver( CLI ):
     def onosPackage( self, opTimeout=120 ):
         """
         Produce a self-contained tar.gz file that can be deployed
-        and executed on any platform with Java 7 JRE.
+        and executed on any platform with Java 8 JRE.
         """
         try:
+            ret = main.TRUE
             self.handle.sendline( "onos-package" )
             self.handle.expect( "onos-package" )
-            self.handle.expect( "tar.gz", opTimeout )
-            self.handle.expect( "\$" )
-            handle = str( self.handle.before )
+            i = self.handle.expect( ["tar.gz", "\$", "Unknown options"], opTimeout )
+            handle = str( self.handle.before + self.handle.after )
+            if i == 0:
+                self.handle.expect( "\$" )
+                handle += str( self.handle.before )
+            elif i == 1:
+                # This seems to be harmless, but may be a problem
+                main.log.warn( "onos-package output not as expected" )
+            elif i == 2:
+                # Incorrect usage
+                main.log.error( "onos-package does not recognize the given options" )
+                self.handle.expect( "\$" )
+                handle += str( self.handle.before )
+                ret = main.FALSE
             main.log.info( "onos-package command returned: " +
                            handle )
             # As long as the sendline does not time out,
             # return true. However, be careful to interpret
             # the results of the onos-package command return
-            return main.TRUE
-
+            return ret
+        except pexpect.TIMEOUT:
+            main.log.exception( self.name + ": TIMEOUT exception found in onosPackage" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            return main.FALSE
         except pexpect.EOF:
             main.log.error( self.name + ": EOF exception found" )
             main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
         except Exception:
             main.log.exception( "Failed to package ONOS" )
             main.cleanup()

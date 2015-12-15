@@ -655,6 +655,7 @@ class FUNCnetCfg:
         """
         Testing removal of configurations
         """
+        import time
         try:
             assert main.s1Json, "s1Json not defined"
             assert main.s2Json, "s2Json not defined"
@@ -679,6 +680,7 @@ class FUNCnetCfg:
 
         s2Json = main.s2Json  # NOTE: This is a reference
         try:
+            time.sleep( main.gossipTime )
             del s2Json['allowed']
         except KeyError:
             main.log.exception( "Key not found" )
@@ -689,6 +691,7 @@ class FUNCnetCfg:
 
         s3Json = main.s3Json  # NOTE: This is a reference
         try:
+            time.sleep( main.gossipTime )
             del s3Json['allowed']
         except KeyError:
             main.log.exception( "Key not found" )
@@ -699,6 +702,7 @@ class FUNCnetCfg:
 
         s4Json = main.s4Json  # NOTE: This is a reference
         try:
+            time.sleep( main.gossipTime )
             del s4Json['allowed']
         except KeyError:
             main.log.exception( "Key not found" )

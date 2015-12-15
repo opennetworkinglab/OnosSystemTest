@@ -398,89 +398,91 @@ class CHOtest:
         numOnosLinks = topology_result[ 'links' ]
         topoResult = main.TRUE
 
-        if ( ( main.numMNswitches == int(numOnosDevices) ) and ( main.numMNlinks == int(numOnosLinks) ) ):
-            main.step( "Store Device DPIDs" )
-            for i in range( 1, (main.numMNswitches+1) ):
-                main.deviceDPIDs.append( "of:" + str(main.prefix) + "0000000000000%02d" % i )
-            print "Device DPIDs in Store: \n", str( main.deviceDPIDs )
+        for check in range(main.topoCheck):
+            if ( ( main.numMNswitches == int(numOnosDevices) ) and ( main.numMNlinks == int(numOnosLinks) ) ):
+                main.step( "Store Device DPIDs" )
+                for i in range( 1, (main.numMNswitches+1) ):
+                    main.deviceDPIDs.append( "of:" + str(main.prefix) + "0000000000000%02d" % i )
+                print "Device DPIDs in Store: \n", str( main.deviceDPIDs )
 
-            main.step( "Store Host MACs" )
-            for i in range( 1, ( main.numMNhosts + 1 ) ):
-                main.hostMACs.append( "00:00:00:00:00:" + format( i, '02x' ) + "/-1" )
-            print "Host MACs in Store: \n", str( main.hostMACs )
-            main.MACsDict = {}
-            print "Creating dictionary of DPID and HostMacs"
-            for i in range(len(main.hostMACs)):
-                main.MACsDict[main.deviceDPIDs[i]] = main.hostMACs[i].split('/')[0]
-            print main.MACsDict
-            main.step( "Collect and store all Devices Links" )
-            linksResult = main.ONOScli1.links( jsonFormat=False )
-            ansi_escape = re.compile( r'\x1b[^m]*m' )
-            linksResult = ansi_escape.sub( '', linksResult )
-            linksResult = linksResult.replace( " links", "" ).replace( "\r\r", "" )
-            linksResult = linksResult.splitlines()
-            main.deviceLinks = copy.copy( linksResult )
-            print "Device Links Stored: \n", str( main.deviceLinks )
-            # this will be asserted to check with the params provided count of
-            # links
-            print "Length of Links Store", len( main.deviceLinks )
+                main.step( "Store Host MACs" )
+                for i in range( 1, ( main.numMNhosts + 1 ) ):
+                    main.hostMACs.append( "00:00:00:00:00:" + format( i, '02x' ) + "/-1" )
+                print "Host MACs in Store: \n", str( main.hostMACs )
+                main.MACsDict = {}
+                print "Creating dictionary of DPID and HostMacs"
+                for i in range(len(main.hostMACs)):
+                    main.MACsDict[main.deviceDPIDs[i]] = main.hostMACs[i].split('/')[0]
+                print main.MACsDict
+                main.step( "Collect and store all Devices Links" )
+                linksResult = main.ONOScli1.links( jsonFormat=False )
+                ansi_escape = re.compile( r'\x1b[^m]*m' )
+                linksResult = ansi_escape.sub( '', linksResult )
+                linksResult = linksResult.replace( " links", "" ).replace( "\r\r", "" )
+                linksResult = linksResult.splitlines()
+                main.deviceLinks = copy.copy( linksResult )
+                print "Device Links Stored: \n", str( main.deviceLinks )
+                # this will be asserted to check with the params provided count of
+                # links
+                print "Length of Links Store", len( main.deviceLinks )
 
-            main.step( "Collect and store each Device ports enabled Count" )
-            time1 = time.time()
-            for i in xrange(1,(main.numMNswitches + 1), int( main.numCtrls ) ):
-                pool = []
-                for cli in main.CLIs:
-                    if i >=  main.numMNswitches + 1:
-                        break
-                    dpid = "of:" + str(main.prefix) + "0000000000000%02d" % i
-                    t = main.Thread(target = cli.getDevicePortsEnabledCount,threadID = main.threadID, name = "getDevicePortsEnabledCount",args = [dpid])
-                    t.start()
-                    pool.append(t)
-                    i = i + 1
-                    main.threadID = main.threadID + 1
-                for thread in pool:
-                    thread.join()
-                    portResult = thread.result
-                    main.devicePortsEnabledCount.append( portResult )
-            print "Device Enabled Port Counts Stored: \n", str( main.devicePortsEnabledCount )
-            time2 = time.time()
-            main.log.info("Time for counting enabled ports of the switches: %2f seconds" %(time2-time1))
+                main.step( "Collect and store each Device ports enabled Count" )
+                time1 = time.time()
+                for i in xrange(1,(main.numMNswitches + 1), int( main.numCtrls ) ):
+                    pool = []
+                    for cli in main.CLIs:
+                        if i >=  main.numMNswitches + 1:
+                            break
+                        dpid = "of:" + str(main.prefix) + "0000000000000%02d" % i
+                        t = main.Thread(target = cli.getDevicePortsEnabledCount,threadID = main.threadID, name = "getDevicePortsEnabledCount",args = [dpid])
+                        t.start()
+                        pool.append(t)
+                        i = i + 1
+                        main.threadID = main.threadID + 1
+                    for thread in pool:
+                        thread.join()
+                        portResult = thread.result
+                        main.devicePortsEnabledCount.append( portResult )
+                print "Device Enabled Port Counts Stored: \n", str( main.devicePortsEnabledCount )
+                time2 = time.time()
+                main.log.info("Time for counting enabled ports of the switches: %2f seconds" %(time2-time1))
 
-            main.step( "Collect and store each Device active links Count" )
-            time1 = time.time()
+                main.step( "Collect and store each Device active links Count" )
+                time1 = time.time()
 
-            for i in xrange( 1,( main.numMNswitches + 1 ), int( main.numCtrls) ):
-                pool = []
-                for cli in main.CLIs:
-                    if i >=  main.numMNswitches + 1:
-                        break
-                    dpid = "of:" + str(main.prefix) + "0000000000000%02d" % i
-                    t = main.Thread( target = cli.getDeviceLinksActiveCount,
-                                     threadID = main.threadID,
-                                     name = "getDevicePortsEnabledCount",
-                                     args = [dpid])
-                    t.start()
-                    pool.append(t)
-                    i = i + 1
-                    main.threadID = main.threadID + 1
-                for thread in pool:
-                    thread.join()
-                    linkCountResult = thread.result
-                    main.deviceActiveLinksCount.append( linkCountResult )
-            print "Device Active Links Count Stored: \n", str( main.deviceActiveLinksCount )
-            time2 = time.time()
-            main.log.info("Time for counting all enabled links of the switches: %2f seconds" %(time2-time1))
+                for i in xrange( 1,( main.numMNswitches + 1 ), int( main.numCtrls) ):
+                    pool = []
+                    for cli in main.CLIs:
+                        if i >=  main.numMNswitches + 1:
+                            break
+                        dpid = "of:" + str(main.prefix) + "0000000000000%02d" % i
+                        t = main.Thread( target = cli.getDeviceLinksActiveCount,
+                                         threadID = main.threadID,
+                                         name = "getDevicePortsEnabledCount",
+                                         args = [dpid])
+                        t.start()
+                        pool.append(t)
+                        i = i + 1
+                        main.threadID = main.threadID + 1
+                    for thread in pool:
+                        thread.join()
+                        linkCountResult = thread.result
+                        main.deviceActiveLinksCount.append( linkCountResult )
+                print "Device Active Links Count Stored: \n", str( main.deviceActiveLinksCount )
+                time2 = time.time()
+                main.log.info("Time for counting all enabled links of the switches: %2f seconds" %(time2-time1))
 
-        else:
-            main.log.info("Devices (expected): %s, Links (expected): %s" %
-                    ( str( main.numMNswitches ), str( main.numMNlinks ) ) )
-            main.log.info("Devices (actual): %s, Links (actual): %s" %
-                    ( numOnosDevices , numOnosLinks ) )
-            main.log.info("Topology does not match, exiting CHO test...")
-            topoResult = main.FALSE
-            # It's better exit here from running the test
-            main.cleanup()
-            main.exit()
+                # Exit out of the topo check loop
+                break
+
+            else:
+                main.log.info("Devices (expected): %s, Links (expected): %s" %
+                        ( str( main.numMNswitches ), str( main.numMNlinks ) ) )
+                main.log.info("Devices (actual): %s, Links (actual): %s" %
+                        ( numOnosDevices , numOnosLinks ) )
+                main.log.info("Topology does not match, trying again...")
+                topoResult = main.FALSE
+                time.sleep(main.topoCheckDelay)
 
         # just returning TRUE for now as this one just collects data
         case3Result = topoResult

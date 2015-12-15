@@ -91,7 +91,7 @@
         <SwitchDiscovery>10</SwitchDiscovery>
         <IntentPurgeDelay>15</IntentPurgeDelay>
         <CheckIntentDelay>8</CheckIntentDelay>
-        <topoCheckDelay>5</topoCheckDelay>
+        <topoCheckDelay>15</topoCheckDelay>
         <pingSleep>3</pingSleep>
     </timers>
 

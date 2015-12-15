@@ -1908,14 +1908,9 @@ class MininetCliDriver( Emulator ):
                 return main.FALSE
 
             for i in range( len(flowTable1) ):
-                flow1 = str(flowTable1[i].get( "selector" )) + str(flowTable1[i].get( "treatment" ))
-                flow2 = str(flowTable2[i].get( "selector" )) + str(flowTable2[i].get( "treatment" ))
-                if flow1 != flow2:
-                    main.log.info( "Flow tables do not match, printing tables:" )
-                    main.log.info( "Before:" )
-                    main.log.info( flow1 )
-                    main.log.info( "After:" )
-                    main.log.info( flow2 )
+                if flowTable1[i] not in flowTable2:
+                    main.log.warn( "Flow tables do not match:" )
+                    main.log.warn( "Old flow:\n{}\n not in new flow table".format( flowTable1[i] ) )
                     return main.FALSE
 
             return main.TRUE

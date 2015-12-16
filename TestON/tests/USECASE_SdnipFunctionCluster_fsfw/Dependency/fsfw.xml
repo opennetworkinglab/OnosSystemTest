@@ -160,7 +160,7 @@
                  <range start="2511" end="2511"/>
             </port>
         </switch>
-        <controller ip_address="10.128.20.11" ssl="false" port="6633"/>
+        <controller ip_address="10.128.20.111" ssl="false" port="6633"/>
     </slice>
     <slice name="P10-ONOS-demo2">
         <switch name="sw13" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
@@ -336,7 +336,7 @@
                  <range start="2511" end="2511"/>
             </port>
         </switch>
-        <controller ip_address="10.128.20.12" ssl="false" port="6633"/>
+        <controller ip_address="10.128.20.112" ssl="false" port="6633"/>
     </slice>
     <slice name="P10-ONOS-demo3">
         <switch name="sw29" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
@@ -439,7 +439,7 @@
                  <range start="2511" end="2511"/>
             </port>
         </switch>
-        <controller ip_address="10.128.20.13" ssl="false" port="6633"/>
+        <controller ip_address="10.128.20.113" ssl="false" port="6633"/>
     </slice>
 
 </flowspace_firewall>

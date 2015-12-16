@@ -28,7 +28,7 @@ class USECASE_SdnipFunction_fsfw:
         if not topoResult:
             main.cleanup()
             main.exit()
-        main.step( "Connect switches to controller" )
+        main.step( "Connect switches to FSFW" )
 
         global ONOS1Ip
         ONOS1Ip = os.getenv( main.params[ 'CTRL' ][ 'ip1' ] )
@@ -45,7 +45,6 @@ class USECASE_SdnipFunction_fsfw:
             sw = "sw%s" % ( i )
             swResult = swResult and main.Mininet.assignSwController( sw, fsfwIp,
                                                                      port = fsfwPort )
-            # swResult = swResult and main.Mininet.assignSwController( sw, ONOS1Ip, port = "6633" )
         utilities.assert_equals( expect = main.TRUE,
                              actual = swResult,
                              onpass = "Successfully connect all switches to ONOS",

@@ -66,7 +66,7 @@ def checkFlowNum( main, switch, flowNumExpected ):
 
 
 def pingSpeakerToPeer( main, speakers = ["speaker1"],
-                       peers = ["peer64514", "peer64515", "peer64516"],
+                       peers = ["pr64514", "pr64515", "pr64516"],
                        expectAllSuccess = True ):
     """
     Carry out ping test between each BGP speaker and peer pair

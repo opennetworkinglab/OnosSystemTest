@@ -235,7 +235,7 @@ class USECASE_SdnipFunction_fsfw:
 
         main.case( "Ping tests between BGP peers and speakers" )
         main.Functions.pingSpeakerToPeer( main, speakers = ["speaker1"],
-                       peers = ["peer64514", "peer64515", "peer64516"],
+                       peers = ["pr64514", "pr64515", "pr64516"],
                        expectAllSuccess = True )
 
 
@@ -331,7 +331,7 @@ class USECASE_SdnipFunction_fsfw:
         import time
         main.case( "Bring down links and check routes/intents" )
         main.step( "Bring down the link between sw32 and peer64514" )
-        linkResult1 = main.Mininet.link( END1 = "sw32", END2 = "peer64514",
+        linkResult1 = main.Mininet.link( END1 = "sw32", END2 = "pr64514",
                                          OPTION = "down" )
         utilities.assertEquals( expect = main.TRUE,
                                 actual = linkResult1,
@@ -348,7 +348,7 @@ class USECASE_SdnipFunction_fsfw:
             main.exit()
 
         main.step( "Bring down the link between sw8 and peer64515" )
-        linkResult2 = main.Mininet.link( END1 = "sw8", END2 = "peer64515",
+        linkResult2 = main.Mininet.link( END1 = "sw8", END2 = "pr64515",
                                          OPTION = "down" )
         utilities.assertEquals( expect = main.TRUE,
                                 actual = linkResult2,
@@ -364,7 +364,7 @@ class USECASE_SdnipFunction_fsfw:
             main.exit()
 
         main.step( "Bring down the link between sw28 and peer64516" )
-        linkResult3 = main.Mininet.link( END1 = "sw28", END2 = "peer64516",
+        linkResult3 = main.Mininet.link( END1 = "sw28", END2 = "pr64516",
                                          OPTION = "down" )
         utilities.assertEquals( expect = main.TRUE,
                                 actual = linkResult3,
@@ -388,7 +388,7 @@ class USECASE_SdnipFunction_fsfw:
 
         # Ping test
         main.Functions.pingSpeakerToPeer( main, speakers = ["speaker1"],
-                       peers = ["peer64514", "peer64515", "peer64516"],
+                       peers = ["pr64514", "pr64515", "pr64516"],
                        expectAllSuccess = False )
         main.Functions.pingHostToHost( main,
                         hosts = ["host64514", "host64515", "host64516"],
@@ -402,7 +402,7 @@ class USECASE_SdnipFunction_fsfw:
         import time
         main.case( "Bring up links and check routes/intents" )
         main.step( "Bring up the link between sw32 and peer64514" )
-        linkResult1 = main.Mininet.link( END1 = "sw32", END2 = "peer64514",
+        linkResult1 = main.Mininet.link( END1 = "sw32", END2 = "pr64514",
                                          OPTION = "up" )
         utilities.assertEquals( expect = main.TRUE,
                                 actual = linkResult1,
@@ -418,7 +418,7 @@ class USECASE_SdnipFunction_fsfw:
             main.exit()
 
         main.step( "Bring up the link between sw8 and peer64515" )
-        linkResult2 = main.Mininet.link( END1 = "sw8", END2 = "peer64515",
+        linkResult2 = main.Mininet.link( END1 = "sw8", END2 = "pr64515",
                                          OPTION = "up" )
         utilities.assertEquals( expect = main.TRUE,
                                 actual = linkResult2,
@@ -434,7 +434,7 @@ class USECASE_SdnipFunction_fsfw:
             main.exit()
 
         main.step( "Bring up the link between sw28 and peer64516" )
-        linkResult3 = main.Mininet.link( END1 = "sw28", END2 = "peer64516",
+        linkResult3 = main.Mininet.link( END1 = "sw28", END2 = "pr64516",
                                          OPTION = "up" )
         utilities.assertEquals( expect = main.TRUE,
                                 actual = linkResult3,
@@ -458,7 +458,7 @@ class USECASE_SdnipFunction_fsfw:
 
         # Ping test
         main.Functions.pingSpeakerToPeer( main, speakers = ["speaker1"],
-                       peers = ["peer64514", "peer64515", "peer64516"],
+                       peers = ["pr64514", "pr64515", "pr64516"],
                        expectAllSuccess = True )
         main.Functions.pingHostToHost( main,
                         hosts = ["host64514", "host64515", "host64516"],
@@ -503,9 +503,9 @@ class USECASE_SdnipFunction_fsfw:
             main.exit()
 
         main.step( "Check ping between BGP peers and speakers" )
-        result4 = main.Mininet.pingHost( src = "speaker1", target = "peer64514" )
-        result5 = main.Mininet.pingHost( src = "speaker1", target = "peer64515" )
-        result6 = main.Mininet.pingHost( src = "speaker1", target = "peer64516" )
+        result4 = main.Mininet.pingHost( src = "speaker1", target = "pr64514" )
+        result5 = main.Mininet.pingHost( src = "speaker1", target = "pr64515" )
+        result6 = main.Mininet.pingHost( src = "speaker1", target = "pr64516" )
 
         pingResult2 = ( result4 == main.FALSE ) and ( result5 == main.TRUE ) \
                                                 and ( result6 == main.TRUE )
@@ -566,7 +566,7 @@ class USECASE_SdnipFunction_fsfw:
 
         # Ping test
         main.Functions.pingSpeakerToPeer( main, speakers = ["speaker1"],
-                       peers = ["peer64514", "peer64515", "peer64516"],
+                       peers = ["pr64514", "pr64515", "pr64516"],
                        expectAllSuccess = True )
         main.Functions.pingHostToHost( main,
                         hosts = ["host64514", "host64515", "host64516"],
@@ -613,7 +613,7 @@ class USECASE_SdnipFunction_fsfw:
             onfail = "Flow status is wrong!" )
         # Ping test
         main.Functions.pingSpeakerToPeer( main, speakers = ["speaker1"],
-                       peers = ["peer64514", "peer64515", "peer64516"],
+                       peers = ["pr64514", "pr64515", "pr64516"],
                        expectAllSuccess = True )
         main.Functions.pingHostToHost( main,
                         hosts = ["host64514", "host64515", "host64516"],
@@ -665,7 +665,7 @@ class USECASE_SdnipFunction_fsfw:
             onfail = "Flow status is wrong!" )
         # Ping test
         main.Functions.pingSpeakerToPeer( main, speakers = ["speaker1"],
-                       peers = ["peer64514", "peer64515", "peer64516"],
+                       peers = ["pr64514", "pr64515", "pr64516"],
                        expectAllSuccess = True )
         main.Functions.pingHostToHost( main,
                         hosts = ["host64514", "host64515", "host64516"],

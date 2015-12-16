@@ -27,7 +27,6 @@ class CHOtest:
 
         global intentState
         main.threadID = 0
-        main.pingTimeout = 600
         main.numCtrls = main.params[ 'CTRL' ][ 'numCtrl' ]
         git_pull = main.params[ 'GIT' ][ 'autoPull' ]
         git_branch = main.params[ 'GIT' ][ 'branch' ]
@@ -40,6 +39,7 @@ class CHOtest:
         main.numPings = int( main.params['TEST']['numPings'] )
         main.pingSleep = int( main.params['timers']['pingSleep'] )
         main.topoCheckDelay = int( main.params['timers']['topoCheckDelay'] )
+        main.pingTimeout = int( main.params['timers']['pingTimeout'] )
         main.newTopo = ""
         main.CLIs = []
         main.prefix = 0
@@ -178,10 +178,11 @@ class CHOtest:
         import time
         import copy
 
+        main.prefix = 0
+
         main.numMNswitches = int ( main.params[ 'TOPO1' ][ 'numSwitches' ] )
         main.numMNlinks = int ( main.params[ 'TOPO1' ][ 'numLinks' ] )
         main.numMNhosts = int ( main.params[ 'TOPO1' ][ 'numHosts' ] )
-        main.pingTimeout = 300
         main.log.report(
             "Load Att topology and Balance all Mininet switches across controllers" )
         main.log.report(
@@ -246,13 +247,12 @@ class CHOtest:
         import time
         import copy
 
-        main.prefix += 1
+        main.prefix = 1
 
         main.newTopo = main.params['TOPO2']['topo']
         main.numMNswitches = int ( main.params[ 'TOPO2' ][ 'numSwitches' ] )
         main.numMNlinks = int ( main.params[ 'TOPO2' ][ 'numLinks' ] )
         main.numMNhosts = int ( main.params[ 'TOPO2' ][ 'numHosts' ] )
-        main.pingTimeout = 300
         main.log.report(
             "Load Chordal topology and Balance all Mininet switches across controllers" )
         main.log.report(
@@ -312,7 +312,7 @@ class CHOtest:
         import time
         import copy
 
-        main.prefix += 1
+        main.prefix = 2
 
         main.newTopo = main.params['TOPO3']['topo']
         main.numMNswitches = int ( main.params[ 'TOPO3' ][ 'numSwitches' ] )
@@ -524,6 +524,9 @@ class CHOtest:
             str( timeDiff ) +
             " seconds" )
 
+        if not pingResult:
+            main.stop()
+
         utilities.assert_equals( expect=main.TRUE, actual=pingResult,
                                  onpass="Reactive Mode IPv4 Pingall test PASS",
                                  onfail="Reactive Mode IPv4 Pingall test FAIL" )
@@ -531,7 +534,7 @@ class CHOtest:
         main.step( "Disable Reactive forwarding" )
         appResult =  main.CLIs[0].deactivateApp( "org.onosproject.fwd" )
         utilities.assert_equals( expect=main.TRUE, actual=appResult,
-                                 onpass="Succefully deactivated fwd app",
+                                 onpass="Successfully deactivated fwd app",
                                  onfail="Failed to deactivate fwd app" )
 
     def CASE41( self, main ):
@@ -2224,7 +2227,6 @@ class CHOtest:
         link2End2top = main.params[ 'SPINECORELINKS' ][ 'linkS10top' ].split( ',' )
         link2End2bot = main.params[ 'SPINECORELINKS' ][ 'linkS10bot' ].split( ',' )
         link_sleep = int( main.params[ 'timers' ][ 'LinkDiscovery' ] )
-        main.pingTimeout = 400
 
         main.log.report( "Bring some core links down and verify ping all (Host Intents-Spine Topo)" )
         main.log.report( "___________________________________________________________________________" )

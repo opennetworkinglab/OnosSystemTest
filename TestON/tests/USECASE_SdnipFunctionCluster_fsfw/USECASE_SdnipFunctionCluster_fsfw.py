@@ -5,10 +5,12 @@ class USECASE_SdnipFunctionCluster_fsfw:
         self.default = ''
         global branchName
 
+    # This case is to setup Mininet testbed
     def CASE100( self, main ):
         """
             Start mininet
         """
+        import os
         import imp
         main.log.case( "Setup the Mininet testbed" )
         main.dependencyPath = main.testDir + \
@@ -26,19 +28,18 @@ class USECASE_SdnipFunctionCluster_fsfw:
         if not topoResult:
             main.cleanup()
             main.exit()
-        main.step( "Connect switches to controllers" )
+        main.step( "Connect switches to FSFW" )
 
-        # connect all switches to controllers
         swResult = main.TRUE
         for i in range ( 1, int( main.params['config']['switchNum'] ) + 1 ):
             sw = "sw%s" % ( i )
-            swResult = swResult and main.Mininet.assignSwController( sw,
-                                                 [ONOS1Ip, ONOS2Ip, ONOS3Ip] )
+            swResult = swResult and main.Mininet.assignSwController( sw, fsfwIp,
+                                                                     port = fsfwPort )
 
         utilities.assert_equals( expect = main.TRUE,
                              actual = swResult,
-                             onpass = "Successfully connect all switches to ONOS",
-                             onfail = "Failed to connect all switches to ONOS" )
+                             onpass = "Successfully connect all switches to FSFW",
+                             onfail = "Failed to connect all switches to FSFW" )
         if not swResult:
             main.cleanup()
             main.exit()
@@ -69,12 +70,17 @@ class USECASE_SdnipFunctionCluster_fsfw:
         ONOS2Ip = os.getenv( main.params[ 'CTRL' ][ 'ip2' ] )
         ONOS3Ip = os.getenv( main.params[ 'CTRL' ][ 'ip3' ] )
 
-        global peer64514
-        global peer64515
-        global peer64516
-        peer64514 = main.params['config']['peer64514']
-        peer64515 = main.params['config']['peer64515']
-        peer64516 = main.params['config']['peer64516']
+        global pr64514
+        global pr64515
+        global pr64516
+        pr64514 = main.params['config']['pr64514']
+        pr64515 = main.params['config']['pr64515']
+        pr64516 = main.params['config']['pr64516']
+
+        global fsfwIp
+        global fsfwPort
+        fsfwIp = main.params[ 'CTRL' ][ 'fsfwIp' ]
+        fsfwPort = main.params[ 'CTRL' ][ 'fsfwPort' ]
 
         main.step( "Applying cell variable to environment" )
         cellResult = main.ONOSbench.setCell( cellName )
@@ -231,10 +237,10 @@ class USECASE_SdnipFunctionCluster_fsfw:
 
         main.case( "Ping tests between BGP peers and speakers" )
         main.Functions.pingSpeakerToPeer( main, speakers = ["speaker1"],
-                       peers = ["peer64514", "peer64515", "peer64516"],
+                       peers = ["pr64514", "pr64515", "pr64516"],
                        expectAllSuccess = True )
         main.Functions.pingSpeakerToPeer( main, speakers = ["speaker2"],
-                       peers = [peer64514, peer64515, peer64516],
+                       peers = [pr64514, pr64515, pr64516],
                        expectAllSuccess = True )
 
 
@@ -330,7 +336,7 @@ class USECASE_SdnipFunctionCluster_fsfw:
         import time
         main.case( "Bring down links and check routes/intents" )
         main.step( "Bring down the link between sw32 and peer64514" )
-        linkResult1 = main.Mininet.link( END1 = "sw32", END2 = "peer64514",
+        linkResult1 = main.Mininet.link( END1 = "sw32", END2 = "pr64514",
                                          OPTION = "down" )
         utilities.assertEquals( expect = main.TRUE,
                                 actual = linkResult1,
@@ -347,7 +353,7 @@ class USECASE_SdnipFunctionCluster_fsfw:
             main.exit()
 
         main.step( "Bring down the link between sw8 and peer64515" )
-        linkResult2 = main.Mininet.link( END1 = "sw8", END2 = "peer64515",
+        linkResult2 = main.Mininet.link( END1 = "sw8", END2 = "pr64515",
                                          OPTION = "down" )
         utilities.assertEquals( expect = main.TRUE,
                                 actual = linkResult2,
@@ -363,7 +369,7 @@ class USECASE_SdnipFunctionCluster_fsfw:
             main.exit()
 
         main.step( "Bring down the link between sw28 and peer64516" )
-        linkResult3 = main.Mininet.link( END1 = "sw28", END2 = "peer64516",
+        linkResult3 = main.Mininet.link( END1 = "sw28", END2 = "pr64516",
                                          OPTION = "down" )
         utilities.assertEquals( expect = main.TRUE,
                                 actual = linkResult3,
@@ -387,7 +393,7 @@ class USECASE_SdnipFunctionCluster_fsfw:
 
         # Ping test
         main.Functions.pingSpeakerToPeer( main, speakers = ["speaker1"],
-                       peers = ["peer64514", "peer64515", "peer64516"],
+                       peers = ["pr64514", "pr64515", "pr64516"],
                        expectAllSuccess = False )
         main.Functions.pingHostToHost( main,
                         hosts = ["host64514", "host64515", "host64516"],
@@ -401,7 +407,7 @@ class USECASE_SdnipFunctionCluster_fsfw:
         import time
         main.case( "Bring up links and check routes/intents" )
         main.step( "Bring up the link between sw32 and peer64514" )
-        linkResult1 = main.Mininet.link( END1 = "sw32", END2 = "peer64514",
+        linkResult1 = main.Mininet.link( END1 = "sw32", END2 = "pr64514",
                                          OPTION = "up" )
         utilities.assertEquals( expect = main.TRUE,
                                 actual = linkResult1,
@@ -417,7 +423,7 @@ class USECASE_SdnipFunctionCluster_fsfw:
             main.exit()
 
         main.step( "Bring up the link between sw8 and peer64515" )
-        linkResult2 = main.Mininet.link( END1 = "sw8", END2 = "peer64515",
+        linkResult2 = main.Mininet.link( END1 = "sw8", END2 = "pr64515",
                                          OPTION = "up" )
         utilities.assertEquals( expect = main.TRUE,
                                 actual = linkResult2,
@@ -433,7 +439,7 @@ class USECASE_SdnipFunctionCluster_fsfw:
             main.exit()
 
         main.step( "Bring up the link between sw28 and peer64516" )
-        linkResult3 = main.Mininet.link( END1 = "sw28", END2 = "peer64516",
+        linkResult3 = main.Mininet.link( END1 = "sw28", END2 = "pr64516",
                                          OPTION = "up" )
         utilities.assertEquals( expect = main.TRUE,
                                 actual = linkResult3,
@@ -457,7 +463,7 @@ class USECASE_SdnipFunctionCluster_fsfw:
 
         # Ping test
         main.Functions.pingSpeakerToPeer( main, speakers = ["speaker1"],
-                       peers = ["peer64514", "peer64515", "peer64516"],
+                       peers = ["pr64514", "pr64515", "pr64516"],
                        expectAllSuccess = True )
         main.Functions.pingHostToHost( main,
                         hosts = ["host64514", "host64515", "host64516"],
@@ -502,9 +508,9 @@ class USECASE_SdnipFunctionCluster_fsfw:
             main.exit()
 
         main.step( "Check ping between BGP peers and speaker1" )
-        result4 = main.Mininet.pingHost( src = "speaker1", target = "peer64514" )
-        result5 = main.Mininet.pingHost( src = "speaker1", target = "peer64515" )
-        result6 = main.Mininet.pingHost( src = "speaker1", target = "peer64516" )
+        result4 = main.Mininet.pingHost( src = "speaker1", target = "pr64514" )
+        result5 = main.Mininet.pingHost( src = "speaker1", target = "pr64515" )
+        result6 = main.Mininet.pingHost( src = "speaker1", target = "pr64516" )
 
         pingResult2 = ( result4 == main.FALSE ) and ( result5 == main.TRUE ) \
                       and ( result6 == main.TRUE )
@@ -518,9 +524,9 @@ class USECASE_SdnipFunctionCluster_fsfw:
 
         main.step( "Check ping between BGP peers and speaker2" )
         # TODO
-        result7 = main.Mininet.pingHost( src = "speaker2", target = peer64514 )
-        result8 = main.Mininet.pingHost( src = "speaker2", target = peer64515 )
-        result9 = main.Mininet.pingHost( src = "speaker2", target = peer64516 )
+        result7 = main.Mininet.pingHost( src = "speaker2", target = pr64514 )
+        result8 = main.Mininet.pingHost( src = "speaker2", target = pr64515 )
+        result9 = main.Mininet.pingHost( src = "speaker2", target = pr64516 )
 
         pingResult3 = ( result7 == main.FALSE ) and ( result8 == main.TRUE ) \
                                                 and ( result9 == main.TRUE )
@@ -581,10 +587,10 @@ class USECASE_SdnipFunctionCluster_fsfw:
 
         # Ping test
         main.Functions.pingSpeakerToPeer( main, speakers = ["speaker1"],
-                       peers = ["peer64514", "peer64515", "peer64516"],
+                       peers = ["pr64514", "pr64515", "pr64516"],
                        expectAllSuccess = True )
         main.Functions.pingSpeakerToPeer( main, speakers = ["speaker2"],
-                       peers = [peer64514, peer64515, peer64516],
+                       peers = [pr64514, pr64515, pr64516],
                        expectAllSuccess = True )
         main.Functions.pingHostToHost( main,
                         hosts = ["host64514", "host64515", "host64516"],
@@ -631,10 +637,10 @@ class USECASE_SdnipFunctionCluster_fsfw:
             onfail = "Flow status is wrong!" )
         # Ping test
         main.Functions.pingSpeakerToPeer( main, speakers = ["speaker1"],
-                       peers = ["peer64514", "peer64515", "peer64516"],
+                       peers = ["pr64514", "pr64515", "pr64516"],
                        expectAllSuccess = True )
         main.Functions.pingSpeakerToPeer( main, speakers = ["speaker2"],
-                       peers = [peer64514, peer64515, peer64516],
+                       peers = [pr64514, pr64515, pr64516],
                        expectAllSuccess = True )
         main.Functions.pingHostToHost( main,
                         hosts = ["host64514", "host64515", "host64516"],
@@ -686,10 +692,10 @@ class USECASE_SdnipFunctionCluster_fsfw:
             onfail = "Flow status is wrong!" )
         # Ping test
         main.Functions.pingSpeakerToPeer( main, speakers = ["speaker1"],
-                       peers = ["peer64514", "peer64515", "peer64516"],
+                       peers = ["pr64514", "pr64515", "pr64516"],
                        expectAllSuccess = True )
         main.Functions.pingSpeakerToPeer( main, speakers = ["speaker2"],
-                       peers = [peer64514, peer64515, peer64516],
+                       peers = [pr64514, pr64515, pr64516],
                        expectAllSuccess = True )
         main.Functions.pingHostToHost( main,
                         hosts = ["host64514", "host64515", "host64516"],
@@ -712,10 +718,10 @@ class USECASE_SdnipFunctionCluster_fsfw:
             onfail = "Flow status is wrong!" )
 
         main.Functions.pingSpeakerToPeer( main, speakers = ["speaker1"],
-                       peers = ["peer64514", "peer64515", "peer64516"],
+                       peers = ["pr64514", "pr64515", "pr64516"],
                        expectAllSuccess = True )
         main.Functions.pingSpeakerToPeer( main, speakers = ["speaker2"],
-                       peers = [peer64514, peer64515, peer64516],
+                       peers = [pr64514, pr64515, pr64516],
                        expectAllSuccess = True )
         main.Functions.pingHostToHost( main,
                         hosts = ["host64514", "host64515", "host64516"],
@@ -760,11 +766,11 @@ class USECASE_SdnipFunctionCluster_fsfw:
 
         '''
         main.Functions.pingSpeakerToPeer( main, speakers = ["speaker1"],
-                       peers = ["peer64514", "peer64515", "peer64516"],
+                       peers = ["pr64514", "pr64515", "pr64516"],
                        expectAllSuccess = False )
         '''
         main.Functions.pingSpeakerToPeer( main, speakers = ["speaker2"],
-                       peers = [peer64514, peer64515, peer64516],
+                       peers = [pr64514, pr64515, pr64516],
                        expectAllSuccess = True )
         main.Functions.pingHostToHost( main,
                         hosts = ["host64514", "host64515", "host64516"],
@@ -827,10 +833,10 @@ class USECASE_SdnipFunctionCluster_fsfw:
                 onfail = "Flow status is wrong!" )
 
         main.Functions.pingSpeakerToPeer( main, speakers = ["speaker1"],
-                       peers = ["peer64514", "peer64515", "peer64516"],
+                       peers = ["pr64514", "pr64515", "pr64516"],
                        expectAllSuccess = True )
         main.Functions.pingSpeakerToPeer( main, speakers = ["speaker2"],
-                       peers = [peer64514, peer64515, peer64516],
+                       peers = [pr64514, pr64515, pr64516],
                        expectAllSuccess = True )
         main.Functions.pingHostToHost( main,
                         hosts = ["host64514", "host64515", "host64516"],

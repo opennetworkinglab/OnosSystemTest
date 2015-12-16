@@ -38,9 +38,9 @@ class SDNTopo( Topo ):
         Topo.__init__( self, *args, **kwargs )
 
         # BGP peer hosts
-        peer64514 = self.addHost( 'peer64514' )
-        peer64515 = self.addHost( 'peer64515' )
-        peer64516 = self.addHost( 'peer64516' )
+        pr64514 = self.addHost( 'pr64514' )
+        pr64515 = self.addHost( 'pr64515' )
+        pr64516 = self.addHost( 'pr64516' )
 
         '''
         sw1 = self.addSwitch( 'SEAT', dpid = '00000000000000a1' )
@@ -197,19 +197,19 @@ class SDNTopo( Topo ):
         self.addLink( sw38, sw39 )
 
         # connection between switches and peers
-        self.addLink( peer64514, sw32 )
-        self.addLink( peer64515, sw8 )
-        self.addLink( peer64516, sw28 )
+        self.addLink( pr64514, sw32 )
+        self.addLink( pr64515, sw8 )
+        self.addLink( pr64516, sw28 )
 
         # connection between BGP peer and hosts behind the BGP peer
-        self.addLink( peer64514, host64514 )
-        self.addLink( peer64515, host64515 )
-        self.addLink( peer64516, host64516 )
+        self.addLink( pr64514, host64514 )
+        self.addLink( pr64515, host64515 )
+        self.addLink( pr64516, host64516 )
 
         # Internal Connection To Hosts
-        self.addLink( swCtl100, peer64514 )
-        self.addLink( swCtl100, peer64515 )
-        self.addLink( swCtl100, peer64516 )
+        self.addLink( swCtl100, pr64514 )
+        self.addLink( swCtl100, pr64515 )
+        self.addLink( swCtl100, pr64516 )
         self.addLink( swCtl100, speaker1 )
         self.addLink( swCtl100, speaker2 )
 
@@ -286,9 +286,9 @@ def sdn1net():
     net = Mininet( topo = topo, controller = RemoteController )
 
 
-    speaker1, speaker2, peer64514, peer64515, peer64516 = \
+    speaker1, speaker2, pr64514, pr64515, pr64516 = \
     net.get( 'speaker1', 'speaker2' ,
-             'peer64514', 'peer64515', 'peer64516' )
+             'pr64514', 'pr64515', 'pr64516' )
 
     # Adding addresses to speakers' interface connected to sw24
     # for BGP peering
@@ -312,33 +312,33 @@ def sdn1net():
     net.start()
 
     # setup configuration on the interface connected to switch
-    peer64514.cmd( "ifconfig  peer64514-eth0 10.0.4.1 up" )
-    peer64514.cmd( "ip addr add 10.0.14.1/24 dev peer64514-eth0" )
-    peer64514.setMAC( '00:00:00:00:00:04', 'peer64514-eth0' )
-    peer64515.cmd( "ifconfig  peer64515-eth0 10.0.5.1 up" )
-    peer64515.cmd( "ip addr add 10.0.15.1/24 dev peer64515-eth0" )
-    peer64515.setMAC( '00:00:00:00:00:05', 'peer64515-eth0' )
-    peer64516.cmd( "ifconfig  peer64516-eth0 10.0.6.1 up" )
-    peer64516.cmd( "ip addr add 10.0.16.1/24 dev peer64516-eth0" )
-    peer64516.setMAC( '00:00:00:00:00:06', 'peer64516-eth0' )
+    pr64514.cmd( "ifconfig  pr64514-eth0 10.0.4.1 up" )
+    pr64514.cmd( "ip addr add 10.0.14.1/24 dev pr64514-eth0" )
+    pr64514.setMAC( '00:00:00:00:00:04', 'pr64514-eth0' )
+    pr64515.cmd( "ifconfig  pr64515-eth0 10.0.5.1 up" )
+    pr64515.cmd( "ip addr add 10.0.15.1/24 dev pr64515-eth0" )
+    pr64515.setMAC( '00:00:00:00:00:05', 'pr64515-eth0' )
+    pr64516.cmd( "ifconfig  pr64516-eth0 10.0.6.1 up" )
+    pr64516.cmd( "ip addr add 10.0.16.1/24 dev pr64516-eth0" )
+    pr64516.setMAC( '00:00:00:00:00:06', 'pr64516-eth0' )
 
     # setup configuration on the interface connected to hosts
-    peer64514.setIP( "4.0.0.254", 8, "peer64514-eth1" )
-    peer64514.setMAC( '00:00:00:00:00:44', 'peer64514-eth1' )
-    peer64515.setIP( "5.0.0.254", 8, "peer64515-eth1" )
-    peer64515.setMAC( '00:00:00:00:00:55', 'peer64515-eth1' )
-    peer64516.setIP( "6.0.0.254", 8, "peer64516-eth1" )
-    peer64516.setMAC( '00:00:00:00:00:66', 'peer64516-eth1' )
+    pr64514.setIP( "4.0.0.254", 8, "pr64514-eth1" )
+    pr64514.setMAC( '00:00:00:00:00:44', 'pr64514-eth1' )
+    pr64515.setIP( "5.0.0.254", 8, "pr64515-eth1" )
+    pr64515.setMAC( '00:00:00:00:00:55', 'pr64515-eth1' )
+    pr64516.setIP( "6.0.0.254", 8, "pr64516-eth1" )
+    pr64516.setMAC( '00:00:00:00:00:66', 'pr64516-eth1' )
 
     # enable forwarding on BGP peer hosts
-    peer64514.cmd( 'sysctl net.ipv4.conf.all.forwarding=1' )
-    peer64515.cmd( 'sysctl net.ipv4.conf.all.forwarding=1' )
-    peer64516.cmd( 'sysctl net.ipv4.conf.all.forwarding=1' )
+    pr64514.cmd( 'sysctl net.ipv4.conf.all.forwarding=1' )
+    pr64515.cmd( 'sysctl net.ipv4.conf.all.forwarding=1' )
+    pr64516.cmd( 'sysctl net.ipv4.conf.all.forwarding=1' )
 
     # config interface for control plane connectivity
-    peer64514.setIP( "192.168.0.4", 24, "peer64514-eth2" )
-    peer64515.setIP( "192.168.0.5", 24, "peer64515-eth2" )
-    peer64516.setIP( "192.168.0.6", 24, "peer64516-eth2" )
+    pr64514.setIP( "192.168.0.4", 24, "pr64514-eth2" )
+    pr64515.setIP( "192.168.0.5", 24, "pr64515-eth2" )
+    pr64516.setIP( "192.168.0.6", 24, "pr64516-eth2" )
 
     # Setup hosts in each non-SDN AS
     host64514, host64515, host64516 = \
@@ -368,9 +368,9 @@ def sdn1net():
     '''
 
     # Start Quagga on border routers
-    startquagga( peer64514, 64514, 'quagga64514.conf' )
-    startquagga( peer64515, 64515, 'quagga64515.conf' )
-    startquagga( peer64516, 64516, 'quagga64516.conf' )
+    startquagga( pr64514, 64514, 'quagga64514.conf' )
+    startquagga( pr64515, 64515, 'quagga64515.conf' )
+    startquagga( pr64516, 64516, 'quagga64516.conf' )
 
     # start Quagga in SDN network
     startquagga( speaker1, 64513, 'quagga-sdn.conf' )
@@ -393,7 +393,7 @@ def sdn1net():
 
     stopsshd()
 
-    hosts = [ peer64514, peer64515, peer64516, host64514];
+    hosts = [ pr64514, pr64515, pr64516, host64514];
     startsshds( hosts )
 
 

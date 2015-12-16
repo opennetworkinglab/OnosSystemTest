@@ -493,37 +493,19 @@ class CHOtest:
 
     def CASE40( self, main ):
         """
-        Verify Reactive forwarding (Att Topology)
+        Verify Reactive forwarding
         """
-        import re
-        import copy
         import time
-        main.log.report( "Verify Reactive forwarding (Att Topology)" )
+        main.log.report( "Verify Reactive forwarding" )
         main.log.report( "______________________________________________" )
-        main.case( "Enable Reactive forwarding and Verify ping all" )
-        main.step( "Enable Reactive forwarding" )
-        installResult = main.TRUE
-        # Activate fwd app
-        appResults = main.CLIs[0].activateApp( "org.onosproject.fwd" )
-        appCheck = main.TRUE
-        pool = []
-        for cli in main.CLIs:
-            t = main.Thread( target=cli.appToIDCheck,
-                             name="appToIDCheck-" + str( i ),
-                             args=[] )
-            pool.append( t )
-            t.start()
-        for t in pool:
-            t.join()
-            appCheck = appCheck and t.result
-        utilities.assert_equals( expect=main.TRUE, actual=appCheck,
-                                 onpass="App Ids seem to be correct",
-                                 onfail="Something is wrong with app Ids" )
-        if appCheck != main.TRUE:
-            main.log.warn( main.CLIs[0].apps() )
-            main.log.warn( main.CLIs[0].appIDs() )
+        main.case( "Enable Reactive forwarding, verify pingall, and disable reactive forwarding" )
 
-        time.sleep( 10 )
+        main.step( "Enable Reactive forwarding" )
+        appResult = main.CLIs[0].activateApp( "org.onosproject.fwd" )
+        utilities.assert_equals( expect=main.TRUE, actual=appResult,
+                                 onpass="Successfully install fwd app",
+                                 onfail="Failed to install fwd app" )
+
 
         main.step( "Verify Ping across all hosts" )
         for i in range(main.numPings):
@@ -532,7 +514,8 @@ class CHOtest:
             if not pingResult:
                 main.log.warn("First pingall failed. Retrying...")
                 time.sleep(main.pingSleep)
-            else: break
+            else:
+                break
 
         time2 = time.time()
         timeDiff = round( ( time2 - time1 ), 2 )
@@ -541,15 +524,15 @@ class CHOtest:
             str( timeDiff ) +
             " seconds" )
 
-        if pingResult == main.TRUE:
-            main.log.report( "IPv4 Pingall Test in Reactive mode successful" )
-        else:
-            main.log.report( "IPv4 Pingall Test in Reactive mode failed" )
-
-        caseResult =  appCheck and pingResult
-        utilities.assert_equals( expect=main.TRUE, actual=caseResult,
+        utilities.assert_equals( expect=main.TRUE, actual=pingResult,
                                  onpass="Reactive Mode IPv4 Pingall test PASS",
                                  onfail="Reactive Mode IPv4 Pingall test FAIL" )
+
+        main.step( "Disable Reactive forwarding" )
+        appResult =  main.CLIs[0].deactivateApp( "org.onosproject.fwd" )
+        utilities.assert_equals( expect=main.TRUE, actual=appResult,
+                                 onpass="Succefully deactivated fwd app",
+                                 onfail="Failed to deactivate fwd app" )
 
     def CASE41( self, main ):
         """
@@ -712,32 +695,8 @@ class CHOtest:
         else:
             main.log.report( "IPv6 Pingall Test in Reactive mode failed" )
 
-        main.step( "Disable Reactive forwarding" )
 
-        main.log.info( "Uninstall reactive forwarding app" )
-        appCheck = main.TRUE
-        appResults = appResults and main.CLIs[0].deactivateApp( "org.onosproject.fwd" )
-        pool = []
-        for cli in main.CLIs:
-            t = main.Thread( target=cli.appToIDCheck,
-                             name="appToIDCheck-" + str( i ),
-                             args=[] )
-            pool.append( t )
-            t.start()
-
-        for t in pool:
-            t.join()
-            appCheck = appCheck and t.result
-        utilities.assert_equals( expect=main.TRUE, actual=appCheck,
-                                 onpass="App Ids seem to be correct",
-                                 onfail="Something is wrong with app Ids" )
-        if appCheck != main.TRUE:
-            main.log.warn( main.CLIs[0].apps() )
-            main.log.warn( main.CLIs[0].appIDs() )
-
-        # Waiting for reative flows to be cleared.
-        time.sleep( 30 )
-        caseResult =  appCheck and cfgResult and pingResult
+        caseResult =  appCheck and pingResult
         utilities.assert_equals( expect=main.TRUE, actual=caseResult,
                                  onpass="Reactive Mode IPv6 Pingall test PASS",
                                  onfail="Reactive Mode IPv6 Pingall test FAIL" )

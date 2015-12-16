@@ -37,9 +37,9 @@
     <config>
         <peerNum> 3 </peerNum>
         <switchNum> 39 </switchNum>
-        <peer64514> 10.0.14.1</peer64514>
-        <peer64515> 10.0.15.1</peer64515>
-        <peer64516> 10.0.16.1</peer64516>
+        <pr64514> 10.0.14.1</pr64514>
+        <pr64515> 10.0.15.1</pr64515>
+        <pr64516> 10.0.16.1</pr64516>
     </config>
 
     <timers>

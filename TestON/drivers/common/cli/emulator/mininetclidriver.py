@@ -1907,6 +1907,10 @@ class MininetCliDriver( Emulator ):
                 main.log.warn( "Flow table lengths do not match" )
                 return main.FALSE
 
+            dFields = ["n_bytes", "cookie", "n_packets", "duration"]
+            for flow1, flow2 in zip(flowTable1, flowTable2):
+                map( lambda a: map(a.pop, dFields), [flow1, flow2] )
+
             for i in range( len(flowTable1) ):
                 if flowTable1[i] not in flowTable2:
                     main.log.warn( "Flow tables do not match:" )

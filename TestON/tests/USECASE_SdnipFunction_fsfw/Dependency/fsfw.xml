@@ -42,395 +42,395 @@
     <slice name="P10-ONOS-demo1">
         <switch name="sw1" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
             <port name="sw1-eth1">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
             <port name="sw1-eth2">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
             <port name="sw1-eth3">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
         </switch>
         <switch name="sw2" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
             <port name="sw2-eth1">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
             <port name="sw2-eth2">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
         </switch>
         <switch name="sw3" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
             <port name="sw3-eth1">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
             <port name="sw3-eth2">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
             <port name="sw3-eth3">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
         </switch>
         <switch name="sw4" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
             <port name="sw4-eth1">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
             <port name="sw4-eth2">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
         </switch>
         <switch name="sw5" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
             <port name="sw5-eth1">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
             <port name="sw5-eth2">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
             <port name="sw5-eth3">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
         </switch>
         <switch name="sw6" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
             <port name="sw6-eth1">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
             <port name="sw6-eth2">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
         </switch>
         <switch name="sw7" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
             <port name="sw7-eth1">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
             <port name="sw7-eth2">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
         </switch>
         <switch name="sw8" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
             <port name="sw8-eth1">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
             <port name="sw8-eth2">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
             <port name="sw8-eth3">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
             <port name="sw8-eth4">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
             <port name="sw8-eth5">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
         </switch>
         <switch name="sw9" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
             <port name="sw9-eth1">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
             <port name="sw9-eth2">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
         </switch>
         <switch name="sw10" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
             <port name="sw10-eth1">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
             <port name="sw10-eth2">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
         </switch>
         <switch name="sw11" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
             <port name="sw11-eth1">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
             <port name="sw11-eth2">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
             <port name="sw11-eth3">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
         </switch>
         <switch name="sw12" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
             <port name="sw12-eth1">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
             <port name="sw12-eth2">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
             <port name="sw12-eth3">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
         </switch>
         <switch name="sw13" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
             <port name="sw13-eth1">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
             <port name="sw13-eth2">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
             <port name="sw13-eth3">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
         </switch>
         <switch name="sw14" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
             <port name="sw14-eth1">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
             <port name="sw14-eth2">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
             <port name="sw14-eth3">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
             <port name="sw14-eth4">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
             <port name="sw14-eth5">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
         </switch>
         <switch name="sw15" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
             <port name="sw15-eth1">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
             <port name="sw15-eth2">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
         </switch>
         <switch name="sw16" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
             <port name="sw16-eth1">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
             <port name="sw16-eth2">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
         </switch>
         <switch name="sw17" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
             <port name="sw17-eth1">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
             <port name="sw17-eth2">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
             <port name="sw17-eth3">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
             <port name="sw17-eth4">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
         </switch>
         <switch name="sw18" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
             <port name="sw18-eth1">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
             <port name="sw18-eth2">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
         </switch>
         <switch name="sw19" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
             <port name="sw19-eth1">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
             <port name="sw19-eth2">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
         </switch>
         <switch name="sw20" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
             <port name="sw20-eth1">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
             <port name="sw20-eth2">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
         </switch>
         <switch name="sw21" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
             <port name="sw21-eth1">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
             <port name="sw21-eth2">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
             <port name="sw21-eth3">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
         </switch>
         <switch name="sw22" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
             <port name="sw22-eth1">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
             <port name="sw22-eth2">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
         </switch>
         <switch name="sw23" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
             <port name="sw23-eth1">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
             <port name="sw23-eth2">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
             <port name="sw23-eth3">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
             <port name="sw23-eth4">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
             <port name="sw23-eth5">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
         </switch>
         <switch name="sw24" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
             <port name="sw24-eth1">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
             <port name="sw24-eth2">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
             <port name="sw24-eth3">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
             <port name="sw24-eth4">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
         </switch>
         <switch name="sw25" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
             <port name="sw25-eth1">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
             <port name="sw25-eth2">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
         </switch>
         <switch name="sw26" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
             <port name="sw26-eth1">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
             <port name="sw26-eth2">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
         </switch>
         <switch name="sw27" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
             <port name="sw27-eth1">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
             <port name="sw27-eth2">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
             <port name="sw27-eth3">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
             <port name="sw27-eth4">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
         </switch>
         <switch name="sw28" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
             <port name="sw28-eth1">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
             <port name="sw28-eth2">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
             <port name="sw28-eth3">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
         </switch>
         <switch name="sw29" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
             <port name="sw29-eth1">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
             <port name="sw29-eth2">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
             <port name="sw29-eth3">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
         </switch>
         <switch name="sw30" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
             <port name="sw30-eth1">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
             <port name="sw30-eth2">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
         </switch>
         <switch name="sw31" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
             <port name="sw31-eth1">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
             <port name="sw31-eth2">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
             <port name="sw31-eth3">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
         </switch>
         <switch name="sw32" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
             <port name="sw32-eth1">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
             <port name="sw32-eth2">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
             <port name="sw32-eth3">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
             <port name="sw32-eth4">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
         </switch>
         <switch name="sw33" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
             <port name="sw33-eth1">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
             <port name="sw33-eth2">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
         </switch>
         <switch name="sw34" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
             <port name="sw34-eth1">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
             <port name="sw34-eth2">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
         </switch>
         <switch name="sw35" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
             <port name="sw35-eth1">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
             <port name="sw35-eth2">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
         </switch>
         <switch name="sw36" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
             <port name="sw36-eth1">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
             <port name="sw36-eth2">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
         </switch>
         <switch name="sw37" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
             <port name="sw37-eth1">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
             <port name="sw37-eth2">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
         </switch>
         <switch name="sw38" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
             <port name="sw38-eth1">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
             <port name="sw38-eth2">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
         </switch>
         <switch name="sw39" max_flows="200" flow_rate="400" packet_in_rate="100" flush_rules_on_connect="false" tag_management="true">
             <port name="sw39-eth1">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
             <port name="sw39-eth2">
-                 <range start="2511" end="2511"/>
+                 <range start="8" end="8"/>
             </port>
         </switch>
 

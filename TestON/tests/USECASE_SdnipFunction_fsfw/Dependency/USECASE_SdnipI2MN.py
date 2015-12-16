@@ -28,6 +28,7 @@ QUAGGA_RUN_DIR = '/usr/local/var/run/quagga'
 QUAGGA_CONFIG_DIR = '~/OnosSystemTest/TestON/tests/USECASE_SdnipFunction_fsfw/Dependency/'
 # onos1IP = '10.254.1.201'
 numSw = 39
+vlanId = 8
 
 
 class SDNTopo( Topo ):
@@ -284,9 +285,10 @@ def sdn1net():
     # Adding addresses to host64513_1 interface connected to sw24
     # for BGP peering
     speaker1.setMAC( '00:00:00:00:00:01', 'speaker1-eth0' )
-    speaker1.cmd( 'ip addr add 10.0.4.101/24 dev speaker1-eth0' )
-    speaker1.cmd( 'ip addr add 10.0.5.101/24 dev speaker1-eth0' )
-    speaker1.cmd( 'ip addr add 10.0.6.101/24 dev speaker1-eth0' )
+    speaker1.cmd( "sudo vconfig add speaker1-eth0 %d" % vlanId )
+    speaker1.cmd( 'ip addr add 10.0.4.101/24 dev speaker1-eth0.%d' % vlanId )
+    speaker1.cmd( 'ip addr add 10.0.5.101/24 dev speaker1-eth0.%d' % vlanId )
+    speaker1.cmd( 'ip addr add 10.0.6.101/24 dev speaker1-eth0.%d' % vlanId )
 
     speaker1.defaultIntf().setIP( '10.1.4.101/24' )
     speaker1.defaultIntf().setMAC( '00:00:00:00:00:01' )
@@ -295,12 +297,18 @@ def sdn1net():
     net.start()
 
     # setup configuration on the interface connected to switch
-    peer64514.cmd( "ifconfig  peer64514-eth0 10.0.4.1 up" )
+
     peer64514.setMAC( '00:00:00:00:00:04', 'peer64514-eth0' )
-    peer64515.cmd( "ifconfig  peer64515-eth0 10.0.5.1 up" )
+    peer64514.cmd( "sudo vconfig add peer64514-eth0 %d" % vlanId )
+    peer64514.cmd( "ip addr add 10.0.4.1/24 dev peer64514-eth0.%d" % vlanId )
+
     peer64515.setMAC( '00:00:00:00:00:05', 'peer64515-eth0' )
-    peer64516.cmd( "ifconfig  peer64516-eth0 10.0.6.1 up" )
+    peer64515.cmd( "sudo vconfig add peer64515-eth0 %d" % vlanId )
+    peer64515.cmd( "ip addr add 10.0.5.1/24 dev peer64515-eth0.%d" % vlanId )
+
     peer64516.setMAC( '00:00:00:00:00:06', 'peer64516-eth0' )
+    peer64516.cmd( "sudo vconfig add peer64516-eth0 %d" % vlanId )
+    peer64516.cmd( "ip addr add 10.0.6.1/24 dev peer64516-eth0.%d" % vlanId )
 
     # setup configuration on the interface connected to hosts
     peer64514.setIP( "4.0.0.254", 8, "peer64514-eth1" )

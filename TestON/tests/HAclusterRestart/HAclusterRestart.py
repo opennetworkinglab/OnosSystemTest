@@ -2197,12 +2197,13 @@ class HAclusterRestart:
                     hosts.append( None )
             for controller in range( 0, len( hosts ) ):
                 controllerStr = str( controller + 1 )
-                for host in hosts[ controller ]:
-                    if host is None or host.get( 'ipAddresses', [] ) == []:
-                        main.log.error(
-                            "Error with host ipAddresses on controller" +
-                            controllerStr + ": " + str( host ) )
-                        ipResult = main.FALSE
+                if hosts[ controller ]:
+                    for host in hosts[ controller ]:
+                        if host is None or host.get( 'ipAddresses', [] ) == []:
+                            main.log.error(
+                                "Error with host ipAddresses on controller" +
+                                controllerStr + ": " + str( host ) )
+                            ipResult = main.FALSE
             ports = []
             threads = []
             for i in range( main.numCtrls ):

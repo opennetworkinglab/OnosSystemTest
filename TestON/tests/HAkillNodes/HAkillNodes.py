@@ -1681,7 +1681,7 @@ class HAkillNodes:
                                      onfail="ONOS" + controllerStr +
                                      " links view is incorrect" )
 
-            if hosts[ controller ] or "Error" not in hosts[ controller ]:
+            if hosts[ controller ] and "Error" not in hosts[ controller ]:
                 currentHostsResult = main.Mininet1.compareHosts(
                         mnHosts,
                         hosts[ controller ] )
@@ -2277,8 +2277,7 @@ class HAkillNodes:
                                          " links view is correct",
                                          onfail="ONOS" + controllerStr +
                                          " links view is incorrect" )
-
-                if hosts[ controller ] or "Error" not in hosts[ controller ]:
+                if hosts[ controller ] and "Error" not in hosts[ controller ]:
                     currentHostsResult = main.Mininet1.compareHosts(
                             mnHosts,
                             hosts[ controller ] )
@@ -2322,7 +2321,7 @@ class HAkillNodes:
                     elif i == 28:
                         deviceId = "2800".zfill(16)
                     mappings[ macId ] = deviceId
-                if hosts[ controller ] or "Error" not in hosts[ controller ]:
+                if hosts[ controller ] and "Error" not in hosts[ controller ]:
                     if hosts[ controller ] == []:
                         main.log.warn( "There are no hosts discovered" )
                         zeroHosts = True
@@ -2393,7 +2392,7 @@ class HAkillNodes:
         consistentHostsResult = main.TRUE
         for controller in range( len( hosts ) ):
             controllerStr = str( main.activeNodes[controller] + 1 )
-            if hosts[ controller ] or "Error" not in hosts[ controller ]:
+            if hosts[ controller ] and "Error" not in hosts[ controller ]:
                 if hosts[ controller ] == hosts[ 0 ]:
                     continue
                 else:  # hosts not consistent

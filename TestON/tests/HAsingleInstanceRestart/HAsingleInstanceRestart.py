@@ -48,6 +48,7 @@ class HAsingleInstanceRestart:
         start tcpdump
         """
         import imp
+        import time
         main.log.info( "ONOS Single node cluster restart " +
                          "HA test - initialization" )
         main.case( "Setting up test environment" )
@@ -219,6 +220,7 @@ class HAsingleInstanceRestart:
                 port=main.params[ 'MNtcpdump' ][ 'port' ] )
 
         main.step( "App Ids check" )
+        time.sleep(60)
         appCheck = main.ONOScli1.appToIDCheck()
         if appCheck != main.TRUE:
             main.log.warn( main.CLIs[0].apps() )

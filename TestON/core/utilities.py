@@ -35,6 +35,8 @@ import smtplib
 import email
 import os
 import email.mime.application
+import time
+import random
 
 class Utilities:
     '''
@@ -291,6 +293,53 @@ class Utilities:
                 print "There is no such file to parse "+fileName
         else:
             return 0
+
+    def retry( self, f, retValue, args=(), kwargs={},
+               sleep=1, attempts=2, randomTime=False ):
+        """
+        Given a function and bad return values, retry will retry a function
+        until successful or give up after a certain number of attempts.
+
+        Arguments:
+        f        - a callable object
+        retValue - Return value(s) of f to retry on. This can be a list or an
+                   object.
+        args     - A tuple containing the arguments of f.
+        kwargs   - A dictionary containing the keyword arguments of f.
+        sleep    - Time in seconds to sleep between retries. If random is True,
+                   this is the max time to wait. Defaults to 1 second.
+        attempts - Max number of attempts before returning. If set to 1,
+                   f will only be called once. Defaults to 2 trys.
+        random   - Boolean indicating if the wait time is random between 0
+                   and sleep or exactly sleep seconds. Defaults to False.
+        """
+        # TODO: be able to pass in a conditional statement(s). For example:
+        #      retCondition = "< 7"
+        #      Then we do something like 'if eval( "ret " + retCondition ):break'
+        try:
+            assert attempts > 0, "attempts must be more than 1"
+            assert sleep >= 0, "sleep must be >= 0"
+            if not isinstance( retValue, list ):
+                retValue = [ retValue ]
+            for i in range( 0, attempts ):
+                ret = f( *args, **kwargs )
+                if ret not in retValue:
+                # NOTE that False in [ 0 ] == True
+                    break
+                if randomTime:
+                    sleeptime = random.randint( 0, sleep )
+                else:
+                    sleeptime = sleep
+                time.sleep( sleeptime )
+            return ret
+        except AssertionError:
+            main.log.exception( "Invalid arguements for retry: " )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( "Uncaught exception in retry: " )
+            main.cleanup()
+            main.exit()
 
 
 if __name__ != "__main__":

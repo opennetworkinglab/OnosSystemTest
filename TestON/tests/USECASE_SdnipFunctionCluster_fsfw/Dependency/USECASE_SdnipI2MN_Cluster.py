@@ -27,8 +27,8 @@ QUAGGA_DIR = '/usr/lib/quagga'
 QUAGGA_RUN_DIR = '/usr/local/var/run/quagga'
 QUAGGA_CONFIG_DIR = '~/OnosSystemTest/TestON/tests/USECASE_SdnipFunctionCluster_fsfw/Dependency/'
 numSw = 39
+vlanId = 8
 
-# net = Mininet( controller = RemoteController )
 
 class SDNTopo( Topo ):
     "SDN Topology"
@@ -293,17 +293,19 @@ def sdn1net():
     # Adding addresses to speakers' interface connected to sw24
     # for BGP peering
     speaker1.setMAC( '00:00:00:00:00:01', 'speaker1-eth0' )
-    speaker1.cmd( 'ip addr add 10.0.4.101/24 dev speaker1-eth0' )
-    speaker1.cmd( 'ip addr add 10.0.5.101/24 dev speaker1-eth0' )
-    speaker1.cmd( 'ip addr add 10.0.6.101/24 dev speaker1-eth0' )
+    speaker1.cmd( "sudo vconfig add speaker1-eth0 %d" % vlanId )
+    speaker1.cmd( 'ip addr add 10.0.4.101/24 dev speaker1-eth0.%d' % vlanId )
+    speaker1.cmd( 'ip addr add 10.0.5.101/24 dev speaker1-eth0.%d' % vlanId )
+    speaker1.cmd( 'ip addr add 10.0.6.101/24 dev speaker1-eth0.%d' % vlanId )
 
     speaker1.defaultIntf().setIP( '10.0.4.101/24' )
     speaker1.defaultIntf().setMAC( '00:00:00:00:00:01' )
 
     speaker2.setMAC( '00:00:00:00:00:02', 'speaker2-eth0' )
-    speaker2.cmd( 'ip addr add 10.0.14.101/24 dev speaker2-eth0' )
-    speaker2.cmd( 'ip addr add 10.0.15.101/24 dev speaker2-eth0' )
-    speaker2.cmd( 'ip addr add 10.0.16.101/24 dev speaker2-eth0' )
+    speaker2.cmd( "sudo vconfig add speaker2-eth0 %d" % vlanId )
+    speaker2.cmd( 'ip addr add 10.0.14.101/24 dev speaker2-eth0.%d' % vlanId )
+    speaker2.cmd( 'ip addr add 10.0.15.101/24 dev speaker2-eth0.%d' % vlanId )
+    speaker2.cmd( 'ip addr add 10.0.16.101/24 dev speaker2-eth0.%d' % vlanId )
 
     speaker2.defaultIntf().setIP( '10.0.14.101/24' )
     speaker2.defaultIntf().setMAC( '00:00:00:00:00:02' )
@@ -312,15 +314,27 @@ def sdn1net():
     net.start()
 
     # setup configuration on the interface connected to switch
-    pr64514.cmd( "ifconfig  pr64514-eth0 10.0.4.1 up" )
-    pr64514.cmd( "ip addr add 10.0.14.1/24 dev pr64514-eth0" )
     pr64514.setMAC( '00:00:00:00:00:04', 'pr64514-eth0' )
-    pr64515.cmd( "ifconfig  pr64515-eth0 10.0.5.1 up" )
-    pr64515.cmd( "ip addr add 10.0.15.1/24 dev pr64515-eth0" )
+    pr64514.cmd( "sudo vconfig add pr64514-eth0 %s" % vlanId )
+    pr64514.cmd( "ip addr add 10.0.4.1/24 dev pr64514-eth0.%s" % vlanId )
+    pr64514.cmd( "ip addr add 10.0.14.1/24 dev pr64514-eth0.%s" % vlanId )
+    pr64514.defaultIntf().setMAC( '00:00:00:00:00:04' )
+    pr64514.defaultIntf().setIP( '10.0.4.1/24' )
+
     pr64515.setMAC( '00:00:00:00:00:05', 'pr64515-eth0' )
-    pr64516.cmd( "ifconfig  pr64516-eth0 10.0.6.1 up" )
-    pr64516.cmd( "ip addr add 10.0.16.1/24 dev pr64516-eth0" )
+    pr64515.cmd( "sudo vconfig add pr64515-eth0 %s" % vlanId )
+    pr64515.cmd( "ip addr add 10.0.5.1/24 dev pr64515-eth0.%s" % vlanId )
+    pr64515.cmd( "ip addr add 10.0.15.1/24 dev pr64515-eth0.%s" % vlanId )
+    pr64515.defaultIntf().setMAC( '00:00:00:00:00:05' )
+    pr64515.defaultIntf().setIP( '10.0.5.1/24' )
+
     pr64516.setMAC( '00:00:00:00:00:06', 'pr64516-eth0' )
+    pr64516.cmd( "sudo vconfig add pr64516-eth0 %s" % vlanId )
+    pr64516.cmd( "ip addr add 10.0.6.1/24 dev pr64516-eth0.%s" % vlanId )
+    pr64516.cmd( "ip addr add 10.0.16.1/24 dev pr64516-eth0.%s" % vlanId )
+    pr64516.defaultIntf().setMAC( '00:00:00:00:00:06' )
+    pr64516.defaultIntf().setIP( '10.0.6.1/24' )
+
 
     # setup configuration on the interface connected to hosts
     pr64514.setIP( "4.0.0.254", 8, "pr64514-eth1" )

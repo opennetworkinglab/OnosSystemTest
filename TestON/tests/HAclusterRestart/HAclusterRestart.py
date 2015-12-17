@@ -48,6 +48,7 @@ class HAclusterRestart:
         start tcpdump
         """
         import imp
+        import time
         main.log.info( "ONOS HA test: Restart all ONOS nodes - " +
                          "initialization" )
         main.case( "Setting up test environment" )
@@ -250,6 +251,7 @@ class HAclusterRestart:
                 port=main.params[ 'MNtcpdump' ][ 'port' ] )
 
         main.step( "App Ids check" )
+        time.sleep(60)
         appCheck = main.TRUE
         threads = []
         for i in range( main.numCtrls ):
@@ -1567,7 +1569,7 @@ class HAclusterRestart:
             if hosts[ controller ]:
                 for host in hosts[ controller ]:
                     if not host.get( 'ipAddresses', [ ] ):
-                        main.log.error( "DEBUG:Error with host ips on controller" +
+                        main.log.error( "Error with host ips on controller" +
                                         controllerStr + ": " + str( host ) )
                         ipResult = main.FALSE
         utilities.assert_equals(

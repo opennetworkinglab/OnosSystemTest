@@ -93,6 +93,7 @@
         <CheckIntentDelay>8</CheckIntentDelay>
         <topoCheckDelay>15</topoCheckDelay>
         <pingSleep>3</pingSleep>
+        <pingTimeout>1200</pingTimeout>
     </timers>
 
     <TEST>

@@ -388,7 +388,6 @@ def sdn1net():
     -o "StrictHostKeyChecking no" -l sdn -L %s %s & ' % ( forwarding1, onos1IP ) )
 
     '''
-    # time.sleep( 3000000000 )
     CLI( net )
 
 

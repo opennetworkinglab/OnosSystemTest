@@ -2178,9 +2178,11 @@ class HAkillNodes:
             ipResult = main.TRUE
             threads = []
             for i in main.activeNodes:
-                t = main.Thread( target=main.CLIs[i].hosts,
+                t = main.Thread( target=utilities.retry,
                                  name="hosts-" + str( i ),
-                                 args=[ ] )
+                                 args=[ main.CLIs[i].hosts, [ None ] ],
+                                 kwargs= { 'sleep': 5, 'attempts': 5,
+                                           'randomTime': True } )
                 threads.append( t )
                 t.start()
 
@@ -2321,7 +2323,7 @@ class HAkillNodes:
                     elif i == 28:
                         deviceId = "2800".zfill(16)
                     mappings[ macId ] = deviceId
-                if hosts[ controller ] and "Error" not in hosts[ controller ]:
+                if hosts[ controller ] is not None and "Error" not in hosts[ controller ]:
                     if hosts[ controller ] == []:
                         main.log.warn( "There are no hosts discovered" )
                         zeroHosts = True

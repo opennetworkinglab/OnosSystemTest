@@ -11,14 +11,14 @@ At ON.Lab, we have adopted the [Mininet Python style](https://github.com/mininet
 Setup
 -------------
 
-0. Pull the git repo from https://github.com/OPENNETWORKINGLAB/ONLabTest.git 
+0. Pull the git repo from https://github.com/OPENNETWORKINGLAB/OnosSystemTest.git 
 
-    $ git clone https://github.com/OPENNETWORKINGLAB/ONLabTest.git
+    $ git clone https://github.com/OPENNETWORKINGLAB/OnosSystemTest.git
 
 1. Make a symbolic link for TestON on the HOMEDIR 
    Execute the following from the home directory  
 
-    $ ln -s ONLabTest/TestON TestON
+    $ ln -s OnosSystemTest/TestON TestON
 
 2. Make sure python path is correct 
 
@@ -57,7 +57,11 @@ Dependencies
 
     1. Erlang R15B, R16B, R17 - if possible please use R17
 
+    $ sudo apt-get install erlang
+
     2. libpcap-dev package if eth interfaces will be used
+
+    $ sudo apt-get install libpcap-dev
 
     Building and Running:
 

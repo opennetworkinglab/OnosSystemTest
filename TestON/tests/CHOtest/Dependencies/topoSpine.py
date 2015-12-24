@@ -8,7 +8,6 @@ from mininet.cli import CLI
 from mininet.log import setLogLevel, info
 from mininet.link import TCLink, Intf
 from subprocess import call
-from mininet.log import setLogLevel
 from mininet.util import dumpNodeConnections
 from mininet.node import ( UserSwitch, OVSSwitch, IVSSwitch )
 

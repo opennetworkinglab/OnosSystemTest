@@ -338,6 +338,10 @@ class USECASE_SdnipFunctionCluster_fsfw:
         main.step( "Bring down the link between sw32 and peer64514" )
         linkResult1 = main.Mininet.link( END1 = "sw32", END2 = "pr64514",
                                          OPTION = "down" )
+        # When bring down a link, Mininet will bring down both the interfaces
+        # at the two sides of the link. Here we do not want to bring down the
+        # host side interface, since I noticed when bring up in CASE6, some of
+        # the configuration information will lost.
         utilities.assertEquals( expect = main.TRUE,
                                 actual = linkResult1,
                                 onpass = "Bring down link succeeded!",
@@ -561,12 +565,13 @@ class USECASE_SdnipFunctionCluster_fsfw:
             onpass = "Starting switch succeeded!",
             onfail = "Starting switch failed!" )
 
-        result2 = main.Mininet.assignSwController( "sw32", ONOS1Ip )
+        result2 = main.Mininet.assignSwController( "sw32", fsfwIp,
+                                                   port = fsfwPort )
         utilities.assertEquals( \
             expect = main.TRUE,
             actual = result2,
-            onpass = "Connect switch to ONOS succeeded!",
-            onfail = "Connect switch to ONOS failed!" )
+            onpass = "Connect switch to FSFW succeeded!",
+            onfail = "Connect switch to FSFW failed!" )
 
         if result1 and result2:
             time.sleep( int( main.params[ 'timers' ][ 'RouteDelivery' ] ) )
@@ -666,10 +671,11 @@ class USECASE_SdnipFunctionCluster_fsfw:
         utilities.assertEquals( expect = main.TRUE, actual = result1,
                                 onpass = "Starting switch succeeded!",
                                 onfail = "Starting switch failed!" )
-        result2 = main.Mininet.assignSwController( "sw11", ONOS1Ip )
+        result2 = main.Mininet.assignSwController( "sw11", fsfwIp,
+                                                   port = fsfwPort )
         utilities.assertEquals( expect = main.TRUE, actual = result2,
-                                onpass = "Connect switch to ONOS succeeded!",
-                                onfail = "Connect switch to ONOS failed!" )
+                                onpass = "Connect switch to FSFW succeeded!",
+                                onfail = "Connect switch to FSFW failed!" )
         if result1 and result2:
             time.sleep( int( main.params[ 'timers' ][ 'RouteDelivery' ] ) )
             main.Functions.checkRouteNum( main, 3 )

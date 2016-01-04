@@ -539,12 +539,13 @@ class USECASE_SdnipFunction_fsfw:
             onpass = "Starting switch succeeded!",
             onfail = "Starting switch failed!" )
 
-        result2 = main.Mininet.assignSwController( "sw32", fsfwIp )
+        result2 = main.Mininet.assignSwController( "sw32", fsfwIp,
+                                                   port = fsfwPort )
         utilities.assertEquals( \
             expect = main.TRUE,
             actual = result2,
-            onpass = "Connect switch to ONOS succeeded!",
-            onfail = "Connect switch to ONOS failed!" )
+            onpass = "Connect switch to FSFW succeeded!",
+            onfail = "Connect switch to FSFW failed!" )
 
         if result1 and result2:
             time.sleep( int( main.params[ 'timers' ][ 'RouteDelivery' ] ) )
@@ -638,10 +639,11 @@ class USECASE_SdnipFunction_fsfw:
         utilities.assertEquals( expect = main.TRUE, actual = result1,
                                 onpass = "Starting switch succeeded!",
                                 onfail = "Starting switch failed!" )
-        result2 = main.Mininet.assignSwController( "sw11", fsfwIp )
+        result2 = main.Mininet.assignSwController( "sw11", fsfwIp,
+                                                   port = fsfwPort )
         utilities.assertEquals( expect = main.TRUE, actual = result2,
-                                onpass = "Connect switch to ONOS succeeded!",
-                                onfail = "Connect switch to ONOS failed!" )
+                                onpass = "Connect switch to FSFW succeeded!",
+                                onfail = "Connect switch to FSFW failed!" )
         if result1 and result2:
             time.sleep( int( main.params[ 'timers' ][ 'RouteDelivery' ] ) )
             main.Functions.checkRouteNum( main, 3 )

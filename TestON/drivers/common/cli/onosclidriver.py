@@ -4144,3 +4144,79 @@ class OnosCliDriver( CLI ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
+
+    def removeDevice( self, device ):
+        '''
+        Description:
+            Remove a device from ONOS by passing the uri of the device(s).
+        Parameters:
+            device - (str or list) the id or uri of the device ex. "of:0000000000000001"
+        Returns:
+            Returns main.FALSE if an exception is thrown or an error is present
+            in the response. Otherwise, returns main.TRUE.
+        NOTE:
+            If a host cannot be removed, then this function will return main.FALSE
+        '''
+        try:
+            if type( device ) is str:
+                device = list( device )
+
+            for d in device:
+                time.sleep( 1 )
+                response = self.sendline( "device-remove {}".format( d ) )
+                if "Error" in response:
+                    main.log.warn( "Error for device: {}\nResponse: {}".format( d, response ) )
+                    return main.FALSE
+
+            return main.TRUE
+
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return main.FALSE
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
+    def removeHost( self, host ):
+        '''
+        Description:
+            Remove a host from ONOS by passing the id of the host(s)
+        Parameters:
+            hostId - (str or list) the id or mac of the host ex. "00:00:00:00:00:01"
+        Returns:
+            Returns main.FALSE if an exception is thrown or an error is present
+            in the response. Otherwise, returns main.TRUE.
+        NOTE:
+            If a host cannot be removed, then this function will return main.FALSE
+        '''
+        try:
+            if type( host ) is str:
+                host = list( host )
+
+            for h in host:
+                time.sleep( 1 )
+                response = self.sendline( "host-remove {}".format( h ) )
+                if "Error" in response:
+                    main.log.warn( "Error for host: {}\nResponse: {}".format( h, response ) )
+                    return main.FALSE
+
+            return main.TRUE
+
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return main.FALSE
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()

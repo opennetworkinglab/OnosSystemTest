@@ -18,7 +18,7 @@
     # 19X. IPv6 ping across Point,Multi-single,Single-Multi Intents
 
 <testcases>
-1,20,3,[40,5,60,70,80,10,5,90,71,81,10,5]*20,21,3,[40,5,61,72,82,10,5,91,73,83,10,5]*20,22,3,[40,5,62,74,84,10,5,92,75,85,10,5]*20
+1,21,[3,41,5,61,72,82,10,5,91,73,83,10,5]*20,200,20,[3,40,5,60,70,80,10,5,90,71,81,10,5]*20,200
 </testcases>
 
     <GIT>
@@ -94,6 +94,8 @@
         <topoCheckDelay>15</topoCheckDelay>
         <pingSleep>3</pingSleep>
         <pingTimeout>1200</pingTimeout>
+        <remHostDelay>5</remHostDelay>
+        <remDevDelay>10</remDevDelay>
     </timers>
 
     <TEST>

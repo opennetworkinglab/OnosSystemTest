@@ -40,9 +40,10 @@ class CHOtest:
         main.pingSleep = int( main.params['timers']['pingSleep'] )
         main.topoCheckDelay = int( main.params['timers']['topoCheckDelay'] )
         main.pingTimeout = int( main.params['timers']['pingTimeout'] )
+        main.remHostDelay = int( main.params['timers']['remHostDelay'] )
+        main.remDevDelay = int( main.params['timers']['remDevDelay'] )
         main.newTopo = ""
         main.CLIs = []
-        main.prefix = 0
 
         main.failSwitch = True if main.failSwitch == "on" else False
         main.emailOnStop = True if main.emailOnStop == "on" else False
@@ -190,11 +191,6 @@ class CHOtest:
         main.case(
             "Assign and Balance all Mininet switches across controllers" )
 
-        main.step( "Stop any previous Mininet network topology" )
-        cliResult = main.TRUE
-        if main.newTopo == main.params['TOPO3']['topo']:
-            stopStatus = main.Mininet1.stopNet( fileName = "topoSpine" )
-
         main.step( "Start Mininet with Att topology" )
         main.newTopo = main.params['TOPO1']['topo']
         mininetDir = main.Mininet1.home + "/custom/"
@@ -260,9 +256,6 @@ class CHOtest:
         main.case(
             "Assign and Balance all Mininet switches across controllers" )
 
-        main.step( "Stop any previous Mininet network topology" )
-        stopStatus = main.Mininet1.stopNet(fileName = "topoAtt" )
-
         main.step("Start Mininet with Chordal topology")
         mininetDir = main.Mininet1.home + "/custom/"
         topoPath = main.testDir + "/" + main.TEST  + "/Dependencies/" + main.newTopo
@@ -324,10 +317,7 @@ class CHOtest:
             "Load Spine and Leaf topology and Balance all Mininet switches across controllers" )
         main.log.report(
             "________________________________________________________________________" )
-        main.case(
-            "Assign and Balance all Mininet switches across controllers" )
-        main.step( "Stop any previous Mininet network topology" )
-        stopStatus = main.Mininet1.stopNet(fileName = "topoChordal" )
+        main.case( "Assign and Balance all Mininet switches across controllers" )
 
         main.step("Start Mininet with Spine topology")
         mininetDir = main.Mininet1.home + "/custom/"
@@ -335,9 +325,6 @@ class CHOtest:
         main.ONOSbench.secureCopy(main.Mininet1.user_name, main.Mininet1.ip_address, topoPath, mininetDir, direction="to")
         topoPath = mininetDir + main.newTopo
         startStatus = main.Mininet1.startNet(topoFile = topoPath)
-
-        time.sleep(60)
-        main.step( "Assign switches to controllers" )
 
         for i in range( 1, ( main.numMNswitches + 1 ) ):  # 1 to ( num of switches +1 )
             main.Mininet1.assignSwController(
@@ -402,7 +389,7 @@ class CHOtest:
             if ( ( main.numMNswitches == int(numOnosDevices) ) and ( main.numMNlinks == int(numOnosLinks) ) ):
                 main.step( "Store Device DPIDs" )
                 for i in range( 1, (main.numMNswitches+1) ):
-                    main.deviceDPIDs.append( "of:" + str(main.prefix) + "0000000000000%02d" % i )
+                    main.deviceDPIDs.append( "of:00000000000000" + format( i, "02x" ) )
                 print "Device DPIDs in Store: \n", str( main.deviceDPIDs )
 
                 main.step( "Store Host MACs" )
@@ -433,7 +420,7 @@ class CHOtest:
                     for cli in main.CLIs:
                         if i >=  main.numMNswitches + 1:
                             break
-                        dpid = "of:" + str(main.prefix) + "0000000000000%02d" % i
+                        dpid = "of:00000000000000" + format( i, "02x" )
                         t = main.Thread(target = cli.getDevicePortsEnabledCount,threadID = main.threadID, name = "getDevicePortsEnabledCount",args = [dpid])
                         t.start()
                         pool.append(t)
@@ -455,7 +442,7 @@ class CHOtest:
                     for cli in main.CLIs:
                         if i >=  main.numMNswitches + 1:
                             break
-                        dpid = "of:" + str(main.prefix) + "0000000000000%02d" % i
+                        dpid = "of:00000000000000" + format( i, "02x" )
                         t = main.Thread( target = cli.getDeviceLinksActiveCount,
                                          threadID = main.threadID,
                                          name = "getDevicePortsEnabledCount",
@@ -489,6 +476,56 @@ class CHOtest:
         utilities.assert_equals( expect=main.TRUE, actual=case3Result,
                                  onpass="Saving ONOS topology data test PASS",
                                  onfail="Saving ONOS topology data test FAIL" )
+
+
+
+    def CASE200( self, main ):
+
+        import time
+        main.log.report( "Clean up ONOS" )
+        main.log.case( "Stop topology and remove hosts and devices" )
+
+        main.step( "Stop Topology" )
+        stopStatus = main.Mininet1.stopNet()
+        utilities.assert_equals( expect=main.TRUE, actual=stopStatus,
+                                 onpass="Stopped mininet",
+                                 onfail="Failed to stop mininet" )
+
+
+        main.log.info( "Constructing host id list" )
+        hosts = []
+        for i in range( main.numMNhosts ):
+            hosts.append( "h" + str(i+1) )
+
+        main.step( "Getting host ids" )
+        hostList = main.CLIs[0].getHostsId( hosts )
+        hostIdResult = True if hostList else False
+        utilities.assert_equals( expect=True, actual=hostIdResult,
+                                 onpass="Successfully obtained the host ids.",
+                                 onfail="Failed to obtain the host ids" )
+
+        main.step( "Removing hosts" )
+        hostResult = main.CLIs[0].removeHost( hostList )
+        utilities.assert_equals( expect=main.TRUE, actual=hostResult,
+                                 onpass="Successfully removed hosts",
+                                 onfail="Failed remove hosts" )
+
+        time.sleep( main.remHostDelay )
+
+        main.log.info( "Constructing device uri list" )
+        deviceList = []
+        for i in range( main.numMNswitches ):
+            deviceList.append( "of:00000000000000" + format( i+1, "02x" ) )
+
+        main.step( "Removing devices" )
+        deviceResult = main.CLIs[0].removeDevice( deviceList )
+        utilities.assert_equals( expect=main.TRUE, actual=deviceResult,
+                                 onpass="Successfully removed devices",
+                                 onfail="Failed remove devices" )
+
+        time.sleep( main.remDevDelay )
+
+        main.log.info( "Summary\n{}".format( main.CLIs[0].summary( jsonFormat=False ) ) )
 
 
     def CASE40( self, main ):
@@ -868,7 +905,7 @@ class CHOtest:
                 for cli in main.CLIs:
                     if i >=  main.numMNswitches + 1:
                         break
-                    dpid = "of:" + str(main.prefix) + "0000000000000%02d" % i
+                    dpid = "of:00000000000000" + format( i, "02x" )
                     t = main.Thread(target = cli.getDevicePortsEnabledCount,
                             threadID = main.threadID,
                             name = "getDevicePortsEnabledCount",
@@ -906,7 +943,7 @@ class CHOtest:
                 for cli in main.CLIs:
                     if i >=  main.numMNswitches + 1:
                         break
-                    dpid = "of:" + str(main.prefix) + "0000000000000%02d" % i
+                    dpid = "of:00000000000000" + format( i, "02x" )
                     t = main.Thread(target = cli.getDeviceLinksActiveCount,
                             threadID = main.threadID,
                             name = "getDeviceLinksActiveCount",

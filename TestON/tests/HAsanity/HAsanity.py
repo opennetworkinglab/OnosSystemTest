@@ -2179,6 +2179,8 @@ class HAsanity:
                     currentHostsResult = main.Mininet1.compareHosts(
                             mnHosts,
                             hosts[ controller ] )
+                elif hosts[ controller ] == []:
+                    currentHostsResult = main.TRUE
                 else:
                     currentHostsResult = main.FALSE
                 utilities.assert_equals( expect=main.TRUE,
@@ -2291,7 +2293,7 @@ class HAsanity:
         consistentHostsResult = main.TRUE
         for controller in range( len( hosts ) ):
             controllerStr = str( controller + 1 )
-            if hosts[ controller ] and "Error" not in hosts[ controller ]:
+            if hosts[ controller ] is not None and "Error" not in hosts[ controller ]:
                 if hosts[ controller ] == hosts[ 0 ]:
                     continue
                 else:  # hosts not consistent

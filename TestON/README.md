@@ -7,7 +7,7 @@ Introduction
 TestON is a solution that aims to interact with OpenFlow/SDN components and automate the functionality of the components.
 
 TestON is an end to end automation solution for testing the Openflow/SDN components.
-run across various components in an OpenFlow topology. This solution
+run across various components in an OpenFlow topology. This solution 
 aims to provide an automation framework, that is not just exhaustive in
 coverage, but also makes it easy to debug and author scripts. 
 It allows for authoring scripts in OpenSpeak (plain English) format and can be run standalone from the command line.

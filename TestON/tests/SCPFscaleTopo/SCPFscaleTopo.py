@@ -43,13 +43,10 @@ class SCPFscaleTopo:
         main.topoCmpAttempts = int( main.params[ 'ATTEMPTS' ][ 'topoCmp' ] )
         main.pingallAttempts = int( main.params[ 'ATTEMPTS' ][ 'pingall' ] )
         main.startUpSleep = int( main.params[ 'SLEEP' ][ 'startup' ] )
-        main.fwdSleep = int( main.params[ 'SLEEP' ][ 'fwd' ] )
         main.balanceSleep = int( main.params[ 'SLEEP' ][ 'balance' ] )
-        main.nodeDownSleep = int( main.params[ 'SLEEP' ][ 'nodeDown' ] )
-        main.nodeUpSleep = int( main.params[ 'SLEEP' ][ 'nodeUp' ] )
+        main.nodeSleep = int( main.params[ 'SLEEP' ][ 'nodeSleep' ] )
         main.pingallSleep = int( main.params[ 'SLEEP' ][ 'pingall' ] )
-        main.stopMNSleep = int( main.params[ 'SLEEP' ][ 'stopMN' ] )
-        main.startMNSleep = int( main.params[ 'SLEEP' ][ 'startMN' ] )
+        main.MNSleep = int( main.params[ 'SLEEP' ][ 'MNsleep' ] )
         main.pingTimeout = int( main.params[ 'TIMEOUT' ][ 'pingall' ] )
         gitPull = main.params[ 'GIT' ][ 'pull' ]
         main.homeDir = os.path.expanduser('~')
@@ -242,7 +239,7 @@ class SCPFscaleTopo:
         if len( main.topoScale ) < main.topoScaleSize:
             main.log.info( "Mininet is already running. Stopping mininet." )
             main.Mininet1.stopNet()
-            time.sleep(main.stopMNSleep)
+            time.sleep(main.MNSleep)
         else:
             main.log.info( "Mininet was not running" )
 
@@ -268,83 +265,7 @@ class SCPFscaleTopo:
                                  onfail=main.topoName +
                                     " topology failed to start" )
 
-        time.sleep( main.startMNSleep )
-
-        main.step( "Pinging all hosts" )
-
-        for i in range(main.pingallAttempts):
-            pingResult = main.Mininet1.pingall(timeout=main.pingTimeout)
-            if not pingResult:
-                main.log.warn( "Pingall attempt: %s failed" % (i+1) )
-                time.sleep(main.pingallSleep)
-            else: break
-
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=pingResult,
-                                 onpass="Pingall successfull",
-                                 onfail="Pingall failed" )
-
-        main.log.info( "Gathering topology information" )
-        devicesResults = main.TRUE
-        linksResults = main.TRUE
-        hostsResults = main.TRUE
-
-        devices = main.topo.getAllDevices( main )
-        hosts = main.topo.getAllHosts( main )
-        ports = main.topo.getAllPorts( main )
-        links = main.topo.getAllLinks( main )
-        clusters = main.topo.getAllClusters( main )
-
-        mnSwitches = main.Mininet1.getSwitches()
-        mnLinks = main.Mininet1.getLinks()
-        mnHosts = main.Mininet1.getHosts()
-
-        main.step( "Comparing MN topology to ONOS topology" )
-
-        for controller in range(len(main.activeNodes)):
-            controllerStr = str( main.activeNodes[controller] + 1 )
-            if devices[ controller ] and ports[ controller ] and\
-                "Error" not in devices[ controller ] and\
-                "Error" not in ports[ controller ]:
-
-                currentDevicesResult = main.Mininet1.compareSwitches(
-                        mnSwitches,
-                        json.loads( devices[ controller ] ),
-                        json.loads( ports[ controller ] ) )
-            else:
-                currentDevicesResult = main.FALSE
-            utilities.assert_equals( expect=main.TRUE,
-                                     actual=currentDevicesResult,
-                                     onpass="ONOS" + controllerStr +
-                                     " Switches view is correct",
-                                     onfail="ONOS" + controllerStr +
-                                     " Switches view is incorrect" )
-
-            if links[ controller ] and "Error" not in links[ controller ]:
-                currentLinksResult = main.Mininet1.compareLinks(
-                        mnSwitches, mnLinks,
-                        json.loads( links[ controller ] ) )
-            else:
-                currentLinksResult = main.FALSE
-            utilities.assert_equals( expect=main.TRUE,
-                                     actual=currentLinksResult,
-                                     onpass="ONOS" + controllerStr +
-                                     " links view is correct",
-                                     onfail="ONOS" + controllerStr +
-                                     " links view is incorrect" )
-
-            if hosts[ controller ] or "Error" not in hosts[ controller ]:
-                currentHostsResult = main.Mininet1.compareHosts(
-                        mnHosts,
-                        json.loads( hosts[ controller ] ) )
-            else:
-                currentHostsResult = main.FALSE
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=currentHostsResult,
-                                 onpass="ONOS" + controllerStr +
-                                 " hosts exist in Mininet",
-                                 onfail="ONOS" + controllerStr +
-                                 " hosts don't match Mininet" )
+        time.sleep( main.MNSleep )
 
     def CASE11( self, main ):
         """
@@ -355,15 +276,13 @@ class SCPFscaleTopo:
         main.case( "Verifying topology: TORUS %sx%s" % (main.currScale, main.currScale) )
         main.caseExplanation = "Pinging all hosts andcomparing topology " +\
                 "elements between Mininet and ONOS"
+
         main.step( "Pinging all hosts" )
-
-        for i in range(main.pingallAttempts):
-            pingResult = main.Mininet1.pingall(timeout=main.pingTimeout)
-            if not pingResult:
-                main.log.warn( "Pingall attempt: %s failed" % (i+1) )
-                time.sleep(main.pingallSleep)
-            else: break
-
+        pingResult = utilities.retry( main.Mininet1.pingall,
+                                      main.FALSE,
+                                      [main.pingTimeout],
+                                      sleep=main.pingallSleep,
+                                      attempts=main.pingallAttempts )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=pingResult,
                                  onpass="Pingall successfull",
@@ -373,19 +292,16 @@ class SCPFscaleTopo:
         devicesResults = main.TRUE
         linksResults = main.TRUE
         hostsResults = main.TRUE
-
         devices = main.topo.getAllDevices( main )
         hosts = main.topo.getAllHosts( main )
         ports = main.topo.getAllPorts( main )
         links = main.topo.getAllLinks( main )
         clusters = main.topo.getAllClusters( main )
-
         mnSwitches = main.Mininet1.getSwitches()
         mnLinks = main.Mininet1.getLinks()
         mnHosts = main.Mininet1.getHosts()
 
         main.step( "Comparing MN topology to ONOS topology" )
-
         for controller in range(len(main.activeNodes)):
             controllerStr = str( main.activeNodes[controller] + 1 )
             if devices[ controller ] and ports[ controller ] and\
@@ -442,54 +358,17 @@ class SCPFscaleTopo:
                         "each controller has some devices and " +\
                         "stop ONOS node 3 service. "
 
-        main.step( "Balancing Masters" )
         stepResult = main.FALSE
-        if main.activeNodes:
-            controller = main.activeNodes[0]
-            stepResult = main.CLIs[controller].balanceMasters()
-        else: main.log.error( "List of active nodes is empty" )
-
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="Balance masters was successfull",
-                                 onfail="Failed to balance masters")
-
-        time.sleep(main.balanceSleep)
-
-        main.step( "Pinging all hosts" )
-
-        for i in range(main.pingallAttempts):
-            pingResult = main.Mininet1.pingall(timeout=main.pingTimeout)
-            if not pingResult:
-                main.log.warn( "Pingall attempt: %s failed" % (i+1) )
-                time.sleep(main.pingallSleep)
-            else: break
-
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=pingResult,
-                                 onpass="Pingall successfull",
-                                 onfail="Pingall failed" )
-
         main.step( "Bringing down node 3" )
-
         # Always bring down the third node
         main.deadNode = 2
-
         # Printing purposes
         node = main.deadNode + 1
-
         main.log.info( "Stopping node %s" % node )
         stepResult = main.ONOSbench.onosStop( main.ONOSip[ main.deadNode ] )
-
         main.log.info( "Removing dead node from list of active nodes" )
         main.activeNodes.pop( main.deadNode )
 
-        utilities.assert_equals( expect=main.TRUE,
-                             actual=stepResult,
-                             onpass="Successfully brought down onos node %s" % node,
-                             onfail="Failed to bring down onos node %s" % node )
-
-        time.sleep(main.nodeDownSleep)
 
 
     def CASE200( self, main ):
@@ -501,10 +380,8 @@ class SCPFscaleTopo:
         main.caseExplanation = "Bring node 3 back up and balance the masters"
 
         node = main.deadNode + 1
-
         main.log.info( "Starting node %s" % node )
         stepResult = main.ONOSbench.onosStart( main.ONOSip[ main.deadNode ] )
-
         main.log.info( "Starting onos cli" )
         stepResult = stepResult and main.CLIs[ main.deadNode ].startOnosCli( main.ONOSip[ main.deadNode ] )
 
@@ -517,28 +394,28 @@ class SCPFscaleTopo:
                                  onfail="Failed to bring up onos node %s" % node )
 
 
-        time.sleep(main.nodeUpSleep)
+        time.sleep(main.nodeSleep)
+
+    def CASE300( self, main ):
+        '''
+
+            Balancing Masters
+        '''
 
         main.step( "Balancing Masters" )
+
         stepResult = main.FALSE
         if main.activeNodes:
             controller = main.activeNodes[0]
             stepResult = main.CLIs[controller].balanceMasters()
-        else: main.log.error( "List of active nodes is empty" )
-
+        else:
+            main.log.error( "List of active nodes is empty" )
+        main.step( "Balancing Masters" )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
                                  onpass="Balance masters was successfull",
                                  onfail="Failed to balance masters")
-
         time.sleep(main.balanceSleep)
-
-        for i in range(main.pingallAttempts):
-            pingResult = main.Mininet1.pingall(timeout=main.pingTimeout)
-            if not pingResult:
-                main.log.warn( "Pingall attempt: %s failed" % (i+1) )
-                time.sleep(main.pingallSleep)
-            else: break
 
     def CASE1000( self, main ):
         '''

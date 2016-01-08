@@ -2,13 +2,13 @@
 
     # 1 - optional pull and build ONOS package
     # 2 - set cell and install ONOS
-    # 10 - start mininet and verify topo
-    # 11 - verify topo
+    # 10 - start mininet
+    # 11 - pingall and verify topo
     # 100 - balance master and bring onos node down
     # 200 - bring onos node up and balance masters
     # 1000 - report logs
 
-    <testcases>1,2,[10,100,11,200,11,1000]*3</testcases>
+    <testcases>1,2,[10,300,11,100,300,11,200,300,11,1000]*3</testcases>
 
     <DEPENDENCY>
         <path>/tests/SCPFscaleTopo/Dependency/</path>
@@ -34,33 +34,24 @@
 
     <SLEEP>
         <startup>15</startup>
-        <fwd>30</fwd>
         <balance>10</balance>
-        <nodeDown>10</nodeDown>
-        <nodeUp>10</nodeUp>
-        <pingall>3</pingall>
-        <stopMN>5</stopMN>
-        <startMN>5</startMN>
+        <nodeSleep>10</nodeSleep>
+        <pingall>15</pingall>
+        <MNsleep>5</MNsleep>
     </SLEEP>
 
     <TIMEOUT>
-        <pingall>240</pingall>
+        <pingall>2000</pingall>
     </TIMEOUT>
 
     <ATTEMPTS>
         <topoCmp>1</topoCmp>
-        <pingall>2</pingall>
+        <pingall>3</pingall>
     </ATTEMPTS>
 
     <TOPOLOGY>
         <topology>torus</topology>
-        <scale>5,10,20</scale>
+        <scale>3,5,10</scale>
     </TOPOLOGY>
-
-    <PINGALL>
-        <sleep>3</sleep>
-        <attempts>5</attempts>
-        <timeout>1000</timeout>
-    </PINGALL>
 
 </PARAMS>

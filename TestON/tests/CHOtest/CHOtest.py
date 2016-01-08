@@ -696,6 +696,102 @@ class CHOtest:
                                  onpass="Reactive Mode IPv4 Pingall test PASS",
                                  onfail="Reactive Mode IPv4 Pingall test FAIL" )
 
+    def CASE47( self, main ):
+        import time
+        main.log.report( "Verify Reactive forwarding" )
+        main.log.report( "______________________________________________" )
+        main.case( "Enable Reactive forwarding, verify pingall, and disable reactive forwarding" )
+
+        main.step( "Enable Reactive forwarding" )
+        appResult = main.CLIs[0].activateApp( "org.onosproject.fwd" )
+        utilities.assert_equals( expect=main.TRUE, actual=appResult,
+                                 onpass="Successfully install fwd app",
+                                 onfail="Failed to install fwd app" )
+
+        numHosts = int( main.params['TOPO1']['numHosts'] )
+        wait = 1
+
+        for i in range(numHosts):
+            src = "h1"
+            dest = "h" + str(i+1)
+            main.Mininet1.handle.sendline( src + " ping " + dest + " -c 3 -i 1 -W 1" )
+            main.Mininet1.handle.expect( "mininet>" )
+            main.log.info( main.Mininet1.handle.before )
+
+        hosts = main.CLIs[0].hosts( jsonFormat=False )
+
+        main.log.info( hosts )
+
+        main.step( "Disable Reactive forwarding" )
+        appResult =  main.CLIs[0].deactivateApp( "org.onosproject.fwd" )
+        utilities.assert_equals( expect=main.TRUE, actual=appResult,
+                                 onpass="Successfully deactivated fwd app",
+                                 onfail="Failed to deactivate fwd app" )
+
+    def CASE48( self, main ):
+        import time
+        main.log.report( "Verify Reactive forwarding" )
+        main.log.report( "______________________________________________" )
+        main.case( "Enable Reactive forwarding, verify pingall, and disable reactive forwarding" )
+
+        main.step( "Enable Reactive forwarding" )
+        appResult = main.CLIs[0].activateApp( "org.onosproject.fwd" )
+        utilities.assert_equals( expect=main.TRUE, actual=appResult,
+                                 onpass="Successfully install fwd app",
+                                 onfail="Failed to install fwd app" )
+
+        numHosts = int( main.params['TOPO2']['numHosts'] )
+        wait = 1
+
+        for i in range(numHosts):
+            src = "h1"
+            dest = "h" + str(i+1)
+            main.Mininet1.handle.sendline( src + " ping " + dest + " -c 3 -i 1 -W 1" )
+            main.Mininet1.handle.expect( "mininet>" )
+            main.log.info( main.Mininet1.handle.before )
+
+        hosts = main.CLIs[0].hosts( jsonFormat=False )
+
+        main.log.info( hosts )
+
+        main.step( "Disable Reactive forwarding" )
+        appResult =  main.CLIs[0].deactivateApp( "org.onosproject.fwd" )
+        utilities.assert_equals( expect=main.TRUE, actual=appResult,
+                                 onpass="Successfully deactivated fwd app",
+                                 onfail="Failed to deactivate fwd app" )
+
+    def CASE49( self, main ):
+        import time
+        main.log.report( "Verify Reactive forwarding" )
+        main.log.report( "______________________________________________" )
+        main.case( "Enable Reactive forwarding, verify pingall, and disable reactive forwarding" )
+
+        main.step( "Enable Reactive forwarding" )
+        appResult = main.CLIs[0].activateApp( "org.onosproject.fwd" )
+        utilities.assert_equals( expect=main.TRUE, actual=appResult,
+                                 onpass="Successfully install fwd app",
+                                 onfail="Failed to install fwd app" )
+
+        numHosts = int( main.params['TOPO3']['numHosts'] )
+        wait = 1
+
+        for i in range(12, numHosts+11):
+            src = "h11"
+            dest = "h" + str(i)
+            main.Mininet1.handle.sendline( src + " ping " + dest + " -c 3 -i 1 -W 1" )
+            main.Mininet1.handle.expect( "mininet>" )
+            main.log.info( main.Mininet1.handle.before )
+
+        hosts = main.CLIs[0].hosts( jsonFormat=False )
+
+        main.log.info( hosts )
+
+        main.step( "Disable Reactive forwarding" )
+        appResult =  main.CLIs[0].deactivateApp( "org.onosproject.fwd" )
+        utilities.assert_equals( expect=main.TRUE, actual=appResult,
+                                 onpass="Successfully deactivated fwd app",
+                                 onfail="Failed to deactivate fwd app" )
+
     def CASE140( self, main ):
         """
         Verify IPv6 Reactive forwarding (Att Topology)

@@ -57,11 +57,11 @@ Dependencies
 
     1. Erlang R15B, R16B, R17 - if possible please use R17
 
-    $ sudo apt-get install erlang
+      $ sudo apt-get install erlang
 
     2. libpcap-dev package if eth interfaces will be used
 
-    $ sudo apt-get install libpcap-dev
+      $ sudo apt-get install libpcap-dev
 
     Building and Running:
 
@@ -70,6 +70,8 @@ Dependencies
     $ cd linc-oe
 
     $ git checkout tags/oe-0.3
+
+    $ cp rel/files/sys.config.orig rel/files/sys.config
 
     $ make rel
 

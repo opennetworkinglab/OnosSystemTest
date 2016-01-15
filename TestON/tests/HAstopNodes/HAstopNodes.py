@@ -180,10 +180,11 @@ class HAstopNodes:
         #       index = The number of the graph under plot name
         job = "HAstopNodes"
         plotName = "Plot-HA"
+        index = "0"
         graphs = '<ac:structured-macro ac:name="html">\n'
         graphs += '<ac:plain-text-body><![CDATA[\n'
         graphs += '<iframe src="https://onos-jenkins.onlab.us/job/' + job +\
-                  '/plot/' + plotName + '/getPlot?index=0' +\
+                  '/plot/' + plotName + '/getPlot?index=' + index +\
                   '&width=500&height=300"' +\
                   'noborder="0" width="500" height="300" scrolling="yes" ' +\
                   'seamless="seamless"></iframe>\n'

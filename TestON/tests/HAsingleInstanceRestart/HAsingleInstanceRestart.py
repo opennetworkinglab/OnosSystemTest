@@ -159,7 +159,7 @@ class HAsingleInstanceRestart:
         #       index = The number of the graph under plot name
         job = "HAsingleInstanceRestart"
         plotName = "Plot-HA"
-        index = "0"
+        index = "1"
         graphs = '<ac:structured-macro ac:name="html">\n'
         graphs += '<ac:plain-text-body><![CDATA[\n'
         graphs += '<iframe src="https://onos-jenkins.onlab.us/job/' + job +\

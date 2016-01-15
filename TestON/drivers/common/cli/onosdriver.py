@@ -359,8 +359,6 @@ class OnosDriver( CLI ):
 
         """
         try:
-            # main.log.info( self.name + ": Stopping ONOS" )
-            # self.stop()
             self.handle.sendline( "cd " + self.home )
             self.handle.expect( self.home + "\$" )
             cmd = "git pull"
@@ -384,10 +382,6 @@ class OnosDriver( CLI ):
                     'Please, commit your changes before you can merge.',
                     pexpect.TIMEOUT ],
                 timeout=300 )
-            # debug
-            # main.log.report( self.name +": DEBUG:  \n"+
-            # "git pull response: " +
-            # str( self.handle.before ) + str( self.handle.after ) )
             if i == 0:
                 main.log.error( self.name + ": Git pull had some issue" )
                 output = self.handle.after

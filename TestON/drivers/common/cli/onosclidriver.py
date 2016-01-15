@@ -1802,14 +1802,13 @@ class OnosCliDriver( CLI ):
 
     def intents( self, jsonFormat = True, summary = False, **intentargs):
         """
-        Optional:
-            * jsonFormat: enable output formatting in json
-            * summary: whether only output the intent summary
-            * type: only output a certain type of intent
-              This options is valid only when jsonFormat is true and summary is
-              true
         Description:
-            Obtain intents
+            Obtain intents from the ONOS cli.
+        Optional:
+            * jsonFormat: Enable output formatting in json, default to True
+            * summary: Whether only output the intent summary, defaults to False
+            * type: Only output a certain type of intent. This options is valid
+                    only when jsonFormat is True and summary is True.
         """
         try:
             cmdStr = "intents"
@@ -1820,19 +1819,20 @@ class OnosCliDriver( CLI ):
             handle = self.sendline( cmdStr )
             args = utilities.parse_args( [ "TYPE" ], **intentargs )
             if "TYPE" in args.keys():
-                type = args[ "TYPE" ]
+                intentType = args[ "TYPE" ]
             else:
-                type = ""
-            if jsonFormat and summary and ( type != "" ):
+                intentType = ""
+            # IF we want the summary of a specific intent type
+            if jsonFormat and summary and ( intentType != "" ):
                 jsonResult = json.loads( handle )
-                if type in jsonResult.keys():
-                    return jsonResult[ type ]
+                if intentType in jsonResult.keys():
+                    return jsonResult[ intentType ]
                 else:
-                    main.log.error( "unknown TYPE, return all types of intents" )
+                    main.log.error( "unknown TYPE, returning all types of intents" )
                     return handle
             else:
+                main.log.error( handle )
                 return handle
-
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
             return None
@@ -1845,7 +1845,6 @@ class OnosCliDriver( CLI ):
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()
             main.exit()
-
 
     def getIntentState(self, intentsId, intentsJson=None):
         """

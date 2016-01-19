@@ -230,7 +230,7 @@ class SAMPstartTemplate:
         main.log.case( "Start Mininet topology" )
 
         main.step( "Starting Mininet Topology" )
-        topoResult = main.Mininet1.startNet( topoFile=topology )
+        topoResult = main.Mininet1.startNet( topoFile=main.dependencyPath + main.topology )
         stepResult = topoResult
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,

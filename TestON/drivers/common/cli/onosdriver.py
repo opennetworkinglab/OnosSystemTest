@@ -192,22 +192,29 @@ class OnosDriver( CLI ):
             ret = main.TRUE
             self.handle.sendline( "onos-package" )
             self.handle.expect( "onos-package" )
-            i = self.handle.expect( ["tar.gz", "\$", "Unknown options"], opTimeout )
+            i = self.handle.expect( [ "Downloading",
+                                      "tar.gz",
+                                      "\$",
+                                      "Unknown options" ],
+                                    opTimeout )
             handle = str( self.handle.before + self.handle.after )
             if i == 0:
-                self.handle.expect( "\$" )
+                # Give more time to download the file
+                self.handle.expect( "\$", opTimeout * 2 )
                 handle += str( self.handle.before )
             elif i == 1:
+                self.handle.expect( "\$" )
+                handle += str( self.handle.before )
+            elif i == 2:
                 # This seems to be harmless, but may be a problem
                 main.log.warn( "onos-package output not as expected" )
-            elif i == 2:
+            elif i == 3:
                 # Incorrect usage
                 main.log.error( "onos-package does not recognize the given options" )
                 self.handle.expect( "\$" )
                 handle += str( self.handle.before )
                 ret = main.FALSE
-            main.log.info( "onos-package command returned: " +
-                           handle )
+            main.log.info( "onos-package command returned: " + handle )
             # As long as the sendline does not time out,
             # return true. However, be careful to interpret
             # the results of the onos-package command return

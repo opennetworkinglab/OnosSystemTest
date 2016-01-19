@@ -216,9 +216,7 @@ class HAclusterRestart:
             for node in main.nodes:
                 started = main.ONOSbench.isup( node.ip_address )
                 if not started:
-                    main.log.error( node.name + " didn't start!" )
-                    main.ONOSbench.onosStop( node.ip_address )
-                    main.ONOSbench.onosStart( node.ip_address )
+                    main.log.error( node.name + " hasn't started" )
                 onosIsupResult = onosIsupResult and started
             if onosIsupResult == main.TRUE:
                 break
@@ -2258,10 +2256,14 @@ class HAclusterRestart:
                     "Error" not in devices[ controller ] and\
                     "Error" not in ports[ controller ]:
 
-                    currentDevicesResult = main.Mininet1.compareSwitches(
-                            mnSwitches,
-                            json.loads( devices[ controller ] ),
-                            json.loads( ports[ controller ] ) )
+                    try:
+                        currentDevicesResult = main.Mininet1.compareSwitches(
+                                mnSwitches,
+                                json.loads( devices[ controller ] ),
+                                json.loads( ports[ controller ] ) )
+                    except ( TypeError, ValueError ) as e:
+                        main.log.exception( "Object not as expected; devices={!r}\nports={!r}".format(
+                            devices[ controller ], ports[ controller ] ) )
                 else:
                     currentDevicesResult = main.FALSE
                 utilities.assert_equals( expect=main.TRUE,

@@ -410,7 +410,6 @@ class SCPFscaleTopo:
             stepResult = main.CLIs[controller].balanceMasters()
         else:
             main.log.error( "List of active nodes is empty" )
-        main.step( "Balancing Masters" )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
                                  onpass="Balance masters was successfull",

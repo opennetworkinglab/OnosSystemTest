@@ -1,13 +1,27 @@
 
 # This is a performance scale intent that test onos to see how many intents can
 # be installed and rerouted using the null provider and mininet.
+'''
+This test will not test on reroute and OVS!!!
+If you need test on reroute or OVS, change the params file
+
+Test information:
+    - BatchSize: 1000
+    - Minimum intents: 10,000
+    - Maximum Intents: 1,000,000
+    - Check Interval: 10,000
+    - Link:
+        - ingress: 0000000000000001/9
+        - egress: 0000000000000002/9
+    - Timeout: 120 Seconds
+'''
 
 class SCPFmaxIntents:
 
     def __init__( self ):
         self.default = ''
 
-    def CASE0( self, main ):
+    def CASE1( self, main ):
         import time
         import os
         import imp
@@ -42,16 +56,20 @@ class SCPFmaxIntents:
         main.maxNodes = int( main.params[ 'SCALE' ][ 'max' ] )
         main.ONOSport = main.params[ 'CTRL' ][ 'port' ]
         main.timeout = int(main.params['SLEEP']['timeout'])
-        main.minIntents = int(main.params['TEST']['min_intents'])
-        main.maxIntents = int(main.params['TEST']['max_intents'])
-        main.checkInterval = int(main.params['TEST']['check_interval'])
         main.startUpSleep = int( main.params[ 'SLEEP' ][ 'startup' ] )
         main.installSleep = int( main.params[ 'SLEEP' ][ 'install' ] )
         main.verifySleep = int( main.params[ 'SLEEP' ][ 'verify' ] )
         main.rerouteSleep = int ( main.params['SLEEP']['reroute'] )
-        main.batchSize = int(main.params['TEST']['batch_size'])
+        main.verifyAttempts = int( main.params['ATTEMPTS']['verify'] )
+        main.ingress = main.params['LINK']['ingress']
+        main.egress = main.params['LINK']['egress']
         main.dbFileName = main.params['DATABASE']['file']
         main.cellData = {} # for creating cell file
+        main.reroute = main.params['reroute']
+        if main.reroute == "True":
+            main.reroute = True
+        else:
+            main.reroute = False
         main.CLIs = []
         main.ONOSip = []
         main.maxNumBatch = 0
@@ -127,19 +145,23 @@ class SCPFmaxIntents:
                                        main.apps,
                                        tempOnosIp )
 
-        main.log.info( "Applying cell to environment" )
-        cell = main.ONOSbench.setCell( "temp" )
-        verify = main.ONOSbench.verifyCell()
-        if not cell or not verify:
-            main.log.error("Failed to apply cell to environment")
-            main.cleanup()
-            main.exit()
+        main.step( "Apply cell to environment" )
+        cellResult = main.ONOSbench.setCell( "temp" )
+        verifyResult = main.ONOSbench.verifyCell()
+        stepResult = cellResult and verifyResult
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="Successfully applied cell to " + \
+                                        "environment",
+                                 onfail="Failed to apply cell to environment " )
 
-        main.log.info( "Creating ONOS package" )
-        if not main.ONOSbench.onosPackage():
-            main.log.error("Failed to create ONOS package")
-            main.cleanup()
-            main.exit()
+        main.step( "Creating ONOS package" )
+        packageResult = main.ONOSbench.onosPackage()
+        stepResult = packageResult
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="Successfully created ONOS package",
+                                 onfail="Failed to create ONOS package" )
 
         main.log.info("Creating DB file")
         with open(main.dbFileName, "w+") as dbFile:
@@ -149,7 +171,7 @@ class SCPFmaxIntents:
             temp += "'" + node + "1" + "'"
             dbFile.write(temp)
 
-    def CASE1( self, main ):
+    def CASE2( self, main ):
         """
         - Uninstall ONOS cluster
         - Verify ONOS start up
@@ -157,52 +179,48 @@ class SCPFmaxIntents:
         - Connect to cli
         """
 
-        main.log.info( "Uninstalling ONOS package" )
-        main.ONOSbench.onosUninstall( nodeIp=main.ONOSip[i] )
-        for i in range( main.maxNodes ):
-            if not main.ONOSbench.onosUninstall( nodeIp=main.ONOSip[i] ):
-                main.log.error("Failed to uninstall onos on node %s" % (i+1))
-                main.cleanup()
-                main.exit()
-
-        main.log.info( "Installing ONOS package" )
+        main.step( "Installing ONOS with -f" )
+        onosInstallResult = main.TRUE
         for i in range( main.numCtrls ):
-            if not main.ONOSbench.onosInstall( node=main.ONOSip[i] ):
-                main.log.error("Failed to install onos on node %s" % (i+1))
-                main.cleanup()
-                main.exit()
+            onosInstallResult = onosInstallResult and \
+                    main.ONOSbench.onosInstall( node=main.ONOSip[ i ] )
+        stepResult = onosInstallResult
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="Successfully installed ONOS package",
+                                 onfail="Failed to install ONOS package" )
 
-        main.log.info( "Starting ONOS service" )
-        for i in range( main.numCtrls ):
-            start = main.ONOSbench.onosStart( main.ONOSip[i] )
-            isup = main.ONOSbench.isup( main.ONOSip[i] )
-            if not start or not isup:
-                main.log.error("Failed to start onos service on node %s" % (i+1))
-                main.cleanup()
-                main.exit()
+        time.sleep( main.startUpSleep )
 
-        main.log.info( "Starting ONOS cli" )
+        main.step( "Start ONOS cli" )
+        cliResult = main.TRUE
         for i in range( main.numCtrls ):
-            if not main.CLIs[i].startOnosCli( main.ONOSip[i] ):
-                main.log.error("Failed to start onos cli on node %s" % (i+1))
-                main.cleanup()
-                main.exit()
+            cliResult = cliResult and \
+                        main.CLIs[ i ].startOnosCli( main.ONOSip[ i ] )
+        stepResult = cliResult
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="Successfully start ONOS cli",
+                                 onfail="Failed to start ONOS cli" )
+
+        time.sleep( main.startUpSleep )
 
     def CASE10( self, main ):
         """
             Setting up null-provider
         """
         import json
-        import pexpect
 
         # Activate apps
-        main.log.info("Activating null-provider")
+        main.step("Activating null-provider")
         appStatus = main.CLIs[0].activateApp('org.onosproject.null')
-        if not appStatus:
-            main.log.error("Failed to activate null-provider")
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=appStatus,
+                                 onpass="Successfully activated null-provider",
+                                 onfail="Failed activate null-provider" )
 
         # Setup the null-provider
-        main.log.info("Configuring null-provider")
+        main.step("Configuring null-provider")
         cfgStatus = main.ONOSbench.onosCfgSet( main.ONOSip[0],
                 'org.onosproject.provider.nil.NullProviders', 'deviceCount 3' )
         cfgStatus = cfgStatus and main.ONOSbench.onosCfgSet( main.ONOSip[0],
@@ -210,20 +228,30 @@ class SCPFmaxIntents:
         cfgStatus = cfgStatus and main.ONOSbench.onosCfgSet( main.ONOSip[0],
                 'org.onosproject.provider.nil.NullProviders', 'enabled true' )
 
-        if not cfgStatus:
-            main.log.error("Failed to configure null-provider")
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=cfgStatus,
+                                 onpass="Successfully configured null-provider",
+                                 onfail="Failed to configure null-provider" )
 
         # give onos some time to settle
         time.sleep(main.startUpSleep)
 
+        main.log.info("Setting default flows to zero")
         main.defaultFlows = 0
-        main.ingress =  ":0000000000000001/3"
-        main.egress = ":0000000000000003/2"
-        main.switch = "null"
-        main.linkUpCmd = "null-link null:0000000000000001/3 null:0000000000000003/1 up"
-        main.linkDownCmd = "null-link null:0000000000000001/3 null:0000000000000003/1 down"
 
-        if not appStatus or not cfgStatus:
+        main.step("Check status of null-provider setup")
+        caseResult = appStatus and cfgStatus
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=caseResult,
+                                 onpass="Setting up null-provider was successfull",
+                                 onfail="Failed to setup null-provider" )
+
+        # This tells the following cases if we are using the null-provider or ovs
+        main.switchType = "null:"
+
+        # If the null-provider setup was unsuccessfull, then there is no point to
+        # run the subsequent cases
+        if not caseResult:
             main.setupSkipped = True
 
     def CASE11( self, main ):
@@ -233,239 +261,214 @@ class SCPFmaxIntents:
         import json
         import time
 
-        main.log.step("Activating openflow")
+        time.sleep(main.startUpSleep)
+
+        main.step("Activating openflow")
         appStatus = main.CLIs[0].activateApp('org.onosproject.openflow')
-        if appStatus:
-            main.log.error("Failed to activate openflow")
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=appStatus,
+                                 onpass="Successfully activated openflow",
+                                 onfail="Failed activate openflow" )
 
         time.sleep(main.startUpSleep)
 
-        main.log.info('Starting mininet topology')
+        main.step('Starting mininet topology')
         mnStatus = main.Mininet1.startNet(topoFile='~/mininet/custom/rerouteTopo.py')
-        if mnStatus:
-            main.log.error("Failed to start mininet")
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=mnStatus,
+                                 onpass="Successfully started Mininet",
+                                 onfail="Failed to activate Mininet" )
 
-        main.log.info("Assinging masters to switches")
-        swStatus =  main.Mininet1.assignSwController(sw='s1', ip=main.ONOSip[0])
-        swStatus = swStatus and  main.Mininet1.assignSwController(sw='s2', ip=main.ONOSip[0])
-        swStatus = swStatus and main.Mininet1.assignSwController(sw='s3', ip=main.ONOSip[0])
-        if not swStatus:
-            main.log.info("Failed to assign masters to switches")
+        main.step("Assinging masters to switches")
+        switches = main.Mininet1.getSwitches()
+        swStatus = main.Mininet1.assignSwController( sw=switches.keys(), ip=main.ONOSip )
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=swStatus,
+                                 onpass="Successfully assigned switches to masters",
+                                 onfail="Failed assign switches to masters" )
 
         time.sleep(main.startUpSleep)
 
+        main.log.info("Getting default flows")
         jsonSum = json.loads(main.CLIs[0].summary())
-        sumStatus = (jsonSum['devices'] == 3 and jsonSum['SCC(s)'] == 1)
-
-        main.log.step("Getting default flows")
-        jsonSum = json.loads(main.CLIs[0].summary())
-
         main.defaultFlows = jsonSum["flows"]
-        main.ingress =  ":0000000000000001/3"
-        main.egress = ":0000000000000003/2"
-        main.switch = "of"
-        main.linkDownCmd = 'link s1 s3 down'
-        main.linkUpCmd = 'link s1 s3 up'
 
-        if not appStatus or not mnStatus or not swStatus or not sumStatus:
+        main.step("Check status of Mininet setup")
+        caseResult = appStatus and mnStatus and swStatus
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=caseResult,
+                                 onpass="Successfully setup Mininet",
+                                 onfail="Failed setup Mininet" )
+
+        # This tells the following cases if we are using the null-provider or ovs
+        main.switchType = "of:"
+
+        if not caseResult:
             main.setupSkipped = True
 
     def CASE20( self, main ):
-        import pexpect
         '''
             Pushing intents
         '''
 
-        # check if the setup case has been skipped
+        if main.reroute:
+            if main.switchType == "of:":
+                main.minIntents = int(main.params['OVS']['REROUTE']['min_intents'])
+                main.maxIntents = int(main.params['OVS']['REROUTE']['max_intents'])
+                main.checkInterval = int(main.params['OVS']['REROUTE']['check_interval'])
+                main.batchSize = int(main.params['OVS']['REROUTE']['batch_size'])
+            else:
+                main.minIntents = int(main.params['NULL']['REROUTE']['min_intents'])
+                main.maxIntents = int(main.params['NULL']['REROUTE']['max_intents'])
+                main.checkInterval = int(main.params['NULL']['REROUTE']['check_interval'])
+                main.batchSize = int(main.params['NULL']['REROUTE']['batch_size'])
+        else:
+            if main.switchType == "of:":
+                main.minIntents = int(main.params['OVS']['PUSH']['min_intents'])
+                main.maxIntents = int(main.params['OVS']['PUSH']['max_intents'])
+                main.checkInterval = int(main.params['OVS']['PUSH']['check_interval'])
+                main.batchSize = int(main.params['OVS']['PUSH']['batch_size'])
+            else:
+                main.minIntents = int(main.params['NULL']['PUSH']['min_intents'])
+                main.maxIntents = int(main.params['NULL']['PUSH']['max_intents'])
+                main.checkInterval = int(main.params['NULL']['PUSH']['check_interval'])
+                main.batchSize = int(main.params['NULL']['PUSH']['batch_size'])
+
+        # check if the case needs to be skipped
         if main.setupSkipped:
             main.setupSkipped = False
             main.skipCase()
 
         # the index where the next intents will be installed
         offset = 0
-        # the number of intents we expect to be in the installed state
-        expectedIntents = 0
         # keeps track of how many intents have been installed
-        maxIntents = 0
-        # the number of flows we expect to be in the added state
-        expectedFlows = main.defaultFlows
+        currIntents = 0
         # keeps track of how many flows have been installed
-        maxFlows = main.defaultFlows
+        currFlows = main.defaultFlows
         # limit for the number of intents that can be installed
         limit = main.maxIntents / main.batchSize
 
+        main.step( "Pushing intents" )
         for i in range(limit):
-            # Push intents
-            main.log.info("Pushing intents")
-            main.intentFunctions.pushIntents( main,
-                                              main.switch,
-                                              main.ingress,
-                                              main.egress,
-                                              main.batchSize,
-                                              offset,
-                                              sleep=main.installSleep,
-                                              timeout=main.timeout,
-                                              options="-i" )
+            pushResult = main.ONOScli1.pushTestIntents( main.switchType +  main.ingress,
+                                                        main.switchType +  main.egress,
+                                                        main.batchSize,
+                                                        offset = offset,
+                                                        options = "-i",
+                                                        timeout = main.timeout )
+            if pushResult == None:
+                main.log.info( "Timeout!" )
+                main.skipCase()
+            time.sleep(1)
 
+            # Update offset
             offset += main.batchSize
-            expectedIntents = offset
-            expectedFlows += main.batchSize*2
 
-            main.log.info("Grabbing number of installed intents and flows")
-            maxIntents = main.intentFunctions.getIntents( main )
-            maxFlows = main.intentFunctions.getFlows( main )
+            if offset >= main.minIntents and offset % main.checkInterval == 0:
+                intentVerify = utilities.retry( main.ONOScli1.checkIntentSummary,
+                                                main.FALSE,
+                                                [main.timeout],
+                                                sleep=main.verifySleep,
+                                                attempts=main.verifyAttempts )
 
-            if offset >= main.minIntents and offset % main.checkInterval == 0 or expectedIntents == main.maxIntents:
-                # Verifying intents
-                main.log.info("Verifying intents\nExpected intents: " + str(expectedIntents))
-                intentStatus = main.intentFunctions.verifyIntents( main,
-                                                                   expectedIntents,
-                                                                   sleep=main.verifySleep,
-                                                                   timeout=main.timeout)
-                # Verfying flows
-                main.log.info("Verifying flows\nExpected Flows: " + str(expectedFlows))
-                flowStatus = main.intentFunctions.verifyFlows( main,
-                                                               expectedFlows,
-                                                               sleep=main.verifySleep,
-                                                               timeout=main.timeout)
+                flowVerify = utilities.retry( main.ONOScli1.checkFlowsState,
+                                              main.FALSE,
+                                              [False,main.timeout],
+                                              sleep=main.verifySleep,
+                                              attempts=main.verifyAttempts )
 
-                if not flowStatus or not intentsStataus:
-                    main.log.error("Failed to verify")
+                if not intentVerify:
+                    main.log.error( "Failed to install intents" )
                     break
 
-        main.log.info("Summary: Intents=" + str(expectedIntents) + " Flows=" + str(expectedFlows))
-        main.log.info("Installed intents: " + str(maxIntents) +
-                      " Added flows: " + str(maxFlows))
+                if main.reroute:
+                    main.step( "Reroute" )
+                    # tear down a link
+                    main.log.info("Tearing down link")
+                    if main.switchType == "of:":
+                        downlink = main.Mininet1.link( END1 = "s1", END2 = "s3", OPTION = "down" )
+                    else:
+                        downlink = main.ONOScli1.link( main.ingress, main.egress, "down")
+
+                    if downlink:
+                        main.log.info( "Successfully tear down link" )
+                    else:
+                        main.log.warn( "Failed to tear down link" )
+
+                    time.sleep(main.rerouteSleep)
+
+                    # Verifying intents
+                    main.step( "Checking intents and flows" )
+                    intentVerify = utilities.retry( main.ONOScli1.checkIntentSummary,
+                                                    main.FALSE,
+                                                    [main.timeout],
+                                                    sleep=main.verifySleep,
+                                                    attempts=main.verifyAttempts )
+                    # Verfying flows
+                    flowVerify = utilities.retry( main.ONOScli1.checkFlowsState,
+                                                  main.FALSE,
+                                                  [False, main.timeout],
+                                                  sleep = main.verifySleep,
+                                                  attempts = main.verifyAttempts )
+
+                    if not intentVerify:
+                        main.log.error( "Failed to install intents" )
+                    # Bring link back up
+                    main.log.info("Bringing link back up")
+                    if main.switchType == "of:":
+                        uplink = main.Mininet1.link( END1 = "s1", END2 = "s3", OPTION = "up" )
+                    else:
+                        uplink = main.ONOScli1.link( main.ingress, main.egress, "up" )
+
+                    if uplink:
+                        main.log.info( "Successfully bring link back up" )
+                    else:
+                        main.log.warn( "Failed to bring link back up" )
+
+                    time.sleep(main.rerouteSleep)
+
+                    # Verifying intents
+                    main.step( "Checking intents and flows" )
+                    intentVerify = utilities.retry( main.ONOScli1.checkIntentSummary,
+                                                    main.FALSE,
+                                                    [main.timeout],
+                                                    sleep=main.verifySleep,
+                                                    attempts=main.verifyAttempts )
+                    # Verfying flows
+                    flowVerify = utilities.retry( main.ONOScli1.checkFlowsState,
+                                                  main.FALSE,
+                                                  [False, main.timeout],
+                                                  sleep = main.verifySleep,
+                                                  attempts = main.verifyAttempts )
+
+                    if not intentVerify:
+                        main.log.error( "Failed to install intents" )
+
+                    rerouteResult = downlink and uplink
+                    utilities.assert_equals( expect = main.TRUE,
+                                             actual = rerouteResult,
+                                             onpass = "Successfully reroute",
+                                             onfail = "Failed to reroute" )
+
+        utilities.assert_equals( expect = main.TRUE,
+                                 actual = intentVerify,
+                                 onpass = "Successfully pushed and verified intents",
+                                 onfail = "Failed to push and verify intents" )
 
         main.log.info("Writing results to DB file")
-        with open(dbFileName, "a") as dbFile:
-            temp = "," + str(maxIntents)
-            temp += "," + str(maxFlows)
-            dbFile.write(temp)
-
-        # Stopping mininet
-        if main.switch == "of":
-            main.log.info("Stopping mininet")
-            main.Mininet1.stopNet()
-
-    def CASE21( self, main ):
-        import pexpect
-        import time
-        '''
-            Reroute
-        '''
-
-        # check if the setup case has been skipped
-        if main.setupSkipped:
-            main.setupSkipped = False
-            main.skipCase()
-
-        # the index where the next intents will be installed
-        offset = 0
-        # the number of intents we expect to be in the installed state
-        expectedIntents = 0
-        # keeps track of how many intents have been installed
-        maxIntents = 0
-        # the number of flows we expect to be in the added state
-        expectedFlows = main.defaultFlows
-        # keeps track of how many flows have been installed
-        maxFlows = main.defaultFlows
-        # limit for the number of intents that can be installed
-        limit = main.maxIntents / main.batchSize
-
-        for i in range(limit):
-            # Push intents
-            main.log.info("Pushing intents")
-            main.intentFunctions.pushIntents( main,
-                                              main.switch,
-                                              main.ingress,
-                                              main.egress,
-                                              main.batchSize,
-                                              offset,
-                                              sleep=main.installSleep,
-                                              timeout=main.timeout,
-                                              options="-i" )
-
-            offset += main.batchSize
-            expectedIntents = offset
-            expectedFlows += main.batchSize*2
-
-            main.log.info("Grabbing number of installed intents and flows")
-            maxIntents = main.intentFunctions.getIntents( main )
-            maxFlows = main.intentFunctions.getFlows( main )
-
-            # Verifying intents
-            main.log.info("Verifying intents\n\tExpected intents: " + str(expectedIntents))
-            intentStatus = main.intentFunctions.verifyIntents( main,
-                                                               expectedIntents,
-                                                               sleep=main.verifySleep,
-                                                               timeout=main.timeout)
-            # Verfying flows
-            main.log.info("Verifying flows\n\tExpected Flows: " + str(expectedFlows))
-            flowStatus = main.intentFunctions.verifyFlows( main,
-                                                           expectedFlows,
-                                                           sleep=main.verifySleep,
-                                                           timeout=main.timeout)
-
-            if not flowStatus or not intentsStataus:
-                main.log.error("Failed to verify\n\tSkipping case")
-                main.log.skipCase()
-
-            # tear down a link
-            main.log.step("Tearing down link")
-            if main.switch == "of":
-                main.log.info("Sending: " + main.linkDownCmd)
-                main.Mininet1.handle.sendline(main.linkDownCmd)
-                main.Mininet1.handle.expect('mininet>')
-            else:
-                main.log.info("Sending: " + main.linkDownCmd)
-                main.CLIs[0].handle.sendline(main.linkDownCmd)
-                main.CLIs[0].handle.expect('onos>')
-
-            time.sleep(main.rerouteSleep)
-
-            # rerouting adds a 1000 flows
-            expectedFlows += 1000
-
-            main.log.info("Grabbing number of added flows")
-            maxFlows = main.intentFunctions.getFlows( main )
-
-            # Verfying flows
-            main.log.info("Verifying flows\n\tExpected Flows: " + str(expectedFlows))
-            flowStatus = main.intentFunctions.verifyFlows( main,
-                                                           expectedFlows,
-                                                           sleep=main.verifySleep,
-                                                           timeout=main.timeout)
-            if not flowStatus:
-                main.log.error("Failed to verify flows\n\tSkipping case")
-                main.skipCase()
-
-            # Bring link back up
-            main.log.step("Bringing link back up")
-            if main.switch == "of":
-                main.log.info("Sending: " + main.linkUpCmd)
-                main.Mininet1.handle.sendline(main.linkUpCmd)
-                main.Mininet1.handle.expect('mininet>')
-            else:
-                main.log.info("Sending: " + main.linkUpCmd)
-                main.CLIs[0].handle.sendline(main.linkUpCmd)
-                main.CLIs[0].handle.expect('onos>')
-
-            time.sleep(main.rerouteSleep)
-
-        main.log.info("Summary: Intents=" + str(expectedIntents) + " Flows=" + str(expectedFlows))
-        main.log.info("Installed intents: " + str(maxIntents) +
-                      " Added flows: " + str(maxFlows))
-
         with open(main.dbFileName, "a") as dbFile:
-            temp = "," + str(maxIntents)
-            temp += "," + str(maxFlows)
+            temp = "," + str(currIntents)
+            temp += "," + str(currFlows)
             dbFile.write(temp)
 
-        # Stopping mininet
-        if main.switch == "of":
-            main.log.info("Stopping mininet")
-            main.Mininet1.stopNet()
+        if main.switchType == "of:":
+            main.step( "Stopping mininet" )
+            stepResult = main.Mininet1.stopNet()
+            utilities.assert_equals( expect = main.TRUE,
+                                     actual = stepResult,
+                                     oppass = "Successfully stop Mininet",
+                                     opfail = "Failed stop Mininet" )
+
 
     def CASE100( self, main ):
         '''

@@ -1235,30 +1235,33 @@ class MininetCliDriver( Emulator ):
 
     def link( self, **linkargs ):
         """
-           Bring link( s ) between two nodes up or down"""
-        args = utilities.parse_args( [ "END1", "END2", "OPTION" ], **linkargs )
-        end1 = args[ "END1" ] if args[ "END1" ] is not None else ""
-        end2 = args[ "END2" ] if args[ "END2" ] is not None else ""
-        option = args[ "OPTION" ] if args[ "OPTION" ] is not None else ""
-        main.log.info(
-            "Bring link between '" +
-            end1 +
-            "' and '" +
-            end2 +
-            "' '" +
-            option +
-            "'" )
-        command = "link " + \
-            str( end1 ) + " " + str( end2 ) + " " + str( option )
+           Bring link( s ) between two nodes up or down
+        """
         try:
-            self.handle.sendline( command )
+            args = utilities.parse_args( [ "END1", "END2", "OPTION" ], **linkargs )
+            end1 = args[ "END1" ] if args[ "END1" ] is not None else ""
+            end2 = args[ "END2" ] if args[ "END2" ] is not None else ""
+            option = args[ "OPTION" ] if args[ "OPTION" ] is not None else ""
+
+            main.log.info( "Bring link between " + str( end1 ) + " and " + str( end2 ) + " " + str( option ) )
+            cmd = "link {} {} {}".format( end1, end2, option )
+            self.handle.sendline( cmd )
             self.handle.expect( "mininet>" )
+            response = self.handle.before
+            main.log.info( response )
+
+            return main.TRUE
+        except pexpect.TIMEOUT:
+            main.log.exception( self.name + ": Command timed out" )
+            return None
         except pexpect.EOF:
-            main.log.error( self.name + ": EOF exception found" )
-            main.log.error( self.name + ":     " + self.handle.before )
+            main.log.exception( self.name + ": connection closed." )
             main.cleanup()
             main.exit()
-        return main.TRUE
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
 
     def switch( self, **switchargs ):
         """

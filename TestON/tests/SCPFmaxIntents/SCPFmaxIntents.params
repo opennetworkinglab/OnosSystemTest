@@ -1,13 +1,14 @@
 <PARAMS>
 
-    # 0-init
-    # 1-setup
+    # 1-init
+    # 2-setup
     # 10-null provider setup
     # 11-mininet setup
-    # 20-pushing intents,
-    # 21-rerouting intents
-    # 0,1,11,20,1,11,21,1,10,20,1,10,21,100
-    <testcases>0,1,11,20,1,11,21,1,10,20,1,10,21,100</testcases>
+    # 20-pushing intents, and rerouting intents if reroute is true
+    # 1,2,10,20,2,11,20,100
+    <testcases>1,2,10,20</testcases>
+
+    <reroute>False</reroute>
 
     <SCALE>
         <size>1</size>
@@ -37,24 +38,66 @@
 
     <SLEEP>
         <startup>3</startup>
-        <install>0</install>
-        <verify>0</verify>
+        <install>1</install>
+        <verify>5</verify>
         <reroute>3</reroute>
         # timeout for pexpect
         <timeout>120</timeout>
     </SLEEP>
 
+    <ATTEMPTS>
+        <verify>3</verify>
+        <push>3</push>
+    </ATTEMPTS>
+
     <DATABASE>
-        <file>MaxIntentDB</file>
+        <file>/tmp/MaxIntentDB</file>
         <nic>1gig</nic>
         <node>baremetal</node>
     </DATABASE>
 
-    <TEST>
-        <batch_size>10000</batch_size>
-        <min_intents>800000</min_intents>
-        <max_intents>1000000</max_intents>
-        <check_interval>20000</check_interval>
-    </TEST>
+    <LINK>
+        <ingress>0000000000000001/9</ingress>
+        <egress>0000000000000002/9</egress>
+    </LINK>
+
+    # CASE10
+    <NULL>
+        # CASE20
+        <PUSH>
+            <batch_size>1000</batch_size>
+            <min_intents>10000</min_intents>
+            <max_intents>1000000</max_intents>
+            <check_interval>10000</check_interval>
+        </PUSH>
+
+        # if reroute is true
+        <REROUTE>
+            <batch_size>1000</batch_size>
+            <min_intents>10000</min_intents>
+            <max_intents>1000000</max_intents>
+            <check_interval>100000</check_interval>
+        </REROUTE>
+    </NULL>
+
+    # CASE11
+    <OVS>
+        # CASE20
+        <PUSH>
+            <batch_size>1000</batch_size>
+            <min_intents>10000</min_intents>
+            <max_intents>500000</max_intents>
+            <check_interval>10000</check_interval>
+        </PUSH>
+
+        # if reroute is true
+        <REROUTE>
+            <batch_size>1000</batch_size>
+            <min_intents>10000</min_intents>
+            <max_intents>500000</max_intents>
+            <check_interval>10000</check_interval>
+        </REROUTE>
+    </OVS>
+
 
 </PARAMS>

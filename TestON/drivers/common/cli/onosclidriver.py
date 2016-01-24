@@ -1992,9 +1992,9 @@ class OnosCliDriver( CLI ):
             # get total and installed number, see if they are match
             allState = response.get( 'all' )
             if allState.get('total') == allState.get('installed'):
-                main.log.info( 'successful verified Intents' )
+                main.log.info( 'Total Intents: {}   Installed Intents: {}'.format( allState.get('total'), allState.get('installed') ) )
                 return main.TRUE
-            main.log.info( 'Verified Intents failed Excepte intetnes: {} installed intents: {}'.format(allState.get('total'), allState.get('installed')))
+            main.log.info( 'Verified Intents failed Excepte intetnes: {} installed intents: {}'.format( allState.get('total'), allState.get('installed') ) )
             return main.FALSE
 
         except TypeError:
@@ -2142,6 +2142,60 @@ class OnosCliDriver( CLI ):
         except TypeError:
             main.log.exception( self.name + ": Object not as expected" )
             return main.FALSE
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
+    def getTotalFlowsNum( self ):
+        """
+        Description:
+            Get the total number of flows, include every states.
+        Return:
+            The number of flows
+        """
+        try:
+            cmd = "summary -j"
+            response = self.sendline( cmd )
+            if response == None:
+                return  -1
+            response = json.loads( response )
+            return int( response.get("flows") )
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
+
+    def getTotalIntentsNum( self ):
+        """
+        Description:
+            Get the total number of intents, include every states.
+        Return:
+            The number of intents
+        """
+        try:
+            cmd = "summary -j"
+            response = self.sendline( cmd )
+            if response == None:
+                return  -1
+            response = json.loads( response )
+            return int( response.get("intents") )
+        except TypeError:
+            main.log.exception( self.name + ": Object not as expected" )
+            return None
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
         except Exception:
             main.log.exception( self.name + ": Uncaught exception!" )
             main.cleanup()

@@ -169,6 +169,10 @@ class SCPFmaxIntents:
             temp += "'" + nic + "',"
             temp += str(main.numCtrls) + ","
             temp += "'" + node + "1" + "'"
+            temp += ",0"
+            temp += ",0"
+            temp += ",0"
+            temp += ",0"
             dbFile.write(temp)
 
     def CASE2( self, main ):
@@ -454,11 +458,15 @@ class SCPFmaxIntents:
                                  actual = intentVerify,
                                  onpass = "Successfully pushed and verified intents",
                                  onfail = "Failed to push and verify intents" )
+        currIntents = main.ONOScli1.getTotalIntentsNum()
+        currFlows = main.ONOScli1.getTotalFlowsNum()
 
         main.log.info("Writing results to DB file")
         with open(main.dbFileName, "a") as dbFile:
             temp = "," + str(currIntents)
             temp += "," + str(currFlows)
+            temp += ",0"
+            temp += ",0\n"
             dbFile.write(temp)
 
         if main.switchType == "of:":

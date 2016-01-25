@@ -835,50 +835,36 @@ class OnosDriver( CLI ):
         configName = 'org.onosproject.myapp'
         configParam = 'appSetting 1'
         """
-        for i in range(5):
-            try:
-                cfgStr = ( "onos "+str(ONOSIp)+" cfg set "+
-                           str(configName) + " " +
-                           str(configParam)
-                         )
+        try:
+            cfgStr = "onos {} cfg set {} {}".format( ONOSIp,
+                                                     configName,
+                                                     configParam )
+            self.handle.sendline( "" )
+            self.handle.expect( ":~" )
+            self.handle.sendline( cfgStr )
+            self.handle.expect("cfg set")
+            self.handle.expect( ":~" )
 
-                self.handle.sendline( "" )
-                self.handle.expect( ":~" )
-                self.handle.sendline( cfgStr )
-                self.handle.expect("cfg set")
-                self.handle.expect( ":~" )
+            paramValue = configParam.split(" ")[1]
+            paramName = configParam.split(" ")[0]
 
-                paramValue = configParam.split(" ")[1]
-                paramName = configParam.split(" ")[0]
+            checkStr = 'onos {} cfg get " {} {} " '.format( ONOSIp, configName, paramName )
 
-                checkStr = ( "onos " + str(ONOSIp) + """ cfg get " """ + str(configName) + " " + paramName + """ " """)
+            self.handle.sendline( checkStr )
+            self.handle.expect( ":~" )
 
-                self.handle.sendline( checkStr )
-                self.handle.expect( ":~" )
-
-                if "value=" + paramValue + "," in self.handle.before:
-                    main.log.info("cfg " + configName + " successfully set to " + configParam)
-                    return main.TRUE
-
-            except pexpect.ExceptionPexpect as e:
-                main.log.exception( self.name + ": Pexpect exception found: " )
-                main.log.error( self.name + ":    " + self.handle.before )
-                main.cleanup()
-                main.exit()
-            except Exception:
-                main.log.exception( self.name + ": Uncaught exception!" )
-                main.cleanup()
-                main.exit()
-
-            time.sleep(5)
-
-        main.log.error("CFG SET FAILURE: " + configName + " " + configParam )
-        main.ONOSbench.handle.sendline("onos $OC1 cfg get")
-        main.ONOSbench.handle.expect("\$")
-        print main.ONOSbench.handle.before
-        main.ONOSbench.logReport( ONOSIp, ["ERROR","WARN","EXCEPT"], "d")
-        return main.FALSE
-
+            if "value=" + paramValue + "," in self.handle.before:
+                main.log.info("cfg " + configName + " successfully set to " + configParam)
+                return main.TRUE
+        except pexpect.ExceptionPexpect as e:
+            main.log.exception( self.name + ": Pexpect exception found: " )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
 
     def onosCli( self, ONOSIp, cmdstr ):
         """

@@ -407,7 +407,12 @@ class SCPFscaleTopo:
         stepResult = main.FALSE
         if main.activeNodes:
             controller = main.activeNodes[0]
-            stepResult = main.CLIs[controller].balanceMasters()
+            stepResult = utilities.retry( main.CLIs[controller].balanceMasters,
+                                          main.FALSE,
+                                          [],
+                                          sleep=3,
+                                          attempts=3 )
+
         else:
             main.log.error( "List of active nodes is empty" )
         utilities.assert_equals( expect=main.TRUE,

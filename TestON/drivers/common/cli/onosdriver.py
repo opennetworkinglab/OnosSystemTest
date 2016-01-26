@@ -2056,64 +2056,73 @@ class OnosDriver( CLI ):
         return sorted( self.onosIps.values() )
 
     def logReport( self, nodeIp, searchTerms, outputMode="s" ):
-        '''
-            - accepts either a list or a string for "searchTerms" these
-              terms will be searched for in the log and have their
-              instances counted
+        """
+        Searches the latest ONOS log file for the given search terms and
+        prints the total occurances of each term. Returns to combined total of
+        all occurances.
 
-            - nodeIp is the ip of the node whos log is to be scanned
+        Arguments:
+            * nodeIp - The ip of the ONOS node where the log is located
+            * searchTerms - A string to grep for or a list of strings to grep
+                            for in the ONOS log. Will print out the number of
+                            occurances for each term.
+        Optional Arguments:
+            * outputMode - 's' or 'd'. If 'd' will print the last 5 lines
+                           containing each search term as well as the total
+                           number of occurances of each term. Defaults to 's',
+                           which prints the simple output of just the number
+                           of occurances for each term.
+        """
+        try:
+            main.log.info( " Log Report for {} ".format( nodeIp ).center( 70, '=' ) )
+            if type( searchTerms ) is str:
+                searchTerms = [searchTerms]
+            numTerms = len( searchTerms )
+            outputMode = outputMode.lower()
 
-            - output modes:
-                "s" -   Simple. Quiet output mode that just prints
-                        the occurences of each search term
-
-                "d" -   Detailed. Prints number of occurences as well as the entire
-                        line for each of the last 5 occurences
-
-            - returns total of the number of instances of all search terms
-        '''
-        main.log.info("========================== Log Report ===========================\n")
-
-        if type(searchTerms) is str:
-            searchTerms = [searchTerms]
-
-        logLines = [ [" "] for i in range(len(searchTerms)) ]
-
-        for term in range(len(searchTerms)):
-            logLines[term][0] = searchTerms[term]
-
-        totalHits = 0
-        for term in range(len(searchTerms)):
-            cmd = "onos-ssh " + nodeIp + " cat /opt/onos/log/karaf.log | grep " + searchTerms[term]
-            self.handle.sendline(cmd)
-            self.handle.expect(":~")
-            before = (self.handle.before).splitlines()
-
-            count = [searchTerms[term],0]
-
-            for line in before:
-                if searchTerms[term] in line and "grep" not in line:
-                    count[1] += 1
-                    if before.index(line) > ( len(before) - 7 ):
-                        logLines[term].append(line)
-
-            main.log.info( str(count[0]) + ": " + str(count[1]) )
-            if term == len(searchTerms)-1:
-                print("\n")
-            totalHits += int(count[1])
-
-        if outputMode != "s" and outputMode != "S":
-            outputString = ""
-            for i in logLines:
-                outputString = i[0] + ": \n"
-                for x in range(1,len(i)):
-                    outputString += ( i[x] + "\n" )
-
-                if outputString != (i[0] + ": \n"):
-                    main.log.info(outputString)
-
-        main.log.info("================================================================\n")
-        return totalHits
+            totalHits = 0
+            logLines = []
+            for termIndex in range( numTerms ):
+                term = searchTerms[termIndex]
+                logLines.append( [term] )
+                cmd = "onos-ssh " + nodeIp + " cat /opt/onos/log/karaf.log | grep " + term
+                self.handle.sendline( cmd )
+                self.handle.expect( ":~" )
+                before = self.handle.before.splitlines()
+                count = 0
+                for line in before:
+                    if term in line and "grep" not in line:
+                        count += 1
+                        if before.index( line ) > ( len( before ) - 7 ):
+                            logLines[termIndex].append( line )
+                main.log.info( "{}: {}".format( term, count ) )
+                totalHits += count
+                if termIndex == numTerms - 1:
+                    print "\n"
+            if outputMode != "s":
+                outputString = ""
+                for term in logLines:
+                    outputString = term[0] + ": \n"
+                    for line in range( 1, len( term ) ):
+                        outputString += ( "\t" + term[line] + "\n" )
+                    if outputString != ( term[0] + ": \n" ):
+                        main.log.info( outputString )
+            main.log.info( "=" * 70 )
+            return totalHits
+        except pexpect.EOF:
+            main.log.error( self.name + ": EOF exception found" )
+            main.log.error( self.name + ":    " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except pexpect.TIMEOUT:
+            main.log.error( self.name + ": TIMEOUT exception found" )
+            main.log.error( self.name + ":     " + self.handle.before )
+            main.cleanup()
+            main.exit()
+        except Exception:
+            main.log.exception( self.name + ": Uncaught exception!" )
+            main.cleanup()
+            main.exit()
 
     def copyMininetFile( self, fileName, localPath, userName, ip,
                          mnPath='~/mininet/custom/', timeout = 60 ):

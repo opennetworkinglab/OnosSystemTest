@@ -1953,7 +1953,7 @@ class OnosCliDriver( CLI ):
             returnValue = main.TRUE
             intentsDict = self.getIntentState( intentsId )
             if len( intentsId ) != len( intentsDict ):
-                main.log.info( self.name + "There is something wrong " +
+                main.log.info( self.name + ": There is something wrong " +
                                "getting intents state" )
                 return main.FALSE
 

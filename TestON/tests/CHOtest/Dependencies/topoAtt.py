@@ -159,7 +159,6 @@ class attTopo( Topo ):
         self.addLink( SLKC , LA03, bw=10, delay='0.243225267023ms')
         self.addLink( LA03 , SNDG, bw=10, delay='0.681264950821ms')
         self.addLink( LA03 , PHNX, bw=10, delay='0.343709457969ms')
-        self.addLink( LA03 , PHNX, bw=10, delay='0.343709457969ms')
         self.addLink( SNDG , PHNX, bw=10, delay='0.345064487693ms')
 
 topos = { 'att': ( lambda: attTopo() ) }

@@ -357,7 +357,7 @@ class MininetCliDriver( Emulator ):
                                         ":     " +
                                         str( response ) )
                         # NOTE: Send ctrl-c to make sure pingall is done
-                        self.handle.sendline( "\x03" )
+                        self.handle.send( "\x03" )
                         self.handle.expect( "Interrupt" )
                         self.handle.expect( "mininet>" )
                         break
@@ -369,7 +369,7 @@ class MininetCliDriver( Emulator ):
                     return returnValue
                 else:
                     # NOTE: Send ctrl-c to make sure pingall is done
-                    self.handle.sendline( "\x03" )
+                    self.handle.send( "\x03" )
                     self.handle.expect( "Interrupt" )
                     self.handle.expect( "mininet>" )
                     return main.FALSE

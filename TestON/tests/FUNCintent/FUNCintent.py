@@ -56,6 +56,8 @@ class FUNCintent:
             main.hostsData = {}
             main.CLIs = []
             main.ONOSip = []
+            main.scapyHostNames = main.params[ 'SCAPY' ][ 'HOSTNAMES' ].split( ',' )
+            main.scapyHosts = []  # List of scapy hosts for iterating
             main.assertReturnString = ''  # Assembled assert return string
 
             main.ONOSip = main.ONOSbench.getOnosIps()
@@ -84,7 +86,7 @@ class FUNCintent:
             copyResult1 = main.ONOSbench.scp( main.Mininet1,
                                               main.dependencyPath +
                                               main.topology,
-                                              main.Mininet1.home,
+                                              main.Mininet1.home + "custom/",
                                               direction="to" )
             if main.CLIs:
                 stepResult = main.TRUE
@@ -144,6 +146,18 @@ class FUNCintent:
         main.log.info( "Safety check, killing all ONOS processes" +
                        " before initiating environment setup" )
 
+        time.sleep( main.startUpSleep )
+        main.step( "Uninstalling ONOS package" )
+        onosUninstallResult = main.TRUE
+        for ip in main.ONOSip:
+            onosUninstallResult = onosUninstallResult and \
+                    main.ONOSbench.onosUninstall( nodeIp=ip )
+        stepResult = onosUninstallResult
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="Successfully uninstalled ONOS package",
+                                 onfail="Failed to uninstall ONOS package" )
+
         for i in range( main.maxNodes ):
             main.ONOSbench.onosDie( main.ONOSip[ i ] )
 
@@ -174,18 +188,6 @@ class FUNCintent:
                                  actual=stepResult,
                                  onpass="Successfully created ONOS package",
                                  onfail="Failed to create ONOS package" )
-
-        time.sleep( main.startUpSleep )
-        main.step( "Uninstalling ONOS package" )
-        onosUninstallResult = main.TRUE
-        for ip in main.ONOSip:
-            onosUninstallResult = onosUninstallResult and \
-                    main.ONOSbench.onosUninstall( nodeIp=ip )
-        stepResult = onosUninstallResult
-        utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
-                                 onpass="Successfully uninstalled ONOS package",
-                                 onfail="Failed to uninstall ONOS package" )
 
         time.sleep( main.startUpSleep )
         main.step( "Installing ONOS package" )
@@ -273,15 +275,15 @@ class FUNCintent:
                 devices = main.topo.getAllDevices( main )
                 ports = main.topo.getAllPorts( main )
                 devicesResults = main.TRUE
-                deviceFails = []  # Reset for each attempt
+                deviceFails = []  # Reset for each failed attempt
             if not linksResults:
                 links = main.topo.getAllLinks( main )
                 linksResults = main.TRUE
-                linkFails = []  # Reset for each attempt
+                linkFails = []  # Reset for each failed attempt
             if not hostsResults:
                 hosts = main.topo.getAllHosts( main )
                 hostsResults = main.TRUE
-                hostFails = []  # Reset for each attempt
+                hostFails = []  # Reset for each failed attempt
 
             #  Check for matching topology on each node
             for controller in range( main.numCtrls ):
@@ -295,7 +297,7 @@ class FUNCintent:
                         deviceData = json.loads( devices[ controller ] )
                         portData = json.loads( ports[ controller ] )
                     except (TypeError,ValueError):
-                        main.log.error("Could not load json:" + str( devices[ controller ] ) + ' or ' + str( ports[ controller ] ))
+                        main.log.error( "Could not load json: {0} or {1}".format( str( devices[ controller ] ), str( ports[ controller ] ) ) )
                         currentDevicesResult = main.FALSE
                     else:
                         currentDevicesResult = main.Mininet1.compareSwitches(
@@ -456,38 +458,122 @@ class FUNCintent:
                                  onfail="Failed to assign switches to " +
                                         "controller" )
 
-    def CASE13( self, main ):
+    def CASE13( self,main ):
         """
-            Discover all hosts and store its data to a dictionary
+            Create Scapy components
+        """
+        main.case( "Create scapy components" )
+        main.step( "Create scapy components" )
+        import json
+        scapyResult = main.TRUE
+        for hostName in main.scapyHostNames:
+            main.Scapy1.createHostComponent( hostName )
+            main.scapyHosts.append( getattr( main, hostName ) )
+
+        main.step( "Start scapy components" )
+        for host in main.scapyHosts:
+            host.startHostCli()
+            host.startScapy()
+            host.updateSelf()
+            main.log.debug( host.name )
+            main.log.debug( host.hostIp )
+            main.log.debug( host.hostMac )
+
+
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=scapyResult,
+                                 onpass="Successfully created Scapy Components",
+                                 onfail="Failed to discover Scapy Components" )
+
+    def CASE14( self, main ):
+        """
+            Discover all hosts with fwd and pingall and store its data in a dictionary
         """
         main.case( "Discover all hosts" )
+        main.step( "Pingall hosts and confirm ONOS discovery" )
+        utilities.retry( f=main.intentFunction.fwdPingall, retValue=main.FALSE, args=[ main ] )
 
-        stepResult = main.TRUE
-        main.step( "Discover all hosts using pingall " )
-        stepResult = main.intentFunction.getHostsData( main )
+        utilities.retry( f=main.intentFunction.confirmHostDiscovery, retValue=main.FALSE,
+                         args=[ main ], attempts=main.checkTopoAttempts, sleep=2 )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
                                  onpass="Successfully discovered hosts",
                                  onfail="Failed to discover hosts" )
 
-    def CASE14( self, main ):
-        """
-            Stop mininet
-        """
-        main.log.report( "Stop Mininet topology" )
-        main.case( "Stop Mininet topology" )
-        main.caseExplanation = "Stopping the current mininet topology " +\
-                                "to start up fresh"
-
-        main.step( "Stopping Mininet Topology" )
-        topoResult = main.Mininet1.stopNet( )
-        stepResult = topoResult
+        main.step( "Populate hostsData" )
+        stepResult = main.intentFunction.populateHostData( main )
         utilities.assert_equals( expect=main.TRUE,
                                  actual=stepResult,
-                                 onpass="Successfully stop mininet",
-                                 onfail="Failed to stop mininet" )
+                                 onpass="Successfully populated hostsData",
+                                 onfail="Failed to populate hostsData" )
+
+    def CASE15( self, main ):
+        """
+            Discover all hosts with scapy arp packets and store its data to a dictionary
+        """
+        main.case( "Discover all hosts using scapy" )
+        main.step( "Send packets from each host to the first host and confirm onos discovery" )
+
+        import collections
+        if len( main.scapyHosts ) < 1:
+            main.log.error( "No scapy hosts have been created" )
+            main.skipCase()
+
+        # Send ARP packets from each scapy host component
+        main.intentFunction.sendDiscoveryArp( main, main.scapyHosts )
+
+        stepResult = utilities.retry( f=main.intentFunction.confirmHostDiscovery,
+                                      retValue=main.FALSE, args=[ main ],
+                                      attempts=main.checkTopoAttempts, sleep=2 )
+
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="ONOS correctly discovered all hosts",
+                                 onfail="ONOS incorrectly discovered hosts" )
+
+        main.step( "Populate hostsData" )
+        stepResult = main.intentFunction.populateHostData( main )
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=stepResult,
+                                 onpass="Successfully populated hostsData",
+                                 onfail="Failed to populate hostsData" )
+
+
+    def CASE16( self, main ):
+        """
+            Stop mininet and remove scapy host
+        """
+        main.log.report( "Stop Mininet and Scapy" )
+        main.case( "Stop Mininet and Scapy" )
+        main.caseExplanation = "Stopping the current mininet topology " +\
+                                "to start up fresh"
+        main.step( "Stopping and Removing Scapy Host Components" )
+        scapyResult = main.TRUE
+        for host in main.scapyHosts:
+            scapyResult = scapyResult and host.stopScapy()
+            main.log.info( "Stopped Scapy Host: {0}".format( host.name ) )
+
+        for host in main.scapyHosts:
+            scapyResult = scapyResult and main.Scapy1.removeHostComponent( host.name )
+            main.log.info( "Removed Scapy Host Component: {0}".format( host.name ) )
+
+        main.scapyHosts = []
+        main.scapyHostIPs = []
+
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=scapyResult,
+                                 onpass="Successfully stopped scapy and removed host components",
+                                 onfail="Failed to stop mininet and scapy" )
+
+        main.step( "Stopping Mininet Topology" )
+        mininetResult = main.Mininet1.stopNet( )
+
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=mininetResult,
+                                 onpass="Successfully stopped mininet and scapy",
+                                 onfail="Failed to stop mininet and scapy" )
         # Exit if topology did not load properly
-        if not topoResult:
+        if not ( mininetResult and scapyResult ):
             main.cleanup()
             main.exit()
 
@@ -522,6 +608,7 @@ class FUNCintent:
         assert main.numSwitch, "Placed the total number of switch topology in \
                                 main.numSwitch"
 
+        # Save leader candidates
         intentLeadersOld = main.CLIs[ 0 ].leaderCandidates()
 
         main.testName = "Host Intents"
@@ -536,104 +623,174 @@ class FUNCintent:
 
         main.step( "IPV4: Add host intents between h1 and h9" )
         main.assertReturnString = "Assertion Result for IPV4 host intent with mac addresses\n"
-        stepResult = main.TRUE
-        stepResult = main.intentFunction.hostIntent( main,
-                                              onosNode='0',
+        host1 = { "name":"h1","id":"00:00:00:00:00:01/-1" }
+        host2 = { "name":"h9","id":"00:00:00:00:00:09/-1" }
+        testResult = main.FALSE
+        installResult = main.intentFunction.installHostIntent( main,
                                               name='IPV4',
-                                              host1='h1',
-                                              host2='h9',
-                                              host1Id='00:00:00:00:00:01/-1',
-                                              host2Id='00:00:00:00:00:09/-1',
+                                              onosNode='0',
+                                              host1=host1,
+                                              host2=host2)
+        if installResult:
+            testResult = main.intentFunction.testHostIntent( main,
+                                              name='IPV4',
+                                              intentId = installResult,
+                                              onosNode='0',
+                                              host1=host1,
+                                              host2=host2,
                                               sw1='s5',
                                               sw2='s2',
-                                              expectedLink=18 )
+                                              expectedLink = 18)
+
         utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
+                                 actual=testResult,
                                  onpass=main.assertReturnString,
                                  onfail=main.assertReturnString)
 
         main.step( "DUALSTACK1: Add host intents between h3 and h11" )
         main.assertReturnString = "Assertion Result for dualstack IPV4 with MAC addresses\n"
-        stepResult = main.TRUE
-        stepResult = main.intentFunction.hostIntent( main,
+        host1 = { "name":"h3","id":"00:00:00:00:00:03/-1" }
+        host2 = { "name":"h11","id":"00:00:00:00:00:0B/-1 "}
+        testResult = main.FALSE
+        installResult = main.intentFunction.installHostIntent( main,
                                               name='DUALSTACK',
-                                              host1='h3',
-                                              host2='h11',
-                                              host1Id='00:00:00:00:00:03/-1',
-                                              host2Id='00:00:00:00:00:0B/-1',
+                                              onosNode='0',
+                                              host1=host1,
+                                              host2=host2)
+
+        if installResult:
+            testResult = main.intentFunction.testHostIntent( main,
+                                              name='DUALSTACK',
+                                              intentId = installResult,
+                                              onosNode='0',
+                                              host1=host1,
+                                              host2=host2,
                                               sw1='s5',
                                               sw2='s2',
-                                              expectedLink=18 )
+                                              expectedLink = 18)
 
         utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
+                                 actual=testResult,
                                  onpass=main.assertReturnString,
-                                 onfail=main.assertReturnString )
+                                 onfail=main.assertReturnString)
 
         main.step( "DUALSTACK2: Add host intents between h1 and h11" )
         main.assertReturnString = "Assertion Result for dualstack2 host intent\n"
-        stepResult = main.TRUE
-        stepResult = main.intentFunction.hostIntent( main,
+        host1 = { "name":"h1" }
+        host2 = { "name":"h11" }
+        testResult = main.FALSE
+        installResult = main.intentFunction.installHostIntent( main,
                                               name='DUALSTACK2',
-                                              host1='h1',
-                                              host2='h11',
+                                              onosNode='0',
+                                              host1=host1,
+                                              host2=host2)
+
+        if installResult:
+            testResult = main.intentFunction.testHostIntent( main,
+                                              name='DUALSTACK2',
+                                              intentId = installResult,
+                                              onosNode='0',
+                                              host1=host1,
+                                              host2=host2,
                                               sw1='s5',
                                               sw2='s2',
-                                              expectedLink=18 )
+                                              expectedLink = 18)
 
         utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
+                                 actual=testResult,
                                  onpass=main.assertReturnString,
-                                 onfail=main.assertReturnString )
+                                 onfail=main.assertReturnString)
 
         main.step( "1HOP: Add host intents between h1 and h3" )
         main.assertReturnString = "Assertion Result for 1HOP for IPV4 same switch\n"
-        stepResult = main.TRUE
-        stepResult = main.intentFunction.hostIntent( main,
+        host1 = { "name":"h1" }
+        host2 = { "name":"h3" }
+        testResult = main.FALSE
+        installResult = main.intentFunction.installHostIntent( main,
                                               name='1HOP',
-                                              host1='h1',
-                                              host2='h3' )
+                                              onosNode='0',
+                                              host1=host1,
+                                              host2=host2)
+
+        if installResult:
+            testResult = main.intentFunction.testHostIntent( main,
+                                              name='1HOP',
+                                              intentId = installResult,
+                                              onosNode='0',
+                                              host1=host1,
+                                              host2=host2,
+                                              sw1='s5',
+                                              sw2='s2',
+                                              expectedLink = 18)
 
         utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
+                                 actual=testResult,
                                  onpass=main.assertReturnString,
-                                 onfail=main.assertReturnString )
+                                 onfail=main.assertReturnString)
 
         main.step( "VLAN1: Add vlan host intents between h4 and h12" )
         main.assertReturnString = "Assertion Result vlan IPV4\n"
-        stepResult = main.TRUE
-        stepResult = main.intentFunction.hostIntent( main,
+        host1 = { "name":"h4","id":"00:00:00:00:00:04/100" }
+        host2 = { "name":"h12","id":"00:00:00:00:00:0C/100 "}
+        testResult = main.FALSE
+        installResult = main.intentFunction.installHostIntent( main,
                                               name='VLAN1',
-                                              host1='h4',
-                                              host2='h12',
-                                              host1Id='00:00:00:00:00:04/100',
-                                              host2Id='00:00:00:00:00:0C/100',
+                                              onosNode='0',
+                                              host1=host1,
+                                              host2=host2)
+
+        if installResult:
+            testResult = main.intentFunction.testHostIntent( main,
+                                              name='VLAN1',
+                                              intentId = installResult,
+                                              onosNode='0',
+                                              host1=host1,
+                                              host2=host2,
                                               sw1='s5',
                                               sw2='s2',
-                                              expectedLink=18 )
+                                              expectedLink = 18)
 
         utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
+                                 actual=testResult,
                                  onpass=main.assertReturnString,
-                                 onfail=main.assertReturnString )
+                                 onfail=main.assertReturnString)
 
         main.step( "VLAN2: Add inter vlan host intents between h13 and h20" )
         main.assertReturnString = "Assertion Result different VLAN negative test\n"
-        stepResult = main.TRUE
-        stepResult = main.intentFunction.hostIntent( main,
+        host1 = { "name":"h13" }
+        host2 = { "name":"h20" }
+        testResult = main.FALSE
+        installResult = main.intentFunction.installHostIntent( main,
                                               name='VLAN2',
-                                              host1='h13',
-                                              host2='h20' )
+                                              onosNode='0',
+                                              host1=host1,
+                                              host2=host2)
 
-        utilities.assert_equals( expect=main.FALSE,
-                                 actual=stepResult,
+        if installResult:
+            testResult = main.intentFunction.testHostIntent( main,
+                                              name='VLAN2',
+                                              intentId = installResult,
+                                              onosNode='0',
+                                              host1=host1,
+                                              host2=host2,
+                                              sw1='s5',
+                                              sw2='s2',
+                                              expectedLink = 18)
+
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=testResult,
                                  onpass=main.assertReturnString,
-                                 onfail=main.assertReturnString )
+                                 onfail=main.assertReturnString)
 
-
+        main.step( "Confirm that ONOS leadership is unchanged")
         intentLeadersNew = main.CLIs[ 0 ].leaderCandidates()
         main.intentFunction.checkLeaderChange( intentLeadersOld,
                                                 intentLeadersNew )
+
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=testResult,
+                                 onpass="ONOS Leaders Unchanged",
+                                 onfail="ONOS Leader Mismatch")
 
         main.intentFunction.report( main )
 
@@ -682,110 +839,134 @@ class FUNCintent:
         # No option point intents
         main.step( "NOOPTION: Add point intents between h1 and h9" )
         main.assertReturnString = "Assertion Result for NOOPTION point intent\n"
-        stepResult = main.TRUE
-        stepResult = main.intentFunction.pointIntent(
+        senders = [
+            { "name":"h1","device":"of:0000000000000005/1" }
+        ]
+        recipients = [
+            { "name":"h9","device":"of:0000000000000006/1" }
+        ]
+        installResult = main.intentFunction.installPointIntent(
                                        main,
                                        name="NOOPTION",
-                                       host1="h1",
-                                       host2="h9",
-                                       deviceId1="of:0000000000000005/1",
-                                       deviceId2="of:0000000000000006/1",
-                                       sw1="s5",
-                                       sw2="s2",
-                                       expectedLink=18 )
+                                       senders=senders,
+                                       recipients=recipients )
+
+        if installResult:
+            testResult = main.intentFunction.testPointIntent(
+                                         main,
+                                         intentId=installResult,
+                                         name="NOOPTION",
+                                         senders=senders,
+                                         recipients=recipients,
+                                         sw1="s5",
+                                         sw2="s2",
+                                         expectedLink=18)
 
         utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
+                                 actual=testResult,
                                  onpass=main.assertReturnString,
                                  onfail=main.assertReturnString )
 
         stepResult = main.TRUE
         main.step( "IPV4: Add point intents between h1 and h9" )
         main.assertReturnString = "Assertion Result for IPV4 point intent\n"
-        stepResult = main.intentFunction.pointIntent(
+        senders = [
+            { "name":"h1","device":"of:0000000000000005/1","mac":"00:00:00:00:00:01" }
+        ]
+        recipients = [
+            { "name":"h9","device":"of:0000000000000006/1","mac":"00:00:00:00:00:09" }
+        ]
+        installResult = main.intentFunction.installPointIntent(
                                        main,
                                        name="IPV4",
-                                       host1="h1",
-                                       host2="h9",
-                                       deviceId1="of:0000000000000005/1",
-                                       deviceId2="of:0000000000000006/1",
-                                       port1="",
-                                       port2="",
-                                       ethType="IPV4",
-                                       mac1="00:00:00:00:00:01",
-                                       mac2="00:00:00:00:00:09",
-                                       bandwidth="",
-                                       lambdaAlloc=False,
-                                       ipProto="",
-                                       ip1="",
-                                       ip2="",
-                                       tcp1="",
-                                       tcp2="",
-                                       sw1="s5",
-                                       sw2="s2",
-                                       expectedLink=18 )
+                                       senders=senders,
+                                       recipients=recipients,
+                                       ethType="IPV4" )
+
+        if installResult:
+            testResult = main.intentFunction.testPointIntent(
+                                         main,
+                                         intentId=installResult,
+                                         name="IPV4",
+                                         senders=senders,
+                                         recipients=recipients,
+                                         sw1="s5",
+                                         sw2="s2",
+                                         expectedLink=18)
 
         utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
+                                 actual=testResult,
                                  onpass=main.assertReturnString,
                                  onfail=main.assertReturnString )
         main.step( "IPV4_2: Add point intents between h1 and h9" )
         main.assertReturnString = "Assertion Result for IPV4 no mac address point intents\n"
-        stepResult = main.intentFunction.pointIntent(
+        senders = [
+            { "name":"h1","device":"of:0000000000000005/1" }
+        ]
+        recipients = [
+            { "name":"h9","device":"of:0000000000000006/1" }
+        ]
+        installResult = main.intentFunction.installPointIntent(
                                        main,
                                        name="IPV4_2",
-                                       host1="h1",
-                                       host2="h9",
-                                       deviceId1="of:0000000000000005/1",
-                                       deviceId2="of:0000000000000006/1",
-                                       ipProto="",
-                                       ip1="",
-                                       ip2="",
-                                       tcp1="",
-                                       tcp2="",
-                                       sw1="s5",
-                                       sw2="s2",
-                                       expectedLink=18 )
+                                       senders=senders,
+                                       recipients=recipients,
+                                       ethType="IPV4" )
+
+        if installResult:
+            testResult = main.intentFunction.testPointIntent(
+                                         main,
+                                         intentId=installResult,
+                                         name="IPV4_2",
+                                         senders=senders,
+                                         recipients=recipients,
+                                         sw1="s5",
+                                         sw2="s2",
+                                         expectedLink=18)
 
         utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
+                                 actual=testResult,
                                  onpass=main.assertReturnString,
                                  onfail=main.assertReturnString )
 
         main.step( "SDNIP-ICMP: Add point intents between h1 and h9" )
         main.assertReturnString = "Assertion Result for SDNIP-ICMP IPV4 using TCP point intents\n"
-        mac1 = main.hostsData[ 'h1' ][ 'mac' ]
-        mac2 = main.hostsData[ 'h9' ][ 'mac' ]
-        try:
-            ip1 = str( main.hostsData[ 'h1' ][ 'ipAddresses' ][ 0 ] ) + "/24"
-            ip2 = str( main.hostsData[ 'h9' ][ 'ipAddresses' ][ 0 ] ) + "/24"
-        except KeyError:
-            main.log.debug( "Key Error getting IP addresses of h1 | h9 in" +
-                            "main.hostsData" )
-            ip1 = main.Mininet1.getIPAddress( 'h1')
-            ip2 = main.Mininet1.getIPAddress( 'h9')
-
+        senders = [
+            { "name":"h1","device":"of:0000000000000005/1","mac":"00:00:00:00:00:01",
+              "ip":main.h1.hostIp }
+        ]
+        recipients = [
+            { "name":"h9","device":"of:0000000000000006/1","mac":"00:00:00:00:00:09",
+              "ip":main.h9.hostIp }
+        ]
         ipProto = main.params[ 'SDNIP' ][ 'icmpProto' ]
         # Uneccessary, not including this in the selectors
-        tcp1 = main.params[ 'SDNIP' ][ 'srcPort' ]
-        tcp2 = main.params[ 'SDNIP' ][ 'dstPort' ]
+        tcpSrc = main.params[ 'SDNIP' ][ 'srcPort' ]
+        tcpDst = main.params[ 'SDNIP' ][ 'dstPort' ]
 
-        stepResult = main.intentFunction.pointIntent(
-                                           main,
-                                           name="SDNIP-ICMP",
-                                           host1="h1",
-                                           host2="h9",
-                                           deviceId1="of:0000000000000005/1",
-                                           deviceId2="of:0000000000000006/1",
-                                           mac1=mac1,
-                                           mac2=mac2,
-                                           ethType="IPV4",
-                                           ipProto=ipProto,
-                                           ip1=ip1,
-                                           ip2=ip2 )
+        installResult = main.intentFunction.installPointIntent(
+                                       main,
+                                       name="SDNIP-ICMP",
+                                       senders=senders,
+                                       recipients=recipients,
+                                       ethType="IPV4",
+                                       ipProto=ipProto,
+                                       tcpSrc=tcpSrc,
+                                       tcpDst=tcpDst )
+
+        if installResult:
+            testResult = main.intentFunction.testPointIntent(
+                                         main,
+                                         intentId=installResult,
+                                         name="SDNIP_ICMP",
+                                         senders=senders,
+                                         recipients=recipients,
+                                         sw1="s5",
+                                         sw2="s2",
+                                         expectedLink=18)
 
         utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
+                                 actual=testResult,
                                  onpass=main.assertReturnString,
                                  onfail=main.assertReturnString )
 
@@ -822,73 +1003,94 @@ class FUNCintent:
 
         main.step( "DUALSTACK1: Add point intents between h3 and h11" )
         main.assertReturnString = "Assertion Result for Dualstack1 IPV4 with mac address point intents\n"
-        stepResult = main.intentFunction.pointIntent(
+        senders = [
+            { "name":"h3","device":"of:0000000000000005/3","mac":"00:00:00:00:00:03" }
+        ]
+        recipients = [
+            { "name":"h11","device":"of:0000000000000006/3","mac":"00:00:00:00:00:0B" }
+        ]
+        installResult = main.intentFunction.installPointIntent(
                                        main,
                                        name="DUALSTACK1",
-                                       host1="h3",
-                                       host2="h11",
-                                       deviceId1="of:0000000000000005",
-                                       deviceId2="of:0000000000000006",
-                                       port1="3",
-                                       port2="3",
-                                       ethType="IPV4",
-                                       mac1="00:00:00:00:00:03",
-                                       mac2="00:00:00:00:00:0B",
-                                       bandwidth="",
-                                       lambdaAlloc=False,
-                                       ipProto="",
-                                       ip1="",
-                                       ip2="",
-                                       tcp1="",
-                                       tcp2="",
-                                       sw1="s5",
-                                       sw2="s2",
-                                       expectedLink=18 )
+                                       senders=senders,
+                                       recipients=recipients,
+                                       ethType="IPV4" )
+
+        if installResult:
+            testResult = main.intentFunction.testPointIntent(
+                                         main,
+                                         intentId=installResult,
+                                         name="DUALSTACK1",
+                                         senders=senders,
+                                         recipients=recipients,
+                                         sw1="s5",
+                                         sw2="s2",
+                                         expectedLink=18)
 
         utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
+                                 actual=testResult,
                                  onpass=main.assertReturnString,
                                  onfail=main.assertReturnString )
 
         main.step( "VLAN: Add point intents between h5 and h21" )
         main.assertReturnString = "Assertion Result for VLAN IPV4 with mac address point intents\n"
-        stepResult = main.intentFunction.pointIntent(
+        senders = [
+            { "name":"h5","device":"of:0000000000000005/5","mac":"00:00:00:00:00:05" }
+        ]
+        recipients = [
+            { "name":"h21","device":"of:0000000000000007/5","mac":"00:00:00:00:00:15" }
+        ]
+        installResult = main.intentFunction.installPointIntent(
                                        main,
-                                       name="VLAN",
-                                       host1="h5",
-                                       host2="h21",
-                                       deviceId1="of:0000000000000005/5",
-                                       deviceId2="of:0000000000000007/5",
-                                       port1="",
-                                       port2="",
-                                       ethType="IPV4",
-                                       mac1="00:00:00:00:00:05",
-                                       mac2="00:00:00:00:00:15",
-                                       bandwidth="",
-                                       lambdaAlloc=False,
-                                       ipProto="",
-                                       ip1="",
-                                       ip2="",
-                                       tcp1="",
-                                       tcp2="",
-                                       sw1="s5",
-                                       sw2="s2",
-                                       expectedLink=18 )
+                                       name="DUALSTACK1",
+                                       senders=senders,
+                                       recipients=recipients,
+                                       ethType="IPV4" )
+
+        if installResult:
+            testResult = main.intentFunction.testPointIntent(
+                                         main,
+                                         intentId=installResult,
+                                         name="DUALSTACK1",
+                                         senders=senders,
+                                         recipients=recipients,
+                                         sw1="s5",
+                                         sw2="s2",
+                                         expectedLink=18)
 
         utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
+                                 actual=testResult,
                                  onpass=main.assertReturnString,
                                  onfail=main.assertReturnString )
 
         main.step( "1HOP: Add point intents between h1 and h3" )
         main.assertReturnString = "Assertion Result for 1HOP IPV4 with no mac address point intents\n"
-        stepResult = main.intentFunction.hostIntent( main,
-                                              name='1HOP',
-                                              host1='h1',
-                                              host2='h3' )
+        senders = [
+            { "name":"h1","device":"of:0000000000000005/1","mac":"00:00:00:00:00:01" }
+        ]
+        recipients = [
+            { "name":"h3","device":"of:0000000000000005/3","mac":"00:00:00:00:00:03" }
+        ]
+        installResult = main.intentFunction.installPointIntent(
+                                       main,
+                                       name="1HOP IPV4",
+                                       senders=senders,
+                                       recipients=recipients,
+                                       ethType="IPV4" )
+
+        if installResult:
+            testResult = main.intentFunction.testPointIntent(
+                                         main,
+                                         intentId=installResult,
+                                         name="1HOP IPV4",
+                                         senders=senders,
+                                         recipients=recipients,
+                                         sw1="s5",
+                                         sw2="s2",
+                                         expectedLink=18)
 
         utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
+                                 actual=testResult,
                                  onpass=main.assertReturnString,
                                  onfail=main.assertReturnString )
 
@@ -930,101 +1132,158 @@ class FUNCintent:
                                ";\nThe test will use OF " + main.OFProtocol +\
                                " OVS running in Mininet"
 
-        hostNames = [ 'h8', 'h16', 'h24' ]
-        devices = [ 'of:0000000000000005/8', 'of:0000000000000006/8', \
-                    'of:0000000000000007/8' ]
-        macs = [ '00:00:00:00:00:08', '00:00:00:00:00:10', '00:00:00:00:00:18' ]
-
-        # This test as written attempts something that is improbable to succeed
-        # Single to Multi Point Raw intent cannot be bi-directional, so pings are not usable to test it
-        # This test should be re-written so that one single-to-multi NOOPTION
-        # intent is installed, with listeners at the destinations, so that one way
-        # packets can be detected
-        #
-        # main.step( "NOOPTION: Add single point to multi point intents" )
-        # stepResult = main.TRUE
-        # stepResult = main.intentFunction.singleToMultiIntent(
-        #                                  main,
-        #                                  name="NOOPTION",
-        #                                  hostNames=hostNames,
-        #                                  devices=devices,
-        #                                  sw1="s5",
-        #                                  sw2="s2",
-        #                                  expectedLink=18 )
-        #
-        # utilities.assert_equals( expect=main.TRUE,
-        #                          actual=stepResult,
-        #                          onpass="NOOPTION: Successfully added single "
-        #                                 + " point to multi point intents" +
-        #                                 " with no match action",
-        #                          onfail="NOOPTION: Failed to add single point"
-        #                                 + " point to multi point intents" +
-        #                                 " with no match action" )
-
-        main.step( "IPV4: Add single point to multi point intents" )
-        main.assertReturnString = "Assertion results for IPV4 single to multi point intent with IPV4 type and MAC addresses\n"
-        stepResult = main.intentFunction.singleToMultiIntent(
+        main.step( "NOOPTION: Install and test single point to multi point intents" )
+        main.assertReturnString = "Assertion results for IPV4 single to multi point intent with no options set\n"
+        senders = [
+            { "name":"h8", "device":"of:0000000000000005/8" }
+        ]
+        recipients = [
+            { "name":"h16", "device":"of:0000000000000006/8" },
+            { "name":"h24", "device":"of:0000000000000007/8" }
+        ]
+        badSenders=[ { "name":"h9" } ]  # Senders that are not in the intent
+        badRecipients=[ { "name":"h17" } ]  # Recipients that are not in the intent
+        testResult = main.FALSE
+        installResult = main.intentFunction.installSingleToMultiIntent(
                                          main,
-                                         name="IPV4",
-                                         hostNames=hostNames,
-                                         devices=devices,
-                                         ports=None,
-                                         ethType="IPV4",
-                                         macs=macs,
-                                         bandwidth="",
-                                         lambdaAlloc=False,
-                                         ipProto="",
-                                         ipAddresses="",
-                                         tcp="",
+                                         name="NOOPTION",
+                                         senders=senders,
+                                         recipients=recipients,
+                                         sw1="s5",
+                                         sw2="s2")
+
+        if installResult:
+            testResult = main.intentFunction.testPointIntent(
+                                         main,
+                                         intentId=installResult,
+                                         name="NOOPTION",
+                                         senders=senders,
+                                         recipients=recipients,
+                                         badSenders=badSenders,
+                                         badRecipients=badRecipients,
                                          sw1="s5",
                                          sw2="s2",
-                                         expectedLink=18 )
+                                         expectedLink=18)
 
         utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
+                                 actual=testResult,
+                                 onpass=main.assertReturnString,
+                                 onfail=main.assertReturnString )
+
+        main.step( "IPV4: Install and test single point to multi point intents" )
+        main.assertReturnString = "Assertion results for IPV4 single to multi point intent with IPV4 type and MAC addresses\n"
+        senders = [
+            { "name":"h8", "device":"of:0000000000000005/8","mac":"00:00:00:00:00:08" }
+        ]
+        recipients = [
+            { "name":"h16", "device":"of:0000000000000006/8", "mac":"00:00:00:00:00:10" },
+            { "name":"h24", "device":"of:0000000000000007/8", "mac":"00:00:00:00:00:18" }
+        ]
+        badSenders=[ { "name":"h9" } ]  # Senders that are not in the intent
+        badRecipients=[ { "name":"h17" } ]  # Recipients that are not in the intent
+        testResult = main.FALSE
+        installResult = main.intentFunction.installSingleToMultiIntent(
+                                         main,
+                                         name="IPV4",
+                                         senders=senders,
+                                         recipients=recipients,
+                                         ethType="IPV4",
+                                         sw1="s5",
+                                         sw2="s2")
+
+        if installResult:
+            testResult = main.intentFunction.testPointIntent(
+                                         main,
+                                         intentId=installResult,
+                                         name="IPV4",
+                                         senders=senders,
+                                         recipients=recipients,
+                                         badSenders=badSenders,
+                                         badRecipients=badRecipients,
+                                         sw1="s5",
+                                         sw2="s2",
+                                         expectedLink=18)
+
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=testResult,
                                  onpass=main.assertReturnString,
                                  onfail=main.assertReturnString )
 
         main.step( "IPV4_2: Add single point to multi point intents" )
         main.assertReturnString = "Assertion results for IPV4 single to multi point intent with IPV4 type and no MAC addresses\n"
-        hostNames = [ 'h8', 'h16', 'h24' ]
-        stepResult = main.intentFunction.singleToMultiIntent(
+        senders = [
+            { "name":"h8", "device":"of:0000000000000005/8" }
+        ]
+        recipients = [
+            { "name":"h16", "device":"of:0000000000000006/8" },
+            { "name":"h24", "device":"of:0000000000000007/8" }
+        ]
+        badSenders=[ { "name":"h9" } ]  # Senders that are not in the intent
+        badRecipients=[ { "name":"h17" } ]  # Recipients that are not in the intent
+        testResult = main.FALSE
+        installResult = main.intentFunction.installSingleToMultiIntent(
                                          main,
-                                         name="IPV4",
-                                         hostNames=hostNames,
+                                         name="IPV4_2",
+                                         senders=senders,
+                                         recipients=recipients,
                                          ethType="IPV4",
-                                         lambdaAlloc=False )
+                                         sw1="s5",
+                                         sw2="s2")
+
+        if installResult:
+            testResult = main.intentFunction.testPointIntent(
+                                         main,
+                                         intentId=installResult,
+                                         name="IPV4_2",
+                                         senders=senders,
+                                         recipients=recipients,
+                                         badSenders=badSenders,
+                                         badRecipients=badRecipients,
+                                         sw1="s5",
+                                         sw2="s2",
+                                         expectedLink=18)
 
         utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
+                                 actual=testResult,
                                  onpass=main.assertReturnString,
                                  onfail=main.assertReturnString )
 
         main.step( "VLAN: Add single point to multi point intents" )
         main.assertReturnString = "Assertion results for IPV4 single to multi point intent with IPV4 type and MAC addresses in the same VLAN\n"
-        hostNames = [ 'h4', 'h12', 'h20' ]
-        devices = [ 'of:0000000000000005/4', 'of:0000000000000006/4', \
-                    'of:0000000000000007/4' ]
-        macs = [ '00:00:00:00:00:04', '00:00:00:00:00:0C', '00:00:00:00:00:14' ]
-        stepResult = main.intentFunction.singleToMultiIntent(
+        senders = [
+            { "name":"h4", "device":"of:0000000000000005/4", "mac":"00:00:00:00:00:04" }
+        ]
+        recipients = [
+            { "name":"h12", "device":"of:0000000000000006/4", "mac":"00:00:00:00:00:0C" },
+            { "name":"h20", "device":"of:0000000000000007/4", "mac":"00:00:00:00:00:14" }
+        ]
+        badSenders=[ { "name":"h13" } ]  # Senders that are not in the intent
+        badRecipients=[ { "name":"h21" } ]  # Recipients that are not in the intent
+        testResult = main.FALSE
+        installResult = main.intentFunction.installSingleToMultiIntent(
                                          main,
-                                         name="VLAN",
-                                         hostNames=hostNames,
-                                         devices=devices,
-                                         ports=None,
+                                         name="IPV4",
+                                         senders=senders,
+                                         recipients=recipients,
                                          ethType="IPV4",
-                                         macs=macs,
-                                         bandwidth="",
-                                         lambdaAlloc=False,
-                                         ipProto="",
-                                         ipAddresses="",
-                                         tcp="",
+                                         sw1="s5",
+                                         sw2="s2")
+
+        if installResult:
+            testResult = main.intentFunction.testPointIntent(
+                                         main,
+                                         intentId=installResult,
+                                         name="IPV4",
+                                         senders=senders,
+                                         recipients=recipients,
+                                         badSenders=badSenders,
+                                         badRecipients=badRecipients,
                                          sw1="s5",
                                          sw2="s2",
-                                         expectedLink=18 )
+                                         expectedLink=18)
 
         utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
+                                 actual=testResult,
                                  onpass=main.assertReturnString,
                                  onfail=main.assertReturnString )
 
@@ -1066,103 +1325,162 @@ class FUNCintent:
                                ";\nThe test will use OF " + main.OFProtocol +\
                                " OVS running in Mininet"
 
-        hostNames = [ 'h8', 'h16', 'h24' ]
-        devices = [ 'of:0000000000000005/8', 'of:0000000000000006/8', \
-                    'of:0000000000000007/8' ]
-        macs = [ '00:00:00:00:00:08', '00:00:00:00:00:10', '00:00:00:00:00:18' ]
+        main.step( "NOOPTION: Add multi point to single point intents" )
+        main.assertReturnString = "Assertion results for NOOPTION multi to single point intent\n"
+        senders = [
+            { "name":"h16", "device":"of:0000000000000006/8" },
+            { "name":"h24", "device":"of:0000000000000007/8" }
+        ]
+        recipients = [
+            { "name":"h8", "device":"of:0000000000000005/8" }
+        ]
+        badSenders=[ { "name":"h17" } ]  # Senders that are not in the intent
+        badRecipients=[ { "name":"h9" } ]  # Recipients that are not in the intent
+        testResult = main.FALSE
+        installResult = main.intentFunction.installMultiToSingleIntent(
+                                         main,
+                                         name="NOOPTION",
+                                         senders=senders,
+                                         recipients=recipients,
+                                         sw1="s5",
+                                         sw2="s2")
 
-        # This test as written attempts something that is impossible
-        # Multi to Single Raw intent cannot be bi-directional, so pings are not usable to test it
-        # This test should be re-written so that one multi-to-single NOOPTION
-        # intent is installed, with listeners at the destinations, so that one way
-        # packets can be detected
-        #
-        # main.step( "NOOPTION: Add multi point to single point intents" )
-        # stepResult = main.TRUE
-        # stepResult = main.intentFunction.multiToSingleIntent(
-        #                                  main,
-        #                                  name="NOOPTION",
-        #                                  hostNames=hostNames,
-        #                                  devices=devices,
-        #                                  sw1="s5",
-        #                                  sw2="s2",
-        #                                  expectedLink=18 )
-        #
-        # utilities.assert_equals( expect=main.TRUE,
-        #                          actual=stepResult,
-        #                          onpass="NOOPTION: Successfully added multi "
-        #                                 + " point to single point intents" +
-        #                                 " with no match action",
-        #                          onfail="NOOPTION: Failed to add multi point" +
-        #                                 " to single point intents" +
-        #                                 " with no match action" )
+        if installResult:
+            testResult = main.intentFunction.testPointIntent(
+                                         main,
+                                         intentId=installResult,
+                                         name="NOOPTION",
+                                         senders=senders,
+                                         recipients=recipients,
+                                         badSenders=badSenders,
+                                         badRecipients=badRecipients,
+                                         sw1="s5",
+                                         sw2="s2",
+                                         expectedLink=18)
+
+        utilities.assert_equals( expect=main.TRUE,
+                                 actual=testResult,
+                                 onpass=main.assertReturnString,
+                                 onfail=main.assertReturnString )
 
         main.step( "IPV4: Add multi point to single point intents" )
         main.assertReturnString = "Assertion results for IPV4 multi to single point intent with IPV4 type and MAC addresses\n"
-        stepResult = main.intentFunction.multiToSingleIntent(
+        senders = [
+            { "name":"h16", "device":"of:0000000000000006/8", "mac":"00:00:00:00:00:10" },
+            { "name":"h24", "device":"of:0000000000000007/8", "mac":"00:00:00:00:00:18" }
+        ]
+        recipients = [
+            { "name":"h8", "device":"of:0000000000000005/8", "mac":"00:00:00:00:00:08" }
+        ]
+        badSenders=[ { "name":"h17" } ]  # Senders that are not in the intent
+        badRecipients=[ { "name":"h9" } ]  # Recipients that are not in the intent
+        testResult = main.FALSE
+        installResult = main.intentFunction.installMultiToSingleIntent(
                                          main,
                                          name="IPV4",
-                                         hostNames=hostNames,
-                                         devices=devices,
-                                         ports=None,
+                                         senders=senders,
+                                         recipients=recipients,
                                          ethType="IPV4",
-                                         macs=macs,
-                                         bandwidth="",
-                                         lambdaAlloc=False,
-                                         ipProto="",
-                                         ipAddresses="",
-                                         tcp="",
+                                         sw1="s5",
+                                         sw2="s2")
+
+        if installResult:
+            testResult = main.intentFunction.testPointIntent(
+                                         main,
+                                         intentId=installResult,
+                                         name="IPV4",
+                                         senders=senders,
+                                         recipients=recipients,
+                                         badSenders=badSenders,
+                                         badRecipients=badRecipients,
                                          sw1="s5",
                                          sw2="s2",
-                                         expectedLink=18 )
+                                         expectedLink=18)
 
         utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
+                                 actual=testResult,
                                  onpass=main.assertReturnString,
                                  onfail=main.assertReturnString )
 
         main.step( "IPV4_2: Add multi point to single point intents" )
         main.assertReturnString = "Assertion results for IPV4 multi to single point intent with IPV4 type and no MAC addresses\n"
-        hostNames = [ 'h8', 'h16', 'h24' ]
-        stepResult = main.intentFunction.multiToSingleIntent(
+        senders = [
+            { "name":"h16", "device":"of:0000000000000006/8" },
+            { "name":"h24", "device":"of:0000000000000007/8" }
+        ]
+        recipients = [
+            { "name":"h8", "device":"of:0000000000000005/8" }
+        ]
+        badSenders=[ { "name":"h17" } ]  # Senders that are not in the intent
+        badRecipients=[ { "name":"h9" } ]  # Recipients that are not in the intent
+        testResult = main.FALSE
+        installResult = main.intentFunction.installMultiToSingleIntent(
                                          main,
-                                         name="IPV4",
-                                         hostNames=hostNames,
+                                         name="IPV4_2",
+                                         senders=senders,
+                                         recipients=recipients,
                                          ethType="IPV4",
-                                         lambdaAlloc=False )
+                                         sw1="s5",
+                                         sw2="s2")
+
+        if installResult:
+            testResult = main.intentFunction.testPointIntent(
+                                         main,
+                                         intentId=installResult,
+                                         name="IPV4_2",
+                                         senders=senders,
+                                         recipients=recipients,
+                                         badSenders=badSenders,
+                                         badRecipients=badRecipients,
+                                         sw1="s5",
+                                         sw2="s2",
+                                         expectedLink=18)
 
         utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
+                                 actual=testResult,
                                  onpass=main.assertReturnString,
                                  onfail=main.assertReturnString )
 
         main.step( "VLAN: Add multi point to single point intents" )
         main.assertReturnString = "Assertion results for IPV4 multi to single point intent with IPV4 type and no MAC addresses in the same VLAN\n"
-        hostNames = [ 'h5', 'h13', 'h21' ]
-        devices = [ 'of:0000000000000005/5', 'of:0000000000000006/5', \
-                    'of:0000000000000007/5' ]
-        macs = [ '00:00:00:00:00:05', '00:00:00:00:00:0D', '00:00:00:00:00:15' ]
-        stepResult = main.intentFunction.multiToSingleIntent(
+        senders = [
+            { "name":"h13", "device":"of:0000000000000006/5" },
+            { "name":"h21", "device":"of:0000000000000007/5" }
+        ]
+        recipients = [
+            { "name":"h5", "device":"of:0000000000000005/5" }
+        ]
+        badSenders=[ { "name":"h12" } ]  # Senders that are not in the intent
+        badRecipients=[ { "name":"h20" } ]  # Recipients that are not in the intent
+        testResult = main.FALSE
+        installResult = main.intentFunction.installMultiToSingleIntent(
                                          main,
                                          name="VLAN",
-                                         hostNames=hostNames,
-                                         devices=devices,
-                                         ports=None,
+                                         senders=senders,
+                                         recipients=recipients,
                                          ethType="IPV4",
-                                         macs=macs,
-                                         bandwidth="",
-                                         lambdaAlloc=False,
-                                         ipProto="",
-                                         ipAddresses="",
-                                         tcp="",
+                                         sw1="s5",
+                                         sw2="s2")
+
+        if installResult:
+            testResult = main.intentFunction.testPointIntent(
+                                         main,
+                                         intentId=installResult,
+                                         name="VLAN",
+                                         senders=senders,
+                                         recipients=recipients,
+                                         badSenders=badSenders,
+                                         badRecipients=badRecipients,
                                          sw1="s5",
                                          sw2="s2",
-                                         expectedLink=18 )
+                                         expectedLink=18)
 
         utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
+                                 actual=testResult,
                                  onpass=main.assertReturnString,
                                  onfail=main.assertReturnString )
+
+        main.intentFunction.report( main )
 
     def CASE5000( self, main ):
         """
@@ -1175,14 +1493,23 @@ class FUNCintent:
         assert main.numSwitch, "Placed the total number of switch topology in \
                                 main.numSwitch"
         main.case( "Test host mobility with host intents " )
-        main.step( " Testing host mobility by moving h1 from s5 to s6" )
+        main.step( "Testing host mobility by moving h1 from s5 to s6" )
         h1PreMove = main.hostsData[ "h1" ][ "location" ][ 0:19 ]
 
         main.log.info( "Moving h1 from s5 to s6")
-
         main.Mininet1.moveHost( "h1","s5","s6" )
 
-        main.intentFunction.getHostsData( main )
+        # Send discovery ping from moved host
+        # Moving the host brings down the default interfaces and creates a new one.
+        # Scapy is restarted on this host to detect the new interface
+        main.h1.stopScapy()
+        main.h1.startScapy()
+
+        # Discover new host location in ONOS and populate host data.
+        # Host 1 IP and MAC should be unchanged
+        main.intentFunction.sendDiscoveryArp( main, [ main.h1 ] )
+        main.intentFunction.populateHostData( main )
+
         h1PostMove = main.hostsData[ "h1" ][ "location" ][ 0:19 ]
 
         utilities.assert_equals( expect="of:0000000000000006",
@@ -1195,16 +1522,27 @@ class FUNCintent:
 
         main.step( "IPV4: Add host intents between h1 and h9" )
         main.assertReturnString = "Assert result for IPV4 host intent between h1, moved, and h9\n"
-        stepResult = main.intentFunction.hostIntent( main,
+        host1 = { "name":"h1","id":"00:00:00:00:00:01/-1" }
+        host2 = { "name":"h9","id":"00:00:00:00:00:09/-1" }
+
+        installResult = main.intentFunction.installHostIntent( main,
+                                              name='IPV4 Mobility IPV4',
                                               onosNode='0',
-                                              name='IPV4',
-                                              host1='h1',
-                                              host2='h9',
-                                              host1Id='00:00:00:00:00:01/-1',
-                                              host2Id='00:00:00:00:00:09/-1' )
+                                              host1=host1,
+                                              host2=host2)
+
+        testResult = main.intentFunction.testHostIntent( main,
+                                              name='Host Mobility IPV4',
+                                              intentId = installResult,
+                                              onosNode='0',
+                                              host1=host1,
+                                              host2=host2,
+                                              sw1="s6",
+                                              sw2="s2",
+                                              expectedLink=18 )
 
         utilities.assert_equals( expect=main.TRUE,
-                                 actual=stepResult,
+                                 actual=testResult,
                                  onpass=main.assertReturnString,
                                  onfail=main.assertReturnString )
 

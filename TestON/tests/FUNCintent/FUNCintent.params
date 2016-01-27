@@ -7,15 +7,17 @@
     # 10 - Start Mininet with Openflow 1.0
     # 11 - Start Mininet with Openflow 1.3
     # 12 - Assign switch to controller
-    # 13 - Create a data of hosts information
-    # 14 - Stop Mininet
+    # 13 - Create Scapy Components
+    # 14 - Discover hosts with Mininet Pingall
+    $ 15 - Discover hosts with Scapy arping ( only discovers scapy hosts )
+    # 16 - Stop Mininet
     # 1000 - Test host intents
     # 2000 - Test point intents
     # 3000 - Test single to multi point intents
     # 4000 - Test multi to single point intents
     # 5000 - Test host mobility
 
-    <testcases>1,[2,10,12,8,13,1000,2000,3000,4000,5000,14]*2,[2,11,12,8,13,1000,2000,3000,4000,5000,14]*2</testcases>
+    <testcases>1,[2,10,12,13,15,2000,3000,4000,16]*2,[2,11,12,13,15,2000,3000,4000,16]*2</testcases>
 
     <SCALE>
         <size>1,3,1,3</size>
@@ -50,6 +52,10 @@
         <switch>7</switch>
         <links>20</links>
     </MININET>
+
+    <SCAPY>
+        <HOSTNAMES>h1,h2,h3,h4,h5,h6,h7,h8,h9,h10,h11,h12,h13,h14,h15,h16,h17,h18,h19,h20,h21,h22,h23,h24</HOSTNAMES>
+    </SCAPY>
 
     # Intent tests params
     <SDNIP>

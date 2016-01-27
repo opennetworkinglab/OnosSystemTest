@@ -224,6 +224,7 @@ class OnosCliDriver( CLI ):
         Note: karafTimeout is left as str so that this could be read
         and passed to startOnosCli from PARAMS file as str.
         """
+        self.onosIp = ONOSIp
         try:
             self.handle.sendline( "" )
             x = self.handle.expect( [
@@ -303,9 +304,19 @@ class OnosCliDriver( CLI ):
             self.handle.sendline( "" )
             i = self.handle.expect( [ "onos>", "\$", pexpect.TIMEOUT ] )
             if i == 1:
-                main.log.error( self.name + ": onos cli session closed." )
-                main.cleanup()
-                main.exit()
+                main.log.error( self.name + ": onos cli session closed. ")
+                if self.onosIp:
+                    main.log.warn( "Trying to reconnect " + self.onosIp )
+                    reconnectResult = self.startOnosCli( self.onosIp )
+                    if reconnectResult:
+                        main.log.info( self.name + ": onos cli session reconnected." )
+                    else:
+                        main.log.error( self.name + ": reconnection failed." )
+                        main.cleanup()
+                        main.exit()
+                else:
+                    main.cleanup()
+                    main.exit()
             if i == 2:
                 self.handle.sendline( "" )
                 self.handle.expect( "onos>" )
